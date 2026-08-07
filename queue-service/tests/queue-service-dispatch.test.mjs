@@ -216,6 +216,48 @@ describe('QueueService.resetDispatchAttempt (stubbed DB)', () => {
     });
 });
 
+describe('QueueService.releaseClaim (stubbed DB)', () => {
+    let calls;
+    afterEach(() => calls?.restore());
+
+    it('releases the claim for a task still in flight, leaving the dispatch budget untouched', async () => {
+        calls = stubDb({ found: makeTask({ dispatchAttempt: 1 }) });
+        await service.releaseClaim('t-1');
+        assert.equal(calls.saved[0].processedTime, null);
+        assert.equal(calls.saved[0].sent, false);
+        assert.equal(calls.saved[0].dispatchAttempt, 1);
+    });
+
+    it('does not touch a task that already reached a terminal state', async () => {
+        calls = stubDb({ found: makeTask({ isError: true }) });
+        await service.releaseClaim('t-1');
+        assert.equal(calls.saved.length, 0);
+    });
+
+    it('does nothing if the task no longer exists', async () => {
+        calls = stubDb({ found: null });
+        await service.releaseClaim('t-1');
+        assert.equal(calls.saved.length, 0);
+    });
+});
+
+describe('QueueService.inFlightWorkers', () => {
+    // refreshAndReassignTasks adds a worker's subject before dispatching and removes it once
+    // dispatchClaimedTask settles (see the .finally() in refreshAndReassignTasks) - this is what
+    // lets the loop skip a worker GET_FREE_WORKERS still reports free mid-decode of a large
+    // out-of-band payload. Exercised directly since the loop itself depends on NATS pub/sub.
+    it('starts empty', () => {
+        assert.equal(service.inFlightWorkers.size, 0);
+    });
+
+    it('is a Set keyed by worker subject', () => {
+        service.inFlightWorkers.add('w-1');
+        assert.ok(service.inFlightWorkers.has('w-1'));
+        service.inFlightWorkers.delete('w-1');
+        assert.ok(!service.inFlightWorkers.has('w-1'));
+    });
+});
+
 describe('QueueService.dispatchClaimedTask (stubbed DB + transport)', () => {
     let calls;
     let originalSend;
@@ -232,18 +274,29 @@ describe('QueueService.dispatchClaimedTask (stubbed DB + transport)', () => {
     // worker-service SEND_TASK_TO_WORKER) - that is an expected outcome of a worker reported
     // free by getFreeWorkers() becoming busy again before the send lands, not a failed
     // hand-off, and must not burn the dead-letter budget.
-    it('releases a busy-worker response without consuming the dispatch budget', async () => {
+    it('releases a busy-worker response via a fresh read, not the stale snapshot', async () => {
         service.sendMessageWithTimeout = async () => ({ result: false });
-        calls = stubDb();
+        calls = stubDb({ found: makeTask({ dispatchAttempt: 0 }) });
 
         const task = makeTask({ dispatchAttempt: 0 });
         await service.dispatchClaimedTask({ subject: 'w-1' }, task, { id: 't-1' }, 1000);
 
+        assert.equal(calls.findOneFilters.length, 1);
         assert.equal(calls.saved.length, 1);
         assert.equal(calls.saved[0].dispatchAttempt, 0);
         assert.equal(calls.saved[0].processedTime, null);
         assert.equal(calls.saved[0].sent, false);
         assert.equal(calls.published.length, 0);
+    });
+
+    it('does not revert an already-completed task on a busy-worker response', async () => {
+        service.sendMessageWithTimeout = async () => ({ result: false });
+        calls = stubDb({ found: makeTask({ done: true }) });
+
+        const task = makeTask();
+        await service.dispatchClaimedTask({ subject: 'w-1' }, task, { id: 't-1' }, 1000);
+
+        assert.equal(calls.saved.length, 0);
     });
 
     it('routes a transport error through releaseOrParkTask and counts it', async () => {
@@ -254,6 +307,25 @@ describe('QueueService.dispatchClaimedTask (stubbed DB + transport)', () => {
         await service.dispatchClaimedTask({ subject: 'w-1' }, task, { id: 't-1' }, 1000);
 
         assert.equal(calls.saved[0].dispatchAttempt, 1);
+    });
+
+    // A DISPATCH_TIMEOUT means the ack deadline passed, not that the task was never delivered -
+    // the worker only acks an out-of-band payload after fetching and parsing it in full, and a
+    // genuinely hung worker times out regardless of delivery. Re-queueing on this (like a proven
+    // transport error) could run a Hedera mint/transfer twice while the first attempt is still in
+    // flight, so it must leave the claim untouched instead of going through releaseOrParkTask.
+    it('leaves the claim untouched on an ack timeout instead of re-queueing or dead-lettering', async () => {
+        const error = new Error('Timeout exceed (w-1)');
+        error.code = 'DISPATCH_TIMEOUT';
+        service.sendMessageWithTimeout = async () => { throw error; };
+        calls = stubDb({ found: makeTask({ dispatchAttempt: 0 }) });
+
+        const task = makeTask({ dispatchAttempt: 0 });
+        await service.dispatchClaimedTask({ subject: 'w-1' }, task, { id: 't-1' }, 1000);
+
+        assert.equal(calls.findOneFilters.length, 0);
+        assert.equal(calls.saved.length, 0);
+        assert.equal(calls.published.length, 0);
     });
 
     it('resets the dispatch budget on success via a fresh read, not the stale snapshot', async () => {

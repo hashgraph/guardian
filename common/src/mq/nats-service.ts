@@ -255,7 +255,11 @@ export abstract class NatsService {
         const timeoutPromise = new Promise<T>((_, reject) => {
             setTimeout(() => {
                 this.responseCallbacksMap.delete(messageId);
-                reject(new Error(`Timeout exceed (${subject})`));
+                // Tagged so callers can tell "no ack within the deadline" apart from a transport
+                // error: a timeout does not prove the message was never delivered.
+                const error: any = new Error(`Timeout exceed (${subject})`);
+                error.code = 'DISPATCH_TIMEOUT';
+                reject(error);
             }, timeout);
         });
 

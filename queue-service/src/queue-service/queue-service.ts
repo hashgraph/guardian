@@ -32,6 +32,17 @@ export class QueueService extends NatsService {
 
     private trigger: boolean = false;
 
+    /**
+     * Worker subjects with a dispatch currently in flight. GET_FREE_WORKERS can report a worker
+     * free while it is still mid-decode of a large out-of-band payload - the worker only sets
+     * `isInUse` once its SEND_TASK_TO_WORKER handler actually runs, which is after that decode
+     * (an HTTP fetch for tens of MB) completes. Without this, a slow decode lets the same worker
+     * get claimed again on the next refresh tick, and the second task is then invisible to
+     * genuinely free workers. Tracking our own in-flight dispatches lets the loop below trust
+     * this over a stale free-worker report.
+     */
+    private readonly inFlightWorkers = new Set<string>();
+
     public async init() {
         await super.init();
 
@@ -236,6 +247,12 @@ export class QueueService extends NatsService {
             const dataBaseServer = new DatabaseServer();
 
             for (const worker of workers) {
+                if (this.inFlightWorkers.has(worker.subject)) {
+                    // Trust our own bookkeeping over this free-worker report - see
+                    // inFlightWorkers above for why the report can be stale.
+                    continue;
+                }
+
                 const task = await dataBaseServer.findOne(TaskEntity, {
                     priority: {
                         $gte: worker.minPriority,
@@ -270,9 +287,14 @@ export class QueueService extends NatsService {
                 task.sent = true;
                 await dataBaseServer.save(TaskEntity, task);
 
-                this.dispatchClaimedTask(worker, task, payload, timeout).catch((error) => {
-                    console.error('Error while sending task to worker:', error);
-                });
+                this.inFlightWorkers.add(worker.subject);
+                this.dispatchClaimedTask(worker, task, payload, timeout)
+                    .catch((error) => {
+                        console.error('Error while sending task to worker:', error);
+                    })
+                    .finally(() => {
+                        this.inFlightWorkers.delete(worker.subject);
+                    });
             }
         } finally {
             this.trigger = false;
@@ -301,14 +323,27 @@ export class QueueService extends NatsService {
                 // earlier) can already be occupied by the time the send actually reaches it.
                 // Routing this through releaseOrParkTask would burn the dead-letter budget on
                 // healthy tasks under normal load, so just release the claim.
-                task.processedTime = null;
-                task.sent = false;
-                await new DatabaseServer().save(TaskEntity, task);
+                await this.releaseClaim(task.taskId);
                 return;
             }
             console.log('task sent error');
             await this.releaseOrParkTask(task, `Task was rejected by the worker: ${JSON.stringify(r)}`);
         } catch (error) {
+            if (error?.code === 'DISPATCH_TIMEOUT') {
+                // An ack timeout does not prove the task was never delivered - a worker only acks
+                // an out-of-band payload after fetching and parsing it in full, and a genuinely
+                // hung worker times out on every attempt regardless of whether it received the
+                // task. Re-queueing here (as releaseOrParkTask does for provably-undelivered
+                // transport errors) could run a Hedera mint/transfer a second time while the first
+                // attempt is still in flight. Leave the claim in place instead: clearLongPendingTasks
+                // reclaims it once processTimeout is reached, same as it did before dispatch had a
+                // timeout at all.
+                console.warn(
+                    `[Queue] dispatch ack timed out, leaving claim in place for clearLongPendingTasks. ` +
+                    `taskId: ${task.taskId}, type: ${task.type}, size: ${task.dataSize ?? 'n/a'}`
+                );
+                return;
+            }
             await this.releaseOrParkTask(task, error?.message || String(error));
         }
     }
@@ -329,17 +364,35 @@ export class QueueService extends NatsService {
     }
 
     /**
+     * Release a claim without touching the dispatch budget - for outcomes that are not the
+     * worker's fault (busy). Re-reads the task instead of writing back the caller's snapshot,
+     * for the same reason as resetDispatchAttempt/releaseOrParkTask: dispatchClaimedTask can
+     * hold that snapshot across an await lasting up to workerSendTaskTimeoutMax.
+     */
+    private async releaseClaim(taskId: string): Promise<void> {
+        const dataBaseServer = new DatabaseServer();
+        const current = await dataBaseServer.findOne(TaskEntity, { taskId });
+        if (!current || current.done || current.isError) {
+            return;
+        }
+        current.processedTime = null;
+        current.sent = false;
+        await dataBaseServer.save(TaskEntity, current);
+    }
+
+    /**
      * Roll a failed hand-off back into the queue, or dead-letter the task once it has exhausted
      * its dispatch budget.
      *
      * `attempt` is only ever incremented in the WorkerEvents.TASK_COMPLETE handler, i.e. only on
-     * errors *reported by a worker*. A task that never reaches a worker at all - a dispatch
-     * timeout or transport error - would otherwise retry forever without ever being marked
-     * failed. `dispatchAttempt` gives that case its own bounded budget.
+     * errors *reported by a worker*. A task that never reaches a worker at all - a transport
+     * error such as an encode/publish/no-responders failure - would otherwise retry forever
+     * without ever being marked failed. `dispatchAttempt` gives that case its own bounded budget.
      *
-     * NOTE: a send timeout does not prove the task was not delivered, so re-queueing can in
-     * principle run a task twice. That risk is inherent to fire-and-forget dispatch and predates
-     * this change.
+     * Only reached for errors that prove the task was never handed to a worker. An ack *timeout*
+     * does not prove that - see dispatchClaimedTask's catch block, which handles it separately
+     * (leaving the claim for clearLongPendingTasks) precisely because re-queueing an ambiguous
+     * outcome here could run the task twice.
      */
     private async releaseOrParkTask(task: TaskEntity, reason: string): Promise<void> {
         const dataBaseServer = new DatabaseServer();
