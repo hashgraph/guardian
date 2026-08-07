@@ -146,6 +146,7 @@
         * [mathBlock](guardian/standard-registry/policies/policy-creation/introduction/mathblock.md)
         * [API Execution Payloads](available-policy-workflow-blocks/api-execution-payloads.md)
       * [Creating Policy using UI](guardian/standard-registry/policies/policy-creation/policy-demo.md)
+      * [Policy Configurator](guardian/standard-registry/policies/policy-creation/policy-configurator.md)
       * [Creating a Policy through Policy Configurator](guardian/standard-registry/policies/policy-creation/creating-a-policy-through-policy-configurator/README.md)
         * [Getting Started with the Policy Workflows](guardian/standard-registry/policies/policy-creation/creating-a-policy-through-policy-configurator/getting-started-with-the-policy-workflows.md)
         * [Policy Workflow Step 1](guardian/standard-registry/policies/policy-creation/creating-a-policy-through-policy-configurator/policy-workflow-step-1.md)
