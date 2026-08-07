@@ -37,7 +37,7 @@ Click **Save all**. The dependency links are stored in the schema's `$comment` f
 
 #### Verify in a generated form
 
-Open a **Dry Run** for the policy that uses this schema.
+You can verify the cascade behavior directly in the schema editor by clicking **Preview**, or by opening a **Dry Run** for the policy that uses this schema.
 
 * Selecting a country filters the State/Province dropdown to that country's subdivisions and fills in the Continent field.
 * Selecting a state fills in its country and continent.
