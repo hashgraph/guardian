@@ -1,3 +1,8 @@
+---
+tags:
+  - concept
+---
+
 # Artifacts
 
 Artifacts can be represented as JSON files. JSON (JavaScript Object Notation) is a lightweight data-interchange format that is widely used for storing and exchanging structured data.

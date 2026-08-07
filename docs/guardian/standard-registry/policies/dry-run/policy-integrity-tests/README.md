@@ -1,6 +1,7 @@
 ---
 tags:
   - new
+  - concept
 ---
 
 # Policy Integrity Tests
@@ -39,5 +40,6 @@ Policy Integrity Tests are created and managed by Standard Registry operators an
 
 ### Related
 
-* [Task: Create a Policy Integrity Test](create-a-policy-integrity-test.md)
-
+* [create-a-policy-integrity-test.md](create-a-policy-integrity-test.md "mention")
+* [attach-a-policy-integrity-test.md](attach-a-policy-integrity-test.md "mention")
+* [run-a-policy-integrity-test.md](run-a-policy-integrity-test.md "mention")

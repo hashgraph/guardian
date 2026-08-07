@@ -29,7 +29,7 @@ If Policy state flag is set in the ‘**Migrate Data**’ dialog, the entire pol
 
 This includes block states - steps, timers, multi-signs, split documents, aggregate documents, etc...
 
-To get information about different steps in the below migration process screen, please refer to [Migration Process](../discontinuing-policy-workflow/apis-related-to-discontinuing-policy-workflow/migratepolicy-data.md)
+To get information about different steps in the below migration process screen, please refer to [Migration Process](../../../developer-tools/api-reference/apis-related-to-discontinuing-policy-workflow/migratepolicy-data.md)
 
 <figure><img src="../../../.gitbook/assets/image (595).png" alt=""><figcaption></figcaption></figure>
 
