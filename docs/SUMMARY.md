@@ -44,6 +44,7 @@
 * [Standard Registry](guardian/standard-registry/README.md)
   * [Schemas](guardian/standard-registry/schemas/README.md)
     * [Types of Schemas](guardian/standard-registry/schemas/system-policy-schemas.md)
+    * [Schema Editor](guardian/standard-registry/schemas/schema-editor/README.md)
     * [Available Schema Data Types](guardian/standard-registry/schemas/available-schema-types/README.md)
       * [Table Data Input Field](guardian/standard-registry/schemas/available-schema-types/table-data-input-field/README.md)
         * [Table Data Input Field with AutoCalculate](guardian/standard-registry/schemas/available-schema-types/table-data-input-field/table-data-input-field-with-autocalculate.md)
