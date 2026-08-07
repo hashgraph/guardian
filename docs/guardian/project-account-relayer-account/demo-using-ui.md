@@ -1,4 +1,4 @@
-# 💻 Demo using UI
+# Demo using UI
 
 [Step By Step](demo-using-ui.md#step-by-step)
 
