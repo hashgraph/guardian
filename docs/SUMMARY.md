@@ -631,6 +631,7 @@
     * [Returns the list of documents in the target policy](guardian/complex-iterative-review-and-approval-workflows/apis-related/returns-the-list-of-documents-in-the-target-policy.md)
 * [Users](guardian/users/README.md)
   * [User Profile Setup](guardian/users/user-profile-setup.md)
+  * [Profile page fields](guardian/users/profile-page.md)
   * [Mobile Support for Data Interface](guardian/users/mobile-support-for-data-interface/README.md)
     * [Mobile Operation for the user](guardian/users/mobile-support-for-data-interface/mobile-operation-for-the-user.md)
   * [AI Search](guardian/users/ai-search/README.md)
