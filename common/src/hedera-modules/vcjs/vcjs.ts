@@ -558,7 +558,7 @@ export class VCJS {
                 return isNaN(n) ? value : n;
             }
             if (type === 'boolean') {
-                return value === 'true';
+                return typeof value === 'boolean' ? value : value === 'true';
             }
             if (type === 'string' && value !== null && value !== undefined) {
                 return String(value);
@@ -572,13 +572,17 @@ export class VCJS {
                 for (const child of node.allOf) { walkIfNode(child, context); }
                 return;
             }
+            if (Array.isArray(node.anyOf)) {
+                for (const child of node.anyOf) { walkIfNode(child, context); }
+                return;
+            }
             if (!node.properties) { return; }
             for (const [key, val] of Object.entries(node.properties) as [string, any][]) {
                 if (!val || typeof val !== 'object') { continue; }
                 if ('const' in val) {
                     const type = context?.properties?.[key]?.type;
                     if (type) { val.const = coerceConst(val.const, type); }
-                } else if (val.properties || val.allOf) {
+                } else if (val.properties || val.allOf || val.anyOf) {
                     const ref = context?.properties?.[key]?.$ref;
                     const subContext = ref ? (context.$defs?.[ref] ?? rootDefs[ref]) : null;
                     if (subContext) { walkIfNode(val, subContext); }
@@ -609,7 +613,8 @@ export class VCJS {
         const segments = instancePath.split('/').filter(Boolean).slice(0, -1);
         let current = rootSchema;
         for (const seg of segments) {
-            const ref = current.properties?.[seg]?.$ref;
+            const prop = current.properties?.[seg];
+            const ref = prop?.$ref ?? prop?.items?.$ref;
             if (ref) {
                 const next = current.$defs?.[ref] ?? rootDefs[ref];
                 if (next) { current = next; }
