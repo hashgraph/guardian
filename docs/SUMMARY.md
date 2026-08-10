@@ -1,13 +1,6 @@
 # Table of contents
 
 * [Welcome](README.md)
-* [Schema Templates Concept](schema-templates-concept/README.md)
-  * [Create a Schema Template](schema-templates-concept/create-a-schema-template.md)
-  * [Apply a Schema Template](schema-templates-concept/apply-a-schema-template.md)
-  * [Update an Applied Schema Template](schema-templates-concept/update-an-applied-schema-template.md)
-  * [Detach a Schema Template](schema-templates-concept/detach-a-schema-template.md)
-  * [Import a Schema Template](schema-templates-concept/import-a-schema-template.md)
-  * [Export a Schema Template](schema-templates-concept/export-a-schema-template.md)
 
 ## Guardian
 
@@ -85,7 +78,13 @@
       * [Demo using VM0042](guardian/standard-registry/schemas/data-entry-updatability/demo-using-vm0042.md)
     * [Cross-Schema Conditions](guardian/standard-registry/schemas/cross-schema-conditions/README.md)
       * [Configure Nested and Cross-Schema Conditions](guardian/standard-registry/schemas/cross-schema-conditions/configure-nested-and-cross-schema-conditions.md)
-    * [Adding Example Data](guardian/standard-registry/schemas/adding-example-data-using-ui.md)
+    * [Schema Templates](guardian/standard-registry/schemas/schema-templates/README.md)
+      * [Create a Schema Template](guardian/standard-registry/schemas/schema-templates/create-a-schema-template.md)
+      * [Apply a Schema Template](guardian/standard-registry/schemas/schema-templates/apply-a-schema-template.md)
+      * [Update an Applied Schema Template](guardian/standard-registry/schemas/schema-templates/update-an-applied-schema-template.md)
+      * [Detach a Schema Template](guardian/standard-registry/schemas/schema-templates/detach-a-schema-template.md)
+      * [Import a Schema Template](guardian/standard-registry/schemas/schema-templates/import-a-schema-template.md)
+      * [Export a Schema Template](guardian/standard-registry/schemas/schema-templates/export-a-schema-template.md)
     * [Schema Differentiation](guardian/standard-registry/schemas/schema-differentiation/README.md)
       * [Schema Differentiation using UI](guardian/standard-registry/schemas/schema-differentiation/schema-differentiation-using-ui.md)
     * [Schema Tree](guardian/standard-registry/schemas/schema-tree/README.md)
@@ -97,6 +96,7 @@
       * [Adding a Schema Tag](guardian/standard-registry/schemas/tag-schema/creating-tag-schemas-using-ui.md)
     * [Schema Rules](guardian/standard-registry/schemas/defining-schema-rules-using-ui.md)
     * [Schema Predefined Values](guardian/standard-registry/schemas/schema-predefined-values-using-ui.md)
+    * [How to add example data to schemas?](guardian/standard-registry/schemas/adding-example-data-using-ui.md)
     * [How to handle large geospatial files?](guardian/standard-registry/schemas/how-to-handle-large-location-files.md)
   * [Policies](guardian/standard-registry/policies/README.md)
     * [Policy Glossary](guardian/standard-registry/policies/policy-glossary.md)

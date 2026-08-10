@@ -1,10 +1,11 @@
 ---
 tags:
-  - new
+  - tag: new
+    primary: true
   - concept
 ---
 
-# Schema Templates Concept
+# Schema Templates
 
 ### The problem it solves
 
