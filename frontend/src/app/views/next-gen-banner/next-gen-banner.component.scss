@@ -1,6 +1,6 @@
 .next-gen-banner {
     position: fixed;
-    top: var(--header-height);
+    top: var(--topbar-height);
     right: 0;
     /* Inset by the vertical rail, like the page content. */
     left: var(--header-width, var(--header-width-expand));

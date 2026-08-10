@@ -149,7 +149,7 @@
     left: 0;
     right: 0;
     top: 0;
-    height: calc(100vh - 2px);
+    height: calc(100vh - var(--header-height) - 2px);
     overflow: hidden;
     min-width: 1000px;
     font-family: var(--font-family-inter, 'Inter', sans-serif);
