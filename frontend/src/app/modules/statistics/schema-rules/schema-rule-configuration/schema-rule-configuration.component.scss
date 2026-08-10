@@ -41,6 +41,14 @@
             }
         }
 
+        .guardian-user-page-header {
+            > span:first-child {
+                display: block;
+                max-width: 50%;
+                word-break: break-word;
+            }
+        }
+
         .policy-name {
             color: var(--guardian-font-color, #23252e);
             font-size: 14px;
