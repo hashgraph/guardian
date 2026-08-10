@@ -16,7 +16,8 @@
 
     .guardian-pages-container {
         width: fit-content;
-        overflow: scroll;
+        overflow-x: auto;
+        overflow-y: hidden;
         display: flex;
         flex-direction: row;
         margin: 0px 8px;
