@@ -1,6 +1,8 @@
 ---
 tags:
   - concept
+  - tag: new
+    primary: true
 ---
 
 # Repeatable Field Links
@@ -28,23 +30,15 @@ Because the entries are paired one-to-one, conditions are also evaluated per ent
 
 Add the source entries — here, two project locations:
 
-
 Each location is its own block with its own fields:
 
-
-
 Each linked section then gets a matching entry, labelled by the display name, with copied fields filled and read-only:
-
 
 **Different fields for each entry**
 
 Each entry runs its conditions independently. The first location chose _Quantification Approach 3_ — its monitoring card expands and shows the conditional fields:
 
-
-
 The second location chose _Quantification Approach 1_ — the same card hides those fields:
-
-
 
 #### Key distinctions
 

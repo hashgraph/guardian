@@ -1,14 +1,14 @@
 ---
-description: >-
-  Field-level reference for the Profile page as shown to Standard Registry and
-  Regular User accounts.
+description: Field-level reference for the Profile page
 tags:
   - reference
+  - tag: new
+    primary: true
 ---
 
-# Profile page fields
+# Profile Reference
 
-The Profile page is the account view at `/profile`, where a Standard Registry or a Regular User inspects their Hedera account, identity documents, relayer accounts, credentials, and per-account settings.
+The Profile page is where the Hedera account, identity documents, relayer accounts, credentials, and per-account settings can be inspected and updated.
 
 #### Tabs
 
@@ -136,5 +136,5 @@ Shown instead of the tabs while the account is not yet confirmed.
 #### Related
 
 * Concept: [Roles and permissions](../standard-registry/roles-and-permissions/)
-* Task: [User profile setup](user-profile-setup.md)
+* Task: [User profile setup](/broken/pages/rBTZefZzHOQUq2sSgypH)
 * Reference: [Profile APIs](../../developer-tools/api-reference/profile-apis/)
