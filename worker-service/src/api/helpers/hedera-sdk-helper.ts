@@ -151,11 +151,6 @@ export class HederaSDKHelper {
     public static readonly REST_API_MAX_LIMIT: number = 100;
 
     /**
-     * Cache of "<network>:<fileId>" → hex FileId to avoid re-uploading binary bytecode per process lifetime
-     */
-    private static readonly _hexBytecodeFileCache = new Map<string, FileId>();
-
-    /**
      * Rest API max limit
      */
     public static readonly DEFAULT_API_OPTIONS: IApiOptions = { mockId: null };
@@ -1717,13 +1712,8 @@ export class HederaSDKHelper {
      * @private
      */
     private async ensureHexBytecodeFile(fileId: FileId): Promise<FileId> {
-        const cacheKey = `${this.network}:${fileId}`;
-        const cached = HederaSDKHelper._hexBytecodeFileCache.get(cacheKey);
-        if (cached) {
-            return cached;
-        }
-
         const client = this.client;
+
         const bytes = await new FileContentsQuery()
             .setFileId(fileId)
             .execute(client);
@@ -1737,7 +1727,6 @@ export class HederaSDKHelper {
         );
 
         if (isAsciiHex) {
-            HederaSDKHelper._hexBytecodeFileCache.set(cacheKey, fileId);
             return fileId;
         }
 
@@ -1761,7 +1750,6 @@ export class HederaSDKHelper {
                 .execute(client);
         }
 
-        HederaSDKHelper._hexBytecodeFileCache.set(cacheKey, newFileId);
         return newFileId;
     }
 
