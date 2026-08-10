@@ -1,7 +1,7 @@
 {
     "author": "Hashgraph <guardian@hashgraph.com>",
     "dependencies": {
-        "@cortex-js/compute-engine": "^0.27.0",
+        "@cortex-js/compute-engine": "^0.102.0",
         "@guardian/common": "workspace:*",
         "@guardian/interfaces": "workspace:*",
         "@mikro-orm/core": "6.6.16",
