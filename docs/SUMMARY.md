@@ -1,6 +1,13 @@
 # Table of contents
 
 * [Welcome](README.md)
+* [Schema Templates Concept](schema-templates-concept/README.md)
+  * [Create a Schema Template](schema-templates-concept/create-a-schema-template.md)
+  * [Apply a Schema Template](schema-templates-concept/apply-a-schema-template.md)
+  * [Update an Applied Schema Template](schema-templates-concept/update-an-applied-schema-template.md)
+  * [Detach a Schema Template](schema-templates-concept/detach-a-schema-template.md)
+  * [Import a Schema Template](schema-templates-concept/import-a-schema-template.md)
+  * [Export a Schema Template](schema-templates-concept/export-a-schema-template.md)
 
 ## Guardian
 
