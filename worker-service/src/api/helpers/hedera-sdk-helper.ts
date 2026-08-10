@@ -55,7 +55,7 @@ import process from 'node:process';
 import { FireblocksHelper } from './fireblocks-helper.js';
 import { Environment, MockEntityType, MockService, MockType, MockHelper } from '@guardian/common';
 
-export const MAX_FEE = Math.abs(+process.env.MAX_TRANSACTION_FEE) || 100;
+export const MAX_FEE = Math.abs(+process.env.MAX_TRANSACTION_FEE) || 30;
 export const INITIAL_BALANCE = 30;
 
 /**
