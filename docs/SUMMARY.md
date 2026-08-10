@@ -380,7 +380,7 @@
     * [Creating a Token Contract](guardian/tokens/retirement-contract/creating-contract-using-ui.md)
     * [TrustChain representation of token retirement](guardian/tokens/retirement-contract/trustchain-representation-of-token-retirement.md)
 * [Users](guardian/users/README.md)
-  * [Profile Reference](guardian/users/profile-page.md)
+  * [Profile Reference](guardian/users/profile.md)
   * [User Managed Credentials for External Services](guardian/users/5246-user-managed-credentials-for-external-services.md)
   * [Mobile Support for Data Interface](guardian/users/mobile-support-for-data-interface/README.md)
     * [Mobile Operation for the user](guardian/users/mobile-support-for-data-interface/mobile-operation-for-the-user.md)
