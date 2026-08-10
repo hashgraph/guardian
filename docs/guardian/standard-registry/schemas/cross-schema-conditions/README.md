@@ -1,3 +1,10 @@
+---
+tags:
+  - concept
+  - tag: new
+    primary: true
+---
+
 # Cross-Schema Conditions
 
 A cross-schema condition lets a field in one referenced sub-schema control a field in a **different** referenced sub-schema on the same parent. The condition is defined on the parent schema that owns both sub-schema references.

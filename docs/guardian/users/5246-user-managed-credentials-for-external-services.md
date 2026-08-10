@@ -36,7 +36,7 @@ Navigate to Profile → Credentials tab.
 
 <br>
 
-<img src="../../../../.gitbook/assets/unknown (4).png" alt="" height="184" width="665">
+<img src="../../.gitbook/assets/unknown (4).png" alt="" height="184" width="665">
 
 #### Adding Global Credentials
 
@@ -50,7 +50,7 @@ The credential appears in the table showing Service, Mode, Updated date, and a D
 
 <br>
 
-<img src="../../../../.gitbook/assets/unknown (5).png" alt="" height="192" width="665">
+<img src="../../.gitbook/assets/unknown (5).png" alt="" height="192" width="665">
 
 #### Adding Per-Policy Credentials
 
@@ -76,7 +76,7 @@ Credentials set up by the SR are shown with the **Set by SR** label. If a user t
 
 <br>
 
-<img src="../../../../.gitbook/assets/unknown (8).png" alt="" height="419" width="665">
+<img src="../../.gitbook/assets/unknown (8).png" alt="" height="419" width="665">
 
 #### Adding Credentials
 
@@ -87,7 +87,7 @@ The interface is identical to the SR configuration. Users can add credentials at
 
 <br>
 
-<img src="../../../../.gitbook/assets/unknown (9).png" alt="" height="219" width="665">
+<img src="../../.gitbook/assets/unknown (9).png" alt="" height="219" width="665">
 
 Note: User-level credentials take priority over SR-level credentials. If a user sets their own API key for a service, it will be used instead of the SR's key. Note: User-level credentials take priority over SR-level credentials. If a user sets their own API key for a service, Guardian uses it instead of the SR key.
 

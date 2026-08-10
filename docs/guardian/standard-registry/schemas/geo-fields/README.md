@@ -1,6 +1,8 @@
 ---
 tags:
   - concept
+  - tag: new
+    primary: true
 ---
 
 # Geo Fields

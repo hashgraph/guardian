@@ -1,6 +1,8 @@
 ---
 tags:
   - concept
+  - tag: new
+    primary: true
 ---
 
 # Policy Configurator
@@ -43,6 +45,6 @@ The Configurator is opened from a policy in **Draft** status and edits that draf
 
 ## Related
 
-* [Creating a Policy through Policy Configurator](creating-a-policy-through-policy-configurator/README.md) – step-by-step construction of a policy in the editor
+* [Creating a Policy through Policy Configurator](creating-a-policy-through-policy-configurator/) – step-by-step construction of a policy in the editor
 * [Getting Started with the Policy Workflows](creating-a-policy-through-policy-configurator/getting-started-with-the-policy-workflows.md) – the first blocks of a working policy
-* [Available Policy Workflow Blocks](introduction/README.md) – the specification for every block type and its properties
+* [Available Policy Workflow Blocks](introduction/) – the specification for every block type and its properties
