@@ -1627,7 +1627,7 @@ __metadata:
     sinon: "npm:^20.0.0"
     tslint: "npm:^6.1.3"
     typescript: "npm:^5.8.3"
-    ws: "npm:8.21.1"
+    ws: "npm:8.21.3"
   languageName: unknown
   linkType: soft
 
@@ -5379,7 +5379,7 @@ __metadata:
     rxjs: "npm:7.8.2"
     tslint: "npm:^6.1.3"
     typescript: "npm:^5.8.3"
-    ws: "npm:8.21.1"
+    ws: "npm:8.21.3"
     yup: "npm:1.7.1"
   languageName: unknown
   linkType: soft
@@ -9637,7 +9637,7 @@ __metadata:
     sinon: "npm:^20.0.0"
     tslint: "npm:^6.1.3"
     typescript: "npm:^5.8.3"
-    ws: "npm:8.21.1"
+    ws: "npm:8.21.3"
     yaml: "npm:2.9.0"
     yup: "npm:1.7.1"
   languageName: unknown
@@ -16860,7 +16860,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:8.21.1, ws@npm:^8.16.0, ws@npm:^8.5.0":
+"ws@npm:8.21.3":
+  version: 8.21.3
+  resolution: "ws@npm:8.21.3"
+  peerDependencies:
+    bufferutil: ^4.0.1
+    utf-8-validate: ">=5.0.2"
+  peerDependenciesMeta:
+    bufferutil:
+      optional: true
+    utf-8-validate:
+      optional: true
+  checksum: 10c0/7b28dc2863ea0e2cece68d142a3eee90361021b73f750431e6d8076bb7dede5fdfdb75b3d29534b62f411261147b76b1bc80fb5cc63ab0aabd467280e85b22e0
+  languageName: node
+  linkType: hard
+
+"ws@npm:^8.16.0, ws@npm:^8.5.0":
   version: 8.21.1
   resolution: "ws@npm:8.21.1"
   peerDependencies:
