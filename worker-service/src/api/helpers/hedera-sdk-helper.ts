@@ -55,7 +55,7 @@ import process from 'node:process';
 import { FireblocksHelper } from './fireblocks-helper.js';
 import { Environment, MockEntityType, MockService, MockType, MockHelper } from '@guardian/common';
 
-export const MAX_FEE = Math.abs(+process.env.MAX_TRANSACTION_FEE) || 30;
+export const MAX_FEE = Math.abs(+process.env.MAX_TRANSACTION_FEE) || 100;
 export const INITIAL_BALANCE = 30;
 
 /**
@@ -149,6 +149,12 @@ export class HederaSDKHelper {
      * Rest API max limit
      */
     public static readonly REST_API_MAX_LIMIT: number = 100;
+
+    /**
+     * Cache of "<network>:<fileId>" → hex FileId to avoid re-uploading binary bytecode per process lifetime
+     */
+    private static readonly _hexBytecodeFileCache = new Map<string, FileId>();
+
     /**
      * Rest API max limit
      */
@@ -1711,8 +1717,13 @@ export class HederaSDKHelper {
      * @private
      */
     private async ensureHexBytecodeFile(fileId: FileId): Promise<FileId> {
-        const client = this.client;
+        const cacheKey = `${this.network}:${fileId}`;
+        const cached = HederaSDKHelper._hexBytecodeFileCache.get(cacheKey);
+        if (cached) {
+            return cached;
+        }
 
+        const client = this.client;
         const bytes = await new FileContentsQuery()
             .setFileId(fileId)
             .execute(client);
@@ -1726,6 +1737,7 @@ export class HederaSDKHelper {
         );
 
         if (isAsciiHex) {
+            HederaSDKHelper._hexBytecodeFileCache.set(cacheKey, fileId);
             return fileId;
         }
 
@@ -1735,6 +1747,7 @@ export class HederaSDKHelper {
         const create = await new FileCreateTransaction()
             .setKeys([client.operatorPublicKey])
             .setContents(hex.slice(0, CHUNK))
+            .setMaxTransactionFee(MAX_FEE)
             .execute(client);
 
         const newFileId = (await create.getReceipt(client)).fileId;
@@ -1744,9 +1757,11 @@ export class HederaSDKHelper {
                 .setFileId(newFileId)
                 .setContents(hex.slice(i, i + CHUNK))
                 .setMaxChunks(Number.MAX_SAFE_INTEGER)
+                .setMaxTransactionFee(MAX_FEE)
                 .execute(client);
         }
 
+        HederaSDKHelper._hexBytecodeFileCache.set(cacheKey, newFileId);
         return newFileId;
     }
 
