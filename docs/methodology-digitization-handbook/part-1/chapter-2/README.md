@@ -195,7 +195,7 @@ VM0033 recognizes that tidal wetland systems exist along a continuum from highly
 VM0033 projects operate within a complex network of stakeholders, each bringing distinct expertise, responsibilities, and interests to coastal restoration initiatives. The methodology's success depends on effective coordination among these diverse participants, from technical specialists to local communities to financial institutions. Understanding this stakeholder ecosystem is crucial for project implementation and for designing digital platforms that can accommodate varied needs and capabilities.
 
 {% hint style="info" %}
-**Guardian Integration**: The platform's [roles and permissions system](../../../guardian/standard-registry/roles-and-permissions/) accommodates VM0033's diverse stakeholder types, from project proponents to VVBs, each with different access needs and responsibilities.
+**Guardian Integration**: The platform's [roles and permissions system](../../../guardian/platform/roles-and-permissions/) accommodates VM0033's diverse stakeholder types, from project proponents to VVBs, each with different access needs and responsibilities.
 {% endhint %}
 
 **Key Stakeholder Types**:
@@ -481,7 +481,7 @@ Key implementation considerations include:
 * [Artifacts Collection](../../_shared/artifacts/) - Complete validation tools and reference materials
 * [Verra VCS Program](https://verra.org/programs/verified-carbon-standard/) - Methodology standards
 * [VM0033 Methodology on Verra](https://verra.org/methodologies/vm0033-methodology-for-tidal-wetland-and-seagrass-restoration-v2-1/)
-* [Guardian Roles & Permissions](../../../guardian/standard-registry/roles-and-permissions/) - Stakeholder management
+* [Guardian Roles & Permissions](../../../guardian/platform/roles-and-permissions/) - Stakeholder management
 
 ### Key Concepts Covered
 

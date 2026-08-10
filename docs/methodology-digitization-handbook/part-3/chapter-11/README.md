@@ -62,7 +62,7 @@ Guardian's Property Glossary provides standardized data definitions based on the
 
 ### Understanding Standardized Properties
 
-For complete property definitions, see [Available Schema Types](../../../guardian/standard-registry/schemas/available-schema-types/) and [Property Glossary](../../../guardian/standard-registry/schemas/property-glossary.md).
+For complete property definitions, see [Available Schema Types](../../../guardian/workspace/schemas/available-schema-types/) and [Property Glossary](../../../guardian/workspace/schemas/property-glossary.md).
 
 **Purpose of Standardized Properties**:
 

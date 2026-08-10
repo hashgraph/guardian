@@ -30,7 +30,7 @@ Adoption of the Guardian has grown from an early concept in 2020 to a platform b
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | Understand how Guardian works         | Core Concepts                                                                                                |
 | Install and run Guardian              | [Getting Started](<README (1).md>)                                                                           |
-| Create and publish policies           | [Standard Registry](guardian/standard-registry/)                                                             |
+| Create and publish policies           | [Standard Registry](guardian/platform/standard-registry.md)                                                  |
 | Digitize an environmental methodology | [Methodology Digitization Handbook](https://app.gitbook.com/s/bKnJV8vV7zUxRwKIsJKg/methodology-digitization) |
 | Build on the Guardian API             | [API Reference](/broken/spaces/EmXQ5yJXkOnwN84YXjVq)                                                         |
 

@@ -204,7 +204,7 @@ VM0033 (Methodology for Tidal Wetland and Seagrass Restoration) serves as the id
 * **Error Reduction**: Automated validation reduces human errors
 * **Reliability**: Improved environmental asset calculation accuracy
 
-See Guardian's [schema system](../../../guardian/standard-registry/schemas/) for data validation details.
+See Guardian's [schema system](../../../guardian/workspace/schemas/) for data validation details.
 
 ### Real-World Digitization Challenges
 

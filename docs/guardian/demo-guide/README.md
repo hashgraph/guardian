@@ -17,5 +17,5 @@ This guide is for anyone seeking to understand the range of policies implemented
 
 #### Related
 
-* Reference: [policies](../standard-registry/policies/ "mention")
+* Reference: [policies](../workspace/policies/ "mention")
 * Reference: [Methodology Digitization](https://app.gitbook.com/s/bKnJV8vV7zUxRwKIsJKg/methodology-digitization "mention")
