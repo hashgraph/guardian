@@ -93,24 +93,10 @@ export class PagesControl {
         this.rename.emit(item);
     }
 
-    onLeft() {
-        if (this.index > 0) {
-            this.index--;
-        }
-        this.updateView();
-    }
-
     onMore($event: MouseEvent, overlayPanel: any, otherPanel: any) {
         $event?.stopPropagation();
         overlayPanel.toggle(event);
         otherPanel?.hide();
-    }
-
-    onRight() {
-        if (this.index < this.items.length - 1) {
-            this.index++;
-        }
-        this.updateView();
     }
 
     onMenu($event: MouseEvent, page: any, overlayPanel: any, otherPanel: any) {

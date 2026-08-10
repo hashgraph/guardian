@@ -1,25 +1,10 @@
 <div class="guardian-pages-control">
   <div class="guardian-pages-nav">
-    <div class="guardian-pages-nav-left guardian-icon-button" (click)="onLeft()">
-      <svg-icon
-        class="icon-btn svg-icon"
-        src="/assets/images/icons/collapse-left.svg"
-        svgClass="icon-color-primary"
-        [svgClass]="isFirst ? 'icon-color-disabled' : 'icon-color-primary'">
-      </svg-icon>
-    </div>
     <div class="guardian-pages-nav-more guardian-icon-button" (click)="onMore($event, menu, itemMenu)">
       <svg-icon
         class="icon-btn svg-icon"
         src="/assets/images/icons/menu-2.svg"
         svgClass="icon-color-primary">
-      </svg-icon>
-    </div>
-    <div class="guardian-pages-nav-right guardian-icon-button" (click)="onRight()">
-      <svg-icon
-        class="icon-btn svg-icon"
-        src="/assets/images/icons/collapse-right.svg"
-        [svgClass]="isLast ? 'icon-color-disabled' : 'icon-color-primary'">
       </svg-icon>
     </div>
   </div>
@@ -59,7 +44,7 @@
   <div class="menu-items">
     @for (item of items; track item) {
       <div
-        class="menu-item"
+        class="menu-item formula-tab-item"
         [attr.selected]="item === current"
         (click)="onSelect(item, menu)"
         pTooltip="{{ item[labelField] }}"

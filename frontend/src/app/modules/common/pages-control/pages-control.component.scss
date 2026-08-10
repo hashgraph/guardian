@@ -14,7 +14,12 @@
 
 .menu-items {
     max-height: 300px;
+    max-width: 400px;
     overflow: auto;
+
+    .formula-tab-item {
+        max-width: 400px;
+    }
 }
 
 .menu-item-name {
