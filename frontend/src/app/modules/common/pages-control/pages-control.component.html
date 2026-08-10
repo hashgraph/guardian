@@ -9,11 +9,10 @@
     </div>
   </div>
   <div class="guardian-pages-container">
-    @for (item of items; track item; let i = $index) {
+    @for (item of items; track item) {
       <div
         class="guardian-pages-item"
         [attr.selected]="item === current"
-        [attr.hidden]="i < index"
         (click)="onSelect(item)"
         pTooltip="{{ item[labelField] }}"
         tooltipPosition="top"
@@ -44,7 +43,7 @@
   <div class="menu-items">
     @for (item of items; track item) {
       <div
-        class="menu-item formula-tab-item"
+        class="menu-item"
         [attr.selected]="item === current"
         (click)="onSelect(item, menu)"
         pTooltip="{{ item[labelField] }}"

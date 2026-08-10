@@ -37,10 +37,6 @@
             user-select: none;
             margin-right: 8px;
 
-            &[hidden="true"] {
-                display: none !important;
-            }
-
             .guardian-pages-item-name {
                 pointer-events: none;
                 font-family: Inter;
