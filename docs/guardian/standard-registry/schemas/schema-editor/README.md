@@ -1,3 +1,10 @@
+---
+tags:
+  - tag: new
+    primary: true
+  - concept
+---
+
 # Schema Editor
 
 The Schema Editor is the visual workspace in which a Standard Registry builds and maintains a schema: its fields, its sub-schema references, its conditional logic, and its metadata. It is the authoring surface for everything a schema defines before that schema is saved, versioned, and published.
@@ -38,7 +45,7 @@ Work in the editor is a draft until saved, and the header reports whether change
 
 * Task: [Creating a Schema](../creating-system-schema-using-ui.md)
 * Task: [Importing a Schema](../importing-schema-using-ui.md)
-* Reference: [Available Schema Data Types](../available-schema-types/README.md)
-* Concept: [Schemas](../README.md)
-* Concept: [Cross-Schema Conditions](../cross-schema-conditions/README.md)
-* Concept: [Schema Tree](../schema-tree/README.md)
+* Reference: [Available Schema Data Types](../available-schema-types/)
+* Concept: [Schemas](../)
+* Concept: [Cross-Schema Conditions](../cross-schema-conditions/)
+* Concept: [Schema Tree](../schema-tree/)
