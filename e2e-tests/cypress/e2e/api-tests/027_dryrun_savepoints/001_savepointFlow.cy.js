@@ -1,11 +1,11 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
-import * as Checks from "../../../support/checkingMethods";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
+import * as Checks from '../../../support/checkingMethods';
 
-context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => {
+context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-    let policyId, sv1, sv3, sv4, sv5, adminDid, registrantDid;
+    let policyId; let sv1; let sv3; let sv4; let sv5; let adminDid; let registrantDid;
 
     before('Get policy id', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
@@ -19,13 +19,13 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 response.body.forEach(element => {
-                    if (element.name == "iRecDRS") {
+                    if (element.name == 'iRecDRS') {
                         policyId = element.id
                     }
                 })
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.DryRunRestart,
+                    url: API.ApiServer + API.Policies + policyId + '/' + API.DryRunRestart,
                     headers: {
                         authorization
                     },
@@ -40,7 +40,7 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
             //Add Registrant
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.DryRunUser,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.DryRunUser,
                 headers: {
                     authorization
                 },
@@ -53,7 +53,7 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
                 //Login by Registrant
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.DryRunLogin,
+                    url: API.ApiServer + API.Policies + policyId + '/' + API.DryRunLogin,
                     headers: {
                         authorization
                     },
@@ -64,15 +64,15 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
                 }).then(() => {
                     //Block wait
                     cy.wait(5000);
-                    //Choose registrant role 
+                    //Choose registrant role
                     cy.request({
                         method: METHOD.POST,
-                        url: API.ApiServer + API.Policies + policyId + "/" + API.ChooseRegistrantRole,
+                        url: API.ApiServer + API.Policies + policyId + '/' + API.ChooseRegistrantRole,
                         headers: {
                             authorization
                         },
                         body: {
-                            role: "Registrant"
+                            role: 'Registrant'
                         },
                         timeout: 180000
                     }).then(() => {
@@ -81,7 +81,7 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
                         //Create application
                         cy.request({
                             method: METHOD.POST,
-                            url: API.ApiServer + API.Policies + policyId + "/" + API.CreateApplication,
+                            url: API.ApiServer + API.Policies + policyId + '/' + API.CreateApplication,
                             headers: {
                                 authorization
                             },
@@ -99,13 +99,13 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
                             cy.wait(5000);
                             cy.request({
                                 method: METHOD.POST,
-                                url: API.ApiServer + API.Policies + policyId + "/" + API.Savepoint,
+                                url: API.ApiServer + API.Policies + policyId + '/' + API.Savepoint,
                                 headers: {
                                     authorization
                                 },
                                 body: {
-                                    "name": "SV1",
-                                    "savepointPath": []
+                                    'name': 'SV1',
+                                    'savepointPath': []
                                 },
                                 timeout: 180000
                             }).then((response) => {
@@ -123,7 +123,7 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.DryRunLogin,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.DryRunLogin,
                 headers: {
                     authorization
                 },
@@ -136,7 +136,7 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
                 //Get document id for approve
                 cy.request({
                     method: METHOD.GET,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.GetApplications,
+                    url: API.ApiServer + API.Policies + policyId + '/' + API.GetApplications,
                     headers: {
                         authorization
                     },
@@ -144,17 +144,17 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
                 }).then((response) => {
                     //Block wait
                     let appData = response.body.data.at(0)
-                    appData.option.status = "Approved"
+                    appData.option.status = 'Approved'
                     //Approve application
                     cy.request({
                         method: METHOD.POST,
-                        url: API.ApiServer + API.Policies + policyId + "/" + API.ApproveApplication,
+                        url: API.ApiServer + API.Policies + policyId + '/' + API.ApproveApplication,
                         headers: {
                             authorization
                         },
                         body: {
                             document: appData,
-                            tag: "Button_0"
+                            tag: 'Button_0'
                         },
                         timeout: 180000
                     }).then(() => {
@@ -162,22 +162,22 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
                         cy.wait(5000);
                         cy.request({
                             method: METHOD.GET,
-                            url: API.ApiServer + API.Policies + policyId + "/" + API.GetApplications,
+                            url: API.ApiServer + API.Policies + policyId + '/' + API.GetApplications,
                             headers: {
                                 authorization
                             },
                             timeout: 180000
                         }).then((response) => {
-                            expect(response.body.data.at(0).option.status).to.eq("Approved")
+                            expect(response.body.data.at(0).option.status).to.eq('Approved')
                             cy.request({
                                 method: METHOD.POST,
-                                url: API.ApiServer + API.Policies + policyId + "/" + API.Savepoint,
+                                url: API.ApiServer + API.Policies + policyId + '/' + API.Savepoint,
                                 headers: {
                                     authorization
                                 },
                                 body: {
-                                    "name": "SV2",
-                                    "savepointPath": [sv1]
+                                    'name': 'SV2',
+                                    'savepointPath': [sv1]
                                 },
                                 timeout: 180000
                             }).then((response) => {
@@ -185,7 +185,7 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
                             })
                             cy.request({
                                 method: METHOD.PUT,
-                                url: API.ApiServer + API.Policies + policyId + "/" + API.Savepoint + sv1,
+                                url: API.ApiServer + API.Policies + policyId + '/' + API.Savepoint + sv1,
                                 headers: {
                                     authorization
                                 },
@@ -195,13 +195,13 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
                                 cy.wait(5000);
                                 cy.request({
                                     method: METHOD.GET,
-                                    url: API.ApiServer + API.Policies + policyId + "/" + API.GetApplications,
+                                    url: API.ApiServer + API.Policies + policyId + '/' + API.GetApplications,
                                     headers: {
                                         authorization
                                     },
                                     timeout: 180000
                                 }).then((response) => {
-                                    expect(response.body.data.at(0).option.status).to.eq("Waiting for approval")
+                                    expect(response.body.data.at(0).option.status).to.eq('Waiting for approval')
                                 })
                             })
                         })
@@ -215,7 +215,7 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.DryRunLogin,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.DryRunLogin,
                 headers: {
                     authorization
                 },
@@ -228,7 +228,7 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
                 //Get document id for approve
                 cy.request({
                     method: METHOD.GET,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.GetApplications,
+                    url: API.ApiServer + API.Policies + policyId + '/' + API.GetApplications,
                     headers: {
                         authorization
                     },
@@ -236,17 +236,17 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
                 }).then((response) => {
                     //Block wait
                     let appData = response.body.data.at(0)
-                    appData.option.status = "Approved"
+                    appData.option.status = 'Approved'
                     //Approve application
                     cy.request({
                         method: METHOD.POST,
-                        url: API.ApiServer + API.Policies + policyId + "/" + API.ApproveApplication,
+                        url: API.ApiServer + API.Policies + policyId + '/' + API.ApproveApplication,
                         headers: {
                             authorization
                         },
                         body: {
                             document: appData,
-                            tag: "Button_0"
+                            tag: 'Button_0'
                         },
                         timeout: 180000
                     }).then(() => {
@@ -254,13 +254,13 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
                         cy.wait(5000);
                         cy.request({
                             method: METHOD.GET,
-                            url: API.ApiServer + API.Policies + policyId + "/" + API.GetApplications,
+                            url: API.ApiServer + API.Policies + policyId + '/' + API.GetApplications,
                             headers: {
                                 authorization
                             },
                             timeout: 180000
                         }).then((response) => {
-                            expect(response.body.data.at(0).option.status).to.eq("Approved")
+                            expect(response.body.data.at(0).option.status).to.eq('Approved')
                         })
                     })
                 })
@@ -273,7 +273,7 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
             //Login by Registrant
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.DryRunLogin,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.DryRunLogin,
                 headers: {
                     authorization
                 },
@@ -287,58 +287,58 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
                 //Create device
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.CreateDevice,
+                    url: API.ApiServer + API.Policies + policyId + '/' + API.CreateDevice,
                     headers: {
                         authorization
                     },
                     body: {
                         document: {
-                            field0: "example",
-                            field1: "2000-01-01",
-                            field2: "example",
+                            field0: 'example',
+                            field1: '2000-01-01',
+                            field2: 'example',
                             field3: {
-                                field0: "example",
-                                field1: "example",
-                                field2: "example",
-                                field3: "example",
-                                field4: "example",
-                                field5: "example",
-                                field6: "example",
-                                field7: "example@email.com",
-                                field8: "example",
-                                field9: "example",
-                                field10: "example"
+                                field0: 'example',
+                                field1: 'example',
+                                field2: 'example',
+                                field3: 'example',
+                                field4: 'example',
+                                field5: 'example',
+                                field6: 'example',
+                                field7: 'example@email.com',
+                                field8: 'example',
+                                field9: 'example',
+                                field10: 'example'
                             },
                             field4: {
-                                field0: "example",
-                                field1: "example",
-                                field2: "example",
-                                field3: "example",
-                                field4: "example",
-                                field5: "example",
-                                field6: "example",
+                                field0: 'example',
+                                field1: 'example',
+                                field2: 'example',
+                                field3: 'example',
+                                field4: 'example',
+                                field5: 'example',
+                                field6: 'example',
                                 field7: 1,
                                 field8: 1,
-                                field9: "2000-01-01",
-                                field10: "example",
-                                field11: "example",
-                                field12: "example",
-                                field13: "example"
+                                field9: '2000-01-01',
+                                field10: 'example',
+                                field11: 'example',
+                                field12: 'example',
+                                field13: 'example'
                             },
                             field5: {
-                                field0: "example",
-                                field1: "example",
+                                field0: 'example',
+                                field1: 'example',
                                 field2: true,
-                                field3: "example",
+                                field3: 'example',
                                 field4: true,
-                                field5: "example",
-                                field6: "example",
-                                field7: "example",
-                                field8: "example",
+                                field5: 'example',
+                                field6: 'example',
+                                field7: 'example',
+                                field8: 'example',
                                 field9: true,
-                                field10: "example",
-                                field11: "2000-01-01",
-                                field12: "example"
+                                field10: 'example',
+                                field11: '2000-01-01',
+                                field12: 'example'
                             }
                         }
                     },
@@ -353,7 +353,7 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
             //Login by Approver
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.DryRunLogin,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.DryRunLogin,
                 headers: {
                     authorization
                 },
@@ -367,26 +367,26 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
                 //Get device document id
                 cy.request({
                     method: METHOD.GET,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.GetDevices,
+                    url: API.ApiServer + API.Policies + policyId + '/' + API.GetDevices,
                     headers: {
                         authorization
                     },
                     timeout: 180000
                 }).then((response) => {
                     let deviceData = response.body.data.at(0)
-                    deviceData.option.status = "Approved"
+                    deviceData.option.status = 'Approved'
                     //Block wait
                     cy.wait(5000);
                     //Approve device
                     cy.request({
                         method: METHOD.POST,
-                        url: API.ApiServer + API.Policies + policyId + "/" + API.ApproveDevice,
+                        url: API.ApiServer + API.Policies + policyId + '/' + API.ApproveDevice,
                         headers: {
                             authorization
                         },
                         body: {
                             document: deviceData,
-                            tag: "Button_0"
+                            tag: 'Button_0'
                         },
                         timeout: 180000
                     }).then(() => {
@@ -394,22 +394,22 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
                         cy.wait(5000);
                         cy.request({
                             method: METHOD.GET,
-                            url: API.ApiServer + API.Policies + policyId + "/" + API.GetDevices,
+                            url: API.ApiServer + API.Policies + policyId + '/' + API.GetDevices,
                             headers: {
                                 authorization
                             },
                             timeout: 180000
                         }).then((response) => {
-                            expect(response.body.data.at(0).option.status).to.eq("Approved")
+                            expect(response.body.data.at(0).option.status).to.eq('Approved')
                             cy.request({
                                 method: METHOD.POST,
-                                url: API.ApiServer + API.Policies + policyId + "/" + API.Savepoint,
+                                url: API.ApiServer + API.Policies + policyId + '/' + API.Savepoint,
                                 headers: {
                                     authorization
                                 },
                                 body: {
-                                    "name": "SV3",
-                                    "savepointPath": [sv1]
+                                    'name': 'SV3',
+                                    'savepointPath': [sv1]
                                 },
                                 timeout: 180000
                             }).then((response) => {
@@ -428,7 +428,7 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
             //Login by Registrant
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.DryRunLogin,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.DryRunLogin,
                 headers: {
                     authorization
                 },
@@ -442,58 +442,58 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
                 //Create issue request
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.CreateIssue,
+                    url: API.ApiServer + API.Policies + policyId + '/' + API.CreateIssue,
                     headers: {
                         authorization
                     },
                     body: {
                         document: {
-                            field0: "example",
-                            field1: "example",
+                            field0: 'example',
+                            field1: 'example',
                             field2: {
-                                field0: "example",
-                                field1: "example",
-                                field2: "example",
-                                field3: "example",
-                                field4: "example",
-                                field5: "example",
-                                field6: "example",
-                                field7: "example@email.com",
-                                field8: "example",
-                                field9: "example",
-                                field10: "example"
+                                field0: 'example',
+                                field1: 'example',
+                                field2: 'example',
+                                field3: 'example',
+                                field4: 'example',
+                                field5: 'example',
+                                field6: 'example',
+                                field7: 'example@email.com',
+                                field8: 'example',
+                                field9: 'example',
+                                field10: 'example'
                             },
                             field3: {
-                                field0: "example",
-                                field1: "example",
-                                field2: "example",
-                                field3: "example",
-                                field4: "example",
-                                field5: "example",
-                                field6: "example",
+                                field0: 'example',
+                                field1: 'example',
+                                field2: 'example',
+                                field3: 'example',
+                                field4: 'example',
+                                field5: 'example',
+                                field6: 'example',
                                 field7: 1,
                                 field8: 1,
-                                field9: "2000-01-01",
-                                field10: "example",
-                                field11: "example",
-                                field12: "example",
-                                field13: "example"
+                                field9: '2000-01-01',
+                                field10: 'example',
+                                field11: 'example',
+                                field12: 'example',
+                                field13: 'example'
                             },
-                            field4: "example",
-                            field5: "2000-01-01",
-                            field6: "2000-01-01",
+                            field4: 'example',
+                            field5: '2000-01-01',
+                            field6: '2000-01-01',
                             field7: 1,
-                            field8: "2000-01-01",
+                            field8: '2000-01-01',
                             field9: 1,
-                            field10: "example",
-                            field11: "example",
-                            field12: "example",
-                            field13: "example",
+                            field10: 'example',
+                            field11: 'example',
+                            field12: 'example',
+                            field13: 'example',
                             field14: true,
                             field15: true,
                             field16: true,
-                            field17: "example",
-                            field18: "example"
+                            field17: 'example',
+                            field18: 'example'
                         }
                     },
                     timeout: 180000
@@ -507,7 +507,7 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
             //Login by Approver
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.DryRunLogin,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.DryRunLogin,
                 headers: {
                     authorization
                 },
@@ -520,13 +520,13 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
                 //Block wait
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.Savepoint,
+                    url: API.ApiServer + API.Policies + policyId + '/' + API.Savepoint,
                     headers: {
                         authorization
                     },
                     body: {
-                        "name": "SV4",
-                        "savepointPath": [sv1, sv3]
+                        'name': 'SV4',
+                        'savepointPath': [sv1, sv3]
                     },
                     timeout: 180000
                 }).then((response) => {
@@ -537,7 +537,7 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
                 //Get issue document id
                 cy.request({
                     method: METHOD.GET,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.GetIssues,
+                    url: API.ApiServer + API.Policies + policyId + '/' + API.GetIssues,
                     headers: {
                         authorization
                     },
@@ -549,13 +549,13 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
                     //Approve issue
                     cy.request({
                         method: METHOD.POST,
-                        url: API.ApiServer + API.Policies + policyId + "/" + API.ApproveIssueRequestsBtn,
+                        url: API.ApiServer + API.Policies + policyId + '/' + API.ApproveIssueRequestsBtn,
                         headers: {
                             authorization
                         },
                         body: {
                             document: issueData,
-                            tag: "Button_0"
+                            tag: 'Button_0'
                         },
                         timeout: 180000
                     })
@@ -569,7 +569,7 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
             //Login by Administrator
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.DryRunLogin,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.DryRunLogin,
                 headers: {
                     authorization
                 },
@@ -583,7 +583,7 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
                 //Get token amount
                 cy.request({
                     method: METHOD.GET,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.GetTokenAmountTag + API.Blocks,
+                    url: API.ApiServer + API.Policies + policyId + '/' + API.GetTokenAmountTag + API.Blocks,
                     headers: {
                         authorization
                     },
@@ -594,13 +594,13 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
                     cy.wait(5000);
                     cy.request({
                         method: METHOD.POST,
-                        url: API.ApiServer + API.Policies + policyId + "/" + API.Savepoint,
+                        url: API.ApiServer + API.Policies + policyId + '/' + API.Savepoint,
                         headers: {
                             authorization
                         },
                         body: {
-                            "name": "SV5",
-                            "savepointPath": [sv1, sv3, sv4]
+                            'name': 'SV5',
+                            'savepointPath': [sv1, sv3, sv4]
                         },
                         timeout: 180000
                     }).then((response) => {
@@ -617,7 +617,7 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.PUT,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.Savepoint + sv4,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.Savepoint + sv4,
                 headers: {
                     authorization
                 },
@@ -627,7 +627,7 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
                 cy.wait(5000);
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.DryRunLogin,
+                    url: API.ApiServer + API.Policies + policyId + '/' + API.DryRunLogin,
                     headers: {
                         authorization
                     },
@@ -638,39 +638,39 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
                 }).then(() => {
                     const waitIssueApproveStatus = {
                         method: METHOD.GET,
-                        url: API.ApiServer + API.Policies + policyId + "/" + API.GetIssues + "?savepointIds=%5B%22" + sv1 + "%22,%22" + sv3 + "%22,%22" + sv4 + "%22%5D",
+                        url: API.ApiServer + API.Policies + policyId + '/' + API.GetIssues + '?savepointIds=%5B%22' + sv1 + '%22,%22' + sv3 + '%22,%22' + sv4 + '%22%5D',
                         headers: {
                             authorization
                         },
                         timeout: 180000,
                         failOnStatusCode: false
                     }
-                    Checks.whileRequestProccessing(waitIssueApproveStatus, "Waiting for approval", "data.0.option.status")
+                    Checks.whileRequestProccessing(waitIssueApproveStatus, 'Waiting for approval', 'data.0.option.status')
                     cy.request(waitIssueApproveStatus).then((response) => {
                         let issueData = response.body.data.at(0)
-                        issueData.option = { "status": "Rejected", "comment": ["q"] };
+                        issueData.option = { 'status': 'Rejected', 'comment': ['q'] };
                         cy.request({
                             method: METHOD.POST,
-                            url: API.ApiServer + API.Policies + policyId + "/" + API.ApproveIssueRequestsBtn,
+                            url: API.ApiServer + API.Policies + policyId + '/' + API.ApproveIssueRequestsBtn,
                             headers: {
                                 authorization
                             },
                             body: {
                                 document: issueData,
-                                tag: "Button_1"
+                                tag: 'Button_1'
                             },
                             timeout: 180000
                         }).then(() => {
                             cy.wait(10000);
                             cy.request({
                                 method: METHOD.GET,
-                                url: API.ApiServer + API.Policies + policyId + "/" + API.GetIssues + "?savepointIds=%5B%22" + sv1 + "%22,%22" + sv3 + "%22,%22" + sv4 + "%22%5D",
+                                url: API.ApiServer + API.Policies + policyId + '/' + API.GetIssues + '?savepointIds=%5B%22' + sv1 + '%22,%22' + sv3 + '%22,%22' + sv4 + '%22%5D',
                                 headers: {
                                     authorization
                                 },
                                 timeout: 180000
                             }).then((response) => {
-                                expect(response.body.data.at(0).option.status).to.eq("Rejected");
+                                expect(response.body.data.at(0).option.status).to.eq('Rejected');
                             })
                         })
                     })
@@ -683,7 +683,7 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.PUT,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.Savepoint + sv5,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.Savepoint + sv5,
                 headers: {
                     authorization
                 },
@@ -693,13 +693,13 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
                 cy.wait(5000);
                 cy.request({
                     method: METHOD.GET,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.GetIssues,
+                    url: API.ApiServer + API.Policies + policyId + '/' + API.GetIssues,
                     headers: {
                         authorization
                     },
                     timeout: 180000
                 }).then((response) => {
-                    expect(response.body.data.at(0).option.status).to.eq("Minted");
+                    expect(response.body.data.at(0).option.status).to.eq('Minted');
                 })
             })
         })
@@ -709,7 +709,7 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.PUT,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.Savepoint + sv4,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.Savepoint + sv4,
                 headers: {
                     authorization
                 },
@@ -719,13 +719,13 @@ context("Savepoints Flow", { tags: ['savepoints', 'secondPool', 'all'] }, () => 
                 cy.wait(10000);
                 cy.request({
                     method: METHOD.GET,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.GetIssues,
+                    url: API.ApiServer + API.Policies + policyId + '/' + API.GetIssues,
                     headers: {
                         authorization
                     },
                     timeout: 180000
                 }).then((response) => {
-                    expect(response.body.data.at(0).option.status).to.eq("Waiting for approval");
+                    expect(response.body.data.at(0).option.status).to.eq('Waiting for approval');
                 })
             })
         })

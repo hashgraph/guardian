@@ -1,9 +1,9 @@
 
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Artifacts", { tags: ['artifacts', 'secondPool', 'all'] }, () => {
+context('Artifacts', { tags: ['artifacts', 'secondPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     const policiesUrl = `${API.ApiServer}${API.Policies}`;
@@ -41,18 +41,18 @@ context("Artifacts", { tags: ['artifacts', 'secondPool', 'all'] }, () => {
 
     const buildFormData = (blob, filename) => {
         const fd = new FormData();
-        fd.append("artifacts", blob, filename);
+        fd.append('artifacts', blob, filename);
         return fd;
     };
 
-    it("Upload artifact", { tags: ['smoke'] }, () => {
+    it('Upload artifact', { tags: ['smoke'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             listPoliciesWithAuth(authorization).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 policyId = response.body.at(0).id;
 
-                readFixtureBlob("artifactsImport.policy")
-                    .then((blob) => buildFormData(blob, "artifactsImport.policy"))
+                readFixtureBlob('artifactsImport.policy')
+                    .then((blob) => buildFormData(blob, 'artifactsImport.policy'))
                     .then((formdata) =>
                         uploadArtifactWithAuth(authorization, policyId, formdata, { authorization, 'Content-Type': 'multipart/form-data' })
                     )
@@ -63,25 +63,25 @@ context("Artifacts", { tags: ['artifacts', 'secondPool', 'all'] }, () => {
         });
     });
 
-    it("Upload artifact without auth token - Negative", () => {
+    it('Upload artifact without auth token - Negative', () => {
         uploadArtifactWithoutAuth(policyId).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Upload artifact with invalid auth token - Negative", () => {
-        uploadArtifactWithoutAuth(policyId, { authorization: "Bearer wqe" }).then((response) => {
+    it('Upload artifact with invalid auth token - Negative', () => {
+        uploadArtifactWithoutAuth(policyId, { authorization: 'Bearer wqe' }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Upload artifact with empty auth token - Negative", () => {
-        uploadArtifactWithoutAuth(policyId, { authorization: "" }).then((response) => {
+    it('Upload artifact with empty auth token - Negative', () => {
+        uploadArtifactWithoutAuth(policyId, { authorization: '' }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Upload artifact without file - Negative", () => {
+    it('Upload artifact without file - Negative', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             listPoliciesWithAuth(authorization).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
@@ -102,14 +102,14 @@ context("Artifacts", { tags: ['artifacts', 'secondPool', 'all'] }, () => {
         });
     });
 
-    it("Upload artifact with invalid policy id - Negative", () => {
+    it('Upload artifact with invalid policy id - Negative', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             listPoliciesWithAuth(authorization).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
-                policyId = "-----";
+                policyId = '-----';
 
-                readFixtureBlob("remoteWorkGHGPolicy.policy")
-                    .then((blob) => buildFormData(blob, "remoteWorkGHGPolicy.policy"))
+                readFixtureBlob('remoteWorkGHGPolicy.policy')
+                    .then((blob) => buildFormData(blob, 'remoteWorkGHGPolicy.policy'))
                     .then((formdata) =>
                         uploadArtifactWithAuth(
                             authorization,

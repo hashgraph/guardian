@@ -1,20 +1,20 @@
-import { randomInt } from "../../../support/random";
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { randomInt } from '../../../support/random';
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Schemas", { tags: ['schema', 'thirdPool', 'all'] }, () => {
+context('Schemas', { tags: ['schema', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
-    it("Find the schema using the schema type", () => {
+    it('Find the schema using the schema type', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             const items = [
-                "STANDARD_REGISTRY",
-                "USER",
-                "POLICY",
-                "MINT_TOKEN",
-                "WIPE_TOKEN",
-                "MINT_NFTOKEN",
+                'STANDARD_REGISTRY',
+                'USER',
+                'POLICY',
+                'MINT_TOKEN',
+                'WIPE_TOKEN',
+                'MINT_NFTOKEN',
             ];
             let randomItem = items[randomInt(items.length)];
             cy.request({

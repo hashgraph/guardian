@@ -1,6 +1,6 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
 context('Profiles', { tags: ['profiles', 'thirdPool', 'all'] }, () => {
 	const SRUsername = Cypress.env('SRUser');

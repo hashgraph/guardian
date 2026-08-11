@@ -1,11 +1,25 @@
 
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { randomInt } from '../../../support/random';
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
+import { registerUser } from '../../../support/api/accounts';
 
-context("Update password", { tags: ['accounts', 'firstPool', 'all'] }, () => {
+context('Update password', { tags: ['accounts', 'firstPool', 'all'] }, () => {
 
-    const name = "TestUserRegistration";
+    // NOTE: a dedicated user per run, so the suite stays idempotent: the password
+    // is changed here and never restored, so a shared user would break on re-run
+    const name = `TestUserPassword_${randomInt(99999)}`;
+    let credentials;
+
+    before(() => {
+        cy.fixture('credentials').then((creds) => {
+            credentials = creds;
+        });
+        registerUser(name);
+    });
+
+    // TODO: delete the created user here once DELETE /accounts is implemented in the API
     const changePasswordUrl = `${API.ApiServer}${API.ChangePassword}`;
     const loginUrl = `${API.ApiServer}${API.AccountsLogin}`;
 
@@ -35,41 +49,41 @@ context("Update password", { tags: ['accounts', 'firstPool', 'all'] }, () => {
             failOnStatusCode,
         });
 
-    it("Change password", () => {
+    it('Change password', () => {
         Authorization.getAccessToken(name).then((authorization) => {
             changePasswordWithAuth(authorization, {
                 username: name,
-                oldPassword: "test",
-                newPassword: "test1",
+                oldPassword: credentials.goodPassword,
+                newPassword: credentials.altPassword,
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
-                expect(response.body).to.have.property("username", name);
-                expect(response.body).to.have.property("role", "USER");
+                expect(response.body).to.have.property('username', name);
+                expect(response.body).to.have.property('role', 'USER');
 
                 // Verify new password works
-                login(name, "test1").then((loginRes) => {
+                login(name, credentials.altPassword).then((loginRes) => {
                     expect(loginRes.status).to.eq(STATUS_CODE.OK);
-                    expect(loginRes.body).to.have.property("username", name);
-                    expect(loginRes.body).to.have.property("role", "USER");
+                    expect(loginRes.body).to.have.property('username', name);
+                    expect(loginRes.body).to.have.property('role', 'USER');
                 });
             });
         });
     });
 
-    it("Change password without body - Negative", () => {
-        Authorization.getAccessTokenWithPass(name, "test1").then((authorization) => {
+    it('Change password without body - Negative', () => {
+        Authorization.getAccessTokenWithPass(name, credentials.altPassword).then((authorization) => {
             changePasswordWithAuth(authorization, undefined, false).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.UNPROCESSABLE);
             });
         });
     });
 
-    it("Change password with wrong password body - Negative", () => {
-        Authorization.getAccessTokenWithPass(name, "test1").then((authorization) => {
+    it('Change password with wrong password body - Negative', () => {
+        Authorization.getAccessTokenWithPass(name, credentials.altPassword).then((authorization) => {
             changePasswordWithAuth(authorization, {
                 username: name,
-                oldPassword: "test", // wrong old password
-                newPassword: "test2",
+                oldPassword: credentials.badPassword, // wrong old password
+                newPassword: credentials.goodPassword,
             }, false).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
             });
@@ -77,10 +91,10 @@ context("Update password", { tags: ['accounts', 'firstPool', 'all'] }, () => {
     });
 
     it('Change password without username - Negative', () => {
-        Authorization.getAccessTokenWithPass(name, "test1").then((authorization) => {
+        Authorization.getAccessTokenWithPass(name, credentials.altPassword).then((authorization) => {
             changePasswordWithAuth(authorization, {
-                oldPassword: "test",
-                newPassword: "test1",
+                oldPassword: credentials.badPassword,
+                newPassword: credentials.altPassword,
             }, false).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.UNPROCESSABLE);
             });
@@ -88,10 +102,10 @@ context("Update password", { tags: ['accounts', 'firstPool', 'all'] }, () => {
     });
 
     it('Change password without old password - Negative', () => {
-        Authorization.getAccessTokenWithPass(name, "test1").then((authorization) => {
+        Authorization.getAccessTokenWithPass(name, credentials.altPassword).then((authorization) => {
             changePasswordWithAuth(authorization, {
                 username: name,
-                newPassword: "test1",
+                newPassword: credentials.altPassword,
             }, false).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.UNPROCESSABLE);
             });
@@ -99,11 +113,11 @@ context("Update password", { tags: ['accounts', 'firstPool', 'all'] }, () => {
     });
 
     it('Change password with wrong username - Negative', () => {
-        Authorization.getAccessTokenWithPass(name, "test1").then((authorization) => {
+        Authorization.getAccessTokenWithPass(name, credentials.altPassword).then((authorization) => {
             changePasswordWithAuth(authorization, {
                 username: `${name}fdsafds`,
-                oldPassword: "test",
-                newPassword: "test1",
+                oldPassword: credentials.badPassword,
+                newPassword: credentials.altPassword,
             }, false).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
             });
@@ -111,58 +125,58 @@ context("Update password", { tags: ['accounts', 'firstPool', 'all'] }, () => {
     });
 
     it('Change password with sql infection - Negative', () => {
-        Authorization.getAccessTokenWithPass(name, "test1").then((authorization) => {
+        Authorization.getAccessTokenWithPass(name, credentials.altPassword).then((authorization) => {
             changePasswordWithAuth(authorization, {
                 username: 'select * from users where id = 1 or 1=1',
-                oldPassword: "test",
-                newPassword: "test1",
+                oldPassword: credentials.badPassword,
+                newPassword: credentials.altPassword,
             }, false).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
             });
         });
     });
 
-    it("Change password with weak password - Negative", () => {
-        Authorization.getAccessTokenWithPass(name, "test1").then((authorization) => {
+    it('Change password with weak password - Negative', () => {
+        Authorization.getAccessTokenWithPass(name, credentials.altPassword).then((authorization) => {
             changePasswordWithAuth(authorization, {
                 username: name,
-                oldPassword: "test1",
-                newPassword: "tt",
+                oldPassword: credentials.altPassword,
+                newPassword: 'tt',
             }, false).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.UNPROCESSABLE);
                 expect(response.body.message).eql(
-                    "Password must be at least 4 characters long."
+                    'Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, and one number.'
                 );
             });
         });
     });
 
-    it("Get list of users without auth - Negative", () => {
+    it('Get list of users without auth - Negative', () => {
         changePassword({
             username: name,
-            oldPassword: "test1",
-            newPassword: "test",
+            oldPassword: credentials.altPassword,
+            newPassword: credentials.goodPassword,
         }, /* headers */ {}, /* failOnStatusCode */ false).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Get list of users with incorrect auth - Negative", () => {
+    it('Get list of users with incorrect auth - Negative', () => {
         changePassword({
             username: name,
-            oldPassword: "test1",
-            newPassword: "test",
-        }, { authorization: "bearer 11111111111111111111@#$" }, false).then((response) => {
+            oldPassword: credentials.altPassword,
+            newPassword: credentials.goodPassword,
+        }, { authorization: 'bearer 11111111111111111111@#$' }, false).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Get list of users with empty auth - Negative", () => {
+    it('Get list of users with empty auth - Negative', () => {
         changePassword({
             username: name,
-            oldPassword: "test1",
-            newPassword: "test",
-        }, { authorization: "" }, false).then((response) => {
+            oldPassword: credentials.altPassword,
+            newPassword: credentials.goodPassword,
+        }, { authorization: '' }, false).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });

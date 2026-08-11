@@ -1,15 +1,15 @@
-import { randomInt } from "../../../support/random";
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { randomInt } from '../../../support/random';
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Update policy labels", { tags: ['policy_labels', 'firstPool', 'all'] }, () => {
+context('Update policy labels', { tags: ['policy_labels', 'firstPool', 'all'] }, () => {
     const UserUsername = Cypress.env('User');
     const labelConfigUUID = randomInt(99999).toString();
 
-    let policyLabel, issueSchema;
+    let policyLabel; let issueSchema;
 
-    before("Get policy label id", () => {
+    before('Get policy label id', () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
@@ -22,7 +22,7 @@ context("Update policy labels", { tags: ['policy_labels', 'firstPool', 'all'] },
                 policyLabel = response.body.at(0);
                 cy.request({
                     method: METHOD.GET,
-                    url: API.ApiServer + API.PolicyLabels + policyLabel.id + "/" + API.Relationships,
+                    url: API.ApiServer + API.PolicyLabels + policyLabel.id + '/' + API.Relationships,
                     headers: {
                         authorization,
                     },
@@ -43,32 +43,32 @@ context("Update policy labels", { tags: ['policy_labels', 'firstPool', 'all'] },
         });
     })
 
-    it("Update policy labels", () => {
+    it('Update policy labels', () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             policyLabel.config.children = [{
                 config: {
                     variables: [
                         {
-                            id: "A1",
+                            id: 'A1',
                             schemaId: `#${issueSchema.uuid}&${issueSchema.version}`,
-                            path: "field7",
-                            schemaName: "I-REC Issue Request",
-                            schemaPath: "Total kWh Produced in this period",
-                            fieldType: "number",
+                            path: 'field7',
+                            schemaName: 'I-REC Issue Request',
+                            schemaPath: 'Total kWh Produced in this period',
+                            fieldType: 'number',
                             fieldArray: false,
                             fieldRef: false,
-                            fieldDescription: "Total kWh Produced in this period",
+                            fieldDescription: 'Total kWh Produced in this period',
                             fieldProperty: null
                         }
                     ],
                     formulas: [
                         {
-                            id: "C1",
-                            type: "number",
-                            description: "valid",
-                            formula: "A1",
+                            id: 'C1',
+                            type: 'number',
+                            description: 'valid',
+                            formula: 'A1',
                             rule: {
-                                type: "range",
+                                type: 'range',
                                 min: 1,
                                 max: 15
                             }
@@ -77,10 +77,10 @@ context("Update policy labels", { tags: ['policy_labels', 'firstPool', 'all'] },
                     scores: []
                 },
                 id: labelConfigUUID,
-                name: "Rules",
-                tag: "rules",
-                title: "Rules",
-                type: "rules"
+                name: 'Rules',
+                tag: 'rules',
+                title: 'Rules',
+                type: 'rules'
             }];
             cy.request({
                 method: METHOD.PUT,
@@ -91,9 +91,9 @@ context("Update policy labels", { tags: ['policy_labels', 'firstPool', 'all'] },
                 },
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                policyLabel.config.children[0].config.variables[0].fieldPropertyName = "";
-                policyLabel.config.children[0].config.variables[0].fieldProperty = "";
-                policyLabel.config.children[0].schemaId = "";
+                policyLabel.config.children[0].config.variables[0].fieldPropertyName = '';
+                policyLabel.config.children[0].config.variables[0].fieldProperty = '';
+                policyLabel.config.children[0].schemaId = '';
 
                 expect(response.body.id).eql(policyLabel.id);
                 expect(response.body.creator).eql(policyLabel.creator);
@@ -109,7 +109,7 @@ context("Update policy labels", { tags: ['policy_labels', 'firstPool', 'all'] },
         })
     });
 
-    it("Update policy labels without auth - Negative", () => {
+    it('Update policy labels without auth - Negative', () => {
         cy.request({
             method: METHOD.PUT,
             url: API.ApiServer + API.PolicyLabels + policyLabel.id,
@@ -122,13 +122,13 @@ context("Update policy labels", { tags: ['policy_labels', 'firstPool', 'all'] },
         });
     });
 
-    it("Update policy labels with incorrect auth - Negative", () => {
+    it('Update policy labels with incorrect auth - Negative', () => {
         cy.request({
             method: METHOD.PUT,
             url: API.ApiServer + API.PolicyLabels + policyLabel.id,
             body: policyLabel,
             headers: {
-                authorization: "bearer 11111111111111111111@#$",
+                authorization: 'bearer 11111111111111111111@#$',
             },
             failOnStatusCode: false,
         }).then((response) => {
@@ -136,13 +136,13 @@ context("Update policy labels", { tags: ['policy_labels', 'firstPool', 'all'] },
         });
     });
 
-    it("Update policy labels with empty auth - Negative", () => {
+    it('Update policy labels with empty auth - Negative', () => {
         cy.request({
             method: METHOD.PUT,
             url: API.ApiServer + API.PolicyLabels + policyLabel.id,
             body: policyLabel,
             headers: {
-                authorization: "",
+                authorization: '',
             },
             failOnStatusCode: false,
         }).then((response) => {

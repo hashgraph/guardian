@@ -1,15 +1,15 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Checks from "../../../support/checkingMethods";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Checks from '../../../support/checkingMethods';
+import * as Authorization from '../../../support/authorization';
 
-context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contracts', 'firstPool', 'all'] }, () => {
+context('Contracts', { tags: ['policy_labels', 'formulas', 'trustchains', 'contracts', 'firstPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
 
-    let contractIdR, contractUuidR, tokenId, policyId, hederaId, poolId, retireRequestId;
+    let contractIdR; let contractUuidR; let tokenId; let policyId; let hederaId; let poolId; let retireRequestId;
 
-    before("Create contracts, policy and register new user", () => {
+    before('Create contracts, policy and register new user', () => {
         //Create retire contract and save id
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
@@ -19,7 +19,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
                     authorization,
                 },
                 qs: {
-                    "type": "RETIRE",
+                    'type': 'RETIRE',
                 },
                 timeout: 180000
             }).then((response) => {
@@ -37,7 +37,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 response.body.forEach(element => {
-                    if (element.name == "iRec_4") {
+                    if (element.name == 'iRec_4') {
                         policyId = element.id
                     }
                 })
@@ -72,9 +72,9 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
         })
     })
 
-    describe("Create and cancel retire request", () => {
+    describe('Create and cancel retire request', () => {
 
-        it("Create retire request", () => {
+        it('Create retire request', () => {
             Authorization.getAccessToken(UserUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.GET,
@@ -86,10 +86,10 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
                     poolId = response.body.at(0).id;
                     cy.request({
                         method: METHOD.POST,
-                        url: API.ApiServer + API.RetirePools + poolId + "/" + API.Retire,
+                        url: API.ApiServer + API.RetirePools + poolId + '/' + API.Retire,
                         headers: {
                             authorization,
-                            "Content-Type": "application/json"
+                            'Content-Type': 'application/json'
                         },
                         body: [{
                             token: tokenId,
@@ -126,7 +126,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             })
         });
 
-        it("Cancel retire request without auth token - Negative", () => {
+        it('Cancel retire request without auth token - Negative', () => {
             cy.request({
                 method: METHOD.DELETE,
                 url: API.ApiServer + API.RetireRequests + retireRequestId,
@@ -136,12 +136,12 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             });
         })
 
-        it("Cancel retire request with invalid auth token - Negative", () => {
+        it('Cancel retire request with invalid auth token - Negative', () => {
             cy.request({
                 method: METHOD.DELETE,
                 url: API.ApiServer + API.RetireRequests + retireRequestId,
                 headers: {
-                    authorization: "Bearer wqe",
+                    authorization: 'Bearer wqe',
                 },
                 failOnStatusCode: false,
             }).then((response) => {
@@ -149,12 +149,12 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             });
         });
 
-        it("Cancel retire request with empty auth token - Negative", () => {
+        it('Cancel retire request with empty auth token - Negative', () => {
             cy.request({
                 method: METHOD.DELETE,
                 url: API.ApiServer + API.RetireRequests + retireRequestId,
                 headers: {
-                    authorization: "",
+                    authorization: '',
                 },
                 failOnStatusCode: false,
             }).then((response) => {
@@ -162,11 +162,11 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             });
         });
 
-        it("Cancel retire request", () => {
+        it('Cancel retire request', () => {
             Authorization.getAccessToken(UserUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.DELETE,
-                    url: API.ApiServer + API.RetireRequests + retireRequestId + "/" + API.Cancel,
+                    url: API.ApiServer + API.RetireRequests + retireRequestId + '/' + API.Cancel,
                     headers: {
                         authorization
                     },
@@ -177,9 +177,9 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
         })
     })
 
-    describe("Create and unset retire request", () => {
+    describe('Create and unset retire request', () => {
 
-        it("Create retire request", () => {
+        it('Create retire request', () => {
 
             Authorization.getAccessToken(UserUsername).then((authorization) => {
                 cy.request({
@@ -192,10 +192,10 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
                     poolId = response.body.at(0).id;
                     cy.request({
                         method: METHOD.POST,
-                        url: API.ApiServer + API.RetirePools + poolId + "/" + API.Retire,
+                        url: API.ApiServer + API.RetirePools + poolId + '/' + API.Retire,
                         headers: {
                             authorization,
-                            "Content-Type": "application/json"
+                            'Content-Type': 'application/json'
                         },
                         body: [{
                             token: tokenId,
@@ -232,7 +232,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             })
         });
 
-        it("Unset retire request without auth token - Negative", () => {
+        it('Unset retire request without auth token - Negative', () => {
             cy.request({
                 method: METHOD.DELETE,
                 url: API.ApiServer + API.RetireRequests + retireRequestId,
@@ -242,12 +242,12 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             });
         });
 
-        it("Unset retire request with invalid auth token - Negative", () => {
+        it('Unset retire request with invalid auth token - Negative', () => {
             cy.request({
                 method: METHOD.DELETE,
                 url: API.ApiServer + API.RetireRequests + retireRequestId,
                 headers: {
-                    authorization: "Bearer wqe",
+                    authorization: 'Bearer wqe',
                 },
                 failOnStatusCode: false,
             }).then((response) => {
@@ -255,12 +255,12 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             });
         });
 
-        it("Unset retire request with empty auth token - Negative", () => {
+        it('Unset retire request with empty auth token - Negative', () => {
             cy.request({
                 method: METHOD.DELETE,
                 url: API.ApiServer + API.RetireRequests + retireRequestId,
                 headers: {
-                    authorization: "",
+                    authorization: '',
                 },
                 failOnStatusCode: false,
             }).then((response) => {
@@ -268,7 +268,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             });
         });
 
-        it("Unset retire request", () => {
+        it('Unset retire request', () => {
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.DELETE,
@@ -283,9 +283,9 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
         })
     })
 
-    describe("Get retire request", () => {
+    describe('Get retire request', () => {
 
-        it("Create retire request", () => {
+        it('Create retire request', () => {
             Authorization.getAccessToken(UserUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.GET,
@@ -297,10 +297,10 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
                     poolId = response.body.at(0).id;
                     cy.request({
                         method: METHOD.POST,
-                        url: API.ApiServer + API.RetirePools + poolId + "/" + API.Retire,
+                        url: API.ApiServer + API.RetirePools + poolId + '/' + API.Retire,
                         headers: {
                             authorization,
-                            "Content-Type": "application/json"
+                            'Content-Type': 'application/json'
                         },
                         body: [{
                             token: tokenId,
@@ -337,7 +337,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             })
         });
 
-        it("Get retire request", () => {
+        it('Get retire request', () => {
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.GET,
@@ -358,7 +358,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             })
         });
 
-        it("Get all retire contracts requests", () => {
+        it('Get all retire contracts requests', () => {
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.GET,
@@ -372,7 +372,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             })
         });
 
-        it("Get all retire contracts requests without auth token - Negative", () => {
+        it('Get all retire contracts requests without auth token - Negative', () => {
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.RetireRequests,
@@ -382,12 +382,12 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             });
         });
 
-        it("Get all retire contracts requests with invalid auth token - Negative", () => {
+        it('Get all retire contracts requests with invalid auth token - Negative', () => {
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.RetireRequests,
                 headers: {
-                    authorization: "Bearer wqe",
+                    authorization: 'Bearer wqe',
                 },
                 failOnStatusCode: false,
             }).then((response) => {
@@ -395,12 +395,12 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             });
         });
 
-        it("Get all retire contracts requests with empty auth token - Negative", () => {
+        it('Get all retire contracts requests with empty auth token - Negative', () => {
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.RetireRequests,
                 headers: {
-                    authorization: "",
+                    authorization: '',
                 },
                 failOnStatusCode: false,
             }).then((response) => {
@@ -408,7 +408,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             });
         });
 
-        it("Get retire request without auth token - Negative", () => {
+        it('Get retire request without auth token - Negative', () => {
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.RetireRequests,
@@ -421,12 +421,12 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             });
         });
 
-        it("Get retire request with invalid auth token - Negative", () => {
+        it('Get retire request with invalid auth token - Negative', () => {
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.RetireRequests,
                 headers: {
-                    authorization: "Bearer wqe",
+                    authorization: 'Bearer wqe',
                 },
                 qs: {
                     contractId: contractIdR
@@ -437,12 +437,12 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             });
         });
 
-        it("Get retire request with empty auth token - Negative", () => {
+        it('Get retire request with empty auth token - Negative', () => {
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.RetireRequests,
                 headers: {
-                    authorization: "",
+                    authorization: '',
                 },
                 qs: {
                     contractId: contractIdR
@@ -454,9 +454,9 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
         });
     })
 
-    describe("Approve retire request", () => {
+    describe('Approve retire request', () => {
 
-        it("Approve retire request without auth token - Negative", () => {
+        it('Approve retire request without auth token - Negative', () => {
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.GET,
@@ -474,19 +474,19 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             })
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.RetireRequests + retireRequestId + "/" + API.Approve,
+                url: API.ApiServer + API.RetireRequests + retireRequestId + '/' + API.Approve,
                 failOnStatusCode: false,
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
             });
         });
 
-        it("Approve retire request with invalid auth token - Negative", () => {
+        it('Approve retire request with invalid auth token - Negative', () => {
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.RetireRequests + retireRequestId + "/" + API.Approve,
+                url: API.ApiServer + API.RetireRequests + retireRequestId + '/' + API.Approve,
                 headers: {
-                    authorization: "Bearer wqe",
+                    authorization: 'Bearer wqe',
                 },
                 failOnStatusCode: false,
             }).then((response) => {
@@ -494,12 +494,12 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             });
         });
 
-        it("Approve retire request with empty auth token - Negative", () => {
+        it('Approve retire request with empty auth token - Negative', () => {
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.RetireRequests + retireRequestId + "/" + API.Approve,
+                url: API.ApiServer + API.RetireRequests + retireRequestId + '/' + API.Approve,
                 headers: {
-                    authorization: "",
+                    authorization: '',
                 },
                 failOnStatusCode: false,
             }).then((response) => {
@@ -507,11 +507,11 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             });
         });
 
-        it("Approve retire request", () => {
+        it('Approve retire request', () => {
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.RetireRequests + retireRequestId + "/" + API.Approve,
+                    url: API.ApiServer + API.RetireRequests + retireRequestId + '/' + API.Approve,
                     headers: {
                         authorization,
                     },
@@ -522,14 +522,14 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
         });
     })
 
-    describe("Create and approve retire request without approve", () => {
+    describe('Create and approve retire request without approve', () => {
 
-        before("Set pool", () => {
+        before('Set pool', () => {
             //Set pool to retire contract and wait while it in progress
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.RetireContract + contractIdR + "/" + API.PoolContract,
+                    url: API.ApiServer + API.RetireContract + contractIdR + '/' + API.PoolContract,
                     headers: {
                         authorization,
                     },
@@ -548,7 +548,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             })
         });
 
-        it("Create retire request", () => {
+        it('Create retire request', () => {
             Authorization.getAccessToken(UserUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.GET,
@@ -560,10 +560,10 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
                     poolId = response.body.at(0).id;
                     cy.request({
                         method: METHOD.POST,
-                        url: API.ApiServer + API.RetirePools + poolId + "/" + API.Retire,
+                        url: API.ApiServer + API.RetirePools + poolId + '/' + API.Retire,
                         headers: {
                             authorization,
-                            "Content-Type": "application/json"
+                            'Content-Type': 'application/json'
                         },
                         body: [{
                             token: tokenId,
@@ -577,22 +577,22 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             })
         });
 
-        it("Create retire request without auth token - Negative", () => {
+        it('Create retire request without auth token - Negative', () => {
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.RetirePools + poolId + "/" + API.Retire,
+                url: API.ApiServer + API.RetirePools + poolId + '/' + API.Retire,
                 failOnStatusCode: false,
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
             });
         });
 
-        it("Create retire request with invalid auth token - Negative", () => {
+        it('Create retire request with invalid auth token - Negative', () => {
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.RetirePools + poolId + "/" + API.Retire,
+                url: API.ApiServer + API.RetirePools + poolId + '/' + API.Retire,
                 headers: {
-                    authorization: "Bearer wqe",
+                    authorization: 'Bearer wqe',
                 },
                 failOnStatusCode: false,
             }).then((response) => {
@@ -600,12 +600,12 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             });
         });
 
-        it("Create retire request with empty auth token - Negative", () => {
+        it('Create retire request with empty auth token - Negative', () => {
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.RetirePools + poolId + "/" + API.Retire,
+                url: API.ApiServer + API.RetirePools + poolId + '/' + API.Retire,
                 headers: {
-                    authorization: "",
+                    authorization: '',
                 },
                 failOnStatusCode: false,
             }).then((response) => {
@@ -613,7 +613,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             });
         });
 
-        it("Verify balance decreased", () => {
+        it('Verify balance decreased', () => {
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.GET,
@@ -623,7 +623,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
                     }
                 }).then((response) => {
                     expect(response.status).to.eq(STATUS_CODE.OK);
-                    expect(response.body.balance).to.eq("7");
+                    expect(response.body.balance).to.eq('7');
                 });
             })
         });

@@ -1,13 +1,13 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Delete formula", { tags: ['formulas', 'firstPool', 'all'] }, () => {
+context('Delete formula', { tags: ['formulas', 'firstPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     let firstFormulaId;
 
-    before("Get first formula", () => {
+    before('Get first formula', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
@@ -22,7 +22,7 @@ context("Delete formula", { tags: ['formulas', 'firstPool', 'all'] }, () => {
         })
     });
 
-    it("Delete formula", () => {
+    it('Delete formula', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.DELETE,
@@ -36,7 +36,7 @@ context("Delete formula", { tags: ['formulas', 'firstPool', 'all'] }, () => {
         })
     });
 
-    it("Delete formula without auth - Negative", () => {
+    it('Delete formula without auth - Negative', () => {
         cy.request({
             method: METHOD.DELETE,
             url: API.ApiServer + API.Formulas + firstFormulaId,
@@ -48,12 +48,12 @@ context("Delete formula", { tags: ['formulas', 'firstPool', 'all'] }, () => {
         });
     });
 
-    it("Delete formula with incorrect auth - Negative", () => {
+    it('Delete formula with incorrect auth - Negative', () => {
         cy.request({
             method: METHOD.DELETE,
             url: API.ApiServer + API.Formulas + firstFormulaId,
             headers: {
-                authorization: "bearer 11111111111111111111@#$",
+                authorization: 'bearer 11111111111111111111@#$',
             },
             failOnStatusCode: false,
         }).then((response) => {
@@ -61,12 +61,12 @@ context("Delete formula", { tags: ['formulas', 'firstPool', 'all'] }, () => {
         });
     });
 
-    it("Delete formula with empty auth - Negative", () => {
+    it('Delete formula with empty auth - Negative', () => {
         cy.request({
             method: METHOD.DELETE,
             url: API.ApiServer + API.Formulas + firstFormulaId,
             headers: {
-                authorization: "",
+                authorization: '',
             },
             failOnStatusCode: false,
         }).then((response) => {

@@ -1,12 +1,12 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Tokens", { tags: ['tokens', 'thirdPool', 'all'] }, () => {
+context('Tokens', { tags: ['tokens', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
 
-    it("Push set the KYC flag for the user", () => {
+    it('Push set the KYC flag for the user', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
@@ -24,11 +24,11 @@ context("Tokens", { tags: ['tokens', 'thirdPool', 'all'] }, () => {
                     url:
                         API.ApiServer +
                         API.ListOfTokens +
-                        "push/" +
+                        'push/' +
                         tokenId +
-                        "/" +
+                        '/' +
                         UserUsername +
-                        "/grant-kyc",
+                        '/grant-kyc',
                     headers: {
                         authorization,
                     },
@@ -39,7 +39,7 @@ context("Tokens", { tags: ['tokens', 'thirdPool', 'all'] }, () => {
         });
     })
 
-    it("Push unset the KYC flag for the user", () => {
+    it('Push unset the KYC flag for the user', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
@@ -57,11 +57,11 @@ context("Tokens", { tags: ['tokens', 'thirdPool', 'all'] }, () => {
                     url:
                         API.ApiServer +
                         API.ListOfTokens +
-                        "push/" +
+                        'push/' +
                         tokenId +
-                        "/" +
+                        '/' +
                         UserUsername +
-                        "/revoke-kyc",
+                        '/revoke-kyc',
                     headers: {
                         authorization,
                     },

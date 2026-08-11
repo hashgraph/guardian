@@ -1,11 +1,10 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
-
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
 context('Start policy test', { tags: ['policies', 'secondPool', 'all'] }, () => {
 	const SRUsername = Cypress.env('SRUser');
-	let policyId, testId;
+	let policyId; let testId;
 
 	before('Get test id', () => {
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
@@ -19,7 +18,7 @@ context('Start policy test', { tags: ['policies', 'secondPool', 'all'] }, () => 
 			}).then((response) => {
 				expect(response.status).to.eq(STATUS_CODE.OK);
 				response.body.forEach(element => {
-					if (element.name == "iRecDRF") {
+					if (element.name == 'iRecDRF') {
 						policyId = element.id
 					}
 				})
@@ -42,7 +41,7 @@ context('Start policy test', { tags: ['policies', 'secondPool', 'all'] }, () => 
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
 			cy.request({
 				method: METHOD.POST,
-				url: API.ApiServer + API.Policies + policyId + "/" + API.Test + testId + "/" + API.Start,
+				url: API.ApiServer + API.Policies + policyId + '/' + API.Test + testId + '/' + API.Start,
 				headers: {
 					authorization,
 				},
@@ -55,22 +54,22 @@ context('Start policy test', { tags: ['policies', 'secondPool', 'all'] }, () => 
 		})
 	})
 
-    it("Start policy test without auth token - Negative", () => {
+    it('Start policy test without auth token - Negative', () => {
         cy.request({
 			method: METHOD.POST,
-			url: API.ApiServer + API.Policies + policyId + "/" + API.Test + testId + "/" + API.Start,
+			url: API.ApiServer + API.Policies + policyId + '/' + API.Test + testId + '/' + API.Start,
             failOnStatusCode: false,
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Start policy test with invalid auth token - Negative", () => {
+    it('Start policy test with invalid auth token - Negative', () => {
         cy.request({
 			method: METHOD.POST,
-			url: API.ApiServer + API.Policies + policyId + "/" + API.Test + testId + "/" + API.Start,
+			url: API.ApiServer + API.Policies + policyId + '/' + API.Test + testId + '/' + API.Start,
             headers: {
-                authorization: "Bearer wqe",
+                authorization: 'Bearer wqe',
             },
             failOnStatusCode: false,
         }).then((response) => {
@@ -78,12 +77,12 @@ context('Start policy test', { tags: ['policies', 'secondPool', 'all'] }, () => 
         });
     });
 
-    it("Start policy test with empty auth token - Negative", () => {
+    it('Start policy test with empty auth token - Negative', () => {
         cy.request({
 			method: METHOD.POST,
-			url: API.ApiServer + API.Policies + policyId + "/" + API.Test + testId + "/" + API.Start,
+			url: API.ApiServer + API.Policies + policyId + '/' + API.Test + testId + '/' + API.Start,
             headers: {
-                authorization: "",
+                authorization: '',
             },
             failOnStatusCode: false,
         }).then((response) => {

@@ -1,33 +1,32 @@
-import { HomePage } from "../../pages/homePage";
+import { HomePage } from '../../pages/homePage';
 const homePage = new HomePage();
 
-import { PoliciesPage } from "../../pages/policiesPage";
+import { PoliciesPage } from '../../pages/policiesPage';
 const policiesPage = new PoliciesPage();
 
-import { UserManagementPage } from "../../pages/userManagementPage";
+import { UserManagementPage } from '../../pages/userManagementPage';
 const userManagementPage = new UserManagementPage();
 
-import { UserPoliciesPage } from "../../pages/userPoliciesPage";
+import { UserPoliciesPage } from '../../pages/userPoliciesPage';
 const userPoliciesPage = new UserPoliciesPage();
 
-import { TokensPage } from "../../pages/tokensPage";
+import { TokensPage } from '../../pages/tokensPage';
 const tokensPage = new TokensPage();
 
-
-context("Workflow Verra Policy", { tags: ['ui'] }, () => {
+context('Workflow Verra Policy', { tags: ['ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const userUsername = Cypress.env('User');
     const user2Username = Cypress.env('User2');
-    const name = "Verra VM0003";
+    const name = 'Verra VM0003';
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
         homePage.visit();
     })
-    
+
     //TBD: wait good params
-    it("checks verra policy workflow", () => {
+    it('checks verra policy workflow', () => {
         // //Import and publish policy
         // homePage.login(SRUsername);
         // policiesPage.openPoliciesTab();
@@ -44,7 +43,6 @@ context("Workflow Verra Policy", { tags: ['ui'] }, () => {
         // userManagementPage.openUserManagementTab();
         // userManagementPage.assignPolicyToUser(user2Username, name);
         // homePage.logOut();
-
 
         // //Token associate
         // homePage.login(userUsername);

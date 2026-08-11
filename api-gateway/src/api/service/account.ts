@@ -360,7 +360,7 @@ export class AccountApi {
             loginBody: {
                 value: {
                     username: Examples.USER_NAME_SR_1,
-                    password: 'test'
+                    password: 'TestPass1'
                 }
             }
         }
@@ -439,7 +439,7 @@ export class AccountApi {
             changePasswordBody: {
                 value: {
                     username: Examples.USER_NAME_SR_1,
-                    oldPassword: 'test',
+                    oldPassword: 'TestPass1',
                     newPassword: 'AnotherStrongPassword3#'
                 }
             }

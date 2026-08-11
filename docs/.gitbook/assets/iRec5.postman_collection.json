@@ -18,7 +18,7 @@
 								"exec": [
 									"var randomName = Math.random().toString(36).substring(2,10);\r",
 									"pm.collectionVariables.set('sr_login', randomName)\r",
-									"pm.collectionVariables.set('sr_password', 'test')"
+									"pm.collectionVariables.set('sr_password', 'TestPass1')"
 								],
 								"type": "text/javascript"
 							}
@@ -220,7 +220,7 @@
 								"exec": [
 									"var randomName = Math.random().toString(36).substring(2,10);\r",
 									"pm.collectionVariables.set('user_login', randomName)\r",
-									"pm.collectionVariables.set('user_password', 'test')"
+									"pm.collectionVariables.set('user_password', 'TestPass1')"
 								],
 								"type": "text/javascript"
 							}
@@ -422,7 +422,7 @@
 								"exec": [
 									"var randomName = Math.random().toString(36).substring(2,10);\r",
 									"pm.collectionVariables.set('approver_login', randomName)\r",
-									"pm.collectionVariables.set('approver_password', 'test')"
+									"pm.collectionVariables.set('approver_password', 'TestPass1')"
 								],
 								"type": "text/javascript"
 							}

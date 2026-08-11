@@ -1,13 +1,13 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
 context('Import Policy Themes', { tags: ['themes', 'secondPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     it('Import theme', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.fixture("exportedTheme.theme", "binary")
+            cy.fixture('exportedTheme.theme', 'binary')
                 .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
                 .then((file) => {
                     cy.request({
@@ -15,7 +15,7 @@ context('Import Policy Themes', { tags: ['themes', 'secondPool', 'all'] }, () =>
                         url: API.ApiServer + API.Themes + API.ImportFile,
                         body: file,
                         headers: {
-                            "content-type": "binary/octet-stream",
+                            'content-type': 'binary/octet-stream',
                             authorization,
                         },
                         timeout: 60000,
@@ -26,8 +26,8 @@ context('Import Policy Themes', { tags: ['themes', 'secondPool', 'all'] }, () =>
         })
     });
 
-    it("Import theme without auth token - Negative", () => {
-        cy.fixture("exportedTheme.theme", "binary")
+    it('Import theme without auth token - Negative', () => {
+        cy.fixture('exportedTheme.theme', 'binary')
             .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
             .then((file) => {
                 cy.request({
@@ -35,7 +35,7 @@ context('Import Policy Themes', { tags: ['themes', 'secondPool', 'all'] }, () =>
                     url: API.ApiServer + API.Themes + API.ImportFile,
                     body: file,
                     headers: {
-                        "content-type": "binary/octet-stream",
+                        'content-type': 'binary/octet-stream',
                     },
                     failOnStatusCode: false,
                 }).then((response) => {
@@ -44,8 +44,8 @@ context('Import Policy Themes', { tags: ['themes', 'secondPool', 'all'] }, () =>
             });
     })
 
-    it("Import theme with invalid auth token - Negative", () => {
-        cy.fixture("exportedTheme.theme", "binary")
+    it('Import theme with invalid auth token - Negative', () => {
+        cy.fixture('exportedTheme.theme', 'binary')
             .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
             .then((file) => {
                 cy.request({
@@ -53,8 +53,8 @@ context('Import Policy Themes', { tags: ['themes', 'secondPool', 'all'] }, () =>
                     url: API.ApiServer + API.Themes + API.ImportFile,
                     body: file,
                     headers: {
-                        "content-type": "binary/octet-stream",
-                        authorization: "Bearer wqe",
+                        'content-type': 'binary/octet-stream',
+                        authorization: 'Bearer wqe',
                     },
                     failOnStatusCode: false,
                 }).then((response) => {
@@ -63,8 +63,8 @@ context('Import Policy Themes', { tags: ['themes', 'secondPool', 'all'] }, () =>
             });
     })
 
-    it("Import theme with empty auth token - Negative", () => {
-        cy.fixture("exportedTheme.theme", "binary")
+    it('Import theme with empty auth token - Negative', () => {
+        cy.fixture('exportedTheme.theme', 'binary')
             .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
             .then((file) => {
                 cy.request({
@@ -72,8 +72,8 @@ context('Import Policy Themes', { tags: ['themes', 'secondPool', 'all'] }, () =>
                     url: API.ApiServer + API.Themes + API.ImportFile,
                     body: file,
                     headers: {
-                        "content-type": "binary/octet-stream",
-                        authorization: "",
+                        'content-type': 'binary/octet-stream',
+                        authorization: '',
                     },
                     failOnStatusCode: false,
                 }).then((response) => {

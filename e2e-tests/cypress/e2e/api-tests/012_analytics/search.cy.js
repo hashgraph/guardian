@@ -1,12 +1,12 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
+context('Analytics', { tags: ['analytics', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     let policyId;
-    it("Search policy", () => {
+    it('Search policy', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
@@ -20,7 +20,7 @@ context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
                     method: METHOD.POST,
                     url: API.ApiServer + API.PolicySearch,
                     body: {
-                        policyId: policyId,
+                        policyId,
                     },
                     headers: {
                         authorization,
@@ -34,8 +34,8 @@ context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
         })
     });
 
-    it("Search blocks", () => {
-        let config, blockId
+    it('Search blocks', () => {
+        let config; let blockId
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
@@ -51,7 +51,7 @@ context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
                     url: API.ApiServer + API.BlockSearch,
                     body: {
                         id: blockId,
-                        config: config,
+                        config,
                     },
                     headers: {
                         authorization,

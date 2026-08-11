@@ -1,22 +1,23 @@
 
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
+context('Analytics', { tags: ['analytics', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     const URLS = {
+        tools: `${API.ApiServer}${API.Tools}`,
         toolsImportMsg: `${API.ApiServer}${API.ToolsImportMsg}`,
         toolCompare: `${API.ApiServer}${API.ToolCompare}`,
         toolCompareExport: `${API.ApiServer}${API.ToolCompare}${API.ExportCSV}`,
     };
 
     const DEFAULT_COMPARE_PARAMS = Object.freeze({
-        childrenLvl: "2",
-        eventsLvl: "1",
-        idLvl: "0",
-        propLvl: "2",
+        childrenLvl: '2',
+        eventsLvl: '1',
+        idLvl: '0',
+        propLvl: '2',
     });
 
     const compareBody = (toolIds) => ({
@@ -31,6 +32,30 @@ context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
             body: { messageId },
             headers: { authorization },
             timeout,
+        });
+
+    // cacheBust makes the request URL unique, as the list endpoint is cached
+    const getToolsWithAuth = (authorization) =>
+        cy.request({
+            method: METHOD.GET,
+            url: `${URLS.tools}?cacheBust=${Date.now()}`,
+            headers: { authorization },
+        });
+
+    // A tool can only be imported once: a second import of the same message fails with
+    // "The tool already exists", so reuse the tool left by a previous run when present.
+    const resolveToolId = (authorization, messageId, timeout) =>
+        getToolsWithAuth(authorization).then((response) => {
+            expect(response.status).to.eq(STATUS_CODE.OK);
+            const tools = response.body.items ?? response.body;
+            const existing = tools.find((tool) => tool.messageId === messageId);
+            if (existing) {
+                return existing.id;
+            }
+            return importToolWithAuth(authorization, messageId, timeout).then((res) => {
+                expect(res.status).to.eq(STATUS_CODE.SUCCESS);
+                return res.body.tool.id;
+            });
         });
 
     const postToolCompareWithAuth = (authorization, body) =>
@@ -67,23 +92,21 @@ context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
             failOnStatusCode: false,
         });
 
-    let toolId1, toolId2;
+    let toolId1; let toolId2;
 
     before(() => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            importToolWithAuth(authorization, Cypress.env('tool_for_compare1'), 1800000).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                toolId1 = response.body.tool.id;
+            resolveToolId(authorization, Cypress.env('tool_for_compare1'), 1800000).then((id1) => {
+                toolId1 = id1;
 
-                importToolWithAuth(authorization, Cypress.env('tool_for_compare2')).then((res2) => {
-                    expect(res2.status).to.eq(STATUS_CODE.SUCCESS);
-                    toolId2 = res2.body.tool.id;
+                resolveToolId(authorization, Cypress.env('tool_for_compare2')).then((id2) => {
+                    toolId2 = id2;
                 });
             });
         });
     });
 
-    it("Compare tools", { tags: ['smoke'] }, () => {
+    it('Compare tools', { tags: ['smoke'] }, () => {
         Authorization.getAccessTokenByRefreshToken().then((authorization) => {
             postToolCompareWithAuth(authorization, compareBody([toolId1, toolId2])).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
@@ -94,49 +117,49 @@ context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
         });
     });
 
-    it("Compare tools without auth - Negative", () => {
-        postToolCompareWithoutAuth(compareBody(["6419853a31fe4fd0e741b3a9", "641983a931fe4fd0e741b399"])).then((response) => {
+    it('Compare tools without auth - Negative', () => {
+        postToolCompareWithoutAuth(compareBody(['6419853a31fe4fd0e741b3a9', '641983a931fe4fd0e741b399'])).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Compare tools with empty auth - Negative", () => {
-        postToolCompareWithoutAuth(compareBody(["6419853a31fe4fd0e741b3a9", "641983a931fe4fd0e741b399"]), { authorization: "" }).then((response) => {
+    it('Compare tools with empty auth - Negative', () => {
+        postToolCompareWithoutAuth(compareBody(['6419853a31fe4fd0e741b3a9', '641983a931fe4fd0e741b399']), { authorization: '' }).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Compare tools with invalid auth - Negative", () => {
-        postToolCompareWithoutAuth(compareBody(["6419853a31fe4fd0e741b3a9", "641983a931fe4fd0e741b399"]), { authorization: "Bearer wqe" }).then((response) => {
+    it('Compare tools with invalid auth - Negative', () => {
+        postToolCompareWithoutAuth(compareBody(['6419853a31fe4fd0e741b3a9', '641983a931fe4fd0e741b399']), { authorization: 'Bearer wqe' }).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Compare tools(Export)", () => {
+    it('Compare tools(Export)', () => {
         Authorization.getAccessTokenByRefreshToken().then((authorization) => {
             postToolCompareExportWithAuth(authorization, compareBody([toolId1, toolId2])).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
-                expect(response.body).to.include("data:text/csv");
+                expect(response.body).to.include('data:text/csv');
             });
         });
     });
 
-    it("Compare tools(Export) without auth - Negative", () => {
-        postToolCompareExportWithoutAuth(compareBody(["6419853a31fe4fd0e741b3a9", "641983a931fe4fd0e741b399"])).then((response) => {
+    it('Compare tools(Export) without auth - Negative', () => {
+        postToolCompareExportWithoutAuth(compareBody(['6419853a31fe4fd0e741b3a9', '641983a931fe4fd0e741b399'])).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Compare tools(Export) with empty auth - Negative", () => {
-        postToolCompareExportWithoutAuth(compareBody(["6419853a31fe4fd0e741b3a9", "641983a931fe4fd0e741b399"]), { authorization: "" }).then((response) => {
+    it('Compare tools(Export) with empty auth - Negative', () => {
+        postToolCompareExportWithoutAuth(compareBody(['6419853a31fe4fd0e741b3a9', '641983a931fe4fd0e741b399']), { authorization: '' }).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Compare tools(Export) with invalid auth - Negative", () => {
-        postToolCompareExportWithoutAuth(compareBody(["6419853a31fe4fd0e741b3a9", "641983a931fe4fd0e741b399"]), { authorization: "Bearer wqe" }).then((response) => {
+    it('Compare tools(Export) with invalid auth - Negative', () => {
+        postToolCompareExportWithoutAuth(compareBody(['6419853a31fe4fd0e741b3a9', '641983a931fe4fd0e741b399']), { authorization: 'Bearer wqe' }).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
         });
     });
-    
+
 });

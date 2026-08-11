@@ -1,8 +1,8 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 // Exclude "all" tag, if needs to stop using MGS in CI tests run
-context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
+context('Policies', { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
 
     const MainSRUsername = Cypress.env('MainSRUser');
     const MainUserUsername = Cypress.env('MainUser');
@@ -10,51 +10,51 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
     const DepUserUsername = Cypress.env('DepUser');
     const MGSAdminUsername = Cypress.env('MGSAdmin');
     const password = Cypress.env('Password');
-    const tenantName = "testTenantFromOS";
-    const email = "apitestosnna@envisionblockchain.com";
+    const tenantName = 'testTenantFromOS';
+    const email = 'apitestosnna@envisionblockchain.com';
 
-    let depUserData, SRDid, tenantId;
+    let depUserData; let SRDid; let tenantId;
 
-    it("Create dependent users", () => {
-        let SRExist, UserExist;
+    it('Create dependent users', () => {
+        let SRExist; let UserExist;
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.RegUsers,
         }).then((response) => {
             response.body.forEach(element => {
                 if (element.username == DepSRUsername)
-                    SRExist = true;
+                    {SRExist = true;}
                 else if (element.username == DepUserUsername)
-                    UserExist = true;
+                    {UserExist = true;}
             })
             if (!SRExist)
-                cy.request({
+                {cy.request({
                     method: METHOD.POST,
                     url: API.ApiServer + API.AccountRegister,
                     body: {
                         username: DepSRUsername,
-                        password: password,
+                        password,
                         password_confirmation: password,
                         role: 'STANDARD_REGISTRY'
                     }
-                })
+                })}
             if (!UserExist)
-                cy.request({
+                {cy.request({
                     method: METHOD.POST,
                     url: API.ApiServer + API.AccountRegister,
                     body: {
                         username: DepUserUsername,
-                        password: password,
+                        password,
                         password_confirmation: password,
                         role: 'USER'
                     }
-                })
+                })}
         });
 
         Authorization.getAccessToken(DepSRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + "profiles/" + DepSRUsername,
+                url: API.ApiServer + 'profiles/' + DepSRUsername,
                 headers: {
                     authorization,
                 },
@@ -70,7 +70,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                         let hederaAccountKey = response.body.key
                         cy.request({
                             method: METHOD.PUT,
-                            url: API.ApiServer + "profiles/" + DepSRUsername,
+                            url: API.ApiServer + 'profiles/' + DepSRUsername,
                             headers: {
                                 authorization,
                             },
@@ -79,29 +79,29 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                                 useFireblocksSigning: false,
                                 fireblocksConfig:
                                 {
-                                    fireBlocksVaultId: "",
-                                    fireBlocksAssetId: "",
-                                    fireBlocksApiKey: "",
-                                    fireBlocksPrivateiKey: ""
+                                    fireBlocksVaultId: '',
+                                    fireBlocksAssetId: '',
+                                    fireBlocksApiKey: '',
+                                    fireBlocksPrivateiKey: ''
                                 },
                                 didKeys: [],
-                                hederaAccountId: hederaAccountId,
-                                hederaAccountKey: hederaAccountKey,
+                                hederaAccountId,
+                                hederaAccountKey,
                                 vcDocument: {
-                                    geography: "testGeography",
-                                    law: "testLaw",
-                                    tags: "testTags",
-                                    type: "StandardRegistry",
-                                    "@context": [],
+                                    geography: 'testGeography',
+                                    law: 'testLaw',
+                                    tags: 'testTags',
+                                    type: 'StandardRegistry',
+                                    '@context': [],
                                 },
                             },
                             timeout: 400000,
                         }).then(() => {
-                            cy.log("hedera credentials was created");
+                            cy.log('hedera credentials was created');
                         });
                     })
                 } else {
-                    cy.log("User has hedera credentials");
+                    cy.log('User has hedera credentials');
                 }
             });
         })
@@ -109,7 +109,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
         Authorization.getAccessToken(DepUserUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + "profiles/" + DepUserUsername,
+                url: API.ApiServer + 'profiles/' + DepUserUsername,
                 headers: {
                     authorization,
                 },
@@ -124,7 +124,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                     }).then((response) => {
                         response.body.forEach(element => {
                             if (element.username == DepSRUsername)
-                                SRDid = element.did;
+                                {SRDid = element.did;}
                         })
                         cy.request({
                             method: METHOD.GET,
@@ -136,28 +136,28 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                             let hederaAccountKey = response.body.key
                             cy.request({
                                 method: METHOD.PUT,
-                                url: API.ApiServer + "profiles/" + DepUserUsername,
+                                url: API.ApiServer + 'profiles/' + DepUserUsername,
                                 headers: {
                                     authorization,
                                 },
                                 body: {
-                                    hederaAccountId: hederaAccountId,
-                                    hederaAccountKey: hederaAccountKey,
+                                    hederaAccountId,
+                                    hederaAccountKey,
                                     parent: SRDid
                                 },
                                 timeout: 400000,
                             }).then(() => {
-                                cy.log("hedera credentials was created");
+                                cy.log('hedera credentials was created');
                             });
                         })
                     })
                 } else {
-                    cy.log("User has hedera credentials");
+                    cy.log('User has hedera credentials');
                 }
             });
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + "profiles/" + DepUserUsername,
+                url: API.ApiServer + 'profiles/' + DepUserUsername,
                 headers: {
                     authorization,
                 },
@@ -167,7 +167,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
         })
     });
 
-    it("Create main users", () => {
+    it('Create main users', () => {
         Authorization.getAccessTokenMGS(MGSAdminUsername, null).then((authorization) => {
             cy.request({
                 method: METHOD.PUT,
@@ -176,10 +176,10 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                     authorization,
                 },
                 body: {
-                    tenantName: tenantName,
-                    network: "testnet",
+                    tenantName,
+                    network: 'testnet',
                     ipfsSettings: {
-                        provider: "local"
+                        provider: 'local'
                     }
                 }
             }).then((response) => {
@@ -192,10 +192,10 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                         authorization,
                     },
                     body: {
-                        tenantId: tenantId,
-                        email: email,
+                        tenantId,
+                        email,
                         returnInviteCode: true,
-                        role: "STANDARD_REGISTRY"
+                        role: 'STANDARD_REGISTRY'
                     }
                 }).then((response) => {
                     expect(response.status).to.eq(STATUS_CODE.OK);
@@ -207,12 +207,12 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                         },
                         body: {
                             username: MainSRUsername,
-                            password: password,
+                            password,
                             password_confirmation: password,
-                            role: "STANDARD_REGISTRY",
+                            role: 'STANDARD_REGISTRY',
                             inviteId: response.body.inviteId,
                             terms: {
-                                name: "MGS.v2",
+                                name: 'MGS.v2',
                                 accepted: true
                             }
                         }
@@ -235,7 +235,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                                             authorization,
                                         },
                                         body: {
-                                            terms: "MGS.v2",
+                                            terms: 'MGS.v2',
                                         }
                                     }).then((response) => {
                                         cy.request({
@@ -249,25 +249,25 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                                                 hederaAccountKey,
                                                 secret: null,
                                                 vcDocument: {
-                                                    "OrganizationName": "g",
-                                                    "AddressLine1": "g",
-                                                    "City": "g",
-                                                    "Country": "g",
-                                                    "PostalCode": "y",
-                                                    "Website": "https://vfds.fds",
-                                                    "Email": "fdsf@fds.csda",
-                                                    "Tags": "fdsa",
-                                                    "ISIC": "dsaf"
+                                                    'OrganizationName': 'g',
+                                                    'AddressLine1': 'g',
+                                                    'City': 'g',
+                                                    'Country': 'g',
+                                                    'PostalCode': 'y',
+                                                    'Website': 'https://vfds.fds',
+                                                    'Email': 'fdsf@fds.csda',
+                                                    'Tags': 'fdsa',
+                                                    'ISIC': 'dsaf'
                                                 },
-                                                "didDocument": null,
-                                                "useFireblocksSigning": false,
-                                                "fireblocksConfig": {
-                                                    "fireBlocksVaultId": "",
-                                                    "fireBlocksAssetId": "",
-                                                    "fireBlocksApiKey": "",
-                                                    "fireBlocksPrivateiKey": ""
+                                                'didDocument': null,
+                                                'useFireblocksSigning': false,
+                                                'fireblocksConfig': {
+                                                    'fireBlocksVaultId': '',
+                                                    'fireBlocksAssetId': '',
+                                                    'fireBlocksApiKey': '',
+                                                    'fireBlocksPrivateiKey': ''
                                                 },
-                                                "didKeys": []
+                                                'didKeys': []
                                             },
                                             timeout: 180000
                                         })
@@ -288,8 +288,8 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                     authorization,
                 },
                 body: {
-                    tenantId: tenantId,
-                    email: email,
+                    tenantId,
+                    email,
                     returnInviteCode: true
                 }
             }).then((response) => {
@@ -302,12 +302,12 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                     },
                     body: {
                         username: MainUserUsername,
-                        password: password,
+                        password,
                         password_confirmation: password,
-                        role: "USER",
+                        role: 'USER',
                         inviteId: response.body.inviteId,
                         terms: {
-                            name: "MGS.v2",
+                            name: 'MGS.v2',
                             accepted: true
                         }
                     }
@@ -321,7 +321,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                                 authorization,
                             },
                             body: {
-                                terms: "MGS.v2",
+                                terms: 'MGS.v2',
                             }
                         }).then(() => {
                             cy.request({
@@ -333,7 +333,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                             }).then((response) => {
                                 response.body.forEach(element => {
                                     if (element.username == MainSRUsername)
-                                        SRDid = element.did;
+                                        {SRDid = element.did;}
                                 })
                                 cy.request({
                                     method: METHOD.PUT,
@@ -346,7 +346,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                                         hederaAccountId: depUserData.hederaAccountId,
                                         parent: SRDid,
                                         topicId: depUserData.topicId,
-                                        type: "remote"
+                                        type: 'remote'
                                     },
                                     timeout: 180000
                                 })

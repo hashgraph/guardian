@@ -1,12 +1,12 @@
 
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Get formula data", { tags: ['formulas', 'firstPool', 'all'] }, () => {
+context('Get formula data', { tags: ['formulas', 'firstPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
-    let firstFormula, documentId;
+    let firstFormula; let documentId;
 
     const getFormulas = (authorization, failOnStatusCode = true) =>
         cy.request({
@@ -45,7 +45,7 @@ context("Get formula data", { tags: ['formulas', 'firstPool', 'all'] }, () => {
             failOnStatusCode,
         });
 
-    before("Get policy, document and schema id", () => {
+    before('Get policy, document and schema id', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             getFormulas(authorization).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
@@ -61,7 +61,7 @@ context("Get formula data", { tags: ['formulas', 'firstPool', 'all'] }, () => {
         });
     });
 
-    it("Get formula data", () => {
+    it('Get formula data', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             postFormulaData(
                 authorization,
@@ -73,9 +73,9 @@ context("Get formula data", { tags: ['formulas', 'firstPool', 'all'] }, () => {
                 true
             ).then((response) => {
                 expect(response.status).eql(STATUS_CODE.SUCCESS);
-                expect(response.body).to.have.property("document");
-                expect(response.body).to.have.property("relationships");
-                expect(response.body).to.have.property("schemas");
+                expect(response.body).to.have.property('document');
+                expect(response.body).to.have.property('relationships');
+                expect(response.body).to.have.property('schemas');
 
                 // Formula echoes should match the first formula fetched
                 expect(response.body.formulas.at(0).config).eql(firstFormula.config);
@@ -87,12 +87,12 @@ context("Get formula data", { tags: ['formulas', 'firstPool', 'all'] }, () => {
                 expect(response.body.formulas.at(0).policyId).eql(firstFormula.policyId);
                 expect(response.body.formulas.at(0).policyInstanceTopicId).eql(firstFormula.policyInstanceTopicId);
                 expect(response.body.formulas.at(0).policyTopicId).eql(firstFormula.policyTopicId);
-                expect(response.body.formulas.at(0).status).eql("PUBLISHED");
+                expect(response.body.formulas.at(0).status).eql('PUBLISHED');
             });
         });
     });
 
-    it("Get formula data without auth - Negative", () => {
+    it('Get formula data without auth - Negative', () => {
         postFormulaData(
             undefined,
             {
@@ -106,9 +106,9 @@ context("Get formula data", { tags: ['formulas', 'firstPool', 'all'] }, () => {
         });
     });
 
-    it("Get formula data with incorrect auth - Negative", () => {
+    it('Get formula data with incorrect auth - Negative', () => {
         postFormulaData(
-            "bearer 11111111111111111111@#$",
+            'bearer 11111111111111111111@#$',
             {
                 documentId,
                 policyId: firstFormula.policyId,
@@ -120,9 +120,9 @@ context("Get formula data", { tags: ['formulas', 'firstPool', 'all'] }, () => {
         });
     });
 
-    it("Get formula data with empty auth - Negative", () => {
+    it('Get formula data with empty auth - Negative', () => {
         postFormulaData(
-            "",
+            '',
             {
                 documentId,
                 policyId: firstFormula.policyId,
