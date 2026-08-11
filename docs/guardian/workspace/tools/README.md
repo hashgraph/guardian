@@ -1,12 +1,33 @@
+---
+description: Reusable policy components that encapsulate specialized policy logic.
+---
+
 # Tools
 
-## **Overview of Tools in the Guardian**
+Tools are reusable policy components for specialized policy logic. They encapsulate blocks, events, and schemas behind a defined external interface.
 
-In the Guardian, **Tools** are integral components within the policy architecture, offering specialized functionalities distinct from other policy elements. These Tools are designed to align with digital methodologies used by organizations like UNFCCC and Verra, thus ensuring standardization and effectiveness in policy execution.
+Use tools to standardize a capability across policies. A policy references a tool without exposing its internal implementation.
 
-## **Defining Characteristics of Tools**
+### The problem tools solve
 
-1. **Component-Based Structure:** Unlike Modules, Tools maintain a component-based structure within policies. They are linked to policies through references rather than being fully embedded, maintaining a level of isolation. This design preserves the integrity of their internal mechanics, such as blocks, events, and schemas.
-2. **Interface-Driven Interoperability:** Tools are equipped with dedicated interfaces for seamless interaction within the policy ecosystem. These interfaces facilitate effective communication and functionality of Tools alongside other policy content.
-3. **Limited Editability:** Tools are designed with restricted editability to maintain their standardized functions. Standard Registries can modify only the external interfaces of Tools, ensuring consistent application and performance in line with established methodologies.
-4. **Hierarchical Integration:** Unique to Tools is their ability to encapsulate other Tools, allowing for a hierarchical structure within policies. This feature enables the development of complex, layered policy frameworks where each Tool contributes specific capabilities.
+Tools keep reusable logic consistent across policy implementations. They also protect the tool's internal blocks, events, and schemas from unintended changes.
+
+### How tools work
+
+Tools expose variables and input or output events. Policies use these interfaces to provide configuration and exchange data with the tool.
+
+Tool schemas are embedded within the tool. A policy can use those schemas when it includes the tool.
+
+Tools can contain other tools. This supports layered implementations for complex methodologies.
+
+### Key distinctions
+
+Tools and modules both encapsulate reusable policy logic. Tools remain isolated and are referenced by policies. Their internal implementation is not directly editable from the policy using them.
+
+Published tools are immutable. Standard Registries can configure only the tool's exposed interfaces.
+
+### Related
+
+* Reference: [Tools Reference](tools-using-ui.md)
+* Concept: [Modules](../modules/)
+* Concept: [Policy Configurator](../policies/policy-creation/policy-configurator.md)
