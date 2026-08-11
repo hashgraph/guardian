@@ -92,6 +92,7 @@ export class FieldForm {
     private readonly ancestorChildPaths: Map<string, Set<string>>;
     public rootForm: FieldForm;
     private arrayGroupCache: Map<IFieldControl<any>, IArrayGroupEntry[]> | null = null;
+    private fieldOrder: Map<string, number> | null = null;
 
     private readonly destroy$: Subject<boolean>;
 
@@ -184,6 +185,7 @@ export class FieldForm {
         const { fields, conditions } = this.updateData();
         this.arrayGroupCache = null;
         this.crossSchemaItems = [];
+        this.fieldOrder = fields ? new Map(fields.map((f, index) => [f.name, index])) : null;
         this.fieldControls = this.buildFields(fields);
         this.conditionControls = this.buildConditions(conditions);
         if (this.schema?.arrayDependencies?.length) {
@@ -265,7 +267,10 @@ export class FieldForm {
 
     private findControl(name: string): IFieldControl<any> | undefined {
         const base = this.fieldControls?.find(control => control.name === name);
-        if (base || !this.rootForm.schema?.arrayDependencies?.length) { return base; }
+        if (base) { return base; }
+        // A container may itself be condition-controlled, in which case it lives in
+        // conditionControls rather than fieldControls. Cross-schema conditions that target a
+        // path inside such a container must still be able to resolve it.
         return this.conditionControls?.find(control => control.name === name);
     }
 
@@ -414,9 +419,7 @@ export class FieldForm {
             }
         }
 
-        if (this.rootForm.schema?.arrayDependencies?.length) {
-            this.conditionControls = controls;
-        }
+        this.conditionControls = controls;
 
         for (const item of this.crossSchemaItems) {
             for (const entryIndex of this.getEntryIndexes(item)) {
@@ -447,11 +450,29 @@ export class FieldForm {
         if (!this.fieldControls) { this.fieldControls = []; }
         if (this.fieldControls.find(c => c.name === field.name)) { return; }
         const item = this.createFieldControl(field, containerPreset);
-        this.fieldControls.push(item);
+        this.insertFieldControlInOrder(item);
         if (item.control) {
             this.form.addControl(item.name, item.control, { emitEvent: false });
         }
         this.controls = this.rebuildControls();
+    }
+
+    private insertFieldControlInOrder(item: IFieldControl<any>): void {
+        this.fieldControls = this.fieldControls || [];
+        const targetIdx = this.fieldOrder?.get(item.name);
+        if (targetIdx === undefined) {
+            this.fieldControls.push(item);
+            return;
+        }
+        const insertBefore = this.fieldControls.findIndex(c => {
+            const idx = this.fieldOrder!.get(c.name);
+            return idx !== undefined && idx > targetIdx;
+        });
+        if (insertBefore < 0) {
+            this.fieldControls.push(item);
+        } else {
+            this.fieldControls.splice(insertBefore, 0, item);
+        }
     }
 
     public removeParentControlledField(fieldName: string): void {
