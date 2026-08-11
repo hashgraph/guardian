@@ -24,7 +24,9 @@
       @if (policy) {
         <div class="policy-name">
           <span>Policy Name: {{policy.name}}</span>
-          <span class="policy-version">Version: {{policy.version}}</span>
+          @if (policy.version) {
+            <span class="policy-version">Version: {{policy.version}}</span>
+          }
         </div>
       }
     </div>

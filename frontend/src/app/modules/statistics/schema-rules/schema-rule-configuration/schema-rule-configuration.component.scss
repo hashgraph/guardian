@@ -4,10 +4,10 @@
     user-select: none;
 
     .header-container {
-        padding: 42px 48px 10px 48px;
+        padding: 42px 48px 16px 48px;
         background: var(--guardian-background, #FFFFFF);
-        min-height: 178px;
-        height: 178px;
+        position: relative;
+        z-index: 2;
         border-bottom: 1px solid var(--guardian-border-color, #E1E7EF);
 
         .schema-breadcrumb {
@@ -42,11 +42,10 @@
         }
 
         .guardian-user-page-header {
-            > span:first-child {
-                display: block;
-                max-width: 50%;
-                word-break: break-word;
-            }
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            margin-bottom: 0;
         }
 
         .policy-name {
@@ -54,9 +53,7 @@
             font-size: 14px;
             font-weight: 500;
             line-height: 16px;
-            position: absolute;
-            top: 34px;
-            right: 0;
+            margin-top: 4px;
 
             .policy-version {
                 padding-left: 16px;
