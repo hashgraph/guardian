@@ -30,6 +30,8 @@ export class SettingsService {
         if (!this.hederaNet) {
             this.hederaNet = this.getRemoteHederaNet().pipe(
                 filter((res) => !!res),
+                // shareReplay resets on error, so a failed lookup is retried
+                // by the next consumer instead of replaying the error.
                 shareReplay(1)
             );
         }
