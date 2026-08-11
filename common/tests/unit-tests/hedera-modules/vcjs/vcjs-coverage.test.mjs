@@ -242,6 +242,60 @@ describe('VCJS coverage (offline paths)', function () {
                     'sibling.b must still be required — the required-strip must not leak from targeted to sibling');
             });
         });
+
+        describe('array-typed sub-schema ref (items.$ref)', function () {
+            // Regression guard: a sub-schema reference under an array property sits at
+            // `items.$ref`, not `$ref` directly on the property. Before readRef/withRef
+            // handled that shape, prepareSchema silently skipped the strip-and-clone pass
+            // for any array-typed ref field entirely.
+            function makeArrayRefSchema() {
+                return {
+                    type: 'object',
+                    properties: {
+                        targetedList: { type: 'array', items: { $ref: '#Sub' } }
+                    },
+                    required: [],
+                    allOf: [{
+                        if: {
+                            properties: { targetedList: { properties: { a: { const: 1 } }, required: ['a'] } },
+                            required: ['targetedList']
+                        },
+                        then: { properties: { targetedList: { required: ['b'] } } },
+                        else: { properties: { targetedList: { properties: { b: false } } } }
+                    }],
+                    $defs: {
+                        '#Sub': {
+                            $id: '#Sub',
+                            type: 'object',
+                            properties: { a: { type: 'number' }, b: { type: 'number' } },
+                            required: ['a', 'b']
+                        }
+                    }
+                };
+            }
+
+            it('rewrites items.$ref to a per-container clone', function () {
+                const vcjs = makeVcjs();
+                const schema = makeArrayRefSchema();
+                vcjs.prepareSchema(schema);
+
+                assert.notEqual(schema.properties.targetedList.items.$ref, '#Sub',
+                    'items.$ref should point to a clone, proving the array-typed ref was recognized');
+            });
+
+            it('strips the conditional field from the clone required, without mutating the original', function () {
+                const vcjs = makeVcjs();
+                const schema = makeArrayRefSchema();
+                vcjs.prepareSchema(schema);
+
+                const cloneKey = schema.properties.targetedList.items.$ref;
+                assert.exists(schema.$defs[cloneKey], 'clone must be present in $defs');
+                assert.notInclude(schema.$defs[cloneKey].required ?? [], 'b',
+                    'b should be stripped from the clone required array');
+                assert.include(schema.$defs['#Sub'].required, 'b',
+                    'original required must not be mutated');
+            });
+        });
     });
 
     describe('verifySubject', function () {

@@ -103,7 +103,7 @@ describe('SchemaHelper.buildDocument — condition serialization', () => {
         assert.equal(doc.allOf.length, 1);
         assert.deepEqual(doc.allOf[0].if.properties, { a: { const: 'x' } });
         assert.ok(doc.allOf[0].then.properties.t1);
-        assert.equal(doc.allOf[0].else, undefined);
+        assert.deepEqual(doc.allOf[0].else, { properties: { t1: false } });
     });
 
     it('serialises a multi-predicate AND into if.allOf', () => {
@@ -148,7 +148,7 @@ describe('SchemaHelper.buildDocument — condition serialization', () => {
 
     it('emits else when only elseFields are present', () => {
         const doc = build([{ ifCondition: { field: { name: 'a' }, fieldValue: 1 }, thenFields: [], elseFields: [field('e1', { required: true })] }]);
-        assert.equal(doc.allOf[0].then, undefined);
+        assert.deepEqual(doc.allOf[0].then, { properties: { e1: false } });
         assert.ok(doc.allOf[0].else.properties.e1);
         assert.deepEqual(doc.allOf[0].else.required, ['e1']);
     });
@@ -156,6 +156,71 @@ describe('SchemaHelper.buildDocument — condition serialization', () => {
     it('omits allOf entirely when no conditions are given', () => {
         const doc = build(undefined);
         assert.equal('allOf' in doc, false);
+    });
+});
+
+describe('SchemaHelper — branch-level required round-trip', () => {
+    const fields = [field('a'), field('b')];
+
+    it('required thenField is present in then.required after build', () => {
+        const doc = SchemaHelper.buildDocument(
+            baseSchema(), fields,
+            [{ ifCondition: { field: field('a'), fieldValue: 'x' }, thenFields: [field('b', { required: true })], elseFields: [] }]
+        );
+        assert.deepEqual(doc.allOf[0].then.required, ['b']);
+    });
+
+    it('required elseField is present in else.required after build', () => {
+        const doc = SchemaHelper.buildDocument(
+            baseSchema(), fields,
+            [{ ifCondition: { field: field('a'), fieldValue: 'x' }, thenFields: [], elseFields: [field('b', { required: true })] }]
+        );
+        assert.deepEqual(doc.allOf[0].else.required, ['b']);
+    });
+
+    it('then.required survives parse → thenFields[].required', () => {
+        const doc = {
+            allOf: [{
+                if: { properties: { a: { const: 'x' } } },
+                then: { properties: { b: { type: 'string' } }, required: ['b'] },
+            }],
+        };
+        const [cond] = SchemaHelper.parseConditions(doc, 'ctx:', fields, new Map());
+        assert.equal(cond.thenFields.length, 1);
+        assert.equal(cond.thenFields[0].name, 'b');
+        assert.equal(cond.thenFields[0].required, true);
+    });
+
+    it('else.required survives parse → elseFields[].required', () => {
+        const doc = {
+            allOf: [{
+                if: { properties: { a: { const: 'x' } } },
+                else: { properties: { b: { type: 'string' } }, required: ['b'] },
+            }],
+        };
+        const [cond] = SchemaHelper.parseConditions(doc, 'ctx:', fields, new Map());
+        assert.equal(cond.elseFields.length, 1);
+        assert.equal(cond.elseFields[0].name, 'b');
+        assert.equal(cond.elseFields[0].required, true);
+    });
+
+    it('required thenField survives full build → parse round-trip', () => {
+        const conditions = [{
+            ifCondition: { field: field('a'), fieldValue: 'x' },
+            thenFields: [field('b', { required: true })],
+            elseFields: [],
+        }];
+        const doc = SchemaHelper.buildDocument(baseSchema(), fields, conditions);
+        const [cond] = SchemaHelper.parseConditions(doc, 'ctx:', fields, new Map());
+        assert.equal(cond.thenFields[0].required, true);
+    });
+
+    it('optional thenField is absent from then.required after build', () => {
+        const doc = SchemaHelper.buildDocument(
+            baseSchema(), fields,
+            [{ ifCondition: { field: field('a'), fieldValue: 'x' }, thenFields: [field('b', { required: false })], elseFields: [] }]
+        );
+        assert.deepEqual(doc.allOf[0].then.required, []);
     });
 });
 

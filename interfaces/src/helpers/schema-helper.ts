@@ -457,8 +457,30 @@ export class SchemaHelper {
         }
         const results: SchemaCondition[] = [];
 
+        const subSchemas = document.$defs || defs;
+
         const buildFields = (node: any) =>
-            SchemaHelper.parseFields(node, context, schemaCache, document.$defs || defs) as SchemaField[];
+            SchemaHelper.parseFields(node, context, schemaCache, subSchemas) as SchemaField[];
+
+        // refField.fields isn't always inlined; fall back to the parse cache, then a fresh parse.
+        const refFieldsOf = (refField: any): SchemaField[] => {
+            if (refField?.fields?.length) {
+                return refField.fields;
+            }
+            const iri = refField?.type;
+            if (!iri) {
+                return [];
+            }
+            const cached = schemaCache?.get(iri);
+            if (cached?.fields?.length) {
+                return cached.fields;
+            }
+            const subDocument = subSchemas?.[iri];
+            if (!subDocument) {
+                return [];
+            }
+            return SchemaHelper.parseFields(subDocument, context, schemaCache, subSchemas) as SchemaField[];
+        };
 
         const predicatesFromProperties = (
             props: any,
@@ -481,10 +503,11 @@ export class SchemaHelper {
                     }
                 } else if (rule.properties) {
                     const refField = currentFields.find(x => x.name === key && x.isRef);
-                    if (refField && (refField as any).fields?.length) {
+                    const childFields = refFieldsOf(refField);
+                    if (childFields.length) {
                         preds.push(...predicatesFromProperties(
                             rule.properties,
-                            (refField as any).fields,
+                            childFields,
                             [...pathSoFar, key]
                         ));
                     }
@@ -564,7 +587,7 @@ export class SchemaHelper {
                 if (isCrossConstraint) {
                     hasCrossKeys = true;
                     const childPath = [...pathPrefix, key];
-                    const childFields: SchemaField[] = (refField as any).fields || [];
+                    const childFields: SchemaField[] = refFieldsOf(refField);
                     if (Array.isArray(val.required)) {
                         for (const fieldName of val.required) {
                             const childField = childFields.find(f => f.name === fieldName);
@@ -906,6 +929,8 @@ export class SchemaHelper {
             if (!targets?.length) { return undefined; }
             const root: any = {};
             for (const t of targets) {
+                // Intentional: optional targets are still hidden via buildCrossForbidden elsewhere.
+                if (!t.field.required) { continue; }
                 const path = t.fieldPath;
                 if (!path || path.length < 2) { continue; }
                 let node = root;
