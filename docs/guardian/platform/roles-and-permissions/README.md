@@ -1,6 +1,8 @@
 # Roles & Permissions
 
-The Guardian Project's roles and permissions system provides a structured way to manage user access and actions within the platform. Here's an overview of the key components:
+The Guardian roles and permissions system provides a structured way to manage user access within the platform.&#x20;
+
+Here's an overview of the key components:
 
 1. **Roles and Groups**: Roles define a set of permissions, and groups can be created to aggregate these roles. This allows for efficient management of permissions across different users by assigning them to specific roles or groups.
 2. **Role Management**: Users with the appropriate permissions can create, update, and delete roles using the Policy Configurator UI. This includes setting specific permissions for each role.
