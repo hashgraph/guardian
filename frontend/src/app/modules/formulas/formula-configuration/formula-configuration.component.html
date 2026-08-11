@@ -13,18 +13,10 @@
   }
 
   <div class="header-container">
-    <div class="guardian-user-back-button">
-      <button
-        (click)="onBack()"
-        class="guardian-button guardian-button-primary">
-        <div class="guardian-button-icon">
-          <svg-icon class="icon-btn svg-icon"
-            src="/assets/images/icons/left-arrow.svg"
-            svgClass="icon-color-secondary">
-          </svg-icon>
-        </div>
-        <div class="guardian-button-label">Back to Formulas</div>
-      </button>
+    <div class="schema-breadcrumb">
+      <a class="breadcrumb-back" (click)="onBack()">Formulas</a>
+      <span class="breadcrumb-sep"> / </span>
+      <span class="breadcrumb-current">{{item?.name}}</span>
     </div>
 
     <div class="guardian-user-page-header">
@@ -32,7 +24,9 @@
       @if (policy) {
         <div class="policy-name">
           <span>Policy Name: {{policy.name}}</span>
-          <span class="policy-version">Version: {{policy.version}}</span>
+          @if (policy.version) {
+            <span class="policy-version">Version: {{policy.version}}</span>
+          }
         </div>
       }
     </div>

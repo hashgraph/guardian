@@ -4,32 +4,56 @@
     user-select: none;
 
     .header-container {
-        padding: 56px 48px 10px 48px;
-        background: var(--guardian-primary-color, #4169E2);
-        min-height: 178px;
-        height: 178px;
+        padding: 42px 48px 16px 48px;
+        background: var(--guardian-background, #FFFFFF);
         position: relative;
         z-index: 2;
+        border-bottom: 1px solid var(--guardian-border-color, #E1E7EF);
 
-        .guardian-user-back-button {
-            button {
-                border-color: var(--guardian-background, #FFFFFF);
+        .schema-breadcrumb {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+
+            .breadcrumb-back {
+                color: var(--guardian-primary-color, #4169E2);
+                font-size: 12px;
+                font-weight: 600;
+                line-height: 16px;
+                cursor: pointer;
+                user-select: none;
+                text-decoration: none;
+            }
+
+            .breadcrumb-sep {
+                color: var(--guardian-grid-color, #848fa9);
+                font-size: 12px;
+                line-height: 16px;
+                padding: 0 4px;
+            }
+
+            .breadcrumb-current {
+                color: var(--guardian-grid-color, #848fa9);
+                font-size: 12px;
+                font-weight: 600;
+                line-height: 16px;
+                user-select: none;
             }
         }
 
         .guardian-user-page-header {
-            color: var(--guardian-background, #FFFFFF);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            margin-bottom: 0;
         }
 
-
         .policy-name {
-            color: var(--guardian-background, #FFFFFF);
+            color: var(--guardian-font-color, #23252e);
             font-size: 14px;
             font-weight: 500;
             line-height: 16px;
-            position: absolute;
-            top: 34px;
-            right: 0;
+            margin-top: 4px;
 
             .policy-version {
                 padding-left: 16px;
