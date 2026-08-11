@@ -29,6 +29,7 @@ Promise.all([
                     name: channelName,
                     queue: 'INDEXER_API_SERVICES',
                     servers: [`nats://${process.env.MQ_ADDRESS}:4222`],
+                    maxReconnectAttempts: -1, // reconnect forever
                 },
                 // tls: GenerateTLSOptionsNats()
             });
