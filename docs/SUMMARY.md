@@ -252,7 +252,7 @@
     * [Multi Policy](guardian/workspace/policies/multi-policy/README.md)
       * [Configuring Multi Policy](guardian/workspace/policies/multi-policy/page-1.md)
   * [Schemas](guardian/workspace/schemas/README.md)
-    * [Types of Schemas](guardian/workspace/schemas/system-policy-schemas.md)
+    * [Schema Types](guardian/workspace/schemas/schema-types.md)
     * [Schema Editor](guardian/workspace/schemas/schema-editor.md)
     * [Available Schema Data Types](guardian/workspace/schemas/available-schema-types/README.md)
       * [Table Data Input Field](guardian/workspace/schemas/available-schema-types/table-data-input-field/README.md)
