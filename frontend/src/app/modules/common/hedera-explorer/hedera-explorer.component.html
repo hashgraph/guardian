@@ -1,3 +1,4 @@
-<a [href]="url" class="hedera-link" target="_blank">
+<!-- Without a network the anchor has no href, and the inactive style drops the link colour and underline. -->
+<a [attr.href]="url || null" class="hedera-link" [class.hedera-link-inactive]="!url" target="_blank">
     <ng-content></ng-content>
 </a>
