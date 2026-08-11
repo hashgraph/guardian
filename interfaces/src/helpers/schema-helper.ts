@@ -929,6 +929,7 @@ export class SchemaHelper {
             if (!targets?.length) { return undefined; }
             const root: any = {};
             for (const t of targets) {
+                // Intentional: optional targets are still hidden via buildCrossForbidden elsewhere.
                 if (!t.field.required) { continue; }
                 const path = t.fieldPath;
                 if (!path || path.length < 2) { continue; }

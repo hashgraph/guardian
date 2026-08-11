@@ -419,6 +419,7 @@ export class FieldForm {
             }
         }
 
+        // Must be set before this loop: findControl (used by resolveChildModels below) falls back to it.
         this.conditionControls = controls;
 
         for (const item of this.crossSchemaItems) {

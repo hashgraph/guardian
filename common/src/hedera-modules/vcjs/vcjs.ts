@@ -644,7 +644,7 @@ export class VCJS {
 
     private enhanceConditionErrors(errors: any[] | null | undefined, schema: any): any[] | null | undefined {
         if (!errors?.length) { return errors; }
-        // Condition owner/index live in schemaPath ("#.../allOf/N/then|else"), not instancePath.
+        // Condition owner/index live in schemaPath (base "#..." is the $defs entry's own $id, never a literal "/$defs/").
         const defs = schema.$defs ?? {};
         return errors.map(error => {
             if (error.keyword !== 'false schema') { return error; }
