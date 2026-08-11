@@ -2,7 +2,7 @@
 
 ## **Overview of Tools in the Guardian**
 
-In the Guardian, 'Tools' are integral components within the policy architecture, offering specialized functionalities distinct from other policy elements. These Tools are designed to align with digital methodologies used by organizations like UNFCCC and Verra, thus ensuring standardization and effectiveness in policy execution.
+In the Guardian, **Tools** are integral components within the policy architecture, offering specialized functionalities distinct from other policy elements. These Tools are designed to align with digital methodologies used by organizations like UNFCCC and Verra, thus ensuring standardization and effectiveness in policy execution.
 
 ## **Defining Characteristics of Tools**
 

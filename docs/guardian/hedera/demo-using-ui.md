@@ -4,9 +4,9 @@ description: Previously referred to as Project Accounts
 
 # Relayer Accounts
 
-[Step By Step](relayer-accounts.md#step-by-step)
+[Step By Step](demo-using-ui.md#step-by-step)
 
-[Demo](relayer-accounts.md#demo-video)
+[Demo](demo-using-ui.md#demo-video)
 
 ## Step By Step
 

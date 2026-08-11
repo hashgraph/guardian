@@ -16,5 +16,5 @@ Hedera is the section of Guardian where you manage the network-level resources â
 ### Related
 
 * [tokens](tokens/ "mention")
-* [contracts](contracts/ "mention")
-* [relayer-accounts.md](relayer-accounts.md "mention")
+* [retirement-contract](retirement-contract/ "mention")
+* [demo-using-ui.md](demo-using-ui.md "mention")

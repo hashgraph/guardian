@@ -1,18 +1,23 @@
-# Module Differentiation using UI
+---
+tags:
+  - tasks
+---
+
+# How to compare Modules?
 
 ## 1. **Modules differentiation**
 
 To compare the modules, click on Compare button in the Modules page as shown below:
 
-![image2.png](<../../../../.gitbook/assets/0 (1) (3) (1).png>)
+![image2.png](<../../../.gitbook/assets/0 (1) (3) (1).png>)
 
 Once, compare button is clicked, we need to select the first and second modules to compare:
 
-![image3.png](<../../../../.gitbook/assets/1 (7) (1).png>)
+![image3.png](<../../../.gitbook/assets/1 (7) (1).png>)
 
 ### 1.1 Result of comparison:
 
-<figure><img src="../../../../.gitbook/assets/2 (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/2 (3).png" alt=""><figcaption></figcaption></figure>
 
 #### **1.1.1 Params**
 
@@ -47,7 +52,7 @@ Once, compare button is clicked, we need to select the first and second modules 
 
 Block comparison structure can be expanded to view the comparison of their Properties:
 
-![image4.png](<../../../../.gitbook/assets/3 (1) (1) (1) (1) (1) (1) (1) (1) (1).png>)
+![image4.png](<../../../.gitbook/assets/3 (1) (1) (1) (1) (1) (1) (1) (1) (1).png>)
 
 1. **Data Format**
 
