@@ -718,6 +718,20 @@ export class SchemaHelper {
                 continue;
             }
             const field = SchemaHelper.parseField(name, property, !!required[name], contextURL);
+            if (!field.isRef && field.type === null) {
+                const allOf: any[] = Array.isArray((document as any).allOf) ? (document as any).allOf : [];
+                for (const rule of allOf) {
+                    const altProp = rule?.then?.properties?.[name];
+                    if (altProp && altProp !== false) {
+                        const altField = SchemaHelper.parseField(name, altProp, !!required[name], contextURL);
+                        if (altField.type !== null || altField.isRef) {
+                            field.type = altField.type;
+                            field.isRef = altField.isRef;
+                            break;
+                        }
+                    }
+                }
+            }
             if (field.isRef) {
                 if (!schemaCache.has(field.type)) {
                     const subSchemas = defs || document.$defs;

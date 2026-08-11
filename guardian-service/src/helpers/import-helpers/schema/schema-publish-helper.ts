@@ -23,7 +23,14 @@ function checkSchemaProps(item: SchemaCollection, document: ISchemaDocument) {
     for (const name of names) {
         const field = SchemaHelper.parseProperty(name, document.properties[name]);
         if (!field.type) {
-            throw new Error(`Field type is not set. Field: ${name}, Schema: ${item.uuid}`);
+            const allOf: any[] = Array.isArray((document as any).allOf) ? (document as any).allOf : [];
+            const hasAltType = allOf.some((rule: any) => {
+                const altProp = rule?.then?.properties?.[name];
+                return altProp && altProp !== false;
+            });
+            if (!hasAltType) {
+                throw new Error(`Field type is not set. Field: ${name}, Schema: ${item.uuid}`);
+            }
         }
         if (field.isRef && (!document.$defs || !document.$defs[field.type])) {
             throw new Error(`Dependent schema not found: ${item.iri}, Field: ${name}, Field Type: ${field.type}`);
