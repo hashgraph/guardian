@@ -16,7 +16,7 @@ import { CONFIGURATION_ERRORS } from '../../policy-engine/injectors/configuratio
     standalone: false
 })
 export class AsyncProgressComponent implements OnInit, OnDestroy {
-    public action: TaskAction | string;
+    public action: TaskAction;
     public progressValue!: number;
     public statusesCount: number = 0;
     public statuses: IStatus[] = [];
@@ -175,6 +175,80 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                         queryParams: {
                             toolId: result,
                         },
+                        replaceUrl: true,
+                    });
+                }, 500);
+                break;
+            case TaskAction.CREATE_SCHEMA_TEMPLATE: {
+                const templateId = result?.id || result?._id || result;
+                setTimeout(() => {
+                    this.router.navigate(['schema-template-configuration'], {
+                        queryParams: {
+                            type: 'template',
+                            topic: result?.topicId,
+                            templateId
+                        },
+                        replaceUrl: true,
+                    });
+                }, 500);
+                break;
+            }
+            case TaskAction.CREATE_SCHEMA_TEMPLATE_VERSION: {
+                const templateId = result?.id || result?._id || result;
+                setTimeout(() => {
+                    this.router.navigate(['schema-template-configuration'], {
+                        queryParams: {
+                            type: 'template',
+                            topic: result?.topicId,
+                            templateId
+                        },
+                        replaceUrl: true,
+                    });
+                }, 500);
+                break;
+            }
+            case TaskAction.IMPORT_SCHEMA_TEMPLATE_FILE:
+            case TaskAction.IMPORT_SCHEMA_TEMPLATE_MESSAGE: {
+                const templateId = result?.templateId;
+                if (templateId) {
+                    setTimeout(() => {
+                        this.router.navigate(['schema-template-configuration'], {
+                            queryParams: {
+                                type: 'template',
+                                templateId
+                            },
+                            replaceUrl: true,
+                        });
+                    }, 500);
+                    break;
+                }
+                setTimeout(() => {
+                    this.router.navigate(['schema-templates'], {
+                        replaceUrl: true,
+                    });
+                }, 500);
+                break;
+            }
+            case TaskAction.PUBLISH_SCHEMA_TEMPLATE:
+                if (this.last) {
+                    this.redirect(this.last);
+                    return;
+                }
+                setTimeout(() => {
+                    this.router.navigate(['schema-templates'], {
+                        replaceUrl: true,
+                    });
+                }, 500);
+                break;
+            case TaskAction.APPLY_SCHEMA_TEMPLATE:
+            case TaskAction.DETACH_SCHEMA_TEMPLATE:
+            case TaskAction.UPDATE_APPLIED_SCHEMA_TEMPLATE:
+                if (this.last) {
+                    this.redirect(this.last);
+                    return;
+                }
+                setTimeout(() => {
+                    this.router.navigate(['policy-viewer'], {
                         replaceUrl: true,
                     });
                 }, 500);
@@ -341,6 +415,17 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                     });
                 }, 500);
                 break;
+            case TaskAction.DELETE_SCHEMA_TEMPLATE:
+                if (this.last) {
+                    this.redirect(this.last);
+                    return;
+                }
+                setTimeout(() => {
+                    this.router.navigate(['schema-templates'], {
+                        replaceUrl: true,
+                    });
+                }, 500);
+                break;
             // @ts-ignore
             case TaskAction.CREATE_SCHEMA:
                 localStorage.removeItem('restoreSchemaData');
@@ -350,7 +435,11 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.IMPORT_SCHEMA_FILE:
             case TaskAction.IMPORT_SCHEMA_MESSAGE:
                 if (this.last) {
-                    this.redirect(this.last);
+                    const schemaId = typeof result === 'string' && result ? result : null;
+                    const lastWithSchema = schemaId
+                        ? this.last + (this.last.includes('?') ? '&' : '?') + 'schemaId=' + schemaId
+                        : this.last;
+                    this.redirect(lastWithSchema);
                     return;
                 }
                 setTimeout(() => {
@@ -371,7 +460,6 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 }, 500);
                 break;
             default:
-                debugger;
                 return;
         }
     }
@@ -381,6 +469,9 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             this.error.emit(error);
             return;
         }
+
+        // Show the failure before the redirect branches below navigate away.
+        this.toastService.processAsyncError(error);
 
         if (this.last) {
             this.redirect(this.last);
@@ -408,6 +499,8 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.IMPORT_POLICY_MESSAGE:
             case TaskAction.IMPORT_TOOL_FILE:
             case TaskAction.IMPORT_TOOL_MESSAGE:
+            case TaskAction.IMPORT_SCHEMA_TEMPLATE_FILE:
+            case TaskAction.IMPORT_SCHEMA_TEMPLATE_MESSAGE:
             case TaskAction.WIZARD_CREATE_POLICY:
             case TaskAction.PUBLISH_POLICY:
             case TaskAction.DELETE_POLICY:
@@ -425,6 +518,25 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.IMPORT_SCHEMA_MESSAGE:
                 setTimeout(() => {
                     this.router.navigate(['schemas'], {
+                        replaceUrl: true,
+                    });
+                }, 500);
+                break;
+            case TaskAction.CREATE_SCHEMA_TEMPLATE:
+            case TaskAction.CREATE_SCHEMA_TEMPLATE_VERSION:
+            case TaskAction.DELETE_SCHEMA_TEMPLATE:
+            case TaskAction.PUBLISH_SCHEMA_TEMPLATE:
+                setTimeout(() => {
+                    this.router.navigate(['schema-templates'], {
+                        replaceUrl: true,
+                    });
+                }, 500);
+                break;
+            case TaskAction.APPLY_SCHEMA_TEMPLATE:
+            case TaskAction.DETACH_SCHEMA_TEMPLATE:
+            case TaskAction.UPDATE_APPLIED_SCHEMA_TEMPLATE:
+                setTimeout(() => {
+                    this.router.navigate(['policy-viewer'], {
                         replaceUrl: true,
                     });
                 }, 500);

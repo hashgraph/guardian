@@ -13,6 +13,8 @@ import process from 'node:process';
 import { HttpStatus, ValidationPipe, VersioningType } from '@nestjs/common';
 import { SwaggerModule } from '@nestjs/swagger';
 import { SwaggerConfig } from './helpers/swagger-config.js';
+import { applyScalarTagMetadata } from './helpers/swagger-tags.js';
+import { setupApiDocs } from './helpers/setup-api-docs.js';
 import { MeecoAuth } from './helpers/meeco.js';
 import * as extraModels from './middlewares/index.js'
 import { ProjectService } from './helpers/projects.js';
@@ -105,7 +107,8 @@ Promise.all([
                 }
             }) as any
         });
-        SwaggerModule.setup('api-docs', app, document);
+        applyScalarTagMetadata(document);
+        setupApiDocs(app, document, 'Guardian API');
 
         const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
         if (Number.isInteger(maxPayload)) {

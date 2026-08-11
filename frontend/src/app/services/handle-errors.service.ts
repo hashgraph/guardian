@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Injector } from '@angular/core';
 import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, throwError } from 'rxjs';
@@ -6,8 +6,8 @@ import { catchError } from 'rxjs/operators';
 import { ToastService } from './toast.service';
 import { MessageTranslationService } from './message-translation-service/message-translation-service';
 import { SILENT_HTTP_ERRORS } from '../constants';
-// import { AuthService } from './auth.service';
-// import { AuthStateService } from './auth-state.service';
+import { AuthService } from './auth.service';
+import { AuthStateService } from './auth-state.service';
 
 /**
  * Error interceptor.
@@ -18,8 +18,10 @@ export class HandleErrorsService implements HttpInterceptor {
         public router: Router,
         private toastService: ToastService,
         private messageTranslator: MessageTranslationService,
-        // private auth: AuthService,
-        // private authState: AuthStateService,
+        // AuthService/AuthStateService depend on HttpClient, so injecting them
+        // directly would create a cyclic dependency with this interceptor.
+        // They are resolved lazily through the injector inside intercept().
+        private injector: Injector,
     ) {
     }
 
@@ -85,7 +87,7 @@ export class HandleErrorsService implements HttpInterceptor {
                 } else {
                     header = `${errorObject.statusCode} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : 'Other Error'}`;
                 }
-                return { warning, text, header };
+                return { warning, text, header, blockErrorData: errorObject.data };
             }
         }
 
@@ -96,7 +98,7 @@ export class HandleErrorsService implements HttpInterceptor {
         return { warning, text, header };
     }
 
-    private createMessage(result: { warning: any, text: any, header: any }, error: any) {
+    private createMessage(result: { warning: any, text: any, header: any, blockErrorData?: any }, error: any) {
         if (result.warning) {
             this.toastService.warn(result.text, 'Waiting for initialization');
         } else {
@@ -104,29 +106,40 @@ export class HandleErrorsService implements HttpInterceptor {
                 !this.excludeErrorCodes.includes(String(error.status)) &&
                 !this.excludeErrorTexts.includes(String(result.text))
             ) {
-                this.toastService.error(result.text, result.header, { sticky: true, logMessage: result.text });
+                this.toastService.error(result.text, result.header, { sticky: true, logMessage: result.text, blockErrorData: result.blockErrorData });
             }
         }
     }
 
-    private ifTokenExpired(error:any){
-        if( error?.status === 401 && error?.error?.message === 'Token expired') {
-            return true;
+    /**
+     * A 401 returned while an access token is attached means that token is no
+     * longer accepted (the session has expired). Clear the stale credentials
+     * and send the user to the login page. Requests made without a token (the
+     * user is already logged out) are left untouched, so this never loops on
+     * the login page. The first handled error clears the token, so concurrent
+     * 401s from the bootstrap requests skip straight past this.
+     */
+    private handleExpiredSession(error: any): boolean {
+        if (error?.status !== 401) {
+            return false;
         }
-        return false;
+        const auth = this.injector.get(AuthService);
+        if (!auth.getAccessToken()) {
+            return false;
+        }
+        const authState = this.injector.get(AuthStateService);
+        authState.clearSession();
+        this.router.navigate(['/login']);
+        return true;
     }
 
     public intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
         return next.handle(req).pipe(
             catchError((error: any) => {
                 console.error(error);
-                // if(this.ifTokenExpired(error)) {
-                //     this.auth.removeAccessToken();
-                //     this.auth.removeUsername();
-                //     this.authState.updateState(false);
-                //     this.router.navigate(['/login']);
-                //     return throwError(error);
-                // }
+                if (this.handleExpiredSession(error)) {
+                    return throwError(error);
+                }
                 if (req.context.get(SILENT_HTTP_ERRORS)) {
                     return throwError(error);
                 }

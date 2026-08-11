@@ -5,7 +5,7 @@ import { Ed25519Signature2018 } from '@digitalbazaar/ed25519-signature-2018';
 import { Ed25519VerificationKey2018 } from '@digitalbazaar/ed25519-verification-key-2018';
 import { PrivateKey } from '@hiero-ledger/sdk';
 import { SchemaValidationResult } from './schema-validation-result.js';
-import { GenerateUUIDv4, ICredentialSubject, IVC, Schema, SignatureType } from '@guardian/interfaces';
+import { GenerateUUIDv4, ICredentialSubject, ISchemaArrayDependency, IVC, Schema, SchemaHelper, SignatureType } from '@guardian/interfaces';
 import { VcDocument } from './vc-document.js';
 import { VpDocument } from './vp-document.js';
 import { VcSubject } from './vc-subject.js';
@@ -19,6 +19,8 @@ import axios from 'axios';
 import { BbsBlsSignature2020, BbsBlsSignatureProof2020, Bls12381G2KeyPair, KeyPairOptions } from '@mattrglobal/jsonld-signatures-bbs';
 import { IPFS } from '../../helpers/index.js';
 import { CommonDidDocument, HederaBBSMethod, HederaDidDocument, HederaEd25519Method } from './did/index.js';
+import { validateGeoConsistency } from './geo-validator.js';
+import { validateArrayGroups } from './array-group-validator.js';
 
 import * as jsigV7Module from 'jsonld-signatures-v7';
 import { ContextHelper } from './context-helper.js';
@@ -322,9 +324,16 @@ export class VCJS {
 
         const validate = await ajv.compileAsync(schema);
         const valid = validate(vcObject);
-        const errors = this.enhanceConditionErrors(validate.errors as any[], schema);
+        let errors = this.enhanceConditionErrors(validate.errors as any[], schema);
+        const geoErrors = validateGeoConsistency(subject, schemaObject?.fields || []);
+        const groupErrors = validateArrayGroups(subject, schemaObject?.arrayDependencies || []);
+        errors = [...(errors || []), ...geoErrors, ...groupErrors];
 
-        return new SchemaValidationResult(valid, 'JSON_SCHEMA_VALIDATION_ERROR', errors as any);
+        return new SchemaValidationResult(
+            valid && !geoErrors.length && !groupErrors.length,
+            'JSON_SCHEMA_VALIDATION_ERROR',
+            errors as any
+        );
     }
 
     /**
@@ -586,11 +595,33 @@ export class VCJS {
 
         this.prepareSchema(schema);
 
+        const schemaObject = Schema.fromVc(schema);
+
         const validate = await ajv.compileAsync(schema);
         const valid = validate(subject);
-        const errors = this.enhanceConditionErrors(validate.errors as any[], schema);
+        let errors = this.enhanceConditionErrors(validate.errors as any[], schema);
+        const geoErrors = validateGeoConsistency(subject, schemaObject?.fields || []);
+        const groupErrors = validateArrayGroups(subject, this.readArrayDependencies(schema));
+        errors = [...(errors || []), ...geoErrors, ...groupErrors];
 
-        return new SchemaValidationResult(valid, 'JSON_SCHEMA_VALIDATION_ERROR', errors as any);
+        return new SchemaValidationResult(
+            valid && !geoErrors.length && !groupErrors.length,
+            'JSON_SCHEMA_VALIDATION_ERROR',
+            errors as any
+        );
+    }
+
+    /**
+     * Read array dependencies from the loaded schema document
+     * @param schema
+     */
+    private readArrayDependencies(schema: any): ISchemaArrayDependency[] {
+        try {
+            const { arrayDependencies } = SchemaHelper.parseSchemaComment(schema?.$comment);
+            return Array.isArray(arrayDependencies) ? arrayDependencies : [];
+        } catch (error) {
+            return [];
+        }
     }
 
     /**

@@ -106,7 +106,7 @@ export class RequestVcDocumentBlock {
     protected async validateDocuments(
         user: PolicyUser,
         state: IPolicyEventState
-    ): Promise<string> {
+    ): Promise<{ message: string; data?: any } | null> {
         const validators = this.getValidators();
         for (const validator of validators) {
             const error = await validator.run({
@@ -146,7 +146,14 @@ export class RequestVcDocumentBlock {
                 ref.actionType === LocationType.REMOTE &&
                 user.location === LocationType.REMOTE
             ),
-            schema: { ...this._schema, fields: [], conditions: [] },
+            // Lightweight schema reference; the client resolves the full schema by id.
+            schema: {
+                id: this._schema.id,
+                iri: this._schema.iri,
+                uuid: this._schema.uuid,
+                name: this._schema.name,
+                version: this._schema.version,
+            },
             presetSchema: options.presetSchema,
             presetFields: options.presetFields,
             editType: options.editType || 'new',
@@ -267,7 +274,7 @@ export class RequestVcDocumentBlock {
             if (!draft) {
                 const error = await this.validateDocuments(user, state);
                 if (error) {
-                    throw new BlockActionError(error, ref.blockType, ref.uuid);
+                    throw new BlockActionError(error.message, ref.blockType, ref.uuid, error.data);
                 }
             }
 
@@ -292,7 +299,7 @@ export class RequestVcDocumentBlock {
             return item;
         } catch (error) {
             ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
-            throw new BlockActionError(error, ref.blockType, ref.uuid);
+            throw new BlockActionError(error, ref.blockType, ref.uuid, error.data);
         }
     }
 

@@ -3,6 +3,7 @@ import { DatabaseServer, INotificationStep, MessageAction, MessageServer, PinoLo
 import { FilterObject } from '@mikro-orm/core';
 import { importTag } from '../tag/tag-import-helper.js';
 import { checkForCircularDependency, loadAnotherSchemas, loadSchema } from '../common/load-helper.js';
+import { validateSchemaDependencies } from './schema-dependency-validator.js';
 
 /**
  * Only unique
@@ -412,6 +413,7 @@ export async function createSchema(
     if (checkForCircularDependency(newSchema)) {
         throw new Error(`There is circular dependency in schema: ${newSchema.iri}`);
     }
+    validateSchemaDependencies(newSchema);
 
     delete newSchema.id;
     delete newSchema._id;

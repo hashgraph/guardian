@@ -1,4 +1,4 @@
-openapi: 3.0.0
+openapi: 3.2.0
 paths:
   /accounts/session:
     get:
@@ -21986,7 +21986,7 @@ paths:
                           verificationMethod: >-
                             did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599#did-root-key
                           proofPurpose: assertionMethod
-                          jws: ...
+                          jws: '...'
                       owner: >-
                         did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
                       group: null
@@ -25572,6 +25572,7 @@ paths:
               - TOOL
               - STATISTIC
               - LABEL
+              - TEMPLATE
             type: string
         - name: policyId
           required: false
@@ -25594,6 +25595,13 @@ paths:
           schema:
             example: 69aeb71ef8c5b278e3bab4e5
             type: string
+        - name: templateId
+          required: false
+          in: query
+          description: Schema template id
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
         - name: topicId
           required: false
           in: query
@@ -25609,6 +25617,16 @@ paths:
           description: Search
           schema:
             example: text
+            type: string
+        - name: templateSchemasOnly
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: unusedInPolicyOnly
+          required: true
+          in: query
+          schema:
             type: string
         - name: searchOptions
           required: false
@@ -25878,6 +25896,7 @@ paths:
               - TOOL
               - STATISTIC
               - LABEL
+              - TEMPLATE
             type: string
       responses:
         '200':
@@ -26363,22 +26382,23 @@ paths:
   /schemas/list/sub:
     get:
       description: >-
-        Returns schemas for the specified policy or tool topic, including
-        related tool schemas discovered from that parent entity. Only users with
-        the Standard Registry role are allowed to make the request.
+        Returns schemas for the specified policy, tool, or template topic.
+        Policy topics include related tool schemas discovered from that parent
+        entity. Only users with the Standard Registry role are allowed to make
+        the request.
       operationId: SchemaApi_getSub
       parameters:
         - name: category
           required: false
           in: query
           description: >-
-            Determines which parent entity type is used to resolve related tool
-            topics. Does not directly filter the returned schemas by category.
-            Supported values: POLICY, TOOL.
+            Determines which parent entity type is used to resolve related
+            schemas. Supported values: POLICY, TOOL, TEMPLATE.
           schema:
             enum:
               - POLICY
               - TOOL
+              - TEMPLATE
             type: string
         - name: topicId
           required: false
@@ -26461,13 +26481,13 @@ paths:
           required: false
           in: query
           description: >-
-            Determines which parent entity type is used to resolve related tool
-            topics. Does not directly filter the returned schemas by category.
-            Supported values: POLICY, TOOL.
+            Determines which parent entity type is used to resolve related
+            schemas. Supported values: POLICY, TOOL, TEMPLATE.
           schema:
             enum:
               - POLICY
               - TOOL
+              - TEMPLATE
             type: string
         - name: topicId
           required: false
@@ -49939,23 +49959,1352 @@ paths:
       summary: Delete SR policy credential.
       tags:
         - credentials
+  /policy-data/query:
+    get:
+      description: >-
+        Returns a paginated list of Verifiable Credential documents committed by
+        a published Guardian policy. Intentionally restricted to audit/manage
+        roles for cross-policy access; there is no per-participant filtering.
+      operationId: PolicyDataApi_queryPolicyData
+      parameters:
+        - name: policyId
+          required: true
+          in: query
+          description: MongoDB ObjectId of the published policy.
+          schema:
+            example: 645f1e2d3a4b5c6d7e8f9012
+            type: string
+        - name: schemaName
+          required: true
+          in: query
+          description: Schema name as returned by GET /schema (e.g. "MRV Data").
+          schema:
+            example: MRV Data
+            type: string
+        - name: filters
+          required: false
+          in: query
+          description: >-
+            JSON-encoded filter map. Each key is a whitelisted system field or
+            an `option.*` field. Each value is `{ "op": "<operator>", "value":
+            <any> }`. Supported operators: `eq`, `ne`, `in`, `nin`, `gt`, `gte`,
+            `lt`, `lte`, `contains` (case-insensitive partial string match). For
+            `in`/`nin`, value must be an array. For `contains`, value must be a
+            string. System field whitelist: owner, assignedTo, assignedToGroup,
+            group, hederaStatus, signature, type, draft, edited, disconnected,
+            policyId, schema, tag, messageId, topicId, hash, createDate,
+            updateDate, option.*. Example:
+            `{"hederaStatus":{"op":"eq","value":"ISSUE"}}`
+          schema:
+            example: >-
+              {"hederaStatus":{"op":"eq","value":"ISSUE"},"option.status":{"op":"ne","value":"REJECTED"}}
+            type: string
+        - name: page
+          required: false
+          in: query
+          description: '1-based page number (default: 1).'
+          schema:
+            example: 1
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: 'Items per page (default: 20, max: 200).'
+          schema:
+            example: 20
+            type: number
+        - name: sort
+          required: false
+          in: query
+          description: >-
+            Field to sort by. Prefix with `-` for descending order (default:
+            `-createDate`). Example: `createDate`, `-updateDate`, `owner`.
+          schema:
+            example: -createDate
+            type: string
+      responses:
+        '200':
+          description: Query executed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyDataQueryResponseDTO'
+              example:
+                data:
+                  - id: 645f1e2d3a4b5c6d7e8f9012
+                    policyId: 645f1e2d3a4b5c6d7e8f1234
+                    schema: '#MRVData'
+                    owner: >-
+                      did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+                    hederaStatus: ISSUE
+                    tag: mrv_data_block
+                    createDate: '2026-01-15T10:30:00.000Z'
+                    updateDate: '2026-01-15T10:30:00.000Z'
+                    option:
+                      status: APPROVED
+                    document:
+                      id: urn:uuid:example
+                      type:
+                        - VerifiableCredential
+                pagination:
+                  page: 1
+                  pageSize: 20
+                  total: 42
+                  totalPages: 3
+                query:
+                  policyId: 645f1e2d3a4b5c6d7e8f1234
+                  schemaName: MRV Data
+                  appliedFilters:
+                    hederaStatus:
+                      op: eq
+                      value: ISSUE
+        '400':
+          description: >-
+            Invalid query parameters (unknown filter field, invalid operator,
+            bad JSON).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorDTO'
+              example:
+                statusCode: 400
+                message: >-
+                  Unknown filter field: "fooBar". Consult the system field
+                  whitelist in the API docs.
+        '401':
+          description: |-
+            Unauthorized request.
+
+            Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: |-
+            Forbidden.
+
+            Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '404':
+          description: Policy or schema not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorDTO'
+              example:
+                statusCode: 404
+                message: Policy "abc" not found.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Query policy-committed VC documents.
+      tags:
+        - policy-data
+  /schema-templates:
+    post:
+      description: >-
+        Creates a new schema template and a dedicated template topic. Only users
+        with the Standard Registry role are allowed to make the request.
+      operationId: SchemaTemplatesApi_createSchemaTemplate
+      parameters: []
+      requestBody:
+        required: true
+        description: Schema template metadata and configuration.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                version:
+                  type: string
+                config:
+                  type: object
+      responses:
+        '201':
+          description: Created schema template.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Creates a new schema template.
+      tags:
+        - schema-templates
+    get:
+      description: >-
+        Returns schema templates visible to the current user. Only users with
+        the Standard Registry role are allowed to make the request.
+      operationId: SchemaTemplatesApi_getSchemaTemplates
+      parameters:
+        - name: pageIndex
+          required: false
+          in: query
+          schema:
+            example: 0
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          schema:
+            example: 20
+            type: number
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Schema templates page.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Returns schema templates.
+      tags:
+        - schema-templates
+  /schema-templates/push:
+    post:
+      description: >-
+        Creates a new schema template and a dedicated template topic
+        asynchronously. Only users with the Standard Registry role are allowed
+        to make the request.
+      operationId: SchemaTemplatesApi_createSchemaTemplateAsync
+      parameters: []
+      requestBody:
+        required: true
+        description: Schema template metadata and configuration.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                config:
+                  type: object
+      responses:
+        '202':
+          description: Task created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Creates a new schema template asynchronously.
+      tags:
+        - schema-templates
+  /schema-templates/{templateId}/push/new-version:
+    post:
+      description: >-
+        Copies a published schema template and its schemas into a new editable
+        draft version. Only users with the Standard Registry role are allowed to
+        make the request.
+      operationId: SchemaTemplatesApi_createSchemaTemplateVersionAsync
+      parameters:
+        - name: templateId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '202':
+          description: Task created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Creates a new draft version of a schema template asynchronously.
+      tags:
+        - schema-templates
+  /schema-templates/{templateId}/export/file:
+    get:
+      description: >-
+        Exports schema template metadata, configuration, and schemas as a
+        zip-based *.template file. Only users with the Standard Registry role
+        are allowed to make the request.
+      operationId: SchemaTemplatesApi_exportSchemaTemplateFile
+      parameters:
+        - name: templateId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+      security:
+        - bearer: []
+      summary: Exports schema template as a file.
+      tags:
+        - schema-templates
+  /schema-templates/{templateId}/export/message:
+    get:
+      description: >-
+        Returns template metadata and message id when the template has been
+        published. Only users with the Standard Registry role are allowed to
+        make the request.
+      operationId: SchemaTemplatesApi_exportSchemaTemplateMessage
+      parameters:
+        - name: templateId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+      security:
+        - bearer: []
+      summary: Returns schema template identity and Hedera message id for export.
+      tags:
+        - schema-templates
+  /schema-templates/check/{messageId}:
+    get:
+      description: >-
+        Checks whether a schema template message is available locally or from
+        Hedera/IPFS. Only users with the Standard Registry role are allowed to
+        make the request.
+      operationId: SchemaTemplatesApi_checkSchemaTemplate
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+      security:
+        - bearer: []
+      summary: Checks schema template message availability.
+      tags:
+        - schema-templates
+  /schema-templates/import/file/preview:
+    post:
+      description: >-
+        Parses a schema template archive without persisting it. Only users with
+        the Standard Registry role are allowed to make the request.
+      operationId: SchemaTemplatesApi_previewSchemaTemplateFile
+      parameters: []
+      responses:
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+      security:
+        - bearer: []
+      summary: Previews schema template package from uploaded file.
+      tags:
+        - schema-templates
+  /schema-templates/import/message/preview:
+    post:
+      description: >-
+        Loads a schema template package from a Hedera message/IPFS and parses it
+        without persisting. Only users with the Standard Registry role are
+        allowed to make the request.
+      operationId: SchemaTemplatesApi_previewSchemaTemplateMessage
+      parameters: []
+      responses:
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+      security:
+        - bearer: []
+      summary: Previews schema template package from message.
+      tags:
+        - schema-templates
+  /schema-templates/push/import/file:
+    post:
+      description: >-
+        Imports schema template metadata, configuration, and schemas from a
+        local archive. Only users with the Standard Registry role are allowed to
+        make the request.
+      operationId: SchemaTemplatesApi_importSchemaTemplateFileAsync
+      parameters: []
+      responses:
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+      security:
+        - bearer: []
+      summary: Imports schema template from uploaded file asynchronously.
+      tags:
+        - schema-templates
+  /schema-templates/push/import/message:
+    post:
+      description: >-
+        Imports schema template metadata, configuration, and schemas from a
+        Hedera message/IPFS archive. Only users with the Standard Registry role
+        are allowed to make the request.
+      operationId: SchemaTemplatesApi_importSchemaTemplateMessageAsync
+      parameters: []
+      responses:
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+      security:
+        - bearer: []
+      summary: Imports schema template from message asynchronously.
+      tags:
+        - schema-templates
+  /schema-templates/policies/topic/{topicId}/applied:
+    get:
+      description: >-
+        Returns policy-specific schema template state. Snapshot configuration is
+        used when available. Only users with the Standard Registry role are
+        allowed to make the request.
+      operationId: SchemaTemplatesApi_getAppliedSchemaTemplateByPolicyTopic
+      parameters:
+        - name: topicId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Applied schema template state.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Returns effective applied schema template state by policy topic.
+      tags:
+        - schema-templates
+  /schema-templates/{templateId}:
+    get:
+      description: >-
+        Returns schema template by internal id. Only users with the Standard
+        Registry role are allowed to make the request.
+      operationId: SchemaTemplatesApi_getSchemaTemplate
+      parameters:
+        - name: templateId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Schema template.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Returns schema template by id.
+      tags:
+        - schema-templates
+    put:
+      description: >-
+        Updates schema template metadata and configuration. Only users with the
+        Standard Registry role are allowed to make the request.
+      operationId: SchemaTemplatesApi_updateSchemaTemplate
+      parameters:
+        - name: templateId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Schema template metadata and configuration.
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Updated schema template.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Updates schema template.
+      tags:
+        - schema-templates
+    delete:
+      description: >-
+        Deletes draft schema template and its draft schemas. Only users with the
+        Standard Registry role are allowed to make the request.
+      operationId: SchemaTemplatesApi_deleteSchemaTemplate
+      parameters:
+        - name: templateId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Operation result.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Deletes schema template.
+      tags:
+        - schema-templates
+  /schema-templates/push/{templateId}:
+    delete:
+      description: >-
+        Deletes draft schema template and its draft schemas asynchronously. Only
+        users with the Standard Registry role are allowed to make the request.
+      operationId: SchemaTemplatesApi_deleteSchemaTemplateAsync
+      parameters:
+        - name: templateId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '202':
+          description: Task created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Deletes schema template asynchronously.
+      tags:
+        - schema-templates
+  /schema-templates/{templateId}/push/publish:
+    put:
+      description: >-
+        Publishes schema template package with metadata, configuration, and
+        schemas. Only users with the Standard Registry role are allowed to make
+        the request.
+      operationId: SchemaTemplatesApi_publishSchemaTemplateAsync
+      parameters:
+        - name: templateId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Schema template version for publish.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                templateVersion:
+                  type: string
+                  example: 1.0.0
+      responses:
+        '202':
+          description: Task created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Publishes schema template asynchronously.
+      tags:
+        - schema-templates
+  /schema-templates/{templateId}/policies/{policyId}/push/apply:
+    post:
+      description: >-
+        Copies template schemas into the selected draft policy and stores
+        template binding metadata on the policy. Only users with the Standard
+        Registry role are allowed to make the request.
+      operationId: SchemaTemplatesApi_applySchemaTemplateAsync
+      parameters:
+        - name: templateId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '202':
+          description: Task created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Applies schema template to policy asynchronously.
+      tags:
+        - schema-templates
+  /schema-templates/{templateId}/policies/{policyId}/update/preview:
+    get:
+      description: >-
+        Calculates schema and field changes before updating the template applied
+        to a draft policy. Only users with the Standard Registry role are
+        allowed to make the request.
+      operationId: SchemaTemplatesApi_previewSchemaTemplateUpdate
+      parameters:
+        - name: templateId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Schema template update preview.
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Previews applied schema template update.
+      tags:
+        - schema-templates
+  /schema-templates/{templateId}/policies/{policyId}/push/update:
+    post:
+      description: >-
+        Applies a newer schema template version to a draft policy and refreshes
+        the policy snapshot. Only users with the Standard Registry role are
+        allowed to make the request.
+      operationId: SchemaTemplatesApi_updateAppliedSchemaTemplateAsync
+      parameters:
+        - name: templateId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '202':
+          description: Task created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Updates applied schema template on policy asynchronously.
+      tags:
+        - schema-templates
+  /schema-templates/policies/{policyId}/push/detach:
+    post:
+      description: >-
+        Removes template binding metadata from the selected draft policy and
+        turns copied template schemas into regular policy schemas. Only users
+        with the Standard Registry role are allowed to make the request.
+      operationId: SchemaTemplatesApi_detachSchemaTemplateAsync
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '202':
+          description: Task created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Detaches schema template from policy asynchronously.
+      tags:
+        - schema-templates
 info:
   title: Guardian
   description: >-
-    The Guardian is a modular open-source solution that includes best-in-class
-    identity management and decentralized ledger technology (DLT) libraries. At
-    the heart of the Guardian solution is a sophisticated Policy Workflow Engine
-    (PWE) that enables applications to offer a requirements-based tokenization
-    implementation.
+    The Guardian is an innovative open-source platform that streamlines the
+    creation, management, and verification of digital environmental assets. It
+    leverages a customizable Policy Workflow Engine and Web3 technology to
+    ensure transparent and fraud-proof operations, making it a key tool for
+    transforming sustainability practices and carbon markets.
   version: 3.6.0
   contact:
     name: API developer
-    url: https://envisionblockchain.com
-    email: info@envisionblockchain.com
+    url: https://hashgraph.com
+    email: guardian@hashgraph.com
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-tags: []
+tags:
+  - name: schemas
+    description: Create and manage JSON schemas for policy data structures.
+    x-displayName: Schemas
+  - name: schema
+    description: Schema operations on individual schema objects.
+    x-displayName: Schema
+  - name: schema-rules
+    description: Validation rules and constraints applied to schema fields.
+    x-displayName: Schema Rules
+  - name: policies
+    description: Create, publish, and manage environmental policy workflows.
+    x-displayName: Policies
+  - name: record
+    description: Environmental data records submitted through policy workflows.
+    x-displayName: Records
+  - name: tools
+    description: Standalone tools that extend policy workflow capabilities.
+    x-displayName: Tools
+  - name: modules
+    description: Reusable policy logic modules that can be composed into workflows.
+    x-displayName: Modules
+  - name: formulas
+    description: Calculation formulas for quantifying environmental impact.
+    x-displayName: Formulas
+  - name: artifacts
+    description: Files and documents attached to policies and policy blocks.
+    x-displayName: Artifacts
+  - name: policy-labels
+    description: Labels for categorizing and filtering policies.
+    x-displayName: Labels
+  - name: policy-comments
+    description: Threaded comments and review notes on policies.
+    x-displayName: Comments
+  - name: policy-repository
+    description: Policy marketplace for discovering and importing published policies.
+    x-displayName: Repository
+  - name: suggestions
+    description: Context-aware suggestions for policy design and configuration.
+    x-displayName: Suggestions
+  - name: analytics
+    description: Query and export usage analytics across the platform.
+    x-displayName: Analytics
+  - name: policy-statistics
+    description: Usage and execution statistics for policies.
+    x-displayName: Statistics
+  - name: external-policies
+    description: Integration with externally hosted or managed policies.
+    x-displayName: External Policies
+  - name: wizard
+    description: Step-by-step guided policy creation workflow.
+    x-displayName: Wizard
+  - name: tokens
+    description: Manage Hedera tokens representing environmental assets and carbon credits.
+    x-displayName: Tokens
+  - name: contracts
+    description: Smart contract interactions for token issuance and retirement.
+    x-displayName: Contracts
+  - name: relayer-accounts
+    description: Hedera relayer account configuration and management.
+    x-displayName: Relayer Accounts
+  - name: dmrv
+    description: Digital Measurement, Reporting and Verification data operations.
+    x-displayName: DMRV
+  - name: ipfs
+    description: Decentralized file storage via the InterPlanetary File System.
+    x-displayName: IPFS
+  - name: external
+    description: Integration with external data sources and third-party systems.
+    x-displayName: External
+  - name: projects
+    description: Environmental projects generating verified carbon or ecological credits.
+    x-displayName: Projects
+  - name: map
+    description: Geospatial data and map visualization for project locations.
+    x-displayName: Map
+  - name: accounts
+    description: Manage user accounts and authentication sessions.
+    x-displayName: Accounts
+  - name: profiles
+    description: User profile configuration and DID management.
+    x-displayName: Profiles
+  - name: permissions
+    description: Role-based access control and permission management.
+    x-displayName: Permissions
+  - name: credentials
+    description: W3C Verifiable Credentials issued and managed within policies.
+    x-displayName: Credentials
+  - name: trust-chains
+    description: Chains of verifiable trust linking issuers, verifiers, and holders.
+    x-displayName: Trust Chains
+  - name: settings
+    description: Global application configuration and environment settings.
+    x-displayName: Settings
+  - name: notifications
+    description: User notifications and alert management.
+    x-displayName: Notifications
+  - name: tags
+    description: User-defined tags for organizing platform resources.
+    x-displayName: Tags
+  - name: logs
+    description: Audit logs recording user and system activity.
+    x-displayName: Logs
+  - name: tasks
+    description: Background task tracking for long-running operations.
+    x-displayName: Tasks
+  - name: worker-tasks
+    description: Worker-level task queue management.
+    x-displayName: Worker Tasks
+  - name: metrics
+    description: Real-time performance and operational metrics.
+    x-displayName: Metrics
+  - name: ai-suggestions
+    description: AI-powered recommendations for policies, schemas, and workflows.
+    x-displayName: AI Suggestions
+  - name: demo
+    description: Demo data and sample environment setup.
+    x-displayName: Demo
+  - name: themes
+    description: UI theme selection and customization.
+    x-displayName: Themes
+  - name: branding
+    description: White-label branding assets and configuration.
+    x-displayName: Branding
 servers:
   - url: /api/v1
     description: version 1.0
@@ -50994,6 +52343,13 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PolicyToolDTO'
+        schemaTemplate:
+          type: object
+          additionalProperties: true
+          nullable: true
+          description: >-
+            Server-managed schema template binding. Ignored by normal policy
+            update endpoints.
         createDate:
           type: string
           example: '2026-03-03T17:25:53.312Z'
@@ -51151,6 +52507,7 @@ components:
         - messageId
         - codeVersion
         - tools
+        - schemaTemplate
         - createDate
         - version
         - editableParametersSettings
@@ -53889,7 +55246,16 @@ components:
             - TOOL
             - STATISTIC
             - LABEL
+            - TEMPLATE
           example: POLICY
+        templateId:
+          type: string
+          nullable: true
+          example: 69aeb71ef8c5b278e3bab4e5
+        templateSchemaId:
+          type: string
+          nullable: true
+          example: 9db028d2-03ad-4d49-a178-cf4b67f8c147
         documentURL:
           type: string
           example: ipfs://AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -55640,6 +57006,7 @@ components:
             - TOOL
             - STATISTIC
             - LABEL
+            - TEMPLATE
           example: POLICY
       required:
         - id
@@ -55689,6 +57056,7 @@ components:
             - TOOL
             - STATISTIC
             - LABEL
+            - TEMPLATE
           example: POLICY
       required:
         - id
@@ -57078,6 +58446,11 @@ components:
               - TOOLS_TOOL_UPDATE
               - TOOLS_TOOL_DELETE
               - TOOLS_TOOL_REVIEW
+              - TEMPLATES_TEMPLATE_READ
+              - TEMPLATES_TEMPLATE_CREATE
+              - TEMPLATES_TEMPLATE_UPDATE
+              - TEMPLATES_TEMPLATE_DELETE
+              - TEMPLATES_TEMPLATE_REVIEW
               - TOKENS_TOKEN_READ
               - TOKENS_TOKEN_CREATE
               - TOKENS_TOKEN_UPDATE
@@ -57180,6 +58553,11 @@ components:
             - TOOLS_TOOL_UPDATE
             - TOOLS_TOOL_DELETE
             - TOOLS_TOOL_REVIEW
+            - TEMPLATES_TEMPLATE_READ
+            - TEMPLATES_TEMPLATE_CREATE
+            - TEMPLATES_TEMPLATE_UPDATE
+            - TEMPLATES_TEMPLATE_DELETE
+            - TEMPLATES_TEMPLATE_REVIEW
             - TOKENS_TOKEN_READ
             - TOKENS_TOKEN_CREATE
             - TOKENS_TOKEN_UPDATE
@@ -57239,6 +58617,7 @@ components:
             - TOKENS
             - AUDIT
             - TOOLS
+            - TEMPLATES
             - PERMISSIONS
             - ACCESS
             - DELEGATION
@@ -57258,6 +58637,7 @@ components:
             - RECORD
             - POLICY
             - TOOL
+            - TEMPLATE
             - DOCUMENT
             - SCHEMA
             - MODULE
@@ -58449,6 +59829,62 @@ components:
         - taskId
         - type
         - updateDate
+    PolicyDataPaginationDTO:
+      type: object
+      properties:
+        page:
+          type: number
+          example: 1
+        pageSize:
+          type: number
+          example: 20
+        total:
+          type: number
+          example: 1234
+        totalPages:
+          type: number
+          example: 62
+      required:
+        - page
+        - pageSize
+        - total
+        - totalPages
+    PolicyDataQueryInfoDTO:
+      type: object
+      properties:
+        policyId:
+          type: string
+          example: 69aeb71ef8c5b278e3bab4e5
+        schemaName:
+          type: string
+          example: MRV Data
+        appliedFilters:
+          type: object
+          additionalProperties: true
+          example:
+            hederaStatus:
+              op: eq
+              value: ISSUE
+      required:
+        - policyId
+        - schemaName
+    PolicyDataQueryResponseDTO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+          description: Committed VC documents matching the query.
+        pagination:
+          $ref: '#/components/schemas/PolicyDataPaginationDTO'
+        query:
+          $ref: '#/components/schemas/PolicyDataQueryInfoDTO'
+      required:
+        - data
+        - pagination
+        - query
     CredentialSubjectDTO:
       type: object
       properties:
@@ -58697,3 +60133,59 @@ components:
         - owner
         - topicId
         - messageId
+x-tagGroups:
+  - name: Guardian Schemas
+    tags:
+      - schemas
+      - schema
+      - schema-rules
+  - name: Guardian Policies
+    tags:
+      - policies
+      - record
+      - tools
+      - modules
+      - formulas
+      - artifacts
+      - policy-labels
+      - policy-comments
+      - policy-repository
+      - suggestions
+      - analytics
+      - policy-statistics
+      - external-policies
+      - wizard
+  - name: Hedera
+    tags:
+      - tokens
+      - contracts
+      - relayer-accounts
+  - name: Data & DMRV
+    tags:
+      - dmrv
+      - ipfs
+      - external
+      - projects
+      - map
+  - name: Identity & Access
+    tags:
+      - accounts
+      - profiles
+      - permissions
+      - credentials
+      - trust-chains
+  - name: Platform
+    tags:
+      - settings
+      - notifications
+      - tags
+      - logs
+      - tasks
+      - worker-tasks
+      - metrics
+      - ai-suggestions
+      - demo
+  - name: Customization
+    tags:
+      - themes
+      - branding

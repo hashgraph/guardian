@@ -1,5 +1,5 @@
 import { UntypedFormGroup, UntypedFormControl, UntypedFormArray, ValidatorFn, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
-import { Schema, SchemaCondition, SchemaConditionTarget, SchemaField, SchemaRuleValidateResult, GenerateUUIDv4 } from '@guardian/interfaces';
+import { Schema, SchemaCondition, SchemaConditionTarget, SchemaField, SchemaRuleValidateResult, GenerateUUIDv4, isGeoCustomType } from '@guardian/interfaces';
 import { fullFormats } from 'ajv-formats/dist/formats';
 import moment from 'moment';
 import { Subject, takeUntil } from 'rxjs';
@@ -26,6 +26,11 @@ export interface IFieldControl<T extends UntypedFormControl | UntypedFormGroup |
     model: any;
     subject: Subject<void>;
     visibility: boolean;
+}
+
+export interface IArrayGroupEntry {
+    owner: FieldForm;
+    control: IFieldControl<any>;
 }
 
 export interface IFieldIndexControl<T extends UntypedFormControl | UntypedFormGroup> {
@@ -61,7 +66,7 @@ interface ICrossSchemaConditionItem {
     conditionInvert: boolean;
     field: SchemaField;
     fieldPath: string[];
-    visibility: boolean;
+    visibilityByEntry: Map<number | null, boolean>;
 }
 
 export class FieldForm {
@@ -86,6 +91,7 @@ export class FieldForm {
     private readonly childControlledFields: Map<string, Set<string>>;
     private readonly ancestorChildPaths: Map<string, Set<string>>;
     public rootForm: FieldForm;
+    private arrayGroupCache: Map<IFieldControl<any>, IArrayGroupEntry[]> | null = null;
 
     private readonly destroy$: Subject<boolean>;
 
@@ -176,9 +182,15 @@ export class FieldForm {
 
     public build() {
         const { fields, conditions } = this.updateData();
+        this.arrayGroupCache = null;
         this.crossSchemaItems = [];
         this.fieldControls = this.buildFields(fields);
         this.conditionControls = this.buildConditions(conditions);
+        if (this.schema?.arrayDependencies?.length) {
+            this.alignArrayGroups();
+            this.syncArrayDependencyValues();
+            this.subscribeArrayDependencyValues();
+        }
         this.controls = this.rebuildControls();
         this.subscribeConditions();
     }
@@ -251,11 +263,20 @@ export class FieldForm {
         return as === bs;
     }
 
-    private evaluateIf(expr: IConditionExpr): boolean {
+    private findControl(name: string): IFieldControl<any> | undefined {
+        const base = this.fieldControls?.find(control => control.name === name);
+        if (base || !this.rootForm.schema?.arrayDependencies?.length) { return base; }
+        return this.conditionControls?.find(control => control.name === name);
+    }
+
+    private evaluateIf(expr: IConditionExpr, entryIndex: number | null = null): boolean {
         if (!expr || !expr.pairs?.length) return false;
 
         const test = (p: IConditionPair) => {
-            const c = p.path ? this.form.get(p.path) : this.form.controls[p.name];
+            const path = p.path && entryIndex !== null
+                ? this.injectEntryIndex(p.path, entryIndex)
+                : p.path;
+            const c = path ? this.form.get(path) : this.form.controls[p.name];
             if (!c) return false;
             return this.equalsLoosely(c.value, p.value);
         };
@@ -263,6 +284,54 @@ export class FieldForm {
         if (expr.op === 'SINGLE') return test(expr.pairs[0]);
         if (expr.op === 'AND') return expr.pairs.every(test);
         return expr.pairs.some(test);
+    }
+
+    private injectEntryIndex(path: string, entryIndex: number): string {
+        const segments = path.split('.');
+        const result: string[] = [];
+        let model: FieldForm | null = this;
+        for (const segment of segments) {
+            result.push(segment);
+            const ctrl: IFieldControl<any> | undefined = model?.findControl(segment);
+            if (ctrl?.isArray && ctrl.isRef) {
+                result.push(String(entryIndex));
+                model = (ctrl.list?.[entryIndex]?.model as FieldForm) || null;
+            } else {
+                model = (ctrl?.model as FieldForm) || null;
+            }
+        }
+        return result.join('.');
+    }
+
+    private getGroupSize(fieldPath: string[]): number | null {
+        if (!fieldPath?.length) { return null; }
+        let model: FieldForm = this;
+        for (let i = 0; i < fieldPath.length - 1; i++) {
+            const ctrl = model.findControl(fieldPath[i]);
+            if (!ctrl) { return null; }
+            if (ctrl.isArray && ctrl.isRef) {
+                return ctrl.list?.length || 0;
+            }
+            const next = ctrl.model as FieldForm | null;
+            if (!next) { return null; }
+            model = next;
+        }
+        return null;
+    }
+
+    private getEntryIndexes(item: ICrossSchemaConditionItem): (number | null)[] {
+        const targetSize = this.getGroupSize(item.fieldPath);
+        const ifSizes = item.expr.pairs
+            .map(p => this.getGroupSize(p.path ? p.path.split('.') : []))
+            .filter((size): size is number => size !== null);
+        if (targetSize === null && !ifSizes.length) {
+            return [null];
+        }
+        if (targetSize === null || !ifSizes.length) {
+            return [];
+        }
+        const size = Math.min(targetSize, ...ifSizes);
+        return Array.from({ length: size }, (_, index) => index);
     }
 
     private buildFields(fields: SchemaField[] | undefined): IFieldControl<any>[] | null {
@@ -330,7 +399,7 @@ export class FieldForm {
                         conditionInvert: invert,
                         field: target.field,
                         fieldPath: target.fieldPath,
-                        visibility: false,
+                        visibilityByEntry: new Map<number | null, boolean>(),
                     });
                 }
             };
@@ -345,21 +414,32 @@ export class FieldForm {
             }
         }
 
+        if (this.rootForm.schema?.arrayDependencies?.length) {
+            this.conditionControls = controls;
+        }
+
         for (const item of this.crossSchemaItems) {
-            const childModel = this.resolveChildModel(item.fieldPath);
-            if (!childModel) { continue; }
-            const visible = this.checkCrossConditionValue(item);
-            item.visibility = visible;
-            if (visible) {
-                childModel.addParentControlledField(item.field, this.getPresetForPath(item.fieldPath));
+            for (const entryIndex of this.getEntryIndexes(item)) {
+                const childModels = this.resolveChildModels(item.fieldPath, entryIndex);
+                if (!childModels.length) { continue; }
+                const visible = this.checkCrossConditionValue(item, entryIndex);
+                item.visibilityByEntry.set(entryIndex, visible);
+                if (visible) {
+                    for (const childModel of childModels) {
+                        childModel.addParentControlledField(item.field, this.getPresetForPath(item.fieldPath));
+                    }
+                }
             }
         }
 
         return controls;
     }
 
-    private checkCrossConditionValue(item: ICrossSchemaConditionItem): boolean {
-        const ok = this.evaluateIf(item.expr);
+    private checkCrossConditionValue(
+        item: ICrossSchemaConditionItem,
+        entryIndex: number | null = null
+    ): boolean {
+        const ok = this.evaluateIf(item.expr, entryIndex);
         return item.conditionInvert ? !ok : ok;
     }
 
@@ -387,32 +467,214 @@ export class FieldForm {
     private rebuildCrossSchemaConditions(force: boolean = true): void {
         if (!this.crossSchemaItems.length) { return; }
         for (const item of this.crossSchemaItems) {
-            const childModel = this.resolveChildModel(item.fieldPath);
-            if (!childModel) { continue; }
-            const visible = this.checkCrossConditionValue(item);
-            const wasVisible = item.visibility;
-            if (force || visible !== wasVisible) {
-                item.visibility = visible;
-                if (visible) {
-                    childModel.addParentControlledField(item.field, this.getPresetForPath(item.fieldPath));
-                } else {
-                    childModel.removeParentControlledField(item.field.name);
+            for (const entryIndex of this.getEntryIndexes(item)) {
+                const childModels = this.resolveChildModels(item.fieldPath, entryIndex);
+                if (!childModels.length) { continue; }
+                const visible = this.checkCrossConditionValue(item, entryIndex);
+                const wasVisible = item.visibilityByEntry.get(entryIndex);
+                if (force || visible !== wasVisible) {
+                    item.visibilityByEntry.set(entryIndex, visible);
+                    for (const childModel of childModels) {
+                        if (visible) {
+                            childModel.addParentControlledField(item.field, this.getPresetForPath(item.fieldPath));
+                        } else {
+                            childModel.removeParentControlledField(item.field.name);
+                        }
+                    }
+                }
+            }
+        }
+        if (this.rootForm.schema?.arrayDependencies?.length) {
+            this.rootForm.syncArrayDependencyValues();
+        }
+    }
+
+    private resolveArrayEntry(fieldPath: string[]): IArrayGroupEntry | null {
+        if (!fieldPath?.length) { return null; }
+        let model: FieldForm = this;
+        for (let i = 0; i < fieldPath.length - 1; i++) {
+            const ctrl = model.findControl(fieldPath[i]);
+            const next = ctrl?.model as FieldForm | null;
+            if (!next) { return null; }
+            model = next;
+        }
+        const name = fieldPath[fieldPath.length - 1];
+        const control = model.findControl(name);
+        return control?.isArray ? { owner: model, control } : null;
+    }
+
+    private buildArrayGroups(): Map<IFieldControl<any>, IArrayGroupEntry[]> {
+        const map = new Map<IFieldControl<any>, IArrayGroupEntry[]>();
+        for (const dependency of (this.schema?.arrayDependencies || [])) {
+            const source = this.resolveArrayEntry(dependency.on);
+            const target = this.resolveArrayEntry(dependency.field);
+            if (!source || !target || source.control === target.control) { continue; }
+            const list = map.get(source.control) || [];
+            if (!list.some(entry => entry.control === target.control)) { list.push(target); }
+            map.set(source.control, list);
+        }
+        return map;
+    }
+
+    public getArrayGroups(): Map<IFieldControl<any>, IArrayGroupEntry[]> {
+        if (!this.arrayGroupCache) {
+            this.arrayGroupCache = this.buildArrayGroups();
+        }
+        return this.arrayGroupCache;
+    }
+
+    public getDependentArrays(item: IFieldControl<any>): IArrayGroupEntry[] {
+        return this.getArrayGroups().get(item) || [];
+    }
+
+    public isManagedArray(item: IFieldControl<any>): boolean {
+        for (const dependents of this.getArrayGroups().values()) {
+            if (dependents.some(entry => entry.control === item)) { return true; }
+        }
+        return false;
+    }
+
+    private alignArrayGroups(): void {
+        const groups = this.getArrayGroups();
+        if (!groups.size) { return; }
+        const visited = new Set<IFieldControl<any>>();
+        for (const source of groups.keys()) {
+            this.alignFromSource(source, visited);
+        }
+    }
+
+    private alignFromSource(source: IFieldControl<any>, visited: Set<IFieldControl<any>>): void {
+        if (visited.has(source)) { return; }
+        visited.add(source);
+        const expected = source.list?.length || 0;
+        for (const entry of this.getDependentArrays(source)) {
+            while ((entry.control.list?.length || 0) < expected) {
+                entry.owner.appendListItem(entry.control);
+            }
+            this.alignFromSource(entry.control, visited);
+        }
+    }
+
+    private syncArrayDependencyValues(): void {
+        for (const dependency of (this.schema?.arrayDependencies || [])) {
+            if (!dependency.valueMappings?.length) { continue; }
+            const source = this.resolveArrayEntry(dependency.on);
+            const target = this.resolveArrayEntry(dependency.field);
+            if (!source || !target) { continue; }
+            const count = Math.min(source.control.list?.length || 0, target.control.list?.length || 0);
+            for (let index = 0; index < count; index++) {
+                for (const mapping of dependency.valueMappings) {
+                    const sourceControl = source.control.list?.[index]?.control?.get(mapping.source.join('.'));
+                    const targetControl = target.control.list?.[index]?.control?.get(mapping.target.join('.'));
+                    if (!sourceControl || !targetControl) { continue; }
+                    targetControl.setValue(sourceControl.value ?? null, { emitEvent: false });
+                    targetControl.disable({ emitEvent: false });
                 }
             }
         }
     }
 
-    private resolveChildModel(fieldPath: string[]): FieldForm | null {
-        if (!fieldPath || fieldPath.length < 2) { return null; }
-        let model: FieldForm = this;
+    private subscribeArrayDependencyValues(): void {
+        for (const dependency of (this.schema?.arrayDependencies || [])) {
+            if (!dependency.valueMappings?.length) { continue; }
+            this.resolveArrayEntry(dependency.on)?.control.control.valueChanges
+                .pipe(takeUntil(this.destroy$))
+                .subscribe(() => this.syncArrayDependencyValues());
+        }
+    }
+
+    private readSourceEntryValue(sourcePath: string[], titlePath: string, index: number): string | null {
+        const source = this.resolveArrayEntry(sourcePath);
+        const value = source?.control.list?.[index]?.control?.get(titlePath)?.value;
+        return value ? String(value) : null;
+    }
+
+    public getEntryTitle(item: IFieldControl<any>, listItem: IFieldIndexControl<any>): string {
+        const fallback = `${item.description} #${listItem.index2}`;
+        const index = Number(listItem.index);
+        for (const dependency of (this.rootForm.schema?.arrayDependencies || [])) {
+            if (!dependency.title?.length) { continue; }
+            const titlePath = dependency.title.join('.');
+            const source = this.rootForm.resolveArrayEntry(dependency.on);
+            const dependent = this.rootForm.resolveArrayEntry(dependency.field);
+            if (source?.control === item) {
+                const value = listItem.control?.get(titlePath)?.value;
+                if (value) { return String(value); }
+            }
+            if (dependent?.control === item) {
+                const value = this.rootForm.readSourceEntryValue(dependency.on, titlePath, index);
+                if (value) { return value; }
+            }
+        }
+        return fallback;
+    }
+
+    public getEntryTitleLabel(item: IFieldControl<any>): string | null {
+        for (const dependency of (this.rootForm.schema?.arrayDependencies || [])) {
+            if (!dependency.title?.length) { continue; }
+            const source = this.rootForm.resolveArrayEntry(dependency.on);
+            const dependent = this.rootForm.resolveArrayEntry(dependency.field);
+            if (source?.control !== item && dependent?.control !== item) { continue; }
+            const titlePath = dependency.title.join('.');
+            const field = source?.control.fields?.find(entry => entry.name === titlePath);
+            if (field?.description) { return field.description; }
+        }
+        return null;
+    }
+
+    public getTitleMappedNames(item: IFieldControl<any>): Set<string> {
+        const names = new Set<string>();
+        for (const dependency of (this.rootForm.schema?.arrayDependencies || [])) {
+            if (!dependency.title?.length || !dependency.valueMappings?.length) { continue; }
+            const dependent = this.rootForm.resolveArrayEntry(dependency.field);
+            if (dependent?.control !== item) { continue; }
+            const titlePath = dependency.title.join('.');
+            for (const mapping of dependency.valueMappings) {
+                if (mapping.source.join('.') === titlePath) {
+                    names.add(mapping.target.join('.'));
+                }
+            }
+        }
+        return names;
+    }
+
+    private isGroupArray(item: IFieldControl<any>): boolean {
+        const groups = this.rootForm.getArrayGroups();
+        if (groups.has(item)) { return true; }
+        for (const dependents of groups.values()) {
+            if (dependents.some(entry => entry.control === item)) { return true; }
+        }
+        return false;
+    }
+
+    private resolveChildModels(fieldPath: string[], entryIndex: number | null = null): FieldForm[] {
+        if (!fieldPath || fieldPath.length < 2) { return []; }
+        let models: FieldForm[] = [this];
         for (let i = 0; i < fieldPath.length - 1; i++) {
             const name = fieldPath[i];
-            const ctrl = model.fieldControls?.find(c => c.name === name);
-            const next = ctrl?.model as FieldForm | null;
-            if (!next) { return null; }
-            model = next;
+            const next: FieldForm[] = [];
+            for (const model of models) {
+                const ctrl = model.findControl(name);
+                if (ctrl?.isArray && ctrl.isRef) {
+                    if (entryIndex === null) { continue; }
+                    if (model.isGroupArray(ctrl)) {
+                        const entry = ctrl.list?.[entryIndex]?.model as FieldForm | undefined;
+                        if (entry) { next.push(entry); }
+                    } else {
+                        for (const listItem of (ctrl.list || [])) {
+                            const entry = listItem.model as FieldForm | undefined;
+                            if (entry) { next.push(entry); }
+                        }
+                    }
+                } else {
+                    const entry = ctrl?.model as FieldForm | undefined;
+                    if (entry) { next.push(entry); }
+                }
+            }
+            if (!next.length) { return []; }
+            models = next;
         }
-        return model;
+        return models;
     }
 
     private getPresetForPath(fieldPath: string[]): any {
@@ -459,7 +721,9 @@ export class FieldForm {
         if (this.fieldControls) {
             for (const base of this.fieldControls) {
                 base.visibility = this.ifFieldVisible(base);
-                result.push(base);
+                if (!result.includes(base)) {
+                    result.push(base);
+                }
             }
         }
 
@@ -481,7 +745,9 @@ export class FieldForm {
                     const anchorIdx = this.getLastVisibleIndexByNames(result, cc.dependsOn);
 
                     if (anchorIdx >= 0) {
-                        result.splice(anchorIdx + 1, 0, cc);
+                        if (!result.includes(cc)) {
+                            result.splice(anchorIdx + 1, 0, cc);
+                        }
                         unplaced.delete(id);
                         placedThisPass++;
                     }
@@ -494,7 +760,9 @@ export class FieldForm {
 
             for (const id of unplaced) {
                 const cc = byId.get(id)!;
-                result.push(cc);
+                if (!result.includes(cc)) {
+                    result.push(cc);
+                }
             }
         }
 
@@ -636,9 +904,11 @@ export class FieldForm {
 
     private createControl(item: IFieldControl<any>, preset: any): UntypedFormControl | UntypedFormGroup | UntypedFormArray {
         const validators = this.getValidators(item);
-        const value = (preset === null || preset === undefined) ? undefined : preset;
+        const value = (preset === null || preset === undefined)
+            ? (isGeoCustomType(item.customType || '') ? null : undefined)
+            : preset;
         const control = new UntypedFormControl(value, validators);
-        if (value !== undefined) {
+        if (value !== undefined && value !== null) {
             control.markAsDirty();
         }
         return control;
@@ -1028,13 +1298,20 @@ export class FieldForm {
             item.name,
         )
         this.form.addControl(item.name, item.control);
+        if (this.rootForm.schema?.arrayDependencies?.length) {
+            this.rootForm.arrayGroupCache = null;
+            this.rootForm.alignArrayGroups();
+        }
         this.rebuildCrossSchemaConditions(true);
         if (this.rootForm !== this) {
             this.rootForm.rebuildCrossSchemaConditions(true);
         }
+        if (this.rootForm.schema?.arrayDependencies?.length) {
+            this.rootForm.syncArrayDependencyValues();
+        }
     }
 
-    public addItem(item: IFieldControl<UntypedFormArray>) {
+    private appendListItem(item: IFieldControl<any>): void {
         const listItem = this.createListControl(item);
         if (item.list) {
             item.list.push(listItem);
@@ -1049,13 +1326,30 @@ export class FieldForm {
         }
     }
 
+    public addItem(item: IFieldControl<UntypedFormArray>, visited?: Set<IFieldControl<any>>) {
+        this.appendListItem(item);
+        const seen = visited || new Set<IFieldControl<any>>();
+        seen.add(item);
+        for (const entry of this.rootForm.getDependentArrays(item)) {
+            if (seen.has(entry.control)) { continue; }
+            entry.owner.addItem(entry.control, seen);
+        }
+        if (!visited) {
+            this.rootForm.rebuildCrossSchemaConditions(true);
+        }
+    }
+
     public removeGroup(item: IFieldControl<any>) {
         item.control = null;
         item.model?.destroy();
         this.form.removeControl(item.name);
     }
 
-    public removeItem(item: IFieldControl<any>, listItem: IFieldIndexControl<any>) {
+    public removeItem(
+        item: IFieldControl<any>,
+        listItem: IFieldIndexControl<any>,
+        visited?: Set<IFieldControl<any>>
+    ) {
         if (item.list) {
             listItem.model?.destroy?.();
             const index = item.list.indexOf(listItem);
@@ -1065,6 +1359,18 @@ export class FieldForm {
                 const element = item.list[index];
                 element.index = String(index);
                 element.index2 = String(index + 1);
+            }
+            const seen = visited || new Set<IFieldControl<any>>();
+            seen.add(item);
+            for (const entry of this.rootForm.getDependentArrays(item)) {
+                if (seen.has(entry.control)) { continue; }
+                const linked = entry.control.list?.[index];
+                if (linked) {
+                    entry.owner.removeItem(entry.control, linked, seen);
+                }
+            }
+            if (!visited) {
+                this.rootForm.rebuildCrossSchemaConditions(true);
             }
         }
     }

@@ -14,6 +14,9 @@ import {
     IRetireRequest,
     ISchema,
     ISchemaDeletionPreview,
+    ISchemaTemplate,
+    ISchemaTemplateUpdateOptions,
+    ISchemaTemplateUpdatePreview,
     IToken,
     ITokenInfo,
     IUser,
@@ -141,6 +144,37 @@ export class Guardians extends NatsService {
      */
     public async getVpDocuments(user: IAuthUser, params?: IFilter): Promise<ResponseAndCount<IVPDocument>> {
         return await this.sendMessage(MessageAPI.GET_VP_DOCUMENTS, { user, params });
+    }
+
+    /**
+     * Query VC documents committed by a policy (read-only, dynamic filter).
+     *
+     * @param policyId   - MongoDB ObjectId of the published policy
+     * @param schemaName - schema.name as returned by GET /schema
+     * @param filters    - optional field-level filter map { field: { op, value } }
+     * @param page       - 1-based page number
+     * @param pageSize   - items per page (1-200)
+     * @param sortField  - optional sort field; prefix '-' for descending
+     * @param policyOwner - caller's Standard Registry tenant DID, used to restrict access to the caller's own policies
+     */
+    public async getPolicyDataDocuments(
+        policyId: string,
+        schemaName: string,
+        filters: Record<string, { op: string; value: unknown }> | undefined,
+        page: number | undefined,
+        pageSize: number | undefined,
+        sortField: string | undefined,
+        policyOwner: string,
+    ): Promise<{ items: unknown[]; total: number; page: number; pageSize: number }> {
+        return await this.sendMessage(MessageAPI.GET_POLICY_DATA_DOCUMENTS, {
+            policyId,
+            schemaName,
+            filters,
+            page,
+            pageSize,
+            sortField,
+            policyOwner,
+        });
     }
 
     /**
@@ -474,6 +508,77 @@ export class Guardians extends NatsService {
             owner,
             associate: false,
             task,
+        });
+    }
+
+    /**
+     * Associate/dissociate a token with an Organization's Hedera wallet, gated by the
+     * caller's org-role permissions (TOKEN_ASSOCIATE/TOKEN_DISSOCIATE), org-owner bypass.
+     * @param orgId
+     * @param tokenId
+     * @param associate
+     * @param owner
+     */
+    public async associateOrgToken(
+        orgId: string,
+        tokenId: string,
+        associate: boolean,
+        owner: IOwner
+    ): Promise<ITokenInfo> {
+        return await this.sendMessage(MessageAPI.ASSOCIATE_ORG_TOKEN, {
+            orgId,
+            tokenId,
+            associate,
+            owner,
+        });
+    }
+
+    /**
+     * Grant/revoke KYC for a token on an Organization's Hedera wallet.
+     * SR org-owner only (the KYC signature is the SR's TOKEN_KYC_KEY).
+     * @param orgId
+     * @param tokenId
+     * @param grant
+     * @param owner
+     */
+    public async grantKycOrgToken(
+        orgId: string,
+        tokenId: string,
+        grant: boolean,
+        owner: IOwner
+    ): Promise<ITokenInfo> {
+        return await this.sendMessage(MessageAPI.GRANT_ORG_KYC_TOKEN, {
+            orgId,
+            tokenId,
+            grant,
+            owner,
+        });
+    }
+
+    /**
+     * Transfer tokens FROM an Organization's Hedera wallet, gated by the caller's org-role
+     * permission TOKEN_TRANSFER (org-owner bypass).
+     * @param orgId
+     * @param tokenId
+     * @param body
+     * @param owner
+     */
+    public async transferOrgToken(
+        orgId: string,
+        tokenId: string,
+        body: {
+            targetAccount: string,
+            amount?: number,
+            serialNumbers?: number[],
+            memo?: string
+        },
+        owner: IOwner
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.TRANSFER_ORG_TOKEN, {
+            orgId,
+            tokenId,
+            body,
+            owner,
         });
     }
 
@@ -2346,6 +2451,247 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Create schema template
+     * @param template
+     * @param owner
+     * @returns template
+     */
+    public async createSchemaTemplate(template: ISchemaTemplate, owner: IOwner): Promise<ISchemaTemplate> {
+        return await this.sendMessage(MessageAPI.CREATE_SCHEMA_TEMPLATE, { template, owner });
+    }
+
+    /**
+     * Create schema template draft version
+     * @param id
+     * @param owner
+     * @param task
+     * @returns task
+     */
+    public async createSchemaTemplateVersionAsync(id: string, owner: IOwner, task: NewTask): Promise<any> {
+        return await this.sendMessage(MessageAPI.CREATE_SCHEMA_TEMPLATE_VERSION, { id, owner, task });
+    }
+
+    /**
+     * Return schema templates
+     * @param filters
+     * @param owner
+     * @returns schema templates
+     */
+    public async getSchemaTemplates(filters: IFilter, owner: IOwner): Promise<ResponseAndCount<ISchemaTemplate>> {
+        return await this.sendMessage(MessageAPI.GET_SCHEMA_TEMPLATES, { filters, owner });
+    }
+
+    /**
+     * Return schema template by id
+     * @param id
+     * @param owner
+     * @returns schema template
+     */
+    public async getSchemaTemplateById(id: string, owner: IOwner): Promise<ISchemaTemplate> {
+        return await this.sendMessage(MessageAPI.GET_SCHEMA_TEMPLATE, { id, owner });
+    }
+
+    /**
+     * Return applied schema template state by policy topic
+     * @param topicId
+     * @param owner
+     * @returns applied schema template state
+     */
+    public async getAppliedSchemaTemplateByPolicyTopic(topicId: string, owner: IOwner): Promise<ISchemaTemplate> {
+        return await this.sendMessage(MessageAPI.GET_APPLIED_SCHEMA_TEMPLATE, { topicId, owner });
+    }
+
+    /**
+     * Check schema template message availability
+     * @param messageId
+     * @param owner
+     * @returns template availability metadata
+     */
+    public async checkSchemaTemplate(messageId: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.CHECK_SCHEMA_TEMPLATE, { messageId, owner });
+    }
+
+    /**
+     * Update schema template
+     * @param id
+     * @param template
+     * @param owner
+     * @returns template
+     */
+    public async updateSchemaTemplate(
+        id: string,
+        template: ISchemaTemplate,
+        owner: IOwner
+    ): Promise<ISchemaTemplate> {
+        return await this.sendMessage(MessageAPI.UPDATE_SCHEMA_TEMPLATE, { id, template, owner });
+    }
+
+    /**
+     * Delete schema template
+     * @param id
+     * @param owner
+     * @returns operation success
+     */
+    public async deleteSchemaTemplate(id: string, owner: IOwner): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_SCHEMA_TEMPLATE, { id, owner });
+    }
+
+    /**
+     * Publish schema template
+     * @param id
+     * @param owner
+     * @param body
+     * @returns published template
+     */
+    public async publishSchemaTemplate(
+        id: string,
+        owner: IOwner,
+        body: { templateVersion: string }
+    ): Promise<ISchemaTemplate> {
+        return await this.sendMessage(MessageAPI.PUBLISH_SCHEMA_TEMPLATE, { id, owner, body });
+    }
+
+    /**
+     * Publish schema template async
+     * @param id
+     * @param owner
+     * @param body
+     * @param task
+     * @returns task
+     */
+    public async publishSchemaTemplateAsync(
+        id: string,
+        owner: IOwner,
+        body: { templateVersion: string },
+        task: NewTask
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.PUBLISH_SCHEMA_TEMPLATE_ASYNC, { id, owner, body, task });
+    }
+
+    /**
+     * Export schema template file
+     * @param id
+     * @param owner
+     * @returns schema template archive
+     */
+    public async exportSchemaTemplateFile(id: string, owner: IOwner): Promise<any> {
+        const file = await this.sendMessage(MessageAPI.SCHEMA_TEMPLATE_EXPORT_FILE, { id, owner }) as any;
+        return Buffer.from(file, 'base64');
+    }
+
+    /**
+     * Export schema template message metadata
+     * @param id
+     * @param owner
+     * @returns schema template metadata
+     */
+    public async exportSchemaTemplateMessage(id: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.SCHEMA_TEMPLATE_EXPORT_MESSAGE, { id, owner });
+    }
+
+    /**
+     * Preview schema template file
+     * @param zip
+     * @param owner
+     * @returns schema template preview
+     */
+    public async previewSchemaTemplateFile(zip: any, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.SCHEMA_TEMPLATE_IMPORT_FILE_PREVIEW, { zip, owner });
+    }
+
+    /**
+     * Preview schema template message
+     * @param messageId
+     * @param owner
+     * @returns schema template preview
+     */
+    public async previewSchemaTemplateMessage(messageId: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.SCHEMA_TEMPLATE_IMPORT_MESSAGE_PREVIEW, { messageId, owner });
+    }
+
+    /**
+     * Import schema template file async
+     * @param zip
+     * @param owner
+     * @param task
+     * @returns task
+     */
+    public async importSchemaTemplateFileAsync(zip: any, owner: IOwner, task: NewTask): Promise<any> {
+        return await this.sendMessage(MessageAPI.SCHEMA_TEMPLATE_IMPORT_FILE_ASYNC, { zip, owner, task });
+    }
+
+    /**
+     * Import schema template message async
+     * @param messageId
+     * @param owner
+     * @param task
+     * @returns task
+     */
+    public async importSchemaTemplateMessageAsync(messageId: string, owner: IOwner, task: NewTask): Promise<any> {
+        return await this.sendMessage(MessageAPI.SCHEMA_TEMPLATE_IMPORT_MESSAGE_ASYNC, { messageId, owner, task });
+    }
+
+    /**
+     * Apply schema template to policy
+     * @param templateId
+     * @param policyId
+     * @param owner
+     * @returns updated policy
+     */
+    public async applySchemaTemplate(
+        templateId: string,
+        policyId: string,
+        owner: IOwner
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.APPLY_SCHEMA_TEMPLATE, { templateId, policyId, owner });
+    }
+
+    /**
+     * Preview applied schema template update
+     * @param templateId
+     * @param policyId
+     * @param owner
+     * @returns update preview
+     */
+    public async previewSchemaTemplateUpdate(
+        templateId: string,
+        policyId: string,
+        owner: IOwner
+    ): Promise<ISchemaTemplateUpdatePreview> {
+        return await this.sendMessage(MessageAPI.PREVIEW_SCHEMA_TEMPLATE_UPDATE, { templateId, policyId, owner });
+    }
+
+    /**
+     * Update applied schema template on policy
+     * @param templateId
+     * @param policyId
+     * @param owner
+     * @param options
+     * @returns updated policy
+     */
+    public async updateAppliedSchemaTemplate(
+        templateId: string,
+        policyId: string,
+        owner: IOwner,
+        options?: ISchemaTemplateUpdateOptions
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.UPDATE_APPLIED_SCHEMA_TEMPLATE, { templateId, policyId, owner, options });
+    }
+
+    /**
+     * Detach schema template from policy
+     * @param policyId
+     * @param owner
+     * @returns updated policy
+     */
+    public async detachSchemaTemplate(
+        policyId: string,
+        owner: IOwner
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.DETACH_SCHEMA_TEMPLATE, { policyId, owner });
+    }
+
+    /**
      * Publish tool
      * @param id
      * @param owner
@@ -4187,6 +4533,45 @@ export class Guardians extends NatsService {
             serviceType,
             dryRun,
         });
+    }
+
+    // ============================================================
+    // Organization orchestration (delegates to guardian-service)
+    // ============================================================
+
+    /**
+     * Publish a DRAFT organization on the ledger: creates the org topic under the SR/global
+     * topic, publishes DID + OrganizationMessage, stores keys in the org wallet, and persists
+     * the hydrated record.
+     */
+    public async publishOrganization(
+        payload: {
+            organizationId: string,
+            hederaAccountId: string,
+            hederaAccountKey: string,
+            description?: string
+        },
+        owner: IOwner,
+        userId: string | null
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.PUBLISH_ORGANIZATION, { payload, owner, userId });
+    }
+
+    /**
+     * Enroll a member into a published organization: publishes RegistrationMessage(Init) on the
+     * org topic carrying the member DID + role-name attributes, then persists the
+     * OrganizationMember record with the resulting messageId.
+     */
+    public async enrollOrganizationMember(
+        payload: {
+            organizationId: string,
+            did: string,
+            orgRoleId: string
+        },
+        owner: IOwner,
+        userId: string | null
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.ENROLL_ORGANIZATION_MEMBER, { payload, owner, userId });
     }
 
 }

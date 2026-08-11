@@ -2,10 +2,26 @@
     <ng-template pTemplate="message" let-message>
         <span [class]="'p-toast-message-icon pi ' + getSeverityIcon(message.severity)"></span>
         <div class="p-toast-message-text">
-            @if (message.summary) {
-                <span class="p-toast-summary">{{ message.summary }}</span>
+            @if (message.data?.blockErrorData?.type === BlockErrorType.DOCUMENT_VALIDATOR_BLOCK_ERROR) {
+                <span class="p-toast-summary">Validation failed</span>
+                <div class="toast-validator-error">
+                    <div class="toast-validator-summary">{{ message.data.blockErrorData.summary }}</div>
+                    @for (condition of message.data.blockErrorData.conditions; track condition.label) {
+                        <div class="toast-validator-condition">
+                            <span class="toast-validator-label">{{ condition.label }}</span>
+                            <span class="toast-validator-count" [class.is-partial]="condition.matched > 0">{{ condition.matched }}/{{ condition.total }}</span>
+                            @if (condition.hint) {
+                                <div class="toast-validator-hint">{{ condition.hint }}</div>
+                            }
+                        </div>
+                    }
+                </div>
+            } @else {
+                @if (message.summary) {
+                    <span class="p-toast-summary">{{ message.summary }}</span>
+                }
+                <div class="p-toast-detail">{{ message.detail }}</div>
             }
-            <div class="p-toast-detail">{{ message.detail }}</div>
             @if (message.data?.logUrl && canReadLogs) {
                 <a class="toast-logs-link" [href]="message.data.logUrl">See logs</a>
             }

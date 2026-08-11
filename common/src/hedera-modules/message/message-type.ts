@@ -19,6 +19,7 @@ export enum MessageType {
     RoleDocument = 'Role-Document',
     GuardianRole = 'Guardian-Role-Document',
     Tool = 'Tool',
+    SchemaTemplate = 'Schema-Template',
     Contract = 'Contract',
     UserPermissions = 'User-Permissions',
     PolicyStatistic = 'Policy-Statistic',
@@ -28,5 +29,6 @@ export enum MessageType {
     PolicyAction = 'Policy-Action',
     PolicyDiscussion = 'Policy-Discussion',
     PolicyComment = 'Policy-Comment',
-    PolicyRecordStep = 'PolicyRecordStep'
+    PolicyRecordStep = 'PolicyRecordStep',
+    Organization = 'Organization'
 }

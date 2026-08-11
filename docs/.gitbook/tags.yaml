@@ -1,3 +1,6 @@
+- tag: guide
+  label: Guide
+  icon: lighthouse
 - tag: template
   label: Template
   icon: cards-blank
@@ -7,3 +10,12 @@
 - tag: new
   label: New
   icon: sparkles
+- tag: concept
+  label: Concept
+  icon: book-open
+- tag: reference
+  label: Reference
+  icon: book-bookmark
+- tag: tasks
+  label: Task
+  icon: list-check

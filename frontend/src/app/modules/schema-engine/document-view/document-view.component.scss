@@ -1,3 +1,5 @@
+@import '../nav-collapse';
+
 form {
     display: flex;
     flex-direction: column;
@@ -266,22 +268,39 @@ form {
     position: sticky;
     top: 0;
     max-height: calc(100vh - 230px);
-    overflow-y: auto;
     box-sizing: border-box;
+    overflow-y: auto;
+    border: 1px solid var(--guardian-border-color, rgba(0, 0, 0, 0.06));
+    border-radius: 6px;
     transition: width 0.2s ease;
 
-    &.nav-collapsed {
-        width: 0 !important;
-        min-width: 0 !important;
-        overflow: hidden;
+    // The panel now owns the border and the scroll; the sticky collapse
+    // header stays pinned while the tree scrolls underneath it.
+    ::ng-deep .schema-nav {
+        max-height: none !important;
+        overflow: visible;
+        border: none;
+        border-radius: 0;
     }
-}
-
-.schema-form-view-nav.nav-collapsed + .resize-handler {
-    display: none;
 }
 
 .schema-form-content {
     flex: 1;
     min-width: 0;
+}
+
+:host ::ng-deep .guardian-accordion {
+
+    .p-accordionpanel,
+    .p-accordioncontent,
+    .p-motion,
+    .p-accordioncontent-wrapper,
+    .p-accordioncontent-content {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .p-accordioncontent-content {
+        overflow-x: auto;
+    }
 }

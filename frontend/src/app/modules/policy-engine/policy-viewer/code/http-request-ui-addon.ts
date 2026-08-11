@@ -41,7 +41,7 @@ export class HttpRequestUIAddonCode {
             history: any[]
         }
     ) {
-        const url = this.createUrl(data.document);
+        const url = this.createUrl({ ...data.document, ...data.params });
         const headers = await this.createHeaders();
         if (this.mockId) {
             return this.mockRequest(this.mockId, this.type, url, data, headers);

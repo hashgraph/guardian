@@ -367,9 +367,10 @@ export class ThemesApi {
         }
     })
     @HttpCode(HttpStatus.OK)
-    @UseCache()
+    @UseCache({ isFastify: true })
     async exportTheme(
         @AuthUser() user: IAuthUser,
+        @Req() req,
         @Param('themeId') themeId: string,
         @Response() res: any
     ): Promise<any> {
@@ -379,6 +380,7 @@ export class ThemesApi {
             const file: any = await guardian.exportThemeFile(themeId, owner);
             res.header('Content-disposition', `attachment; filename=theme_${Date.now()}`);
             res.header('Content-type', 'application/zip');
+            req.locals = file;
             return res.send(file);
         } catch (error) {
             await InternalException(error, this.logger, user.id);

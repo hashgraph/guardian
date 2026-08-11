@@ -284,11 +284,12 @@ export class ModulesApi {
                 s.readonly = s.readonly || s.owner !== owner.owner
             });
 
-            req.locals = SchemaUtils.toOld(items)
+            const result = SchemaUtils.toOld(items)
+            req.locals = result
 
             return res
                 .header('X-Total-Count', count)
-                .send(SchemaUtils.toOld(items));
+                .send(result);
         } catch (error) {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);

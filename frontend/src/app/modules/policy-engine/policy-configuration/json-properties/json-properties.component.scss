@@ -1,7 +1,7 @@
 .textarea-code {
     position: absolute;
     left: 0px;
-    top: 32px;
+    top: 44px;
     bottom: 0px;
     right: 0px;
     resize: none;
@@ -10,6 +10,10 @@
     margin: 0px;
     border: none;
     padding: 0;
+
+    ::ng-deep .CodeMirror {
+        font-size: 12px;
+    }
 }
 
 .toolbar {
@@ -17,57 +21,68 @@
     left: 0px;
     top: 0px;
     right: 0px;
-    height: 31px;
+    height: 44px;
     overflow: hidden;
-    background: var(--guardian-grey-background, #f7f7f7);
+    background: var(--guardian-background, #fff);
     display: flex;
     flex-direction: row;
-    border-bottom: 1px solid var(--guardian-border-color, #ddd);
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 0 10px;
+    border-bottom: 1px solid var(--guardian-border-color, #E1E7EF);
 }
 
 .toolbar__save-btn[readonly="true"],
 .toolbar__close-btn[readonly="true"] {
     pointer-events: none;
-    filter: grayscale(1);
-    opacity: 0.6;
-}
-
-.toolbar__save-btn {
-    color: #3f51b5
-}
-
-.toolbar-btn.toolbar__close-btn {
-    width: 80px;
-}
-
-.toolbar__close-btn {
-    color: #c90000;
+    cursor: not-allowed;
+    opacity: 0.45;
 }
 
 .toolbar-btn {
     cursor: pointer;
-    margin: 2px 6px 2px 3px;
-    position: relative;
-    height: 27px;
-    padding: 1px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 30px;
+    padding: 0 14px;
     box-sizing: border-box;
-    width: 70px;
-    border: 1px solid #e7e7e7;
-    border-radius: 4px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: var(--font-family-inter, 'Inter', sans-serif);
+    transition: opacity 0.12s ease;
 
     .pi {
-        margin: 4px;
+        font-size: 14px;
     }
 }
 
-.toolbar-btn:hover {
-    background: var(--guardian-grey-background, #f0f0f0);
+.toolbar-btn span {
+    position: static;
 }
 
-.toolbar-btn span {
-    position: absolute;
-    left: 28px;
-    top: 4px;
+.toolbar__close-btn {
+    order: 1;
+    color: var(--guardian-font-color, #23252E);
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
+    background: var(--guardian-background, #fff);
+
+    &:hover {
+        background: var(--guardian-grey-background, #f1f3f9);
+    }
+}
+
+.toolbar__save-btn {
+    order: 2;
+    color: #fff;
+    background: var(--color-primary, #4169E2);
+    border: 1px solid var(--color-primary, #4169E2);
+
+    &:hover {
+        background: color-mix(in srgb, var(--color-primary, #4169E2) 88%, #000);
+    }
 }
 
 .json-errors {

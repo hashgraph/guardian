@@ -143,21 +143,41 @@
                         <div class="formula-body" [attr.error]="!item.validField">
                           <div class="guardian-input-container">
                             <label class="form-label"></label>
-                            <div class="formula-link" (click)="onInputLink(item)">
-                              @if (item.field) {
-                                <div class="formula-link-value">
-                                  <div class="formula-link-value__entity">{{getEntityName('input', item.schema)}}:</div>
-                                  <div class="formula-link-value__item">{{getFieldName('input', item.schema, item.field)}}</div>
-                                </div>
+                            <div class="path-input-wrapper">
+                              <input
+                                type="text"
+                                pInputText
+                                class="path-input"
+                                [ngModel]="item.field"
+                                (ngModelChange)="onPathChange(item, $event)"
+                                (keyup)="onPathKeyup($event)"
+                                (blur)="onPathBlur(item)"
+                                placeholder="Path"
+                                [readOnly]="readonly"
+                              />
+                              @if (!readonly) {
+                                <button
+                                  class="guardian-icon-button path-pick-btn"
+                                  (click)="onInputLink(item)"
+                                  title="Browse schema fields">
+                                  <svg-icon
+                                    class="icon-btn svg-icon"
+                                    src="/assets/images/icons/16/search.svg"
+                                    svgClass="icon-color-primary">
+                                  </svg-icon>
+                                </button>
                               }
-                              @if (item.field) {
-                                <div class="formula-link-remove">
-                                  <button class="guardian-icon-button" (click)="deleteLink(item, $event)">
-                                    <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
-                                  </button>
+                              @if (activePathItem === item && pathSuggestions.length) {
+                                <div class="path-suggestions">
+                                  @for (s of pathSuggestions; track s) {
+                                    <div class="path-suggestion-item" (mousedown)="selectPathSuggestion(item, s)">{{s}}</div>
+                                  }
                                 </div>
                               }
                             </div>
+                            @if (fieldWarnings.get(item.id)) {
+                              <div class="path-unknown-warning">Path not found in schema</div>
+                            }
                           </div>
                         </div>
                       </div>
@@ -173,11 +193,11 @@
                           </div>
                         </div>
                         <div class="guardian-input-container">
-                          <label class="form-label">Path</label>
+                          <label class="form-label">Field Name</label>
                           <div class="readonly-input">
                             @if (item.field) {
                               <div class="formula-link-value">
-                                <div class="formula-link-value__item">{{getFieldPath('input', item.schema, item.field)}}</div>
+                                <div class="formula-link-value__item">{{getFieldName('input', item.schema, item.field)}}</div>
                               </div>
                             }
                           </div>
@@ -626,11 +646,11 @@
                           </div>
                         </div>
                         <div class="guardian-input-container">
-                          <label class="form-label">Path</label>
+                          <label class="form-label">Field Name</label>
                           <div class="readonly-input">
                             @if (item.field) {
                               <div class="formula-link-value">
-                                <div class="formula-link-value__item">{{getFieldPath('output', null, item.field)}}</div>
+                                <div class="formula-link-value__item">{{getFieldName('output', null, item.field)}}</div>
                               </div>
                             }
                           </div>
@@ -885,11 +905,11 @@
                         </div>
                       </div>
                       <div class="guardian-input-container">
-                        <label class="form-label">Path</label>
+                        <label class="form-label">Field Name</label>
                         <div class="readonly-input">
                           @if (item.field) {
                             <div class="formula-link-value">
-                              <div class="formula-link-value__item">{{getFieldPath('input', item.schema, item.field)}}</div>
+                              <div class="formula-link-value__item">{{getFieldName('input', item.schema, item.field)}}</div>
                             </div>
                           }
                         </div>
@@ -1004,11 +1024,11 @@
                         </div>
                       </div>
                       <div class="guardian-input-container" style="width: 50%">
-                        <label class="form-label">Path</label>
+                        <label class="form-label">Field Name</label>
                         <div class="readonly-input">
                           @if (item.field) {
                             <div class="formula-link-value">
-                              <div class="formula-link-value__item">{{getFieldPath('output', null, item.field)}}</div>
+                              <div class="formula-link-value__item">{{getFieldName('output', null, item.field)}}</div>
                             </div>
                           }
                         </div>

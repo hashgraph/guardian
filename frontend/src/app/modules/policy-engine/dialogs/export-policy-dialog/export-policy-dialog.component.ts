@@ -1,8 +1,10 @@
 import { Component } from '@angular/core';
+import { Observable } from 'rxjs';
 import { ModulesService } from 'src/app/services/modules.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ToolsService } from 'src/app/services/tools.service';
+import { SchemaTemplatesService } from 'src/app/services/schema-templates.service';
 /**
  * Export schema dialog.
  */
@@ -18,6 +20,7 @@ export class ExportPolicyDialog {
     public policy!: any;
     public module!: any;
     public tool!: any;
+    public schemaTemplate!: any;
     public header!: any;
 
     constructor(
@@ -25,11 +28,13 @@ export class ExportPolicyDialog {
         public config: DynamicDialogConfig,
         private policyEngineService: PolicyEngineService,
         private modulesService: ModulesService,
-        private toolsService: ToolsService
+        private toolsService: ToolsService,
+        private schemaTemplatesService: SchemaTemplatesService
     ) {
         this.policy = this.config.data.policy;
         this.module = this.config.data.module;
         this.tool = this.config.data.tool;
+        this.schemaTemplate = this.config.data.schemaTemplate;
         this.header = this.config.header;
     }
 
@@ -41,7 +46,8 @@ export class ExportPolicyDialog {
         return (
             (this.policy && this.policy.messageId) ||
             (this.module && this.module.messageId) ||
-            (this.tool && this.tool.messageId)
+            (this.tool && this.tool.messageId) ||
+            (this.schemaTemplate && this.schemaTemplate.messageId)
         )
     }
 
@@ -49,7 +55,8 @@ export class ExportPolicyDialog {
         return (
             (this.policy) ||
             (this.module) ||
-            (this.tool)
+            (this.tool) ||
+            (this.schemaTemplate)
         )
     }
 
@@ -64,6 +71,10 @@ export class ExportPolicyDialog {
         }
         if (this.tool) {
             this.handleCopyToClipboard(this.tool.messageId)
+            return;
+        }
+        if (this.schemaTemplate) {
+            this.handleCopyToClipboard(this.schemaTemplate.messageId)
             return;
         }
     }
@@ -81,6 +92,10 @@ export class ExportPolicyDialog {
             this.toolToFile()
             return;
         }
+        if (this.schemaTemplate) {
+            this.schemaTemplateToFile()
+            return;
+        }
     }
 
     public getSchemaTitle(model: any) {
@@ -96,50 +111,48 @@ export class ExportPolicyDialog {
     }
 
     private saveToFile() {
-        this.loading = true;
-        this.policyEngineService.exportInFile(this.policy.id).subscribe(
-            (fileBuffer) => {
-                let downloadLink = document.createElement('a');
-                downloadLink.href = window.URL.createObjectURL(
-                    new Blob([new Uint8Array(fileBuffer)], {
-                        type: 'application/guardian-policy',
-                    })
-                );
-                downloadLink.setAttribute(
-                    'download',
-                    `${this.policy.name}.policy`
-                );
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
-            },
-            (error) => {
-                this.loading = false;
-            }
+        this.download(
+            this.policyEngineService.exportInFile(this.policy.id),
+            'application/guardian-policy',
+            `${this.policy.name}.policy`
         );
     }
 
     private moduleToFile() {
+        this.download(
+            this.modulesService.exportInFile(this.module.uuid),
+            'application/guardian-module',
+            `${this.module.name}.module`
+        );
+    }
+
+    private toolToFile() {
+        this.download(
+            this.toolsService.exportInFile(this.tool.id),
+            'application/guardian-tool',
+            `${this.tool.name}.tool`
+        );
+    }
+
+    private schemaTemplateToFile() {
+        this.download(
+            this.schemaTemplatesService.exportInFile(this.schemaTemplate.id),
+            'application/guardian-schema-template',
+            `${this.schemaTemplate.name}.template`
+        );
+    }
+
+    private download(
+        request: Observable<any>,
+        type: string,
+        fileName: string
+    ): void {
         this.loading = true;
-        this.modulesService.exportInFile(this.module.uuid).subscribe(
+        request.subscribe(
             (fileBuffer) => {
-                let downloadLink = document.createElement('a');
-                downloadLink.href = window.URL.createObjectURL(
-                    new Blob([new Uint8Array(fileBuffer)], {
-                        type: 'application/guardian-module',
-                    })
-                );
-                downloadLink.setAttribute(
-                    'download',
-                    `${this.module.name}.module`
-                );
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
+                this.saveBuffer(fileBuffer, type, fileName);
+                this.loading = false;
+                this.ref.close(true);
             },
             (error) => {
                 this.loading = false;
@@ -147,22 +160,16 @@ export class ExportPolicyDialog {
         );
     }
 
-    private toolToFile() {
-        this.loading = true;
-        this.toolsService.exportInFile(this.tool.id)
-            .subscribe(fileBuffer => {
-                let downloadLink = document.createElement('a');
-                downloadLink.href = window.URL.createObjectURL(new Blob([new Uint8Array(fileBuffer)], {
-                    type: 'application/guardian-tool'
-                }));
-                downloadLink.setAttribute('download', `${this.tool.name}.tool`);
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
-            }, error => {
-                this.loading = false;
-            });
+    private saveBuffer(fileBuffer: any, type: string, fileName: string): void {
+        const url = window.URL.createObjectURL(
+            new Blob([new Uint8Array(fileBuffer)], { type })
+        );
+        const downloadLink = document.createElement('a');
+        downloadLink.href = url;
+        downloadLink.setAttribute('download', fileName);
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        setTimeout(() => window.URL.revokeObjectURL(url), 500);
     }
 }

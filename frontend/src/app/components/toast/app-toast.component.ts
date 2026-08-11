@@ -1,7 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { IUser, UserPermissions } from '@guardian/interfaces';
+import { BlockErrorType, IUser, UserPermissions } from '@guardian/interfaces';
 import { Subscription } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
+import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
     selector: 'app-toast',
@@ -10,13 +11,21 @@ import { ProfileService } from 'src/app/services/profile.service';
     standalone: false
 })
 export class AppToastComponent implements OnInit, OnDestroy {
+    public readonly BlockErrorType = BlockErrorType;
     public canReadLogs: boolean = false;
 
     private subscription = new Subscription();
 
-    constructor(private profileService: ProfileService) {}
+    constructor(
+        private profileService: ProfileService,
+        private auth: AuthService,
+    ) {}
 
     public ngOnInit(): void {
+        // No session (e.g. login page): skip getProfile() to avoid a /profiles/null 401.
+        if (!this.auth.getAccessToken()) {
+            return;
+        }
         this.subscription.add(
             this.profileService.getProfile().subscribe({
                 next: (profile: IUser) => {

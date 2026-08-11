@@ -1,6 +1,29 @@
 <div class="content" #contentContainer>
+  @if (type !== 'VP' && navCollapsed) {
+    <div class="nav-collapse-rail">
+      <button
+        class="nav-collapse-btn"
+        type="button"
+        title="Expand panel"
+        aria-label="Expand panel"
+        (click)="toggleNav()">
+        <i class="pi pi-chevron-right"></i>
+      </button>
+    </div>
+  }
   @if (type !== 'VP') {
-    <div class="schema-form-view-nav" #navContainer [class.nav-collapsed]="navCollapsed">
+    <div class="schema-form-view-nav" #navContainer [hidden]="navCollapsed">
+      <div class="nav-collapse-header">
+        <span class="nav-collapse-title">Sections</span>
+        <button
+          class="nav-collapse-btn"
+          type="button"
+          title="Collapse panel"
+          aria-label="Collapse panel"
+          (click)="toggleNav()">
+          <i class="pi pi-chevron-left"></i>
+        </button>
+      </div>
       <app-schema-form-view-navigation #schemaNav
         [subjects]="subjects"
         [schemaMap]="schemaMap"
@@ -12,7 +35,7 @@
       </app-schema-form-view-navigation>
     </div>
   }
-  @if (type !== 'VP') {
+  @if (type !== 'VP' && !navCollapsed) {
     <div
       class="resize-handler"
       (mousedown)="onResizeStart($event)"

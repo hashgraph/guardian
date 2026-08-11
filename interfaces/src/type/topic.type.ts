@@ -13,11 +13,13 @@ export enum TopicType {
     ModuleTopic = 'MODULE_TOPIC',
     ContractTopic = 'CONTRACT_TOPIC',
     ToolTopic = 'TOOL_TOPIC',
+    SchemaTemplateTopic = 'SCHEMA_TEMPLATE_TOPIC',
     TagsTopic = 'TAGS_TOPIC',
     StatisticTopic = 'STATISTIC_TOPIC',
     LabelTopic = 'LABEL_TOPIC',
     RestoreTopic = 'RESTORE_TOPIC',
     ActionsTopic = 'ACTIONS_TOPIC',
     RecordsTopic = 'RECORDS_TOPIC',
-    CommentsTopic = 'COMMENTS_TOPIC'
+    CommentsTopic = 'COMMENTS_TOPIC',
+    OrganizationTopic = 'ORGANIZATION_TOPIC'
 }

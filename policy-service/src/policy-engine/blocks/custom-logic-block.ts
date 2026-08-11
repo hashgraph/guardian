@@ -119,9 +119,31 @@ export class CustomLogicBlock {
     public async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
 
+        // This block has no UI, so whenever it finishes without handing work to the next
+        // child, the enclosing step must not be left pointing at it.
+        const unparkParentStep = async () => {
+            const parent = ref.parent as any;
+            if (parent?.blockType === 'interfaceStepBlock' && typeof parent.unparkStalledChild === 'function') {
+                try {
+                    await parent.unparkStalledChild(event.user, ref, event.actionStatus);
+                } catch (unparkError) {
+                    ref.error(`unparkStalledChild failed: ${PolicyUtils.getErrorMessage(unparkError)}`);
+                }
+            }
+        };
+
         try {
             const triggerEvents = async (documents: IPolicyDocument | IPolicyDocument[]) => {
                 if (!documents) {
+                    // An empty result is a legitimate script outcome (`done(null)`, or a bare
+                    // `return` when a source lookup misses), but it must not silently kill the
+                    // workflow. Skipping every event left an interfaceStepBlock parked on this
+                    // non-UI block with nothing to render, so the viewer showed "This step isn't
+                    // available to you right now" forever. Nothing goes downstream (still no
+                    // RunEvent), but refresh the viewer and tell the step the chain ended here.
+                    ref.warn('custom logic returned an empty result; nothing passed downstream');
+                    await unparkParentStep();
+                    await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data, event.actionStatus);
                     return;
                 }
                 const outData: IPolicyEventState = { ...event.data, data: documents };
@@ -144,6 +166,9 @@ export class CustomLogicBlock {
             PolicyComponentsUtils.BlockErrorFn(ref.blockType, message, event.user)
                 .catch((broadcastError) => ref.error(PolicyUtils.getErrorMessage(broadcastError)));
             ref.triggerEvents(PolicyOutputEventType.ErrorEvent, event.user, event.data, event.actionStatus);
+            // Surfacing the error still left the step parked here, so the user got a toast
+            // *and* a permanent "step isn't available" screen. Rewind as well.
+            await unparkParentStep();
         }
 
         return event.data;
@@ -468,6 +493,13 @@ export class CustomLogicBlock {
                         reject(error);
                     });
                     worker.on('message', async (data) => {
+                        // A thrown script posts an 'error' sentinel; reject so runAction's catch
+                        // surfaces it (BlockErrorFn + log) instead of silently parking the step.
+                        if (data?.error) {
+                            cleanup();
+                            reject(new Error(data.error));
+                            return;
+                        }
                         try {
                             if (data?.type === 'done') {
                                 await done(data.result, data.final);

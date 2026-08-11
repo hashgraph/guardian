@@ -1,7 +1,3 @@
----
-icon: sidebar-flip
----
-
 # Demo using UI
 
 ## 1. Document reviews
@@ -26,7 +22,7 @@ When opening a comments section a list of discussions is displayed. To create a 
 
 To create a discussion several fields must be filled out:
 
-**Discussion name** - arbitrary human readable name (usually used for indicating the topic of the discussion).&#x20;
+**Discussion name** - arbitrary human readable name (usually used for indicating the topic of the discussion).
 
 **Relationships** – references to other documents related to the current one.
 

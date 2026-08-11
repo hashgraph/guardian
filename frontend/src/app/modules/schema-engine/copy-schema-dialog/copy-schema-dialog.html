@@ -23,7 +23,7 @@
           <label for="policyDropdown" class="form-label">* Policy</label>
           <p-select id="policyDropdown" formControlName="topicId" [options]="getPoliciesWithDefault()"
             optionLabel="name" optionValue="topicId" [appendTo]="'body'" placeholder="Select a policy"
-            (onChange)="onFilter($event)" class="full-width">
+            class="full-width">
           </p-select>
         </div>
       }
@@ -31,7 +31,7 @@
         <div class="form-group">
           <label for="toolDropdown" class="form-label">* Tool</label>
           <p-select id="toolDropdown" formControlName="topicId" [options]="getToolsWithDefault()"
-            optionLabel="name" optionValue="topicId" placeholder="Select a tool" (onChange)="onFilter($event)"
+            optionLabel="name" optionValue="topicId" placeholder="Select a tool"
             class="full-width">
           </p-select>
         </div>

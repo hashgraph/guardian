@@ -34,6 +34,10 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
                 routerLink: '/schema-rules'
             },
             {
+                title: 'Schema Templates',
+                routerLink: '/schema-templates'
+            },
+            {
                 title: 'Artifacts',
                 routerLink: '/artifacts'
             },
@@ -52,7 +56,7 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
         ],
     },
     {
-        title: 'Tokens & Contracts',
+        title: 'Hedera',
         icon: 'icon-hbar',
         allowedUserRoles: [UserRole.STANDARD_REGISTRY],
         active: false,
@@ -65,14 +69,11 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
                 title: 'Retirement Contracts',
                 routerLink: '/contracts'
             },
+            {
+                title: 'Relayer Accounts',
+                routerLink: '/relayer-accounts'
+            },
         ],
-    },
-    {
-        title: 'Relayer Accounts',
-        icon: 'pi pi-wallet',
-        allowedUserRoles: [UserRole.STANDARD_REGISTRY],
-        active: false,
-        routerLink: '/relayer-accounts'
     },
     {
         title: 'Administration',
@@ -188,6 +189,15 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
                 routerLink: '/schema-rules'
             });
         }
+        if (
+            user.SCHEMAS_SCHEMA_READ ||
+            user.SCHEMAS_SYSTEM_SCHEMA_READ
+        ) {
+            childItems.push({
+                title: 'Schema Templates',
+                routerLink: '/schema-templates'
+            });
+        }
         if (user.ARTIFACTS_FILE_READ) {
             childItems.push({
                 title: 'Artifacts',
@@ -279,7 +289,7 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
             }
         }
         menu.push({
-            title: 'Tokens & Contracts',
+            title: 'Hedera',
             icon: 'icon-hbar',
             allowedUserRoles: [UserRole.STANDARD_REGISTRY],
             active: false,

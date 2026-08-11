@@ -1,5 +1,15 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
-import { Schema, SchemaField, SchemaRuleValidateResult, UnitSystem } from '@guardian/interfaces';
+import {
+    getAllContinents,
+    getAllCountries,
+    getCountriesOfState,
+    getStatesOfCountry,
+    isGeoCustomType,
+    Schema,
+    SchemaField,
+    SchemaRuleValidateResult,
+    UnitSystem
+} from '@guardian/interfaces';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { FormulasViewDialog } from '../../formulas/dialogs/formulas-view-dialog/formulas-view-dialog.component';
 import { DialogService } from 'primeng/dynamicdialog';
@@ -58,6 +68,9 @@ export class SchemaFormViewComponent implements OnInit {
 
     public fields: IFieldControl[] | undefined = [];
     private pageSize: number = 25;
+    // Resolved images by link; null marks a link that failed to resolve.
+    private imgCache = new Map<string, string | null>();
+    private imgRequests = new Map<string, Promise<string | null>>();
 
     constructor(
         private ipfs: IPFSService,
@@ -302,28 +315,34 @@ export class SchemaFormViewComponent implements OnInit {
     }
 
     private async loadImg(item: IFieldControl | IFieldIndexControl) {
-        item.loading = true;
-        if (this.dryRun) {
-            return this.ipfs
-                .getImageFromDryRunStorage(item.value)
-                .then((res) => {
-                    item.imgSrc = res;
-                })
-                .finally(() => {
-                    item.loading = false;
-                    this.changeDetector.detectChanges();
-                });
-        } else {
-            return this.ipfs
-                .getImageByLink(item.value)
-                .then((res) => {
-                    item.imgSrc = res;
-                })
-                .finally(() => {
-                    item.loading = false;
-                    this.changeDetector.detectChanges();
-                });
+        const key = `${this.dryRun ? 'dry-run' : 'ipfs'}:${item.value}`;
+
+        // update() rebuilds every field on each input change; without this cache a
+        // failing link is re-requested on every re-render.
+        if (this.imgCache.has(key)) {
+            item.imgSrc = this.imgCache.get(key) || '';
+            item.loading = false;
+            return;
         }
+
+        item.loading = true;
+
+        let request = this.imgRequests.get(key);
+        if (!request) {
+            request = (this.dryRun
+                ? this.ipfs.getImageFromDryRunStorage(item.value)
+                : this.ipfs.getImageByLink(item.value)
+            )
+                .catch(() => null)
+                .finally(() => this.imgRequests.delete(key));
+            this.imgRequests.set(key, request);
+        }
+
+        const imgSrc = await request;
+        this.imgCache.set(key, imgSrc);
+        item.imgSrc = imgSrc || '';
+        item.loading = false;
+        this.changeDetector.detectChanges();
     }
     private loadImgs(items: IFieldIndexControl[]) {
         Promise.all(
@@ -374,6 +393,28 @@ export class SchemaFormViewComponent implements OnInit {
         }
         return item.pattern === '^((https):\/\/)?ipfs.io\/ipfs\/.+'
             || item.pattern === '^ipfs:\/\/.+';
+    }
+
+    public displayValue(item: IFieldControl): any {
+        if (!isGeoCustomType(item.customType || '') || !item.value) {
+            return item.value;
+        }
+        if (item.customType === 'continent') {
+            return getAllContinents()
+                .find((entry) => entry.value === item.value)?.name || item.value;
+        }
+        if (item.customType === 'country') {
+            return getAllCountries()
+                .find((entry) => entry.value === item.value)?.name || item.value;
+        }
+        for (const country of getCountriesOfState(item.value)) {
+            const state = getStatesOfCountry(country)
+                .find((entry) => entry.value === item.value);
+            if (state) {
+                return state.name;
+            }
+        }
+        return item.value;
     }
 
     public isInput(item: IFieldControl): boolean {
@@ -632,7 +673,7 @@ export class SchemaFormViewComponent implements OnInit {
     }
 
     public canDrawTable(item: IFieldControl): boolean {
-        const customTypes = ['geo', 'table', 'sentinel'];
+        const customTypes = ['geo', 'table', 'sentinel', 'country', 'continent', 'state'];
 
         if (!item.isArray || !item.isRef || item.hidden) {
             return false;

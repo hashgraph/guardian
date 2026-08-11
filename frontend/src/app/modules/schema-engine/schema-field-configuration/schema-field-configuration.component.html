@@ -179,6 +179,32 @@
             </ng-template>
           </p-select>
         </div>
+        @if ((geoLocation && geoAncestorTypes.length) || field.controlDependency.value) {
+          <div class="dropdown-field max-width-50 guardian-input-container">
+            <label class="form-label">Depends on</label>
+            <p-select
+              class="guardian-dropdown"
+              panelStyleClass="guardian-dropdown-panel width-825"
+              [formControl]="field.controlDependency"
+              [options]="geoDependencyOptions"
+              [showClear]="true"
+              appendTo="body"
+              placeholder="No dependency"
+              >
+              <ng-template let-parent pTemplate="selectedItem">
+                <span>{{ geoDependencyLabel(parent) }}</span>
+              </ng-template>
+              <ng-template let-parent pTemplate="item">
+                <span>{{ geoDependencyLabel(parent) }}</span>
+              </ng-template>
+            </p-select>
+            @if (field.controlDependency.hasError('geoDependency')) {
+              <small class="error-message">
+                {{ field.controlDependency.getError('geoDependency') }}
+              </small>
+            }
+          </div>
+        }
         @if (unit) {
           <div class="input-field-container guardian-input-container">
             <label class="form-label">Unit</label>

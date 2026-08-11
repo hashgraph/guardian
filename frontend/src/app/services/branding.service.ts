@@ -27,7 +27,7 @@ const DEFAULT_BRANDING: BrandingPayload = {
     primaryColor: '#0031ff',
     companyName: 'GUARDIAN',
     companyLogoUrl: '/assets/images/logo.png',
-    loginBannerUrl: '/assets/bg.jpg',
+    loginBannerUrl: '',
     faviconUrl: 'favicon.ico',
     termsAndConditions: '',
 };
@@ -84,8 +84,7 @@ export class BrandingService {
                 this.brandingData = data || { ...DEFAULT_BRANDING };
                 return this.brandingData as BrandingPayload;
             })
-            .catch((error: any) => {
-                console.log(error)
+            .catch(() => {
                 this.brandingData = { ...DEFAULT_BRANDING };
                 return this.brandingData;
             })
@@ -105,8 +104,7 @@ export class BrandingService {
                 this.applyBranding(this.brandingData);
                 return data
             })
-            .catch((error: any) => {
-                console.log(error)
+            .catch(() => {
                 return this.brandingData;
             });
     }

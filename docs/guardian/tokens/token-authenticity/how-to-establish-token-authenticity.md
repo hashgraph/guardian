@@ -11,6 +11,6 @@
    * Verify signatures, retrieve DIDs as necessary
    * Confirm the MRV data that meets the criteria of the policy.
 
-For a working example, please check [FAQs](../../faqs.md) Question no. 17.
+For a working example, please check [FAQs](../../../community-and-contributing/faqs.md) Question no. 17.
 
 #### To get a visual representation on the above process, please check [Detailed Architecture Diagram](../../architecture/schema-architecture.md).

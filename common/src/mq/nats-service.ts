@@ -5,14 +5,16 @@ import { IMessageResponse } from '../models/index.js';
 import { ForbiddenException } from '@nestjs/common';
 import { JwtServicesValidator } from '../security/index.js';
 
-type CallbackFunction = (body: any, error?: string, code?: number) => void;
+type CallbackFunction = (body: any, error?: string, code?: number, data?: any) => void;
 
 class MessageError extends Error {
     public code: number;
+    public data?: any;
 
-    constructor(message: any, code?: number) {
+    constructor(message: any, code?: number, data?: any) {
         super(message);
         this.code = code;
+        this.data = data;
     }
 }
 
@@ -114,7 +116,7 @@ export abstract class NatsService {
                                 } catch (err) {
                                     throw err;
                                 }
-                            fn(message.body, message.error, message.code);
+                            fn(message.body, message.error, message.code, (message as any).data);
                             } catch (e: any) {
                                 console.error('Reply validation failed:', e.message);
                                 fn(null, e.message, 401);
@@ -210,9 +212,9 @@ export abstract class NatsService {
             const head = headers();
             head.append('messageId', messageId);
             if (isResponseCallback) {
-                this.responseCallbacksMap.set(messageId, (body: T, error?: string, code?: number) => {
+                this.responseCallbacksMap.set(messageId, (body: T, error?: string, code?: number, errorData?: any) => {
                     if (error) {
-                        reject(new MessageError(error, code));
+                        reject(new MessageError(error, code, errorData));
                     } else {
                         resolve(body);
                     }
@@ -324,7 +326,7 @@ export abstract class NatsService {
         }
 
         if (message && message.error) {
-            throw new MessageError(message.error, message.code);
+            throw new MessageError(message.error, message.code, (message as any).data);
         }
         return message ? message.body : null;
     }
