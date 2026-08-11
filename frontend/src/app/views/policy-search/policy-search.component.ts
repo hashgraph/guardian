@@ -6,6 +6,7 @@ import {HeaderPropsService} from 'src/app/services/header-props.service';
 import {TagsService} from 'src/app/services/tag.service';
 import {IUser} from '@guardian/interfaces';
 import {ProfileService} from '../../services/profile.service';
+import {environment} from '../../../environments/environment';
 
 /**
  * The page with guided policy search
@@ -18,11 +19,17 @@ import {ProfileService} from '../../services/profile.service';
 })
 export class PolicySearchComponent implements OnInit {
     loading: boolean = false;
-    selectedIndex: number = 0;
+    // AI search is optional: the tab is hidden when the AI service is not configured.
+    readonly aiSearchEnabled: boolean = environment.isAISearchConfigured;
+    selectedIndex: number = this.aiSearchEnabled ? 0 : 1;
     isConfirmed: boolean = false;
 
     private subscription = new Subscription();
     private tabs = ['policy-ai-search', 'policy-guided-search'];
+
+    private get defaultIndex(): number {
+        return this.aiSearchEnabled ? 0 : 1;
+    }
 
     constructor(
         public tagsService: TagsService,
@@ -38,11 +45,14 @@ export class PolicySearchComponent implements OnInit {
         this.loadProfile();
         this.route.queryParams.subscribe((params) => {
             const tab = this.route.snapshot.queryParams['tab'] || '';
-            this.selectedIndex = 0;
+            this.selectedIndex = this.defaultIndex;
             for (let index = 0; index < this.tabs.length; index++) {
                 if (tab === this.tabs[index]) {
                     this.selectedIndex = index;
                 }
+            }
+            if (!this.aiSearchEnabled && this.selectedIndex === 0) {
+                this.selectedIndex = this.defaultIndex;
             }
         })
     }
@@ -66,7 +76,7 @@ export class PolicySearchComponent implements OnInit {
     }
 
     onChange(index: string | number | undefined) {
-        this.selectedIndex = typeof index === 'number' ? index : 0;
+        this.selectedIndex = typeof index === 'number' ? index : this.defaultIndex;
         this.router.navigate(['/policy-search'], {
             queryParams: {tab: this.tabs[this.selectedIndex]}
         });
