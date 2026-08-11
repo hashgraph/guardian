@@ -19,11 +19,11 @@
 }
 
 .dialog-body {
-    height: 5vh;
-    max-height: 5vh;
-    overflow: auto;
     min-height: 70px;
     margin-bottom: 16px;
+    // The theme caps .dialog-body with !important, which scrolls the policy list inside the body.
+    max-height: none !important;
+    overflow: visible !important;
 }
 
 .dialog-footer {
@@ -37,4 +37,22 @@
     font-weight: 500;
     line-height: 18px;
     margin-top: 25px;
+
+    &+.confirmation-text {
+        margin-top: 12px;
+    }
+
+    ul {
+        margin: 0;
+        padding-left: 20px;
+    }
+
+    li {
+        margin-top: 8px;
+    }
+
+    li p {
+        margin: 0;
+        word-break: break-word;
+    }
 }

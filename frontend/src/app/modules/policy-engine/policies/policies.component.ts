@@ -2266,12 +2266,14 @@ export class PoliciesComponent implements OnInit {
                                     //
                                 })
 
-                                return this.indexedDb.clearByKeyPrefixAcrossStores(
+                                await this.indexedDb.clearByKeyPrefixAcrossStores(
                                     DB_NAME.HIDE_EVENTS_UI_STATE,
                                     [STORES_NAME.POLICY_HIDE_EVENTS_STORE],
                                     `${policyId}`
                                 );
                             }
+
+                            this.onClearSelection();
 
                             const { taskId, expectation } = result;
                             this.router.navigate(['task', taskId], {
