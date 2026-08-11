@@ -338,7 +338,7 @@
                       <div class="components-group-body readonly-status">
                         @for (item of componentsList.favorites; track item) {
                           <div
-                            class="components-group-item">
+                            [attr.block-type]="item.header" class="components-group-item">
                             <div (click)="onAdd(item)" [attr.block-type]="item.header"
                               [cdkDragData]="item.data" cdkDrag class="drag-btn">
                               <div class="drag-component">
@@ -368,7 +368,7 @@
                     <div class="components-group-body readonly-status">
                       @for (item of componentsList.uiComponents; track item) {
                         <div
-                          class="components-group-item">
+                          [attr.block-type]="item.header" class="components-group-item">
                           <div (click)="onAdd(item)" [attr.block-type]="item.header"
                             [cdkDragData]="item.data" cdkDrag class="drag-btn">
                             <div class="drag-component">
@@ -397,7 +397,7 @@
                     <div class="components-group-body readonly-status">
                       @for (item of componentsList.serverBlocks; track item) {
                         <div
-                          class="components-group-item">
+                          [attr.block-type]="item.header" class="components-group-item">
                           <div (click)="onAdd(item)" [attr.block-type]="item.header"
                             [cdkDragData]="item.data" cdkDrag class="drag-btn">
                             <div class="drag-component">
@@ -425,7 +425,7 @@
                     </div>
                     <div class="components-group-body readonly-status">
                       @for (item of componentsList.addons; track item) {
-                        <div class="components-group-item">
+                        <div [attr.block-type]="item.header" class="components-group-item">
                           <div (click)="onAdd(item)" [attr.block-type]="item.header"
                             [cdkDragData]="item.data" cdkDrag class="drag-btn">
                             <div class="drag-component">
@@ -454,7 +454,7 @@
                       <div class="components-group-body readonly-status">
                         @for (item of componentsList.unGrouped; track item) {
                           <div
-                            class="components-group-item">
+                            [attr.block-type]="item.header" class="components-group-item">
                             <div (click)="onAdd(item)" [attr.block-type]="item.header"
                               [cdkDragData]="item.data" cdkDrag class="drag-btn">
                               <div class="drag-component">
@@ -493,7 +493,7 @@
                       </div>
                       <div class="components-group-body readonly-status">
                         @for (item of modulesList.favorites; track item) {
-                          <div class="components-group-item">
+                          <div [attr.block-type]="item.header" class="components-group-item">
                             <div (click)="onAddModule(item)" [attr.block-type]="item.header"
                               [cdkDragData]="item.data" cdkDrag class="drag-btn">
                               <div class="drag-component drag-module">
@@ -531,7 +531,7 @@
                     <div class="components-group-body readonly-status">
                       @for (item of modulesList.defaultModules; track item) {
                         <div
-                          class="components-group-item">
+                          [attr.block-type]="item.header" class="components-group-item">
                           <div (click)="onAddModule(item)" [attr.block-type]="item.header"
                             [cdkDragData]="item.data" cdkDrag class="drag-btn">
                             <div class="drag-component drag-module">
@@ -568,7 +568,7 @@
                     <div class="components-group-body readonly-status">
                       @for (item of modulesList.customModules; track item) {
                         <div
-                          class="components-group-item">
+                          [attr.block-type]="item.header" class="components-group-item">
                           <div (click)="onAddModule(item)" [attr.block-type]="item.header"
                             [cdkDragData]="item.data" cdkDrag class="drag-btn">
                             <div class="drag-component drag-module">
@@ -613,7 +613,7 @@
                     </div>
                     <div class="components-group-body readonly-status">
                       @for (item of modulesList.customTools; track item) {
-                        <div class="components-group-item">
+                        <div [attr.block-type]="item.header" class="components-group-item">
                           <div (click)="onAddTool(item)" [attr.block-type]="item.header"
                             [cdkDragData]="item.data" cdkDrag class="drag-btn">
                             <div class="drag-component drag-module">
