@@ -305,11 +305,15 @@ export class VCJS {
             throw new Error('Schema Loader not found');
         }
 
-        const schema = await this.schemaLoader(subject['@context'], subject.type, 'vc');
+        const loadedSchema = await this.schemaLoader(subject['@context'], subject.type, 'vc');
 
-        if (!schema) {
+        if (!loadedSchema) {
             throw new Error('Schema not found');
         }
+
+        // prepareSchema/coerceConditionConsts rewrite the document in place; the loader may
+        // hand back a cached instance shared with other callers, so validate against a copy.
+        const schema = JSON.parse(JSON.stringify(loadedSchema));
 
         const ajv = new Ajv({
             loadSchema: this.loadSchema
@@ -360,6 +364,16 @@ export class VCJS {
     }
 
     /**
+     * $ref sits directly on the property for objects, under `items` for arrays.
+     *
+     * @param prop Schema property
+     * @returns Referenced $defs key, if any
+     */
+    private readRef(prop: any): string | undefined {
+        return prop?.$ref ?? prop?.items?.$ref;
+    }
+
+    /**
      * Delete system fields from schema defs
      *
      * @param schema Schema
@@ -392,11 +406,17 @@ export class VCJS {
         // Multiple conditions targeting the same container accumulate into one Set.
         const stripByPath = new Map<string, Set<string>>();
 
+        const withRef = (prop: any, newRef: string): any => {
+            if (prop?.$ref) { return { ...prop, $ref: newRef }; }
+            if (prop?.items?.$ref) { return { ...prop, items: { ...prop.items, $ref: newRef } }; }
+            return prop;
+        };
+
         const collectPath = (constraint: any, pathSoFar: string[], currentProps: any) => {
             if (!constraint?.properties) { return; }
             for (const [propKey, val] of Object.entries(constraint.properties) as [string, any][]) {
                 if (!val || typeof val !== 'object') { continue; }
-                const ref = currentProps[propKey]?.$ref;
+                const ref = this.readRef(currentProps[propKey]);
                 if (!ref || !defsObj[ref]) { continue; }
                 const containerPath = [...pathSoFar, propKey];
                 const pathKey = containerPath.join('.');
@@ -430,7 +450,7 @@ export class VCJS {
         const computeOriginalIri = (pathArr: string[]): string | undefined => {
             let props = rootProperties;
             for (let i = 0; i < pathArr.length; i++) {
-                const ref = props[pathArr[i]]?.$ref;
+                const ref = this.readRef(props[pathArr[i]]);
                 if (!ref || !defsObj[ref]) { return undefined; }
                 if (i === pathArr.length - 1) { return ref; }
                 props = defsObj[ref]?.properties || {};
@@ -481,17 +501,17 @@ export class VCJS {
             // Rewrite the $ref on this specific container only.
             if (pathArr.length === 1) {
                 if (rootProperties[pathArr[0]]) {
-                    rootProperties[pathArr[0]] = { ...rootProperties[pathArr[0]], $ref: cloneKey };
+                    rootProperties[pathArr[0]] = withRef(rootProperties[pathArr[0]], cloneKey);
                 }
             } else {
                 const parentPathKey = pathArr.slice(0, -1).join('.');
                 const parentCloneKey = cloneKeys.get(parentPathKey);
                 const leafProp = pathArr[pathArr.length - 1];
                 if (parentCloneKey && defsObj[parentCloneKey]?.properties?.[leafProp]) {
-                    defsObj[parentCloneKey].properties[leafProp] = {
-                        ...defsObj[parentCloneKey].properties[leafProp],
-                        $ref: cloneKey,
-                    };
+                    defsObj[parentCloneKey].properties[leafProp] = withRef(
+                        defsObj[parentCloneKey].properties[leafProp],
+                        cloneKey
+                    );
                 }
             }
         }
@@ -558,7 +578,11 @@ export class VCJS {
                 return isNaN(n) ? value : n;
             }
             if (type === 'boolean') {
-                return typeof value === 'boolean' ? value : value === 'true';
+                if (typeof value === 'boolean') { return value; }
+                const s = String(value).trim().toLowerCase();
+                if (s === 'true' || s === '1') { return true; }
+                if (s === 'false' || s === '0') { return false; }
+                return value;
             }
             if (type === 'string' && value !== null && value !== undefined) {
                 return String(value);
@@ -566,27 +590,42 @@ export class VCJS {
             return value;
         };
 
+        // Mirrors describeIfConditionLeaf's shape: const, nested container, or anyOf/allOf of either.
+        const coerceValueNode = (val: any, contextProp: any, context: any): void => {
+            if (!val || typeof val !== 'object') { return; }
+            if ('const' in val) {
+                const type = contextProp?.type === 'array'
+                    ? contextProp?.items?.type
+                    : contextProp?.type;
+                if (type) { val.const = coerceConst(val.const, type); }
+                return;
+            }
+            if (val.properties) {
+                const ref = this.readRef(contextProp);
+                const subContext = ref ? (context.$defs?.[ref] ?? rootDefs[ref]) : null;
+                if (subContext) { walkIfNode(val, subContext); }
+                return;
+            }
+            if (Array.isArray(val.anyOf)) {
+                for (const branch of val.anyOf) { coerceValueNode(branch, contextProp, context); }
+            }
+            if (Array.isArray(val.allOf)) {
+                for (const branch of val.allOf) { coerceValueNode(branch, contextProp, context); }
+            }
+        };
+
         const walkIfNode = (node: any, context: any): void => {
             if (!node || typeof node !== 'object') { return; }
+            // allOf/anyOf may both be present on a node, so neither branch may return early.
             if (Array.isArray(node.allOf)) {
                 for (const child of node.allOf) { walkIfNode(child, context); }
-                return;
             }
             if (Array.isArray(node.anyOf)) {
                 for (const child of node.anyOf) { walkIfNode(child, context); }
-                return;
             }
             if (!node.properties) { return; }
             for (const [key, val] of Object.entries(node.properties) as [string, any][]) {
-                if (!val || typeof val !== 'object') { continue; }
-                if ('const' in val) {
-                    const type = context?.properties?.[key]?.type;
-                    if (type) { val.const = coerceConst(val.const, type); }
-                } else if (val.properties || val.allOf || val.anyOf) {
-                    const ref = context?.properties?.[key]?.$ref;
-                    const subContext = ref ? (context.$defs?.[ref] ?? rootDefs[ref]) : null;
-                    if (subContext) { walkIfNode(val, subContext); }
-                }
+                coerceValueNode(val, context?.properties?.[key], context);
             }
         };
 
@@ -603,37 +642,19 @@ export class VCJS {
         }
     }
 
-    /**
-     * Replaces AJV messages with a human-readable description
-     */
-    private resolveSchemaForError(rootSchema: any, instancePath: string): any {
-        // Root $defs is flat (updateSchemaDefs hoists all nested defs up); fall back to
-        // the current node's own $defs for schemas that were not hoisted.
-        const rootDefs = rootSchema.$defs || {};
-        const segments = instancePath.split('/').filter(Boolean).slice(0, -1);
-        let current = rootSchema;
-        for (const seg of segments) {
-            const prop = current.properties?.[seg];
-            const ref = prop?.$ref ?? prop?.items?.$ref;
-            if (ref) {
-                const next = current.$defs?.[ref] ?? rootDefs[ref];
-                if (next) { current = next; }
-            }
-        }
-        return current;
-    }
-
     private enhanceConditionErrors(errors: any[] | null | undefined, schema: any): any[] | null | undefined {
-        if (!errors?.length || !Array.isArray(schema?.allOf)) {
-            return errors;
-        }
+        if (!errors?.length) { return errors; }
+        // Condition owner/index live in schemaPath ("#.../allOf/N/then|else"), not instancePath.
+        const defs = schema.$defs ?? {};
         return errors.map(error => {
             if (error.keyword !== 'false schema') { return error; }
-            const match = (error.schemaPath as string)?.match(/^#\/allOf\/(\d+)\/(then|else)\//);
+            const match = (error.schemaPath as string)
+                ?.match(/^(#[^/]*)\/allOf\/(\d+)\/(then|else)\//);
             if (!match) { return error; }
-            const schemaForError = this.resolveSchemaForError(schema, error.instancePath);
-            if (!Array.isArray(schemaForError?.allOf)) { return error; }
-            const condEntry = schemaForError.allOf[parseInt(match[1], 10)];
+            const [, base, idx] = match;
+            const owner = base === '#' ? schema : (defs[base] ?? schema);
+            if (!Array.isArray(owner?.allOf)) { return error; }
+            const condEntry = owner.allOf[parseInt(idx, 10)];
             if (!condEntry?.if) { return error; }
             const fieldName = (error.instancePath as string).split('/').filter(Boolean).pop() || 'field';
             const condition = this.describeIfCondition(condEntry.if) || 'condition not met';
@@ -656,11 +677,15 @@ export class VCJS {
             throw new Error('Schema Loader not found');
         }
 
-        const schema = await this.schemaLoader(subject['@context'], subject.type, 'subject');
+        const loadedSchema = await this.schemaLoader(subject['@context'], subject.type, 'subject');
 
-        if (!schema) {
+        if (!loadedSchema) {
             throw new Error('Schema not found');
         }
+
+        // prepareSchema/coerceConditionConsts rewrite the document in place; the loader may
+        // hand back a cached instance shared with other callers, so validate against a copy.
+        const schema = JSON.parse(JSON.stringify(loadedSchema));
 
         const ajv = new Ajv({
             loadSchema: this.loadSchema
