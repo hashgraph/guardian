@@ -944,7 +944,7 @@ a.go-back-link svg {
 }
 
 :host ::ng-deep .content {
-    right: inherit !important;
+    right: auto !important;
     min-width: 100% !important;
 }
 
