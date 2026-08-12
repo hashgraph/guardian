@@ -441,11 +441,9 @@ export class SchemaHelper {
     /**
      * Unwrap the reachability gate around a condition's `else` branch.
      *
-     * `buildDocument` wraps the `else` of a condition that reads a field revealed by
-     * another condition in `{ if: <field present>, then: <else fields>, else: <forbid> }`,
-     * so the `else` fields are not demanded while that field is absent from the document.
-     * Anything reading the `else` body as a container of fields has to unwrap it first,
-     * otherwise the `else` fields are silently dropped.
+     * `buildDocument` wraps the `else` of a chained condition in
+     * `{ if: <field present>, then: <else fields>, else: <forbid> }`. Readers that treat
+     * `else` as a field container must unwrap it, or the `else` fields are dropped.
      * @param node `else` node of an `allOf` entry
      */
     public static unwrapConditionElse(node: any): any {
@@ -943,19 +941,13 @@ export class SchemaHelper {
         };
 
         /**
-         * Presence-only twin of `serializeIf`: same shape, but each leaf drops the `const`
-         * check so the node only asserts that the field is in the document.
+         * Presence-only twin of `serializeIf`: same shape without the `const` checks, so it
+         * asserts only that the field is in the document. Gates the `else` branch, which
+         * JSON Schema would otherwise apply when the field is absent — requiring the `else`
+         * fields of a condition that can never be reached.
          *
-         * Used to gate the `else` branch. `serializeIf` requires the field it reads, so an
-         * absent field makes the `if` fail and JSON Schema falls through to `else` — which
-         * would require the `else` fields of a condition that can never be reached. In
-         * `if A == 1 then B` / `if B == 2 then C` / `if C == 3 then D else E`, `A != 1`
-         * leaves `C` out of the document and `E` required, so the document cannot be
-         * completed at all.
-         *
-         * Returns null when every predicate reads an ordinary field, which is always
-         * present in the form: those conditions keep their plain `else` so existing
-         * schemas are unaffected.
+         * Returns null when every predicate reads an ordinary (always present) field, so
+         * unchained conditions keep their plain `else` and existing schemas are unaffected.
          */
         const serializeReachableIf = (cond: SchemaCondition): any => {
             const ic = cond.ifCondition;

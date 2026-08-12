@@ -292,16 +292,10 @@ export class FieldForm {
     }
 
     /**
-     * A condition can only be answered while the fields it reads are part of the form.
-     * Once such a field is itself revealed by a condition that no longer holds, its
-     * control is removed and the condition becomes unreachable: neither its `then` nor
-     * its `else` fields belong in the form.
-     *
-     * This has to be checked separately from `evaluateIf`, which reports a missing
-     * control as `false` and cannot distinguish "the field says something else" from
-     * "the field is not being asked". Without the distinction, `if A == 1 then B` /
-     * `if B == 2 then C` / `if C == 3 then D else E` reveals `E` whenever `A != 1`,
-     * even though `C` is never shown.
+     * A condition is unreachable once the fields it reads are no longer in the form:
+     * neither its `then` nor its `else` fields belong there. Kept separate from
+     * `evaluateIf`, which reports a missing control as `false` and so cannot tell
+     * "says something else" from "is not being asked".
      */
     private isConditionReachable(expr: IConditionExpr, entryIndex: number | null = null): boolean {
         if (!expr || !expr.pairs?.length) {
@@ -314,9 +308,8 @@ export class FieldForm {
             if (path) {
                 return !!this.form.get(path);
             }
-            // Mirrors the plain-name lookup in `evaluateIf`, but via `hasOwnProperty` so a
-            // field called `constructor` or `toString` is not reported as present through
-            // the prototype of `form.controls`.
+            // `hasOwnProperty` so a field called `constructor` or `toString` is not
+            // reported as present through the prototype of `form.controls`.
             return Object.prototype.hasOwnProperty.call(this.form.controls, p.name);
         };
         // OR only needs one readable field to be decidable; SINGLE and AND need them all.
@@ -758,15 +751,10 @@ export class FieldForm {
     }
 
     /**
-     * Picks the field a condition control is anchored to: the dependency that is
-     * declared last, so that a condition reading several fields is rendered after
-     * all of them.
-     *
-     * Anchoring is deliberately based on declaration order and NOT on visibility.
-     * The template only renders controls whose `visibility` is true, so resolving
-     * the anchor by name keeps the layout stable while the user fills the form and
-     * still finds an anchor for `else` fields, which are visible precisely when
-     * the field their condition reads is hidden.
+     * The field a condition control is anchored to: its last-declared dependency, so a
+     * condition reading several fields renders after all of them. Anchors on declaration
+     * order rather than visibility — the template already filters on `visibility`, and an
+     * `else` field is visible precisely when the field its condition reads is hidden.
      */
     private getAnchorName(cc: IConditionControl<any>, declOrder: Map<string, number>): string | null {
         if (!cc.dependsOn?.length) {

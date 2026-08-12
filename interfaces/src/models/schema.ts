@@ -284,15 +284,12 @@ export class Schema implements ISchema {
     }
 
     /**
-     * Point `fields` and the `thenFields`/`elseFields` of every condition at the same
-     * objects.
+     * Point `fields` and every condition's `thenFields`/`elseFields` at the same objects.
      *
-     * `fields` is parsed from `properties` while condition fields are parsed from
-     * `allOf`, so a field that lives in a condition is materialised twice. The editor
-     * only exposes the copy rendered inside the condition, so without this relinking an
-     * edit reaches `allOf` while the top-level `properties` entry is rebuilt from the
-     * untouched duplicate and keeps the stale title/type/description — and a rename
-     * leaves the previous property behind entirely.
+     * `fields` comes from `properties` and condition fields from `allOf`, so a condition
+     * field is materialised twice. The editor only exposes the copy inside the condition,
+     * so without relinking an edit reaches `allOf` while `properties` is rebuilt from the
+     * stale duplicate, and a rename leaves the old property behind.
      * @private
      */
     private linkConditionFields(): void {

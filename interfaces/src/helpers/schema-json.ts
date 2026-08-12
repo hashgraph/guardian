@@ -1394,11 +1394,9 @@ export class JsonToSchema {
     /**
      * Add the fields a condition reveals to the schema's own field list.
      *
-     * The field list is what `buildDocument` turns into `properties`, so a condition field
-     * that is missing from it is never declared — and because the document sets
-     * `additionalProperties: false`, the schema then rejects the very documents it is
-     * meant to describe. The same object is shared with the condition, which is the
-     * invariant the editor keeps when a field is added to a condition by hand.
+     * `buildDocument` turns that list into `properties`, so a missing condition field is
+     * never declared — and with `additionalProperties: false` the schema then rejects the
+     * documents it describes. Shares the same object with the condition, as the editor does.
      */
     private static mergeConditionFields(fields: SchemaField[], conditions: SchemaCondition[]): void {
         for (const condition of (conditions || [])) {

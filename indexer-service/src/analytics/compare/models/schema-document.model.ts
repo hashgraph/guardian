@@ -76,11 +76,9 @@ export class SchemaDocumentModel {
     /**
      * Unwrap the reachability gate around a condition's `else` branch.
      *
-     * A condition that reads a field revealed by another condition serialises its `else`
-     * as `{ if: <field present>, then: <else fields>, else: <forbid> }` so the `else`
-     * fields are not demanded while that field is absent. Mirrors
-     * `SchemaHelper.unwrapConditionElse` in @guardian/interfaces, which this service does
-     * not depend on.
+     * A chained condition serialises its `else` as
+     * `{ if: <field present>, then: <else fields>, else: <forbid> }`. Mirrors
+     * `SchemaHelper.unwrapConditionElse`, which this service cannot import.
      * @param node `else` node of an `allOf` entry
      * @private
      */
