@@ -342,6 +342,13 @@ export class PolicyConfigurationComponent implements OnInit {
         return this.currentView === 'blocks';
     }
 
+    public get visibleConfigurations(): OrderOption[] {
+        if (this.isTree) {
+            return this.options.configurationOrder;
+        }
+        return this.options.configurationOrder.filter((item) => item.id === 'tree');
+    }
+
     public get isModuleValid(): boolean {
         return this.rootTemplate?.valid;
     }
