@@ -4,6 +4,12 @@
     initial-value: 0px;
 }
 
+@property --header-width {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 280px;
+}
+
 :root,
 :root.guardian-theme-light {
     --font-family-poppins: 'Poppins', sans-serif;
