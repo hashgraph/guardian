@@ -291,6 +291,38 @@ Once the emission reductions are verified and approved, the Standard Registry ca
 <img src="./Assets/Images/trust_chain/img1.png" alt="Minting Notifications" width="700"/>
 </p>
 
+## Policy Calculations (mathBlock)
+
+All mathematical calculations and emission reduction logic in this policy are executed automatically within Guardian **mathBlock** (Calculation Block). The mathBlock processes all equations seamlessly, ensuring verifiable, transparent, and accurate computations directly from monitored data.
+
+The emission calculations executed by mathBlock include:
+
+* **Total Baseline Emission**
+
+<p align="center">
+<img src="./Assets/Images/monitoring_report/img5.png" alt="Total Baseline Emission" width="700"/>
+</p>
+
+* **Total Activity Emission**
+
+<p align="center">
+<img src="./Assets/Images/monitoring_report/img6.png" alt="Total Activity Emission" width="700"/>
+</p>
+
+* **Total Leakage Emission**
+
+<p align="center">
+<img src="./Assets/Images/monitoring_report/img7.png" alt="Total Leakage Emission" width="700"/>
+</p>
+
+* **Net Emission Reduction**
+
+<p align="center">
+<img src="./Assets/Images/monitoring_report/img8.png" alt="Net Emission Reduction" width="700"/>
+</p>
+
+
+
 ## Structural Changes to the Version 1.0
 
 * Version 2.0 of the Safe Drinking Water Methodology involves a 5-step approach for baseline determination
