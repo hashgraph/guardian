@@ -438,7 +438,7 @@ export class VCJS {
 
         for (const condEntry of schema.allOf) {
             if (!condEntry?.if) { continue; }
-            for (const branch of [condEntry.then, condEntry.else]) {
+            for (const branch of [condEntry.then, SchemaHelper.unwrapConditionElse(condEntry.else)]) {
                 collectPath(branch, [], rootProperties);
             }
         }

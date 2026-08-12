@@ -1391,6 +1391,29 @@ export class JsonToSchema {
         return conditions;
     }
 
+    /**
+     * Add the fields a condition reveals to the schema's own field list.
+     *
+     * The field list is what `buildDocument` turns into `properties`, so a condition field
+     * that is missing from it is never declared — and because the document sets
+     * `additionalProperties: false`, the schema then rejects the very documents it is
+     * meant to describe. The same object is shared with the condition, which is the
+     * invariant the editor keeps when a field is added to a condition by hand.
+     */
+    private static mergeConditionFields(fields: SchemaField[], conditions: SchemaCondition[]): void {
+        for (const condition of (conditions || [])) {
+            const revealed = [
+                ...(condition.thenFields || []),
+                ...(condition.elseFields || [])
+            ];
+            for (const field of revealed) {
+                if (!fields.some(f => f.name === field.name)) {
+                    fields.push(field);
+                }
+            }
+        }
+    }
+
     public static fromJson(json: ISchemaJson, all: Schema[]) {
         const context: ErrorContext = new ErrorContext();
         context.setPath(['schema']);
@@ -1400,6 +1423,7 @@ export class JsonToSchema {
         const entity = JsonToSchema.fromEntity(json.entity, context.add('entity'));
         const fields = JsonToSchema.fromFields(json.fields, all, entity, new Set<string>(), context.add('fields'));
         const conditions = JsonToSchema.fromConditions(json.conditions, fields, all, entity, context.add('conditions'));
+        JsonToSchema.mergeConditionFields(fields, conditions);
         JsonToSchema.fromDefaultFields(fields, entity);
         return {
             name,

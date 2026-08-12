@@ -439,6 +439,23 @@ export class SchemaHelper {
     }
 
     /**
+     * Unwrap the reachability gate around a condition's `else` branch.
+     *
+     * `buildDocument` wraps the `else` of a condition that reads a field revealed by
+     * another condition in `{ if: <field present>, then: <else fields>, else: <forbid> }`,
+     * so the `else` fields are not demanded while that field is absent from the document.
+     * Anything reading the `else` body as a container of fields has to unwrap it first,
+     * otherwise the `else` fields are silently dropped.
+     * @param node `else` node of an `allOf` entry
+     */
+    public static unwrapConditionElse(node: any): any {
+        if (node && !node.properties && node.if && node.then) {
+            return node.then;
+        }
+        return node;
+    }
+
+    /**
      * Parse conditions
      * @param document
      * @param context
@@ -669,7 +686,7 @@ export class SchemaHelper {
                     thenTargets: elseRequiredTargets,
                     elseTargets: elseForbiddenTargets,
                     cleanNode: cleanElse,
-                } = extractCrossTargets(n.else);
+                } = extractCrossTargets(SchemaHelper.unwrapConditionElse(n.else));
                 const thenFields = buildFields(cleanThen);
                 const elseFields = buildFields(cleanElse);
                 const allThenTargets = dedupeTargets([...thenTargets, ...elseForbiddenTargets]);
@@ -849,6 +866,34 @@ export class SchemaHelper {
             allOf: []
         };
 
+        // Fields that only exist because some condition reveals them, and how many
+        // conditions declare each of them.
+        const revealCountByName = new Map<string, number>();
+        for (const cond of (conditions || [])) {
+            const declared = new Set<string>();
+            for (const f of (cond.thenFields || [])) { declared.add(f.name); }
+            for (const f of (cond.elseFields || [])) { declared.add(f.name); }
+            for (const name of declared) {
+                revealCountByName.set(name, (revealCountByName.get(name) ?? 0) + 1);
+            }
+        }
+
+        const predicatePath = (p: any): string[] =>
+            (p && 'fieldPath' in p && p.fieldPath && p.fieldPath.length > 1)
+                ? p.fieldPath
+                : [p?.field?.name];
+
+        /**
+         * True when a predicate reads a field that is itself revealed by a condition, so
+         * the field can legitimately be missing from the document. Multi-segment
+         * (cross-schema) paths are treated as always readable so their behaviour is
+         * untouched.
+         */
+        const readsRevealedField = (p: any): boolean => {
+            const path = predicatePath(p);
+            return path.length === 1 && !!path[0] && revealCountByName.has(path[0]);
+        };
+
         const serializeIf = (cond: SchemaCondition): any => {
             const ic = cond.ifCondition;
             if (!ic) {
@@ -892,6 +937,61 @@ export class SchemaHelper {
                 return {
                     anyOf: ic.OR.map(p => single(p))
                 };
+            }
+
+            return null;
+        };
+
+        /**
+         * Presence-only twin of `serializeIf`: same shape, but each leaf drops the `const`
+         * check so the node only asserts that the field is in the document.
+         *
+         * Used to gate the `else` branch. `serializeIf` requires the field it reads, so an
+         * absent field makes the `if` fail and JSON Schema falls through to `else` — which
+         * would require the `else` fields of a condition that can never be reached. In
+         * `if A == 1 then B` / `if B == 2 then C` / `if C == 3 then D else E`, `A != 1`
+         * leaves `C` out of the document and `E` required, so the document cannot be
+         * completed at all.
+         *
+         * Returns null when every predicate reads an ordinary field, which is always
+         * present in the form: those conditions keep their plain `else` so existing
+         * schemas are unaffected.
+         */
+        const serializeReachableIf = (cond: SchemaCondition): any => {
+            const ic = cond.ifCondition;
+            if (!ic) {
+                return null;
+            }
+
+            const single = (p: any) => {
+                let node: any = {};
+                const path = predicatePath(p);
+                for (let i = path.length - 1; i >= 0; i--) {
+                    node = { properties: { [path[i]]: node }, required: [path[i]] };
+                }
+                return node;
+            };
+
+            if ('field' in ic && 'fieldValue' in ic) {
+                return readsRevealedField(ic) ? single(ic) : null;
+            }
+
+            if ('AND' in ic && Array.isArray(ic.AND)) {
+                // AND needs every predicate, so guard on each revealed field it reads.
+                const guarded = ic.AND.filter(readsRevealedField);
+                if (!guarded.length) {
+                    return null;
+                }
+                return guarded.length === 1 ? single(guarded[0]) : { allOf: guarded.map(p => single(p)) };
+            }
+
+            if ('OR' in ic && Array.isArray(ic.OR)) {
+                // OR can be answered by any single predicate, so one ordinary field is
+                // enough to keep the condition reachable.
+                if (!ic.OR.length || !ic.OR.every(readsRevealedField)) {
+                    return null;
+                }
+                return ic.OR.length === 1 ? single(ic.OR[0]) : { anyOf: ic.OR.map(p => single(p)) };
             }
 
             return null;
@@ -1008,7 +1108,21 @@ export class SchemaHelper {
                 obj.then = thenObj;
             }
             if (elseObj) {
-                obj.else = elseObj;
+                const reachableIf = serializeReachableIf(cond);
+                if (reachableIf) {
+                    // The condition reads a field that a another condition reveals, so the
+                    // `else` fields only apply while that field is actually being asked.
+                    // When it is not, neither branch can be filled in, so forbid the fields
+                    // this condition owns outright.
+                    const owned = [...(cond.thenFields || []), ...(cond.elseFields || [])]
+                        .filter(f => revealCountByName.get(f.name) === 1);
+                    const unreachable = buildForbid(owned);
+                    obj.else = unreachable
+                        ? { if: reachableIf, then: elseObj, else: unreachable }
+                        : { if: reachableIf, then: elseObj };
+                } else {
+                    obj.else = elseObj;
+                }
             }
             return obj;
         };

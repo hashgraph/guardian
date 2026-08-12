@@ -278,8 +278,46 @@ export class Schema implements ISchema {
         const schemaCache = new Map<string, any>();
         this.fields = SchemaHelper.parseFields(this.document, this.contextURL, schemaCache, null, includeSystemProperties);
         this.conditions = SchemaHelper.parseConditions(this.document, this.contextURL, this.fields, schemaCache);
+        this.linkConditionFields();
         this.setPaths(this.fields, '', this.iri + '/');
         this.setTypes(this.fields, null);
+    }
+
+    /**
+     * Point `fields` and the `thenFields`/`elseFields` of every condition at the same
+     * objects.
+     *
+     * `fields` is parsed from `properties` while condition fields are parsed from
+     * `allOf`, so a field that lives in a condition is materialised twice. The editor
+     * only exposes the copy rendered inside the condition, so without this relinking an
+     * edit reaches `allOf` while the top-level `properties` entry is rebuilt from the
+     * untouched duplicate and keeps the stale title/type/description — and a rename
+     * leaves the previous property behind entirely.
+     * @private
+     */
+    private linkConditionFields(): void {
+        if (!Array.isArray(this.fields) || !Array.isArray(this.conditions) || !this.conditions.length) {
+            return;
+        }
+        const indexByName = new Map<string, number>();
+        for (let index = 0; index < this.fields.length; index++) {
+            const name = this.fields[index].name;
+            if (!indexByName.has(name)) {
+                indexByName.set(name, index);
+            }
+        }
+        for (const condition of this.conditions) {
+            const conditionFields = [
+                ...(condition.thenFields || []),
+                ...(condition.elseFields || [])
+            ];
+            for (const field of conditionFields) {
+                const index = indexByName.get(field.name);
+                if (index !== undefined) {
+                    this.fields[index] = field;
+                }
+            }
+        }
     }
 
     /**
