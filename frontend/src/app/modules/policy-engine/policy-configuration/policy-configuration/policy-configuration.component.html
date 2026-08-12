@@ -1358,14 +1358,16 @@
     @if (!readonly && isTree) {
       <div class="overflow-menu-divider"></div>
       <div (click)="onSuggestionsClick(); overflowMenu.hide()" class="toolbar-menu"
-        [ngClass]="{'btn-mode-active': isSuggestionsEnabled}">
+        [attr.active]="isSuggestionsEnabled ? true : null">
         <svg-icon src="/assets/images/icons/assistant.svg" svgClass="icon-style-assistant"></svg-icon>
         <span>Suggestions</span>
+        @if (isSuggestionsEnabled) { <i class="pi pi-check overflow-check"></i> }
       </div>
       <div (click)="copyBlocksMode=!copyBlocksMode; overflowMenu.hide()" class="toolbar-menu"
-        [ngClass]="{'btn-mode-active': copyBlocksMode}">
+        [attr.active]="copyBlocksMode ? true : null">
         <i class="pi pi-copy"></i>
         <span>Copy Mode</span>
+        @if (copyBlocksMode) { <i class="pi pi-check overflow-check"></i> }
       </div>
       @if (
         user.MODULES_MODULE_CREATE &&
