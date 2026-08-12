@@ -264,7 +264,7 @@
       </div>
       <div (cdkDropListDropped)="onDroppedSection($event)" [cdkDropListData]="options.configurationOrder" cdkDropList
         cdkDropListOrientation="horizontal" class="main-container">
-        @for (configuration of options.configurationOrder; track configuration; let last = $last) {
+        @for (configuration of visibleConfigurations; track configuration; let last = $last) {
           @switch (configuration.id) {
             @case ('blocks') {
               <ng-container
@@ -272,7 +272,7 @@
             }
             @case ('tree') {
               <ng-container
-              *ngTemplateOutlet="configurationTree; context: { last, size: configuration.size, id: configuration.id }"></ng-container>
+              *ngTemplateOutlet="configurationTree; context: { last, size: isTree ? configuration.size : 'auto', id: configuration.id }"></ng-container>
             }
             @case ('properties') {
               <ng-container
