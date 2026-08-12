@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, ViewEncapsulation } from '@angular/core';
 
 /**
  * Trigger for the "Expression" property.
@@ -12,28 +12,28 @@ import { Component, EventEmitter, Input, Output, ViewEncapsulation } from '@angu
     encapsulation: ViewEncapsulation.Emulated,
     standalone: false
 })
-export class ExpressionPropertyComponent {
+export class ExpressionPropertyComponent implements OnChanges {
     @Input('value') value: any;
     @Input('readonly') readonly: boolean = false;
     @Output('edit') edit = new EventEmitter<MouseEvent>();
 
-    public get empty(): boolean {
-        return !this.summary;
-    }
-
-    public get label(): string {
-        return this.summary || 'Not set';
-    }
-
     /**
-     * Full text for the tooltip – the button itself truncates.
+     * Summarising the expression walks its whole source, so it is computed
+     * when the inputs change rather than on every change detection pass.
      */
-    public get title(): string {
+    public empty: boolean = true;
+    public label: string = 'Not set';
+    public title: string = '';
+
+    public ngOnChanges(): void {
+        const summary = this.summarize();
         const action = this.readonly ? 'View expression' : 'Edit expression';
-        return this.empty ? action : `${this.summary} – ${action.toLowerCase()}`;
+        this.empty = !summary;
+        this.label = summary || 'Not set';
+        this.title = summary ? `${summary} – ${action.toLowerCase()}` : action;
     }
 
-    private get summary(): string {
+    private summarize(): string {
         const value = this.value;
         if (!value) {
             return '';
@@ -48,9 +48,11 @@ export class ExpressionPropertyComponent {
     }
 
     private static codeSummary(value: string): string {
-        if (!value.trim()) {
+        if (!value) {
             return '';
         }
+        // Validation only rejects a falsy expression, so whitespace counts as
+        // set - reporting it as empty would contradict the validator.
         const lines = value.split('\n').length;
         return lines === 1 ? '1 line' : `${lines} lines`;
     }
@@ -60,7 +62,7 @@ export class ExpressionPropertyComponent {
         ExpressionPropertyComponent.count(parts, value.variables, 'variable');
         ExpressionPropertyComponent.count(parts, value.formulas, 'formula');
         ExpressionPropertyComponent.count(parts, value.outputs, 'output');
-        if (!parts.length && typeof value.code === 'string' && value.code.trim()) {
+        if (!parts.length && typeof value.code === 'string' && value.code) {
             parts.push(ExpressionPropertyComponent.codeSummary(value.code));
         }
         return parts.join(', ');
