@@ -16,5 +16,7 @@ export const PREFIXES = {
  * has to carry the `tag` part to match anything at all.
  */
 export const TAG_PREFIXES = {
-  SCHEMAS: `${PREFIXES.TAG}/schemas`,
+  // Schemas are served by two controllers: `/schemas/...` and the single
+  // schema route of `@Controller('schema')`.
+  SCHEMAS: [`${PREFIXES.TAG}/schemas`, `${PREFIXES.TAG}/schema/`],
 }

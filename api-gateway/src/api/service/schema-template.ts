@@ -161,7 +161,7 @@ export class SchemaTemplatesApi {
             const taskManager = new TaskManager();
             const task = taskManager.start(TaskAction.CREATE_SCHEMA_TEMPLATE_VERSION, user.id);
             await guardians.createSchemaTemplateVersionAsync(templateId, owner, task);
-            await this.cacheService.invalidateAllTagsByPrefixes([CACHE_TAG_PREFIXES.SCHEMAS]);
+            await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS);
             return task;
         } catch (error) {
             await InternalException(error, this.logger, user.id);
@@ -386,7 +386,7 @@ export class SchemaTemplatesApi {
             const taskManager = new TaskManager();
             const task = taskManager.start(TaskAction.IMPORT_SCHEMA_TEMPLATE_FILE, user.id);
             await guardians.importSchemaTemplateFileAsync(body, new EntityOwner(user), task);
-            await this.cacheService.invalidateAllTagsByPrefixes([CACHE_TAG_PREFIXES.SCHEMAS]);
+            await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS);
             return task;
         } catch (error) {
             await InternalException(error, this.logger, user.id);
@@ -419,7 +419,7 @@ export class SchemaTemplatesApi {
             const taskManager = new TaskManager();
             const task = taskManager.start(TaskAction.IMPORT_SCHEMA_TEMPLATE_MESSAGE, user.id);
             await guardians.importSchemaTemplateMessageAsync(messageId, new EntityOwner(user), task);
-            await this.cacheService.invalidateAllTagsByPrefixes([CACHE_TAG_PREFIXES.SCHEMAS]);
+            await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS);
             return task;
         } catch (error) {
             await InternalException(error, this.logger, user.id);
@@ -694,7 +694,7 @@ export class SchemaTemplatesApi {
             const taskManager = new TaskManager();
             const task = taskManager.start(TaskAction.PUBLISH_SCHEMA_TEMPLATE, user.id);
             await guardians.publishSchemaTemplateAsync(templateId, owner, body, task);
-            await this.cacheService.invalidateAllTagsByPrefixes([CACHE_TAG_PREFIXES.SCHEMAS]);
+            await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS);
             return task;
         } catch (error) {
             await InternalException(error, this.logger, user.id);
@@ -748,7 +748,7 @@ export class SchemaTemplatesApi {
                 const result = await guardians.applySchemaTemplate(templateId, policyId, owner);
                 taskManager.addStatus(task.taskId, 'Copy template schemas', StatusType.COMPLETED);
                 taskManager.addStatus(task.taskId, 'Save template binding', StatusType.PROCESSING);
-                await this.cacheService.invalidateAllTagsByPrefixes([CACHE_TAG_PREFIXES.SCHEMAS]);
+                await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS);
                 taskManager.addStatus(task.taskId, 'Save template binding', StatusType.COMPLETED);
                 taskManager.addResult(task.taskId, result);
             }, async (error) => {
@@ -853,7 +853,7 @@ export class SchemaTemplatesApi {
                 const result = await guardians.updateAppliedSchemaTemplate(templateId, policyId, owner, body);
                 taskManager.addStatus(task.taskId, 'Update policy schemas', StatusType.COMPLETED);
                 taskManager.addStatus(task.taskId, 'Save template snapshot', StatusType.PROCESSING);
-                await this.cacheService.invalidateAllTagsByPrefixes([CACHE_TAG_PREFIXES.SCHEMAS]);
+                await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS);
                 taskManager.addStatus(task.taskId, 'Save template snapshot', StatusType.COMPLETED);
                 taskManager.addResult(task.taskId, result);
             }, async (error) => {
@@ -909,7 +909,7 @@ export class SchemaTemplatesApi {
                 const result = await guardians.detachSchemaTemplate(policyId, owner);
                 taskManager.addStatus(task.taskId, 'Detach template from policy schemas', StatusType.COMPLETED);
                 taskManager.addStatus(task.taskId, 'Finalize policy binding', StatusType.PROCESSING);
-                await this.cacheService.invalidateAllTagsByPrefixes([CACHE_TAG_PREFIXES.SCHEMAS]);
+                await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS);
                 taskManager.addStatus(task.taskId, 'Finalize policy binding', StatusType.COMPLETED);
                 taskManager.addResult(task.taskId, result);
             }, async (error) => {
