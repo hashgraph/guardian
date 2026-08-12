@@ -74,7 +74,7 @@ export class ExternalPolicyComponent implements OnInit {
             tooltip: false
         }, {
             id: 'messageId',
-            title: 'Message',
+            title: 'Policy Public ID',
             type: 'text',
             size: '210',
             tooltip: false
