@@ -1,4 +1,9 @@
-# Versioning and Deprecation Policy
+---
+tags:
+  - flagged-for-rewrite
+---
+
+# Policy Versioning and Deprecation
 
 Policy versioning in Guardian allows a methodology or workflow to evolve over time without breaking existing projects. Each policy can have multiple versions, ensuring traceability, flexibility, and regulatory compliance.
 
@@ -18,3 +23,4 @@ Deprecation means a policy version is officially discontinued and cannot be used
   * Continue under old rules (frozen state), or
   * Migrate to a newer version using Guardian’s Migration Wizard.
 * Deprecation ensures stakeholders are aligned with up-to-date methodologies.
+

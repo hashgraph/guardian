@@ -1,5 +1,7 @@
 ---
 icon: brackets-curly
+tags:
+  - flagged-for-deletion
 ---
 
 # API Reference

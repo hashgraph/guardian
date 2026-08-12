@@ -1,7 +1,7 @@
 ---
 description: How to edit policy parameters at runtime without having to republish a policy?
 tags:
-  - new
+  - flagged-for-rewrite
 ---
 
 # Editing Policy Parameters at Runtime

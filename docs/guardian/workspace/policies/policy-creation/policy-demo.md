@@ -1,4 +1,9 @@
-# Creating Policy using UI
+---
+tags:
+  - flagged-for-rewrite
+---
+
+# Creating a Policy Reference
 
 Once you login as a Standard Registry and finish the setup, click on Policies tab.
 

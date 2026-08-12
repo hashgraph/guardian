@@ -1,3 +1,8 @@
+---
+tags:
+  - flagged-for-rewrite
+---
+
 # Creating Policy Navigation (Stepper)
 
 There is tab menu in right side in the policy configurator called "Navigation", which helps to configure the stepper in the policies.
