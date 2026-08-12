@@ -16,6 +16,12 @@ export function getCacheKey(routes: string[], user: IAuthUser | null, prefix: st
         } catch (e) {
             //
         }
+        if (prefix === CACHE_PREFIXES.TAG) {
+            // A tag groups every cached response of a route, whatever its query
+            // string, so it must be built from the path alone - otherwise a
+            // mutation carrying query params invalidates a tag that never exists.
+            normalized = normalized.split('?')[0];
+        }
         return `${prefix}${normalized}:${hashUser}`;
     });
 }
