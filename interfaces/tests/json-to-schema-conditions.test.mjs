@@ -265,7 +265,8 @@ describe('JsonToSchema.fromJson — fields a condition reveals', () => {
     it('does not make them required at the top level', () => {
         const document = documentOf(importJson());
         assert.ok(!document.required.includes('B'));
-        assert.deepEqual(document.allOf[0].then.required, ['B']);
+        assert.equal('required' in document.allOf[0].then, false);
+        assert.equal(JSON.parse(document.allOf[0].then.properties.B.$comment).conditionRequired, true);
     });
 
     it('does not duplicate a field that is already declared', () => {

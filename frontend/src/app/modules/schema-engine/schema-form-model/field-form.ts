@@ -1,5 +1,5 @@
 import { UntypedFormGroup, UntypedFormControl, UntypedFormArray, ValidatorFn, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
-import { Schema, SchemaCondition, SchemaConditionTarget, SchemaField, SchemaRuleValidateResult, GenerateUUIDv4, isGeoCustomType } from '@guardian/interfaces';
+import { Schema, SchemaCondition, SchemaConditionTarget, SchemaField, SchemaHelper, SchemaRuleValidateResult, GenerateUUIDv4, isGeoCustomType } from '@guardian/interfaces';
 import { fullFormats } from 'ajv-formats/dist/formats';
 import moment from 'moment';
 import { Subject, takeUntil } from 'rxjs';
@@ -47,6 +47,7 @@ export interface IFieldIndexControl<T extends UntypedFormControl | UntypedFormGr
 
 export interface IConditionControl<T extends UntypedFormControl | UntypedFormGroup | UntypedFormArray> extends IFieldControl<T> {
     conditionExpr: IConditionExpr;
+    sourceCondition: SchemaCondition;
     conditionInvert: boolean;
     dependsOn: string[];
 }
@@ -63,6 +64,7 @@ interface IConditionExpr {
 
 interface ICrossSchemaConditionItem {
     expr: IConditionExpr;
+    sourceCondition: SchemaCondition;
     conditionInvert: boolean;
     field: SchemaField;
     fieldPath: string[];
@@ -85,6 +87,8 @@ export class FieldForm {
     private fieldControls: IFieldControl<any>[] | null;
     private conditionControls: IConditionControl<any>[] | null;
     private crossSchemaItems: ICrossSchemaConditionItem[];
+    private conditionExprBySource: Map<SchemaCondition, IConditionExpr>;
+    private conditionRevealMap: Map<string, { condition: SchemaCondition, branch: 'then' | 'else' }[]>;
 
     private readonly conditionFields: Set<string>;
     private ownParentControlledFields: Set<string>;
@@ -111,6 +115,8 @@ export class FieldForm {
         this.fieldControls = null;
         this.conditionControls = null;
         this.crossSchemaItems = [];
+        this.conditionExprBySource = new Map<SchemaCondition, IConditionExpr>();
+        this.conditionRevealMap = new Map<string, { condition: SchemaCondition, branch: 'then' | 'else' }[]>();
         this.controls = null;
         this.rootForm = this;
     }
@@ -185,6 +191,8 @@ export class FieldForm {
         const { fields, conditions } = this.updateData();
         this.arrayGroupCache = null;
         this.crossSchemaItems = [];
+        this.conditionExprBySource = new Map<SchemaCondition, IConditionExpr>();
+        this.conditionRevealMap = SchemaHelper.buildRevealMap(conditions || []);
         this.fieldOrder = fields ? new Map(fields.map((f, index) => [f.name, index])) : null;
         this.fieldControls = this.buildFields(fields);
         this.conditionControls = this.buildConditions(conditions);
@@ -292,28 +300,29 @@ export class FieldForm {
     }
 
     /**
-     * A condition is unreachable once the fields it reads are no longer in the form:
-     * neither its `then` nor its `else` fields belong there. Kept separate from
-     * `evaluateIf`, which reports a missing control as `false` and so cannot tell
-     * "says something else" from "is not being asked".
+     * A condition is unreachable when the fields its `if` reads are not being asked: the
+     * condition branch that reveals them is not the active one, so neither its `then` nor
+     * its `else` fields belong in the form.
+     *
+     * Reachability is a property of the condition graph, not of the form: a control may be
+     * missing for reasons the schema knows nothing about — a private field, a field supplied
+     * by the parent, an optional sub-schema that was never instantiated — and hiding a
+     * branch for those would produce a form that cannot satisfy its own schema. The
+     * traversal is shared with `SchemaHelper.validateConditionFields` so the form and
+     * document validation cannot disagree.
      */
-    private isConditionReachable(expr: IConditionExpr, entryIndex: number | null = null): boolean {
-        if (!expr || !expr.pairs?.length) {
+    private isConditionReachable(condition: SchemaCondition, entryIndex: number | null = null): boolean {
+        if (!condition) {
             return false;
         }
-        const present = (p: IConditionPair) => {
-            const path = p.path && entryIndex !== null
-                ? this.injectEntryIndex(p.path, entryIndex)
-                : p.path;
-            if (path) {
-                return !!this.form.get(path);
+        return SchemaHelper.isConditionReachable(
+            condition,
+            this.conditionRevealMap,
+            (owner: SchemaCondition) => {
+                const expr = this.conditionExprBySource.get(owner);
+                return expr ? this.evaluateIf(expr, entryIndex) : false;
             }
-            // `hasOwnProperty` so a field called `constructor` or `toString` is not
-            // reported as present through the prototype of `form.controls`.
-            return Object.prototype.hasOwnProperty.call(this.form.controls, p.name);
-        };
-        // OR only needs one readable field to be decidable; SINGLE and AND need them all.
-        return expr.op === 'OR' ? expr.pairs.some(present) : expr.pairs.every(present);
+        );
     }
 
     private injectEntryIndex(path: string, entryIndex: number): string {
@@ -396,12 +405,14 @@ export class FieldForm {
 
         for (const condition of conditions) {
             const expr = this.normalizeIfCondition((condition as any).ifCondition);
+            this.conditionExprBySource.set(condition, expr);
             const deps = Array.from(new Set(expr.pairs.map(p => p.path ? p.path.split('.')[0] : p.name).filter(Boolean)));
             for (const thenField of condition.thenFields) {
                 const fieldControl = this.createFieldControl(thenField, this.preset);
                 const item: IConditionControl<any> = {
                     ...fieldControl,
                     conditionExpr: expr,
+                    sourceCondition: condition,
                     conditionInvert: false,
                     dependsOn: deps,
                     visibility: false
@@ -414,6 +425,7 @@ export class FieldForm {
                 const item: IConditionControl<any> = {
                     ...fieldControl,
                     conditionExpr: expr,
+                    sourceCondition: condition,
                     conditionInvert: true,
                     dependsOn: deps,
                     visibility: false
@@ -426,6 +438,7 @@ export class FieldForm {
                     if (!target.fieldPath || target.fieldPath.length < 2) { continue; }
                     this.crossSchemaItems.push({
                         expr,
+                        sourceCondition: condition,
                         conditionInvert: invert,
                         field: target.field,
                         fieldPath: target.fieldPath,
@@ -468,7 +481,7 @@ export class FieldForm {
         item: ICrossSchemaConditionItem,
         entryIndex: number | null = null
     ): boolean {
-        if (!this.isConditionReachable(item.expr, entryIndex)) {
+        if (!this.isConditionReachable(item.sourceCondition, entryIndex)) {
             return false;
         }
         const ok = this.evaluateIf(item.expr, entryIndex);
@@ -954,7 +967,7 @@ export class FieldForm {
     }
 
     private checkConditionValue(item: IConditionControl<any>): boolean {
-        if (!this.isConditionReachable(item.conditionExpr)) {
+        if (!this.isConditionReachable(item.sourceCondition)) {
             return false;
         }
         const ok = this.evaluateIf(item.conditionExpr);

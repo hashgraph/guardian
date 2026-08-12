@@ -54,74 +54,113 @@ const chainSchema = () => buildSchema(
     ],
 );
 
-describe('SchemaHelper.buildDocument — reachability gate on the else branch', () => {
-    it('gates the else branch of a condition that reads a revealed field', () => {
+describe('SchemaHelper.buildDocument — condition branches are not required by the schema', () => {
+    it('emits no required array on either branch', () => {
         const [, , third] = chainSchema().document.allOf;
-        // `else` becomes { if: <C present>, then: <else fields>, else: <forbid> }
-        assert.deepEqual(third.else.if, { properties: { C: {} }, required: ['C'] });
-        assert.deepEqual(third.else.then.required, ['E']);
+        assert.equal('required' in third.then, false);
+        assert.equal('required' in third.else, false);
     });
 
-    it('does not demand the else fields while the field it reads is absent', () => {
+    it('emits a plain field container for else, with no nested gate', () => {
         const [, , third] = chainSchema().document.allOf;
-        assert.ok(!Array.isArray(third.else.required));
-        assert.deepEqual(third.else.else, { properties: { D: false, E: false } });
+        assert.ok(third.else.properties.E);
+        assert.equal('if' in third.else, false);
     });
 
-    it('leaves a condition on an ordinary field untouched', () => {
+    it('marks a required branch field in $comment instead', () => {
+        const [, , third] = chainSchema().document.allOf;
+        assert.equal(JSON.parse(third.else.properties.E.$comment).conditionRequired, true);
+        assert.equal(JSON.parse(third.then.properties.D.$comment).conditionRequired, true);
+    });
+
+    it('leaves an optional branch field unmarked', () => {
         const document = buildSchema(
-            [field('A'), field('B'), field('C')],
-            [ifEquals('A', '1', [field('B', { required: true })], [field('C', { required: true })])],
+            [field('A'), field('B')],
+            [ifEquals('A', '1', [field('B', { required: false })])],
         ).document;
-        const [only] = document.allOf;
-        assert.equal(only.else.if, undefined);
-        assert.deepEqual(only.else.required, ['C']);
+        assert.equal(JSON.parse(document.allOf[0].then.properties.B.$comment).conditionRequired, undefined);
+    });
+});
+
+describe('SchemaHelper.validateConditionFields', () => {
+    const conditions = () => reload(chainSchema().document).conditions;
+
+    it('accepts the then branch', () => {
+        assert.deepEqual(SchemaHelper.validateConditionFields(conditions(), { A: '1', B: '2', C: '3', D: 'x' }), []);
     });
 
-    it('gates on every revealed field an AND reads', () => {
-        const document = buildSchema(
-            [field('A'), field('B'), field('C'), field('X'), field('Y')],
+    it('accepts the else branch when the field it reads was answered', () => {
+        assert.deepEqual(SchemaHelper.validateConditionFields(conditions(), { A: '1', B: '2', C: '9', E: 'x' }), []);
+    });
+
+    // The case JSON Schema cannot express: C is asked but left blank, so it is absent from
+    // the document while its condition is still reachable and the else branch is active.
+    it('accepts the else branch when the field it reads was asked but left blank', () => {
+        // C is optional here: it is asked, the user left it empty, so the else branch of the
+        // condition reading it is active. JSON Schema would forbid E, having no way to tell
+        // an unanswered field from an unasked one.
+        const optionalC = reload(buildSchema(
+            [field('A'), field('B'), field('C'), field('D'), field('E')],
             [
-                ifEquals('A', '1', [field('B'), field('C')]),
-                {
-                    ifCondition: {
-                        AND: [
-                            { field: field('B'), fieldValue: '2' },
-                            { field: field('C'), fieldValue: '3' },
-                        ],
-                    },
-                    thenFields: [field('X', { required: true })],
-                    elseFields: [field('Y', { required: true })],
-                },
+                ifEquals('A', '1', [field('B', { required: true })]),
+                ifEquals('B', '2', [field('C', { required: false })]),
+                ifEquals('C', '3', [field('D', { required: true })], [field('E', { required: true })]),
             ],
-        ).document;
-        assert.deepEqual(document.allOf[1].else.if, {
-            allOf: [
-                { properties: { B: {} }, required: ['B'] },
-                { properties: { C: {} }, required: ['C'] },
-            ],
-        });
+        ).document).conditions;
+        assert.deepEqual(SchemaHelper.validateConditionFields(optionalC, { A: '1', B: '2', E: 'x' }), []);
     });
 
-    it('leaves an OR alone while one of the fields it reads is ordinary', () => {
-        const document = buildSchema(
-            [field('A'), field('B'), field('X'), field('Y')],
-            [
-                ifEquals('A', '1', [field('B')]),
-                {
-                    ifCondition: {
-                        OR: [
-                            { field: field('A'), fieldValue: '7' },
-                            { field: field('B'), fieldValue: '2' },
-                        ],
-                    },
-                    thenFields: [field('X', { required: true })],
-                    elseFields: [field('Y', { required: true })],
-                },
-            ],
-        ).document;
-        assert.equal(document.allOf[1].else.if, undefined);
-        assert.deepEqual(document.allOf[1].else.required, ['Y']);
+    it('demands a required field of the active branch', () => {
+        const errors = SchemaHelper.validateConditionFields(conditions(), { A: '1', B: '2', C: '9' });
+        assert.equal(errors.length, 1);
+        assert.match(errors[0], /"E" is required/);
+    });
+
+    it('rejects a field whose condition is unreachable', () => {
+        const errors = SchemaHelper.validateConditionFields(conditions(), { A: '9', E: 'x' });
+        assert.equal(errors.length, 1);
+        assert.match(errors[0], /"E" is not allowed/);
+    });
+
+    it('demands nothing once the chain is closed', () => {
+        assert.deepEqual(SchemaHelper.validateConditionFields(conditions(), { A: '9' }), []);
+    });
+
+    it('returns no errors without conditions or data', () => {
+        assert.deepEqual(SchemaHelper.validateConditionFields([], { A: '1' }), []);
+        assert.deepEqual(SchemaHelper.validateConditionFields(conditions(), null), []);
+    });
+});
+
+describe('SchemaHelper.isConditionReachable', () => {
+    it('treats a condition on a declared field as reachable', () => {
+        const conditions = reload(chainSchema().document).conditions;
+        const map = SchemaHelper.buildRevealMap(conditions);
+        assert.equal(SchemaHelper.isConditionReachable(conditions[0], map, () => false), true);
+    });
+
+    it('follows the revealing branch of the condition above it', () => {
+        const conditions = reload(chainSchema().document).conditions;
+        const map = SchemaHelper.buildRevealMap(conditions);
+        // Every `if` holds: the whole chain is asked.
+        assert.equal(SchemaHelper.isConditionReachable(conditions[2], map, () => true), true);
+        // No `if` holds: B is never revealed, so the conditions below it are not asked.
+        assert.equal(SchemaHelper.isConditionReachable(conditions[2], map, () => false), false);
+    });
+
+    it('survives a cycle', () => {
+        const a = ifEquals('Y', '1', [field('X')]);
+        const b = ifEquals('X', '1', [field('Y')]);
+        const map = SchemaHelper.buildRevealMap([a, b]);
+        assert.equal(SchemaHelper.isConditionReachable(a, map, () => true), true);
+    });
+
+    it('treats a name revealed by two conditions as always asked', () => {
+        const a = ifEquals('A', '1', [field('X')]);
+        const b = ifEquals('A', '2', [field('X')]);
+        const c = ifEquals('X', '1', [field('Z')]);
+        const map = SchemaHelper.buildRevealMap([a, b, c]);
+        assert.equal(SchemaHelper.isConditionReachable(c, map, () => false), true);
     });
 });
 
@@ -141,9 +180,44 @@ describe('SchemaHelper.unwrapConditionElse', () => {
         assert.equal(SchemaHelper.unwrapConditionElse(undefined), undefined);
         assert.equal(SchemaHelper.unwrapConditionElse(null), null);
     });
+
+    // A hand written schema may legitimately nest a second condition inside `else` — an
+    // "else if". Its predicate constrains a value, unlike the gate's presence-only one, and
+    // unwrapping it would discard both that predicate and its own `else` branch.
+    it('leaves a hand written else-if chain alone', () => {
+        const elseIf = {
+            if: { properties: { tier: { const: 'silver' } }, required: ['tier'] },
+            then: { properties: { silverCode: { type: 'string' } }, required: ['silverCode'] },
+            else: { properties: { bronzeCode: { type: 'string' } }, required: ['bronzeCode'] },
+        };
+        assert.equal(SchemaHelper.unwrapConditionElse(elseIf), elseIf);
+    });
+
+    it('unwraps a gate whose predicate spells out the property', () => {
+        const body = { properties: { E: { type: 'string' } } };
+        const gated = { if: { properties: { C: {} }, required: ['C'] }, then: body, else: { properties: { E: false } } };
+        assert.equal(SchemaHelper.unwrapConditionElse(gated), body);
+    });
+
+    it('unwraps a gate built from AND or OR predicates', () => {
+        const body = { properties: { E: { type: 'string' } } };
+        for (const branching of ['allOf', 'anyOf']) {
+            const gated = {
+                if: { [branching]: [{ properties: { C: {} }, required: ['C'] }, { properties: { D: {} }, required: ['D'] }] },
+                then: body,
+            };
+            assert.equal(SchemaHelper.unwrapConditionElse(gated), body);
+        }
+    });
+
+    it('recognises a value constraint at any depth', () => {
+        assert.equal(SchemaHelper.isPresenceOnlyPredicate({ properties: { a: { properties: { b: {} }, required: ['b'] } }, required: ['a'] }), true);
+        assert.equal(SchemaHelper.isPresenceOnlyPredicate({ properties: { a: { properties: { b: { const: 1 } }, required: ['b'] } }, required: ['a'] }), false);
+        assert.equal(SchemaHelper.isPresenceOnlyPredicate({ allOf: [{ properties: { a: { enum: [1] } }, required: ['a'] }] }), false);
+    });
 });
 
-describe('SchemaHelper.parseConditions — gated else branch', () => {
+describe('SchemaHelper.parseConditions — already-saved gated else branch', () => {
     it('still reports the else fields after a reload', () => {
         const document = chainSchema().document;
         const conditions = reload(document).conditions;
@@ -198,6 +272,43 @@ describe('Schema.parseDocument — condition fields shared with the field list',
         assert.ok(schema.document.allOf[0].then.properties.renamed);
     });
 
+    // A branch field renamed while the copies were unshared ends up in `allOf` only: the
+    // schema never declares it, and `additionalProperties: false` then rejects it as soon as
+    // the branch is filled in. Parsing must adopt it so the next save repairs the document.
+    it('adopts a branch field that properties never declared', () => {
+        const document = {
+            $id: '#N',
+            title: 'N',
+            description: 'D',
+            type: 'object',
+            properties: {
+                field_1: { title: 'field_1', type: 'string', $comment: '{"term":"field_1"}' },
+                field_7: { title: 'field_7', description: 'DDD', type: 'string', $comment: '{"term":"field_7"}' },
+            },
+            required: [],
+            additionalProperties: false,
+            allOf: [{
+                if: { properties: { field_1: { const: '2' } }, required: ['field_1'] },
+                then: { properties: { field_73: false } },
+                else: {
+                    properties: {
+                        field_73: { title: 'field_7', description: 'aElse', type: 'string', $comment: '{"term":"field_73"}' },
+                    },
+                },
+            }],
+        };
+        const schema = reload(document);
+        const adopted = schema.fields.find((f) => f.name === 'field_73');
+        assert.ok(adopted, 'field_73 should be adopted into the field list');
+        assert.equal(adopted, schema.conditions[0].elseFields[0]);
+
+        schema.update(schema.fields, schema.conditions);
+        assert.ok(schema.document.properties.field_73, 'field_73 should be declared after a save');
+        assert.equal(schema.document.additionalProperties, false);
+        // The pre-existing field of the same title is untouched.
+        assert.equal(schema.document.properties.field_7.description, 'DDD');
+    });
+
     it('keeps a condition field out of the top level required list', () => {
         const schema = reload(buildSchema(
             [field('A'), field('B')],
@@ -206,6 +317,7 @@ describe('Schema.parseDocument — condition fields shared with the field list',
         schema.conditions[0].thenFields[0].required = true;
         schema.update(schema.fields, schema.conditions);
         assert.ok(!schema.document.required.includes('B'));
-        assert.deepEqual(schema.document.allOf[0].then.required, ['B']);
+        assert.equal('required' in schema.document.allOf[0].then, false);
+        assert.equal(JSON.parse(schema.document.allOf[0].then.properties.B.$comment).conditionRequired, true);
     });
 });

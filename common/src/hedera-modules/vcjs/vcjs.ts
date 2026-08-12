@@ -20,7 +20,7 @@ import { BbsBlsSignature2020, BbsBlsSignatureProof2020, Bls12381G2KeyPair, KeyPa
 import { IPFS } from '../../helpers/index.js';
 import { CommonDidDocument, HederaBBSMethod, HederaDidDocument, HederaEd25519Method } from './did/index.js';
 import { validateGeoConsistency } from './geo-validator.js';
-import { validateArrayGroups } from './array-group-validator.js';
+import { ArrayGroupValidationError, validateArrayGroups } from './array-group-validator.js';
 
 import * as jsigV7Module from 'jsonld-signatures-v7';
 import { ContextHelper } from './context-helper.js';
@@ -332,10 +332,11 @@ export class VCJS {
         let errors = this.enhanceConditionErrors(validate.errors as any[], schema);
         const geoErrors = validateGeoConsistency(subject, schemaObject?.fields || []);
         const groupErrors = validateArrayGroups(subject, schemaObject?.arrayDependencies || []);
-        errors = [...(errors || []), ...geoErrors, ...groupErrors];
+        const conditionErrors = VCJS.conditionErrors(subject, schemaObject);
+        errors = [...(errors || []), ...geoErrors, ...groupErrors, ...conditionErrors];
 
         return new SchemaValidationResult(
-            valid && !geoErrors.length && !groupErrors.length,
+            valid && !geoErrors.length && !groupErrors.length && !conditionErrors.length,
             'JSON_SCHEMA_VALIDATION_ERROR',
             errors as any
         );
@@ -702,13 +703,36 @@ export class VCJS {
         let errors = this.enhanceConditionErrors(validate.errors as any[], schema);
         const geoErrors = validateGeoConsistency(subject, schemaObject?.fields || []);
         const groupErrors = validateArrayGroups(subject, this.readArrayDependencies(schema));
-        errors = [...(errors || []), ...geoErrors, ...groupErrors];
+        const conditionErrors = VCJS.conditionErrors(subject, schemaObject);
+        errors = [...(errors || []), ...geoErrors, ...groupErrors, ...conditionErrors];
 
         return new SchemaValidationResult(
-            valid && !geoErrors.length && !groupErrors.length,
+            valid && !geoErrors.length && !groupErrors.length && !conditionErrors.length,
             'JSON_SCHEMA_VALIDATION_ERROR',
             errors as any
         );
+    }
+
+    /**
+     * Validate the fields a schema's conditions reveal.
+     *
+     * The schema document declares each branch but does not mark its fields required:
+     * JSON Schema applies `else` whenever `if` fails, including when the field the `if`
+     * reads was never asked, which would demand fields the form never showed. Those rules
+     * are enforced here instead, in the same shape ajv reports.
+     * @param subject credential subject
+     * @param schemaObject parsed schema
+     */
+    private static conditionErrors(subject: any, schemaObject: Schema): ArrayGroupValidationError[] {
+        return SchemaHelper
+            .validateConditionFields(schemaObject?.conditions || [], subject)
+            .map((message) => ({
+                instancePath: '',
+                schemaPath: '#/allOf',
+                message,
+                keyword: 'conditionFields' as any,
+                params: {} as Record<string, never>,
+            }));
     }
 
     /**

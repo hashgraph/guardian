@@ -1392,23 +1392,45 @@ export class JsonToSchema {
     }
 
     /**
-     * Add the fields a condition reveals to the schema's own field list.
+     * Add the fields a condition reveals to the schema's own field list, and share one
+     * object between the two.
      *
      * `buildDocument` turns that list into `properties`, so a missing condition field is
      * never declared — and with `additionalProperties: false` the schema then rejects the
-     * documents it describes. Shares the same object with the condition, as the editor does.
+     * documents it describes. `schemaToJson` also emits the field in `json.fields` as well
+     * as inside `json.conditions`, and each condition parses with its own uniqueness set,
+     * so on a round trip both copies survive: the field is present but not shared, and an
+     * edit or rename in the editor reaches `allOf` while `properties` keeps the old entry.
      */
     private static mergeConditionFields(fields: SchemaField[], conditions: SchemaCondition[]): void {
-        for (const condition of (conditions || [])) {
-            const revealed = [
-                ...(condition.thenFields || []),
-                ...(condition.elseFields || [])
-            ];
-            for (const field of revealed) {
-                if (!fields.some(f => f.name === field.name)) {
-                    fields.push(field);
-                }
+        const indexByName = new Map<string, number>();
+        for (let index = 0; index < fields.length; index++) {
+            if (!indexByName.has(fields[index].name)) {
+                indexByName.set(fields[index].name, index);
             }
+        }
+        const merge = (branch?: SchemaField[]) => {
+            if (!Array.isArray(branch)) {
+                return;
+            }
+            for (let i = 0; i < branch.length; i++) {
+                const field = branch[i];
+                const index = indexByName.get(field.name);
+                if (index === undefined) {
+                    indexByName.set(field.name, fields.length);
+                    fields.push(field);
+                    continue;
+                }
+                // Keep the declared entry as the shared object, as `Schema.linkConditionFields`
+                // does; `required` is the one attribute that belongs to the branch.
+                const declared = fields[index];
+                declared.required = field.required;
+                branch[i] = declared;
+            }
+        };
+        for (const condition of (conditions || [])) {
+            merge(condition.thenFields);
+            merge(condition.elseFields);
         }
     }
 

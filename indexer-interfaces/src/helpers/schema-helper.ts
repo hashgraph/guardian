@@ -199,6 +199,58 @@ export class SchemaHelper {
     }
 
     /**
+     * Unwrap the reachability gate around a condition's `else` branch.
+     *
+     * A chained condition serialises its `else` as
+     * `{ if: <field present>, then: <else fields>, else: <forbid> }`. Mirrors
+     * `SchemaHelper.unwrapConditionElse` in @guardian/interfaces, which this package
+     * cannot import.
+     * @param node `else` node of an `allOf` entry
+     */
+    public static unwrapConditionElse(node: any): any {
+        if (node && !node.properties && node.if && node.then
+            && SchemaHelper.isPresenceOnlyPredicate(node.if)) {
+            return node.then;
+        }
+        return node;
+    }
+
+    /**
+     * True for a predicate that only asserts fields are present, with no constraint on their
+     * values — the shape the reachability gate used for its `if`.
+     *
+     * Separates the gate from a hand written `else: { if, then, else }`, which is an ordinary
+     * "else if" whose predicate constrains a value; unwrapping one of those would discard its
+     * predicate and its own `else`.
+     * @param node predicate node
+     */
+    public static isPresenceOnlyPredicate(node: any): boolean {
+        if (!node || typeof node !== 'object' || Array.isArray(node)) {
+            return false;
+        }
+        const keys = Object.keys(node);
+        if (!keys.length) {
+            return true;
+        }
+        for (const branching of ['allOf', 'anyOf']) {
+            if (Array.isArray(node[branching])) {
+                return keys.length === 1
+                    && node[branching].length > 0
+                    && node[branching].every((entry: any) => SchemaHelper.isPresenceOnlyPredicate(entry));
+            }
+        }
+        if (keys.some((key) => key !== 'properties' && key !== 'required')) {
+            return false;
+        }
+        if (node.properties && typeof node.properties === 'object') {
+            return Object.values(node.properties)
+                .every((child: any) => SchemaHelper.isPresenceOnlyPredicate(child));
+        }
+        // `required` on its own also constrains presence only.
+        return Array.isArray(node.required);
+    }
+
+    /**
      * Parse conditions
      * @param document
      * @param context
@@ -244,7 +296,7 @@ export class SchemaHelper {
                     document.$defs || defs
                 ) as SchemaField[],
                 elseFields: SchemaHelper.parseFields(
-                    condition.else,
+                    SchemaHelper.unwrapConditionElse(condition.else),
                     context,
                     schemaCache,
                     document.$defs || defs

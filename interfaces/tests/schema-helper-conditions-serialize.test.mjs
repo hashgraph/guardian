@@ -150,7 +150,9 @@ describe('SchemaHelper.buildDocument — condition serialization', () => {
         const doc = build([{ ifCondition: { field: { name: 'a' }, fieldValue: 1 }, thenFields: [], elseFields: [field('e1', { required: true })] }]);
         assert.deepEqual(doc.allOf[0].then, { properties: { e1: false } });
         assert.ok(doc.allOf[0].else.properties.e1);
-        assert.deepEqual(doc.allOf[0].else.required, ['e1']);
+        // Branch `required` is not emitted; the flag rides in `$comment` instead.
+        assert.equal('required' in doc.allOf[0].else, false);
+        assert.equal(JSON.parse(doc.allOf[0].else.properties.e1.$comment).conditionRequired, true);
     });
 
     it('omits allOf entirely when no conditions are given', () => {
@@ -162,20 +164,26 @@ describe('SchemaHelper.buildDocument — condition serialization', () => {
 describe('SchemaHelper — branch-level required round-trip', () => {
     const fields = [field('a'), field('b')];
 
-    it('required thenField is present in then.required after build', () => {
+    // A branch must never emit `required`: JSON Schema applies `else` whenever `if` fails,
+    // including when the field the `if` reads was never asked, which would demand fields no
+    // form can show. The flag is carried in `$comment` and enforced by
+    // `SchemaHelper.validateConditionFields`.
+    it('required thenField is marked in $comment, not then.required', () => {
         const doc = SchemaHelper.buildDocument(
             baseSchema(), fields,
             [{ ifCondition: { field: field('a'), fieldValue: 'x' }, thenFields: [field('b', { required: true })], elseFields: [] }]
         );
-        assert.deepEqual(doc.allOf[0].then.required, ['b']);
+        assert.equal('required' in doc.allOf[0].then, false);
+        assert.equal(JSON.parse(doc.allOf[0].then.properties.b.$comment).conditionRequired, true);
     });
 
-    it('required elseField is present in else.required after build', () => {
+    it('required elseField is marked in $comment, not else.required', () => {
         const doc = SchemaHelper.buildDocument(
             baseSchema(), fields,
             [{ ifCondition: { field: field('a'), fieldValue: 'x' }, thenFields: [], elseFields: [field('b', { required: true })] }]
         );
-        assert.deepEqual(doc.allOf[0].else.required, ['b']);
+        assert.equal('required' in doc.allOf[0].else, false);
+        assert.equal(JSON.parse(doc.allOf[0].else.properties.b.$comment).conditionRequired, true);
     });
 
     it('then.required survives parse → thenFields[].required', () => {
@@ -215,12 +223,49 @@ describe('SchemaHelper — branch-level required round-trip', () => {
         assert.equal(cond.thenFields[0].required, true);
     });
 
-    it('optional thenField is absent from then.required after build', () => {
+    // These four assertions used to read `then.required` / `else.required`. That array is no
+    // longer emitted, so the guarantee it protected — a required branch field stays required
+    // across a save — is asserted end to end here instead: ajv must not demand the field
+    // (otherwise a condition that was never asked makes the document unsatisfiable), while
+    // `validateConditionFields` must.
+    it('moves required enforcement from ajv to validateConditionFields', async () => {
+        const { default: Ajv } = await import('ajv');
+        const conditions = [{
+            ifCondition: { field: field('a'), fieldValue: 'x' },
+            thenFields: [field('b', { required: true })],
+            elseFields: [],
+        }];
+        const document = SchemaHelper.buildDocument(baseSchema(), fields, conditions);
+
+        const compiled = JSON.parse(JSON.stringify(document));
+        delete compiled.$defs;
+        delete compiled.$id;
+        compiled.properties = { ...compiled.properties };
+        delete compiled.properties['@context'];
+        delete compiled.properties.type;
+        compiled.required = (compiled.required || []).filter((n) => n !== '@context' && n !== 'type');
+        const validate = new Ajv({ strict: false, allErrors: true }).compile(compiled);
+
+        // `if` holds and `b` is missing: ajv stays silent, the code check speaks.
+        assert.equal(validate({ a: 'x' }), true);
+        const parsed = SchemaHelper.parseConditions(document, 'ctx:', fields, new Map());
+        assert.equal(parsed[0].thenFields[0].required, true);
+        const errors = SchemaHelper.validateConditionFields(parsed, { a: 'x' });
+        assert.equal(errors.length, 1);
+        assert.match(errors[0], /"b" is required/);
+
+        // `if` does not hold: the field belongs to no active branch, so nothing demands it.
+        assert.equal(validate({ a: 'other' }), true);
+        assert.deepEqual(SchemaHelper.validateConditionFields(parsed, { a: 'other' }), []);
+    });
+
+    it('optional thenField carries no conditionRequired flag', () => {
         const doc = SchemaHelper.buildDocument(
             baseSchema(), fields,
             [{ ifCondition: { field: field('a'), fieldValue: 'x' }, thenFields: [field('b', { required: false })], elseFields: [] }]
         );
-        assert.deepEqual(doc.allOf[0].then.required, []);
+        assert.equal('required' in doc.allOf[0].then, false);
+        assert.equal(JSON.parse(doc.allOf[0].then.properties.b.$comment).conditionRequired, undefined);
     });
 });
 
