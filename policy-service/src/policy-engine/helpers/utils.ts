@@ -546,6 +546,7 @@ export class PolicyUtils {
         if (leftIsArray) {
             return left.every((l: any) => PolicyUtils.evaluateFieldCondition(l, type, right));
         }
+        if (rightIsArray) { return false; }
         return PolicyUtils.compareScalarPair(left, type, right);
     }
 

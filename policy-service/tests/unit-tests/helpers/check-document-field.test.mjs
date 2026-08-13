@@ -234,6 +234,12 @@ describe('PolicyUtils.evaluateFieldCondition', () => {
         assert.equal(PolicyUtils.evaluateFieldCondition(1, 'equal', [1]), false);
     });
 
+    it('scalar vs non-empty array on relational op returns false (not JS coercion)', () => {
+        // 5 gt [3] must be false — not accidentally true via String([3])→"3"
+        assert.equal(PolicyUtils.evaluateFieldCondition(5, 'gt', [3]), false);
+        assert.equal(PolicyUtils.evaluateFieldCondition(5, 'gt', [3, 4]), false);
+    });
+
     it('in: empty left array vs non-empty right array fails', () => {
         assert.equal(PolicyUtils.evaluateFieldCondition([], 'in', [1, 2, 3]), false);
     });
