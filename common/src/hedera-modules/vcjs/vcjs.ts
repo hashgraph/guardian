@@ -5,7 +5,7 @@ import { Ed25519Signature2018 } from '@digitalbazaar/ed25519-signature-2018';
 import { Ed25519VerificationKey2018 } from '@digitalbazaar/ed25519-verification-key-2018';
 import { PrivateKey } from '@hiero-ledger/sdk';
 import { SchemaValidationResult } from './schema-validation-result.js';
-import { GenerateUUIDv4, ICredentialSubject, ISchemaArrayDependency, IVC, Schema, SchemaHelper, SignatureType } from '@guardian/interfaces';
+import { GenerateUUIDv4, ICredentialSubject, ISchemaArrayDependency, IVC, Schema, SchemaField, SchemaHelper, SignatureType } from '@guardian/interfaces';
 import { VcDocument } from './vc-document.js';
 import { VpDocument } from './vp-document.js';
 import { VcSubject } from './vc-subject.js';
@@ -20,7 +20,7 @@ import { BbsBlsSignature2020, BbsBlsSignatureProof2020, Bls12381G2KeyPair, KeyPa
 import { IPFS } from '../../helpers/index.js';
 import { CommonDidDocument, HederaBBSMethod, HederaDidDocument, HederaEd25519Method } from './did/index.js';
 import { validateGeoConsistency } from './geo-validator.js';
-import { validateArrayGroups } from './array-group-validator.js';
+import { ArrayGroupValidationError, validateArrayGroups } from './array-group-validator.js';
 
 import * as jsigV7Module from 'jsonld-signatures-v7';
 import { ContextHelper } from './context-helper.js';
@@ -332,10 +332,11 @@ export class VCJS {
         let errors = this.enhanceConditionErrors(validate.errors as any[], schema);
         const geoErrors = validateGeoConsistency(subject, schemaObject?.fields || []);
         const groupErrors = validateArrayGroups(subject, schemaObject?.arrayDependencies || []);
-        errors = [...(errors || []), ...geoErrors, ...groupErrors];
+        const conditionErrors = VCJS.conditionErrors(subject, schemaObject);
+        errors = [...(errors || []), ...geoErrors, ...groupErrors, ...conditionErrors];
 
         return new SchemaValidationResult(
-            valid && !geoErrors.length && !groupErrors.length,
+            valid && !geoErrors.length && !groupErrors.length && !conditionErrors.length,
             'JSON_SCHEMA_VALIDATION_ERROR',
             errors as any
         );
@@ -702,13 +703,99 @@ export class VCJS {
         let errors = this.enhanceConditionErrors(validate.errors as any[], schema);
         const geoErrors = validateGeoConsistency(subject, schemaObject?.fields || []);
         const groupErrors = validateArrayGroups(subject, this.readArrayDependencies(schema));
-        errors = [...(errors || []), ...geoErrors, ...groupErrors];
+        const conditionErrors = VCJS.conditionErrors(subject, schemaObject);
+        errors = [...(errors || []), ...geoErrors, ...groupErrors, ...conditionErrors];
 
         return new SchemaValidationResult(
-            valid && !geoErrors.length && !groupErrors.length,
+            valid && !geoErrors.length && !groupErrors.length && !conditionErrors.length,
             'JSON_SCHEMA_VALIDATION_ERROR',
             errors as any
         );
+    }
+
+    /**
+     * Validate the fields a schema's conditions reveal.
+     *
+     * The schema document declares each branch but does not mark its fields required:
+     * JSON Schema applies `else` whenever `if` fails, including when the field the `if`
+     * reads was never asked, which would demand fields the form never showed. Those rules
+     * are enforced here instead, in the same shape ajv reports.
+     *
+     * `schemaObject.conditions` only holds the root document's own conditions — a `$ref`
+     * field's sub-schema keeps its own conditions on `field.conditions`, so they are walked
+     * here as well, recursively, against the matching slice of the submitted data.
+     * @param subject credential subject
+     * @param schemaObject parsed schema
+     */
+    private static conditionErrors(subject: any, schemaObject: Schema): ArrayGroupValidationError[] {
+        const out: ArrayGroupValidationError[] = [];
+        VCJS.pushConditionErrors(schemaObject?.conditions || [], subject, '', out);
+        VCJS.collectNestedConditionErrors(schemaObject?.fields || [], subject, '', out);
+        return out;
+    }
+
+    /**
+     * Recurse into `$ref` fields to validate the conditions declared inside their own
+     * sub-schemas, which `schemaObject.conditions` never sees.
+     * @param fields fields of the (sub-)schema currently being walked
+     * @param data matching slice of the submitted data
+     * @param path JSON-pointer path to `data`, for error reporting
+     * @param out accumulator for produced errors
+     */
+    private static collectNestedConditionErrors(
+        fields: SchemaField[],
+        data: any,
+        path: string,
+        out: ArrayGroupValidationError[]
+    ): void {
+        if (!Array.isArray(fields) || !data || typeof data !== 'object') {
+            return;
+        }
+        for (const field of fields) {
+            if (!field?.isRef) {
+                continue;
+            }
+            const value = data[field.name];
+            const entries: { entry: any; entryPath: string }[] = field.isArray
+                ? (Array.isArray(value) ? value : []).map((entry: any, index: number) => ({
+                    entry,
+                    entryPath: `${path}/${field.name}/${index}`,
+                }))
+                : [{ entry: value, entryPath: `${path}/${field.name}` }];
+
+            for (const { entry, entryPath } of entries) {
+                if (!entry || typeof entry !== 'object') {
+                    continue;
+                }
+                VCJS.pushConditionErrors(field.conditions || [], entry, entryPath, out);
+                VCJS.collectNestedConditionErrors(field.fields || [], entry, entryPath, out);
+            }
+        }
+    }
+
+    /**
+     * Run `validateConditionFields` for one (sub-)schema's conditions and append the
+     * results, in the shape ajv reports, to `out`.
+     * @param conditions conditions of the (sub-)schema being validated
+     * @param data matching slice of the submitted data
+     * @param instancePath JSON-pointer path to `data`
+     * @param out accumulator for produced errors
+     */
+    private static pushConditionErrors(
+        conditions: any[],
+        data: any,
+        instancePath: string,
+        out: ArrayGroupValidationError[]
+    ): void {
+        for (const message of SchemaHelper.validateConditionFields(conditions, data)) {
+            out.push({
+                instancePath,
+                schemaPath: '#/allOf',
+                message,
+                keyword: 'conditionFields' as any,
+                params: {} as Record<string, never>,
+            });
+        }
     }
 
     /**

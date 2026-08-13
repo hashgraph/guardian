@@ -275,6 +275,7 @@ export class SchemaHelper {
             isUpdatable,
             dependency,
             enumName,
+            conditionRequired,
         } = SchemaHelper.parseFieldComment(field.comment);
         field.suggest = suggest;
         if (field.isRef) {
@@ -313,7 +314,11 @@ export class SchemaHelper {
         field.customType = customType ? String(customType) : null;
         field.dependency = dependency && dependency.on ? dependency : null;
         field.isPrivate = isPrivate;
-        field.required = required;
+        // A field a condition reveals carries its required flag in `$comment` rather than in
+        // the branch's `required` array: JSON Schema applies `else` whenever `if` fails, so a
+        // branch `required` would demand fields of a condition that was never asked. See
+        // `validateConditionFields`, which enforces the flag against the active branch.
+        field.required = required || !!conditionRequired;
         field.hidden = !!hidden;
         field.autocalculate = !!autocalculate;
         field.expression = expression;
@@ -436,6 +441,249 @@ export class SchemaHelper {
                 version: null
             };
         }
+    }
+
+    /**
+     * Record in a property's `$comment` that the field is required by the condition branch
+     * that declares it.
+     *
+     * `$comment` is an annotation keyword, so ajv ignores it — which is the point: the flag
+     * has to survive a save/parse round trip without letting JSON Schema demand the field
+     * from a branch that was never asked.
+     * @param property property node of a branch
+     */
+    public static markConditionRequired(property: any): void {
+        if (!property || typeof property !== 'object') {
+            return;
+        }
+        const comment = SchemaHelper.parseFieldComment(property.$comment);
+        comment.conditionRequired = true;
+        property.$comment = JSON.stringify(comment);
+    }
+
+    /**
+     * The predicates a condition's `if` reads, as single field names.
+     *
+     * Multi-segment (cross-schema) paths are returned as null: which branch of which
+     * sub-schema reveals them is not knowable from this schema's condition list, so they
+     * are treated as always readable.
+     * @param condition
+     */
+    public static getConditionPredicates(condition: SchemaCondition): (string | null)[] {
+        const ic: any = condition?.ifCondition;
+        if (!ic) {
+            return [];
+        }
+        const name = (p: any): string | null => {
+            if (p?.fieldPath?.length > 1) {
+                return null;
+            }
+            return p?.field?.name ?? null;
+        };
+        if (Array.isArray(ic.AND)) {
+            return ic.AND.map(name);
+        }
+        if (Array.isArray(ic.OR)) {
+            return ic.OR.map(name);
+        }
+        return [name(ic)];
+    }
+
+    /**
+     * True when a condition's `if` is answered by any single predicate rather than all of
+     * them, which changes how its reachability combines.
+     * @param condition
+     */
+    public static isConditionDisjunctive(condition: SchemaCondition): boolean {
+        return Array.isArray((condition?.ifCondition as any)?.OR);
+    }
+
+    /**
+     * Which condition branch reveals each field, by field name.
+     *
+     * A name revealed by more than one condition is ambiguous — there is no way to tell
+     * which branch owns it — and is reported as such so callers can fall back to treating
+     * it as always asked.
+     * @param conditions
+     */
+    public static buildRevealMap(
+        conditions: SchemaCondition[]
+    ): Map<string, { condition: SchemaCondition, branch: 'then' | 'else' }[]> {
+        const map = new Map<string, { condition: SchemaCondition, branch: 'then' | 'else' }[]>();
+        const add = (name: string, condition: SchemaCondition, branch: 'then' | 'else') => {
+            if (!name) {
+                return;
+            }
+            const list = map.get(name);
+            if (list) {
+                list.push({ condition, branch });
+            } else {
+                map.set(name, [{ condition, branch }]);
+            }
+        };
+        for (const condition of (conditions || [])) {
+            for (const field of (condition.thenFields || [])) {
+                add(field.name, condition, 'then');
+            }
+            for (const field of (condition.elseFields || [])) {
+                add(field.name, condition, 'else');
+            }
+        }
+        return map;
+    }
+
+    /**
+     * True when the fields a condition's `if` reads are actually being asked.
+     *
+     * A field is being asked when it is declared outright, or when the condition branch
+     * that reveals it is the active one — recursively, so a chain of conditions is only
+     * reachable while every link above it holds. This is what separates "the field was
+     * answered differently" from "the field was never asked": the first makes the `else`
+     * branch active, the second makes neither branch apply.
+     *
+     * `evaluate` decides whether a condition's `if` holds. It is supplied by the caller so
+     * the same traversal serves the form, which reads live controls, and document
+     * validation, which reads submitted JSON.
+     * @param condition
+     * @param revealMap
+     * @param evaluate
+     * @param visited
+     */
+    public static isConditionReachable(
+        condition: SchemaCondition,
+        revealMap: Map<string, { condition: SchemaCondition, branch: 'then' | 'else' }[]>,
+        evaluate: (condition: SchemaCondition) => boolean,
+        visited: Set<SchemaCondition> = new Set()
+    ): boolean {
+        if (!condition || visited.has(condition)) {
+            // A cycle cannot be resolved either way; treat it as asked so nothing is
+            // silently dropped from the form or the document.
+            return true;
+        }
+        visited.add(condition);
+        try {
+            const predicates = SchemaHelper.getConditionPredicates(condition);
+            if (!predicates.length) {
+                return false;
+            }
+            const readable = (name: string | null): boolean => {
+                if (name === null) {
+                    // Cross-schema path, or a predicate with no field: always readable.
+                    return true;
+                }
+                const reveals = revealMap.get(name);
+                if (!reveals?.length || reveals.length > 1) {
+                    // Declared outright, or ambiguous: treated as asked.
+                    return true;
+                }
+                const { condition: owner, branch } = reveals[0];
+                if (!SchemaHelper.isConditionReachable(owner, revealMap, evaluate, visited)) {
+                    return false;
+                }
+                return evaluate(owner) === (branch === 'then');
+            };
+            return SchemaHelper.isConditionDisjunctive(condition)
+                ? predicates.some(readable)
+                : predicates.every(readable);
+        } finally {
+            visited.delete(condition);
+        }
+    }
+
+    /**
+     * Validate the fields a schema's conditions reveal against a submitted document.
+     *
+     * `buildDocument` declares the shape of every branch but does not mark branch fields
+     * required, because JSON Schema applies `else` whenever `if` fails — including when the
+     * field the `if` reads was never asked, which would demand fields no form can show.
+     * The rules that cannot be expressed there are enforced here instead:
+     *
+     * - a required field of the active branch must be present;
+     * - no field of a condition whose `if` is unreachable may be present at all.
+     *
+     * Branch exclusivity for reachable conditions is still enforced by the schema itself.
+     * @param conditions
+     * @param data submitted document (credentialSubject)
+     * @returns human readable errors, empty when the document is consistent
+     */
+    public static validateConditionFields(conditions: SchemaCondition[], data: any): string[] {
+        const errors: string[] = [];
+        if (!Array.isArray(conditions) || !conditions.length || !data || typeof data !== 'object') {
+            return errors;
+        }
+
+        const resolve = (path: string[]): any => {
+            let node: any = data;
+            for (const segment of path) {
+                if (node === null || node === undefined || typeof node !== 'object') {
+                    return undefined;
+                }
+                node = node[segment];
+            }
+            return node;
+        };
+        const present = (value: any): boolean =>
+            value !== undefined && value !== null && value !== '';
+        const equals = (a: any, b: any): boolean => {
+            if (a === b) {
+                return true;
+            }
+            if (a === null || a === undefined || b === null || b === undefined) {
+                return false;
+            }
+            const an = Number(a);
+            const bn = Number(b);
+            if (!Number.isNaN(an) && !Number.isNaN(bn)) {
+                return an === bn;
+            }
+            return String(a).trim() === String(b).trim();
+        };
+        const test = (p: any): boolean => {
+            const path = (p?.fieldPath?.length > 1) ? p.fieldPath : [p?.field?.name];
+            if (!path[0]) {
+                return false;
+            }
+            return equals(resolve(path), p.fieldValue);
+        };
+        const evaluate = (condition: SchemaCondition): boolean => {
+            const ic: any = condition?.ifCondition;
+            if (!ic) {
+                return false;
+            }
+            if (Array.isArray(ic.AND)) {
+                return ic.AND.length > 0 && ic.AND.every(test);
+            }
+            if (Array.isArray(ic.OR)) {
+                return ic.OR.some(test);
+            }
+            return test(ic);
+        };
+
+        const revealMap = SchemaHelper.buildRevealMap(conditions);
+        for (const condition of conditions) {
+            const reachable = SchemaHelper.isConditionReachable(condition, revealMap, evaluate);
+            const thenFields = condition.thenFields || [];
+            const elseFields = condition.elseFields || [];
+
+            if (!reachable) {
+                for (const field of [...thenFields, ...elseFields]) {
+                    if (present(data[field.name])) {
+                        errors.push(
+                            `Field "${field.name}" is not allowed: the condition that reveals it is not applicable.`
+                        );
+                    }
+                }
+                continue;
+            }
+
+            const active = evaluate(condition) ? thenFields : elseFields;
+            for (const field of active) {
+                if (field.required && !present(data[field.name])) {
+                    errors.push(`Field "${field.name}" is required.`);
+                }
+            }
+        }
+        return errors;
     }
 
     /**
@@ -978,11 +1226,22 @@ export class SchemaHelper {
                 return null;
             }
 
+            // `required` is deliberately not emitted for the fields a branch reveals.
+            // JSON Schema cannot tell "the field was answered differently" from "the field
+            // was never asked": when a condition reads a field that another condition
+            // reveals, closing the outer condition drops the read field from the document,
+            // the `if` fails, and `else` applies — demanding fields the form never showed,
+            // which no submission can satisfy. The flag is carried in each property's
+            // `$comment` instead, where ajv does not act on it, and
+            // `SchemaHelper.validateConditionFields` enforces it against the active branch.
             const buildSub = (sub?: SchemaField[]) => {
                 const req: string[] = [];
                 const props: any = {};
                 SchemaHelper.getFieldsFromObject(sub || [], req, props, schema.contextURL);
-                return Object.keys(props).length ? { properties: props, required: req } : undefined;
+                for (const name of req) {
+                    SchemaHelper.markConditionRequired(props[name]);
+                }
+                return Object.keys(props).length ? { properties: props } : undefined;
             };
 
             const thenObj = deepMergeSchemaObj(

@@ -269,3 +269,232 @@ describe('FieldForm — entry titles', () => {
         expect(form.getEntryTitle(instances, instances.list![0])).toMatch(/#1$/);
     });
 });
+
+const plainField = (name: string, extra: any = {}): any => ({
+    name,
+    title: name,
+    description: name,
+    type: 'string',
+    isArray: false,
+    isRef: false,
+    required: false,
+    readOnly: false,
+    ...extra,
+});
+
+const ifEquals = (
+    fieldName: string,
+    fieldValue: string,
+    thenFields: any[],
+    elseFields: any[] = []
+): any => ({
+    ifCondition: { field: plainField(fieldName), fieldValue },
+    thenFields,
+    elseFields,
+});
+
+const buildFieldsForm = (fields: any[], conditions: any[]): FieldForm => {
+    const form = new FieldForm(new UntypedFormGroup({}));
+    form.setData({ fields, conditions });
+    form.build();
+    return form;
+};
+
+const orderedNames = (form: FieldForm): string[] =>
+    (form.controls || []).map((item) => item.name);
+
+const visibleNames = (form: FieldForm): string[] =>
+    (form.controls || []).filter((item) => item.visibility).map((item) => item.name);
+
+const answer = (form: FieldForm, name: string, value: string): void => {
+    form.form.get(name)?.setValue(value);
+};
+
+describe('FieldForm — order of the fields a condition reveals', () => {
+    let form: FieldForm;
+
+    afterEach(() => form?.destroy());
+
+    it('keeps the fields of one condition in declaration order', () => {
+        form = buildFieldsForm(
+            [plainField('country')],
+            [ifEquals('country', 'US', [plainField('state'), plainField('zip')])]
+        );
+        answer(form, 'country', 'US');
+        expect(visibleNames(form)).toEqual(['country', 'state', 'zip']);
+    });
+
+    it('attaches a nested condition to the field it reads, after the fields it is declared alongside', () => {
+        form = buildFieldsForm(
+            [plainField('country')],
+            [
+                ifEquals('country', 'US', [plainField('state'), plainField('zip')]),
+                ifEquals('state', 'CA', [plainField('county')]),
+            ]
+        );
+        answer(form, 'country', 'US');
+        answer(form, 'state', 'CA');
+        expect(visibleNames(form)).toEqual(['country', 'state', 'zip', 'county']);
+    });
+
+    it('keeps a whole reveal group together before descending into a nested condition, alongside unrelated root fields', () => {
+        form = buildFieldsForm(
+            [plainField('A'), plainField('F'), plainField('G'), plainField('H')],
+            [
+                ifEquals('A', '2', [plainField('B'), plainField('C'), plainField('D')]),
+                ifEquals('B', '3', [plainField('E')]),
+            ]
+        );
+        answer(form, 'A', '2');
+        answer(form, 'B', '3');
+        expect(visibleNames(form)).toEqual(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']);
+    });
+
+    it('renders two conditions on the same field in declaration order', () => {
+        form = buildFieldsForm(
+            [plainField('type')],
+            [
+                ifEquals('type', 'A', [plainField('aThen')], [plainField('aElse')]),
+                ifEquals('type', 'B', [plainField('bThen')], [plainField('bElse')]),
+            ]
+        );
+        answer(form, 'type', 'A');
+        expect(visibleNames(form)).toEqual(['type', 'aThen', 'bElse']);
+    });
+
+    it('anchors a revealed field after the last field its condition reads', () => {
+        form = buildFieldsForm(
+            [plainField('x'), plainField('y'), plainField('z')],
+            [{
+                ifCondition: {
+                    AND: [
+                        { field: plainField('x'), fieldValue: '1' },
+                        { field: plainField('y'), fieldValue: '2' },
+                    ],
+                },
+                thenFields: [plainField('revealed')],
+                elseFields: [],
+            }]
+        );
+        answer(form, 'x', '1');
+        answer(form, 'y', '2');
+        expect(visibleNames(form)).toEqual(['x', 'y', 'revealed', 'z']);
+    });
+
+    it('does not move a field while the form is being filled', () => {
+        form = buildFieldsForm(
+            [plainField('country'), plainField('city')],
+            [
+                ifEquals('country', 'US', [plainField('state')]),
+                ifEquals('state', 'CA', [plainField('county')], [plainField('province')]),
+            ]
+        );
+        const before = orderedNames(form);
+        answer(form, 'country', 'US');
+        answer(form, 'state', 'CA');
+        expect(orderedNames(form)).toEqual(before);
+        expect(before).toEqual(['country', 'state', 'county', 'province', 'city']);
+    });
+
+    it('keeps a field whose condition reads a field outside the form', () => {
+        form = buildFieldsForm(
+            [plainField('a')],
+            [ifEquals('nowhere', '1', [plainField('orphan')])]
+        );
+        expect(orderedNames(form)).toEqual(['a', 'orphan']);
+    });
+});
+
+describe('FieldForm — conditions that cannot be reached', () => {
+    let form: FieldForm;
+
+    // if A == 1 then B / if B == 2 then C / if C == 3 then D else E
+    const chain = (): FieldForm => buildFieldsForm(
+        [plainField('A')],
+        [
+            ifEquals('A', '1', [plainField('B')]),
+            ifEquals('B', '2', [plainField('C')]),
+            ifEquals('C', '3', [plainField('D')], [plainField('E')]),
+        ]
+    );
+
+    afterEach(() => form?.destroy());
+
+    it('hides both branches while the field the condition reads is not shown', () => {
+        form = chain();
+        expect(visibleNames(form)).toEqual(['A']);
+    });
+
+    it('keeps them hidden when the answer does not open the chain', () => {
+        form = chain();
+        answer(form, 'A', '9');
+        expect(visibleNames(form)).toEqual(['A']);
+    });
+
+    it('keeps them hidden when the chain stops half way', () => {
+        form = chain();
+        answer(form, 'A', '1');
+        answer(form, 'B', '9');
+        expect(visibleNames(form)).toEqual(['A', 'B']);
+    });
+
+    it('reveals the else branch once the field it reads is shown', () => {
+        form = chain();
+        answer(form, 'A', '1');
+        answer(form, 'B', '2');
+        answer(form, 'C', '9');
+        expect(visibleNames(form)).toEqual(['A', 'B', 'C', 'E']);
+    });
+
+    it('reveals the then branch when the condition holds', () => {
+        form = chain();
+        answer(form, 'A', '1');
+        answer(form, 'B', '2');
+        answer(form, 'C', '3');
+        expect(visibleNames(form)).toEqual(['A', 'B', 'C', 'D']);
+    });
+
+    it('hides the else branch again when the chain is closed', () => {
+        form = chain();
+        answer(form, 'A', '1');
+        answer(form, 'B', '2');
+        answer(form, 'C', '9');
+        answer(form, 'A', '9');
+        expect(visibleNames(form)).toEqual(['A']);
+    });
+
+    it('shows the else branch of a condition on an ordinary field left empty', () => {
+        form = buildFieldsForm(
+            [plainField('A')],
+            [ifEquals('A', '1', [plainField('B')], [plainField('C')])]
+        );
+        expect(visibleNames(form)).toEqual(['A', 'C']);
+        answer(form, 'A', '9');
+        expect(visibleNames(form)).toEqual(['A', 'C']);
+        answer(form, 'A', '1');
+        expect(visibleNames(form)).toEqual(['A', 'B']);
+    });
+
+    it('treats an OR as reachable while any field it reads is shown', () => {
+        form = buildFieldsForm(
+            [plainField('A')],
+            [
+                ifEquals('A', '1', [plainField('B')]),
+                {
+                    ifCondition: {
+                        OR: [
+                            { field: plainField('A'), fieldValue: '7' },
+                            { field: plainField('B'), fieldValue: '2' },
+                        ],
+                    },
+                    thenFields: [plainField('X')],
+                    elseFields: [plainField('Y')],
+                },
+            ]
+        );
+        // A is always shown, so the OR stays answerable and its else branch applies.
+        expect(visibleNames(form)).toEqual(['A', 'Y']);
+        answer(form, 'A', '7');
+        expect(visibleNames(form)).toEqual(['A', 'X']);
+    });
+});
