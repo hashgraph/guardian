@@ -27,9 +27,9 @@ describe('PolicyUtils.checkDocumentField', () => {
         });
 
         it('legacy equal: number field vs string value uses strict comparison (no coercion)', () => {
-            // legacy path (no valueSource) must NOT coerce; qty=10 (number) !== '10' (string)
-            const d = { document: { credentialSubject: [{ qty: 10 }] } };
-            assert.equal(PolicyUtils.checkDocumentField(d, { field: 'document.credentialSubject.0.qty', type: 'equal', value: '10' }), false);
+            // legacy path (no valueSource) must NOT coerce; amount=10 (number) !== '10' (string)
+            const d = { document: { credentialSubject: [{ amount: 10 }] } };
+            assert.equal(PolicyUtils.checkDocumentField(d, { field: 'document.credentialSubject.0.amount', type: 'equal', value: '10' }), false);
         });
     });
 
@@ -61,35 +61,35 @@ describe('PolicyUtils.checkDocumentField', () => {
 
     describe('gt / gte / lt / lte — numeric coercion', () => {
         it('gt: numeric string field > numeric string config', () => {
-            assert.equal(PolicyUtils.checkDocumentField(doc({ qty: '10' }), filter('document.credentialSubject.0.qty', 'gt', '5')), true);
+            assert.equal(PolicyUtils.checkDocumentField(doc({ amount: '10' }), filter('document.credentialSubject.0.amount', 'gt', '5')), true);
         });
 
         it('gt: numeric field (number type) vs numeric string config', () => {
-            assert.equal(PolicyUtils.checkDocumentField(doc({ qty: 10 }), filter('document.credentialSubject.0.qty', 'gt', '5')), true);
+            assert.equal(PolicyUtils.checkDocumentField(doc({ amount: 10 }), filter('document.credentialSubject.0.amount', 'gt', '5')), true);
         });
 
         it('gt: equal values is false', () => {
-            assert.equal(PolicyUtils.checkDocumentField(doc({ qty: 5 }), filter('document.credentialSubject.0.qty', 'gt', '5')), false);
+            assert.equal(PolicyUtils.checkDocumentField(doc({ amount: 5 }), filter('document.credentialSubject.0.amount', 'gt', '5')), false);
         });
 
         it('gt: less-than is false', () => {
-            assert.equal(PolicyUtils.checkDocumentField(doc({ qty: 3 }), filter('document.credentialSubject.0.qty', 'gt', '5')), false);
+            assert.equal(PolicyUtils.checkDocumentField(doc({ amount: 3 }), filter('document.credentialSubject.0.amount', 'gt', '5')), false);
         });
 
         it('gt: avoids lexicographic trap — 9 > 10 is false numerically', () => {
-            assert.equal(PolicyUtils.checkDocumentField(doc({ qty: '9' }), filter('document.credentialSubject.0.qty', 'gt', '10')), false);
+            assert.equal(PolicyUtils.checkDocumentField(doc({ amount: '9' }), filter('document.credentialSubject.0.amount', 'gt', '10')), false);
         });
 
         it('gte: equal values is true', () => {
-            assert.equal(PolicyUtils.checkDocumentField(doc({ qty: 5 }), filter('document.credentialSubject.0.qty', 'gte', '5')), true);
+            assert.equal(PolicyUtils.checkDocumentField(doc({ amount: 5 }), filter('document.credentialSubject.0.amount', 'gte', '5')), true);
         });
 
         it('lt: field less than config', () => {
-            assert.equal(PolicyUtils.checkDocumentField(doc({ qty: 3 }), filter('document.credentialSubject.0.qty', 'lt', '5')), true);
+            assert.equal(PolicyUtils.checkDocumentField(doc({ amount: 3 }), filter('document.credentialSubject.0.amount', 'lt', '5')), true);
         });
 
         it('lte: equal values is true', () => {
-            assert.equal(PolicyUtils.checkDocumentField(doc({ qty: 5 }), filter('document.credentialSubject.0.qty', 'lte', '5')), true);
+            assert.equal(PolicyUtils.checkDocumentField(doc({ amount: 5 }), filter('document.credentialSubject.0.amount', 'lte', '5')), true);
         });
     });
 
@@ -150,8 +150,8 @@ describe('PolicyUtils.resolveFieldPath', () => {
     });
 
     it('maps over intermediate array (broadcast semantics)', () => {
-        const data = { items: [{ qty: 10 }, { qty: 20 }] };
-        assert.deepEqual(PolicyUtils.resolveFieldPath(data, 'items.qty'), [10, 20]);
+        const data = { items: [{ amount: 10 }, { amount: 20 }] };
+        assert.deepEqual(PolicyUtils.resolveFieldPath(data, 'items.amount'), [10, 20]);
     });
 
     it('resolves numeric index into array', () => {
@@ -234,10 +234,18 @@ describe('PolicyUtils.evaluateFieldCondition', () => {
         assert.equal(PolicyUtils.evaluateFieldCondition(1, 'equal', [1]), false);
     });
 
-    it('scalar vs non-empty array on relational op returns false (not JS coercion)', () => {
+    // Asymmetry: array-left is valid for-all broadcast; scalar-left + array-right is a
+    // misconfiguration (collection field must be on the left) and returns false explicitly.
+    it('array-left vs scalar-right: for-all broadcast (items[].amount gt 5)', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition([10, 20, 30], 'gt', 5), true);
+        assert.equal(PolicyUtils.evaluateFieldCondition([10, 3, 30], 'gt', 5), false);
+    });
+
+    it('scalar-left vs array-right on relational op returns false (not JS coercion)', () => {
         // 5 gt [3] must be false — not accidentally true via String([3])→"3"
         assert.equal(PolicyUtils.evaluateFieldCondition(5, 'gt', [3]), false);
         assert.equal(PolicyUtils.evaluateFieldCondition(5, 'gt', [3, 4]), false);
+        assert.equal(PolicyUtils.evaluateFieldCondition(5, 'lte', [9]), false);
     });
 
     it('in: empty left array vs non-empty right array fails', () => {

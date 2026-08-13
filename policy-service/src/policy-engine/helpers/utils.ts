@@ -543,9 +543,17 @@ export class PolicyUtils {
                 PolicyUtils.evaluateFieldCondition(l, type, right[i])
             );
         }
+        // Array-left + scalar-right: for-all broadcast - resolveFieldPath maps over a
+        // collection and returns an array of leaf values, so this is the normal case for
+        // conditions like `items[].amount gt 5` (every item's amount must satisfy the threshold).
         if (leftIsArray) {
             return left.every((l: any) => PolicyUtils.evaluateFieldCondition(l, type, right));
         }
+        // Scalar-left + array-right on non-in/not_in: reject rather than fall through to
+        // compareScalarPair, which would coerce the array via String() and produce
+        // inconsistent results (e.g. 5 gt [3] -> true, 5 gt [3,4] -> false via NaN).
+        // A scalar left with an array right means the condition paths are misconfigured —
+        // the collection field should always be on the left.
         if (rightIsArray) { return false; }
         return PolicyUtils.compareScalarPair(left, type, right);
     }
