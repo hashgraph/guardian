@@ -164,60 +164,7 @@ describe('SchemaHelper.isConditionReachable', () => {
     });
 });
 
-describe('SchemaHelper.unwrapConditionElse', () => {
-    it('returns the else body of a gated branch', () => {
-        const body = { properties: { E: { type: 'string' } }, required: ['E'] };
-        const gated = { if: { required: ['C'] }, then: body, else: { properties: { E: false } } };
-        assert.equal(SchemaHelper.unwrapConditionElse(gated), body);
-    });
-
-    it('returns a plain branch unchanged', () => {
-        const plain = { properties: { C: { type: 'string' } }, required: ['C'] };
-        assert.equal(SchemaHelper.unwrapConditionElse(plain), plain);
-    });
-
-    it('passes through nothing', () => {
-        assert.equal(SchemaHelper.unwrapConditionElse(undefined), undefined);
-        assert.equal(SchemaHelper.unwrapConditionElse(null), null);
-    });
-
-    // A hand written schema may legitimately nest a second condition inside `else` — an
-    // "else if". Its predicate constrains a value, unlike the gate's presence-only one, and
-    // unwrapping it would discard both that predicate and its own `else` branch.
-    it('leaves a hand written else-if chain alone', () => {
-        const elseIf = {
-            if: { properties: { tier: { const: 'silver' } }, required: ['tier'] },
-            then: { properties: { silverCode: { type: 'string' } }, required: ['silverCode'] },
-            else: { properties: { bronzeCode: { type: 'string' } }, required: ['bronzeCode'] },
-        };
-        assert.equal(SchemaHelper.unwrapConditionElse(elseIf), elseIf);
-    });
-
-    it('unwraps a gate whose predicate spells out the property', () => {
-        const body = { properties: { E: { type: 'string' } } };
-        const gated = { if: { properties: { C: {} }, required: ['C'] }, then: body, else: { properties: { E: false } } };
-        assert.equal(SchemaHelper.unwrapConditionElse(gated), body);
-    });
-
-    it('unwraps a gate built from AND or OR predicates', () => {
-        const body = { properties: { E: { type: 'string' } } };
-        for (const branching of ['allOf', 'anyOf']) {
-            const gated = {
-                if: { [branching]: [{ properties: { C: {} }, required: ['C'] }, { properties: { D: {} }, required: ['D'] }] },
-                then: body,
-            };
-            assert.equal(SchemaHelper.unwrapConditionElse(gated), body);
-        }
-    });
-
-    it('recognises a value constraint at any depth', () => {
-        assert.equal(SchemaHelper.isPresenceOnlyPredicate({ properties: { a: { properties: { b: {} }, required: ['b'] } }, required: ['a'] }), true);
-        assert.equal(SchemaHelper.isPresenceOnlyPredicate({ properties: { a: { properties: { b: { const: 1 } }, required: ['b'] } }, required: ['a'] }), false);
-        assert.equal(SchemaHelper.isPresenceOnlyPredicate({ allOf: [{ properties: { a: { enum: [1] } }, required: ['a'] }] }), false);
-    });
-});
-
-describe('SchemaHelper.parseConditions — already-saved gated else branch', () => {
+describe('SchemaHelper.parseConditions — chained else branch survives a reload', () => {
     it('still reports the else fields after a reload', () => {
         const document = chainSchema().document;
         const conditions = reload(document).conditions;

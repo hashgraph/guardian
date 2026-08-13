@@ -1,4 +1,3 @@
-import { SchemaHelper } from '@guardian/interfaces';
 import { FieldModel } from './field.model.js';
 import { ConditionModel, ConditionPredicate } from './condition.model.js';
 import { CompareOptions, ISchemaDocument } from '../interfaces/index.js';
@@ -102,7 +101,7 @@ export class SchemaDocumentModel {
             }
 
             const thenFields = this.parseFields(condition.then, combinedDefs, cache);
-            const elseFields = this.parseFields(SchemaHelper.unwrapConditionElse(condition.else), combinedDefs, cache);
+            const elseFields = this.parseFields(condition.else, combinedDefs, cache);
 
             if (condition.if.properties && typeof condition.if.properties === 'object') {
                 const ifProps = condition.if.properties;
