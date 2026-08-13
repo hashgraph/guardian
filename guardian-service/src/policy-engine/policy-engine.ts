@@ -170,6 +170,28 @@ export function resolvePolicyAccessCode(
 }
 
 /**
+ * Select draft tokens that no other policy references
+ * @param tokens
+ * @param tokenIdsUsedElsewhere
+ */
+export function resolveDraftTokensToDelete(
+    tokens: Token[],
+    tokenIdsUsedElsewhere: Set<string>
+): Token[] {
+    const result: Token[] = [];
+    for (const token of tokens) {
+        if (!token.draftToken) {
+            continue;
+        }
+        if (token.tokenId && tokenIdsUsedElsewhere.has(token.tokenId)) {
+            continue;
+        }
+        result.push(token);
+    }
+    return result;
+}
+
+/**
  * Policy engine service
  */
 @Singleton
@@ -798,6 +820,41 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
+     * Delete draft tokens that belong only to this policy
+     * @param policyToDelete
+     */
+    private async deletePolicyTokens(policyToDelete: Policy): Promise<void> {
+        const tokenIds = findAllEntities(policyToDelete.config, ['tokenId']);
+        const candidates = await DatabaseServer.getTokens({
+            $or: [
+                { tokenId: { $in: tokenIds } },
+                { policyId: policyToDelete.id.toString() }
+            ],
+            owner: policyToDelete.owner,
+            draftToken: true
+        });
+        if (!candidates.length) {
+            return;
+        }
+        const otherPolicies = await DatabaseServer.getPolicies({
+            owner: policyToDelete.owner
+        });
+        const tokenIdsUsedElsewhere = new Set<string>();
+        for (const policy of otherPolicies) {
+            if (policy.id === policyToDelete.id) {
+                continue;
+            }
+            for (const tokenId of findAllEntities(policy.config, ['tokenId'])) {
+                tokenIdsUsedElsewhere.add(tokenId);
+            }
+        }
+        const databaseServer = new DatabaseServer();
+        for (const token of resolveDraftTokensToDelete(candidates, tokenIdsUsedElsewhere)) {
+            await databaseServer.deleteEntity(Token, token.id);
+        }
+    }
+
+    /**
      * Delete policy
      * @param policyId Policy ID
      * @param owner User
@@ -815,6 +872,7 @@ export class PolicyEngine extends NatsService {
         const STEP_DELETE_INSTANCE = 'Delete policy instance';
         const STEP_DELETE_SCHEMAS = 'Delete schemas';
         const STEP_DELETE_ARTIFACTS = 'Delete artifacts';
+        const STEP_DELETE_TOKENS = 'Delete tokens';
         const STEP_DELETE_TESTS = 'Delete tests';
         const STEP_DELETE_CREDENTIALS = 'Delete credentials';
         const STEP_DELETE_POLICY = 'Delete policy from DB';
@@ -823,6 +881,7 @@ export class PolicyEngine extends NatsService {
         notifier.addStep(STEP_DELETE_INSTANCE);
         notifier.addStep(STEP_DELETE_SCHEMAS);
         notifier.addStep(STEP_DELETE_ARTIFACTS);
+        notifier.addStep(STEP_DELETE_TOKENS);
         notifier.addStep(STEP_DELETE_TESTS);
         notifier.addStep(STEP_DELETE_CREDENTIALS);
         notifier.addStep(STEP_DELETE_POLICY);
@@ -867,6 +926,10 @@ export class PolicyEngine extends NatsService {
         }
         notifier.completeStep(STEP_DELETE_ARTIFACTS);
 
+        notifier.startStep(STEP_DELETE_TOKENS);
+        await this.deletePolicyTokens(policyToDelete);
+        notifier.completeStep(STEP_DELETE_TOKENS);
+
         notifier.startStep(STEP_DELETE_TESTS);
         await DatabaseServer.deletePolicyTests(policyToDelete.id);
         notifier.completeStep(STEP_DELETE_TESTS);
@@ -902,6 +965,7 @@ export class PolicyEngine extends NatsService {
         const STEP_DELETE_INSTANCE = 'Delete policy instance';
         const STEP_DELETE_SCHEMAS = 'Delete schemas';
         const STEP_DELETE_ARTIFACTS = 'Delete artifacts';
+        const STEP_DELETE_TOKENS = 'Delete tokens';
         const STEP_DELETE_TESTS = 'Delete tests';
         const STEP_DELETE_CREDENTIALS = 'Delete credentials';
         const STEP_DELETE_POLICY = 'Delete policy from DB';
@@ -910,6 +974,7 @@ export class PolicyEngine extends NatsService {
         notifier.addStep(STEP_DELETE_INSTANCE);
         notifier.addStep(STEP_DELETE_SCHEMAS);
         notifier.addStep(STEP_DELETE_ARTIFACTS);
+        notifier.addStep(STEP_DELETE_TOKENS);
         notifier.addStep(STEP_DELETE_TESTS);
         notifier.addStep(STEP_DELETE_CREDENTIALS);
         notifier.addStep(STEP_DELETE_POLICY);
@@ -955,6 +1020,10 @@ export class PolicyEngine extends NatsService {
         }
         notifier.completeStep(STEP_DELETE_ARTIFACTS);
 
+        notifier.startStep(STEP_DELETE_TOKENS);
+        await this.deletePolicyTokens(policyToDelete);
+        notifier.completeStep(STEP_DELETE_TOKENS);
+
         notifier.startStep(STEP_DELETE_TESTS);
         await DatabaseServer.deletePolicyTests(policyToDelete.id);
         notifier.completeStep(STEP_DELETE_TESTS);
@@ -989,6 +1058,7 @@ export class PolicyEngine extends NatsService {
         // <-- Steps
         const STEP_DELETE_SCHEMAS = 'Delete schemas';
         const STEP_DELETE_ARTIFACTS = 'Delete artifacts';
+        const STEP_DELETE_TOKENS = 'Delete tokens';
         const STEP_DELETE_TESTS = 'Delete tests';
         const STEP_DELETE_CREDENTIALS = 'Delete credentials';
         const STEP_DELETE_POLICY_MESSAGE = 'Publishing delete policy message';
@@ -997,6 +1067,7 @@ export class PolicyEngine extends NatsService {
 
         notifier.addStep(STEP_DELETE_SCHEMAS);
         notifier.addStep(STEP_DELETE_ARTIFACTS);
+        notifier.addStep(STEP_DELETE_TOKENS);
         notifier.addStep(STEP_DELETE_TESTS);
         notifier.addStep(STEP_DELETE_CREDENTIALS);
         notifier.addStep(STEP_DELETE_POLICY_MESSAGE);
@@ -1040,6 +1111,10 @@ export class PolicyEngine extends NatsService {
             await DatabaseServer.removeArtifact(artifact);
         }
         notifier.completeStep(STEP_DELETE_ARTIFACTS);
+
+        notifier.startStep(STEP_DELETE_TOKENS);
+        await this.deletePolicyTokens(policyToDelete);
+        notifier.completeStep(STEP_DELETE_TOKENS);
 
         notifier.startStep(STEP_DELETE_TESTS);
         await DatabaseServer.deletePolicyTests(policyToDelete.id);
