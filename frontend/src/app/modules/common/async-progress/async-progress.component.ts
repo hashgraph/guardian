@@ -307,6 +307,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                     });
                 }, 500);
                 break;
+            case TaskAction.DRY_RUN_POLICY:
             case TaskAction.PUBLISH_POLICY:
                 if (result) {
                     const { isValid, errors, policyId } = result;
@@ -333,7 +334,22 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                             'The policy is invalid',
                             { sticky: true, logMessage: msg }
                         );
+                        // The configuration page is the only place the block errors
+                        // can be shown, so go there instead of back to the origin.
                         this._configurationErrors.set(policyId, errors);
+                        setTimeout(() => {
+                            this.router.navigate(['policy-configuration'], {
+                                queryParams: {
+                                    policyId,
+                                },
+                                replaceUrl: true,
+                            });
+                        }, 500);
+                        break;
+                    }
+                    if (this.last) {
+                        this.redirect(this.last);
+                        return;
                     }
                     setTimeout(() => {
                         this.router.navigate(['policy-configuration'], {

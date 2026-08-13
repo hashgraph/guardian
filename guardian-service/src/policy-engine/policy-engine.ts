@@ -36,6 +36,7 @@ import {
     MockHelper,
     MultiPolicy,
     NatsService,
+    NewNotifier,
     NotificationHelper, PinoLogger,
     Policy,
     PolicyImportExport,
@@ -1222,7 +1223,8 @@ export class PolicyEngine extends NatsService {
         model: Policy,
         user: IOwner,
         accountId: string,
-        mockId: string
+        mockId: string,
+        notifier: INotificationStep = NewNotifier.empty()
     ): Promise<Policy> {
         const schemas = await DatabaseServer.getSchemas({ topicId: model.topicId });
 
@@ -1230,10 +1232,20 @@ export class PolicyEngine extends NatsService {
         const updatedSchemas: SchemaCollection[] = [];
         const mockRows: any[] = [];
 
+        const STEP_SAVE_MOCK_DATA = 'Save mock data';
+        const pendingCount = schemas.filter((schema) => schema.status !== SchemaStatus.PUBLISHED).length;
+
+        notifier.start();
+        // Mock data is persisted in a single batch after the loop, so it needs one extra step.
+        notifier.setEstimate(mockId ? pendingCount + 1 : pendingCount);
+
         for (const schema of schemas) {
             if (schema.status === SchemaStatus.PUBLISHED) {
                 continue;
             }
+
+            const schemaStep = notifier.addStep(`${schema.name || '-'}`, 1, true);
+            schemaStep.start();
 
             schema.context = generateSchemaContext(schema);
             SchemaHelper.updateIRI(schema);
@@ -1263,7 +1275,12 @@ export class PolicyEngine extends NatsService {
                 }
                 mockRows.push(MockHelper.getMessageRecord(topicId, message.toMessage(), accountId));
             }
+
+            schemaStep.complete();
         }
+
+        const mockStep = mockId ? notifier.addStep(STEP_SAVE_MOCK_DATA, 1) : null;
+        mockStep?.start();
 
         // Independent bulk writes to different collections - run them concurrently.
         await Promise.all([
@@ -1271,6 +1288,9 @@ export class PolicyEngine extends NatsService {
             DatabaseServer.saveMockBatch(mockId, mockRows)
         ]);
 
+        mockStep?.complete();
+
+        notifier.complete();
         return model;
     }
 
@@ -1784,6 +1804,8 @@ export class PolicyEngine extends NatsService {
      * @param version
      * @param demo
      * @param logger
+     * @param enableMock
+     * @param notifier
      */
     public async dryRunPolicy(
         model: Policy,
@@ -1791,14 +1813,37 @@ export class PolicyEngine extends NatsService {
         version: string,
         demo: boolean,
         logger: PinoLogger,
-        enableMock: boolean
+        enableMock: boolean,
+        notifier: INotificationStep = NewNotifier.empty()
     ): Promise<Policy> {
+        // <-- Steps
+        const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+        const STEP_PUBLISH_TOPIC = 'Publish policy topic';
+        const STEP_PUBLISH_SCHEMAS = 'Publish schemas';
+        const STEP_CREATE_TOPIC = 'Create instance topic';
+        const STEP_PUBLISH_MESSAGE = 'Publish policy message';
+        const STEP_CREATE_VC = 'Create policy credential';
+        const STEP_CREATE_USER = 'Create virtual user';
+        const STEP_SAVE = 'Save policy';
+        // Steps -->
+
+        notifier.addStep(STEP_RESOLVE_ACCOUNT, 2);
+        notifier.addStep(STEP_PUBLISH_TOPIC, 3);
+        notifier.addStep(STEP_PUBLISH_SCHEMAS, 70);
+        notifier.addStep(STEP_CREATE_TOPIC, 5);
+        notifier.addStep(STEP_PUBLISH_MESSAGE, 8);
+        notifier.addStep(STEP_CREATE_VC, 5);
+        notifier.addStep(STEP_CREATE_USER, 2);
+        notifier.addStep(STEP_SAVE, 5);
+        notifier.start();
+
         if (demo) {
             logger.info('Demo Policy', ['GUARDIAN_SERVICE'], user.id);
         } else {
             logger.info('Dry-run Policy', ['GUARDIAN_SERVICE'], user.id);
         }
 
+        notifier.startStep(STEP_RESOLVE_ACCOUNT);
         const dryRunId = model.id.toString();
         const databaseServer = new DatabaseServer(dryRunId);
         const root = await this.users.getHederaAccount(user.owner, user.id);
@@ -1807,6 +1852,7 @@ export class PolicyEngine extends NatsService {
         )
 
         const mockId = enableMock ? dryRunId : null;
+        notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
         // Create Services
         const messageServer = new MessageServer({
@@ -1817,6 +1863,7 @@ export class PolicyEngine extends NatsService {
         }).setTopicObject(policyTopic);
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions, dryRunId);
 
+        notifier.startStep(STEP_PUBLISH_TOPIC);
         const topicMessage = await MessageServer.getTopic(policyTopic.topicId, user.id, {});
         await messageServer.sendMessage(topicMessage, {
             sendToIPFS: true,
@@ -1825,9 +1872,17 @@ export class PolicyEngine extends NatsService {
             interception: null,
             mockId
         });
+        notifier.completeStep(STEP_PUBLISH_TOPIC);
 
         //'Publish' policy schemas
-        model = await this.dryRunSchemas(model, user, root.hederaAccountId, mockId);
+        notifier.startStep(STEP_PUBLISH_SCHEMAS);
+        model = await this.dryRunSchemas(
+            model,
+            user,
+            root.hederaAccountId,
+            mockId,
+            notifier.getStep(STEP_PUBLISH_SCHEMAS)
+        );
         model.status = demo ? PolicyStatus.DEMO : PolicyStatus.DRY_RUN;
         model.version = version;
 
@@ -1835,8 +1890,10 @@ export class PolicyEngine extends NatsService {
         if (demo || savepointsCount === 0) {
             this.regenerateIds(model.config);
         }
+        notifier.completeStep(STEP_PUBLISH_SCHEMAS);
 
         //Create instance topic
+        notifier.startStep(STEP_CREATE_TOPIC);
         const instancePolicyTopic = await topicHelper.create(
             {
                 type: TopicType.InstancePolicyTopic,
@@ -1859,8 +1916,10 @@ export class PolicyEngine extends NatsService {
         await databaseServer.saveTopic(instancePolicyTopic.toObject());
 
         model.instanceTopicId = instancePolicyTopic.topicId;
+        notifier.completeStep(STEP_CREATE_TOPIC);
 
         //Send Message
+        notifier.startStep(STEP_PUBLISH_MESSAGE);
         const zip = await PolicyImportExport.generate(model);
         const buffer = await zip.generateAsync({
             type: 'arraybuffer',
@@ -1886,8 +1945,10 @@ export class PolicyEngine extends NatsService {
             userId: user.id,
             mockId
         });
+        notifier.completeStep(STEP_PUBLISH_MESSAGE);
 
         //Create Policy VC
+        notifier.startStep(STEP_CREATE_VC);
         const messageId = result.getId();
         const url = result.getUrl();
         let credentialSubject: any = {
@@ -1918,8 +1979,10 @@ export class PolicyEngine extends NatsService {
             type: SchemaEntity.POLICY,
             policyId: `${model.id}`
         });
+        notifier.completeStep(STEP_CREATE_VC);
 
         //Create default user
+        notifier.startStep(STEP_CREATE_USER);
         await databaseServer.createVirtualUser(
             'Administrator',
             root.did,
@@ -1927,7 +1990,9 @@ export class PolicyEngine extends NatsService {
             root.hederaAccountKey,
             true
         );
+        notifier.completeStep(STEP_CREATE_USER);
 
+        notifier.startStep(STEP_SAVE);
         let [, retVal] = await Promise.all([
             //Update dry-run table (mark readonly rows)
             DatabaseServer.setSystemMode(dryRunId, true),
@@ -1936,8 +2001,10 @@ export class PolicyEngine extends NatsService {
         ]);
 
         retVal = await PolicyImportExportHelper.updatePolicyComponents(retVal, logger, user.id);
+        notifier.completeStep(STEP_SAVE);
 
         logger.info('Run Policy', ['GUARDIAN_SERVICE'], user.id);
+        notifier.complete();
         return retVal;
     }
 
@@ -2104,6 +2171,103 @@ export class PolicyEngine extends NatsService {
                 errors
             };
         }
+    }
+
+    /**
+     * Validate and dry-run policy
+     * @param policyId
+     * @param owner
+     * @param enableMock
+     * @param notifier
+     * @param logger
+     */
+    public async validateAndDryRunPolicy(
+        policyId: string,
+        owner: IOwner,
+        enableMock: boolean,
+        notifier: INotificationStep,
+        logger: PinoLogger
+    ): Promise<IPublishResult> {
+        // <-- Steps
+        const STEP_FIND_POLICY = 'Find policy';
+        const STEP_VALIDATE_POLICY = 'Validate policy';
+        const STEP_DRY_RUN_POLICY = 'Start dry-run';
+        const STEP_RUN_POLICY = 'Run policy';
+        // Steps -->
+
+        notifier.addStep(STEP_FIND_POLICY, 1);
+        notifier.addStep(STEP_VALIDATE_POLICY, 5);
+        notifier.addStep(STEP_DRY_RUN_POLICY, 80);
+        notifier.addStep(STEP_RUN_POLICY, 14);
+        notifier.start();
+
+        notifier.startStep(STEP_FIND_POLICY);
+        const model = await DatabaseServer.getPolicyById(policyId);
+        await this.accessPolicy(model, owner, 'publish');
+
+        if (!model.config) {
+            throw new Error('The policy is empty');
+        }
+        if (model.status === PolicyStatus.PUBLISH) {
+            throw new Error(`Policy published`);
+        }
+        if (model.status === PolicyStatus.DISCONTINUED) {
+            throw new Error(`Policy is discontinued`);
+        }
+        if (model.status === PolicyStatus.DRY_RUN) {
+            throw new Error(`Policy already in Dry Run`);
+        }
+        if (model.status === PolicyStatus.PUBLISH_ERROR) {
+            throw new Error(`Failed policy cannot be started in dry run mode`);
+        }
+        if (model.status === PolicyStatus.DEMO) {
+            throw new Error(`Policy imported in demo mode`);
+        }
+        if (model.status === PolicyStatus.VIEW) {
+            throw new Error(`Policy imported in view mode`);
+        }
+        notifier.completeStep(STEP_FIND_POLICY);
+
+        notifier.startStep(STEP_VALIDATE_POLICY);
+        const errors = await this.validateModel(policyId, true);
+        const isValid = !errors.blocks.some(block => !block.isValid);
+        notifier.completeStep(STEP_VALIDATE_POLICY);
+
+        if (isValid) {
+            notifier.startStep(STEP_DRY_RUN_POLICY);
+            await this.dryRunPolicy(
+                model,
+                owner,
+                'Dry Run',
+                false,
+                logger,
+                enableMock,
+                notifier.getStep(STEP_DRY_RUN_POLICY)
+            );
+            notifier.completeStep(STEP_DRY_RUN_POLICY);
+
+            notifier.startStep(STEP_RUN_POLICY);
+            await this.generateModel(policyId, enableMock);
+            notifier.completeStep(STEP_RUN_POLICY);
+        } else {
+            notifier.skipStep(STEP_DRY_RUN_POLICY);
+            notifier.skipStep(STEP_RUN_POLICY);
+        }
+
+        const savepointsCount = await DatabaseServer.getSavepointsCount(policyId);
+        if (savepointsCount === 0) {
+            await DatabaseServer.nullifyInitialDryRunSavepointIds();
+        } else {
+            await DatabaseServer.removeDryRunWithEmptySavepoint(policyId);
+            PolicyDataMigrator.clearRunCacheByPolicyId(policyId);
+        }
+
+        notifier.complete();
+        return {
+            policyId: model.id.toString(),
+            isValid,
+            errors
+        };
     }
 
     /**
