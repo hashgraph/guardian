@@ -348,7 +348,8 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                         break;
                     }
                     if (this.last) {
-                        this.redirect(this.last);
+                        // Replace the task page so it is not left in the history.
+                        this.redirect(this.last, true);
                         return;
                     }
                     setTimeout(() => {
@@ -594,7 +595,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
         this.applyChanges();
     }
 
-    private redirect(urlString: string) {
+    private redirect(urlString: string, replaceUrl: boolean = false) {
         const url = new URL(urlString);
         const path = [url.pathname];
         const queryParams: any = {};
@@ -610,7 +611,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             }
         }
         setTimeout(() => {
-            this.router.navigate(path, { queryParams });
+            this.router.navigate(path, { queryParams, replaceUrl });
         }, 500);
 
     }

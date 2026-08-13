@@ -61,6 +61,7 @@ export class TaskManager {
         [TaskAction.CREATE_POLICY, 8],
         [TaskAction.WIZARD_CREATE_POLICY, 8],
         [TaskAction.PUBLISH_POLICY, 13],
+        [TaskAction.DRY_RUN_POLICY, 6],
         [TaskAction.IMPORT_POLICY_FILE, 15],
         [TaskAction.IMPORT_POLICY_MESSAGE, 17],
         [TaskAction.PUBLISH_SCHEMA, 8],
