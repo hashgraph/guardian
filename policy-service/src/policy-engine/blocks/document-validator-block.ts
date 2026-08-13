@@ -175,7 +175,7 @@ export class DocumentValidatorBlock {
 
         for (const f of (sourceValidation.filters || [])) {
             const raw = f.typeValue === 'variable'
-                ? this.resolveDocumentValue(f.value, document)
+                ? PolicyUtils.getObjectValue(document, f.value)
                 : f.value;
             const value = this.coerceValue(raw);
 
