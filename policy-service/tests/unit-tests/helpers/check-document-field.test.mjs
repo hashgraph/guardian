@@ -25,6 +25,12 @@ describe('PolicyUtils.checkDocumentField', () => {
         it('returns false for null document', () => {
             assert.equal(PolicyUtils.checkDocumentField(null, filter('field', 'equal', 'x')), false);
         });
+
+        it('legacy equal: number field vs string value uses strict comparison (no coercion)', () => {
+            // legacy path (no valueSource) must NOT coerce; qty=10 (number) !== '10' (string)
+            const d = { document: { credentialSubject: [{ qty: 10 }] } };
+            assert.equal(PolicyUtils.checkDocumentField(d, { field: 'document.credentialSubject.0.qty', type: 'equal', value: '10' }), false);
+        });
     });
 
     describe('in / not_in (comma-separated list)', () => {
@@ -168,6 +174,14 @@ describe('PolicyUtils.evaluateFieldCondition', () => {
         assert.equal(PolicyUtils.evaluateFieldCondition('A', 'equal', 'B'), false);
     });
 
+    it('equal: coerces number and string (10 equal "10")', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition(10, 'equal', '10'), true);
+    });
+
+    it('not_equal: coerces number and string (10 not_equal "10" → false)', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition(10, 'not_equal', '10'), false);
+    });
+
     it('empty array vs scalar fails (fail-closed)', () => {
         assert.equal(PolicyUtils.evaluateFieldCondition([], 'equal', 'A'), false);
     });
@@ -210,6 +224,10 @@ describe('PolicyUtils.evaluateFieldCondition', () => {
 
     it('in: array left — fails if any element not in right', () => {
         assert.equal(PolicyUtils.evaluateFieldCondition(['A', 'D'], 'in', ['A', 'B', 'C']), false);
+    });
+
+    it('in: equal-length arrays use membership, not position ([1,2] in [2,1])', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition([1, 2], 'in', [2, 1]), true);
     });
 
     it('scalar vs array (non-in/not_in): type mismatch fails', () => {
