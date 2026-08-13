@@ -305,11 +305,10 @@ export class RequestVcDocumentBlockAddon {
                 item = PolicyUtils.setDocumentRef(item, documentRef);
 
                 const state: IPolicyEventState = { data: item };
-                const error = await this.validateDocuments(user, state);
-                if (error) {
-                    throw new BlockActionError(error.message, ref.blockType, ref.uuid, error.data);
+                const validationError = await this.validateDocuments(user, state);
+                if (validationError) {
+                    throw new BlockActionError(validationError.message, ref.blockType, ref.uuid, validationError.data);
                 }
-
                 result = state;
                 return state;
             },
