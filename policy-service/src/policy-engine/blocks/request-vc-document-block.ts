@@ -247,20 +247,6 @@ export class RequestVcDocumentBlock {
                 if (!res.ok) {
                     throw new BlockActionError(JSON.stringify(res.error), ref.blockType, ref.uuid);
                 }
-
-                const preSignDoc: IPolicyDocument = {
-                    document: {
-                        credentialSubject: Array.isArray(credentialSubject) ? credentialSubject : [credentialSubject],
-                    },
-                    owner: documentOwner.did,
-                    group: documentOwner.group,
-                    policyId: ref.policyId,
-                } as any;
-                const preSignState: IPolicyEventState = { data: preSignDoc };
-                const validationError = await this.validateDocuments(user, preSignState);
-                if (validationError) {
-                    throw new BlockActionError(validationError.message, ref.blockType, ref.uuid, validationError.data);
-                }
             }
 
             //Create Verifiable Credential
@@ -282,6 +268,14 @@ export class RequestVcDocumentBlock {
             };
             if (editType === 'edit') {
                 state.old = documentRef;
+            }
+
+            //Validate
+            if (!draft) {
+                const validationError = await this.validateDocuments(user, state);
+                if (validationError) {
+                    throw new BlockActionError(validationError.message, ref.blockType, ref.uuid, validationError.data);
+                }
             }
 
             //Trigger Events

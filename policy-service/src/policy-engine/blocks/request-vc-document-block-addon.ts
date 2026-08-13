@@ -283,21 +283,6 @@ export class RequestVcDocumentBlockAddon {
                     };
                 }
 
-                //Validate
-                const preSignDoc: IPolicyDocument = {
-                    document: {
-                        credentialSubject: Array.isArray(credentialSubject) ? credentialSubject : [credentialSubject],
-                    },
-                    owner: documentOwner.did,
-                    group: documentOwner.group,
-                    policyId: ref.policyId,
-                } as any;
-                const preSignState: IPolicyEventState = { data: preSignDoc };
-                const validationError = await this.validateDocuments(user, preSignState);
-                if (validationError) {
-                    throw new BlockActionError(validationError.message, ref.blockType, ref.uuid, validationError.data);
-                }
-
                 const vc = await PolicyActionsUtils.signVC({
                     ref,
                     subject: credentialSubject,
@@ -320,6 +305,10 @@ export class RequestVcDocumentBlockAddon {
                 item = PolicyUtils.setDocumentRef(item, documentRef);
 
                 const state: IPolicyEventState = { data: item };
+                const validationError = await this.validateDocuments(user, state);
+                if (validationError) {
+                    throw new BlockActionError(validationError.message, ref.blockType, ref.uuid, validationError.data);
+                }
                 result = state;
                 return state;
             },
