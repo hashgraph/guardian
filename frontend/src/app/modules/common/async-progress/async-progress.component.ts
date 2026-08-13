@@ -30,6 +30,9 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
     private last?: any;
     private redir?: boolean;
     private lastTimestamp: number = 0;
+    // The finished task arrives both over the websocket and from the initial
+    // request, so the result must only be handled once.
+    private resultHandled: boolean = false;
 
     @Input('taskId') inputTaskId?: string;
     @Output() completed = new EventEmitter<string>();
@@ -88,6 +91,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             this.statusesCount = 0;
             this.statuses.length = 0;
             this.progressValue = 0;
+            this.resultHandled = false;
         }
     }
 
@@ -130,9 +134,15 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
         }
         if (result) {
             this.progressValue = 100;
-            this.setResult(result);
+            if (!this.resultHandled) {
+                this.resultHandled = true;
+                this.setResult(result);
+            }
         } else if (error) {
-            this.setError(error);
+            if (!this.resultHandled) {
+                this.resultHandled = true;
+                this.setError(error);
+            }
         }
     }
 
