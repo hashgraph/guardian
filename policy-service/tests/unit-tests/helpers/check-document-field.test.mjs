@@ -210,8 +210,20 @@ describe('PolicyUtils.evaluateFieldCondition', () => {
         assert.equal(PolicyUtils.evaluateFieldCondition([1, 2], 'equal', [1, 2, 3]), false);
     });
 
+    it('in: scalar in CSV list', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition('A', 'in', 'A,B,C'), true);
+    });
+
+    it('in: scalar not in CSV list', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition('D', 'in', 'A,B,C'), false);
+    });
+
     it('in: scalar is member of array right-side', () => {
         assert.equal(PolicyUtils.evaluateFieldCondition('B', 'in', ['A', 'B', 'C']), true);
+    });
+
+    it('in: scalar not in array right-side', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition('D', 'in', ['A', 'B', 'C']), false);
     });
 
     it('not_in: scalar is not member of array right-side', () => {
@@ -226,8 +238,26 @@ describe('PolicyUtils.evaluateFieldCondition', () => {
         assert.equal(PolicyUtils.evaluateFieldCondition(['A', 'D'], 'in', ['A', 'B', 'C']), false);
     });
 
+    it('in: array left all in CSV string right', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition(['A', 'B'], 'in', 'A,B,C'), true);
+    });
+
+    it('in: array left partial match in CSV string right fails', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition(['A', 'D'], 'in', 'A,B,C'), false);
+    });
+
+    it('in: array left vs single-value CSV - all must be in that set, not array-contains-scalar', () => {
+        // old evaluateCrossCondition: ['A','B'].includes('A') -> true (array contains scalar)
+        // new: every element of left must be in set {'A'} -> 'B' not in {'A'} -> false
+        assert.equal(PolicyUtils.evaluateFieldCondition(['A', 'B'], 'in', 'A'), false);
+    });
+
     it('in: equal-length arrays use membership, not position ([1,2] in [2,1])', () => {
         assert.equal(PolicyUtils.evaluateFieldCondition([1, 2], 'in', [2, 1]), true);
+    });
+
+    it('unknown operator returns false', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition('A', 'regex', 'A.*'), false);
     });
 
     it('scalar vs array (non-in/not_in): type mismatch fails', () => {
