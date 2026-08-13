@@ -68,11 +68,26 @@ export class ExpressionPropertyComponent implements OnChanges {
         return parts.join(', ');
     }
 
-    private static count(parts: string[], items: any, name: string): void {
-        const size = Array.isArray(items) ? items.length : 0;
+    private static count(parts: string[], groups: any, name: string): void {
+        const size = ExpressionPropertyComponent.leaves(groups);
         if (size) {
             parts.push(size === 1 ? `1 ${name}` : `${size} ${name}s`);
         }
+    }
+
+    /**
+     * Variables, formulas and outputs are stored as an array of tabs, each
+     * holding the items - counting the array itself only ever counts tabs.
+     */
+    private static leaves(items: any): number {
+        if (!Array.isArray(items)) {
+            return 0;
+        }
+        return items.reduce((sum: number, item: any) => {
+            return sum + (item && Array.isArray(item.items)
+                ? ExpressionPropertyComponent.leaves(item.items)
+                : 1);
+        }, 0);
     }
 
     public onClick($event: MouseEvent): void {
