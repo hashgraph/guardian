@@ -827,27 +827,33 @@ export class FieldForm {
             }
         }
 
-        // Emit every field followed immediately by the fields its conditions reveal,
-        // depth first, so a condition on a revealed field stays attached to that field.
+        // Emit each field's own reveal-subtree breadth first, so the whole group of
+        // fields one condition reveals stays together before descending into a condition
+        // nested on one of them. The outer loop still visits roots in declaration order,
+        // so unrelated fields are unaffected by a sibling's reveal chain.
         const result: IFieldControl<any>[] = [];
         const emitted = new Set<IConditionControl<any>>();
-        const emit = (ctrl: IFieldControl<any>) => {
-            result.push(ctrl);
-            const children = childrenByAnchor.get(ctrl.name);
-            if (!children) {
-                return;
-            }
-            for (const child of children) {
-                if (emitted.has(child)) {
+        const emitSubtree = (root: IFieldControl<any>) => {
+            const queue: IFieldControl<any>[] = [root];
+            while (queue.length) {
+                const ctrl = queue.shift() as IFieldControl<any>;
+                result.push(ctrl);
+                const children = childrenByAnchor.get(ctrl.name);
+                if (!children) {
                     continue;
                 }
-                emitted.add(child);
-                emit(child);
+                for (const child of children) {
+                    if (emitted.has(child)) {
+                        continue;
+                    }
+                    emitted.add(child);
+                    queue.push(child);
+                }
             }
         };
 
         for (const base of baseControls) {
-            emit(base);
+            emitSubtree(base);
         }
 
         // Anything still unplaced reads a field that is not part of this form (or forms
@@ -855,7 +861,7 @@ export class FieldForm {
         for (const cc of this.conditionControls) {
             if (!emitted.has(cc)) {
                 emitted.add(cc);
-                emit(cc);
+                emitSubtree(cc);
             }
         }
 

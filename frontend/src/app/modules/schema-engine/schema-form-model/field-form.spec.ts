@@ -324,7 +324,7 @@ describe('FieldForm — order of the fields a condition reveals', () => {
         expect(visibleNames(form)).toEqual(['country', 'state', 'zip']);
     });
 
-    it('attaches a nested condition to the field it reads', () => {
+    it('attaches a nested condition to the field it reads, after the fields it is declared alongside', () => {
         form = buildFieldsForm(
             [plainField('country')],
             [
@@ -334,7 +334,20 @@ describe('FieldForm — order of the fields a condition reveals', () => {
         );
         answer(form, 'country', 'US');
         answer(form, 'state', 'CA');
-        expect(visibleNames(form)).toEqual(['country', 'state', 'county', 'zip']);
+        expect(visibleNames(form)).toEqual(['country', 'state', 'zip', 'county']);
+    });
+
+    it('keeps a whole reveal group together before descending into a nested condition, alongside unrelated root fields', () => {
+        form = buildFieldsForm(
+            [plainField('A'), plainField('F'), plainField('G'), plainField('H')],
+            [
+                ifEquals('A', '2', [plainField('B'), plainField('C'), plainField('D')]),
+                ifEquals('B', '3', [plainField('E')]),
+            ]
+        );
+        answer(form, 'A', '2');
+        answer(form, 'B', '3');
+        expect(visibleNames(form)).toEqual(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']);
     });
 
     it('renders two conditions on the same field in declaration order', () => {
