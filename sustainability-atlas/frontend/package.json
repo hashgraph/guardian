@@ -20,7 +20,7 @@
         "html2canvas-pro": "^2.0.4",
         "leaflet": "^1",
         "lucide-vue-next": "^0",
-        "nuxt": "^3.16",
+        "nuxt": "^3.21",
         "reka-ui": "^2",
         "tailwind-merge": "^3",
         "tw-animate-css": "^1",
