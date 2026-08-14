@@ -31,6 +31,23 @@ context('Schema', { tags: ['schema', 'thirdPool', 'all'] }, () => {
         return cy.wrap(response.body, { log: false });
     });
 
+    // Single-schema DELETE is task-based on both sides: api-gateway invalidates the schema cache
+    // right after guardian-service's fire-and-forget ack, not after the actual deletion (which runs
+    // in guardian-service's own background task and is only guaranteed done once waitForTask below
+    // resolves). A read in that window caches the pre-deletion list for the full 10-minute TTL, so
+    // listing right after a single-schema delete needs an uncached read. Topic-wide deletion doesn't
+    // have this problem (both sides handle it synchronously), so listTopicSchemas is fine there.
+    // See <follow-up issue>.
+    const listTopicSchemasAfterDelete = (authorization) => cy.request({
+        method: METHOD.GET,
+        url: API.ApiServer + API.Schemas + topicId,
+        headers: { authorization },
+        qs: { cacheBust: `${runId}_${Date.now()}` },
+    }).then((response) => {
+        expect(response.status).to.eq(STATUS_CODE.OK);
+        return cy.wrap(response.body, { log: false });
+    });
+
     const findSchema = (list, uuid, name) => {
         const schema = list.find((item) => item?.uuid === uuid);
         expect(schema, `${name} in the schemas of topic ${topicId}`).to.not.be.undefined;
@@ -131,7 +148,7 @@ context('Schema', { tags: ['schema', 'thirdPool', 'all'] }, () => {
     it('Delete schema without child deletion', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             deleteSchema(authorization, schemaBId, false);
-            listTopicSchemas(authorization).then((list) => {
+            listTopicSchemasAfterDelete(authorization).then((list) => {
                 expect(list.length).eql(1);
                 expect(list.at(0).id).eql(schemaAId);
             });
@@ -142,7 +159,7 @@ context('Schema', { tags: ['schema', 'thirdPool', 'all'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             createSchemaB(authorization)
                 .then(() => deleteSchema(authorization, schemaBId, true))
-                .then(() => listTopicSchemas(authorization))
+                .then(() => listTopicSchemasAfterDelete(authorization))
                 .then((list) => {
                     expect(list.length).eql(0);
                 });

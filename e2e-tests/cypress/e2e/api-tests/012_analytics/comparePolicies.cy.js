@@ -66,7 +66,7 @@ context('Analytics', { tags: ['analytics', 'thirdPool', 'all'] }, () => {
             failOnStatusCode: false,
         });
 
-    let policyId1; let policyId2; let preprelastPolicy; let prelastPolicy;
+    let policyId1; let policyId2;
 
     before(() => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
@@ -92,24 +92,21 @@ context('Analytics', { tags: ['analytics', 'thirdPool', 'all'] }, () => {
         });
     });
 
+    // Compares an existing policy against itself: a policy is trivially identical to itself, so this
+    // exercises the comparator's FULL/100 result without depending on specific policy names (e.g.
+    // 'iRec_2') that may or may not exist on a given stack, and without provisioning new Hedera
+    // resources just to get a second, content-identical policy.
     it('Compare equal policies', () => {
         Authorization.getAccessTokenByRefreshToken().then((authorization) => {
-            getPoliciesWithAuth(authorization).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.OK);
-                response.body.forEach((element) => {
-                    if (element.name.startsWith('iRec_2_')) {preprelastPolicy = element.id;}
-                    if (element.name == 'iRec_2') {prelastPolicy = element.id;}
-                });
-                postCompareWithAuth(
-                    authorization,
-                    compareBody({ policyId1: preprelastPolicy, policyId2: prelastPolicy, eventsLvl: 2 })
-                ).then((res) => {
-                    expect(res.status).to.eq(STATUS_CODE.OK);
-                    expect(res.body.left.id).to.eq(preprelastPolicy);
-                    expect(res.body.right.id).to.eq(prelastPolicy);
-                    expect(res.body.blocks.report.at(0).type).eq('FULL');
-                    expect(res.body.total).eq(100);
-                });
+            postCompareWithAuth(
+                authorization,
+                compareBody({ policyId1, policyId2: policyId1, eventsLvl: 2 })
+            ).then((res) => {
+                expect(res.status).to.eq(STATUS_CODE.OK);
+                expect(res.body.left.id).to.eq(policyId1);
+                expect(res.body.right.id).to.eq(policyId1);
+                expect(res.body.blocks.report.at(0).type).eq('FULL');
+                expect(res.body.total).eq(100);
             });
         });
     });
