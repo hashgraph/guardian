@@ -19,6 +19,9 @@ export class SchemaViewDialog {
     tools: any[];
     errors: any[];
     schemaType: string;
+    errorCount: number = 0;
+    warningCount: number = 0;
+    issuesSummary: string = '';
 
     constructor(
         private dialogRef: DynamicDialogRef,
@@ -44,8 +47,31 @@ export class SchemaViewDialog {
                 } else if (error.col) {
                     error.__path = `Col: ${error.col}`;
                 }
+                if (error.type === 'error') {
+                    this.errorCount++;
+                } else if (error.type === 'warning') {
+                    this.warningCount++;
+                }
             }
+            this.issuesSummary = this.buildIssuesSummary();
         }
+    }
+
+    private buildIssuesSummary(): string {
+        const parts: string[] = [];
+        if (this.errorCount > 0) {
+            parts.push(`${this.errorCount} ${this.errorCount === 1 ? 'error' : 'errors'}`);
+        }
+        if (this.warningCount > 0) {
+            parts.push(`${this.warningCount} ${this.warningCount === 1 ? 'warning' : 'warnings'}`);
+        }
+        if (parts.length === 0) {
+            if (this.errors.length === 0) {
+                return '';
+            }
+            return `${this.errors.length} ${this.errors.length === 1 ? 'issue' : 'issues'}`;
+        }
+        return parts.join(', ');
     }
 
     ngOnInit() {
