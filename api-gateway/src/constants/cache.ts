@@ -19,4 +19,7 @@ export const TAG_PREFIXES = {
   // Schemas are served by two controllers: `/schemas/...` and the single
   // schema route of `@Controller('schema')`.
   SCHEMAS: [`${PREFIXES.TAG}/schemas`, `${PREFIXES.TAG}/schema/`],
+  // Every cached route of `@Controller('accounts')`: the listing, the session,
+  // the standard registries and the balance.
+  ACCOUNTS: [`${PREFIXES.TAG}/accounts`],
 }
