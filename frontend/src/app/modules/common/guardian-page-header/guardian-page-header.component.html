@@ -1,0 +1,7 @@
+<div class="guardian-user-page-header guardian-user-page-header--with-help">
+    <span class="page-header-title">{{ pageTitle }}</span>
+    <ng-content></ng-content>
+</div>
+@if (helpText) {
+    <div class="page-header-help-text">{{ helpText }}</div>
+}

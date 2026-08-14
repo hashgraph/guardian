@@ -12,7 +12,7 @@
 
     <ng-container *ngIf="isConfirmed; else elseTemplate">
         <div *ngIf="profile" class="profile">
-            <div class="guardian-user-page-header">Profile</div>
+            <guardian-page-header pageTitle="Profile" helpKey="profile"></guardian-page-header>
 
             <div class="tabs-nav">
                 <p-tabs [(value)]="tabIndex" (valueChange)="onChangeTab($event)" class="guardian-header-tabs">
