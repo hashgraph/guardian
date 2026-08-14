@@ -52,6 +52,24 @@ export class AccountApi {
     }
 
     /**
+     * Drops every cached accounts response.
+     *
+     * The mutation is already applied when this runs, so a cache failure must
+     * not turn a successful request into an error - it is logged instead.
+     */
+    private async invalidateAccountsCache(userId: string | null): Promise<void> {
+        try {
+            await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.ACCOUNTS);
+        } catch (error) {
+            await this.logger.warn(
+                `Failed to invalidate the accounts cache: ${error.message}`,
+                ['API_GATEWAY'],
+                userId
+            );
+        }
+    }
+
+    /**
      * getSession
      * @param headers
      */
@@ -182,7 +200,7 @@ export class AccountApi {
                 childUser.id,
             );
 
-            await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.ACCOUNTS);
+            await this.invalidateAccountsCache(childUser.id);
 
             return childUser;
         } catch (error) {
@@ -330,7 +348,7 @@ export class AccountApi {
         taskManager.registerCallback(task, async (completedTask) => {
             // The account only exists once the task is done, so the listing cache
             // cannot be dropped when the request returns.
-            await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.ACCOUNTS).catch(() => null);
+            await this.invalidateAccountsCache(parentUser?.id ?? null);
 
             if (completedTask.result?.username) {
                 try {
@@ -491,7 +509,7 @@ export class AccountApi {
             const users = new Users();
             const result = await users.changeUserPassword(user, username, oldPassword, newPassword);
 
-            await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.ACCOUNTS);
+            await this.invalidateAccountsCache(user.id);
 
             return result;
         } catch (error) {
@@ -843,7 +861,7 @@ export class AccountApi {
             const token = body.token;
             const result = await users.otpConfirmSecret(user.id, token);
 
-            await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.ACCOUNTS);
+            await this.invalidateAccountsCache(user.id);
 
             return result;
 
@@ -911,7 +929,7 @@ export class AccountApi {
         try {
             const result = await users.otpDeactivate(user.id);
 
-            await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.ACCOUNTS);
+            await this.invalidateAccountsCache(user.id);
 
             return result;
 
