@@ -1,7 +1,3 @@
----
-icon: building-shield
----
-
 # Password Policy
 
 ## Step By Step Process

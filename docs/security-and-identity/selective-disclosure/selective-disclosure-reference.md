@@ -1,7 +1,7 @@
-# Selective Disclosure Demo
+# Selective Disclosure Reference
 
-1. [Step By Step Process](selective-disclosure-demo.md#id-1.-step-by-step-process)
-2. [Demo Video](selective-disclosure-demo.md#id-2.-demo-video)
+1. [Step By Step Process](selective-disclosure-reference.md#id-1.-step-by-step-process)
+2. [Demo Video](selective-disclosure-reference.md#id-2.-demo-video)
 
 ## 1. Step By Step Process
 

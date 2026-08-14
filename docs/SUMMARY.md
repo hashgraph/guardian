@@ -451,6 +451,13 @@
     * [GHGP Corporate Standard V2](guardian/demo-guide/carbon-emissions/ghgp-corporate-standard-v2.md)
     * [Climate Action Reserve’s U.S. Landfill Protocol Version 6.0](guardian/demo-guide/carbon-emissions/climate-action-reserves-u.s.-landfill-protocol-version-6.0.md)
 
+## Explorers
+
+* [Explorers Overview](explorers/explorers-overview.md)
+* [Sustainability Atlas](explorers/sustainability-atlas.md)
+* [Carbon Atlas](explorers/carbon-atlas.md)
+* [Guardian Indexer](explorers/guardian-indexer.md)
+
 ## Methodology Digitization
 
 * [📚 Methodology Digitization Handbook](methodology-digitization-handbook/README.md)
@@ -498,30 +505,20 @@
 ## Security & Identity
 
 * [Password Management & Multifactor Authentication (MFA)](security-and-identity/password-management/README.md)
-  * [Change Password](security-and-identity/password-management/change-password/README.md)
-    * [Password Security Hardening and Change Password using UI](security-and-identity/password-management/change-password/password-security-hardening-and-change-password-using-ui.md)
-    * [Change Password API](security-and-identity/password-management/change-password/change-password.md)
+  * [Password Change and Security Hardening](security-and-identity/password-management/password-change-hardening.md)
   * [Password Policy](security-and-identity/password-management/password-policy.md)
   * [Multifactor Authentication (MFA)](security-and-identity/password-management/4108-multifactor-authentication-2fa.md)
-  * [Multifactor Authentication API (MFA API)](security-and-identity/password-management/multifactor-authentication-api-2fa-api/README.md)
-    * [Deactivate OTP](security-and-identity/password-management/multifactor-authentication-api-2fa-api/deactivate-otp.md)
-    * [Get status of MFA](security-and-identity/password-management/multifactor-authentication-api-2fa-api/get-status-of-2fa.md)
-    * [Confirm OTP](security-and-identity/password-management/multifactor-authentication-api-2fa-api/confirm-otp.md)
-    * [Generate OTP](security-and-identity/password-management/multifactor-authentication-api-2fa-api/generate-otp.md)
 * [Selective Disclosure](security-and-identity/selective-disclosure/README.md)
-  * [User Guide](security-and-identity/selective-disclosure/user-guide.md)
-  * [Selective Disclosure Demo](security-and-identity/selective-disclosure/selective-disclosure-demo.md)
+  * [Selective Disclosure Guide](security-and-identity/selective-disclosure/user-guide.md)
+  * [Selective Disclosure Reference](security-and-identity/selective-disclosure/selective-disclosure-reference.md)
 * [Bring your own DIDs](security-and-identity/bring-your-own-dids/README.md)
-  * [Bring your own (BYO) DIDs UI](security-and-identity/bring-your-own-dids/bring-your-own-byo-dids-ui.md)
-  * [APIs](security-and-identity/bring-your-own-dids/apis/README.md)
-    * [Validate DID Format](security-and-identity/bring-your-own-dids/apis/validate-did-format.md)
-    * [Validate DID Keys](security-and-identity/bring-your-own-dids/apis/validate-did-keys.md)
+  * [Bring your own (BYO) DIDs Reference](security-and-identity/bring-your-own-dids/bring-your-own-byo-dids-ui.md)
 * [Guardian Vault](security-and-identity/guardian-vault.md)
+* [FireBlocks Raw Signing](security-and-identity/fireblocks-raw-signing/README.md)
+  * [Fireblocks Signing Reference](security-and-identity/fireblocks-raw-signing/fireblocks-signing-in-guardian-ui.md)
+  * [How to fetch keys from FireBlocks?](security-and-identity/fireblocks-raw-signing/getting-keys-from-fireblocks-ui.md)
 * [Meeco authentication](security-and-identity/security-1/README.md)
   * [How it works](security-and-identity/security-1/how-it-works.md)
-* [FireBlocks Raw Signing](security-and-identity/fireblocks-raw-signing/README.md)
-  * [Fireblocks signing in Guardian UI](security-and-identity/fireblocks-raw-signing/fireblocks-signing-in-guardian-ui.md)
-  * [Getting Keys from FireBlocks UI](security-and-identity/fireblocks-raw-signing/getting-keys-from-fireblocks-ui.md)
 
 ## Developer Tools
 
@@ -531,8 +528,6 @@
   * [First Ingestion and Semantic Search](developer-tools/ai-toolkit/first-ingestion-and-semantic-search.md)
   * [Schema and Formula Generation](developer-tools/ai-toolkit/schema-and-formula-generation.md)
   * [Mapping and Transformation](developer-tools/ai-toolkit/mapping-and-transformation.md)
-* [Global Indexer](developer-tools/global-indexer/README.md)
-  * [Indexer Reference](developer-tools/global-indexer/indexer-user-guide.md)
 * [Guardian CLI](developer-tools/guardian-cli.md)
 * [Environments](developer-tools/environments/README.md)
   * [Multi session consistency according to Environment](developer-tools/environments/multi-session-consistency-according-to-environment.md)
@@ -1219,6 +1214,16 @@
     * [Removes a file from IPFS by CID](developer-tools/api-reference/indexer-apis/removes-a-file-from-ipfs-by-cid.md)
     * [Comparing the policy changes as per ID](developer-tools/api-reference/indexer-apis/comparing-the-policy-changes-as-per-id.md)
     * [Display the derivations](developer-tools/api-reference/indexer-apis/display-the-derivations.md)
+  * [Multifactor Authentication API (MFA API)](developer-tools/api-reference/multifactor-authentication-api-2fa-api/README.md)
+    * [Deactivate OTP](developer-tools/api-reference/multifactor-authentication-api-2fa-api/deactivate-otp.md)
+    * [Get status of MFA](developer-tools/api-reference/multifactor-authentication-api-2fa-api/get-status-of-2fa.md)
+    * [Confirm OTP](developer-tools/api-reference/multifactor-authentication-api-2fa-api/confirm-otp.md)
+    * [Generate OTP](developer-tools/api-reference/multifactor-authentication-api-2fa-api/generate-otp.md)
+  * [Bring your Own DIDs APIs](developer-tools/api-reference/apis-5/README.md)
+    * [Validate DID Format](developer-tools/api-reference/apis-5/validate-did-format.md)
+    * [Validate DID Keys](developer-tools/api-reference/apis-5/validate-did-keys.md)
+* [Global Indexer](developer-tools/global-indexer/README.md)
+  * [Indexer Reference](developer-tools/global-indexer/indexer-user-guide.md)
 
 ## Community & Contributing
 
@@ -1237,10 +1242,10 @@
 * [Contributing](community-and-contributing/contributing/README.md)
   * [Contribute a New Policy](community-and-contributing/contributing/contribute-a-new-policy.md)
   * [Open Source Policy Submissions](community-and-contributing/contributing/guidance-for-open-source-policy.md)
-* [FAQs](community-and-contributing/faqs.md)
 * [Change Log](community-and-contributing/change-log.md)
-* [Roadmap](community-and-contributing/roadmap.md)
 * [Security](community-and-contributing/security.md)
+* [FAQs](community-and-contributing/faqs.md)
+* [Roadmap](community-and-contributing/roadmap.md)
 
 ## First Steps
 
