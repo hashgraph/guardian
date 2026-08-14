@@ -4,6 +4,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import { registerUser } from '../../../support/api/accounts';
+import { expectedPasswordError } from '../../../support/passwordPolicy';
 
 context('Update password', { tags: ['accounts', 'firstPool', 'all'] }, () => {
 
@@ -144,9 +145,7 @@ context('Update password', { tags: ['accounts', 'firstPool', 'all'] }, () => {
                 newPassword: 'tt',
             }, false).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.UNPROCESSABLE);
-                expect(response.body.message).eql(
-                    'Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, and one number.'
-                );
+                expect(response.body.message).eql(expectedPasswordError());
             });
         });
     });

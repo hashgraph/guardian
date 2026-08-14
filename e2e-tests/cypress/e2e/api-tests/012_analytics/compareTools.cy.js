@@ -34,11 +34,10 @@ context('Analytics', { tags: ['analytics', 'thirdPool', 'all'] }, () => {
             timeout,
         });
 
-    // cacheBust makes the request URL unique, as the list endpoint is cached
     const getToolsWithAuth = (authorization) =>
         cy.request({
             method: METHOD.GET,
-            url: `${URLS.tools}?cacheBust=${Date.now()}`,
+            url: URLS.tools,
             headers: { authorization },
         });
 

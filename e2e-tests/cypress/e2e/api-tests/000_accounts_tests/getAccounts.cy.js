@@ -10,9 +10,11 @@ context('Get accounts', { tags: ['accounts', 'firstPool', 'all'] }, () => {
     const UserUsername = Cypress.env('User');
     const accountsUrl = API.ApiServer + API.Accounts;
 
-    // The endpoint response is cached per (url + user) for 10 minutes and registering
-    // a user does not invalidate it, so reading a list that must reflect a just-created
-    // account requires a unique query string to miss the cache.
+    // `GET /accounts` is cached per (url + user) for 10 minutes and `account.ts` has no cache
+    // invalidation at all, so registering a user leaves the cached listing stale. Reading a list
+    // that must reflect a just-created account needs a unique query string to miss the cache.
+    // See <follow-up issue>: once the accounts routes get tag-prefix invalidation like schemas
+    // (#6634) and tools, this can go.
     const getAccounts = ({ authorization, failOnStatusCode = true, bustCache = false } = {}) =>
         cy.request({
             method: METHOD.GET,

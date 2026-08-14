@@ -99,16 +99,12 @@ context('Schemas', { tags: ['schema', 'thirdPool', 'all'] }, () => {
                 }).then((response) => {
                     expect(response.status).eql(STATUS_CODE.SUCCESS);
                 });
-                //Schema listings are cached by request URL for 10 minutes, so a plain listing can
-                //still be missing the schema just created: a unique query parameter (ignored by the
-                //API) gives an uncached view of the topic
                 cy.request({
                     method: METHOD.GET,
                     url: API.ApiServer + API.Schemas + topicUid,
                     headers: {
                         authorization,
                     },
-                    qs: { cacheBust: Date.now() },
                 }).then((response) => {
                     expect(response.status).eql(STATUS_CODE.OK);
                     //Publish the schema created above: picking an arbitrary one from the listing

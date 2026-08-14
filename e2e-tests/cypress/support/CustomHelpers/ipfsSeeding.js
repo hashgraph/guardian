@@ -41,6 +41,10 @@ export const publishPolicyFixture = (username, fixtureName, policyVersion = '1.0
                 timeout: PUBLISH_TIMEOUT,
             }).then((publishResponse) => {
                 expect(publishResponse.status, `publish of ${fixtureName}`).to.eq(STATUS_CODE.OK);
+                expect(
+                    publishResponse.body.isValid,
+                    `publish of ${fixtureName} validation: ${JSON.stringify(publishResponse.body.errors)}`
+                ).to.be.true;
                 return cy.request({
                     method: METHOD.GET,
                     url: `${API.ApiServer}${API.Policies}${policyId}/${API.ExportMessage}`,
@@ -119,8 +123,8 @@ export const publishSchema = (username) =>
         }).then((createResponse) => {
             expect(createResponse.status, 'schema creation').to.be.oneOf([STATUS_CODE.OK, STATUS_CODE.SUCCESS]);
             // The creation response is the paginated list of every schema, so the new schema has to
-            // be looked up by topic. The filtered `schemas?topicId=` listing is cached and can miss
-            // it, the per topic route is not.
+            // be looked up by topic instead. Both the filtered `schemas?topicId=` listing and the
+            // per-topic route are cache-invalidated on schema mutations (#6634).
             return cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.Schemas + topicId,
@@ -138,6 +142,9 @@ export const publishSchema = (username) =>
                 timeout: PUBLISH_TIMEOUT,
             }).then((publishResponse) => {
                 expect(publishResponse.status, 'schema publish').to.be.oneOf([STATUS_CODE.OK, STATUS_CODE.SUCCESS]);
+                const published = publishResponse.body.find((item) => item?.uuid === uuid);
+                expect(published, 'published schema').to.not.be.undefined;
+                expect(published.status, 'published schema status').to.eq('PUBLISHED');
                 return cy.request({
                     method: METHOD.GET,
                     url: `${API.ApiServer}${API.Schemas}${schema.id}/${API.ExportMessage}`,

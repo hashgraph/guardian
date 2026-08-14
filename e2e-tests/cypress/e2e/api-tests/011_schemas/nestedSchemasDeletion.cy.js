@@ -22,14 +22,10 @@ context('Schema', { tags: ['schema', 'thirdPool', 'all'] }, () => {
 
     let topicId; let schemaAId; let schemaBId; let schemas;
 
-    // Schema listings are cached by request URL for 10 minutes, and deleting a schema only
-    // invalidates the cache entry of its own URL, so a plain listing keeps serving deleted schemas.
-    // A unique query parameter (ignored by the API) gives this spec an uncached view of the topic.
     const listTopicSchemas = (authorization) => cy.request({
         method: METHOD.GET,
         url: API.ApiServer + API.Schemas + topicId,
         headers: { authorization },
-        qs: { cacheBust: `${runId}_${Date.now()}` },
     }).then((response) => {
         expect(response.status).to.eq(STATUS_CODE.OK);
         return cy.wrap(response.body, { log: false });

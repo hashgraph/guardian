@@ -1,5 +1,6 @@
 import URL from '../../../support/GuardianUrls';
 import CommonElements from '../../../support/defaultUIElements';
+import { expectedPasswordError } from '../../../support/passwordPolicy';
 
 const HomePageLocators = {
 	usernameInput: '[formcontrolname="username"]',
@@ -14,7 +15,6 @@ const HomePageLocators = {
 	alert: '[role="alert"]',
 	passwordDifError: ' Passwords are different ',
 	userAlreadyExistError: 'An account with the same name already exists.',
-	weakPassword: 'Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, and one number.',
 	logoutIcon: "[ng-reflect-content='Logout']"
 
 	// submitBtn: '[type="submit"]',
@@ -69,7 +69,7 @@ export class HomePage {
 	}
 
 	verifyWeakPasswordAlert() {
-		cy.get(HomePageLocators.alert).children().contains(HomePageLocators.weakPassword).should('exist');
+		cy.get(HomePageLocators.alert).children().contains(expectedPasswordError()).should('exist');
 	}
 
 	checkCreateDisabledUserNameEmpty() {

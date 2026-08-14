@@ -2,6 +2,7 @@ import { randomInt } from '../../../support/random';
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import { registerUser } from '../../../support/api/accounts';
+import { expectedPasswordError } from '../../../support/passwordPolicy';
 
 context('Register', { tags: ['accounts', 'firstPool', 'all'] }, () => {
     // NODE: using a fixed name until a cleanup via DELETE account is implemented in the API
@@ -143,7 +144,6 @@ context('Register', { tags: ['accounts', 'firstPool', 'all'] }, () => {
         });
     });
 
-    // password validation sets to easy + 8 length for CICD, so we cannot get weak password
     it('Register user with weak password - Negative', () => {
         postRegister({
             username: name + 'test',
@@ -152,9 +152,7 @@ context('Register', { tags: ['accounts', 'firstPool', 'all'] }, () => {
             role: 'USER',
         }).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.UNPROCESSABLE);
-            expect(response.body.message).to.eq(
-                'Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, and one number.',
-            );
+            expect(response.body.message).to.eq(expectedPasswordError());
         });
     });
 });

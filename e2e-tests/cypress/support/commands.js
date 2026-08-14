@@ -259,13 +259,9 @@ Cypress.Commands.add('getOrCreateSchemaId', (authorization) => {
                 },
                 timeout: 180000,
             }).then(() => cy.request({
-                // Schema listings are cached by request URL for 10 minutes, so a plain listing
-                // straight after the creation keeps serving the pre-creation (empty) view.
-                // A unique query parameter (ignored by the API) gives an uncached read.
                 method: METHOD.GET,
                 url: API.ApiServer + API.Schemas + policy.topicId,
                 headers: { authorization },
-                qs: { cacheBust: `${randomInt(999999)}_${Date.now()}` },
             }).then((list) => {
                 const created = list.body.find((item) => item?.name === schemaName);
                 expect(created, `schema ${schemaName} in topic ${policy.topicId}`).to.not.be.undefined;
