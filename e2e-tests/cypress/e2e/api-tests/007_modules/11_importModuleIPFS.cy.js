@@ -76,7 +76,8 @@ context('Modules', { tags: ['modules', 'thirdPool', 'all'] }, () => {
                 });
                 expect(response.body.creator).eql(did);
                 expect(response.body.description).eql('');
-                expect(response.body.name).eql('ComparedModuleIPFS');
+                // A repeated import gets a "_<timestamp>" suffix to keep module names unique
+                expect(response.body.name).to.match(/^ComparedModuleIPFS(_\d+)?$/);
                 expect(response.body.owner).eql(did);
                 expect(response.body.status).eql('DRAFT');
                 expect(response.body.type).eql('CUSTOM');
