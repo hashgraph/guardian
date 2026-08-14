@@ -121,14 +121,18 @@ context("Modules", { tags: ['modules', 'thirdPool', 'all'] }, () => {
     });
 
     it("Imports new module and all associated artifacts from IPFS into the local DB with invalid message id - Negative", () => {
+        const invalidMessageId = Cypress.env('module_for_import') + "777121";
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             postImportMessageWithAuth(
                 authorization,
-                { messageId: Cypress.env('module_for_import') + "777121" },
+                { messageId: invalidMessageId },
                 { timeout: 240000, failOnStatusCode: false }
             ).then((response) => {
-                expect(response.status).eql(STATUS_CODE.ERROR);
-                expect(response.body.message).eql("Cannot read properties of null (reading 'type')");
+                expect(response.status).eql(STATUS_CODE.NOT_FOUND);
+                expect(response.body.message).eql(
+                    `MESSAGE_NOT_FOUND: Message ${invalidMessageId} could not be retrieved. ` +
+                    "Check the message id and that it belongs to the current Hedera network."
+                );
             });
         });
     });
