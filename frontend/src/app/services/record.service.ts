@@ -21,6 +21,14 @@ export class RecordService {
         return this.http.post<any>(`${this.url}/${policyId}/recording/start`, null);
     }
 
+    public pauseRecording(policyId: string): Observable<boolean> {
+        return this.http.post<boolean>(`${this.url}/${policyId}/recording/pause`, null);
+    }
+
+    public resumeRecording(policyId: string): Observable<boolean> {
+        return this.http.post<boolean>(`${this.url}/${policyId}/recording/resume`, null);
+    }
+
     public stopRecording(policyId: string, options: any = {}): Observable<ArrayBuffer> {
         return this.http.post(
             `${this.url}/${policyId}/recording/stop`,
