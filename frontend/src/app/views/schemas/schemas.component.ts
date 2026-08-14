@@ -12,8 +12,7 @@ import {
     SchemaStatus,
     TagType,
     UserPermissions,
-    ModelHelper,
-    resolveIwaVersion
+    ModelHelper
 } from '@guardian/interfaces';
 import { forkJoin, Observable, Subject, takeUntil } from 'rxjs';
 //services
@@ -796,14 +795,6 @@ export class SchemaConfigComponent implements OnInit {
                 this.loading = false;
             }, 500);
         }
-    }
-
-    /**
-     * Major IWA specification version for the schema-list badge.
-     * Untagged schemas predate IWA v3 support and read as v1.
-     */
-    public iwaMajorVersion(schema: ISchema): string {
-        return resolveIwaVersion(schema).split('.')[0];
     }
 
     public onFilter(event?: any) {
