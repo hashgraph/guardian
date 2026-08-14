@@ -1,6 +1,66 @@
 const { defineConfig } = require('cypress');
 const { verifyDownloadTasks } = require('cy-verify-downloads');
 
+const MIN_SR_USER_HBAR_BALANCE = 10;
+
+// Logs in as the configured SRUser and warns if their HBAR balance is low.
+// Runs once per full test run (not per spec) since it is wired to the
+// `before:run` node event rather than a cypress/support hook.
+async function checkSrUserHbarBalance(config) {
+    const apiServer = config.env.apiServer
+        ? (config.env.apiServer.endsWith('/') ? config.env.apiServer : `${config.env.apiServer}/`)
+        : `http://localhost:${config.env.portApi}/`;
+    const username = config.env.SRUser;
+    const password = config.env.Password;
+
+    try {
+        const loginResponse = await fetch(`${apiServer}accounts/login/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password }),
+        });
+        if (!loginResponse.ok) {
+            throw new Error(`login failed with status ${loginResponse.status}`);
+        }
+        const { refreshToken } = await loginResponse.json();
+
+        const tokenResponse = await fetch(`${apiServer}accounts/access-token/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refreshToken }),
+        });
+        if (!tokenResponse.ok) {
+            throw new Error(`access-token request failed with status ${tokenResponse.status}`);
+        }
+        const { accessToken } = await tokenResponse.json();
+
+        const balanceResponse = await fetch(`${apiServer}accounts/balance`, {
+            headers: { authorization: `Bearer ${accessToken}` },
+        });
+        if (!balanceResponse.ok) {
+            throw new Error(`balance request failed with status ${balanceResponse.status}`);
+        }
+        const { balance } = await balanceResponse.json();
+        const hbarBalance = parseFloat(balance);
+
+        if (Number.isNaN(hbarBalance)) {
+            console.warn(`[HBAR balance check] Could not parse balance value returned for ${username}: "${balance}"`);
+            return;
+        }
+
+        console.log(`[HBAR balance check] ${username} balance: ${hbarBalance} Hbar`);
+        if (hbarBalance < MIN_SR_USER_HBAR_BALANCE) {
+            console.warn(
+                `\n[HBAR balance check] WARNING: ${username}'s HBAR balance (${hbarBalance}) is below the ` +
+                `recommended minimum of ${MIN_SR_USER_HBAR_BALANCE} Hbar. Tests that deploy contracts or ` +
+                `perform other HBAR-costly operations may fail with INSUFFICIENT_PAYER_BALANCE.\n`
+            );
+        }
+    } catch (error) {
+        console.warn(`[HBAR balance check] Skipped: could not verify ${username}'s HBAR balance (${error.message})`);
+    }
+}
+
 module.exports = defineConfig({
     video: false,
     watchForFileChanges: false,
@@ -78,6 +138,7 @@ module.exports = defineConfig({
 
             require('@cypress/grep/plugin').plugin(config);
             require('cypress-mochawesome-reporter/plugin')(on);
+            on('before:run', () => checkSrUserHbarBalance(config));
             on('task', verifyDownloadTasks);
             on('task', {
                 checkFile(partialName) {
