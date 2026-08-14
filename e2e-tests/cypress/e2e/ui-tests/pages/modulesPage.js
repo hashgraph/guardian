@@ -1,23 +1,23 @@
-import * as Checks from "../../../support/checkingMethods";
-import CommonElements from "../../../support/defaultUIElements";
+import * as Checks from '../../../support/checkingMethods';
+import CommonElements from '../../../support/defaultUIElements';
 
 const ModulesPageLocators = {
-    createNewButton: "Create a Module",
+    createNewButton: 'Create a Module',
     nameInput: '[formcontrolname="name"]',
     descriptionInput: '[formcontrolname="description"]',
     finalCreateButton: 'button[label="Create"]',
-    importButton: "Import",
-    importIPFSButton: " Import from IPFS ",
+    importButton: 'Import',
+    importIPFSButton: ' Import from IPFS ',
     timestampInput: '[formcontrolname="timestamp"]',
     moduleImportButton: 'button:contains("Import")',
     pImportButton: 'button[label="Import"]',
     moduleDeleteIcon: '[ng-reflect-src="/assets/images/icons/delete.sv"]',
     moduleDeleteButton: 'span:contains("Delete")',
     exportModule: '[ng-reflect-src="/assets/images/icons/export.sv"]',
-    exportFileButton: " Save to file ",
-    exportMessageIdButton: " Copy message identifier ",
-    publishButton: "Publish ",
-    publishedStatus: "Published",
+    exportFileButton: ' Save to file ',
+    exportMessageIdButton: ' Copy message identifier ',
+    publishButton: 'Publish ',
+    publishedStatus: 'Published',
     createButton: "[ng-reflect-label='Create']",
     deleteTagIcon: "svg-icon[svgclass='accent-color-red']",
     closeWindowButton: "[ng-reflect-label='Close']",
@@ -31,34 +31,31 @@ const ModulesPageLocators = {
     expandBlockBtn: (value) => `[block-instance="${value}"] .block-expand`,
     deleteBlockBtn: 'button[class*="delete-action"]:visible',
 
-
-
-
-    okButton: "Ok",
-    modulesList: "/api/v1/modules?pageIndex=0&pageSize=10",
-    postPreviewIPFS: "/api/v1/modules/import/message/preview",
-    postPreviewFile: "/api/v1/modules/import/file/preview",
+    okButton: 'Ok',
+    modulesList: '/api/v1/modules?pageIndex=0&pageSize=10',
+    postPreviewIPFS: '/api/v1/modules/import/message/preview',
+    postPreviewFile: '/api/v1/modules/import/file/preview',
     moduleRowSelector: 'tbody>tr[role="row"]',
     exportButton: '[mattooltip="Export"]',
     exportFileLabel: 'Save to file',
     exportIPFSLabel: 'Copy message identifier',
-    createFinalBtn: "div.g-dialog-actions-btn",
+    createFinalBtn: 'div.g-dialog-actions-btn',
     tagCreationModal: 'tags-create-dialog',
     createTagButton: ' Create a Tag ',
     tagNameInput: '[ng-reflect-name="name"]',
-    tagDeleteButton: "div.delete-tag",
+    tagDeleteButton: 'div.delete-tag',
     tagDescInput: '[ng-reflect-name="description"]',
-    tagsListRequest: "/api/v1/tags/",
-    tagsDeleteRequest: "/api/v1/tags/*",
+    tagsListRequest: '/api/v1/tags/',
+    tagsDeleteRequest: '/api/v1/tags/*',
 };
 
 export class ModulesPage {
 
     openModulesTab() {
         cy.get(CommonElements.navBar).should('exist')
-        cy.get("body").then(($body) => {
+        cy.get('body').then(($body) => {
             if ($body.find(`span:contains(${CommonElements.modulesTab})`).length == 0)
-                cy.get(CommonElements.navBar).contains(CommonElements.mainPoliciesTab).click();
+                {cy.get(CommonElements.navBar).contains(CommonElements.mainPoliciesTab).click();}
         })
         cy.get(CommonElements.navBar).contains(CommonElements.modulesTab).click();
         Checks.waitForLoading();
@@ -70,7 +67,7 @@ export class ModulesPage {
         cy.get(ModulesPageLocators.descriptionInput).type(moduleName);
         cy.get(ModulesPageLocators.finalCreateButton).click();
         Checks.waitForLoading();
-        cy.contains(moduleName).should("exist");
+        cy.contains(moduleName).should('exist');
     }
 
     importNewModuleIPFS(messageId, name) {
@@ -81,7 +78,7 @@ export class ModulesPage {
         Checks.waitForElement("div:contains('Details')")
         cy.get(ModulesPageLocators.moduleImportButton).last().click();
         Checks.waitForLoading();
-        cy.contains(name).should("exist");
+        cy.contains(name).should('exist');
     }
 
     importNewModuleFile(fileName, name) {
@@ -91,7 +88,7 @@ export class ModulesPage {
         Checks.waitForElement("div:contains('Details')")
         cy.get(ModulesPageLocators.moduleImportButton).last().click();
         Checks.waitForLoading();
-        cy.contains(name).should("exist");
+        cy.contains(name).should('exist');
     }
 
     deleteModule(moduleName) {
@@ -99,15 +96,15 @@ export class ModulesPage {
         cy.contains(moduleName).siblings().find(ModulesPageLocators.moduleDeleteIcon).click();
         cy.get(ModulesPageLocators.moduleDeleteButton).click();
         Checks.waitForLoading();
-        cy.contains(moduleName).should("not.exist")
+        cy.contains(moduleName).should('not.exist')
     }
 
     checkStatus(name, status) {
-        cy.contains("td", name).siblings().contains(status).should("exist");
+        cy.contains('td', name).siblings().contains(status).should('exist');
     }
 
     openExportModal(name) {
-        cy.contains("td", name).siblings().find(ModulesPageLocators.exportModule).click();
+        cy.contains('td', name).siblings().find(ModulesPageLocators.exportModule).click();
     }
 
     exportModuleAsFile(name) {
@@ -144,19 +141,19 @@ export class ModulesPage {
         cy.get(ModulesPageLocators.tagNameInput).type(tagName);
         cy.get(ModulesPageLocators.tagDescInput).type(tagName);
         cy.get(ModulesPageLocators.createButton).click();
-        cy.contains(tagName).should("exist");
+        cy.contains(tagName).should('exist');
     }
 
     deleteTag(name, tagName) {
         cy.contains(name).siblings().contains(tagName).click();
         cy.get(ModulesPageLocators.deleteTagIcon).click();
         cy.get(ModulesPageLocators.closeWindowButton).click();
-        cy.contains(tagName).should("not.exist");
+        cy.contains(tagName).should('not.exist');
     }
 
     verifyButtonsAndHeaders() {
-        cy.contains(ModulesPageLocators.createNewButton).should("exist");
-        cy.contains(ModulesPageLocators.importButton).should("exist");
+        cy.contains(ModulesPageLocators.createNewButton).should('exist');
+        cy.contains(ModulesPageLocators.importButton).should('exist');
         cy.get(ModulesPageLocators.headerSelector).should(($header) => {
             expect($header.get(0).innerText).to.eq('NAME')
             expect($header.get(1).innerText).to.eq('DESCRIPTION')
@@ -167,16 +164,16 @@ export class ModulesPage {
     }
 
     verifyDraftModuleDataAndActions(name) {
-        cy.contains(new RegExp("^" + name + "$", "g")).parent().should(($module) => {
+        cy.contains(new RegExp('^' + name + '$', 'g')).parent().should(($module) => {
             const draftModuleChildren = $module.get(0).childNodes;
             expect(draftModuleChildren.item(0).innerText).to.eq(name);
-            expect(draftModuleChildren.item(2).getElementsByTagName("button").item(0).innerText).to.eq("Create a Tag");
-            expect(draftModuleChildren.item(3).firstChild.innerText).to.eq("Draft");
-            expect(draftModuleChildren.item(4).getElementsByTagName("button").item(0).innerText).to.eq("Publish");
-            expect(draftModuleChildren.item(4).getElementsByTagName("svg-icon").item(0).getAttribute('ng-reflect-src')).to.eq("/assets/images/icons/export.sv");
-            expect(draftModuleChildren.item(4).getElementsByTagName("svg-icon").item(1).getAttribute('ng-reflect-src')).to.eq("/assets/images/icons/edit.svg");
-            expect(draftModuleChildren.item(4).getElementsByTagName("svg-icon").item(2).getAttribute('ng-reflect-src')).to.eq("/assets/images/icons/delete.sv");
-            expect(draftModuleChildren.item(4).getElementsByTagName("svg-icon").item(2).getAttribute('ng-reflect-svg-class')).to.eq("accent-color-red");
+            expect(draftModuleChildren.item(2).getElementsByTagName('button').item(0).innerText).to.eq('Create a Tag');
+            expect(draftModuleChildren.item(3).firstChild.innerText).to.eq('Draft');
+            expect(draftModuleChildren.item(4).getElementsByTagName('button').item(0).innerText).to.eq('Publish');
+            expect(draftModuleChildren.item(4).getElementsByTagName('svg-icon').item(0).getAttribute('ng-reflect-src')).to.eq('/assets/images/icons/export.sv');
+            expect(draftModuleChildren.item(4).getElementsByTagName('svg-icon').item(1).getAttribute('ng-reflect-src')).to.eq('/assets/images/icons/edit.svg');
+            expect(draftModuleChildren.item(4).getElementsByTagName('svg-icon').item(2).getAttribute('ng-reflect-src')).to.eq('/assets/images/icons/delete.sv');
+            expect(draftModuleChildren.item(4).getElementsByTagName('svg-icon').item(2).getAttribute('ng-reflect-svg-class')).to.eq('accent-color-red');
         })
     }
 
@@ -184,13 +181,13 @@ export class ModulesPage {
         cy.contains(name).parent().should(($module) => {
             const publishedModuleChildren = $module.get(0).childNodes;
             expect(publishedModuleChildren.item(0).innerText).to.eq(name);
-            expect(publishedModuleChildren.item(2).getElementsByTagName("button").item(0).innerText).to.eq("Create a Tag");
-            expect(publishedModuleChildren.item(3).getElementsByTagName("div").item(0).innerText).to.eq("Published");
-            expect(publishedModuleChildren.item(4).getElementsByTagName("svg-icon").item(0).getAttribute('ng-reflect-src')).to.eq("/assets/images/icons/export.sv");
-            expect(publishedModuleChildren.item(4).getElementsByTagName("svg-icon").item(1).getAttribute('ng-reflect-src')).to.eq("/assets/images/icons/edit.svg");
-            expect(publishedModuleChildren.item(4).getElementsByTagName("svg-icon").item(2).getAttribute('ng-reflect-src')).to.eq("/assets/images/icons/delete.sv");
-            expect(publishedModuleChildren.item(4).getElementsByTagName("svg-icon").item(2).getAttribute('ng-reflect-svg-class')).to.eq("disabled-color");
-            expect(publishedModuleChildren.item(4).getElementsByTagName("button").item(0).getAttribute('disabled')).exist;
+            expect(publishedModuleChildren.item(2).getElementsByTagName('button').item(0).innerText).to.eq('Create a Tag');
+            expect(publishedModuleChildren.item(3).getElementsByTagName('div').item(0).innerText).to.eq('Published');
+            expect(publishedModuleChildren.item(4).getElementsByTagName('svg-icon').item(0).getAttribute('ng-reflect-src')).to.eq('/assets/images/icons/export.sv');
+            expect(publishedModuleChildren.item(4).getElementsByTagName('svg-icon').item(1).getAttribute('ng-reflect-src')).to.eq('/assets/images/icons/edit.svg');
+            expect(publishedModuleChildren.item(4).getElementsByTagName('svg-icon').item(2).getAttribute('ng-reflect-src')).to.eq('/assets/images/icons/delete.sv');
+            expect(publishedModuleChildren.item(4).getElementsByTagName('svg-icon').item(2).getAttribute('ng-reflect-svg-class')).to.eq('disabled-color');
+            expect(publishedModuleChildren.item(4).getElementsByTagName('button').item(0).getAttribute('disabled')).exist;
         })
     }
 
@@ -201,10 +198,10 @@ export class ModulesPage {
 
     editModuleProperty(property, name) {
         cy.wait(500)
-        if (property == "Description")
-            cy.contains("td.cellName", new RegExp("^" + property + "$", "g")).parent().find(CommonElements.textarea).clear().type(name);
+        if (property == 'Description')
+            {cy.contains('td.cellName', new RegExp('^' + property + '$', 'g')).parent().find(CommonElements.textarea).clear().type(name);}
         else
-            cy.contains("td.cellName", new RegExp("^" + property + "$", "g")).parent().find(CommonElements.Input).clear().type(name);
+            {cy.contains('td.cellName', new RegExp('^' + property + '$', 'g')).parent().find(CommonElements.Input).clear().type(name);}
     }
 
     saveModuleEditing() {
@@ -216,8 +213,8 @@ export class ModulesPage {
     }
 
     verifyModuleProperty(name, property, value) {
-        if (property == "Description")
-            cy.contains("td", name).siblings(".cell-description").should('have.text', value + " ");
+        if (property == 'Description')
+            {cy.contains('td', name).siblings('.cell-description').should('have.text', value + ' ');}
     }
 
     addNewBlock(name) {
@@ -225,12 +222,12 @@ export class ModulesPage {
     }
 
     checkBlockExists(name) {
-        cy.get(ModulesPageLocators.blockItemName(name)).should("be.visible");
+        cy.get(ModulesPageLocators.blockItemName(name)).should('be.visible');
     }
 
     editBlockName(name, newName) {
         this.clickOnBlock(name);
-        this.editModuleProperty("Tag", newName);
+        this.editModuleProperty('Tag', newName);
     }
 
     clickOnBlock(name) {
@@ -243,7 +240,7 @@ export class ModulesPage {
 
     checkBlockNotExist(name) {
         cy.wait(10000)
-        cy.get(ModulesPageLocators.blockItemName(name)).should("not.exist");
+        cy.get(ModulesPageLocators.blockItemName(name)).should('not.exist');
     }
 
     clickOnDeleteBlockButton() {
@@ -251,23 +248,10 @@ export class ModulesPage {
     }
 
     checkFieldsInEditModuleIsNotEditable() {
-        cy.contains("td", new RegExp("^Name$", "g")).parent().find(CommonElements.Input).should('have.attr', 'readonly', 'readonly');
-        cy.contains("td", new RegExp("^Topic Description$", "g")).parent().find(CommonElements.Input).should('have.attr', 'readonly', 'readonly');
-        cy.contains("td", new RegExp("^Description$", "g")).parent().find(CommonElements.textarea).should('have.attr', 'readonly', 'readonly');
+        cy.contains('td', new RegExp('^Name$', 'g')).parent().find(CommonElements.Input).should('have.attr', 'readonly', 'readonly');
+        cy.contains('td', new RegExp('^Topic Description$', 'g')).parent().find(CommonElements.Input).should('have.attr', 'readonly', 'readonly');
+        cy.contains('td', new RegExp('^Description$', 'g')).parent().find(CommonElements.textarea).should('have.attr', 'readonly', 'readonly');
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     exportFile(moduleName) {
         cy.contains(moduleName).parent().find(ModulesPageLocators.exportButton).click();
@@ -280,6 +264,6 @@ export class ModulesPage {
     }
 
     checkTheTextIsPresentInModule(text) {
-        cy.contains(text).should("exist");
+        cy.contains(text).should('exist');
     }
 }

@@ -1,11 +1,11 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
+context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
 	const SRUsername = Cypress.env('SRUser');
 
-	let policyId, blockId;
+	let policyId; let blockId;
 
 	before(() => {
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
@@ -31,13 +31,13 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
 		})
 	});
 
-	it("Get block data", () => {
+	it('Get block data', () => {
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
 			cy.request;
 			const url = {
 				method: METHOD.GET,
 				url:
-					API.ApiServer + "policies/" + policyId + "/blocks/" + blockId,
+					API.ApiServer + 'policies/' + policyId + '/blocks/' + blockId,
 				headers: {
 					authorization,
 				},

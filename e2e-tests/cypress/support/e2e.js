@@ -14,11 +14,10 @@
 // ***********************************************************
 
 // Import commands.js using ES2015 syntax:
-import "./commands";
-import "cypress-real-events";
-import "./api/api-helper";
-import "cypress-mochawesome-reporter/register";
-
+import './commands';
+import 'cypress-real-events';
+import './api/api-helper';
+import 'cypress-mochawesome-reporter/register';
 
 // cypress/support/index.js
 // load and register the grep feature using "require" function
@@ -31,9 +30,15 @@ registerCypressGrep()
 require('cy-verify-downloads').addCustomCommand();
 
 beforeEach('Time logging', () => {
-    cy.task('log', Cypress.currentTest.title + " started on:")
+    cy.task('log', Cypress.currentTest.title + ' started on:')
     cy.task('log', new Date(Date.now()))
 })
+
+afterEach(function () {
+  if (this.currentTest.state === 'failed') {
+    Cypress.stop();
+  }
+});
 
 // Alternatively you can use CommonJS syntax:
 // require('./commands')

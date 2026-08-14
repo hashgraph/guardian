@@ -1,9 +1,9 @@
 
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Artifacts", { tags: ['artifacts', 'secondPool', 'all'] }, () => {
+context('Artifacts', { tags: ['artifacts', 'secondPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
 
@@ -25,7 +25,7 @@ context("Artifacts", { tags: ['artifacts', 'secondPool', 'all'] }, () => {
             failOnStatusCode: false,
         });
 
-    it("Get list of artifacts", { tags: ['smoke'] }, () => {
+    it('Get list of artifacts', { tags: ['smoke'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             getArtifactsWithAuth(authorization).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
@@ -36,7 +36,7 @@ context("Artifacts", { tags: ['artifacts', 'secondPool', 'all'] }, () => {
         });
     });
 
-    it("Get list of artifacts by user - Negative", () => {
+    it('Get list of artifacts by user - Negative', () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             getArtifactsWithAuth(authorization, { failOnStatusCode: false }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.FORBIDDEN);
@@ -44,20 +44,20 @@ context("Artifacts", { tags: ['artifacts', 'secondPool', 'all'] }, () => {
         });
     });
 
-    it("Get list of artifacts without auth token - Negative", () => {
+    it('Get list of artifacts without auth token - Negative', () => {
         getArtifactsWithoutAuth().then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Get list of artifacts with invalid auth token - Negative", () => {
-        getArtifactsWithoutAuth({ authorization: "Bearer wqe" }).then((response) => {
+    it('Get list of artifacts with invalid auth token - Negative', () => {
+        getArtifactsWithoutAuth({ authorization: 'Bearer wqe' }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Get list of artifacts with empty auth token - Negative", () => {
-        getArtifactsWithoutAuth({ authorization: "" }).then((response) => {
+    it('Get list of artifacts with empty auth token - Negative', () => {
+        getArtifactsWithoutAuth({ authorization: '' }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });

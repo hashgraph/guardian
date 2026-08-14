@@ -1,11 +1,11 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Schemas", { tags: ['schema', 'thirdPool', 'all'] }, () => {
+context('Schemas', { tags: ['schema', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
-    it("Push create new schema", () => {
+    it('Push create new schema', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
@@ -20,7 +20,7 @@ context("Schemas", { tags: ['schema', 'thirdPool', 'all'] }, () => {
                     url:
                         API.ApiServer +
                         API.Schemas +
-                        "push/" +
+                        'push/' +
                         topicUid,
                     headers: {
                         authorization,

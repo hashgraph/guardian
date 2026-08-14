@@ -1,12 +1,12 @@
 
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("IPFS", { tags: ['ipfs', 'secondPool', 'all'] }, () => {
+context('IPFS', { tags: ['ipfs', 'secondPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
-    let cid, policyId;
+    let cid; let policyId;
 
     const policiesUrl = `${API.ApiServer}${API.Policies}`;
     const ipfsFileUrl = `${API.ApiServer}${API.IPFSFile}`;
@@ -33,7 +33,7 @@ context("IPFS", { tags: ['ipfs', 'secondPool', 'all'] }, () => {
             url: dryRunUrl(policyId),
             body,
             headers: {
-                "content-type": "binary/octet-stream",
+                'content-type': 'binary/octet-stream',
                 authorization,
             },
             timeout,
@@ -62,7 +62,7 @@ context("IPFS", { tags: ['ipfs', 'secondPool', 'all'] }, () => {
             failOnStatusCode: false,
         });
 
-    before("Import and dry-run policy", () => {
+    before('Import and dry-run policy', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             getPoliciesWithAuth(authorization).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
@@ -74,68 +74,68 @@ context("IPFS", { tags: ['ipfs', 'secondPool', 'all'] }, () => {
         });
     });
 
-    it("Add file from ipfs for dry run mode", () => {
+    it('Add file from ipfs for dry run mode', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.fixture("testJsonDR.json").then((file) => {
+            cy.fixture('testJsonDR.json').then((file) => {
                 postIpfsDryRunWithAuth(authorization, policyId, file).then((response) => {
                     expect(response.status).eql(STATUS_CODE.SUCCESS);
-                    cy.writeFile("cypress/fixtures/testJsonDRCid", response.body);
+                    cy.writeFile('cypress/fixtures/testJsonDRCid', response.body);
                 });
             });
         });
     });
 
-    it("Add file from ipfs for dry run mode without auth token - Negative", () => {
+    it('Add file from ipfs for dry run mode without auth token - Negative', () => {
         postIpfsDryRunWithoutAuth(policyId).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Add file from ipfs for dry run mode with invalid auth token - Negative", () => {
-        postIpfsDryRunWithoutAuth(policyId, { authorization: "Bearer wqe" }).then((response) => {
+    it('Add file from ipfs for dry run mode with invalid auth token - Negative', () => {
+        postIpfsDryRunWithoutAuth(policyId, { authorization: 'Bearer wqe' }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Add file from ipfs for dry run mode with empty auth token - Negative", () => {
-        postIpfsDryRunWithoutAuth(policyId, { authorization: "" }).then((response) => {
+    it('Add file from ipfs for dry run mode with empty auth token - Negative', () => {
+        postIpfsDryRunWithoutAuth(policyId, { authorization: '' }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Get file from ipfs for dry run mode", () => {
+    it('Get file from ipfs for dry run mode', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.fixture("testJsonDRCid").then((cidFromFile) => {
+            cy.fixture('testJsonDRCid').then((cidFromFile) => {
                 cid = cidFromFile;
                 getIpfsDryRunWithAuth(authorization, cid).then((response) => {
                     expect(response.status).eql(STATUS_CODE.OK);
                     let body = JSON.parse(response.body);
-                    expect(body.red).eql("rose");
-                    expect(body.blue).eql("sky");
+                    expect(body.red).eql('rose');
+                    expect(body.blue).eql('sky');
                 });
             });
         });
     });
 
-    it("Get file from ipfs for dry run mode without auth token - Negative", () => {
+    it('Get file from ipfs for dry run mode without auth token - Negative', () => {
         getIpfsWithoutAuth(cid).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Get file from ipfs for dry run mode with invalid auth token - Negative", () => {
-        getIpfsWithoutAuth(cid, { authorization: "Bearer wqe" }).then((response) => {
+    it('Get file from ipfs for dry run mode with invalid auth token - Negative', () => {
+        getIpfsWithoutAuth(cid, { authorization: 'Bearer wqe' }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Get file from ipfs for dry run mode with empty auth token - Negative", () => {
-        getIpfsWithoutAuth(cid, { authorization: "" }).then((response) => {
+    it('Get file from ipfs for dry run mode with empty auth token - Negative', () => {
+        getIpfsWithoutAuth(cid, { authorization: '' }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    after("Stop dry-run policy", () => {
+    after('Stop dry-run policy', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             putPolicyStateWithAuth(authorization, policyId, API.Draft).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);

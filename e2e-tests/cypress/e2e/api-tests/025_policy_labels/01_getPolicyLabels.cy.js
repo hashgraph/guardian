@@ -1,15 +1,15 @@
-import { STATUS_CODE } from "../../../support/api/api-const";
-import * as Authorization from "../../../support/authorization";
+import { STATUS_CODE } from '../../../support/api/api-const';
+import * as Authorization from '../../../support/authorization';
 
-context("Get policy labels", { tags: ['policy_labels', 'firstPool', 'all'] }, () => {
+context('Get policy labels', { tags: ['policy_labels', 'firstPool', 'all'] }, () => {
     const UserUsername = Cypress.env('User');
-    const labelName = "testPolicyLabelAPI";
+    const labelName = 'testPolicyLabelAPI';
 
-    let policy, did, SRDid;
+    let policy; let did; let SRDid;
 
-    before("Get policy ids and did", () => {
+    before('Get policy ids and did', () => {
         Authorization.getAccessToken(UserUsername).then((auth) => {
-            cy.getPolicyByName(auth, "iRec_4").then((p) => {
+            cy.getPolicyByName(auth, 'iRec_4').then((p) => {
                 policy = p;
             });
 
@@ -20,7 +20,7 @@ context("Get policy labels", { tags: ['policy_labels', 'firstPool', 'all'] }, ()
         });
     });
 
-    it("Get policy labels", () => {
+    it('Get policy labels', () => {
         Authorization.getAccessToken(UserUsername).then((auth) => {
             cy.getPolicyLabels(auth).then(({ body, status }) => {
                 expect(status).eql(STATUS_CODE.OK);
@@ -32,28 +32,28 @@ context("Get policy labels", { tags: ['policy_labels', 'firstPool', 'all'] }, ()
                 expect(firstLabel.name).eql(labelName);
                 expect(firstLabel.policyId).eql(policy.id);
                 expect(firstLabel.owner).eql(SRDid);
-                expect(firstLabel.status).eql("DRAFT");
+                expect(firstLabel.status).eql('DRAFT');
                 expect(firstLabel.config.children).to.be.an('array').that.is.empty;
 
                 // Bulk property checks
                 body.forEach(item => {
-                    const properties = ["config", "creator", "description", "id", "name", "owner", "policyId", "status"];
+                    const properties = ['config', 'creator', 'description', 'id', 'name', 'owner', 'policyId', 'status'];
                     properties.forEach(prop => expect(item).to.have.property(prop));
                 });
             });
         });
     });
 
-    it("Get policy labels without auth - Negative", () => {
+    it('Get policy labels without auth - Negative', () => {
         cy.getPolicyLabels(null).its('status').should('eq', STATUS_CODE.UNAUTHORIZED);
     });
 
-    it("Get policy labels with incorrect auth - Negative", () => {
-        cy.getPolicyLabels("bearer invalid_token_123").its('status').should('eq', STATUS_CODE.UNAUTHORIZED);
+    it('Get policy labels with incorrect auth - Negative', () => {
+        cy.getPolicyLabels('bearer invalid_token_123').its('status').should('eq', STATUS_CODE.UNAUTHORIZED);
     });
 
-    it("Get policy labels with empty auth - Negative", () => {
-        cy.getPolicyLabels("").its('status').should('eq', STATUS_CODE.UNAUTHORIZED);
+    it('Get policy labels with empty auth - Negative', () => {
+        cy.getPolicyLabels('').its('status').should('eq', STATUS_CODE.UNAUTHORIZED);
     });
 
 });

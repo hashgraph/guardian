@@ -1,14 +1,14 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Set role as default", { tags: ['permissions', 'firstPool', 'all'] }, () => {
+context('Set role as default', { tags: ['permissions', 'firstPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-    const roleName = "Policy User";
+    const roleName = 'Policy User';
 
     let roleId;
 
-    before("Get role id", () => {
+    before('Get role id', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
@@ -20,13 +20,13 @@ context("Set role as default", { tags: ['permissions', 'firstPool', 'all'] }, ()
                 expect(response.status).eql(STATUS_CODE.OK);
                 response.body.forEach(item => {
                     if (item.name == roleName)
-                        roleId = item.id
+                        {roleId = item.id}
                 });
             });
         })
     })
 
-    it("Set role as default", () => {
+    it('Set role as default', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
@@ -49,14 +49,14 @@ context("Set role as default", { tags: ['permissions', 'firstPool', 'all'] }, ()
                     expect(response.status).eql(STATUS_CODE.OK);
                     response.body.forEach(item => {
                         if (item.name == roleName)
-                            expect(item.default).eql(true);
+                            {expect(item.default).eql(true);}
                     });
                 });
             });
         })
     });
 
-    it("Set role as default without auth - Negative", () => {
+    it('Set role as default without auth - Negative', () => {
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.Permissions + API.Roles + API.Default,
@@ -71,7 +71,7 @@ context("Set role as default", { tags: ['permissions', 'firstPool', 'all'] }, ()
         });
     });
 
-    it("Set role as default with incorrect auth - Negative", () => {
+    it('Set role as default with incorrect auth - Negative', () => {
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.Permissions + API.Roles + API.Default,
@@ -79,7 +79,7 @@ context("Set role as default", { tags: ['permissions', 'firstPool', 'all'] }, ()
                 id: roleId,
             },
             headers: {
-                authorization: "bearer 11111111111111111111@#$",
+                authorization: 'bearer 11111111111111111111@#$',
             },
             failOnStatusCode: false,
         }).then((response) => {
@@ -87,7 +87,7 @@ context("Set role as default", { tags: ['permissions', 'firstPool', 'all'] }, ()
         });
     });
 
-    it("Set role as default with empty auth - Negative", () => {
+    it('Set role as default with empty auth - Negative', () => {
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.Permissions + API.Roles + API.Default,
@@ -95,7 +95,7 @@ context("Set role as default", { tags: ['permissions', 'firstPool', 'all'] }, ()
                 id: roleId,
             },
             headers: {
-                authorization: "",
+                authorization: '',
             },
             failOnStatusCode: false,
         }).then((response) => {

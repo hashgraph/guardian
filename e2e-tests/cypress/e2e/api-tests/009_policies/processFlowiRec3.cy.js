@@ -1,53 +1,41 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Checks from "../../../support/checkingMethods";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Checks from '../../../support/checkingMethods';
+import * as Authorization from '../../../support/authorization';
+import * as IpfsSeeding from '../../../support/CustomHelpers/ipfsSeeding';
 
-context("Contracts", { tags: ['policies', 'comments', 'firstPool', 'all'] }, () => {
+context('Contracts', { tags: ['policies', 'comments', 'firstPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
 
-    const optionKey = "option";
-    let tokenId, policyId, hederaId;
-    let waitForApproveApplicationBlockId, deviceGridBlockId, issueRequestGridBlockId;
+    const optionKey = 'option';
+    const policyFixture = 'iRec_3_BtnFix.policy'; //iRec3
+    let tokenId; let policyId; let hederaId; let policyMessageId;
+    let waitForApproveApplicationBlockId; let deviceGridBlockId; let issueRequestGridBlockId;
 
-    before("Import and publish policy, assign user and associate token", () => {
+    // Publish the policy from a local fixture so the import below has a message whose IPFS content
+    // is guaranteed to exist, instead of depending on a hardcoded message that can be unpinned.
+    before('Publish policy to IPFS', () => {
+        IpfsSeeding.publishPolicyFixture(SRUsername, policyFixture).then((messageId) => {
+            policyMessageId = messageId;
+        });
+    });
+
+    before('Import and publish policy, assign user and associate token', () => {
         //Create retire contract and save id
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.PolicisImportMsg,
-                body: {
-                    messageId: "1707126011.005978889",//iRec3
-                    metadata: {
-                        "tools": {}
-                    }
-                },
-                headers: {
-                    authorization,
-                },
-                timeout: 180000,
-            }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-            });
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies,
-                headers: {
-                    authorization,
-                },
-                timeout: 180000
-            }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.OK);
-                response.body.forEach(element => {
-                    if (element.name == "iRec_3") policyId = element.id
-                })
+            IpfsSeeding.importPolicyFromMessage(SRUsername, policyMessageId, {
+                metadata: {
+                    'tools': {}
+                }
+            }).then((policies) => {
+                policyId = policies.at(0).id;
                 //Publish policy
                 cy.request({
                     method: METHOD.PUT,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.Publish,
+                    url: API.ApiServer + API.Policies + policyId + '/' + API.Publish,
                     body: {
-                        policyVersion: "1.2.5"
+                        policyVersion: '1.2.5'
                     },
                     headers: {
                         authorization
@@ -55,8 +43,8 @@ context("Contracts", { tags: ['policies', 'comments', 'firstPool', 'all'] }, () 
                     timeout: 600000,
                     failOnStatusCode: false,
                 }).then((response) => {
-                    if (response.status == STATUS_CODE.ERROR && response.body.message != "Policy already published")
-                        throw new Error("Issue with policy publish")
+                    if (response.status === STATUS_CODE.ERROR && response.body.message !== 'Policy already published')
+                        {throw new Error('Issue with policy publish')}
                 })
 
                 cy.request({
@@ -87,20 +75,20 @@ context("Contracts", { tags: ['policies', 'comments', 'firstPool', 'all'] }, () 
                             API.ApiServer +
                             API.ListOfTokens +
                             tokenId +
-                            "/" +
+                            '/' +
                             UserUsername +
-                            "/grant-kyc",
+                            '/grant-kyc',
                         headers: {
                             authorization,
                         },
                     })
                 })
-                
+
                 cy.assignPolicyToUser(authorization, UserUsername, policyId)
                 .then((response) => {
                     expect(response.status).to.eq(STATUS_CODE.SUCCESS);
                 });
-                
+
                 cy.request({
                     method: METHOD.GET,
                     url: API.ApiServer + 'profiles/' + UserUsername,
@@ -115,11 +103,11 @@ context("Contracts", { tags: ['policies', 'comments', 'firstPool', 'all'] }, () 
         })
     })
 
-    before("Get blocks for waiting(approve app, device grid, issue grid) and token id", () => {
+    before('Get blocks for waiting(approve app, device grid, issue grid) and token id', () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.WaitForApproveApplication,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.WaitForApproveApplication,
                 headers: {
                     authorization
                 }
@@ -128,7 +116,7 @@ context("Contracts", { tags: ['policies', 'comments', 'firstPool', 'all'] }, () 
             })
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.DeviceGrid,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.DeviceGrid,
                 headers: {
                     authorization
                 }
@@ -137,7 +125,7 @@ context("Contracts", { tags: ['policies', 'comments', 'firstPool', 'all'] }, () 
             })
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.IssueRequestGrid,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.IssueRequestGrid,
                 headers: {
                     authorization
                 }
@@ -147,17 +135,17 @@ context("Contracts", { tags: ['policies', 'comments', 'firstPool', 'all'] }, () 
         })
     })
 
-    it("Mint token", () => {
+    it('Mint token', () => {
         //Choose role
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.ChooseRegistrantRole,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.ChooseRegistrantRole,
                 headers: {
                     authorization
                 },
                 body: {
-                    role: "Registrant"
+                    role: 'Registrant'
                 }
             })
 
@@ -166,7 +154,7 @@ context("Contracts", { tags: ['policies', 'comments', 'firstPool', 'all'] }, () 
             //Create app and wait while it in progress
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.CreateApplication,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.CreateApplication,
                 headers: {
                     authorization
                 },
@@ -182,38 +170,38 @@ context("Contracts", { tags: ['policies', 'comments', 'firstPool', 'all'] }, () 
 
             let requestForApplicationCreationProgress = {
                 method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.Blocks + waitForApproveApplicationBlockId,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.Blocks + waitForApproveApplicationBlockId,
                 headers: {
                     authorization
                 },
                 failOnStatusCode: false
             }
 
-            Checks.whileApplicationCreating("Submitted for Approval", requestForApplicationCreationProgress, 0)
+            Checks.whileApplicationCreating('Submitted for Approval', requestForApplicationCreationProgress, 0)
         })
         //Get applications data and prepare body for approve
         let applicationData
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.GetApplications,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.GetApplications,
                 headers: {
                     authorization
                 }
             }).then((response) => {
                 applicationData = response.body.data[0];
-                applicationData.option.status = "Approved"
+                applicationData.option.status = 'Approved'
                 let appDataBody = JSON.stringify({
                     document: applicationData,
-                    tag: "Button_0"
+                    tag: 'Button_0'
                 })
                 //Approve app
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.ApproveApplication,
+                    url: API.ApiServer + API.Policies + policyId + '/' + API.ApproveApplication,
                     headers: {
                         authorization,
-                        "content-type": "application/json"
+                        'content-type': 'application/json'
                     },
                     body: appDataBody
                 })
@@ -223,19 +211,19 @@ context("Contracts", { tags: ['policies', 'comments', 'firstPool', 'all'] }, () 
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             let requestForApplicationApproveProgress = {
                 method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.Blocks + deviceGridBlockId,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.Blocks + deviceGridBlockId,
                 headers: {
                     authorization
                 },
                 failOnStatusCode: false
             }
 
-            Checks.whileApplicationApproving("Device Name", requestForApplicationApproveProgress, 0)
+            Checks.whileApplicationApproving('Device Name', requestForApplicationApproveProgress, 0)
 
             //Create device and wait while it in progress
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.CreateDevice,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.CreateDevice,
                 headers: {
                     authorization
                 },
@@ -251,13 +239,13 @@ context("Contracts", { tags: ['policies', 'comments', 'firstPool', 'all'] }, () 
 
             let requestForDeviceCreationProgress = {
                 method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.Blocks + deviceGridBlockId,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.Blocks + deviceGridBlockId,
                 headers: {
                     authorization
                 },
                 failOnStatusCode: false
             }
-            Checks.whileDeviceCreating("Waiting for approval", requestForDeviceCreationProgress, 0)
+            Checks.whileDeviceCreating('Waiting for approval', requestForDeviceCreationProgress, 0)
         })
 
         //Get devices data and prepare body for approve
@@ -265,25 +253,25 @@ context("Contracts", { tags: ['policies', 'comments', 'firstPool', 'all'] }, () 
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.GetDevices,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.GetDevices,
                 headers: {
                     authorization
                 }
             }).then((response) => {
                 deviceBody = response.body;
                 let data = deviceBody.data[deviceBody.data.length - 1]
-                data[optionKey].status = "Approved"
+                data[optionKey].status = 'Approved'
                 let appDataBody = JSON.stringify({
                     document: data,
-                    tag: "Button_0"
+                    tag: 'Button_0'
                 })
                 //Approve device
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.ApproveDevice,
+                    url: API.ApiServer + API.Policies + policyId + '/' + API.ApproveDevice,
                     headers: {
                         authorization,
-                        "content-type": "application/json"
+                        'content-type': 'application/json'
                     },
                     body: appDataBody
                 })
@@ -295,19 +283,19 @@ context("Contracts", { tags: ['policies', 'comments', 'firstPool', 'all'] }, () 
 
             let requestForDeviceApproveProgress = {
                 method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.Blocks + deviceGridBlockId,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.Blocks + deviceGridBlockId,
                 headers: {
                     authorization
                 },
                 failOnStatusCode: false
             }
 
-            Checks.whileDeviceApproving("Approved", requestForDeviceApproveProgress, 0)
+            Checks.whileDeviceApproving('Approved', requestForDeviceApproveProgress, 0)
 
             //Get issue data and prepare body for create
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.GetDeviceIssue,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.GetDeviceIssue,
                 headers: {
                     authorization
                 }
@@ -318,18 +306,18 @@ context("Contracts", { tags: ['policies', 'comments', 'firstPool', 'all'] }, () 
                 //Create issue and wait while it in progress
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.CreateIssue,
+                    url: API.ApiServer + API.Policies + policyId + '/' + API.CreateIssue,
                     headers: {
                         authorization,
-                        "content-type": "application/json"
+                        'content-type': 'application/json'
                     },
                     body: {
                         document: {
                             field2: {},
                             field3: {},
-                            field6: "2024-03-01",
+                            field6: '2024-03-01',
                             field7: 10,
-                            field8: "2024-03-02",
+                            field8: '2024-03-02',
                             field17: UserUsername,
                             field18: hederaId
                         },
@@ -339,14 +327,14 @@ context("Contracts", { tags: ['policies', 'comments', 'firstPool', 'all'] }, () 
 
                 let requestForIssueCreationProgress = {
                     method: METHOD.GET,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.Blocks + issueRequestGridBlockId,
+                    url: API.ApiServer + API.Policies + policyId + '/' + API.Blocks + issueRequestGridBlockId,
                     headers: {
                         authorization
                     },
                     failOnStatusCode: false
                 }
 
-                Checks.whileIssueRequestCreating("Waiting for approval", requestForIssueCreationProgress, 0)
+                Checks.whileIssueRequestCreating('Waiting for approval', requestForIssueCreationProgress, 0)
             })
         })
 
@@ -355,25 +343,25 @@ context("Contracts", { tags: ['policies', 'comments', 'firstPool', 'all'] }, () 
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.GetIssues,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.GetIssues,
                 headers: {
                     authorization
                 }
             }).then((response) => {
                 issueRow = response.body.data
                 issueRow = issueRow[issueRow.length - 1]
-                issueRow[optionKey].status = "Approved"
+                issueRow[optionKey].status = 'Approved'
                 issueRow = JSON.stringify({
                     document: issueRow,
-                    tag: "Button_0"
+                    tag: 'Button_0'
                 })
                 //Approve issue
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.ApproveIssueRequestsBtn,
+                    url: API.ApiServer + API.Policies + policyId + '/' + API.ApproveIssueRequestsBtn,
                     headers: {
                         authorization,
-                        "content-type": "application/json"
+                        'content-type': 'application/json'
                     },
                     body: issueRow
                 })
@@ -384,15 +372,14 @@ context("Contracts", { tags: ['policies', 'comments', 'firstPool', 'all'] }, () 
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             let requestForIssueApproveProgress = {
                 method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.Blocks + issueRequestGridBlockId,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.Blocks + issueRequestGridBlockId,
                 headers: {
                     authorization
                 },
                 failOnStatusCode: false
             }
 
-            Checks.whileIssueRequestApproving("Approved", requestForIssueApproveProgress, 0)
-
+            Checks.whileIssueRequestApproving('Approved', requestForIssueApproveProgress, 0)
 
             let requestForBalance = {
                 method: METHOD.GET,
@@ -402,8 +389,8 @@ context("Contracts", { tags: ['policies', 'comments', 'firstPool', 'all'] }, () 
                 }
             }
 
-            Checks.whileBalanceVerifying("10", requestForBalance, 91, tokenId)
-            Checks.whileBalanceVerifying("10", requestForBalance, 91, tokenId)
+            Checks.whileBalanceVerifying('10', requestForBalance, 91, tokenId)
+            Checks.whileBalanceVerifying('10', requestForBalance, 91, tokenId)
         })
     })
 })

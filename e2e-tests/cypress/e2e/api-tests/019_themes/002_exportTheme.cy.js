@@ -1,10 +1,10 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
 context('Export Policy Themes', { tags: ['themes', 'secondPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-    const themeName = "ThemeAPI";
+    const themeName = 'ThemeAPI';
 
     let themeId;
 
@@ -27,35 +27,35 @@ context('Export Policy Themes', { tags: ['themes', 'secondPool', 'all'] }, () =>
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + API.Themes + themeId + "/" + API.ExportFile,
+                url: API.ApiServer + API.Themes + themeId + '/' + API.ExportFile,
                 headers: {
                     authorization,
                 },
                 timeout: 60000,
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                expect(response.headers).to.have.property("content-type","application/zip");
+                expect(response.headers).to.have.property('content-type','application/zip');
                 expect(response.body).not.eql(null);
             })
         });
     });
 
-    it("Export theme without auth token - Negative", () => {
+    it('Export theme without auth token - Negative', () => {
         cy.request({
             method: METHOD.GET,
-            url: API.ApiServer + API.Themes + themeId + "/" + API.ExportFile,
+            url: API.ApiServer + API.Themes + themeId + '/' + API.ExportFile,
             failOnStatusCode: false,
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Export theme with invalid auth token - Negative", () => {
+    it('Export theme with invalid auth token - Negative', () => {
         cy.request({
             method: METHOD.GET,
-            url: API.ApiServer + API.Themes + themeId + "/" + API.ExportFile,
+            url: API.ApiServer + API.Themes + themeId + '/' + API.ExportFile,
             headers: {
-                authorization: "Bearer wqe",
+                authorization: 'Bearer wqe',
             },
             failOnStatusCode: false,
         }).then((response) => {
@@ -63,12 +63,12 @@ context('Export Policy Themes', { tags: ['themes', 'secondPool', 'all'] }, () =>
         });
     });
 
-    it("Export theme with empty auth token - Negative", () => {
+    it('Export theme with empty auth token - Negative', () => {
         cy.request({
             method: METHOD.GET,
-            url: API.ApiServer + API.Themes + themeId + "/" + API.ExportFile,
+            url: API.ApiServer + API.Themes + themeId + '/' + API.ExportFile,
             headers: {
-                authorization: "",
+                authorization: '',
             },
             failOnStatusCode: false,
         }).then((response) => {

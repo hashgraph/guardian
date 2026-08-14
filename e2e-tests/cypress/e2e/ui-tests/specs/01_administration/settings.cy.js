@@ -1,10 +1,10 @@
-import { HomePage } from "../../pages/homePage";
+import { HomePage } from '../../pages/homePage';
 const homepage = new HomePage();
 
-import { SettingsPage } from "../../pages/settings";
+import { SettingsPage } from '../../pages/settings';
 const settings = new SettingsPage();
 
-context("Check settings page", { tags: ['ui'] }, () => {
+context('Check settings page', { tags: ['ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
 
@@ -15,7 +15,7 @@ context("Check settings page", { tags: ['ui'] }, () => {
         settings.openSettingsTab();
     })
 
-    it("Verify if all fields have a validation on settings page", () => {
+    it('Verify if all fields have a validation on settings page', () => {
         settings.verifyIfFieldHasValidation();
     });
 
