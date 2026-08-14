@@ -2,6 +2,7 @@
 description: Build a policy workflow step by step in the Policy Configurator.
 tags:
   - needs-updating
+  - flagged-for-rewrite
 ---
 
 # Creating a Policy with the Policy Configurator

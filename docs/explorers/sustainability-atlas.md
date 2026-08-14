@@ -8,7 +8,7 @@ description: >-
 
 A standalone application that indexes data published by the Hedera Guardian to the Hedera Network and presents it through a sustainability-focused business lens — Projects, Credits, Methodologies, Organizations.
 
-**Live:** https://se.xeptagon.com
+**Live:** [https://se.xeptagon.com](https://se.xeptagon.com/)
 
 ***
 

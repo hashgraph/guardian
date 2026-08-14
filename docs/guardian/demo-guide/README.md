@@ -13,7 +13,7 @@ The collection of articles in this section demonstrate various Guardian policies
 
 #### Who this guide is for
 
-This guide is for anyone seeking to understand the range of policies implemented with the Guardian either as a starting place for their own policy development.&#x20;
+This guide is for anyone seeking to understand the range of policies implemented with the Guardian either as a starting place or for their own policy development.&#x20;
 
 #### Related
 

@@ -8,7 +8,7 @@ description: >-
 
 Public dashboard for exploring verified emission reductions across Guardian policies. Built on Hedera Guardian, an open-source MRV platform using Hedera Hashgraph DLT.
 
-**Live:** https://atlas.carbonmarketshq.com
+**Live:** [https://atlas.carbonmarketshq.com](https://atlas.carbonmarketshq.com/)
 
 ***
 
