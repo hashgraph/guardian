@@ -49,7 +49,10 @@
         "dev:docker": "nodemon .",
         "lint": "tslint --config ../tslint.json --project .",
         "start": "node dist/index.js",
-        "test": "mocha tests/**/*.test.mjs --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/worker-service.xml --exit"
+        "test": "mocha --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/worker-service.xml --exit",
+        "test:network": "mocha 'tests/network-tests/**/*.test.mjs' --no-config --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/worker-service-network.xml --exit",
+        "test:local": "mocha --exit",
+        "test:network:local": "mocha 'tests/network-tests/**/*.test.mjs' --no-config --exit"
     },
     "type": "module",
     "types": "dist/index.d.ts",
