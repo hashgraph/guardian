@@ -136,6 +136,80 @@ export class RecordApi {
         }
     }
 
+    @Post('/:policyId/recording/pause')
+    @Auth(Permissions.POLICIES_RECORD_ALL)
+    @ApiOperation({
+        summary: 'Pause recording.',
+        description: 'Pause recording.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: Boolean
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async pauseRecord(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string
+    ) {
+        const owner = new EntityOwner(user);
+        await checkPolicyByRecord(policyId, owner);
+        try {
+            const guardians = new Guardians();
+            return await guardians.pauseRecording(policyId, owner);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    @Post('/:policyId/recording/resume')
+    @Auth(Permissions.POLICIES_RECORD_ALL)
+    @ApiOperation({
+        summary: 'Resume recording.',
+        description: 'Resume recording.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: Boolean
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async resumeRecord(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string
+    ) {
+        const owner = new EntityOwner(user);
+        await checkPolicyByRecord(policyId, owner);
+        try {
+            const guardians = new Guardians();
+            return await guardians.resumeRecording(policyId, owner);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
     /**
      * Stop recording
      */

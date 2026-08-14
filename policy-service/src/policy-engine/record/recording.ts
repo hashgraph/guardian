@@ -69,6 +69,7 @@ export class Recording {
      * Recording status
      */
     private _status: RecordStatus;
+    private _pausedAt: number | null;
     /**
      * Recording mode
      */
@@ -98,6 +99,7 @@ export class Recording {
         this._status = this.mode === 'auto'
             ? RecordStatus.Recording
             : RecordStatus.New;
+        this._pausedAt = null;
     }
 
     /**
@@ -105,7 +107,9 @@ export class Recording {
      * @private
      */
     private isActive(): boolean {
-        return this.mode === 'auto' || this._status === RecordStatus.Recording;
+        return this.mode === 'auto' || (
+            this._status === RecordStatus.Recording && this._pausedAt === null
+        );
     }
 
     /**
@@ -182,6 +186,33 @@ export class Recording {
         return true;
     }
 
+    public async pause(): Promise<boolean> {
+        if (this.mode === 'auto') {
+            return false;
+        }
+        if (this._status !== RecordStatus.Recording) {
+            return false;
+        }
+        if (this._pausedAt === null) {
+            this._pausedAt = Date.now();
+        }
+        return true;
+    }
+
+    public async resume(): Promise<boolean> {
+        if (this.mode === 'auto') {
+            return false;
+        }
+        if (
+            this._status !== RecordStatus.Recording ||
+            this._pausedAt === null
+        ) {
+            return false;
+        }
+        this._pausedAt = null;
+        return true;
+    }
+
     /**
      * Stop recording
      * @public
@@ -198,11 +229,12 @@ export class Recording {
             policyId: this.policyId,
             method: RecordMethod.Stop,
             action: null,
-            time: Date.now(),
+            time: this._pausedAt ?? Date.now(),
             user: null,
             target: null,
             document: null
         } as FilterObject<Record>);
+        this._pausedAt = null;
         this._status = RecordStatus.Stopped;
         this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
         return true;
