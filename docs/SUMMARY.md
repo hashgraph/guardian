@@ -23,14 +23,11 @@
       * [Summary of URLs and Ports](guardian/readme/getting-started/installation/installation.md)
       * [Launching Guardian](guardian/readme/getting-started/installation/launching-guardian.md)
       * [How to perform Unit Tests?](guardian/readme/getting-started/installation/how-to-perform-unit-tests.md)
-    * [How to Configure Hedera Local Node](guardian/readme/getting-started/how-to-configure-hedera-local-node.md)
     * [How to Configure HashiCorp Vault](guardian/readme/getting-started/how-to-configure-hashicorp-vault.md)
     * [How to create Operator ID and Operator Key](guardian/readme/getting-started/how-to-create-operator-id-and-operator-key.md)
-    * [How to generate Web3.Storage API values](guardian/readme/getting-started/how-to-generate-web3.storage-api-key.md)
     * [How to Change Explorer URL](guardian/readme/getting-started/how-to-change-explorer-url.md)
     * [How to Restore Account from Database/Hashicorp Vault during Setup](guardian/readme/getting-started/how-to-restore-account-from-database-hashicorp-vault-during-setup.md)
   * [Frameworks/Libraries](guardian/readme/built-with.md)
-  * [API Guideline](guardian/readme/api-guideline.md)
 * [Architecture](guardian/architecture/README.md)
   * [High Level Architecture](guardian/architecture/architecture-2.md)
   * [Deep Dive Architecture](guardian/architecture/reference-architecture.md)
@@ -452,9 +449,9 @@
 ## Explorers
 
 * [Explorers Overview](explorers/explorers-overview.md)
-* [Carbon Atlas](explorers/carbon-atlas.md)
+* [Sustainability Atlas (Beta)](explorers/sustainability-atlas.md)
 * [Guardian Indexer](explorers/guardian-indexer.md)
-* [Sustainability Atlas](explorers/sustainability-atlas.md)
+* [Carbon Atlas (Alpha)](explorers/carbon-atlas.md)
 
 ## Methodology Digitization
 
@@ -500,23 +497,21 @@
     * [⚙️ Guardian Integration](methodology-digitization-handbook/_shared/guardian-integration/README.md)
     * [🗂️ Artifacts Collection](methodology-digitization-handbook/_shared/artifacts/README.md)
 
-## Security & Identity
+## Security, Identity, and Privacy
 
-* [Password Management & Multifactor Authentication (MFA)](security-and-identity/password-management/README.md)
-  * [Password Change and Security Hardening](security-and-identity/password-management/password-change-hardening.md)
-  * [Password Policy](security-and-identity/password-management/password-policy.md)
-  * [Multifactor Authentication (MFA)](security-and-identity/password-management/4108-multifactor-authentication-2fa.md)
-* [Selective Disclosure](security-and-identity/selective-disclosure/README.md)
-  * [Selective Disclosure Guide](security-and-identity/selective-disclosure/user-guide.md)
-  * [Selective Disclosure Reference](security-and-identity/selective-disclosure/selective-disclosure-reference.md)
-* [Bring your own DIDs](security-and-identity/bring-your-own-dids/README.md)
-  * [Bring your own (BYO) DIDs Reference](security-and-identity/bring-your-own-dids/bring-your-own-byo-dids-ui.md)
-* [Guardian Vault](security-and-identity/guardian-vault.md)
-* [FireBlocks Raw Signing](security-and-identity/fireblocks-raw-signing/README.md)
-  * [Fireblocks Signing Reference](security-and-identity/fireblocks-raw-signing/fireblocks-signing-in-guardian-ui.md)
-  * [How to fetch keys from FireBlocks?](security-and-identity/fireblocks-raw-signing/getting-keys-from-fireblocks-ui.md)
-* [Meeco authentication](security-and-identity/security-1/README.md)
-  * [How it works](security-and-identity/security-1/how-it-works.md)
+* [Password Management & Multifactor Authentication (MFA)](security-identity-and-privacy/password-management/README.md)
+  * [Password Change and Security Hardening](security-identity-and-privacy/password-management/password-change-hardening.md)
+  * [Password Policy](security-identity-and-privacy/password-management/password-policy.md)
+  * [Multifactor Authentication (MFA)](security-identity-and-privacy/password-management/4108-multifactor-authentication-2fa.md)
+* [Selective Disclosure](security-identity-and-privacy/selective-disclosure/README.md)
+  * [Selective Disclosure Guide](security-identity-and-privacy/selective-disclosure/user-guide.md)
+  * [Selective Disclosure Reference](security-identity-and-privacy/selective-disclosure/selective-disclosure-reference.md)
+* [Bring your own DIDs](security-identity-and-privacy/bring-your-own-dids/README.md)
+  * [Bring your own (BYO) DIDs Reference](security-identity-and-privacy/bring-your-own-dids/bring-your-own-byo-dids-ui.md)
+* [Guardian Vault](security-identity-and-privacy/guardian-vault.md)
+* [FireBlocks Raw Signing](security-identity-and-privacy/fireblocks-raw-signing/README.md)
+  * [Fireblocks Signing Reference](security-identity-and-privacy/fireblocks-raw-signing/fireblocks-signing-in-guardian-ui.md)
+  * [How to fetch keys from FireBlocks?](security-identity-and-privacy/fireblocks-raw-signing/getting-keys-from-fireblocks-ui.md)
 
 ## Developer Tools
 

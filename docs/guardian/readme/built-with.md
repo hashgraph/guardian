@@ -1,23 +1,21 @@
 # Frameworks/Libraries
 
-The Guardian solution is built with the following major frameworks/libraries.
+The Guardian platform uses the following major frameworks and libraries.
 
-**Backend**
+### Backend
 
 * [NodeJS](https://nodejs.org/)
 * [MongoDB](https://www.mongodb.com/)
-* [Express](https://expressjs.com/)
+* [NestJS](https://nestjs.com)
 * [Nats](https://nats.io/)
 * [MikroORM](https://mikro-orm.io/)
 * [W3C VC-JS-HTTP](https://w3c.github.io/vc-data-model/)
-* [Transmute](https://github.com/transmute-industries/verifiable-data/tree/main/packages/vc.js)
+* [Verifiable Credentials JS Library](https://github.com/digitalbazaar/vc)
 * [MathJS](https://mathjs.org)
-* [Web3.Storage](https://github.com/web3-storage/web3.storage)
-* [NestJS](https://nestjs.com/)
-* [Nginx](https://www.nginx.com/)
-* [Hedera network](https://portal.hedera.com/login)
+* [Filebase](https://filebase.com)
+* [Kubo](https://github.com/ipfs/kubo)
 
-**Frontend**
+### Frontend
 
-* [Angular](https://angular.io/)
-* [crypto-browserify](https://www.npmjs.com/package/crypto-browserify)
+* [Angular](https://angular.dev)
+* [PrimeNG](https://primeng.org)

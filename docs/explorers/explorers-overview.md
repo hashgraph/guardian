@@ -2,8 +2,6 @@
 description: >-
   An introduction to Guardian's explorer tools and how each serves a different
   audience.
-tags:
-  - new
 ---
 
 # Explorers Overview

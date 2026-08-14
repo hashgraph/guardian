@@ -2,9 +2,12 @@
 description: >-
   A business intelligence platform for carbon market participants — browse
   projects, credits, methodologies, and SDG data indexed from Guardian.
+tags:
+  - tag: new
+    primary: true
 ---
 
-# Sustainability Atlas
+# Sustainability Atlas (Beta)
 
 A standalone application that indexes data published by the Hedera Guardian to the Hedera Network and presents it through a sustainability-focused business lens — Projects, Credits, Methodologies, Organizations.
 

@@ -209,7 +209,7 @@ IPFS_STORAGE_KEY="..."
 IPFS_STORAGE_PROOF="..."
 ```
 
-To know complete process of How to setup IPFS Storage variables, please check [How to generate Web3.Storage API values](../../how-to-generate-web3.storage-api-key.md)
+To know complete process of How to setup IPFS Storage variables, please check [How to generate Web3.Storage API values](/broken/pages/Pqn0TWZlIN91xqj8szf8)
 
 ### 4.3 Setting up IPFS Filebase Bucket:
 

@@ -307,7 +307,7 @@ Guardian offers two deployment options for accessing the platform's methodology 
 
 * [Prerequisites documentation](../../../guardian/readme/getting-started/prerequisites.md) - Detailed setup requirements
 * [Environment parameters guide](../../../guardian/readme/getting-started/installation/setting-up-environment-parameters.md) - Configuration instructions
-* [API guidelines](../../../guardian/readme/api-guideline.md) - Integration patterns and endpoints
+* [API guidelines](/broken/pages/0uJ0cdGVBhBZ8ObbszJT) - Integration patterns and endpoints
 
 {% hint style="info" %}
 **API Integration**: Guardian's RESTful APIs enable integration with existing monitoring systems, data collection platforms, and verification tools for seamless workflow incorporation.

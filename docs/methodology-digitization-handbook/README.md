@@ -8,6 +8,10 @@ tags:
 
 # 📚 Methodology Digitization Handbook
 
+{% hint style="warning" %}
+This handbook was written for an earlier version of Guardian and will be updated for the latest release in the future.
+{% endhint %}
+
 ## Summary
 
 The Methodology Digitization Handbook is a comprehensive guide for transforming environmental methodologies from PDF documents into fully functional, automated policies on the Guardian platform. Using VM0033 (Methodology for Tidal Wetland and Seagrass Restoration) as our primary reference example, this handbook provides step-by-step instructions, best practices, and real-world examples for every aspect of the digitization process.
