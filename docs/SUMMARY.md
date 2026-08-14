@@ -337,7 +337,7 @@
   * [Standard Registry User](guardian/platform/standard-registry.md)
   * [Profile Reference](guardian/platform/profile.md)
   * [Notifications](guardian/platform/notifications/README.md)
-    * [User Guide](guardian/platform/notifications/user-guide.md)
+    * [Notifications Reference](guardian/platform/notifications/user-guide.md)
   * [Asynchronous Tasks Status](guardian/platform/asynchronous-tasks-status.md)
   * [Usage Statistics](guardian/platform/usage-statistics/README.md)
     * [Reporting, Statistics, and Traceability of VC Documents and Policies](guardian/platform/usage-statistics/bottom-up-data-traceability-using-ui.md)
