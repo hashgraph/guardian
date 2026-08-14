@@ -5,9 +5,9 @@ import { assert } from 'chai';
 import dotenv from 'dotenv';
 import path from 'node:path';
 
-import { IpfsClient } from '../dist/api/ipfs-client.js';
+import { IpfsClientClass } from '../../dist/api/ipfs-client-class.js';
 
-dotenv.config({ path: path.resolve(__dirname, `../../configs/.env.${process.env.TEST_ENV}.guardian.system`) });
+dotenv.config({ path: path.resolve(import.meta.dirname, `../../../configs/.env.${process.env.TEST_ENV}.guardian.system`) });
 
 /**
  * This test suite enables the testing and implementation of new IPFS clients.
@@ -23,6 +23,9 @@ dotenv.config({ path: path.resolve(__dirname, `../../configs/.env.${process.env.
  * You may use "yarn test:ipfs" to ensure that the microservice builds and runs tests.
  *
  * You can change "TEST_ENV=" field to target specific configuration from the root "configs".
+ *
+ * Requires IPFS_PROVIDER and IPFS_STORAGE_API_KEY in the environment; it uploads to
+ * and reads from a live IPFS gateway.
  */
 describe('IPFS Client implementation test suite', function () {
 
@@ -37,7 +40,7 @@ describe('IPFS Client implementation test suite', function () {
 
     before(async function () {
         // TODO: This will need to be updated for version 2.20.x as there is a current concept of channels.
-        ipfsClient = new IpfsClient(IPFS_STORAGE_API_KEY)
+        ipfsClient = new IpfsClientClass(IPFS_STORAGE_API_KEY)
     });
 
     it('Ensure that the IPFS provider is not local', async function () {
