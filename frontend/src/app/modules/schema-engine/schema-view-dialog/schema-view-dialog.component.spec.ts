@@ -1,12 +1,30 @@
-import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { of } from 'rxjs';
+import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { SchemaViewDialog } from './schema-view-dialog.component';
 
 describe('SchemaViewDialog', () => {
 
+    let closedWith: any;
+    let confirmConfig: any;
+    let confirmOpened: number;
+    let confirmResult: string | undefined;
+
     function createComponent(data: any = {}): SchemaViewDialog {
-        const ref = {} as DynamicDialogRef;
+        closedWith = undefined;
+        confirmConfig = undefined;
+        confirmOpened = 0;
+        const ref = {
+            close: (value: any) => { closedWith = value; }
+        } as DynamicDialogRef;
         const config = { data } as DynamicDialogConfig;
-        const component = new SchemaViewDialog(ref, config);
+        const dialogService = {
+            open: (component: any, openConfig: any) => {
+                confirmOpened++;
+                confirmConfig = openConfig;
+                return { onClose: of(confirmResult) };
+            }
+        } as DialogService;
+        const component = new SchemaViewDialog(ref, config, dialogService);
         component.ngOnInit();
         return component;
     }
@@ -101,6 +119,76 @@ describe('SchemaViewDialog', () => {
         it('should use the column when there is no cell and no row', () => {
             const c = createComponent({ errors: [{ type: 'warning', col: 3 }] });
             expect(c.errors[0].__path).toBe('Col: 3');
+        });
+    });
+
+    describe('onImport', () => {
+
+        it('should import without asking when there are no entries', () => {
+            const c = createComponent({ errors: [], topicId: 'topic-1' });
+            c.onImport();
+            expect(confirmOpened).toBe(0);
+            expect(closedWith).toEqual({ topicId: 'topic-1' });
+        });
+
+        it('should import without asking when there are only warnings', () => {
+            const c = createComponent({ errors: issues(3, 'warning'), topicId: 'topic-1' });
+            c.onImport();
+            expect(confirmOpened).toBe(0);
+            expect(closedWith).toEqual({ topicId: 'topic-1' });
+        });
+
+        it('should ask before importing when there is at least one error', () => {
+            confirmResult = undefined;
+            const c = createComponent({ errors: issues(4, 'error'), topicId: 'topic-1' });
+            c.onImport();
+            expect(confirmOpened).toBe(1);
+            expect(closedWith).toBeUndefined();
+        });
+
+        it('should name the error count in the confirmation text', () => {
+            confirmResult = undefined;
+            const c = createComponent({
+                errors: [...issues(4, 'error'), ...issues(2, 'warning')],
+                topicId: 'topic-1'
+            });
+            c.onImport();
+            expect(confirmConfig.data.text).toBe('This import has 4 errors. Import anyway?');
+        });
+
+        it('should use the singular form for one error', () => {
+            confirmResult = undefined;
+            const c = createComponent({ errors: issues(1, 'error'), topicId: 'topic-1' });
+            c.onImport();
+            expect(confirmConfig.data.text).toBe('This import has 1 error. Import anyway?');
+        });
+
+        it('should offer a cancel and an import button', () => {
+            confirmResult = undefined;
+            const c = createComponent({ errors: issues(2, 'error'), topicId: 'topic-1' });
+            c.onImport();
+            expect(confirmConfig.data.buttons.map((b: any) => b.name)).toEqual(['Cancel', 'Import']);
+        });
+
+        it('should import when the confirmation is accepted', () => {
+            confirmResult = 'Import';
+            const c = createComponent({ errors: issues(2, 'error'), topicId: 'topic-1' });
+            c.onImport();
+            expect(closedWith).toEqual({ topicId: 'topic-1' });
+        });
+
+        it('should not import when the confirmation is cancelled', () => {
+            confirmResult = 'Cancel';
+            const c = createComponent({ errors: issues(2, 'error'), topicId: 'topic-1' });
+            c.onImport();
+            expect(closedWith).toBeUndefined();
+        });
+
+        it('should not import when the confirmation is dismissed', () => {
+            confirmResult = undefined;
+            const c = createComponent({ errors: issues(2, 'error'), topicId: 'topic-1' });
+            c.onImport();
+            expect(closedWith).toBeUndefined();
         });
     });
 });
