@@ -454,9 +454,9 @@
 ## Explorers
 
 * [Explorers Overview](explorers/explorers-overview.md)
-* [Sustainability Atlas](explorers/sustainability-atlas.md)
 * [Carbon Atlas](explorers/carbon-atlas.md)
 * [Guardian Indexer](explorers/guardian-indexer.md)
+* [Sustainability Atlas](explorers/sustainability-atlas.md)
 
 ## Methodology Digitization
 
