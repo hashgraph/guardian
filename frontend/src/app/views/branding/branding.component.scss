@@ -101,12 +101,13 @@
 
 .branding-page-header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     gap: 24px;
-    margin-bottom: var(--guardian-page-header-gap);
+    margin-bottom: var(--guardian-page-header-block-gap);
 
-    .guardian-user-page-header {
+    .guardian-user-page-header,
+    guardian-page-header {
         margin-bottom: 0;
     }
 }
