@@ -1,12 +1,12 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
 // The settings endpoint only format-validates the operator (AccountId.fromString /
 // PrivateKey.fromString – no network or balance check), so a throwaway keypair is
 // enough to exercise it.
-const testOperatorId = "0.0.999999999";
-const testOperatorKey = "302e020100300506032b6570042204206d8024debb71d43324e4b59d879765875493039e647e2850e653b4b2dd27cc20";
+const testOperatorId = '0.0.999999999';
+const testOperatorKey = '302e020100300506032b6570042204206d8024debb71d43324e4b59d879765875493039e647e2850e653b4b2dd27cc20';
 
 // Required by the API, but unused while IPFS_PROVIDER=local.
 const ipfsStorageApiKey = Cypress.env('ipfsStorageApiKey') || 'local-ipfs-node-unused';
@@ -60,7 +60,7 @@ context('Settings', { tags: ['settings', 'thirdPool', 'all'] }, () => {
         })
     })
 
-    after("Restore the real operator", () => {
+    after('Restore the real operator', () => {
         if (!operatorConfigured) {
             return;
         }

@@ -1,7 +1,6 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
-
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
 context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
@@ -12,8 +11,8 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
             cy.request({
                 method: METHOD.POST,
                 url: API.ApiServer + API.PolicisImportMsg,
-                body: { 
-                    "messageId": policyMessageId },
+                body: {
+                    'messageId': policyMessageId },
                 headers: {
                     authorization,
                 },

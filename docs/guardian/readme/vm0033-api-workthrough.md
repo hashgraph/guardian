@@ -15,7 +15,7 @@ To login, the user must request a refresh token:
 ```json5
    {
       "username":"StandardRegistry",
-      "password":"test"
+      "password":"TestPass1"
    }
 ```
 

@@ -69,7 +69,7 @@ context('Policy Grid Actions API', { tags: ['policies', 'gridActions', 'all'] },
                     timeout: TIMEOUT,
                     failOnStatusCode: false,
                 }).then((response) => {
-                    if (response.status !== STATUS_CODE.OK || response.body.length === 0) return;
+                    if (response.status !== STATUS_CODE.OK || response.body.length === 0) {return;}
 
                     const grid = response.body[0];
                     expect(grid).to.have.property('gridId').that.is.a('string');
@@ -131,7 +131,7 @@ context('Policy Grid Actions API', { tags: ['policies', 'gridActions', 'all'] },
         });
 
         it('returns 200 and an array of action descriptors for a valid grid', () => {
-            if (!gridId) return; // skip when no grids visible
+            if (!gridId) {return;} // skip when no grids visible
 
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
@@ -150,7 +150,7 @@ context('Policy Grid Actions API', { tags: ['policies', 'gridActions', 'all'] },
         });
 
         it('action descriptor shape is correct', () => {
-            if (!gridId) return;
+            if (!gridId) {return;}
 
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
@@ -160,7 +160,7 @@ context('Policy Grid Actions API', { tags: ['policies', 'gridActions', 'all'] },
                     timeout: TIMEOUT,
                     failOnStatusCode: false,
                 }).then((response) => {
-                    if (response.status !== STATUS_CODE.OK || response.body.length === 0) return;
+                    if (response.status !== STATUS_CODE.OK || response.body.length === 0) {return;}
 
                     const action = response.body[0];
                     expect(action).to.have.property('actionId').that.is.a('string');
@@ -190,7 +190,7 @@ context('Policy Grid Actions API', { tags: ['policies', 'gridActions', 'all'] },
         });
 
         it('returns 401 without authorization header', () => {
-            if (!gridId) return;
+            if (!gridId) {return;}
 
             cy.request({
                 method: METHOD.GET,
@@ -225,7 +225,7 @@ context('Policy Grid Actions API', { tags: ['policies', 'gridActions', 'all'] },
         });
 
         it('returns 200 with paginated response shape', () => {
-            if (!gridId) return;
+            if (!gridId) {return;}
 
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
@@ -237,7 +237,7 @@ context('Policy Grid Actions API', { tags: ['policies', 'gridActions', 'all'] },
                     failOnStatusCode: false,
                 }).then((response) => {
                     expect([STATUS_CODE.OK, 503]).to.include(response.status);
-                    if (response.status !== STATUS_CODE.OK) return;
+                    if (response.status !== STATUS_CODE.OK) {return;}
 
                     const body = response.body;
                     expect(body).to.have.property('data').that.is.an('array');
@@ -251,7 +251,7 @@ context('Policy Grid Actions API', { tags: ['policies', 'gridActions', 'all'] },
         });
 
         it('each record carries a _actions array', () => {
-            if (!gridId) return;
+            if (!gridId) {return;}
 
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
@@ -262,7 +262,7 @@ context('Policy Grid Actions API', { tags: ['policies', 'gridActions', 'all'] },
                     timeout: TIMEOUT,
                     failOnStatusCode: false,
                 }).then((response) => {
-                    if (response.status !== STATUS_CODE.OK || response.body.data.length === 0) return;
+                    if (response.status !== STATUS_CODE.OK || response.body.data.length === 0) {return;}
 
                     const record = response.body.data[0];
                     expect(record).to.have.property('_actions').that.is.an('array');
@@ -276,7 +276,7 @@ context('Policy Grid Actions API', { tags: ['policies', 'gridActions', 'all'] },
         });
 
         it('respects pageSize cap of 200', () => {
-            if (!gridId) return;
+            if (!gridId) {return;}
 
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
@@ -287,7 +287,7 @@ context('Policy Grid Actions API', { tags: ['policies', 'gridActions', 'all'] },
                     timeout: TIMEOUT,
                     failOnStatusCode: false,
                 }).then((response) => {
-                    if (response.status !== STATUS_CODE.OK) return;
+                    if (response.status !== STATUS_CODE.OK) {return;}
                     expect(response.body.pageSize).to.be.at.most(200);
                 });
             });
@@ -363,7 +363,7 @@ context('Policy Grid Actions API', { tags: ['policies', 'gridActions', 'all'] },
         let e2eActionId;
 
         before(() => {
-            if (!policyId || policyId === nonExistentId) return;
+            if (!policyId || policyId === nonExistentId) {return;}
 
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
@@ -373,7 +373,7 @@ context('Policy Grid Actions API', { tags: ['policies', 'gridActions', 'all'] },
                     timeout: TIMEOUT,
                     failOnStatusCode: false,
                 }).then((gridsResponse) => {
-                    if (gridsResponse.status !== STATUS_CODE.OK || !gridsResponse.body.length) return;
+                    if (gridsResponse.status !== STATUS_CODE.OK || !gridsResponse.body.length) {return;}
 
                     const firstGridId = gridsResponse.body[0].gridId;
 
@@ -385,11 +385,11 @@ context('Policy Grid Actions API', { tags: ['policies', 'gridActions', 'all'] },
                         timeout: TIMEOUT,
                         failOnStatusCode: false,
                     }).then((recordsResponse) => {
-                        if (recordsResponse.status !== STATUS_CODE.OK) return;
+                        if (recordsResponse.status !== STATUS_CODE.OK) {return;}
 
                         const data = recordsResponse.body.data ?? [];
                         const record = data.find((r) => r._actions?.length > 0);
-                        if (!record) return;
+                        if (!record) {return;}
 
                         e2eGridId = firstGridId;
                         e2eRecordId = String(record._id);
@@ -437,7 +437,7 @@ context('Policy Grid Actions API', { tags: ['policies', 'gridActions', 'all'] },
                     timeout: TIMEOUT,
                     failOnStatusCode: false,
                 }).then((response) => {
-                    if (response.status !== STATUS_CODE.OK) return;
+                    if (response.status !== STATUS_CODE.OK) {return;}
 
                     const found = (response.body.data ?? []).some(
                         (r) => String(r._id) === e2eRecordId,
@@ -462,7 +462,7 @@ context('Policy Grid Actions API', { tags: ['policies', 'gridActions', 'all'] },
                     timeout: TIMEOUT,
                     failOnStatusCode: false,
                 }).then((response) => {
-                    if (response.status !== STATUS_CODE.OK) return;
+                    if (response.status !== STATUS_CODE.OK) {return;}
 
                     response.body.forEach((grid) => {
                         expect(grid.gridId, 'gridId must not be a UUID').not.to.match(uuidPattern);

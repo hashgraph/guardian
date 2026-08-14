@@ -1,41 +1,41 @@
-import { HomePage } from "../../pages/homePage";
+import { HomePage } from '../../pages/homePage';
 const homePage = new HomePage();
 
-import { PoliciesPage } from "../../pages/policiesPage";
+import { PoliciesPage } from '../../pages/policiesPage';
 const policiesPage = new PoliciesPage();
 
-import { UserManagementPage } from "../../pages/userManagementPage";
+import { UserManagementPage } from '../../pages/userManagementPage';
 const userManagementPage = new UserManagementPage();
 
-import { UserPoliciesPage } from "../../pages/userPoliciesPage";
+import { UserPoliciesPage } from '../../pages/userPoliciesPage';
 const userPoliciesPage = new UserPoliciesPage();
 
-import { TokensPage } from "../../pages/tokensPage";
+import { TokensPage } from '../../pages/tokensPage';
 const tokensPage = new TokensPage();
 
-context("Workflow iREC 5 Policy - with Groups(Approver/User)", { tags: ['ui'] }, () => {
+context('Workflow iREC 5 Policy - with Groups(Approver/User)', { tags: ['ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const userUsername = Cypress.env('User');
     const user2Username = Cypress.env('User2');
     const policyMessageId = Cypress.env('policy_for_compare2');
-    const name = "iRec_5";
+    const name = 'iRec_5';
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
         homePage.visit();
     })
 
-    it("checks iREC 5 policy workflow", () => {
+    it('checks iREC 5 policy workflow', () => {
         //Import and publish policy
         homePage.login(SRUsername);
         policiesPage.openPoliciesTab();
         policiesPage.importPolicyFromIPFS(policyMessageId);
         policiesPage.backToPoliciesList();
-        policiesPage.checkStatus(name, "Draft");
+        policiesPage.checkStatus(name, 'Draft');
         policiesPage.publishPolicy(name);
         policiesPage.backToPoliciesList();
-        policiesPage.checkStatus(name, "Published");
+        policiesPage.checkStatus(name, 'Published');
 
         //Give permissions to user
         userManagementPage.openUserManagementTab();
@@ -55,7 +55,7 @@ context("Workflow iREC 5 Policy - with Groups(Approver/User)", { tags: ['ui'] },
         homePage.login(user2Username);
         userPoliciesPage.openPoliciesTab();
         userPoliciesPage.openPolicy(name);
-        userPoliciesPage.registerInPolicy("Approvers");
+        userPoliciesPage.registerInPolicy('Approvers');
         //Approve application
         userPoliciesPage.approveUserInPolicy();
         homePage.logOut();

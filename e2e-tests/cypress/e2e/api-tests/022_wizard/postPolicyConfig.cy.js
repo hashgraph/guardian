@@ -1,11 +1,11 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Create Policy by Wizard", { tags: ['wizard', 'firstPool', 'all'] }, () => {
+context('Create Policy by Wizard', { tags: ['wizard', 'firstPool', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
-    const policyName = "wizardPolicyEdited";
+    const policyName = 'wizardPolicyEdited';
     let policyId;
 
     before('Get policy id', () => {
@@ -20,7 +20,7 @@ context("Create Policy by Wizard", { tags: ['wizard', 'firstPool', 'all'] }, () 
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 response.body.forEach(element => {
-                    if (element.name == "wizardPolicy") {
+                    if (element.name == 'wizardPolicy') {
                         policyId = element.id
                     }
                 })
@@ -28,19 +28,19 @@ context("Create Policy by Wizard", { tags: ['wizard', 'firstPool', 'all'] }, () 
         })
     });
 
-    it("Get policy config by wizard without auth - Negative", () => {
+    it('Get policy config by wizard without auth - Negative', () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.Wizard + policyId + "/" + API.Config,
+            url: API.ApiServer + API.Wizard + policyId + '/' + API.Config,
             body:
             {
                 policy: {
                     name: policyName,
-                    topicDescription: "",
-                    description: ""
+                    topicDescription: '',
+                    description: ''
                 },
                 roles: [
-                    "OWNER"
+                    'OWNER'
                 ],
                 schemas: [],
                 trustChain: []
@@ -53,25 +53,25 @@ context("Create Policy by Wizard", { tags: ['wizard', 'firstPool', 'all'] }, () 
         });
     });
 
-    it("Get policy config by wizard with incorrect auth - Negative", () => {
+    it('Get policy config by wizard with incorrect auth - Negative', () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.Wizard + policyId + "/" + API.Config,
+            url: API.ApiServer + API.Wizard + policyId + '/' + API.Config,
             body:
             {
                 policy: {
                     name: policyName,
-                    topicDescription: "",
-                    description: ""
+                    topicDescription: '',
+                    description: ''
                 },
                 roles: [
-                    "OWNER"
+                    'OWNER'
                 ],
                 schemas: [],
                 trustChain: []
             },
             headers: {
-                authorization: "bearer 11111111111111111111@#$",
+                authorization: 'bearer 11111111111111111111@#$',
             },
             failOnStatusCode: false,
         }).then((response) => {
@@ -79,25 +79,25 @@ context("Create Policy by Wizard", { tags: ['wizard', 'firstPool', 'all'] }, () 
         });
     });
 
-    it("Get policy config by wizard with empty auth - Negative", () => {
+    it('Get policy config by wizard with empty auth - Negative', () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.Wizard + policyId + "/" + API.Config,
+            url: API.ApiServer + API.Wizard + policyId + '/' + API.Config,
             body:
             {
                 policy: {
                     name: policyName,
-                    topicDescription: "",
-                    description: ""
+                    topicDescription: '',
+                    description: ''
                 },
                 roles: [
-                    "OWNER"
+                    'OWNER'
                 ],
                 schemas: [],
                 trustChain: []
             },
             headers: {
-                authorization: "",
+                authorization: '',
             },
             failOnStatusCode: false,
         }).then((response) => {
@@ -105,20 +105,20 @@ context("Create Policy by Wizard", { tags: ['wizard', 'firstPool', 'all'] }, () 
         });
     });
 
-    it("Get policy config by wizard", () => {
+    it('Get policy config by wizard', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.Wizard + policyId + "/" + API.Config,
+                url: API.ApiServer + API.Wizard + policyId + '/' + API.Config,
                 body:
                 {
                     policy: {
                         name: policyName,
-                        topicDescription: "",
-                        description: ""
+                        topicDescription: '',
+                        description: ''
                     },
                     roles: [
-                        "OWNER"
+                        'OWNER'
                     ],
                     schemas: [],
                     trustChain: []

@@ -1,18 +1,18 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
-import * as Checks from "../../../support/checkingMethods";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
+import * as Checks from '../../../support/checkingMethods';
 // Exclude "all" tag, if needs to stop using MGS in CI tests run
-context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
+context('Policies', { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
 
     const MainSRUsername = Cypress.env('MainSRUser');
     const DepUserUsername = Cypress.env('DepUser');
     const MGSAdminUsername = Cypress.env('MGSAdmin');
-    const tenantName = "testTenantFromOS";
+    const tenantName = 'testTenantFromOS';
 
-    let policyId, tenantId;
+    let policyId; let tenantId;
 
-    it("Get tenant id", () => {
+    it('Get tenant id', () => {
         Authorization.getAccessTokenMGS(MGSAdminUsername, null).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
@@ -21,9 +21,9 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                     authorization,
                 },
                 body: {
-                    "pageSize": 10,
-                    "pageIndex": 0,
-                    "sortDirection": "desc"
+                    'pageSize': 10,
+                    'pageIndex': 0,
+                    'sortDirection': 'desc'
                 }
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
@@ -36,13 +36,13 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
         })
     });
 
-    it("Get policy id", () => {
+    it('Get policy id', () => {
         Authorization.getAccessToken(DepUserUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.Policies,
                 qs: {
-                    type: "remote"
+                    type: 'remote'
                 },
                 headers: {
                     authorization,
@@ -51,7 +51,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 response.body.forEach(element => {
-                    if (element.name == "iRec2ForRemote") {
+                    if (element.name == 'iRec2ForRemote') {
                         policyId = element.id;
                     }
                 })
@@ -60,25 +60,25 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
     });
 
     it('Registrant register', () => {
-        Authorization.getAccessToken(DepUserUsername).then((authorization) => {            
+        Authorization.getAccessToken(DepUserUsername).then((authorization) => {
             cy.task('fireAndForget', {
-                url: API.ApiServer + API.Policies + policyId + "/" + API.ChooseRegistrantRole,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.ChooseRegistrantRole,
                 method: METHOD.POST,
-                data: { role: "Registrant" },
+                data: { role: 'Registrant' },
                 headers: { 'Content-Type': 'application/json', authorization }
             });
             Checks.whileRequestAppear(authorization);
             const waitCreateApplication = {
                 method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.CreateApplication,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.CreateApplication,
                 headers: {
                     authorization
                 },
                 failOnStatusCode: false
             }
-            Checks.whileRequestProccessing(waitCreateApplication, "Registrant Application", "uiMetaData.title")
+            Checks.whileRequestProccessing(waitCreateApplication, 'Registrant Application', 'uiMetaData.title')
             cy.task('fireAndForget', {
-                url: API.ApiServer + API.Policies + policyId + "/" + API.CreateApplication,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.CreateApplication,
                 method: METHOD.POST,
                 data: {
                     document: {
@@ -100,28 +100,28 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
         Authorization.getAccessTokenMGS(MainSRUsername, tenantId).then((authorization) => {
             const waitProjectApproveStatus = {
                 method: METHOD.GET,
-                url: API.ApiMGS + API.Policies + policyId + "/" + API.GetApplications,
+                url: API.ApiMGS + API.Policies + policyId + '/' + API.GetApplications,
                 headers: {
                     authorization
                 },
                 failOnStatusCode: false,
             }
-            Checks.whileRequestProccessing(waitProjectApproveStatus, "Waiting for approval", "data.0.option.status")
+            Checks.whileRequestProccessing(waitProjectApproveStatus, 'Waiting for approval', 'data.0.option.status')
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiMGS + API.Policies + policyId + "/" + API.GetApplications,
+                url: API.ApiMGS + API.Policies + policyId + '/' + API.GetApplications,
                 headers: {
                     authorization
                 }
             }).then((response) => {
                 let applicationData = response.body.data[0];
-                applicationData.option.status = "Approved"
+                applicationData.option.status = 'Approved'
                 cy.task('fireAndForget', {
-                    url: API.ApiMGS + API.Policies + policyId + "/" + API.ApproveApplication,
+                    url: API.ApiMGS + API.Policies + policyId + '/' + API.ApproveApplication,
                     method: METHOD.POST,
                     data: {
                         document: applicationData,
-                        tag: "Option_0"
+                        tag: 'Option_0'
                     },
                     headers: { 'Content-Type': 'application/json', authorization }
                 });
@@ -136,16 +136,16 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
         Authorization.getAccessToken(DepUserUsername).then((authorization) => {
             const waitDeviceAddStatus = {
                 method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.CreateDevice,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.CreateDevice,
                 headers: {
                     authorization
                 },
                 failOnStatusCode: false
             }
-            Checks.whileRequestProccessing(waitDeviceAddStatus, "Approved", "data.option.status")
+            Checks.whileRequestProccessing(waitDeviceAddStatus, 'Approved', 'data.option.status')
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.CreateDevice,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.CreateDevice,
                 headers: {
                     authorization
                 }
@@ -159,7 +159,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                     }
                 }).then((response) => {
                     cy.task('fireAndForget', {
-                        url: API.ApiServer + API.Policies + policyId + "/" + API.CreateDevice,
+                        url: API.ApiServer + API.Policies + policyId + '/' + API.CreateDevice,
                         method: METHOD.POST,
                         data: {
                             document: {
@@ -184,30 +184,30 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
         Authorization.getAccessTokenMGS(MainSRUsername, tenantId).then((authorization) => {
             const waitDeviceApproveStatus = {
                 method: METHOD.GET,
-                url: API.ApiMGS + API.Policies + policyId + "/" + API.GetDevices,
+                url: API.ApiMGS + API.Policies + policyId + '/' + API.GetDevices,
                 headers: {
                     authorization
                 },
                 failOnStatusCode: false
             }
-            Checks.whileRequestProccessing(waitDeviceApproveStatus, "Waiting for approval", "data.0.option.status")
+            Checks.whileRequestProccessing(waitDeviceApproveStatus, 'Waiting for approval', 'data.0.option.status')
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiMGS + API.Policies + policyId + "/" + API.GetDevices,
+                url: API.ApiMGS + API.Policies + policyId + '/' + API.GetDevices,
                 headers: {
                     authorization
                 }
             }).then((response) => {
                 let deviceBody = response.body;
                 let data = deviceBody.data[deviceBody.data.length - 1]
-                data.option.status = "Approved"
+                data.option.status = 'Approved'
                 let appDataBody = {
                     document: data,
-                    tag: "Option_0"
+                    tag: 'Option_0'
                 }
                 //Approve device
                 cy.task('fireAndForget', {
-                    url: API.ApiMGS + API.Policies + policyId + "/" + API.ApproveDevice,
+                    url: API.ApiMGS + API.Policies + policyId + '/' + API.ApproveDevice,
                     method: METHOD.POST,
                     data: appDataBody,
                     headers: { 'Content-Type': 'application/json', authorization }
@@ -218,13 +218,13 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
             Checks.whileRequestAppear(authorization);
             const waitDeviceApproveStatus = {
                 method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.GetDeviceIssue,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.GetDeviceIssue,
                 headers: {
                     authorization
                 },
                 failOnStatusCode: false
             }
-            Checks.whileRequestProccessing(waitDeviceApproveStatus, "Approved", "data.0.option.status")
+            Checks.whileRequestProccessing(waitDeviceApproveStatus, 'Approved', 'data.0.option.status')
         })
     })
 
@@ -232,7 +232,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
         Authorization.getAccessToken(DepUserUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.GetDeviceIssue,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.GetDeviceIssue,
                 headers: {
                     authorization
                 }
@@ -249,7 +249,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                 }).then((response) => {
                     //Create issue and wait while it in progress
                     cy.task('fireAndForget', {
-                        url: API.ApiServer + API.Policies + policyId + "/" + API.CreateIssue,
+                        url: API.ApiServer + API.Policies + policyId + '/' + API.CreateIssue,
                         method: METHOD.POST,
                         data: {
                             document: {
@@ -257,9 +257,9 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                                 field1: credDid,
                                 field2: {},
                                 field3: {},
-                                field6: "2024-03-01",
+                                field6: '2024-03-01',
                                 field7: 1,
-                                field8: "2024-03-02",
+                                field8: '2024-03-02',
                                 field17: DepUserUsername,
                                 field18: response.body.hederaAccountId
                             },
@@ -278,30 +278,30 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
         Authorization.getAccessTokenMGS(MainSRUsername, tenantId).then((authorization) => {
             const waitDeviceApproveStatus = {
                 method: METHOD.GET,
-                url: API.ApiMGS + API.Policies + policyId + "/" + API.GetIssues,
+                url: API.ApiMGS + API.Policies + policyId + '/' + API.GetIssues,
                 headers: {
                     authorization
                 },
                 failOnStatusCode: false
             }
-            Checks.whileRequestProccessing(waitDeviceApproveStatus, "Waiting for approval", "data.0.option.status")
+            Checks.whileRequestProccessing(waitDeviceApproveStatus, 'Waiting for approval', 'data.0.option.status')
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiMGS + API.Policies + policyId + "/" + API.GetIssues,
+                url: API.ApiMGS + API.Policies + policyId + '/' + API.GetIssues,
                 headers: {
                     authorization
                 }
             }).then((response) => {
                 let issueRow = response.body.data
                 issueRow = issueRow[issueRow.length - 1]
-                issueRow.option.status = "Approved"
+                issueRow.option.status = 'Approved'
                 issueRow = {
                     document: issueRow,
-                    tag: "Option_0"
+                    tag: 'Option_0'
                 }
                 //Approve issue
                 cy.task('fireAndForget', {
-                    url: API.ApiMGS + API.Policies + policyId + "/" + API.ApproveIssueRequestsBtn,
+                    url: API.ApiMGS + API.Policies + policyId + '/' + API.ApproveIssueRequestsBtn,
                     method: METHOD.POST,
                     data: issueRow,
                     headers: { 'Content-Type': 'application/json', authorization }
@@ -322,7 +322,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                     authorization
                 }
             }
-            Checks.whileRequestProccessing(waitBalance, "1", "0.balance")
+            Checks.whileRequestProccessing(waitBalance, '1', '0.balance')
         })
     })
 
@@ -335,8 +335,8 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                     authorization,
                 },
                 body: {
-                    tenantId: tenantId,
-                    tenantName: tenantName
+                    tenantId,
+                    tenantName
                 }
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);

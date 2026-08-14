@@ -1,10 +1,10 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
 context('Get Policy Themes', { tags: ['themes', 'secondPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-    const themeName = "ThemeAPI";
+    const themeName = 'ThemeAPI';
 
     it('Get theme', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
@@ -22,7 +22,7 @@ context('Get Policy Themes', { tags: ['themes', 'secondPool', 'all'] }, () => {
         })
     });
 
-    it("Get theme without auth token - Negative", () => {
+    it('Get theme without auth token - Negative', () => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.Themes,
@@ -32,12 +32,12 @@ context('Get Policy Themes', { tags: ['themes', 'secondPool', 'all'] }, () => {
         });
     });
 
-    it("Get theme with invalid auth token - Negative", () => {
+    it('Get theme with invalid auth token - Negative', () => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.Themes,
             headers: {
-                authorization: "Bearer wqe",
+                authorization: 'Bearer wqe',
             },
             failOnStatusCode: false,
         }).then((response) => {
@@ -45,12 +45,12 @@ context('Get Policy Themes', { tags: ['themes', 'secondPool', 'all'] }, () => {
         });
     });
 
-    it("Get theme with empty auth token - Negative", () => {
+    it('Get theme with empty auth token - Negative', () => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.Themes,
             headers: {
-                authorization: "",
+                authorization: '',
             },
             failOnStatusCode: false,
         }).then((response) => {

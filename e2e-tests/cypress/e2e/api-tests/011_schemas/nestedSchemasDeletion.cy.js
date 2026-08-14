@@ -1,18 +1,105 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
+import { randomInt } from '../../../support/random';
+import { waitForTask } from '../../../support/CustomHelpers/tasks';
 
-context("Schema", { tags: ['schema', 'thirdPool', 'all'] }, () => {
+context('Schema', { tags: ['schema', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-    const policyName = "forNestedSchemaTest";
-    const schemaNameA = "schemaA";
-    const schemaNameB = "schemaB";
+    // policyTag is unique in the DB, so a hardcoded one makes every run after the first fail with a
+    // duplicate key error
+    const runId = randomInt(999999);
+    const policyName = `forNestedSchemaTest_${runId}`;
+    const policyTag = `Tag_${runId}`;
+    const schemaNameA = `schemaA_${runId}`;
+    const schemaNameB = `schemaB_${runId}`;
+    // the uuids of the fixture are rewritten per run as well: a schema left over by an interrupted
+    // run makes the creation of the same schema fail
+    const fixtureUuidA = 'de21cc0a-18ad-47c0-ae82-aefe7107fc61';
+    const fixtureUuidB = 'f5d3e328-cd4e-4819-a807-c98c4a5795f8';
+    const schemaUuidA = crypto.randomUUID();
+    const schemaUuidB = crypto.randomUUID();
 
-    let topicId, schemaAId, schemaBId, schemas;
+    let topicId; let schemaAId; let schemaBId; let schemas;
 
+    const listTopicSchemas = (authorization) => cy.request({
+        method: METHOD.GET,
+        url: API.ApiServer + API.Schemas + topicId,
+        headers: { authorization },
+    }).then((response) => {
+        expect(response.status).to.eq(STATUS_CODE.OK);
+        return cy.wrap(response.body, { log: false });
+    });
 
+    // Single-schema DELETE is task-based on both sides: api-gateway invalidates the schema cache
+    // right after guardian-service's fire-and-forget ack, not after the actual deletion (which runs
+    // in guardian-service's own background task and is only guaranteed done once waitForTask below
+    // resolves). A read in that window caches the pre-deletion list for the full 10-minute TTL, so
+    // listing right after a single-schema delete needs an uncached read. Topic-wide deletion doesn't
+    // have this problem (both sides handle it synchronously), so listTopicSchemas is fine there.
+    // See <follow-up issue>.
+    const listTopicSchemasAfterDelete = (authorization) => cy.request({
+        method: METHOD.GET,
+        url: API.ApiServer + API.Schemas + topicId,
+        headers: { authorization },
+        qs: { cacheBust: `${runId}_${Date.now()}` },
+    }).then((response) => {
+        expect(response.status).to.eq(STATUS_CODE.OK);
+        return cy.wrap(response.body, { log: false });
+    });
 
-    before("Create policy", () => {
+    const findSchema = (list, uuid, name) => {
+        const schema = list.find((item) => item?.uuid === uuid);
+        expect(schema, `${name} in the schemas of topic ${topicId}`).to.not.be.undefined;
+        return schema;
+    };
+
+    const createSchema = (authorization, schema) => cy.request({
+        method: METHOD.POST,
+        url: API.ApiServer + API.Schemas + topicId,
+        headers: { authorization },
+        body: schema,
+    }).then((response) => {
+        expect(response.status, `creation of ${schema.name}`).to.eq(STATUS_CODE.SUCCESS);
+    });
+
+    /**
+     * Creates schema A and points the nested field of schema B at it.
+     *
+     * The reference has to carry the iri the API assigned to A, version included: the parent/child
+     * relation is resolved by iri, so a reference to a hardcoded version (as stored in the fixture)
+     * silently stops matching as soon as A is created with any other version.
+     */
+    const createSchemaAAndNestItIntoB = (authorization) => {
+        createSchema(authorization, schemas.schemaA);
+        return listTopicSchemas(authorization).then((list) => {
+            const schemaA = findSchema(list, schemaUuidA, schemaNameA);
+            schemaAId = schemaA.id;
+            const document = schemas.schemaB.document;
+            document.$defs = { [schemaA.iri]: Object.values(document.$defs).at(0) };
+            document.properties.field0.$ref = schemaA.iri;
+        });
+    };
+
+    const createSchemaB = (authorization) => {
+        createSchema(authorization, schemas.schemaB);
+        return listTopicSchemas(authorization).then((list) => {
+            schemaBId = findSchema(list, schemaUuidB, schemaNameB).id;
+        });
+    };
+
+    // deletion by schema id is asynchronous, the response only carries the task to wait for
+    const deleteSchema = (authorization, schemaId, includeChildren) => cy.request({
+        method: METHOD.DELETE,
+        url: API.ApiServer + API.Schemas + schemaId,
+        headers: { authorization },
+        qs: { includeChildren },
+    }).then((response) => {
+        expect(response.status).to.eq(STATUS_CODE.OK);
+        return waitForTask(authorization, response.body.taskId);
+    });
+
+    before('Create policy', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
@@ -22,285 +109,81 @@ context("Schema", { tags: ['schema', 'thirdPool', 'all'] }, () => {
                 },
                 body: {
                     name: policyName,
-                    policyTag: "Tag_11223344",
+                    policyTag,
                 }
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.SUCCESS);
                 topicId = response.body.at(0).topicId;
-                cy.fixture("schemaForNestedTest.json").then((schemasFromJSON) => {
-                    schemas = schemasFromJSON;
+                cy.fixture('schemaForNestedTest.json').then((schemasFromJSON) => {
+                    // the fixture uuids appear in $id, $ref, $comment, contextURL and the $defs keys,
+                    // so they are swapped on the serialized schema to keep all of them consistent
+                    const withRunUuids = (schema) => JSON.parse(JSON.stringify(schema)
+                        .replaceAll(fixtureUuidA, schemaUuidA)
+                        .replaceAll(fixtureUuidB, schemaUuidB));
+                    schemas = {
+                        schemaA: withRunUuids(schemasFromJSON.schemaA),
+                        schemaB: withRunUuids(schemasFromJSON.schemaB),
+                    };
                     schemas.schemaA.name = schemaNameA;
                     schemas.schemaA.document.title = schemaNameA;
+                    schemas.schemaA.topicId = topicId;
                     schemas.schemaB.name = schemaNameB;
                     schemas.schemaB.document.title = schemaNameB;
-                    schemas.schemaB.document.properties.field0 = schemaNameA;
-                    schemas.schemaB.document.$defs["#de21cc0a-18ad-47c0-ae82-aefe7107fc61&1.0.1"].title = schemaNameA;
-                    schemas.schemaA.topicId = topicId;
                     schemas.schemaB.topicId = topicId;
+                    // only the label of the nested field, the nesting itself is the $ref of field0
+                    schemas.schemaB.document.properties.field0.description = schemaNameA;
+                    Object.values(schemas.schemaB.document.$defs).at(0).title = schemaNameA;
                 })
             });
         })
     });
 
-    before("Create schemas and nest one of them", () => {
+    before('Create schemas and nest one of them', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.Schemas + topicId,
-                headers: {
-                    authorization,
-                },
-                body: schemas.schemaA
-            }).then((response) => {
-                expect(response.status).eql(STATUS_CODE.SUCCESS);
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + API.Schemas + topicId,
-                    headers: {
-                        authorization,
-                    },
-                    body: schemas.schemaB
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.SUCCESS);
-                    cy.request({
-                        method: METHOD.GET,
-                        url: API.ApiServer + API.Schemas,
-                        headers: {
-                            authorization,
-                        },
-                        qs: {
-                            category: "POLICY",
-                            topicId: topicId
-                        }
-                    }).then((response) => {
-                        schemaAId = response.body.at(1).id;
+            createSchemaAAndNestItIntoB(authorization)
+                .then(() => createSchemaB(authorization));
+        });
+    });
 
-                        schemaBId = response.body.at(0).id;
-                    })
-                });
+    it('Delete schema without child deletion', () => {
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            deleteSchema(authorization, schemaBId, false);
+            listTopicSchemasAfterDelete(authorization).then((list) => {
+                expect(list.length).eql(1);
+                expect(list.at(0).id).eql(schemaAId);
             });
         });
     });
 
-    it("Delete schema without child deletion", () => {
+    it('Delete schema with child deletion', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.DELETE,
-                url: API.ApiServer + API.Schemas + schemaBId,
-                headers: {
-                    authorization,
-                },
-                qs: {
-                    includeChildren: false
-                }
-            }).then((response) => {
-                expect(response.status).eql(STATUS_CODE.OK);
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.Schemas,
-                    headers: {
-                        authorization,
-                    },
-                    qs: {
-                        category: "POLICY",
-                        topicId: topicId
-                    }
-                }).then((response) => {
-                    expect(response.body.length).eql(1);
-                    expect(response.body.at(0).id).eql(schemaAId);
-                })
-            });
-        });
-    });
-
-    it("Delete schema with child deletion", () => {
-        Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.Schemas + topicId,
-                headers: {
-                    authorization,
-                },
-                body: schemas.schemaB
-            }).then((response) => {
-                expect(response.status).eql(STATUS_CODE.SUCCESS);
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.Schemas,
-                    headers: {
-                        authorization,
-                    },
-                    qs: {
-                        category: "POLICY",
-                        topicId: topicId
-                    }
-                }).then((response) => {
-                    schemaBId = response.body.at(0).id;
-                    cy.request({
-                        method: METHOD.DELETE,
-                        url: API.ApiServer + API.Schemas + schemaBId,
-                        headers: {
-                            authorization,
-                        },
-                        qs: {
-                            includeChildren: true
-                        }
-                    }).then((response) => {
-                        cy.wait(10000);
-                        expect(response.status).eql(STATUS_CODE.OK);
-                        cy.request({
-                            method: METHOD.GET,
-                            url: API.ApiServer + API.Schemas,
-                            headers: {
-                                authorization,
-                            },
-                            qs: {
-                                category: "POLICY",
-                                topicId: topicId
-                            }
-                        }).then((response) => {
-                            expect(response.body.length).eql(0);
-                        })
-                    });
+            createSchemaB(authorization)
+                .then(() => deleteSchema(authorization, schemaBId, true))
+                .then(() => listTopicSchemasAfterDelete(authorization))
+                .then((list) => {
+                    expect(list.length).eql(0);
                 });
-            });
         })
     });
 
-    it("Delete all policy schemas", () => {
+    it('Delete all policy schemas', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.Schemas + topicId,
-                headers: {
-                    authorization,
-                },
-                body: {
-                    "uuid": "de21cc0a-18ad-47c0-ae82-aefe7107fc61",
-                    "name": schemaNameA,
-                    "entity": "NONE",
-                    "status": "DRAFT",
-                    "readonly": false,
-                    "document": {
-                        "$id": "#de21cc0a-18ad-47c0-ae82-aefe7107fc61",
-                        "$comment": "{ \"@id\": \"schema:de21cc0a-18ad-47c0-ae82-aefe7107fc61#de21cc0a-18ad-47c0-ae82-aefe7107fc61\", \"term\": \"de21cc0a-18ad-47c0-ae82-aefe7107fc61\" }",
-                        "title": schemaNameA,
-                        "type": "object",
-                        "additionalProperties": false,
-                    },
-                    "topicId": topicId,
-                    "contextURL": "schema:de21cc0a-18ad-47c0-ae82-aefe7107fc61",
-                    "active": false,
-                    "system": false,
-                    "category": "POLICY"
-                }
-            }).then((response) => {
-                expect(response.status).eql(STATUS_CODE.SUCCESS);
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + API.Schemas + topicId,
+            createSchemaAAndNestItIntoB(authorization)
+                .then(() => createSchemaB(authorization))
+                .then(() => cy.request({
+                    method: METHOD.DELETE,
+                    url: API.ApiServer + API.Schemas + API.Topic + topicId,
                     headers: {
                         authorization,
-                    },
-                    body: {
-                        "uuid": "f5d3e328-cd4e-4819-a807-c98c4a5795f8",
-                        "name": schemaNameB,
-                        "entity": "NONE",
-                        "status": "DRAFT",
-                        "readonly": false,
-                        "document": {
-                            "$id": "#f5d3e328-cd4e-4819-a807-c98c4a5795f8",
-                            "$comment": "{ \"@id\": \"schema:f5d3e328-cd4e-4819-a807-c98c4a5795f8#f5d3e328-cd4e-4819-a807-c98c4a5795f8\", \"term\": \"f5d3e328-cd4e-4819-a807-c98c4a5795f8\" }",
-                            "title": schemaNameB,
-                            "type": "object",
-                            "properties": {
-                                "@context": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    ],
-                                    "readOnly": true
-                                },
-                                "type": {
-                                    "oneOf": [
-                                        {
-                                            "type": "string"
-                                        },
-                                        {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    ],
-                                    "readOnly": true
-                                },
-                                "id": {
-                                    "type": "string",
-                                    "readOnly": true
-                                },
-                                "field0": {
-                                    "title": "field0",
-                                    "description": schemaNameA,
-                                    "readOnly": false,
-                                    "$ref": "#de21cc0a-18ad-47c0-ae82-aefe7107fc61",
-                                    "$comment": "{\"term\":\"field0\",\"@id\":\"schema:f5d3e328-cd4e-4819-a807-c98c4a5795f8#de21cc0a-18ad-47c0-ae82-aefe7107fc61\",\"availableOptions\":[],\"orderPosition\":0}"
-                                }
-                            },
-                            "required": [
-                                "@context",
-                                "type"
-                            ],
-                            "additionalProperties": false,
-                            "$defs": {
-                                "#de21cc0a-18ad-47c0-ae82-aefe7107fc61": {
-                                    "$id": "#de21cc0a-18ad-47c0-ae82-aefe7107fc61",
-                                    "$comment": "{ \"@id\": \"schema:de21cc0a-18ad-47c0-ae82-aefe7107fc61#de21cc0a-18ad-47c0-ae82-aefe7107fc61\", \"term\": \"de21cc0a-18ad-47c0-ae82-aefe7107fc61\" }",
-                                    "title": schemaNameA,
-                                    "type": "object",
-                                    "additionalProperties": false
-                                }
-                            }
-                        },
-                        "topicId": topicId,
-                        "contextURL": "schema:f5d3e328-cd4e-4819-a807-c98c4a5795f8",
-                        "active": false,
-                        "system": false,
-                        "category": "POLICY",
                     }
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.SUCCESS);
-                    cy.request({
-                        method: METHOD.DELETE,
-                        url: API.ApiServer + API.Schemas + API.Topic + topicId,
-                        headers: {
-                            authorization,
-                        }
-                    }).then((response) => {
-                        expect(response.status).eql(STATUS_CODE.OK);
-                        cy.request({
-                            method: METHOD.GET,
-                            url: API.ApiServer + API.Schemas,
-                            headers: {
-                                authorization,
-                            },
-                            qs: {
-                                category: "POLICY",
-                                topicId: topicId
-                            }
-                        }).then((response) => {
-                            expect(response.body.length).eql(0);
-                        })
-                    })
+                }))
+                .then((response) => {
+                    expect(response.status).eql(STATUS_CODE.OK);
+                    return listTopicSchemas(authorization);
+                })
+                .then((list) => {
+                    expect(list.length).eql(0);
                 });
-            });
         });
     });
 });

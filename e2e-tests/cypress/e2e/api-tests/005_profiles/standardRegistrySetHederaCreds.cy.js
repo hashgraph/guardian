@@ -1,10 +1,16 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
-
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
 context('Profiles', { tags: ['profiles', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
+    let credentials;
+
+    before(() => {
+        cy.fixture('credentials').then((creds) => {
+            credentials = creds;
+        });
+    });
 
     it('Get Standard Registry account information', () => {
         //Getting accessToken for StandardRegistry
@@ -13,7 +19,7 @@ context('Profiles', { tags: ['profiles', 'thirdPool', 'all'] }, () => {
             url: API.ApiServer + 'accounts/login',
             body: {
                 username: SRUsername,
-                password: 'test'
+                password: credentials.goodPassword
             }
         })
             .then((response) => {
@@ -65,7 +71,7 @@ context('Profiles', { tags: ['profiles', 'thirdPool', 'all'] }, () => {
                                         })
                                             .then((response) => {
                                                 response.body.accessToken = accessToken
-                                                cy.writeFile("cypress/fixtures/StandardRegistryData.json", JSON.stringify(response.body))
+                                                cy.writeFile('cypress/fixtures/StandardRegistryData.json', JSON.stringify(response.body))
                                             })
                                     })
                                 })
@@ -73,7 +79,7 @@ context('Profiles', { tags: ['profiles', 'thirdPool', 'all'] }, () => {
                                 //if StandardRegistry already has hedera credentials, do not create hedera creds,
                                 //just put info about StandardRegistry and accessToken in the file (just in case the file isn't presented)
                                 response.body.accessToken = accessToken
-                                cy.writeFile("cypress/fixtures/StandardRegistryData.json", JSON.stringify(response.body))
+                                cy.writeFile('cypress/fixtures/StandardRegistryData.json', JSON.stringify(response.body))
                             }
                         })
 

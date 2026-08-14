@@ -1,8 +1,8 @@
-import { METHOD } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Prepare accounts for future tests", { tags: ['preparing', 'smoke', 'all', 'ui'] }, () => {
+context('Prepare accounts for future tests', { tags: ['preparing', 'smoke', 'all', 'ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const SR2Username = Cypress.env('SR2User');
@@ -11,7 +11,6 @@ context("Prepare accounts for future tests", { tags: ['preparing', 'smoke', 'all
     const password = Cypress.env('Password');
 
     let SRDid;
-
 
     it('Verify that default users exist', () => {
         const defaults = [
@@ -56,13 +55,13 @@ context("Prepare accounts for future tests", { tags: ['preparing', 'smoke', 'all
         Authorization.getAccessToken(username).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + "profiles/" + username,
+                url: API.ApiServer + 'profiles/' + username,
                 headers: {
                     authorization,
                 },
             }).then((response) => {
                 if (response.body.confirmed) {
-                    cy.log("User has hedera credentials");
+                    cy.task('log', `${username} already has hedera credentials (accountId: ${response.body.hederaAccountId})`);
                     return;
                 }
                 cy.request({
@@ -75,7 +74,7 @@ context("Prepare accounts for future tests", { tags: ['preparing', 'smoke', 'all
                     let hederaAccountKey = response.body.key
                     cy.request({
                         method: METHOD.PUT,
-                        url: API.ApiServer + "profiles/" + username,
+                        url: API.ApiServer + 'profiles/' + username,
                         headers: {
                             authorization,
                         },
@@ -84,25 +83,26 @@ context("Prepare accounts for future tests", { tags: ['preparing', 'smoke', 'all
                             useFireblocksSigning: false,
                             fireblocksConfig:
                             {
-                                fireBlocksVaultId: "",
-                                fireBlocksAssetId: "",
-                                fireBlocksApiKey: "",
-                                fireBlocksPrivateiKey: ""
+                                fireBlocksVaultId: '',
+                                fireBlocksAssetId: '',
+                                fireBlocksApiKey: '',
+                                fireBlocksPrivateiKey: ''
                             },
                             didKeys: [],
-                            hederaAccountId: hederaAccountId,
-                            hederaAccountKey: hederaAccountKey,
+                            hederaAccountId,
+                            hederaAccountKey,
                             vcDocument: {
-                                geography: "testGeography",
-                                law: "testLaw",
-                                tags: "testTags",
-                                type: "StandardRegistry",
-                                "@context": [],
+                                geography: 'testGeography',
+                                law: 'testLaw',
+                                tags: 'testTags',
+                                type: 'StandardRegistry',
+                                '@context': [],
                             },
                         },
                         timeout: 400000,
                     }).then(() => {
-                        cy.log("hedera credentials was created");
+                        cy.task('log', `hedera credentials created for ${username}. hederaAccountId: ${hederaAccountId}`);
+                        cy.task('log', 'Remember to transfer hbar funds to this account for running tests.');
                     });
                 })
             });
@@ -124,7 +124,7 @@ context("Prepare accounts for future tests", { tags: ['preparing', 'smoke', 'all
         Authorization.getAccessToken(userUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + "profiles/" + userUsername,
+                url: API.ApiServer + 'profiles/' + userUsername,
                 headers: {
                     authorization,
                 },
@@ -139,7 +139,7 @@ context("Prepare accounts for future tests", { tags: ['preparing', 'smoke', 'all
                     }).then((response) => {
                         response.body.forEach(element => {
                             if (element.username == SRUsername)
-                                SRDid = element.did;
+                                {SRDid = element.did;}
                         })
                         cy.request({
                             method: METHOD.GET,
@@ -151,23 +151,23 @@ context("Prepare accounts for future tests", { tags: ['preparing', 'smoke', 'all
                             let hederaAccountKey = response.body.key
                             cy.request({
                                 method: METHOD.PUT,
-                                url: API.ApiServer + "profiles/" + userUsername,
+                                url: API.ApiServer + 'profiles/' + userUsername,
                                 headers: {
                                     authorization,
                                 },
                                 body: {
-                                    hederaAccountId: hederaAccountId,
-                                    hederaAccountKey: hederaAccountKey,
+                                    hederaAccountId,
+                                    hederaAccountKey,
                                     parent: SRDid
                                 },
                                 timeout: 400000,
                             }).then(() => {
-                                cy.log("hedera credentials was created");
+                                cy.task('log', `hedera credentials created for ${userUsername}. hederaAccountId: ${hederaAccountId}`);
                             });
                         })
                     })
                 } else {
-                    cy.log("User has hedera credentials");
+                    cy.task('log', `${userUsername} already has hedera credentials (accountId: ${response.body.hederaAccountId})`);
                 }
             });
         })

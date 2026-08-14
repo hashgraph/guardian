@@ -1,12 +1,18 @@
-import { randomInt } from "../../../support/random";
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
-
+import { randomInt } from '../../../support/random';
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
 context('Profiles', { tags: ['profiles', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-    let did
+    let did;
+    let credentials;
+
+    before(() => {
+        cy.fixture('credentials').then((creds) => {
+            credentials = creds;
+        });
+    });
 
     before(() => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
@@ -19,14 +25,14 @@ context('Profiles', { tags: ['profiles', 'thirdPool', 'all'] }, () => {
             }).then((response) => {
                 response.body.forEach(element => {
                     if (element.username == SRUsername)
-                        did = element.did
+                        {did = element.did}
                 });
             });
         })
     });
 
     it('Register a new user, login with it and set hedera credentials for it', () => {
-        const userPassword = 'test'
+        const userPassword = credentials.goodPassword
         const name = (randomInt(999) + 'testUser')
         cy.request({
             method: METHOD.POST,
@@ -62,7 +68,7 @@ context('Profiles', { tags: ['profiles', 'thirdPool', 'all'] }, () => {
     })
 
     it('Should attempt to register a new user, login with it and set invalid hedera credentials for it', () => {
-        const userPassword = 'testTest'
+        const userPassword = credentials.goodPassword
         const name = (randomInt(999) + 'testUser')
         cy.request({
             method: METHOD.POST,
@@ -85,7 +91,7 @@ context('Profiles', { tags: ['profiles', 'thirdPool', 'all'] }, () => {
                 method: METHOD.POST,
                 url: API.ApiServer + 'accounts/login',
                 body: {
-                    username: username,
+                    username,
                     password: userPassword,
                     password_confirmation: userPassword,
                 }

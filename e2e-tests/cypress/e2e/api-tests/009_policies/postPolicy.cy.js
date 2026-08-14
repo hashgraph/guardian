@@ -1,13 +1,17 @@
 
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
+import { randomInt } from '../../../support/random';
 
 context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
-    const nameTag = "EmptyPolicyTag";
-    const policyName = "EmptyPolicyName";
+    // policyTag is unique in the DB, so a hardcoded one makes every run after the first fail with a
+    // duplicate key error
+    const runId = randomInt(999999);
+    const nameTag = `EmptyPolicyTag_${runId}`;
+    const policyName = `EmptyPolicyName_${runId}`;
 
     const policiesUrl = `${API.ApiServer}${API.Policies}`;
 
@@ -38,31 +42,31 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
         });
     });
 
-    it("Creates a new policy without auth token - Negative", () => {
+    it('Creates a new policy without auth token - Negative', () => {
         createPolicyWithoutAuth({ name: policyName, policyTag: nameTag }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Creates a new policy with invalid auth token - Negative", () => {
+    it('Creates a new policy with invalid auth token - Negative', () => {
         createPolicyWithoutAuth(
             { name: policyName, policyTag: nameTag },
-            { authorization: "Bearer wqe" }
+            { authorization: 'Bearer wqe' }
         ).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Creates a new policy with empty auth token - Negative", () => {
+    it('Creates a new policy with empty auth token - Negative', () => {
         createPolicyWithoutAuth(
             { name: policyName, policyTag: nameTag },
-            { authorization: "" }
+            { authorization: '' }
         ).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Creates a new policy by user - Negative", () => {
+    it('Creates a new policy by user - Negative', () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             createPolicyWithAuth(
                 authorization,

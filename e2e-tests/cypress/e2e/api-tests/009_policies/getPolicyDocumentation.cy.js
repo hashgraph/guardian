@@ -1,8 +1,8 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Policy Documentation", { tags: ['policies', 'secondPool', 'all'] }, () => {
+context('Policy Documentation', { tags: ['policies', 'secondPool', 'all'] }, () => {
 	const SRUsername = Cypress.env('SRUser');
 
 	let policyId;
@@ -23,7 +23,7 @@ context("Policy Documentation", { tags: ['policies', 'secondPool', 'all'] }, () 
 		});
 	});
 
-	it("Get policy documentation - GET /policies/{policyId}/about", () => {
+	it('Get policy documentation - GET /policies/{policyId}/about', () => {
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
 			cy.request({
 				method: METHOD.GET,
@@ -33,12 +33,12 @@ context("Policy Documentation", { tags: ['policies', 'secondPool', 'all'] }, () 
 				},
 			}).then((response) => {
 				expect(response.status).to.eq(STATUS_CODE.OK);
-				expect(response.body).to.be.an("array");
+				expect(response.body).to.be.an('array');
 			});
 		});
 	});
 
-	it("Documentation entries have required fields", () => {
+	it('Documentation entries have required fields', () => {
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
 			cy.request({
 				method: METHOD.GET,
@@ -50,20 +50,20 @@ context("Policy Documentation", { tags: ['policies', 'secondPool', 'all'] }, () 
 				expect(response.status).to.eq(STATUS_CODE.OK);
 				if (response.body.length > 0) {
 					response.body.forEach((entry) => {
-						expect(entry).to.have.property("name");
-						expect(entry).to.have.property("description");
-						expect(entry).to.have.property("method");
-						expect(entry).to.have.property("url");
-						expect(entry).to.have.property("alias");
-						expect(entry).to.have.property("dmrvUrl");
-						expect(["GET", "POST"]).to.include(entry.method);
+						expect(entry).to.have.property('name');
+						expect(entry).to.have.property('description');
+						expect(entry).to.have.property('method');
+						expect(entry).to.have.property('url');
+						expect(entry).to.have.property('alias');
+						expect(entry).to.have.property('dmrvUrl');
+						expect(['GET', 'POST']).to.include(entry.method);
 					});
 				}
 			});
 		});
 	});
 
-	it("POST entries have correct URL pattern", () => {
+	it('POST entries have correct URL pattern', () => {
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
 			cy.request({
 				method: METHOD.GET,
@@ -73,18 +73,18 @@ context("Policy Documentation", { tags: ['policies', 'secondPool', 'all'] }, () 
 				},
 			}).then((response) => {
 				expect(response.status).to.eq(STATUS_CODE.OK);
-				const postEntries = response.body.filter((e) => e.method === "POST");
+				const postEntries = response.body.filter((e) => e.method === 'POST');
 				postEntries.forEach((entry) => {
-					expect(entry.url).to.include("/api/v1/policies/");
-					expect(entry.url).to.include("/tag/");
-					expect(entry.dmrvUrl).to.include("/api/v1/dmrv/");
+					expect(entry.url).to.include('/api/v1/policies/');
+					expect(entry.url).to.include('/tag/');
+					expect(entry.dmrvUrl).to.include('/api/v1/dmrv/');
 					expect(entry.dmrvUrl).to.include(entry.alias);
 				});
 			});
 		});
 	});
 
-	it("GET entries have correct URL pattern", () => {
+	it('GET entries have correct URL pattern', () => {
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
 			cy.request({
 				method: METHOD.GET,
@@ -94,18 +94,18 @@ context("Policy Documentation", { tags: ['policies', 'secondPool', 'all'] }, () 
 				},
 			}).then((response) => {
 				expect(response.status).to.eq(STATUS_CODE.OK);
-				const getEntries = response.body.filter((e) => e.method === "GET");
+				const getEntries = response.body.filter((e) => e.method === 'GET');
 				getEntries.forEach((entry) => {
-					expect(entry.url).to.include("/api/v1/policies/");
-					expect(entry.url).to.include("/tag/");
-					expect(entry.dmrvUrl).to.include("/api/v1/dmrv/");
+					expect(entry.url).to.include('/api/v1/policies/');
+					expect(entry.url).to.include('/tag/');
+					expect(entry.dmrvUrl).to.include('/api/v1/dmrv/');
 					expect(entry.dmrvUrl).to.include(entry.alias);
 				});
 			});
 		});
 	});
 
-	it("URLs are relative (no domain/host)", () => {
+	it('URLs are relative (no domain/host)', () => {
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
 			cy.request({
 				method: METHOD.GET,
@@ -124,7 +124,7 @@ context("Policy Documentation", { tags: ['policies', 'secondPool', 'all'] }, () 
 		});
 	});
 
-	it("DMRV proxy with invalid alias returns 404", () => {
+	it('DMRV proxy with invalid alias returns 404', () => {
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
 			cy.request({
 				method: METHOD.GET,
@@ -139,7 +139,7 @@ context("Policy Documentation", { tags: ['policies', 'secondPool', 'all'] }, () 
 		});
 	});
 
-	it("Documentation without authorization returns 401", () => {
+	it('Documentation without authorization returns 401', () => {
 		cy.request({
 			method: METHOD.GET,
 			url: API.PolicyDocumentation(policyId),
@@ -149,7 +149,7 @@ context("Policy Documentation", { tags: ['policies', 'secondPool', 'all'] }, () 
 		});
 	});
 
-	it("DMRV proxy without authorization returns 401", () => {
+	it('DMRV proxy without authorization returns 401', () => {
 		cy.request({
 			method: METHOD.GET,
 			url: API.ApiServer + `dmrv/${policyId}/some-alias`,
