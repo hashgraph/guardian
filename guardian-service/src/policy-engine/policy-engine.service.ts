@@ -1628,56 +1628,48 @@ export class PolicyEngineService {
             }): Promise<IMessageResponse<any>> => {
                 try {
                     const { policyId, owner, enableMock } = msg;
-
-                    const model = await DatabaseServer.getPolicyById(policyId);
-                    await this.policyEngine.accessPolicy(model, owner, 'publish');
-
-                    if (!model.config) {
-                        throw new Error('The policy is empty');
-                    }
-                    if (model.status === PolicyStatus.PUBLISH) {
-                        throw new Error(`Policy published`);
-                    }
-                    if (model.status === PolicyStatus.DISCONTINUED) {
-                        throw new Error(`Policy is discontinued`);
-                    }
-                    if (model.status === PolicyStatus.DRY_RUN) {
-                        throw new Error(`Policy already in Dry Run`);
-                    }
-                    if (model.status === PolicyStatus.PUBLISH_ERROR) {
-                        throw new Error(`Failed policy cannot be started in dry run mode`);
-                    }
-                    if (model.status === PolicyStatus.DEMO) {
-                        throw new Error(`Policy imported in demo mode`);
-                    }
-                    if (model.status === PolicyStatus.VIEW) {
-                        throw new Error(`Policy imported in view mode`);
-                    }
-
-                    const errors = await this.policyEngine.validateModel(policyId, true);
-                    const isValid = !errors.blocks.some(block => !block.isValid);
-                    if (isValid) {
-                        await this.policyEngine.dryRunPolicy(model, owner, 'Dry Run', false, logger, enableMock);
-                        await this.policyEngine.generateModel(model.id.toString(), enableMock);
-                    }
-
-                    const savepointsCount = await DatabaseServer.getSavepointsCount(policyId);
-
-                    if (savepointsCount === 0) {
-                        await DatabaseServer.nullifyInitialDryRunSavepointIds();
-                    } else {
-                        await DatabaseServer.removeDryRunWithEmptySavepoint(policyId);
-                        PolicyDataMigrator.clearRunCacheByPolicyId(policyId);
-                    }
-
+                    const result = await this.policyEngine.validateAndDryRunPolicy(
+                        policyId,
+                        owner,
+                        enableMock,
+                        NewNotifier.empty(),
+                        logger
+                    );
                     return new MessageResponse({
-                        isValid,
-                        errors
+                        isValid: result.isValid,
+                        errors: result.errors
                     });
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                     return new MessageError(error);
                 }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.DRY_RUN_POLICIES_ASYNC,
+            async (msg: {
+                policyId: string,
+                owner: IOwner,
+                enableMock: boolean,
+                task: any
+            }): Promise<IMessageResponse<any>> => {
+                const { policyId, owner, enableMock, task } = msg;
+                const notifier = await NewNotifier.create(task);
+
+                RunFunctionAsync(async () => {
+                    const result = await this.policyEngine.validateAndDryRunPolicy(
+                        policyId,
+                        owner,
+                        enableMock,
+                        notifier,
+                        logger
+                    );
+                    notifier.result(result);
+                }, async (error) => {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                    notifier.fail(error);
+                });
+
+                return new MessageResponse(task);
             });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.DISCONTINUE_POLICY,

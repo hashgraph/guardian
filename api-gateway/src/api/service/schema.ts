@@ -24,8 +24,8 @@ import { Examples,
     VersionSchemaDTO,
     ForbiddenErrorDTO
 } from '#middlewares';
-import { CACHE, CACHE_PREFIXES, PREFIXES, SCHEMA_REQUIRED_PROPS } from '#constants';
-import { CacheService, EntityOwner, getCacheKey, Guardians, InternalException, ONLY_SR, SchemaUtils, ServiceError, TaskManager, UseCache, FilenameSanitizer } from '#helpers';
+import { CACHE, CACHE_PREFIXES, CACHE_TAG_PREFIXES, SCHEMA_REQUIRED_PROPS } from '#constants';
+import { CacheService, EntityOwner, Guardians, InternalException, ONLY_SR, SchemaUtils, ServiceError, TaskManager, UseCache, FilenameSanitizer } from '#helpers';
 import process from 'node:process';
 
 @Controller('schema')
@@ -1245,9 +1245,7 @@ export class SchemaApi {
             const schemas = await guardians.createSchema(newSchema, owner);
             SchemaHelper.updatePermission(schemas, owner);
 
-            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
-
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+            await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS);
 
             return SchemaUtils.toOld(schemas);
         } catch (error) {
@@ -1308,14 +1306,11 @@ export class SchemaApi {
             const { iri, topicId, name, copyNested } = body;
             taskManager.addStatus(task.taskId, 'Check schema version', StatusType.PROCESSING);
             await guardians.copySchemaAsync(iri, topicId, name, owner, task, copyNested);
+            await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS).catch(() => null);
         }, async (error) => {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
-
-        const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
-
-        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
 
         return task;
     }
@@ -1389,14 +1384,11 @@ export class SchemaApi {
             SchemaHelper.updateOwner(newSchema, owner);
 
             await guardians.createSchemaAsync(newSchema, owner, task);
+            await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS).catch(() => null);
         }, async (error) => {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
-
-        const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
-
-        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
 
         return task;
     }
@@ -1494,9 +1486,7 @@ export class SchemaApi {
             const schemas = await guardians.updateSchema(newSchema, owner);
             SchemaHelper.updatePermission(schemas, owner);
 
-            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
-
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+            await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS);
 
             return SchemaUtils.toOld(schemas);
         } catch (error) {
@@ -1591,11 +1581,9 @@ export class SchemaApi {
         try {
             const taskManager = new TaskManager();
             const task = taskManager.start(TaskAction.DELETE_SCHEMAS, user.id);
-            const reqUrl = req.url;
-            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
             RunFunctionAsync<ServiceError>(async () => {
                 await guardians.deleteSchema(schemaId, owner, task, String(includeChildren).toLowerCase() === 'true');
-                await this.cacheService.invalidate(getCacheKey([reqUrl, ...invalidedCacheKeys], user)).catch(() => null);
+                await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS).catch(() => null);
             }, async (error) => {
                 await this.logger.error(error, ['API_GATEWAY'], user.id);
                 taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
@@ -1729,9 +1717,7 @@ export class SchemaApi {
             }, owner);
             SchemaHelper.updatePermission(items, owner);
 
-            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
-
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+            await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS);
 
             return res.header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
@@ -1829,14 +1815,11 @@ export class SchemaApi {
                 return;
             }
             await guardians.publishSchemaAsync(schemaId, version, owner, task);
+            await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS).catch(() => null);
         }, async (error) => {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
-
-        const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
-
-        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
 
         return task;
     }
@@ -2173,9 +2156,7 @@ export class SchemaApi {
             }, owner);
             SchemaHelper.updatePermission(items, owner);
 
-            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
-
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+            await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS);
 
             return res.status(201).header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
@@ -2261,14 +2242,11 @@ export class SchemaApi {
             const guardians = new Guardians();
             const schemasIds = (schemas || '').split(',');
             await guardians.importSchemasByMessagesAsync([messageId], owner, topicId, task, schemasIds);
+            await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS).catch(() => null);
         }, async (error) => {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
-
-        const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
-
-        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
 
         return task;
     }
@@ -2355,9 +2333,7 @@ export class SchemaApi {
             }, owner);
             SchemaHelper.updatePermission(items, owner);
 
-            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
-
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+            await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS);
 
             return res.status(201).header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
@@ -2440,14 +2416,11 @@ export class SchemaApi {
             const guardians = new Guardians();
             const schemasIds = (schemas || '').split(',');
             await guardians.importSchemasByFileAsync(files, owner, topicId, task, schemasIds);
+            await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS).catch(() => null);
         }, async (error) => {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
-
-        const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
-
-        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
 
         return task;
     }
@@ -2690,9 +2663,7 @@ export class SchemaApi {
             SchemaHelper.updateOwner(newSchema, owner);
             const schema = await guardians.createSystemSchema(newSchema, owner);
 
-            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
-
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+            await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS);
 
             return SchemaUtils.toOld(schema);
         } catch (error) {
@@ -2957,13 +2928,11 @@ export class SchemaApi {
             const task = taskManager.start(TaskAction.DELETE_SCHEMAS, user.id);
             RunFunctionAsync<ServiceError>(async () => {
                 await guardians.deleteSchema(schemaId, owner, task);
+                await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS).catch(() => null);
             }, async (error) => {
                 await this.logger.error(error, ['API_GATEWAY'], user.id);
                 taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
             });
-
-            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
 
             return task;
         } catch (error) {
@@ -3076,9 +3045,7 @@ export class SchemaApi {
             const schemas = await guardians.updateSchema(newSchema, owner);
             SchemaHelper.updatePermission(schemas, owner);
 
-            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
-
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+            await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS);
 
             return SchemaUtils.toOld(schemas);
         } catch (error) {
@@ -3153,9 +3120,7 @@ export class SchemaApi {
             const owner = new EntityOwner(user);
             await guardians.activeSchema(schemaId, owner);
 
-            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
-
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+            await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS);
 
             return null;
         } catch (error) {
@@ -3354,9 +3319,7 @@ export class SchemaApi {
             }, owner);
             SchemaHelper.updatePermission(items, owner);
 
-            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
-
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+            await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS);
 
             return res.status(201).header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
@@ -3441,14 +3404,11 @@ export class SchemaApi {
             const owner = new EntityOwner(user);
             const schemasIds = (schemas || '').split(',');
             await guardians.importSchemasByXlsxAsync(owner, topicId, file, task, schemasIds);
+            await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS).catch(() => null);
         }, async (error) => {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
         });
-        const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
-
-        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
-
         return res.status(202).send(task);
     }
 
@@ -3614,9 +3574,7 @@ export class SchemaApi {
         try {
             await guardians.deleteSchemasByTopic(topicId, owner);
 
-            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
-
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+            await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS);
 
             return true;
         } catch (error) {
@@ -3893,13 +3851,11 @@ export class SchemaApi {
             const task = taskManager.start(TaskAction.DELETE_SCHEMAS, user.id);
             RunFunctionAsync<ServiceError>(async () => {
                 await guardians.deleteSchemasByIds(schemaIds, owner, task, String(includeChildren).toLowerCase() === 'true');
+                await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS).catch(() => null);
             }, async (error) => {
                 await this.logger.error(error, ['API_GATEWAY'], user.id);
                 taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
             });
-
-            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
 
             return task;
         } catch (error) {

@@ -1,3 +1,8 @@
+---
+tags:
+  - flagged-for-rewrite
+---
+
 # Getting Started
 
 ## **1. Introduction**

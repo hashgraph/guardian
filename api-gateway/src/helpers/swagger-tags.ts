@@ -63,7 +63,7 @@ const swaggerTags: SwaggerTag[] = [
         name: 'record',
         'x-parent': 'guardian-policies',
         'x-page-title': 'Records',
-        'x-page-description': 'Environmental data records submitted through policy workflows.',
+        'x-page-description': 'Capture and replay policy execution sequences for regression testing and validation.',
     },
     {
         name: 'tools',

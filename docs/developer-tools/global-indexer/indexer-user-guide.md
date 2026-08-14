@@ -1,4 +1,9 @@
-# Indexer User Guide
+---
+tags:
+  - flagged-for-deletion
+---
+
+# Indexer Reference
 
 1. [Step By Step Process](indexer-user-guide.md#id-1.-step-by-step-process)
 2. [Demo Video](indexer-user-guide.md#id-2.-demo-video)

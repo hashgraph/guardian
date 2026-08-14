@@ -67,7 +67,9 @@ describe('SchemaToJson.conditionToJson', () => {
             thenFields: [],
             elseFields: [],
         });
-        assert.deepEqual(json.if.AND, [{ field: 'x', value: 1 }, { field: 'y', value: 2 }]);
+        // `fieldValue` is the key `JsonToSchema.fromCondIf` reads back, and the same key
+        // multi-OR uses. Emitting `value` here would drop the value on import.
+        assert.deepEqual(json.if.AND, [{ field: 'x', fieldValue: 1 }, { field: 'y', fieldValue: 2 }]);
     });
 
     it('serialises a multi-clause OR condition', () => {

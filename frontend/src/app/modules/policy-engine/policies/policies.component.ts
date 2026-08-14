@@ -994,48 +994,21 @@ export class PoliciesComponent implements OnInit {
     private executeDryRun(element: any, enableMock: boolean) {
         this.loading = true;
         this.policyEngineService
-            .dryRun(element.id, { enableMock })
+            .pushDryRun(element.id, { enableMock })
             .pipe(takeUntil(this._destroy$))
             .subscribe(
-                    (data: any) => {
-                        const { policies, isValid, errors } = data;
-                        if (!isValid) {
-                            let text = [];
-                            const blocks = errors.blocks;
-                            const invalidBlocks = blocks.filter(
-                                (block: any) => !block.isValid
-                            );
-                            for (let i = 0; i < invalidBlocks.length; i++) {
-                                const block = invalidBlocks[i];
-                                for (let j = 0; j < block.errors.length; j++) {
-                                    const error = block.errors[j];
-                                    if (block.id) {
-                                        text.push(`${block.id}: ${error}`);
-                                    } else {
-                                        text.push(error);
-                                    }
-                                }
-                            }
-                            const msg = text.join('\n');
-                            this.toastService.error(
-                                msg,
-                                'The policy is invalid',
-                                { sticky: true, logMessage: msg }
-                            );
-                            this._configurationErrors.set(element.id, errors);
-                            this.router.navigate(['policy-configuration'], {
-                                queryParams: {
-                                    policyId: element.id,
-                                },
-                                replaceUrl: true,
-                            });
-                        }
-                        this.loadAllPolicy();
-                    },
-                    (e) => {
-                        this.loading = false;
-                    }
-                );
+                (result) => {
+                    const { taskId } = result;
+                    this.router.navigate(['task', taskId], {
+                        queryParams: {
+                            last: btoa(location.href),
+                        },
+                    });
+                },
+                (e) => {
+                    this.loading = false;
+                }
+            );
     }
 
     private draft(element: any) {

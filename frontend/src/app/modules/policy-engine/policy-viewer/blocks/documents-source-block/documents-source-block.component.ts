@@ -9,6 +9,7 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { HttpErrorResponse } from '@angular/common/http';
 import { VCFullscreenDialog } from 'src/app/modules/schema-engine/vc-fullscreen-dialog/vc-fullscreen-dialog.component';
 import { Subject } from 'rxjs';
+import { CommentsService } from 'src/app/services/comments.service';
 
 /**
  * Component for display block of 'interfaceDocumentsSource' types.
@@ -58,6 +59,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
         private policyHelper: PolicyHelper,
         private dialog: DialogService,
         private dialogService: DialogService,
+        private commentsService: CommentsService,
     ) {
         this.fields = [];
         this.columns = [];
@@ -306,6 +308,11 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 }
             })!;
             dialogRef.onClose.subscribe(async (result) => {
+                this.commentsService
+                    .getPolicyCommentsCount(this.policyId, row.id)
+                    .subscribe((count) => {
+                        row.comments = count?.count ?? row.comments;
+                    });
             });
         }
     }

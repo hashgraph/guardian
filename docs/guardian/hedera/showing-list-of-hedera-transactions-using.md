@@ -1,3 +1,8 @@
+---
+tags:
+  - flagged-for-rewrite
+---
+
 # Viewing Hedera Transactions
 
 Users can select the "**Show transactions**" option in the grids’ pop-up menu to see the list of Hedera transactions related to the selected entity.

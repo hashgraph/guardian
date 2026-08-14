@@ -1,8 +1,4 @@
----
-description: This is an Alpha Version
----
-
-# User Guide
+# Selective Disclosure Guide
 
 ## Overview <a href="#xw1hte24c5p" id="xw1hte24c5p"></a>
 
@@ -70,7 +66,7 @@ The high level sequence is shown below:
 
 ### 'Supply' Side <a href="#bakygsypldnr" id="bakygsypldnr"></a>
 
-A Guardian admin triggers the SD mechanism by stipulating that a particular schema is type “Encrypted Verifiable Credential”, and specifies some attributes as private. To get complete information, please check [selective-disclosure-demo.md](selective-disclosure-demo.md "mention")
+A Guardian admin triggers the SD mechanism by stipulating that a particular schema is type “Encrypted Verifiable Credential”, and specifies some attributes as private. To get complete information, please check [selective-disclosure-reference.md](selective-disclosure-reference.md "mention")
 
 With the configuration, whenever in the future that Guardian creates a VC complying to that schema - it will follow the SD sequence and not the default .
 
