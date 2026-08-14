@@ -54,22 +54,34 @@ context('Tokens', { tags: ['tokens', 'thirdPool', 'all'] }, () => {
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + 'tokens',
+                // By default a User only sees tokens tied to policies assigned to them (here,
+                // the iRec policy's token), which may already have NFTs minted to the account
+                // by unrelated policy-workflow runs and can't be dissociated. `status=All`
+                // returns the full token list instead, so we can target the fungible tokens
+                // this suite itself creates (postTokens.cy.js) and stay independent of that.
+                qs: {
+                    status: 'All'
+                },
                 headers: {
                     authorization
                 }
             }).then((response) => {
-                const token = response.body.at(-1);
+                const token = response.body.filter((t) => t.tokenName === 'test').at(-1);
                 const tokenId = token.tokenId;
-                // A previous run may have left the token associated, associating it again returns 500
-                if (token.associated) {
-                    cy.request({
-                        method: 'PUT',
-                        url: API.ApiServer + 'tokens/' + tokenId + '/dissociate',
-                        headers: {
-                            authorization
-                        }
-                    });
-                }
+                // The `associated` flag from the list endpoint can be stale relative to the
+                // actual Hedera state, so it can't be trusted to decide whether a cleanup
+                // dissociate is needed. Unconditionally dissociate first and ignore the
+                // result (a previous run may not have left it associated, in which case this
+                // returns a 500 with TOKEN_NOT_ASSOCIATED_TO_ACCOUNT) so the test always
+                // starts from a known, dissociated state.
+                cy.request({
+                    method: 'PUT',
+                    url: API.ApiServer + 'tokens/' + tokenId + '/dissociate',
+                    headers: {
+                        authorization
+                    },
+                    failOnStatusCode: false
+                });
                 cy.request({
                     method: 'PUT',
                     url: API.ApiServer + 'tokens/' + tokenId + '/associate',

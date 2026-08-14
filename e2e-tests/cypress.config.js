@@ -1,6 +1,5 @@
 const { defineConfig } = require('cypress');
 const { verifyDownloadTasks } = require('cy-verify-downloads');
-const fetch = require('node-fetch');
 
 module.exports = defineConfig({
     video: false,
@@ -71,6 +70,7 @@ module.exports = defineConfig({
             // CI/Docker still pass them via CYPRESS_grepTags/--env, so forward them here.
             config.expose = {
                 ...config.expose,
+                grep: config.env.grep,
                 grepTags: config.env.grepTags,
                 grepFilterSpecs: config.env.grepFilterSpecs,
                 grepOmitFiltered: config.env.grepOmitFiltered,
@@ -101,6 +101,41 @@ module.exports = defineConfig({
                         headers,
                     });
                     return null;
+                },
+            });
+            on('task', {
+                // Uploads a fixture to the local Kubo node through its RPC API.
+                // `add` is content-addressed and idempotent: re-adding the same bytes always
+                // yields the same CID and is a no-op when the node already holds the blocks.
+                async ipfsAddFixture(fixtureName) {
+                    const fs = require('fs');
+                    const path = require('path');
+                    const file = path.join(config.fixturesFolder, fixtureName);
+                    // Cypress runs either on the host or inside the runner container, so fall
+                    // back to the docker host alias when `localhost` is not the IPFS node.
+                    const nodes = config.env.ipfsApi
+                        ? [config.env.ipfsApi]
+                        : ['http://localhost:5001', 'http://host.docker.internal:5001'];
+                    const form = new FormData();
+                    form.append('file', new Blob([fs.readFileSync(file)]), fixtureName);
+                    const errors = [];
+                    for (const node of nodes) {
+                        let response;
+                        try {
+                            // cid-version 0 keeps the default UnixFS layout that produces `Qm...` CIDs
+                            response = await fetch(`${node}/api/v0/add?cid-version=0&pin=true`, { method: 'POST', body: form });
+                        } catch (error) {
+                            errors.push(`${node}: ${error.message}`);
+                            continue;
+                        }
+                        const body = await response.text();
+                        if (!response.ok) {
+                            throw new Error(`IPFS add failed on ${node}: ${response.status} ${body}`);
+                        }
+                        // `add` answers with one JSON object per added entry, the file itself being the last one
+                        return JSON.parse(body.trim().split('\n').pop()).Hash;
+                    }
+                    throw new Error(`No reachable IPFS node. Tried:\n${errors.join('\n')}`);
                 },
             });
             return config;

@@ -20,7 +20,9 @@ context('Tokens', { tags: ['tokens', 'thirdPool', 'all'] }, () => {
                 expect(response.body[0]).to.have.property('tokenId');
                 expect(response.body[0]).to.have.property('tokenName');
 
-                const topicUid = response.body[0].tokenId;
+                // Restrict to the fungible tokens this suite creates, not whatever token
+                // another suite (e.g. policy workflows) last created for this account.
+                const topicUid = response.body.filter((t) => t.tokenName === 'test')[0].tokenId;
 
                 cy.request({
                     method: METHOD.GET,

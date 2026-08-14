@@ -12,12 +12,19 @@ context('Tokens', { tags: ['tokens', 'thirdPool', 'all'] }, () => {
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + 'tokens',
+                // Same rationale as putDissociateAssociate.cy.js: `status=All` returns the
+                // full token list (instead of just the policy tokens assigned to this User),
+                // so we can target the fungible tokens this suite creates, not whatever token
+                // another suite last created.
+                qs: {
+                    status: 'All'
+                },
                 headers: {
                     authorization
                 }
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                let tokenId = response.body.at(-1).tokenId
+                let tokenId = response.body.filter((t) => t.tokenName === 'test').at(-1).tokenId
                 Authorization.getAccessToken(SRUsername).then((authorization) => {
                     cy.request({
                         method: METHOD.PUT,

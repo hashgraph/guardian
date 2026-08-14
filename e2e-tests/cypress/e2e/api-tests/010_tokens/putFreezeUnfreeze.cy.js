@@ -12,18 +12,33 @@ context('Tokens', { tags: ['tokens', 'thirdPool', 'all'] }, () => {
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + 'tokens',
+                // Same rationale as putDissociateAssociate.cy.js: `status=All` returns the
+                // full token list (instead of just the policy tokens assigned to this User),
+                // so we can target the fungible tokens this suite creates, not whatever token
+                // another suite last created.
+                qs: {
+                    status: 'All'
+                },
                 headers: {
                     authorization
                 }
             })
             .then((response) => {
-                let tokenId = response.body.at(-1).tokenId
+                const token = response.body.filter((t) => t.tokenName === 'test').at(-1);
+                let tokenId = token.tokenId
+                // The `associated` flag from the list endpoint can be stale relative to the
+                // actual Hedera state, so it can't be trusted to decide whether an associate
+                // is needed. Unconditionally associate first and ignore the result (a
+                // previous run may have left it associated, in which case this returns a 500
+                // with TOKEN_ALREADY_ASSOCIATED_TO_ACCOUNT) so the test always starts from a
+                // known, associated state before freezing.
                 cy.request({
                     method: 'PUT',
                     url: API.ApiServer + 'tokens/' + tokenId + '/associate',
                     headers: {
                         authorization
-                    }
+                    },
+                    failOnStatusCode: false
                 })
                 Authorization.getAccessToken(SRUsername).then((authorization) => {
                     cy.request({

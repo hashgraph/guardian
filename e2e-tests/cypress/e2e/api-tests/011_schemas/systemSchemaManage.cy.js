@@ -21,12 +21,10 @@ context('Schemas', { tags: ['schema', 'thirdPool', 'all'] }, () => {
                     entity: 'USER',
                     status: 'DRAFT',
                     readonly: false,
-                    name: 'test',
-                    entity: 'USER',
                     document:
                     {
                         $id: schemaUUID,
-                        $comment: '{\"term\\": \"${schemaUUID}\\", \"@id\\": \"https://localhost/schema#${schemaUUID}\\"}',
+                        $comment: '{"term": "${schemaUUID}", "@id": "https://localhost/schema#${schemaUUID}"}',
                         title: 'test',
                         description: ' test',
                         type: 'object',
@@ -73,7 +71,7 @@ context('Schemas', { tags: ['schema', 'thirdPool', 'all'] }, () => {
                             document:
                             {
                                 $id: schemaUUID,
-                                $comment: '{\"term\\": \"${schemaUUID}\\", \"@id\\": \"https://localhost/schema#${schemaUUID}\\"}',
+                                $comment: '{"term": "${schemaUUID}", "@id": "https://localhost/schema#${schemaUUID}"}',
                                 title: 'test',
                                 description: ' test',
                                 type: 'object',
