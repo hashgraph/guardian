@@ -1,3 +1,17 @@
+---
+description: Historical foundations for publishing and tracing Guardian data on Hedera.
+---
+
 # Discovering Environmental assets on Hedera
 
-As identified in Hedera Improvement Proposal 19 (HIP-19), each entity on the Hedera network may contain a specific identifier in the memo field for discoverability. Guardian demonstrates this when every Hedera Consensus Service transaction is logged to a Hedera Consensus Service Topic. Observing the Hedera Consensus Service Topic, you can discover newly minted tokens. In the memo field of each token mint transaction you will find a unique Hedera message timestamp. This message contains the url of the Verifiable Presentation (VP) associated with the token. The VP can serve as a starting point from which you can traverse the entire sequence of documents produced by Guardian policy workflow, which led to the creation of the token. Please see p.17 in the [FAQ](https://docs.hedera.com/guardian/faqs/) for more information. This is further defined in [Hedera Improvement Proposal 28 (HIP-28)](https://hips.hedera.com/hip/hip-28).
+{% hint style="info" %}
+HIP-19 and HIP-28 established foundational Hedera capabilities used by Guardian.
+{% endhint %}
+
+Guardian publishes policy workflow data to Hedera through these capabilities. They support the discovery and traceability of digital environmental assets.
+
+Guardian records Hedera Consensus Service transactions in topics. A token mint transaction can include a memo identifier that points to a Hedera message timestamp. That message contains the URL of the related Verifiable Presentation (VP).
+
+The VP links the Verifiable Credentials produced by the policy workflow. Together, these records provide the starting point for tracing the documents behind a token.
+
+[HIP-19](https://hips.hedera.com/hip/hip-19) and [HIP-28](https://hips.hedera.com/hip/hip-28) define this foundational approach. Guardian builds on it through the [TrustChain](../platform/trustchain.md).
