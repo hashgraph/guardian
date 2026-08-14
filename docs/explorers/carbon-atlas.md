@@ -49,7 +49,7 @@ Cross-registry analytics across the voluntary carbon market.
 
 ### Source code
 
-https://github.com/hashgraph/guardian/tree/main/carbon-atlas
+[https://github.com/hashgraph/guardian/tree/main/carbon-atlas](https://github.com/hashgraph/guardian/tree/main/carbon-atlas)
 
 The `carbon-atlas/` folder contains setup instructions, architecture documentation, and a developer guide for adding new policies.
 

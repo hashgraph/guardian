@@ -38,7 +38,7 @@ A standalone application that indexes data published by the Hedera Guardian to t
 
 ### Source code
 
-https://github.com/hashgraph/guardian/tree/main/sustainability-atlas
+[https://github.com/hashgraph/guardian/tree/main/sustainability-atlas](https://github.com/hashgraph/guardian/tree/main/sustainability-atlas)
 
 The `sustainability-atlas/` folder contains architecture documentation, environment setup, and technical details on the indexing pipeline and frontend.
 

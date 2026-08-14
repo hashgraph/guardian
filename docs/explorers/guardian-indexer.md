@@ -1,6 +1,14 @@
+---
+description: >-
+  A developer tool to search and explore Guardian policies, credentials,
+  accounts, schemas, tokens, and on-chain records.
+---
+
 # Guardian Indexer
 
 A comprehensive search and exploration tool for all data recorded through Guardian — every policy, credential, account, schema, token, and on-chain document, searchable in a single interface.
+
+The indexer can be run by setting up a development environment.
 
 ***
 
@@ -30,6 +38,6 @@ A comprehensive search and exploration tool for all data recorded through Guardi
 
 ### Source code
 
-The Indexer spans several folders in the Guardian monorepo: https://github.com/hashgraph/guardian
+The Indexer spans several folders in the Guardian monorepo: [https://github.com/hashgraph/guardian](https://github.com/hashgraph/guardian)
 
-Relevant directories: `indexer-frontend/`, `indexer-service/`, `indexer-api-gateway/`, `indexer-common/`, `indexer-interfaces/`, `indexer-worker-service/`, `indexer-web-proxy/`. The `docker-compose-indexer.yml` file in the repository root is the starting point for running the stack locally.
+Relevant directories include `indexer-frontend/`, `indexer-service/`, `indexer-api-gateway/`, `indexer-common/`, `indexer-interfaces/`, `indexer-worker-service/`, `indexer-web-proxy/`. The `docker-compose-indexer.yml` file in the repository root is the starting point for running the stack locally.
