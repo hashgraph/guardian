@@ -1,4 +1,4 @@
-import { AssignedEntityType, GenerateUUIDv4, IVC, MintTransactionStatus, PolicyTestStatus, PolicyStatus, SchemaEntity, TokenType, TopicType, ExternalPolicyStatus } from '@guardian/interfaces';
+import { AssignedEntityType, GenerateUUIDv4, IVC, IwaVersion, MintTransactionStatus, PolicyTestStatus, PolicyStatus, SchemaEntity, TokenType, TopicType, ExternalPolicyStatus } from '@guardian/interfaces';
 import { TopicId } from '@hiero-ledger/sdk';
 import { FilterObject, FilterQuery, FindAllOptions, MikroORM, FindOptions } from '@mikro-orm/core';
 import { MongoDriver, ObjectId, PopulatePath } from '@mikro-orm/mongodb';
@@ -3266,8 +3266,32 @@ export class DatabaseServer extends AbstractDatabaseServer {
      *
      * @virtual
      */
-    public static async getPolicyProperties(): Promise<PolicyProperty[]> {
-        return await new DataBaseHelper(PolicyProperty).find({});
+    public static async getPolicyProperties(iwaVersion?: string): Promise<PolicyProperty[]> {
+        return await new DataBaseHelper(PolicyProperty).find(
+            DatabaseServer.buildPolicyPropertyFilter(iwaVersion)
+        );
+    }
+
+    /**
+     * Build the policy-property lookup filter for an IWA version.
+     *
+     * Rows seeded before IWA v3 support carry no iwaVersion, so a v1 request
+     * must also match untagged rows — otherwise the property list comes back
+     * empty on an instance where the backfill migration has not run yet.
+     */
+    private static buildPolicyPropertyFilter(iwaVersion?: string): FilterObject<PolicyProperty> {
+        if (!iwaVersion) {
+            return {};
+        }
+        if (iwaVersion === IwaVersion.V1) {
+            return {
+                $or: [
+                    { iwaVersion: IwaVersion.V1 },
+                    { iwaVersion: { $exists: false } }
+                ]
+            } as FilterObject<PolicyProperty>;
+        }
+        return { iwaVersion } as FilterObject<PolicyProperty>;
     }
 
     /**

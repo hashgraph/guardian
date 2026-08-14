@@ -14,4 +14,11 @@ export class PolicyProperty extends BaseEntity {
 
     @Property({ nullable: false })
     value: string;
+
+    /**
+     * IWA dMRV specification version the field properties are authored against.
+     * Absent means IWA v1.
+     */
+    @Property({ nullable: true })
+    iwaVersion?: string;
 }

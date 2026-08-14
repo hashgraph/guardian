@@ -47,7 +47,7 @@ export class ProjectService extends NatsService {
     /**
      * Get policy properties
      */
-    public async getPolicyProperties() {
-        return await this.sendMessage(MessageAPI.GET_POLICY_PROPERTIES, {});
+    public async getPolicyProperties(iwaVersion?: string) {
+        return await this.sendMessage(MessageAPI.GET_POLICY_PROPERTIES, { iwaVersion });
     }
 }

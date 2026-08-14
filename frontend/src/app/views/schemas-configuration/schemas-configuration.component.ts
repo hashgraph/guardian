@@ -3,11 +3,12 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpResponse } from '@angular/common/http';
 import { EMPTY, Observable, Subject, Subscription, forkJoin, of } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, switchMap, takeUntil } from 'rxjs/operators';
-import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, relationAncestors, ModuleStatus, ISchemaTemplate, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus, ISchemaArrayDependency, ISchemaArrayDependencyMapping, } from '@guardian/interfaces';
+import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, relationAncestors, ModuleStatus, ISchemaTemplate, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus, ISchemaArrayDependency, ISchemaArrayDependencyMapping, DEFAULT_IWA_VERSION, IwaVersion, resolveIwaVersion, } from '@guardian/interfaces';
 import { SchemaService } from 'src/app/services/schema.service';
 import { TagsService } from 'src/app/services/tag.service';
 import { ProjectComparisonService } from 'src/app/services/project-comparison.service';
 import { DialogService } from 'primeng/dynamicdialog';
+import { IwaUpgradeDialogComponent } from 'src/app/modules/schema-engine/iwa-upgrade-dialog/iwa-upgrade-dialog.component';
 import { SchemaDeleteDialogComponent } from 'src/app/modules/schema-engine/schema-delete-dialog/schema-delete-dialog.component';
 import { ExportSchemaDialog } from 'src/app/modules/schema-engine/export-schema-dialog/export-schema-dialog.component';
 import { SetVersionDialog } from 'src/app/modules/schema-engine/set-version-dialog/set-version-dialog.component';
@@ -47,6 +48,15 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public schemaTemplate: ISchemaTemplate | null = null;
     public templateLoading: boolean = false;
     public schemaLoading: boolean = false;
+    /**
+     * Id of the schema whose full document has finished loading.
+     *
+     * switchSchema() sets selectedSchema optimistically from the sidebar item so
+     * the header renders immediately, and that placeholder does not carry the
+     * whole record. Anything that decides whether a mutating action is offered
+     * must wait for the real document, or it flickers on and off during load.
+     */
+    private loadedSchemaId: string | null = null;
 
     public activeTab: 'builder' | 'preview' = 'builder';
     public activeSideTab: 'fields' | 'schemas' = 'fields';
@@ -515,6 +525,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     private schemasFetched: boolean = false;
 
     public properties: any[] = [];
+    /** Property lists are per IWA version; cache so switching schemas is cheap. */
+    private propertiesByVersion = new Map<string, any[]>();
+    private propertyOptionsMemo: { source: any[]; current: string; result: any[] } | null = null;
 
     public readonly requiredModeOptions: { label: string; value: string }[] = [
         { label: 'None',          value: 'none'          },
@@ -536,12 +549,113 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         private _cdr: ChangeDetectorRef,
     ) {}
 
+    /**
+     * Whether the open schema can be switched to the IWA v3 property namespace.
+     *
+     * Only drafts qualify: a published schema's field properties are frozen on
+     * IPFS, so it must get a new version first.
+     */
+    public get canUpgradeToIwaV3(): boolean {
+        const schema = this.selectedSchema;
+        if (!schema || this.isTemplateMode) { return false; }
+        // Only decide once the full document is loaded - the optimistic
+        // placeholder would otherwise flash the button on and straight off again.
+        if (!this.loadedSchemaId || this.loadedSchemaId !== this.selectedSchemaId) {
+            return false;
+        }
+        if (resolveIwaVersion(schema) === IwaVersion.V3) { return false; }
+        return schema.status === SchemaStatus.DRAFT || schema.status === SchemaStatus.ERROR;
+    }
+
+    /**
+     * Remap every field property on the open draft schema from IWA v1 to v3.
+     *
+     * Shows what would change first — renames are applied, and properties v3
+     * removed are cleared, so the author confirms before anything is written.
+     */
+    public onUpgradeToIwaV3(): void {
+        const schema = this.selectedSchema;
+        const id = schema?.id || (schema as any)?._id;
+        if (!id) { return; }
+
+        this.schemaService.iwaUpgradePreview(id)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (report) => {
+                    const dialogRef = this.dialogService.open(IwaUpgradeDialogComponent, {
+                        showHeader: false,
+                        width: '840px',
+                        styleClass: 'guardian-dialog',
+                        data: {
+                            header: 'Upgrade to IWA v3',
+                            report
+                        },
+                    });
+                    if (!dialogRef) { return; }
+                    dialogRef.onClose.pipe(takeUntil(this.destroy$)).subscribe((result: string) => {
+                        if (result !== 'Upgrade') { return; }
+                        this.schemaService.upgradeToIwaV3(id)
+                            .pipe(takeUntil(this.destroy$))
+                            .subscribe({
+                                next: () => this.schemaLoad$.next(id),
+                                error: () => {}
+                            });
+                    });
+                },
+                error: () => {}
+            });
+    }
+
+    /**
+     * Load the IWA property list for a specific specification version.
+     */
+    private loadProperties(iwaVersion: string): void {
+        const cached = this.propertiesByVersion.get(iwaVersion);
+        if (cached) {
+            this.properties = cached;
+            return;
+        }
+        this.projectComparisonService.getProperties(iwaVersion)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (list) => {
+                    const properties = list || [];
+                    this.propertiesByVersion.set(iwaVersion, properties);
+                    this.properties = properties;
+                    this._cdr.markForCheck();
+                },
+                error: () => {}
+            });
+    }
+
+    /**
+     * Options for the Property dropdown.
+     *
+     * A field may already carry a property that is not in the current version's
+     * list — e.g. a v1 path on a schema being viewed, or one the spec dropped.
+     * p-select renders an unlisted value as blank, which would silently wipe it
+     * on the next save, so the existing value is appended as its own option.
+     */
+    public get propertyOptions(): any[] {
+        const current = (this.selectedField as any)?.property || '';
+        if (!current || this.properties.some((item) => item?.title === current)) {
+            return this.properties;
+        }
+        const memo = this.propertyOptionsMemo;
+        if (memo && memo.source === this.properties && memo.current === current) {
+            return memo.result;
+        }
+        const result = [...this.properties, { title: current, value: current }];
+        this.propertyOptionsMemo = { source: this.properties, current, result };
+        return result;
+    }
+
     public ngOnInit(): void {
         this.restoreCanvasTab();
 
-        this.projectComparisonService.getProperties()
-            .pipe(takeUntil(this.destroy$))
-            .subscribe({ next: (p) => { this.properties = p || []; }, error: () => {} });
+        // A brand-new schema is authored against the current IWA version; an
+        // existing one keeps whatever version it was authored against.
+        this.loadProperties(DEFAULT_IWA_VERSION);
 
         this.schemaLoad$.pipe(
             switchMap(id => {
@@ -601,9 +715,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 this.schemaTemplate = appliedTemplate;
             }
             this.selectedSchema = schema;
+            this.loadProperties(resolveIwaVersion(schema));
             this.resetArrayDependencyEditor();
             this.schemaLoading = false;
             const schemaId = schema.id || (schema as any)._id;
+            this.loadedSchemaId = schemaId || null;
             if (schemaId) { this.dirtySchemaIds.delete(schemaId); }
             if (!this.topic && schema.topicId) {
                 this.topic = schema.topicId;
@@ -830,6 +946,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
         this.selectedField = null;
         this.selectedSchema = schema; // optimistic: show header before fields load
+        this.loadedSchemaId = null;
         this.drillStack = [];
         this.setCanvasTab('fields');
         this.resetArrayDependencyEditor();

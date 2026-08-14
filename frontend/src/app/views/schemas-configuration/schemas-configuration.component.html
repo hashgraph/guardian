@@ -74,6 +74,16 @@
                     <i class="pi pi-download"></i>
                     Export
                 </button>
+                @if (canUpgradeToIwaV3) {
+                <button class="sc-btn"
+                    pTooltip="Remap every field property from IWA v1 to IWA v3"
+                    tooltipStyleClass="guardian-tooltip"
+                    tooltipPosition="bottom"
+                    (click)="onUpgradeToIwaV3()">
+                    <i class="pi pi-arrow-up-right"></i>
+                    Upgrade to IWA v3
+                </button>
+                }
                 @if (showPublish) {
                 <button class="sc-btn sc-btn-primary"
                     [disabled]="!canPublish"
@@ -972,14 +982,14 @@
                             </div>
                         }
 
-                        @if (properties.length) {
+                        @if (propertyOptions.length) {
                             <div class="sc-rp-divider"></div>
                             <div class="sc-rp-group">
                                 <label class="sc-rp-label">Property</label>
                                 <p-select
                                     class="guardian-dropdown sc-rp-select"
                                     panelStyleClass="guardian-dropdown-panel"
-                                    [options]="properties"
+                                    [options]="propertyOptions"
                                     [showClear]="true"
                                     [filter]="true"
                                     filterBy="title"

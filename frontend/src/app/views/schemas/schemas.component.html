@@ -333,6 +333,10 @@
                       <td class="row-cell-text" [class.text-grey]="rowData.status === 'DRAFT'">
                         <div style="display: flex; align-items: center; gap: 4px;">
                           <span>{{ rowData.version || rowData.sourceVersion }}</span>
+                          <span class="iwa-version-badge"
+                            pTooltip="IWA dMRV specification version this schema's field properties are authored against"
+                            tooltipStyleClass="guardian-tooltip"
+                            tooltipPosition="top">IWA v{{ iwaMajorVersion(rowData) }}</span>
                           @if (rowData.status === 'DRAFT' && (rowData.version !== '' || rowData.sourceVersion !== '')) {
                             <div class="btn-info"
                               pTooltip="Expected version" tooltipStyleClass="guardian-tooltip"
