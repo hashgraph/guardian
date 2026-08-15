@@ -169,6 +169,72 @@ describe('SchemasConfigurationComponent', () => {
         });
     });
 
+    describe('a failed sidebar list load', () => {
+
+        function failingComponent(state: any = {}): any {
+            const component = createComponent(state);
+            component.schemaService.getSchemasByPage = () => throwError(() => new Error('boom'));
+            return component;
+        }
+
+        it('drops the dirty key of a schema that was only in the list', () => {
+            const a = makeSchema({ id: 'a' });
+            const component = failingComponent({ schemas: [a], dirtyIds: ['a'] });
+
+            component.loadSchemas('topic-1');
+
+            expect(component.schemas).toEqual([]);
+            expect(component.dirtySchemaIds.size).toBe(0);
+            expect(component.hasUnsavedChanges).toBeFalse();
+        });
+
+        it('keeps the open schema key, and saveAll still sends it', () => {
+            const a = makeSchema({ id: 'a', fields: [makeField()] });
+            const component = failingComponent({ schemas: [a], selectedSchema: a, dirtyIds: ['a'] });
+
+            component.loadSchemas('topic-1');
+
+            expect(component.dirtySchemaIds.has('a')).toBeTrue();
+            component.saveAll();
+            expect(component.updated.length).toBe(1);
+        });
+
+        it('keeps a new-schema key for the open unsaved schema', () => {
+            const fresh = makeSchema({ uuid: 'u-new', fields: [makeField()] });
+            fresh.id = undefined;
+            fresh._id = undefined;
+            const component = failingComponent({
+                schemas: [fresh], selectedSchema: fresh,
+                dirtyIds: ['new:u-new'], newKeys: ['new:u-new'],
+            });
+
+            component.loadSchemas('topic-1');
+
+            expect(component.dirtySchemaIds.has('new:u-new')).toBeTrue();
+            expect(component.newSchemaKeys.has('new:u-new')).toBeTrue();
+        });
+
+        it('leaves the list and the dirty keys alone when an append fails', () => {
+            const a = makeSchema({ id: 'a' });
+            const b = makeSchema({ id: 'b' });
+            const component = failingComponent({ schemas: [a, b], dirtyIds: ['a', 'b'] });
+
+            component.loadSchemas('topic-1', true);
+
+            expect(component.schemas.length).toBe(2);
+            expect(component.dirtySchemaIds.size).toBe(2);
+            expect(component.schemasLoadingMore).toBeFalse();
+        });
+
+        it('clears the loading flag on a failed full load', () => {
+            const component = failingComponent({ schemas: [], dirtyIds: [] });
+
+            component.loadSchemas('topic-1');
+
+            expect(component.schemasLoading).toBeFalse();
+        });
+    });
+
     describe('save invariant: after any list change, an enabled Save all always sends something', () => {
 
         function saveButtonEnabled(component: any): boolean {

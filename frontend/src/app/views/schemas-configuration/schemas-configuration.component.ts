@@ -3333,6 +3333,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                         this.schemas = [];
                         this.schemasLoading = false;
                     }
+                    this.pruneDirtySchemaIds();
                 }
             });
     }
