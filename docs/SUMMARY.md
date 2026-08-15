@@ -5,7 +5,6 @@
 ## Guardian
 
 * [Getting Started](<README (1).md>)
-  * [Discovering Environmental assets on Hedera](guardian/readme/discovering-esg-assets-on-hedera.md)
   * [Guardian Glossary](guardian/readme/guardian-glossary.md)
   * [Installation Guide](guardian/readme/getting-started/README.md)
     * [Installation](guardian/readme/getting-started/installation/README.md)
