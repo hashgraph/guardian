@@ -670,6 +670,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             this.schemaSearch = search;
             this.schemasPage = 0;
             this.schemas = [];
+            this.pruneDirtySchemaIds();
             this.loadSchemas(this.topic);
         });
     }
@@ -3237,6 +3238,27 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
     }
 
+    private pruneDirtySchemaIds(): void {
+        if (!this.dirtySchemaIds.size) { return; }
+        const liveKeys = new Set<string>();
+        for (const schema of this.schemas) {
+            const id = schema.id || (schema as any)._id;
+            if (id) { liveKeys.add(id); }
+            const uuid = (schema as any).uuid;
+            if (uuid) { liveKeys.add(`new:${uuid}`); }
+        }
+        const selectedId = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
+        if (selectedId) { liveKeys.add(selectedId); }
+        const selectedUuid = (this.selectedSchema as any)?.uuid;
+        if (selectedUuid) { liveKeys.add(`new:${selectedUuid}`); }
+        for (const dirtyId of Array.from(this.dirtySchemaIds)) {
+            if (!liveKeys.has(dirtyId)) {
+                this.dirtySchemaIds.delete(dirtyId);
+                this.newSchemaKeys.delete(dirtyId);
+            }
+        }
+    }
+
     private loadSchemas(topicId: string, append: boolean = false): void {
         if (append) {
             this.schemasLoadingMore = true;
@@ -3302,6 +3324,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     this.schemasFetched = true;
                     this.loadAppliedSchemaTemplate();
                     if (this.selectedSchema) { this.upsertInSidebar(this.selectedSchema); }
+                    this.pruneDirtySchemaIds();
                 },
                 error: () => {
                     if (append) {
