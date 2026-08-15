@@ -235,6 +235,80 @@ describe('SchemasConfigurationComponent', () => {
         });
     });
 
+    describe('saveAll resolving a new unsaved schema', () => {
+
+        function newSchemaComponent(state: any): any {
+            const fresh = makeSchema({ uuid: 'u-new', fields: [makeField()] });
+            fresh.id = undefined;
+            fresh._id = undefined;
+            const component = createComponent({
+                schemas: state.inList ? [fresh] : [],
+                selectedSchema: state.open ? fresh : null,
+                dirtyIds: ['new:u-new'],
+                newKeys: ['new:u-new'],
+            });
+            return component;
+        }
+
+        it('creates it from the open schema when the list is empty', () => {
+            const component = newSchemaComponent({ open: true, inList: false });
+
+            component.saveAll();
+
+            expect(component.created.length).toBe(1);
+            expect(component.created[0].uuid).toBe('u-new');
+        });
+
+        it('still creates it from the list when it is not the open schema', () => {
+            const component = newSchemaComponent({ open: false, inList: true });
+
+            component.saveAll();
+
+            expect(component.created.length).toBe(1);
+        });
+
+        it('sends nothing when it is in neither place', () => {
+            const component = newSchemaComponent({ open: false, inList: false });
+
+            component.saveAll();
+
+            expect(component.created.length).toBe(0);
+            expect(component.updated.length).toBe(0);
+        });
+
+        it('creates and updates in the same run when both are dirty', () => {
+            const saved = makeSchema({ id: 'a', fields: [makeField()] });
+            const fresh = makeSchema({ uuid: 'u-new', fields: [makeField()] });
+            fresh.id = undefined;
+            fresh._id = undefined;
+            const component = createComponent({
+                schemas: [saved],
+                selectedSchema: fresh,
+                dirtyIds: ['a', 'new:u-new'],
+                newKeys: ['new:u-new'],
+            });
+
+            component.saveAll();
+
+            expect(component.created.length).toBe(1);
+            expect(component.updated.length).toBe(1);
+        });
+
+        it('does not confuse the open saved schema with a new-schema key', () => {
+            const saved = makeSchema({ id: 'a', uuid: 'u-new', fields: [makeField()] });
+            const component = createComponent({
+                schemas: [saved],
+                selectedSchema: saved,
+                dirtyIds: ['a'],
+            });
+
+            component.saveAll();
+
+            expect(component.created.length).toBe(0);
+            expect(component.updated.length).toBe(1);
+        });
+    });
+
     describe('save invariant: after any list change, an enabled Save all always sends something', () => {
 
         function saveButtonEnabled(component: any): boolean {
@@ -303,7 +377,6 @@ describe('SchemasConfigurationComponent', () => {
             },
             {
                 name: 'new unsaved schema, open, list emptied by a search',
-                pending: 'iteration-03',
                 build: () => {
                     const fresh = makeSchema({ uuid: 'u-new', fields: [validField()] });
                     fresh.id = undefined;

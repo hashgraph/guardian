@@ -1144,7 +1144,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         for (const dirtyId of this.dirtySchemaIds) {
             if (this.newSchemaKeys.has(dirtyId)) {
                 const uuid = dirtyId.slice(4);
-                const s = this.schemas.find(s => s.uuid === uuid);
+                const s = this.selectedSchema && (this.selectedSchema as any).uuid === uuid
+                    ? this.selectedSchema
+                    : this.schemas.find(s => s.uuid === uuid);
                 if (s) { toCreate.push(s); }
             } else if (selId && dirtyId === selId && this.selectedSchema) {
                 toSave.push(this.selectedSchema);
