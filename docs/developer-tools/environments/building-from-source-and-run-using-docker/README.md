@@ -133,7 +133,7 @@ This configuration allows you to leave untouched all the data referring to Mainn
 
 To start of auth-service it is necessary to fill in `JWT_PRIVATE_KEY` and `JWT_PUBLIC_KEY`, which are RSA key pair. You can generate it in any convenient way, for example, using this service [https://travistidwell.com/jsencrypt/demo/](https://travistidwell.com/jsencrypt/demo/).
 
-<figure><img src="../../../../../.gitbook/assets/image (841).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (841).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 Note: **Please make sure you copy and paste complete keys starting from "-----BEGIN-----" to "-----END-----".**
@@ -146,7 +146,7 @@ To start all services, you need to create a 2048-bit RSA key pair for each servi
 \- key ID: sha256\
 \- show: yes
 
-<figure><img src="../../../../../.gitbook/assets/image (842).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (842).png" alt=""><figcaption></figcaption></figure>
 
 For each service, you must add its secret key \`SERVICE\_JWT\_SECRET\_KEY\` and a list of all public keys from every service:\
 \- \`SERVICE\_JWT\_PUBLIC\_KEY\_WORKER\_SERVICE\`\
@@ -162,7 +162,7 @@ For each service, you must add its secret key \`SERVICE\_JWT\_SECRET\_KEY\` and 
 
 **Note:** Alternatively, you can create a single key pair and, instead of adding the public keys for each individual service, you can add \`SERVICE\_JWT\_SECRET\_KEY\_ALL\` and \`SERVICE\_JWT\_PUBLIC\_KEY\_ALL\` to use the same keys for all services. However, it is recommended to generate a separate key pair for each service.
 
-<figure><img src="../../../../../.gitbook/assets/image (8) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (8) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="warning" %}
 **Note**: It is important to add these keys to the env files, because without them the services will return errors, and communication with a service that does not sign messages for the message queue will not be supported.
@@ -264,7 +264,7 @@ About docker-compose: from the end of June 2023 Compose V1 won’t be supported 
 
 ## 7. Browse the local browser
 
-Browse to [http://localhost:3000](http://localhost:3000) and complete the setup. To get more info, please check: [Launching Guardian](../launching-guardian.md)
+Browse to [http://localhost:3000](http://localhost:3000) and complete the setup. To get more info, please check: [Launching Guardian](../../../guardian/readme/getting-started/installation/launching-guardian.md)
 
 ## 8. Increase security
 

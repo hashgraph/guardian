@@ -305,7 +305,7 @@ Guardian offers two deployment options for accessing the platform's methodology 
 
 **Configuration Guides**:
 
-* [Prerequisites documentation](../../../guardian/readme/getting-started/prerequisites.md) - Detailed setup requirements
+* [Prerequisites documentation](../../../guardian/readme-1/getting-started/installation/prerequisites.md) - Detailed setup requirements
 * [Environment parameters guide](../../../guardian/readme/getting-started/installation/setting-up-environment-parameters.md) - Configuration instructions
 * [API guidelines](/broken/pages/0uJ0cdGVBhBZ8ObbszJT) - Integration patterns and endpoints
 

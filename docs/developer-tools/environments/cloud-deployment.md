@@ -2,7 +2,6 @@
 description: >-
   This document describes how to deploy a guardian instance on one of the three
   major cloud providers using Kubernetes.
-coverY: 0
 ---
 
 # Cloud Deployment
@@ -21,7 +20,7 @@ To begin the Rancher deployment process, the first step is setting up a Rancher 
 
 Once you have your Rancher server up and running, you can access it through the web interface, and you should see something like this:
 
-<figure><img src="../../../../.gitbook/assets/rancher-dashboard.png" alt="" width="563"><figcaption><p>Rancher login page</p></figcaption></figure>
+<figure><img src="../../.gitbook/assets/rancher-dashboard.png" alt="" width="563"><figcaption><p>Rancher login page</p></figcaption></figure>
 
 You should be able to log in with the credentials you created during the installation process. Once you're logged in, you'll be able to manage your clusters and deploy new ones on any cloud provider. Additionally, you'll see a couple of default clusters created by Rancher, one of them is the local cluster, which is the one where Rancher is running, and the other one is the `sandbox` cluster, which is a cluster created by Rancher to test deployments and other features.
 
@@ -41,7 +40,7 @@ You can also explore the cluster by clicking on the cluster name on the left sid
 
 An important part of the Rancher UI is the top header, specially the namespace dropdown. This dropdown allows you to select the namespace where you want to deploy the manifests. By default, Rancher will create a namespace named `default`, but you can create as many namespaces as you want. Get familiar with this dropdown and check it to see the selected namespace before panicking if you don't see the resources you expect to see under any section.
 
-<figure><img src="../../../../.gitbook/assets/rancher-header.png" alt="" width="563"><figcaption><p>Rancher header bar</p></figcaption></figure>
+<figure><img src="../../.gitbook/assets/rancher-header.png" alt="" width="563"><figcaption><p>Rancher header bar</p></figcaption></figure>
 
 To deploy the manifests, you can use the Rancher web interface, or you can use the `kubectl` command line tool. For this guide we're going to use the command line tool. The reason to use the command line tool is because it allows to deploy an entire folder with a single command, but you can use the web interface if you prefer. Simply click on the :outbox\_tray:\[import yaml] button on the right of header bar on rancher ui for each file.
 
@@ -168,7 +167,7 @@ These are third party services that are not part of the Guardian platform, but a
 
 For production workloads it is recommended to use a more robust setup for these services, like a replica set for mongo, a cluster for ipfs, a cluster for the message broker, etc. Navigating to the Apps section of Rancher, you can find the official [Helm](https://helm.sh/) charts for these services, with Rancher support, which can be used to deploy them in a more robust way. As an example, you can follow the steps below to deploy a message broker cluster using the Rancher UI, you'll see something similar to this:
 
-<figure><img src="../../../../.gitbook/assets/rancher-charts-section.png" alt=""><figcaption><p>Rancher charts section</p></figcaption></figure>
+<figure><img src="../../.gitbook/assets/rancher-charts-section.png" alt=""><figcaption><p>Rancher charts section</p></figcaption></figure>
 
 1. Navigate to the Apps section of Rancher.
 2. Click on the :heavy\_plus\_sign:\[Charts] button.

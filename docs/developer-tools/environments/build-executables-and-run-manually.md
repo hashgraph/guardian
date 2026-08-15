@@ -279,4 +279,4 @@ To start the service (found on [http://localhost:4200](http://localhost:4200))
 npm start
 ```
 
-Browse to [http://localhost:3000](http://localhost:3000) and complete the setup. To get more info, please check: [Launching Guardian](launching-guardian.md)
+Browse to [http://localhost:3000](http://localhost:3000) and complete the setup. To get more info, please check: [Launching Guardian](../../guardian/readme/getting-started/installation/launching-guardian.md)
