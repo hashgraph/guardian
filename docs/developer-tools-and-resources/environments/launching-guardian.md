@@ -1,8 +1,13 @@
-# Launching Guardian
+---
+tags:
+  - flagged-for-rewrite
+---
+
+# How to launch Guardian after installation?
 
 Once [http://localhost:3000](http://localhost:3000) is launched, we need to first generate Operator ID and Operator Key by clicking on Generate button as shown below:
 
-<figure><img src="../../../../.gitbook/assets/image (18) (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (18) (3).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 Note: If OPERATORID and OPERATOR KEY are added in .env file, we can click on Generate button directly without entering the details again in the UI.
@@ -12,7 +17,7 @@ Once you generated Operator ID and Operator Key, we can either click on Next or 
 
 **Note**: Restore Data can be restored from Hedera if data is available for setting up the Registry.
 
-<figure><img src="../../../../.gitbook/assets/image (21) (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (21) (4).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 **Limitations on restoring the data:**\
@@ -23,7 +28,7 @@ Once you generated Operator ID and Operator Key, we can either click on Next or 
 
 If Next is clicked, we need to manually setup the Registry or if Restore Data is clicked, it is filled automatically.
 
-![](<../../../../.gitbook/assets/image (23) (4).png>)
+![](<../../.gitbook/assets/image (23) (4).png>)
 
 **Note:** The above fields in UI are mandatory only for this default Schema.
 

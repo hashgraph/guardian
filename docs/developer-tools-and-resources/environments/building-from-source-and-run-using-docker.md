@@ -268,7 +268,7 @@ About docker-compose: from the end of June 2023 Compose V1 won’t be supported 
 
 ## 7. Browse the local browser
 
-Browse to [http://localhost:3000](http://localhost:3000) and complete the setup. To get more info, please check: [Launching Guardian](../../guardian/getting-started/getting-started/installation/launching-guardian.md)
+Browse to [http://localhost:3000](http://localhost:3000) and complete the setup. To get more info, please check: [Launching Guardian](launching-guardian.md)
 
 ## 8. Increase security
 

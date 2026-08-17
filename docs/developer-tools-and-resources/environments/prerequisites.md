@@ -1,15 +1,26 @@
-# Prerequisites
+---
+tags:
+  - flagged-for-rewrite
+---
+
+# What are the prerequisites?
+
+{% hint style="warning" %}
+**Reference only:** This article is flagged for rewriting and is provided for reference only.
+
+For definitive configuration details, see the [Guardian repository README](https://github.com/hashgraph/guardian/blob/main/README.md). Send feedback to [guardian-feedback@hashgraph.com](mailto:guardian-feedback@hashgraph.com) or [open a pull request](https://github.com/hashgraph/guardian).
+{% endhint %}
 
 ## 1. Universal Software
 
-1. **[Git](https://git-scm.com/downloads)** – source-control tooling
-2. **[Docker](https://www.docker.com/)** – one-command build & run (recommended)
-3. **[MongoDB v6](https://www.mongodb.com/)**, **[Node.js v24.15+](https://nodejs.org/en/download)**, and **[NATS 2.9.25](https://nats.io/)** – auto-provisioned when using Docker Compose
-4. **[IPFS storage](https://docs.ipfs.tech/concepts/what-is-ipfs/)** (choose one):
-   - **[Storacha account](https://storacha.network/)** – IPFS pinning service (formerly Web3.Storage)
-   - **[Filebase account](https://filebase.com/)** – S3-compatible IPFS pinning
-   - Local IPFS node (e.g., **[Kubo](https://github.com/ipfs/kubo)**) – auto-provisioned when using Docker Compose
-5. **[Valkey](https://valkey.io)** – in-memory cache & message broker (auto-provisioned by the Docker stack)
+1. [**Git**](https://git-scm.com/downloads) – source-control tooling
+2. [**Docker**](https://www.docker.com/) – one-command build & run (recommended)
+3. [**MongoDB v6**](https://www.mongodb.com/), [**Node.js v24.15+**](https://nodejs.org/en/download), and [**NATS 2.9.25**](https://nats.io/) – auto-provisioned when using Docker Compose
+4. [**IPFS storage**](https://docs.ipfs.tech/concepts/what-is-ipfs/) (choose one):
+   * [**Storacha account**](https://storacha.network/) – IPFS pinning service (formerly Web3.Storage)
+   * [**Filebase account**](https://filebase.com/) – S3-compatible IPFS pinning
+   * Local IPFS node (e.g., [**Kubo**](https://github.com/ipfs/kubo)) – auto-provisioned when using Docker Compose
+5. [**Valkey**](https://valkey.io) – in-memory cache & message broker (auto-provisioned by the Docker stack)
 
 When building reference implementation, you can manually build every component or run a single command with Docker.
 
@@ -31,7 +42,7 @@ When building reference implementation, you can manually build every component o
 
 ### 3.1 Prerequisites for Automatic Installation
 
-* **[Docker](https://www.docker.com/)**
+* [**Docker**](https://www.docker.com/)
 
 #### 3.1.1 Docker Installation
 

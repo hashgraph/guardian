@@ -283,7 +283,7 @@ Guardian offers two deployment options for accessing the platform's methodology 
 
 * **Benefits**: Complete control, customization capabilities, infrastructure integration, data sovereignty
 * **Requirements**: Docker/Docker Compose, Node.js, Hedera credentials, sufficient server resources
-* **Guide**: [Guardian installation instructions](../../../guardian/getting-started/getting-started/)
+* **Guide**: [Guardian installation instructions](../../../guardian/getting-started/getting-started.md)
 
 ### Essential Development Tools
 
@@ -305,8 +305,8 @@ Guardian offers two deployment options for accessing the platform's methodology 
 
 **Configuration Guides**:
 
-* [Prerequisites documentation](../../../guardian/getting-started/getting-started/installation/prerequisites.md) - Detailed setup requirements
-* [Environment parameters guide](../../../guardian/getting-started/getting-started/installation/setting-up-environment-parameters.md) - Configuration instructions
+* [Prerequisites documentation](../../../developer-tools-and-resources/environments/prerequisites.md) - Detailed setup requirements
+* [Environment parameters guide](../../../developer-tools-and-resources/environments/setting-up-environment-parameters.md) - Configuration instructions
 * [API guidelines](/broken/pages/0uJ0cdGVBhBZ8ObbszJT) - Integration patterns and endpoints
 
 {% hint style="info" %}
@@ -318,7 +318,7 @@ Guardian offers two deployment options for accessing the platform's methodology 
 ### Related Resources
 
 * [Guardian Architecture](../../../guardian/architecture/architecture-2.md) - Technical platform overview
-* [Guardian Installation Guide](../../../guardian/getting-started/getting-started/) - Setup instructions
+* [Guardian Installation Guide](../../../guardian/getting-started/getting-started.md) - Setup instructions
 * [VM0033 Methodology](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/VM0033-methodology-pdf-parsed/VM0033-Methodology.md) - Source methodology document
 * [Policy Workflow Engine](../../../guardian/architecture/architecture-2.md) - Core digitization capabilities
 

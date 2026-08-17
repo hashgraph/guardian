@@ -1,4 +1,4 @@
-# Build executables and run manually
+# How to build executables and run manually?
 
 If you want to manually build every component with debug information, then build and run the services and packages in the following sequence: Interfaces, Logger Helper, Message Broker, Logger Service, Auth Service, IPFS, Guardian Service, UI Service, and lastly, the MRV Sender Service. See below for commands.
 
@@ -279,4 +279,4 @@ To start the service (found on [http://localhost:4200](http://localhost:4200))
 npm start
 ```
 
-Browse to [http://localhost:3000](http://localhost:3000) and complete the setup. To get more info, please check: [Launching Guardian](../../guardian/getting-started/getting-started/installation/launching-guardian.md)
+Browse to [http://localhost:3000](http://localhost:3000) and complete the setup. To get more info, please check: [Launching Guardian](launching-guardian.md)
