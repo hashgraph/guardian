@@ -2,7 +2,7 @@
 
 ## The official [Hedera Guardian](https://guardian.hedera.com/) documentation
 
-The Hedera Guardian is an open-source platform for creating, managing, and issuing digital environmental assets. Examples include credit issuance for carbon, renewable energy, and biodiversity; emission and financial disclosures; certifications; climate-smart commodities; and more. Through forms, automated workflows, and connected data streams, it links project developers, auditors, corporates, and standards bodies in a shared ecosystem, using the [Hedera network](https://hedera.com/) as the trust layer. It leverages a customizable workflow engine, calculation engine, verifiable-credential based identity management, and web3 technology to ensure transparent and fraud-proof operations, making it a key tool for transforming sustainability practices and environmental markets. &#x20;
+The Hedera Guardian is an open-source platform for creating, managing, and issuing digital environmental assets. Examples include credit issuance for carbon, renewable energy, and biodiversity; emission and financial disclosures; certifications; climate-smart commodities; and more. Through forms, automated workflows, and connected data streams, it links project developers, auditors, corporates, and standards bodies in a shared ecosystem, using the [Hedera network](https://hedera.com/?utm_source=guardian) as the trust layer. It leverages a customizable workflow engine, calculation engine, verifiable-credential based identity management, and web3 technology to ensure transparent and fraud-proof operations, making it a key tool for transforming sustainability practices and environmental markets. &#x20;
 
 ### **Methodology Digitalization and Trust**
 
