@@ -6,7 +6,7 @@
 
 * [Getting Started](guardian/getting-started/README.md)
   * [Guardian Glossary](guardian/getting-started/guardian-glossary.md)
-  * [Installation Guide](guardian/getting-started/getting-started.md)
+  * [Installation Guide](guardian/getting-started/installation-guide.md)
   * [Frameworks/Libraries](guardian/getting-started/built-with.md)
 * [Architecture](guardian/architecture/README.md)
   * [High Level Architecture](guardian/architecture/architecture-2.md)

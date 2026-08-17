@@ -33,4 +33,4 @@ The [Guardian repository README](https://github.com/hashgraph/guardian#readme) i
 
 ## Ready to install?
 
-Continue to the [getting-started.md](getting-started.md "mention") to choose a self-hosted installation path.
+Continue to the [installation-guide.md](installation-guide.md "mention") to choose a self-hosted installation path.

@@ -283,7 +283,7 @@ Guardian offers two deployment options for accessing the platform's methodology 
 
 * **Benefits**: Complete control, customization capabilities, infrastructure integration, data sovereignty
 * **Requirements**: Docker/Docker Compose, Node.js, Hedera credentials, sufficient server resources
-* **Guide**: [Guardian installation instructions](../../../guardian/getting-started/getting-started.md)
+* **Guide**: [Guardian installation instructions](../../../guardian/getting-started/installation-guide.md)
 
 ### Essential Development Tools
 
@@ -318,7 +318,7 @@ Guardian offers two deployment options for accessing the platform's methodology 
 ### Related Resources
 
 * [Guardian Architecture](../../../guardian/architecture/architecture-2.md) - Technical platform overview
-* [Guardian Installation Guide](../../../guardian/getting-started/getting-started.md) - Setup instructions
+* [Guardian Installation Guide](../../../guardian/getting-started/installation-guide.md) - Setup instructions
 * [VM0033 Methodology](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/VM0033-methodology-pdf-parsed/VM0033-Methodology.md) - Source methodology document
 * [Policy Workflow Engine](../../../guardian/architecture/architecture-2.md) - Core digitization capabilities
 
