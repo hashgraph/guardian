@@ -1,4 +1,5 @@
 ---
+icon: globe
 tags:
   - flagged-for-deletion
 ---
@@ -6,7 +7,7 @@ tags:
 # Global Indexer
 
 {% hint style="warning" %}
-Note this page is flagged for deletion and will be replaced by[guardian-indexer.md](../../explorers/guardian-indexer.md "mention")
+Note this page is flagged for deletion and will be replaced by[guardian-indexer.md](../../explorers/guardian-indexer.md "mention") in the [Explorers](https://app.gitbook.com/s/bKnJV8vV7zUxRwKIsJKg/explorers "mention") section.
 {% endhint %}
 
 The Global Indexer is designed to enhance data search, retrieval, and management across various instances of the Guardian framework. Here are the key features and functionalities of the Global Indexer:
