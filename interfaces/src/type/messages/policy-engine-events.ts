@@ -23,6 +23,7 @@ export enum PolicyEngineEvents {
     PUBLISH_POLICIES = 'policy-engine-event-publish-policies',
     PUBLISH_POLICIES_ASYNC = 'policy-engine-event-publish-policies-async',
     DRY_RUN_POLICIES = 'policy-engine-event-dry-run-policies',
+    DRY_RUN_POLICIES_ASYNC = 'policy-engine-event-dry-run-policies-async',
     DRAFT_POLICIES = 'policy-engine-event-draft-policies',
     DISCONNECT_POLICY = 'policy-engine-event-disconnect-policy',
     RECONNECT_POLICY = 'policy-engine-event-reconnect-policy',

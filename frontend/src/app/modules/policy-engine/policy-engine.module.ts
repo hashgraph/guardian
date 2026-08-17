@@ -181,6 +181,7 @@ import { GlobalEventsReaderBlockComponent } from './policy-viewer/blocks/global-
 import { GlobalEventsReaderFiltersDialogComponent } from './policy-viewer/dialogs/global-events-reader-filters-dialog/global-events-reader-filters-dialog.component';
 import { AddGlobalEventTopicDialogComponent } from './policy-viewer/dialogs/add-global-event-topic/add-global-event-topic-dialog.component';
 import { MathConfigComponent } from './policy-configuration/blocks/calculate/math-config/math-config.component';
+import { ExpressionPropertyComponent } from './policy-configuration/expression-property/expression-property.component';
 import { MathEditorDialogComponent } from './dialogs/math-editor-dialog/math-editor-dialog.component';
 import { FieldLinkDialog } from './dialogs/field-link-dialog/field-link-dialog.component';
 import { ChangeBlockSettingsDialog } from './dialogs/change-block-settings-dialog/change-block-settings-dialog.component';
@@ -237,6 +238,7 @@ import { ApplySchemaTemplateDialog } from './dialogs/apply-schema-template-dialo
         ReplaceSchemasDialogComponent,
         ExportPolicyDialog,
         MathConfigComponent,
+        ExpressionPropertyComponent,
         CalculateConfigComponent,
         CalculateMathConfigComponent,
         JsonPropertiesComponent,

@@ -32,7 +32,7 @@
 
 [Step by Step](ams-i.d-grid-connected-renewable-electricity-generation-v.18.0.md#toc160021937)
 
-### Introduction &#x20;
+### Introduction
 
 The AMS-I.D Grid Connected Renewable Electricity Generation methodology presents a framework for the construction, operation, retrofit, rehabilitation, replacement, or capacity addition of power plants harnessing renewable energy sources to supply electricity to the grid. In the face of growing environmental concerns, this methodology serves as a vital instrument in curbing greenhouse gas emissions by displacing electricity that would otherwise be generated through more GHG-intensive means. With a focus on a diverse range of renewable sources such as photovoltaic, hydro, tidal/wave, wind, geothermal, and renewable biomass, the AMS-I.D methodology encapsulates projects contributing to sustainable and clean energy practices, ensuring a substantial impact on reducing the carbon footprint of electricity generation.
 
@@ -79,45 +79,45 @@ At Monitoring Periods:
 
 * Quantity of Net Electricity Supplied to the Grid
 * Quantity of Biomass/Fossil Fuel Consumed
-* Net Calorific Value of Biomass&#x20;
+* Net Calorific Value of Biomass
 
 ### Demo Video
 
-[YouTube ](https://www.youtube.com/watch?v=QiH0R3NVKJo\&list=PLnld0e1pwLho3M7uAzcbyzyJobn-X9wG_\&index=3)&#x20;
+[YouTube](https://www.youtube.com/watch?v=QiH0R3NVKJo\&list=PLnld0e1pwLho3M7uAzcbyzyJobn-X9wG_\&index=3)
 
-### Policy Workflow  <a href="#toc160021932" id="toc160021932"></a>
+### Policy Workflow <a href="#toc160021932" id="toc160021932"></a>
 
 <figure><img src="../../../.gitbook/assets/0 (1).jpeg" alt=""><figcaption></figcaption></figure>
 
-### Policy Guide  <a href="#toc160021933" id="toc160021933"></a>
+### Policy Guide <a href="#toc160021933" id="toc160021933"></a>
 
-This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp.&#x20;
+This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp.
 
-### Available Roles  <a href="#toc160021934" id="toc160021934"></a>
+### Available Roles <a href="#toc160021934" id="toc160021934"></a>
 
-**Project Participant** - The project participant is responsible for executing the emission reduction project. The project participant must adhere to the requirements outlined by the CDM and provide evidence of the emission reductions achieved. Upon successful verification, the project participant receives certified emission reduction (CER) tokens as an incentive for their emission reductions. &#x20;
+**Project Participant** - The project participant is responsible for executing the emission reduction project. The project participant must adhere to the requirements outlined by the CDM and provide evidence of the emission reductions achieved. Upon successful verification, the project participant receives certified emission reduction (CER) tokens as an incentive for their emission reductions.
 
-**Verification and Validation Body (VVB)** - The VVB plays a critical role in independently verifying and validating the project data submitted by the project participant. They thoroughly assess the project's emission reduction potential, methodologies, and adherence to the policy guidelines. Based on their evaluation, the VVB either approves or rejects the project for registration. &#x20;
+**Verification and Validation Body (VVB)** - The VVB plays a critical role in independently verifying and validating the project data submitted by the project participant. They thoroughly assess the project's emission reduction potential, methodologies, and adherence to the policy guidelines. Based on their evaluation, the VVB either approves or rejects the project for registration.
 
-**Registry (UNFCCC)** - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens.&#x20;
+**Registry (UNFCCC)** - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens.
 
-### Important Documents & Schemas  <a href="#toc160021935" id="toc160021935"></a>
+### Important Documents & Schemas <a href="#toc160021935" id="toc160021935"></a>
 
-1. Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc.&#x20;
-2. Emissions Reduction – Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions.&#x20;
-3. Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.  &#x20;
+1. Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc.
+2. Emissions Reduction – Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions.
+3. Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.
 
 ### Tools Referenced <a href="#toc160021936" id="toc160021936"></a>
 
-* Methodological Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.&#x20;
+* Methodological Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.
 * Methodological Tool 07 - Tool to calculate the emission factor for an electricity system.
 * Methodological Tool 10 - Tool to determine the remaining lifetime of equipment.
 
-### Token (Carbon Emission Reduction)  <a href="#toc160021936" id="toc160021936"></a>
+### Token (Carbon Emission Reduction) <a href="#toc160021936" id="toc160021936"></a>
 
-Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.&#x20;
+Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
-### Step by Step   <a href="#toc160021937" id="toc160021937"></a>
+### Step by Step <a href="#toc160021937" id="toc160021937"></a>
 
 1. Log in as the Standard Registry and import the policy either by file or through IPFS timestamp by selecting the third button at the top right.
 

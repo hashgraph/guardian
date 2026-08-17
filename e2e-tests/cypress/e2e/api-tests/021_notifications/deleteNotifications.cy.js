@@ -1,13 +1,13 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Delete notifications", { tags: ['notifications', 'firstPool', 'all'] }, () => {
+context('Delete notifications', { tags: ['notifications', 'firstPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
-    let notificationId, notificationNumber;
+    let notificationId; let notificationNumber;
 
-    before("Get notification id", () => {
+    before('Get notification id', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
@@ -23,7 +23,7 @@ context("Delete notifications", { tags: ['notifications', 'firstPool', 'all'] },
         })
     });
 
-    it("Delete notifications without auth - Negative", () => {
+    it('Delete notifications without auth - Negative', () => {
         cy.request({
             method: METHOD.DELETE,
             url: API.ApiServer + API.DeleteNotification + notificationId,
@@ -35,12 +35,12 @@ context("Delete notifications", { tags: ['notifications', 'firstPool', 'all'] },
         });
     });
 
-    it("Delete notifications with incorrect auth - Negative", () => {
+    it('Delete notifications with incorrect auth - Negative', () => {
         cy.request({
             method: METHOD.DELETE,
             url: API.ApiServer + API.DeleteNotification + notificationId,
             headers: {
-                authorization: "bearer 11111111111111111111@#$",
+                authorization: 'bearer 11111111111111111111@#$',
             },
             failOnStatusCode: false,
         }).then((response) => {
@@ -48,12 +48,12 @@ context("Delete notifications", { tags: ['notifications', 'firstPool', 'all'] },
         });
     });
 
-    it("Delete notifications with empty auth - Negative", () => {
+    it('Delete notifications with empty auth - Negative', () => {
         cy.request({
             method: METHOD.DELETE,
             url: API.ApiServer + API.DeleteNotification + notificationId,
             headers: {
-                authorization: "",
+                authorization: '',
             },
             failOnStatusCode: false,
         }).then((response) => {
@@ -61,7 +61,7 @@ context("Delete notifications", { tags: ['notifications', 'firstPool', 'all'] },
         });
     });
 
-    it("Delete notifications", () => {
+    it('Delete notifications', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.DELETE,

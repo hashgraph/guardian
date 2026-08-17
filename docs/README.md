@@ -14,7 +14,7 @@ Guardian is built around a number of core aspects and understanding how they rel
 
 * **Guardian Policies** are the rules of an environmental methodology — they can include data collection forms, role-based approval workflows, calculations, and dMRV endpoints — as executable software rather than PDF documents. A policy for Verra VM0047 specifies exactly what a project proponent submits, what a verifier approves, and how credits are calculated and issued.
 * **Schemas** define the structure of every data submission within a policy — fields, types, and validation rules that make data submissions consistent and machine-readable.
-* **Calculation Engine** powered by math blocks and formula linked definitions can be included inGuardian Policies. These are used to calculate emission reductions and application baselines, project, and net GHG emissions, applying leakage, uncertainty, and buffer-pool deductions, as well as converting verified results into credit quantities for token issuance.&#x20;
+* **Calculation Engine** powered by math blocks and formula linked definitions can be included in Guardian Policies. Depending upon the application, these can be used to calculate emission reductions and application baselines, project, and net GHG emissions, applying leakage, uncertainty, and buffer-pool deductions, as well as converting verified results into credit quantities for token issuance.&#x20;
 * **Tokens** are the digital environmental assets produced at key points within a policy workflow and represent outcomes recorded on the Hedera network as fungible or non-fungible tokens.
 * **TrustChain** is the verifiable audit trail that links every token back to the original submissions, approvals, and calculations that produced it. Any participant can inspect the full chain of custody without relying on a central intermediary.
 * **Standard Registry** is the platform role that publishes policies, onboards project participants, and manages credit issuance. It is the organizing entity for everything that happens in Guardian.
@@ -28,11 +28,24 @@ Adoption of the Guardian has grown from an early concept in 2020 to a platform b
 
 | I want to…                            | Start here                                                                                                   |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Understand how Guardian works         | Core Concepts                                                                                                |
 | Install and run Guardian              | [Getting Started](<README (1).md>)                                                                           |
-| Create and publish policies           | [Standard Registry](guardian/standard-registry/)                                                             |
+| Create and publish policies           | [Workspace](guardian/workspace/)                                                                             |
 | Digitize an environmental methodology | [Methodology Digitization Handbook](https://app.gitbook.com/s/bKnJV8vV7zUxRwKIsJKg/methodology-digitization) |
-| Build on the Guardian API             | [API Reference](/broken/spaces/EmXQ5yJXkOnwN84YXjVq)                                                         |
+| Build on the Guardian API             | [API Reference / guardian](https://app.gitbook.com/o/-LuC734MpqlgwA6zyhAO/s/qHzrfhYRf3qLjeOsZTmp/ "mention") |
+
+**Hedera Network Foundations**
+
+Guardian publishes policy workflow data to the Hedera Network to support the discovery and traceability of digital environmental assets.
+
+Guardian records Hedera Consensus Service transactions in topics. A token mint transaction can include a memo identifier that points to a Hedera message timestamp. That message contains the URL of the related Verifiable Presentation (VP).
+
+The VP links the Verifiable Credentials produced by the policy workflow. Together, these records provide the starting point for tracing the documents behind a token.
+
+{% hint style="info" %}
+HIP-19 and HIP-28 established foundational Hedera capabilities used by the Guardian on the Hedera Network
+{% endhint %}
+
+[HIP-19](https://hips.hedera.com/hip/hip-19) and [HIP-28](https://hips.hedera.com/hip/hip-28) define this foundational approach. Guardian builds on it through the [TrustChain](guardian/platform/trustchain.md).
 
 **Open source community**
 
@@ -50,7 +63,6 @@ Community calls, hands-on training sessions, and design workshops are regularly 
 
 **Related**
 
-* Concepts: Key Concepts
 * Concepts: [Architecture](guardian/architecture/)
 * Guide: [Methodology Digitization Handbook](https://app.gitbook.com/s/bKnJV8vV7zUxRwKIsJKg/methodology-digitization)
 

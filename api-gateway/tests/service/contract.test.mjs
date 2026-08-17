@@ -85,7 +85,7 @@ describe('ContractsApi controller logic', function () {
     it('getContracts sets count header from tuple', async () => {
         const { api } = makeApi(Api);
         const res = makeRes();
-        await api.getContracts(makeUser(), res, 'wipe', 0, 10);
+        await api.getContracts(makeUser(), makeReq(), res, 'wipe', 0, 10);
         assert.equal(res.headers['X-Total-Count'], 2);
     });
 
@@ -93,7 +93,7 @@ describe('ContractsApi controller logic', function () {
         let seen;
         stub.getContracts = async (owner, type, pi, ps) => { seen = { type, pi, ps, owner }; return [[], 0]; };
         const { api } = makeApi(Api);
-        await api.getContracts(makeUser(), makeRes(), 'retire', 2, 25);
+        await api.getContracts(makeUser(), makeReq(), makeRes(), 'retire', 2, 25);
         assert.equal(seen.type, 'retire');
         assert.equal(seen.pi, 2);
         assert.ok(seen.owner instanceof FakeEntityOwner);

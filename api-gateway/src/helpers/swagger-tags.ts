@@ -13,6 +13,7 @@ interface ScalarTag {
     name: string;
     description?: string;
     'x-displayName'?: string;
+    parent?: string;
 }
 
 interface ScalarTagGroup {
@@ -62,7 +63,7 @@ const swaggerTags: SwaggerTag[] = [
         name: 'record',
         'x-parent': 'guardian-policies',
         'x-page-title': 'Records',
-        'x-page-description': 'Environmental data records submitted through policy workflows.',
+        'x-page-description': 'Capture and replay policy execution sequences for regression testing and validation.',
     },
     {
         name: 'tools',
@@ -333,10 +334,14 @@ export function applyScalarTagMetadata(document: OpenAPIObject): void {
     const groups = new Map<string, ScalarTagGroup>();
     const tags: ScalarTag[] = [];
 
-    // Register containers (tags without a parent) as groups, preserving order.
+    // Register containers (tags without a parent) as groups and real tags, preserving order.
     for (const tag of swaggerTags) {
         if (!tag['x-parent']) {
             groups.set(tag.name, { name: tag['x-page-title'] ?? tag.name, tags: [] });
+            tags.push({
+                name: tag.name,
+                'x-displayName': tag['x-page-title'],
+            });
         }
     }
 
@@ -351,6 +356,7 @@ export function applyScalarTagMetadata(document: OpenAPIObject): void {
             name: tag.name,
             description: tag['x-page-description'],
             'x-displayName': tag['x-page-title'],
+            parent,
         });
     }
 

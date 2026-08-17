@@ -1,7 +1,3 @@
----
-icon: lightbulb-on
----
-
 # GCCM001 v.4 Methodology for Renewable Energy Generation Projects Supplying Electricity to Grid
 
 ## Table of Contents

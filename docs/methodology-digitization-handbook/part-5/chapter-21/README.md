@@ -20,8 +20,8 @@ After completing this chapter, you will be able to:
 
 * Completed Chapters 18-20: Custom Logic Block Development, Formula Linked Definitions, and Guardian Tools Architecture
 * Access to test artifacts: [Final PDD VC with net ERR data](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/final-PDD-vc.json), [AR Tool 14 implementation](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/AR-Tool-14.json), [VM0033 test spreadsheet](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx)
-* Understanding of Guardian [dry-run mode](../../../guardian/standard-registry/policies/dry-run/demo-guide-on-dry-run-operations.md)
-* Familiarity with Guardian [testing interface](../../../guardian/standard-registry/policies/testing-debugging-code/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui.md)
+* Understanding of Guardian [dry-run mode](../../../guardian/workspace/policies/dry-run/demo-guide-on-dry-run-operations.md)
+* Familiarity with Guardian [testing interface](../../../guardian/workspace/policies/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui.md)
 
 ## Guardian's Built-in Testing Framework
 
@@ -39,8 +39,8 @@ Environmental methodology calculations directly impact carbon credit credibility
 
 Our recommended testing framework supports multiple validation levels:
 
-1. **CustomLogicBlock Testing** - Individual calculation block validation using Guardian's [testing interface](../../../guardian/standard-registry/policies/testing-debugging-code/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui.md)
-2. **Dry-Run Policy Execution** - Complete workflow testing using [dry-run mode](../../../guardian/standard-registry/policies/dry-run/demo-guide-on-dry-run-operations.md)
+1. **CustomLogicBlock Testing** - Individual calculation block validation using Guardian's [testing interface](../../../guardian/workspace/policies/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui.md)
+2. **Dry-Run Policy Execution** - Complete workflow testing using [dry-run mode](../../../guardian/workspace/policies/dry-run/demo-guide-on-dry-run-operations.md)
 3. **Tool Integration Testing** - AR Tool and other tool validations
 4. **End-to-End Workflow Testing** - Complete credit issuance workflows
 5. **Test Artifact Validation** - Against methodology spreadsheet test cases
@@ -92,7 +92,7 @@ Guardian provides a powerful testing interface specifically designed for customL
 
 #### Accessing the Testing Interface
 
-Following Guardian's [testing documentation](../../../guardian/standard-registry/policies/testing-debugging-code/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui.md):
+Following Guardian's [testing documentation](../../../guardian/workspace/policies/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui.md):
 
 1. **Navigate to Policy Editor** - Open your methodology policy in draft mode
 2. **Select customLogicBlock** - Click on the calculation block you want to test
@@ -173,7 +173,7 @@ Debug output appears in the **Logs** tab of the testing interface.
 
 ### Complete Policy Workflow Testing
 
-Guardian's [dry-run mode](../../../guardian/standard-registry/policies/dry-run/demo-guide-on-dry-run-operations.md) allows testing complete methodology workflows without blockchain transactions.
+Guardian's [dry-run mode](../../../guardian/workspace/policies/dry-run/demo-guide-on-dry-run-operations.md) allows testing complete methodology workflows without blockchain transactions.
 
 #### Setting Up Dry-Run Mode
 
@@ -307,8 +307,8 @@ This completes Part V: Calculation Logic Implementation. With comprehensive test
 
 ## References and Further Reading
 
-* [Guardian Dry-Run Mode Documentation](../../../guardian/standard-registry/policies/dry-run/demo-guide-on-dry-run-operations.md)
-* [CustomLogicBlock Testing Interface](../../../guardian/standard-registry/policies/testing-debugging-code/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui.md)
+* [Guardian Dry-Run Mode Documentation](../../../guardian/workspace/policies/dry-run/demo-guide-on-dry-run-operations.md)
+* [CustomLogicBlock Testing Interface](../../../guardian/workspace/policies/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui.md)
 * [Guardian API Automation Testing](https://github.com/hashgraph/guardian/blob/develop/docs/api-automation-testing/how-to-perform-api-automation-testing.md)
 * [VM0033 Test Artifacts](../../_shared/artifacts/) - Complete test dataset for validation
 * [AR Tool 14 Implementation](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/AR-Tool-14.json) - Production tool configuration

@@ -149,6 +149,7 @@ export class HederaSDKHelper {
      * Rest API max limit
      */
     public static readonly REST_API_MAX_LIMIT: number = 100;
+
     /**
      * Rest API max limit
      */
@@ -1735,6 +1736,7 @@ export class HederaSDKHelper {
         const create = await new FileCreateTransaction()
             .setKeys([client.operatorPublicKey])
             .setContents(hex.slice(0, CHUNK))
+            .setMaxTransactionFee(MAX_FEE)
             .execute(client);
 
         const newFileId = (await create.getReceipt(client)).fileId;
@@ -1744,6 +1746,7 @@ export class HederaSDKHelper {
                 .setFileId(newFileId)
                 .setContents(hex.slice(i, i + CHUNK))
                 .setMaxChunks(Number.MAX_SAFE_INTEGER)
+                .setMaxTransactionFee(MAX_FEE)
                 .execute(client);
         }
 

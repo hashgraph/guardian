@@ -1,7 +1,3 @@
----
-icon: island-tropical
----
-
 # VM0042 Improved Agricultural Land Management, v2.1
 
 ### Table of Contents <a href="#toc964999924" id="toc964999924"></a>
@@ -169,7 +165,7 @@ The digital policy for VM0042 follows structured procedural steps, covering proj
 
 <figure><img src="../../../.gitbook/assets/image (803).png" alt=""><figcaption></figcaption></figure>
 
-2.To start using the policy you first have to change the status of the policy from “Draft” to “Dry Run” or “Publish”,  then select the “Dry Run” button
+2.To start using the policy you first have to change the status of the policy from “Draft” to “Dry Run” or “Publish”, then select the “Dry Run” button
 
 <figure><img src="../../../.gitbook/assets/image (804).png" alt=""><figcaption></figcaption></figure>
 
@@ -179,7 +175,7 @@ The digital policy for VM0042 follows structured procedural steps, covering proj
 
 <figure><img src="../../../.gitbook/assets/image (806).png" alt=""><figcaption></figcaption></figure>
 
-4.Create a new user again and assign their role as VVB.&#x20;
+4.Create a new user again and assign their role as VVB.
 
 <figure><img src="../../../.gitbook/assets/image (807).png" alt=""><figcaption></figcaption></figure>
 

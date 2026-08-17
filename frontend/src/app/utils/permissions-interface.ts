@@ -100,6 +100,7 @@ export const entityNames = new Map<PermissionEntities, string>([
     [PermissionEntities.TEMPLATE, 'Template'],
     [PermissionEntities.DOCUMENT, 'Document'],
     [PermissionEntities.SCHEMA, 'Schema'],
+    [PermissionEntities.TEMPLATE, 'Template'],
     [PermissionEntities.RULE, 'Schema Rule'],
     [PermissionEntities.MODULE, 'Module'],
     [PermissionEntities.FILE, 'File'],
@@ -127,6 +128,11 @@ export const entityNames = new Map<PermissionEntities, string>([
     [PermissionEntities.STATISTIC, 'Statistic'],
     [PermissionEntities.LABEL, 'Label'],
     [PermissionEntities.FORMULA, 'Formula'],
+    [PermissionEntities.CREDENTIAL, 'Credential'],
+    [PermissionEntities.ORGANIZATION, 'Organization'],
+    [PermissionEntities.ORG_ROLE, 'Organization Role'],
+    [PermissionEntities.ORG_MEMBER, 'Organization Member'],
+    [PermissionEntities.ORG_POLICY, 'Organization Policy'],
     [PermissionEntities.WORKER_TASK, 'Worker Task']
 ])
 
@@ -174,6 +180,8 @@ export const categoryNames = new Map<PermissionCategories, string>([
     [PermissionCategories.STATISTICS, 'Policy Statistics'],
     [PermissionCategories.FORMULAS, 'Formulas'],
     [PermissionCategories.ACCESS, 'Access'], 
+    [PermissionCategories.CREDENTIALS, 'Credentials'],
+    [PermissionCategories.ORGANIZATIONS, 'Organizations'],
     [PermissionCategories.WORKER_TASKS, 'Worker Tasks'], 
 ])
 

@@ -1230,7 +1230,7 @@ export class SchemaConfigComponent implements OnInit {
         const { type, data, schemas, errors } = result;
         const dialogRef = this.dialog.open(SchemaViewDialog, {
             width: '90%',
-            styleClass: 'guardian-dialog',
+            styleClass: 'guardian-dialog schema-import-preview',
             showHeader: false,
             data: {
                 schemas,

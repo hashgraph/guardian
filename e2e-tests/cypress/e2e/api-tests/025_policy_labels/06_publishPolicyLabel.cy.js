@@ -1,13 +1,13 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Publish policy label", { tags: ['policy_labels', 'firstPool', 'all'] }, () => {
+context('Publish policy label', { tags: ['policy_labels', 'firstPool', 'all'] }, () => {
     const UserUsername = Cypress.env('User');
 
     let policyLabel;
 
-    before("Get policy label", () => {
+    before('Get policy label', () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
@@ -22,11 +22,11 @@ context("Publish policy label", { tags: ['policy_labels', 'firstPool', 'all'] },
         });
     })
 
-    it("Publish policy label", () => {
+    it('Publish policy label', () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             cy.request({
                 method: METHOD.PUT,
-                url: API.ApiServer + API.PolicyLabels + policyLabel.id + "/" + API.Publish,
+                url: API.ApiServer + API.PolicyLabels + policyLabel.id + '/' + API.Publish,
                 headers: {
                     authorization,
                 },
@@ -39,15 +39,15 @@ context("Publish policy label", { tags: ['policy_labels', 'firstPool', 'all'] },
                 expect(response.body.name).eql(policyLabel.name);
                 expect(response.body.description).eql(policyLabel.description);
                 expect(response.body.policyId).eql(policyLabel.policyId);
-                expect(response.body.status).eql("PUBLISHED");
+                expect(response.body.status).eql('PUBLISHED');
             });
         })
     });
 
-    it("Publish policy label without auth - Negative", () => {
+    it('Publish policy label without auth - Negative', () => {
         cy.request({
             method: METHOD.PUT,
-            url: API.ApiServer + API.PolicyLabels + policyLabel.id + "/" + API.Publish,
+            url: API.ApiServer + API.PolicyLabels + policyLabel.id + '/' + API.Publish,
             headers: {
             },
             failOnStatusCode: false,
@@ -56,12 +56,12 @@ context("Publish policy label", { tags: ['policy_labels', 'firstPool', 'all'] },
         });
     });
 
-    it("Publish policy label with incorrect auth - Negative", () => {
+    it('Publish policy label with incorrect auth - Negative', () => {
         cy.request({
             method: METHOD.PUT,
-            url: API.ApiServer + API.PolicyLabels + policyLabel.id + "/" + API.Publish,
+            url: API.ApiServer + API.PolicyLabels + policyLabel.id + '/' + API.Publish,
             headers: {
-                authorization: "bearer 11111111111111111111@#$",
+                authorization: 'bearer 11111111111111111111@#$',
             },
             failOnStatusCode: false,
         }).then((response) => {
@@ -69,12 +69,12 @@ context("Publish policy label", { tags: ['policy_labels', 'firstPool', 'all'] },
         });
     })
 
-    it("Publish policy label with empty auth - Negative", () => {
+    it('Publish policy label with empty auth - Negative', () => {
         cy.request({
             method: METHOD.PUT,
-            url: API.ApiServer + API.PolicyLabels + policyLabel.id + "/" + API.Publish,
+            url: API.ApiServer + API.PolicyLabels + policyLabel.id + '/' + API.Publish,
             headers: {
-                authorization: "",
+                authorization: '',
             },
             failOnStatusCode: false,
         }).then((response) => {

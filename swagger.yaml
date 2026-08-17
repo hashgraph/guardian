@@ -484,7 +484,7 @@ paths:
               loginBody:
                 value:
                   username: StandardRegistry
-                  password: test
+                  password: TestPass1
       responses:
         '200':
           description: Successful operation.
@@ -560,7 +560,7 @@ paths:
               changePasswordBody:
                 value:
                   username: StandardRegistry
-                  oldPassword: test
+                  oldPassword: TestPass1
                   newPassword: AnotherStrongPassword3#
       responses:
         '200':
@@ -8537,8 +8537,22 @@ paths:
                 message: Forbidden resource
                 error: Forbidden
                 statusCode: 403
+        '404':
+          description: Message could not be retrieved from Hedera.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorDTO'
+              example:
+                statusCode: 404
+                message: >-
+                  MESSAGE_NOT_FOUND: Message 1774441459.171929000 could not be
+                  retrieved. Check the message id and that it belongs to the
+                  current Hedera network.
         '422':
-          description: Message ID in body is empty.
+          description: >-
+            Message ID in body is empty, or the message documents could not be
+            loaded from IPFS.
           content:
             application/json:
               schema:
@@ -8743,8 +8757,22 @@ paths:
                 message: Forbidden resource
                 error: Forbidden
                 statusCode: 403
+        '404':
+          description: Message could not be retrieved from Hedera.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorDTO'
+              example:
+                statusCode: 404
+                message: >-
+                  MESSAGE_NOT_FOUND: Message 1774441459.171929000 could not be
+                  retrieved. Check the message id and that it belongs to the
+                  current Hedera network.
         '422':
-          description: Message ID in body is empty.
+          description: >-
+            Message ID in body is empty, or the message documents could not be
+            loaded from IPFS.
           content:
             application/json:
               schema:
@@ -16573,6 +16601,75 @@ paths:
       security:
         - bearer: []
       summary: Publishes the policy onto IPFS.
+      tags:
+        - policies
+  /policies/push/{policyId}/dry-run:
+    put:
+      description: >-
+        Switches the specified policy into dry-run mode asynchronously and
+        returns the task of the operation, so that its progress can be tracked.
+        Dry-run mode is intended for testing and simulation without executing
+        real transactions. Only users with the Standard Registry role are
+        allowed to make the request.
+      operationId: PolicyApi_dryRunPolicyAsync
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+      requestBody:
+        required: true
+        description: Options.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Object'
+      responses:
+        '202':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+              example:
+                taskId: c51e15d5-b484-49e9-b267-84b1de3585b4
+                expectation: 6
+                action: Dry-run policy
+                userId: 69c2cfc021d39e7b6d15e236
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Dry Run policy.
       tags:
         - policies
   /policies/{policyId}/dry-run:
@@ -53143,129 +53240,186 @@ info:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
 tags:
+  - name: guardian-schemas
+    x-displayName: Guardian Schemas
+  - name: guardian-policies
+    x-displayName: Guardian Policies
+  - name: hedera-tokens
+    x-displayName: Hedera
+  - name: data
+    x-displayName: Data & DMRV
+  - name: identity
+    x-displayName: Identity & Access
+  - name: platform
+    x-displayName: Platform
+  - name: customization
+    x-displayName: Customization
   - name: schemas
     description: Create and manage JSON schemas for policy data structures.
     x-displayName: Schemas
+    parent: guardian-schemas
   - name: schema
     description: Schema operations on individual schema objects.
     x-displayName: Schema
+    parent: guardian-schemas
   - name: schema-rules
     description: Validation rules and constraints applied to schema fields.
     x-displayName: Schema Rules
+    parent: guardian-schemas
   - name: policies
     description: Create, publish, and manage environmental policy workflows.
     x-displayName: Policies
+    parent: guardian-policies
   - name: record
-    description: Environmental data records submitted through policy workflows.
+    description: >-
+      Capture and replay policy execution sequences for regression testing and
+      validation.
     x-displayName: Records
+    parent: guardian-policies
   - name: tools
     description: Standalone tools that extend policy workflow capabilities.
     x-displayName: Tools
+    parent: guardian-policies
   - name: modules
     description: Reusable policy logic modules that can be composed into workflows.
     x-displayName: Modules
+    parent: guardian-policies
   - name: formulas
     description: Calculation formulas for quantifying environmental impact.
     x-displayName: Formulas
+    parent: guardian-policies
   - name: artifacts
     description: Files and documents attached to policies and policy blocks.
     x-displayName: Artifacts
+    parent: guardian-policies
   - name: policy-labels
     description: Labels for categorizing and filtering policies.
     x-displayName: Labels
+    parent: guardian-policies
   - name: policy-comments
     description: Threaded comments and review notes on policies.
     x-displayName: Comments
+    parent: guardian-policies
   - name: policy-repository
     description: Policy marketplace for discovering and importing published policies.
     x-displayName: Repository
+    parent: guardian-policies
   - name: suggestions
     description: Context-aware suggestions for policy design and configuration.
     x-displayName: Suggestions
+    parent: guardian-policies
   - name: analytics
     description: Query and export usage analytics across the platform.
     x-displayName: Analytics
+    parent: guardian-policies
   - name: policy-statistics
     description: Usage and execution statistics for policies.
     x-displayName: Statistics
+    parent: guardian-policies
   - name: external-policies
     description: Integration with externally hosted or managed policies.
     x-displayName: External Policies
+    parent: guardian-policies
   - name: wizard
     description: Step-by-step guided policy creation workflow.
     x-displayName: Wizard
+    parent: guardian-policies
   - name: tokens
     description: Manage Hedera tokens representing environmental assets and carbon credits.
     x-displayName: Tokens
+    parent: hedera-tokens
   - name: contracts
     description: Smart contract interactions for token issuance and retirement.
     x-displayName: Contracts
+    parent: hedera-tokens
   - name: relayer-accounts
     description: Hedera relayer account configuration and management.
     x-displayName: Relayer Accounts
+    parent: hedera-tokens
   - name: dmrv
     description: Digital Measurement, Reporting and Verification data operations.
     x-displayName: DMRV
+    parent: data
   - name: ipfs
     description: Decentralized file storage via the InterPlanetary File System.
     x-displayName: IPFS
+    parent: data
   - name: external
     description: Integration with external data sources and third-party systems.
     x-displayName: External
+    parent: data
   - name: projects
     description: Environmental projects generating verified carbon or ecological credits.
     x-displayName: Projects
+    parent: data
   - name: map
     description: Geospatial data and map visualization for project locations.
     x-displayName: Map
+    parent: data
   - name: accounts
     description: Manage user accounts and authentication sessions.
     x-displayName: Accounts
+    parent: identity
   - name: profiles
     description: User profile configuration and DID management.
     x-displayName: Profiles
+    parent: identity
   - name: permissions
     description: Role-based access control and permission management.
     x-displayName: Permissions
+    parent: identity
   - name: credentials
     description: W3C Verifiable Credentials issued and managed within policies.
     x-displayName: Credentials
+    parent: identity
   - name: trust-chains
     description: Chains of verifiable trust linking issuers, verifiers, and holders.
     x-displayName: Trust Chains
+    parent: identity
   - name: settings
     description: Global application configuration and environment settings.
     x-displayName: Settings
+    parent: platform
   - name: notifications
     description: User notifications and alert management.
     x-displayName: Notifications
+    parent: platform
   - name: tags
     description: User-defined tags for organizing platform resources.
     x-displayName: Tags
+    parent: platform
   - name: logs
     description: Audit logs recording user and system activity.
     x-displayName: Logs
+    parent: platform
   - name: tasks
     description: Background task tracking for long-running operations.
     x-displayName: Tasks
+    parent: platform
   - name: worker-tasks
     description: Worker-level task queue management.
     x-displayName: Worker Tasks
+    parent: platform
   - name: metrics
     description: Real-time performance and operational metrics.
     x-displayName: Metrics
+    parent: platform
   - name: ai-suggestions
     description: AI-powered recommendations for policies, schemas, and workflows.
     x-displayName: AI Suggestions
+    parent: platform
   - name: demo
     description: Demo data and sample environment setup.
     x-displayName: Demo
+    parent: platform
   - name: themes
     description: UI theme selection and customization.
     x-displayName: Themes
+    parent: customization
   - name: branding
     description: White-label branding assets and configuration.
     x-displayName: Branding
+    parent: customization
 servers:
   - url: /api/v1
     description: version 1.0

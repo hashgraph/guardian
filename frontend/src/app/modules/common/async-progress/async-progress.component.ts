@@ -30,6 +30,9 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
     private last?: any;
     private redir?: boolean;
     private lastTimestamp: number = 0;
+    // The finished task arrives both over the websocket and from the initial
+    // request, so the result must only be handled once.
+    private resultHandled: boolean = false;
 
     @Input('taskId') inputTaskId?: string;
     @Output() completed = new EventEmitter<string>();
@@ -88,6 +91,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             this.statusesCount = 0;
             this.statuses.length = 0;
             this.progressValue = 0;
+            this.resultHandled = false;
         }
     }
 
@@ -130,9 +134,15 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
         }
         if (result) {
             this.progressValue = 100;
-            this.setResult(result);
+            if (!this.resultHandled) {
+                this.resultHandled = true;
+                this.setResult(result);
+            }
         } else if (error) {
-            this.setError(error);
+            if (!this.resultHandled) {
+                this.resultHandled = true;
+                this.setError(error);
+            }
         }
     }
 
@@ -307,6 +317,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                     });
                 }, 500);
                 break;
+            case TaskAction.DRY_RUN_POLICY:
             case TaskAction.PUBLISH_POLICY:
                 if (result) {
                     const { isValid, errors, policyId } = result;
@@ -333,7 +344,23 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                             'The policy is invalid',
                             { sticky: true, logMessage: msg }
                         );
+                        // The configuration page is the only place the block errors
+                        // can be shown, so go there instead of back to the origin.
                         this._configurationErrors.set(policyId, errors);
+                        setTimeout(() => {
+                            this.router.navigate(['policy-configuration'], {
+                                queryParams: {
+                                    policyId,
+                                },
+                                replaceUrl: true,
+                            });
+                        }, 500);
+                        break;
+                    }
+                    if (this.last) {
+                        // Replace the task page so it is not left in the history.
+                        this.redirect(this.last, true);
+                        return;
                     }
                     setTimeout(() => {
                         this.router.navigate(['policy-configuration'], {
@@ -578,7 +605,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
         this.applyChanges();
     }
 
-    private redirect(urlString: string) {
+    private redirect(urlString: string, replaceUrl: boolean = false) {
         const url = new URL(urlString);
         const path = [url.pathname];
         const queryParams: any = {};
@@ -594,7 +621,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             }
         }
         setTimeout(() => {
-            this.router.navigate(path, { queryParams });
+            this.router.navigate(path, { queryParams, replaceUrl });
         }, 500);
 
     }

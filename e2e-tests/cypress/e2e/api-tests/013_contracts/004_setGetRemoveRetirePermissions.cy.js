@@ -1,14 +1,14 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
+context('Contracts', { tags: ['contracts', 'firstPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const SR2Username = Cypress.env('SR2User');
-    const contractNameR = "FirstAPIContractR";
-    const contractNameW = "FirstAPIContractW";
+    const contractNameR = 'FirstAPIContractR';
+    const contractNameW = 'FirstAPIContractW';
 
-    let idW, idR, idW2, idR2, hederaIdSR2;
+    let idW; let idR; let idW2; let idR2; let hederaIdSR2;
 
     const getContractId = (token, type, description) => {
         return cy.request({
@@ -33,8 +33,8 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
 
     before(() => {
         Authorization.getAccessToken(SRUsername).then((token) => {
-            getContractId(token, "WIPE", contractNameW).then(id => idW = id);
-            getContractId(token, "RETIRE", contractNameR).then(id => idR = id);
+            getContractId(token, 'WIPE', contractNameW).then(id => idW = id);
+            getContractId(token, 'RETIRE', contractNameR).then(id => idR = id);
         });
 
         Authorization.getAccessToken(SR2Username).then((token) => {
@@ -44,12 +44,12 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
                 headers: { authorization: token }
             }).then(res => hederaIdSR2 = res.body.hederaAccountId);
 
-            getContractId(token, "WIPE", contractNameW).then(id => idW2 = id);
-            getContractId(token, "RETIRE", contractNameR).then(id => idR2 = id);
+            getContractId(token, 'WIPE', contractNameW).then(id => idW2 = id);
+            getContractId(token, 'RETIRE', contractNameR).then(id => idR2 = id);
         });
     });
 
-    it("Add wipe contract admin(retire)", () => {
+    it('Add wipe contract admin(retire)', () => {
         Authorization.getAccessToken(SRUsername).then((token) => {
             manageRole(METHOD.POST, API.RetireContract, idR, API.AdminRole, hederaIdSR2, token).then((res) => {
                 expect(res.status).eql(STATUS_CODE.OK);
@@ -58,25 +58,25 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
         });
     });
 
-    it("Add wipe contract admin(retire) without auth token - Negative", () => {
+    it('Add wipe contract admin(retire) without auth token - Negative', () => {
         manageRole(METHOD.POST, API.RetireContract, idR, API.AdminRole, hederaIdSR2).then((res) => {
             expect(res.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Add wipe contract admin(retire) with invalid auth token - Negative", () => {
-        manageRole(METHOD.POST, API.RetireContract, idR, API.AdminRole, hederaIdSR2, "Bearer wqe").then((res) => {
+    it('Add wipe contract admin(retire) with invalid auth token - Negative', () => {
+        manageRole(METHOD.POST, API.RetireContract, idR, API.AdminRole, hederaIdSR2, 'Bearer wqe').then((res) => {
             expect(res.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Add wipe contract admin(retire) permissions with empty auth token - Negative", () => {
-        manageRole(METHOD.POST, API.RetireContract, idR, API.AdminRole, hederaIdSR2, "").then((res) => {
+    it('Add wipe contract admin(retire) permissions with empty auth token - Negative', () => {
+        manageRole(METHOD.POST, API.RetireContract, idR, API.AdminRole, hederaIdSR2, '').then((res) => {
             expect(res.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Add wipe contract manager", () => {
+    it('Add wipe contract manager', () => {
         Authorization.getAccessToken(SRUsername).then((token) => {
             manageRole(METHOD.POST, API.WipeContract, idW, API.ManagerRole, hederaIdSR2, token).then((res) => {
                 expect(res.status).eql(STATUS_CODE.OK);
@@ -85,25 +85,25 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
         });
     });
 
-    it("Add wipe contract manager without auth token - Negative", () => {
+    it('Add wipe contract manager without auth token - Negative', () => {
         manageRole(METHOD.POST, API.WipeContract, idW, API.ManagerRole, hederaIdSR2).then((res) => {
             expect(res.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Add wipe contract manager with invalid auth token - Negative", () => {
-        manageRole(METHOD.POST, API.WipeContract, idW, API.ManagerRole, hederaIdSR2, "Bearer wqe").then((res) => {
+    it('Add wipe contract manager with invalid auth token - Negative', () => {
+        manageRole(METHOD.POST, API.WipeContract, idW, API.ManagerRole, hederaIdSR2, 'Bearer wqe').then((res) => {
             expect(res.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Add wipe contract manager permissions with empty auth token - Negative", () => {
-        manageRole(METHOD.POST, API.WipeContract, idW, API.ManagerRole, hederaIdSR2, "").then((res) => {
+    it('Add wipe contract manager permissions with empty auth token - Negative', () => {
+        manageRole(METHOD.POST, API.WipeContract, idW, API.ManagerRole, hederaIdSR2, '').then((res) => {
             expect(res.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Add wipe contract admin(wipe)", () => {
+    it('Add wipe contract admin(wipe)', () => {
         Authorization.getAccessToken(SRUsername).then((token) => {
             manageRole(METHOD.POST, API.WipeContract, idW, API.AdminRole, hederaIdSR2, token).then((res) => {
                 expect(res.status).eql(STATUS_CODE.OK);
@@ -112,25 +112,25 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
         });
     });
 
-    it("Add wipe contract admin(wipe) without auth token - Negative", () => {
+    it('Add wipe contract admin(wipe) without auth token - Negative', () => {
         manageRole(METHOD.POST, API.WipeContract, idW, API.AdminRole, hederaIdSR2).then((res) => {
             expect(res.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Add wipe contract admin(wipe) with invalid auth token - Negative", () => {
-        manageRole(METHOD.POST, API.WipeContract, idW, API.AdminRole, hederaIdSR2, "Bearer wqe").then((res) => {
+    it('Add wipe contract admin(wipe) with invalid auth token - Negative', () => {
+        manageRole(METHOD.POST, API.WipeContract, idW, API.AdminRole, hederaIdSR2, 'Bearer wqe').then((res) => {
             expect(res.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Add wipe contract admin(wipe) with empty auth token - Negative", () => {
-        manageRole(METHOD.POST, API.WipeContract, idW, API.AdminRole, hederaIdSR2, "").then((res) => {
+    it('Add wipe contract admin(wipe) with empty auth token - Negative', () => {
+        manageRole(METHOD.POST, API.WipeContract, idW, API.AdminRole, hederaIdSR2, '').then((res) => {
             expect(res.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Verify roles(wipe)", () => {
+    it('Verify roles(wipe)', () => {
         cy.wait(60000);
         Authorization.getAccessToken(SR2Username).then((token) => {
             cy.request({
@@ -144,7 +144,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
         });
     });
 
-    it("Verify roles(retire)", () => {
+    it('Verify roles(retire)', () => {
         Authorization.getAccessToken(SR2Username).then((token) => {
             cy.request({
                 method: METHOD.GET,
@@ -157,7 +157,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
         });
     });
 
-    it("Remove wipe contract admin(retire)", () => {
+    it('Remove wipe contract admin(retire)', () => {
         Authorization.getAccessToken(SRUsername).then((token) => {
             manageRole(METHOD.DELETE, API.RetireContract, idR, API.AdminRole, hederaIdSR2, token).then((res) => {
                 expect(res.status).eql(STATUS_CODE.OK);
@@ -166,25 +166,25 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
         });
     });
 
-    it("Remove wipe contract admin(retire) without auth token - Negative", () => {
+    it('Remove wipe contract admin(retire) without auth token - Negative', () => {
         manageRole(METHOD.DELETE, API.RetireContract, idR, API.AdminRole, hederaIdSR2).then((res) => {
             expect(res.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Remove wipe contract admin(retire) with invalid auth token - Negative", () => {
-        manageRole(METHOD.DELETE, API.RetireContract, idR, API.AdminRole, hederaIdSR2, "Bearer wqe").then((res) => {
+    it('Remove wipe contract admin(retire) with invalid auth token - Negative', () => {
+        manageRole(METHOD.DELETE, API.RetireContract, idR, API.AdminRole, hederaIdSR2, 'Bearer wqe').then((res) => {
             expect(res.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Remove wipe contract admin(retire) permissions with empty auth token - Negative", () => {
-        manageRole(METHOD.DELETE, API.RetireContract, idR, API.AdminRole, hederaIdSR2, "").then((res) => {
+    it('Remove wipe contract admin(retire) permissions with empty auth token - Negative', () => {
+        manageRole(METHOD.DELETE, API.RetireContract, idR, API.AdminRole, hederaIdSR2, '').then((res) => {
             expect(res.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Remove wipe contract manager", () => {
+    it('Remove wipe contract manager', () => {
         Authorization.getAccessToken(SRUsername).then((token) => {
             manageRole(METHOD.DELETE, API.WipeContract, idW, API.ManagerRole, hederaIdSR2, token).then((res) => {
                 expect(res.status).eql(STATUS_CODE.OK);
@@ -193,25 +193,25 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
         });
     });
 
-    it("Remove wipe contract manager without auth token - Negative", () => {
+    it('Remove wipe contract manager without auth token - Negative', () => {
         manageRole(METHOD.DELETE, API.WipeContract, idW, API.ManagerRole, hederaIdSR2).then((res) => {
             expect(res.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Remove wipe contract manager with invalid auth token - Negative", () => {
-        manageRole(METHOD.DELETE, API.WipeContract, idW, API.ManagerRole, hederaIdSR2, "Bearer wqe").then((res) => {
+    it('Remove wipe contract manager with invalid auth token - Negative', () => {
+        manageRole(METHOD.DELETE, API.WipeContract, idW, API.ManagerRole, hederaIdSR2, 'Bearer wqe').then((res) => {
             expect(res.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Remove wipe contract manager permissions with empty auth token - Negative", () => {
-        manageRole(METHOD.DELETE, API.WipeContract, idW, API.ManagerRole, hederaIdSR2, "").then((res) => {
+    it('Remove wipe contract manager permissions with empty auth token - Negative', () => {
+        manageRole(METHOD.DELETE, API.WipeContract, idW, API.ManagerRole, hederaIdSR2, '').then((res) => {
             expect(res.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Remove wipe contract admin(wipe)", () => {
+    it('Remove wipe contract admin(wipe)', () => {
         Authorization.getAccessToken(SRUsername).then((token) => {
             manageRole(METHOD.DELETE, API.WipeContract, idW, API.AdminRole, hederaIdSR2, token).then((res) => {
                 expect(res.status).eql(STATUS_CODE.OK);
@@ -220,25 +220,25 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
         });
     });
 
-    it("Remove  wipe contract admin(wipe) without auth token - Negative", () => {
+    it('Remove  wipe contract admin(wipe) without auth token - Negative', () => {
         manageRole(METHOD.DELETE, API.WipeContract, idW, API.AdminRole, hederaIdSR2).then((res) => {
             expect(res.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Remove  wipe contract admin(wipe) with invalid auth token - Negative", () => {
-        manageRole(METHOD.DELETE, API.WipeContract, idW, API.AdminRole, hederaIdSR2, "Bearer wqe").then((res) => {
+    it('Remove  wipe contract admin(wipe) with invalid auth token - Negative', () => {
+        manageRole(METHOD.DELETE, API.WipeContract, idW, API.AdminRole, hederaIdSR2, 'Bearer wqe').then((res) => {
             expect(res.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Remove  wipe contract admin(wipe) permissions with empty auth token - Negative", () => {
-        manageRole(METHOD.DELETE, API.WipeContract, idW, API.AdminRole, hederaIdSR2, "").then((res) => {
+    it('Remove  wipe contract admin(wipe) permissions with empty auth token - Negative', () => {
+        manageRole(METHOD.DELETE, API.WipeContract, idW, API.AdminRole, hederaIdSR2, '').then((res) => {
             expect(res.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it.skip("Verify roles(wipe)", () => {
+    it.skip('Verify roles(wipe)', () => {
         cy.clearCookies();
         cy.wait(240000);
         Authorization.getAccessToken(SR2Username).then((token) => {
@@ -250,7 +250,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
         });
     });
 
-    it.skip("Verify roles(retire)", () => {
+    it.skip('Verify roles(retire)', () => {
         Authorization.getAccessToken(SR2Username).then((token) => {
             cy.request({
                 method: METHOD.GET,

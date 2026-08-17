@@ -415,7 +415,7 @@
           <div class="demo-users-list">
             <div class="demo-user"
               *ngFor="let user of testUsers$ | async"
-              (click)="authState.doLogin(user.username, 'test')">
+              (click)="authState.doLogin(user.username, 'TestPass1')">
               <div class="demo-user-avatar">{{ getInitials(user.username) }}</div>
               <div class="demo-user-info">
                 <span class="demo-user-name">{{ user.username }}</span>

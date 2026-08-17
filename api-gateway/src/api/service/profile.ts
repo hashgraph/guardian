@@ -22,12 +22,32 @@ import {
 } from '#middlewares';
 import { Auth, AuthUser } from '#auth';
 import { CacheService, getCacheKey, Guardians, InternalException, ServiceError, TaskManager, UseCache } from '#helpers';
-import { CACHE, PREFIXES } from '#constants';
+import { CACHE, CACHE_TAG_PREFIXES, PREFIXES } from '#constants';
 
 @Controller('profiles')
 @ApiTags('profiles')
 export class ProfileApi {
     constructor(private readonly cacheService: CacheService, private readonly logger: PinoLogger) {
+    }
+
+    /**
+     * Drops every cached accounts response.
+     *
+     * Setting up or restoring a profile assigns the DID and Hedera account the
+     * accounts listing reports, so those cached responses go stale too. The
+     * profile is already saved when this runs, hence a cache failure is logged
+     * rather than propagated.
+     */
+    private async invalidateAccountsCache(userId: string | null): Promise<void> {
+        try {
+            await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.ACCOUNTS);
+        } catch (error) {
+            await this.logger.warn(
+                `Failed to invalidate the accounts cache: ${error.message}`,
+                ['API_GATEWAY'],
+                userId
+            );
+        }
     }
 
     /**
@@ -144,6 +164,7 @@ export class ProfileApi {
         const invalidedCacheTags = [`/${PREFIXES.PROFILES}/${username}`];
 
         await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
+        await this.invalidateAccountsCache(user.id);
     }
 
     /**
@@ -213,6 +234,7 @@ export class ProfileApi {
             await this.cacheService.invalidate(
                 getCacheKey([req.url, ...invalidedCacheTags], user)
             );
+            await this.invalidateAccountsCache(user.id);
         });
 
         RunFunctionAsync<ServiceError>(async () => {
@@ -347,6 +369,7 @@ export class ProfileApi {
             await guardians.restoreUserProfileCommonAsync(user, username, profile, task);
 
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
+            await this.invalidateAccountsCache(user.id);
         }, async (error) => {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });

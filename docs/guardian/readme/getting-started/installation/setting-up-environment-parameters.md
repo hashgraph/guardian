@@ -1,3 +1,8 @@
+---
+tags:
+  - flagged-for-rewrite
+---
+
 # Setting up environment parameters
 
 ### `.env / .env.docker` Parameters in `guardian-service`

@@ -1,13 +1,13 @@
 
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Create policy labels", { tags: ['policy_labels', 'firstPool', 'all'] }, () => {
+context('Create policy labels', { tags: ['policy_labels', 'firstPool', 'all'] }, () => {
     const UserUsername = Cypress.env('User');
-    const labelName = "testPolicyLabelAPI";
+    const labelName = 'testPolicyLabelAPI';
 
-    let policy, did, SRDid, labelId;
+    let policy; let did; let SRDid; let labelId;
 
     const createPolicyLabel = (authorization, body, failOnStatusCode = true) =>
         cy.request({
@@ -26,7 +26,7 @@ context("Create policy labels", { tags: ['policy_labels', 'firstPool', 'all'] },
             failOnStatusCode,
         });
 
-    before("Get policy ids and did", () => {
+    before('Get policy ids and did', () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
@@ -37,7 +37,7 @@ context("Create policy labels", { tags: ['policy_labels', 'firstPool', 'all'] },
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
                 response.body.forEach(element => {
-                    if (element.name == "iRec_4") {
+                    if (element.name == 'iRec_4') {
                         policy = element;
                     }
                 })
@@ -56,38 +56,38 @@ context("Create policy labels", { tags: ['policy_labels', 'firstPool', 'all'] },
         });
     })
 
-    it("Create policy labels", () => {
+    it('Create policy labels', () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             createPolicyLabel(authorization, {
                 name: labelName,
-                description: labelName + " desc",
+                description: labelName + ' desc',
                 policyId: policy.id,
                 policyInstanceTopicId: policy.instanceTopicId
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.SUCCESS);
                 labelId = response.body.id;
 
-                expect(response.body).to.have.property("uuid");
+                expect(response.body).to.have.property('uuid');
 
                 expect(response.body.creator).eql(did);
                 expect(response.body.owner).eql(SRDid);
                 expect(response.body.name).eql(labelName);
-                expect(response.body.description).eql(labelName + " desc");
+                expect(response.body.description).eql(labelName + ' desc');
                 expect(response.body.policyId).eql(policy.id);
                 expect(response.body.policyTopicId).eql(policy.topicId);
                 expect(response.body.policyInstanceTopicId).eql(policy.instanceTopicId);
-                expect(response.body.status).eql("DRAFT");
+                expect(response.body.status).eql('DRAFT');
                 expect(response.body.config.children).eql([]);
                 expect(response.body.config.imports).eql([]);
-                expect(response.body.config.schemaId).eql("");
+                expect(response.body.config.schemaId).eql('');
             });
         })
     });
 
-    it("Create policy labels without auth - Negative", () => {
+    it('Create policy labels without auth - Negative', () => {
         createPolicyLabel(undefined, {
             name: labelName,
-            description: labelName + " desc",
+            description: labelName + ' desc',
             policyId: policy.id,
             policyInstanceTopicId: policy.instanceTopicId
         }, false).then((response) => {
@@ -95,10 +95,10 @@ context("Create policy labels", { tags: ['policy_labels', 'firstPool', 'all'] },
         });
     });
 
-    it("Create policy labels with incorrect auth - Negative", () => {
-        createPolicyLabel("bearer 11111111111111111111@#$", {
+    it('Create policy labels with incorrect auth - Negative', () => {
+        createPolicyLabel('bearer 11111111111111111111@#$', {
             name: labelName,
-            description: labelName + " desc",
+            description: labelName + ' desc',
             policyId: policy.id,
             policyInstanceTopicId: policy.instanceTopicId
         }, false).then((response) => {
@@ -106,10 +106,10 @@ context("Create policy labels", { tags: ['policy_labels', 'firstPool', 'all'] },
         });
     });
 
-    it("Create policy labels with empty auth - Negative", () => {
-        createPolicyLabel("", {
+    it('Create policy labels with empty auth - Negative', () => {
+        createPolicyLabel('', {
             name: labelName,
-            description: labelName + " desc",
+            description: labelName + ' desc',
             policyId: policy.id,
             policyInstanceTopicId: policy.instanceTopicId
         }, false).then((response) => {
@@ -117,42 +117,42 @@ context("Create policy labels", { tags: ['policy_labels', 'firstPool', 'all'] },
         });
     });
 
-    it("Get policy label", () => {
+    it('Get policy label', () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             getPolicyLabel(authorization, labelId).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                expect(response.body).to.have.property("uuid");
+                expect(response.body).to.have.property('uuid');
 
                 expect(response.body.id).eql(labelId);
                 expect(response.body.creator).eql(did);
                 expect(response.body.owner).eql(SRDid);
                 expect(response.body.name).eql(labelName);
-                expect(response.body.description).eql(labelName + " desc");
+                expect(response.body.description).eql(labelName + ' desc');
                 expect(response.body.policyId).eql(policy.id);
                 expect(response.body.policyTopicId).eql(policy.topicId);
                 expect(response.body.policyInstanceTopicId).eql(policy.instanceTopicId);
-                expect(response.body.status).eql("DRAFT");
+                expect(response.body.status).eql('DRAFT');
                 expect(response.body.config.children).eql([]);
                 expect(response.body.config.imports).eql([]);
-                expect(response.body.config.schemaId).eql("");
+                expect(response.body.config.schemaId).eql('');
             });
         })
     });
 
-    it("Get policy label without auth - Negative", () => {
+    it('Get policy label without auth - Negative', () => {
         getPolicyLabel(undefined, labelId, false).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Get policy label with incorrect auth - Negative", () => {
-        getPolicyLabel("bearer 11111111111111111111@#$", labelId, false).then((response) => {
+    it('Get policy label with incorrect auth - Negative', () => {
+        getPolicyLabel('bearer 11111111111111111111@#$', labelId, false).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Get policy label with empty auth - Negative", () => {
-        getPolicyLabel("", labelId, false).then((response) => {
+    it('Get policy label with empty auth - Negative', () => {
+        getPolicyLabel('', labelId, false).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });

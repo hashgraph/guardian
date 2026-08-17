@@ -1,0 +1,14 @@
+:host {
+    display: block;
+    margin-bottom: var(--guardian-page-header-block-gap);
+}
+
+.page-header-help-text {
+    max-width: 820px;
+    padding: var(--guardian-page-header-padding);
+    margin-top: 6px;
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.55;
+    color: var(--color-grey-6);
+}

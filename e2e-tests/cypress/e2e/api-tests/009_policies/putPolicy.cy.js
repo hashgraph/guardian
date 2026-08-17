@@ -1,12 +1,12 @@
 
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
 context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
-    const policyName = "UpdatedPolicyName";
+    const policyName = 'UpdatedPolicyName';
 
     const policiesUrl = `${API.ApiServer}${API.Policies}`;
 
@@ -45,7 +45,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
         });
     });
 
-    it("Updates policy configuration for the specified policy ID", () => {
+    it('Updates policy configuration for the specified policy ID', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             putPolicyWithAuth(authorization, policyId, {
                 id: policyId,
@@ -57,7 +57,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
         });
     });
 
-    it("Updates policy configuration for the specified policy ID by user - Negative", () => {
+    it('Updates policy configuration for the specified policy ID by user - Negative', () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             putPolicyWithAuth(authorization, policyId, undefined, false).then((response) => {
                 expect(response.status).eql(STATUS_CODE.FORBIDDEN);
@@ -65,25 +65,25 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
         });
     });
 
-    it("Updates policy configuration for the specified policy ID without auth token - Negative", () => {
+    it('Updates policy configuration for the specified policy ID without auth token - Negative', () => {
         putPolicyWithoutAuth(policyId).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Updates policy configuration for the specified policy ID with invalid auth token - Negative", () => {
-        putPolicyWithoutAuth(policyId, { authorization: "Bearer wqe" }).then((response) => {
+    it('Updates policy configuration for the specified policy ID with invalid auth token - Negative', () => {
+        putPolicyWithoutAuth(policyId, { authorization: 'Bearer wqe' }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Updates policy configuration for the specified policy ID with empty auth token - Negative", () => {
-        putPolicyWithoutAuth(policyId, { authorization: "" }).then((response) => {
+    it('Updates policy configuration for the specified policy ID with empty auth token - Negative', () => {
+        putPolicyWithoutAuth(policyId, { authorization: '' }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Updates policy configuration for the specified policy ID with invalid policy id - Negative", () => {
+    it('Updates policy configuration for the specified policy ID with invalid policy id - Negative', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             putPolicyWithAuth(authorization, `${policyId}abrakadabra`, {
                 id: policyId,
@@ -91,19 +91,19 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                 config: {},
             }, false).then((response) => {
                 expect(response.status).eql(STATUS_CODE.ERROR);
-                expect(response.body.message).eql("Internal server error");
+                expect(response.body.message).eql('Internal server error');
             });
         });
     });
 
-    it("Updates policy configuration for the specified policy ID with invalid policy configuration - Negative", () => {
+    it('Updates policy configuration for the specified policy ID with invalid policy configuration - Negative', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             putPolicyWithAuth(authorization, policyId, {
                 id: policyId,
                 name: policyName,
             }, false).then((response) => {
                 expect(response.status).eql(STATUS_CODE.ERROR);
-                expect(response.body.message).eql("You must pass a non-undefined value to the property config of entity Policy.");
+                expect(response.body.message).eql('You must pass a non-undefined value to the property config of entity Policy.');
             });
         });
     });

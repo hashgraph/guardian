@@ -1896,6 +1896,71 @@ export class PolicyApi {
     }
 
     /**
+     * Go to dry-run policy (async)
+     */
+    @Put('/push/:policyId/dry-run')
+    @Auth(
+        Permissions.POLICIES_POLICY_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Dry Run policy.',
+        description:
+            'Switches the specified policy into dry-run mode asynchronously and returns the task of the operation, so that its progress can be tracked. Dry-run mode is intended for testing and simulation without executing real transactions.' +
+            ONLY_SR,
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiBody({
+        description: 'Options.',
+        type: Object,
+    })
+    @ApiAcceptedResponse({
+        description: 'Successful operation.',
+        type: TaskDTO,
+        example: {
+            taskId: 'c51e15d5-b484-49e9-b267-84b1de3585b4',
+            expectation: 6,
+            action: 'Dry-run policy',
+            userId: '69c2cfc021d39e7b6d15e236'
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
+    })
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.ACCEPTED)
+    async dryRunPolicyAsync(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() body: any,
+        @Req() req
+    ): Promise<TaskDTO> {
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.DRY_RUN_POLICY, user.id);
+        const enableMock = !!body?.enableMock;
+        RunFunctionAsync<ServiceError>(async () => {
+            const engineService = new PolicyEngine();
+            await engineService.dryRunPolicyAsync(policyId, new EntityOwner(user), enableMock, task);
+        }, async (error) => {
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
+            taskManager.addError(task.taskId, { code: 500, message: error.message || error });
+        });
+
+        const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
+        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
+        return task;
+    }
+
+    /**
      * Go to dry-run policy
      */
     @Put('/:policyId/dry-run')

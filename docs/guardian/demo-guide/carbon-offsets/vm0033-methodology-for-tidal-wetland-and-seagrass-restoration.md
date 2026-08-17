@@ -1,7 +1,3 @@
----
-icon: house-tsunami
----
-
 # VM0033 Methodology for Tidal Wetland and Seagrass Restoration
 
 [Introduction](vm0033-methodology-for-tidal-wetland-and-seagrass-restoration.md#introduction)

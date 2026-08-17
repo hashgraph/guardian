@@ -1630,7 +1630,7 @@
                                     } @else {
                                         <input class="sc-cond-val-inp" type="text" placeholder="value"
                                             [value]="getIfRowValue(row)"
-                                            (change)="setIfRowValue(cond, ri, $any($event.target).value)" />
+                                            (input)="setIfRowValue(cond, ri, $any($event.target).value)" />
                                     }
                                 </div>
                                 <button class="sc-cond-row-del"

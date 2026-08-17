@@ -18,6 +18,8 @@ jobs:
     runs-on: guardian-linux-medium
     env:
       YARN_ENABLE_GLOBAL_CACHE: 'false'
+      MIN_PASSWORD_LENGTH: 4
+      PASSWORD_COMPLEXITY: easy
     services:
       cache:
         image: valkey/valkey:8.1-alpine
@@ -29,7 +31,7 @@ jobs:
         mongodb-version: [ 7.0.21 ]
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40 # v2.20.1
         with:
           egress-policy: audit
 
@@ -114,7 +116,7 @@ jobs:
           until curl -s -X POST http://127.0.0.1:5001/api/v0/id >/dev/null 2>&1; do sleep 0.5; done
 
       - name: Start MongoDB
-        uses: step-security/mongodb-github-action@4c2640417c3e31ebd7439e64d47f9751bd782772
+        uses: step-security/mongodb-github-action@9bfc4a7e812a86657abfbe923af612a0fedcd1ea
         with:
           mongodb-version: ${{ matrix.mongodb-version }}
 
@@ -152,8 +154,6 @@ jobs:
           IPFS_STORAGE_PROOF: ${{ secrets.E2E_IPFS_STORAGE_PROOF }}
           IPFS_STORAGE_API_KEY: ${{ secrets.IPFS_STORAGE_API_KEY }}
           ACCESS_TOKEN_UPDATE_INTERVAL: 600000
-          MIN_PASSWORD_LENGTH: 4
-          PASSWORD_COMPLEXITY: easy
           INITIAL_BALANCE: 20
           INITIAL_STANDARD_REGISTRY_BALANCE: 250
 
@@ -182,6 +182,8 @@ jobs:
             -e "CYPRESS_grepTags=${{ inputs.tags }}" \
             -e CYPRESS_grepFilterSpecs=true \
             -e ReportName="${{ inputs.report_name }}" \
+            -e CYPRESS_minPasswordLength=${{ env.MIN_PASSWORD_LENGTH }} \
+            -e CYPRESS_passwordComplexity=${{ env.PASSWORD_COMPLEXITY }} \
             cypress-runner
 
       - name: Copy test results from Docker container

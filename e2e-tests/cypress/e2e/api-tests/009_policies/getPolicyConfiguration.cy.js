@@ -1,9 +1,9 @@
 
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
+context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     const policiesUrl = `${API.ApiServer}${API.Policies}`;
@@ -38,7 +38,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
         });
     });
 
-    it("Retrieves policy configuration for the specified policy ID", () => {
+    it('Retrieves policy configuration for the specified policy ID', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             getPolicyWithAuth(authorization, policyId).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
@@ -46,20 +46,20 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
         });
     });
 
-    it("Retrieves policy configuration for the specified policy ID without auth token - Negative", () => {
+    it('Retrieves policy configuration for the specified policy ID without auth token - Negative', () => {
         getPolicyWithoutAuth(policyId).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Retrieves policy configuration for the specified policy ID with invalid auth token - Negative", () => {
-        getPolicyWithoutAuth(policyId, { authorization: "Bearer wqe" }).then((response) => {
+    it('Retrieves policy configuration for the specified policy ID with invalid auth token - Negative', () => {
+        getPolicyWithoutAuth(policyId, { authorization: 'Bearer wqe' }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Retrieves policy configuration for the specified policy ID with empty auth token - Negative", () => {
-        getPolicyWithoutAuth(policyId, { authorization: "" }).then((response) => {
+    it('Retrieves policy configuration for the specified policy ID with empty auth token - Negative', () => {
+        getPolicyWithoutAuth(policyId, { authorization: '' }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });

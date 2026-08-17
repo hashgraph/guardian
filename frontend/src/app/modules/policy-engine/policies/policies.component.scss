@@ -317,6 +317,14 @@
         padding: 0 12px;
     }
 
+    ::ng-deep .p-button-label {
+        text-align: left;
+    }
+
+    ::ng-deep .p-button-outlined > svg-icon {
+        flex-shrink: 0;
+    }
+
     ::ng-deep .accent-color-red {
         fill: var(--color-accent-red-1) !important;
         color: var(--color-accent-red-1) !important;

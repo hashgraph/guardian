@@ -20,7 +20,7 @@ After completing this chapter, you will be able to:
 * Completed Chapter 18: Custom Logic Block Development
 * Understanding of Guardian workflow blocks from Part IV
 * Access to AR Tool 14 artifacts: [AR-Tool-14.json](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/AR-Tool-14.json) and [ar-am-tool-14-v4.1.pdf](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/ar-am-tool-14-v4.1.pdf)
-* Familiarity with [extractDataBlock documentation](../../../guardian/standard-registry/policies/policy-creation/introduction/externaldatablock.md)
+* Familiarity with [extractDataBlock documentation](../../../guardian/workspace/policies/policy-creation/introduction/externaldatablock.md)
 
 ## What is AR Tool 14?
 
@@ -85,7 +85,7 @@ The Tool workflow follows this pattern:
 
 ### Understanding extractDataBlock
 
-The extractDataBlock is Guardian's mechanism for working with embedded schema data. From the [documentation](../../../guardian/standard-registry/policies/policy-creation/introduction/externaldatablock.md):
+The extractDataBlock is Guardian's mechanism for working with embedded schema data. From the [documentation](../../../guardian/workspace/policies/policy-creation/introduction/externaldatablock.md):
 
 > "This block is used for VC documents which are based on (or 'conform to') a schema which contains embedded schemas, extractDataBlock provides means to extract a data set which corresponds to any of these embedded schemas (at any depth level), and if required after processing to return the updated values back into the VC dataset to their original 'place'."
 
@@ -501,7 +501,7 @@ Chapter 21 will demonstrate comprehensive testing and validation frameworks for 
 
 * [AR Tool 14 Guardian Implementation](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/AR-Tool-14.json) - Complete tool policy configuration
 * [AR Tool 14 PDF Methodology](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/ar-am-tool-14-v4.1.pdf) - Original CDM methodology document
-* [Guardian extractDataBlock Documentation](../../../guardian/standard-registry/policies/policy-creation/introduction/externaldatablock.md)
+* [Guardian extractDataBlock Documentation](../../../guardian/workspace/policies/policy-creation/introduction/externaldatablock.md)
 * [Guardian customLogicBlock Documentation](https://github.com/hashgraph/guardian/blob/develop/docs/available-policy-workflow-blocks/customlogicblock.md)
 
 ***

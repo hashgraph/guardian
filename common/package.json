@@ -1,7 +1,7 @@
 {
     "author": "Hashgraph <guardian@hashgraph.com>",
     "dependencies": {
-        "@aws-sdk/client-secrets-manager": "3.1100.0",
+        "@aws-sdk/client-secrets-manager": "3.1105.0",
         "@azure/identity": "^4.10.0",
         "@azure/keyvault-secrets": "^4.9.0",
         "@digitalbazaar/credentials-context": "3.2.0",
@@ -48,7 +48,7 @@
         "reflect-metadata": "0.2.2",
         "rxjs": "7.8.2",
         "seq-logging": "^2.2.0",
-        "ws": "8.21.1"
+        "ws": "8.21.3"
     },
     "description": "Common package share cross all services",
     "devDependencies": {

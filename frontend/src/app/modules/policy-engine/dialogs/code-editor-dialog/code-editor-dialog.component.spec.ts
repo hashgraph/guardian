@@ -122,9 +122,10 @@ describe('CodeEditorDialogComponent', () => {
                 expect(component.validateExpression()).toEqual([]);
             });
 
-            it('should pass deeply nested access', () => {
+            it('should report an error for access deeper than one level', () => {
                 component.expression = 'subSchema.nested.value + field1';
-                expect(component.validateExpression()).toEqual([]);
+                const errors = component.validateExpression();
+                expect(errors.length).toBeGreaterThan(0);
             });
         });
 

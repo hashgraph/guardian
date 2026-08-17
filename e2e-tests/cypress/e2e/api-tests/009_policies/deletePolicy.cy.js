@@ -1,9 +1,9 @@
 
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
+context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
 
@@ -44,7 +44,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
         });
     });
 
-    it("Deletes the policy with the provided ID by user - Negative", () => {
+    it('Deletes the policy with the provided ID by user - Negative', () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             deletePolicyWithAuth(authorization, policyId, false).then((response) => {
                 expect(response.status).eql(STATUS_CODE.FORBIDDEN);
@@ -52,25 +52,25 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
         });
     });
 
-    it("Deletes the policy with the provided ID without auth token - Negative", () => {
+    it('Deletes the policy with the provided ID without auth token - Negative', () => {
         deletePolicyWithoutAuth(policyId).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Deletes the policy with the provided ID with invalid auth token - Negative", () => {
-        deletePolicyWithoutAuth(policyId, { authorization: "Bearer wqe" }).then((response) => {
+    it('Deletes the policy with the provided ID with invalid auth token - Negative', () => {
+        deletePolicyWithoutAuth(policyId, { authorization: 'Bearer wqe' }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Deletes the policy with the provided ID with empty auth token - Negative", () => {
-        deletePolicyWithoutAuth(policyId, { authorization: "" }).then((response) => {
+    it('Deletes the policy with the provided ID with empty auth token - Negative', () => {
+        deletePolicyWithoutAuth(policyId, { authorization: '' }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Deletes the policy with the provided ID", { tags: ['notifications', 'smoke'] }, () => {
+    it('Deletes the policy with the provided ID', { tags: ['notifications', 'smoke'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             deletePolicyWithAuth(authorization, policyId).then((response) => {
                 expect(response.status).eql(STATUS_CODE.ACCEPTED);

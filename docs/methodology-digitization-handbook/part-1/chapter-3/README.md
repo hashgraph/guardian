@@ -78,7 +78,7 @@ The Policy Workflow Engine (PWE) is Guardian's core innovation, transforming cer
 * **Governance Compliance**: Meets VM0033's complex governance requirements
 * **Tailored Tools**: Each stakeholder gets specific tools and information needed
 
-See [workflow blocks](../../../guardian/standard-registry/policies/policy-creation/introduction/) for complete component reference.
+See [workflow blocks](../../../guardian/workspace/policies/policy-creation/introduction/) for complete component reference.
 
 ## Schema System and Data Management
 
@@ -127,7 +127,7 @@ Guardian's schema system provides the foundation for structured data management,
 * **Migration Support**: Smooth transitions to updated methodology versions
 * **Compliance**: Maintains validity across methodology evolution
 
-See [schema system](../../../guardian/standard-registry/schemas/) and [available schema types](../../../guardian/standard-registry/schemas/available-schema-types/) for detailed specifications.
+See [schema system](../../../guardian/workspace/schemas/) and [available schema types](../../../guardian/workspace/schemas/available-schema-types/) for detailed specifications.
 
 ## Blockchain Integration and User Management
 
@@ -150,7 +150,7 @@ Guardian's integration with Hedera Hashgraph provides immutable record-keeping e
 
 * **Stakeholder Support**: Complex ecosystems typical of environmental methodologies
 * **VM0033 Roles**: Project developers, technical reviewers, independent validators, registry operators
-* **Access Control**: [Roles and permissions system](../../../guardian/standard-registry/roles-and-permissions/) ensures appropriate access/permissions
+* **Access Control**: [Roles and permissions system](../../../guardian/platform/roles-and-permissions/) ensures appropriate access/permissions
 
 **Role-Based Access Control**:
 
@@ -222,9 +222,9 @@ VM0033 methodology demonstrates how Guardian's flexible architecture accommodate
 ### Related Resources
 
 * [Guardian Architecture](../../../guardian/architecture/architecture-2.md) - Detailed technical architecture
-* [Policy Workflow Blocks](../../../guardian/standard-registry/policies/policy-creation/introduction/) - Available workflow components
-* [Schema System](../../../guardian/standard-registry/schemas/) - Data structure management
-* [Roles & Permissions](../../../guardian/standard-registry/roles-and-permissions/) - Stakeholder management
+* [Policy Workflow Blocks](../../../guardian/workspace/policies/policy-creation/introduction/) - Available workflow components
+* [Schema System](../../../guardian/workspace/schemas/) - Data structure management
+* [Roles & Permissions](../../../guardian/platform/roles-and-permissions/) - Stakeholder management
 * [Artifacts Collection](../../_shared/artifacts/) - Working examples, test cases, and validation tools
 * [Excel Artifact Extractor](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/excel_artifact_extractor.py) - Python tool for data extraction and validation
 

@@ -35,6 +35,7 @@ import { CustomConfirmDialogComponent } from './custom-confirm-dialog/custom-con
 import { TreeGraphComponent } from './tree-graph/tree-graph.component';
 import { GuardianSwitchButton } from './guardian-switch-button/guardian-switch-button.component';
 import { GuardianTabsSwitch } from './guardian-tabs-switch/guardian-tabs-switch.component';
+import { GuardianPageHeader } from './guardian-page-header/guardian-page-header.component';
 import { ImportEntityDialog } from './import-entity-dialog/import-entity-dialog.component';
 import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
 import { GuardianDialogService } from '../../services/guardian-dialog.service';
@@ -83,6 +84,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
         TreeGraphComponent,
         GuardianSwitchButton,
         GuardianTabsSwitch,
+        GuardianPageHeader,
         ImportEntityDialog,
         MathLiveComponent,
         MenuButton,
@@ -150,6 +152,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
         TreeGraphComponent,
         GuardianSwitchButton,
         GuardianTabsSwitch,
+        GuardianPageHeader,
         ImportEntityDialog,
         MathLiveComponent,
         MenuButton,

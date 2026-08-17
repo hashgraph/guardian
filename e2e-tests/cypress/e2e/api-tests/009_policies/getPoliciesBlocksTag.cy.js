@@ -1,12 +1,12 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
+context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
 	const SRUsername = Cypress.env('SRUser');
 
 	let policyId;
-	const tag = "approve_registrant_btn";
+	const tag = 'approve_registrant_btn';
 
 	before(() => {
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
@@ -23,12 +23,12 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
 		})
 	});
 
-	it("Get block data by tag", () => {
+	it('Get block data by tag', () => {
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
 			cy.request({
 				method: METHOD.GET,
 				url:
-					API.ApiServer + "policies/" + policyId + "/tag/" + tag + "/blocks",
+					API.ApiServer + 'policies/' + policyId + '/tag/' + tag + '/blocks',
 				headers: {
 					authorization,
 				},

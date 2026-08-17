@@ -67,7 +67,7 @@ The workflow for the afforestation and reforestation of lands except wetlands (A
 
 <figure><img src="../../../.gitbook/assets/image (389).png" alt=""><figcaption></figcaption></figure>
 
-12. &#x20;We login as SR and click on Add
+12. We login as SR and click on Add
 
 <figure><img src="../../../.gitbook/assets/image (390).png" alt=""><figcaption></figcaption></figure>
 
@@ -77,7 +77,7 @@ The workflow for the afforestation and reforestation of lands except wetlands (A
 
 <figure><img src="../../../.gitbook/assets/image (392).png" alt=""><figcaption></figcaption></figure>
 
-14. &#x20;Once monitoring report is submitted, it waits for verification from VVB.
+14. Once monitoring report is submitted, it waits for verification from VVB.
 
 <figure><img src="../../../.gitbook/assets/image (393).png" alt=""><figcaption></figcaption></figure>
 

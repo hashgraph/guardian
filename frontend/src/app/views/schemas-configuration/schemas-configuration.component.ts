@@ -2633,16 +2633,31 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return all.filter(f => !owned.has(f.name));
     }
 
+    // Rebuilt only when the schema list itself changes; these getters run on every
+    // change-detection pass, so the map must not be reconstructed each time.
+    private _schemaByIriSource: Schema[] | null = null;
+    private _schemaByIriCache = new Map<string, Schema>();
+
+    private get _schemaByIri(): Map<string, Schema> {
+        if (this._schemaByIriSource !== this.schemas) {
+            this._schemaByIriSource = this.schemas;
+            this._schemaByIriCache = new Map(
+                (this.schemas ?? []).filter(s => s.iri).map(s => [s.iri as string, s])
+            );
+        }
+        return this._schemaByIriCache;
+    }
+
     public getConditionFieldGroups(): {
         groupLabel: string;
         isRoot: boolean;
-        fields: { pathStr: string; label: string }[];
+        fields: { pathStr: string; label: string; field: SchemaField }[];
     }[] {
         const schema = this.currentContextSchema;
         if (!schema) { return []; }
-        const schemaByIri = new Map(this.schemas.filter(s => s.iri).map(s => [s.iri as string, s]));
-        const rootGroup = { groupLabel: '', isRoot: true, fields: [] as { pathStr: string; label: string }[] };
-        const nested: { groupLabel: string; isRoot: false; fields: { pathStr: string; label: string }[] }[] = [];
+        const schemaByIri = this._schemaByIri;
+        const rootGroup = { groupLabel: '', isRoot: true, fields: [] as { pathStr: string; label: string; field: SchemaField }[] };
+        const nested: { groupLabel: string; isRoot: false; fields: { pathStr: string; label: string; field: SchemaField }[] }[] = [];
 
         for (const f of schema.fields ?? []) {
             if (f.readOnly) { continue; }
@@ -2650,37 +2665,43 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 const ref = schemaByIri.get(f.type);
                 const refFields = ref?.fields ?? (Array.isArray((f as any).fields) && (f as any).fields.length ? (f as any).fields : []);
                 if (refFields.length) {
-                    const group = { groupLabel: f.title || f.name, isRoot: false as const, fields: [] as { pathStr: string; label: string }[] };
-                    this._collectLeafConditionFields(refFields, [f.name], schemaByIri, group.fields);
+                    const group = { groupLabel: f.title || f.name, isRoot: false as const, fields: [] as { pathStr: string; label: string; field: SchemaField }[] };
+                    this._collectConditionFields(refFields, [f.name], schemaByIri, group.fields);
                     if (group.fields.length) { nested.push(group); }
                 }
             } else {
-                rootGroup.fields.push({ pathStr: f.name, label: f.title || f.name });
+                rootGroup.fields.push({ pathStr: f.name, label: f.title || f.name, field: f });
             }
         }
 
-        const result: { groupLabel: string; isRoot: boolean; fields: { pathStr: string; label: string }[] }[] = [];
+        const result: { groupLabel: string; isRoot: boolean; fields: { pathStr: string; label: string; field: SchemaField }[] }[] = [];
         if (rootGroup.fields.length) { result.push(rootGroup); }
         result.push(...nested);
         return result;
     }
 
-    private _collectLeafConditionFields(
+    private _collectConditionFields(
         fields: SchemaField[],
         pathParts: string[],
         schemaByIri: Map<string, Schema>,
-        out: { pathStr: string; label: string }[]
+        out: { pathStr: string; label: string; field: SchemaField }[],
+        seen: Set<string> = new Set()
     ): void {
         for (const f of fields) {
             if (f.readOnly) { continue; }
+            const pathStr = [...pathParts, f.name].join('.');
             if (f.isRef && f.type) {
+                // Leaves only — whole-container selection is handled separately by getCrossTargetPSelectGroups.
+                if (seen.has(f.type)) { continue; } // guards against cyclic schema refs
                 const ref = schemaByIri.get(f.type);
                 const refFields = ref?.fields ?? (Array.isArray((f as any).fields) && (f as any).fields.length ? (f as any).fields : []);
                 if (refFields.length) {
-                    this._collectLeafConditionFields(refFields, [...pathParts, f.name], schemaByIri, out);
+                    this._collectConditionFields(
+                        refFields, [...pathParts, f.name], schemaByIri, out, new Set(seen).add(f.type)
+                    );
                 }
             } else {
-                out.push({ pathStr: [...pathParts, f.name].join('.'), label: f.title || f.name });
+                out.push({ pathStr, label: f.title || f.name, field: f });
             }
         }
     }
@@ -2747,11 +2768,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return fields.find(f => f.name === parts[parts.length - 1]) ?? null;
     }
 
-    private get _firstConditionField(): SchemaField | null {
+    private get _firstConditionEntry(): { field: SchemaField; fieldPath: string[] } | null {
         for (const group of this.getConditionFieldGroups()) {
             for (const opt of group.fields) {
-                const f = this._resolveConditionField(opt.pathStr);
-                if (f) { return f; }
+                // Re-resolve against the current schemas so a field left over from a removed
+                // sub-schema is never embedded into a condition.
+                const field = this._resolveConditionField(opt.pathStr);
+                if (field) { return { field, fieldPath: opt.pathStr.split('.') }; }
             }
         }
         return null;
@@ -2766,6 +2789,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (!schema?.conditions?.length) { return false; }
         return schema.conditions.some(c => {
             const ic = c.ifCondition as any;
+            if (!ic) { return false; }
             if ('AND' in ic) { return (ic.AND as any[])?.some((r: any) => r.field?.name === field.name); }
             if ('OR' in ic) { return (ic.OR as any[])?.some((r: any) => r.field?.name === field.name); }
             return ic.field?.name === field.name;
@@ -2780,6 +2804,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public getIfOperator(cond: SchemaCondition): 'SINGLE' | 'AND' | 'OR' {
         const ic = cond.ifCondition as any;
+        if (!ic) { return 'SINGLE'; }
         if ('AND' in ic) { return 'AND'; }
         if ('OR' in ic) { return 'OR'; }
         return 'SINGLE';
@@ -2787,6 +2812,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public getIfRows(cond: SchemaCondition): any[] {
         const ic = cond.ifCondition as any;
+        if (!ic) { return [{ field: null, fieldValue: '' }]; }
         if ('AND' in ic) { return ic.AND || []; }
         if ('OR' in ic) { return ic.OR || []; }
         return [ic];
@@ -2794,7 +2820,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public setConditionOperator(cond: SchemaCondition, op: 'SINGLE' | 'AND' | 'OR'): void {
         const rows = this.getIfRows(cond);
-        const first = rows[0] ?? { field: this._firstConditionField, fieldValue: '' };
+        const firstEntry = this._firstConditionEntry;
+        // getIfRows returns a placeholder row for a null ifCondition, so an existing row is
+        // only usable when it actually carries a field; otherwise fall back to the first entry.
+        const existing = rows[0]?.field ? rows[0] : null;
+        const first = existing ?? { field: firstEntry?.field, fieldValue: '', ...(firstEntry && firstEntry.fieldPath.length > 1 ? { fieldPath: firstEntry.fieldPath } : {}) };
         const predicate = {
             field: first.field,
             fieldValue: first.fieldValue,
@@ -2810,7 +2840,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.markDirty();
     }
 
-    public getIfRowFieldName(row: any): string { return row?.field?.name ?? ''; }
     public getIfRowValue(row: any): any { return row?.fieldValue ?? ''; }
     public isIfRowEnum(row: any): boolean { return !!(row?.field?.enum?.length); }
     public getIfRowOptions(row: any): string[] { return row?.field?.enum ?? []; }
@@ -2825,14 +2854,15 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             ...(fieldPath.length > 1 ? { fieldPath } : {}),
         };
         const ic = cond.ifCondition as any;
-        if ('AND' in ic) { ic.AND[rowIdx] = predicate; }
-        else if ('OR' in ic) { ic.OR[rowIdx] = predicate; }
+        if (ic && 'AND' in ic) { ic.AND[rowIdx] = predicate; }
+        else if (ic && 'OR' in ic) { ic.OR[rowIdx] = predicate; }
         else { (cond as any).ifCondition = predicate; }
         this.markDirty();
     }
 
     public setIfRowValue(cond: SchemaCondition, rowIdx: number, value: any): void {
         const ic = cond.ifCondition as any;
+        if (!ic) { return; }
         if ('AND' in ic) { ic.AND[rowIdx].fieldValue = value; }
         else if ('OR' in ic) { ic.OR[rowIdx].fieldValue = value; }
         else { ic.fieldValue = value; }
@@ -2841,7 +2871,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public addIfRow(cond: SchemaCondition): void {
         const ic = cond.ifCondition as any;
-        const newRow = { field: this._firstConditionField, fieldValue: '' };
+        if (!ic) { return; }
+        const firstEntry = this._firstConditionEntry;
+        const newRow = {
+            field: firstEntry?.field ?? null,
+            fieldValue: '',
+            ...(firstEntry && firstEntry.fieldPath.length > 1 ? { fieldPath: firstEntry.fieldPath } : {}),
+        };
         if ('AND' in ic) { ic.AND.push(newRow); }
         else if ('OR' in ic) { ic.OR.push(newRow); }
         this.markDirty();
@@ -2849,6 +2885,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public removeIfRow(cond: SchemaCondition, rowIdx: number): void {
         const ic = cond.ifCondition as any;
+        if (!ic) { return; }
         if ('AND' in ic && ic.AND.length > 1) { ic.AND.splice(rowIdx, 1); }
         else if ('OR' in ic && ic.OR.length > 1) { ic.OR.splice(rowIdx, 1); }
         this.markDirty();
@@ -3134,10 +3171,14 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public addNewCondition(): void {
         const schema = this.currentContextSchema;
-        const firstField = this._firstConditionField;
-        if (!schema || !firstField) { return; }
+        const firstEntry = this._firstConditionEntry;
+        if (!schema || !firstEntry) { return; }
         const newCond: SchemaCondition = {
-            ifCondition: { field: firstField, fieldValue: '' } as any,
+            ifCondition: {
+                field: firstEntry.field,
+                fieldValue: '',
+                ...(firstEntry.fieldPath.length > 1 ? { fieldPath: firstEntry.fieldPath } : {}),
+            } as any,
             thenFields: [],
             elseFields: [],
         };

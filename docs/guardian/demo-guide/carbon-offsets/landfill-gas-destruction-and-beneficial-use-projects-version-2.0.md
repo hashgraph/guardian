@@ -1,7 +1,3 @@
----
-icon: monument
----
-
 # Landfill Gas Destruction and Beneficial Use Projects, Version 2.0
 
 ## Table of Contents

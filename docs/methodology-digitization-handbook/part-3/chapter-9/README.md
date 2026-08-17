@@ -11,7 +11,7 @@ Complex Guardian schemas can be built using Excel templates that define the data
 **Alternative Schema Building Methods:**
 
 * **Excel-first approach** (recommended for complex methodologies): Design in Excel, then import - covered in this chapter
-* **Guardian UI approach**: Build directly in Guardian interface - see [Creating Schemas Using UI](../../../guardian/standard-registry/schemas/creating-system-schema-using-ui.md)
+* **Guardian UI approach**: Build directly in Guardian interface - see [Creating Schemas Using UI](../../../guardian/workspace/schemas/creating-system-schema-using-ui.md)
 
 {% hint style="info" %}
 Excel-first approach also enables easier collaboration with carbon domain experts and non-technical stakeholders to provide better feedback with back-and-forth when schemas are complex.

@@ -53,14 +53,14 @@ This policy is published to Hedera network and can either be imported via Github
 
 ### Tools referenced
 
-* Tool 02 - Combined tool to identify the baseline scenario and demonstrate additionality&#x20;
-* Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion&#x20;
-* Tool 04 - Emissions from solid waste disposal sites&#x20;
-* Tool 05 - Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation&#x20;
-* Tool 07 - Tool to calculate the emission factor for an electricity system&#x20;
+* Tool 02 - Combined tool to identify the baseline scenario and demonstrate additionality
+* Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion
+* Tool 04 - Emissions from solid waste disposal sites
+* Tool 05 - Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation
+* Tool 07 - Tool to calculate the emission factor for an electricity system
 * Tool 09 - Determining the baseline efficiency of thermal or electric energy generation systems
-* Tool 10 - Tool to determine the remaining lifetime of equipment&#x20;
-* Tool 12 - Project and leakage emissions from transportation of freight&#x20;
+* Tool 10 - Tool to determine the remaining lifetime of equipment
+* Tool 12 - Project and leakage emissions from transportation of freight
 * Tool 16 - Project and leakage emissions from biomass
 
 ### Token(Carbon Emissions Reduction) <a href="#tokencarbon-emissions-reduction" id="tokencarbon-emissions-reduction"></a>

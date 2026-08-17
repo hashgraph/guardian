@@ -278,8 +278,63 @@ export class Schema implements ISchema {
         const schemaCache = new Map<string, any>();
         this.fields = SchemaHelper.parseFields(this.document, this.contextURL, schemaCache, null, includeSystemProperties);
         this.conditions = SchemaHelper.parseConditions(this.document, this.contextURL, this.fields, schemaCache);
+        this.linkConditionFields();
         this.setPaths(this.fields, '', this.iri + '/');
         this.setTypes(this.fields, null);
+    }
+
+    /**
+     * Point `fields` and every condition's `thenFields`/`elseFields` at the same objects.
+     *
+     * `fields` comes from `properties` and condition fields from `allOf`, so a condition
+     * field is materialised twice. The editor only exposes the copy inside the condition,
+     * so without relinking an edit reaches `allOf` while `properties` is rebuilt from the
+     * stale duplicate, and a rename leaves the old property behind.
+     *
+     * The `properties` entry is kept as the shared object: a branch may narrow the field
+     * (`then.properties.B` can be a bare `{type}` while `properties.B` carries pattern,
+     * unit and description), and adopting the branch copy would drop those on the next
+     * save. Only `required`, which is per branch, is taken from the branch copy.
+     *
+     * A branch field with no `properties` entry at all is added to the list. `buildDocument`
+     * builds `properties` from this list only, so such a field is never declared — and with
+     * `additionalProperties: false` the schema rejects it as soon as the branch is filled in,
+     * with nothing to repair it on the next save. This happens whenever a branch field is
+     * renamed while the copies are unshared: `allOf` takes the new name, `properties` keeps
+     * the old one.
+     * @private
+     */
+    private linkConditionFields(): void {
+        if (!Array.isArray(this.fields) || !Array.isArray(this.conditions) || !this.conditions.length) {
+            return;
+        }
+        const indexByName = new Map<string, number>();
+        for (let index = 0; index < this.fields.length; index++) {
+            const name = this.fields[index].name;
+            if (!indexByName.has(name)) {
+                indexByName.set(name, index);
+            }
+        }
+        const link = (branch?: SchemaField[]) => {
+            if (!Array.isArray(branch)) {
+                return;
+            }
+            for (let i = 0; i < branch.length; i++) {
+                const index = indexByName.get(branch[i].name);
+                if (index === undefined) {
+                    indexByName.set(branch[i].name, this.fields.length);
+                    this.fields.push(branch[i]);
+                    continue;
+                }
+                const declared = this.fields[index];
+                declared.required = branch[i].required;
+                branch[i] = declared;
+            }
+        };
+        for (const condition of this.conditions) {
+            link(condition.thenFields);
+            link(condition.elseFields);
+        }
     }
 
     /**
