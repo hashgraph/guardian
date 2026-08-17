@@ -2,6 +2,7 @@ export enum TaskAction {
     CREATE_POLICY = 'Create policy',
     WIZARD_CREATE_POLICY = 'Create Policy',
     PUBLISH_POLICY = 'Publish policy',
+    DRY_RUN_POLICY = 'Dry-run policy',
     IMPORT_POLICY_FILE = 'Import policy file',
     IMPORT_POLICY_MESSAGE = 'Import policy message',
     PUBLISH_SCHEMA = 'Publish schema',

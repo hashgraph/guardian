@@ -21,6 +21,7 @@
     <script>
         if (window.location.protocol === 'https:') {
             const STORAGE_KEY = 'gitbook-widget-pos';
+            const ENABLED_KEY = 'SHOW_DOC_WIDGET';
             const BUTTON_ID = 'gitbook-widget-button';
             const WINDOW_ID = 'gitbook-widget-window';
             const TARGET_IFRAME_ID = 'gitbook-widget-iframe';
@@ -48,6 +49,14 @@
             const setStyles = (el, styles) => {
                 for (const [prop, val] of Object.entries(styles)) {
                     el.style.setProperty(prop, String(val), 'important');
+                }
+            };
+
+            const isWidgetEnabled = () => {
+                try {
+                    return localStorage.getItem(ENABLED_KEY) !== 'false';
+                } catch {
+                    return true;
                 }
             };
 
@@ -413,7 +422,12 @@
                     button: { label: 'See Docs', icon: 'assistant' },
                     tabs: ['assistant', 'docs']
                 });
-                window.GitBook('show');
+                if (isWidgetEnabled()) {
+                    window.GitBook('show');
+                } else {
+                    window.GitBook('close');
+                    window.GitBook('hide');
+                }
                 bootWidget();
             };
             document.head.appendChild(script);

@@ -15,9 +15,9 @@ describe('@unit SwaggerConfig', () => {
         assert.match(SwaggerConfig.info.description, /Policy Workflow Engine/);
     });
 
-    it('contact email and url are envisionblockchain.com (until a rebrand updates this)', () => {
-        assert.equal(SwaggerConfig.info.contact.email, 'info@envisionblockchain.com');
-        assert.equal(SwaggerConfig.info.contact.url, 'https://envisionblockchain.com');
+    it('contact email and url are hashgraph.com (until a rebrand updates this)', () => {
+        assert.equal(SwaggerConfig.info.contact.email, 'guardian@hashgraph.com');
+        assert.equal(SwaggerConfig.info.contact.url, 'https://hashgraph.com');
     });
 
     it('license is Apache 2.0 with the canonical URL', () => {

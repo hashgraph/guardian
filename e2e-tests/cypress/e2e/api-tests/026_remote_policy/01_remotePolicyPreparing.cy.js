@@ -1,19 +1,19 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 // Exclude "all" tag, if needs to stop using MGS in CI tests run
-context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
+context('Policies', { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
 
     const MainSRUsername = Cypress.env('MainSRUser');
     const DepSRUsername = Cypress.env('DepSRUser');
     const MainUserUsername = Cypress.env('MainUser');
     const DepUserUsername = Cypress.env('DepUser');
     const MGSAdminUsername = Cypress.env('MGSAdmin');
-    const tenantName = "testTenantFromOS";
+    const tenantName = 'testTenantFromOS';
 
-    let policyId, remoteMessageId, tokenId, tenantId;
+    let policyId; let remoteMessageId; let tokenId; let tenantId;
 
-    it("Get tenant id", () => {
+    it('Get tenant id', () => {
         Authorization.getAccessTokenMGS(MGSAdminUsername, null).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
@@ -22,9 +22,9 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                     authorization,
                 },
                 body: {
-                    "pageSize": 10,
-                    "pageIndex": 0,
-                    "sortDirection": "desc"
+                    'pageSize': 10,
+                    'pageIndex': 0,
+                    'sortDirection': 'desc'
                 }
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
@@ -39,7 +39,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
 
     it('Import and publish policy', () => {
         Authorization.getAccessTokenMGS(MainSRUsername, tenantId).then((authorization) => {
-            cy.fixture("iRec2ForRemote.policy", "binary")
+            cy.fixture('iRec2ForRemote.policy', 'binary')
                 .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
                 .then((file) => {
                     cy.request({
@@ -47,7 +47,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                         url: API.ApiMGS + API.PolicisImportFile,
                         body: file,
                         headers: {
-                            "content-type": "binary/octet-stream",
+                            'content-type': 'binary/octet-stream',
                             authorization,
                         },
                         timeout: 180000,
@@ -63,16 +63,16 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                         }).then((response) => {
                             expect(response.status).to.eq(STATUS_CODE.OK);
                             response.body.forEach(element => {
-                                if (element.name == "iRec2ForRemote") {
+                                if (element.name == 'iRec2ForRemote') {
                                     policyId = element.id
                                 }
                             })
                             cy.request({
                                 method: METHOD.PUT,
-                                url: API.ApiMGS + API.Policies + policyId + "/" + API.Publish,
+                                url: API.ApiMGS + API.Policies + policyId + '/' + API.Publish,
                                 body: {
-                                    policyVersion: "19.9.9",
-                                    policyAvailability: "public"
+                                    policyVersion: '19.9.9',
+                                    policyAvailability: 'public'
                                 },
                                 headers: {
                                     authorization,
@@ -115,7 +115,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                 Authorization.getAccessToken(DepSRUsername).then((authorization) => {
                     cy.request({
                         method: METHOD.POST,
-                        url: API.ApiServer + API.ExternalPolicy + remoteMessageId + "/" + API.Approve,
+                        url: API.ApiServer + API.ExternalPolicy + remoteMessageId + '/' + API.Approve,
                         headers: {
                             authorization,
                         },
@@ -167,12 +167,12 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
         Authorization.getAccessTokenMGS(MainSRUsername, tenantId).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiMGS + API.UsersPermissions + MainUserUsername + "/" + API.Policies + API.Assign,
+                url: API.ApiMGS + API.UsersPermissions + MainUserUsername + '/' + API.Policies + API.Assign,
                 body: {
-                    "policyIds": [
+                    'policyIds': [
                         policyId
                     ],
-                    "assign": true
+                    'assign': true
                 },
                 headers: {
                     authorization,
@@ -190,7 +190,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                 method: METHOD.GET,
                 url: API.ApiServer + API.Policies,
                 qs: {
-                    type: "remote"
+                    type: 'remote'
                 },
                 headers: {
                     authorization,
@@ -219,7 +219,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                     })
                     cy.request({
                         method: METHOD.PUT,
-                        url: API.ApiServer + API.ListOfTokens + tokenId + "/associate",
+                        url: API.ApiServer + API.ListOfTokens + tokenId + '/associate',
                         headers: {
                             authorization,
                         },
@@ -232,7 +232,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                         Authorization.getAccessTokenMGS(MainSRUsername, tenantId).then((authorization) => {
                             cy.request({
                                 method: METHOD.PUT,
-                                url: API.ApiMGS + API.ListOfTokens + tokenId + "/" + MainUserUsername + "/grant-kyc",
+                                url: API.ApiMGS + API.ListOfTokens + tokenId + '/' + MainUserUsername + '/grant-kyc',
                                 headers: {
                                     authorization,
                                 },

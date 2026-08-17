@@ -19,3 +19,11 @@
 - tag: tasks
   label: Task
   icon: list-check
+- tag: flagged-for-deletion
+  label: Flagged for Deletion
+  icon: trash-can
+- tag: flagged-for-rewrite
+  label: Flagged for Rewrite
+  icon: pen-nib
+- tag: flagged-for-relocating
+  label: Flagged for Relocating

@@ -4,7 +4,7 @@
   </div>
 } @else {
 <div class="guardian-page">
-  <div class="guardian-user-page-header">Schemas</div>
+  <guardian-page-header pageTitle="Schemas" helpKey="schemas"></guardian-page-header>
 
   <div class="actions">
     <div class="tabs-nav">
@@ -180,22 +180,23 @@
                   <col style="width: 85px;" />
                   <col style="width: 100px;" />
                   <col style="width: 185px;" />
+                  <col style="width: 185px;" />
                   <col style="width: 100px;" />
                   <col style="width: 140px;" />
-                  <col style="width: 110px;" />
+                  <col style="width: 145px;" />
                 }
                 @if (type === 'module') {
                   <col style="width: 150px;" />
                   <col style="width: 100px;" />
                   <col style="width: 140px;" />
-                  <col style="width: 110px;" />
+                  <col style="width: 145px;" />
                 }
                 @if (type === 'tool') {
                   <col style="width: 150px;" />
                   <col style="width: 150px;" />
                   <col style="width: 100px;" />
                   <col style="width: 140px;" />
-                  <col style="width: 110px;" />
+                  <col style="width: 145px;" />
                 }
               </colgroup>
             </ng-template>
@@ -263,7 +264,7 @@
                     Operations
                   </th>
                 }
-                <th class="header-cell-text" style="min-width: 110px; width: 110px; max-width: 110px;">
+                <th class="header-cell-text" style="min-width: 145px; width: 145px; max-width: 145px;">
                 </th>
               </tr>
             </ng-template>
@@ -303,7 +304,7 @@
                         </div>
                       </div>
                     </td>
-                    <td class="row-cell-text parent-row-cell" style="min-width: 110px; width: 110px; max-width: 110px;"></td>
+                    <td class="row-cell-text parent-row-cell" style="min-width: 145px; width: 145px; max-width: 145px;"></td>
                   }
                   @if (!rowData.isParent) {
                     @if (type === 'policy') {

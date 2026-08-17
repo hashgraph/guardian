@@ -1,12 +1,11 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
-import * as Checks from "../../../support/checkingMethods";
-
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
+import * as Checks from '../../../support/checkingMethods';
 
 context('Get policy test result', { tags: ['policies', 'secondPool', 'all'] }, () => {
 	const SRUsername = Cypress.env('SRUser');
-	let policyId, testId;
+	let policyId; let testId;
 
 	before('Get test id', () => {
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
@@ -20,7 +19,7 @@ context('Get policy test result', { tags: ['policies', 'secondPool', 'all'] }, (
 			}).then((response) => {
 				expect(response.status).to.eq(STATUS_CODE.OK);
 				response.body.forEach(element => {
-					if (element.name == "iRecDRF") {
+					if (element.name == 'iRecDRF') {
 						policyId = element.id
 					}
 				})
@@ -51,7 +50,7 @@ context('Get policy test result', { tags: ['policies', 'secondPool', 'all'] }, (
 
 			Checks.whilePolicyTestExecuting(requestForGettingPolicyTestResult)
 
-			cy.request(requestForGettingPolicyTestResult).then((response) => { 
+			cy.request(requestForGettingPolicyTestResult).then((response) => {
 				expect(response.status).to.eq(STATUS_CODE.OK)
 				expect(response.body.tests.at(0).result.total).to.eq(100)
 			})

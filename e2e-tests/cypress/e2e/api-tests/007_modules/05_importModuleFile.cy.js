@@ -1,136 +1,104 @@
 
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { STATUS_CODE } from '../../../support/api/api-const';
+import * as Modules from '../../../support/api/modules';
+import * as Authorization from '../../../support/authorization';
 
-context("Export Module from File", { tags: ['modules', 'thirdPool', 'all'] }, () => {
+context('Export Module from File', { tags: ['modules', 'thirdPool', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
+    const moduleName = 'FirstAPIModule';
 
-    const modulesUrl = `${API.ApiServer}${API.ListOfAllModules}`;
-    const importUrl = `${modulesUrl}${API.ImportFile}`;
+    let originalModule; let exportedModuleFile; let importedModule;
 
-    let modules, lastModule, importedModule;
-
-    const getModulesWithAuth = (authorization) =>
-        cy.request({
-            method: METHOD.GET,
-            url: modulesUrl,
-            headers: { authorization },
-        });
-
-    const getModuleWithAuth = (authorization, uuid) =>
-        cy.request({
-            method: METHOD.GET,
-            url: modulesUrl + uuid,
-            headers: { authorization },
-        });
-
-    const postImportWithAuth = (authorization, file) =>
-        cy.request({
-            method: METHOD.POST,
-            url: importUrl,
-            body: file,
-            headers: {
-                "content-type": "binary/octet-stream",
-                authorization,
-            },
-            timeout: 180000,
-        });
-
-    const postImportWithoutAuth = (file, headers = {}) =>
-        cy.request({
-            method: METHOD.POST,
-            url: importUrl,
-            body: file,
-            headers: {
-                "content-type": "binary/octet-stream",
-                ...headers,
-            },
-            failOnStatusCode: false,
-        });
-
-    const readExportedModuleBlob = () =>
-        cy.fixture("exportedModule.module", "binary")
-            .then((binary) => Cypress.Blob.binaryStringToBlob(binary));
-
-    it("Import module from IPFS", { tags: ['smoke', 'analytics'] }, () => {
+    // The archive is exported here instead of being read from the exportedModule.module
+    // fixture: that file is written by 04_exportModuleFile, so the spec used to depend on
+    // another spec having run, and the fixture is not in the repository
+    before('Get module and export it', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            readExportedModuleBlob().then((file) => {
-                postImportWithAuth(authorization, file).then((response) => {
-                    expect(response.status).to.eq(STATUS_CODE.SUCCESS);
+            Modules.resolveDraftModule(authorization, moduleName).then((resolved) => {
+                Modules.getModule(authorization, resolved.uuid).then((response) => {
+                    expect(response.status).eql(STATUS_CODE.OK);
+                    originalModule = response.body;
+                });
+                Modules.exportModuleFile(authorization, resolved.uuid).then((file) => {
+                    exportedModuleFile = file;
                 });
             });
         });
     });
 
-    it("Verify import module", () => {
+    after('Remove the imported copy', () => {
+        if (!importedModule) {
+            return;
+        }
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            getModulesWithAuth(authorization).then((response) => {
+            Modules.deleteModule(authorization, importedModule.uuid, { failOnStatusCode: false });
+        });
+    });
+
+    it('Import module from IPFS', { tags: ['smoke', 'analytics'] }, () => {
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            Modules.importModuleFile(authorization, exportedModuleFile).then((response) => {
+                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
+                importedModule = Modules.parseBinaryJson(response.body);
+                expect(importedModule.uuid).to.not.eql(originalModule.uuid);
+            });
+        });
+    });
+
+    it('Verify import module', () => {
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            Modules.getModule(authorization, importedModule.uuid).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                modules = response.body;
 
-                getModuleWithAuth(authorization, modules.at(0).uuid).then((res0) => {
-                    expect(res0.status).eql(STATUS_CODE.OK);
-                    importedModule = res0.body;
+                const imported = response.body;
+                const original = JSON.parse(JSON.stringify(originalModule));
 
-                    getModuleWithAuth(authorization, modules.at(1).uuid).then((res1) => {
-                        expect(res1.status).eql(STATUS_CODE.OK);
-                        lastModule = res1.body;
+                expect(imported._id).not.eql(original._id);
+                delete imported._id;
+                delete original._id;
 
-                        expect(importedModule._id).not.eql(lastModule._id);
-                        delete importedModule._id;
-                        delete lastModule._id;
+                expect(imported.configFileId).not.eql(original.configFileId);
+                delete imported.configFileId;
+                delete original.configFileId;
 
-                        expect(importedModule.configFileId).not.eql(lastModule.configFileId);
-                        delete importedModule.configFileId;
-                        delete lastModule.configFileId;
+                expect(imported.id).not.eql(original.id);
+                delete imported.id;
+                delete original.id;
 
-                        expect(importedModule.id).not.eql(lastModule.id);
-                        delete importedModule.id;
-                        delete lastModule.id;
+                expect(imported.uuid).not.eql(original.uuid);
+                delete imported.uuid;
+                delete original.uuid;
 
-                        expect(importedModule.uuid).not.eql(lastModule.uuid);
-                        delete importedModule.uuid;
-                        delete lastModule.uuid;
+                expect(imported.name).to.match(new RegExp('^' + original.name + '_\\d+$', 'g'));
+                delete imported.name;
+                delete original.name;
 
-                        expect(importedModule.name).to.match(new RegExp("^" + lastModule.name + "_\\d+$", "g"));
-                        delete importedModule.name;
-                        delete lastModule.name;
+                delete imported.createDate;
+                delete original.createDate;
+                delete imported.updateDate;
+                delete original.updateDate;
 
-                        delete importedModule.createDate;
-                        delete lastModule.createDate;
-                        delete importedModule.updateDate;
-                        delete lastModule.updateDate;
-
-                        expect(importedModule).eql(lastModule);
-                    });
-                });
+                expect(imported).eql(original);
             });
         });
     });
 
-    it("Import module from IPFS without auth token - Negative", () => {
-        readExportedModuleBlob().then((file) => {
-            postImportWithoutAuth(file).then((response) => {
-                expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
-            });
+    it('Import module from IPFS without auth token - Negative', () => {
+        Modules.importModuleFile(undefined, exportedModuleFile, { failOnStatusCode: false }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Import module from IPFS with invalid auth token - Negative", () => {
-        readExportedModuleBlob().then((file) => {
-            postImportWithoutAuth(file, { authorization: "Bearer wqe" }).then((response) => {
-                expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
-            });
+    it('Import module from IPFS with invalid auth token - Negative', () => {
+        Modules.importModuleFile('Bearer wqe', exportedModuleFile, { failOnStatusCode: false }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Import module from IPFS with empty auth token - Negative", () => {
-        readExportedModuleBlob().then((file) => {
-            postImportWithoutAuth(file, { authorization: "" }).then((response) => {
-                expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
-            });
+    it('Import module from IPFS with empty auth token - Negative', () => {
+        Modules.importModuleFile('', exportedModuleFile, { failOnStatusCode: false }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 

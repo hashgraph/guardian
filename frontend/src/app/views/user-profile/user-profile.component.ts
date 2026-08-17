@@ -397,7 +397,7 @@ export class UserProfileComponent implements OnInit {
             tooltip: false
         }, {
             id: 'messageId',
-            title: 'Message',
+            title: 'Policy Public ID',
             type: 'text',
             size: 'auto',
             tooltip: false

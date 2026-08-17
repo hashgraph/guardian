@@ -468,7 +468,7 @@
     top: 0;
     left: 0;
     right: 0;
-    height: var(--header-height);
+    height: var(--topbar-height);
     z-index: 100;
 
     .topbar-brand {
@@ -498,7 +498,7 @@
 }
 
 ::ng-deep .topbar .guardian-menubar.p-menubar {
-    height: var(--header-height);
+    height: var(--topbar-height);
     border: none;
     border-bottom: 1px solid var(--sidebar-border);
     border-radius: 0;

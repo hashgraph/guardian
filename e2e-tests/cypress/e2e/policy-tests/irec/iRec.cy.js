@@ -1,13 +1,13 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
 
-context("Policy autotest", { tags: ['policyAT'] }, () => {
-    const authorization = Cypress.env("authorization");
-    var policyId, testId;
+context('Policy autotest', { tags: ['policyAT'] }, () => {
+    const authorization = Cypress.env('authorization');
+    let policyId; let testId;
 
-    it("Run test for iRec", () => {
+    it('Run test for iRec', () => {
         //import policy with tests
-        cy.readFile("../Methodology Library/iREC/Policies/iRec Policy.policy", "binary")
+        cy.readFile('../Methodology Library/iREC/Policies/iRec Policy.policy', 'binary')
             .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
             .then((file) => {
                 cy.request({
@@ -15,7 +15,7 @@ context("Policy autotest", { tags: ['policyAT'] }, () => {
                     url: API.ApiServer + 'policies/import/file?demo=true',
                     body: file,
                     headers: {
-                        "content-type": "binary/octet-stream",
+                        'content-type': 'binary/octet-stream',
                         authorization,
                     },
                     timeout: 180000,
@@ -37,7 +37,7 @@ context("Policy autotest", { tags: ['policyAT'] }, () => {
             testId = response.body.at(0).tests.at(0).id;
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.Policies + policyId + "/test/" + testId + "/start",
+                url: API.ApiServer + API.Policies + policyId + '/test/' + testId + '/start',
                 headers: {
                     authorization,
                 },
@@ -53,11 +53,11 @@ context("Policy autotest", { tags: ['policyAT'] }, () => {
                 },
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
-                expect(response.body.at(0).tests.at(0).status).to.eq("Success");
+                expect(response.body.at(0).tests.at(0).status).to.eq('Success');
             })
         })
 
         //get policy id and test id
-        
+
     })
 });

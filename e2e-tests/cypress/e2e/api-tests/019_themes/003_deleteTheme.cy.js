@@ -1,10 +1,10 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
 context('Delete Policy Themes', { tags: ['themes', 'secondPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-    const themeName = "ThemeAPI";
+    const themeName = 'ThemeAPI';
 
     let themeId;
 
@@ -38,7 +38,7 @@ context('Delete Policy Themes', { tags: ['themes', 'secondPool', 'all'] }, () =>
         });
     });
 
-    it("Delete theme without auth token - Negative", () => {
+    it('Delete theme without auth token - Negative', () => {
         cy.request({
             method: METHOD.DELETE,
             url: API.ApiServer + API.Themes + themeId,
@@ -48,12 +48,12 @@ context('Delete Policy Themes', { tags: ['themes', 'secondPool', 'all'] }, () =>
         });
     });
 
-    it("Delete theme with invalid auth token - Negative", () => {
+    it('Delete theme with invalid auth token - Negative', () => {
         cy.request({
             method: METHOD.DELETE,
             url: API.ApiServer + API.Themes + themeId,
             headers: {
-                authorization: "Bearer wqe",
+                authorization: 'Bearer wqe',
             },
             failOnStatusCode: false,
         }).then((response) => {
@@ -61,12 +61,12 @@ context('Delete Policy Themes', { tags: ['themes', 'secondPool', 'all'] }, () =>
         });
     });
 
-    it("Delete theme with empty auth token - Negative", () => {
+    it('Delete theme with empty auth token - Negative', () => {
         cy.request({
             method: METHOD.DELETE,
             url: API.ApiServer + API.Themes + themeId,
             headers: {
-                authorization: "",
+                authorization: '',
             },
             failOnStatusCode: false,
         }).then((response) => {

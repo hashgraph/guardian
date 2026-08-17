@@ -233,6 +233,22 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
+     * Async dry-run policy
+     * @param policyId
+     * @param owner
+     * @param enableMock
+     * @param task
+     */
+    public async dryRunPolicyAsync(
+        policyId: string,
+        owner: IOwner,
+        enableMock: boolean,
+        task: NewTask
+    ): Promise<NewTask> {
+        return await this.sendMessage(PolicyEngineEvents.DRY_RUN_POLICIES_ASYNC, { policyId, owner, enableMock, task });
+    }
+
+    /**
      * Dry-run policy
      * @param policyId
      * @param owner

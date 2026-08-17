@@ -342,6 +342,13 @@ export class PolicyConfigurationComponent implements OnInit {
         return this.currentView === 'blocks';
     }
 
+    public get visibleConfigurations(): OrderOption[] {
+        if (this.isTree) {
+            return this.options.configurationOrder;
+        }
+        return this.options.configurationOrder.filter((item) => item.id === 'tree');
+    }
+
     public get isModuleValid(): boolean {
         return this.rootTemplate?.valid;
     }
@@ -1306,21 +1313,16 @@ export class PolicyConfigurationComponent implements OnInit {
     private executeDryRun(enableMock: boolean) {
         this.loading = true;
         this.policyEngineService
-            .dryRun(this.policyId, { enableMock })
+            .pushDryRun(this.policyId, { enableMock })
             .pipe(takeUntil(this._destroy$))
-            .subscribe((data: any) => {
-                const { policies, isValid, errors } = data;
-                if (isValid) {
-                    this.clearState();
-                    this.loadData();
-                } else {
-                    this.setErrors(errors, 'policy');
-
-                    this.emptyWarningsStates()
-                    this.emptyInfosStates()
-
-                    this.loading = false;
-                }
+            .subscribe((result) => {
+                const { taskId } = result;
+                this.clearState();
+                this.router.navigate(['task', taskId], {
+                    queryParams: {
+                        last: btoa(location.href),
+                    },
+                });
             }, (e) => {
                 console.error(e.error);
                 this.loading = false;

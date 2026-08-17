@@ -264,7 +264,7 @@
       </div>
       <div (cdkDropListDropped)="onDroppedSection($event)" [cdkDropListData]="options.configurationOrder" cdkDropList
         cdkDropListOrientation="horizontal" class="main-container">
-        @for (configuration of options.configurationOrder; track configuration; let last = $last) {
+        @for (configuration of visibleConfigurations; track configuration; let last = $last) {
           @switch (configuration.id) {
             @case ('blocks') {
               <ng-container
@@ -272,7 +272,7 @@
             }
             @case ('tree') {
               <ng-container
-              *ngTemplateOutlet="configurationTree; context: { last, size: configuration.size, id: configuration.id }"></ng-container>
+              *ngTemplateOutlet="configurationTree; context: { last, size: isTree ? configuration.size : 'auto', id: configuration.id }"></ng-container>
             }
             @case ('properties') {
               <ng-container
@@ -338,7 +338,7 @@
                       <div class="components-group-body readonly-status">
                         @for (item of componentsList.favorites; track item) {
                           <div
-                            class="components-group-item">
+                            [attr.block-type]="item.header" class="components-group-item">
                             <div (click)="onAdd(item)" [attr.block-type]="item.header"
                               [cdkDragData]="item.data" cdkDrag class="drag-btn">
                               <div class="drag-component">
@@ -368,7 +368,7 @@
                     <div class="components-group-body readonly-status">
                       @for (item of componentsList.uiComponents; track item) {
                         <div
-                          class="components-group-item">
+                          [attr.block-type]="item.header" class="components-group-item">
                           <div (click)="onAdd(item)" [attr.block-type]="item.header"
                             [cdkDragData]="item.data" cdkDrag class="drag-btn">
                             <div class="drag-component">
@@ -397,7 +397,7 @@
                     <div class="components-group-body readonly-status">
                       @for (item of componentsList.serverBlocks; track item) {
                         <div
-                          class="components-group-item">
+                          [attr.block-type]="item.header" class="components-group-item">
                           <div (click)="onAdd(item)" [attr.block-type]="item.header"
                             [cdkDragData]="item.data" cdkDrag class="drag-btn">
                             <div class="drag-component">
@@ -425,7 +425,7 @@
                     </div>
                     <div class="components-group-body readonly-status">
                       @for (item of componentsList.addons; track item) {
-                        <div class="components-group-item">
+                        <div [attr.block-type]="item.header" class="components-group-item">
                           <div (click)="onAdd(item)" [attr.block-type]="item.header"
                             [cdkDragData]="item.data" cdkDrag class="drag-btn">
                             <div class="drag-component">
@@ -454,7 +454,7 @@
                       <div class="components-group-body readonly-status">
                         @for (item of componentsList.unGrouped; track item) {
                           <div
-                            class="components-group-item">
+                            [attr.block-type]="item.header" class="components-group-item">
                             <div (click)="onAdd(item)" [attr.block-type]="item.header"
                               [cdkDragData]="item.data" cdkDrag class="drag-btn">
                               <div class="drag-component">
@@ -493,7 +493,7 @@
                       </div>
                       <div class="components-group-body readonly-status">
                         @for (item of modulesList.favorites; track item) {
-                          <div class="components-group-item">
+                          <div [attr.block-type]="item.header" class="components-group-item">
                             <div (click)="onAddModule(item)" [attr.block-type]="item.header"
                               [cdkDragData]="item.data" cdkDrag class="drag-btn">
                               <div class="drag-component drag-module">
@@ -531,7 +531,7 @@
                     <div class="components-group-body readonly-status">
                       @for (item of modulesList.defaultModules; track item) {
                         <div
-                          class="components-group-item">
+                          [attr.block-type]="item.header" class="components-group-item">
                           <div (click)="onAddModule(item)" [attr.block-type]="item.header"
                             [cdkDragData]="item.data" cdkDrag class="drag-btn">
                             <div class="drag-component drag-module">
@@ -568,7 +568,7 @@
                     <div class="components-group-body readonly-status">
                       @for (item of modulesList.customModules; track item) {
                         <div
-                          class="components-group-item">
+                          [attr.block-type]="item.header" class="components-group-item">
                           <div (click)="onAddModule(item)" [attr.block-type]="item.header"
                             [cdkDragData]="item.data" cdkDrag class="drag-btn">
                             <div class="drag-component drag-module">
@@ -613,7 +613,7 @@
                     </div>
                     <div class="components-group-body readonly-status">
                       @for (item of modulesList.customTools; track item) {
-                        <div class="components-group-item">
+                        <div [attr.block-type]="item.header" class="components-group-item">
                           <div (click)="onAddTool(item)" [attr.block-type]="item.header"
                             [cdkDragData]="item.data" cdkDrag class="drag-btn">
                             <div class="drag-component drag-module">
@@ -1358,14 +1358,16 @@
     @if (!readonly && isTree) {
       <div class="overflow-menu-divider"></div>
       <div (click)="onSuggestionsClick(); overflowMenu.hide()" class="toolbar-menu"
-        [ngClass]="{'btn-mode-active': isSuggestionsEnabled}">
+        [attr.active]="isSuggestionsEnabled ? true : null">
         <svg-icon src="/assets/images/icons/assistant.svg" svgClass="icon-style-assistant"></svg-icon>
         <span>Suggestions</span>
+        @if (isSuggestionsEnabled) { <i class="pi pi-check overflow-check"></i> }
       </div>
       <div (click)="copyBlocksMode=!copyBlocksMode; overflowMenu.hide()" class="toolbar-menu"
-        [ngClass]="{'btn-mode-active': copyBlocksMode}">
+        [attr.active]="copyBlocksMode ? true : null">
         <i class="pi pi-copy"></i>
         <span>Copy Mode</span>
+        @if (copyBlocksMode) { <i class="pi pi-check overflow-check"></i> }
       </div>
       @if (
         user.MODULES_MODULE_CREATE &&

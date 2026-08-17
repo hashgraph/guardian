@@ -1,15 +1,16 @@
 
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Checks from "../../../support/checkingMethods";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Checks from '../../../support/checkingMethods';
+import * as Authorization from '../../../support/authorization';
+import * as IpfsSeeding from '../../../support/CustomHelpers/ipfsSeeding';
 
-context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
+context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
 
-    const importMsgUrl = `${API.ApiServer}${API.PolicisImportMsg}`;
+    const policyFixture = 'test_Field_Validation.policy';
     const policiesBase = `${API.ApiServer}${API.Policies}`;
     const assignUrl = (username) => `${API.ApiServer}${API.Permissions}${API.Users}${username}/${API.Policies}${API.Assign}`;
     const publishUrl = (policyId) => `${policiesBase}${policyId}/${API.Publish}`;
@@ -17,7 +18,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
     const regWorkflowStepsUrl = (policyId) => `${policiesBase}${policyId}/${API.RegWorkflowSteps}`;
     const createApplicationUrl = (policyId) => `${policiesBase}${policyId}/${API.CreateApplication}`;
 
-    let policyId;
+    let policyId; let policyMessageId;
 
     const requestWithAuth = (method, url, authorization, options = {}) =>
         cy.request({
@@ -29,26 +30,43 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
             ...(options.failOnStatusCode !== undefined ? { failOnStatusCode: options.failOnStatusCode } : {}),
         });
 
-    const postCreateApplicationWithAuth = (authorization, policyId, body, opts = {}) =>
-        requestWithAuth(METHOD.POST, createApplicationUrl(policyId), authorization, {
+    const postCreateApplicationWithAuth = (authorization, policyId, body, opts = {}) => {
+        // Guard against a broken setup: without it every GeoJSON test would still get a 422
+        // ("Policy does not exist.") and pass for the wrong reason.
+        expect(policyId, 'policy prepared by the setup test').to.be.a('string');
+        return requestWithAuth(METHOD.POST, createApplicationUrl(policyId), authorization, {
             body,
             timeout: opts.timeout ?? 600000,
             failOnStatusCode: opts.failOnStatusCode ?? false,
         });
+    };
 
-    it("Import, publish, assign policy", () => {
-        Authorization.getAccessToken(SRUsername).then((authorization) => {
-            requestWithAuth(METHOD.POST, importMsgUrl, authorization, {
-                body: { messageId: "1759843626.057332154" },
-                timeout: 18000000,
-            }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                policyId = response.body.at(0).id;
-                Authorization.getAccessToken(SRUsername).then((authorization) => {
-                    requestWithAuth(METHOD.PUT, publishUrl(policyId), authorization, {
-                        body: { policyVersion: "1.2.5" },
-                        timeout: 18000000,
-                    });
+    // A bare 422 is not enough: an unprepared policy also answers 422, so check the rejection
+    // really comes from the #GeoJSON schema validation.
+    const expectGeoJsonValidationError = (response) => {
+        expect(response.status).to.eq(STATUS_CODE.UNPROCESSABLE);
+        expect(response.body.message).to.contain('JSON_SCHEMA_VALIDATION_ERROR');
+        expect(response.body.message).to.contain('#GeoJSON');
+    };
+
+    // The policy is published from a local fixture instead of reusing a hardcoded message ID, whose
+    // IPFS content can be unpinned at any time. The import below still goes through Hedera + IPFS.
+    it('Publish policy to IPFS', () => {
+        IpfsSeeding.publishPolicyFixture(SRUsername, policyFixture).then((messageId) => {
+            policyMessageId = messageId;
+        });
+    });
+
+    it('Import, publish, assign policy', () => {
+        expect(policyMessageId, 'message ID of the policy published by the setup test').to.be.a('string');
+        IpfsSeeding.importPolicyFromMessage(SRUsername, policyMessageId).then((policies) => {
+            policyId = policies.at(0).id;
+            Authorization.getAccessToken(SRUsername).then((authorization) => {
+                requestWithAuth(METHOD.PUT, publishUrl(policyId), authorization, {
+                    body: { policyVersion: '1.2.5' },
+                    timeout: 18000000,
+                }).then((response) => {
+                    expect(response.status).to.eq(STATUS_CODE.OK);
                 });
             });
         });
@@ -62,33 +80,34 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
         });
     });
 
-    it("Register user in policy", () => {
+    it('Register user in policy', () => {
+        expect(policyId, 'policy prepared by the setup test').to.be.a('string');
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             requestWithAuth(METHOD.POST, chooseRoleUrl(policyId), authorization, {
-                body: { role: "Registrant" },
+                body: { role: 'Registrant' },
             }).then(() => {
                 const waitRegRoleChoosing = {
                     method: METHOD.GET,
                     url: regWorkflowStepsUrl(policyId),
                     headers: { authorization },
                 };
-                Checks.whileRequestProccessing(waitRegRoleChoosing, "Registrant Application", "blocks.0.uiMetaData.title");
+                Checks.whileRequestProccessing(waitRegRoleChoosing, 'Registrant Application', 'blocks.0.uiMetaData.title');
             });
         });
     });
 
-    it("Verify GeoJSON fields - bad type", () => {
+    it('Verify GeoJSON fields - bad type', () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             postCreateApplicationWithAuth(authorization, policyId, {
                 document: {
                     field1: {
-                        type: "FeatureCollection",
+                        type: 'FeatureCollection',
                         features: [
                             {
-                                type: "Feature",
+                                type: 'Feature',
                                 properties: {},
                                 geometry: {
-                                    type: "BlaBla",
+                                    type: 'BlaBla',
                                     coordinates: [
                                         [
                                             [
@@ -112,23 +131,23 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                 },
                 ref: null
             }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.UNPROCESSABLE);
+                expectGeoJsonValidationError(response);
             });
         });
     });
 
-    it("Verify GeoJSON fields - bad Polygon", () => {
+    it('Verify GeoJSON fields - bad Polygon', () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             postCreateApplicationWithAuth(authorization, policyId, {
                 document: {
                     field1: {
-                        type: "FeatureCollection",
+                        type: 'FeatureCollection',
                         features: [
                             {
-                                type: "Feature",
+                                type: 'Feature',
                                 properties: {},
                                 geometry: {
-                                    type: "Polygon",
+                                    type: 'Polygon',
                                     coordinates: [
                                         [
                                             [
@@ -152,23 +171,23 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                 },
                 ref: null
             }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.UNPROCESSABLE);
+                expectGeoJsonValidationError(response);
             });
         });
     });
 
-    it("Verify GeoJSON fields - bad Point", () => {
+    it('Verify GeoJSON fields - bad Point', () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             postCreateApplicationWithAuth(authorization, policyId, {
                 document: {
                     field1: {
-                        type: "FeatureCollection",
+                        type: 'FeatureCollection',
                         features: [
                             {
-                                type: "Feature",
+                                type: 'Feature',
                                 properties: {},
                                 geometry: {
-                                    type: "Point",
+                                    type: 'Point',
                                     coordinates: [
                                         [
                                             30.236953455571204,
@@ -185,23 +204,23 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                 },
                 ref: null
             }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.UNPROCESSABLE);
+                expectGeoJsonValidationError(response);
             });
         });
     });
 
-    it("Verify GeoJSON fields - bad MultiPoint", () => {
+    it('Verify GeoJSON fields - bad MultiPoint', () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             postCreateApplicationWithAuth(authorization, policyId, {
                 document: {
                     field1: {
-                        type: "FeatureCollection",
+                        type: 'FeatureCollection',
                         features: [
                             {
-                                type: "Feature",
+                                type: 'Feature',
                                 properties: {},
                                 geometry: {
-                                    type: "MultiPoint",
+                                    type: 'MultiPoint',
                                     coordinates: [
                                         16.162714920660097,
                                         -1.64224653330524
@@ -213,23 +232,23 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                 },
                 ref: null
             }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.UNPROCESSABLE);
+                expectGeoJsonValidationError(response);
             });
         });
     });
 
-    it("Verify GeoJSON fields - bad LineString", () => {
+    it('Verify GeoJSON fields - bad LineString', () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             postCreateApplicationWithAuth(authorization, policyId, {
                 document: {
                     field1: {
-                        type: "FeatureCollection",
+                        type: 'FeatureCollection',
                         features: [
                             {
-                                type: "Feature",
+                                type: 'Feature',
                                 properties: {},
                                 geometry: {
-                                    type: "LineString",
+                                    type: 'LineString',
                                     coordinates: [
                                         [
                                             22.338694977111512,
@@ -243,23 +262,23 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                 },
                 ref: null
             }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.UNPROCESSABLE);
+                expectGeoJsonValidationError(response);
             });
         });
     });
 
-    it("Verify GeoJSON fields - bad MultiLineString", () => {
+    it('Verify GeoJSON fields - bad MultiLineString', () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             postCreateApplicationWithAuth(authorization, policyId, {
                 document: {
                     field1: {
-                        type: "FeatureCollection",
+                        type: 'FeatureCollection',
                         features: [
                             {
-                                type: "Feature",
+                                type: 'Feature',
                                 properties: {},
                                 geometry: {
-                                    type: "Polygon",
+                                    type: 'Polygon',
                                     coordinates: [
                                         [
                                             [
@@ -283,23 +302,23 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                 },
                 ref: null
             }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.UNPROCESSABLE);
+                expectGeoJsonValidationError(response);
             });
         });
     });
 
-    it("Verify GeoJSON fields - bad MultiPolygon", () => {
+    it('Verify GeoJSON fields - bad MultiPolygon', () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             postCreateApplicationWithAuth(authorization, policyId, {
                 document: {
                     field1: {
-                        type: "FeatureCollection",
+                        type: 'FeatureCollection',
                         features: [
                             {
-                                type: "Feature",
+                                type: 'Feature',
                                 properties: {},
                                 geometry: {
-                                    type: "Polygon",
+                                    type: 'Polygon',
                                     coordinates: [
                                         [
                                             [
@@ -341,7 +360,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                 },
                 ref: null
             }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.UNPROCESSABLE);
+                expectGeoJsonValidationError(response);
             });
         });
     });

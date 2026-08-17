@@ -719,13 +719,13 @@ export class MintService {
                                 type: ContractParamType.ADDRESS,
                                 value: TokenId.fromString(
                                     token.tokenId
-                                ).toSolidityAddress(),
+                                ).toEvmAddress(),
                             },
                             {
                                 type: ContractParamType.ADDRESS,
                                 value: AccountId.fromString(
                                     targetAccount
-                                ).toSolidityAddress(),
+                                ).toEvmAddress(),
                             },
                             {
                                 type: ContractParamType.INT64,

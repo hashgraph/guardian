@@ -1,11 +1,23 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
+import * as IpfsSeeding from '../../../support/CustomHelpers/ipfsSeeding';
 
-context("Schemas", { tags: ['schema', 'thirdPool', 'all'] }, () => {
+context('Schemas', { tags: ['schema', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
-    it("Push import new schema from IPFS", () => {
+    let schemaMessageId;
+
+    // The schema is published here instead of reusing a hardcoded message ID, whose IPFS content
+    // can be unpinned at any time. The import below still goes through Hedera + IPFS.
+    before('Publish schema to IPFS', () => {
+        IpfsSeeding.publishSchema(SRUsername).then(({ messageId }) => {
+            schemaMessageId = messageId;
+        });
+    });
+
+    it('Push import new schema from IPFS', () => {
+        expect(schemaMessageId, 'message ID of the schema published by the setup').to.be.a('string');
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
@@ -20,18 +32,18 @@ context("Schemas", { tags: ['schema', 'thirdPool', 'all'] }, () => {
                     url:
                         API.ApiServer +
                         API.Schemas +
-                        "push/" +
+                        'push/' +
                         topicUid +
-                        "/import/message",
+                        '/import/message',
                     headers: {
                         authorization,
                     },
                     body: {
-                        messageId: Cypress.env("schema_for_import"),
+                        messageId: schemaMessageId,
                     },
                 }).then((response) => {
                     expect(response.status).eql(STATUS_CODE.ACCEPTED);
-                    expect(response.body).to.not.be.oneOf([null, ""]);
+                    expect(response.body).to.not.be.oneOf([null, '']);
                 });
             });
         });

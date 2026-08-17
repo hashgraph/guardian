@@ -1,5 +1,5 @@
 import { UntypedFormGroup, UntypedFormControl, UntypedFormArray, ValidatorFn, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
-import { Schema, SchemaCondition, SchemaConditionTarget, SchemaField, SchemaRuleValidateResult, GenerateUUIDv4, isGeoCustomType } from '@guardian/interfaces';
+import { Schema, SchemaCondition, SchemaConditionTarget, SchemaField, SchemaHelper, SchemaRuleValidateResult, GenerateUUIDv4, isGeoCustomType } from '@guardian/interfaces';
 import { fullFormats } from 'ajv-formats/dist/formats';
 import moment from 'moment';
 import { Subject, takeUntil } from 'rxjs';
@@ -47,6 +47,7 @@ export interface IFieldIndexControl<T extends UntypedFormControl | UntypedFormGr
 
 export interface IConditionControl<T extends UntypedFormControl | UntypedFormGroup | UntypedFormArray> extends IFieldControl<T> {
     conditionExpr: IConditionExpr;
+    sourceCondition: SchemaCondition;
     conditionInvert: boolean;
     dependsOn: string[];
 }
@@ -63,6 +64,7 @@ interface IConditionExpr {
 
 interface ICrossSchemaConditionItem {
     expr: IConditionExpr;
+    sourceCondition: SchemaCondition;
     conditionInvert: boolean;
     field: SchemaField;
     fieldPath: string[];
@@ -85,6 +87,8 @@ export class FieldForm {
     private fieldControls: IFieldControl<any>[] | null;
     private conditionControls: IConditionControl<any>[] | null;
     private crossSchemaItems: ICrossSchemaConditionItem[];
+    private conditionExprBySource: Map<SchemaCondition, IConditionExpr>;
+    private conditionRevealMap: Map<string, { condition: SchemaCondition, branch: 'then' | 'else' }[]>;
 
     private readonly conditionFields: Set<string>;
     private ownParentControlledFields: Set<string>;
@@ -92,6 +96,7 @@ export class FieldForm {
     private readonly ancestorChildPaths: Map<string, Set<string>>;
     public rootForm: FieldForm;
     private arrayGroupCache: Map<IFieldControl<any>, IArrayGroupEntry[]> | null = null;
+    private fieldOrder: Map<string, number> | null = null;
 
     private readonly destroy$: Subject<boolean>;
 
@@ -110,6 +115,8 @@ export class FieldForm {
         this.fieldControls = null;
         this.conditionControls = null;
         this.crossSchemaItems = [];
+        this.conditionExprBySource = new Map<SchemaCondition, IConditionExpr>();
+        this.conditionRevealMap = new Map<string, { condition: SchemaCondition, branch: 'then' | 'else' }[]>();
         this.controls = null;
         this.rootForm = this;
     }
@@ -184,6 +191,9 @@ export class FieldForm {
         const { fields, conditions } = this.updateData();
         this.arrayGroupCache = null;
         this.crossSchemaItems = [];
+        this.conditionExprBySource = new Map<SchemaCondition, IConditionExpr>();
+        this.conditionRevealMap = SchemaHelper.buildRevealMap(conditions || []);
+        this.fieldOrder = fields ? new Map(fields.map((f, index) => [f.name, index])) : null;
         this.fieldControls = this.buildFields(fields);
         this.conditionControls = this.buildConditions(conditions);
         if (this.schema?.arrayDependencies?.length) {
@@ -265,7 +275,10 @@ export class FieldForm {
 
     private findControl(name: string): IFieldControl<any> | undefined {
         const base = this.fieldControls?.find(control => control.name === name);
-        if (base || !this.rootForm.schema?.arrayDependencies?.length) { return base; }
+        if (base) { return base; }
+        // A container may itself be condition-controlled, in which case it lives in
+        // conditionControls rather than fieldControls. Cross-schema conditions that target a
+        // path inside such a container must still be able to resolve it.
         return this.conditionControls?.find(control => control.name === name);
     }
 
@@ -284,6 +297,32 @@ export class FieldForm {
         if (expr.op === 'SINGLE') return test(expr.pairs[0]);
         if (expr.op === 'AND') return expr.pairs.every(test);
         return expr.pairs.some(test);
+    }
+
+    /**
+     * A condition is unreachable when the fields its `if` reads are not being asked: the
+     * condition branch that reveals them is not the active one, so neither its `then` nor
+     * its `else` fields belong in the form.
+     *
+     * Reachability is a property of the condition graph, not of the form: a control may be
+     * missing for reasons the schema knows nothing about — a private field, a field supplied
+     * by the parent, an optional sub-schema that was never instantiated — and hiding a
+     * branch for those would produce a form that cannot satisfy its own schema. The
+     * traversal is shared with `SchemaHelper.validateConditionFields` so the form and
+     * document validation cannot disagree.
+     */
+    private isConditionReachable(condition: SchemaCondition, entryIndex: number | null = null): boolean {
+        if (!condition) {
+            return false;
+        }
+        return SchemaHelper.isConditionReachable(
+            condition,
+            this.conditionRevealMap,
+            (owner: SchemaCondition) => {
+                const expr = this.conditionExprBySource.get(owner);
+                return expr ? this.evaluateIf(expr, entryIndex) : false;
+            }
+        );
     }
 
     private injectEntryIndex(path: string, entryIndex: number): string {
@@ -366,12 +405,14 @@ export class FieldForm {
 
         for (const condition of conditions) {
             const expr = this.normalizeIfCondition((condition as any).ifCondition);
+            this.conditionExprBySource.set(condition, expr);
             const deps = Array.from(new Set(expr.pairs.map(p => p.path ? p.path.split('.')[0] : p.name).filter(Boolean)));
             for (const thenField of condition.thenFields) {
                 const fieldControl = this.createFieldControl(thenField, this.preset);
                 const item: IConditionControl<any> = {
                     ...fieldControl,
                     conditionExpr: expr,
+                    sourceCondition: condition,
                     conditionInvert: false,
                     dependsOn: deps,
                     visibility: false
@@ -384,6 +425,7 @@ export class FieldForm {
                 const item: IConditionControl<any> = {
                     ...fieldControl,
                     conditionExpr: expr,
+                    sourceCondition: condition,
                     conditionInvert: true,
                     dependsOn: deps,
                     visibility: false
@@ -396,6 +438,7 @@ export class FieldForm {
                     if (!target.fieldPath || target.fieldPath.length < 2) { continue; }
                     this.crossSchemaItems.push({
                         expr,
+                        sourceCondition: condition,
                         conditionInvert: invert,
                         field: target.field,
                         fieldPath: target.fieldPath,
@@ -414,9 +457,8 @@ export class FieldForm {
             }
         }
 
-        if (this.rootForm.schema?.arrayDependencies?.length) {
-            this.conditionControls = controls;
-        }
+        // Must be set before this loop: findControl (used by resolveChildModels below) falls back to it.
+        this.conditionControls = controls;
 
         for (const item of this.crossSchemaItems) {
             for (const entryIndex of this.getEntryIndexes(item)) {
@@ -439,6 +481,9 @@ export class FieldForm {
         item: ICrossSchemaConditionItem,
         entryIndex: number | null = null
     ): boolean {
+        if (!this.isConditionReachable(item.sourceCondition, entryIndex)) {
+            return false;
+        }
         const ok = this.evaluateIf(item.expr, entryIndex);
         return item.conditionInvert ? !ok : ok;
     }
@@ -446,12 +491,30 @@ export class FieldForm {
     public addParentControlledField(field: SchemaField, containerPreset?: any): void {
         if (!this.fieldControls) { this.fieldControls = []; }
         if (this.fieldControls.find(c => c.name === field.name)) { return; }
-        const item = this.createFieldControl(field, containerPreset?.[field.name]);
-        this.fieldControls.push(item);
+        const item = this.createFieldControl(field, containerPreset);
+        this.insertFieldControlInOrder(item);
         if (item.control) {
             this.form.addControl(item.name, item.control, { emitEvent: false });
         }
         this.controls = this.rebuildControls();
+    }
+
+    private insertFieldControlInOrder(item: IFieldControl<any>): void {
+        this.fieldControls = this.fieldControls || [];
+        const targetIdx = this.fieldOrder?.get(item.name);
+        if (targetIdx === undefined) {
+            this.fieldControls.push(item);
+            return;
+        }
+        const insertBefore = this.fieldControls.findIndex(c => {
+            const idx = this.fieldOrder!.get(c.name);
+            return idx !== undefined && idx > targetIdx;
+        });
+        if (insertBefore < 0) {
+            this.fieldControls.push(item);
+        } else {
+            this.fieldControls.splice(insertBefore, 0, item);
+        }
     }
 
     public removeParentControlledField(fieldName: string): void {
@@ -700,69 +763,105 @@ export class FieldForm {
             })
     }
 
-    private getLastVisibleIndexByNames(arr: IFieldControl<any>[], names: string[]): number {
-        if (!names?.length) {
-            return -1;
+    /**
+     * The field a condition control is anchored to: its last-declared dependency, so a
+     * condition reading several fields renders after all of them. Anchors on declaration
+     * order rather than visibility — the template already filters on `visibility`, and an
+     * `else` field is visible precisely when the field its condition reads is hidden.
+     */
+    private getAnchorName(cc: IConditionControl<any>, declOrder: Map<string, number>): string | null {
+        if (!cc.dependsOn?.length) {
+            return null;
         }
-        const nameSet = new Set(names);
-        let idx = -1;
-        for (let i = 0; i < arr.length; i++) {
-            const it = arr[i];
-            if (it.visibility && nameSet.has(it.name)) {
-                idx = i;
+        let anchor: string | null = null;
+        let anchorIdx = -1;
+        for (const name of cc.dependsOn) {
+            const idx = declOrder.get(name);
+            if (idx !== undefined && idx > anchorIdx) {
+                anchorIdx = idx;
+                anchor = name;
             }
         }
-        return idx;
+        return anchor;
     }
 
     private rebuildControls(): IFieldControl<any>[] {
-        const result: IFieldControl<any>[] = [];
+        const baseControls: IFieldControl<any>[] = [];
 
         if (this.fieldControls) {
             for (const base of this.fieldControls) {
                 base.visibility = this.ifFieldVisible(base);
-                if (!result.includes(base)) {
-                    result.push(base);
+                if (!baseControls.includes(base)) {
+                    baseControls.push(base);
                 }
             }
         }
 
-        if (this.conditionControls?.length) {
-            for (const cc of this.conditionControls) {
-                cc.visibility = this.checkConditionValue(cc);
+        if (!this.conditionControls?.length) {
+            return baseControls;
+        }
+
+        for (const cc of this.conditionControls) {
+            cc.visibility = this.checkConditionValue(cc);
+        }
+
+        const declOrder = new Map<string, number>();
+        const declared: IFieldControl<any>[] = [...baseControls, ...this.conditionControls];
+        for (let i = 0; i < declared.length; i++) {
+            declOrder.set(declared[i].name, i);
+        }
+
+        // Group the revealed fields under the field their condition reads, keeping
+        // the order in which the conditions (and the fields inside them) were declared.
+        const childrenByAnchor = new Map<string, IConditionControl<any>[]>();
+        for (const cc of this.conditionControls) {
+            const anchor = this.getAnchorName(cc, declOrder);
+            if (anchor === null) {
+                continue;
             }
+            const siblings = childrenByAnchor.get(anchor);
+            if (siblings) {
+                siblings.push(cc);
+            } else {
+                childrenByAnchor.set(anchor, [cc]);
+            }
+        }
 
-            const unplaced = new Set(this.conditionControls.map(c => c.id));
-            const byId = new Map(this.conditionControls.map(c => [c.id, c]));
-
-            const max = this.conditionControls.length || 1;
-            for (let pass = 0; pass < max && unplaced.size; pass++) {
-                let placedThisPass = 0;
-
-                for (const id of Array.from(unplaced)) {
-                    const cc = byId.get(id)!;
-
-                    const anchorIdx = this.getLastVisibleIndexByNames(result, cc.dependsOn);
-
-                    if (anchorIdx >= 0) {
-                        if (!result.includes(cc)) {
-                            result.splice(anchorIdx + 1, 0, cc);
-                        }
-                        unplaced.delete(id);
-                        placedThisPass++;
+        // Emit each field's own reveal-subtree breadth first, so the whole group of
+        // fields one condition reveals stays together before descending into a condition
+        // nested on one of them. The outer loop still visits roots in declaration order,
+        // so unrelated fields are unaffected by a sibling's reveal chain.
+        const result: IFieldControl<any>[] = [];
+        const emitted = new Set<IConditionControl<any>>();
+        const emitSubtree = (root: IFieldControl<any>) => {
+            const queue: IFieldControl<any>[] = [root];
+            while (queue.length) {
+                const ctrl = queue.shift() as IFieldControl<any>;
+                result.push(ctrl);
+                const children = childrenByAnchor.get(ctrl.name);
+                if (!children) {
+                    continue;
+                }
+                for (const child of children) {
+                    if (emitted.has(child)) {
+                        continue;
                     }
-                }
-
-                if (!placedThisPass) {
-                    break;
+                    emitted.add(child);
+                    queue.push(child);
                 }
             }
+        };
 
-            for (const id of unplaced) {
-                const cc = byId.get(id)!;
-                if (!result.includes(cc)) {
-                    result.push(cc);
-                }
+        for (const base of baseControls) {
+            emitSubtree(base);
+        }
+
+        // Anything still unplaced reads a field that is not part of this form (or forms
+        // a cycle); keep it at the end rather than dropping it from the form.
+        for (const cc of this.conditionControls) {
+            if (!emitted.has(cc)) {
+                emitted.add(cc);
+                emitSubtree(cc);
             }
         }
 
@@ -874,6 +973,9 @@ export class FieldForm {
     }
 
     private checkConditionValue(item: IConditionControl<any>): boolean {
+        if (!this.isConditionReachable(item.sourceCondition)) {
+            return false;
+        }
         const ok = this.evaluateIf(item.conditionExpr);
         return item.conditionInvert ? !ok : ok;
     }

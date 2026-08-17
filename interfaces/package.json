@@ -32,5 +32,5 @@
         "test": "mocha tests/**/*.test.mjs --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/interfaces.xml --exit"
     },
     "type": "module",
-    "version": "3.7.0-rc"
+    "version": "3.7.0"
 }
