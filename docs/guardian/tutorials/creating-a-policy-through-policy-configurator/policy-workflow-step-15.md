@@ -6,7 +6,7 @@ We click back to the “create\_new\_sensors\_steps” process step and add a �
 
 We then add a tag, type - of course, a verifiable credential, and entity – our inverter sensor. And done. We have completed the steps to add an inverter sensor to a project.
 
-![](../../../../../.gitbook/assets/PW_image_21.png)
+![](../../../.gitbook/assets/PW_image_21.png)
 
 **Programmatically this workflow step looks like this:**
 
@@ -31,7 +31,7 @@ We then add a tag, type - of course, a verifiable credential, and entity – our
 
 Lastly, just create a new Container Block to group all components on the page with MRV data.
 
-![](../../../../../.gitbook/assets/PW_image_35.png)
+![](../../../.gitbook/assets/PW_image_35.png)
 
 **Programmatically this workflow step looks like this:**
 

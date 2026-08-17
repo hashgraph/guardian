@@ -13,4 +13,4 @@ Work through the steps in order. Each step builds on the configuration before it
 
 Before you begin, sign in as a **Standard Registry User**. Only Standard Registry Users can create policies.
 
-For an overview of the editor and its core concepts, see [Policy Configurator](../policy-configurator.md).
+For an overview of the editor and its core concepts, see [Policy Configurator](../../workspace/policies/policy-creation/policy-configurator.md).

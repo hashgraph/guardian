@@ -2,7 +2,7 @@
 
 Next, we return to the top field in our policy to add our final policy action block – minting of tokens – by clicking on the “Container” button in the top navigation bar.
 
-![](../../../../../.gitbook/assets/PW_image_29.png)
+![](../../../.gitbook/assets/PW_image_29.png)
 
 **Programmatically this workflow step looks like this:**
 

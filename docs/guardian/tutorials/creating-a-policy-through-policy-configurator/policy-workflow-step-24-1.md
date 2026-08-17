@@ -8,7 +8,7 @@ You can use the rule field to enter minting calculations that are specific to yo
 
 Then we click on the “Save” button on the left side in the top navigation bar.
 
-![](../../../../../.gitbook/assets/PW_image_31.png)
+![](../../../.gitbook/assets/PW_image_31.png)
 
 **Programmatically this workflow step looks like this:**
 

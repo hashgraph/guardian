@@ -305,8 +305,8 @@ Guardian offers two deployment options for accessing the platform's methodology 
 
 **Configuration Guides**:
 
-* [Prerequisites documentation](../../../developer-tools-and-resources/environments/prerequisites.md) - Detailed setup requirements
-* [Environment parameters guide](../../../developer-tools-and-resources/environments/setting-up-environment-parameters.md) - Configuration instructions
+* [Prerequisites documentation](../../../developer-tools-and-resources/dev-environments-and-faqs/prerequisites.md) - Detailed setup requirements
+* [Environment parameters guide](../../../developer-tools-and-resources/dev-environments-and-faqs/setting-up-environment-parameters.md) - Configuration instructions
 * [API guidelines](/broken/pages/0uJ0cdGVBhBZ8ObbszJT) - Integration patterns and endpoints
 
 {% hint style="info" %}

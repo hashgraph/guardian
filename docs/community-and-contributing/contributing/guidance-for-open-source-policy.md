@@ -42,7 +42,7 @@ Please visit this [link](https://www.youtube.com/watch?v=nOQpLmbW0hA) to get an 
 
 Second step is to provide a detailed User Guide of the policy, meaning, a step by step process of running the policy with proper and clear screenshots of the policy steps. The steps should start from importing the policy to TrustChain execution.
 
-For reference, please check [iREC 7 Demo UI Guide.](../../guardian/demo-guide/renewable-energy-credits/irec-7-demo-guide.md)
+For reference, please check [iREC 7 Demo UI Guide.](../../guardian/tutorials/renewable-energy-credits/irec-7-demo-guide.md)
 
 ## Automated Policy Workflow with valid sample Input data
 

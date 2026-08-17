@@ -15,7 +15,7 @@ Find supported versions and the latest release notes in the [Guardian releases](
 
 ### Want to go further?
 
-[Development Environments & FAQs](../../developer-tools-and-resources/environments/) covers local, default, development, and QA deployments. It also covers Docker, Kubernetes, Vault and KMS, upgrades, and session consistency.
+[Development Environments & FAQs](../../developer-tools-and-resources/dev-environments-and-faqs/) covers local, default, development, and QA deployments. It also covers Docker, Kubernetes, Vault and KMS, upgrades, and session consistency.
 
 Visit that section for additional details and advanced topics.
 

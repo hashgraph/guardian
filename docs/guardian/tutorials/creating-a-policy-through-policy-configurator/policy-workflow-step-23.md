@@ -4,7 +4,7 @@ Then we add another workflow block below the “mint\_events” block by clickin
 
 We enter the Entity type as MRV and select the Schema from the drop-down as “MRV”
 
-![](../../../../../.gitbook/assets/PW_image_30.png)
+![](../../../.gitbook/assets/PW_image_30.png)
 
 **Programmatically this workflow step looks like this:**
 
