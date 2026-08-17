@@ -42,5 +42,5 @@
     },
     "type": "module",
     "types": "dist/index.d.ts",
-    "version": "3.7.0-rc"
+    "version": "3.7.0"
 }

@@ -69,5 +69,5 @@
         "test:local": "mocha --exit"
     },
     "type": "module",
-    "version": "3.7.0-rc"
+    "version": "3.7.0"
 }

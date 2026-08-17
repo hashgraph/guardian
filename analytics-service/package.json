@@ -62,5 +62,5 @@
         "test": "mocha tests/**/*.test.mjs --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/analytics-service.xml --exit"
     },
     "type": "module",
-    "version": "3.7.0-rc"
+    "version": "3.7.0"
 }

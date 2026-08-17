@@ -91,5 +91,5 @@
         "test:local": "mocha tests/**/*.test.mjs --exit"
     },
     "type": "module",
-    "version": "3.7.0-rc"
+    "version": "3.7.0"
 }

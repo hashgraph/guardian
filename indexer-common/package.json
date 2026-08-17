@@ -48,5 +48,5 @@
         "prepack": "npm run build:prod"
     },
     "type": "module",
-    "version": "3.7.0-rc"
+    "version": "3.7.0"
 }
