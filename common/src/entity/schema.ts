@@ -1,4 +1,4 @@
-import { GenerateUUIDv4, ISchema, ISchemaDocument, SchemaCategory, SchemaEntity, SchemaStatus } from '@guardian/interfaces';
+import { DEFAULT_IWA_VERSION, GenerateUUIDv4, ISchema, ISchemaDocument, SchemaCategory, SchemaEntity, SchemaStatus } from '@guardian/interfaces';
 import { AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeUpdate, Entity, Enum, Index, OnLoad, Property } from '@mikro-orm/core';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { DataBaseHelper, SchemaConverterUtils } from '../helpers/index.js';
@@ -188,6 +188,13 @@ export class Schema extends BaseEntity implements ISchema {
     codeVersion?: string;
 
     /**
+     * IWA dMRV specification version the field properties are authored against.
+     * Absent means IWA v1.
+     */
+    @Property({ nullable: true })
+    iwaVersion?: string;
+
+    /**
      * Definitions
      */
     @Property({ nullable: true })
@@ -245,6 +252,7 @@ export class Schema extends BaseEntity implements ISchema {
         this.system = this.system || false;
         this.active = this.active || false;
         this.codeVersion = this.codeVersion || SchemaConverterUtils.VERSION;
+        this.iwaVersion = this.iwaVersion || DEFAULT_IWA_VERSION;
         if (!this.category) {
             this.category = this.readonly ? SchemaCategory.SYSTEM : SchemaCategory.POLICY;
         }

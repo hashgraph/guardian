@@ -124,6 +124,11 @@ export interface ISchema {
      */
     codeVersion?: string;
     /**
+     * IWA dMRV specification version the field properties are authored against.
+     * Absent means IWA v1.
+     */
+    iwaVersion?: string;
+    /**
      * Errors
      */
     errors?: any[];

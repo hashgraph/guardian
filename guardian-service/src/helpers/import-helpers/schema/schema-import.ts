@@ -9,6 +9,7 @@ import {
     SchemaHelper,
     SchemaStatus,
     TopicType,
+    resolveIwaVersion,
 } from '@guardian/interfaces';
 import {
     DatabaseServer,
@@ -279,6 +280,7 @@ export class SchemaImport {
             file.system = false;
             SchemaConverterUtils.SchemaConverter(file);
             file.codeVersion = SchemaConverterUtils.VERSION;
+            file.iwaVersion = resolveIwaVersion(file);
             if (this.mode === ImportMode.DEMO) {
                 file.status = SchemaStatus.DEMO;
             } else if (this.mode === ImportMode.VIEW) {

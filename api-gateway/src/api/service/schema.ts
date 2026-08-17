@@ -24,7 +24,7 @@ import { Examples,
     VersionSchemaDTO,
     ForbiddenErrorDTO
 } from '#middlewares';
-import { CACHE, CACHE_TAG_PREFIXES, SCHEMA_REQUIRED_PROPS } from '#constants';
+import { CACHE, CACHE_PREFIXES, CACHE_TAG_PREFIXES, SCHEMA_REQUIRED_PROPS } from '#constants';
 import { CacheService, EntityOwner, Guardians, InternalException, ONLY_SR, SchemaUtils, ServiceError, TaskManager, UseCache, FilenameSanitizer } from '#helpers';
 import process from 'node:process';
 
@@ -3582,6 +3582,118 @@ export class SchemaApi {
         }
 
         return false;
+    }
+
+    /**
+     * Preview an IWA v1 -> v3 upgrade for a draft schema
+     */
+    @Get('/:schemaId/iwa-upgrade/preview')
+    @Auth(
+        Permissions.SCHEMAS_SCHEMA_READ
+    )
+    @ApiOperation({
+        summary: 'Previews remapping a draft schema from IWA v1 to v3.',
+        description: 'Reports, per field, which IWA property paths would stay the same, which would be renamed, and which v3 removed. Does not modify the schema.',
+    })
+    @ApiParam({
+        name: 'schemaId',
+        type: String,
+        description: 'Schema Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({ description: 'Per-field remap report.' })
+    @ApiNotFoundResponse({
+        description: 'Schema not found.',
+        type: NotFoundErrorDTO,
+        example: { statusCode: 404, message: 'Schema is not found' }
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Schema is published, or already on IWA v3.',
+        type: UnprocessableEntityErrorDTO,
+        example: { statusCode: 422, message: 'Schema is already on IWA v3' }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
+    })
+    @ApiExtraModels(NotFoundErrorDTO, UnprocessableEntityErrorDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getSchemaIwaUpgradePreview(
+        @AuthUser() user: IAuthUser,
+        @Param('schemaId') schemaId: string,
+    ): Promise<any> {
+        try {
+            const guardians = new Guardians();
+            const owner = new EntityOwner(user);
+            return await guardians.getSchemaIwaUpgradePreview(schemaId, owner);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Remap a draft schema's field properties from IWA v1 to v3
+     */
+    @Post('/:schemaId/iwa-upgrade')
+    @Auth(
+        Permissions.SCHEMAS_SCHEMA_UPDATE
+    )
+    @ApiOperation({
+        summary: 'Remaps a draft schema from IWA v1 to v3.',
+        description: 'Rewrites every field property to its IWA v3 equivalent and tags the schema as v3. Properties v3 removed are cleared and reported. Draft schemas only — a published schema must get a new version first.',
+    })
+    @ApiParam({
+        name: 'schemaId',
+        type: String,
+        description: 'Schema Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({ description: 'Remap report and the updated schema.' })
+    @ApiNotFoundResponse({
+        description: 'Schema not found.',
+        type: NotFoundErrorDTO,
+        example: { statusCode: 404, message: 'Schema is not found' }
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Schema is published, or already on IWA v3.',
+        type: UnprocessableEntityErrorDTO,
+        example: { statusCode: 422, message: 'Only a draft schema can be upgraded. Create a new version first.' }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
+    })
+    @ApiExtraModels(NotFoundErrorDTO, UnprocessableEntityErrorDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async upgradeSchemaToIwaV3(
+        @AuthUser() user: IAuthUser,
+        @Param('schemaId') schemaId: string,
+        @Req() req,
+    ): Promise<any> {
+        try {
+            const guardians = new Guardians();
+            const owner = new EntityOwner(user);
+            const result = await guardians.upgradeSchemaToIwaV3(schemaId, owner);
+
+            // The upgrade rewrites the schema document, so every cached read of
+            // it has to go. Without this the editor keeps serving the
+            // pre-upgrade document for up to CACHE.SHORT_TTL after upgrading.
+            // Derive the base path from the request so this holds whatever
+            // prefix the gateway is mounted under.
+            const basePath = req.url.split('?')[0].split('/schemas/')[0];
+            await this.cacheService.invalidateAllTagsByPrefixes([
+                `${CACHE_PREFIXES.TAG}${basePath}/schema/${schemaId}`,
+                `${CACHE_PREFIXES.TAG}${basePath}/schemas/`
+            ]);
+
+            return result;
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
     }
 
     /**

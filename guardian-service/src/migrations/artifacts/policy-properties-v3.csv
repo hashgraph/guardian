@@ -1,0 +1,359 @@
+AccountableImpactOrganization.id,Organization Identifier
+AccountableImpactOrganization.name,Organization Name
+AccountableImpactOrganization.description,Organization Description
+AccountableImpactOrganization.addresses,Organization Addresses
+AccountableImpactOrganization.owners,Organization Owners
+AccountableImpactOrganization.informationLink,Information Link
+AccountableImpactOrganization.mediaLinks,Media Links
+AccountableImpactOrganization.attestations,Attestations
+AccountableImpactOrganization.activityImpactModules,Activity Impact Modules
+AccountableImpactOrganization.entityExtensions,Entity Extensions
+Address.addressType,Address Type
+Address.addressLines,Address Lines
+Address.city,City
+Address.state,State/Province
+Address.postalCode,Postal Code
+Address.country,Country
+ActivityImpactModule.id,Module Identifier
+ActivityImpactModule.aioId,Organization Reference
+ActivityImpactModule.isGrouped,Is Grouped
+ActivityImpactModule.name,Module Name
+ActivityImpactModule.classificationCategory,Classification Category
+ActivityImpactModule.classificationMethod,Classification Method
+ActivityImpactModule.benefitCategory,Benefit Category
+ActivityImpactModule.projectScope,Project Scope
+ActivityImpactModule.projectType,Project Type
+ActivityImpactModule.projectScale,Project Scale
+ActivityImpactModule.country,Country
+ActivityImpactModule.region,Region
+ActivityImpactModule.arbId,ARB Project Identifier
+ActivityImpactModule.geographicLocation,Geographic Location
+ActivityImpactModule.firstYearIssuance,First Year of Issuance
+ActivityImpactModule.registryProjectId,Registry Project Identifier
+ActivityImpactModule.developers,Project Developers
+ActivityImpactModule.sponsors,Project Sponsors
+ActivityImpactModule.claimSources,Claim Sources
+ActivityImpactModule.impactClaims,Impact Claims
+ActivityImpactModule.validations,Validations
+ActivityImpactModule.attestations,Attestations
+ActivityImpactModule.entityExtensions,Entity Extensions
+ActivityImpactModule.formulaTemplates,Formula Templates
+ActivityImpactModule.fixedVariables,Fixed Variables
+Validation.requestDate,Request Date
+Validation.validationDate,Validation Date
+Validation.validatingPartyId,Validating Party Identifier
+Validation.validationMethod,Validation Method
+Validation.validationExpirationDate,Validation Expiration Date
+Validation.validationSteps,Validation Steps
+ValidationStep.validationStepName,Validation Step Name
+ValidationStep.validationStepDescription,Validation Step Description
+ValidationStep.validationStepStatus,Validation Step Status
+ValidationStep.stepDocumentLink,Step Document Link
+ProjectModule.aimId,AIM ID
+ProjectModule.description,Project Module Description
+ProjectModule.extensionSetId,Extension Set ID
+ProjectModule.extensionSetModuleId,Extension Set Module ID
+ProjectModule.vvbId,VVB ID
+ProjectModule.verificationPlatformId,Verification Platform ID
+ClaimSource.id,Claim Source Identifier
+ClaimSource.aimId,Activity Impact Module Reference
+ClaimSource.name,Claim Source Name
+ClaimSource.description,Claim Source Description
+ClaimSource.location,Claim Source Location
+ClaimSource.sourceType,Source Type
+ClaimSource.unitOfMeasure,Unit of Measure
+ClaimSource.reportingFrequency,Reporting Frequency
+ClaimSource.sourceIdentifier,Source Identifier
+ClaimSource.entityExtensions,Entity Extensions
+ClaimSource.variableTemplates,Variable Templates
+ImpactClaim.id,Impact Claim Identifier
+ImpactClaim.aimId,Activity Impact Module Reference
+ImpactClaim.processedClaimId,Processed Claim Reference
+ImpactClaim.claimGroupId,Claim Group ID
+ImpactClaim.startDate,Start Date
+ImpactClaim.endDate,End Date
+ImpactClaim.unit,Unit of Measure
+ImpactClaim.quantity,Quantity
+ImpactClaim.co-benefits,Co-Benefits
+ImpactClaim.checkpoints,Checkpoints
+ImpactClaim.entityExtensions,Entity Extensions
+ImpactClaim.formulas,Formulas
+Checkpoint.id,Checkpoint ID
+Checkpoint.claimId,Claim ID
+Checkpoint.claimSourceIds,Claim Source IDs
+Checkpoint.projectDeveloperId,Project Developer ID
+Checkpoint.efBefore,EF Before
+Checkpoint.efAfter,EF After
+Checkpoint.checkpointDateRange,Checkpoint Date Range
+Checkpoint.entityExtensions,Entity Extensions
+Checkpoint.variables,Variables
+Checkpoint.dataPackages,Data Packages
+DataPackage.manifest,Manifest
+DataPackage.verifiedLinkToCheckpointData,Verified Link to Checkpoint Data
+Manifest.id,Manifest Identifier
+Manifest.version,Manifest Version
+Manifest.aioId,AIO ID
+Manifest.aimId,Activity Impact Module Reference
+Manifest.claimId,Claim Identifier
+Manifest.processedClaimId,Processed Claim ID
+Manifest.projectDeveloperId,Project Developer Reference
+Manifest.created,Creation Date
+Manifest.entityExtensions,Entity Extensions
+Manifest.files,Files
+DataFile.name,Data File Name
+DataFile.type,Data File Type
+DataFile.description,Data File Description
+DataFile.claimSourceId,Claim Source ID
+DataFile.claimSourceAttestation,Claim Source Attestation
+DataFile.entityExtensions,Entity Extensions
+ClaimGroup.id,Claim Group ID
+ClaimGroup.opaId,OPA ID
+ClaimGroup.name,Claim Group Name
+ClaimGroup.description,Claim Group Description
+ClaimGroup.impactClaims,Impact Claims
+ClaimGroup.processedClaims,Processed Claims
+ExtensionSet.id,Extension Set ID
+ExtensionSet.name,Extension Set Name
+ExtensionSet.version,Extension Set Version
+ExtensionSet.description,Extension Set Description
+ExtensionSet.documentation,Documentation
+ExtensionSet.modules,Modules
+ExtensionSet.entityExtensionTemplates,Entity Extension Templates
+ExtensionSet.extensionMessage,Extension Message
+ExtensionSet.formulaTemplates,Formula Templates
+ExtensionSet.variableTemplates,Variable Templates
+ExtensionSetModule.id,Extension Set Module ID
+ExtensionSetModule.name,Extension Set Module Name
+ExtensionSetModule.version,Extension Set Module Version
+ExtensionSetModule.description,Extension Set Module Description
+ExtensionSetModule.documentation,Documentation
+ExtensionSetModule.entityExtensionTemplates,Entity Extension Templates
+ExtensionSetModule.messagePairs,Message Pairs
+ExtensionSetModule.formulaTemplates,Formula Templates
+ExtensionSetModule.variableTemplates,Variable Templates
+MessagePair.id,Message Pair ID
+MessagePair.name,Message Pair Name
+MessagePair.version,Message Pair Version
+MessagePair.description,Message Pair Description
+MessagePair.documentation,Documentation
+MessagePair.requestDefinition,Request Definition
+MessagePair.responseDefinition,Response Definition
+Message.id,ID
+Message.messageType,Message Type
+Message.senderId,Sender ID
+Message.correlationId,Correlation ID
+Message.conversationId,Conversation ID
+Message.closed,Closed
+Message.message,Message
+AnyData.protoData,Proto Data
+AnyData.dataType,Data Type
+AnyData.value,Value
+EntityExtensionTemplate.id,Entity Extension Template ID
+EntityExtensionTemplate.name,Entity Extension Template Name
+EntityExtensionTemplate.version,Entity Extension Template Version
+EntityExtensionTemplate.description,Entity Extension Template Description
+EntityExtensionTemplate.documentation,Documentation
+EntityExtensionTemplate.extensionContext,Extension Context
+EntityExtensionTemplate.dataSchemaOrType,Data Schema or Type
+EntityExtensionTemplate.dataExample,Data Example
+EntityExtension.id,Entity Extension ID
+EntityExtension.templateId,Template ID
+EntityExtension.data,Entity Extension Data
+EntityExtension.appliedToId,Applied to ID
+EntityExtension.extensionContext,Extension Context
+FormulaTemplate.id,Formula Template ID
+FormulaTemplate.name,Formula Template Name
+FormulaTemplate.version,Formula Template Version
+FormulaTemplate.formula,Formula
+FormulaTemplate.description,Formula Template Description
+FormulaTemplate.documentation,Documentation
+FormulaTemplate.dataSchemaOrType,Data Schema or Type
+FormulaTemplate.dataExample,Data Example
+FormulaTemplate.variableTemplates,Variable Templates
+Formula.id,ID
+Formula.templateId,Template ID
+Formula.data,Data
+Formula.variables,Variables
+Formula.extensionContext,Extension Context
+VariableTemplate.id,Variable Template ID
+VariableTemplate.name,Variable Template Name
+VariableTemplate.version,Variable Template Version
+VariableTemplate.description,Variable Template Description
+VariableTemplate.documentation,Documentation
+VariableTemplate.alias,Alias
+VariableTemplate.dataSchemaOrType,Data Schema or Type
+VariableTemplate.dataExample,Data Example
+Variable.id,ID
+Variable.templateId,Template ID
+Variable.data,Data
+Variable.claimSourceId,Claim Source ID
+Variable.extensionContext,Extension Context
+ProcessedClaim.id,Processed Claim Identifier
+ProcessedClaim.opaId,OPA ID
+ProcessedClaim.impactClaimId,Impact Claim Reference
+ProcessedClaim.claimGroupId,Claim Group ID
+ProcessedClaim.creditId,Credit Identifier
+ProcessedClaim.unit,Unit of Measure
+ProcessedClaim.quantity,Quantity
+ProcessedClaim.co-benefits,Co-Benefits
+ProcessedClaim.formulas,Formulas
+ProcessedClaim.checkpointResults,Checkpoint Results
+ProcessedClaim.entityExtensions,Entity Extensions
+ProcessedClaim.issuanceRequest,Issuance Request
+CheckpointResult.id,Checkpoint Result Identifier
+CheckpointResult.checkpointId,Checkpoint Identifier
+CheckpointResult.verifiedLinkToProcessDataResult,Verified Link to Process Data Result
+CheckpointResult.dateRange,Date Range
+CheckpointResult.efBefore,Emissions Factor Before
+CheckpointResult.efAfter,Emissions Factor After
+CheckpointResult.status,Checkpoint Result Status
+CheckpointResult.comment,Comment
+CheckpointResult.variables,Variables
+CheckpointResult.entityExtensions,Entity Extensions
+OriginationProcessAgreement.id,Agreement ID
+OriginationProcessAgreement.name,Agreement Name
+OriginationProcessAgreement.description,Agreement Description
+OriginationProcessAgreement.projectModules,Project Modules
+OriginationProcessAgreement.signatories,Signatories
+OriginationProcessAgreement.qualityStandard,Quality Standard
+OriginationProcessAgreement.mrvRequirements,MRV Requirements
+OriginationProcessAgreement.agreementDate,Agreement Date
+OriginationProcessAgreement.estimatedAnnualCredits,Estimated Annual Credits
+OriginationProcessAgreement.AuditSchedule,Audit Schedule
+OriginationProcessAgreement.Audits,Audits
+OriginationProcessAgreement.entityExtensions,Entity Extensions
+CRU.id,Carbon Removal Unit Identifier
+CRU.quantity,Quantity
+CRU.unit,Unit of Measure
+CRU.ownerId,Owner Identifier
+CRU.listingAgentId,Listing Agent Identifier
+CRU.assetId,Asset ID
+CRU.issuanceDate,Issuance Date
+CRU.vintage,Vintage
+CRU.coreCarbonPrinciples,Core Carbon Principles
+CRU.climateLabels,Climate Labels
+CRU.status,Status
+CRU.referencedCru,Referenced CRU
+CRU.appliedToReportingPeriodId,Applied to Reporting Period ID
+CRU.processedClaimId,Processed Claim Identifier
+CRU.issuerId,Issuer Identifier
+CoreCarbonPrinciples.generationType,Generation Type
+CoreCarbonPrinciples.verificationStandard,Verification Standard
+CoreCarbonPrinciples.mitigationActivity,Mitigation Activity
+CoreCarbonPrinciples.durability,Durability
+CoreCarbonPrinciples.replacement,Replacement
+CoreCarbonPrinciples.paCompliance,PA Compliance
+CoreCarbonPrinciples.quantifiedSDGImpacts,Quantified SDG Impacts
+CoreCarbonPrinciples.adaptionCoBenefits,Adaptation Co-Benefits
+Durability.storageType,Storage Type
+Durability.years,Duration in Years
+Durability.degradable,Degradable Component
+Durability.reversalMitigation,Reversal Mitigation
+Degradable.percentage,Degradation Percentage
+Degradable.factor,Degradation Factor
+Degradable.degredationType,Degredation Type
+Replacement.replacesId,Replaces Identifier
+Replacement.replacementDate,Replacement Date
+Replacement.notes,Replacement Notes
+Co-Benefit.un-sdg,UN SDG
+Co-Benefit.description,Description
+ReversalMitigation.reversalRisk,Reversal Risk
+ReversalMitigation.insuranceType,Insurance Type
+ReversalMitigation.insurancePolicyOwner,Insurance Policy Owner
+ReversalMitigation.insurancePolicyLink,Insurance Policy Link
+PACompliance.correspondingAdjustment,Corresponding Adjustment
+PACompliance.letterOfApproval,Letter of Approval
+PACompliance.itmoId,ITMO ID
+REC.id,Renewable Energy Certificate Identifier
+REC.type,Type
+REC.validJurisdiction,Valid Jurisdiction
+REC.quantity,Quantity
+REC.unit,Unit of Measure
+REC.ownerId,Owner Identifier
+REC.listingAgentId,Listing Agent Identifier
+REC.climateLabels,Climate Labels
+REC.status,Status
+REC.referencedRec,Referenced REC
+REC.appliedToReportingPeriodId,Applied to Reporting Period ID
+REC.processedClaimId,Processed Claim Identifier
+REC.issuerId,Issuer Identifier
+ClimateLabel.id,Climate Label Identifier
+ClimateLabel.name,Climate Label Name
+ClimateLabel.description,Climate Label Description
+VerifiedLink.id,Verified Link Identifier
+VerifiedLink.uri,Link URI
+VerifiedLink.description,Link Description
+VerifiedLink.hashProof,Hash Proof
+VerifiedLink.hashAlgorithm,Hash Algorithm
+ReferencedCredit.referencedCreditId,Referenced Credit ID
+ReferencedCredit.registryLink,Registry Link
+ReferencedCredit.metadata,Metadata
+Audits.lastAuditDate,Last Audit Date
+Audits.auditReports,Audit Reports
+Signatory.id,Signatory Identifier
+Signatory.name,Signatory Name
+Signatory.description,Signatory Description
+Signatory.signatoryRole,Signatory Role
+Signatory.vvbIdForAim,VVB ID For AIM
+Signatory.signature,Signature
+DigitalSignature.type,Signature Type
+DigitalSignature.jws,JWS
+DigitalSignature.credential,Credential
+Credential.context,Context
+Credential.id,Credential Identifier
+Credential.type,Credential Type
+Credential.issuer,Issuer
+Credential.issuanceDate,Issuance Date
+Credential.credentialSubject,Credential Subject
+Credential.proof,Proof
+CredentialSubject.id,Subject Identifier
+CredentialSubject.property,Subject Property
+Proof.type,Proof Type
+Proof.created,Proof Creation Date
+Proof.proofPurpose,Proof Purpose
+Proof.verificationMethod,Verification Method
+Proof.challenge,Challenge
+Proof.domain,Domain
+Proof.jws,JWS
+VerifiablePresentation.id,Presentation ID
+VerifiablePresentation.type,Presentation Type
+VerifiablePresentation.holder,Holder
+VerifiablePresentation.credentials,Credentials
+VerifiablePresentation.proof,Proof
+Attestation.tag,Attestation Tag
+Attestation.type,Attestation Type
+Attestation.proof_type,Proof Type
+Attestation.attestor,Attestor
+Attestation.signature,Signature
+Tag.id,ID
+Tag.name,Tag Name
+Tag.context,Tag Context
+Tag.description,Tag Description
+MitigationActivity.carbonCategory,Carbon Category
+MitigationActivity.method,Mitigation Method
+GeographicLocation.id,ID
+GeographicLocation.latitude,Latitude
+GeographicLocation.longitude,Longitude
+GeographicLocation.geoJsonOrKml,GeoJSON/KML
+GeographicLocation.geographicLocationFile,Geographic Location File
+QualityStandard.name,Quality Standard Name
+QualityStandard.description,Quality Standard Description
+QualityStandard.standard,Standard Reference
+QualityStandard.methdologyAndTools,Methodology and Tools
+QualityStandard.version,Standard Version
+QualityStandard.co-benefits,Co-Benefits
+QualityStandard.standardLink,Standard Link
+MRVRequirements.MeasurementSpecification,Measurement Specification
+MRVRequirements.specificationLink,Specification Link
+MRVRequirements.precision,Precision Level
+MRVRequirements.claimPeriod,Claim Period
+MRVRequirements.extensionSetId,Extension Set ID
+PrecisionMix.low,Low Precision
+PrecisionMix.medium,Medium Precision
+PrecisionMix.high,High Precision
+DateRange.start,Start
+DateRange.end,End
+DatePoint.date,Date
+DatePoint.timestamp,Timestamp
+Date.dateTime,Date Time
+Date.dateString,Date String
