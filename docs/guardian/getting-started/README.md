@@ -29,8 +29,6 @@ Choose one of these paths:
 * **Docker containers**: Suitable for users comfortable running and configuring services. This is the fastest way to get a self-hosted instance running.
 * **Build from source**: Suitable for contributors and teams needing custom changes, forking the project, or hosting a modified instance. Requires more time and operational knowledge. You manage dependencies, configuration, upgrades, and the running environment.
 
-The [Guardian repository README](https://github.com/hashgraph/guardian#readme) is the source of truth for supported releases, commands, and configuration.
-
 ## Ready to install?
 
-Continue to the [installation-guide.md](installation-guide.md "mention") to choose a self-hosted installation path.
+Continue to the [installation-guide.md](installation-guide.md "mention").
