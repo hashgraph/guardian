@@ -10,7 +10,7 @@ tags:
 
 Guardian produces data as activity flows through the platform. This includes primatives such as projects, credits, policies, methodologies, organizations, and verification documents.&#x20;
 
-**Explorers** are dedicated applications that surface data published to the Hedera Network for different audiences, each presenting the same underlying information through a lens suited for specific jobs and purposes.
+**Explorers** are dedicated applications that surface data published to the [Hedera Network](https://hedera.com/) for different audiences, each presenting the same underlying information through a lens suited for specific jobs and purposes.
 
 Three explorers exist today, ranging from a technical developer tool to polished, business-focused market intelligence platforms. All three are open source and hosted in the Guardian repository.
 
@@ -18,7 +18,7 @@ Three explorers exist today, ranging from a technical developer tool to polished
 
 ### The three explorers
 
-<table><thead><tr><th width="221.25390625">Explorer</th><th>Audience</th><th>Focus</th></tr></thead><tbody><tr><td>Sustainability Atlas</td><td>Carbon market participants — buyers, auditors, ESG officers</td><td>Business intelligence — projects, credits, methodologies, and reporting through a market lens</td></tr><tr><td>Guardian Indexer</td><td>Developers, registry operators, technical users</td><td>Complete on-chain record — every document, policy, schema, and token, searchable in raw form</td></tr><tr><td>Carbon Atlas</td><td>Policy-specific users and market analysts</td><td>Per-methodology deep dives and cross-registry market analytics</td></tr></tbody></table>
+<table><thead><tr><th width="221.25390625">Explorer</th><th>Audience</th><th>Focus</th></tr></thead><tbody><tr><td>Sustainability Atlas</td><td>Carbon market participants e.g. buyers, auditors, ESG officers</td><td>Business intelligence e.g. projects, credits, methodologies, and reporting through a market lens</td></tr><tr><td>Guardian Indexer</td><td>Developers, registry operators, technical users</td><td>Complete on-chain record e.g. every document, policy, schema, and token, searchable in raw form</td></tr><tr><td>Carbon Atlas</td><td>Policy-specific users and market analysts</td><td>Per-methodology deep dives and cross-registry market analytics</td></tr></tbody></table>
 
 ***
 
@@ -26,7 +26,7 @@ Three explorers exist today, ranging from a technical developer tool to polished
 
 Guardian's data is rich and context specific. A developer debugging a policy workflow can inspect raw Verifiable Credentials and topic hierarchies. A carbon credit buyer can compare projects by vintage, geography, and SDG alignment. An asset manager or compliance officer can generate a  reports with traceability references.&#x20;
 
-Each explorer is an independent application with its own data model, interface, and deployment — but all draw from the same Guardian-generated data on Hedera and IPFS.
+Each explorer is an independent application with its own data model, interface, and deployment which all draw from the same Guardian-generated data on Hedera and IPFS.
 
 ***
 
