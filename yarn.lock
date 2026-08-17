@@ -3356,14 +3356,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scalar/client-side-rendering@npm:0.3.6":
-  version: 0.3.6
-  resolution: "@scalar/client-side-rendering@npm:0.3.6"
+"@scalar/client-side-rendering@npm:0.3.7":
+  version: 0.3.7
+  resolution: "@scalar/client-side-rendering@npm:0.3.7"
   dependencies:
     "@scalar/schemas": "npm:0.8.1"
-    "@scalar/types": "npm:0.17.1"
+    "@scalar/types": "npm:0.18.0"
     "@scalar/validation": "npm:0.6.2"
-  checksum: 10c0/4774075b1394f9cb51d05df7264bab1f229910ea57a157416d39f148894ff8196062fd0ff0594f661b582e9e994cd88c44a5f94a4c8ed621a84d317151ad0084
+  checksum: 10c0/c818d7bd4e9b7fa6d0d49125f2729d6b1ad63ed7bb16546476ce6833ce470afc8334f8fd8ecfabce3c60d42abb7324809253c88d530beabb1b22713689e921ed
   languageName: node
   linkType: hard
 
@@ -3375,11 +3375,11 @@ __metadata:
   linkType: hard
 
 "@scalar/nestjs-api-reference@npm:^1.2.11":
-  version: 1.2.13
-  resolution: "@scalar/nestjs-api-reference@npm:1.2.13"
+  version: 1.2.14
+  resolution: "@scalar/nestjs-api-reference@npm:1.2.14"
   dependencies:
-    "@scalar/client-side-rendering": "npm:0.3.6"
-  checksum: 10c0/67a67bbcd1232584d354df41078b1783bc9d02f93fe65ffb53dc53bb9753897f574310d054d4ef80e7713e269c2257842e660959e50ebd8fc1224282c1bef2e2
+    "@scalar/client-side-rendering": "npm:0.3.7"
+  checksum: 10c0/f15514f96a6b18c6f641076d5860ca8fc75f5da1332c0c52eeff24e87593835358d3f4ee1daf597e67766b31aecb1db95d6e66aaea0ba7060de9aaabc48ce45f
   languageName: node
   linkType: hard
 
@@ -3393,15 +3393,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scalar/types@npm:0.17.1":
-  version: 0.17.1
-  resolution: "@scalar/types@npm:0.17.1"
+"@scalar/types@npm:0.18.0":
+  version: 0.18.0
+  resolution: "@scalar/types@npm:0.18.0"
   dependencies:
     "@scalar/helpers": "npm:0.10.0"
     nanoid: "npm:^5.1.6"
     type-fest: "npm:^5.3.1"
     zod: "npm:^4.3.5"
-  checksum: 10c0/cda556101bdfe49e8c1da967b3a52c618b016e3d8401bee315df7a8d2d2e0d5860dbf1ea4ca9d6b94b2ddd6142b6c63a4ca791bc87bc90af2be310ef0fd76be9
+  checksum: 10c0/b95ecf428694a00b50c83a8ecc6fc0496fc29b74e624ed764e5363c474188f8ba0cec3f197c14c494dcc33b4699f1100a2b59dacad19de89e6aa11ba4f6019a2
   languageName: node
   linkType: hard
 
