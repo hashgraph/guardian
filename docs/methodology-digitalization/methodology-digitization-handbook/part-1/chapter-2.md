@@ -459,7 +459,7 @@ The methodology's sophisticated integration requirements demonstrate both the ch
 
 ## Preparing for Guardian Implementation
 
-With this deep understanding of VM0033's requirements, stakeholders, and processes, you're now prepared to explore how Guardian's technical architecture can accommodate this methodology's complexity. The platform's [Policy Workflow Engine](../chapter-3/#policy-workflow-engine-fundamentals) must handle VM0033's sophisticated temporal boundaries, multi-stakeholder processes, and comprehensive monitoring requirements.
+With this deep understanding of VM0033's requirements, stakeholders, and processes, you're now prepared to explore how Guardian's technical architecture can accommodate this methodology's complexity. The platform's [Policy Workflow Engine](chapter-3.md#policy-workflow-engine-fundamentals) must handle VM0033's sophisticated temporal boundaries, multi-stakeholder processes, and comprehensive monitoring requirements.
 
 Key implementation considerations include:
 
@@ -478,7 +478,7 @@ Key implementation considerations include:
 * [VM0033 Parsed Documentation](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/VM0033-Methodology.md) - Complete parsed methodology document
 * [VM0033 Test Case Artifact](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx) - Working test scenarios with real project data
 * [ER Calculations Example](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/ER_calculations_ABC%20Senegal.xlsx) - Real Allcot project calculations
-* [Artifacts Collection](../../_shared/artifacts/) - Complete validation tools and reference materials
+* [Artifacts Collection](../_shared/artifacts.md) - Complete validation tools and reference materials
 * [Verra VCS Program](https://verra.org/programs/verified-carbon-standard/) - Methodology standards
 * [VM0033 Methodology on Verra](https://verra.org/methodologies/vm0033-methodology-for-tidal-wetland-and-seagrass-restoration-v2-1/)
 * [Guardian Roles & Permissions](../../../guardian/platform/roles-and-permissions/) - Stakeholder management

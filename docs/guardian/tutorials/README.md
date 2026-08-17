@@ -18,4 +18,4 @@ This guide is for anyone seeking to understand the range of policies implemented
 #### Related
 
 * Reference: [policies](../workspace/policies/ "mention")
-* Reference: [Methodology Digitization](https://app.gitbook.com/s/bKnJV8vV7zUxRwKIsJKg/methodology-digitization "mention")
+* Reference: [Methodology Digitalization](https://app.gitbook.com/s/bKnJV8vV7zUxRwKIsJKg/methodology-digitalization "mention")

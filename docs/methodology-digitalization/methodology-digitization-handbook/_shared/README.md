@@ -8,19 +8,19 @@ This directory contains shared infrastructure used across all parts (I-VIII) of 
 
 ## Shared Components
 
-### [Templates](templates/)
+### [Templates](templates.md)
 
 Standard templates for consistent content structure across all chapters and parts
 
-### [VM0033 Integration System](vm0033-integration/)
+### [VM0033 Integration System](vm0033-integration.md)
 
 System for ensuring accurate VM0033 references throughout all handbook content
 
-### [Guardian Integration](guardian-integration/)
+### [Guardian Integration](guardian-integration.md)
 
 System for linking handbook content with existing Guardian documentation
 
-### [Artifacts Collection](artifacts/)
+### [Artifacts Collection](artifacts.md)
 
 Comprehensive collection of test artifacts, Guardian implementations, calculation tools, and validation materials including:
 

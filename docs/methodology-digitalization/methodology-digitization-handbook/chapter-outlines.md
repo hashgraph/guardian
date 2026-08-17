@@ -2,7 +2,8 @@
 
 ## Part I: Foundation and Preparation
 
-### [Chapter 1: Introduction to Methodology Digitization](part-1/chapter-1/README.md)
+### [Chapter 1: Introduction to Methodology Digitization](part-1/chapter-1.md)
+
 **Purpose**: Establish the foundation for understanding methodology digitization on Guardian platform.
 
 **Key Topics**:
@@ -17,7 +18,8 @@
 
 **VM0033 Context**: Introduction to VM0033's significance in blue carbon markets and its complexity as a comprehensive tidal wetland restoration methodology.
 
-### [Chapter 2: Understanding VM0033 Methodology](part-1/chapter-2/README.md)
+### [Chapter 2: Understanding VM0033 Methodology](part-1/chapter-2.md)
+
 **Purpose**: Provide deep domain knowledge of VM0033 before beginning technical implementation.
 
 **Key Topics**:
@@ -32,7 +34,8 @@
 
 **VM0033 Context**: Complete walkthrough of the methodology document structure, highlighting sections that will be digitized and their interdependencies.
 
-### [Chapter 3: Guardian Platform Overview for Methodology Developers](part-1/chapter-3/README.md)
+### [Chapter 3: Guardian Platform Overview for Methodology Developers](part-1/chapter-3.md)
+
 **Purpose**: Provide methodology developers with Guardian-specific knowledge needed for digitization.
 
 **Key Topics**:
@@ -226,7 +229,7 @@
 
 * VVB document approval workflow with real JSON configurations
 * Project submission and review processes using Guardian blocks
-* Role-based workflow analysis (Project_Proponent, VVB, Owner)
+* Role-based workflow analysis (Project\_Proponent, VVB, Owner)
 * Document filtering and status management implementations
 * Button configuration patterns for workflow transitions
 * End-to-end integration patterns and event routing
@@ -276,7 +279,7 @@
 **Key Topics**:
 
 * FLD concept and basic architectural understanding
-* Parameter reuse across multiple schema documents in policy workflows 
+* Parameter reuse across multiple schema documents in policy workflows
 * VM0033 parameter relationship examples suitable for FLD implementation
 * Integration patterns with customLogicBlock calculations
 * Basic design principles for FLD frameworks
@@ -312,7 +315,7 @@
 * API-based automated testing using Guardian's REST APIs and Cypress framework
 * Best practices for test data management and systematic testing approaches
 
-**VM0033 Context**: Practical testing implementation using VM0033_Allcot_Test_Case_Artifact.xlsx and final-PDD-vc.json with Guardian's testing interface, demonstrating complete validation workflow from individual calculations to full policy testing.
+**VM0033 Context**: Practical testing implementation using VM0033\_Allcot\_Test\_Case\_Artifact.xlsx and final-PDD-vc.json with Guardian's testing interface, demonstrating complete validation workflow from individual calculations to full policy testing.
 
 ## Part VI: Integration and Testing
 
@@ -344,7 +347,6 @@
 * Cypress testing integration for automated methodology validation and regression testing
 
 **VM0033 Context**: Practical API automation using VM0033 policy endpoints, demonstrating automated data submission, virtual user workflows, and production API patterns for scalable methodology operations.
-
 
 ### Chapter 24: Guardian Indexer for Methodology Analytics
 

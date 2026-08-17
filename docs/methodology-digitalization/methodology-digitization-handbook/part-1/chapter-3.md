@@ -225,7 +225,7 @@ VM0033 methodology demonstrates how Guardian's flexible architecture accommodate
 * [Policy Workflow Blocks](../../../guardian/workspace/policies/policy-creation/introduction/) - Available workflow components
 * [Schema System](../../../guardian/workspace/schemas/) - Data structure management
 * [Roles & Permissions](../../../guardian/platform/roles-and-permissions/) - Stakeholder management
-* [Artifacts Collection](../../_shared/artifacts/) - Working examples, test cases, and validation tools
+* [Artifacts Collection](../_shared/artifacts.md) - Working examples, test cases, and validation tools
 * [Excel Artifact Extractor](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/excel_artifact_extractor.py) - Python tool for data extraction and validation
 
 ### Key Capabilities Covered

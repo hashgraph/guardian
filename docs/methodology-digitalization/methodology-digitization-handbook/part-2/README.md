@@ -23,7 +23,7 @@ This sequence ensures that no critical elements are missed while building toward
 
 ## Chapter Progression and Learning Objectives
 
-### [Chapter 4: Methodology Analysis and Decomposition](chapter-4/)
+### [Chapter 4: Methodology Analysis and Decomposition](chapter-4.md)
 
 **Focus**: Approach to reading and analyzing methodology PDFs, identifying key components, stakeholders, and workflow requirements.
 
@@ -31,7 +31,7 @@ This sequence ensures that no critical elements are missed while building toward
 
 **VM0033 Application**: Step-by-step analysis of VM0033's structure, demonstrating how to identify and prioritize the most critical sections for digitization. You'll see how VM0033's complexity can be decomposed into manageable components while maintaining the integrity of the overall methodology requirements.
 
-### [Chapter 5: Equation Mapping and Parameter Identification](chapter-5/)
+### [Chapter 5: Equation Mapping and Parameter Identification](chapter-5.md)
 
 **Focus**: Mathematical component extraction using recursive analysis techniques starting from final emission reduction formulas.
 
@@ -39,7 +39,7 @@ This sequence ensures that no critical elements are missed while building toward
 
 **VM0033 Application**: Mapping of VM0033's emission reduction equations, including baseline emissions, project emissions, and leakage calculations. You'll work through actual VM0033 equations using the recursive approach, building dependency trees that capture all parameter relationships.
 
-### [Chapter 6: Tools and Modules Integration](chapter-6/)
+### [Chapter 6: Tools and Modules Integration](chapter-6.md)
 
 **Focus**: Approach to handling external tools and modules that methodologies reference, creating unified calculation frameworks.
 
@@ -47,7 +47,7 @@ This sequence ensures that no critical elements are missed while building toward
 
 **VM0033 Application**: Integration of the tools implemented for VM0033, including AR-Tool14 for biomass calculations, AR-Tool05 for fossil fuel emissions, and AFLOU for risk assessment. You'll see how to create unified frameworks that incorporate external calculation resources while maintaining VM0033's specific requirements.
 
-### [Chapter 7: Test Artifact Development](chapter-7/)
+### [Chapter 7: Test Artifact Development](chapter-7.md)
 
 **Focus**: Creating test spreadsheets that serve as validation benchmarks for digitized methodology implementations.
 
@@ -88,12 +88,12 @@ The industry techniques introduced in Part II represent knowledge gained through
 
 ## Chapter Navigation
 
-| Chapter             | Title                                             | Focus                                                     | Reading Time |
-| ------------------- | ------------------------------------------------- | --------------------------------------------------------- | ------------ |
-| [**4**](chapter-4/) | **Methodology Analysis and Decomposition**        | Systematic document analysis and component identification | \~15-20 min  |
-| [**5**](chapter-5/) | **Equation Mapping and Parameter Identification** | Recursive mathematical component extraction               | \~15-20 min  |
-| [**6**](chapter-6/) | **Tools and Modules Integration**                 | External dependency integration and unified frameworks    | \~15-20 min  |
-| [**7**](chapter-7/) | **Test Artifact Development**                     | Validation framework and test benchmark creation          | \~15-20 min  |
+| Chapter               | Title                                             | Focus                                                     | Reading Time |
+| --------------------- | ------------------------------------------------- | --------------------------------------------------------- | ------------ |
+| [**4**](chapter-4.md) | **Methodology Analysis and Decomposition**        | Systematic document analysis and component identification | \~15-20 min  |
+| [**5**](chapter-5.md) | **Equation Mapping and Parameter Identification** | Recursive mathematical component extraction               | \~15-20 min  |
+| [**6**](chapter-6.md) | **Tools and Modules Integration**                 | External dependency integration and unified frameworks    | \~15-20 min  |
+| [**7**](chapter-7.md) | **Test Artifact Development**                     | Validation framework and test benchmark creation          | \~15-20 min  |
 
 {% hint style="info" %}
 **Sequential Learning**: Complete chapters in order for optimal learning progression and systematic skill development.

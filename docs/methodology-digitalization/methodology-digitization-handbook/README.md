@@ -1,12 +1,12 @@
 ---
 description: >-
-  A comprehensive guide to digitizing environmental methodologies on Guardian
+  A comprehensive guide to digitalizing environmental methodologies on Guardian
   platform
 tags:
   - guide
 ---
 
-# 📚 Methodology Digitization Handbook
+# 📚 Methodology Digitalization Handbook
 
 {% hint style="warning" %}
 This handbook was written for an earlier version of Guardian and will be updated for the latest release in the future.
@@ -246,8 +246,8 @@ The Methodology Digitization Handbook is a comprehensive guide for transforming 
 ### Shared Resources
 
 * **🔧** [**Shared Resources**](_shared/) - Templates, integration guides, and reference materials
-* **📄** [**Templates**](_shared/templates/) - Standardized chapter and section templates
-* **🔗** [**VM0033 Integration**](_shared/vm0033-integration/) - VM0033-specific integration system
+* **📄** [**Templates**](_shared/templates.md) - Standardized chapter and section templates
+* **🔗** [**VM0033 Integration**](_shared/vm0033-integration.md) - VM0033-specific integration system
 
 ***
 

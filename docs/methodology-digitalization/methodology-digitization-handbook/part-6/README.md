@@ -19,7 +19,7 @@ Building on the calculation logic from Part V, Part VI focuses on system-level v
 
 ### Part VI Structure
 
-#### [Chapter 22: End-to-End Policy Testing](chapter-22/)
+#### [Chapter 22: End-to-End Policy Testing](chapter-22.md)
 
 Test complete methodology workflows across all stakeholder roles using Guardian's dry-run capabilities. Learn to create virtual users, simulate multi-year project lifecycles, and validate complex state transitions using VM0033's production patterns.
 
@@ -30,7 +30,7 @@ Test complete methodology workflows across all stakeholder roles using Guardian'
 * Production-scale data validation and performance testing
 * Cross-component integration validation
 
-#### [Chapter 23: API Integration and Automation](chapter-23/)
+#### [Chapter 23: API Integration and Automation](chapter-23.md)
 
 Automate methodology operations using Guardian's REST API framework. Build production-ready automation systems, integrate with external monitoring platforms, and create comprehensive testing suites for continuous validation.
 
@@ -41,7 +41,7 @@ Automate methodology operations using Guardian's REST API framework. Build produ
 * Virtual user management for programmatic testing
 * Cypress integration for automated regression testing
 
-#### [Chapter 24: Guardian Indexer for Methodology Analytics](chapter-24/)
+#### [Chapter 24: Guardian Indexer for Methodology Analytics](chapter-24.md)
 
 Deploy and configure Guardian Indexer for comprehensive methodology analytics, monitoring, and compliance reporting. Learn to leverage global search capabilities, track project lifecycles, and generate regulatory compliance reports.
 
@@ -97,10 +97,10 @@ After completing Part VI, you will be able to:
 
 ### Production Readiness
 
-- **Scalability Validation**: Confirm methodology implementations handle production user volumes and data processing
-- **Operational Monitoring**: Implement monitoring and alerting for production methodology operations
-- **Analytics Integration**: Deploy Guardian Indexer for comprehensive data analysis and reporting
-- **Stakeholder Readiness**: Prepare documentation and training materials for methodology users
+* **Scalability Validation**: Confirm methodology implementations handle production user volumes and data processing
+* **Operational Monitoring**: Implement monitoring and alerting for production methodology operations
+* **Analytics Integration**: Deploy Guardian Indexer for comprehensive data analysis and reporting
+* **Stakeholder Readiness**: Prepare documentation and training materials for methodology users
 
 ### Success Metrics
 
@@ -128,14 +128,16 @@ After completing Part VI, you will be able to:
 ### Implementation Timeline
 
 **Chapter 22 (End-to-End Testing)**: 3-4 hours
-- Multi-role testing framework setup and execution
-- VM0033 complete workflow validation
-- Production-scale testing and performance validation
+
+* Multi-role testing framework setup and execution
+* VM0033 complete workflow validation
+* Production-scale testing and performance validation
 
 **Chapter 23 (API Integration)**: 2-3 hours
-- Guardian API authentication and endpoint mapping
-- Automated workflow development and testing
-- External system integration patterns
+
+* Guardian API authentication and endpoint mapping
+* Automated workflow development and testing
+* External system integration patterns
 
 **Chapter 24 (Guardian Indexer Analytics)**: 2-3 hours
 
@@ -147,7 +149,7 @@ After completing Part VI, you will be able to:
 
 ### Getting Started
 
-Begin with [Chapter 22: End-to-End Policy Testing](chapter-22/README.md) to establish comprehensive testing frameworks, then proceed to [Chapter 23: API Integration and Automation](chapter-23/README.md) to automate operations, and complete with [Chapter 24: Guardian Indexer for Methodology Analytics](chapter-24/README.md) for comprehensive monitoring and analytics.
+Begin with [Chapter 22: End-to-End Policy Testing](chapter-22.md) to establish comprehensive testing frameworks, then proceed to [Chapter 23: API Integration and Automation](chapter-23.md) to automate operations, and complete with [Chapter 24: Guardian Indexer for Methodology Analytics](chapter-24.md) for comprehensive monitoring and analytics.
 
 Part VI completes your methodology digitization journey, transforming individual components into production-ready systems that scale to serve thousands of users while maintaining accuracy and compliance with methodology requirements.
 

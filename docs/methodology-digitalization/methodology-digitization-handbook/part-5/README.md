@@ -9,19 +9,19 @@ This part covers the implementation of calculation logic in Guardian environment
 
 Part V provides comprehensive guidance on implementing and testing calculation logic for environmental methodologies in Guardian:
 
-### [Chapter 18: Custom Logic Block Development](chapter-18/)
+### [Chapter 18: Custom Logic Block Development](chapter-18.md)
 
 Complete implementation of VM0033 emission reduction calculations using Guardian's customLogicBlock, including baseline emissions, project emissions, leakage calculations, and final net emission reductions with real JavaScript production code.
 
-### [Chapter 19: Formula Linked Definitions (FLDs)](chapter-19/)
+### [Chapter 19: Formula Linked Definitions (FLDs)](chapter-19.md)
 
 Foundation concepts and architectural framework for parameter relationships and dependencies in environmental methodologies, establishing patterns for future FLD implementation.
 
-### [Chapter 20: Guardian Tools Architecture and Implementation](chapter-20/)
+### [Chapter 20: Guardian Tools Architecture and Implementation](chapter-20.md)
 
 Complete guide to building Guardian Tools using AR Tool 14 as practical example, covering the extractDataBlock → customLogicBlock → extractDataBlock mini-policy pattern for standardized calculation tools.
 
-### [Chapter 21: Calculation Testing and Validation](chapter-21/)
+### [Chapter 21: Calculation Testing and Validation](chapter-21.md)
 
 Comprehensive testing framework using Guardian's dry-run mode and customLogicBlock testing interface, with validation against VM0033 test artifacts at every calculation stage.
 

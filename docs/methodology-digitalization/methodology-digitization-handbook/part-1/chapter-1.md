@@ -73,7 +73,7 @@ Guardian is a production-ready platform for environmental asset tokenization and
 * **Immutable Records**: All transactions and data modifications recorded on Hedera blockchain
 * **Document Preservation**: IPFS ensures supporting documentation remains accessible throughout project lifecycle
 
-See [Guardian architecture](../../../guardian/architecture/architecture-2.md) for detailed technical specifications and the [Artifacts Collection](../../_shared/artifacts/) for working examples and validation tools.
+See [Guardian architecture](../../../guardian/architecture/architecture-2.md) for detailed technical specifications and the [Artifacts Collection](../_shared/artifacts.md) for working examples and validation tools.
 
 ## The VM0033 Case Study
 

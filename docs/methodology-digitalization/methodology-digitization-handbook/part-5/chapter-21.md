@@ -310,7 +310,7 @@ This completes Part V: Calculation Logic Implementation. With comprehensive test
 * [Guardian Dry-Run Mode Documentation](../../../guardian/workspace/policies/dry-run/demo-guide-on-dry-run-operations.md)
 * [CustomLogicBlock Testing Interface](../../../guardian/workspace/policies/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui.md)
 * [Guardian API Automation Testing](https://github.com/hashgraph/guardian/blob/develop/docs/api-automation-testing/how-to-perform-api-automation-testing.md)
-* [VM0033 Test Artifacts](../../_shared/artifacts/) - Complete test dataset for validation
+* [VM0033 Test Artifacts](../_shared/artifacts.md) - Complete test dataset for validation
 * [AR Tool 14 Implementation](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/AR-Tool-14.json) - Production tool configuration
 
 ***

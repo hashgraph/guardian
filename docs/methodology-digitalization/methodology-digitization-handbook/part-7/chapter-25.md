@@ -384,6 +384,6 @@ These integration patterns enable Guardian to function as a comprehensive platfo
 
 ### Code Examples
 
-* [dataTransformationAddon Configuration](./#vm0033-datatransformation-implementation)
-* [External Data Submission Format](./#external-data-submission-endpoint)
-* [MRV Configuration Structure](./#mrv-configuration-download-pattern)
+* [dataTransformationAddon Configuration](chapter-25.md#vm0033-datatransformation-implementation)
+* [External Data Submission Format](chapter-25.md#external-data-submission-endpoint)
+* [MRV Configuration Structure](chapter-25.md#mrv-configuration-download-pattern)

@@ -145,7 +145,7 @@ Project emissions include both the carbon benefits from restoration and any emis
 VM0033 references external tools (AR-Tool05, AR-Tool14, AFLOU) that have their own parameter requirements. Recursive analysis helped us understand how these tools fit into the overall calculation framework.
 
 {% hint style="info" %}
-**Calculation Reference**: See the complete equation mapping and parameter dependencies in our [VM0033 test artifact](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx) and [parsed methodology](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/VM0033-Methodology.md) available in the [Artifacts Collection](../../_shared/artifacts/).
+**Calculation Reference**: See the complete equation mapping and parameter dependencies in our [VM0033 test artifact](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx) and [parsed methodology](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/VM0033-Methodology.md) available in the [Artifacts Collection](../_shared/artifacts.md).
 {% endhint %}
 
 **AR-Tool14 for Biomass Calculations**:

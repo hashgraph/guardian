@@ -1,4 +1,5 @@
 # ⚡ Part VII: Advanced Topics and Best Practices
+
 > Advanced integration techniques, troubleshooting procedures, and expert-level methodology implementation patterns
 
 Part VII covers advanced topics for expert-level methodology implementation, including sophisticated external system integration, comprehensive troubleshooting procedures, and best practices learned from production deployments.
@@ -16,11 +17,11 @@ Building on operational deployment from Part VI, Part VII addresses complex inte
 
 ### Part VII Structure
 
-#### [Chapter 25: Integration with External Systems](chapter-25/)
+#### [Chapter 25: Integration with External Systems](chapter-25.md)
 
 Bidirectional data exchange between Guardian and external platforms. Covers data transformation using VM0033's dataTransformationAddon block and external data reception using MRV configuration patterns from metered energy policies.
 
-#### [Chapter 26: Troubleshooting and Common Issues](chapter-26/)
+#### [Chapter 26: Troubleshooting and Common Issues](chapter-26.md)
 
 Common problems encountered during methodology digitization and their solutions, with specific examples from VM0033 implementation. Covers debugging techniques, performance optimization, and issue resolution.
 
@@ -29,36 +30,41 @@ Common problems encountered during methodology digitization and their solutions,
 #### From Previous Parts
 
 ### From Previous Parts
-- **Parts I-VI**: Complete methodology implementation through production deployment
-- Experience with methodology operations and user management
-- Understanding of production system monitoring and maintenance
+
+* **Parts I-VI**: Complete methodology implementation through production deployment
+* Experience with methodology operations and user management
+* Understanding of production system monitoring and maintenance
 
 ### Technical Requirements
-- Advanced Guardian platform knowledge and API expertise
-- Experience with external system integration and data transformation
-- Understanding of production troubleshooting and debugging techniques
+
+* Advanced Guardian platform knowledge and API expertise
+* Experience with external system integration and data transformation
+* Understanding of production troubleshooting and debugging techniques
 
 ### Learning Outcomes
 
 After completing Part VII, you will be able to:
 
 ### Advanced Integration Mastery
-- Implement data transformation using dataTransformationAddon blocks with JavaScript
-- Configure external data reception using externalDataBlock and MRV patterns
-- Handle Guardian-to-external system data export and formatting
-- Set up automated monitoring data collection from external devices and systems
+
+* Implement data transformation using dataTransformationAddon blocks with JavaScript
+* Configure external data reception using externalDataBlock and MRV patterns
+* Handle Guardian-to-external system data export and formatting
+* Set up automated monitoring data collection from external devices and systems
 
 ### Expert Troubleshooting
-- Diagnose and resolve complex methodology implementation issues
-- Optimize performance for large-scale production deployments
-- Implement comprehensive monitoring and alerting systems
-- Handle edge cases and unusual integration scenarios
+
+* Diagnose and resolve complex methodology implementation issues
+* Optimize performance for large-scale production deployments
+* Implement comprehensive monitoring and alerting systems
+* Handle edge cases and unusual integration scenarios
 
 ### Best Practices Implementation
-- Apply proven patterns from successful methodology deployments
-- Avoid common pitfalls and implementation mistakes
-- Optimize for maintainability, scalability, and performance
-- Establish expert-level quality assurance and testing procedures
+
+* Apply proven patterns from successful methodology deployments
+* Avoid common pitfalls and implementation mistakes
+* Optimize for maintainability, scalability, and performance
+* Establish expert-level quality assurance and testing procedures
 
 ## Implementation Timeline
 
@@ -68,8 +74,9 @@ After completing Part VII, you will be able to:
 * Enterprise system connectivity and data transformation
 
 **Chapter 26 (Troubleshooting)**: 2-3 hours
-- Comprehensive troubleshooting procedures and issue resolution
-- Performance optimization and advanced debugging techniques
+
+* Comprehensive troubleshooting procedures and issue resolution
+* Performance optimization and advanced debugging techniques
 
 **Total Part VII Time**: 5-7 hours for advanced mastery and expert-level implementation
 

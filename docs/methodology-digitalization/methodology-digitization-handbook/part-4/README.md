@@ -22,7 +22,7 @@ This hands-on approach ensures you can build production-ready policies that hand
 
 ## Chapter Progression and Learning Objectives
 
-### [Chapter 13: Policy Workflow Architecture and Design Principles](chapter-13/)
+### [Chapter 13: Policy Workflow Architecture and Design Principles](chapter-13.md)
 
 **Focus**: Guardian Policy Workflow Engine basics and integration with Part III schemas.
 
@@ -30,7 +30,7 @@ This hands-on approach ensures you can build production-ready policies that hand
 
 **Practical Skills**: Policy architecture design, schema UUID integration, role-based access control, and workflow planning for methodology certification processes.
 
-### [Chapter 14: Guardian Workflow Blocks and Configuration](chapter-14/)
+### [Chapter 14: Guardian Workflow Blocks and Configuration](chapter-14.md)
 
 **Focus**: Step-by-step configuration of Guardian's workflow blocks for data collection, calculations, and token management.
 
@@ -38,7 +38,7 @@ This hands-on approach ensures you can build production-ready policies that hand
 
 **Practical Skills**: Workflow block configuration, form generation from schemas, calculation logic implementation, and token minting rule setup.
 
-### [Chapter 15: VM0033 Policy Implementation Deep Dive](chapter-15/)
+### [Chapter 15: VM0033 Policy Implementation Deep Dive](chapter-15.md)
 
 **Focus**: Complete analysis of VM0033's production policy with 37 schemas and 2 AR Tools.
 
@@ -46,7 +46,7 @@ This hands-on approach ensures you can build production-ready policies that hand
 
 **Practical Skills**: Multi-stakeholder workflow design, document state management, verification workflows, and production policy patterns.
 
-### [Chapter 16: Advanced Policy Patterns and Testing](chapter-16/)
+### [Chapter 16: Advanced Policy Patterns and Testing](chapter-16.md)
 
 **Focus**: Multi-methodology support, comprehensive testing strategies, and production-grade security patterns.
 
@@ -54,7 +54,7 @@ This hands-on approach ensures you can build production-ready policies that hand
 
 **Practical Skills**: Multi-methodology pattern design, policy testing automation, performance optimization, external API integration, and security implementation.
 
-### [Chapter 17: Policy Deployment and Production Management](chapter-17/)
+### [Chapter 17: Policy Deployment and Production Management](chapter-17.md)
 
 **Focus**: Production deployment strategies, monitoring, and operational excellence for Guardian policies.
 
@@ -113,13 +113,13 @@ Each chapter requires approximately 20-30 minutes reading plus 45-90 minutes han
 
 ## Chapter Navigation
 
-| Chapter               | Title                                    | Focus                                      | Reading Time | Practice Time |
-| --------------------- | ---------------------------------------- | ------------------------------------------ | ------------ | ------------- |
-| [**13**](chapter-13/) | **Policy Workflow Architecture**         | Guardian PWE basics and schema integration | \~25 min     | \~60 min      |
-| [**14**](chapter-14/) | **Workflow Blocks and Configuration**    | Step-by-step block configuration guide     | \~30 min     | \~90 min      |
-| [**15**](chapter-15/) | **VM0033 Implementation Deep Dive**      | Production policy analysis and patterns    | \~25 min     | \~75 min      |
-| [**16**](chapter-16/) | **Advanced Policy Patterns and Testing** | Multi-methodology support and testing      | \~30 min     | \~60 min      |
-| [**17**](chapter-17/) | **Policy Deployment and Production**     | Production deployment and management       | \~20 min     | \~45 min      |
+| Chapter                 | Title                                    | Focus                                      | Reading Time | Practice Time |
+| ----------------------- | ---------------------------------------- | ------------------------------------------ | ------------ | ------------- |
+| [**13**](chapter-13.md) | **Policy Workflow Architecture**         | Guardian PWE basics and schema integration | \~25 min     | \~60 min      |
+| [**14**](chapter-14.md) | **Workflow Blocks and Configuration**    | Step-by-step block configuration guide     | \~30 min     | \~90 min      |
+| [**15**](chapter-15.md) | **VM0033 Implementation Deep Dive**      | Production policy analysis and patterns    | \~25 min     | \~75 min      |
+| [**16**](chapter-16.md) | **Advanced Policy Patterns and Testing** | Multi-methodology support and testing      | \~30 min     | \~60 min      |
+| [**17**](chapter-17.md) | **Policy Deployment and Production**     | Production deployment and management       | \~20 min     | \~45 min      |
 
 {% hint style="info" %}
 **Policy Development Path**: Follow chapters sequentially to build from basic policy understanding to complete production deployment.

@@ -17,7 +17,7 @@ To get started you can choose from one of the following options depending upon y
 
 **2. How can I create a policy?**
 
-You can use the policy editor or APIs to create a policy workflow. Some examples can be found in [Methodology Digitization](https://app.gitbook.com/s/bKnJV8vV7zUxRwKIsJKg/methodology-digitization "mention") and [creating-a-policy-through-policy-configurator](../guardian/tutorials/creating-a-policy-through-policy-configurator/ "mention")here and there is a quick start guide to help you publish your first policy.
+You can use the policy editor or APIs to create a policy workflow. Some examples can be found in [Methodology Digitalization](https://app.gitbook.com/s/bKnJV8vV7zUxRwKIsJKg/methodology-digitalization "mention") and [creating-a-policy-through-policy-configurator](../guardian/tutorials/creating-a-policy-through-policy-configurator/ "mention")here and there is a quick start guide to help you publish your first policy.
 
 **5. Where can I get notified of updates, trainings, and workshops?**
 

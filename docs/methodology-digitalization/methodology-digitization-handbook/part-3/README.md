@@ -22,7 +22,7 @@ This hands-on approach ensures you can build production-ready schemas while unde
 
 ## Chapter Progression and Learning Objectives
 
-### [Chapter 8: Schema Architecture and Foundations](chapter-8/)
+### [Chapter 8: Schema Architecture and Foundations](chapter-8.md)
 
 **Focus**: Guardian schema system fundamentals and the two-part architecture pattern used in VM0033.
 
@@ -30,7 +30,7 @@ This hands-on approach ensures you can build production-ready schemas while unde
 
 **Practical Skills**: Field type selection, parameter mapping, and architectural patterns that simplify complex methodologies into manageable schema structures.
 
-### [Chapter 9: Project Design Document (PDD) Schema Development](chapter-9/)
+### [Chapter 9: Project Design Document (PDD) Schema Development](chapter-9.md)
 
 **Focus**: Step-by-step Excel-first approach to building comprehensive PDD schemas.
 
@@ -38,7 +38,7 @@ This hands-on approach ensures you can build production-ready schemas while unde
 
 **Practical Skills**: Excel schema template usage, Guardian field configuration, conditional visibility logic, and proper field key naming for maintainable calculation code.
 
-### [Chapter 10: Monitoring Report Schema Development](chapter-10/)
+### [Chapter 10: Monitoring Report Schema Development](chapter-10.md)
 
 **Focus**: Time-series monitoring schemas that handle annual data collection and calculation updates.
 
@@ -46,7 +46,7 @@ This hands-on approach ensures you can build production-ready schemas while unde
 
 **Practical Skills**: Annual parameter tracking, temporal data organization, monitoring-specific field key naming, and verification support structures.
 
-### [Chapter 11: Advanced Schema Techniques](chapter-11/)
+### [Chapter 11: Advanced Schema Techniques](chapter-11.md)
 
 **Focus**: API schema management, standardized properties, Required field types, and UUID management.
 
@@ -54,7 +54,7 @@ This hands-on approach ensures you can build production-ready schemas while unde
 
 **Practical Skills**: API schema updates, Auto Calculate field implementation, standardized property usage, and UUID-based schema version management.
 
-### [Chapter 12: Schema Testing and Validation Checklist](chapter-12/)
+### [Chapter 12: Schema Testing and Validation Checklist](chapter-12.md)
 
 **Focus**: Practical validation steps using Guardian's testing features before schema deployment.
 
@@ -97,13 +97,13 @@ Each chapter requires approximately 15-25 minutes reading plus 30-60 minutes han
 
 ## Chapter Navigation
 
-| Chapter               | Title                                   | Focus                                       | Reading Time | Practice Time |
-| --------------------- | --------------------------------------- | ------------------------------------------- | ------------ | ------------- |
-| [**8**](chapter-8/)   | **Schema Architecture and Foundations** | Guardian schema basics and field mapping    | \~20 min     | \~30 min      |
-| [**9**](chapter-9/)   | **PDD Schema Development**              | PDD schema step-by-step                     | \~25 min     | \~60 min      |
-| [**10**](chapter-10/) | **Monitoring Schema Development**       | Time-series monitoring and field management | \~20 min     | \~45 min      |
-| [**11**](chapter-11/) | **Advanced Schema Techniques**          | API management, Required types, UUIDs       | \~25 min     | \~45 min      |
-| [**12**](chapter-12/) | **Schema Testing Checklist**            | Practical validation and testing steps      | \~15 min     | \~30 min      |
+| Chapter                 | Title                                   | Focus                                       | Reading Time | Practice Time |
+| ----------------------- | --------------------------------------- | ------------------------------------------- | ------------ | ------------- |
+| [**8**](chapter-8.md)   | **Schema Architecture and Foundations** | Guardian schema basics and field mapping    | \~20 min     | \~30 min      |
+| [**9**](chapter-9.md)   | **PDD Schema Development**              | PDD schema step-by-step                     | \~25 min     | \~60 min      |
+| [**10**](chapter-10.md) | **Monitoring Schema Development**       | Time-series monitoring and field management | \~20 min     | \~45 min      |
+| [**11**](chapter-11.md) | **Advanced Schema Techniques**          | API management, Required types, UUIDs       | \~25 min     | \~45 min      |
+| [**12**](chapter-12.md) | **Schema Testing Checklist**            | Practical validation and testing steps      | \~15 min     | \~30 min      |
 
 {% hint style="success" %}
 **Ready to Begin**: With Part II analysis complete, you're prepared for hands-on schema development. Start with Chapter 8 for Guardian schema system foundations.

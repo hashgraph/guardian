@@ -10,6 +10,10 @@ Environmental markets depend on trust: trust that issued credits represent real 
 
 Today, Guardian makes it programmable through **methodology digitalization**. Guardian policies encode methodology rules directly, the Hedera Network provides an immutable audit trail, and verifiable credentials let any participant confirm the chain of custody without needing to trust a central intermediary. This lowers costs, improves speed and efficiency, while accelerating collaboration across domains such as finance, technology, compliance, and ecology.
 
+#### Want to learn more about methodology digitalization?&#x20;
+
+[View the best practices guide to get started.](methodology-digitalization/methodology-digitalization-best-practices.md)
+
 ### **Platform at a glance**
 
 Guardian is built around a number of core aspects and understanding how they relate is a good foundation to navigate the docs further.
@@ -28,13 +32,13 @@ Adoption of the Guardian has grown from an early concept in 2020 to a platform b
 
 ### **Where to start**
 
-| I want to…                            | Start here                                                                                                   |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Install and run Guardian              | [Getting Started](guardian/getting-started/)                                                                 |
-| Create and publish policies           | [Workspace](guardian/workspace/)                                                                             |
-| Digitize an environmental methodology | [Methodology Digitization Handbook](https://app.gitbook.com/s/bKnJV8vV7zUxRwKIsJKg/methodology-digitization) |
-| Build on the Guardian API             | [API Reference / guardian](https://app.gitbook.com/o/-LuC734MpqlgwA6zyhAO/s/qHzrfhYRf3qLjeOsZTmp/ "mention") |
-| Explore what's published by Guardian  | [Explorers](https://app.gitbook.com/s/bKnJV8vV7zUxRwKIsJKg/explorers "mention")                              |
+| I want to…                              | Start here                                                                                                   |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Install and run Guardian                | [Getting Started](guardian/getting-started/)                                                                 |
+| Create and publish policies             | [Workspace](guardian/workspace/)                                                                             |
+| Digitalize an environmental methodology | [Methodology Digitalization](methodology-digitalization/methodology-digitalization-best-practices.md)        |
+| Build on the Guardian API               | [API Reference / guardian](https://app.gitbook.com/o/-LuC734MpqlgwA6zyhAO/s/qHzrfhYRf3qLjeOsZTmp/ "mention") |
+| Explore what's published by Guardian    | [Explorers](https://app.gitbook.com/s/bKnJV8vV7zUxRwKIsJKg/explorers "mention")                              |
 
 ### **Hedera Network Foundations**
 
@@ -67,4 +71,4 @@ Community calls, hands-on training sessions, and design workshops are regularly 
 #### **Related**
 
 * Concepts: [Architecture](guardian/architecture/)
-* Guide: [Methodology Digitization Handbook](https://app.gitbook.com/s/bKnJV8vV7zUxRwKIsJKg/methodology-digitization)
+* Guide: [Methodology Digitalization](methodology-digitalization/methodology-digitalization-best-practices.md)

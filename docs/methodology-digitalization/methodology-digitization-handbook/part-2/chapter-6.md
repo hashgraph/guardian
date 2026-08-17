@@ -19,7 +19,7 @@ When we first analyzed VM0033, we found references to numerous CDM tools and VCS
 **Tool Integration Strategy**: Rather than trying to implement complete standalone versions of each tool, we focused on integrating the specific calculation procedures that VM0033 actually uses from each tool.
 
 {% hint style="info" %}
-**Reference Materials**: For tool integration context, see our [parsed VM0033 methodology](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/VM0033-Methodology.md) and [Python extraction tool](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/excel_artifact_extractor.py) in our [Artifacts Collection](../../_shared/artifacts/). The [VM0033 test artifact](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx) contains real project data for validation (covered in Chapter 7).
+**Reference Materials**: For tool integration context, see our [parsed VM0033 methodology](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/VM0033-Methodology.md) and [Python extraction tool](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/excel_artifact_extractor.py) in our [Artifacts Collection](../_shared/artifacts.md). The [VM0033 test artifact](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx) contains real project data for validation (covered in Chapter 7).
 {% endhint %}
 
 ### Tool vs. Methodology Calculations

@@ -119,7 +119,7 @@ Where:
 VM0033 references several external calculation tools that we needed to understand and integrate. During our first digitization attempt, we implemented the ones that were most essential for the mangrove restoration focus.
 
 {% hint style="info" %}
-**Reference Materials**: For detailed VM0033 analysis, consult the [parsed methodology document](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/VM0033-Methodology.md) and [test case artifact](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx) in our [Artifacts Collection](../../_shared/artifacts/).
+**Reference Materials**: For detailed VM0033 analysis, consult the [parsed methodology document](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/VM0033-Methodology.md) and [test case artifact](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx) in our [Artifacts Collection](../_shared/artifacts.md).
 {% endhint %}
 
 **Tools We Implemented**:
