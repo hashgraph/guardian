@@ -1123,8 +1123,8 @@ export class Worker extends NatsService {
                     ]);
 
                     const routerConstructor = new ContractFunctionParameters()
-                        .addAddress(ContractId.fromString(singleContractId).toSolidityAddress())
-                        .addAddress(ContractId.fromString(doubleContractId).toSolidityAddress());
+                        .addAddress(ContractId.fromString(singleContractId).toEvmAddress())
+                        .addAddress(ContractId.fromString(doubleContractId).toEvmAddress());
 
                     const [routerContractId, logInfo] = await client.createContractV2(
                         bytecodeFileId,
@@ -1135,7 +1135,7 @@ export class Worker extends NatsService {
 
                     result.data = [routerContractId, logInfo];
 
-                    const routerAddr = ContractId.fromString(routerContractId).toSolidityAddress();
+                    const routerAddr = ContractId.fromString(routerContractId).toEvmAddress();
                     const implIds = [singleContractId, doubleContractId];
 
                     for (const implId of implIds) {
