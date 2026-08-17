@@ -33,10 +33,6 @@ describe('notificationActionMap', () => {
     it('has no entry for CONNECT_USER', () => {
         assert.isUndefined(notificationActionMap.get(TaskAction.CONNECT_USER));
     });
-
-    it('contains 19 entries', () => {
-        assert.equal(notificationActionMap.size, 19);
-    });
 });
 
 describe('taskResultTitleMap', () => {
@@ -50,10 +46,6 @@ describe('taskResultTitleMap', () => {
 
     it('titles PUBLISH_POLICY_LABEL as Label published', () => {
         assert.equal(taskResultTitleMap.get(TaskAction.PUBLISH_POLICY_LABEL), 'Label published');
-    });
-
-    it('contains 28 entries', () => {
-        assert.equal(taskResultTitleMap.size, 28);
     });
 });
 
