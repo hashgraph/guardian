@@ -1,23 +1,27 @@
-# Building from source and run using Docker
+# How to building from source and run using Docker?
 
-[Step By Step Process](./#step-by-step-process)
+{% hint style="warning" %}
+This page was authored with an older version of the Guardian. It remains here and may still be useful for some. Please refer to the README within the Github repo for the most up to date information.
+{% endhint %}
 
-[Demo Video](./#demo-video)
+[Step By Step Process](building-from-source-and-run-using-docker.md#step-by-step-process)
 
-[Troubleshoot](./#troubleshoot)
+[Demo Video](building-from-source-and-run-using-docker.md#demo-video)
+
+[Troubleshoot](building-from-source-and-run-using-docker.md#troubleshoot)
 
 ### Step By Step Process
 
 The following steps need to be executed in order to start Guardian using docker:
 
-1. [Clone the repo](./#id-1.-clone-the-repo)
-2. [Configure project level .env file](./#id-2.-configure-project-level-.env-file)
-3. [Update BC access variables](./#id-3.-update-bc-access-variables)
-4. [Setup IPFS](./#id-4.-setup-ipfs)
-5. [Setting up ChatGPT Key (if required)](./#id-5.-setting-up-chat-gpt-api-key-to-enable-ai-search-and-guided-search)
-6. [Build and launch with Docker](./#id-6.-build-and-launch-with-docker)
-7. [Browse to http://localhost:3000](./#id-7.-browse-the-local-browser)
-8. [For increased security remove credentials from `.env` file](./#id-8.-increase-security)
+1. [Clone the repo](building-from-source-and-run-using-docker.md#id-1.-clone-the-repo)
+2. [Configure project level .env file](building-from-source-and-run-using-docker.md#id-2.-configure-project-level-.env-file)
+3. [Update BC access variables](building-from-source-and-run-using-docker.md#id-3.-update-bc-access-variables)
+4. [Setup IPFS](building-from-source-and-run-using-docker.md#id-4.-setup-ipfs)
+5. [Setting up ChatGPT Key (if required)](building-from-source-and-run-using-docker.md#id-5.-setting-up-chat-gpt-api-key-to-enable-ai-search-and-guided-search)
+6. [Build and launch with Docker](building-from-source-and-run-using-docker.md#id-6.-build-and-launch-with-docker)
+7. [Browse to http://localhost:3000](building-from-source-and-run-using-docker.md#id-7.-browse-the-local-browser)
+8. [For increased security remove credentials from `.env` file](building-from-source-and-run-using-docker.md#id-8.-increase-security)
 
 ## 1. Clone the repo
 
@@ -133,7 +137,7 @@ This configuration allows you to leave untouched all the data referring to Mainn
 
 To start of auth-service it is necessary to fill in `JWT_PRIVATE_KEY` and `JWT_PUBLIC_KEY`, which are RSA key pair. You can generate it in any convenient way, for example, using this service [https://travistidwell.com/jsencrypt/demo/](https://travistidwell.com/jsencrypt/demo/).
 
-<figure><img src="../../../.gitbook/assets/image (841).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (841).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 Note: **Please make sure you copy and paste complete keys starting from "-----BEGIN-----" to "-----END-----".**
@@ -146,7 +150,7 @@ To start all services, you need to create a 2048-bit RSA key pair for each servi
 \- key ID: sha256\
 \- show: yes
 
-<figure><img src="../../../.gitbook/assets/image (842).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (842).png" alt=""><figcaption></figcaption></figure>
 
 For each service, you must add its secret key \`SERVICE\_JWT\_SECRET\_KEY\` and a list of all public keys from every service:\
 \- \`SERVICE\_JWT\_PUBLIC\_KEY\_WORKER\_SERVICE\`\
@@ -162,7 +166,7 @@ For each service, you must add its secret key \`SERVICE\_JWT\_SECRET\_KEY\` and 
 
 **Note:** Alternatively, you can create a single key pair and, instead of adding the public keys for each individual service, you can add \`SERVICE\_JWT\_SECRET\_KEY\_ALL\` and \`SERVICE\_JWT\_PUBLIC\_KEY\_ALL\` to use the same keys for all services. However, it is recommended to generate a separate key pair for each service.
 
-<figure><img src="../../../.gitbook/assets/image (8) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (8) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="warning" %}
 **Note**: It is important to add these keys to the env files, because without them the services will return errors, and communication with a service that does not sign messages for the message queue will not be supported.
@@ -264,7 +268,7 @@ About docker-compose: from the end of June 2023 Compose V1 won’t be supported 
 
 ## 7. Browse the local browser
 
-Browse to [http://localhost:3000](http://localhost:3000) and complete the setup. To get more info, please check: [Launching Guardian](../../../guardian/getting-started/getting-started/installation/launching-guardian.md)
+Browse to [http://localhost:3000](http://localhost:3000) and complete the setup. To get more info, please check: [Launching Guardian](../../guardian/getting-started/getting-started/installation/launching-guardian.md)
 
 ## 8. Increase security
 
@@ -306,6 +310,6 @@ docker-compose build --no-cache
 
 In the subsection you’ll find the following examples:
 
-* [Steps on how to deploy Guardian using a default Environment](deploying-guardian-using-default-environment.md)
-* [Steps on how to deploy Guardian using a default Environment ( Develop )](deploying-guardian-using-a-specific-environment-develop.md)
-* [Steps on how to deploy Guardian using a default Environment ( QA )](deploying-guardian-using-a-specific-environment-qa.md)
+* [Steps on how to deploy Guardian using a default Environment](default-environment.md)
+* [Steps on how to deploy Guardian using a default Environment ( Develop )](develop-environment.md)
+* [Steps on how to deploy Guardian using a default Environment ( QA )](qa-environment.md)

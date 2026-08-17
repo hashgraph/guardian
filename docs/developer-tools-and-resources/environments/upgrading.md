@@ -1,4 +1,9 @@
-# Upgrading
+---
+tags:
+  - flagged-for-rewrite
+---
+
+# How to upgrade Guardian?
 
 ## Introduction
 

@@ -1,9 +1,4 @@
----
-tags:
-  - flagged-for-relocating
----
-
-# How to Change Explorer URL
+# How to change the explorer URL?
 
 To make changes in the Explorer, we need to change some parameters in environment settings on UI. explorerSettings, which contains url (with network, type, value variables) , networkMap, typeMap (networkMap and typeMap helps to resolve api path on different explorers) as shown:
 

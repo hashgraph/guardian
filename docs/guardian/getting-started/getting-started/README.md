@@ -29,6 +29,6 @@ The [Guardian repository README](https://github.com/hashgraph/guardian#readme) p
 
 1. Review the [prerequisites](installation/prerequisites.md).
 2. Select an installation approach:
-   * [Run with Docker](../../../developer-tools/environments/building-from-source-and-run-using-docker/).
-   * [Use pre-built containers](../../../developer-tools/environments/building-from-pre-build-containers.md).
-   * [Build and run manually](../../../developer-tools/environments/build-executables-and-run-manually.md).
+   * [Run with Docker](../../../developer-tools-and-resources/environments/building-from-source-and-run-using-docker.md).
+   * [Use pre-built containers](../../../developer-tools-and-resources/environments/building-from-pre-build-containers.md).
+   * [Build and run manually](../../../developer-tools-and-resources/environments/build-executables-and-run-manually.md).
