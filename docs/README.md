@@ -38,7 +38,7 @@ Adoption of the Guardian has grown from an early concept in 2020 to a platform b
 
 ### **Hedera Network Foundations**
 
-Guardian publishes policy workflow data to the Hedera Network to support the discovery and traceability of digital environmental assets.
+Guardian publishes policy workflow data to the Hedera Network to support discovery and traceability.
 
 Guardian records Hedera Consensus Service transactions in topics. A token mint transaction can include a memo identifier that points to a Hedera message timestamp. That message contains the URL of the related Verifiable Presentation (VP).
 
