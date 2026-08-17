@@ -5,7 +5,7 @@ tags:
 
 # Workspace
 
-The Workspace navigation section of the Guardian is where you build and manage everything that defines a policy — the schemas, policy logic, artifacts, tools, and modules you create and would take with you if you exported that policy.
+The Workspace navigation section is where you build and manage policy assets. These include schemas, policy logic, artifacts, tools, and modules. You create these assets and can export them with a policy.
 
 ### Reference
 
@@ -18,9 +18,9 @@ Workspace is organized into the building blocks of a policy, grouped under **Man
 * **Artifacts** — JSON files that represent a policy's or workflow's structure: rules, conditions, actions, parameters, and metadata.
 * **Tools** — component-based, standardized pieces of policy logic, linked to policies by reference rather than fully embedded, with restricted editability and the ability to nest other Tools.
 * **Modules** — encapsulated, independently-operable units of functionality that can be combined to build policies, workflows, and other system capabilities.
-* **Formulas** — human-readable views of a policy's calculation logic, mapping the math variables in a formula back to the schema and document fields they represent.&#x20;
+* **Formulas** — human-readable views of a policy's calculation logic, mapping the math variables in a formula back to the schema and document fields they represent.
 
-Each of these lives inside Workspace because it's something you directly author, edit, and own as part of building a policy — not something the platform manages on your behalf.
+Each of these lives inside Workspace because it's something you directly author, edit, and own as part of building a policy. To explore capabilities that support these assets and creation workflows, such as roles and permissions, notifications, task status, or search visit the [platform](../platform/ "mention") section.
 
 ### Related
 
