@@ -30,7 +30,7 @@ Adoption of the Guardian has grown from an early concept in 2020 to a platform b
 
 | I want to…                            | Start here                                                                                                   |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Install and run Guardian              | [Getting Started](<README (1).md>)                                                                           |
+| Install and run Guardian              | [Getting Started](guardian/getting-started/)                                                                 |
 | Create and publish policies           | [Workspace](guardian/workspace/)                                                                             |
 | Digitize an environmental methodology | [Methodology Digitization Handbook](https://app.gitbook.com/s/bKnJV8vV7zUxRwKIsJKg/methodology-digitization) |
 | Build on the Guardian API             | [API Reference / guardian](https://app.gitbook.com/o/-LuC734MpqlgwA6zyhAO/s/qHzrfhYRf3qLjeOsZTmp/ "mention") |
