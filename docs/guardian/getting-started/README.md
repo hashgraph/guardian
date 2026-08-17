@@ -1,7 +1,5 @@
 ---
 description: Choose a path get started with Guardian.
-tags:
-  - flagged-for-rewrite
 ---
 
 # Getting Started
@@ -9,18 +7,18 @@ tags:
 {% hint style="info" %}
 **Not sure where to start?**&#x20;
 
-If you just want to see Guardian in action with minimal setup, we recommend the **Managed Guardian Service**, a SaaS offering from [Climission](https://www.climission.com/?utc_source=guardian) who are co-maintainers of this project. If you want to run your own environment quickly, start with **Docker Quickstart**. If you're planning to fork, extend, or contribute to Guardian itself, go with **Build from Source**.
+If you just want to see Guardian in action with minimal setup, we recommend the [**Managed Guardian Service**](https://www.climission.com/mgs?utm_source=guardian-docs), a SaaS offering from [Climission](https://www.climission.com/?utc_source=guardian-docs) who are co-maintainers of this project. If you want to run your own environment quickly, start with **Docker Quickstart**. If you're planning to fork, extend, or contribute to Guardian itself, go with **Build from Source**.
 {% endhint %}
 
 ## Which path is right for you?
 
-<table><thead><tr><th width="142.4140625">Scenario</th><th>Path</th><th>Best for</th><th>You manage</th><th>Get started</th></tr></thead><tbody><tr><td><strong>Explore &#x26; evaluate</strong></td><td>Managed Guardian Service</td><td>Trying Guardian, demos, non-technical stakeholders, proof-of-concept</td><td>Nothing — fully hosted</td><td><a href="https://www.climission.com/?utc_source=guardian">Managed Guardian Service</a></td></tr><tr><td><strong>Turn-key self-hosted</strong></td><td>Docker Quickstart</td><td>Running your own instance fast, technical evaluation, small production deployments</td><td>Your own infrastructure; Guardian handles the rest</td><td><a href="https://github.com/hashgraph/guardian/blob/main/README.md#quickstart">README, Quickstart</a></td></tr><tr><td><strong>Extend &#x26; contribute</strong></td><td>Build from Source</td><td>Forking the project, custom development, contributing to core, non-standard configurations</td><td>Dependencies, configuration, upgrades, and the running environment</td><td><a href="https://github.com/hashgraph/guardian#readme">Guardian repository README</a></td></tr></tbody></table>
+<table><thead><tr><th width="142.4140625">Scenario</th><th>Path</th><th>Best for</th><th>You manage</th><th width="189.2578125">Get started</th></tr></thead><tbody><tr><td><strong>Explore &#x26; evaluate</strong></td><td>Managed Guardian Service</td><td>Trying Guardian, demos, non-technical stakeholders, proof-of-concept</td><td>Nothing — fully hosted</td><td><a href="https://www.climission.com/?utc_source=guardian">Managed Guardian Service</a></td></tr><tr><td><strong>Turn-key self-hosted</strong></td><td>Docker Quickstart</td><td>Running your own instance fast, technical evaluation, small production deployments</td><td>Your own infrastructure; Guardian handles the rest</td><td><a href="../../">Guardian README#Quickstart</a></td></tr><tr><td><strong>Extend &#x26; contribute</strong></td><td>Build from Source</td><td>Forking the project, custom development, contributing to core, non-standard configurations</td><td>Dependencies, configuration, upgrades, and the running environment</td><td><a href="https://github.com/hashgraph/guardian#readme">Guardian repository README</a></td></tr></tbody></table>
 
 ### Try Guardian without operating infrastructure
 
-Check out the [Managed Guardian Service](https://climission.com/?utm_source=guardian) for a hosted Guardian environment with free trial.
+Check out the [Managed Guardian Service](https://climission.com/?utm_source=guardian) for a hosted Guardian environment to request a free trial.
 
-Choose this option if you do not want to install or operate infrastructure.
+Choose or explore this path if you do not want to install locally or operate infrastructure or are evaluating the product.
 
 ### Run open-source Guardian
 
