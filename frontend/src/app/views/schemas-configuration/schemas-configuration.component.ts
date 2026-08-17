@@ -670,7 +670,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             this.schemaSearch = search;
             this.schemasPage = 0;
             this.schemas = [];
-            this.pruneDirtySchemaIds();
             this.loadSchemas(this.topic);
         });
     }

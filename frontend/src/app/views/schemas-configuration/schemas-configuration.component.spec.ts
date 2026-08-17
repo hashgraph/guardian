@@ -87,6 +87,52 @@ describe('SchemasConfigurationComponent', () => {
         return component;
     }
 
+    describe('a drill edit followed by a sidebar search', () => {
+
+        it('keeps the sub-schema key when the search returns it, and saveAll sends the drill edits', () => {
+            const root: any = makeSchema({ id: 'root', iri: '#root', fields: [makeField()] });
+            const sub: any = makeSchema({ id: 'sub', iri: '#sub', fields: [makeField({ name: 'f_sub' })] });
+            const component = createComponent({ schemas: [root, sub], selectedSchema: root });
+            component.drillStack = [{ fieldLabel: 'Sub', fields: sub.fields, schemaIri: '#sub' }];
+
+            component.markDirty();
+            expect(Array.from(component.dirtySchemaIds)).toEqual(['sub']);
+
+            const fresh: any = makeSchema({ id: 'sub', iri: '#sub', fields: [makeField({ name: 'f_sub' })] });
+            component.schemaService.getSchemasByPage = () => of({
+                body: [fresh], headers: { get: () => '1' },
+            });
+
+            component.schemas = [];
+            component.loadSchemas('topic-1');
+
+            expect(component.dirtySchemaIds.has('sub')).toBeTrue();
+            expect(component.hasUnsavedChanges).toBeTrue();
+
+            component.saveAll();
+            expect(component.updated.length).toBe(1);
+            expect(component.updated[0].fields).toBe(component.drillCurrentFields);
+        });
+
+        it('drops the sub-schema key when the search does not return it', () => {
+            const root: any = makeSchema({ id: 'root', iri: '#root', fields: [makeField()] });
+            const sub: any = makeSchema({ id: 'sub', iri: '#sub', fields: [makeField({ name: 'f_sub' })] });
+            const component = createComponent({ schemas: [root, sub], selectedSchema: root });
+            component.drillStack = [{ fieldLabel: 'Sub', fields: sub.fields, schemaIri: '#sub' }];
+
+            component.markDirty();
+            component.schemaService.getSchemasByPage = () => of({
+                body: [], headers: { get: () => '0' },
+            });
+
+            component.schemas = [];
+            component.loadSchemas('topic-1');
+
+            expect(component.dirtySchemaIds.has('sub')).toBeFalse();
+            expect(component.hasUnsavedChanges).toBeFalse();
+        });
+    });
+
     describe('pruneDirtySchemaIds', () => {
 
         it('keeps a dirty key whose schema is still in the reloaded list', () => {
