@@ -18,7 +18,9 @@ Three explorers exist today, ranging from a technical developer tool to polished
 
 ### The three explorers
 
-<table><thead><tr><th width="221.25390625">Explorer</th><th>Audience</th><th>Focus</th></tr></thead><tbody><tr><td>Sustainability Atlas</td><td>Carbon market participants e.g. buyers, auditors, ESG officers</td><td>Business intelligence e.g. projects, credits, methodologies, and reporting through a market lens</td></tr><tr><td>Guardian Indexer</td><td>Developers, registry operators, technical users</td><td>Complete on-chain record e.g. every document, policy, schema, and token, searchable in raw form</td></tr><tr><td>Carbon Atlas</td><td>Policy-specific users and market analysts</td><td>Per-methodology deep dives and cross-registry market analytics</td></tr></tbody></table>
+<table><thead><tr><th width="221.25390625">Explorer</th><th>Audience</th><th>Focus</th></tr></thead><tbody><tr><td>Sustainability Atlas</td><td>Carbon market participants e.g. buyers, auditors, project developers</td><td>Business intelligence e.g. projects, credits, methodologies, and reporting through a market lens</td></tr><tr><td>Guardian Indexer</td><td>Developers, registry operators, technical users</td><td>Complete on-chain record e.g. every document, policy, schema, and token, searchable in raw form</td></tr><tr><td>Carbon Atlas</td><td>Policy-specific users and market analysts</td><td>Per-methodology deep dives and cross-registry market analytics</td></tr></tbody></table>
+
+
 
 ***
 
