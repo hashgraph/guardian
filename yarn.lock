@@ -1582,7 +1582,7 @@ __metadata:
     "@formulajs/formulajs": "npm:4.6.1"
     "@google-cloud/secret-manager": "npm:6.3.0"
     "@guardian/interfaces": "workspace:*"
-    "@hiero-ledger/sdk": "npm:2.86.2"
+    "@hiero-ledger/sdk": "npm:2.87.0"
     "@mattrglobal/jsonld-signatures-bbs": "npm:1.2.0"
     "@meeco/cryppo": "npm:^3.0.1"
     "@mikro-orm/core": "npm:6.6.16"
@@ -1645,17 +1645,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@hiero-ledger/cryptography@npm:1.20.1":
-  version: 1.20.1
-  resolution: "@hiero-ledger/cryptography@npm:1.20.1"
+"@hiero-ledger/cryptography@npm:1.21.0":
+  version: 1.21.0
+  resolution: "@hiero-ledger/cryptography@npm:1.21.0"
   dependencies:
-    "@noble/ciphers": "npm:1.2.1"
-    "@noble/curves": "npm:1.8.1"
-    "@noble/hashes": "npm:1.8.0"
-    "@scure/base": "npm:1.2.4"
-    "@scure/bip32": "npm:1.6.2"
+    "@noble/ciphers": "npm:2.2.0"
+    "@noble/curves": "npm:2.2.0"
+    "@noble/hashes": "npm:2.2.0"
+    "@scure/base": "npm:2.2.0"
+    "@scure/bip32": "npm:2.2.0"
     ansi-regex: "npm:6.2.2"
-    ansi-styles: "npm:6.2.3"
+    ansi-styles: "npm:7.0.0"
     asn1js: "npm:3.0.6"
     bignumber.js: "npm:11.1.2"
     bn.js: "npm:5.2.3"
@@ -1665,7 +1665,7 @@ __metadata:
   peerDependenciesMeta:
     expo-crypto:
       optional: true
-  checksum: 10c0/79137a76965d5b5cfb080d2052632825be9dd3c888910d0d53da6e658f3028e1c65f9c655be5d6f1a193cd9329eec097f1bf628b217988ec89880428d31dbd8f
+  checksum: 10c0/8b71922f75564c3b44083e5e416a42efebac707d3ad5e3932bc00d6209ef555312ba3fe3671f744a75c590ecafb6a79065a50ea90ea2ac94fd51fdb390548f77
   languageName: node
   linkType: hard
 
@@ -1684,15 +1684,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@hiero-ledger/sdk@npm:2.86.2":
-  version: 2.86.2
-  resolution: "@hiero-ledger/sdk@npm:2.86.2"
+"@hiero-ledger/sdk@npm:2.87.0":
+  version: 2.87.0
+  resolution: "@hiero-ledger/sdk@npm:2.87.0"
   dependencies:
     "@grpc/grpc-js": "npm:1.12.7"
-    "@hiero-ledger/cryptography": "npm:1.20.1"
+    "@hiero-ledger/cryptography": "npm:1.21.0"
     "@hiero-ledger/proto": "npm:2.31.0"
     ansi-regex: "npm:6.2.2"
-    ansi-styles: "npm:6.2.3"
+    ansi-styles: "npm:7.0.0"
     bignumber.js: "npm:11.1.2"
     bn.js: "npm:5.2.3"
     crypto-js: "npm:4.2.0"
@@ -1708,7 +1708,7 @@ __metadata:
     utf8: "npm:3.0.0"
   peerDependencies:
     bn.js: 5.2.3
-  checksum: 10c0/6ab5043ec1bb89b471e8ca4821404a238ddb9c30caa8a224fff0eb50aabb9ab53567709a39869107f2124fa62bf76b158af3413ad0f3bde2a4257bc149cd138f
+  checksum: 10c0/e52e1f39d771a22898987be2c3ea227f5ac674f8f28ef7e8c82794cfc90a117bfc90c2012a5c24bca64b4f791181c48f398c0f4b3696b18ffda31545a8b6be31
   languageName: node
   linkType: hard
 
@@ -2958,10 +2958,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@noble/ciphers@npm:1.2.1":
-  version: 1.2.1
-  resolution: "@noble/ciphers@npm:1.2.1"
-  checksum: 10c0/00e414da686ddba00f6e9bed124abb698bfe076658d40cc4e3b67b51fc7582fc3c2a7002ef33f154ea8cbf45e7783cfd48325cf3885d577ce8c0ae8bdd648069
+"@noble/ciphers@npm:2.2.0":
+  version: 2.2.0
+  resolution: "@noble/ciphers@npm:2.2.0"
+  checksum: 10c0/56396fa9b2cd7863999d9d70c6cbfcc03db9644cbbac9bb9d383d18f701bee3eb09f36878d8252a763c8d1fb6f0807339e06e2d28f18b14c525133c57c14508d
   languageName: node
   linkType: hard
 
@@ -2981,12 +2981,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@noble/curves@npm:1.8.1":
-  version: 1.8.1
-  resolution: "@noble/curves@npm:1.8.1"
+"@noble/curves@npm:2.2.0":
+  version: 2.2.0
+  resolution: "@noble/curves@npm:2.2.0"
   dependencies:
-    "@noble/hashes": "npm:1.7.1"
-  checksum: 10c0/84902c7af93338373a95d833f77981113e81c48d4bec78f22f63f1f7fdd893bc1d3d7a3ee78f01b9a8ad3dec812a1232866bf2ccbeb2b1560492e5e7d690ab1f
+    "@noble/hashes": "npm:2.2.0"
+  checksum: 10c0/e545d3bb03ebedd5c04c2cab81342d64f5ce8a4c1019cfe207f3dc69174bc0ad7cfb50effc31bfa8616b8340900f445dd053da7454190428857c4eedd3b51413
   languageName: node
   linkType: hard
 
@@ -3008,15 +3008,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@noble/curves@npm:~1.8.1":
-  version: 1.8.2
-  resolution: "@noble/curves@npm:1.8.2"
-  dependencies:
-    "@noble/hashes": "npm:1.7.2"
-  checksum: 10c0/e7ef119b114681d6b7530b29a21f9bbea6fa6973bc369167da2158d05054cc6e6dbfb636ba89fad7707abacc150de30188b33192f94513911b24bdb87af50bbd
-  languageName: node
-  linkType: hard
-
 "@noble/ed25519@npm:^1.6.0, @noble/ed25519@npm:^1.7.3":
   version: 1.7.5
   resolution: "@noble/ed25519@npm:1.7.5"
@@ -3031,20 +3022,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@noble/hashes@npm:1.7.1":
-  version: 1.7.1
-  resolution: "@noble/hashes@npm:1.7.1"
-  checksum: 10c0/2f8ec0338ccc92b576a0f5c16ab9c017a3a494062f1fbb569ae641c5e7eab32072f9081acaa96b5048c0898f972916c818ea63cbedda707886a4b5ffcfbf94e3
-  languageName: node
-  linkType: hard
-
-"@noble/hashes@npm:1.7.2, @noble/hashes@npm:~1.7.1":
-  version: 1.7.2
-  resolution: "@noble/hashes@npm:1.7.2"
-  checksum: 10c0/b1411eab3c0b6691d847e9394fe7f1fcd45eeb037547c8f97e7d03c5068a499b4aef188e8e717eee67389dca4fee17d69d7e0f58af6c092567b0b76359b114b2
-  languageName: node
-  linkType: hard
-
 "@noble/hashes@npm:1.8.0, @noble/hashes@npm:^1.1.5, @noble/hashes@npm:^1.3.0, @noble/hashes@npm:^1.3.1, @noble/hashes@npm:^1.3.2, @noble/hashes@npm:~1.8.0":
   version: 1.8.0
   resolution: "@noble/hashes@npm:1.8.0"
@@ -3056,6 +3033,13 @@ __metadata:
   version: 2.0.1
   resolution: "@noble/hashes@npm:2.0.1"
   checksum: 10c0/e81769ce21c3b1c80141a3b99bd001f17edea09879aa936692ae39525477386d696101cd573928a304806efb2b9fa751e1dd83241c67d0c84d30091e85c79bdb
+  languageName: node
+  linkType: hard
+
+"@noble/hashes@npm:2.2.0":
+  version: 2.2.0
+  resolution: "@noble/hashes@npm:2.2.0"
+  checksum: 10c0/cad8630c504d6b9271984f685cd0af9101b40988fc2dfbe17ccdf068a9941f95cc5c9957d89e9ca4b7ca94c15cb35f93510c5d53a09fbcc83ee503b93d0a1034
   languageName: node
   linkType: hard
 
@@ -3419,28 +3403,28 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scure/base@npm:1.2.4":
-  version: 1.2.4
-  resolution: "@scure/base@npm:1.2.4"
-  checksum: 10c0/469c8aee80d6d6973e1aac6184befa04568f1b4016e40c889025f4a721575db9c1ca0c2ead80613896cce929392740322a18da585a427f157157e797dc0a42a9
+"@scure/base@npm:2.2.0":
+  version: 2.2.0
+  resolution: "@scure/base@npm:2.2.0"
+  checksum: 10c0/30158ccf5da86b0f06928f1cfe24a29fbea22824adf6f8895222910cade1ad4fe7593958aacf563287e6b4c55746f47395178e7a4763b059c22d6ee8e6f76387
   languageName: node
   linkType: hard
 
-"@scure/base@npm:^1.1.3, @scure/base@npm:~1.2.2, @scure/base@npm:~1.2.5":
+"@scure/base@npm:^1.1.3, @scure/base@npm:~1.2.5":
   version: 1.2.6
   resolution: "@scure/base@npm:1.2.6"
   checksum: 10c0/49bd5293371c4e062cb6ba689c8fe3ea3981b7bb9c000400dc4eafa29f56814cdcdd27c04311c2fec34de26bc373c593a1d6ca6d754398a488d587943b7c128a
   languageName: node
   linkType: hard
 
-"@scure/bip32@npm:1.6.2":
-  version: 1.6.2
-  resolution: "@scure/bip32@npm:1.6.2"
+"@scure/bip32@npm:2.2.0":
+  version: 2.2.0
+  resolution: "@scure/bip32@npm:2.2.0"
   dependencies:
-    "@noble/curves": "npm:~1.8.1"
-    "@noble/hashes": "npm:~1.7.1"
-    "@scure/base": "npm:~1.2.2"
-  checksum: 10c0/a0abd62d1fe34b4d90b84feb25fa064ad452fd51be9fd7ea3dcd376059c0e8d08d4fe454099030f43fb91a1bee85cd955f093f221bbc522178919f779fbe565c
+    "@noble/curves": "npm:2.2.0"
+    "@noble/hashes": "npm:2.2.0"
+    "@scure/base": "npm:2.2.0"
+  checksum: 10c0/1c71466ea3383657f58120427974c8e83ab1556b17df41e0b139e9b93998c7513f04bf54858fdc493074f0a2e6b7be07eb94715173f8c36932b7cada8ebed60d
   languageName: node
   linkType: hard
 
@@ -5276,10 +5260,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ansi-styles@npm:6.2.3, ansi-styles@npm:^6.1.0":
-  version: 6.2.3
-  resolution: "ansi-styles@npm:6.2.3"
-  checksum: 10c0/23b8a4ce14e18fb854693b95351e286b771d23d8844057ed2e7d083cd3e708376c3323707ec6a24365f7d7eda3ca00327fe04092e29e551499ec4c8b7bfac868
+"ansi-styles@npm:7.0.0":
+  version: 7.0.0
+  resolution: "ansi-styles@npm:7.0.0"
+  checksum: 10c0/406cf8984c682d632738964db918d895d84ec4ff39bffd0dddc81c4a4669a77b57adb0b58b26a1cc6ebcff0e30581d5946fc9b6f0394f6d9ac0b42f5ea97d216
   languageName: node
   linkType: hard
 
@@ -5298,6 +5282,13 @@ __metadata:
   dependencies:
     color-convert: "npm:^2.0.1"
   checksum: 10c0/895a23929da416f2bd3de7e9cb4eabd340949328ab85ddd6e484a637d8f6820d485f53933446f5291c3b760cbc488beb8e88573dd0f9c7daf83dccc8fe81b041
+  languageName: node
+  linkType: hard
+
+"ansi-styles@npm:^6.1.0":
+  version: 6.2.3
+  resolution: "ansi-styles@npm:6.2.3"
+  checksum: 10c0/23b8a4ce14e18fb854693b95351e286b771d23d8844057ed2e7d083cd3e708376c3323707ec6a24365f7d7eda3ca00327fe04092e29e551499ec4c8b7bfac868
   languageName: node
   linkType: hard
 
@@ -9187,7 +9178,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "guardian-cli@workspace:guardian-cli"
   dependencies:
-    "@hiero-ledger/sdk": "npm:2.86.2"
+    "@hiero-ledger/sdk": "npm:2.87.0"
     "@types/node": "npm:24.13.3"
     axios: "npm:^1.16.1"
     commander: "npm:^11.1.0"
@@ -15717,7 +15708,7 @@ __metadata:
   dependencies:
     "@guardian/common": "workspace:*"
     "@guardian/interfaces": "workspace:*"
-    "@hiero-ledger/sdk": "npm:2.86.2"
+    "@hiero-ledger/sdk": "npm:2.87.0"
     "@nestjs/common": "npm:^11.1.24"
     "@nestjs/core": "npm:^11.1.24"
     "@nestjs/microservices": "npm:^11.1.24"
@@ -16770,7 +16761,7 @@ __metadata:
     "@filebase/client": "npm:0.0.5"
     "@guardian/common": "workspace:*"
     "@guardian/interfaces": "workspace:*"
-    "@hiero-ledger/sdk": "npm:2.86.2"
+    "@hiero-ledger/sdk": "npm:2.87.0"
     "@nestjs/common": "npm:^11.1.24"
     "@nestjs/core": "npm:^11.1.24"
     "@nestjs/microservices": "npm:^11.1.24"
