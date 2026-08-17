@@ -2,8 +2,8 @@ name: Guardian CI
 on:
   workflow_dispatch:
   push:
-    branches-ignore:
-      - 'dependabot/**'
+    paths-ignore:
+      - 'docs/**'
 jobs:
   buildAndTest:
     name: Build and Test (Manual - Main)
