@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EWD-RB Waste Batch",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "methodology_id": {
+      "type": "string",
+      "const": "EWD-RB"
+    },
+    "methodology_version": {
+      "type": "string",
+      "const": "0.3"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "0.3.0"
+    },
+    "batch_id": {
+      "$ref": "#/$defs/uuid"
+    },
+
+    "batch_closed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "processing_route": {
+      "type": "string",
+      "enum": [
+        "bsf_bioconversion",
+        "composting",
+        "mixed",
+        "other"
+      ]
+    },
+    "delivery_ids": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/uuid"
+      },
+      "minItems": 1
+    },
+    "batch_kg_ajustados_total": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Auto Calculate"
+    },
+    "batch_status": {
+      "type": "string",
+      "enum": [
+        "Draft",
+        "Populated",
+        "Closed",
+        "Calculated",
+        "Locked",
+        "Superseded",
+        "Invalidated"
+      ]
+    },
+    "batch_evidence": {
+      "$ref": "#/$defs/evidenceRefs"
+    }
+  },
+  "required": [
+    "methodology_id",
+    "methodology_version",
+    "schema_version",
+    "batch_id",
+    "processing_route",
+    "delivery_ids",
+    "batch_status",
+    "batch_evidence"
+  ]
+}

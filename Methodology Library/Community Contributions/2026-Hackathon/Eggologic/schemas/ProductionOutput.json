@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EWD-RB Production Output",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "methodology_id": {
+      "type": "string",
+      "const": "EWD-RB"
+    },
+    "methodology_version": {
+      "type": "string",
+      "const": "0.3"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "0.3.0"
+    },
+    "output_id": {
+      "$ref": "#/$defs/uuid"
+    },
+    "batch_id": {
+      "$ref": "#/$defs/uuid"
+    },
+    "output_timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "larvae_kg": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Unidad: kg (opcional MVP)"
+    },
+    "frass_kg": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Unidad: kg (opcional MVP)"
+    },
+    "compost_kg": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Unidad: kg (opcional MVP)"
+    },
+
+    "output_evidence": {
+      "$ref": "#/$defs/evidenceRefs"
+    }
+  },
+  "required": [
+    "methodology_id",
+    "methodology_version",
+    "schema_version",
+    "output_id",
+    "batch_id",
+    "output_timestamp",
+    "output_evidence"
+  ]
+}

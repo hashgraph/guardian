@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EWD-RB Supplier Registration",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "methodology_id": {
+      "type": "string",
+      "const": "EWD-RB"
+    },
+    "methodology_version": {
+      "type": "string",
+      "const": "0.3"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "0.3.0"
+    },
+    "supplier_id": {
+      "$ref": "#/$defs/uuid"
+    },
+    "supplier_display_name": {
+      "type": "string",
+      "minLength": 2
+    },
+    "supplier_legal_name": {
+      "type": "string",
+      "minLength": 2
+    },
+    "supplier_type": {
+      "type": "string",
+      "enum": [
+        "restaurant",
+        "food_court",
+        "catering",
+        "supermarket",
+        "other"
+      ]
+    },
+    "contact_email": {
+      "type": "string",
+      "format": "email"
+    },
+    "contact_phone": {
+      "type": "string",
+      "minLength": 6
+    },
+    "address": {
+      "type": "object",
+      "description": "Alineable a Address (city/state/country) del handbook.",
+      "properties": {
+        "address_line_1": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "state_or_region": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "postal_code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "city",
+        "country"
+      ]
+    },
+
+    "supplier_terms_accepted": {
+      "type": "boolean",
+      "const": true
+    },
+    "supplier_signature_evidence": {
+      "$ref": "#/$defs/evidenceRefs"
+    },
+    "registry_status": {
+      "type": "string",
+      "enum": [
+        "Draft",
+        "Submitted",
+        "Under_Registry_Review",
+        "Approved",
+        "Active",
+        "Suspended",
+        "Revoked"
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "methodology_id",
+    "methodology_version",
+    "schema_version",
+    "supplier_id",
+    "supplier_display_name",
+    "supplier_legal_name",
+    "supplier_type",
+    "contact_email",
+    "address",
+    "supplier_terms_accepted",
+    "supplier_signature_evidence",
+    "registry_status",
+    "created_at"
+  ]
+}
