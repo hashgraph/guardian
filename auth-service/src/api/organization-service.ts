@@ -145,6 +145,14 @@ function redactWalletToken(organization: Organization): Organization {
 }
 
 /**
+ * User input reaches a $regex below. Unescaped, `?name=[` is an invalid expression
+ * and Mongo answers with a 500 instead of a result set.
+ */
+function escapeRegex(value: string): string {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
  * Standard pagination shape borrowed from RoleService.GET_ROLES.
  */
 function buildPaging(pageIndex: any, pageSize: any): any {
@@ -233,8 +241,8 @@ export class OrganizationService extends NatsService {
          * List organizations owned by the caller, plus — if the caller is an active member whose
          * role carries MEMBER_MANAGE — the single organization they administer (their discovery
          * path for that organizationId). Deduped and name-filtered like the owned query; the
-         * admin case adds at most one row, so it is only appended on the first page to avoid it
-         * reappearing on every subsequent page.
+         * admin case adds at most one row, and it is folded into the query rather than appended
+         * to a page, so the count and the paging stay exact.
          */
         this.getMessages(AuthEvents.GET_ORGANIZATIONS,
             async (msg: {
@@ -254,36 +262,56 @@ export class OrganizationService extends NatsService {
                     const entityRepository = new DatabaseServer();
 
                     const otherOptions = buildPaging(pageIndex, pageSize);
-                    const options: any = { owner: creator };
+
+                    /*
+                     * The administered organization is part of the query, not an extra
+                     * row appended to the first page.
+                     *
+                     * Appending it only when offset is 0, and incrementing the count
+                     * only there, meant a delegated admin who owns no organizations
+                     * reported count 1 on page 0 and count 0 on page 1 - a total that
+                     * moves between pages breaks any paging client - and page 0 carried
+                     * pageSize + 1 items. The dedup also inspected page-0 items only, so
+                     * an owner who is additionally enrolled with MEMBER_MANAGE and owns
+                     * more than pageSize organizations received the same row twice, with
+                     * the count double-counting it.
+                     *
+                     * Folding it into the filter makes the count and the paging exact,
+                     * and a document cannot match a query twice, so the dedup is
+                     * inherent.
+                     */
+                    const adminMember = await entityRepository.findOne(OrganizationMember, {
+                        did: creator,
+                        active: true
+                    });
+                    const adminRole = adminMember?.orgRoleId
+                        ? await entityRepository.findOne(OrgRole, { id: adminMember.orgRoleId })
+                        : null;
+                    const administeredOrgId = roleCarriesMemberManage(adminRole)
+                        ? adminMember?.organizationId
+                        : null;
+
+                    const scope: any[] = [{ owner: creator }];
+                    if (administeredOrgId) {
+                        scope.push({ id: administeredOrgId });
+                    }
+                    const options: any = scope.length > 1 ? { $or: scope } : scope[0];
                     if (filters?.name) {
-                        options.name = { $regex: '.*' + filters.name + '.*' };
+                        // Escaped, and case-insensitive as the API documents. Applied to
+                        // one query now, so the owned and administered rows can no longer
+                        // filter by different rules - the admin branch used String.includes
+                        // while the owned query used a regex.
+                        options.name = { $regex: '.*' + escapeRegex(filters.name) + '.*', $options: 'i' };
                     }
 
                     const [items, count] = await entityRepository.findAndCount(Organization, options, otherOptions);
-                    let resultItems = items;
-                    let resultCount = count;
 
-                    if (!otherOptions.offset) {
-                        const adminMember = await entityRepository.findOne(OrganizationMember, {
-                            did: creator,
-                            active: true
-                        });
-                        const adminRole = adminMember?.orgRoleId
-                            ? await entityRepository.findOne(OrgRole, { id: adminMember.orgRoleId })
-                            : null;
-                        if (roleCarriesMemberManage(adminRole)) {
-                            const adminOrg = await entityRepository.findOne(Organization, {
-                                id: adminMember.organizationId
-                            });
-                            const matchesName = !filters?.name || (adminOrg?.name ?? '').includes(filters.name);
-                            if (adminOrg && matchesName && !resultItems.some((item) => item.id === adminOrg.id)) {
-                                resultItems = [...resultItems, redactWalletToken(adminOrg)];
-                                resultCount += 1;
-                            }
-                        }
-                    }
+                    // The wallet token belongs to the owner: a row reachable only through
+                    // the administered-organization branch is still redacted.
+                    const resultItems = items.map((item) =>
+                        item.owner === creator ? item : redactWalletToken(item));
 
-                    return new MessageResponse({ items: resultItems, count: resultCount });
+                    return new MessageResponse({ items: resultItems, count });
                 } catch (error) {
                     await logger.error(error, ['AUTH_SERVICE'], userId);
                     return new MessageError(error);
