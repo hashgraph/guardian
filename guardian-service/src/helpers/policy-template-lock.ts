@@ -4,24 +4,12 @@ import { hostname } from 'node:os';
 import { randomUUID } from 'node:crypto';
 
 /**
- * Advisory lock for schema-template operations on a single policy.
+ * Advisory lock for schema-template operations on one policy.
  *
- * APPLY and UPDATE both read the policy, copy or rewrite its schemas, save a
- * snapshot and only then write the binding. Two overlapping runs for the same
- * policy therefore both pass the "already applied" check, both do the work, and
- * both call updatePolicy: last writer wins, the loser's snapshot is orphaned and
- * its schema copies are left as duplicates. The binding cannot serve as the guard
- * because it is written last, which is precisely the window being raced.
- *
- * Modelled on withMigrationLock (common/src/helpers/migration-lock.ts), which
- * already runs in production: a Mongo compare-and-set with a lease, so a holder
- * that dies without releasing frees the lock after TTL_MS rather than wedging the
- * policy forever.
- *
- * Unlike the migration lock this one does NOT wait. These run behind a request or
- * a push task, and queueing a second APPLY would only mean it starts, discovers
- * the binding the first one just wrote, and fails anyway - after a long silence.
- * Failing immediately says something true and actionable instead.
+ * APPLY and UPDATE write the binding last, so it cannot guard the window being
+ * raced: two overlapping runs both pass the "already applied" check, both do the
+ * work, and last writer wins - orphaning the loser's snapshot and leaving its
+ * schema copies as duplicates. Modelled on withMigrationLock.
  */
 
 const LOCK_COLLECTION = '_policy_template_lock';

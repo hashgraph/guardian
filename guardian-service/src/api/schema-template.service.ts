@@ -1455,19 +1455,10 @@ async function updateAppliedSchemaTemplate(
     }
 
     /*
-     * The policy's schemas are rewritten in place, so the only way to undo is to
-     * have kept what they looked like first.
-     *
-     * The loop below edits existing policy schemas and persists each one before the
-     * new snapshot is saved and the binding swapped. A failure part-way used to
-     * leave some schemas on the new template version while policy.schemaTemplate
-     * still pointed at the old snapshot and state hash - and the catch removed only
-     * the new snapshot, never the schema edits. Preview then diffed against a
-     * snapshot that no longer described reality.
-     *
-     * Copies created during an update are undone by deletion, like APPLY; edits are
-     * undone by restoring the captured document. Both are best-effort, and the
-     * original error is what surfaces.
+     * The loop below edits existing policy schemas in place and persists each one
+     * before the binding is swapped, so the only way to undo is to have captured the
+     * originals first. Copies are undone by deletion, edits by restore; both
+     * best-effort, and the original error is what surfaces.
      */
     const originalSchemas = new Map<string, Schema>();
     const createdSchemas: Schema[] = [];
@@ -1725,18 +1716,11 @@ async function applySchemaTemplate(
     const copiedSchemas: Schema[] = [];
 
     /*
-     * Everything from here on is undone if any step fails.
-     *
-     * The copies are persisted one at a time, so a throw part-way through used to
-     * leave schemas 1..N-1 sitting in the policy topic carrying templateId and
-     * templateSchemaId, with no snapshot and no binding. Nothing cleaned them up -
-     * and because the binding is written last, hasSchemaTemplateBinding() still
-     * reported false, so a retry sailed past the guard and copied the whole set
-     * again. Every failed attempt added another duplicate.
-     *
-     * Undo is exact here: these are rows this call created, and their ids are known.
-     * It is best-effort - a compensating delete can itself fail, and the original
-     * error is the one worth surfacing.
+     * Undone if any step fails. The copies persist one at a time, so a throw
+     * part-way used to leave schemas carrying template markers with no binding - and
+     * since the binding is written last, hasSchemaTemplateBinding() still reported
+     * false, so a retry copied the whole set again. Best-effort; the original error
+     * is the one worth surfacing.
      */
     let snapshot: Awaited<ReturnType<typeof saveApplySnapshot>> | null = null;
     const rollback = async (): Promise<void> => {
