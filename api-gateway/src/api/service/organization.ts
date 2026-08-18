@@ -694,17 +694,9 @@ export class OrganizationApi {
             const owner = new EntityOwner(user);
 
             /*
-             * The policy has to be checked here.
-             *
-             * auth-service owns the assignment row but not the Policy collection, so
-             * its handler can only verify that the caller owns the organization and
-             * that policyId is non-empty. Nothing downstream looks at the policy at
-             * all, so a Standard Registry could assign another SR's policy to their
-             * own organization - and policy-service's relayed block-action gate then
-             * honours that assignment.
-             *
-             * The gateway is the one layer that can reach both services, so it
-             * resolves the policy and refuses anything the caller does not own.
+             * auth-service owns the assignment row but not the Policy collection, so it can
+             * only check organization ownership. The gateway is the one layer that reaches
+             * both, so the policy-owner check belongs here.
              */
             const policy = await (new PolicyEngine()).getPolicy({ filters: body.policyId }, owner);
             if (!policy) {

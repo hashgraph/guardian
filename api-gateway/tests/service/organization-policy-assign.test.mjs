@@ -7,12 +7,8 @@ import {
 const DIST = '../../dist/api/service/organization.js';
 
 /*
- * ASSIGN_POLICY_TO_ORG checked that the caller owned the organization and that
- * policyId was non-empty, and nothing else. auth-service owns the assignment row
- * but not the Policy collection, so its handler could not check the policy, and no
- * layer above it did either. A Standard Registry could therefore assign any policy
- * id - including another SR's - to their own organization, and policy-service's
- * relayed block-action gate honours the assignment.
+ * The assignment must be refused unless the caller owns the policy - otherwise an
+ * SR can assign another SR's policy to their own organization.
  */
 
 let stub;
