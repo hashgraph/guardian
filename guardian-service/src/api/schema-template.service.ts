@@ -536,13 +536,9 @@ async function publishSchemaTemplate(
 
         notifier.startStep(STEP_SAVE_FILE);
         /*
-         * Drop the file the previous attempt left behind.
-         *
-         * configFileId has the _configFileId "previous handle" mechanism on the
-         * entity, cleaned up by its @AfterUpdate hook; contentFileId has no
-         * equivalent, so every publish attempt simply overwrote the handle and
-         * stranded the file it replaced. Deleted after the new one is safely stored,
-         * and best-effort: losing the old file is not a reason to fail a publish.
+         * contentFileId has no _configFileId-style previous-handle mechanism, so each
+         * publish overwrote the handle and stranded the old file. Deleted after the new
+         * one is stored, best-effort: losing it must not fail a publish.
          */
         const supersededContentFileId = template.contentFileId;
         template.contentFileId = await DatabaseServer.saveFile(GenerateUUIDv4(), Buffer.from(buffer));
@@ -2153,18 +2149,9 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
                         readonly: false
                     });
                     /*
-                     * Refuse to strand published schemas.
-                     *
-                     * ensureEditable only blocks a PUBLISHED template, so a
-                     * PUBLISH_ERROR one is deletable - but its schemas may already
-                     * have been flipped to PUBLISHED by the attempt that then failed.
-                     * The cleanup below removes only DRAFT and ERROR rows, so those
-                     * published ones survived the template and were left pointing at a
-                     * templateId that no longer exists.
-                     *
-                     * Blocking mirrors the used-by-policies guard above: nothing that
-                     * reached a topic is destroyed silently, and the owner is told what
-                     * to resolve.
+                     * ensureEditable only blocks a PUBLISHED template, so a PUBLISH_ERROR one is
+                     * deletable while its schemas may already be published - and those would be left
+                     * with no template to resolve against.
                      */
                     const publishedSchemas = (schemas as Schema[])
                         .filter((schema) => schema.status === SchemaStatus.PUBLISHED);
