@@ -1021,7 +1021,23 @@ function ensureSchemaPropertyParent(document: any, path: string[]): any {
     return target;
 }
 
-function mergeCustomFieldsIntoDocument(
+/**
+ * Locate the object that owns `path`'s last segment, without creating anything.
+ * Used to read the source document's `required` list for a preserved field.
+ */
+function findSchemaPropertyParent(document: any, path: string[]): any {
+    let current = document;
+    for (const key of path.slice(0, -1)) {
+        const target = current?.type === 'array' ? current.items : current;
+        current = target?.properties?.[key];
+        if (!current) {
+            return null;
+        }
+    }
+    return current?.type === 'array' ? current.items : current;
+}
+
+export function mergeCustomFieldsIntoDocument(
     targetDocument: any,
     sourceDocument: any,
     fields: any[]
@@ -1038,6 +1054,23 @@ function mergeCustomFieldsIntoDocument(
             continue;
         }
         parent.properties[fieldName] = cloneJson(property);
+
+        /*
+         * Carry the required flag across with the field.
+         *
+         * The target document is a fresh clone of the template, so its `required`
+         * list is the template's. Re-inserting the preserved field into `properties`
+         * alone left it optional: a required custom field survived a template update
+         * as optional, and VCs missing it started validating. `required` lives on the
+         * parent, not on the property, so it has to be copied separately.
+         */
+        const sourceParent = findSchemaPropertyParent(sourceDocument, path);
+        if (Array.isArray(sourceParent?.required) && sourceParent.required.includes(fieldName)) {
+            parent.required = Array.isArray(parent.required) ? parent.required : [];
+            if (!parent.required.includes(fieldName)) {
+                parent.required.push(fieldName);
+            }
+        }
     }
 }
 
