@@ -264,21 +264,10 @@ export class OrganizationService extends NatsService {
                     const otherOptions = buildPaging(pageIndex, pageSize);
 
                     /*
-                     * The administered organization is part of the query, not an extra
-                     * row appended to the first page.
-                     *
-                     * Appending it only when offset is 0, and incrementing the count
-                     * only there, meant a delegated admin who owns no organizations
-                     * reported count 1 on page 0 and count 0 on page 1 - a total that
-                     * moves between pages breaks any paging client - and page 0 carried
-                     * pageSize + 1 items. The dedup also inspected page-0 items only, so
-                     * an owner who is additionally enrolled with MEMBER_MANAGE and owns
-                     * more than pageSize organizations received the same row twice, with
-                     * the count double-counting it.
-                     *
-                     * Folding it into the filter makes the count and the paging exact,
-                     * and a document cannot match a query twice, so the dedup is
-                     * inherent.
+                     * Fold the administered organization into the query instead of appending it to
+                     * page 0: appending there moved the total between pages, overfilled page 0, and
+                     * deduped against page-0 items only. A document cannot match twice, so folding
+                     * it in makes the count exact and the dedup inherent.
                      */
                     const adminMember = await entityRepository.findOne(OrganizationMember, {
                         did: creator,
