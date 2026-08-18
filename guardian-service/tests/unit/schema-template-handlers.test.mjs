@@ -2,7 +2,10 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { MessageAPI, ModuleStatus, PolicyStatus, SchemaCategory } from '@guardian/interfaces';
-import { schemaTemplatesAPI } from '../../dist/api/schema-template.service.js';
+import {
+    removePolicySchemaTemplateSnapshot,
+    schemaTemplatesAPI,
+} from '../../dist/api/schema-template.service.js';
 import {
     callHandler,
     DatabaseServer,
@@ -450,5 +453,69 @@ describe('APPLY_SCHEMA_TEMPLATE success path', () => {
         assert.equal(updatedPolicy.schemaTemplate.templateId, 'template-1');
         assert.equal(updatedPolicy.schemaTemplate.snapshotId, 'snap-1');
         assert.equal(updatedPolicy.schemaTemplate.templateStateHash, savedSnapshot.templateStateHash);
+    });
+});
+
+/*
+ * removeSchemaTemplateSnapshot was only ever called from this module's own
+ * detach/update paths; none of the three policy delete flows called it. Deleting a
+ * draft policy with a template applied left the snapshot row behind forever, along
+ * with its two GridFS payloads - one orphan per apply/delete cycle.
+ */
+describe('removePolicySchemaTemplateSnapshot', () => {
+    afterEach(() => restoreStubs());
+
+    const arrange = (snapshot) => {
+        const removed = [];
+        stub(DatabaseServer, 'getSchemaTemplateSnapshotById', async () => snapshot);
+        stub(DatabaseServer, 'removeSchemaTemplateSnapshot', async (value) => {
+            removed.push(value);
+        });
+        return removed;
+    };
+
+    it('removes the snapshot a deleted policy was bound to', async () => {
+        const snapshot = { id: 'snapshot-1' };
+        const removed = arrange(snapshot);
+
+        await removePolicySchemaTemplateSnapshot({
+            id: 'policy-1',
+            schemaTemplate: { templateId: 'template-1', snapshotId: 'snapshot-1' },
+        });
+
+        assert.deepEqual(removed, [snapshot]);
+    });
+
+    it('does nothing for a policy with no template applied', async () => {
+        const removed = arrange({ id: 'snapshot-1' });
+
+        await removePolicySchemaTemplateSnapshot({ id: 'policy-1' });
+        await removePolicySchemaTemplateSnapshot(null);
+
+        assert.deepEqual(removed, []);
+    });
+
+    it('does nothing when the snapshot is already gone', async () => {
+        const removed = arrange(null);
+
+        await removePolicySchemaTemplateSnapshot({
+            schemaTemplate: { snapshotId: 'snapshot-1' },
+        });
+
+        assert.deepEqual(removed, []);
+    });
+
+    it('never fails the delete it is cleaning up after', async () => {
+        stub(DatabaseServer, 'getSchemaTemplateSnapshotById', async () => {
+            throw new Error('database is down');
+        });
+        const logged = [];
+
+        await assert.doesNotReject(() => removePolicySchemaTemplateSnapshot(
+            { schemaTemplate: { snapshotId: 'snapshot-1' } },
+            { error: async (error) => { logged.push(error); } }
+        ));
+
+        assert.equal(logged.length, 1, 'the failure is logged rather than swallowed silently');
     });
 });

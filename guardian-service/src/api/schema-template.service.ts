@@ -10,6 +10,7 @@ import {
     MessageType,
     NewNotifier,
     PinoLogger,
+    Policy,
     RunFunctionAsync,
     Schema,
     SchemaTemplateMessage,
@@ -1624,6 +1625,29 @@ async function applySchemaTemplate(
     } catch (error) {
         await DatabaseServer.removeSchemaTemplateSnapshot(snapshot);
         throw error;
+    }
+}
+
+/**
+ * Drop a policy's template snapshot (and its GridFS payloads, via @AfterDelete)
+ * when the policy goes away. Best-effort: the caller is already deleting the
+ * policy, so a failed cleanup must not fail the delete.
+ */
+export async function removePolicySchemaTemplateSnapshot(
+    policy: Policy | null | undefined,
+    logger?: PinoLogger
+): Promise<void> {
+    const snapshotId = (policy as any)?.schemaTemplate?.snapshotId;
+    if (!snapshotId) {
+        return;
+    }
+    try {
+        const snapshot = await DatabaseServer.getSchemaTemplateSnapshotById(snapshotId);
+        if (snapshot) {
+            await DatabaseServer.removeSchemaTemplateSnapshot(snapshot);
+        }
+    } catch (error) {
+        await logger?.error(error, ['GUARDIAN_SERVICE']);
     }
 }
 
