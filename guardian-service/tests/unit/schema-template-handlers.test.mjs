@@ -265,26 +265,16 @@ describe('schema template CRUD and query handlers', () => {
         assert.equal(response.body.id, 'template-1');
     });
 
-    /*
-     * A schema template zip is user-supplied. The sanitizer stripped the identity
-     * fields but left topicId and the GridFS handles, and a legitimate export never
-     * carries them - only a hand-crafted zip does.
-     *
-     *  - contentFileId / configFileId reach DataBaseHelper.gridFS.delete() through
-     *    SchemaTemplate.deleteFiles(), so a forged value deletes someone else's file.
-     *  - topicId makes createTemplateTopic() return early, binding the import to an
-     *    existing topic; a later publish then signs with that topic's submit key.
-     */
+    // forged topicId / GridFS handles in a hand-crafted zip: see the sanitizer in
+    // schema-template.service.ts for what each one reaches
     it('CREATE_SCHEMA_TEMPLATE strips server-managed fields from the payload', async () => {
         let saved = null;
         stub(DatabaseServer, 'saveSchemaTemplate', async (payload) => {
             saved = payload;
             return { ...payload, id: 'template-new' };
         });
-        // createTemplateTopic runs after the save and needs Hedera infrastructure this
-        // harness does not provide, so it throws and the handler rolls back. The
-        // sanitization under test happens before that, and the payload is captured
-        // above.
+        // createTemplateTopic needs Hedera and throws here; the sanitization under
+        // test already happened, and the payload is captured above.
         stub(DatabaseServer, 'removeSchemaTemplate', async () => undefined);
 
         const response = await callHandler(handlers, MessageAPI.CREATE_SCHEMA_TEMPLATE, {
