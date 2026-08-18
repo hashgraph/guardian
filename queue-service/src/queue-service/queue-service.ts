@@ -33,13 +33,14 @@ export class QueueService extends NatsService {
     private trigger: boolean = false;
 
     /**
-     * Worker subjects with a dispatch currently in flight. GET_FREE_WORKERS can report a worker
-     * free while it is still mid-decode of a large out-of-band payload - the worker only sets
-     * `isInUse` once its SEND_TASK_TO_WORKER handler actually runs, which is after that decode
-     * (an HTTP fetch for tens of MB) completes. Without this, a slow decode lets the same worker
-     * get claimed again on the next refresh tick, and the second task is then invisible to
-     * genuinely free workers. Tracking our own in-flight dispatches lets the loop below trust
-     * this over a stale free-worker report.
+     * Worker subjects with a dispatch currently in flight. A worker claims `isInUse` atomically
+     * before decoding an incoming task (see `claimIfFree` in worker-service/src/api/worker.ts),
+     * so it stops answering GET_FREE_WORKERS the moment a send lands - but our own free-worker
+     * report can still be up to a refresh tick + the 300ms getFreeWorkers window stale by the
+     * time we act on it. Without this, that staleness lets the same worker get claimed again on
+     * the next refresh tick before its first busy report arrives, and the second task is then
+     * invisible to genuinely free workers. Tracking our own in-flight dispatches lets the loop
+     * below trust this over a stale free-worker report.
      */
     private readonly inFlightWorkers = new Set<string>();
 

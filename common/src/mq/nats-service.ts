@@ -378,8 +378,15 @@ export abstract class NatsService {
      * @param subject
      * @param cb
      * @param noRespond
+     * @param beforeDecode Optional synchronous hook run right after auth, before `codec.decode`.
+     * `codec.decode` can HTTP-fetch an out-of-band `directLink` payload, which for a large task
+     * takes far longer than authenticating the message - a caller that needs to claim some piece
+     * of state per-message (e.g. a busy flag) has to do it here, not in `cb`, or a second message
+     * arriving mid-decode observes the stale pre-claim state. Return a value to short-circuit:
+     * skip `cb`/decode entirely and respond with it (or, if `noRespond`, just skip). Return
+     * `undefined` to proceed normally.
      */
-    public getMessages<T, A>(subject: string, cb: Function, noRespond = false): Subscription {
+    public getMessages<T, A>(subject: string, cb: Function, noRespond = false, beforeDecode?: () => unknown): Subscription {
         this.addAdditionalAvailableEvents([subject]);
         return this.connection.subscribe(subject, {
             queue: this.messageQueueName,
@@ -417,6 +424,17 @@ export abstract class NatsService {
                     } catch (err) {
                         throw err;
                     }
+
+                    if (beforeDecode) {
+                        const early = beforeDecode();
+                        if (early !== undefined) {
+                            if (!noRespond) {
+                                msg.respond(await this.codec.encode(early), { headers: head });
+                            }
+                            return;
+                        }
+                    }
+
                     if (!noRespond) {
                         msg.respond(await this.codec.encode(await cb(await this.codec.decode(msg.data), msg.headers)), { headers: head });
                     } else {
