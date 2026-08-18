@@ -108,6 +108,33 @@ export class AuthService {
         return localStorage.getItem('username') as string;
     }
 
+    /**
+     * The user id carried by the access token, or null when there is no usable
+     * session.
+     *
+     * Used only to scope preferences stored in this browser to the account that
+     * chose them - never as an access decision. The token is not verified here,
+     * and a forged one would only let its bearer read their own local settings.
+     */
+    public getUserId(): string | null {
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+            return null;
+        }
+        try {
+            const payload = token.split('.')[1];
+            if (!payload) {
+                return null;
+            }
+            // base64url -> base64
+            const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+            const decoded = JSON.parse(atob(normalized));
+            return decoded?.userId ? String(decoded.userId) : null;
+        } catch {
+            return null;
+        }
+    }
+
     public getAccessToken() {
         return localStorage.getItem('accessToken');
     }
