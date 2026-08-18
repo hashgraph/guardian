@@ -655,6 +655,10 @@ describe('removePolicySchemaTemplateSnapshot', () => {
         ));
 
         assert.equal(logged.length, 1, 'the failure is logged rather than swallowed silently');
+    });
+});
+
+/*
  * Normalization assigns any missing templateSchemaId / templateFieldId values.
  * It used to persist them from wherever it ran - including GET and export, which
  * any user with TEMPLATES_TEMPLATE_READ can call on a published template. A

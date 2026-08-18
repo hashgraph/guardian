@@ -434,11 +434,9 @@ async function getPoliciesUsingSchemaTemplate(
 }
 
 /**
- * `owner` gates usedByPolicyNames. The listing shows published templates to every
- * user with TEMPLATES_TEMPLATE_READ, and these names come from the *template
- * owner's* policies, drafts included - so returning them to everyone disclosed
- * another Standard Registry's private draft-policy names. The count is kept for
- * everyone: it says how widely a template is used without naming anything.
+ * `owner` gates usedByPolicyNames: the names come from the template owner's
+ * policies, drafts included. The count stays public - it says how widely a
+ * template is used without naming anything.
  */
 async function addSchemaCounts(templates: SchemaTemplate[], owner?: IOwner): Promise<any[]> {
     const ownerPoliciesCache = new Map<string, any[]>();
@@ -1518,16 +1516,10 @@ async function updateAppliedSchemaTemplate(
 }
 
 /**
- * `persist` exists because the read paths must not write.
- *
- * GET, export and update-preview all normalize the template config, and
- * normalization assigns any missing templateSchemaId / templateFieldId. Writing
- * from there meant a non-owner's GET on a published template - readable by every
- * user with TEMPLATES_TEMPLATE_READ - mutated the owner's schema documents, and
- * two concurrent readers raced to store different random ids for the same field.
- *
- * The ids are still filled in memory, so the response is identical either way;
- * they are only written when the caller is actually performing a write.
+ * `persist` exists because the read paths must not write. Normalization assigns
+ * missing templateSchemaId / templateFieldId, so a non-owner's GET mutated the
+ * owner's schemas and concurrent readers raced to store different ids. The ids are
+ * still filled in memory, so the response is identical either way.
  */
 async function ensureTemplateSchemaReferences(
     schema: Schema,
