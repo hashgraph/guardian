@@ -1629,19 +1629,9 @@ async function applySchemaTemplate(
 }
 
 /**
- * Drop a policy's template snapshot when the policy itself goes away.
- *
- * removeSchemaTemplateSnapshot was only ever called from this module's own
- * detach/update paths; the policy delete flows never called it. Deleting a draft
- * policy with a template applied therefore left the snapshot row behind forever,
- * along with its two GridFS payloads (configFileId / schemasFileId, removed by the
- * entity's @AfterDelete hook). One orphan per apply/delete cycle, accumulating
- * quietly.
- *
- * Best-effort by design: the caller is already deleting the policy, and failing
- * that because a snapshot could not be cleaned would be a worse outcome than the
- * orphan it is trying to avoid. Deliberately does not touch the schemas - they are
- * deleted with the policy.
+ * Drop a policy's template snapshot (and its GridFS payloads, via @AfterDelete)
+ * when the policy goes away. Best-effort: the caller is already deleting the
+ * policy, so a failed cleanup must not fail the delete.
  */
 export async function removePolicySchemaTemplateSnapshot(
     policy: Policy | null | undefined,

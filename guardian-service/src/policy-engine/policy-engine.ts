@@ -941,8 +941,7 @@ export class PolicyEngine extends NatsService {
         notifier.completeStep(STEP_DELETE_CREDENTIALS);
 
         notifier.startStep(STEP_DELETE_POLICY);
-        // the applied template's snapshot dies with the policy; without this the row
-        // and its two GridFS payloads are orphaned on every apply/delete cycle
+        // must run before the policy row goes: snapshotId lives on it
         await removePolicySchemaTemplateSnapshot(policyToDelete, logger);
         await DatabaseServer.deletePolicy(policyToDelete.id);
         notifier.completeStep(STEP_DELETE_POLICY);
@@ -1038,8 +1037,7 @@ export class PolicyEngine extends NatsService {
         notifier.completeStep(STEP_DELETE_CREDENTIALS);
 
         notifier.startStep(STEP_DELETE_POLICY);
-        // the applied template's snapshot dies with the policy; without this the row
-        // and its two GridFS payloads are orphaned on every apply/delete cycle
+        // must run before the policy row goes: snapshotId lives on it
         await removePolicySchemaTemplateSnapshot(policyToDelete, logger);
         await DatabaseServer.deletePolicy(policyToDelete.id);
         notifier.completeStep(STEP_DELETE_POLICY);
@@ -1153,8 +1151,7 @@ export class PolicyEngine extends NatsService {
         notifier.completeStep(STEP_DELETE_CREDENTIALS);
 
         notifier.startStep(STEP_DELETE_POLICY);
-        // the applied template's snapshot dies with the policy; without this the row
-        // and its two GridFS payloads are orphaned on every apply/delete cycle
+        // must run before the policy row goes: snapshotId lives on it
         await removePolicySchemaTemplateSnapshot(policyToDelete, logger);
         await DatabaseServer.deletePolicy(policyToDelete.id);
         notifier.completeStep(STEP_DELETE_POLICY);
