@@ -5,11 +5,6 @@ const GLOBAL_KEY = 'GUARDIAN_APP_THEME';
 const DARK_CLASS = 'guardian-theme-dark';
 const LIGHT_CLASS = 'guardian-theme-light';
 
-/*
- * A browser is shared. With a single global storage key, the theme one account
- * chose was applied to the next account that signed in on the same machine, and
- * survived signing out.
- */
 describe('AppThemeService', () => {
     let service: AppThemeService;
 

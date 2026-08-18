@@ -9,12 +9,8 @@ export interface AppThemeOption {
 }
 
 /**
- * Per-user, because a browser is shared.
- *
- * A single global key meant the theme one account chose was applied to the next
- * account that signed in on the same machine, and survived signing out. The
- * legacy key is still read once as a fallback so an existing preference is not
- * silently lost on upgrade.
+ * Per-user, because a browser is shared. The legacy global key is still read once
+ * as a fallback so an existing preference is not lost on upgrade.
  */
 const APP_THEME_STORAGE_KEY = 'GUARDIAN_APP_THEME';
 
