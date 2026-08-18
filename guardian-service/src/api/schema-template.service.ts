@@ -127,6 +127,24 @@ async function createSchemaTemplate(
         throw new Error('Invalid schema template');
     }
 
+    /*
+     * Strip every server-managed field from an imported payload.
+     *
+     * SchemaTemplateImportExport.generateZipFile already omits these, so nothing
+     * legitimate depends on them surviving an import - a hand-crafted zip is the
+     * only way they arrive. Two of them are dangerous rather than untidy:
+     *
+     *  - contentFileId / configFileId are GridFS handles, and
+     *    SchemaTemplate.deleteFiles() passes them straight to
+     *    DataBaseHelper.gridFS.delete(). A user able to create and delete a
+     *    template could therefore delete an arbitrary GridFS file - a policy
+     *    package, a schema document, another template's payload.
+     *  - topicId short-circuits createTemplateTopic(), which returns early when it
+     *    is already set. The imported template then binds silently to an existing
+     *    topic, its schemas are imported into that topic, and a later publish signs
+     *    with that topic's stored submit key - writing the importer's
+     *    PublishSchemaTemplate message into a topic they do not own.
+     */
     delete payload._id;
     delete payload.id;
     delete payload.status;
@@ -135,6 +153,10 @@ async function createSchemaTemplate(
     delete payload.messageId;
     delete payload.version;
     delete payload.previousVersion;
+    delete payload.topicId;
+    delete (payload as any).contentFileId;
+    delete (payload as any).configFileId;
+    delete (payload as any)._configFileId;
 
     payload.creator = owner.creator;
     payload.owner = owner.owner;

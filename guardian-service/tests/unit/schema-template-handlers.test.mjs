@@ -265,6 +265,66 @@ describe('schema template CRUD and query handlers', () => {
         assert.equal(response.body.id, 'template-1');
     });
 
+    /*
+     * A schema template zip is user-supplied. The sanitizer stripped the identity
+     * fields but left topicId and the GridFS handles, and a legitimate export never
+     * carries them - only a hand-crafted zip does.
+     *
+     *  - contentFileId / configFileId reach DataBaseHelper.gridFS.delete() through
+     *    SchemaTemplate.deleteFiles(), so a forged value deletes someone else's file.
+     *  - topicId makes createTemplateTopic() return early, binding the import to an
+     *    existing topic; a later publish then signs with that topic's submit key.
+     */
+    it('CREATE_SCHEMA_TEMPLATE strips server-managed fields from the payload', async () => {
+        let saved = null;
+        stub(DatabaseServer, 'saveSchemaTemplate', async (payload) => {
+            saved = payload;
+            return { ...payload, id: 'template-new' };
+        });
+        // createTemplateTopic runs after the save and needs Hedera infrastructure this
+        // harness does not provide, so it throws and the handler rolls back. The
+        // sanitization under test happens before that, and the payload is captured
+        // above.
+        stub(DatabaseServer, 'removeSchemaTemplate', async () => undefined);
+
+        const response = await callHandler(handlers, MessageAPI.CREATE_SCHEMA_TEMPLATE, {
+            template: {
+                name: 'Forged',
+                config: {},
+                _id: 'forged-id',
+                id: 'forged-id',
+                status: ModuleStatus.PUBLISHED,
+                owner: 'did:victim',
+                creator: 'did:victim',
+                messageId: 'forged-message',
+                version: '9.9.9',
+                previousVersion: '9.9.8',
+                topicId: '0.0.999',
+                contentFileId: '64b7f1e2d3a4b5c6d7e8f901',
+                configFileId: '64b7f1e2d3a4b5c6d7e8f902',
+                _configFileId: '64b7f1e2d3a4b5c6d7e8f903'
+            },
+            owner
+        });
+
+        void response;
+        assert.ok(saved, 'the sanitized payload should have reached saveSchemaTemplate');
+
+        assert.equal(saved.topicId, undefined, 'a forged topicId must not survive import');
+        assert.equal(saved.contentFileId, undefined, 'a forged GridFS handle must not survive import');
+        assert.equal(saved.configFileId, undefined, 'a forged GridFS handle must not survive import');
+        assert.equal(saved._configFileId, undefined, 'a forged GridFS handle must not survive import');
+
+        assert.equal(saved.messageId, undefined);
+        assert.equal(saved.version, undefined);
+        assert.equal(saved.previousVersion, undefined);
+
+        assert.equal(saved.owner, owner.owner);
+        assert.equal(saved.creator, owner.creator);
+        assert.equal(saved.status, ModuleStatus.DRAFT);
+        assert.equal(saved.name, 'Forged', 'legitimate fields are untouched');
+    });
+
     it('CHECK_SCHEMA_TEMPLATE returns not-found when messageId is absent', async () => {
         const response = await callHandler(handlers, MessageAPI.CHECK_SCHEMA_TEMPLATE, {
             messageId: '',
