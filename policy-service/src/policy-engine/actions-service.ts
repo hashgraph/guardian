@@ -864,6 +864,22 @@ export class PolicyActionsService {
             if (await DatabaseServer.getAssignedEntity(AssignedEntityType.Policy, this.policyId, policyUser.did)) {
                 return true;
             }
+            /*
+             * An organization assignment only grants access within the policy's own
+             * owner.
+             *
+             * guardian-service's accessPolicyCode rejects `user.owner !== policy.owner`
+             * before it consults an assignment; this gate did not, so the two were
+             * asymmetric - a PolicyOrgAssignment row naming a policy that belongs to a
+             * different Standard Registry let that organization's members through here.
+             *
+             * Only a *known* mismatch denies. A virtual (dry-run) user or one built
+             * from a bare DID has no parent, and treating unknown as mismatched would
+             * break dry-run runs that never had an owner to compare.
+             */
+            if (policyUser.parent && this.policyOwner && policyUser.parent !== this.policyOwner) {
+                return false;
+            }
             try {
                 return await isPolicyAssignedToUserOrg(policyUser, this.policyId);
             } catch {

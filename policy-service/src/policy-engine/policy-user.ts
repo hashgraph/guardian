@@ -83,6 +83,18 @@ export class PolicyUser {
      */
     public readonly policyOwner: string | null;
     /**
+     * The DID of the Standard Registry this user belongs to.
+     *
+     * EntityOwner derives `owner` the same way (user.parent for a USER, user.did for
+     * an SR), and guardian-service's accessPolicyCode compares it against
+     * policy.owner before honouring any assignment. PolicyUser carried no
+     * equivalent, so the policy-service gate could not make the same comparison.
+     *
+     * Null for a virtual (dry-run) user or one built from a bare DID, where the
+     * parent is simply unknown - callers must not read that as "no owner".
+     */
+    public readonly parent: string | null;
+    /**
      * Policy status
      */
     public readonly policyStatus: PolicyStatus | null;
@@ -131,6 +143,7 @@ export class PolicyUser {
             this.location = LocationType.LOCAL;
             this._userId = null;
             this._hederaAccountId = null;
+            this.parent = null;
         } else {
             this.did = arg.did;
             this.username = arg.username;
@@ -138,6 +151,7 @@ export class PolicyUser {
             this.location = arg.location || LocationType.LOCAL;
             this._userId = arg.id;
             this._hederaAccountId = arg.hederaAccountId;
+            this.parent = arg.parent || null;
         }
         this.role = null;
         this.group = null;
