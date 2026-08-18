@@ -630,6 +630,24 @@ export class PolicyImport {
             throw new Error('Selected schema template is inaccessible');
         }
 
+        /*
+         * Fall back to the binding's own templateId locally.
+         *
+         * Only metadata.templateId and a message id were tried, and clonePolicy passes
+         * no metadata - so cloning a policy bound to an *unpublished* template threw
+         * "Schema template is inaccessible", even though the template sits right there
+         * in the database. Same accessibility rule as the metadata branch: published,
+         * or owned by the caller.
+         */
+        if (binding.templateId) {
+            const template = await DatabaseServer.getSchemaTemplateById(binding.templateId);
+            if (template && (template.status === ModuleStatus.PUBLISHED || template.owner === user.owner)) {
+                this.schemaTemplate = template;
+                step.complete();
+                return;
+            }
+        }
+
         const messageId = metadata?.schemaTemplate?.templateMessageId || binding.templateMessageId;
         if (messageId) {
             const template = await this.resolveSchemaTemplateByMessage(messageId, user, userId);
@@ -643,7 +661,16 @@ export class PolicyImport {
         throw new Error('Schema template is inaccessible. Select a template or detach it.');
     }
 
-    private clearTemplateMetadataFromSchemas(schemas: Schema[]): void {
+    /**
+     * Whether the schema-template binding must be dropped before the schemas are
+     * written - either because the caller asked to detach, or because there is no
+     * snapshot to carry it (see the note at the call site).
+     */
+    public mustDropSchemaTemplateBinding(policy: Policy, schemaTemplateSnapshot: any, metadata: any): boolean {
+        return !!metadata?.schemaTemplate?.detach || (!!policy?.schemaTemplate && !schemaTemplateSnapshot);
+    }
+
+    public clearTemplateMetadataFromSchemas(schemas: Schema[]): void {
         for (const schema of schemas) {
             schema.templateId = '';
             schema.templateSchemaId = '';
@@ -902,10 +929,21 @@ export class PolicyImport {
         const additionalPolicyConfig = options.additionalPolicyConfig;
         const metadata = options.metadata;
         const logger = options.logger;
-        const detachSchemaTemplate = !!metadata?.schemaTemplate?.detach;
-
         this.importRecords = !!options.importRecords;
-        if (detachSchemaTemplate) {
+
+        /*
+         * A binding that cannot be carried is dropped whole, not half.
+         *
+         * saveSchemaTemplateSnapshot nulls policy.schemaTemplate when there is no
+         * snapshot to remap - which is exactly what clonePolicy produces - but by then
+         * the schemas are already persisted, so they kept their templateId,
+         * templateSchemaId and templateFieldId markers. The result was a half-bound
+         * clone: a policy claiming no template, over schemas still claiming one.
+         *
+         * Deciding it here, alongside the explicit detach and before the schemas are
+         * written, is what makes the strip persist.
+         */
+        if (this.mustDropSchemaTemplateBinding(policy, schemaTemplateSnapshot, metadata)) {
             policy.schemaTemplate = null;
             this.clearTemplateMetadataFromSchemas(schemas);
         }
