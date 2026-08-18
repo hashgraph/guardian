@@ -635,14 +635,10 @@ export class PolicyImportExport {
         PolicyImportExport.removeField(components, 'systemSchemas');
         delete components.schemaTemplateSnapshot;
         /*
-         * The template binding is environment-specific, so it cannot take part in the
-         * hash. schemaTemplateSnapshot was already dropped, but policy.schemaTemplate
-         * carries a snapshotId, schemaMap ObjectIds and appliedAt/updatedAt timestamps,
-         * all assigned per environment. Exporting and re-importing an identical
-         * template-bound policy therefore produced a different hash every time, so
-         * hash-based same-policy detection reported a difference for every
-         * template-bound policy. The per-schema markers below are environment-specific
-         * for the same reason.
+         * Environment-specific, so it cannot take part in the hash: snapshotId,
+         * schemaMap ObjectIds and the timestamps are assigned per environment, so an
+         * identical policy hashed differently in each one. Same for the per-schema
+         * markers below.
          */
         delete (components.policy as any).schemaTemplate;
 
