@@ -19,6 +19,10 @@ import {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const importHelpersPath = path.resolve(__dirname, '../../dist/helpers/import-helpers/index.js');
+// The lock has its own suite (policy-template-lock.test.mjs). Stubbed here so these
+// cases do not pay for esmock re-importing @guardian/common through it.
+const lockPath = path.resolve(__dirname, '../../dist/helpers/policy-template-lock.js');
+const passThroughLock = { withPolicyTemplateLock: (_policyId, fn) => fn() };
 
 const owner = {
     id: 'user-1',
@@ -883,5 +887,269 @@ describe('PUBLISH_SCHEMA_TEMPLATE content file', () => {
         });
 
         assert.deepEqual(gridFsDeletes, []);
+    });
+});
+
+
+/*
+ * APPLY persists the schema copies one at a time, so a throw part-way used to
+ * leave schemas 1..N-1 in the policy topic carrying templateId and
+ * templateSchemaId, with no snapshot and no binding. Nothing cleaned them up, and
+ * because the binding is written last hasSchemaTemplateBinding() still reported
+ * false - so a retry sailed past the guard and copied the whole set again. Every
+ * failed attempt added another duplicate.
+ */
+describe('APPLY_SCHEMA_TEMPLATE rollback', () => {
+    const templateSchema = (id) => ({
+        id,
+        templateSchemaId: `tpl-${id}`,
+        iri: `#${id}&1.0.0`,
+        uuid: id,
+        name: id,
+        topicId: '0.0.20',
+        category: SchemaCategory.TEMPLATE,
+        document: { $id: `#${id}&1.0.0`, type: 'object', properties: {} },
+    });
+
+    const arrange = async ({ failOn }) => {
+        const created = [];
+        const removedSchemas = [];
+        const removedSnapshots = [];
+        let snapshotSaved = null;
+
+        const fakeDb = {
+            getSchemaTemplateById: async () => ({
+                id: 'template-1',
+                name: 'Template',
+                owner: owner.owner,
+                status: ModuleStatus.PUBLISHED,
+                topicId: '0.0.20',
+                config: { schemas: {} },
+            }),
+            getPolicyById: async () => policy({ schemaTemplate: null }),
+            getSchemas: async () => [templateSchema('a'), templateSchema('b')],
+            updateSchema: async () => null,
+            saveSchemaTemplateSnapshot: async (value) => {
+                snapshotSaved = { ...value, id: 'snap-1' };
+                if (failOn === 'snapshot') {
+                    throw new Error('snapshot write failed');
+                }
+                return snapshotSaved;
+            },
+            removeSchemaTemplateSnapshot: async (value) => { removedSnapshots.push(value); },
+            updatePolicy: async () => {
+                if (failOn === 'policy') {
+                    throw new Error('policy write failed');
+                }
+                return {};
+            },
+        };
+
+        const { handlers } = await loadAPI(
+            '../dist/api/schema-template.service.js',
+            'schemaTemplatesAPI',
+            {
+                '@guardian/common': {
+                    DatabaseServer: fakeDb,
+                    NewNotifier: Object.assign(() => {}, { empty: () => ({}) }),
+                },
+                [lockPath]: passThroughLock,
+                [importHelpersPath]: {
+                    createSchemaAndArtifacts: async (_category, copy) => {
+                        if (failOn === 'copy' && created.length === 1) {
+                            throw new Error('copy failed');
+                        }
+                        const copied = { ...copy, id: `copy-${created.length + 1}` };
+                        created.push(copied);
+                        return copied;
+                    },
+                    deleteSchema: async (id) => { removedSchemas.push(id); },
+                    SchemaImportExportHelper: class {},
+                    updateSchemaDefs: async () => {}
+                }
+            }
+        );
+
+        const response = await handlers[MessageAPI.APPLY_SCHEMA_TEMPLATE]({
+            templateId: 'template-1',
+            policyId: 'policy-1',
+            owner
+        });
+        return { response, created, removedSchemas, removedSnapshots, snapshotSaved };
+    };
+
+    it('deletes the copies it already made when a later copy fails', async () => {
+        const { response, created, removedSchemas } = await arrange({ failOn: 'copy' });
+
+        assert.equal(ok(response), false);
+        assert.match(response.error, /copy failed/, 'the original failure is what surfaces');
+        assert.deepEqual(removedSchemas, created.map((schema) => schema.id),
+            'a partial apply must not leave orphan copies for the retry to duplicate');
+    });
+
+    it('deletes the copies when the snapshot cannot be written', async () => {
+        const { response, created, removedSchemas } = await arrange({ failOn: 'snapshot' });
+
+        assert.equal(ok(response), false);
+        assert.equal(removedSchemas.length, created.length);
+    });
+
+    it('deletes the copies and the snapshot when the binding cannot be written', async () => {
+        const { response, created, removedSchemas, removedSnapshots } =
+            await arrange({ failOn: 'policy' });
+
+        assert.equal(ok(response), false);
+        assert.equal(removedSchemas.length, created.length,
+            'previously only the snapshot was removed, and the copies were left behind');
+        assert.equal(removedSnapshots.length, 1);
+    });
+
+    it('removes nothing when the apply succeeds', async () => {
+        const { response, removedSchemas, removedSnapshots } = await arrange({ failOn: null });
+
+        assert.equal(ok(response), true);
+        assert.deepEqual(removedSchemas, []);
+        assert.deepEqual(removedSnapshots, []);
+    });
+});
+
+/*
+ * UPDATE rewrites the policy's schemas in place and persists each one before the
+ * new snapshot is saved and the binding swapped. A failure part-way used to leave
+ * some schemas on the new template version while policy.schemaTemplate still
+ * pointed at the old snapshot and state hash - and the catch removed only the new
+ * snapshot, never the schema edits. Preview then diffed against a snapshot that no
+ * longer described reality.
+ */
+describe('UPDATE_APPLIED_SCHEMA_TEMPLATE rollback', () => {
+    // the template gained a field the policy copy does not have yet: that is the
+    // in-place edit UPDATE performs, and the thing a rollback has to undo
+    const document = (properties) => ({
+        $id: '#a&1.0.0',
+        title: 'A',
+        type: 'object',
+        properties,
+        required: [],
+    });
+
+    const arrange = async ({ failOnPolicy }) => {
+        const writes = [];
+        const removedSnapshots = [];
+        const templateSchema = {
+            id: 'ts-a',
+            templateSchemaId: 'tpl-a',
+            iri: '#a&1.0.0',
+            uuid: 'a',
+            version: '1.0.0',
+            name: 'A',
+            topicId: '0.0.20',
+            category: SchemaCategory.TEMPLATE,
+            document: document({ fromTemplate: { type: 'string', title: 'From template' } }),
+        };
+        const policySchema = {
+            id: 'ps-1',
+            templateId: 'template-1',
+            templateSchemaId: 'tpl-a',
+            iri: '#a&1.0.0',
+            uuid: 'a',
+            version: '1.0.0',
+            name: 'A',
+            topicId: '0.0.10',
+            category: SchemaCategory.POLICY,
+            document: document({}),
+        };
+
+        const fakeDb = {
+            getSchemaTemplateById: async () => ({
+                id: 'template-1',
+                name: 'Template',
+                owner: owner.owner,
+                status: ModuleStatus.PUBLISHED,
+                topicId: '0.0.20',
+                config: { schemas: {} },
+            }),
+            getPolicyById: async () => policy({
+                schemaTemplate: {
+                    templateId: 'template-1',
+                    snapshotId: 'snap-0',
+                    appliedAt: '2026-01-01T00:00:00.000Z',
+                    schemaMap: { 'tpl-a': 'ps-1' },
+                },
+            }),
+            getSchemaTemplateSnapshotById: async () => ({
+                id: 'snap-0',
+                config: { schemas: {} },
+                schemas: { schemas: { 'tpl-a': { templateSchemaId: 'tpl-a', name: 'A (old)', fields: [], conditions: [] } } },
+            }),
+            getSchemas: async (filter) => (
+                filter?.category === SchemaCategory.TEMPLATE ? [templateSchema] : [policySchema]
+            ),
+            updateSchema: async (id, value) => {
+                writes.push({ id, fields: Object.keys(value?.document?.properties || {}) });
+                return value;
+            },
+            saveSchemaTemplateSnapshot: async (value) => ({ ...value, id: 'snap-1' }),
+            removeSchemaTemplateSnapshot: async (value) => { removedSnapshots.push(value?.id); },
+            updatePolicy: async (value) => {
+                if (failOnPolicy) {
+                    throw new Error('policy write failed');
+                }
+                return value;
+            },
+        };
+
+        const { handlers } = await loadAPI(
+            '../dist/api/schema-template.service.js',
+            'schemaTemplatesAPI',
+            {
+                '@guardian/common': {
+                    DatabaseServer: fakeDb,
+                    NewNotifier: Object.assign(() => {}, { empty: () => ({}) }),
+                },
+                [lockPath]: passThroughLock,
+                [importHelpersPath]: {
+                    createSchemaAndArtifacts: async (_category, copy) => ({ ...copy, id: 'copy-1' }),
+                    deleteSchema: async () => {},
+                    SchemaImportExportHelper: class {},
+                    updateSchemaDefs: async () => {}
+                }
+            }
+        );
+
+        const response = await handlers[MessageAPI.UPDATE_APPLIED_SCHEMA_TEMPLATE]({
+            templateId: 'template-1',
+            policyId: 'policy-1',
+            owner
+        });
+        return { response, writes, removedSnapshots };
+    };
+
+    it('restores the edited schema when the binding cannot be written', async () => {
+        const { response, writes } = await arrange({ failOnPolicy: true });
+
+        assert.equal(ok(response), false);
+        assert.match(response.error, /policy write failed/);
+
+        const edits = writes.filter((write) => write.id === 'ps-1');
+        assert.ok(
+            edits.some((edit) => edit.fields.includes('fromTemplate')),
+            `the update should have edited the policy schema first, saw ${JSON.stringify(writes)}`
+        );
+        assert.deepEqual(edits.at(-1).fields, [],
+            'an in-place edit cannot be undone by deletion; the captured document must be written back');
+    });
+
+    it('removes the new snapshot, not the old one, on failure', async () => {
+        const { removedSnapshots } = await arrange({ failOnPolicy: true });
+
+        assert.deepEqual(removedSnapshots, ['snap-1'],
+            'the policy must stay describable by the snapshot its binding still points at');
+    });
+
+    it('removes the old snapshot once the new binding is committed', async () => {
+        const { response, removedSnapshots } = await arrange({ failOnPolicy: false });
+
+        assert.equal(ok(response), true, response.error);
+        assert.deepEqual(removedSnapshots, ['snap-0']);
     });
 });
