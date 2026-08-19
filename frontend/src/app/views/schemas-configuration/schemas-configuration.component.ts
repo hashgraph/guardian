@@ -119,6 +119,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public get currentDrilledSchemaIri(): string { return this.drillStack[this.drillStack.length - 1]?.schemaIri || ''; }
 
     private dirtySchemaIds = new Set<string>();
+    // last-saved signature per schema, so a reverted edit can clear the dirty flag
+    private savedSignatures = new Map<string, string>();
     public isSaving: boolean = false;
     private _subSchemasByIri = new Map<string, Schema>();
     public newArrayDependencyField: string | null = null;
@@ -615,7 +617,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             this.resetArrayDependencyEditor();
             this.schemaLoading = false;
             const schemaId = schema.id || (schema as any)._id;
-            if (schemaId) { this.dirtySchemaIds.delete(schemaId); }
+            if (schemaId) {
+                this.dirtySchemaIds.delete(schemaId);
+                // freshly loaded from the server, so this is the saved baseline
+                this.snapshotSchema(schema, schemaId);
+            }
             if (!this.topic && schema.topicId) {
                 this.topic = schema.topicId;
             }
@@ -1109,6 +1115,100 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return schemaConfig.fields[fieldKey];
     }
 
+    /**
+     * A stable signature of everything the editor can change.
+     *
+     * Returns null on anything it cannot model (cycle, depth blow-out, throw). Callers
+     * treat null as "cannot prove clean" and leave the schema dirty: a false clean would
+     * hide Save all and silently discard the user's work, which is far worse than the
+     * stale "Unsaved changes" this fixes.
+     */
+    private static readonly SIGNATURE_MAX_DEPTH = 12;
+
+    private schemaSignature(schema: Schema | null | undefined): string | null {
+        if (!schema) {
+            return null;
+        }
+        try {
+            const seen = new WeakSet<object>();
+            const field = (f: any, depth: number): any => {
+                if (!f || typeof f !== 'object') {
+                    return f ?? null;
+                }
+                if (depth > SchemasConfigurationComponent.SIGNATURE_MAX_DEPTH || seen.has(f)) {
+                    throw new Error('unbounded');
+                }
+                seen.add(f);
+                return [
+                    f.name, f.title, f.description, f.type, f.format, f.pattern, f.unit,
+                    f.unitSystem, f.property, f.customType, f.enumName, f.comment,
+                    f.textSize, f.expression, f.remoteLink, f.templateFieldId,
+                    !!f.required, !!f.isArray, !!f.isRef, !!f.readOnly, !!f.autocalculate,
+                    f.enum ?? null,
+                    f.availableOptions ?? null,
+                    f.dependency ?? null,
+                    (f.fields ?? []).map((sub: any) => field(sub, depth + 1)),
+                    (f.conditions ?? []).map((c: any) => condition(c, depth + 1)),
+                ];
+            };
+            const condition = (c: any, depth: number): any => {
+                if (!c || typeof c !== 'object') {
+                    return c ?? null;
+                }
+                if (depth > SchemasConfigurationComponent.SIGNATURE_MAX_DEPTH || seen.has(c)) {
+                    throw new Error('unbounded');
+                }
+                seen.add(c);
+                return [
+                    c.ifCondition?.field?.name ?? null,
+                    c.ifCondition?.fieldValue ?? null,
+                    (c.thenFields ?? []).map((f: any) => field(f, depth + 1)),
+                    (c.elseFields ?? []).map((f: any) => field(f, depth + 1)),
+                ];
+            };
+            return JSON.stringify([
+                schema.name ?? null,
+                schema.description ?? null,
+                schema.entity ?? null,
+                (schema.fields ?? []).map((f: any) => field(f, 0)),
+                (schema.conditions ?? []).map((c: any) => condition(c, 0)),
+            ]);
+        } catch {
+            return null;
+        }
+    }
+
+    private snapshotSchema(schema: Schema | null | undefined, key?: string): void {
+        const id = key || schema?.id || (schema as any)?._id;
+        if (!id) {
+            return;
+        }
+        const signature = this.schemaSignature(schema);
+        if (signature === null) {
+            this.savedSignatures.delete(id);
+        } else {
+            this.savedSignatures.set(id, signature);
+        }
+    }
+
+    /**
+     * Drop the dirty mark when the schema matches what was last saved. An unknown
+     * signature or a missing baseline leaves it dirty.
+     */
+    private reconcileDirty(key: string, schema: Schema | null | undefined): void {
+        const baseline = this.savedSignatures.get(key);
+        if (baseline === undefined) {
+            this.dirtySchemaIds.add(key);
+            return;
+        }
+        const current = this.schemaSignature(schema);
+        if (current !== null && current === baseline) {
+            this.dirtySchemaIds.delete(key);
+        } else {
+            this.dirtySchemaIds.add(key);
+        }
+    }
+
     public markDirty(): void {
         if (this.isTemplateReadonly) {
             return;
@@ -1123,15 +1223,16 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             const subId = subSchema?.id || (subSchema as any)?._id;
             const subUuid = (subSchema as any)?.uuid;
             if (subId) {
-                this.dirtySchemaIds.add(subId);
+                this.reconcileDirty(subId, subSchema);
             } else if (subUuid) {
+                // a schema that has never been saved has no baseline: always dirty
                 this.dirtySchemaIds.add(`new:${subUuid}`);
             }
             return;
         }
         const rootId = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
         if (rootId) {
-            this.dirtySchemaIds.add(rootId);
+            this.reconcileDirty(rootId, this.selectedSchema);
         } else if (this.selectedSchema?.uuid) {
             this.dirtySchemaIds.add(`new:${this.selectedSchema.uuid}`);
         }
@@ -1257,6 +1358,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     this.isSaving = false;
                     this.dirtySchemaIds.clear();
                     this.newSchemaKeys.clear();
+                    // what was just saved becomes the new baseline
+                    allSchemas.forEach(schema => this.snapshotSchema(schema));
                 },
                 error: (error) => { this.isSaving = false; this.reportError('Save all', error); }
             });
@@ -3334,6 +3437,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                         this.schemasLoading = false;
                     }
                     this.schemasFetched = true;
+                    // server copies are the saved baseline; a locally edited
+                    // selectedSchema still differs from its signature and stays dirty
+                    items.forEach(schema => this.snapshotSchema(schema));
                     this.loadAppliedSchemaTemplate();
                     if (this.selectedSchema) { this.upsertInSidebar(this.selectedSchema); }
                     this.pruneDirtySchemaIds();

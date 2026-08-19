@@ -60,6 +60,7 @@ describe('SchemasConfigurationComponent', () => {
         component.schemasPage = 0;
         component.schemaSearch = '';
         component.dirtySchemaIds = new Set<string>(state.dirtyIds || []);
+        component.savedSignatures = new Map<string, string>();
         component.newSchemaKeys = new Set<string>(state.newKeys || []);
 
         component.router = { url: state.url || '/schema-configuration', navigate: () => Promise.resolve(true) };
@@ -189,6 +190,126 @@ describe('SchemasConfigurationComponent', () => {
             component.onExport();
 
             expect(component.toasts[0].detail).toBe('Unknown error');
+        });
+    });
+
+    // Dirty tracking was add-only: markDirty() added the schema id and nothing ever
+    // removed it, so once touched a schema stayed dirty until saved even if the user
+    // undid the change.
+    describe('reverting an edit clears the dirty flag', () => {
+
+        function withBaseline() {
+            const field = makeField({ name: 'f1', title: 'Original' });
+            const schema: any = makeSchema({ id: 'a', fields: [field] });
+            const component = createComponent({ schemas: [schema], selectedSchema: schema });
+            component.snapshotSchema(schema);
+            return { component, schema, field };
+        }
+
+        it('marks dirty on edit and clean again on revert', () => {
+            const { component, field } = withBaseline();
+
+            field.title = 'Changed';
+            component.markDirty();
+            expect(component.dirtySchemaIds.has('a')).toBeTrue();
+            expect(component.hasUnsavedChanges).toBeTrue();
+
+            field.title = 'Original';
+            component.markDirty();
+            expect(component.dirtySchemaIds.has('a')).toBeFalse();
+            expect(component.hasUnsavedChanges).toBeFalse();
+        });
+
+        it('notices an added and then removed field', () => {
+            const { component, schema } = withBaseline();
+
+            schema.fields.push(makeField({ name: 'f2' }));
+            component.markDirty();
+            expect(component.hasUnsavedChanges).toBeTrue();
+
+            schema.fields.pop();
+            component.markDirty();
+            expect(component.hasUnsavedChanges).toBeFalse();
+        });
+
+        it('notices an added and then removed condition', () => {
+            const { component, schema } = withBaseline();
+
+            schema.conditions.push({
+                ifCondition: { field: { name: 'f1' }, fieldValue: 'x' },
+                thenFields: [makeField({ name: 'then_1' })],
+                elseFields: [],
+            });
+            component.markDirty();
+            expect(component.hasUnsavedChanges).toBeTrue();
+
+            schema.conditions.pop();
+            component.markDirty();
+            expect(component.hasUnsavedChanges).toBeFalse();
+        });
+
+        it('stays dirty when only part of the edit is reverted', () => {
+            const { component, schema, field } = withBaseline();
+
+            field.title = 'Changed';
+            schema.fields.push(makeField({ name: 'f2' }));
+            component.markDirty();
+
+            field.title = 'Original';
+            component.markDirty();
+            expect(component.hasUnsavedChanges).toBeTrue();
+        });
+
+        // A false clean would hide Save all and silently discard the user's work, so
+        // anything the signature cannot model has to leave the schema dirty.
+        it('stays dirty when there is no saved baseline', () => {
+            const field = makeField({ name: 'f1' });
+            const schema: any = makeSchema({ id: 'a', fields: [field] });
+            const component = createComponent({ schemas: [schema], selectedSchema: schema });
+
+            component.markDirty();
+            expect(component.dirtySchemaIds.has('a')).toBeTrue();
+            component.markDirty();
+            expect(component.dirtySchemaIds.has('a')).toBeTrue();
+        });
+
+        it('stays dirty when the field tree is cyclic', () => {
+            const field = makeField({ name: 'f1' });
+            const schema: any = makeSchema({ id: 'a', fields: [field] });
+            const component = createComponent({ schemas: [schema], selectedSchema: schema });
+            component.snapshotSchema(schema);
+
+            field.fields = [field];
+            component.markDirty();
+            expect(component.dirtySchemaIds.has('a')).toBeTrue();
+
+            component.markDirty();
+            expect(component.dirtySchemaIds.has('a')).toBeTrue();
+        });
+
+        it('a never-saved schema is always dirty', () => {
+            const schema: any = makeSchema({ uuid: 'u-new' });
+            schema.id = undefined;
+            schema._id = undefined;
+            const component = createComponent({
+                schemas: [schema], selectedSchema: schema, newKeys: ['new:u-new'],
+            });
+
+            component.markDirty();
+            expect(component.dirtySchemaIds.has('new:u-new')).toBeTrue();
+        });
+
+        it('a successful save becomes the new baseline', () => {
+            const { component, field } = withBaseline();
+
+            field.title = 'Changed';
+            component.markDirty();
+            component.saveAll();
+            expect(component.hasUnsavedChanges).toBeFalse();
+
+            field.title = 'Original';
+            component.markDirty();
+            expect(component.hasUnsavedChanges).toBeTrue();
         });
     });
 
