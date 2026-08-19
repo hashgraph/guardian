@@ -1677,24 +1677,6 @@ export class HederaSDKHelper {
     }
 
     /**
-     * Get balance account (AccountBalanceQuery)
-     *
-     * @param {string | AccountId} accountId - Account Id
-     *
-     * @returns {string} - balance
-     */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Account balance query timeout exceeded')
-    public static async balance(client: Client, accountId: string | AccountId): Promise<number> {
-        const query = new AccountBalanceQuery()
-            .setAccountId(accountId);
-        const accountBalance = await query.execute(client);
-        if (accountBalance && accountBalance.hbars) {
-            return accountBalance.hbars.to(HbarUnit.Hbar).toNumber();
-        }
-        return NaN;
-    }
-
-    /**
      * Ensures the contents of a Hedera file are stored as ASCII hex.
      *
      * If the current file's contents are raw binary (not ASCII hex), this method:
