@@ -2299,17 +2299,16 @@ export class HederaSDKHelper {
     /**
      * Get balance account (Rest API)
      *
-     * Replaces the deprecated AccountBalanceQuery. The SDK's
-     * MirrorNodeAccountBalanceQuery hardcodes /api/v1 and reuses the gRPC
-     * mirror address, so it ignores OVERRIDE_HEDERA_MIRROR_NODES_BASE_API
-     * and breaks localnode.
+     * Reads through Environment rather than the SDK's mirror-node query,
+     * which hardcodes /api/v1 and reuses the gRPC mirror address, so it
+     * ignores OVERRIDE_HEDERA_MIRROR_NODES_BASE_API and breaks localnode.
      *
      * @param {string} accountId - Account Id
      *
      * @returns {string} - balance
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get balance request timeout exceeded')
-    public static async balanceRest(
+    public static async balance(
         accountId: string,
         apiOptions: IApiOptions
     ): Promise<string> {
