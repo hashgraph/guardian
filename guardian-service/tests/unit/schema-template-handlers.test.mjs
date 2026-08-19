@@ -23,6 +23,7 @@ const importHelpersPath = path.resolve(__dirname, '../../dist/helpers/import-hel
 const owner = {
     id: 'user-1',
     owner: 'did:owner',
+    creator: 'did:owner-creator',
 };
 
 const policy = (overrides = {}) => ({
@@ -266,6 +267,62 @@ describe('schema template CRUD and query handlers', () => {
 
         assert.equal(ok(response), true);
         assert.equal(response.body.id, 'template-1');
+    });
+
+    // forged topicId / GridFS handles in a hand-crafted zip: see the sanitizer in
+    // schema-template.service.ts for what each one reaches
+    it('CREATE_SCHEMA_TEMPLATE strips server-managed fields from the payload', async () => {
+        let saved = null;
+        stub(DatabaseServer, 'saveSchemaTemplate', async (payload) => {
+            saved = payload;
+            return { ...payload, id: 'template-new' };
+        });
+        // createTemplateTopic needs Hedera and throws here; the sanitization under
+        // test already happened, and the payload is captured above.
+        stub(DatabaseServer, 'removeSchemaTemplate', async () => undefined);
+
+        const response = await callHandler(handlers, MessageAPI.CREATE_SCHEMA_TEMPLATE, {
+            template: {
+                name: 'Forged',
+                config: {},
+                _id: 'forged-id',
+                id: 'forged-id',
+                status: ModuleStatus.PUBLISHED,
+                owner: 'did:victim',
+                creator: 'did:victim',
+                messageId: 'forged-message',
+                version: '9.9.9',
+                previousVersion: '9.9.8',
+                topicId: '0.0.999',
+                contentFileId: '64b7f1e2d3a4b5c6d7e8f901',
+                configFileId: '64b7f1e2d3a4b5c6d7e8f902',
+                _configFileId: '64b7f1e2d3a4b5c6d7e8f903',
+                uuid: 'forged-uuid'
+            },
+            owner
+        });
+
+        void response;
+        assert.ok(saved, 'the sanitized payload should have reached saveSchemaTemplate');
+
+        assert.equal(saved.topicId, undefined, 'a forged topicId must not survive import');
+        assert.equal(saved.contentFileId, undefined, 'a forged GridFS handle must not survive import');
+        assert.equal(saved.configFileId, undefined, 'a forged GridFS handle must not survive import');
+        assert.equal(saved._configFileId, undefined, 'a forged GridFS handle must not survive import');
+
+        assert.equal(saved.messageId, undefined);
+        assert.equal(saved.version, undefined);
+        assert.equal(saved.previousVersion, undefined);
+
+        assert.equal(saved.uuid, undefined, 'a pinned uuid must not survive import');
+
+        assert.equal(saved.owner, owner.owner);
+        // guards the assertion below: without a creator on the fixture it would
+        // compare undefined to undefined
+        assert.notEqual(owner.creator, undefined);
+        assert.equal(saved.creator, owner.creator);
+        assert.equal(saved.status, ModuleStatus.DRAFT);
+        assert.equal(saved.name, 'Forged', 'legitimate fields are untouched');
     });
 
     it('CHECK_SCHEMA_TEMPLATE returns not-found when messageId is absent', async () => {

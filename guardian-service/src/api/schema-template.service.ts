@@ -128,6 +128,14 @@ async function createSchemaTemplate(
         throw new Error('Invalid schema template');
     }
 
+    /*
+     * A legitimate export never carries these, so a hand-crafted zip is the only
+     * source. Two are dangerous rather than untidy:
+     *  - contentFileId / configFileId reach gridFS.delete() via deleteFiles(),
+     *    so a forged value deletes someone else's file.
+     *  - topicId makes createTemplateTopic() return early, binding the import to
+     *    an existing topic; a later publish then signs with that topic's key.
+     */
     delete payload._id;
     delete payload.id;
     delete payload.status;
@@ -136,6 +144,13 @@ async function createSchemaTemplate(
     delete payload.messageId;
     delete payload.version;
     delete payload.previousVersion;
+    delete payload.topicId;
+    delete (payload as any).contentFileId;
+    delete (payload as any).configFileId;
+    delete (payload as any)._configFileId;
+    // setDefaults() only generates a uuid when missing, so a forged one would be
+    // kept and propagate into targetUUID / templateUUID.
+    delete payload.uuid;
 
     payload.creator = owner.creator;
     payload.owner = owner.owner;
