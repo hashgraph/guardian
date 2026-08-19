@@ -45,7 +45,7 @@ import {
     TransactionRecordQuery,
     TransferTransaction
 } from '@hiero-ledger/sdk';
-import { axiosGetWithRetry, HederaUtils, timeout } from './utils.js';
+import { axiosGetWithRetry, delay, HederaUtils, timeout } from './utils.js';
 import axios, { AxiosResponse } from 'axios';
 import { ContractParamType, FireblocksCreds, GenerateUUIDv4, HederaResponseCode, ISignOptions, SignType } from '@guardian/interfaces';
 import Long from 'long';
@@ -148,6 +148,16 @@ export class HederaSDKHelper {
      * Rest API max limit
      */
     public static readonly REST_API_MAX_LIMIT: number = 100;
+
+    /**
+     * Attempts allowed for the mirror node to ingest an account
+     */
+    public static readonly MIRROR_NODE_INDEXING_ATTEMPTS: number = 10;
+
+    /**
+     * Delay between those attempts, in milliseconds
+     */
+    public static readonly MIRROR_NODE_INDEXING_DELAY: number = 1000;
 
     /**
      * Rest API max limit
@@ -2303,6 +2313,10 @@ export class HederaSDKHelper {
      * which hardcodes /api/v1 and reuses the gRPC mirror address, so it
      * ignores OVERRIDE_HEDERA_MIRROR_NODES_BASE_API and breaks localnode.
      *
+     * An account the mirror node has not ingested yet is reported the same way
+     * as one that does not exist, so an empty result is retried: callers use
+     * this to validate an account they may have created moments ago.
+     *
      * @param {string} accountId - Account Id
      *
      * @returns {string} - balance
@@ -2312,16 +2326,21 @@ export class HederaSDKHelper {
         accountId: string,
         apiOptions: IApiOptions
     ): Promise<string> {
-        const res = await axios.get(
-            `${Environment.HEDERA_BALANCES_API}?account.id=${accountId}`,
-            { responseType: 'json' }
-        );
-        if (!res || !res.data || !res.data.balances || !res.data.balances.length) {
-            throw new Error(`Invalid balance '${accountId}'`);
+        for (let attempt = 1; ; attempt++) {
+            const res = await axios.get(
+                `${Environment.HEDERA_BALANCES_API}?account.id=${accountId}`,
+                { responseType: 'json' }
+            );
+            const balances = res?.data?.balances;
+            if (balances && balances.length) {
+                const hbars = new Hbar(balances[0].balance, HbarUnit.Tinybar);
+                return hbars.toString();
+            }
+            if (attempt >= HederaSDKHelper.MIRROR_NODE_INDEXING_ATTEMPTS) {
+                throw new Error(`Invalid balance '${accountId}'`);
+            }
+            await delay(HederaSDKHelper.MIRROR_NODE_INDEXING_DELAY);
         }
-        const balances = res.data.balances[0];
-        const hbars = new Hbar(balances.balance, HbarUnit.Tinybar);
-        return hbars.toString();
     }
 
     /**
