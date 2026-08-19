@@ -20,6 +20,7 @@ const importHelpersPath = path.resolve(__dirname, '../../dist/helpers/import-hel
 const owner = {
     id: 'user-1',
     owner: 'did:owner',
+    creator: 'did:owner-creator',
 };
 
 const policy = (overrides = {}) => ({
@@ -292,7 +293,8 @@ describe('schema template CRUD and query handlers', () => {
                 topicId: '0.0.999',
                 contentFileId: '64b7f1e2d3a4b5c6d7e8f901',
                 configFileId: '64b7f1e2d3a4b5c6d7e8f902',
-                _configFileId: '64b7f1e2d3a4b5c6d7e8f903'
+                _configFileId: '64b7f1e2d3a4b5c6d7e8f903',
+                uuid: 'forged-uuid'
             },
             owner
         });
@@ -309,7 +311,12 @@ describe('schema template CRUD and query handlers', () => {
         assert.equal(saved.version, undefined);
         assert.equal(saved.previousVersion, undefined);
 
+        assert.equal(saved.uuid, undefined, 'a pinned uuid must not survive import');
+
         assert.equal(saved.owner, owner.owner);
+        // the fixture forges 'did:victim' for both, so these prove the reassignment
+        // rather than comparing undefined to undefined
+        assert.notEqual(owner.creator, undefined);
         assert.equal(saved.creator, owner.creator);
         assert.equal(saved.status, ModuleStatus.DRAFT);
         assert.equal(saved.name, 'Forged', 'legitimate fields are untouched');

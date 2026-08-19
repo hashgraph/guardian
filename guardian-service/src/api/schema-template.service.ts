@@ -147,6 +147,14 @@ async function createSchemaTemplate(
     delete (payload as any).contentFileId;
     delete (payload as any).configFileId;
     delete (payload as any)._configFileId;
+    /*
+     * uuid is server-managed by the same definition as the rest of this list.
+     * generateZipFile strips it on export, so it never appears in a legitimate
+     * archive, but setDefaults() only generates one when it is missing - so a
+     * hand-crafted zip can pin a chosen uuid, which then propagates into the topic's
+     * targetUUID and the snapshot's templateUUID as a misleading identifier.
+     */
+    delete payload.uuid;
 
     payload.creator = owner.creator;
     payload.owner = owner.owner;
