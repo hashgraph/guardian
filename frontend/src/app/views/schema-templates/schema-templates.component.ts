@@ -27,7 +27,7 @@ export class SchemaTemplatesComponent implements OnInit, OnDestroy {
     public templates: SchemaTemplateGridItem[] = [];
     public total: number = 0;
     public pageIndex: number = 0;
-    public pageSize: number = 20;
+    public pageSize: number = 25;
     public user: UserPermissions = new UserPermissions();
     public isConfirmed: boolean = false;
     public textSearch: string = '';
@@ -338,9 +338,19 @@ export class SchemaTemplatesComponent implements OnInit, OnDestroy {
         });
     }
 
+    /**
+     * app-paginator emits {pageIndex, pageSize}; the p-table pager this replaced emitted
+     * {first, rows}. Changing the page size resets to the first page, matching the
+     * Schemas grid.
+     */
     public onPage(event: any): void {
-        this.pageIndex = Math.floor((event.first || 0) / (event.rows || this.pageSize));
-        this.pageSize = event.rows || this.pageSize;
+        if (this.pageSize !== event.pageSize) {
+            this.pageIndex = 0;
+            this.pageSize = event.pageSize;
+        } else {
+            this.pageIndex = event.pageIndex;
+            this.pageSize = event.pageSize;
+        }
         this.loadTemplates();
     }
 
