@@ -1,5 +1,8 @@
 ---
 icon: book-open-lines
+tags:
+  - tag: new
+    primary: true
 ---
 
 # Methodology Digitalization Best Practices
