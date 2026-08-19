@@ -2324,25 +2324,31 @@ export class HederaSDKHelper {
         return hbars.toString();
     }
 
-    private static async loadData(
+    /**
+     * Read a paginated Rest API collection page by page
+     *
+     * @param {string} url - Request url, without the query string
+     * @param {string} query - Query string of the first page, including '?'
+     * @param {string} error - Error message for an empty response
+     *
+     * @returns {AsyncGenerator<any>} - response body of each page
+     */
+    private static async *loadPages(
         url: string,
-        next: string,
-        result: any[],
-        error: string,
-        apiOptions: IApiOptions
-    ) {
-        const res = await axios.get(`${url}${next}`, { responseType: 'json' });
-        if (!res || !res.data) {
-            throw new Error(error);
-        }
-        result.push(res.data);
-        if (res.data?.links?.next) {
-            const _next = res.data.links.next.split('?')[1];
-            if (_next) {
-                await HederaSDKHelper.loadData(url, `?${_next}`, result, error, apiOptions);
+        query: string,
+        error: string
+    ): AsyncGenerator<any> {
+        let next = query;
+        while (next !== null) {
+            const res = await axios.get(`${url}${next}`, { responseType: 'json' });
+            if (!res || !res.data) {
+                throw new Error(error);
             }
+            yield res.data;
+            const link: string = res.data?.links?.next;
+            const _next = link ? link.split('?')[1] : null;
+            next = _next ? `?${_next}` : null;
         }
-        return result;
     }
 
     /**
@@ -2364,12 +2370,14 @@ export class HederaSDKHelper {
         }
 
         const error = `Invalid account '${accountId}'`;
-        const responses = await HederaSDKHelper.loadData(
-            `${Environment.HEDERA_ACCOUNT_API}/${accountId}/tokens`, '', [], error, apiOptions
+        const pages = HederaSDKHelper.loadPages(
+            `${Environment.HEDERA_ACCOUNT_API}/${accountId}/tokens`,
+            `?limit=${HederaSDKHelper.REST_API_MAX_LIMIT}`,
+            error
         );
         const result: { [tokenId: string]: any } = {};
-        for (const response of responses) {
-            const tokens: any[] = response.tokens;
+        for await (const page of pages) {
+            const tokens: any[] = page.tokens || [];
             for (const token of tokens) {
                 result[token.token_id] = {
                     tokenId: token.token_id,
