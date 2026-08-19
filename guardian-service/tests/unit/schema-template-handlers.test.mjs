@@ -314,8 +314,8 @@ describe('schema template CRUD and query handlers', () => {
         assert.equal(saved.uuid, undefined, 'a pinned uuid must not survive import');
 
         assert.equal(saved.owner, owner.owner);
-        // the fixture forges 'did:victim' for both, so these prove the reassignment
-        // rather than comparing undefined to undefined
+        // guards the assertion below: without a creator on the fixture it would
+        // compare undefined to undefined
         assert.notEqual(owner.creator, undefined);
         assert.equal(saved.creator, owner.creator);
         assert.equal(saved.status, ModuleStatus.DRAFT);

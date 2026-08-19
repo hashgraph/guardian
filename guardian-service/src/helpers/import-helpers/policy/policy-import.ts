@@ -572,8 +572,7 @@ export class PolicyImport {
 
         const components = await SchemaTemplateImportExport.parseZipFile(message.document);
         const templatePayload: any = components.template || {};
-        // kept in step with createSchemaTemplate's sanitizer: this parses a
-        // message-sourced zip, which is equally hand-craftable
+        // same list as createSchemaTemplate's sanitizer - this zip is equally forgeable
         delete templatePayload._id;
         delete templatePayload.id;
         delete templatePayload.configFileId;
