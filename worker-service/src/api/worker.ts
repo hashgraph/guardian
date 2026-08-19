@@ -282,7 +282,7 @@ export class Worker extends NatsService {
 
         HederaSDKHelper.setTransactionResponseCallback(async (operatorAccountId: string, userId: string | null) => {
             try {
-                const balance = await HederaSDKHelper.balanceRest(operatorAccountId, HederaSDKHelper.DEFAULT_API_OPTIONS);
+                const balance = await HederaSDKHelper.balance(operatorAccountId, HederaSDKHelper.DEFAULT_API_OPTIONS);
                 await this.sendMessage('update-user-balance', {
                     balance,
                     unit: 'Hbar',
@@ -573,20 +573,11 @@ export class Worker extends NatsService {
                 }
 
                 case WorkerTaskType.GET_USER_BALANCE: {
-                    const { hederaAccountId, hederaAccountKey } = task.data;
-                    const { dryRun, mockId } = task;
-                    client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun, mockId, networkOptions);
-                    result.data = await client.balance(hederaAccountId);
-
-                    break;
-                }
-
-                case WorkerTaskType.GET_USER_BALANCE_REST: {
                     const { hederaAccountId } = task.data;
                     const { mockId } = task;
                     result.data = await HederaSDKHelper
                         .setNetwork(networkOptions)
-                        .balanceRest(hederaAccountId, { mockId });
+                        .balance(hederaAccountId, { mockId });
 
                     break;
                 }

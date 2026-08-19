@@ -54,7 +54,7 @@ export function profileAPI(logger: PinoLogger) {
                 }
 
                 const balance = await workers.addNonRetryableTask({
-                    type: WorkerTaskType.GET_USER_BALANCE_REST,
+                    type: WorkerTaskType.GET_USER_BALANCE,
                     data: {
                         hederaAccountId: target.hederaAccountId
                     }
@@ -101,7 +101,7 @@ export function profileAPI(logger: PinoLogger) {
                 }
 
                 const balance = await workers.addNonRetryableTask({
-                    type: WorkerTaskType.GET_USER_BALANCE_REST,
+                    type: WorkerTaskType.GET_USER_BALANCE,
                     data: {
                         hederaAccountId: target.hederaAccountId
                     }

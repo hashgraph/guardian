@@ -1,5 +1,4 @@
 import {
-    AccountBalanceQuery,
     AccountCreateTransaction,
     AccountId,
     AccountInfoQuery,
@@ -46,7 +45,7 @@ import {
     TransactionRecordQuery,
     TransferTransaction
 } from '@hiero-ledger/sdk';
-import { axiosGetWithRetry, HederaUtils, timeout } from './utils.js';
+import { axiosGetWithRetry, delay, HederaUtils, timeout } from './utils.js';
 import axios, { AxiosResponse } from 'axios';
 import { ContractParamType, FireblocksCreds, GenerateUUIDv4, HederaResponseCode, ISignOptions, SignType } from '@guardian/interfaces';
 import Long from 'long';
@@ -149,6 +148,16 @@ export class HederaSDKHelper {
      * Rest API max limit
      */
     public static readonly REST_API_MAX_LIMIT: number = 100;
+
+    /**
+     * Attempts allowed for the mirror node to ingest an account
+     */
+    public static readonly MIRROR_NODE_INDEXING_ATTEMPTS: number = 10;
+
+    /**
+     * Delay between those attempts, in milliseconds
+     */
+    public static readonly MIRROR_NODE_INDEXING_DELAY: number = 1000;
 
     /**
      * Rest API max limit
@@ -452,22 +461,6 @@ export class HederaSDKHelper {
         const receipt = await this.executeAndReceipt(client, signTx, 'TokenDeleteTransaction', userId);
         const transactionStatus = receipt.status;
         return transactionStatus === Status.Success;
-    }
-
-    /**
-     * Get balance account (AccountBalanceQuery)
-     *
-     * @param {string | AccountId} accountId - Account Id
-     *
-     * @returns {string} - balance
-     */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Balance query timeout exceeded')
-    public async balance(accountId: string | AccountId): Promise<string> {
-        const client = this.client;
-        const query = new AccountBalanceQuery()
-            .setAccountId(accountId);
-        const accountBalance = await query.execute(client);
-        return accountBalance.hbars.toString();
     }
 
     /**
@@ -1677,24 +1670,6 @@ export class HederaSDKHelper {
     }
 
     /**
-     * Get balance account (AccountBalanceQuery)
-     *
-     * @param {string | AccountId} accountId - Account Id
-     *
-     * @returns {string} - balance
-     */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Account balance query timeout exceeded')
-    public static async balance(client: Client, accountId: string | AccountId): Promise<number> {
-        const query = new AccountBalanceQuery()
-            .setAccountId(accountId);
-        const accountBalance = await query.execute(client);
-        if (accountBalance && accountBalance.hbars) {
-            return accountBalance.hbars.to(HbarUnit.Hbar).toNumber();
-        }
-        return NaN;
-    }
-
-    /**
      * Ensures the contents of a Hedera file are stored as ASCII hex.
      *
      * If the current file's contents are raw binary (not ASCII hex), this method:
@@ -2334,46 +2309,65 @@ export class HederaSDKHelper {
     /**
      * Get balance account (Rest API)
      *
+     * Reads through Environment rather than the SDK's mirror-node query,
+     * which hardcodes /api/v1 and reuses the gRPC mirror address, so it
+     * ignores OVERRIDE_HEDERA_MIRROR_NODES_BASE_API and breaks localnode.
+     *
+     * An account the mirror node has not ingested yet is reported the same way
+     * as one that does not exist, so an empty result is retried: callers use
+     * this to validate an account they may have created moments ago.
+     *
      * @param {string} accountId - Account Id
      *
      * @returns {string} - balance
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get balance request timeout exceeded')
-    public static async balanceRest(
+    public static async balance(
         accountId: string,
         apiOptions: IApiOptions
     ): Promise<string> {
-        const res = await axios.get(
-            `${Environment.HEDERA_BALANCES_API}?account.id=${accountId}`,
-            { responseType: 'json' }
-        );
-        if (!res || !res.data || !res.data.balances || !res.data.balances.length) {
-            throw new Error(`Invalid balance '${accountId}'`);
+        for (let attempt = 1; ; attempt++) {
+            const res = await axios.get(
+                `${Environment.HEDERA_BALANCES_API}?account.id=${accountId}`,
+                { responseType: 'json' }
+            );
+            const balances = res?.data?.balances;
+            if (balances && balances.length) {
+                const hbars = new Hbar(balances[0].balance, HbarUnit.Tinybar);
+                return hbars.toString();
+            }
+            if (attempt >= HederaSDKHelper.MIRROR_NODE_INDEXING_ATTEMPTS) {
+                throw new Error(`Invalid balance '${accountId}'`);
+            }
+            await delay(HederaSDKHelper.MIRROR_NODE_INDEXING_DELAY);
         }
-        const balances = res.data.balances[0];
-        const hbars = new Hbar(balances.balance, HbarUnit.Tinybar);
-        return hbars.toString();
     }
 
-    private static async loadData(
+    /**
+     * Read a paginated Rest API collection page by page
+     *
+     * @param {string} url - Request url, without the query string
+     * @param {string} query - Query string of the first page, including '?'
+     * @param {string} error - Error message for an empty response
+     *
+     * @returns {AsyncGenerator<any>} - response body of each page
+     */
+    private static async *loadPages(
         url: string,
-        next: string,
-        result: any[],
-        error: string,
-        apiOptions: IApiOptions
-    ) {
-        const res = await axios.get(`${url}${next}`, { responseType: 'json' });
-        if (!res || !res.data) {
-            throw new Error(error);
-        }
-        result.push(res.data);
-        if (res.data?.links?.next) {
-            const _next = res.data.links.next.split('?')[1];
-            if (_next) {
-                await HederaSDKHelper.loadData(url, `?${_next}`, result, error, apiOptions);
+        query: string,
+        error: string
+    ): AsyncGenerator<any> {
+        let next = query;
+        while (next !== null) {
+            const res = await axios.get(`${url}${next}`, { responseType: 'json' });
+            if (!res || !res.data) {
+                throw new Error(error);
             }
+            yield res.data;
+            const link: string = res.data?.links?.next;
+            const _next = link ? link.split('?')[1] : null;
+            next = _next ? `?${_next}` : null;
         }
-        return result;
     }
 
     /**
@@ -2395,12 +2389,14 @@ export class HederaSDKHelper {
         }
 
         const error = `Invalid account '${accountId}'`;
-        const responses = await HederaSDKHelper.loadData(
-            `${Environment.HEDERA_ACCOUNT_API}/${accountId}/tokens`, '', [], error, apiOptions
+        const pages = HederaSDKHelper.loadPages(
+            `${Environment.HEDERA_ACCOUNT_API}/${accountId}/tokens`,
+            `?limit=${HederaSDKHelper.REST_API_MAX_LIMIT}`,
+            error
         );
         const result: { [tokenId: string]: any } = {};
-        for (const response of responses) {
-            const tokens: any[] = response.tokens;
+        for await (const page of pages) {
+            const tokens: any[] = page.tokens || [];
             for (const token of tokens) {
                 result[token.token_id] = {
                     tokenId: token.token_id,
