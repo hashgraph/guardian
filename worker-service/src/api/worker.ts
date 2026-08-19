@@ -282,7 +282,7 @@ export class Worker extends NatsService {
 
         HederaSDKHelper.setTransactionResponseCallback(async (operatorAccountId: string, userId: string | null) => {
             try {
-                const balance = await HederaSDKHelper.balance(operatorAccountId, HederaSDKHelper.DEFAULT_API_OPTIONS);
+                const balance = await HederaSDKHelper.balance(operatorAccountId);
                 await this.sendMessage('update-user-balance', {
                     balance,
                     unit: 'Hbar',
@@ -574,10 +574,9 @@ export class Worker extends NatsService {
 
                 case WorkerTaskType.GET_USER_BALANCE: {
                     const { hederaAccountId } = task.data;
-                    const { mockId } = task;
                     result.data = await HederaSDKHelper
                         .setNetwork(networkOptions)
-                        .balance(hederaAccountId, { mockId });
+                        .balance(hederaAccountId);
 
                     break;
                 }
@@ -593,10 +592,9 @@ export class Worker extends NatsService {
 
                 case WorkerTaskType.GET_ACCOUNT_TOKENS_REST: {
                     const { hederaAccountId } = task.data;
-                    const { mockId } = task;
                     result.data = await HederaSDKHelper
                         .setNetwork(networkOptions)
-                        .accountTokensInfo(hederaAccountId, { mockId });
+                        .accountTokensInfo(hederaAccountId);
                     break;
                 }
 
@@ -1021,10 +1019,9 @@ export class Worker extends NatsService {
 
                 case WorkerTaskType.GET_TOPIC_MESSAGE_CHUNKS: {
                     const { topic, timeStamp, next } = task.data;
-                    const { mockId } = task;
                     result.data = await HederaSDKHelper
                         .setNetwork(networkOptions)
-                        .getTopicMessageChunks(topic, timeStamp, next, { mockId });
+                        .getTopicMessageChunks(topic, timeStamp, next);
                     break;
                 }
 
@@ -1259,10 +1256,9 @@ export class Worker extends NatsService {
 
                 case WorkerTaskType.GET_CONTRACT_INFO: {
                     const { contractId } = task.data;
-                    const { mockId } = task;
                     const info = await HederaSDKHelper
                         .setNetwork(networkOptions)
-                        .getContractInfo(contractId, { mockId });
+                        .getContractInfo(contractId);
                     result.data = {
                         memo: info.memo
                     };
@@ -1276,17 +1272,15 @@ export class Worker extends NatsService {
                         contractId,
                         order,
                     } = task.data;
-                    const { mockId } = task;
                     result.data = await HederaSDKHelper
                         .setNetwork(networkOptions)
-                        .getContractEvents(contractId, timestamp, order, { mockId });
+                        .getContractEvents(contractId, timestamp, order);
                     break;
                 }
 
                 case WorkerTaskType.GET_USER_NFTS_SERIALS: {
                     const { hederaAccountId, tokenId } = task.data;
-                    const { mockId } = task;
-                    const nfts = (await HederaSDKHelper.setNetwork(networkOptions).getSerialsNFT(hederaAccountId, tokenId, { mockId })) || [];
+                    const nfts = (await HederaSDKHelper.setNetwork(networkOptions).getSerialsNFT(hederaAccountId, tokenId)) || [];
                     const serials = {};
                     nfts.forEach(item => {
                         if (serials[item.token_id]) {
@@ -1309,7 +1303,6 @@ export class Worker extends NatsService {
                         filter,
                         limit
                     } = task.data;
-                    const { mockId } = task;
                     const nfts = await HederaSDKHelper
                         .setNetwork(networkOptions)
                         .getNFTTokenSerials(
@@ -1320,8 +1313,7 @@ export class Worker extends NatsService {
                                 order,
                                 filter,
                                 limit
-                            },
-                            { mockId }
+                            }
                         );
                     result.data = nfts?.map(nft => nft.serial_number) || [];
                     break;
@@ -1336,7 +1328,6 @@ export class Worker extends NatsService {
                         filter,
                         limit,
                     } = task.data;
-                    const { mockId } = task;
                     const transactions = await HederaSDKHelper
                         .setNetwork(networkOptions)
                         .getTransactions(
@@ -1347,8 +1338,7 @@ export class Worker extends NatsService {
                                 order,
                                 filter,
                                 limit
-                            },
-                            { mockId }
+                            }
                         );
                     result.data = transactions || [];
                     break;
