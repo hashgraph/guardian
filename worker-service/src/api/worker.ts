@@ -573,10 +573,11 @@ export class Worker extends NatsService {
                 }
 
                 case WorkerTaskType.GET_USER_BALANCE: {
-                    const { hederaAccountId, hederaAccountKey } = task.data;
-                    const { dryRun, mockId } = task;
-                    client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun, mockId, networkOptions);
-                    result.data = await client.balance(hederaAccountId);
+                    const { hederaAccountId } = task.data;
+                    const { mockId } = task;
+                    result.data = await HederaSDKHelper
+                        .setNetwork(networkOptions)
+                        .balanceRest(hederaAccountId, { mockId });
 
                     break;
                 }

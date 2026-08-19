@@ -1,5 +1,4 @@
 import {
-    AccountBalanceQuery,
     AccountCreateTransaction,
     AccountId,
     AccountInfoQuery,
@@ -452,22 +451,6 @@ export class HederaSDKHelper {
         const receipt = await this.executeAndReceipt(client, signTx, 'TokenDeleteTransaction', userId);
         const transactionStatus = receipt.status;
         return transactionStatus === Status.Success;
-    }
-
-    /**
-     * Get balance account (AccountBalanceQuery)
-     *
-     * @param {string | AccountId} accountId - Account Id
-     *
-     * @returns {string} - balance
-     */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Balance query timeout exceeded')
-    public async balance(accountId: string | AccountId): Promise<string> {
-        const client = this.client;
-        const query = new AccountBalanceQuery()
-            .setAccountId(accountId);
-        const accountBalance = await query.execute(client);
-        return accountBalance.hbars.toString();
     }
 
     /**
@@ -2315,6 +2298,11 @@ export class HederaSDKHelper {
 
     /**
      * Get balance account (Rest API)
+     *
+     * Replaces the deprecated AccountBalanceQuery. The SDK's
+     * MirrorNodeAccountBalanceQuery hardcodes /api/v1 and reuses the gRPC
+     * mirror address, so it ignores OVERRIDE_HEDERA_MIRROR_NODES_BASE_API
+     * and breaks localnode.
      *
      * @param {string} accountId - Account Id
      *
