@@ -70,7 +70,7 @@ export class RelayerAccountsService extends NatsService {
 
                     const workers = new Workers();
                     const balance = await workers.addNonRetryableTask({
-                        type: WorkerTaskType.GET_USER_BALANCE_REST,
+                        type: WorkerTaskType.GET_USER_BALANCE,
                         data: {
                             hederaAccountId: relayerAccount
                         }

@@ -647,7 +647,7 @@ export async function createRemoteUserProfile({
         const workers = new Workers();
         AccountId.fromString(hederaAccountId);
         await workers.addNonRetryableTask({
-            type: WorkerTaskType.GET_USER_BALANCE_REST,
+            type: WorkerTaskType.GET_USER_BALANCE,
             data: { hederaAccountId }
         }, {
             priority: 20,
