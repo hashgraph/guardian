@@ -160,11 +160,6 @@ export class HederaSDKHelper {
     public static readonly MIRROR_NODE_INDEXING_DELAY: number = 1000;
 
     /**
-     * Rest API max limit
-     */
-    public static readonly DEFAULT_API_OPTIONS: IApiOptions = { mockId: null };
-
-    /**
      * Callback
      * @private
      */
@@ -1328,7 +1323,7 @@ export class HederaSDKHelper {
         metadata?: any
     ): Promise<TransactionReceipt> {
         if (this.mockId) {
-            return await this._mockExecuteAndReceipt(client, transaction, type, userId, metadata);
+            return await this._mockExecuteAndReceipt(client, transaction, type, userId);
         } else if (this.dryRun) {
             return await this._dryRunExecuteAndReceipt(type, userId, metadata);
         } else {
@@ -1374,8 +1369,7 @@ export class HederaSDKHelper {
         client: Client,
         transaction: Transaction,
         type: string,
-        userId: string | null,
-        metadata?: any
+        userId: string | null
     ): Promise<TransactionReceipt> {
         await this.virtualTransactionLog(this.mockId, type, userId);
         const accountId = client.operatorAccountId?.toString();
@@ -1963,8 +1957,7 @@ export class HederaSDKHelper {
             type: 'nfts' | 'transactions' | 'logs',
             filters?: { [key: string]: any },
             limit?: number,
-        },
-        apiOptions: IApiOptions
+        }
     ) {
         const config: any = {
             ...options.config,
@@ -2017,8 +2010,7 @@ export class HederaSDKHelper {
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Contract info query timeout exceeded')
     public static async getContractInfo(
-        contractId: string | ContractId,
-        apiOptions: IApiOptions
+        contractId: string | ContractId
     ): Promise<{ memo: string }> {
         const url = `${Environment.HEDERA_CONTRACT_API}/${contractId}`;
         const res = await axios.get(url, {
@@ -2044,8 +2036,7 @@ export class HederaSDKHelper {
     public static async getContractEvents(
         contractId: string,
         timestamp: string | null,
-        order: string | null,
-        apiOptions: IApiOptions
+        order: string | null
     ): Promise<any[]> {
         const params: any = {
             limit: HederaSDKHelper.REST_API_MAX_LIMIT,
@@ -2064,8 +2055,7 @@ export class HederaSDKHelper {
             {
                 config,
                 type: 'logs',
-            },
-            apiOptions
+            }
         );
     }
 
@@ -2076,8 +2066,7 @@ export class HederaSDKHelper {
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get serials request timeout exceeded')
     public async getSerialsNFT(
-        tokenId: string | null,
-        apiOptions: IApiOptions
+        tokenId: string | null
     ): Promise<any[]> {
         const client = this.client;
         const params = {
@@ -2096,8 +2085,7 @@ export class HederaSDKHelper {
             {
                 config,
                 type: 'nfts',
-            },
-            apiOptions
+            }
         );
     }
 
@@ -2109,8 +2097,7 @@ export class HederaSDKHelper {
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get serials request timeout exceeded')
     public static async getSerialsNFT(
         hederaAccountId: string,
-        tokenId: string | null,
-        apiOptions: IApiOptions
+        tokenId: string | null
     ): Promise<any[]> {
         const params = {
             limit: HederaSDKHelper.REST_API_MAX_LIMIT,
@@ -2128,8 +2115,7 @@ export class HederaSDKHelper {
             {
                 config,
                 type: 'nfts',
-            },
-            apiOptions
+            }
         );
     }
 
@@ -2152,8 +2138,7 @@ export class HederaSDKHelper {
             order?: string,
             filter?: any,
             limit?: number
-        },
-        apiOptions: IApiOptions
+        }
     ): Promise<any[]> {
         if (!options.order) {
             options.order = 'asc'
@@ -2180,8 +2165,7 @@ export class HederaSDKHelper {
                 type: 'nfts',
                 filters: options.filter,
                 limit: options.limit,
-            },
-            apiOptions
+            }
         );
     }
 
@@ -2204,8 +2188,7 @@ export class HederaSDKHelper {
             order?: string,
             filter?: any,
             limit?: number,
-        },
-        apiOptions: IApiOptions
+        }
     ): Promise<any[]> {
         if (!options.order) {
             options.order = 'asc'
@@ -2235,8 +2218,7 @@ export class HederaSDKHelper {
                 type: 'transactions',
                 filters: options.filter,
                 limit: options.limit,
-            },
-            apiOptions
+            }
         );
     }
 
@@ -2286,8 +2268,7 @@ export class HederaSDKHelper {
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get contract info request timeout exceeded')
     public async getContractInfoRest(
-        contractId: string,
-        apiOptions: IApiOptions
+        contractId: string
     ): Promise<any> {
         const res = await axios.get(
             `${Environment.HEDERA_CONTRACT_API}/${contractId}`,
@@ -2323,8 +2304,7 @@ export class HederaSDKHelper {
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get balance request timeout exceeded')
     public static async balance(
-        accountId: string,
-        apiOptions: IApiOptions
+        accountId: string
     ): Promise<string> {
         for (let attempt = 1; ; attempt++) {
             const res = await axios.get(
@@ -2379,8 +2359,7 @@ export class HederaSDKHelper {
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get balance request timeout exceeded')
     public static async accountTokensInfo(
-        accountId: string,
-        apiOptions: IApiOptions
+        accountId: string
     ): Promise<any> {
         try {
             AccountId.fromString(accountId);
@@ -2470,8 +2449,7 @@ export class HederaSDKHelper {
     public static async getTopicMessageChunks(
         topicId: string,
         startTimestamp: string | null,
-        next: string | null,
-        apiOptions: IApiOptions
+        next: string | null
     ): Promise<any> {
         let url: string;
         let requestParams: any;
