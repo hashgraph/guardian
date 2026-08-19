@@ -74,7 +74,7 @@ export class ComparePolicyComponent {
         this.groups = groups?.report;
         this.tokens = tokens?.report;
         this.topics = topics?.report;
-        this.blocks = blocks?.report;
+        this.blocks = Array.isArray(blocks?.report) ? blocks.report : [];
         this.tools = tools?.report;
 
         let max = 0;
