@@ -90,6 +90,10 @@
 }
 
 .guardian-multiselect-panel {
+    // without a bound the panel stretches to the body width whenever PrimeNG's align
+    // pass cannot match it to the trigger
+    max-width: 100vw;
+    box-sizing: border-box;
     border: 1px solid var(--guardian-grey-color-2, #E1E7EF);
     border-radius: 8px;
     background: var(--guardian-background, #ffffff);
