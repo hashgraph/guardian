@@ -1,4 +1,4 @@
-# Demo using VM0033
+# Review & Approval Workflows with VM0033 for Auditors & VVBs
 
 ## 1. Purpose and Context
 
@@ -24,43 +24,43 @@ The feature addresses a core challenge in real-world carbon workflow validation 
 
 The Project Developer submits a new project description (e.g., VM00033 v2.0 methodology). Data is uploaded via JSON console or manual entry. The project document is validated and created as a Verifiable Credential.
 
-<figure><img src="../../../.gitbook/assets/image (458).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (458).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (459).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (459).png" alt=""><figcaption></figcaption></figure>
 
 #### Step 2 — Registry Review
 
 The Standard Registry reviews the submission and assigns it for validation. The project status transitions to "Waiting for Validation."
 
-<figure><img src="../../../.gitbook/assets/image (460).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (460).png" alt=""><figcaption></figcaption></figure>
 
 #### Step 3 - Project Developer assigns VVB
 
 The Project Developer now assigns the GreenCheck (validator) to the project to get it reviewed and validated.
 
-<figure><img src="../../../.gitbook/assets/image (461).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (461).png" alt=""><figcaption></figcaption></figure>
 
 #### Step 4 — Validator Review
 
 The Validator reviews field-level data within the document. In this example, section 2.3.7 (Community Risk and Benefits) is flagged. The Validator creates a new discussion labeled \*\*2.3.7 Review\*\*, marking it public.
 
-<figure><img src="../../../.gitbook/assets/image (473).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (473).png" alt=""><figcaption></figcaption></figure>
 
 A comment is added:
 
 "The project proponent must update section 2.3.7 to clarify potential risks to stakeholders."
 
-<figure><img src="../../../.gitbook/assets/image (581).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (581).png" alt=""><figcaption></figcaption></figure>
 
 The Validator rejects the document to request revisions.
 
-<figure><img src="../../../.gitbook/assets/image (583).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (583).png" alt=""><figcaption></figcaption></figure>
 
 #### Step 4 — Proponent Revision
 
 The Project Developer reviews the comment thread, updates the document (version 2) addressing validator feedback, and submits a new version through the same workflow.
 
-<figure><img src="../../../.gitbook/assets/image (598).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (598).png" alt=""><figcaption></figcaption></figure>
 
 #### Step 5 — Validator Confirmation
 
@@ -69,22 +69,22 @@ The Validator reviews the corrected document and creates a follow-up discussion 
 \
 "The project proponent has updated section 2.3.7 with clarifications. Hence, the PD is approved."
 
-<figure><img src="../../../.gitbook/assets/image (599).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (599).png" alt=""><figcaption></figcaption></figure>
 
 \
 The document is approved and validated.
 
-<figure><img src="../../../.gitbook/assets/image (606).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (606).png" alt=""><figcaption></figcaption></figure>
 
 #### Step 6 — Validation Report
 
 Validator uploads a supporting validation report (PDF) summarizing the exchange: title, issue, action required, proponent response, and final approval. The file is published to IPFS and linked to the workflow.
 
-<figure><img src="../../../.gitbook/assets/image (610).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (610).png" alt=""><figcaption></figcaption></figure>
 
 Registry administrators can view the entire conversation chain, demonstrating traceable decision-making.
 
-<figure><img src="../../../.gitbook/assets/image (611).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (611).png" alt=""><figcaption></figcaption></figure>
 
 ## 4. UI Overview
 
