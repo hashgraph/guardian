@@ -1006,35 +1006,35 @@ function findSchemaProperty(document: any, path: string[]): any {
     return current;
 }
 
-function ensureSchemaPropertyParent(document: any, path: string[]): any {
+/**
+ * Walk to the object that owns `path`'s last segment.
+ *
+ * `create` distinguishes the two callers: the target document is being built, so it
+ * wants the `properties` containers filled in on the way down; the source document is
+ * only being read, and creating nodes there would mutate the very thing being copied
+ * from.
+ */
+function schemaPropertyParent(document: any, path: string[], create: boolean): any {
     let current = document;
     for (const key of path.slice(0, -1)) {
         const parent = current?.type === 'array' ? current.items : current;
-        parent.properties = parent.properties || {};
-        current = parent.properties[key];
+        if (create) {
+            parent.properties = parent.properties || {};
+        }
+        current = parent?.properties?.[key];
         if (!current) {
             return null;
         }
     }
     const target = current?.type === 'array' ? current.items : current;
-    target.properties = target.properties || {};
+    if (create && target) {
+        target.properties = target.properties || {};
+    }
     return target;
 }
 
-/**
- * Locate the object that owns `path`'s last segment, without creating anything.
- * Used to read the source document's `required` list for a preserved field.
- */
-function findSchemaPropertyParent(document: any, path: string[]): any {
-    let current = document;
-    for (const key of path.slice(0, -1)) {
-        const target = current?.type === 'array' ? current.items : current;
-        current = target?.properties?.[key];
-        if (!current) {
-            return null;
-        }
-    }
-    return current?.type === 'array' ? current.items : current;
+function ensureSchemaPropertyParent(document: any, path: string[]): any {
+    return schemaPropertyParent(document, path, true);
 }
 
 export function mergeCustomFieldsIntoDocument(
@@ -1064,7 +1064,15 @@ export function mergeCustomFieldsIntoDocument(
          * as optional, and VCs missing it started validating. `required` lives on the
          * parent, not on the property, so it has to be copied separately.
          */
-        const sourceParent = findSchemaPropertyParent(sourceDocument, path);
+        /*
+         * Read the source document's own `required` list rather than the parsed
+         * field.required flag: parseField sets `required || !!conditionRequired`, so a
+         * field required only by a condition branch reports true there while the
+         * document's required array correctly omits it. Copying that flag across would
+         * promote a branch-scoped requirement into an unconditional one - the thing the
+         * $comment marking in this same change exists to avoid.
+         */
+        const sourceParent = schemaPropertyParent(sourceDocument, path, false);
         if (Array.isArray(sourceParent?.required) && sourceParent.required.includes(fieldName)) {
             parent.required = Array.isArray(parent.required) ? parent.required : [];
             if (!parent.required.includes(fieldName)) {

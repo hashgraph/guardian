@@ -310,3 +310,51 @@ describe('mergeCustomFieldsIntoDocument — required flag', () => {
         assert.equal(occurrences, 1);
     });
 });
+
+/*
+ * The required flag is read from the source DOCUMENT, not from the parsed field.
+ *
+ * SchemaHelper.parseField sets `required || !!conditionRequired`, so a field that is
+ * required only by a condition branch reports required === true on the parsed object
+ * while the document's own `required` array correctly omits it. Copying the parsed
+ * flag across would promote a branch-scoped requirement into an unconditional one -
+ * exactly what the $comment marking in this change exists to prevent, since JSON
+ * Schema cannot tell "answered differently" from "never asked".
+ */
+describe('mergeCustomFieldsIntoDocument - condition-required fields', () => {
+    it('does not promote a branch-required field to unconditionally required', () => {
+        const source = {
+            $id: '#Policy',
+            properties: {
+                branchOnly: {
+                    type: 'string',
+                    title: 'Branch only',
+                    // marked required by a condition branch, not by the schema
+                    $comment: JSON.stringify({ term: 'branchOnly', conditionRequired: true }),
+                },
+            },
+            required: [],
+        };
+        const target = { $id: '#Policy', properties: {}, required: [] };
+
+        mergeCustomFieldsIntoDocument(target, source, [{ path: 'branchOnly' }]);
+
+        assert.ok(target.properties.branchOnly, 'the field is still preserved');
+        assert.equal(target.required.includes('branchOnly'), false,
+            'a condition branch requirement must not become an unconditional one');
+    });
+
+    it('still carries a genuinely required field across', () => {
+        const source = {
+            $id: '#Policy',
+            properties: { always: { type: 'string', title: 'Always' } },
+            required: ['always'],
+        };
+        const target = { $id: '#Policy', properties: {}, required: [] };
+
+        mergeCustomFieldsIntoDocument(target, source, [{ path: 'always' }]);
+
+        assert.equal(target.required.includes('always'), true);
+    });
+});
+
