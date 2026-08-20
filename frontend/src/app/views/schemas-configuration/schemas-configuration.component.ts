@@ -17,6 +17,7 @@ import { ExportPolicyDialog } from 'src/app/modules/policy-engine/dialogs/export
 import { PublishSchemaTemplateDialog } from 'src/app/modules/policy-engine/dialogs/publish-schema-template-dialog/publish-schema-template-dialog.component';
 import { FieldTypeUI, FIELD_TYPES_UI } from 'src/app/modules/schema-engine/field-type-ui';
 import { SchemaTemplatesService } from 'src/app/services/schema-templates.service';
+import { ToastService } from 'src/app/services/toast.service';
 
 export interface DrillEntry {
     fieldLabel: string;
@@ -534,7 +535,17 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         private _elRef: ElementRef,
         private _zone: NgZone,
         private _cdr: ChangeDetectorRef,
+        private toastService: ToastService,
     ) {}
+
+    /**
+     * Surface a backend failure. Every error path in this component used to be a silent
+     * no-op, which makes a failed operation indistinguishable from a dead button.
+     */
+    private reportError(action: string, error: any): void {
+        const detail = error?.error?.message || error?.message || 'Unknown error';
+        this.toastService.error(detail, action, { sticky: true });
+    }
 
     public ngOnInit(): void {
         this.restoreCanvasTab();
@@ -1219,13 +1230,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                                 queryParams: { last: btoa(returnUrl) },
                             });
                         },
-                        error: () => { this.isSaving = false; },
+                        error: (error) => { this.isSaving = false; this.reportError('Save all', error); },
                     });
             };
             if (createObs.length) {
                 forkJoin(createObs).pipe(takeUntil(this.destroy$)).subscribe({
                     next: triggerNewVersion,
-                    error: () => { this.isSaving = false; },
+                    error: (error) => { this.isSaving = false; this.reportError('Save all', error); },
                 });
             } else {
                 triggerNewVersion();
@@ -1247,7 +1258,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     this.dirtySchemaIds.clear();
                     this.newSchemaKeys.clear();
                 },
-                error: () => { this.isSaving = false; }
+                error: (error) => { this.isSaving = false; this.reportError('Save all', error); }
             });
     }
 
@@ -3459,10 +3470,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                                 void this.router.navigate(['task', result.taskId], {
                                     queryParams: { last: btoa(returnUrl) },
                                 });
-                            });
+                            }, (error) => this.reportError('Delete schema', error));
                     }
                 });
-            });
+            }, (error) => this.reportError('Delete schema', error));
     }
 
     // Build $defs the same way as the old editor (SchemaHelper.findRefs + uniqueRefs),
@@ -3579,7 +3590,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     styleClass: 'custom-dialog',
                     data: { schema },
                 });
-            });
+            }, (error) => this.reportError('Export', error));
     }
 
     public onExportTemplate(): void {
@@ -3597,7 +3608,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                         schemaTemplate
                     },
                 });
-            });
+            }, (error) => this.reportError('Export', error));
     }
 
     public onSidebarScroll(event: Event): void {
