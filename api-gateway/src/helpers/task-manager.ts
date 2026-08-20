@@ -275,8 +275,16 @@ export class TaskManager {
             return;
         }
 
+        // A task can be completed twice (a result followed by an error, or the
+        // other way around): the callback has to run once, otherwise the second
+        // run would clear the pending flag while the first one is still going.
+        this.callbacks.delete(task.taskId);
+        task.callbackPending = true;
         callback(task)
-            .finally(() => this.cleanupAfterCallback(taskId));
+            .finally(() => {
+                task.callbackPending = false;
+                this.cleanupAfterCallback(taskId);
+            });
     }
 
     /**
@@ -338,7 +346,20 @@ export class TaskManager {
     ): Task {
         const task = this.tasks[taskId];
         if (task && task.userId === userId) {
-            return this.tasks[taskId];
+            if (task.callbackPending) {
+                // The completion callback (e.g. cache invalidation) is still
+                // running: hide the result until it is done, otherwise a client
+                // polling this endpoint can act on a state the gateway has not
+                // caught up with yet.
+                const pending: Task = Object.assign(
+                    Object.create(Object.getPrototypeOf(task)),
+                    task
+                );
+                pending.result = undefined;
+                pending.error = undefined;
+                return pending;
+            }
+            return task;
         } else if (skipIfNotFound) {
             return;
         } else {
@@ -379,9 +400,9 @@ export class TaskManager {
             taskId: task.taskId,
             action: task.action,
             expectation: task.expectation,
-            completed: task.result !== null,
-            failed: task.error !== null,
-            error: task.error
+            completed: !task.callbackPending && task.result !== null,
+            failed: !task.callbackPending && task.error !== null,
+            error: !task.callbackPending && task.error
                 ? { message: task.error.message ?? 'Task failed' }
                 : null,
         };
@@ -476,6 +497,10 @@ class Task {
      * Info of task
      */
     public info: any;
+    /**
+     * Completion callback is still running
+     */
+    public callbackPending: boolean = false;
 
     constructor(
         public action: TaskAction | string,

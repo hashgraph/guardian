@@ -1,13 +1,13 @@
 {
     "name": "guardian-e2e-test",
-    "version": "3.7.0-rc",
+    "version": "3.7.0",
     "description": "This a place for quardian e2e automation test suite",
     "main": "index.js",
     "scripts": {
         "test": "npx cypress run",
-        "e2e": "cypress run",
-        "ui-only-headed": "cypress run --headed --env \"grepTags=ui,grepFilterSpecs=true\"",
-        "ui-only": "cypress run --env \"grepTags=ui,grepFilterSpecs=true\"",
+        "e2e": "npx cypress run",
+        "ui-only-headed": "npx cypress run --headed --env \"grepTags=ui,grepFilterSpecs=true\"",
+        "ui-only": "npx cypress run --env \"grepTags=ui,grepFilterSpecs=true\"",
         "test-tag": "./run-test-by-tag.sh",
         "api-tests": "npx cypress run --env \"grepTags=all,grepFilterSpecs=true\" --spec \"cypress/e2e/api-tests/**/*.cy.js\" --browser chrome",
         "smoke-pull": "npx cypress run --env \"grepTags=smoke,grepFilterSpecs=true\" --spec \"cypress/e2e/api-tests/**/*.cy.js\" --browser chrome"
@@ -19,9 +19,13 @@
     "license": "ISC",
     "devDependencies": {
         "@cypress/grep": "6.0.0",
+        "@eslint/js": "^10.0.1",
         "cy-verify-downloads": "0.3.0",
         "cypress": "15.15.0",
         "cypress-mochawesome-reporter": "^3.8.4",
+        "eslint": "^10.8.1",
+        "eslint-plugin-cypress": "^7.0.0",
+        "globals": "^17.9.0",
         "node-fetch": "3.3.2"
     },
     "dependencies": {

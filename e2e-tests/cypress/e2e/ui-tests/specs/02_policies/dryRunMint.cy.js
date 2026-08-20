@@ -1,16 +1,16 @@
-import { HomePage } from "../../pages/homePage";
+import { HomePage } from '../../pages/homePage';
 const homepage = new HomePage();
 
-import { PoliciesPage } from "../../pages/policiesPage";
+import { PoliciesPage } from '../../pages/policiesPage';
 const policiesPage = new PoliciesPage();
 
-import { UserPoliciesPage } from "../../pages/userPoliciesPage";
+import { UserPoliciesPage } from '../../pages/userPoliciesPage';
 const userPoliciesPage = new UserPoliciesPage();
 
-context("Dry run Policy", { tags: ['ui'] }, () => {
+context('Dry run Policy', { tags: ['ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
-    const name = "iRec_3";
+    const name = 'iRec_3';
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
@@ -19,12 +19,12 @@ context("Dry run Policy", { tags: ['ui'] }, () => {
         policiesPage.openPoliciesTab();
     })
 
-    it("checks dry run with mint workflow", () => {
+    it('checks dry run with mint workflow', () => {
         //import and dry-run policy
-        policiesPage.importPolicyFromIPFS("1707126011.005978889");  //iRec3
+        policiesPage.importPolicyFromIPFS('1707126011.005978889');  //iRec3
         policiesPage.backToPoliciesList();
         policiesPage.startDryRun(name);
-        policiesPage.checkStatus(name, "In Dry Run");
+        policiesPage.checkStatus(name, 'In Dry Run');
         policiesPage.openPolicy(name);
 
         //Register user as Registrant and create application
@@ -33,7 +33,7 @@ context("Dry run Policy", { tags: ['ui'] }, () => {
         userPoliciesPage.registerInPolicy();
 
         //Approve application
-        policiesPage.openDryRunUser("Administrator");
+        policiesPage.openDryRunUser('Administrator');
         policiesPage.approveUserInPolicy();
 
         //Create device
@@ -41,7 +41,7 @@ context("Dry run Policy", { tags: ['ui'] }, () => {
         userPoliciesPage.createDeviceInPolicy();
 
         //Approve device
-        policiesPage.openDryRunUser("Administrator");
+        policiesPage.openDryRunUser('Administrator');
         policiesPage.approveDeviceInPolicy();
 
         //Create issue request
@@ -49,7 +49,7 @@ context("Dry run Policy", { tags: ['ui'] }, () => {
         userPoliciesPage.createIssueRequestInPolicy();
 
         //Approve issue request and verify balance increase
-        policiesPage.openDryRunUser("Administrator");
+        policiesPage.openDryRunUser('Administrator');
         policiesPage.approveIssueRequestInPolicy();
     });
 

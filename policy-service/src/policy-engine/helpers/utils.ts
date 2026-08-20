@@ -456,19 +456,19 @@ export class PolicyUtils {
 
         if (Array.isArray(data)) {
             if (key === 'L') {
-                const value = data[data.length - 1];
+                const last = data[data.length - 1];
                 if (rest === null) {
-                    return value ?? null;
+                    return last ?? null;
                 }
-                return PolicyUtils.resolveFieldPath(value, rest);
+                return PolicyUtils.resolveFieldPath(last, rest);
             }
             const idx = Number(key);
             if (Number.isInteger(idx) && idx >= 0 && String(idx) === key) {
-                const value = data[idx];
+                const item = data[idx];
                 if (rest === null) {
-                    return value ?? null;
+                    return item ?? null;
                 }
-                return PolicyUtils.resolveFieldPath(value, rest);
+                return PolicyUtils.resolveFieldPath(item, rest);
             }
             return data.map((item) => PolicyUtils.resolveFieldPath(item, field));
         }

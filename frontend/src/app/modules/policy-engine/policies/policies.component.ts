@@ -1049,7 +1049,7 @@ export class PoliciesComponent implements OnInit {
             policy.uuid === element.uuid && policy.version !== ''
         ) || [];
         const lastVersion = relatedPolicies
-            .sort((a, b) => ModelHelper.versionCompare(a.toString(), b.toString()))
+            .sort((a, b) => ModelHelper.versionCompare(a.version, b.version))
             .pop();
         selectedPolicy.previousVersion = lastVersion?.version || '';
         const dialogRef = this.dialogService.open(PublishPolicyDialog, {

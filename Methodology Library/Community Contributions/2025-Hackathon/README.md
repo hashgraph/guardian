@@ -1,12 +1,12 @@
-# 2025 Hackathon Submissions
+# 2026 Hackathon Submissions
 
-Welcome! This folder is where 2025 hackathon teams can share the Guardian policies they built, so the wider community — methodology authors, VVBs, and other developers — can discover and learn from your work.
+Welcome! This folder is where hackathon teams can share the Guardian policies they built, so the wider community — methodology authors, VVBs, and other developers — can discover and learn from your work.
 
 ## How to submit
 
 1. **Create your team folder** under this directory:
    ```
-   Methodology Library/Community Contributions/2025-Hackathon/<your-team-name>/
+   Methodology Library/Community Contributions/2026-Hackathon/<your-team-name>/
    ```
 2. **Add your files:**
    - Your exported Guardian policy file (`.policy`)

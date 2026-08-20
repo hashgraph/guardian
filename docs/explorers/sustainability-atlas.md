@@ -2,13 +2,16 @@
 description: >-
   A business intelligence platform for carbon market participants — browse
   projects, credits, methodologies, and SDG data indexed from Guardian.
+tags:
+  - tag: new
+    primary: true
 ---
 
-# Sustainability Atlas
+# Sustainability Atlas (Beta)
 
-A standalone application that indexes data published by the Hedera Guardian to the Hedera Network and presents it through a sustainability-focused business lens — Projects, Credits, Methodologies, Organizations.
+A standalone application that indexes data published by the Hedera Guardian to the Hedera Network and presents it through a sustainability-focused business lens — Projects, Credits, Methodologies, Organizations. It leverages aspects of the Guardian indexer.&#x20;
 
-**Live:** https://se.xeptagon.com
+**Live:** [https://se.xeptagon.com](https://se.xeptagon.com/)
 
 ***
 
@@ -38,7 +41,7 @@ A standalone application that indexes data published by the Hedera Guardian to t
 
 ### Source code
 
-https://github.com/hashgraph/guardian/tree/main/sustainability-atlas
+[https://github.com/hashgraph/guardian/tree/main/sustainability-atlas](https://github.com/hashgraph/guardian/tree/main/sustainability-atlas)
 
 The `sustainability-atlas/` folder contains architecture documentation, environment setup, and technical details on the indexing pipeline and frontend.
 

@@ -1,14 +1,14 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("External", { tags: ['external', 'thirdPool', 'all'] }, () => {
+context('External', { tags: ['external', 'thirdPool', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
 
-    let policyTag, owner;
+    let policyTag; let owner;
 
-    before("Import policy", () => {
+    before('Import policy', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
@@ -35,13 +35,13 @@ context("External", { tags: ['external', 'thirdPool', 'all'] }, () => {
         })
     });
 
-    it("Sends data from an external source", { tags: ['notifications', 'ipfs', 'tags', 'policies', 'smoke', 'artifacts'] }, () => {
+    it('Sends data from an external source', { tags: ['notifications', 'ipfs', 'tags', 'policies', 'smoke', 'artifacts'] }, () => {
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.External,
             body: {
-                owner: owner,
-                policyTag: policyTag,
+                owner,
+                policyTag,
                 document: {},
             },
         }).then((response) => {

@@ -1,12 +1,12 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Tokens", { tags: ['tokens', 'thirdPool', 'all'] }, () => {
+context('Tokens', { tags: ['tokens', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
 
-    it("Freeze and unfreeze transfers of the specified token for the user", { tags: ['smoke'] }, () => {
+    it('Freeze and unfreeze transfers of the specified token for the user', { tags: ['smoke'] }, () => {
         //associate token
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             cy.request({
@@ -32,9 +32,9 @@ context("Tokens", { tags: ['tokens', 'thirdPool', 'all'] }, () => {
                             API.ApiServer +
                             API.ListOfTokens +
                             tokenId +
-                            "/" +
+                            '/' +
                             UserUsername +
-                            "/freeze",
+                            '/freeze',
                         headers: {
                             authorization,
                         },
@@ -53,9 +53,9 @@ context("Tokens", { tags: ['tokens', 'thirdPool', 'all'] }, () => {
                                 API.ApiServer +
                                 API.ListOfTokens +
                                 tokenId +
-                                "/" +
+                                '/' +
                                 UserUsername +
-                                "/unfreeze",
+                                '/unfreeze',
                             headers: {
                                 authorization,
                             },

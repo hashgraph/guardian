@@ -137,4 +137,4 @@ Shown instead of the tabs while the account is not yet confirmed.
 
 * Concept: [Roles and permissions](roles-and-permissions/)
 * Task: [User profile setup](/broken/pages/rBTZefZzHOQUq2sSgypH)
-* Reference: [Profile APIs](../../developer-tools/api-reference/profile-apis/)
+* Reference: [Profile APIs](../../developer-tools-and-resources/api-reference/profile-apis/)

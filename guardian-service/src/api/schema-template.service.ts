@@ -10,6 +10,7 @@ import {
     MessageType,
     NewNotifier,
     PinoLogger,
+    Policy,
     RunFunctionAsync,
     Schema,
     SchemaTemplateMessage,
@@ -127,6 +128,14 @@ async function createSchemaTemplate(
         throw new Error('Invalid schema template');
     }
 
+    /*
+     * A legitimate export never carries these, so a hand-crafted zip is the only
+     * source. Two are dangerous rather than untidy:
+     *  - contentFileId / configFileId reach gridFS.delete() via deleteFiles(),
+     *    so a forged value deletes someone else's file.
+     *  - topicId makes createTemplateTopic() return early, binding the import to
+     *    an existing topic; a later publish then signs with that topic's key.
+     */
     delete payload._id;
     delete payload.id;
     delete payload.status;
@@ -135,6 +144,13 @@ async function createSchemaTemplate(
     delete payload.messageId;
     delete payload.version;
     delete payload.previousVersion;
+    delete payload.topicId;
+    delete (payload as any).contentFileId;
+    delete (payload as any).configFileId;
+    delete (payload as any)._configFileId;
+    // setDefaults() only generates a uuid when missing, so a forged one would be
+    // kept and propagate into targetUUID / templateUUID.
+    delete payload.uuid;
 
     payload.creator = owner.creator;
     payload.owner = owner.owner;
@@ -1624,6 +1640,29 @@ async function applySchemaTemplate(
     } catch (error) {
         await DatabaseServer.removeSchemaTemplateSnapshot(snapshot);
         throw error;
+    }
+}
+
+/**
+ * Drop a policy's template snapshot (and its GridFS payloads, via @AfterDelete)
+ * when the policy goes away. Best-effort: the caller is already deleting the
+ * policy, so a failed cleanup must not fail the delete.
+ */
+export async function removePolicySchemaTemplateSnapshot(
+    policy: Policy | null | undefined,
+    logger?: PinoLogger
+): Promise<void> {
+    const snapshotId = (policy as any)?.schemaTemplate?.snapshotId;
+    if (!snapshotId) {
+        return;
+    }
+    try {
+        const snapshot = await DatabaseServer.getSchemaTemplateSnapshotById(snapshotId);
+        if (snapshot) {
+            await DatabaseServer.removeSchemaTemplateSnapshot(snapshot);
+        }
+    } catch (error) {
+        await logger?.error(error, ['GUARDIAN_SERVICE']);
     }
 }
 

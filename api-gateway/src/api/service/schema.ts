@@ -1581,9 +1581,17 @@ export class SchemaApi {
         try {
             const taskManager = new TaskManager();
             const task = taskManager.start(TaskAction.DELETE_SCHEMAS, user.id);
+
+            // The deletion itself runs asynchronously in guardian-service, so the
+            // cache can only be invalidated once the task reports completion -
+            // invalidating right after the RPC ack would leave the listing cache
+            // free to be re-populated with the pre-deletion state.
+            taskManager.registerCallback(task, async () => {
+                await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS).catch(() => null);
+            });
+
             RunFunctionAsync<ServiceError>(async () => {
                 await guardians.deleteSchema(schemaId, owner, task, String(includeChildren).toLowerCase() === 'true');
-                await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS).catch(() => null);
             }, async (error) => {
                 await this.logger.error(error, ['API_GATEWAY'], user.id);
                 taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });

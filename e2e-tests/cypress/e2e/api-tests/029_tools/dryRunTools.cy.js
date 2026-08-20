@@ -1,23 +1,23 @@
-import { randomInt } from "../../../support/random";
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { randomInt } from '../../../support/random';
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Tools", { tags: ['tools', 'thirdPool', 'all'] }, () => {
+context('Tools', { tags: ['tools', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-    let toolId, policy, policyId;
+    let toolId; let policy; let policyId;
     const toolBlockConfigUUID = randomInt(99999).toString();
 
-    before("Import tool", () => {
+    before('Import tool', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.fixture("toolDryRunTest.tool", "binary").then((binary) => Cypress.Blob.binaryStringToBlob(binary))
+            cy.fixture('toolDryRunTest.tool', 'binary').then((binary) => Cypress.Blob.binaryStringToBlob(binary))
                 .then((file) => {
                     cy.request({
                         method: METHOD.POST,
                         url: API.ApiServer + API.ToolsImportFile,
                         body: file,
                         headers: {
-                            "content-type": "binary/octet-stream",
+                            'content-type': 'binary/octet-stream',
                             authorization,
                         },
                     }).then((response) => {
@@ -28,9 +28,9 @@ context("Tools", { tags: ['tools', 'thirdPool', 'all'] }, () => {
         })
     })
 
-    before("Import policy and add tool block", () => {
+    before('Import policy and add tool block', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.fixture("policyForToolTest.policy", "binary")
+            cy.fixture('policyForToolTest.policy', 'binary')
                 .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
                 .then((file) => {
                     cy.request({
@@ -38,7 +38,7 @@ context("Tools", { tags: ['tools', 'thirdPool', 'all'] }, () => {
                         url: API.ApiServer + API.PolicisImportFile,
                         body: file,
                         headers: {
-                            "content-type": "binary/octet-stream",
+                            'content-type': 'binary/octet-stream',
                             authorization,
                         },
                         timeout: 18000000,
@@ -59,22 +59,22 @@ context("Tools", { tags: ['tools', 'thirdPool', 'all'] }, () => {
         })
     })
 
-    it("Dry Run tool without auth token - Negative", () => {
+    it('Dry Run tool without auth token - Negative', () => {
         cy.request({
             method: METHOD.PUT,
-            url: API.ApiServer + API.Tools + toolId + "/" + API.DryRun,
+            url: API.ApiServer + API.Tools + toolId + '/' + API.DryRun,
             failOnStatusCode: false,
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         })
     });
 
-    it("Dry Run tool with invalid auth token - Negative", () => {
+    it('Dry Run tool with invalid auth token - Negative', () => {
         cy.request({
             method: METHOD.PUT,
-            url: API.ApiServer + API.Tools + toolId + "/" + API.DryRun,
+            url: API.ApiServer + API.Tools + toolId + '/' + API.DryRun,
             headers: {
-                authorization: "Bearer wqe",
+                authorization: 'Bearer wqe',
             },
             failOnStatusCode: false,
         }).then((response) => {
@@ -82,12 +82,12 @@ context("Tools", { tags: ['tools', 'thirdPool', 'all'] }, () => {
         })
     });
 
-    it("Dry Run tool with empty auth token - Negative", () => {
+    it('Dry Run tool with empty auth token - Negative', () => {
         cy.request({
             method: METHOD.PUT,
-            url: API.ApiServer + API.Tools + toolId + "/" + API.DryRun,
+            url: API.ApiServer + API.Tools + toolId + '/' + API.DryRun,
             headers: {
-                authorization: "",
+                authorization: '',
             },
             failOnStatusCode: false,
         }).then((response) => {
@@ -95,11 +95,11 @@ context("Tools", { tags: ['tools', 'thirdPool', 'all'] }, () => {
         })
     });
 
-    it("Dry Run tool", () => {
+    it('Dry Run tool', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.PUT,
-                url: API.ApiServer + API.Tools + toolId + "/" + API.DryRun,
+                url: API.ApiServer + API.Tools + toolId + '/' + API.DryRun,
                 headers: {
                     authorization,
                 },
@@ -110,23 +110,23 @@ context("Tools", { tags: ['tools', 'thirdPool', 'all'] }, () => {
         });
     })
 
-    it("Dry Run tool for tool in Dry Run", () => {
+    it('Dry Run tool for tool in Dry Run', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.PUT,
-                url: API.ApiServer + API.Tools + toolId + "/" + API.DryRun,
+                url: API.ApiServer + API.Tools + toolId + '/' + API.DryRun,
                 headers: {
                     authorization,
                 },
                 failOnStatusCode: false,
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.ERROR);
-                expect(response.body.message).eql("Tool already in Dry Run");
+                expect(response.body.message).eql('Tool already in Dry Run');
             })
         });
     })
 
-    it("Check that tool appear as policy block and include tool into policy", () => {
+    it('Check that tool appear as policy block and include tool into policy', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
@@ -137,43 +137,43 @@ context("Tools", { tags: ['tools', 'thirdPool', 'all'] }, () => {
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
                 response.body.forEach(element => {
-                    if (element.name == "toolDryRunTest") {
-                        policy.config.children.at(0)["children"].splice(2, 0,
+                    if (element.name == 'toolDryRunTest') {
+                        policy.config.children.at(0).children.splice(2, 0,
                             {
-                                "id": toolBlockConfigUUID,
-                                "blockType": "tool",
-                                "defaultActive": true,
-                                "hash": element.hash,
-                                "messageId": element.messageId,
-                                "permissions": [],
-                                "onErrorAction": "no-action",
-                                "tag": "Tool_1",
-                                "children": [],
-                                "events": [
+                                'id': toolBlockConfigUUID,
+                                'blockType': 'tool',
+                                'defaultActive': true,
+                                'hash': element.hash,
+                                'messageId': element.messageId,
+                                'permissions': [],
+                                'onErrorAction': 'no-action',
+                                'tag': 'Tool_1',
+                                'children': [],
+                                'events': [
                                     {
-                                        "target": "save",
-                                        "source": "Tool_1",
-                                        "input": "RunEvent",
-                                        "output": "output_tool",
-                                        "actor": "",
-                                        "disabled": false
+                                        'target': 'save',
+                                        'source': 'Tool_1',
+                                        'input': 'RunEvent',
+                                        'output': 'output_tool',
+                                        'actor': '',
+                                        'disabled': false
                                     }
                                 ],
-                                "artifacts": [],
-                                "variables": [],
-                                "inputEvents": [
+                                'artifacts': [],
+                                'variables': [],
+                                'inputEvents': [
                                     {
-                                        "name": "input_tool",
-                                        "description": ""
+                                        'name': 'input_tool',
+                                        'description': ''
                                     }
                                 ],
-                                "outputEvents": [
+                                'outputEvents': [
                                     {
-                                        "name": "output_tool",
-                                        "description": ""
+                                        'name': 'output_tool',
+                                        'description': ''
                                     }
                                 ],
-                                "innerEvents": []
+                                'innerEvents': []
                             });
                         cy.request({
                             method: METHOD.PUT,
@@ -187,7 +187,7 @@ context("Tools", { tags: ['tools', 'thirdPool', 'all'] }, () => {
                             cy.request({
                                 method: METHOD.PUT,
                                 url:
-                                    API.ApiServer + API.Policies + policyId + "/" + API.DryRun,
+                                    API.ApiServer + API.Policies + policyId + '/' + API.DryRun,
                                 headers: {
                                     authorization,
                                 },

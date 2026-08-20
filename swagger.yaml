@@ -484,7 +484,7 @@ paths:
               loginBody:
                 value:
                   username: StandardRegistry
-                  password: test
+                  password: TestPass1
       responses:
         '200':
           description: Successful operation.
@@ -560,7 +560,7 @@ paths:
               changePasswordBody:
                 value:
                   username: StandardRegistry
-                  oldPassword: test
+                  oldPassword: TestPass1
                   newPassword: AnotherStrongPassword3#
       responses:
         '200':
@@ -8537,8 +8537,22 @@ paths:
                 message: Forbidden resource
                 error: Forbidden
                 statusCode: 403
+        '404':
+          description: Message could not be retrieved from Hedera.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorDTO'
+              example:
+                statusCode: 404
+                message: >-
+                  MESSAGE_NOT_FOUND: Message 1774441459.171929000 could not be
+                  retrieved. Check the message id and that it belongs to the
+                  current Hedera network.
         '422':
-          description: Message ID in body is empty.
+          description: >-
+            Message ID in body is empty, or the message documents could not be
+            loaded from IPFS.
           content:
             application/json:
               schema:
@@ -8743,8 +8757,22 @@ paths:
                 message: Forbidden resource
                 error: Forbidden
                 statusCode: 403
+        '404':
+          description: Message could not be retrieved from Hedera.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorDTO'
+              example:
+                statusCode: 404
+                message: >-
+                  MESSAGE_NOT_FOUND: Message 1774441459.171929000 could not be
+                  retrieved. Check the message id and that it belongs to the
+                  current Hedera network.
         '422':
-          description: Message ID in body is empty.
+          description: >-
+            Message ID in body is empty, or the message documents could not be
+            loaded from IPFS.
           content:
             application/json:
               schema:
@@ -16573,6 +16601,75 @@ paths:
       security:
         - bearer: []
       summary: Publishes the policy onto IPFS.
+      tags:
+        - policies
+  /policies/push/{policyId}/dry-run:
+    put:
+      description: >-
+        Switches the specified policy into dry-run mode asynchronously and
+        returns the task of the operation, so that its progress can be tracked.
+        Dry-run mode is intended for testing and simulation without executing
+        real transactions. Only users with the Standard Registry role are
+        allowed to make the request.
+      operationId: PolicyApi_dryRunPolicyAsync
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+      requestBody:
+        required: true
+        description: Options.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Object'
+      responses:
+        '202':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+              example:
+                taskId: c51e15d5-b484-49e9-b267-84b1de3585b4
+                expectation: 6
+                action: Dry-run policy
+                userId: 69c2cfc021d39e7b6d15e236
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Dry Run policy.
       tags:
         - policies
   /policies/{policyId}/dry-run:
@@ -53134,7 +53231,7 @@ info:
     leverages a customizable Policy Workflow Engine and Web3 technology to
     ensure transparent and fraud-proof operations, making it a key tool for
     transforming sustainability practices and carbon markets.
-  version: 3.7.0-rc
+  version: 3.7.0
   contact:
     name: API developer
     url: https://hashgraph.com
@@ -53174,7 +53271,9 @@ tags:
     x-displayName: Policies
     parent: guardian-policies
   - name: record
-    description: Environmental data records submitted through policy workflows.
+    description: >-
+      Capture and replay policy execution sequences for regression testing and
+      validation.
     x-displayName: Records
     parent: guardian-policies
   - name: tools

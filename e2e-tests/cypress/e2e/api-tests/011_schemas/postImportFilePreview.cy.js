@@ -1,13 +1,13 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Schemas", { tags: ['schema', 'thirdPool', 'all'] }, () => {
+context('Schemas', { tags: ['schema', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
-    it("Preview the schema from a file", () => {
+    it('Preview the schema from a file', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.fixture("exportedSchema.schema", "binary")
+            cy.fixture('exportedSchema.schema', 'binary')
                 .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
                 .then((file) => {
                     cy.request({
@@ -16,7 +16,7 @@ context("Schemas", { tags: ['schema', 'thirdPool', 'all'] }, () => {
                             API.ApiServer + API.SchemaImportFilePreview,
                         body: file,
                         headers: {
-                            "content-type": "binary/octet-stream",
+                            'content-type': 'binary/octet-stream',
                             authorization,
                         },
                     }).then((response) => {

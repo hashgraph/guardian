@@ -1260,7 +1260,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         for (const dirtyId of this.dirtySchemaIds) {
             if (this.newSchemaKeys.has(dirtyId)) {
                 const uuid = dirtyId.slice(4);
-                const s = this.schemas.find(s => s.uuid === uuid);
+                const s = this.selectedSchema && (this.selectedSchema as any).uuid === uuid
+                    ? this.selectedSchema
+                    : this.schemas.find(s => s.uuid === uuid);
                 if (s) { toCreate.push(s); }
             } else if (selId && dirtyId === selId && this.selectedSchema) {
                 toSave.push(this.selectedSchema);
@@ -3354,6 +3356,27 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
     }
 
+    private pruneDirtySchemaIds(): void {
+        if (!this.dirtySchemaIds.size) { return; }
+        const liveKeys = new Set<string>();
+        for (const schema of this.schemas) {
+            const id = schema.id || (schema as any)._id;
+            if (id) { liveKeys.add(id); }
+            const uuid = (schema as any).uuid;
+            if (uuid) { liveKeys.add(`new:${uuid}`); }
+        }
+        const selectedId = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
+        if (selectedId) { liveKeys.add(selectedId); }
+        const selectedUuid = (this.selectedSchema as any)?.uuid;
+        if (selectedUuid) { liveKeys.add(`new:${selectedUuid}`); }
+        for (const dirtyId of Array.from(this.dirtySchemaIds)) {
+            if (!liveKeys.has(dirtyId)) {
+                this.dirtySchemaIds.delete(dirtyId);
+                this.newSchemaKeys.delete(dirtyId);
+            }
+        }
+    }
+
     private loadSchemas(topicId: string, append: boolean = false): void {
         if (append) {
             this.schemasLoadingMore = true;
@@ -3419,6 +3442,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     this.schemasFetched = true;
                     this.loadAppliedSchemaTemplate();
                     if (this.selectedSchema) { this.upsertInSidebar(this.selectedSchema); }
+                    this.pruneDirtySchemaIds();
                 },
                 error: () => {
                     if (append) {
@@ -3427,6 +3451,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                         this.schemas = [];
                         this.schemasLoading = false;
                     }
+                    this.pruneDirtySchemaIds();
                 }
             });
     }

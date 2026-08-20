@@ -1,13 +1,13 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Get tokens for policy label", { tags: ['policy_labels', 'firstPool', 'all'] }, () => {
+context('Get tokens for policy label', { tags: ['policy_labels', 'firstPool', 'all'] }, () => {
     const UserUsername = Cypress.env('User');
 
-    let policyLabel, tokenLabel;
+    let policyLabel; let tokenLabel;
 
-    before("Get policy label", () => {
+    before('Get policy label', () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
@@ -18,13 +18,13 @@ context("Get tokens for policy label", { tags: ['policy_labels', 'firstPool', 'a
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
                 response.body.forEach(element => {
-                    if (element.status == "PUBLISHED") {
+                    if (element.status == 'PUBLISHED') {
                         policyLabel = element;
                     }
                 })
                 cy.request({
                     method: METHOD.GET,
-                    url: API.ApiServer + API.PolicyLabels + policyLabel.id + "/" + API.ListOfTokens,
+                    url: API.ApiServer + API.PolicyLabels + policyLabel.id + '/' + API.ListOfTokens,
                     headers: {
                         authorization,
                     },
@@ -36,11 +36,11 @@ context("Get tokens for policy label", { tags: ['policy_labels', 'firstPool', 'a
         });
     })
 
-    it("Get tokens for policy label", () => {
+    it('Get tokens for policy label', () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.PolicyLabels + policyLabel.id + "/" + API.Documents,
+                url: API.ApiServer + API.PolicyLabels + policyLabel.id + '/' + API.Documents,
                 body: {
                     target: tokenLabel.id,
                     documents: [
@@ -63,18 +63,18 @@ context("Get tokens for policy label", { tags: ['policy_labels', 'firstPool', 'a
                 timeout: 180000
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.SUCCESS);
-                expect(response.body).to.have.property("createDate");
-                expect(response.body).to.have.property("id");
-                expect(response.body).to.have.property("relationships");
-                expect(response.body).to.have.property("target");
-                expect(response.body).to.have.property("updateDate");
-                expect(response.body).to.have.property("uuid");
-                expect(response.body).to.have.property("document");
-                expect(response.body).to.have.property("documentFileId");
-                expect(response.body).to.have.property("messageId");
-                expect(response.body).to.have.property("policyInstanceTopicId");
-                expect(response.body).to.have.property("policyTopicId");
-                expect(response.body).to.have.property("topicId");
+                expect(response.body).to.have.property('createDate');
+                expect(response.body).to.have.property('id');
+                expect(response.body).to.have.property('relationships');
+                expect(response.body).to.have.property('target');
+                expect(response.body).to.have.property('updateDate');
+                expect(response.body).to.have.property('uuid');
+                expect(response.body).to.have.property('document');
+                expect(response.body).to.have.property('documentFileId');
+                expect(response.body).to.have.property('messageId');
+                expect(response.body).to.have.property('policyInstanceTopicId');
+                expect(response.body).to.have.property('policyTopicId');
+                expect(response.body).to.have.property('topicId');
 
                 expect(response.body.creator).eql(policyLabel.creator);
                 expect(response.body.owner).eql(policyLabel.owner);
@@ -84,10 +84,10 @@ context("Get tokens for policy label", { tags: ['policy_labels', 'firstPool', 'a
         })
     });
 
-    it("Get tokens for policy label without auth - Negative", () => {
+    it('Get tokens for policy label without auth - Negative', () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.PolicyLabels + policyLabel.id + "/" + API.Documents,
+            url: API.ApiServer + API.PolicyLabels + policyLabel.id + '/' + API.Documents,
             body: {
                 target: tokenLabel.id,
                 documents: [
@@ -112,10 +112,10 @@ context("Get tokens for policy label", { tags: ['policy_labels', 'firstPool', 'a
         });
     });
 
-    it("Get tokens for policy label with incorrect auth - Negative", () => {
+    it('Get tokens for policy label with incorrect auth - Negative', () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.PolicyLabels + policyLabel.id + "/" + API.Documents,
+            url: API.ApiServer + API.PolicyLabels + policyLabel.id + '/' + API.Documents,
             body: {
                 target: tokenLabel.id,
                 documents: [
@@ -133,7 +133,7 @@ context("Get tokens for policy label", { tags: ['policy_labels', 'firstPool', 'a
                 ]
             },
             headers: {
-                authorization: "bearer 11111111111111111111@#$",
+                authorization: 'bearer 11111111111111111111@#$',
             },
             failOnStatusCode: false,
         }).then((response) => {
@@ -141,10 +141,10 @@ context("Get tokens for policy label", { tags: ['policy_labels', 'firstPool', 'a
         });
     })
 
-    it("Get tokens for policy label with empty auth - Negative", () => {
+    it('Get tokens for policy label with empty auth - Negative', () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.PolicyLabels + policyLabel.id + "/" + API.Documents,
+            url: API.ApiServer + API.PolicyLabels + policyLabel.id + '/' + API.Documents,
             body: {
                 target: tokenLabel.id,
                 documents: [
@@ -162,7 +162,7 @@ context("Get tokens for policy label", { tags: ['policy_labels', 'firstPool', 'a
                 ]
             },
             headers: {
-                authorization: "",
+                authorization: '',
             },
             failOnStatusCode: false,
         }).then((response) => {

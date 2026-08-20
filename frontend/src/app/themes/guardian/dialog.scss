@@ -149,6 +149,39 @@
     }
 }
 
+.guardian-dialog.schema-import-preview {
+    .p-dialog-content {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    app-schema-view-dialog {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+
+    .dialog-header {
+        flex: 0 0 auto;
+    }
+
+    .issues-summary {
+        flex: 0 0 auto;
+    }
+
+    .dialog-footer {
+        flex: 0 0 auto;
+    }
+
+    .dialog-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        max-height: none;
+    }
+}
+
 .draft-dialog {
     .action-buttons button {
         padding: 5px 24px;

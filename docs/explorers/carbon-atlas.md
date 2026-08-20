@@ -8,7 +8,7 @@ description: >-
 
 Public dashboard for exploring verified emission reductions across Guardian policies. Built on Hedera Guardian, an open-source MRV platform using Hedera Hashgraph DLT.
 
-**Live:** https://atlas.carbonmarketshq.com
+**Live:** [https://atlas.carbonmarketshq.com](https://atlas.carbonmarketshq.com/)
 
 ***
 
@@ -49,7 +49,7 @@ Cross-registry analytics across the voluntary carbon market.
 
 ### Source code
 
-https://github.com/hashgraph/guardian/tree/main/carbon-atlas
+[https://github.com/hashgraph/guardian/tree/main/carbon-atlas](https://github.com/hashgraph/guardian/tree/main/carbon-atlas)
 
 The `carbon-atlas/` folder contains setup instructions, architecture documentation, and a developer guide for adding new policies.
 

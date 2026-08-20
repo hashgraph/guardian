@@ -26,7 +26,7 @@ interface IColumn {
     standalone: false
 })
 export class ExternalPolicyComponent implements OnInit {
-    public title: string = 'Remote Policy Request';
+    public title: string = 'Remote Policy Requests';
 
     public loading: boolean = true;
     public isConfirmed: boolean = false;

@@ -405,7 +405,7 @@ export async function setPoolContract(
         hederaAccountKey,
         retireAbi.encodeFunctionData('setPool', [
             tokens.map((token) => [
-                TokenId.fromString(token.token).toSolidityAddress(),
+                TokenId.fromString(token.token).toEvmAddress(),
                 token.count,
             ]),
             immediately,
@@ -590,9 +590,7 @@ export async function syncWipeContract(
 
             switch (eventName) {
                 case 'WiperAdded': {
-                    const retireContractId = AccountId.fromSolidityAddress(
-                        data[0]
-                    ).toString();
+                    const retireContractId = AccountId.fromEvmAddress(0, 0, data[0]).toString();
 
                     if (isFirstVersion) {
                         await setContractWiperPermissions(
@@ -604,9 +602,7 @@ export async function syncWipeContract(
                             true
                         );
                     } else {
-                        const token = TokenId.fromSolidityAddress(
-                            data[1]
-                        ).toString();
+                        const token = TokenId.fromEvmAddress(0, 0, data[1]).toString();
                         await setContractWiperPermissions(
                             dataBaseServer,
                             retireContractId,
@@ -618,9 +614,7 @@ export async function syncWipeContract(
                     break;
                 }
                 case 'WiperRemoved': {
-                    const retireContractId = AccountId.fromSolidityAddress(
-                        data[0]
-                    ).toString();
+                    const retireContractId = AccountId.fromEvmAddress(0, 0, data[0]).toString();
 
                     if (isFirstVersion) {
                         await setContractWiperPermissions(
@@ -630,9 +624,7 @@ export async function syncWipeContract(
                             false
                         );
                     } else {
-                        const token = TokenId.fromSolidityAddress(
-                            data[1]
-                        ).toString();
+                        const token = TokenId.fromEvmAddress(0, 0, data[1]).toString();
                         await setContractWiperPermissions(
                             dataBaseServer,
                             retireContractId,
@@ -644,9 +636,7 @@ export async function syncWipeContract(
                     break;
                 }
                 case 'WipeRequestAdded': {
-                    const user: string = AccountId.fromSolidityAddress(
-                        data[0]
-                    ).toString();
+                    const user: string = AccountId.fromEvmAddress(0, 0, data[0]).toString();
 
                     if (isFirstVersion) {
                         await dataBaseServer.deleteEntity(WiperRequest, {
@@ -672,9 +662,7 @@ export async function syncWipeContract(
                             )
                         );
                     } else {
-                        const token: string = TokenId.fromSolidityAddress(
-                            data[1]
-                        ).toString();
+                        const token: string = TokenId.fromEvmAddress(0, 0, data[1]).toString();
                         await dataBaseServer.deleteEntity(WiperRequest, {
                             user,
                             contractId,
@@ -703,9 +691,7 @@ export async function syncWipeContract(
                     break;
                 }
                 case 'WipeRequestRemoved': {
-                    const user: string = AccountId.fromSolidityAddress(
-                        data[0]
-                    ).toString();
+                    const user: string = AccountId.fromEvmAddress(0, 0, data[0]).toString();
 
                     if (isFirstVersion) {
                         await dataBaseServer.deleteEntity(WiperRequest, {
@@ -713,9 +699,7 @@ export async function syncWipeContract(
                             user,
                         });
                     } else {
-                        const token: string = TokenId.fromSolidityAddress(
-                            data[1]
-                        ).toString();
+                        const token: string = TokenId.fromEvmAddress(0, 0, data[1]).toString();
                         await dataBaseServer.deleteEntity(WiperRequest, {
                             contractId,
                             user,
@@ -730,9 +714,7 @@ export async function syncWipeContract(
                             contractId,
                         });
                     } else {
-                        const user: string = AccountId.fromSolidityAddress(
-                            data[0]
-                        ).toString();
+                        const user: string = AccountId.fromEvmAddress(0, 0, data[0]).toString();
                         await dataBaseServer.deleteEntity(WiperRequest, {
                             contractId,
                             user
@@ -975,11 +957,9 @@ export async function syncRetireContract(
 
             switch (eventName) {
                 case 'Retire': {
-                    const retireUser = AccountId.fromSolidityAddress(
-                        data[0]
-                    ).toString();
+                    const retireUser = AccountId.fromEvmAddress(0, 0, data[0]).toString();
                     const tokens = data[1].map((item) =>
-                        TokenId.fromSolidityAddress(item[0]).toString()
+                        TokenId.fromEvmAddress(0, 0, item[0]).toString()
                     );
                     const user = await users.getUserByAccount(retireUser, userId);
                     if (!sendNotifications || !user?.id) {
@@ -994,7 +974,7 @@ export async function syncRetireContract(
                 }
                 case 'PoolAdded': {
                     const tokens: RetireTokenPool[] = data[0].map((item) => ({
-                        token: TokenId.fromSolidityAddress(item[0]).toString(),
+                        token: TokenId.fromEvmAddress(0, 0, item[0]).toString(),
                         count: Number(item[1]),
                     }));
 
@@ -1037,7 +1017,7 @@ export async function syncRetireContract(
                 }
                 case 'PoolRemoved': {
                     const tokenIds = data[0].map((item) =>
-                        TokenId.fromSolidityAddress(item).toString()
+                        TokenId.fromEvmAddress(0, 0, item).toString()
                     );
                     await dataBaseServer.deleteEntity(RetirePool, {
                         $and: [
@@ -1080,9 +1060,7 @@ export async function syncRetireContract(
                     break;
                 }
                 case 'RetireRequestAdded': {
-                    const retireUser = AccountId.fromSolidityAddress(
-                        data[0]
-                    ).toString();
+                    const retireUser = AccountId.fromEvmAddress(0, 0, data[0]).toString();
 
                     const userAccountId = await resolveNumericAccountId(workers, retireUser, userId);
                     await setRetireRequest(
@@ -1091,9 +1069,7 @@ export async function syncRetireContract(
                         contractId,
                         retireUser,
                         data[1].map((item) => ({
-                            token: TokenId.fromSolidityAddress(
-                                item[0]
-                            ).toString(),
+                            token: TokenId.fromEvmAddress(0, 0, item[0]).toString(),
                             count: Number(item[1]),
                             serials: item[2].map((serial) => Number(serial)),
                         })),
@@ -1115,11 +1091,9 @@ export async function syncRetireContract(
                     break;
                 }
                 case 'RetireRequestRemoved': {
-                    const user = AccountId.fromSolidityAddress(
-                        data[0]
-                    ).toString();
+                    const user = AccountId.fromEvmAddress(0, 0, data[0]).toString();
                     const tokenIds = data[1].map((item) =>
-                        TokenId.fromSolidityAddress(item).toString()
+                        TokenId.fromEvmAddress(0, 0, item).toString()
                     );
                     await dataBaseServer.deleteEntity(RetireRequest, {
                         $and: [
@@ -1327,16 +1301,14 @@ async function isContractWiper(
                 case 'WiperAdded': {
                     if (isFirstVersion) {
                         if (
-                            AccountId.fromSolidityAddress(data[0]).toString() ===
-                            retireContractId
+                            AccountId.fromEvmAddress(0, 0, data[0]).toString() === retireContractId
                         ) {
                             return true;
                         }
                     } else {
                         if (
-                            (AccountId.fromSolidityAddress(data[0]).toString() ===
-                                retireContractId) && (TokenId.fromSolidityAddress(data[1]).toString() ===
-                                    token)
+                            (AccountId.fromEvmAddress(0, 0, data[0]).toString() === retireContractId) &&
+                            (TokenId.fromEvmAddress(0, 0, data[1]).toString() === token)
                         ) {
                             return true;
                         }
@@ -1346,16 +1318,14 @@ async function isContractWiper(
                 case 'WiperRemoved': {
                     if (isFirstVersion) {
                         if (
-                            AccountId.fromSolidityAddress(data[0]).toString() ===
-                            retireContractId
+                            AccountId.fromEvmAddress(0, 0, data[0]).toString() === retireContractId
                         ) {
                             return false;
                         }
                     } else {
                         if (
-                            (AccountId.fromSolidityAddress(data[0]).toString() ===
-                                retireContractId) && (TokenId.fromSolidityAddress(data[1]).toString() ===
-                                    token)
+                            (AccountId.fromEvmAddress(0, 0, data[0]).toString() === retireContractId) &&
+                            (TokenId.fromEvmAddress(0, 0, data[1]).toString() === token)
                         ) {
                             return false;
                         }
@@ -2210,7 +2180,7 @@ export async function contractAPI(
                     type: ContractParamType.ADDRESS,
                     value: AccountId.fromString(
                         request.user
-                    ).toSolidityAddress(),
+                    ).toEvmAddress(),
                 }]
 
                 if (contract.version !== '1.0.0') {
@@ -2218,7 +2188,7 @@ export async function contractAPI(
                         type: ContractParamType.ADDRESS,
                         value: TokenId.fromString(
                             request.token
-                        ).toSolidityAddress(),
+                        ).toEvmAddress(),
                     })
                 }
 
@@ -2294,7 +2264,7 @@ export async function contractAPI(
                 type: ContractParamType.ADDRESS,
                 value: AccountId.fromString(
                     request.user
-                ).toSolidityAddress(),
+                ).toEvmAddress(),
             }]
 
             if (contract.version !== '1.0.0') {
@@ -2302,7 +2272,7 @@ export async function contractAPI(
                     type: ContractParamType.ADDRESS,
                     value: TokenId.fromString(
                         request.token
-                    ).toSolidityAddress(),
+                    ).toEvmAddress(),
                 })
             }
 
@@ -2382,7 +2352,7 @@ export async function contractAPI(
                                 type: ContractParamType.ADDRESS,
                                 value: AccountId.fromString(
                                     hederaId
-                                ).toSolidityAddress(),
+                                ).toEvmAddress(),
                             }]
                         );
                         await dataBaseServer.deleteEntity(WiperRequest, {
@@ -2406,7 +2376,7 @@ export async function contractAPI(
                                     type: ContractParamType.ADDRESS,
                                     value: AccountId.fromString(
                                         userHederaId
-                                    ).toSolidityAddress(),
+                                    ).toEvmAddress(),
                                 }]
                             );
                         }
@@ -2736,7 +2706,7 @@ export async function contractAPI(
                     type: ContractParamType.ADDRESS,
                     value: AccountId.fromString(
                         hederaId
-                    ).toSolidityAddress(),
+                    ).toEvmAddress(),
                 },
             ];
             if (contract.version !== '1.0.0') {
@@ -2744,7 +2714,7 @@ export async function contractAPI(
                     type: ContractParamType.ADDRESS,
                     value: TokenId.fromString(
                         tokenId
-                    ).toSolidityAddress(),
+                    ).toEvmAddress(),
                 })
             }
 
@@ -2812,7 +2782,7 @@ export async function contractAPI(
                     type: ContractParamType.ADDRESS,
                     value: AccountId.fromString(
                         hederaId
-                    ).toSolidityAddress(),
+                    ).toEvmAddress(),
                 },
             ];
             if (contract.version !== '1.0.0') {
@@ -2820,7 +2790,7 @@ export async function contractAPI(
                     type: ContractParamType.ADDRESS,
                     value: TokenId.fromString(
                         tokenId
-                    ).toSolidityAddress(),
+                    ).toEvmAddress(),
                 })
             }
 
@@ -3366,7 +3336,7 @@ export async function contractAPI(
                         {
                             type: ContractParamType.ADDRESS_ARRAY,
                             value: pool.tokens.map((token) =>
-                                TokenId.fromString(token.token).toSolidityAddress()
+                                TokenId.fromString(token.token).toEvmAddress()
                             ),
                         },
                     ]
@@ -3431,12 +3401,12 @@ export async function contractAPI(
                             type: ContractParamType.ADDRESS,
                             value: AccountId.fromString(
                                 request.user
-                            ).toSolidityAddress(),
+                            ).toEvmAddress(),
                         },
                         {
                             type: ContractParamType.ADDRESS_ARRAY,
                             value: request.tokens.map((token) =>
-                                TokenId.fromString(token.token).toSolidityAddress()
+                                TokenId.fromString(token.token).toEvmAddress()
                             ),
                         },
                     ]
@@ -3521,7 +3491,7 @@ export async function contractAPI(
                 rootKey,
                 retireAbi.encodeFunctionData('retire', [
                     tokens.map((token) => [
-                        TokenId.fromString(token.token).toSolidityAddress(),
+                        TokenId.fromString(token.token).toEvmAddress(),
                         token.count,
                         token.serials,
                     ]),
@@ -3622,12 +3592,12 @@ export async function contractAPI(
                                 type: ContractParamType.ADDRESS,
                                 value: AccountId.fromString(
                                     request.user
-                                ).toSolidityAddress(),
+                                ).toEvmAddress(),
                             },
                             {
                                 type: ContractParamType.ADDRESS_ARRAY,
                                 value: request.tokens.map((token) =>
-                                    TokenId.fromString(token.token).toSolidityAddress()
+                                    TokenId.fromString(token.token).toEvmAddress()
                                 ),
                             },
                         ]
@@ -3642,9 +3612,9 @@ export async function contractAPI(
                         retireAbi.encodeFunctionData('approveRetire', [
                             AccountId.fromString(
                                 request.user
-                            ).toSolidityAddress(),
+                            ).toEvmAddress(),
                             request.tokens.map((token) => [
-                                TokenId.fromString(token.token).toSolidityAddress(),
+                                TokenId.fromString(token.token).toEvmAddress(),
                                 token.count,
                                 token.serials,
                             ])
@@ -3722,7 +3692,7 @@ export async function contractAPI(
                         {
                             type: ContractParamType.ADDRESS_ARRAY,
                             value: request.tokens.map((token) =>
-                                TokenId.fromString(token.token).toSolidityAddress()
+                                TokenId.fromString(token.token).toEvmAddress()
                             ),
                         },
                     ]

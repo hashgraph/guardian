@@ -1,14 +1,14 @@
-import { randomInt } from "../../../support/random";
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { randomInt } from '../../../support/random';
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Update formula", { tags: ['formulas', 'firstPool', 'all'] }, () => {
+context('Update formula', { tags: ['formulas', 'firstPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     let firstFormula;
 
-    before("Get first formula and prepare updated formula", () => {
+    before('Get first formula and prepare updated formula', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
@@ -19,17 +19,17 @@ context("Update formula", { tags: ['formulas', 'firstPool', 'all'] }, () => {
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
                 firstFormula = response.body.at(0);
-                firstFormula.name = firstFormula.name + "Edited";
+                firstFormula.name = firstFormula.name + 'Edited';
                 firstFormula.config = {
                     formulas: [
                         {
-                            description: "testLink desc",
+                            description: 'testLink desc',
                             name: `testLink`,
-                            type: "variable",
+                            type: 'variable',
                             uuid: randomInt(99999),
                             link: {
-                                item: "field0",
-                                type: "schema",
+                                item: 'field0',
+                                type: 'schema',
                                 entityId: ``
                             }
                         }
@@ -38,7 +38,7 @@ context("Update formula", { tags: ['formulas', 'firstPool', 'all'] }, () => {
                 };
                 cy.request({
                     method: METHOD.GET,
-                    url: API.ApiServer + API.Formulas + firstFormula.id + "/" + API.Relationships,
+                    url: API.ApiServer + API.Formulas + firstFormula.id + '/' + API.Relationships,
                     headers: {
                         authorization,
                     },
@@ -50,7 +50,7 @@ context("Update formula", { tags: ['formulas', 'firstPool', 'all'] }, () => {
         })
     });
 
-    it("Update formula", () => {
+    it('Update formula', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.PUT,
@@ -61,17 +61,17 @@ context("Update formula", { tags: ['formulas', 'firstPool', 'all'] }, () => {
                 },
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                expect(response.body).to.have.property("createDate");
-                expect(response.body).to.have.property("creator");
-                expect(response.body).to.have.property("description");
-                expect(response.body).to.have.property("id");
-                expect(response.body).to.have.property("name");
-                expect(response.body).to.have.property("owner");
-                expect(response.body).to.have.property("policyId");
-                expect(response.body).to.have.property("policyInstanceTopicId");
-                expect(response.body).to.have.property("policyTopicId");
-                expect(response.body).to.have.property("status");
-                expect(response.body).to.have.property("uuid");
+                expect(response.body).to.have.property('createDate');
+                expect(response.body).to.have.property('creator');
+                expect(response.body).to.have.property('description');
+                expect(response.body).to.have.property('id');
+                expect(response.body).to.have.property('name');
+                expect(response.body).to.have.property('owner');
+                expect(response.body).to.have.property('policyId');
+                expect(response.body).to.have.property('policyInstanceTopicId');
+                expect(response.body).to.have.property('policyTopicId');
+                expect(response.body).to.have.property('status');
+                expect(response.body).to.have.property('uuid');
 
                 expect(response.body.description).eql(firstFormula.description);
                 expect(response.body.name).eql(firstFormula.name);
@@ -83,7 +83,7 @@ context("Update formula", { tags: ['formulas', 'firstPool', 'all'] }, () => {
         })
     });
 
-    it("Update formula without auth - Negative", () => {
+    it('Update formula without auth - Negative', () => {
         cy.request({
             method: METHOD.PUT,
             url: API.ApiServer + API.Formulas + firstFormula.id,
@@ -96,13 +96,13 @@ context("Update formula", { tags: ['formulas', 'firstPool', 'all'] }, () => {
         });
     });
 
-    it("Update formula with incorrect auth - Negative", () => {
+    it('Update formula with incorrect auth - Negative', () => {
         cy.request({
             method: METHOD.PUT,
             url: API.ApiServer + API.Formulas + firstFormula.id,
             body: firstFormula,
             headers: {
-                authorization: "bearer 11111111111111111111@#$",
+                authorization: 'bearer 11111111111111111111@#$',
             },
             failOnStatusCode: false,
         }).then((response) => {
@@ -110,13 +110,13 @@ context("Update formula", { tags: ['formulas', 'firstPool', 'all'] }, () => {
         });
     });
 
-    it("Update formula with empty auth - Negative", () => {
+    it('Update formula with empty auth - Negative', () => {
         cy.request({
             method: METHOD.PUT,
             url: API.ApiServer + API.Formulas + firstFormula.id,
             body: firstFormula,
             headers: {
-                authorization: "",
+                authorization: '',
             },
             failOnStatusCode: false,
         }).then((response) => {

@@ -10,7 +10,7 @@ login() {
         --header 'Accept: application/json' \
         --data-raw '{
   "username": "StandardRegistry",
-  "password": "test"
+  "password": "TestPass1"
     }' | jq -r .accessToken)
     echo "$token"
 }

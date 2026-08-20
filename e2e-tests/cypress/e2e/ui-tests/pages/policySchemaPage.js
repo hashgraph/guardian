@@ -1,29 +1,28 @@
-import ASSERT from "../../../support/CustomHelpers/assertions";
-import TIMEOUTS from "../../../support/CustomHelpers/timeouts";
-import URL from "../../../support/GuardianUrls";
+import ASSERT from '../../../support/CustomHelpers/assertions';
+import TIMEOUTS from '../../../support/CustomHelpers/timeouts';
+import URL from '../../../support/GuardianUrls';
 
 const SchemasPageLocators = {
 
     //Buttons
 
-    policySchemacreateBtn: "div.g-dialog-actions-btn",
-    policySchemaeditBtn: "td.mat-column-edit",
-    policySchemapublishbtn: "td.mat-column-operation",
-    policySchemasBtn: "Policy Schemas",
-    newBtn: "New",
+    policySchemacreateBtn: 'div.g-dialog-actions-btn',
+    policySchemaeditBtn: 'td.mat-column-edit',
+    policySchemapublishbtn: 'td.mat-column-operation',
+    policySchemasBtn: 'Policy Schemas',
+    newBtn: 'New',
     policySchemapublishOkBtn: '.mat-button-wrapper',
-    schemaDeleteBtn: ".mat-dialog-actions > .mat-primary",
-    deleteBtn: "delete",
+    schemaDeleteBtn: '.mat-dialog-actions > .mat-primary',
+    deleteBtn: 'delete',
     saveBtn: ' Save ',
-    importBtn: "Import",
-    importFileBtn: "Import from file",
-    importMsgBtn: "Import from IPFS",
+    importBtn: 'Import',
+    importFileBtn: 'Import from file',
+    importMsgBtn: 'Import from IPFS',
     continueImportBtn: "*[class^='g-dialog-actions-btn']",
     submitBtn: 'button[type="submit"]',
     schemaExportBtn : 'td.mat-column-export',
     schemaSaveToFileBtn : 'Save to file',
     compareBtn : 'Compare',
-
 
     //Inputs
     nameInput: "*[formcontrolname^='name']",
@@ -34,12 +33,10 @@ const SchemasPageLocators = {
     policySchemaentityVCinput: '[value="VC"]',
     policySchemaentityEVCinput: '[value="EVC"]',
 
-
     //Lists
     entityList: '[formcontrolname="entity"]',
     policyList: '[formcontrolname="topicId"]',
     schemaSelectPolicyList : '[role="combobox"]',
- 
 
     //Request
     schemaListReq: 'api/v1/schemas/list/all',
@@ -48,11 +45,10 @@ const SchemasPageLocators = {
     taskReq: '/api/v1/tasks/**',
 
     //others
-    
-    
+
     headerSelector: 'th[role="columnheader"]',
     policyName: '[role="option"]',
-    schemaName: "td.mat-column-type",
+    schemaName: 'td.mat-column-type',
     importFile: '[type="file"]',
     schemaPolicyValue : '.mat-option-text',
     compareresults : 'div.g-dialog-actions-btn',
@@ -66,23 +62,23 @@ export class SchemasPage {
 
     static waitForSchemas() {
         cy.intercept(SchemasPageLocators.schemaListReq).as(
-            "waitForSchemaList"
+            'waitForSchemaList'
         );
-        cy.wait("@waitForSchemaList", { timeout: 200000 })
+        cy.wait('@waitForSchemaList', { timeout: 200000 })
     }
 
     static waitForSchemaStatusToComplete() {
         cy.intercept(SchemasPageLocators.searchSchemaReq).as(
-            "waitForSchemaToBepublished"
+            'waitForSchemaToBepublished'
         );
-        cy.wait("@waitForSchemaToBepublished", { timeout: 200000 })
+        cy.wait('@waitForSchemaToBepublished', { timeout: 200000 })
     }
 
     static waitForSchemaCompareReq() {
         cy.intercept(SchemasPageLocators.compareReq).as(
-            "waitForSchemaToBepublished"
+            'waitForSchemaToBepublished'
         );
-        cy.wait("@waitForSchemaToBepublished", { timeout: 200000 })
+        cy.wait('@waitForSchemaToBepublished', { timeout: 200000 })
     }
 
     clickPolicySchema(){
@@ -90,7 +86,7 @@ export class SchemasPage {
     }
 
     verifyButtonsAndHeadersPolicySchema() {
-        cy.contains(SchemasPageLocators.newBtn).should("exist");
+        cy.contains(SchemasPageLocators.newBtn).should('exist');
         cy.get(SchemasPageLocators.headerSelector).should(($header) => {
             expect($header.get(0).innerText).to.eq('Policy')
             expect($header.get(1).innerText).to.eq('Name')
@@ -102,8 +98,6 @@ export class SchemasPage {
             expect($header.get(7).innerText).to.eq('Operations')
         })
     }
-
-
 
     createPolicySchema(name, entitytype, policyname) {
         cy.contains(SchemasPageLocators.newBtn).click();
@@ -132,15 +126,13 @@ export class SchemasPage {
 
     }
 
-   
-
     editPolicySchema(name, entitytype) {
         cy.contains(SchemasPageLocators.schemaName, name).siblings(SchemasPageLocators.policySchemaeditBtn).click();
         const inputNameEdit = cy.get(SchemasPageLocators.nameInput);
         cy.wait(1000);
         inputNameEdit.click();
         inputNameEdit.clear();
-        var editName = name + " updated";
+        let editName = name + ' updated';
         inputNameEdit.type(editName);
 
         if (entitytype == 'DEFAULT') {
@@ -153,18 +145,17 @@ export class SchemasPage {
 
         }
         const descNameEdit = cy.get(SchemasPageLocators.descriptionInput);
-        descNameEdit.type("Added Description in edit flow")
+        descNameEdit.type('Added Description in edit flow')
         cy.contains(SchemasPageLocators.saveBtn).click({ force: true });
         SchemasPage.waitForSchemaStatusToComplete();
         cy.contains(SchemasPageLocators.schemaName, editName).should(ASSERT.exist);
 
     }
 
-
     PublishPolicySchema(name) {
         cy.contains(SchemasPageLocators.schemaName, name).siblings(SchemasPageLocators.policySchemapublishbtn).click();
 
-        cy.get(SchemasPageLocators.policySchemaVersionInput).type("1.0.0");
+        cy.get(SchemasPageLocators.policySchemaVersionInput).type('1.0.0');
      cy.contains(SchemasPageLocators.policySchemapublishOkBtn,'Publish').click();
      SchemasPage.waitForSchemaStatusToComplete();
         cy.contains(SchemasPageLocators.schemaName, name).siblings(SchemasPageLocators.tagschemaPublishedStatus).find('span.status-PUBLISHED').should(($text) => {
@@ -187,8 +178,8 @@ export class SchemasPage {
 
     importSchemaFile(file) {
         cy.contains(SchemasPageLocators.importFileBtn).click();
-        cy.fixture(file, { encoding: null }).as("myFixture");
-        cy.get(SchemasPageLocators.importFile).selectFile("@myFixture", {
+        cy.fixture(file, { encoding: null }).as('myFixture');
+        cy.get(SchemasPageLocators.importFile).selectFile('@myFixture', {
             force: true,
         });
         cy.readFile('test.env.json').then((env) => {
@@ -199,16 +190,16 @@ export class SchemasPage {
         cy.get(SchemasPageLocators.continueImportBtn).click();
         SchemasPage.waitForSchemaStatusToComplete();
     }
-  
+
     importSchemaMessage(msg) {
         cy.contains(SchemasPageLocators.importMsgBtn).click();
         const inputMessage = cy.get(SchemasPageLocators.msgInput);
         inputMessage.type(msg);
         cy.intercept(SchemasPageLocators.taskReq).as(
-            "waitForSchemaImport"
+            'waitForSchemaImport'
         );
         cy.get(SchemasPageLocators.submitBtn).click();
-        cy.wait("@waitForSchemaImport", { timeout: 100000 })
+        cy.wait('@waitForSchemaImport', { timeout: 100000 })
         cy.readFile('test.env.json').then((env) => {
                      const pname = env.policyname;
                     cy.contains('.field-name','Policy').parent().children().find(SchemasPageLocators.schemaSelectPolicyList).click();
@@ -216,7 +207,7 @@ export class SchemasPage {
                    });
         cy.get(SchemasPageLocators.continueImportBtn).click();
         SchemasPage.waitForSchemaStatusToComplete();
-        cy.contains(SchemasPageLocators.schemaName, "Applicant Details").should(ASSERT.exist);
+        cy.contains(SchemasPageLocators.schemaName, 'Applicant Details').should(ASSERT.exist);
     }
 
     exportSchemaFile(name)
@@ -225,11 +216,11 @@ export class SchemasPage {
         cy.contains(SchemasPageLocators.schemaSaveToFileBtn).click();
         cy.wait(2000);
         cy.verifyDownload('.schema', { contains: true });
-        
+
     }
 
     comparePolicySchema(schemapolicy1,schemapolicy2,policyname)
-  
+
     {
         cy.contains(SchemasPageLocators.compareBtn).click();
         cy.get(SchemasPageLocators.schemaSelectPolicyList).eq(2).click({force: true});
@@ -245,6 +236,6 @@ export class SchemasPage {
         cy.contains(SchemasPageLocators.compareSchemaname, schemapolicy1).should(ASSERT.exist);
         cy.contains(SchemasPageLocators.compareSchemaname, schemapolicy2).should(ASSERT.exist);
         cy.contains(SchemasPageLocators.compareSchemaname, policyname).should(ASSERT.exist);
-        
+
     }
 }

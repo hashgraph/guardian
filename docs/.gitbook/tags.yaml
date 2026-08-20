@@ -25,3 +25,6 @@
 - tag: flagged-for-rewrite
   label: Flagged for Rewrite
   icon: pen-nib
+- tag: flagged-for-relocating
+  label: Flagged for Relocating
+  icon: crosshairs-simple

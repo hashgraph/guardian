@@ -1,18 +1,18 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Checks from "../../../support/checkingMethods";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Checks from '../../../support/checkingMethods';
+import * as Authorization from '../../../support/authorization';
 
-context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
+context('Contracts', { tags: ['contracts', 'firstPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-    const contractNameR = "SecondAPIContractR";
-    const tokenName = "FirstToken";
+    const contractNameR = 'SecondAPIContractR';
+    const tokenName = 'FirstToken';
 
-    let contractUuidW, contractIdW, contractIdR, contractUuidR, tokenId, wipeRequestId;
+    let contractUuidW; let contractIdW; let contractIdR; let contractUuidR; let tokenId; let wipeRequestId;
 
-    describe("Reject", () => {
+    describe('Reject', () => {
 
-        before("Get request id", () => {
+        before('Get request id', () => {
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.GET,
@@ -21,7 +21,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
                         authorization,
                     },
                     qs: {
-                        "type": "WIPE",
+                        'type': 'WIPE',
                     },
                 }).then((response) => {
                     contractUuidW = response.body.at(0).contractId;
@@ -44,22 +44,22 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
             })
         })
 
-        it("Reject wipe contract requests without auth token - Negative", () => {
+        it('Reject wipe contract requests without auth token - Negative', () => {
             cy.request({
                 method: METHOD.DELETE,
-                url: API.ApiServer + API.WipeRequests + wipeRequestId + "/" + API.Reject,
+                url: API.ApiServer + API.WipeRequests + wipeRequestId + '/' + API.Reject,
                 failOnStatusCode: false,
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
             });
         });
 
-        it("Reject wipe contract requests with invalid auth token - Negative", () => {
+        it('Reject wipe contract requests with invalid auth token - Negative', () => {
             cy.request({
                 method: METHOD.DELETE,
-                url: API.ApiServer + API.WipeRequests + wipeRequestId + "/" + API.Reject,
+                url: API.ApiServer + API.WipeRequests + wipeRequestId + '/' + API.Reject,
                 headers: {
-                    authorization: "Bearer wqe",
+                    authorization: 'Bearer wqe',
                 },
                 failOnStatusCode: false,
             }).then((response) => {
@@ -67,12 +67,12 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
             });
         });
 
-        it("Reject wipe contract requests with empty auth token - Negative", () => {
+        it('Reject wipe contract requests with empty auth token - Negative', () => {
             cy.request({
                 method: METHOD.DELETE,
-                url: API.ApiServer + API.WipeRequests + wipeRequestId + "/" + API.Reject,
+                url: API.ApiServer + API.WipeRequests + wipeRequestId + '/' + API.Reject,
                 headers: {
-                    authorization: "",
+                    authorization: '',
                 },
                 failOnStatusCode: false,
             }).then((response) => {
@@ -80,11 +80,11 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
             });
         });
 
-        it("Reject wipe contract requests", () => {
+        it('Reject wipe contract requests', () => {
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.DELETE,
-                    url: API.ApiServer + API.WipeRequests + wipeRequestId + "/" + API.Reject,
+                    url: API.ApiServer + API.WipeRequests + wipeRequestId + '/' + API.Reject,
                     headers: {
                         authorization,
                     }
@@ -108,9 +108,9 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
         })
     })
 
-    describe("Clear", () => {
+    describe('Clear', () => {
 
-        before("Set pool", () => {
+        before('Set pool', () => {
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.GET,
@@ -119,7 +119,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
                         authorization,
                     },
                     qs: {
-                        "type": "RETIRE",
+                        'type': 'RETIRE',
                     },
                     timeout: 180000
                 }).then((response) => {
@@ -132,7 +132,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
                             authorization,
                         },
                         qs: {
-                            "type": "WIPE",
+                            'type': 'WIPE',
                         },
                     }).then((response) => {
                         contractIdW = response.body.at(0).id;
@@ -151,7 +151,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
                             });
                             cy.request({
                                 method: METHOD.POST,
-                                url: API.ApiServer + API.RetireContract + contractIdR + "/" + API.PoolContract,
+                                url: API.ApiServer + API.RetireContract + contractIdR + '/' + API.PoolContract,
                                 headers: {
                                     authorization,
                                 },
@@ -189,22 +189,22 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
             })
         })
 
-        it("Clear wipe contract requests without auth token - Negative", () => {
+        it('Clear wipe contract requests without auth token - Negative', () => {
             cy.request({
                 method: METHOD.DELETE,
-                url: API.ApiServer + API.WipeContract + contractUuidW + "/" + API.Requests,
+                url: API.ApiServer + API.WipeContract + contractUuidW + '/' + API.Requests,
                 failOnStatusCode: false,
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
             });
         });
 
-        it("Clear wipe contract requests with invalid auth token - Negative", () => {
+        it('Clear wipe contract requests with invalid auth token - Negative', () => {
             cy.request({
                 method: METHOD.DELETE,
-                url: API.ApiServer + API.WipeContract + contractUuidW + "/" + API.Requests,
+                url: API.ApiServer + API.WipeContract + contractUuidW + '/' + API.Requests,
                 headers: {
-                    authorization: "Bearer wqe",
+                    authorization: 'Bearer wqe',
                 },
                 failOnStatusCode: false,
             }).then((response) => {
@@ -212,12 +212,12 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
             });
         });
 
-        it("Clear wipe contract requests with empty auth token - Negative", () => {
+        it('Clear wipe contract requests with empty auth token - Negative', () => {
             cy.request({
                 method: METHOD.DELETE,
-                url: API.ApiServer + API.WipeContract + contractUuidW + "/" + API.Requests,
+                url: API.ApiServer + API.WipeContract + contractUuidW + '/' + API.Requests,
                 headers: {
-                    authorization: "",
+                    authorization: '',
                 },
                 failOnStatusCode: false,
             }).then((response) => {
@@ -225,11 +225,11 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
             });
         });
 
-        it("Clear wipe contract requests", () => {
+        it('Clear wipe contract requests', () => {
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.DELETE,
-                    url: API.ApiServer + API.WipeContract + contractIdW + "/" + API.Requests + contractUuidR,
+                    url: API.ApiServer + API.WipeContract + contractIdW + '/' + API.Requests + contractUuidR,
                     headers: {
                         authorization,
                     }

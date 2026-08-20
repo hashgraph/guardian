@@ -1,12 +1,12 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Tokens", { tags: ['tokens', 'thirdPool', 'all'] }, () => {
+context('Tokens', { tags: ['tokens', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
 
-    it("Set and unset the KYC flag for the user", { tags: ['smoke'] }, () => {
+    it('Set and unset the KYC flag for the user', { tags: ['smoke'] }, () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             //grant kyc
             cy.request({
@@ -25,9 +25,9 @@ context("Tokens", { tags: ['tokens', 'thirdPool', 'all'] }, () => {
                             API.ApiServer +
                             API.ListOfTokens +
                             tokenId +
-                            "/" +
+                            '/' +
                             UserUsername +
-                            "/grant-kyc",
+                            '/grant-kyc',
                         headers: {
                             authorization,
                         },
@@ -43,9 +43,9 @@ context("Tokens", { tags: ['tokens', 'thirdPool', 'all'] }, () => {
                                 API.ApiServer +
                                 API.ListOfTokens +
                                 tokenId +
-                                "/" +
+                                '/' +
                                 UserUsername +
-                                "/revoke-kyc",
+                                '/revoke-kyc',
                             headers: {
                                 authorization,
                             },

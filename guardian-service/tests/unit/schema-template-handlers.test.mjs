@@ -2,7 +2,10 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { MessageAPI, ModuleStatus, PolicyStatus, SchemaCategory } from '@guardian/interfaces';
-import { schemaTemplatesAPI } from '../../dist/api/schema-template.service.js';
+import {
+    removePolicySchemaTemplateSnapshot,
+    schemaTemplatesAPI,
+} from '../../dist/api/schema-template.service.js';
 import {
     callHandler,
     DatabaseServer,
@@ -20,6 +23,7 @@ const importHelpersPath = path.resolve(__dirname, '../../dist/helpers/import-hel
 const owner = {
     id: 'user-1',
     owner: 'did:owner',
+    creator: 'did:owner-creator',
 };
 
 const policy = (overrides = {}) => ({
@@ -265,6 +269,62 @@ describe('schema template CRUD and query handlers', () => {
         assert.equal(response.body.id, 'template-1');
     });
 
+    // forged topicId / GridFS handles in a hand-crafted zip: see the sanitizer in
+    // schema-template.service.ts for what each one reaches
+    it('CREATE_SCHEMA_TEMPLATE strips server-managed fields from the payload', async () => {
+        let saved = null;
+        stub(DatabaseServer, 'saveSchemaTemplate', async (payload) => {
+            saved = payload;
+            return { ...payload, id: 'template-new' };
+        });
+        // createTemplateTopic needs Hedera and throws here; the sanitization under
+        // test already happened, and the payload is captured above.
+        stub(DatabaseServer, 'removeSchemaTemplate', async () => undefined);
+
+        const response = await callHandler(handlers, MessageAPI.CREATE_SCHEMA_TEMPLATE, {
+            template: {
+                name: 'Forged',
+                config: {},
+                _id: 'forged-id',
+                id: 'forged-id',
+                status: ModuleStatus.PUBLISHED,
+                owner: 'did:victim',
+                creator: 'did:victim',
+                messageId: 'forged-message',
+                version: '9.9.9',
+                previousVersion: '9.9.8',
+                topicId: '0.0.999',
+                contentFileId: '64b7f1e2d3a4b5c6d7e8f901',
+                configFileId: '64b7f1e2d3a4b5c6d7e8f902',
+                _configFileId: '64b7f1e2d3a4b5c6d7e8f903',
+                uuid: 'forged-uuid'
+            },
+            owner
+        });
+
+        void response;
+        assert.ok(saved, 'the sanitized payload should have reached saveSchemaTemplate');
+
+        assert.equal(saved.topicId, undefined, 'a forged topicId must not survive import');
+        assert.equal(saved.contentFileId, undefined, 'a forged GridFS handle must not survive import');
+        assert.equal(saved.configFileId, undefined, 'a forged GridFS handle must not survive import');
+        assert.equal(saved._configFileId, undefined, 'a forged GridFS handle must not survive import');
+
+        assert.equal(saved.messageId, undefined);
+        assert.equal(saved.version, undefined);
+        assert.equal(saved.previousVersion, undefined);
+
+        assert.equal(saved.uuid, undefined, 'a pinned uuid must not survive import');
+
+        assert.equal(saved.owner, owner.owner);
+        // guards the assertion below: without a creator on the fixture it would
+        // compare undefined to undefined
+        assert.notEqual(owner.creator, undefined);
+        assert.equal(saved.creator, owner.creator);
+        assert.equal(saved.status, ModuleStatus.DRAFT);
+        assert.equal(saved.name, 'Forged', 'legitimate fields are untouched');
+    });
+
     it('CHECK_SCHEMA_TEMPLATE returns not-found when messageId is absent', async () => {
         const response = await callHandler(handlers, MessageAPI.CHECK_SCHEMA_TEMPLATE, {
             messageId: '',
@@ -450,5 +510,69 @@ describe('APPLY_SCHEMA_TEMPLATE success path', () => {
         assert.equal(updatedPolicy.schemaTemplate.templateId, 'template-1');
         assert.equal(updatedPolicy.schemaTemplate.snapshotId, 'snap-1');
         assert.equal(updatedPolicy.schemaTemplate.templateStateHash, savedSnapshot.templateStateHash);
+    });
+});
+
+/*
+ * removeSchemaTemplateSnapshot was only ever called from this module's own
+ * detach/update paths; none of the three policy delete flows called it. Deleting a
+ * draft policy with a template applied left the snapshot row behind forever, along
+ * with its two GridFS payloads - one orphan per apply/delete cycle.
+ */
+describe('removePolicySchemaTemplateSnapshot', () => {
+    afterEach(() => restoreStubs());
+
+    const arrange = (snapshot) => {
+        const removed = [];
+        stub(DatabaseServer, 'getSchemaTemplateSnapshotById', async () => snapshot);
+        stub(DatabaseServer, 'removeSchemaTemplateSnapshot', async (value) => {
+            removed.push(value);
+        });
+        return removed;
+    };
+
+    it('removes the snapshot a deleted policy was bound to', async () => {
+        const snapshot = { id: 'snapshot-1' };
+        const removed = arrange(snapshot);
+
+        await removePolicySchemaTemplateSnapshot({
+            id: 'policy-1',
+            schemaTemplate: { templateId: 'template-1', snapshotId: 'snapshot-1' },
+        });
+
+        assert.deepEqual(removed, [snapshot]);
+    });
+
+    it('does nothing for a policy with no template applied', async () => {
+        const removed = arrange({ id: 'snapshot-1' });
+
+        await removePolicySchemaTemplateSnapshot({ id: 'policy-1' });
+        await removePolicySchemaTemplateSnapshot(null);
+
+        assert.deepEqual(removed, []);
+    });
+
+    it('does nothing when the snapshot is already gone', async () => {
+        const removed = arrange(null);
+
+        await removePolicySchemaTemplateSnapshot({
+            schemaTemplate: { snapshotId: 'snapshot-1' },
+        });
+
+        assert.deepEqual(removed, []);
+    });
+
+    it('never fails the delete it is cleaning up after', async () => {
+        stub(DatabaseServer, 'getSchemaTemplateSnapshotById', async () => {
+            throw new Error('database is down');
+        });
+        const logged = [];
+
+        await assert.doesNotReject(() => removePolicySchemaTemplateSnapshot(
+            { schemaTemplate: { snapshotId: 'snapshot-1' } },
+            { error: async (error) => { logged.push(error); } }
+        ));
+
+        assert.equal(logged.length, 1, 'the failure is logged rather than swallowed silently');
     });
 });

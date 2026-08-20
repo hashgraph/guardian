@@ -572,10 +572,13 @@ export class PolicyImport {
 
         const components = await SchemaTemplateImportExport.parseZipFile(message.document);
         const templatePayload: any = components.template || {};
+        // same list as createSchemaTemplate's sanitizer - this zip is equally forgeable
         delete templatePayload._id;
         delete templatePayload.id;
         delete templatePayload.configFileId;
         delete templatePayload.contentFileId;
+        delete templatePayload._configFileId;
+        delete templatePayload.uuid;
 
         templatePayload.owner = message.owner;
         templatePayload.creator = message.owner;

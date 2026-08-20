@@ -1,8 +1,8 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
+context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     let policyId;
@@ -22,12 +22,12 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
         })
     });
 
-    it("export policy message", () => {
+    it('export policy message', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
                 url:
-                    API.ApiServer + "policies/" + policyId + "/export/message",
+                    API.ApiServer + 'policies/' + policyId + '/export/message',
                 headers: {
                     authorization,
                 },

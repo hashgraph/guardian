@@ -1,11 +1,11 @@
-import { randomInt } from "../../../support/random";
+import { randomInt } from '../../../support/random';
 
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
-import * as Checks from "../../../support/checkingMethods";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
+import * as Checks from '../../../support/checkingMethods';
 
-context("IPFS", { tags: ['ipfs', 'secondPool', 'all'] }, () => {
+context('IPFS', { tags: ['ipfs', 'secondPool', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const ipfsFileUrl = `${API.ApiServer}${API.IPFSFile}`;
@@ -21,7 +21,7 @@ context("IPFS", { tags: ['ipfs', 'secondPool', 'all'] }, () => {
             url: ipfsFileUrl,
             body,
             headers: {
-                "content-type": "binary/octet-stream",
+                'content-type': 'binary/octet-stream',
                 authorization,
             },
             timeout: 200000,
@@ -35,14 +35,6 @@ context("IPFS", { tags: ['ipfs', 'secondPool', 'all'] }, () => {
             failOnStatusCode: false,
         });
 
-    const getFileWithAuth = (authorization, cid) =>
-        cy.request({
-            method: METHOD.GET,
-            url: ipfsFileUrl + cid,
-            headers: { authorization },
-            failOnStatusCode: false,
-        });
-
     const getFileWithoutAuth = (cid, headers = {}) =>
         cy.request({
             method: METHOD.GET,
@@ -51,7 +43,7 @@ context("IPFS", { tags: ['ipfs', 'secondPool', 'all'] }, () => {
             failOnStatusCode: false,
         });
 
-    it("Add file to ipfs", () => {
+    it('Add file to ipfs', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             addFileWithAuth(authorization, {
                 randTest1: firstRandom,
@@ -64,25 +56,25 @@ context("IPFS", { tags: ['ipfs', 'secondPool', 'all'] }, () => {
         });
     });
 
-    it("Add file to ipfs without auth token - Negative", () => {
+    it('Add file to ipfs without auth token - Negative', () => {
         addFileWithoutAuth().then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Add file to ipfs with invalid auth token - Negative", () => {
-        addFileWithoutAuth({ authorization: "Bearer wqe" }).then((response) => {
+    it('Add file to ipfs with invalid auth token - Negative', () => {
+        addFileWithoutAuth({ authorization: 'Bearer wqe' }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Add file to ipfs with empty auth token - Negative", () => {
-        addFileWithoutAuth({ authorization: "" }).then((response) => {
+    it('Add file to ipfs with empty auth token - Negative', () => {
+        addFileWithoutAuth({ authorization: '' }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Get file from ipfs", () => {
+    it('Get file from ipfs', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             const waitForFile = {
                 method: METHOD.GET,
@@ -101,20 +93,20 @@ context("IPFS", { tags: ['ipfs', 'secondPool', 'all'] }, () => {
         });
     });
 
-    it("Get file from ipfs without auth token - Negative", () => {
+    it('Get file from ipfs without auth token - Negative', () => {
         getFileWithoutAuth(cid).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Get file from ipfs with invalid auth token - Negative", () => {
-        getFileWithoutAuth(cid, { authorization: "Bearer wqe" }).then((response) => {
+    it('Get file from ipfs with invalid auth token - Negative', () => {
+        getFileWithoutAuth(cid, { authorization: 'Bearer wqe' }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Get file from ipfs with empty auth token - Negative", () => {
-        getFileWithoutAuth(cid, { authorization: "" }).then((response) => {
+    it('Get file from ipfs with empty auth token - Negative', () => {
+        getFileWithoutAuth(cid, { authorization: '' }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });

@@ -79,6 +79,7 @@ import { AISuggestionsService } from '../helpers/ai-suggestions.js';
 import { publishFormula } from '../api/helpers/formulas-helpers.js';
 import { FilterObject } from '@mikro-orm/core';
 import { PolicyDataMigrator } from './helpers/policy-data-migrator.js';
+import { removePolicySchemaTemplateSnapshot } from '../api/schema-template.service.js';
 
 /**
  * Result of publishing
@@ -940,6 +941,8 @@ export class PolicyEngine extends NatsService {
         notifier.completeStep(STEP_DELETE_CREDENTIALS);
 
         notifier.startStep(STEP_DELETE_POLICY);
+        // must run before the policy row goes: snapshotId lives on it
+        await removePolicySchemaTemplateSnapshot(policyToDelete, logger);
         await DatabaseServer.deletePolicy(policyToDelete.id);
         notifier.completeStep(STEP_DELETE_POLICY);
 
@@ -1034,6 +1037,8 @@ export class PolicyEngine extends NatsService {
         notifier.completeStep(STEP_DELETE_CREDENTIALS);
 
         notifier.startStep(STEP_DELETE_POLICY);
+        // must run before the policy row goes: snapshotId lives on it
+        await removePolicySchemaTemplateSnapshot(policyToDelete, logger);
         await DatabaseServer.deletePolicy(policyToDelete.id);
         notifier.completeStep(STEP_DELETE_POLICY);
 
@@ -1146,6 +1151,8 @@ export class PolicyEngine extends NatsService {
         notifier.completeStep(STEP_DELETE_CREDENTIALS);
 
         notifier.startStep(STEP_DELETE_POLICY);
+        // must run before the policy row goes: snapshotId lives on it
+        await removePolicySchemaTemplateSnapshot(policyToDelete, logger);
         await DatabaseServer.deletePolicy(policyToDelete.id);
         notifier.completeStep(STEP_DELETE_POLICY);
 

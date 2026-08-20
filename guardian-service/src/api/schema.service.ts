@@ -1864,11 +1864,14 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
             const notifier = await NewNotifier.create(task);
 
             RunFunctionAsync(async () => {
+                // the returned value is discarded here, so these have to be thrown:
+                // the caller only learns about them through the task, and a task that
+                // is never failed is polled until it times out
                 if (!schemaIds || schemaIds?.length <= 0) {
-                    return new MessageError('Invalid schema ids');
+                    throw new Error('Invalid schema ids');
                 }
                 if (!owner) {
-                    return new MessageError('Invalid schema owner');
+                    throw new Error('Invalid schema owner');
                 }
 
                 const schemas = await DatabaseServer.getSchemas({
@@ -1876,7 +1879,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     owner: owner.owner
                 });
                 if (!schemas || schemas?.length <= 0) {
-                    return new MessageError('Schemas is not found');
+                    throw new Error('Schemas is not found');
                 }
 
                 const childSchemas = new Map<string, SchemaCollection>();

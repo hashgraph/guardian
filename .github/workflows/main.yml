@@ -2,8 +2,8 @@ name: Guardian CI
 on:
   workflow_dispatch:
   push:
-    branches-ignore:
-      - 'dependabot/**'
+    paths-ignore:
+      - 'docs/**'
 jobs:
   buildAndTest:
     name: Build and Test (Manual - Main)
@@ -15,7 +15,7 @@ jobs:
         node-version: [ 24.18.1 ]
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40 # v2.20.1
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
         with:
           egress-policy: audit
 
@@ -46,6 +46,12 @@ jobs:
           yarn run build
           popd
           pushd common
+          yarn run build
+          popd
+          pushd ai-service
+          yarn run build
+          popd
+          pushd analytics-service
           yarn run build
           popd
           pushd logger-service
@@ -133,13 +139,43 @@ jobs:
 
       - name: Test
         run: |
+          pushd interfaces
+          npm run test
+          popd
           pushd common
+          npm run test
+          popd
+          pushd ai-service
+          npm run test
+          popd
+          pushd analytics-service
+          npm run test
+          popd
+          pushd api-gateway
+          npm run test
+          popd
+          pushd auth-service
+          npm run test
+          popd
+          pushd guardian-service
+          npm run test
+          popd
+          pushd logger-service
+          npm run test
+          popd
+          pushd notification-service
           npm run test
           popd
           pushd policy-service
           npm run test
           popd
-          pushd guardian-service
+          pushd queue-service
+          npm run test
+          popd
+          pushd topic-listener-service
+          npm run test
+          popd
+          pushd worker-service
           npm run test
           popd
         env:

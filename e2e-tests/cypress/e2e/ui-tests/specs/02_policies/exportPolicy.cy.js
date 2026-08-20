@@ -1,14 +1,14 @@
-import { randomInt } from "../../../../support/random";
-import { HomePage } from "../../pages/homePage";
+import { randomInt } from '../../../../support/random';
+import { HomePage } from '../../pages/homePage';
 const homepage = new HomePage();
 
-import { PoliciesPage } from "../../pages/policiesPage";
+import { PoliciesPage } from '../../pages/policiesPage';
 const policiesPage = new PoliciesPage();
 
-context("Export Policy", { tags: ['ui'] }, () => {
+context('Export Policy', { tags: ['ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
-    const name = randomInt(999) + "testName";
+    const name = randomInt(999) + 'testName';
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
@@ -16,42 +16,42 @@ context("Export Policy", { tags: ['ui'] }, () => {
         homepage.login(SRUsername);
         policiesPage.openPoliciesTab();
     })
-    
-    it("Verify if it possible to Export draft policy using file", () => {
+
+    it('Verify if it possible to Export draft policy using file', () => {
         policiesPage.createPolicy();
         policiesPage.fillNewPolicyForm(name);
         policiesPage.backToPoliciesList();
-        policiesPage.checkStatus(name, "Draft");
+        policiesPage.checkStatus(name, 'Draft');
         policiesPage.exportPolicyAsFile(name);
     });
 
-    it("Verify if it impossible to Export draft policy using message identifier", () => {
-        policiesPage.checkStatus(name, "Draft");
+    it('Verify if it impossible to Export draft policy using message identifier', () => {
+        policiesPage.checkStatus(name, 'Draft');
         policiesPage.openExportModal(name);
-        policiesPage.verifyThatButtonDisabled(" Copy message identifier ");
+        policiesPage.verifyThatButtonDisabled(' Copy message identifier ');
     });
 
-    it("Verify if it possible to Export dry run policy using file", () => {
+    it('Verify if it possible to Export dry run policy using file', () => {
         policiesPage.startDryRun(name);
-        policiesPage.checkStatus(name, "In Dry Run");
+        policiesPage.checkStatus(name, 'In Dry Run');
         policiesPage.exportPolicyAsFile(name);
     });
 
-    it("Verify if it impossible to Export dry run policy using message identifier", () => {
-        policiesPage.checkStatus(name, "In Dry Run");
+    it('Verify if it impossible to Export dry run policy using message identifier', () => {
+        policiesPage.checkStatus(name, 'In Dry Run');
         policiesPage.openExportModal(name);
-        policiesPage.verifyThatButtonDisabled(" Copy message identifier ");
+        policiesPage.verifyThatButtonDisabled(' Copy message identifier ');
     });
 
-    it("Verify if it possible to Export published policy using file", () => {
+    it('Verify if it possible to Export published policy using file', () => {
         policiesPage.publishPolicy(name);
         policiesPage.backToPoliciesList();
-        policiesPage.checkStatus(name, "Published");
+        policiesPage.checkStatus(name, 'Published');
         policiesPage.exportPolicyAsFile(name);
     });
 
-    it("Verify if it possible to Export published policy using message identifier", () => {
-        policiesPage.checkStatus(name, "Published");
+    it('Verify if it possible to Export published policy using message identifier', () => {
+        policiesPage.checkStatus(name, 'Published');
         policiesPage.exportPolicyAsMessageId(name);
     });
 });

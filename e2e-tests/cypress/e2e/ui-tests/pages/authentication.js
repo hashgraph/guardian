@@ -1,4 +1,4 @@
-import URL from "../../../support/GuardianUrls";
+import URL from '../../../support/GuardianUrls';
 
 const AuthPageLocators = {
     usernameInput: '[formcontrolname="login"]',
@@ -6,12 +6,12 @@ const AuthPageLocators = {
     submitBtn: '[type="submit"]',
     logoutBtn: '[mattooltip="Logout"]',
     did: 'did:hedera:testnet',
-    nextBtn: " Next ",
-    generateBtn: "Generate",
+    nextBtn: ' Next ',
+    generateBtn: 'Generate',
     geographyInput: '[ng-reflect-name="geography"]',
     lawInput: '[ng-reflect-name="law"]',
     standardregistryList: 'api/v1/schemas/system/entity/STANDARD_REGISTRY',
-    connectBtn: "Connect",
+    connectBtn: 'Connect',
     tagsInput: '[ng-reflect-name="tags"]',
     isicInput: '[ng-reflect-name="ISIC"]',
     createNewBtn: "*[class^='create-link']",
@@ -29,19 +29,18 @@ export class AuthenticationPage {
 
     static waitForTask() {
         cy.intercept(AuthPageLocators.taskReq).as(
-            "waitForTastToComplete"
+            'waitForTastToComplete'
         );
-        cy.wait("@waitForTastToComplete", { timeout: 100000 })
+        cy.wait('@waitForTastToComplete', { timeout: 100000 })
     }
 
-
     login(username) {
-        cy.reload()
-        const inputName = cy.get(AuthPageLocators.usernameInput);
-        inputName.type(username);
-        const inputPass = cy.get(AuthPageLocators.passInput);
-        inputPass.type("test");
-        cy.get(AuthPageLocators.submitBtn).click();
+        cy.fixture('credentials').then(({ goodPassword }) => {
+            cy.reload();
+            cy.get(AuthPageLocators.usernameInput).type(username);
+            cy.get(AuthPageLocators.passInput).type(goodPassword);
+            cy.get(AuthPageLocators.submitBtn).click();
+        });
     }
 
     logOut(username) {
@@ -51,23 +50,22 @@ export class AuthenticationPage {
     checkSetup(role) {
         cy.wait(2000);
 
-
-        cy.get("body").then((body) => {
+        cy.get('body').then((body) => {
             if (body.find(AuthPageLocators.card).length) {
-                cy.log("Requires registration")
+                cy.log('Requires registration')
 
                 cy.contains('StandardRegistry').click();
                 cy.contains('Next').click();
                 cy.contains(AuthPageLocators.generateBtn).click();
                 AuthenticationPage.waitForTask();
-                cy.contains("Submit").click();
-                cy.intercept("/api/v1/profiles/" + role).as("waitForRegister" + role);
-                cy.wait("@waitForRegister" + role, { timeout: 180000 }).then(() => {
-                    cy.contains("Policies").click({ force: true });
+                cy.contains('Submit').click();
+                cy.intercept('/api/v1/profiles/' + role).as('waitForRegister' + role);
+                cy.wait('@waitForRegister' + role, { timeout: 180000 }).then(() => {
+                    cy.contains('Policies').click({ force: true });
                 });
             }
             else {
-                cy.log("Role already set")
+                cy.log('Role already set')
             }
         });
     }
@@ -76,8 +74,8 @@ export class AuthenticationPage {
         cy.get(AuthPageLocators.createNewBtn).click();
         cy.contains(AuthPageLocators.roleName, role).click();
         cy.wait(8000);
-        cy.contains("*[type^='submit']", "Create").click();
-        cy.get("body").then((body) => {
+        cy.contains("*[type^='submit']", 'Create').click();
+        cy.get('body').then((body) => {
             cy.get('[role="combobox"]')
                 .click()
                 .then(() => {
@@ -85,25 +83,25 @@ export class AuthenticationPage {
                     cy.contains(AuthPageLocators.generateBtn).click();
                     cy.wait(5000);
                 });
-            cy.contains("Submit").click();
+            cy.contains('Submit').click();
             cy.wait(12000);
         });
     }
 
     createNewSR(login) {
         cy.get(AuthPageLocators.createNewBtn).click();
-        cy.contains(AuthPageLocators.roleName, "Standard Registry").click();
+        cy.contains(AuthPageLocators.roleName, 'Standard Registry').click();
         cy.wait(8000);
         cy.get(AuthPageLocators.usernameInput).clear().type(login);
-        cy.contains("*[type^='submit']", "Create").click();
+        cy.contains("*[type^='submit']", 'Create').click();
         cy.contains(AuthPageLocators.generateBtn).click();
         AuthenticationPage.waitForTask();
         cy.wait(4000);
         cy.contains(AuthPageLocators.nextBtn).click();
-        cy.get(AuthPageLocators.geographyInput).type("test");
-        cy.get(AuthPageLocators.lawInput).type("law");
-        cy.get(AuthPageLocators.tagsInput).type("tag");
-        cy.get(AuthPageLocators.isicInput).type("version1");
+        cy.get(AuthPageLocators.geographyInput).type('test');
+        cy.get(AuthPageLocators.lawInput).type('law');
+        cy.get(AuthPageLocators.tagsInput).type('tag');
+        cy.get(AuthPageLocators.isicInput).type('version1');
         cy.contains(AuthPageLocators.connectBtn).click();
         cy.intercept(AuthPageLocators.standardregistryList).as('waitForSetup')
         cy.wait('@waitForSetup', { timeout: 200000 });

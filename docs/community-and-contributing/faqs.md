@@ -9,15 +9,15 @@ tags:
 This page is flagged to be updated. Don't see your questions listed? Send an inquiry to guardian-feedback@hashgraph.com
 {% endhint %}
 
-**1.How can I get started with the Guardian?**
+1. **How can I get started with the Guardian?**
 
-To get started you can choose from one of the following options depending upon your level of technical experience.
+To get started you can choose from one of the following options depending upon your level of technical experience. Visit [getting-started](../guardian/getting-started/ "mention") for more details.
 
 <table><thead><tr><th width="255.2109375">Option</th><th width="197.64453125">Format</th><th>Technical Complexity</th></tr></thead><tbody><tr><td><a href="https://www.climission.com/mgs">Managed Guardian Service</a></td><td>SaaS / Free Trial</td><td>Low</td></tr><tr><td><a href="https://github.com/hashgraph/guardian/#quickstart">Quickstart guide</a></td><td>Docker containers</td><td>Medium</td></tr><tr><td><a href="https://github.com/hashgraph/guardian/#getting-started">Building from source</a></td><td>Source code</td><td>High</td></tr></tbody></table>
 
 **2. How can I create a policy?**
 
-You can use the policy editor or APIs to create a policy workflow. Some examples can be found in [Methodology Digitization](https://app.gitbook.com/s/bKnJV8vV7zUxRwKIsJKg/methodology-digitization "mention") and [creating-a-policy-through-policy-configurator](../guardian/workspace/policies/policy-creation/creating-a-policy-through-policy-configurator/ "mention")here and there is a quick start guide to help you publish your first policy.
+You can use the policy editor or APIs to create a policy workflow. Some examples can be found in [Methodology Digitalization](https://app.gitbook.com/s/bKnJV8vV7zUxRwKIsJKg/methodology-digitalization "mention") and [creating-a-policy-through-policy-configurator](../guardian/tutorials/creating-a-policy-through-policy-configurator/ "mention")here and there is a quick start guide to help you publish your first policy.
 
 **5. Where can I get notified of updates, trainings, and workshops?**
 

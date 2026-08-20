@@ -1,12 +1,11 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-
-context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
+context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
-    it("Push import new policy and all associated artifacts from IPFS", () => {
+    it('Push import new policy and all associated artifacts from IPFS', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
@@ -14,7 +13,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                 body: {
                     messageId: (Cypress.env('policy_with_artifacts')),
                     metadata: {
-                        "tools": {}
+                        'tools': {}
                     }
                 },
                 headers: {
