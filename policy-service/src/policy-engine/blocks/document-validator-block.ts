@@ -108,14 +108,24 @@ export class DocumentValidatorBlock {
         if (sourceValidation.onlyOwnDocuments && user?.did) {
             filter.owner = { $eq: user.did };
         }
-        if (sourceValidation.onlyOwnByGroupDocuments && user?.group) {
-            filter.group = { $eq: user.group };
+        /*
+         * A group restriction with no group must not widen the search. These used to be
+         * skipped entirely when the user had no active group (a non-group policy, or
+         * before group selection), so an "own group only" entry ran with NO group filter
+         * and every document in the policy became a candidate - another participant's
+         * document could satisfy it. The direct document checks in this same block fail
+         * closed in that situation, so it was inconsistent as well as fail-open. An
+         * impossible filter is the honest translation of "only my group" when there is
+         * no group.
+         */
+        if (sourceValidation.onlyOwnByGroupDocuments) {
+            filter.group = user?.group ? { $eq: user.group } : { $in: [] };
         }
         if (sourceValidation.onlyAssignDocuments && user?.did) {
             filter.assignedTo = { $eq: user.did };
         }
-        if (sourceValidation.onlyAssignByGroupDocuments && user?.group) {
-            filter.assignedToGroup = { $eq: user.group };
+        if (sourceValidation.onlyAssignByGroupDocuments) {
+            filter.assignedToGroup = user?.group ? { $eq: user.group } : { $in: [] };
         }
 
         for (const f of (sourceValidation.filters || [])) {
