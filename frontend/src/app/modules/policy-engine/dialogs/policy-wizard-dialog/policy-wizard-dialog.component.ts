@@ -521,7 +521,14 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
         const newNode: any = {
             id: `${node.id}.${node.children.length + 1}`,
             icon: node.icon,
-            name: `${role} configuration`,
+            /*
+             * This and the trust-chain role node were both called "<role>
+             * configuration", so the same label appeared under Policy Schemas and again
+             * under Trust Chain. The step walk is a plain depth-first pass with no
+             * wrap-around, but two identically named stops read as one the user keeps
+             * returning to, which is why the flow felt like a loop with no end.
+             */
+            name: node.schema?.name ? `${role} in ${node.schema.name}` : `${role} configuration`,
             parent: node,
             template: this.schemaRoleConfig,
             fields,
@@ -798,7 +805,7 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
         const newNode = {
             id: `${node.id}.${node.children.length + 1}`,
             icon: node.icon,
-            name: `${trustChainRole} configuration`,
+            name: `${trustChainRole} trust chain`,
             children: [],
             parent: node,
             template: this.trustChainRoleConfig,
