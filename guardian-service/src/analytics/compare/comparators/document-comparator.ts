@@ -255,19 +255,19 @@ export class DocumentComparator {
                 const colData = cols[index];
                 if (colData) {
                     if (index === 0) {
-                        row[`lvl`] = colData.lvl;
-                        row[`document_type`] = colData.document_type;
-                        row[`document_schema`] = colData.document_schema;
-                        row[`left`] = colData.left;
-                        row[`left_id`] = colData.left_id;
-                        row[`left_message_id`] = colData.left_message_id;
-                        row[`left_type`] = colData.left_type;
-                        row[`left_schema`] = colData.left_schema;
-                        row[`left_owner`] = colData.left_owner;
+                        row.lvl = colData.lvl;
+                        row.document_type = colData.document_type;
+                        row.document_schema = colData.document_schema;
+                        row.left = colData.left;
+                        row.left_id = colData.left_id;
+                        row.left_message_id = colData.left_message_id;
+                        row.left_type = colData.left_type;
+                        row.left_schema = colData.left_schema;
+                        row.left_owner = colData.left_owner;
                     } else {
-                        row[`lvl`] = colData.lvl;
-                        row[`document_type`] = colData.document_type;
-                        row[`document_schema`] = colData.document_schema;
+                        row.lvl = colData.lvl;
+                        row.document_type = colData.document_type;
+                        row.document_schema = colData.document_schema;
                         row[`type_${index}`] = colData.type;
                         row[`right_${index}`] = colData.right;
                         row[`right_id_${index}`] = colData.right_id;

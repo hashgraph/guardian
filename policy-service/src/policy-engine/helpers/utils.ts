@@ -98,7 +98,7 @@ export class PolicyUtils {
                 }
             });
             return variables;
-        } catch (error) {
+        } catch {
             return variables;
         }
     }
@@ -113,7 +113,7 @@ export class PolicyUtils {
         return (function (math: any, _formula: string, _scope: any) {
             try {
                 return math.evaluate(_formula, _scope);
-            } catch (error) {
+            } catch {
                 return 'Incorrect formula';
             }
         }).call(null, mathjs, formula, scope);
@@ -129,7 +129,7 @@ export class PolicyUtils {
         return (function (math: any, _formula: string, _scope: any) {
             try {
                 return math.evaluate(_formula, _scope);
-            } catch (error) {
+            } catch {
                 return 'Incorrect formula';
             }
         }).call(null, PolicyUtils.customFunctions, formula, scope);
@@ -163,7 +163,7 @@ export class PolicyUtils {
         let amount = 0;
         for (const element of vcs) {
             const scope = PolicyUtils.getVCScope(element);
-            const value = parseFloat(PolicyUtils.evaluateFormula(rule, scope));
+            const value = Number.parseFloat(PolicyUtils.evaluateFormula(rule, scope));
             amount += value;
         }
         return amount;
@@ -190,7 +190,7 @@ export class PolicyUtils {
      * @param method
      */
     public static tokenAmount(token: Token, amount: number, method: string): [number, string] {
-        const decimals = parseFloat(token.decimals) || 0;
+        const decimals = Number.parseFloat(token.decimals) || 0;
         const _decimals = Math.pow(10, decimals);
         let tokenValue: number;
         switch (method) {
@@ -237,7 +237,7 @@ export class PolicyUtils {
                     return null;
                 }
                 if (key === 'L' && Array.isArray(result)) {
-                    result = result[result.length - 1];
+                    result = result.at(-1);
                 } else {
                     result = result[key];
                 }
@@ -263,12 +263,12 @@ export class PolicyUtils {
                 }
                 const key = keys[i];
                 if (key === 'L' && Array.isArray(result)) {
-                    result = result[result.length - 1];
+                    result = result.at(-1);
                 } else {
                     result = result[key];
                 }
             }
-            result[keys[keys.length - 1]] = value;
+            result[keys.at(-1)] = value;
         }
     }
 
@@ -332,7 +332,7 @@ export class PolicyUtils {
                     return data.document.credentialSubject.id;
                 }
             }
-        } catch (error) {
+        } catch {
             return null;
         }
         return null;
@@ -351,7 +351,7 @@ export class PolicyUtils {
                     return data.document.credentialSubject;
                 }
             }
-        } catch (error) {
+        } catch {
             return null;
         }
         return null;
@@ -370,7 +370,7 @@ export class PolicyUtils {
                     return document.credentialSubject;
                 }
             }
-        } catch (error) {
+        } catch {
             return null;
         }
         return null;
@@ -407,12 +407,12 @@ export class PolicyUtils {
         if (document && document.document) {
             if (Array.isArray(document.document.credentialSubject)) {
                 return (
-                    document.document.credentialSubject[0]['@context'].indexOf(context) > -1 &&
+                    document.document.credentialSubject[0]['@context'].includes(context) &&
                     document.document.credentialSubject[0].type === iri
                 );
             } else {
                 return (
-                    document.document.credentialSubject['@context'].indexOf(context) > -1 &&
+                    document.document.credentialSubject['@context'].includes(context) &&
                     document.document.credentialSubject.type === iri
                 );
             }
@@ -456,7 +456,7 @@ export class PolicyUtils {
 
         if (Array.isArray(data)) {
             if (key === 'L') {
-                const last = data[data.length - 1];
+                const last = data.at(-1);
                 if (rest === null) {
                     return last ?? null;
                 }
@@ -531,8 +531,8 @@ export class PolicyUtils {
             if (rightIsArray) {
                 // coerce both sides — consistent with compareScalarPair's string path
                 const cl = PolicyUtils.coerceComparable(left);
-                const haystack = right.flat(Infinity).map((v: any) => PolicyUtils.coerceComparable(v));
-                return type === 'in' ? haystack.includes(cl) : !haystack.includes(cl);
+                const haystack = new Set(right.flat(Infinity).map((v: any) => PolicyUtils.coerceComparable(v)));
+                return type === 'in' ? haystack.has(cl) : !haystack.has(cl);
             }
             return PolicyUtils.compareScalarPair(left, type, right);
         }
@@ -584,14 +584,14 @@ export class PolicyUtils {
                 return filter.value !== value;
             case 'in': {
                 if (Array.isArray(value)) {
-                    return value.indexOf(filter.value) > -1;
+                    return value.includes(filter.value);
                 }
                 const list = String(filter.value).split(',').map((v: string) => v.trim());
                 return list.includes(String(value));
             }
             case 'not_in': {
                 if (Array.isArray(value)) {
-                    return value.indexOf(filter.value) === -1;
+                    return !value.includes(filter.value);
                 }
                 const list = String(filter.value).split(',').map((v: string) => v.trim());
                 return !list.includes(String(value));
@@ -1766,7 +1766,7 @@ export class PolicyUtils {
         if (typeof file === 'string') {
             return file;
         } else {
-            throw new Error(`File does not exist`);
+            throw new TypeError(`File does not exist`);
         }
     }
 
@@ -1900,31 +1900,31 @@ export class PolicyUtils {
     public static parseFilterValue(value: string): [QueryType, string] {
         if (typeof value === 'string') {
             if (value.startsWith('eq:')) {
-                return [QueryType.eq, value.substring('eq'.length + 1)];
+                return [QueryType.eq, value.slice(Math.max(0, 'eq'.length + 1))];
             }
             if (value.startsWith('ne:')) {
-                return [QueryType.ne, value.substring('ne'.length + 1)];
+                return [QueryType.ne, value.slice(Math.max(0, 'ne'.length + 1))];
             }
             if (value.startsWith('in:')) {
-                return [QueryType.in, value.substring('in'.length + 1)];
+                return [QueryType.in, value.slice(Math.max(0, 'in'.length + 1))];
             }
             if (value.startsWith('nin:')) {
-                return [QueryType.nin, value.substring('nin'.length + 1)];
+                return [QueryType.nin, value.slice(Math.max(0, 'nin'.length + 1))];
             }
             if (value.startsWith('gt:')) {
-                return [QueryType.gt, value.substring('gt'.length + 1)];
+                return [QueryType.gt, value.slice(Math.max(0, 'gt'.length + 1))];
             }
             if (value.startsWith('gte:')) {
-                return [QueryType.gte, value.substring('gte'.length + 1)];
+                return [QueryType.gte, value.slice(Math.max(0, 'gte'.length + 1))];
             }
             if (value.startsWith('lt:')) {
-                return [QueryType.lt, value.substring('lt'.length + 1)];
+                return [QueryType.lt, value.slice(Math.max(0, 'lt'.length + 1))];
             }
             if (value.startsWith('lte:')) {
-                return [QueryType.lte, value.substring('lte'.length + 1)];
+                return [QueryType.lte, value.slice(Math.max(0, 'lte'.length + 1))];
             }
             if (value.startsWith('regex:')) {
-                return [QueryType.regex, value.substring('regex'.length + 1)];
+                return [QueryType.regex, value.slice(Math.max(0, 'regex'.length + 1))];
             }
         }
         return [null, value];
@@ -2028,13 +2028,13 @@ export class PolicyUtils {
 
     private static autoCalculateField(field: SchemaField, document: any): any {
         try {
-            const func = Function('table', `with (this) { return ${field.expression} }`);
+            const func = new Function('table', `with (this) { return ${field.expression} }`);
 
             const table = buildTableHelper();
 
             return func.apply(document, [table]);
-        } catch (error) {
-            throw Error(`Invalid expression: ${field.path}`);
+        } catch {
+            throw new Error(`Invalid expression: ${field.path}`);
         }
     }
 
@@ -2137,8 +2137,8 @@ export class PolicyUtils {
                 owner = user;
                 return [account, owner];
             }
-        } catch (error) {
-            throw Error(`Invalid relayer account.`);
+        } catch {
+            throw new Error(`Invalid relayer account.`);
         }
     }
 
@@ -2164,7 +2164,7 @@ export class PolicyUtils {
                 return (info.balance / 100000000) > 1;
             }
             return true;
-        } catch (error) {
+        } catch {
             return null;
         }
     }
@@ -2341,7 +2341,7 @@ export class PolicyUtils {
                 ref, record.ownerId, KeyType.INTEGRATION_KEY, keyPath, user.userId
             );
             return token || null;
-        } catch (e) {
+        } catch {
             return null;
         }
     }

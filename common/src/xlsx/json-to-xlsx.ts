@@ -628,7 +628,7 @@ export class JsonToXlsx {
             } else {
                 return [];
             }
-        } catch (error) {
+        } catch {
             return [];
         }
     }

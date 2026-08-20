@@ -47,7 +47,7 @@ export class PolicyActionsService {
         const topicConfig = await DatabaseServer.getTopicById(this.topicId);
         this.topic = await TopicConfig.fromObject(topicConfig, false, this.policyOwnerId);
         if (!this.topic) {
-            throw Error('Invalid action topic');
+            throw new Error('Invalid action topic');
         }
 
         this.topicListener = new TopicListener(this.topicId);
@@ -72,7 +72,7 @@ export class PolicyActionsService {
         const userMessageKey = await userCred.loadMessageKey(this.policyInstance, user.userId);
 
         if (!userMessageKey) {
-            throw Error('Decentralized access key is not set');
+            throw new Error('Decentralized access key is not set');
         }
 
         const messageServer = new MessageServer({
@@ -139,7 +139,7 @@ export class PolicyActionsService {
         const userMessageKey = await userCred.loadMessageKey(block, user.userId);
 
         if (!userMessageKey) {
-            throw Error('Decentralized access key is not set');
+            throw new Error('Decentralized access key is not set');
         }
 
         const messageServer = new MessageServer({
@@ -209,7 +209,7 @@ export class PolicyActionsService {
         const userMessageKey = await userCred.loadMessageKey(this.policyInstance, user.userId);
 
         if (!userMessageKey) {
-            throw Error('Decentralized access key is not set');
+            throw new Error('Decentralized access key is not set');
         }
 
         const messageServer = new MessageServer({
@@ -546,7 +546,7 @@ export class PolicyActionsService {
             });
             document = message.getDocument();
             loaded = true;
-        } catch (error) {
+        } catch {
             document = null;
             loaded = false;
         }
@@ -948,7 +948,7 @@ export class PolicyActionsService {
             accountId: user.hederaAccountId
         });
         if (!row) {
-            throw Error('Action not found');
+            throw new Error('Action not found');
         }
         const message = await MessageServer.tryGetMessage<PolicyActionMessage>({
             messageId,

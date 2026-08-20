@@ -89,7 +89,7 @@ export class IpfsClientClass {
                     principal,
                     store: new StoreMemory()
                 });
-                const proof = await Proof.parse(this.options.w3s.proof.replace(/[\r\n]+/g, ''));
+                const proof = await Proof.parse(this.options.w3s.proof.replaceAll(/[\r\n]+/g, ''));
                 const space = await client.addSpace(proof);
                 await client.setCurrentSpace(space.did());
                 break;
@@ -212,7 +212,7 @@ export class IpfsClientClass {
     private parseCID(cid: string): string {
         try {
             return new CID(cid).toV1().toString('base32');
-        } catch (error) {
+        } catch {
             return cid;
         }
     }

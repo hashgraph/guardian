@@ -1049,7 +1049,7 @@ function mergeCustomFieldsIntoDocument(
         }
         const property = findSchemaProperty(sourceDocument, path);
         const parent = ensureSchemaPropertyParent(targetDocument, path);
-        const fieldName = path[path.length - 1];
+        const fieldName = path.at(-1);
         if (!property || !parent || parent.properties?.[fieldName]) {
             continue;
         }
@@ -1394,7 +1394,7 @@ async function updateAppliedSchemaTemplate(
         templateSchemaById.set(schema.templateSchemaId, schema);
     }
 
-    for (const [templateSchemaId, source] of templateSchemaById.entries()) {
+    for (const [templateSchemaId, source] of templateSchemaById) {
         const target = context.policySchemaByTemplateId.get(templateSchemaId);
         if (target) {
             const targetSourceIri = source.iri;
@@ -1544,8 +1544,8 @@ async function updateCopiedSchemaRefs(
             continue;
         }
         let document = JSON.stringify(schema.document);
-        for (const [oldIri, newIri] of iriMap.entries()) {
-            document = document.replaceAll(oldIri.substring(1), newIri.substring(1));
+        for (const [oldIri, newIri] of iriMap) {
+            document = document.replaceAll(oldIri.slice(1), newIri.slice(1));
         }
         schema.document = JSON.parse(document);
         await DatabaseServer.updateSchema(schema.id, schema);
@@ -1685,7 +1685,7 @@ async function detachSchemaTemplate(
     }
 
     const binding = policy.schemaTemplate;
-    const schemaIds = new Set(Object.values(binding.schemaMap || {}).filter(id => !!id).map(id => String(id)));
+    const schemaIds = new Set(Object.values(binding.schemaMap || {}).filter(id => !!id).map(String));
     let detachedSchemas = 0;
     const schemas = await DatabaseServer.getSchemas({
         topicId: policy.topicId,

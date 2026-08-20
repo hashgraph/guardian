@@ -296,7 +296,7 @@ export class ProfileApi {
         }
         const guardians = new Guardians();
         const balance = await guardians.getUserBalance(user, username);
-        if (isNaN(parseFloat(balance))) {
+        if (Number.isNaN(Number.parseFloat(balance))) {
             throw new HttpException(balance, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         //For backward compatibility

@@ -212,10 +212,7 @@ export class SchemaComparator {
         } else {
             result = MergeUtils.notMerge<FieldModel>(fields1, fields2);
         }
-        const children: FieldsRate[] = [];
-        for (const item of result) {
-            children.push(this.compareField(item.left, item.right, options));
-        }
+        const children: FieldsRate[] = Array.from(result, item => this.compareField(item.left, item.right, options));
         return children;
     }
 

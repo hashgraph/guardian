@@ -24,7 +24,7 @@ import { MongoDriver } from '@mikro-orm/mongodb';
 import { DEFAULT_MONGO } from '#constants';
 import { AppModule } from './app.module.js';
 
-const channelName = (process.env.SERVICE_CHANNEL || `topic-listener.${GenerateUUIDv4().substring(26)}`).toUpperCase();
+const channelName = (process.env.SERVICE_CHANNEL || `topic-listener.${GenerateUUIDv4().slice(26)}`).toUpperCase();
 
 Promise.all([
     Migration({

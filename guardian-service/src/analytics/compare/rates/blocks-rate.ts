@@ -154,10 +154,7 @@ export class BlocksRate extends Rate<BlockModel> {
                 CompareUtils.mapping<string>(list, item);
             }
         }
-        const rates: IRate<any>[] = [];
-        for (const item of list) {
-            rates.push(new PermissionsRate(item.left, item.right));
-        }
+        const rates: IRate<any>[] = Array.from(list, item => new PermissionsRate(item.left, item.right));
         return rates;
     }
 
@@ -186,10 +183,7 @@ export class BlocksRate extends Rate<BlockModel> {
                 CompareUtils.mapping<EventModel>(list, item);
             }
         }
-        const rates: IRate<any>[] = [];
-        for (const item of list) {
-            rates.push(new EventsRate(item.left, item.right));
-        }
+        const rates: IRate<any>[] = Array.from(list, item => new EventsRate(item.left, item.right));
         return rates;
     }
 
@@ -218,10 +212,7 @@ export class BlocksRate extends Rate<BlockModel> {
                 CompareUtils.mapping<ArtifactModel>(list, item);
             }
         }
-        const rates: IRate<any>[] = [];
-        for (const item of list) {
-            rates.push(new ArtifactsRate(item.left, item.right));
-        }
+        const rates: IRate<any>[] = Array.from(list, item => new ArtifactsRate(item.left, item.right));
         return rates;
     }
 

@@ -315,7 +315,7 @@ function reorderImportedRecords(importedRecords: RecordEntity[]): RecordEntity[]
         g.items.push(importedRecords[i]);
     }
 
-    const groupList = Array.from(groups.entries())
+    const groupList = Array.from(groups)
         .sort((a, b) => a[1].firstIdx - b[1].firstIdx);
 
     for (const [, g] of groupList) {
@@ -473,8 +473,8 @@ async function loadImportedRecordsFromDb(
     const firstTs = toTimestamp(importedRecords[0]?.time) ?? toTimestamp(importedRecords[0]?.createDate);
     const secondTs = toTimestamp(importedRecords[1]?.time) ?? toTimestamp(importedRecords[1]?.createDate);
     const startTime = ((secondTs ?? firstTs ?? Date.now()) - 10000);
-    const endTimeCandidate = toTimestamp(importedRecords[importedRecords.length - 1]?.time) ??
-        toTimestamp(importedRecords[importedRecords.length - 1]?.createDate);
+    const endTimeCandidate = toTimestamp(importedRecords.at(-1)?.time) ??
+        toTimestamp(importedRecords.at(-1)?.createDate);
     const initialEndTime = endTimeCandidate ?? startTime;
     const endTime = (initialEndTime !== null && startTime !== null && initialEndTime <= startTime)
         ? startTime + 1
@@ -838,7 +838,7 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const items = await DatabaseServer.getRecord({ policyId, method: 'STOP' });
-                const uuid = items[items.length - 1]?.uuid;
+                const uuid = items.at(-1)?.uuid;
 
                 const zip = await RecordImportExport.generate(uuid, options?.policyTest || null);
                 const file = await zip.generateAsync({

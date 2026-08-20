@@ -23,7 +23,7 @@ export function initMathjs() {
     mathjs.import(customFunctions, { override: true });
     mathjs.import({
         // tslint:disable-next-line:only-arrow-functions object-literal-shorthand triple-equals
-        equal: function (a: any, b: any) { return a == b }
+        equal (a: any, b: any) { return a == b }
     }, { override: true });
     _mathjs = mathjs;
     FormulaEngine.setMathEngine(_mathjs);

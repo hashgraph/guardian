@@ -132,7 +132,7 @@ export class ReportItemBlock {
             ? await ref.databaseServer.getVcDocuments(filtersToVc) as VcDocument[]
             : [await ref.databaseServer.getVcDocument(filtersToVc)];
 
-        const vcDocuments: any[] = _documents.filter((vc) => vc);
+        const vcDocuments: any[] = _documents.filter(Boolean);
         const notFoundDocuments = vcDocuments.length < 1;
         item.notFoundDocuments = notFoundDocuments;
 

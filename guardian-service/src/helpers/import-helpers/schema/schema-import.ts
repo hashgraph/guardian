@@ -202,7 +202,7 @@ export class SchemaImport {
             newIRI: string | null
         }
         if (this.mode === ImportMode.VIEW) {
-            const oldUUID = schema.iri ? schema.iri.substring(1) : null;
+            const oldUUID = schema.iri ? schema.iri.slice(1) : null;
             const newUUID = oldUUID;
             ids = {
                 oldID: schema.id,
@@ -222,7 +222,7 @@ export class SchemaImport {
             delete schema.id;
             delete schema._id;
         } else {
-            const oldUUID = schema.iri ? schema.iri.substring(1) : null;
+            const oldUUID = schema.iri ? schema.iri.slice(1) : null;
             const newUUID = GenerateUUIDv4();
             ids = {
                 oldID: schema.id,
@@ -263,7 +263,7 @@ export class SchemaImport {
         // is order-independent (schemas are sorted by name, not by dependency order).
         const policySchemaUUIDs = new Set<string>();
         for (const file of schemas) {
-            const uuid = file.iri?.startsWith('#') ? file.iri.substring(1) : file.iri;
+            const uuid = file.iri?.startsWith('#') ? file.iri.slice(1) : file.iri;
             if (uuid) {
                 policySchemaUUIDs.add(uuid);
             }
@@ -292,7 +292,7 @@ export class SchemaImport {
             const defs = SchemaImportExportHelper.getDefDocuments(file);
             for (const def of defs) {
                 if (def && !this.schemaIdsMapping.has(def.$id)) {
-                    const defUUID = def.$id?.startsWith('#') ? def.$id.substring(1) : def.$id;
+                    const defUUID = def.$id?.startsWith('#') ? def.$id.slice(1) : def.$id;
                     if (policySchemaUUIDs.has(defUUID)) {
                         continue;
                     }
@@ -322,10 +322,7 @@ export class SchemaImport {
         const tools = await DatabaseServer.getTools({ status: ModuleStatus.PUBLISHED }, { fields: ['topicId'] });
         const toolSchemas = await DatabaseServer.getSchemas({ topicId: { $in: tools.map(t => t.topicId) } });
 
-        const allSchemas: Schema[] = [];
-        for (const item of schemas) {
-            allSchemas.push(new Schema(item, true));
-        }
+        const allSchemas: Schema[] = Array.from(schemas, item => new Schema(item, true));
         for (const item of toolSchemas) {
             allSchemas.push(new Schema(item, true));
         }
@@ -444,8 +441,8 @@ export class SchemaImport {
                 let documentStr = JSON.stringify(savedSchema.document);
 
                 for (const [tempIri, actualIri] of updatedSchemasIriMap) {
-                    const tempUuid = tempIri.substring(1);
-                    const actualUuid = actualIri.substring(1);
+                    const tempUuid = tempIri.slice(1);
+                    const actualUuid = actualIri.slice(1);
 
                     if (documentStr.includes(tempUuid)) {
                         documentStr = documentStr.replaceAll(tempUuid, actualUuid);

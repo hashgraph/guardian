@@ -27,7 +27,7 @@ export class DocumentsSourceAddon {
                 'approve',
                 'source'
             ];
-            if (types.indexOf(ref.options.dataType) === -1) {
+            if (!types.includes(ref.options.dataType)) {
                 validator.addError('Option "dataType" must be one of ' + types.join(','));
             }
             validator.checkBlockError(

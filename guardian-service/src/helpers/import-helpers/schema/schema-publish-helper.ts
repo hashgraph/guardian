@@ -260,10 +260,7 @@ export async function publishSchemas(
     type: MessageAction,
     notifier: INotificationStep
 ): Promise<void> {
-    const tasks = [];
-    for (const schema of schemas) {
-        tasks.push(publishSchema(schema, owner, messageServer, type, notifier));
-    }
+    const tasks = Array.from(schemas, schema => publishSchema(schema, owner, messageServer, type, notifier));
     const items = await Promise.all(tasks);
     for (const schema of items) {
         await DatabaseServer.createAndSaveSchema(schema);

@@ -77,7 +77,7 @@ export class TagsManagerBlock {
         const cache = await ref.databaseServer.getTagCache(filter);
         return {
             entity: TagType.PolicyDocument,
-            refreshDate: cache[cache.length - 1]?.date,
+            refreshDate: cache.at(-1)?.date,
             target: documentId,
             owner: user.did,
             tags,

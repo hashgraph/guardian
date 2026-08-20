@@ -6,5 +6,5 @@ export function GenerateTLSOptionsNats() {
             ca: process.env.TLS_CA
         }
     }
-    return undefined;
+    return;
 }

@@ -95,8 +95,8 @@ export class SplitBlock {
         try {
             const options = await ref.getOptions(user);
             const value = PolicyUtils.getObjectValue<any>(doc, options.sourceField);
-            return parseFloat(value);
-        } catch (error) {
+            return Number.parseFloat(value);
+        } catch {
             return 0;
         }
     }
@@ -181,7 +181,7 @@ export class SplitBlock {
         actionStatusId: string
     ) {
         const options = await ref.getOptions(user);
-        const threshold = parseFloat(options.threshold);
+        const threshold = Number.parseFloat(options.threshold);
         const value = await this.calcDocValue(ref, document, user);
 
         let sum = 0;
@@ -211,7 +211,7 @@ export class SplitBlock {
         } else {
             const count = Math.floor((value - needed) / threshold);
             const end = value - needed - (count * threshold);
-            const maxChunks = (count > 0 ? count : 0) + (end > 0 ? 1 : 0) + 1;
+            const maxChunks = (Math.max(count, 0)) + (end > 0 ? 1 : 0) + 1;
 
             const newDoc1 = await this.createNewDoc(
                 ref, root, document, needed, 1, maxChunks, value, threshold, userId, actionStatusId, user

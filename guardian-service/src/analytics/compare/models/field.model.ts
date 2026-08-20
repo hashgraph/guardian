@@ -241,7 +241,7 @@ export class FieldModel implements IWeightModel {
         try {
             const item = JSON.parse(comment);
             return item || {};
-        } catch (error) {
+        } catch {
             return {};
         }
     }

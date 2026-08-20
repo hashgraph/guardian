@@ -50,7 +50,7 @@ export class PolicyCommentCollectionBackup extends CollectionBackup<PolicyCommen
     }
 
     private prepareRow(row: PolicyComment): PolicyComment {
-        const keys: string[] = [
+        const keys: Set<string> = new Set([
             '_id',
             '_restoreId',
             '_docHash',
@@ -71,9 +71,9 @@ export class PolicyCommentCollectionBackup extends CollectionBackup<PolicyCommen
             'owner',
             'creator',
             'encryptedDocument'
-        ];
+        ]);
         for (const key of Object.keys(row)) {
-            if (!keys.includes(key)) {
+            if (!keys.has(key)) {
                 delete row[key];
             }
         }
@@ -93,7 +93,7 @@ export class PolicyCommentCollectionBackup extends CollectionBackup<PolicyCommen
                 }
             }
             return this.prepareRow(row);
-        } catch (error) {
+        } catch {
             const newRow = await this.findDocument(row);
             return await this.loadFile(newRow, i + 1);
         }

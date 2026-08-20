@@ -183,7 +183,7 @@ export class AccountApi {
 
             try {
                 parentUser = await users.getUserByToken(token) as IAuthUser;
-            } catch (e) {
+            } catch {
                 parentUser = null;
             }
             if (!parentUser) {
@@ -268,7 +268,7 @@ export class AccountApi {
             const token = authHeader?.split(' ')[1];
             try {
                 parentUser = await users.getUserByToken(token) as IAuthUser;
-            } catch (_) {
+            } catch {
                 parentUser = null;
             }
             if (!parentUser) {
@@ -357,7 +357,7 @@ export class AccountApi {
                     if (newUser?.id) {
                         taskManager.transferOwnership(task.taskId, newUser.id);
                     }
-                } catch (_) {
+                } catch {
                     // Non-fatal — ownership transfer best-effort
                 }
             }
@@ -561,7 +561,7 @@ export class AccountApi {
             return {
                 accessToken
             }
-        } catch (e) {
+        } catch {
             throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
         }
     }
@@ -720,7 +720,7 @@ export class AccountApi {
                         type: SchemaEntity.STANDARD_REGISTRY
                     });
                     if (vcDocuments && vcDocuments.length) {
-                        vcDocument = vcDocuments[vcDocuments.length - 1];
+                        vcDocument = vcDocuments.at(-1);
                     }
 
                     const { policies } = await engineService.getPolicies(

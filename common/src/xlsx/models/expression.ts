@@ -76,7 +76,7 @@ export class Expression {
                 result.push(`${startCol}${i}`);
             }
             return result;
-        } catch (error) {
+        } catch {
             throw new Error('Invalid range');
         }
     }

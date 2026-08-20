@@ -4,7 +4,7 @@ export class SheetName {
 
     public getSheetName(name: string, size: number): string {
         let id = ((name || '')
-            .replace(/[\*,\?,\:,\\,\/,\[,\]]/ig, '')
+            .replaceAll(/[\*,\?,\:,\\,\/,\[,\]]/ig, '')
             .slice(0, Math.min(size, 30)))
             .trim();
 

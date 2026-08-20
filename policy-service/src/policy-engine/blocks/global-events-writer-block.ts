@@ -123,7 +123,7 @@ export class GlobalEventsWriterBlock {
 
             try {
                 this.validateTopicId(optionTopicId, ref);
-            } catch (_e) {
+            } catch {
                 continue;
             }
 
@@ -153,7 +153,7 @@ export class GlobalEventsWriterBlock {
     private validateTopicId(topicId: string, ref: AnyBlockType): void {
         try {
             TopicId.fromString(topicId);
-        } catch (_e) {
+        } catch {
             throw new BlockActionError('Invalid topic id format', ref.blockType, ref.uuid);
         }
     }
@@ -175,7 +175,7 @@ export class GlobalEventsWriterBlock {
             if (cached && typeof cached === 'object') {
                 cacheState = cached;
             }
-        } catch (_e) {
+        } catch {
             //
         }
         return cacheState;
@@ -594,7 +594,7 @@ export class GlobalEventsWriterBlock {
             for (const topic of topics) {
                 try {
                     this.validateTopicId(topic.topicId, ref);
-                } catch (_e) {
+                } catch {
                     continue;
                 }
 

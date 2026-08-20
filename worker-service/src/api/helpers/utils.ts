@@ -89,7 +89,7 @@ export function timeout(timeoutValue: number, messageError?: string) {
                     reject(new TimeoutError(messageError || 'Transaction timeout exceeded'));
                 }, timeoutValue);
             })
-            return Promise.race([oldFunc.apply(this, arguments), timeoutPromise]);
+            return Promise.race([Reflect.apply(oldFunc, this, arguments), timeoutPromise]);
         }
     }
 }
@@ -139,7 +139,7 @@ export class HederaUtils {
                 } else {
                     return key;
                 }
-            } catch (error) {
+            } catch {
                 throw new Error(`Invalid ${keyName}`);
             }
         } else if (notNull) {

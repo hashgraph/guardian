@@ -73,7 +73,7 @@ export class Sha256 {
                 .update(data)
                 .digest();
             return Hashing.base58.encode(sha256);
-        } catch (error) {
+        } catch {
             return '';
         }
     }

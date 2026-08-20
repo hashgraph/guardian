@@ -42,7 +42,7 @@ const handleClassEmbeddings = (file: any, intermediate: any, classEmbedding: str
 
 const handlePropertyEmbeddings = (file: any, intermediate: any, classEmbedding: string, embeddedLinkedDataClass: any): void => {
     Object.values(file.properties).forEach((prop: any) => {
-        embeddingAttributeNames.forEach((propertyEmbedding) => {
+        for (const propertyEmbedding of embeddingAttributeNames) {
             if (prop[propertyEmbedding]) {
                 // Use the property's own attribute; the @transmute original used the class's
                 // and crashed on mixed embeddings. Same output for single-attribute schemas.
@@ -54,26 +54,26 @@ const handlePropertyEmbeddings = (file: any, intermediate: any, classEmbedding: 
                     prop.description
                 );
             }
-        });
+        }
     });
 };
 
 const handleFileEmbeddings = (file: any, intermediate: any): void => {
-    embeddingAttributeNames.forEach((classEmbedding) => {
+    for (const classEmbedding of embeddingAttributeNames) {
         if (file[classEmbedding]) {
             const embeddedLinkedDataClass = handleClassEmbeddings(file, intermediate, classEmbedding);
             if (file.properties) {
                 handlePropertyEmbeddings(file, intermediate, classEmbedding, embeddedLinkedDataClass);
             }
         }
-    });
+    }
 };
 
 const schemasToIntermediate = (files: any[]): any => {
     const intermediate: any = {};
-    files.forEach((file) => {
+    for (const file of files) {
         handleFileEmbeddings(file, intermediate);
-    });
+    }
     return intermediate;
 };
 

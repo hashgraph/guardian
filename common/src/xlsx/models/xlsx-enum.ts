@@ -125,7 +125,7 @@ export class XlsxEnum {
                 this._loaded = true;
                 return true;
             }
-        } catch (error) {
+        } catch {
             this._loaded = false;
             return false;
         }

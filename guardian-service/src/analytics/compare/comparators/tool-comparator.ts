@@ -205,15 +205,15 @@ export class ToolComparator {
                 const colData = cols[index];
                 if (colData) {
                     if (index === 0) {
-                        row[`lvl`] = colData.lvl;
-                        row[`block_type`] = colData.block_type;
-                        row[`left`] = colData.left;
-                        row[`left_index`] = colData.left_index;
-                        row[`left_type`] = colData.left_type;
-                        row[`left_tag`] = colData.left_tag;
+                        row.lvl = colData.lvl;
+                        row.block_type = colData.block_type;
+                        row.left = colData.left;
+                        row.left_index = colData.left_index;
+                        row.left_type = colData.left_type;
+                        row.left_tag = colData.left_tag;
                     } else {
-                        row[`lvl`] = colData.lvl;
-                        row[`block_type`] = colData.block_type;
+                        row.lvl = colData.lvl;
+                        row.block_type = colData.block_type;
                         row[`type_${index}`] = colData.type;
                         row[`right_${index}`] = colData.right;
                         row[`right_index_${index}`] = colData.right_index;

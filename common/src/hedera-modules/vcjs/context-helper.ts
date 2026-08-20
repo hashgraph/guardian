@@ -119,8 +119,8 @@ export class ContextHelper {
         } else if (typeof root === 'object') {
             root.__path = key;
             items.push(root);
-            for (const prop of Object.keys(root)) {
-                ContextHelper._getItems(root[prop], key ? `${key}.${prop}` : prop, items);
+            for (const [prop, value] of Object.entries(root)) {
+                ContextHelper._getItems(value, key ? `${key}.${prop}` : prop, items);
             }
             return items;
         } else {

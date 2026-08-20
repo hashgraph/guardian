@@ -96,14 +96,11 @@ async function createMessageServer(owner: IOwner): Promise<MessageServer> {
 }
 
 export async function serDefaultRole(user: IAuthUser, owner: IOwner): Promise<any> {
-    const roles: any[] = [];
-    for (const group of user.permissionsGroup) {
-        roles.push({
+    const roles: any[] = Array.from(user.permissionsGroup, group => ({
             uuid: group.uuid,
             name: group.roleName,
             owner: group.owner
-        })
-    }
+        }));
     const data = {
         user: user.did
     }

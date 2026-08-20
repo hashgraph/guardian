@@ -231,7 +231,7 @@ export class MeecoAuthService extends NatsService {
         const currentDate = new Date();
         const timestamp = Date.parse(expirationDate);
         if (isNaN(timestamp)) {
-            throw new Error('Invalid expiration date from Meeco API credentials');
+            throw new TypeError('Invalid expiration date from Meeco API credentials');
         }
 
         const expiresIn = new Date(expirationDate);

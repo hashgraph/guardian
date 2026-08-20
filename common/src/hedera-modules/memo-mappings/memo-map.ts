@@ -18,7 +18,7 @@ export class MemoMap {
             }
             return '';
         }
-        return memo.replace(
+        return memo.replaceAll(
             /\${([A-Za-z0-9\.\[\]\@]+)}/g,
             (_, placeholderWithoutDelimiters) => {
                 const value = ObjGet(memoObj, placeholderWithoutDelimiters, '');

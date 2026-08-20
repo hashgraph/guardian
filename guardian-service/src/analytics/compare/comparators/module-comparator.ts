@@ -327,10 +327,7 @@ export class ModuleComparator {
         } else {
             result = MergeUtils.notMerge<BlockModel>(children1, children2);
         }
-        const children: BlocksRate[] = [];
-        for (const item of result) {
-            children.push(this.compareTree(item.left, item.right, options));
-        }
+        const children: BlocksRate[] = Array.from(result, item => this.compareTree(item.left, item.right, options));
         return children;
     }
 

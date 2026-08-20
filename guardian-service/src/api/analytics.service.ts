@@ -164,7 +164,7 @@ async function localSearch(
         for (const policy of policies) {
             try {
                 policy.rate = HashComparator.compare(options.blocks, policy);
-            } catch (error) {
+            } catch {
                 policy.rate = 0;
             }
         }
@@ -837,7 +837,7 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                 });
 
                 return new MessageResponse(result);
-            } catch (error) {
+            } catch {
                 return new MessageResponse(false);
             }
         });

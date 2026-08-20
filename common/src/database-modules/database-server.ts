@@ -97,7 +97,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
     public static dbID(id: string): ObjectId {
         try {
             return new ObjectId(id);
-        } catch (error) {
+        } catch {
             return null;
         }
     }
@@ -565,7 +565,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
 
         const dryRun = new DataBaseHelper(DryRun);
         const docs = [];
-        for (const [sourceId, opt] of latestOptions.entries()) {
+        for (const [sourceId, opt] of latestOptions) {
             const row = await dryRun.findOne({ id: sourceId });
             if (row) {
                 row.option = opt;
@@ -1850,7 +1850,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param module
      */
     public static async createModules(module: PolicyModule): Promise<PolicyModule> {
-        module.name = module.name.replace(/\s+/g, ' ').trim();
+        module.name = module.name.replaceAll(/\s+/g, ' ').trim();
         const dbHelper = new DataBaseHelper(PolicyModule);
         const item = dbHelper.create(module);
         if (
@@ -2304,7 +2304,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
                 try {
                     const keyPath = `${record.serviceType}/${record.policyId || 'global'}/${record.dryRun ? 'dryrun' : 'production'}`;
                     await wallet.setUserKey(record.ownerId, KeyType.INTEGRATION_KEY, keyPath, '', userId);
-                } catch (_) { /* best effort */ }
+                } catch { /* best effort */ }
             }
             await credentialDb.delete({ policyId });
         }
@@ -4665,7 +4665,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
             await new DataBaseHelper(ArtifactChunkCollection).save({
                 uuid,
                 number: fileNumber,
-                data: new Binary(data.subarray(offset, offset + DatabaseServer.MAX_DOCUMENT_SIZE > data.length ? data.length : offset + DatabaseServer.MAX_DOCUMENT_SIZE))
+                data: new Binary(data.subarray(offset, Math.min(offset + DatabaseServer.MAX_DOCUMENT_SIZE, data.length)))
             });
             offset = offset + DatabaseServer.MAX_DOCUMENT_SIZE;
             fileNumber++;
@@ -5413,7 +5413,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param row
      */
     public static async updateModule(row: PolicyModule): Promise<PolicyModule> {
-        row.name = row.name.replace(/\s+/g, ' ').trim();
+        row.name = row.name.replaceAll(/\s+/g, ' ').trim();
         const dbHelper = new DataBaseHelper(PolicyModule);
         if (
             (await dbHelper.count({

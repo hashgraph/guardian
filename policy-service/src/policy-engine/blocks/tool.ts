@@ -99,10 +99,7 @@ export class ToolBlock {
      */
     public getVariables(names: any[] | any, type: string): any {
         if (Array.isArray(names)) {
-            const result = [];
-            for (const name of names) {
-                result.push(this._getVariable(name, type));
-            }
+            const result = Array.from(names, name => this._getVariable(name, type));
             return result;
         } else {
             return this._getVariable(names, type);

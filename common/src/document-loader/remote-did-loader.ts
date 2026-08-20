@@ -32,8 +32,8 @@ export class RemoteDidLoader extends DocumentLoader {
             .map(m => {
                 try {
                     return JSON.parse(m.message);
-                } catch (e) {
-                    return undefined;
+                } catch {
+                    return;
                 }
             })
             .find(m => {

@@ -61,7 +61,7 @@ export class SettingsApi {
         try {
             const settings = body as CommonSettings;
             const guardians = new Guardians();
-            await Promise.all([guardians.updateSettings(user, settings)]);
+            await guardians.updateSettings(user, settings);
             return null;
         } catch (error) {
             await InternalException(error, this.logger, user.id);
@@ -107,7 +107,7 @@ export class SettingsApi {
     ): Promise<SettingsDTO> {
         try {
             const guardians = new Guardians();
-            const [guardiansSettings] = await Promise.all([guardians.getSettings(user)]);
+            const guardiansSettings = await guardians.getSettings(user);
             return { ...guardiansSettings } as any;
         } catch (error) {
             await InternalException(error, this.logger, user.id);
@@ -201,11 +201,11 @@ export class SettingsApi {
                 const unknown = 'Unknown';
                 try {
                     const packageJsonUrl = new URL('../../../package.json', import.meta.url);
-                    const raw = fs.readFileSync(packageJsonUrl, 'utf-8');
+                    const raw = fs.readFileSync(packageJsonUrl, 'utf8');
                     const parsed = JSON.parse(raw);
 
                     version = parsed.version || unknown;
-                } catch (error) {
+                } catch {
                     version = unknown;
                 }
             }

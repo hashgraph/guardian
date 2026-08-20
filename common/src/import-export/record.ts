@@ -344,7 +344,7 @@ export class RecordImportExport {
     public static async loadRecordComponents(uuid: string): Promise<IRecordComponents> {
         const records = await DatabaseServer.getRecord({ uuid }, { orderBy: { time: 'ASC' } });
         const first = records[0];
-        const last = records[records.length - 1];
+        const last = records.at(-1);
         const time: any = first ? first.time : null;
         if (first && last) {
             const results = await RecordImportExport.loadRecordResults(first.policyId, first.time, last.time);
@@ -494,7 +494,7 @@ export class RecordImportExport {
             }
         }
         const first = records[0];
-        const last = records[records.length - 1];
+        const last = records.at(-1);
         const duration = RecordImportExport.duration(first?.time, last?.time);
         return {
             records,
