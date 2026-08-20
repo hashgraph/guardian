@@ -29,6 +29,7 @@ import {
 } from '@guardian/common';
 import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 import { getGlobalTopic } from './profile-helper.js';
+import { validateHederaAccountKey } from './hedera-key-validator.js';
 
 /**
  * Lightweight shape used by guardian-service to round-trip Organization records over NATS.
@@ -205,25 +206,13 @@ export async function publishOrganization({
     // ------------------------
     notifier.startStep(STEP_RESOLVE_ACCOUNT);
     try {
-        const workers = new Workers();
-        AccountId.fromString(payload.hederaAccountId);
-        PrivateKey.fromString(payload.hederaAccountKey);
-        await workers.addNonRetryableTask({
-            type: WorkerTaskType.GET_USER_BALANCE,
-            data: {
-                hederaAccountId: payload.hederaAccountId,
-                hederaAccountKey: payload.hederaAccountKey
-            }
-        }, {
-            priority: 20,
-            attempts: 0,
-            registerCallback: true,
-            interception: owner.id,
-            userId: owner.id
+        await validateHederaAccountKey(payload.hederaAccountId, payload.hederaAccountKey, {
+            userId: owner.id,
+            interception: owner.id
         });
     } catch (error) {
         logger.error(error, ['GUARDIAN_SERVICE'], logId);
-        throw new Error('Invalid Hedera account or key.');
+        throw error;
     }
     notifier.completeStep(STEP_RESOLVE_ACCOUNT);
     // ------------------------
