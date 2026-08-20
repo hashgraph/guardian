@@ -665,6 +665,22 @@ export class SchemaHelper {
             const thenFields = condition.thenFields || [];
             const elseFields = condition.elseFields || [];
 
+            /*
+             * thenTargets / elseTargets are the cross-schema half of a condition: a
+             * target lives at a path inside another sub-schema rather than being a field
+             * of the condition itself. buildDocument compiles them into nested
+             * properties/required (buildCrossRequired) and `false` (buildCrossForbidden),
+             * so they are enforced for a plain object instance, but nothing here checked
+             * them - which left them unverified wherever the compiled keyword cannot
+             * apply.
+             */
+            const thenTargets = (condition as any).thenTargets || [];
+            const elseTargets = (condition as any).elseTargets || [];
+            const targetPath = (t: any): string[] | null =>
+                (t?.fieldPath?.length > 1) ? t.fieldPath : null;
+            const targetName = (t: any): string =>
+                t?.field?.name || (t?.fieldPath ? t.fieldPath[t.fieldPath.length - 1] : '');
+
             if (!reachable) {
                 for (const field of [...thenFields, ...elseFields]) {
                     if (present(data[field.name])) {
@@ -673,13 +689,39 @@ export class SchemaHelper {
                         );
                     }
                 }
+                for (const target of [...thenTargets, ...elseTargets]) {
+                    const path = targetPath(target);
+                    if (path && present(resolve(path))) {
+                        errors.push(
+                            `Field "${targetName(target)}" is not allowed: the condition that reveals it is not applicable.`
+                        );
+                    }
+                }
                 continue;
             }
 
-            const active = evaluate(condition) ? thenFields : elseFields;
+            const matched = evaluate(condition);
+            const active = matched ? thenFields : elseFields;
             for (const field of active) {
                 if (field.required && !present(data[field.name])) {
                     errors.push(`Field "${field.name}" is required.`);
+                }
+            }
+
+            const activeTargets = matched ? thenTargets : elseTargets;
+            const inactiveTargets = matched ? elseTargets : thenTargets;
+            for (const target of activeTargets) {
+                const path = targetPath(target);
+                if (path && target?.field?.required && !present(resolve(path))) {
+                    errors.push(`Field "${targetName(target)}" is required.`);
+                }
+            }
+            for (const target of inactiveTargets) {
+                const path = targetPath(target);
+                if (path && present(resolve(path))) {
+                    errors.push(
+                        `Field "${targetName(target)}" is not allowed: the condition that reveals it is not applicable.`
+                    );
                 }
             }
         }
