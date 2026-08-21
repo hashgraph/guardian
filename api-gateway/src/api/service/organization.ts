@@ -1,5 +1,5 @@
 import { Auth, AuthUser } from '#auth';
-import { EntityOwner, Guardians, InternalException, Users, toOrgResponse } from '#helpers';
+import { EntityOwner, Guardians, InternalException, PolicyEngine, Users, toOrgResponse } from '#helpers';
 import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Permissions } from '@guardian/interfaces';
 import {
@@ -692,6 +692,23 @@ export class OrganizationApi {
     ): Promise<PolicyOrgAssignmentDTO> {
         try {
             const owner = new EntityOwner(user);
+
+            /*
+             * auth-service owns the assignment row but not the Policy collection, so it can
+             * only check organization ownership. The gateway is the one layer that reaches
+             * both, so the policy-owner check belongs here.
+             */
+            const policy = await (new PolicyEngine()).getPolicy({ filters: body.policyId }, owner);
+            if (!policy) {
+                throw new HttpException('Policy not found.', HttpStatus.NOT_FOUND);
+            }
+            if (policy.owner !== owner.creator) {
+                throw new HttpException(
+                    'Only the owner of a policy can assign it to an organization.',
+                    HttpStatus.FORBIDDEN
+                );
+            }
+
             return toOrgResponse(await (new Users()).assignPolicyToOrg(id, body.policyId, owner));
         } catch (error) {
             await InternalException(error, this.logger, user.id);
