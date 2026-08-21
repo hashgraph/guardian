@@ -521,7 +521,8 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
         const newNode: any = {
             id: `${node.id}.${node.children.length + 1}`,
             icon: node.icon,
-            name: `${role} configuration`,
+            // Name the step after its schema so it is distinct from the trust-chain role node.
+            name: node.schema?.name ? `${role} in ${node.schema.name}` : `${role} configuration`,
             parent: node,
             template: this.schemaRoleConfig,
             fields,
@@ -798,7 +799,7 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
         const newNode = {
             id: `${node.id}.${node.children.length + 1}`,
             icon: node.icon,
-            name: `${trustChainRole} configuration`,
+            name: `${trustChainRole} trust chain`,
             children: [],
             parent: node,
             template: this.trustChainRoleConfig,
