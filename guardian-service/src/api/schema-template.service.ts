@@ -2164,7 +2164,7 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
                         throw new Error(
                             `Schema template has published schemas and cannot be deleted` +
                             `${shown ? `: ${shown}${hidden}` : ''}. ` +
-                            `They were published by an earlier attempt; remove them first.`
+                            `They were published by an earlier attempt; retry the publish to finish it.`
                         );
                     }
 
