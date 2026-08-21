@@ -29,8 +29,7 @@ describe('ExportSchemaDialog', () => {
             .find((button) => button.getAttribute('label') === label);
     }
 
-    // A draft is not published and so has no Hedera message identifier: the button used
-    // to render permanently greyed out with no explanation of why.
+    // Drafts have no Hedera message identifier since they are not yet published
     it('hides Copy message identifier on a draft', () => {
         expect(buttonByLabel(render({ name: 'S' }), 'Copy message identifier')).toBeUndefined();
     });
@@ -39,8 +38,7 @@ describe('ExportSchemaDialog', () => {
         expect(buttonByLabel(render({ name: 'S', messageId: '1.2.3' }), 'Copy message identifier')).toBeDefined();
     });
 
-    // onClose() existed but was never wired to anything, so the dialog closed only
-    // programmatically after a successful save.
+    // Users can close the dialog with Cancel instead of only through a successful save.
     it('offers a Cancel control that closes the dialog', () => {
         const fixture = render({ name: 'S' });
         const cancel = buttonByLabel(fixture, 'Cancel');

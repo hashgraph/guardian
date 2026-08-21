@@ -29,8 +29,7 @@
 
 <div class="dialog-footer">
   <div class="action-buttons">
-    <!-- a draft has no Hedera message identifier, so this used to render permanently
-         greyed out with no explanation -->
+    <!-- only a published schema has a Hedera message identifier -->
     @if (schema?.messageId) {
       <div class="copy-button">
         <button (click)="handleCopyToClipboard(schema.messageId)"
