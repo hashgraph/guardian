@@ -238,8 +238,8 @@ export class XlsxResult {
                                 worksheet: schemaCache?.worksheet,
                                 row: field.order
                             }, field);
-                            // without this, link.worksheet below throws and the outer
-                            // catch replaces every collected error with one generic message
+                            // clear the dangling ref so it is not persisted into the schema
+                            field.type = null;
                             continue;
                         }
 
