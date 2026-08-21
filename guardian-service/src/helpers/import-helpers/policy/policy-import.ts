@@ -630,8 +630,10 @@ export class PolicyImport {
             throw new Error('Selected schema template is inaccessible');
         }
 
-        // clonePolicy passes no metadata, so an unpublished template was unreachable
-        // even though it sits in the database. Same rule: published, or owned.
+        // An import that carries a snapshot keeps its binding, and no caller sets
+        // metadata.schemaTemplate, so an unpublished but owned template would otherwise
+        // fall through to the throw below. A clone has no snapshot and is detached
+        // before this runs, so it never reaches here.
         if (binding.templateId) {
             const template = await DatabaseServer.getSchemaTemplateById(binding.templateId);
             if (template && (template.status === ModuleStatus.PUBLISHED || template.owner === user.owner)) {
