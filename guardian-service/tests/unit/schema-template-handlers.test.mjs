@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { MessageAPI, ModuleStatus, PolicyStatus, SchemaCategory } from '@guardian/interfaces';
+import { MessageAPI, ModuleStatus, PolicyStatus, SchemaCategory, SchemaStatus } from '@guardian/interfaces';
 import {
     removePolicySchemaTemplateSnapshot,
     schemaTemplatesAPI,
@@ -399,6 +399,87 @@ describe('schema template CRUD and query handlers', () => {
         assert.ok(removed, 'removeSchemaTemplate was not called');
     });
 
+    /*
+     * ensureEditable only blocks a PUBLISHED template, so a PUBLISH_ERROR one is
+     * deletable - but its schemas may already have been flipped to PUBLISHED by the
+     * attempt that then failed. The cleanup removes only DRAFT and ERROR rows, so
+     * those published ones survived the template and were left pointing at a
+     * templateId that no longer exists.
+     */
+    it('DELETE_SCHEMA_TEMPLATE refuses to strand schemas an earlier publish attempt published', async () => {
+        const deleted = [];
+        stub(DatabaseServer, 'getSchemaTemplateById', async () => ({
+            id: 'template-1',
+            owner: owner.owner,
+            status: ModuleStatus.PUBLISH_ERROR,
+            topicId: '0.0.20'
+        }));
+        stub(DatabaseServer, 'getPolicies', async () => []);
+        stub(DatabaseServer, 'getSchemas', async () => [
+            { id: 'schema-1', name: 'Draft One', status: SchemaStatus.DRAFT },
+            { id: 'schema-2', name: 'Published One', status: SchemaStatus.PUBLISHED },
+        ]);
+        stub(DatabaseServer, 'removeSchemaTemplate', async (value) => {
+            deleted.push(value);
+        });
+
+        const response = await callHandler(handlers, MessageAPI.DELETE_SCHEMA_TEMPLATE, {
+            id: 'template-1',
+            owner
+        });
+
+        assert.equal(ok(response), false);
+        assert.match(response.error, /published schemas and cannot be deleted/);
+        assert.match(response.error, /Published One/, 'the owner is told what to resolve');
+        assert.deepEqual(deleted, [], 'the template must survive the refusal');
+    });
+
+    it('DELETE_SCHEMA_TEMPLATE still removes a template whose schemas are all unpublished', async () => {
+        const deleted = [];
+        const removedSchemas = [];
+        const fakeDb = {
+            getSchemaTemplateById: async () => ({
+                id: 'template-1',
+                owner: owner.owner,
+                status: ModuleStatus.PUBLISH_ERROR,
+                topicId: '0.0.20'
+            }),
+            getPolicies: async () => [],
+            getSchemas: async () => [
+                { id: 'schema-1', name: 'Draft One', status: SchemaStatus.DRAFT },
+                { id: 'schema-2', name: 'Errored One', status: SchemaStatus.ERROR },
+            ],
+            removeSchemaTemplate: async (value) => { deleted.push(value); },
+        };
+
+        const { handlers: isolated } = await loadAPI(
+            '../dist/api/schema-template.service.js',
+            'schemaTemplatesAPI',
+            {
+                '@guardian/common': {
+                    DatabaseServer: fakeDb,
+                    NewNotifier: Object.assign(() => {}, { empty: () => ({}) }),
+                },
+                [importHelpersPath]: {
+                    createSchemaAndArtifacts: async () => ({}),
+                    deleteSchema: async (id) => { removedSchemas.push(id); },
+                    SchemaImportExportHelper: class {},
+                    updateSchemaDefs: async () => {}
+                }
+            }
+        );
+
+        const response = await isolated[MessageAPI.DELETE_SCHEMA_TEMPLATE]({
+            id: 'template-1',
+            owner
+        });
+
+        assert.equal(ok(response), true);
+        assert.equal(deleted.length, 1);
+        assert.deepEqual(removedSchemas, ['schema-1', 'schema-2'],
+            'the guard must not stop the ordinary cleanup');
+    });
+
     it('DELETE_SCHEMA_TEMPLATE rejects when the template is applied to a policy', async () => {
         stub(DatabaseServer, 'getSchemaTemplateById', async () => ({
             id: 'template-1',
@@ -574,5 +655,103 @@ describe('removePolicySchemaTemplateSnapshot', () => {
         ));
 
         assert.equal(logged.length, 1, 'the failure is logged rather than swallowed silently');
+    });
+});
+
+/*
+ * configFileId has the _configFileId "previous handle" mechanism on the entity,
+ * cleaned up by its @AfterUpdate hook. contentFileId had no equivalent, so every
+ * publish attempt overwrote the handle and stranded the file it replaced - a
+ * permanent GridFS orphan per re-publish.
+ */
+describe('PUBLISH_SCHEMA_TEMPLATE content file', () => {
+    const stepNotifier = () => ({
+        addStep() {}, start() {}, startStep() {}, completeStep() {}, complete() {},
+        fail() {}, result() {}, getStep() { return stepNotifier(); },
+    });
+
+    const publishHandlers = async (template, gridFsDeletes) => {
+        const fakeDb = {
+            getSchemaTemplateById: async () => template,
+            getSchemaTemplates: async () => [],
+            getSchemas: async () => [],
+            updateSchemas: async () => {},
+            updateSchemaTemplate: async (value) => value,
+            getTopicById: async () => ({ topicId: '0.0.20' }),
+            saveFile: async () => 'content-file-2',
+        };
+        const { handlers } = await loadAPI(
+            '../dist/api/schema-template.service.js',
+            'schemaTemplatesAPI',
+            {
+                '@guardian/common': {
+                    DatabaseServer: fakeDb,
+                    DataBaseHelper: {
+                        gridFS: { delete: async (id) => { gridFsDeletes.push(id); } },
+                    },
+                    NewNotifier: Object.assign(() => {}, { empty: () => stepNotifier() }),
+                    Users: class { async getHederaAccount() { return {}; } },
+                    TopicConfig: { fromObject: async () => ({}) },
+                    MessageServer: class {
+                        setTopicObject() { return this; }
+                        async sendMessage() { return { getId: () => 'message-1' }; }
+                    },
+                    SchemaTemplateImportExport: {
+                        generate: async () => ({ generateAsync: async () => new ArrayBuffer(8) }),
+                    },
+                },
+                [importHelpersPath]: {
+                    createSchemaAndArtifacts: async () => ({}),
+                    deleteSchema: async () => {},
+                    SchemaImportExportHelper: class {},
+                    updateSchemaDefs: async () => {}
+                }
+            }
+        );
+        return handlers;
+    };
+
+    it('deletes the package the previous publish attempt left behind', async () => {
+        const gridFsDeletes = [];
+        const template = {
+            id: 'template-1',
+            owner: owner.owner,
+            status: ModuleStatus.PUBLISH_ERROR,
+            topicId: '0.0.20',
+            contentFileId: 'content-file-1',
+            config: { schemas: {} },
+        };
+
+        const handlers = await publishHandlers(template, gridFsDeletes);
+        const response = await handlers[MessageAPI.PUBLISH_SCHEMA_TEMPLATE]({
+            id: 'template-1',
+            owner,
+            body: { templateVersion: '1.0.0' },
+        });
+
+        assert.equal(ok(response), true, response.error);
+        assert.equal(template.contentFileId, 'content-file-2', 'the new package is stored');
+        assert.deepEqual(gridFsDeletes, ['content-file-1'],
+            'the superseded package must not be left in GridFS forever');
+    });
+
+    it('deletes nothing on a first publish', async () => {
+        const gridFsDeletes = [];
+        const template = {
+            id: 'template-1',
+            owner: owner.owner,
+            status: ModuleStatus.DRAFT,
+            topicId: '0.0.20',
+            config: { schemas: {} },
+        };
+
+        const handlers = await publishHandlers(template, gridFsDeletes);
+        await handlers[MessageAPI.PUBLISH_SCHEMA_TEMPLATE]({
+            id: 'template-1',
+            owner,
+            body: { templateVersion: '1.0.0' },
+        });
+
+        assert.deepEqual(gridFsDeletes, []);
     });
 });

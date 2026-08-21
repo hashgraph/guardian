@@ -1,6 +1,7 @@
 import { FilterObject } from '@mikro-orm/core';
 import {
     BinaryMessageResponse,
+    DataBaseHelper,
     DatabaseServer,
     INotificationStep,
     MessageError,
@@ -549,7 +550,20 @@ async function publishSchemaTemplate(
         notifier.completeStep(STEP_GENERATE_FILE);
 
         notifier.startStep(STEP_SAVE_FILE);
+        /*
+         * contentFileId has no _configFileId-style previous-handle mechanism, so each
+         * publish overwrote the handle and stranded the old file. Deleted after the new
+         * one is stored, best-effort: losing it must not fail a publish.
+         */
+        const supersededContentFileId = template.contentFileId;
         template.contentFileId = await DatabaseServer.saveFile(GenerateUUIDv4(), Buffer.from(buffer));
+        if (supersededContentFileId) {
+            try {
+                await DataBaseHelper.gridFS.delete(supersededContentFileId);
+            } catch (error) {
+                await logger?.error?.(error, ['GUARDIAN_SERVICE'], owner?.id);
+            }
+        }
         notifier.completeStep(STEP_SAVE_FILE);
 
         notifier.startStep(STEP_PUBLISH);
@@ -2149,6 +2163,26 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
                         templateId: template.id,
                         readonly: false
                     });
+                    /*
+                     * ensureEditable only blocks a PUBLISHED template, so a PUBLISH_ERROR one is
+                     * deletable while its schemas may already be published - and those would be left
+                     * with no template to resolve against.
+                     */
+                    const publishedSchemas = (schemas as Schema[])
+                        .filter((schema) => schema.status === SchemaStatus.PUBLISHED);
+                    if (publishedSchemas.length) {
+                        const names = publishedSchemas
+                            .map((schema) => schema.name || schema.iri || schema.id)
+                            .filter((name) => !!name);
+                        const shown = names.slice(0, 5).join(', ');
+                        const hidden = names.length > 5 ? ` and ${names.length - 5} more` : '';
+                        throw new Error(
+                            `Schema template has published schemas and cannot be deleted` +
+                            `${shown ? `: ${shown}${hidden}` : ''}. ` +
+                            `They were published by an earlier attempt; retry the publish to finish it.`
+                        );
+                    }
+
                     for (const schema of schemas as Schema[]) {
                         if (schema.status === SchemaStatus.DRAFT || schema.status === SchemaStatus.ERROR) {
                             await deleteSchema(schema.id, owner, NewNotifier.empty());
