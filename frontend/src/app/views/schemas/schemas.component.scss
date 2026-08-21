@@ -451,6 +451,11 @@ a {
     margin-left: auto;
 }
 
+/* tooltip anchor around each toolbar p-button - must not change the layout */
+.toolbar-tooltip-anchor {
+    display: inline-flex;
+}
+
 .toolbar-btn[readonly="true"] {
     background: #b5b5b5;
     cursor: not-allowed;
