@@ -252,6 +252,12 @@ export class CompareComponent implements OnInit {
         console.error(message);
     }
 
+    private onExportFailed(message?: string): void {
+        this.loading = false;
+        this.error = message || 'The report could not be exported. Please try again.';
+        console.error(message);
+    }
+
     private loadDocument() {
         this.error = null;
         const options = {
@@ -297,7 +303,7 @@ export class CompareComponent implements OnInit {
             }
             this.loading = false;
         }, ({ message }) => {
-            this.onLoadFailed(message);
+            this.onExportFailed(message);
         });
     }
     private loadOriginalPolicy(policyId: string) {
@@ -365,7 +371,7 @@ export class CompareComponent implements OnInit {
             }
             this.loading = false;
         }, ({ message }) => {
-            this.onLoadFailed(message);
+            this.onExportFailed(message);
         });
     }
 
@@ -410,7 +416,7 @@ export class CompareComponent implements OnInit {
             }
             this.loading = false;
         }, ({ message }) => {
-            this.onLoadFailed(message);
+            this.onExportFailed(message);
         });
     }
 
@@ -463,7 +469,7 @@ export class CompareComponent implements OnInit {
             }
             this.loading = false;
         }, ({ message }) => {
-            this.onLoadFailed(message);
+            this.onExportFailed(message);
         });
     }
 
@@ -512,7 +518,7 @@ export class CompareComponent implements OnInit {
             }
             this.loading = false;
         }, ({ message }) => {
-            this.onLoadFailed(message);
+            this.onExportFailed(message);
         });
     }
 
