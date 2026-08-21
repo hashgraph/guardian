@@ -103,10 +103,6 @@
     font-size: 20px;
 }
 
-/* The .not-exist rule further down already centres the empty state with flex and
-   supersedes every declaration this block set; all it contributed was the absolute
-   positioning that lifted the empty state out of flow, on top of the toolbar. */
-
 .ml-8 {
     margin-left: 8px;
 }
