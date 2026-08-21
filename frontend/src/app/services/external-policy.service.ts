@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpParams, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
+import { SILENT_HTTP_ERRORS } from '../constants';
 
 /**
  * Services for working from labels and separate blocks.
@@ -48,12 +49,20 @@ export class ExternalPoliciesService {
         return this.http.get<any>(`${this.url}`, { observe: 'response', params });
     }
 
+    /**
+     * The Search Policy dialog renders these failures inline, so the global interceptor
+     * toast is a second copy of the same message.
+     */
+    private silent(): HttpContext {
+        return new HttpContext().set(SILENT_HTTP_ERRORS, true);
+    }
+
     public preview(messageId: string): Observable<any> {
-        return this.http.post<any>(`${this.url}/preview`, { messageId });
+        return this.http.post<any>(`${this.url}/preview`, { messageId }, { context: this.silent() });
     }
 
     public import(messageId: string): Observable<any> {
-        return this.http.post<any>(`${this.url}/import`, { messageId });
+        return this.http.post<any>(`${this.url}/import`, { messageId }, { context: this.silent() });
     }
 
     public approve(messageId: string): Observable<any> {
