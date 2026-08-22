@@ -246,7 +246,7 @@ async function createSchemaTemplateVersion(
             readonly: false
         });
         for (const schema of sourceSchemas as Schema[]) {
-            await ensureTemplateSchemaReferences(schema);
+            await ensureTemplateSchemaReferences(schema, true);
         }
         notifier.completeStep(STEP_VALIDATE);
 
@@ -286,7 +286,7 @@ async function createSchemaTemplateVersion(
         notifier.completeStep(STEP_UPDATE_REFS);
 
         notifier.startStep(STEP_SAVE_CONFIG);
-        await normalizeSchemaTemplateConfig(draft);
+        await normalizeSchemaTemplateConfig(draft, true);
         const result = await DatabaseServer.updateSchemaTemplate(draft);
         notifier.completeStep(STEP_SAVE_CONFIG);
         notifier.complete();
@@ -390,7 +390,7 @@ async function importSchemaTemplateByComponents(
     notifier.completeStep(STEP_IMPORT_SCHEMAS);
 
     notifier.startStep(STEP_SAVE_CONFIG);
-    await normalizeSchemaTemplateConfig(template);
+    await normalizeSchemaTemplateConfig(template, true);
     const result = await DatabaseServer.updateSchemaTemplate(template);
     notifier.completeStep(STEP_SAVE_CONFIG);
     notifier.complete();
@@ -438,7 +438,7 @@ async function getPoliciesUsingSchemaTemplate(
  * policies, drafts included. The count stays public - it says how widely a
  * template is used without naming anything.
  */
-async function addSchemaCounts(templates: SchemaTemplate[], owner?: IOwner): Promise<any[]> {
+async function addSchemaCounts(templates: SchemaTemplate[], owner: IOwner): Promise<any[]> {
     const ownerPoliciesCache = new Map<string, any[]>();
     const getCachedPolicies = async (owner: string) => {
         if (!ownerPoliciesCache.has(owner)) {
@@ -539,7 +539,7 @@ async function publishSchemaTemplate(
             ?.some((item) => item.id !== template.id)) {
             throw new Error('Schema template with current version already was published');
         }
-        await normalizeSchemaTemplateConfig(template);
+        await normalizeSchemaTemplateConfig(template, true);
         notifier.completeStep(STEP_VALIDATE);
         validationPassed = true;
 
@@ -655,7 +655,7 @@ function normalizeTemplateConfigKeys(
 
 async function normalizeSchemaTemplateConfig(
     template: SchemaTemplate,
-    persist: boolean = true
+    persist: boolean = false
 ): Promise<void> {
     if (!template?.topicId) {
         return;
@@ -1086,7 +1086,7 @@ async function loadSchemaTemplateUpdateContext(
     policyId: string,
     owner: IOwner,
     // false when the caller is previewing rather than updating
-    persist: boolean = true
+    persist: boolean = false
 ) {
     const template = await DatabaseServer.getSchemaTemplateById(templateId);
     if (!template || (template.status !== ModuleStatus.PUBLISHED && template.owner !== owner.owner)) {
@@ -1407,7 +1407,7 @@ async function updateAppliedSchemaTemplate(
     owner: IOwner,
     options?: ISchemaTemplateUpdateOptions
 ): Promise<any> {
-    const context = await loadSchemaTemplateUpdateContext(templateId, policyId, owner);
+    const context = await loadSchemaTemplateUpdateContext(templateId, policyId, owner, true);
     const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
     const resolutions = validateSchemaTemplateUpdateResolutions(preview, options);
     const nextConfig = normalizeTemplateConfigKeys(context.template.config, context.templateSchemas);
@@ -1523,7 +1523,7 @@ async function updateAppliedSchemaTemplate(
  */
 async function ensureTemplateSchemaReferences(
     schema: Schema,
-    persist: boolean = true
+    persist: boolean = false
 ): Promise<void> {
     let changed = false;
     if (!schema.templateSchemaId) {
@@ -1626,7 +1626,7 @@ async function applySchemaTemplate(
     }
 
     for (const schema of templateSchemas as Schema[]) {
-        await ensureTemplateSchemaReferences(schema);
+        await ensureTemplateSchemaReferences(schema, true);
     }
 
     const schemaMap: Record<string, string> = {};
