@@ -1056,21 +1056,11 @@ export function mergeCustomFieldsIntoDocument(
         parent.properties[fieldName] = cloneJson(property);
 
         /*
-         * Carry the required flag across with the field.
-         *
-         * The target document is a fresh clone of the template, so its `required`
-         * list is the template's. Re-inserting the preserved field into `properties`
-         * alone left it optional: a required custom field survived a template update
-         * as optional, and VCs missing it started validating. `required` lives on the
-         * parent, not on the property, so it has to be copied separately.
-         */
-        /*
-         * Read the source document's own `required` list rather than the parsed
-         * field.required flag: parseField sets `required || !!conditionRequired`, so a
-         * field required only by a condition branch reports true there while the
-         * document's required array correctly omits it. Copying that flag across would
-         * promote a branch-scoped requirement into an unconditional one - the thing the
-         * $comment marking in this same change exists to avoid.
+         * `required` lives on the parent, so it is copied separately or the preserved
+         * field comes back optional. Read it from the source document, not from
+         * field.required: parseField sets `required || !!conditionRequired`
+         * (interfaces schema-helper.ts:321), which would promote a branch-scoped
+         * requirement into an unconditional one.
          */
         const sourceParent = schemaPropertyParent(sourceDocument, path, false);
         if (Array.isArray(sourceParent?.required) && sourceParent.required.includes(fieldName)) {
