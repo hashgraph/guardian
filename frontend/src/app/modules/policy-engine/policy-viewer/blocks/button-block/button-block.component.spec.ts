@@ -93,6 +93,49 @@ describe('ButtonBlockComponent', () => {
             expect(toastService.success).not.toHaveBeenCalled();
         });
 
+        it('undoes the optimistic write when the submit is rejected', () => {
+            component.data = { status: 'A' };
+            policyEngineService.setBlockData.and.returnValue(throwError(() => ({ error: {} })));
+
+            component.onSelect({ field: 'status', value: 'B', tag: 'btn1' });
+
+            expect(component.data.status).toBe('A');
+        });
+
+        it('undoes the dialog comment too, so a retry does not record it twice', () => {
+            component.data = { option: { comment: ['first'] } };
+            policyEngineService.setBlockData.and.returnValue(throwError(() => ({ error: {} })));
+
+            // what onSelectDialog does: capture, append, submit
+            const restorePoint = JSON.stringify(component.data);
+            (component.data as any).option.comment.push('second');
+            component.onSelect({ field: 'status', value: 'B', tag: 'btn1' }, restorePoint);
+
+            expect((component.data as any).option.comment).toEqual(['first']);
+        });
+
+        it('clears the persisted hide-events decision when the submit is rejected', async () => {
+            // onSelect always clears once up front, so only the extra clear proves the undo
+            const settle = async () => { for (let i = 0; i < 5; i++) { await Promise.resolve(); } };
+            const remove = (TestBed.inject(IndexedDbRegistryService) as any).delete as jasmine.Spy;
+            (component as any).hideEventsUserId = 'did:user';
+
+            component.data = { status: 'A' };
+            policyEngineService.setBlockData.and.returnValue(of(null as any));
+            remove.calls.reset();
+            component.onSelect({ field: 'status', value: 'B', tag: 'ok' });
+            await settle();
+            const whenAccepted = remove.calls.count();
+
+            component.data = { status: 'A' };
+            policyEngineService.setBlockData.and.returnValue(throwError(() => ({ error: {} })));
+            remove.calls.reset();
+            component.onSelect({ field: 'status', value: 'B', tag: 'rejected' });
+            await settle();
+
+            expect(remove.calls.count()).toBe(whenAccepted + 1);
+        });
+
         it('hides the buttons while an accepted decision is in flight', () => {
             component.data = {};
             component.commonVisible = true;

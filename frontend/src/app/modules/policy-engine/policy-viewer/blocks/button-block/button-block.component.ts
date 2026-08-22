@@ -233,7 +233,12 @@ export class ButtonBlockComponent implements OnInit {
         return result;
     }
 
-    onSelect(button: any) {
+    /*
+     * `restorePoint` is captured by onSelectDialog before it appends the comment,
+     * so a rejected submit can undo that too. Snapshotting here would keep it.
+     */
+    onSelect(button: any, restorePoint?: string) {
+        const snapshot = restorePoint ?? JSON.stringify(this.data ?? null);
         void this.clearOutgoingHideEventsState()
             .then(() => {
                 return this.writeOutgoingHideEventsState(button);
@@ -264,6 +269,13 @@ export class ButtonBlockComponent implements OnInit {
                      * left with no controls and no explanation.
                      */
                     this.commonVisible = true;
+                    try {
+                        this.data = JSON.parse(snapshot);
+                    } catch (parseError) {
+                        console.error(parseError);
+                    }
+                    // the persisted hide-events value records a decision that never landed
+                    void this.clearOutgoingHideEventsState().catch((err) => console.error(err));
                     this.loading = false;
                     this.toastService.error(
                         e?.error?.message || 'The action could not be submitted.',
@@ -285,6 +297,7 @@ export class ButtonBlockComponent implements OnInit {
             },
         })!;
 
+        const restorePoint = JSON.stringify(this.data ?? null);
         dialogRef.onClose.subscribe((result) => {
             if (result) {
                 let comments = this.getObjectValue(
@@ -303,7 +316,7 @@ export class ButtonBlockComponent implements OnInit {
                     button.dialogResultFieldPath || this._commentField,
                     comments
                 );
-                this.onSelect(button);
+                this.onSelect(button, restorePoint);
             }
         });
     }
