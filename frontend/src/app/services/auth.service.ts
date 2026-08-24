@@ -116,7 +116,14 @@ export class AuthService {
      * chose them - never as an access decision. The token is not verified here,
      * and a forged one would only let its bearer read their own local settings.
      */
-    public getUserId(): string | null {
+    /**
+     * Identifies the signed-in account for per-user client storage.
+     *
+     * `username`, not an id: generateAccessToken signs { username, did, role,
+     * expireAt } and nothing else, so reading any id claim yields null for every
+     * real session.
+     */
+    public getUserKey(): string | null {
         const token = localStorage.getItem('accessToken');
         if (!token) {
             return null;
@@ -126,10 +133,11 @@ export class AuthService {
             if (!payload) {
                 return null;
             }
-            // base64url -> base64
+            // base64url -> base64, then decode as UTF-8: atob alone mangles non-ASCII
             const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
-            const decoded = JSON.parse(atob(normalized));
-            return decoded?.userId ? String(decoded.userId) : null;
+            const bytes = Uint8Array.from(atob(normalized), (ch) => ch.charCodeAt(0));
+            const decoded = JSON.parse(new TextDecoder().decode(bytes));
+            return decoded?.username ? String(decoded.username) : null;
         } catch {
             return null;
         }

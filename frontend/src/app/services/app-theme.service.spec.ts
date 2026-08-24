@@ -8,7 +8,9 @@ const LIGHT_CLASS = 'guardian-theme-light';
 describe('AppThemeService', () => {
     let service: AppThemeService;
 
-    const keysToClear = [GLOBAL_KEY, `${GLOBAL_KEY}:user-a`, `${GLOBAL_KEY}:user-b`];
+    const LAST_USER_KEY = 'GUARDIAN_APP_THEME_LAST_USER';
+
+    const keysToClear = [GLOBAL_KEY, LAST_USER_KEY, `${GLOBAL_KEY}:user-a`, `${GLOBAL_KEY}:user-b`];
 
     beforeEach(() => {
         keysToClear.forEach((key) => localStorage.removeItem(key));
@@ -57,6 +59,40 @@ describe('AppThemeService', () => {
 
         expect(service.getCurrentTheme()).toBe('light');
         expect(localStorage.getItem(`${GLOBAL_KEY}:user-a`)).toBe('dark');
+    });
+
+    it('does not write the shared fallback when no one is signed in', () => {
+        // the bare key is every not-yet-chosen user's fallback, so writing it here
+        // would hand this choice to all of them
+        localStorage.setItem(GLOBAL_KEY, 'light');
+
+        service.setTheme('dark');
+
+        expect(localStorage.getItem(GLOBAL_KEY)).toBe('light');
+        expect(service.getCurrentTheme()).toBe('dark');
+    });
+
+    it('restores the last account on construction, before applyForUser arrives', () => {
+        // applyForUser only lands after an HTTP round-trip; without the seed a
+        // dark-mode user gets a flash of light on every refresh
+        service.applyForUser('user-a');
+        service.setTheme('dark');
+
+        const reconstructed = new AppThemeService();
+
+        expect(reconstructed.getCurrentTheme()).toBe('dark');
+        reconstructed.ngOnDestroy();
+    });
+
+    it('forgets the last account on sign-out', () => {
+        service.applyForUser('user-a');
+        service.setTheme('dark');
+        service.reset();
+
+        const reconstructed = new AppThemeService();
+
+        expect(reconstructed.getCurrentTheme()).toBe('light');
+        reconstructed.ngOnDestroy();
     });
 
     it('adopts a preference stored under the pre-upgrade global key', () => {

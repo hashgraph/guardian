@@ -15,8 +15,8 @@ describe('AuthStateService — theme scoping', () => {
 
     beforeEach(() => {
         theme = jasmine.createSpyObj<AppThemeService>('AppThemeService', ['applyForUser', 'reset']);
-        auth = jasmine.createSpyObj<AuthService>('AuthService', ['getUserId', 'updateAccessToken']);
-        auth.getUserId.and.returnValue('user-a');
+        auth = jasmine.createSpyObj<AuthService>('AuthService', ['getUserKey', 'updateAccessToken']);
+        auth.getUserKey.and.returnValue('user-a');
 
         TestBed.configureTestingModule({
             providers: [

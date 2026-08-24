@@ -59,7 +59,7 @@ export class AuthStateService {
          * discard the theme on every page refresh.
          */
         if (state) {
-            this.appThemeService.applyForUser(this.authService.getUserId());
+            this.appThemeService.applyForUser(this.authService.getUserKey());
         } else if (!noClearLocalStorage) {
             this.appThemeService.reset();
         }

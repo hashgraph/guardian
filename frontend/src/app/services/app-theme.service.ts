@@ -14,6 +14,8 @@ export interface AppThemeOption {
  */
 const APP_THEME_STORAGE_KEY = 'GUARDIAN_APP_THEME';
 
+const LAST_USER_STORAGE_KEY = 'GUARDIAN_APP_THEME_LAST_USER';
+
 function storageKeyForUser(userId: string | null): string {
     return userId ? `${APP_THEME_STORAGE_KEY}:${userId}` : APP_THEME_STORAGE_KEY;
 }
@@ -41,6 +43,9 @@ export class AppThemeService implements OnDestroy {
 
     constructor() {
         this.darkModeQuery.addEventListener('change', this.onSystemChange);
+        // applyForUser only arrives after an HTTP round-trip, so without seeding the
+        // last signed-in account here a dark-mode user gets a flash of light on refresh
+        this.userId = localStorage.getItem(LAST_USER_STORAGE_KEY);
         this.currentTheme = this.readStoredTheme();
         this.applyResolvedTheme();
     }
@@ -55,7 +60,11 @@ export class AppThemeService implements OnDestroy {
 
     public setTheme(theme: AppTheme): void {
         this.currentTheme = this.findTheme(theme).value;
-        localStorage.setItem(storageKeyForUser(this.userId), this.currentTheme);
+        // with no account the key is the legacy global one, which is also every
+        // not-yet-chosen user's fallback: writing it would overwrite what they read
+        if (this.userId) {
+            localStorage.setItem(storageKeyForUser(this.userId), this.currentTheme);
+        }
         this.applyResolvedTheme();
     }
 
@@ -65,6 +74,9 @@ export class AppThemeService implements OnDestroy {
      */
     public applyForUser(userId: string | null): void {
         this.userId = userId;
+        if (userId) {
+            localStorage.setItem(LAST_USER_STORAGE_KEY, userId);
+        }
         this.currentTheme = this.readStoredTheme();
         this.applyResolvedTheme();
     }
@@ -75,6 +87,8 @@ export class AppThemeService implements OnDestroy {
      */
     public reset(): void {
         this.userId = null;
+        // drop the seed too, or a refresh after sign-out restores the last account's theme
+        localStorage.removeItem(LAST_USER_STORAGE_KEY);
         this.currentTheme = this.themes[0].value;
         this.applyResolvedTheme();
     }
