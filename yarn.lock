@@ -2619,14 +2619,14 @@ __metadata:
   linkType: hard
 
 "@meeco/cryppo@npm:^3.0.1":
-  version: 3.0.1
-  resolution: "@meeco/cryppo@npm:3.0.1"
+  version: 3.0.2
+  resolution: "@meeco/cryppo@npm:3.0.2"
   dependencies:
     bson: "npm:^7.2.0"
     buffer: "npm:^6.0.3"
     node-forge: "npm:^1.3.1"
     yaml: "npm:^2.8.2"
-  checksum: 10c0/27b8e8529f327294a6b0d66ec3b477a30e15d2885d8a0c876b25588ec50962a71eaa36b3e21e99ee2bcaed2e96b8fb88c8445cd181c82f12ffdbf219ea3bd504
+  checksum: 10c0/5e5dcf0484464466bb29f4ab724abd1cdeb2424c80bf8587f2f79fc1a17a99a35facd61db55c0fb2d51500b45eaebe542fa1dd20e99ac002a695a08f11905224
   languageName: node
   linkType: hard
 
