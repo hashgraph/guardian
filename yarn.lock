@@ -3340,59 +3340,59 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scalar/client-side-rendering@npm:0.3.7":
-  version: 0.3.7
-  resolution: "@scalar/client-side-rendering@npm:0.3.7"
+"@scalar/client-side-rendering@npm:0.3.9":
+  version: 0.3.9
+  resolution: "@scalar/client-side-rendering@npm:0.3.9"
   dependencies:
-    "@scalar/schemas": "npm:0.8.1"
-    "@scalar/types": "npm:0.18.0"
-    "@scalar/validation": "npm:0.6.2"
-  checksum: 10c0/c818d7bd4e9b7fa6d0d49125f2729d6b1ad63ed7bb16546476ce6833ce470afc8334f8fd8ecfabce3c60d42abb7324809253c88d530beabb1b22713689e921ed
+    "@scalar/schemas": "npm:0.8.3"
+    "@scalar/types": "npm:0.18.2"
+    "@scalar/validation": "npm:0.6.3"
+  checksum: 10c0/71d4c43511863b5893a89b6339f8695f4641d81fb2ef1d6b0d1a51d24cb0e5f4c6d4bc3e175bc0cae03f1d59ee9bf158d957d6d58f1fbeaaed2ab13dac453d6d
   languageName: node
   linkType: hard
 
-"@scalar/helpers@npm:0.10.0":
-  version: 0.10.0
-  resolution: "@scalar/helpers@npm:0.10.0"
-  checksum: 10c0/5686fca8f2e022ef42e12aaada0b7254e0842961964a4c67ae815ef8ad4262a7b2ee841cdade202a16f76bd5ba62c0f12aad2bc9db9047e8ddff3988d2f64be7
+"@scalar/helpers@npm:0.11.1":
+  version: 0.11.1
+  resolution: "@scalar/helpers@npm:0.11.1"
+  checksum: 10c0/534d1c567d3faad71fce8d7afeec2221c51ff665a7ac054d5587176a748dc82be615bb8764206cdc514a306b86409a8c006ef4b76a767bb399dd2197913099c0
   languageName: node
   linkType: hard
 
 "@scalar/nestjs-api-reference@npm:^1.2.11":
-  version: 1.2.14
-  resolution: "@scalar/nestjs-api-reference@npm:1.2.14"
+  version: 1.2.16
+  resolution: "@scalar/nestjs-api-reference@npm:1.2.16"
   dependencies:
-    "@scalar/client-side-rendering": "npm:0.3.7"
-  checksum: 10c0/f15514f96a6b18c6f641076d5860ca8fc75f5da1332c0c52eeff24e87593835358d3f4ee1daf597e67766b31aecb1db95d6e66aaea0ba7060de9aaabc48ce45f
+    "@scalar/client-side-rendering": "npm:0.3.9"
+  checksum: 10c0/6f9f6a886e7373cee85192a164bdf858caa6e821279f8f09615b3e7bca024fc9098d13585ea50249c86252bab228790594c5bb704ef4ec616c367c57deec5e07
   languageName: node
   linkType: hard
 
-"@scalar/schemas@npm:0.8.1":
-  version: 0.8.1
-  resolution: "@scalar/schemas@npm:0.8.1"
+"@scalar/schemas@npm:0.8.3":
+  version: 0.8.3
+  resolution: "@scalar/schemas@npm:0.8.3"
   dependencies:
-    "@scalar/helpers": "npm:0.10.0"
-    "@scalar/validation": "npm:0.6.2"
-  checksum: 10c0/9cad66dbdabaf851db9ca4dade2c782b1cb4ebd33ed587425d81c010dddfbbb01e96a1a1a27588f361878fb32303bdb5d4967ba2fa68329169a3b9e8d4c5576a
+    "@scalar/helpers": "npm:0.11.1"
+    "@scalar/validation": "npm:0.6.3"
+  checksum: 10c0/fbe90393bba71080a411970532fd0db168ce8462c07e185d5e3693aa9026e3a790d4d62c1a271c2a203153e30ef85ddd3ac6ea14397026aa259514a7c60bfbf3
   languageName: node
   linkType: hard
 
-"@scalar/types@npm:0.18.0":
-  version: 0.18.0
-  resolution: "@scalar/types@npm:0.18.0"
+"@scalar/types@npm:0.18.2":
+  version: 0.18.2
+  resolution: "@scalar/types@npm:0.18.2"
   dependencies:
-    "@scalar/helpers": "npm:0.10.0"
+    "@scalar/helpers": "npm:0.11.1"
     nanoid: "npm:^5.1.6"
-    type-fest: "npm:^5.3.1"
+    type-fest: "npm:^5.8.0"
     zod: "npm:^4.3.5"
-  checksum: 10c0/b95ecf428694a00b50c83a8ecc6fc0496fc29b74e624ed764e5363c474188f8ba0cec3f197c14c494dcc33b4699f1100a2b59dacad19de89e6aa11ba4f6019a2
+  checksum: 10c0/ca5ccda83ebd7dc200ee3db33c04192e9aeabc2c2874e4e2ebbf0985667a1fbf681349c08e849b0514ccca1db01e68b924f8dd9f56a4e6b5170e7f3f2ef67c00
   languageName: node
   linkType: hard
 
-"@scalar/validation@npm:0.6.2":
-  version: 0.6.2
-  resolution: "@scalar/validation@npm:0.6.2"
-  checksum: 10c0/7fa8f4c40973380da4033dcf72a490d0ebdfacdee471f181167993d0a2bd138e462fc741ea7fe98f3607cf622e88ea0106f9638428f3c2fc4a8d90e90569372d
+"@scalar/validation@npm:0.6.3":
+  version: 0.6.3
+  resolution: "@scalar/validation@npm:0.6.3"
+  checksum: 10c0/3c510769ff50beeeebc2b4fce1bc9de726dbe89ab5a78525a4eec5209353f534b34a075dee3c86e2238e5068ca5aac8260d110f9496b5b3ad863695ab633855a
   languageName: node
   linkType: hard
 
@@ -16079,7 +16079,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"type-fest@npm:^5.3.1":
+"type-fest@npm:^5.8.0":
   version: 5.8.0
   resolution: "type-fest@npm:5.8.0"
   dependencies:
