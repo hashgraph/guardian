@@ -895,4 +895,4 @@ For any questions, please reach out to the Hashgraph team at:
 
 ## License
 
-MIT License. See the [LICENSE](LICENSE) file for details.
+Apache 2.0. See the [LICENSE](LICENSE) file for details.
