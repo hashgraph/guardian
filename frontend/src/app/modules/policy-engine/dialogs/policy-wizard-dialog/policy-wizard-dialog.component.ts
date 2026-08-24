@@ -41,6 +41,10 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
         schemas: Schema[];
     }[] = [];
     public selectedSchemas: Schema[] = [];
+    public missingSubSchemas: string[] = [];
+    // parent + every sub-schema the backend resolves, keyed by iri
+    private resolvedSchemas = new Map<string, Schema>();
+    private failedSchemaLookups = new Set<string>();
     public mintedSchemas: Schema[] = [];
     public selectedTrustChainRoles: string[] = [];
 
@@ -358,7 +362,13 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
                             addedSchema = new Schema(data.schema);
                         }
 
+                        this.registerResolvedSchemas(addedSchema, data?.subSchemas);
                         resolve(addedSchema);
+                    }, (error) => {
+                        // without an error arm the promise never settles and the wizard hangs
+                        console.error(error);
+                        this.failedSchemaLookups.add(schema?.iri || id);
+                        resolve(schema);
                     });
                 });
 
@@ -638,8 +648,79 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
         }
     }
 
+    // never present as policy schemas; the same two are whitelisted by
+    // TemplateUtils.checkSchemaVariables
+    private static readonly BUILT_IN_REFS = ['#GeoJSON', '#SentinelHUB'];
+
+    private registerResolvedSchemas(schema: Schema, subSchemas: any[]): void {
+        if (schema?.iri) {
+            this.resolvedSchemas.set(schema.iri, schema);
+        }
+        if (Array.isArray(subSchemas)) {
+            for (const sub of subSchemas) {
+                const parsed = sub instanceof Schema ? sub : new Schema(sub);
+                if (parsed?.iri) {
+                    this.resolvedSchemas.set(parsed.iri, parsed);
+                }
+            }
+        }
+    }
+
+    /**
+     * Walk the transitive $ref chain of everything selected and report the IRIs that
+     * resolve to nothing, so the wizard cannot hand back a policy the backend will
+     * reject with "refers to non-existing schema".
+     */
+    private findMissingSubSchemas(): string[] {
+        const known = new Map<string, Schema>();
+        for (const schema of this.schemas || []) {
+            if (schema?.iri) {
+                known.set(schema.iri, schema);
+            }
+        }
+        for (const [iri, schema] of this.resolvedSchemas) {
+            known.set(iri, schema);
+        }
+
+        const missing = new Set<string>();
+        const visited = new Set<string>();
+        const walk = (schema: Schema) => {
+            if (!schema?.iri || visited.has(schema.iri)) {
+                return;
+            }
+            visited.add(schema.iri);
+            for (const field of schema.fields || []) {
+                if (!field.isRef || !field.type) {
+                    continue;
+                }
+                if (PolicyWizardDialogComponent.BUILT_IN_REFS.includes(field.type)) {
+                    continue;
+                }
+                const sub = known.get(field.type);
+                if (sub) {
+                    walk(sub);
+                } else {
+                    missing.add(field.type);
+                }
+            }
+        };
+
+        for (const selected of this.selectedSchemas || []) {
+            const iri = selected?.iri;
+            walk((iri && this.resolvedSchemas.get(iri)) || selected);
+        }
+        for (const iri of this.failedSchemaLookups) {
+            missing.add(iri);
+        }
+        return Array.from(missing);
+    }
+
     onCreate() {
         if (!this.dataForm.valid) {
+            return;
+        }
+        this.missingSubSchemas = this.findMissingSubSchemas();
+        if (this.missingSubSchemas.length) {
             return;
         }
         this.ref.close({
@@ -653,6 +734,14 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
         const deletedSchemas = this.selectedSchemas.filter(
             (schema) => !value.some((item: any) => item.iri === schema.iri)
         );
+        // the banner is only recomputed in onCreate, so without this it keeps naming
+        // IRIs the user has already fixed
+        this.missingSubSchemas = [];
+        for (const deletedSchema of deletedSchemas) {
+            if (deletedSchema.iri) {
+                this.failedSchemaLookups.delete(deletedSchema.iri);
+            }
+        }
         this.currentNode.children =
             this.currentNode.children.filter(
                 (schema: any) =>
@@ -695,7 +784,19 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
                         addedSchema = new Schema(data.schema);
                     }
 
+                    this.registerResolvedSchemas(addedSchema, data?.subSchemas);
+                    // otherwise one transient failure blocks Create for the whole dialog
+                    this.failedSchemaLookups.delete(addedSchema?.iri || id);
                     resolve(addedSchema);
+                }, (error) => {
+                    /*
+                     * Without an error arm this promise never settles, so Promise.all
+                     * below never resolves, selectedSchemas is never assigned and the
+                     * tree never refreshes - the wizard simply stops responding.
+                     */
+                    console.error(error);
+                    this.failedSchemaLookups.add(schema?.iri || id);
+                    resolve(schema);
                 });
             });
 
@@ -749,7 +850,7 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
             parent: node,
             template: this.schemaConfig,
             schema,
-            mintFields: schema.fields.filter((field) =>
+            mintFields: (schema.fields || []).filter((field: any) =>
                 ['integer', 'number'].includes(field.type)
             ),
             control: schemaConfigControl,
