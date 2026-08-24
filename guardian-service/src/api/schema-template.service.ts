@@ -1462,7 +1462,9 @@ async function updateAppliedSchemaTemplate(
      */
     const originalSchemas = new Map<string, Schema>();
     const createdSchemas: Schema[] = [];
+    const pendingRemovals: Schema[] = [];
     let nextSnapshot: Awaited<ReturnType<typeof saveApplySnapshot>> | null = null;
+    let result: Policy;
     const rollback = async (): Promise<void> => {
         if (nextSnapshot) {
             try {
@@ -1541,7 +1543,9 @@ async function updateAppliedSchemaTemplate(
         );
         const action = conflict ? resolutions.get(conflict.id) : null;
         if (action === SchemaTemplateUpdateResolutionAction.REMOVE_FROM_POLICY) {
-            await removePolicySchema(policySchema, owner);
+            // deleted only past the commit: rollback() restores originalSchemas and
+            // drops createdSchemas, and a hard-deleted row is in neither
+            pendingRemovals.push(policySchema);
         } else {
             // another in-place edit; capture before detaching the markers
             if (!originalSchemas.has(policySchema.id)) {
@@ -1582,18 +1586,24 @@ async function updateAppliedSchemaTemplate(
         updatedAt: appliedAt,
         schemaMap
     };
-    const result = await DatabaseServer.updatePolicy(context.policy);
+    result = await DatabaseServer.updatePolicy(context.policy);
     // the old snapshot only goes once the new binding is committed, so a failure
     // above still leaves the policy describable by its old snapshot
     nextSnapshot = null;
-    await DatabaseServer.removeSchemaTemplateSnapshot(previousSnapshot);
-    return result;
     } catch (error) {
         // undo the copies and restore the edited rows, then surface the original
         // failure. Previously only the new snapshot was removed.
         await rollback();
         throw error;
     }
+
+    // Past the commit point. rollback() must not run from here: the binding already
+    // names the new snapshot, so restoring the old schema rows would contradict it.
+    for (const policySchema of pendingRemovals) {
+        await removePolicySchema(policySchema, owner);
+    }
+    await DatabaseServer.removeSchemaTemplateSnapshot(previousSnapshot);
+    return result;
 }
 
 /**
