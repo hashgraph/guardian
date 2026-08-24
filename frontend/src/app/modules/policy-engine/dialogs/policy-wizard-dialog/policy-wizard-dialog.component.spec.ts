@@ -143,6 +143,53 @@ describe('PolicyWizardDialogComponent', () => {
             expect(component.missingSubSchemas).toEqual(['n1']);
             expect(ref.close).not.toHaveBeenCalled();
         });
+
+        it('stops blocking Create once the lookup succeeds', async () => {
+            const component: any = build();
+            stubTree(component);
+            spyOn(console, 'error');
+            component.selectedSchemas = [];
+            component.currentNode = { children: [] as any[] };
+            const added = { iri: 'n1', name: 'N1', fields: [], category: 'cat', id: 'i1', topicId: 'tp' };
+
+            schemaService.getSchemaWithSubSchemas.and.returnValue(throwError(() => new Error('boom')));
+            component.onSelectedSchemasChange([added]);
+            await flushMicrotasks();
+
+            // the user retries and the network is back
+            component.selectedSchemas = [];
+            component.currentNode = { children: [] as any[] };
+            schemaService.getSchemaWithSubSchemas.and.returnValue(of({ schema: added, subSchemas: [] }));
+            component.onSelectedSchemasChange([added]);
+            await flushMicrotasks();
+
+            validForm(component);
+            component.onCreate();
+
+            expect(component.missingSubSchemas).toEqual([]);
+            expect(ref.close).toHaveBeenCalled();
+        });
+
+        it('drops the banner as soon as the selection changes', async () => {
+            const component: any = build();
+            stubTree(component);
+            spyOn(console, 'error');
+            component.selectedSchemas = [];
+            component.currentNode = { children: [] as any[] };
+            const added = { iri: 'n1', name: 'N1', fields: [], category: 'cat', id: 'i1', topicId: 'tp' };
+            schemaService.getSchemaWithSubSchemas.and.returnValue(throwError(() => new Error('boom')));
+            component.onSelectedSchemasChange([added]);
+            await flushMicrotasks();
+            validForm(component);
+            component.onCreate();
+            expect(component.missingSubSchemas).toEqual(['n1']);
+
+            // deselecting it is the user fixing the problem
+            component.currentNode = { id: 'c1', children: [] as any[] };
+            component.onSelectedSchemasChange([]);
+
+            expect(component.missingSubSchemas).toEqual([]);
+        });
     });
 
     it('registers the resolved sub-schemas, not just the parent', async () => {

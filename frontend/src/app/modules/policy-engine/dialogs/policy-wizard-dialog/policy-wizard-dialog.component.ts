@@ -734,6 +734,14 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
         const deletedSchemas = this.selectedSchemas.filter(
             (schema) => !value.some((item: any) => item.iri === schema.iri)
         );
+        // the banner is only recomputed in onCreate, so without this it keeps naming
+        // IRIs the user has already fixed
+        this.missingSubSchemas = [];
+        for (const deletedSchema of deletedSchemas) {
+            if (deletedSchema.iri) {
+                this.failedSchemaLookups.delete(deletedSchema.iri);
+            }
+        }
         this.currentNode.children =
             this.currentNode.children.filter(
                 (schema: any) =>
@@ -777,6 +785,8 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
                     }
 
                     this.registerResolvedSchemas(addedSchema, data?.subSchemas);
+                    // otherwise one transient failure blocks Create for the whole dialog
+                    this.failedSchemaLookups.delete(addedSchema?.iri || id);
                     resolve(addedSchema);
                 }, (error) => {
                     /*
@@ -840,7 +850,7 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
             parent: node,
             template: this.schemaConfig,
             schema,
-            mintFields: schema.fields.filter((field) =>
+            mintFields: (schema.fields || []).filter((field: any) =>
                 ['integer', 'number'].includes(field.type)
             ),
             control: schemaConfigControl,
