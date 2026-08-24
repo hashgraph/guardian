@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { AbstractControl, FormArray, FormControl, FormGroup, UntypedFormControl, Validators } from '@angular/forms';
 import { PolicyEditableFieldDTO, UserPermissions } from '@guardian/interfaces';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -23,7 +23,7 @@ interface PolicyParameterItem {
     styleUrls: ['./policy-parameters-dialog.component.scss'],
     standalone: false
 })
-export class PolicyParametersDialog {
+export class PolicyParametersDialog implements OnDestroy {
     public blockInfo: any;
     public loading = false;
     public policyId: string;
@@ -50,6 +50,11 @@ export class PolicyParametersDialog {
         this.form = new FormGroup({
             items: new FormArray<AbstractControl<any>>([])
         });
+    }
+
+    ngOnDestroy(): void {
+        this._destroy$.next();
+        this._destroy$.complete();
     }
 
     ngOnInit() {
