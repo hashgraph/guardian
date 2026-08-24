@@ -3,6 +3,7 @@ import {
     buildFieldChangeDetails,
     buildTemplateSchemasSnapshot,
     createTemplateStateHash,
+    mergeCustomFieldsIntoDocument,
     normalizeFieldForDiff,
 } from '../../dist/api/schema-template.service.js';
 import { SchemaHelper } from '../../../interfaces/dist/helpers/schema-helper.js';
@@ -222,3 +223,138 @@ describe('schema template update diff helpers', () => {
         ]);
     });
 });
+
+/*
+ * Preserved custom fields silently lost their required flag.
+ *
+ * preparePolicySchemaUpdate replaces target.document with a fresh clone of the
+ * template document, so the `required` list becomes the template's, and then asks
+ * mergeCustomFieldsIntoDocument to put the SR's own fields back. It re-inserted
+ * them into `properties` only - and `required` lives on the parent, not on the
+ * property - so a required custom field survived a template update as optional
+ * and VCs missing it started validating.
+ */
+describe('mergeCustomFieldsIntoDocument — required flag', () => {
+    const sourceDocument = () => ({
+        $id: '#Policy',
+        properties: {
+            keep: { type: 'string', title: 'Keep' },
+            optionalCustom: { type: 'string', title: 'Optional' },
+            nested: {
+                type: 'object',
+                properties: {
+                    innerCustom: { type: 'string', title: 'Inner' },
+                },
+                required: ['innerCustom'],
+            },
+        },
+        required: ['keep'],
+    });
+
+    // the fresh template clone: no trace of the custom fields
+    const templateDocument = () => ({
+        $id: '#Policy',
+        properties: {
+            fromTemplate: { type: 'string' },
+            nested: { type: 'object', properties: {}, required: [] },
+        },
+        required: ['fromTemplate'],
+    });
+
+    it('re-adds a preserved required field to the parent required list', () => {
+        const source = sourceDocument();
+        source.required.push('optionalCustom');
+        const target = templateDocument();
+
+        mergeCustomFieldsIntoDocument(target, source, [{ path: 'optionalCustom' }]);
+
+        assert.ok(target.properties.optionalCustom, 'the field is restored');
+        assert.ok(target.required.includes('optionalCustom'),
+            'a required custom field must stay required across a template update');
+        assert.ok(target.required.includes('fromTemplate'),
+            'the template requirements are untouched');
+    });
+
+    it('leaves an optional preserved field optional', () => {
+        const target = templateDocument();
+
+        mergeCustomFieldsIntoDocument(target, sourceDocument(), [{ path: 'optionalCustom' }]);
+
+        assert.ok(target.properties.optionalCustom);
+        assert.equal(target.required.includes('optionalCustom'), false,
+            'an optional field must not become required');
+    });
+
+    it('carries the required flag for a nested field to its own parent', () => {
+        const target = templateDocument();
+
+        mergeCustomFieldsIntoDocument(target, sourceDocument(), [{ path: 'nested.innerCustom' }]);
+
+        assert.ok(target.properties.nested.properties.innerCustom);
+        assert.ok(target.properties.nested.required.includes('innerCustom'),
+            'required is tracked on the owning object, not the root');
+        assert.equal(target.required.includes('innerCustom'), false,
+            'and must not leak to the root required list');
+    });
+
+    it('does not duplicate an entry that is already required', () => {
+        const source = sourceDocument();
+        source.required.push('optionalCustom');
+        const target = templateDocument();
+        target.required.push('optionalCustom');
+        target.properties.other = { type: 'string' };
+
+        mergeCustomFieldsIntoDocument(target, source, [{ path: 'optionalCustom' }]);
+
+        const occurrences = target.required.filter((name) => name === 'optionalCustom').length;
+        assert.equal(occurrences, 1);
+    });
+});
+
+/*
+ * The required flag is read from the source DOCUMENT, not from the parsed field.
+ *
+ * SchemaHelper.parseField sets `required || !!conditionRequired`, so a field that is
+ * required only by a condition branch reports required === true on the parsed object
+ * while the document's own `required` array correctly omits it. Copying the parsed
+ * flag across would promote a branch-scoped requirement into an unconditional one -
+ * exactly what the $comment marking in this change exists to prevent, since JSON
+ * Schema cannot tell "answered differently" from "never asked".
+ */
+describe('mergeCustomFieldsIntoDocument - condition-required fields', () => {
+    it('does not promote a branch-required field to unconditionally required', () => {
+        const source = {
+            $id: '#Policy',
+            properties: {
+                branchOnly: {
+                    type: 'string',
+                    title: 'Branch only',
+                    // marked required by a condition branch, not by the schema
+                    $comment: JSON.stringify({ term: 'branchOnly', conditionRequired: true }),
+                },
+            },
+            required: [],
+        };
+        const target = { $id: '#Policy', properties: {}, required: [] };
+
+        mergeCustomFieldsIntoDocument(target, source, [{ path: 'branchOnly' }]);
+
+        assert.ok(target.properties.branchOnly, 'the field is still preserved');
+        assert.equal(target.required.includes('branchOnly'), false,
+            'a condition branch requirement must not become an unconditional one');
+    });
+
+    it('still carries a genuinely required field across', () => {
+        const source = {
+            $id: '#Policy',
+            properties: { always: { type: 'string', title: 'Always' } },
+            required: ['always'],
+        };
+        const target = { $id: '#Policy', properties: {}, required: [] };
+
+        mergeCustomFieldsIntoDocument(target, source, [{ path: 'always' }]);
+
+        assert.equal(target.required.includes('always'), true);
+    });
+});
+

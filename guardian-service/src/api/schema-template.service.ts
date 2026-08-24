@@ -1036,22 +1036,38 @@ function findSchemaProperty(document: any, path: string[]): any {
     return current;
 }
 
-function ensureSchemaPropertyParent(document: any, path: string[]): any {
+/**
+ * Walk to the object that owns `path`'s last segment.
+ *
+ * `create` distinguishes the two callers: the target document is being built, so it
+ * wants the `properties` containers filled in on the way down; the source document is
+ * only being read, and creating nodes there would mutate the very thing being copied
+ * from.
+ */
+function schemaPropertyParent(document: any, path: string[], create: boolean): any {
     let current = document;
     for (const key of path.slice(0, -1)) {
         const parent = current?.type === 'array' ? current.items : current;
-        parent.properties = parent.properties || {};
-        current = parent.properties[key];
+        if (create) {
+            parent.properties = parent.properties || {};
+        }
+        current = parent?.properties?.[key];
         if (!current) {
             return null;
         }
     }
     const target = current?.type === 'array' ? current.items : current;
-    target.properties = target.properties || {};
+    if (create && target) {
+        target.properties = target.properties || {};
+    }
     return target;
 }
 
-function mergeCustomFieldsIntoDocument(
+function ensureSchemaPropertyParent(document: any, path: string[]): any {
+    return schemaPropertyParent(document, path, true);
+}
+
+export function mergeCustomFieldsIntoDocument(
     targetDocument: any,
     sourceDocument: any,
     fields: any[]
@@ -1068,6 +1084,21 @@ function mergeCustomFieldsIntoDocument(
             continue;
         }
         parent.properties[fieldName] = cloneJson(property);
+
+        /*
+         * `required` lives on the parent, so it is copied separately or the preserved
+         * field comes back optional. Read it from the source document, not from
+         * field.required: parseField sets `required || !!conditionRequired`
+         * (interfaces schema-helper.ts:321), which would promote a branch-scoped
+         * requirement into an unconditional one.
+         */
+        const sourceParent = schemaPropertyParent(sourceDocument, path, false);
+        if (Array.isArray(sourceParent?.required) && sourceParent.required.includes(fieldName)) {
+            parent.required = Array.isArray(parent.required) ? parent.required : [];
+            if (!parent.required.includes(fieldName)) {
+                parent.required.push(fieldName);
+            }
+        }
     }
 }
 
