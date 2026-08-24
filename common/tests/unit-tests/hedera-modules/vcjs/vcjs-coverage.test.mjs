@@ -116,6 +116,36 @@ describe('VCJS coverage (offline paths)', function () {
             assert.deepEqual(schema.$defs.Bar.required, []);
         });
 
+        it('strips templateFieldId, an editor-only annotation AJV strict mode rejects as unknown', function () {
+            const vcjs = makeVcjs();
+            const schema = {
+                type: 'object',
+                properties: {
+                    root: { type: 'string', templateFieldId: 'root-id' },
+                    // SchemaHelper writes templateFieldId on the array field itself,
+                    // never on `items` directly; nested object fields get their own id.
+                    list: {
+                        type: 'array',
+                        templateFieldId: 'list-id',
+                        items: { type: 'object', properties: {
+                            nested: { type: 'string', templateFieldId: 'nested-id' }
+                        } }
+                    }
+                },
+                $defs: {
+                    Foo: {
+                        type: 'object',
+                        properties: { a: { type: 'string', templateFieldId: 'def-id' } }
+                    }
+                }
+            };
+            vcjs.prepareSchema(schema);
+            assert.notProperty(schema.properties.root, 'templateFieldId');
+            assert.notProperty(schema.properties.list, 'templateFieldId');
+            assert.notProperty(schema.properties.list.items.properties.nested, 'templateFieldId');
+            assert.notProperty(schema.$defs.Foo.properties.a, 'templateFieldId');
+        });
+
         describe('shared sub-schema sibling isolation', function () {
             // Two root fields (`targeted` and `sibling`) both $ref the same #Sub entry.
             // A condition in allOf targets only `targeted`. The fix must clone #Sub

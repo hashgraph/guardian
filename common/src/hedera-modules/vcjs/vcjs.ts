@@ -381,6 +381,7 @@ export class VCJS {
      */
     private prepareSchema(schema: any) {
         this.stripIfOnly(schema);
+        this.stripTemplateFieldIds(schema);
 
         const defsObj = schema.$defs;
         if (!defsObj) {
@@ -514,6 +515,40 @@ export class VCJS {
                         cloneKey
                     );
                 }
+            }
+        }
+    }
+
+    /**
+     * Remove the schema-editor-only `templateFieldId` annotation from every property.
+     *
+     * @param schema Schema
+     */
+    private stripTemplateFieldIds(schema: any) {
+        const stripProperties = (properties: any) => {
+            if (!properties || typeof properties !== 'object') {
+                return;
+            }
+            for (const property of Object.values<any>(properties)) {
+                if (!property || typeof property !== 'object') {
+                    continue;
+                }
+
+                delete property.templateFieldId;
+
+                if (property.properties) {
+                    stripProperties(property.properties);
+                }
+                if (property.items?.properties) {
+                    stripProperties(property.items.properties);
+                }
+            }
+        };
+
+        stripProperties(schema?.properties);
+        if (schema?.$defs) {
+            for (const nestedSchema of Object.values<any>(schema.$defs)) {
+                stripProperties(nestedSchema?.properties);
             }
         }
     }
