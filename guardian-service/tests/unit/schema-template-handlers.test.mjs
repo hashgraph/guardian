@@ -659,6 +659,136 @@ describe('removePolicySchemaTemplateSnapshot', () => {
 });
 
 /*
+ * Normalization assigns any missing templateSchemaId / templateFieldId values.
+ * It used to persist them from wherever it ran - including GET and export, which
+ * any user with TEMPLATES_TEMPLATE_READ can call on a published template. A
+ * non-owner's read therefore mutated the owner's schema documents, and two
+ * concurrent readers stored different random ids for the same field. The ids are
+ * still filled in memory, so responses are unchanged; only writers persist them.
+ */
+describe('schema template reads must not write', () => {
+    let handlers;
+
+    beforeEach(async () => {
+        handlers = await register(schemaTemplatesAPI, silentLogger());
+    });
+
+    afterEach(() => restoreStubs());
+
+    const arrangeRead = () => {
+        const writes = [];
+        // no templateSchemaId, and a field with no templateFieldId: exactly what
+        // normalization wants to fill in
+        const schema = {
+            id: 'tpl-schema-1',
+            iri: '#Alpha',
+            topicId: '0.0.20',
+            category: SchemaCategory.TEMPLATE,
+            templateId: 'template-1',
+            document: { $id: '#Alpha', properties: { a: { type: 'string' } } },
+        };
+        stub(DatabaseServer, 'getSchemaTemplateById', async () => ({
+            id: 'template-1',
+            name: 'Template',
+            // published and owned by somebody else: the read is legitimate
+            owner: 'did:other-owner',
+            status: ModuleStatus.PUBLISHED,
+            topicId: '0.0.20',
+            config: { schemas: [] },
+        }));
+        stub(DatabaseServer, 'getSchemas', async () => [schema]);
+        stub(DatabaseServer, 'updateSchema', async (id, value) => {
+            writes.push({ id, value });
+            return value;
+        });
+        return { writes, schema };
+    };
+
+    it('GET_SCHEMA_TEMPLATE does not persist the ids it fills in', async () => {
+        const { writes, schema } = arrangeRead();
+
+        const response = await handlers[MessageAPI.GET_SCHEMA_TEMPLATE]({
+            id: 'template-1',
+            owner,
+        });
+
+        assert.equal(ok(response), true);
+        assert.ok(schema.templateSchemaId,
+            'normalization did not run, so this test proves nothing');
+        assert.ok(schema.document.properties.a.templateFieldId,
+            'field ids must still be filled in memory, or the response changes');
+        assert.deepEqual(writes, [],
+            'a read on a published template wrote to the owner\'s schemas');
+    });
+
+    it('SCHEMA_TEMPLATE_EXPORT_FILE does not persist them either', async () => {
+        const { writes, schema } = arrangeRead();
+
+        await handlers[MessageAPI.SCHEMA_TEMPLATE_EXPORT_FILE]({
+            id: 'template-1',
+            owner,
+        });
+
+        assert.ok(schema.templateSchemaId,
+            'normalization did not run, so this test proves nothing');
+        assert.deepEqual(writes, [], 'export is a read');
+    });
+});
+
+/*
+ * usedByPolicyNames is built from the *template owner's* policies, drafts
+ * included, while the listing is visible to every user with
+ * TEMPLATES_TEMPLATE_READ. Returning the names to everyone disclosed another
+ * Standard Registry's private draft-policy names. The count stays public: it says
+ * how widely a template is used without naming anything.
+ */
+describe('GET_SCHEMA_TEMPLATES usedByPolicyNames', () => {
+    let handlers;
+
+    beforeEach(async () => {
+        handlers = await register(schemaTemplatesAPI, silentLogger());
+    });
+
+    afterEach(() => restoreStubs());
+
+    const arrangeList = (templateOwner) => {
+        stub(DatabaseServer, 'getSchemaTemplatesAndCount', async () => [[{
+            id: 'template-1',
+            name: 'Template',
+            owner: templateOwner,
+            status: ModuleStatus.PUBLISHED,
+            topicId: '0.0.20',
+        }], 1]);
+        stub(DatabaseServer, 'getPolicies', async () => [
+            { id: 'policy-1', name: 'Secret Draft', schemaTemplate: { templateId: 'template-1' } },
+        ]);
+        stub(DatabaseServer, 'getSchemasCount', async () => 3);
+    };
+
+    it('withholds the names from a user who does not own the template', async () => {
+        arrangeList('did:other-owner');
+
+        const response = await handlers[MessageAPI.GET_SCHEMA_TEMPLATES]({ owner });
+        const [item] = response.body.items;
+
+        assert.deepEqual(item.usedByPolicyNames, [],
+            'another registry\'s draft-policy names must not be disclosed');
+        assert.equal(item.usedByPoliciesCount, 1,
+            'the count is not sensitive and stays');
+    });
+
+    it('returns them to the owner', async () => {
+        arrangeList(owner.owner);
+
+        const response = await handlers[MessageAPI.GET_SCHEMA_TEMPLATES]({ owner });
+        const [item] = response.body.items;
+
+        assert.deepEqual(item.usedByPolicyNames, ['Secret Draft']);
+        assert.equal(item.usedByPoliciesCount, 1);
+    });
+});
+
+/*
  * configFileId has the _configFileId "previous handle" mechanism on the entity,
  * cleaned up by its @AfterUpdate hook. contentFileId had no equivalent, so every
  * publish attempt overwrote the handle and stranded the file it replaced - a

@@ -597,6 +597,8 @@ export class PolicyImport {
             schema.topicId = template.topicId;
             schema.category = SchemaCategory.TEMPLATE;
             schema.templateId = template.id;
+            schema.templateSchemaId = schema.templateSchemaId || GenerateUUIDv4();
+            SchemaHelper.ensureTemplateFieldIds(schema.document);
             schema.status = SchemaStatus.PUBLISHED;
             schema.owner = message.owner;
             schema.creator = message.owner;

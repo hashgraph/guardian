@@ -246,7 +246,7 @@ async function createSchemaTemplateVersion(
             readonly: false
         });
         for (const schema of sourceSchemas as Schema[]) {
-            await ensureTemplateSchemaReferences(schema);
+            await ensureTemplateSchemaReferences(schema, true);
         }
         notifier.completeStep(STEP_VALIDATE);
 
@@ -286,7 +286,7 @@ async function createSchemaTemplateVersion(
         notifier.completeStep(STEP_UPDATE_REFS);
 
         notifier.startStep(STEP_SAVE_CONFIG);
-        await normalizeSchemaTemplateConfig(draft);
+        await normalizeSchemaTemplateConfig(draft, true);
         const result = await DatabaseServer.updateSchemaTemplate(draft);
         notifier.completeStep(STEP_SAVE_CONFIG);
         notifier.complete();
@@ -390,7 +390,7 @@ async function importSchemaTemplateByComponents(
     notifier.completeStep(STEP_IMPORT_SCHEMAS);
 
     notifier.startStep(STEP_SAVE_CONFIG);
-    await normalizeSchemaTemplateConfig(template);
+    await normalizeSchemaTemplateConfig(template, true);
     const result = await DatabaseServer.updateSchemaTemplate(template);
     notifier.completeStep(STEP_SAVE_CONFIG);
     notifier.complete();
@@ -433,7 +433,12 @@ async function getPoliciesUsingSchemaTemplate(
     });
 }
 
-async function addSchemaCounts(templates: SchemaTemplate[]): Promise<any[]> {
+/**
+ * `owner` gates usedByPolicyNames: the names come from the template owner's
+ * policies, drafts included. The count stays public - it says how widely a
+ * template is used without naming anything.
+ */
+async function addSchemaCounts(templates: SchemaTemplate[], owner: IOwner): Promise<any[]> {
     const ownerPoliciesCache = new Map<string, any[]>();
     const getCachedPolicies = async (owner: string) => {
         if (!ownerPoliciesCache.has(owner)) {
@@ -463,10 +468,12 @@ async function addSchemaCounts(templates: SchemaTemplate[]): Promise<any[]> {
             })
             : 0;
         item.usedByPoliciesCount = usedByPolicies.length;
-        item.usedByPolicyNames = usedByPolicies
-            .map((policy) => policy.name || policy.id)
-            .filter((name) => !!name)
-            .slice(0, 5);
+        item.usedByPolicyNames = owner && template.owner === owner.owner
+            ? usedByPolicies
+                .map((policy) => policy.name || policy.id)
+                .filter((name) => !!name)
+                .slice(0, 5)
+            : [];
         result.push(item);
     }
     return result;
@@ -532,7 +539,7 @@ async function publishSchemaTemplate(
             ?.some((item) => item.id !== template.id)) {
             throw new Error('Schema template with current version already was published');
         }
-        await normalizeSchemaTemplateConfig(template);
+        await normalizeSchemaTemplateConfig(template, true);
         notifier.completeStep(STEP_VALIDATE);
         validationPassed = true;
 
@@ -646,7 +653,10 @@ function normalizeTemplateConfigKeys(
     return normalized;
 }
 
-async function normalizeSchemaTemplateConfig(template: SchemaTemplate): Promise<void> {
+async function normalizeSchemaTemplateConfig(
+    template: SchemaTemplate,
+    persist: boolean = false
+): Promise<void> {
     if (!template?.topicId) {
         return;
     }
@@ -656,7 +666,7 @@ async function normalizeSchemaTemplateConfig(template: SchemaTemplate): Promise<
         templateId: template.id
     });
     for (const schema of schemas as Schema[]) {
-        await ensureTemplateSchemaReferences(schema);
+        await ensureTemplateSchemaReferences(schema, persist);
     }
     template.config = normalizeTemplateConfigKeys(template.config, schemas as Schema[]);
 }
@@ -1105,7 +1115,9 @@ export function mergeCustomFieldsIntoDocument(
 async function loadSchemaTemplateUpdateContext(
     templateId: string,
     policyId: string,
-    owner: IOwner
+    owner: IOwner,
+    // false when the caller is previewing rather than updating
+    persist: boolean = false
 ) {
     const template = await DatabaseServer.getSchemaTemplateById(templateId);
     if (!template || (template.status !== ModuleStatus.PUBLISHED && template.owner !== owner.owner)) {
@@ -1144,9 +1156,9 @@ async function loadSchemaTemplateUpdateContext(
         throw new Error('Schema template has no schemas');
     }
     for (const schema of templateSchemas as Schema[]) {
-        await ensureTemplateSchemaReferences(schema);
+        await ensureTemplateSchemaReferences(schema, persist);
     }
-    await normalizeSchemaTemplateConfig(template);
+    await normalizeSchemaTemplateConfig(template, persist);
 
     const nextSchemas = buildTemplateSchemasSnapshot(templateSchemas as Schema[]);
     const policySchemas = await DatabaseServer.getSchemas({
@@ -1348,7 +1360,8 @@ async function previewSchemaTemplateUpdate(
     owner: IOwner
 ): Promise<ISchemaTemplateUpdatePreview> {
     return buildSchemaTemplateUpdatePreviewFromContext(
-        await loadSchemaTemplateUpdateContext(templateId, policyId, owner)
+        // preview is a read: it must not persist normalization ids
+        await loadSchemaTemplateUpdateContext(templateId, policyId, owner, false)
     );
 }
 
@@ -1425,7 +1438,7 @@ async function updateAppliedSchemaTemplate(
     owner: IOwner,
     options?: ISchemaTemplateUpdateOptions
 ): Promise<any> {
-    const context = await loadSchemaTemplateUpdateContext(templateId, policyId, owner);
+    const context = await loadSchemaTemplateUpdateContext(templateId, policyId, owner, true);
     const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
     const resolutions = validateSchemaTemplateUpdateResolutions(preview, options);
     const nextConfig = normalizeTemplateConfigKeys(context.template.config, context.templateSchemas);
@@ -1533,14 +1546,23 @@ async function updateAppliedSchemaTemplate(
     }
 }
 
-async function ensureTemplateSchemaReferences(schema: Schema): Promise<void> {
+/**
+ * `persist` exists because the read paths must not write. Normalization assigns
+ * missing templateSchemaId / templateFieldId, so a non-owner's GET mutated the
+ * owner's schemas and concurrent readers raced to store different ids. The ids are
+ * still filled in memory, so the response is identical either way.
+ */
+async function ensureTemplateSchemaReferences(
+    schema: Schema,
+    persist: boolean = false
+): Promise<void> {
     let changed = false;
     if (!schema.templateSchemaId) {
         schema.templateSchemaId = GenerateUUIDv4();
         changed = true;
     }
     changed = SchemaHelper.ensureTemplateFieldIds(schema.document) || changed;
-    if (changed) {
+    if (changed && persist) {
         await DatabaseServer.updateSchema(schema.id, schema);
     }
 }
@@ -1635,7 +1657,7 @@ async function applySchemaTemplate(
     }
 
     for (const schema of templateSchemas as Schema[]) {
-        await ensureTemplateSchemaReferences(schema);
+        await ensureTemplateSchemaReferences(schema, true);
     }
 
     const schemaMap: Record<string, string> = {};
@@ -1908,7 +1930,7 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
                 }, options);
 
                 return new MessageResponse({
-                    items: await addSchemaCounts(items),
+                    items: await addSchemaCounts(items, owner),
                     count
                 });
             } catch (error) {
@@ -1931,7 +1953,8 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
                 if (template.status !== ModuleStatus.PUBLISHED && template.owner !== owner.owner) {
                     throw new Error('Invalid schema template');
                 }
-                await normalizeSchemaTemplateConfig(template);
+                // a read must not write: see ensureTemplateSchemaReferences
+                await normalizeSchemaTemplateConfig(template, false);
                 return new MessageResponse(template);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -2018,7 +2041,8 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
                     return new BinaryMessageResponse(Uint8Array.from(buffer).buffer);
                 }
 
-                await normalizeSchemaTemplateConfig(template);
+                // export is a read too
+                await normalizeSchemaTemplateConfig(template, false);
                 const zip = await SchemaTemplateImportExport.generate(template);
                 const file = await zip.generateAsync({
                     type: 'arraybuffer',
