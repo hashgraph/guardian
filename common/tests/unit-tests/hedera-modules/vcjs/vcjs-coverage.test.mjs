@@ -146,6 +146,35 @@ describe('VCJS coverage (offline paths)', function () {
             assert.notProperty(schema.$defs.Foo.properties.a, 'templateFieldId');
         });
 
+        it('strips templateFieldId from a conditional field revealed in an allOf then/else branch', function () {
+            const vcjs = makeVcjs();
+            const schema = {
+                type: 'object',
+                properties: {
+                    trigger: { type: 'string' }
+                },
+                allOf: [{
+                    if: {
+                        properties: { trigger: { const: 'yes' } },
+                        required: ['trigger']
+                    },
+                    then: {
+                        properties: {
+                            condField: { type: 'string', templateFieldId: 'cond-id' }
+                        }
+                    },
+                    else: {
+                        properties: {
+                            otherCondField: { type: 'string', templateFieldId: 'other-cond-id' }
+                        }
+                    }
+                }]
+            };
+            vcjs.prepareSchema(schema);
+            assert.notProperty(schema.allOf[0].then.properties.condField, 'templateFieldId');
+            assert.notProperty(schema.allOf[0].else.properties.otherCondField, 'templateFieldId');
+        });
+
         describe('shared sub-schema sibling isolation', function () {
             // Two root fields (`targeted` and `sibling`) both $ref the same #Sub entry.
             // A condition in allOf targets only `targeted`. The fix must clone #Sub

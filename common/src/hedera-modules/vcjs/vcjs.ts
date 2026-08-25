@@ -545,10 +545,20 @@ export class VCJS {
             }
         };
 
-        stripProperties(schema?.properties);
+        const stripNode = (node: any) => {
+            stripProperties(node?.properties);
+            if (Array.isArray(node?.allOf)) {
+                for (const entry of node.allOf) {
+                    stripNode(entry?.then);
+                    stripNode(entry?.else);
+                }
+            }
+        };
+
+        stripNode(schema);
         if (schema?.$defs) {
             for (const nestedSchema of Object.values<any>(schema.$defs)) {
-                stripProperties(nestedSchema?.properties);
+                stripNode(nestedSchema);
             }
         }
     }
