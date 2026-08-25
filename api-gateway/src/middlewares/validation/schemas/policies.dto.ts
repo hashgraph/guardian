@@ -346,12 +346,14 @@ export class PolicyDTO {
     @ApiProperty({
         type: 'object',
         additionalProperties: true,
+        isArray: true,
         nullable: true,
-        description: 'Server-managed schema template binding. Ignored by normal policy update endpoints.'
+        description: 'Server-managed schema template bindings, one per applied template. Ignored by normal policy update endpoints.'
     })
     @IsOptional()
-    @IsObject()
-    schemaTemplate?: any;
+    @IsArray()
+    @IsObject({ each: true })
+    schemaTemplates?: any[];
 
     @ApiProperty({
         type: String,

@@ -126,17 +126,24 @@ async function getTemplateSchemaValidationContext(
     }
 
     const policy = await DatabaseServer.getPolicy({ topicId: schema.topicId });
-    if (!policy?.schemaTemplate?.templateId) {
+    /*
+     * A policy carries at most one binding until multi-template apply lands, so the
+     * first entry is the policy's binding. Keying this off schema.templateId instead
+     * would drop the locks for imported policies: an imported schema keeps the source
+     * instance's templateId, while the binding gets the locally resolved one.
+     */
+    const binding = policy?.schemaTemplates?.[0];
+    if (!binding?.templateId) {
         return null;
     }
 
     let config: ISchemaTemplateConfig | null | undefined;
-    if (policy.schemaTemplate.snapshotId) {
-        const snapshot = await DatabaseServer.getSchemaTemplateSnapshotById(policy.schemaTemplate.snapshotId);
+    if (binding.snapshotId) {
+        const snapshot = await DatabaseServer.getSchemaTemplateSnapshotById(binding.snapshotId);
         config = snapshot?.config;
     }
     if (!config) {
-        const template = await DatabaseServer.getSchemaTemplateById(policy.schemaTemplate.templateId);
+        const template = await DatabaseServer.getSchemaTemplateById(binding.templateId);
         config = template?.config;
     }
 

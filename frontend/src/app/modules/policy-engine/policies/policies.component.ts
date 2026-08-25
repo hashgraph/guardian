@@ -1338,14 +1338,14 @@ export class PoliciesComponent implements OnInit {
                 const versionOfTopicId = result.versionOfTopicId || null;
                 const demo = result.demo || false;
                 const tools = result.tools;
-                const schemaTemplate = result.schemaTemplate;
+                const schemaTemplates = result.schemaTemplates;
                 const importRecords = !!result.importRecords;
                 const originalTracking = !!result.originalTracking;
 
                 this.loading = true;
                 if (type == 'message') {
                     this.policyEngineService
-                        .pushImportByMessage(data, versionOfTopicId, { tools, schemaTemplate, importRecords }, demo, originalTracking)
+                        .pushImportByMessage(data, versionOfTopicId, { tools, schemaTemplates, importRecords }, demo, originalTracking)
                         .pipe(takeUntil(this._destroy$))
                         .subscribe((result) => {
                             const { taskId, expectation } = result;
@@ -1360,7 +1360,7 @@ export class PoliciesComponent implements OnInit {
                         });
                 } else if (type == 'file') {
                     this.policyEngineService
-                        .pushImportByFile(data, versionOfTopicId, { tools, schemaTemplate }, demo, originalTracking)
+                        .pushImportByFile(data, versionOfTopicId, { tools, schemaTemplates }, demo, originalTracking)
                         .pipe(takeUntil(this._destroy$)).subscribe((result) => {
                             const { taskId, expectation } = result;
                             this.router.navigate(['task', taskId], {
@@ -1885,16 +1885,15 @@ export class PoliciesComponent implements OnInit {
     }
 
     private hasAppliedSchemaTemplate(policy: any): boolean {
-        const binding = policy?.schemaTemplate;
-        return !!(
+        return !!(policy?.schemaTemplates || []).some((binding: any) => (
             binding?.templateId ||
             binding?.snapshotId ||
             Object.keys(binding?.schemaMap || {}).length
-        );
+        ));
     }
 
     public getSchemaTemplateLabel(policy: any): string {
-        const binding = policy?.schemaTemplate;
+        const binding = policy?.schemaTemplates?.[0];
         if (!binding?.templateName) {
             return '';
         }
@@ -1945,7 +1944,7 @@ export class PoliciesComponent implements OnInit {
 
     public detachSchemaTemplate(policy: any): void {
         this.policyMenu?.hide();
-        const templateName = policy.schemaTemplate?.templateName || 'schema template';
+        const templateName = policy.schemaTemplates?.[0]?.templateName || 'schema template';
         const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
             showHeader: false,
             width: '640px',

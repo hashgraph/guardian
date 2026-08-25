@@ -754,7 +754,7 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     private getPolicyTemplateLabel(policy: any): string {
-        const binding = policy?.schemaTemplate;
+        const binding = policy?.schemaTemplates?.[0];
         if (!binding?.templateName) {
             return '';
         }

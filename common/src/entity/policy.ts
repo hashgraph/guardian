@@ -238,10 +238,10 @@ export class Policy extends BaseEntity {
     tools?: any;
 
     /**
-     * Server-managed schema template binding.
+     * Server-managed schema template bindings, one per applied template.
      */
     @Property({ nullable: true, type: 'unknown' })
-    schemaTemplate?: IPolicySchemaTemplateBinding;
+    schemaTemplates?: IPolicySchemaTemplateBinding[];
 
     /**
      * Discontinued date

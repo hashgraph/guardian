@@ -102,8 +102,8 @@ export class PolicyImportExport {
         policy: Policy,
         existingSchemas: Schema[]
     ): Promise<Schema[]> {
-        const schemaMap = policy.schemaTemplate?.schemaMap || {};
-        const schemaIds = Object.values(schemaMap)
+        const schemaIds = (policy.schemaTemplates || [])
+            .flatMap(binding => Object.values(binding.schemaMap || {}))
             .map(id => id?.toString?.() || String(id || ''))
             .filter(id => !!id);
 
@@ -204,8 +204,9 @@ export class PolicyImportExport {
         );
         const systemSchemas = await PolicyImportExport.loadSystemSchemas(topicId);
         const tools = await dataBaseServer.find(PolicyTool, { messageId: { $in: toolIds } });
-        const schemaTemplateSnapshot = policy.schemaTemplate?.snapshotId
-            ? await DatabaseServer.getSchemaTemplateSnapshotById(policy.schemaTemplate.snapshotId)
+        const firstSchemaTemplateBinding = policy.schemaTemplates?.[0];
+        const schemaTemplateSnapshot = firstSchemaTemplateBinding?.snapshotId
+            ? await DatabaseServer.getSchemaTemplateSnapshotById(firstSchemaTemplateBinding.snapshotId)
             : null;
         const artifacts: IArtifact[] = [];
         const artifactRows = await dataBaseServer.find(Artifact, { policyId: policy.id });

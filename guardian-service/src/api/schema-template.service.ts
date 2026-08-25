@@ -411,11 +411,16 @@ function ensureEditable(
 }
 
 function hasSchemaTemplateBinding(policy: any): boolean {
-    const binding = policy?.schemaTemplate;
-    return !!(
+    return (policy?.schemaTemplates || []).some((binding: any) => !!(
         binding?.templateId ||
         binding?.snapshotId ||
         Object.keys(binding?.schemaMap || {}).length
+    ));
+}
+
+function policyUsesTemplate(policy: any, templateId: any): boolean {
+    return (policy?.schemaTemplates || []).some((binding: any) =>
+        binding?.templateId === templateId || binding?.templateId === templateId?.toString()
     );
 }
 
@@ -425,13 +430,9 @@ async function getPoliciesUsingSchemaTemplate(
 ): Promise<any[]> {
     const policies = await DatabaseServer.getPolicies(
         { owner },
-        { fields: ['id', 'name', 'schemaTemplate'] } as any
+        { fields: ['id', 'name', 'schemaTemplates'] } as any
     );
-    return (policies as any[]).filter((policy) => {
-        const binding = policy?.schemaTemplate;
-        return binding?.templateId === template.id ||
-            binding?.templateId === template.id?.toString();
-    });
+    return (policies as any[]).filter((policy) => policyUsesTemplate(policy, template.id));
 }
 
 /**
@@ -445,7 +446,7 @@ async function addSchemaCounts(templates: SchemaTemplate[], owner: IOwner): Prom
         if (!ownerPoliciesCache.has(ownerId)) {
             const policies = await DatabaseServer.getPolicies(
                 { owner: ownerId },
-                { fields: ['id', 'name', 'schemaTemplate'] } as any
+                { fields: ['id', 'name', 'schemaTemplates'] } as any
             );
             ownerPoliciesCache.set(ownerId, policies as any[]);
         }
@@ -456,11 +457,7 @@ async function addSchemaCounts(templates: SchemaTemplate[], owner: IOwner): Prom
     for (const template of templates) {
         const item: any = template;
         const allPolicies = template.owner ? await getCachedPolicies(template.owner) : [];
-        const usedByPolicies = allPolicies.filter((policy) => {
-            const binding = policy?.schemaTemplate;
-            return binding?.templateId === template.id ||
-                binding?.templateId === template.id?.toString();
-        });
+        const usedByPolicies = allPolicies.filter((policy) => policyUsesTemplate(policy, template.id));
         item.schemasCount = template.topicId
             ? await DatabaseServer.getSchemasCount({
                 topicId: template.topicId,
@@ -1138,7 +1135,7 @@ async function loadSchemaTemplateUpdateContext(
     if (!policy.topicId) {
         throw new Error('Policy has no topic');
     }
-    const binding = policy.schemaTemplate;
+    const binding = policy.schemaTemplates?.find((b) => b.templateId === templateId);
     if (!binding?.templateId || !binding?.snapshotId) {
         throw new Error('Policy has no applied schema template snapshot');
     }
@@ -1574,7 +1571,7 @@ async function updateAppliedSchemaTemplate(
     );
     const snapshot = nextSnapshot;
 
-    context.policy.schemaTemplate = {
+    const updatedBinding = {
         templateId: context.template.id,
         templateName: context.template.name,
         templateVersion: context.template.version,
@@ -1586,6 +1583,9 @@ async function updateAppliedSchemaTemplate(
         updatedAt: appliedAt,
         schemaMap
     };
+    context.policy.schemaTemplates = (context.policy.schemaTemplates || [])
+        .filter((b) => b.templateId !== context.template.id)
+        .concat([updatedBinding]);
     result = await DatabaseServer.updatePolicy(context.policy);
     // the old snapshot only goes once the new binding is committed, so a failure
     // above still leaves the policy describable by its old snapshot
@@ -1790,7 +1790,7 @@ async function applySchemaTemplate(
             appliedAt
         );
 
-        policy.schemaTemplate = {
+        const newBinding = {
             templateId: template.id,
             templateName: template.name,
             templateVersion: template.version,
@@ -1801,6 +1801,7 @@ async function applySchemaTemplate(
             appliedAt,
             schemaMap
         };
+        policy.schemaTemplates = [...(policy.schemaTemplates || []), newBinding];
         return await DatabaseServer.updatePolicy(policy);
     } catch (error) {
         // undo the copies and the snapshot, then surface the original failure.
@@ -1820,17 +1821,18 @@ export async function removePolicySchemaTemplateSnapshot(
     policy: Policy | null | undefined,
     logger?: PinoLogger
 ): Promise<void> {
-    const snapshotId = (policy as any)?.schemaTemplate?.snapshotId;
-    if (!snapshotId) {
-        return;
-    }
-    try {
-        const snapshot = await DatabaseServer.getSchemaTemplateSnapshotById(snapshotId);
-        if (snapshot) {
-            await DatabaseServer.removeSchemaTemplateSnapshot(snapshot);
+    const snapshotIds = ((policy as any)?.schemaTemplates || [])
+        .map((binding: any) => binding?.snapshotId)
+        .filter((snapshotId: any) => !!snapshotId);
+    for (const snapshotId of snapshotIds) {
+        try {
+            const snapshot = await DatabaseServer.getSchemaTemplateSnapshotById(snapshotId);
+            if (snapshot) {
+                await DatabaseServer.removeSchemaTemplateSnapshot(snapshot);
+            }
+        } catch (error) {
+            await logger?.error(error, ['GUARDIAN_SERVICE']);
         }
-    } catch (error) {
-        await logger?.error(error, ['GUARDIAN_SERVICE']);
     }
 }
 
@@ -1848,11 +1850,11 @@ async function detachSchemaTemplate(
     if (!policy.topicId) {
         throw new Error('Policy has no topic');
     }
-    if (!policy.schemaTemplate?.templateId) {
+    const binding = policy.schemaTemplates?.[0];
+    if (!binding?.templateId) {
         throw new Error('Schema template is not applied to policy');
     }
 
-    const binding = policy.schemaTemplate;
     const schemaIds = new Set(Object.values(binding.schemaMap || {}).filter(id => !!id).map(id => String(id)));
     let detachedSchemas = 0;
     const schemas = await DatabaseServer.getSchemas({
@@ -1880,7 +1882,7 @@ async function detachSchemaTemplate(
         }
     }
 
-    policy.schemaTemplate = null;
+    policy.schemaTemplates = (policy.schemaTemplates || []).filter((b) => b.templateId !== binding.templateId);
     await DatabaseServer.updatePolicy(policy);
     return {
         policyId: policy.id,
@@ -1898,7 +1900,7 @@ async function getAppliedSchemaTemplateByPolicyTopic(
         throw new Error('Invalid policy');
     }
 
-    const binding = policy.schemaTemplate;
+    const binding = policy.schemaTemplates?.[0];
     if (!binding?.templateId) {
         return null;
     }

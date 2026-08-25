@@ -618,15 +618,16 @@ export class PolicyImport {
         userId: string | null
     ): Promise<void> {
         step.start();
-        const binding = policy.schemaTemplate;
-        if (!binding || metadata?.schemaTemplate?.detach) {
+        const binding = policy.schemaTemplates?.[0];
+        const metadataOverride = metadata?.schemaTemplates?.[0];
+        if (!binding || metadataOverride?.detach) {
             this.schemaTemplate = null;
             step.complete();
             return;
         }
 
-        if (metadata?.schemaTemplate?.templateId) {
-            const template = await DatabaseServer.getSchemaTemplateById(metadata.schemaTemplate.templateId);
+        if (metadataOverride?.templateId) {
+            const template = await DatabaseServer.getSchemaTemplateById(metadataOverride.templateId);
             if (template && (template.status === ModuleStatus.PUBLISHED || template.owner === user.owner)) {
                 this.schemaTemplate = template;
                 step.complete();
@@ -636,7 +637,7 @@ export class PolicyImport {
         }
 
         // An import that carries a snapshot keeps its binding, and no caller sets
-        // metadata.schemaTemplate, so an unpublished but owned template would otherwise
+        // metadata.schemaTemplates, so an unpublished but owned template would otherwise
         // fall through to the throw below. A clone has no snapshot and is detached
         // before this runs, so it never reaches here.
         if (binding.templateId) {
@@ -648,7 +649,7 @@ export class PolicyImport {
             }
         }
 
-        const messageId = metadata?.schemaTemplate?.templateMessageId || binding.templateMessageId;
+        const messageId = metadataOverride?.templateMessageId || binding.templateMessageId;
         if (messageId) {
             const template = await this.resolveSchemaTemplateByMessage(messageId, user, userId);
             if (template) {
@@ -663,7 +664,7 @@ export class PolicyImport {
 
     /** Drop the binding before the schemas are written: detached, or no snapshot to carry it. */
     public mustDropSchemaTemplateBinding(policy: Policy, schemaTemplateSnapshot: any, metadata: any): boolean {
-        return !!metadata?.schemaTemplate?.detach || (!!policy?.schemaTemplate && !schemaTemplateSnapshot);
+        return !!metadata?.schemaTemplates?.[0]?.detach || (!!policy?.schemaTemplates?.length && !schemaTemplateSnapshot);
     }
 
     public clearTemplateMetadataFromSchemas(schemas: Schema[]): void {
@@ -718,26 +719,27 @@ export class PolicyImport {
         step: INotificationStep
     ): Promise<void> {
         step.start();
-        if (!policy.schemaTemplate || !snapshot || !this.schemaTemplate) {
-            policy.schemaTemplate = null;
+        const existingBinding = policy.schemaTemplates?.[0];
+        if (!existingBinding || !snapshot || !this.schemaTemplate) {
+            policy.schemaTemplates = [];
             step.complete();
             return;
         }
 
         const nextSnapshot = this.remapSchemaTemplateSnapshot(snapshot, policy);
         const savedSnapshot = await DatabaseServer.saveSchemaTemplateSnapshot(nextSnapshot);
-        policy.schemaTemplate = {
-            ...policy.schemaTemplate,
+        policy.schemaTemplates = [{
+            ...existingBinding,
             templateId: this.schemaTemplate.id?.toString(),
             templateName: this.schemaTemplate.name,
             templateVersion: this.schemaTemplate.version,
             templateStatus: this.schemaTemplate.status,
-            templateMessageId: this.schemaTemplate.messageId || policy.schemaTemplate.templateMessageId,
+            templateMessageId: this.schemaTemplate.messageId || existingBinding.templateMessageId,
             templateStateHash: savedSnapshot.templateStateHash,
             snapshotId: savedSnapshot.id,
             schemaMap: savedSnapshot.schemaMap || {},
             appliedAt: savedSnapshot.appliedAt || new Date().toISOString()
-        };
+        }];
         await DatabaseServer.updatePolicy(policy);
         step.complete();
     }
@@ -928,15 +930,15 @@ export class PolicyImport {
         this.importRecords = !!options.importRecords;
 
         /*
-         * Drop the binding whole, not half. saveSchemaTemplateSnapshot nulls
-         * policy.schemaTemplate after the schemas are persisted, leaving them with
+         * Drop the binding whole, not half. saveSchemaTemplateSnapshot clears
+         * policy.schemaTemplates after the schemas are persisted, leaving them with
          * their template markers - a policy claiming no template over schemas that do.
          *
          * Deciding it here, alongside the explicit detach and before the schemas are
          * written, is what makes the strip persist.
          */
         if (this.mustDropSchemaTemplateBinding(policy, schemaTemplateSnapshot, metadata)) {
-            policy.schemaTemplate = null;
+            policy.schemaTemplates = [];
             this.clearTemplateMetadataFromSchemas(schemas);
         }
 

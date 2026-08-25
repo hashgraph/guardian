@@ -127,7 +127,7 @@ export interface IPolicy {
    */
   policyDocumentation?: IPolicyDocumentationEntry[];
   /**
-   * Server-managed schema template binding.
+   * Server-managed schema template bindings, one per applied template.
    */
-  schemaTemplate?: IPolicySchemaTemplateBinding;
+  schemaTemplates?: IPolicySchemaTemplateBinding[];
 }

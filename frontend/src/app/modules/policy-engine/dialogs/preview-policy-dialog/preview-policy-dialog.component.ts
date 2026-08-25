@@ -54,7 +54,7 @@ export class PreviewPolicyDialog {
     private _destroy$ = new Subject<void>();
     private _destroyMap: any = {};
     private _map = new Map<string, boolean>();
-    
+
     public isLargeSize: boolean = true;
     @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
 
@@ -128,7 +128,7 @@ export class PreviewPolicyDialog {
                 .join(', ');
 
             this.toolConfigs = importFile.tools || [];
-            this.schemaTemplate = this.policy.schemaTemplate;
+            this.schemaTemplate = this.policy.schemaTemplates?.[0];
             this.schemaTemplateSnapshot = importFile.schemaTemplateSnapshot;
             if (this.schemaTemplate) {
                 this.schemaTemplateMessageId = this.schemaTemplate.templateMessageId || '';
@@ -315,7 +315,7 @@ export class PreviewPolicyDialog {
         this.ref.close({
             versionOfTopicId: this.versionOfTopicId,
             tools: this.toolForm?.value,
-            schemaTemplate: this.getSchemaTemplateMetadata(),
+            schemaTemplates: this.getSchemaTemplateMetadataArray(),
             demo: this.mode === 'demo',
             importRecords: this.canImportRecords ? this.importRecords : false,
             originalTracking: this.originalTracking
@@ -326,7 +326,7 @@ export class PreviewPolicyDialog {
         this.ref.close({
             messageId,
             tools: this.toolForm?.value,
-            schemaTemplate: this.getSchemaTemplateMetadata(),
+            schemaTemplates: this.getSchemaTemplateMetadataArray(),
         });
     }
 
@@ -389,6 +389,11 @@ export class PreviewPolicyDialog {
         return {
             templateMessageId: this.schemaTemplateMessageId
         };
+    }
+
+    private getSchemaTemplateMetadataArray(): any[] | undefined {
+        const metadata = this.getSchemaTemplateMetadata();
+        return metadata ? [metadata] : undefined;
     }
 
     public enforceMask(messageId: string, event: any): void {
