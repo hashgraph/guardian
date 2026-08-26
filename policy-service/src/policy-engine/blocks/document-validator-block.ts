@@ -108,21 +108,8 @@ export class DocumentValidatorBlock {
         if (sourceValidation.onlyOwnDocuments && user?.did) {
             filter.owner = { $eq: user.did };
         }
-        /*
-         * A group restriction with no group must not widen the search. These used to be
-         * skipped entirely when the user had no active group (a non-group policy, or
-         * before group selection), so an "own group only" entry ran with NO group filter
-         * and every document in the policy became a candidate - another participant's
-         * document could satisfy it.
-         *
-         * Match the direct checks rather than inverting them: `document.group !== userGroup`
-         * (:353) and `document.assignedToGroup !== userGroup` (:363) both ACCEPT when
-         * neither side has a group, which is every document in a group-less policy. An
-         * impossible filter ($in: []) would reject exactly what they accept - the same
-         * inconsistency mirrored, not removed. `$eq: null` matches a null or missing
-         * group, so a group-less user sees group-less documents and still never matches
-         * a document carrying a real group uuid.
-         */
+        // the restriction used to be skipped when the user had no group, leaving the source
+        // unfiltered. `$eq: null` matches group-less documents the way the direct checks do.
         if (sourceValidation.onlyOwnByGroupDocuments) {
             filter.group = { $eq: user?.group ?? null };
         }
