@@ -113,19 +113,24 @@ export class DocumentValidatorBlock {
          * skipped entirely when the user had no active group (a non-group policy, or
          * before group selection), so an "own group only" entry ran with NO group filter
          * and every document in the policy became a candidate - another participant's
-         * document could satisfy it. The direct document checks in this same block fail
-         * closed in that situation, so it was inconsistent as well as fail-open. An
-         * impossible filter is the honest translation of "only my group" when there is
-         * no group.
+         * document could satisfy it.
+         *
+         * Match the direct checks rather than inverting them: `document.group !== userGroup`
+         * (:353) and `document.assignedToGroup !== userGroup` (:363) both ACCEPT when
+         * neither side has a group, which is every document in a group-less policy. An
+         * impossible filter ($in: []) would reject exactly what they accept - the same
+         * inconsistency mirrored, not removed. `$eq: null` matches a null or missing
+         * group, so a group-less user sees group-less documents and still never matches
+         * a document carrying a real group uuid.
          */
         if (sourceValidation.onlyOwnByGroupDocuments) {
-            filter.group = user?.group ? { $eq: user.group } : { $in: [] };
+            filter.group = { $eq: user?.group ?? null };
         }
         if (sourceValidation.onlyAssignDocuments && user?.did) {
             filter.assignedTo = { $eq: user.did };
         }
         if (sourceValidation.onlyAssignByGroupDocuments) {
-            filter.assignedToGroup = user?.group ? { $eq: user.group } : { $in: [] };
+            filter.assignedToGroup = { $eq: user?.group ?? null };
         }
 
         for (const f of (sourceValidation.filters || [])) {
