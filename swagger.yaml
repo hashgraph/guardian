@@ -52685,11 +52685,13 @@ paths:
             type: string
       responses:
         '200':
-          description: Applied schema template state.
+          description: Applied schema template state, one entry per applied template.
           content:
             application/json:
               schema:
-                type: object
+                type: array
+                items:
+                  type: object
         '401':
           description: Unauthorized request.
           content:
@@ -53170,7 +53172,7 @@ paths:
       summary: Updates applied schema template on policy asynchronously.
       tags:
         - schema-templates
-  /schema-templates/policies/{policyId}/push/detach:
+  /schema-templates/{templateId}/policies/{policyId}/push/detach:
     post:
       description: >-
         Removes template binding metadata from the selected draft policy and
@@ -53178,6 +53180,11 @@ paths:
         with the Standard Registry role are allowed to make the request.
       operationId: SchemaTemplatesApi_detachSchemaTemplateAsync
       parameters:
+        - name: templateId
+          required: true
+          in: path
+          schema:
+            type: string
         - name: policyId
           required: true
           in: path
@@ -54458,13 +54465,15 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PolicyToolDTO'
-        schemaTemplate:
-          type: object
+        schemaTemplates:
           additionalProperties: true
           nullable: true
           description: >-
-            Server-managed schema template binding. Ignored by normal policy
-            update endpoints.
+            Server-managed schema template bindings, one per applied template.
+            Ignored by normal policy update endpoints.
+          type: array
+          items:
+            type: object
         createDate:
           type: string
           example: '2026-03-03T17:25:53.312Z'
@@ -54622,7 +54631,7 @@ components:
         - messageId
         - codeVersion
         - tools
-        - schemaTemplate
+        - schemaTemplates
         - createDate
         - version
         - editableParametersSettings
