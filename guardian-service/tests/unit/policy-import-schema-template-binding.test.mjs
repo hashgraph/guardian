@@ -12,7 +12,7 @@ import { restoreStubs, stub } from '../_handler-harness.mjs';
  *    clonePolicy passes no metadata - so a policy bound to an *unpublished*
  *    template threw "Schema template is inaccessible" even though the template was
  *    sitting right there in the database.
- *  - saveSchemaTemplateSnapshot nulls policy.schemaTemplate when there is no
+ *  - saveSchemaTemplateSnapshot clears policy.schemaTemplates when there is no
  *    snapshot to remap (exactly what a clone produces), but by then the schemas are
  *    already persisted and kept their templateId / templateSchemaId /
  *    templateFieldId markers: a policy claiming no template over schemas still
@@ -27,7 +27,7 @@ const makeImport = () => new PolicyImport('COMMON', step());
 describe('PolicyImport - schema template binding', () => {
     afterEach(() => restoreStubs());
 
-    describe('resolveSchemaTemplate', () => {
+    describe('resolveSchemaTemplates', () => {
         it('resolves an unpublished template from the binding when no metadata is supplied', async () => {
             const template = { id: 'template-1', status: ModuleStatus.DRAFT, owner: owner.owner };
             const looked = [];
@@ -37,13 +37,13 @@ describe('PolicyImport - schema template binding', () => {
             });
 
             const service = makeImport();
-            const policy = { schemaTemplate: { templateId: 'template-1' } };
+            const policy = { schemaTemplates: [{ templateId: 'template-1' }] };
 
             // clonePolicy passes no metadata at all
-            await service.resolveSchemaTemplate(undefined, policy, owner, step(), null);
+            await service.resolveSchemaTemplates(undefined, policy, owner, step(), null);
 
             assert.deepEqual(looked, ['template-1']);
-            assert.equal(service.schemaTemplate, template,
+            assert.equal(service.schemaTemplates.get('template-1'), template,
                 'the bound template should resolve locally instead of throwing');
         });
 
@@ -53,13 +53,14 @@ describe('PolicyImport - schema template binding', () => {
             }));
 
             const service = makeImport();
-            const policy = { schemaTemplate: { templateId: 'template-1' } };
+            const policy = { schemaTemplates: [{ templateId: 'template-1' }] };
 
-            await assert.rejects(
-                () => service.resolveSchemaTemplate(undefined, policy, owner, step(), null),
-                /inaccessible/,
-                'accessibility still applies to the binding fallback'
-            );
+            // one unresolvable template no longer fails the whole import; it is left
+            // out and detached individually
+            await service.resolveSchemaTemplates(undefined, policy, owner, step(), null);
+
+            assert.equal(service.schemaTemplates.has('template-1'), false,
+                'accessibility still applies to the binding fallback');
         });
 
         it('accepts a published template belonging to another owner', async () => {
@@ -67,51 +68,55 @@ describe('PolicyImport - schema template binding', () => {
             stub(DatabaseServer, 'getSchemaTemplateById', async () => template);
 
             const service = makeImport();
-            await service.resolveSchemaTemplate(undefined, { schemaTemplate: { templateId: 'template-1' } }, owner, step(), null);
+            await service.resolveSchemaTemplates(undefined, { schemaTemplates: [{ templateId: 'template-1' }] }, owner, step(), null);
 
-            assert.equal(service.schemaTemplate, template);
+            assert.equal(service.schemaTemplates.get('template-1'), template);
         });
 
         it('still detaches when the caller asks for it, without any lookup', async () => {
             stub(DatabaseServer, 'getSchemaTemplateById', async () => { throw new Error('must not be looked up'); });
 
             const service = makeImport();
-            await service.resolveSchemaTemplate(
-                { schemaTemplate: { detach: true } },
-                { schemaTemplate: { templateId: 'template-1' } },
+            await service.resolveSchemaTemplates(
+                { schemaTemplates: [{ detach: true }] },
+                { schemaTemplates: [{ templateId: 'template-1' }] },
                 owner, step(), null
             );
 
-            assert.equal(service.schemaTemplate, null);
+            assert.equal(service.schemaTemplates.size, 0);
         });
     });
 
-    describe('mustDropSchemaTemplateBinding', () => {
-        const bound = { schemaTemplate: { templateId: 'template-1' } };
+    describe('schemaTemplateBindingsToDrop', () => {
+        const bound = { schemaTemplates: [{ templateId: 'template-1' }] };
+        const snapshot = [{ templateId: 'template-1' }];
 
         it('drops a binding that has no snapshot to carry it', () => {
             // exactly what clonePolicy produces
-            assert.equal(makeImport().mustDropSchemaTemplateBinding(bound, null, undefined), true);
+            assert.deepEqual(
+                makeImport().schemaTemplateBindingsToDrop(bound, [], undefined),
+                ['template-1']
+            );
         });
 
         it('keeps a binding that has a snapshot', () => {
-            assert.equal(
-                makeImport().mustDropSchemaTemplateBinding(bound, { id: 'snapshot-1' }, undefined),
-                false
+            assert.deepEqual(
+                makeImport().schemaTemplateBindingsToDrop(bound, snapshot, undefined),
+                []
             );
         });
 
         it('drops on an explicit detach even when a snapshot exists', () => {
-            assert.equal(
-                makeImport().mustDropSchemaTemplateBinding(
-                    bound, { id: 'snapshot-1' }, { schemaTemplate: { detach: true } }
+            assert.deepEqual(
+                makeImport().schemaTemplateBindingsToDrop(
+                    bound, snapshot, { schemaTemplates: [{ detach: true }] }
                 ),
-                true
+                ['template-1']
             );
         });
 
         it('is a no-op for a policy that was never bound', () => {
-            assert.equal(makeImport().mustDropSchemaTemplateBinding({}, null, undefined), false);
+            assert.deepEqual(makeImport().schemaTemplateBindingsToDrop({}, [], undefined), []);
         });
     });
 

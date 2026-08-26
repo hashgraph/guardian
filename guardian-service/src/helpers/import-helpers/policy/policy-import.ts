@@ -644,22 +644,15 @@ export class PolicyImport {
             }
         });
 
-        // Whatever is left lines up by position. An entry naming some other binding
-        // is not up for grabs - it would detach or re-point the wrong template.
+        // Whatever is left lines up by position, which is what a single-binding file
+        // relies on. An entry naming some other binding was already claimed above, so
+        // position can only ever hand out an entry that named nobody.
         bindings.forEach((_, index) => {
-            if (result[index] || claimed.has(index)) {
+            if (result[index] || claimed.has(index) || !entries[index]) {
                 return;
             }
-            const entry = entries[index];
-            if (!entry) {
-                return;
-            }
-            const namesAnotherBinding = entry.templateId &&
-                bindings.some((binding) => binding?.templateId === entry.templateId);
-            if (!namesAnotherBinding) {
-                result[index] = entry;
-                claimed.add(index);
-            }
+            result[index] = entries[index];
+            claimed.add(index);
         });
 
         return result;
