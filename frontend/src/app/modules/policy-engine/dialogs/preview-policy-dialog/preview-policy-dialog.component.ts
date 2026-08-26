@@ -43,7 +43,7 @@ export class PreviewPolicyDialog {
     } = {};
     public validTools: boolean = true;
     public schemaTemplate: any;
-    public schemaTemplateSnapshot: any;
+    public schemaTemplateSnapshots: any[] = [];
     public schemaTemplateMessageId: string = '';
     public selectedSchemaTemplate: any = null;
     public detachSchemaTemplate: boolean = false;
@@ -129,7 +129,7 @@ export class PreviewPolicyDialog {
 
             this.toolConfigs = importFile.tools || [];
             this.schemaTemplate = this.policy.schemaTemplates?.[0];
-            this.schemaTemplateSnapshot = importFile.schemaTemplateSnapshot;
+            this.schemaTemplateSnapshots = importFile.schemaTemplateSnapshots || [];
             if (this.schemaTemplate) {
                 this.schemaTemplateMessageId = this.schemaTemplate.templateMessageId || '';
                 this.validSchemaTemplate = false;
