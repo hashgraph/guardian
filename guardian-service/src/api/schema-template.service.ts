@@ -1,6 +1,7 @@
 import { FilterObject } from '@mikro-orm/core';
 import {
     BinaryMessageResponse,
+    DataBaseHelper,
     DatabaseServer,
     INotificationStep,
     MessageError,
@@ -128,6 +129,14 @@ async function createSchemaTemplate(
         throw new Error('Invalid schema template');
     }
 
+    /*
+     * A legitimate export never carries these, so a hand-crafted zip is the only
+     * source. Two are dangerous rather than untidy:
+     *  - contentFileId / configFileId reach gridFS.delete() via deleteFiles(),
+     *    so a forged value deletes someone else's file.
+     *  - topicId makes createTemplateTopic() return early, binding the import to
+     *    an existing topic; a later publish then signs with that topic's key.
+     */
     delete payload._id;
     delete payload.id;
     delete payload.status;
@@ -136,6 +145,13 @@ async function createSchemaTemplate(
     delete payload.messageId;
     delete payload.version;
     delete payload.previousVersion;
+    delete payload.topicId;
+    delete (payload as any).contentFileId;
+    delete (payload as any).configFileId;
+    delete (payload as any)._configFileId;
+    // setDefaults() only generates a uuid when missing, so a forged one would be
+    // kept and propagate into targetUUID / templateUUID.
+    delete payload.uuid;
 
     payload.creator = owner.creator;
     payload.owner = owner.owner;
@@ -230,7 +246,7 @@ async function createSchemaTemplateVersion(
             readonly: false
         });
         for (const schema of sourceSchemas as Schema[]) {
-            await ensureTemplateSchemaReferences(schema);
+            await ensureTemplateSchemaReferences(schema, true);
         }
         notifier.completeStep(STEP_VALIDATE);
 
@@ -270,7 +286,7 @@ async function createSchemaTemplateVersion(
         notifier.completeStep(STEP_UPDATE_REFS);
 
         notifier.startStep(STEP_SAVE_CONFIG);
-        await normalizeSchemaTemplateConfig(draft);
+        await normalizeSchemaTemplateConfig(draft, true);
         const result = await DatabaseServer.updateSchemaTemplate(draft);
         notifier.completeStep(STEP_SAVE_CONFIG);
         notifier.complete();
@@ -374,7 +390,7 @@ async function importSchemaTemplateByComponents(
     notifier.completeStep(STEP_IMPORT_SCHEMAS);
 
     notifier.startStep(STEP_SAVE_CONFIG);
-    await normalizeSchemaTemplateConfig(template);
+    await normalizeSchemaTemplateConfig(template, true);
     const result = await DatabaseServer.updateSchemaTemplate(template);
     notifier.completeStep(STEP_SAVE_CONFIG);
     notifier.complete();
@@ -417,7 +433,12 @@ async function getPoliciesUsingSchemaTemplate(
     });
 }
 
-async function addSchemaCounts(templates: SchemaTemplate[]): Promise<any[]> {
+/**
+ * `owner` gates usedByPolicyNames: the names come from the template owner's
+ * policies, drafts included. The count stays public - it says how widely a
+ * template is used without naming anything.
+ */
+async function addSchemaCounts(templates: SchemaTemplate[], owner: IOwner): Promise<any[]> {
     const ownerPoliciesCache = new Map<string, any[]>();
     const getCachedPolicies = async (owner: string) => {
         if (!ownerPoliciesCache.has(owner)) {
@@ -447,10 +468,12 @@ async function addSchemaCounts(templates: SchemaTemplate[]): Promise<any[]> {
             })
             : 0;
         item.usedByPoliciesCount = usedByPolicies.length;
-        item.usedByPolicyNames = usedByPolicies
-            .map((policy) => policy.name || policy.id)
-            .filter((name) => !!name)
-            .slice(0, 5);
+        item.usedByPolicyNames = owner && template.owner === owner.owner
+            ? usedByPolicies
+                .map((policy) => policy.name || policy.id)
+                .filter((name) => !!name)
+                .slice(0, 5)
+            : [];
         result.push(item);
     }
     return result;
@@ -516,7 +539,7 @@ async function publishSchemaTemplate(
             ?.some((item) => item.id !== template.id)) {
             throw new Error('Schema template with current version already was published');
         }
-        await normalizeSchemaTemplateConfig(template);
+        await normalizeSchemaTemplateConfig(template, true);
         notifier.completeStep(STEP_VALIDATE);
         validationPassed = true;
 
@@ -534,7 +557,20 @@ async function publishSchemaTemplate(
         notifier.completeStep(STEP_GENERATE_FILE);
 
         notifier.startStep(STEP_SAVE_FILE);
+        /*
+         * contentFileId has no _configFileId-style previous-handle mechanism, so each
+         * publish overwrote the handle and stranded the old file. Deleted after the new
+         * one is stored, best-effort: losing it must not fail a publish.
+         */
+        const supersededContentFileId = template.contentFileId;
         template.contentFileId = await DatabaseServer.saveFile(GenerateUUIDv4(), Buffer.from(buffer));
+        if (supersededContentFileId) {
+            try {
+                await DataBaseHelper.gridFS.delete(supersededContentFileId);
+            } catch (error) {
+                await logger?.error?.(error, ['GUARDIAN_SERVICE'], owner?.id);
+            }
+        }
         notifier.completeStep(STEP_SAVE_FILE);
 
         notifier.startStep(STEP_PUBLISH);
@@ -617,7 +653,10 @@ function normalizeTemplateConfigKeys(
     return normalized;
 }
 
-async function normalizeSchemaTemplateConfig(template: SchemaTemplate): Promise<void> {
+async function normalizeSchemaTemplateConfig(
+    template: SchemaTemplate,
+    persist: boolean = false
+): Promise<void> {
     if (!template?.topicId) {
         return;
     }
@@ -627,7 +666,7 @@ async function normalizeSchemaTemplateConfig(template: SchemaTemplate): Promise<
         templateId: template.id
     });
     for (const schema of schemas as Schema[]) {
-        await ensureTemplateSchemaReferences(schema);
+        await ensureTemplateSchemaReferences(schema, persist);
     }
     template.config = normalizeTemplateConfigKeys(template.config, schemas as Schema[]);
 }
@@ -1007,22 +1046,38 @@ function findSchemaProperty(document: any, path: string[]): any {
     return current;
 }
 
-function ensureSchemaPropertyParent(document: any, path: string[]): any {
+/**
+ * Walk to the object that owns `path`'s last segment.
+ *
+ * `create` distinguishes the two callers: the target document is being built, so it
+ * wants the `properties` containers filled in on the way down; the source document is
+ * only being read, and creating nodes there would mutate the very thing being copied
+ * from.
+ */
+function schemaPropertyParent(document: any, path: string[], create: boolean): any {
     let current = document;
     for (const key of path.slice(0, -1)) {
         const parent = current?.type === 'array' ? current.items : current;
-        parent.properties = parent.properties || {};
-        current = parent.properties[key];
+        if (create) {
+            parent.properties = parent.properties || {};
+        }
+        current = parent?.properties?.[key];
         if (!current) {
             return null;
         }
     }
     const target = current?.type === 'array' ? current.items : current;
-    target.properties = target.properties || {};
+    if (create && target) {
+        target.properties = target.properties || {};
+    }
     return target;
 }
 
-function mergeCustomFieldsIntoDocument(
+function ensureSchemaPropertyParent(document: any, path: string[]): any {
+    return schemaPropertyParent(document, path, true);
+}
+
+export function mergeCustomFieldsIntoDocument(
     targetDocument: any,
     sourceDocument: any,
     fields: any[]
@@ -1039,13 +1094,30 @@ function mergeCustomFieldsIntoDocument(
             continue;
         }
         parent.properties[fieldName] = cloneJson(property);
+
+        /*
+         * `required` lives on the parent, so it is copied separately or the preserved
+         * field comes back optional. Read it from the source document, not from
+         * field.required: parseField sets `required || !!conditionRequired`
+         * (interfaces schema-helper.ts:321), which would promote a branch-scoped
+         * requirement into an unconditional one.
+         */
+        const sourceParent = schemaPropertyParent(sourceDocument, path, false);
+        if (Array.isArray(sourceParent?.required) && sourceParent.required.includes(fieldName)) {
+            parent.required = Array.isArray(parent.required) ? parent.required : [];
+            if (!parent.required.includes(fieldName)) {
+                parent.required.push(fieldName);
+            }
+        }
     }
 }
 
 async function loadSchemaTemplateUpdateContext(
     templateId: string,
     policyId: string,
-    owner: IOwner
+    owner: IOwner,
+    // false when the caller is previewing rather than updating
+    persist: boolean = false
 ) {
     const template = await DatabaseServer.getSchemaTemplateById(templateId);
     if (!template || (template.status !== ModuleStatus.PUBLISHED && template.owner !== owner.owner)) {
@@ -1084,9 +1156,9 @@ async function loadSchemaTemplateUpdateContext(
         throw new Error('Schema template has no schemas');
     }
     for (const schema of templateSchemas as Schema[]) {
-        await ensureTemplateSchemaReferences(schema);
+        await ensureTemplateSchemaReferences(schema, persist);
     }
-    await normalizeSchemaTemplateConfig(template);
+    await normalizeSchemaTemplateConfig(template, persist);
 
     const nextSchemas = buildTemplateSchemasSnapshot(templateSchemas as Schema[]);
     const policySchemas = await DatabaseServer.getSchemas({
@@ -1288,7 +1360,8 @@ async function previewSchemaTemplateUpdate(
     owner: IOwner
 ): Promise<ISchemaTemplateUpdatePreview> {
     return buildSchemaTemplateUpdatePreviewFromContext(
-        await loadSchemaTemplateUpdateContext(templateId, policyId, owner)
+        // preview is a read: it must not persist normalization ids
+        await loadSchemaTemplateUpdateContext(templateId, policyId, owner, false)
     );
 }
 
@@ -1365,7 +1438,7 @@ async function updateAppliedSchemaTemplate(
     owner: IOwner,
     options?: ISchemaTemplateUpdateOptions
 ): Promise<any> {
-    const context = await loadSchemaTemplateUpdateContext(templateId, policyId, owner);
+    const context = await loadSchemaTemplateUpdateContext(templateId, policyId, owner, true);
     const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
     const resolutions = validateSchemaTemplateUpdateResolutions(preview, options);
     const nextConfig = normalizeTemplateConfigKeys(context.template.config, context.templateSchemas);
@@ -1473,14 +1546,23 @@ async function updateAppliedSchemaTemplate(
     }
 }
 
-async function ensureTemplateSchemaReferences(schema: Schema): Promise<void> {
+/**
+ * `persist` exists because the read paths must not write. Normalization assigns
+ * missing templateSchemaId / templateFieldId, so a non-owner's GET mutated the
+ * owner's schemas and concurrent readers raced to store different ids. The ids are
+ * still filled in memory, so the response is identical either way.
+ */
+async function ensureTemplateSchemaReferences(
+    schema: Schema,
+    persist: boolean = false
+): Promise<void> {
     let changed = false;
     if (!schema.templateSchemaId) {
         schema.templateSchemaId = GenerateUUIDv4();
         changed = true;
     }
     changed = SchemaHelper.ensureTemplateFieldIds(schema.document) || changed;
-    if (changed) {
+    if (changed && persist) {
         await DatabaseServer.updateSchema(schema.id, schema);
     }
 }
@@ -1575,7 +1657,7 @@ async function applySchemaTemplate(
     }
 
     for (const schema of templateSchemas as Schema[]) {
-        await ensureTemplateSchemaReferences(schema);
+        await ensureTemplateSchemaReferences(schema, true);
     }
 
     const schemaMap: Record<string, string> = {};
@@ -1848,7 +1930,7 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
                 }, options);
 
                 return new MessageResponse({
-                    items: await addSchemaCounts(items),
+                    items: await addSchemaCounts(items, owner),
                     count
                 });
             } catch (error) {
@@ -1871,7 +1953,8 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
                 if (template.status !== ModuleStatus.PUBLISHED && template.owner !== owner.owner) {
                     throw new Error('Invalid schema template');
                 }
-                await normalizeSchemaTemplateConfig(template);
+                // a read must not write: see ensureTemplateSchemaReferences
+                await normalizeSchemaTemplateConfig(template, false);
                 return new MessageResponse(template);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -1958,7 +2041,8 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
                     return new BinaryMessageResponse(Uint8Array.from(buffer).buffer);
                 }
 
-                await normalizeSchemaTemplateConfig(template);
+                // export is a read too
+                await normalizeSchemaTemplateConfig(template, false);
                 const zip = await SchemaTemplateImportExport.generate(template);
                 const file = await zip.generateAsync({
                     type: 'arraybuffer',
@@ -2134,6 +2218,26 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
                         templateId: template.id,
                         readonly: false
                     });
+                    /*
+                     * ensureEditable only blocks a PUBLISHED template, so a PUBLISH_ERROR one is
+                     * deletable while its schemas may already be published - and those would be left
+                     * with no template to resolve against.
+                     */
+                    const publishedSchemas = (schemas as Schema[])
+                        .filter((schema) => schema.status === SchemaStatus.PUBLISHED);
+                    if (publishedSchemas.length) {
+                        const names = publishedSchemas
+                            .map((schema) => schema.name || schema.iri || schema.id)
+                            .filter((name) => !!name);
+                        const shown = names.slice(0, 5).join(', ');
+                        const hidden = names.length > 5 ? ` and ${names.length - 5} more` : '';
+                        throw new Error(
+                            `Schema template has published schemas and cannot be deleted` +
+                            `${shown ? `: ${shown}${hidden}` : ''}. ` +
+                            `They were published by an earlier attempt; retry the publish to finish it.`
+                        );
+                    }
+
                     for (const schema of schemas as Schema[]) {
                         if (schema.status === SchemaStatus.DRAFT || schema.status === SchemaStatus.ERROR) {
                             await deleteSchema(schema.id, owner, NewNotifier.empty());

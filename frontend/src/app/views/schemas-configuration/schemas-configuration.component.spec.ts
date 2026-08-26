@@ -64,6 +64,12 @@ describe('SchemasConfigurationComponent', () => {
 
         component.router = { url: state.url || '/schema-configuration', navigate: () => Promise.resolve(true) };
         component.route = {};
+        component.toasts = [];
+        component.toastService = {
+            error: (detail: string, action?: string) => { component.toasts.push({ detail, action }); },
+            success: () => {},
+            warn: () => {},
+        };
         component.schemaService = {
             update: (s: any) => { component.updated.push(s); return of([]); },
             create: (_c: any, s: any) => { component.created.push(s); return of([]); },
@@ -130,6 +136,59 @@ describe('SchemasConfigurationComponent', () => {
 
             expect(component.dirtySchemaIds.has('sub')).toBeFalse();
             expect(component.hasUnsavedChanges).toBeFalse();
+        });
+    });
+
+    // Every error path in this component was a silent no-op: the button stayed enabled,
+    // the click fired, and a failed backend call produced no toast, dialog or message -
+    // indistinguishable from a dead button.
+    describe('backend failures are surfaced', () => {
+        it('reports a failed export instead of never opening the dialog', () => {
+            const schema: any = makeSchema({ id: 'a' });
+            const component = createComponent({ schemas: [schema], selectedSchema: schema });
+            component.schemaService.exportInMessage = () => throwError(() => ({ error: { message: 'nope' } }));
+            component.dialogService = { open: () => ({ onClose: of(null) }) };
+
+            component.onExport();
+
+            expect(component.toasts.length).toBe(1);
+            expect(component.toasts[0].detail).toBe('nope');
+            expect(component.toasts[0].action).toBe('Export');
+        });
+
+        it('reports a failed deletion preview instead of doing nothing', () => {
+            const schema: any = makeSchema({ id: 'a' });
+            const component = createComponent({ schemas: [schema], selectedSchema: schema });
+            component.schemaService.getSchemaDeletionPreview = () => throwError(() => ({ error: { message: 'blocked' } }));
+            component.dialogService = { open: () => ({ onClose: of(null) }) };
+
+            component.onDeleteSchema(schema);
+
+            expect(component.toasts.length).toBe(1);
+            expect(component.toasts[0].detail).toBe('blocked');
+        });
+
+        it('reports a rejected save and clears the saving flag', () => {
+            const schema: any = makeSchema({ id: 'a', fields: [makeField()] });
+            const component = createComponent({ schemas: [schema], selectedSchema: schema, dirtyIds: ['a'] });
+            component.schemaService.update = () => throwError(() => ({ error: { message: 'rejected' } }));
+
+            component.saveAll();
+
+            expect(component.isSaving).toBeFalse();
+            expect(component.toasts.length).toBe(1);
+            expect(component.toasts[0].action).toBe('Save all');
+        });
+
+        it('falls back to a generic detail when the error carries no message', () => {
+            const schema: any = makeSchema({ id: 'a' });
+            const component = createComponent({ schemas: [schema], selectedSchema: schema });
+            component.schemaService.exportInMessage = () => throwError(() => ({}));
+            component.dialogService = { open: () => ({ onClose: of(null) }) };
+
+            component.onExport();
+
+            expect(component.toasts[0].detail).toBe('Unknown error');
         });
     });
 

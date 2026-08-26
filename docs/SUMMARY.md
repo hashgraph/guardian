@@ -296,8 +296,7 @@
       * [Step-by-Step Walkthrough](guardian/workspace/decentralized-guardian/connecting-your-mgs-instance-with-verra/step-by-step-walkthrough.md)
     * [Tips and Troubleshooting](guardian/workspace/decentralized-guardian/tips-and-troubleshooting.md)
   * [Iterative Review and Approval Workflows for Auditors and VVBs](guardian/workspace/complex-iterative-review-and-approval-workflows/README.md)
-    * [Demo using UI](guardian/workspace/complex-iterative-review-and-approval-workflows/demo-using-ui.md)
-    * [Demo using VM0033](guardian/workspace/complex-iterative-review-and-approval-workflows/demo-using-vm0033.md)
+    * [Review & Approval Workflows Reference](guardian/workspace/complex-iterative-review-and-approval-workflows/review-and-approval-reference.md)
 * [Hedera](guardian/hedera/README.md)
   * [Tokens](guardian/hedera/tokens/README.md)
     * [Creating a Token](guardian/hedera/tokens/creating-token-using-ui.md)
@@ -430,6 +429,7 @@
     * [GHGP Corporate Standard](guardian/tutorials/carbon-emissions/ghgp-corporate-standard.md)
     * [GHGP Corporate Standard V2](guardian/tutorials/carbon-emissions/ghgp-corporate-standard-v2.md)
     * [Climate Action Reserve’s U.S. Landfill Protocol Version 6.0](guardian/tutorials/carbon-emissions/climate-action-reserves-u.s.-landfill-protocol-version-6.0.md)
+  * [Review & Approval Workflows with VM0033 for Auditors & VVBs](guardian/tutorials/review-and-approval-vm0033.md)
 
 ## Explorers
 

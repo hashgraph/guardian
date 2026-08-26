@@ -121,41 +121,45 @@
       </div>
       <div class="schema-actions-buttons-container">
         @if (canCreate) {
-          <p-button
-            (click)="onNewInEditor()"
-            class="toolbar-btn-primary"
-            [pTooltip]="'Create a Schema'"
-            tooltipPosition="bottom">
-            <svg-icon src="/assets/images/icons/add.svg" svgClass="color-white"></svg-icon>
-          </p-button>
+          <span class="toolbar-tooltip-anchor" pTooltip="Create a Schema"
+            tooltipStyleClass="guardian-tooltip" tooltipPosition="bottom">
+            <p-button
+              (click)="onNewInEditor()"
+              class="toolbar-btn-primary">
+              <svg-icon src="/assets/images/icons/add.svg" svgClass="color-white"></svg-icon>
+            </p-button>
+          </span>
         }
         @if (canImport) {
-          <p-button
-            (click)="downloadExcelExample()"
-            class="toolbar-btn-primary"
-            [pTooltip]="'Generate Excel Template'"
-            tooltipPosition="bottom">
-            <svg-icon src="/assets/images/icons/wizard.svg" svgClass="color-white"></svg-icon>
-          </p-button>
+          <span class="toolbar-tooltip-anchor" pTooltip="Generate Excel Template"
+            tooltipStyleClass="guardian-tooltip" tooltipPosition="bottom">
+            <p-button
+              (click)="downloadExcelExample()"
+              class="toolbar-btn-primary">
+              <svg-icon src="/assets/images/icons/wizard.svg" svgClass="color-white"></svg-icon>
+            </p-button>
+          </span>
         }
         @if (canImport) {
-          <p-button
-            (click)="onImportSchemas()"
-            class="toolbar-btn-primary"
-            [pTooltip]="'Import'"
-            tooltipPosition="bottom">
-            <svg-icon src="/assets/images/icons/import.svg" svgClass="color-white"></svg-icon>
-          </p-button>
+          <span class="toolbar-tooltip-anchor" pTooltip="Import"
+            tooltipStyleClass="guardian-tooltip" tooltipPosition="bottom">
+            <p-button
+              (click)="onImportSchemas()"
+              class="toolbar-btn-primary">
+              <svg-icon src="/assets/images/icons/import.svg" svgClass="color-white"></svg-icon>
+            </p-button>
+          </span>
         }
         @if (isPolicy || isModule || isTool) {
-          <p-button
-            (click)="onCompare()"
-            [pTooltip]="'Compare'"
-            class="toolbar-btn-secondary"
-            [outlined]=true
-            tooltipPosition="bottom">
-            <svg-icon src="/assets/images/icons/compare.svg" svgClass="primary-color"></svg-icon>
-          </p-button>
+          <span class="toolbar-tooltip-anchor" pTooltip="Compare"
+            tooltipStyleClass="guardian-tooltip" tooltipPosition="bottom">
+            <p-button
+              (click)="onCompare()"
+              class="toolbar-btn-secondary"
+              [outlined]=true>
+              <svg-icon src="/assets/images/icons/compare.svg" svgClass="primary-color"></svg-icon>
+            </p-button>
+          </span>
         }
       </div>
     </div>

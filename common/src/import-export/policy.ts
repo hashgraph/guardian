@@ -634,6 +634,13 @@ export class PolicyImportExport {
         PolicyImportExport.removeField(components, 'guardianVersion');
         PolicyImportExport.removeField(components, 'systemSchemas');
         delete components.schemaTemplateSnapshot;
+        /*
+         * Environment-specific, so it cannot take part in the hash: snapshotId,
+         * schemaMap ObjectIds and the timestamps are assigned per environment, so an
+         * identical policy hashed differently in each one. Same for the per-schema
+         * markers below.
+         */
+        delete (components.policy as any).schemaTemplate;
 
         components.schemas.sort((schemaA, schemaB) => schemaA.name > schemaB.name ? -1 : 1);
 
@@ -648,6 +655,9 @@ export class PolicyImportExport {
             delete schema.creator;
             delete schema.owner;
             delete schema.codeVersion;
+            // see the note on policy.schemaTemplate above
+            delete (schema as any).templateId;
+            delete (schema as any).templateSchemaId;
         });
 
         components.tokens.forEach(token => {

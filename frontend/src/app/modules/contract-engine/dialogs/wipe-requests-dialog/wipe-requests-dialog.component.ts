@@ -14,7 +14,7 @@ export class WipeRequestsDialogComponent implements OnInit {
         id: string;
         user: string;
         token?: string;
-    }[];
+    }[] = [];
     loading: boolean = false;
     pageIndex = 0;
     pageSize = 5;
@@ -53,7 +53,12 @@ export class WipeRequestsDialogComponent implements OnInit {
                     this.length = (count && +count) || this.requests.length;
                     this.loading = false;
                 },
-                () => (this.loading = false)
+                () => {
+                    // fall back to the empty state; the template reads requests.length
+                    this.requests = [];
+                    this.length = 0;
+                    this.loading = false;
+                }
             );
     }
 

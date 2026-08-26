@@ -224,7 +224,9 @@ export class XlsxResult {
                 const schemaCache = this._schemaCache.find(c => c.iri === schema.iri);
                 for (const field of schema.fields) {
                     if (field.isRef) {
-                        if (field.type === '#GeoJSON') {
+                        // both are pre-seeded as validated ref types by the schema import,
+                        // so neither has a link entry
+                        if (field.type === '#GeoJSON' || field.type === '#SentinelHUB') {
                             continue;
                         }
                         const link = this._linkCache.get(field.type);
@@ -236,6 +238,9 @@ export class XlsxResult {
                                 worksheet: schemaCache?.worksheet,
                                 row: field.order
                             }, field);
+                            // clear the dangling ref so it is not persisted into the schema
+                            field.type = null;
+                            continue;
                         }
 
                         let subSchemaCache: ISchemaCache;
