@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { FieldTypes } from '../../../dist/xlsx/models/dictionary.js';
+import { FieldTypes } from '../../dist/xlsx/models/dictionary.js';
 
 const richTextField = {
     type: 'string',
