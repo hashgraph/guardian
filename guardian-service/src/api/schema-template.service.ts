@@ -1597,15 +1597,6 @@ async function updateAppliedSchemaTemplate(
         throw error;
     }
 
-    /*
-     * Past the commit point. rollback() must not run from here: the binding already
-     * names the new snapshot, so restoring the old schema rows would contradict it.
-     *
-     * Neither cleanup may throw either. updatePolicy has committed and the binding is
-     * live, so letting a failure propagate would reach the API handler and report the
-     * update as failed when it succeeded. Both are logged and swallowed; what they
-     * leave behind is a stale row, not a broken binding.
-     */
     for (const policySchema of pendingRemovals) {
         try {
             await removePolicySchema(policySchema, owner);
