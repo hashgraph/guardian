@@ -310,9 +310,15 @@ export class DocumentsSourceBlockComponent implements OnInit {
             dialogRef.onClose.subscribe(async (result) => {
                 this.commentsService
                     .getPolicyCommentsCount(this.policyId, row.id)
-                    .subscribe((count) => {
-                        row.comments = count?.count ?? row.comments;
-                    });
+                    .subscribe(
+                        (count) => {
+                            row.comments = count?.count ?? row.comments;
+                        },
+                        // fires for every row on dialog close, dry-run included, where
+                        // the count is not resolvable. Without an arm the failure was
+                        // swallowed and the stale count silently kept.
+                        (error) => console.error('[documents-source] comment count failed', error)
+                    );
             });
         }
     }
