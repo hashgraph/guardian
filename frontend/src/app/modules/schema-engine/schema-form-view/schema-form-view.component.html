@@ -21,6 +21,10 @@
                         ></table-viewer>
                     </div>
 
+                    <div *ngIf="isRichText(item)" class="form-field-input guardian-input-container">
+                        <div class="rte-view-content" [innerHTML]="item.value"></div>
+                    </div>
+
                     <div *ngIf="isInput(item) && !isIPFS(item)" class="form-field-input guardian-input-container">
                         <textarea
                             pInputTextarea
@@ -171,6 +175,10 @@
                                         [value]="listItem.value"
                                         [title]="item.title || item.description || item.name"
                                 ></table-viewer>
+                            </div>
+
+                            <div *ngIf="isRichText(item)" class="form-field-input guardian-input-container">
+                                <div class="rte-view-content" [innerHTML]="listItem.value"></div>
                             </div>
 
                             <div *ngIf="isInput(item) && !isIPFS(item)" class="form-field-input guardian-input-container">
