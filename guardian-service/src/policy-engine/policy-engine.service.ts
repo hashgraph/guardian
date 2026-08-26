@@ -148,19 +148,6 @@ export class PolicyEngineChannel extends NatsService {
 }
 
 /**
- * Resolve a policy document from the collection that policy actually writes to.
- *
- * getVCById reads VcDocument; a dry-run policy's documents live in DryRun, keyed by
- * dryRunId. Looking a dry-run document up the first way finds nothing.
- */
-export async function findPolicyVcDocument(policy: any, documentId: string): Promise<any> {
-    if (PolicyHelper.isDryRunMode(policy)) {
-        return await new DatabaseServer(policy.id.toString()).getVcDocument({ id: documentId } as any);
-    }
-    return await DatabaseServer.getVCById(documentId);
-}
-
-/**
  * Policy engine service
  */
 
@@ -4689,7 +4676,7 @@ export class PolicyEngineService {
 
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
-                    const vc = await findPolicyVcDocument(policy, documentId);
+                    const vc = await DatabaseServer.getVCById(documentId);
                     if (!vc || vc.policyId !== policyId) {
                         throw new Error('Document not found.');
                     }
@@ -4786,7 +4773,7 @@ export class PolicyEngineService {
 
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
-                    const vc = await findPolicyVcDocument(policy, documentId);
+                    const vc = await DatabaseServer.getVCById(documentId);
                     if (!vc || vc.policyId !== policyId) {
                         throw new Error('Document not found.');
                     }
@@ -4810,7 +4797,7 @@ export class PolicyEngineService {
 
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
-                    const vc = await findPolicyVcDocument(policy, documentId);
+                    const vc = await DatabaseServer.getVCById(documentId);
                     if (!vc || vc.policyId !== policyId) {
                         throw new Error('Document not found.');
                     }
@@ -4839,7 +4826,7 @@ export class PolicyEngineService {
 
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
-                    const vc = await findPolicyVcDocument(policy, documentId);
+                    const vc = await DatabaseServer.getVCById(documentId);
                     if (!vc || vc.policyId !== policyId) {
                         throw new Error('Document not found.');
                     }
@@ -4946,7 +4933,7 @@ export class PolicyEngineService {
 
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
-                    const vc = await findPolicyVcDocument(policy, documentId);
+                    const vc = await DatabaseServer.getVCById(documentId);
                     if (!vc || vc.policyId !== policyId) {
                         throw new Error('Document not found.');
                     }
@@ -5018,7 +5005,7 @@ export class PolicyEngineService {
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
 
-                    const vc = await findPolicyVcDocument(policy, documentId);
+                    const vc = await DatabaseServer.getVCById(documentId);
                     if (!vc) {
                         throw new Error('Document not found.');
                     }
@@ -5099,7 +5086,7 @@ export class PolicyEngineService {
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
 
-                    const vc = await findPolicyVcDocument(policy, documentId);
+                    const vc = await DatabaseServer.getVCById(documentId);
                     if (!vc) {
                         throw new Error('Document not found.');
                     }
@@ -5174,7 +5161,7 @@ export class PolicyEngineService {
 
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
-                    const vc = await findPolicyVcDocument(policy, documentId);
+                    const vc = await DatabaseServer.getVCById(documentId);
                     if (!vc || vc.policyId !== policyId) {
                         throw new Error('Document not found.');
                     }
@@ -5247,7 +5234,7 @@ export class PolicyEngineService {
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
 
-                    const vc = await findPolicyVcDocument(policy, documentId);
+                    const vc = await DatabaseServer.getVCById(documentId);
                     if (!vc) {
                         throw new Error('Document not found.');
                     }
@@ -5310,7 +5297,7 @@ export class PolicyEngineService {
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
 
-                    const vc = await findPolicyVcDocument(policy, documentId);
+                    const vc = await DatabaseServer.getVCById(documentId);
                     if (!vc) {
                         throw new Error('Document not found.');
                     }
@@ -5370,7 +5357,7 @@ export class PolicyEngineService {
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
 
-                    const vc = await findPolicyVcDocument(policy, documentId);
+                    const vc = await DatabaseServer.getVCById(documentId);
                     if (!vc) {
                         throw new Error('Document not found.');
                     }
