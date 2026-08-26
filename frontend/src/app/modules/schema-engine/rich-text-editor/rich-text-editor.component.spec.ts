@@ -31,7 +31,7 @@ describe('RichTextEditorComponent', () => {
     });
 
     it('should hide toolbar in readonly mode', () => {
-        component.readonly = true;
+        fixture.componentRef.setInput('readonly', true);
         fixture.detectChanges();
         const toolbar = fixture.debugElement.query(By.css('.rte-toolbar'));
         expect(toolbar).toBeNull();
@@ -114,7 +114,6 @@ describe('RichTextEditorComponent', () => {
     });
 
     it('should prepend https:// when URL lacks protocol', () => {
-        // Spy on execCommand to avoid needing a real browser context
         const execSpy = spyOn(document, 'execCommand');
         component.showLinkDialog = true;
         component.linkUrl = 'example.com';
@@ -143,5 +142,55 @@ describe('RichTextEditorComponent', () => {
         expect(commands).toContain('h2');
         expect(commands).toContain('h3');
         expect(commands).toContain('link');
+    });
+
+    it('should refuse a link with an unsupported protocol', () => {
+        const execSpy = spyOn(document, 'execCommand');
+        component.showLinkDialog = true;
+        component.linkUrl = 'javascript:alert(1)';
+        component.insertLink();
+        expect(execSpy).not.toHaveBeenCalled();
+        expect(component.showLinkDialog).toBeFalse();
+    });
+
+    it('should keep a mailto link as typed', () => {
+        const execSpy = spyOn(document, 'execCommand');
+        component.showLinkDialog = true;
+        component.linkUrl = 'mailto:user@example.com';
+        component.insertLink();
+        expect(execSpy).toHaveBeenCalledWith('createLink', false, 'mailto:user@example.com');
+    });
+
+    it('should report an empty control value for visually empty markup', () => {
+        const changeSpy = jasmine.createSpy('onChange');
+        component.registerOnChange(changeSpy);
+        const editor = fixture.debugElement.query(By.css('.rte-editor'));
+        editor.nativeElement.innerHTML = '<p><br></p>';
+        editor.nativeElement.dispatchEvent(new Event('input'));
+        expect(changeSpy).toHaveBeenCalledWith('');
+        expect(component.isEmpty).toBeTrue();
+    });
+
+    it('should insert sanitized markup on paste', () => {
+        const execSpy = spyOn(document, 'execCommand');
+        const event = new Event('paste') as any;
+        event.clipboardData = {
+            getData: (type: string) =>
+                type === 'text/html' ? '<b>Bold</b><img src="x" onerror="steal()">' : ''
+        };
+        spyOn(event, 'preventDefault');
+        component.onPaste(event);
+        expect(event.preventDefault).toHaveBeenCalled();
+        expect(execSpy).toHaveBeenCalledWith('insertHTML', false, '<b>Bold</b>');
+    });
+
+    it('should escape plain text pasted without markup', () => {
+        const execSpy = spyOn(document, 'execCommand');
+        const event = new Event('paste') as any;
+        event.clipboardData = {
+            getData: (type: string) => (type === 'text/html' ? '' : '5 < 6 & 7')
+        };
+        component.onPaste(event);
+        expect(execSpy).toHaveBeenCalledWith('insertHTML', false, '5 &lt; 6 &amp; 7');
     });
 });

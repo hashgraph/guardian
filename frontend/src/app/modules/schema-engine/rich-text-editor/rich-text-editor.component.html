@@ -29,6 +29,7 @@
     [attr.contenteditable]="(readonly || isDisabled) ? false : true"
     [attr.data-placeholder]="placeholder"
     (input)="onInput()"
+    (paste)="onPaste($event)"
     (blur)="onBlur()"
     role="textbox"
     aria-multiline="true"

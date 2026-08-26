@@ -10,6 +10,7 @@ import {
     ViewChild
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { isBlankRichText, isSafeHref, sanitizeRichText } from './rich-text-sanitizer';
 
 @Component({
     selector: 'app-rich-text-editor',
@@ -89,8 +90,23 @@ export class RichTextEditorComponent
 
     onInput(): void {
         const html = this.editorRef.nativeElement.innerHTML;
-        this._value = html;
-        this._onChange(html);
+        const value = isBlankRichText(html) ? '' : html;
+        this._value = value;
+        this._onChange(value);
+        this.cdr.markForCheck();
+    }
+
+    onPaste(event: ClipboardEvent): void {
+        if (this.readonly || this.isDisabled) { return; }
+        const clipboard = event.clipboardData;
+        if (!clipboard) { return; }
+        event.preventDefault();
+        const html = clipboard.getData('text/html');
+        const clean = html
+            ? sanitizeRichText(html)
+            : escapeText(clipboard.getData('text/plain'));
+        document.execCommand('insertHTML', false, clean);
+        this.onInput();
     }
 
     onBlur(): void {
@@ -98,10 +114,7 @@ export class RichTextEditorComponent
     }
 
     get isEmpty(): boolean {
-        if (!this._value) { return true; }
-        const tmp = document.createElement('div');
-        tmp.innerHTML = this._value;
-        return (tmp.textContent || '').trim() === '';
+        return isBlankRichText(this._value);
     }
 
     execCommand(command: string, event: MouseEvent): void {
@@ -136,9 +149,13 @@ export class RichTextEditorComponent
                 sel.addRange(this._savedRange);
             }
         }
-        const url = this.linkUrl.match(/^https?:\/\//)
-            ? this.linkUrl
-            : 'https://' + this.linkUrl;
+        const typed = this.linkUrl.trim();
+        const url = /^[a-z][a-z0-9+.-]*:/i.test(typed) ? typed : 'https://' + typed;
+        if (!isSafeHref(url)) {
+            this.cancelLink();
+            this.cdr.markForCheck();
+            return;
+        }
         document.execCommand('createLink', false, url);
         this.showLinkDialog = false;
         this.linkUrl = '';
@@ -168,4 +185,11 @@ export class RichTextEditorComponent
         }
         return null;
     }
+}
+
+function escapeText(text: string): string {
+    const inert = document.implementation.createHTMLDocument('');
+    const holder = inert.createElement('div');
+    holder.textContent = text;
+    return holder.innerHTML;
 }

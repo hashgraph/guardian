@@ -552,17 +552,16 @@ form {
     position: absolute;
 } */
 
-// Rich text view – read-only rendered content
 .rte-view-content {
     padding: 8px 12px;
     min-height: 40px;
     font-size: 14px;
     line-height: 1.6;
-    color: var(--guardian-text-color, #111827);
+    color: var(--guardian-font-color);
     word-break: break-word;
-    border: 1px solid var(--guardian-border-color, #d1d5db);
+    border: 1px solid var(--guardian-border-color);
     border-radius: 4px;
-    background: var(--guardian-readonly-bg, #f9fafb);
+    background: var(--guardian-disabled-background);
     width: 100%;
 
     b, strong { font-weight: 700; }
@@ -573,5 +572,5 @@ form {
     h3        { font-size: 1.1em; font-weight: 700; margin: 0.4em 0 0.2em; }
     ul        { list-style-type: disc; margin-left: 1.6em; }
     ol        { list-style-type: decimal; margin-left: 1.6em; }
-    a         { color: #2563eb; text-decoration: underline; }
+    a         { color: var(--color-primary); text-decoration: underline; }
 }
