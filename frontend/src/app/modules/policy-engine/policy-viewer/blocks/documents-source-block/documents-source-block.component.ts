@@ -314,9 +314,8 @@ export class DocumentsSourceBlockComponent implements OnInit {
                         (count) => {
                             row.comments = count?.count ?? row.comments;
                         },
-                        // fires for every row on dialog close, dry-run included, where
-                        // the count is not resolvable. Without an arm the failure was
-                        // swallowed and the stale count silently kept.
+                        // not resolvable in dry-run. The row keeps its previous count
+                        // either way; this only stops the failure being swallowed.
                         (error) => console.error('[documents-source] comment count failed', error)
                     );
             });
