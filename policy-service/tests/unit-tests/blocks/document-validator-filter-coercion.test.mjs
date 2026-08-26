@@ -51,4 +51,30 @@ describe('documentValidatorBlock source filter coercion', () => {
             assert.deepEqual(filter.f, { $in: [1, '1', 2, '2'] });
         });
     });
+
+    describe('values resolved from the document', () => {
+        it('widens a variable-resolved range value', () => {
+            const document = { currentAmount: '100' };
+            const filter = block().buildSourceFilter(
+                { filters: [{ field: 'amount', type: 'gte', value: 'currentAmount', typeValue: 'variable' }] },
+                ref, document, {}
+            );
+
+            const [{ $or }] = filter.$and;
+            assert.deepEqual($or, [
+                { amount: { $gte: 100 } },
+                { amount: { $gte: '100' } }
+            ]);
+        });
+
+        it('widens every element of a variable-resolved in list', () => {
+            const document = { allowed: ['1', '2'] };
+            const filter = block().buildSourceFilter(
+                { filters: [{ field: 'f', type: 'in', value: 'allowed', typeValue: 'variable' }] },
+                ref, document, {}
+            );
+
+            assert.deepEqual(filter.f, { $in: [1, '1', 2, '2'] });
+        });
+    });
 });
