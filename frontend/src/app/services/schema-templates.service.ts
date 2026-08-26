@@ -80,8 +80,9 @@ export class SchemaTemplatesService {
         return this.http.get<SchemaTemplateGridItem>(`${this.url}/${id}`);
     }
 
-    public getAppliedByPolicyTopic(topicId: string): Observable<SchemaTemplateGridItem | null> {
-        return this.http.get<SchemaTemplateGridItem | null>(`${this.url}/policies/topic/${topicId}/applied`);
+    /** One entry per template applied to the policy that owns this topic. */
+    public getAppliedByPolicyTopic(topicId: string): Observable<SchemaTemplateGridItem[]> {
+        return this.http.get<SchemaTemplateGridItem[]>(`${this.url}/policies/topic/${topicId}/applied`);
     }
 
     public create(template: Partial<ISchemaTemplate>): Observable<SchemaTemplateGridItem> {
@@ -162,7 +163,7 @@ export class SchemaTemplatesService {
         return this.http.post<TaskResponse>(`${this.url}/${templateId}/policies/${policyId}/push/update`, options || {});
     }
 
-    public pushDetach(policyId: string): Observable<TaskResponse> {
-        return this.http.post<TaskResponse>(`${this.url}/policies/${policyId}/push/detach`, {});
+    public pushDetach(templateId: string, policyId: string): Observable<TaskResponse> {
+        return this.http.post<TaskResponse>(`${this.url}/${templateId}/policies/${policyId}/push/detach`, {});
     }
 }

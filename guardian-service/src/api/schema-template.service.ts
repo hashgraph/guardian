@@ -27,6 +27,7 @@ import {
     IOwner,
     ISchema,
     ISchemaTemplate,
+    IPolicySchemaTemplateBinding,
     ISchemaTemplateConfig,
     ISchemaTemplateSnapshot,
     ISchemaTemplateSnapshotField,
@@ -410,18 +411,21 @@ function ensureEditable(
     }
 }
 
-function hasSchemaTemplateBinding(policy: any): boolean {
-    return (policy?.schemaTemplates || []).some((binding: any) => !!(
-        binding?.templateId ||
-        binding?.snapshotId ||
-        Object.keys(binding?.schemaMap || {}).length
-    ));
+/**
+ * The policy's binding for one specific template. A policy can hold several, so
+ * every template operation has to find its own rather than take the first.
+ */
+function findSchemaTemplateBinding(
+    policy: any,
+    templateId: any
+): IPolicySchemaTemplateBinding | undefined {
+    return (policy?.schemaTemplates || []).find((binding: any) =>
+        binding?.templateId === templateId || binding?.templateId === templateId?.toString()
+    );
 }
 
 function policyUsesTemplate(policy: any, templateId: any): boolean {
-    return (policy?.schemaTemplates || []).some((binding: any) =>
-        binding?.templateId === templateId || binding?.templateId === templateId?.toString()
-    );
+    return !!findSchemaTemplateBinding(policy, templateId);
 }
 
 async function getPoliciesUsingSchemaTemplate(
@@ -1135,8 +1139,11 @@ async function loadSchemaTemplateUpdateContext(
     if (!policy.topicId) {
         throw new Error('Policy has no topic');
     }
-    const binding = policy.schemaTemplates?.find((b) => b.templateId === templateId);
-    if (!binding?.templateId || !binding?.snapshotId) {
+    const binding = findSchemaTemplateBinding(policy, templateId);
+    if (!binding?.templateId) {
+        throw new Error('Schema template is not applied to policy');
+    }
+    if (!binding.snapshotId) {
         throw new Error('Policy has no applied schema template snapshot');
     }
 
@@ -1583,9 +1590,14 @@ async function updateAppliedSchemaTemplate(
         updatedAt: appliedAt,
         schemaMap
     };
-    context.policy.schemaTemplates = (context.policy.schemaTemplates || [])
-        .filter((b) => b.templateId !== context.template.id)
-        .concat([updatedBinding]);
+    // Replace in place. Moving the updated binding to the end reorders the list,
+    // which is invisible with one binding and silently re-points anything still
+    // reading a fixed position once there are several.
+    const bindings = context.policy.schemaTemplates || [];
+    const index = bindings.findIndex((b) => b.templateId === context.template.id);
+    context.policy.schemaTemplates = index < 0
+        ? [...bindings, updatedBinding]
+        : [...bindings.slice(0, index), updatedBinding, ...bindings.slice(index + 1)];
     result = await DatabaseServer.updatePolicy(context.policy);
     // the old snapshot only goes once the new binding is committed, so a failure
     // above still leaves the policy describable by its old snapshot
@@ -1692,6 +1704,94 @@ async function updateCopiedSchemaRefs(
     }
 }
 
+/**
+ * Applying a template copies its schemas into the policy topic under their own
+ * names. Nothing downstream enforces name uniqueness there, so two templates that
+ * each define a "Project Description" would both land and be told apart only by
+ * their iri - indistinguishable in every picker that shows a schema by name.
+ *
+ * Reject the apply instead of renaming: a renamed copy no longer matches the name
+ * in the template it came from, which is the trail the whole feature depends on.
+ */
+async function validateSchemaNameCollisions(
+    template: SchemaTemplate,
+    policy: Policy,
+    templateSchemas: Schema[]
+): Promise<void> {
+    const existingSchemas = await DatabaseServer.getSchemas(
+        {
+            topicId: policy.topicId,
+            category: SchemaCategory.POLICY
+        },
+        { fields: ['name', 'templateId'] } as any
+    );
+
+    const templateNameById = new Map<string, string>();
+    for (const binding of policy.schemaTemplates || []) {
+        if (binding?.templateId) {
+            templateNameById.set(
+                String(binding.templateId),
+                binding.templateName || String(binding.templateId)
+            );
+        }
+    }
+
+    const existingByName = new Map<string, Schema>();
+    for (const schema of existingSchemas as Schema[]) {
+        const name = String(schema?.name || '').trim();
+        if (name && !existingByName.has(name)) {
+            existingByName.set(name, schema);
+        }
+    }
+
+    /*
+     * The two cases need different advice. A name held by another applied template is
+     * freed by detaching that template. A name held by an ordinary schema is not:
+     * detach leaves the copied schemas behind under their original names, so telling
+     * the user to detach after a detach would send them round the same loop.
+     */
+    const ownedByTemplate: string[] = [];
+    const alreadyInPolicy: string[] = [];
+    const reported = new Set<string>();
+    for (const schema of templateSchemas) {
+        const name = String(schema?.name || '').trim();
+        if (!name || reported.has(name)) {
+            continue;
+        }
+        const existing = existingByName.get(name);
+        if (!existing) {
+            continue;
+        }
+        reported.add(name);
+        const ownerName = existing.templateId
+            ? templateNameById.get(String(existing.templateId))
+            : '';
+        if (ownerName) {
+            ownedByTemplate.push(`"${name}" (from template "${ownerName}")`);
+        } else {
+            alreadyInPolicy.push(`"${name}"`);
+        }
+    }
+    if (!ownedByTemplate.length && !alreadyInPolicy.length) {
+        return;
+    }
+
+    const message = [`Schema template "${template.name}" cannot be applied.`];
+    if (ownedByTemplate.length) {
+        message.push(
+            `These schemas belong to an applied schema template: ${ownedByTemplate.join(', ')}. ` +
+            'Detach that template first.'
+        );
+    }
+    if (alreadyInPolicy.length) {
+        message.push(
+            `The policy already has schemas named ${alreadyInPolicy.join(', ')}. ` +
+            'Rename or delete them first.'
+        );
+    }
+    throw new Error(message.join(' '));
+}
+
 async function applySchemaTemplate(
     templateId: string,
     policyId: string,
@@ -1716,7 +1816,7 @@ async function applySchemaTemplate(
     if (!policy.topicId) {
         throw new Error('Policy has no topic');
     }
-    if (hasSchemaTemplateBinding(policy)) {
+    if (policyUsesTemplate(policy, template.id)) {
         throw new Error('Schema template already applied to policy');
     }
 
@@ -1728,6 +1828,8 @@ async function applySchemaTemplate(
     if (!templateSchemas.length) {
         throw new Error('Schema template has no schemas');
     }
+
+    await validateSchemaNameCollisions(template, policy, templateSchemas as Schema[]);
 
     for (const schema of templateSchemas as Schema[]) {
         await ensureTemplateSchemaReferences(schema, true);
@@ -1838,8 +1940,14 @@ export async function removePolicySchemaTemplateSnapshot(
 
 async function detachSchemaTemplate(
     policyId: string,
-    owner: IOwner
+    owner: IOwner,
+    templateId: string
 ): Promise<any> {
+    // A policy can hold several bindings, so an unnamed detach is ambiguous.
+    // Guessing here would silently detach somebody else's template.
+    if (!templateId) {
+        throw new Error('Schema template id is required');
+    }
     const policy = await DatabaseServer.getPolicyById(policyId);
     if (!policy || policy.owner !== owner.owner) {
         throw new Error('Invalid policy');
@@ -1850,7 +1958,7 @@ async function detachSchemaTemplate(
     if (!policy.topicId) {
         throw new Error('Policy has no topic');
     }
-    const binding = policy.schemaTemplates?.[0];
+    const binding = findSchemaTemplateBinding(policy, templateId);
     if (!binding?.templateId) {
         throw new Error('Schema template is not applied to policy');
     }
@@ -1891,20 +1999,15 @@ async function detachSchemaTemplate(
     };
 }
 
-async function getAppliedSchemaTemplateByPolicyTopic(
-    topicId: string,
+/**
+ * The applied template as the schema editor needs it: binding facts first, since
+ * they are the state the policy was applied against, with the live template only
+ * filling in what the binding does not carry.
+ */
+async function describeAppliedSchemaTemplate(
+    binding: IPolicySchemaTemplateBinding,
     owner: IOwner
-): Promise<any | null> {
-    const policy = await DatabaseServer.getPolicy({ topicId });
-    if (!policy || policy.owner !== owner.owner) {
-        throw new Error('Invalid policy');
-    }
-
-    const binding = policy.schemaTemplates?.[0];
-    if (!binding?.templateId) {
-        return null;
-    }
-
+): Promise<any> {
     const template = await DatabaseServer.getSchemaTemplateById(binding.templateId);
     let config: ISchemaTemplateConfig | null | undefined;
     if (binding.snapshotId) {
@@ -1932,6 +2035,27 @@ async function getAppliedSchemaTemplateByPolicyTopic(
         templateStateHash: binding.templateStateHash,
         appliedAt: binding.appliedAt
     };
+}
+
+/**
+ * One entry per applied template. The editor resolves a schema's locks by matching
+ * its own templateId against this list, so it needs all of them, not just the first.
+ */
+async function getAppliedSchemaTemplateByPolicyTopic(
+    topicId: string,
+    owner: IOwner
+): Promise<any[]> {
+    const policy = await DatabaseServer.getPolicy({ topicId });
+    if (!policy || policy.owner !== owner.owner) {
+        throw new Error('Invalid policy');
+    }
+
+    const bindings = (policy.schemaTemplates || []).filter((binding) => !!binding?.templateId);
+    const result = [];
+    for (const binding of bindings) {
+        result.push(await describeAppliedSchemaTemplate(binding, owner));
+    }
+    return result;
 }
 
 /**
@@ -2472,11 +2596,12 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
     ApiResponse(MessageAPI.DETACH_SCHEMA_TEMPLATE,
         async (msg: {
             policyId: string,
+            templateId: string,
             owner: IOwner
         }) => {
             try {
-                const { policyId, owner } = msg;
-                const result = await detachSchemaTemplate(policyId, owner);
+                const { policyId, templateId, owner } = msg;
+                const result = await detachSchemaTemplate(policyId, owner, templateId);
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);

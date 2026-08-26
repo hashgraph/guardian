@@ -1944,7 +1944,17 @@ export class PoliciesComponent implements OnInit {
 
     public detachSchemaTemplate(policy: any): void {
         this.policyMenu?.hide();
-        const templateName = policy.schemaTemplates?.[0]?.templateName || 'schema template';
+        // The row menu still offers one action per policy; it becomes one per applied
+        // template in step 7, which is what fills in the templateId properly.
+        const binding = policy.schemaTemplates?.[0];
+        // hasAppliedSchemaTemplate treats a snapshot-only binding as applied, so the
+        // menu can offer a detach with no template to name. Sending it would put the
+        // string "undefined" in the request path and come back as a confusing error.
+        if (!binding?.templateId) {
+            this.toastService.error('This policy has no schema template to detach.');
+            return;
+        }
+        const templateName = binding.templateName || 'schema template';
         const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
             showHeader: false,
             width: '640px',
@@ -1969,7 +1979,7 @@ export class PoliciesComponent implements OnInit {
             if (result !== 'Detach') {
                 return;
             }
-            this.schemaTemplatesService.pushDetach(policy.id).subscribe({
+            this.schemaTemplatesService.pushDetach(binding.templateId, policy.id).subscribe({
                 next: (task) => {
                     if (!task?.taskId) {
                         return;

@@ -675,6 +675,54 @@ export class PolicyImport {
         }
     }
 
+    /**
+     * A template id only means something on the instance that issued it. An imported
+     * schema still carries the id of the instance it was exported from, while its
+     * binding is re-pointed at the locally resolved template, so the two stop naming
+     * the same template. Anything that resolves template locks by comparing them then
+     * finds nothing and silently drops every lock, so the schemas have to be
+     * re-pointed too.
+     *
+     * Only the template id is instance-specific. templateSchemaId and the per-field
+     * templateFieldId markers are stable by design and are left alone.
+     *
+     * A schema whose template was detached has no entry in the map and keeps what it
+     * has; clearTemplateMetadataFromSchemas is what strips those.
+     */
+    public remapSchemaTemplateIds(
+        schemas: Schema[],
+        templatesBySourceId: Map<string, SchemaTemplate>
+    ): void {
+        if (!templatesBySourceId?.size) {
+            return;
+        }
+        for (const schema of schemas || []) {
+            if (!schema?.templateId) {
+                continue;
+            }
+            const localTemplateId = templatesBySourceId
+                .get(String(schema.templateId))
+                ?.id
+                ?.toString();
+            if (localTemplateId) {
+                schema.templateId = localTemplateId;
+            }
+        }
+    }
+
+    /**
+     * Source template id -> the template it resolved to on this instance. One entry
+     * per binding; a policy carries at most one until multi-template apply lands.
+     */
+    private resolvedSchemaTemplatesBySourceId(policy: Policy): Map<string, SchemaTemplate> {
+        const templates = new Map<string, SchemaTemplate>();
+        const sourceTemplateId = policy.schemaTemplates?.[0]?.templateId;
+        if (sourceTemplateId && this.schemaTemplate) {
+            templates.set(String(sourceTemplateId), this.schemaTemplate);
+        }
+        return templates;
+    }
+
     private remapSchemaTemplateSnapshot(
         snapshot: SchemaTemplateSnapshot,
         policy: Policy
@@ -1006,6 +1054,9 @@ export class PolicyImport {
             this.notifier.getStep(STEP_RESOLVE_SCHEMA_TEMPLATE),
             userId
         );
+        // The binding is about to point at a local template; the schemas must follow
+        // it, and they have to do so before importSchemas persists them.
+        this.remapSchemaTemplateIds(schemas, this.resolvedSchemaTemplatesBySourceId(policy));
         await this.importTokens(
             tokens,
             user,

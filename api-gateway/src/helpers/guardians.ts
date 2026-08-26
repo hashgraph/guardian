@@ -2497,7 +2497,7 @@ export class Guardians extends NatsService {
      * @param owner
      * @returns applied schema template state
      */
-    public async getAppliedSchemaTemplateByPolicyTopic(topicId: string, owner: IOwner): Promise<ISchemaTemplate> {
+    public async getAppliedSchemaTemplateByPolicyTopic(topicId: string, owner: IOwner): Promise<ISchemaTemplate[]> {
         return await this.sendMessage(MessageAPI.GET_APPLIED_SCHEMA_TEMPLATE, { topicId, owner });
     }
 
@@ -2686,9 +2686,10 @@ export class Guardians extends NatsService {
      */
     public async detachSchemaTemplate(
         policyId: string,
+        templateId: string,
         owner: IOwner
     ): Promise<any> {
-        return await this.sendMessage(MessageAPI.DETACH_SCHEMA_TEMPLATE, { policyId, owner });
+        return await this.sendMessage(MessageAPI.DETACH_SCHEMA_TEMPLATE, { policyId, templateId, owner });
     }
 
     /**

@@ -444,8 +444,8 @@ export class SchemaTemplatesApi {
         required: true
     })
     @ApiOkResponse({
-        description: 'Applied schema template state.',
-        schema: { type: 'object' }
+        description: 'Applied schema template state, one entry per applied template.',
+        schema: { type: 'array', items: { type: 'object' } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -456,7 +456,7 @@ export class SchemaTemplatesApi {
     async getAppliedSchemaTemplateByPolicyTopic(
         @AuthUser() user: IAuthUser,
         @Param('topicId') topicId: string
-    ): Promise<ISchemaTemplate | null> {
+    ): Promise<ISchemaTemplate[]> {
         try {
             const guardians = new Guardians();
             return await guardians.getAppliedSchemaTemplateByPolicyTopic(topicId, new EntityOwner(user));
@@ -869,7 +869,7 @@ export class SchemaTemplatesApi {
     /**
      * Detach schema template from policy async.
      */
-    @Post('/policies/:policyId/push/detach')
+    @Post('/:templateId/policies/:policyId/push/detach')
     @Auth(
         Permissions.POLICIES_POLICY_UPDATE,
         // UserRole.STANDARD_REGISTRY,
@@ -877,6 +877,11 @@ export class SchemaTemplatesApi {
     @ApiOperation({
         summary: 'Detaches schema template from policy asynchronously.',
         description: 'Removes template binding metadata from the selected draft policy and turns copied template schemas into regular policy schemas.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'templateId',
+        type: String,
+        required: true
     })
     @ApiParam({
         name: 'policyId',
@@ -895,6 +900,7 @@ export class SchemaTemplatesApi {
     @HttpCode(HttpStatus.ACCEPTED)
     async detachSchemaTemplateAsync(
         @AuthUser() user: IAuthUser,
+        @Param('templateId') templateId: string,
         @Param('policyId') policyId: string
     ): Promise<TaskDTO> {
         try {
@@ -906,7 +912,7 @@ export class SchemaTemplatesApi {
                 taskManager.addStatus(task.taskId, 'Validate policy template binding', StatusType.PROCESSING);
                 taskManager.addStatus(task.taskId, 'Validate policy template binding', StatusType.COMPLETED);
                 taskManager.addStatus(task.taskId, 'Detach template from policy schemas', StatusType.PROCESSING);
-                const result = await guardians.detachSchemaTemplate(policyId, owner);
+                const result = await guardians.detachSchemaTemplate(policyId, templateId, owner);
                 taskManager.addStatus(task.taskId, 'Detach template from policy schemas', StatusType.COMPLETED);
                 taskManager.addStatus(task.taskId, 'Finalize policy binding', StatusType.PROCESSING);
                 await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS);

@@ -961,7 +961,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         topicId: string
     ): Observable<ISchemaTemplate | null> {
         const cacheKey = `${templateId}:${topicId}`;
-        if (cacheKey === this.loadedAppliedTemplateId && this.schemaTemplate) {
+        // A miss is cached too. Now that the list is filtered down to this schema's
+        // own template, "no match" is a normal answer, and re-requesting on every
+        // schema selection because the answer was null would hammer the endpoint.
+        // catchError clears the key, so a failed request is still retried.
+        if (cacheKey === this.loadedAppliedTemplateId) {
             return of(this.schemaTemplate);
         }
         if (!topicId) {
@@ -969,6 +973,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
         this.loadedAppliedTemplateId = cacheKey;
         return this.schemaTemplatesService.getAppliedByPolicyTopic(topicId).pipe(
+            // The policy can have several templates applied; the locks that apply to
+            // this schema are the ones from the template the schema itself names.
+            map((applied) => (applied || []).find((item) => item.id === templateId)),
             map((template) => template
                 ? ({
                     ...template,

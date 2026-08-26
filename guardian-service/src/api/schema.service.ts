@@ -127,12 +127,13 @@ async function getTemplateSchemaValidationContext(
 
     const policy = await DatabaseServer.getPolicy({ topicId: schema.topicId });
     /*
-     * A policy carries at most one binding until multi-template apply lands, so the
-     * first entry is the policy's binding. Keying this off schema.templateId instead
-     * would drop the locks for imported policies: an imported schema keeps the source
-     * instance's templateId, while the binding gets the locally resolved one.
+     * A policy can hold several bindings, so the schema's own templateId is what
+     * says which one owns it. That only works because import now re-points imported
+     * schemas at the locally resolved template (and the v3-7-1 migration repairs the
+     * ones imported before it did); without that the two ids never match and every
+     * lock silently disappears.
      */
-    const binding = policy?.schemaTemplates?.[0];
+    const binding = policy?.schemaTemplates?.find((item) => item.templateId === schema.templateId);
     if (!binding?.templateId) {
         return null;
     }
