@@ -127,7 +127,8 @@ import { RichTextEditorComponent } from './rich-text-editor/rich-text-editor.com
         SchemaFormDialog,
         SchemaFormRootComponent,
         SchemaFormNavigationComponent,
-        SchemaFormViewNavigationComponent
+        SchemaFormViewNavigationComponent,
+        RichTextEditorComponent
     ],
     providers: [
         { provide: DialogService, useClass: GuardianDialogService }

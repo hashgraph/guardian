@@ -545,4 +545,44 @@ describe('SchemasConfigurationComponent', () => {
             });
         });
     });
+
+    describe('getFieldValueInputType', () => {
+        const fieldTypes = [
+            { key: 'string', schemaType: 'string' },
+            { key: 'number', schemaType: 'number' },
+            { key: 'boolean', schemaType: 'boolean' },
+            { key: 'date', schemaType: 'string', format: 'date' },
+            { key: 'hederaAccount', schemaType: 'string', pattern: '^\\d+\\.\\d+\\.\\d+$', customType: 'hederaAccount' },
+            { key: 'richText', schemaType: 'string', customType: 'richText' },
+        ];
+
+        function typeOf(field: any): string {
+            const component = createComponent();
+            component.fieldTypes = fieldTypes;
+            return component.getFieldValueInputType(field);
+        }
+
+        it('asks for the rich text editor on a rich text field', () => {
+            expect(typeOf(makeField({ type: 'string', customType: 'richText' }))).toBe('richText');
+        });
+
+        it('keeps a plain string field on a text input', () => {
+            expect(typeOf(makeField({ type: 'string' }))).toBe('text');
+        });
+
+        it('keeps the other scalar types on their own inputs', () => {
+            expect(typeOf(makeField({ type: 'boolean' }))).toBe('boolean');
+            expect(typeOf(makeField({ type: 'number' }))).toBe('number');
+            expect(typeOf(makeField({ type: 'string', format: 'date' }))).toBe('date');
+        });
+
+        it('does not treat another custom type as rich text', () => {
+            const account = makeField({
+                type: 'string',
+                pattern: '^\\d+\\.\\d+\\.\\d+$',
+                customType: 'hederaAccount',
+            });
+            expect(typeOf(account)).not.toBe('richText');
+        });
+    });
 });

@@ -1401,6 +1401,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (key === 'date') { return 'date'; }
         if (key === 'time') { return 'time'; }
         if (key === 'dateTime') { return 'datetime-local'; }
+        if (key === 'richText') { return 'richText'; }
         return 'text';
     }
 

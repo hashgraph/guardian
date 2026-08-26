@@ -3546,6 +3546,17 @@
     }
 }
 
+.sc-fv-rte {
+    display: block;
+    width: 100%;
+    font-size: 13px;
+
+    ::ng-deep .rte-editor {
+        min-height: 48px;
+        font-size: 13px;
+    }
+}
+
 // Field-value enum picker is a p-select (guardian-dropdown); shrink it to match
 // the compact scalar value inputs (.sc-fv-input) instead of the full 40px control.
 .sc-fv-select { width: 100%; }
