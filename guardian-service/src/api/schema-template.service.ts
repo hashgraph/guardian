@@ -440,15 +440,15 @@ async function getPoliciesUsingSchemaTemplate(
  */
 async function addSchemaCounts(templates: SchemaTemplate[], owner: IOwner): Promise<any[]> {
     const ownerPoliciesCache = new Map<string, any[]>();
-    const getCachedPolicies = async (owner: string) => {
-        if (!ownerPoliciesCache.has(owner)) {
+    const getCachedPolicies = async (ownerId: string) => {
+        if (!ownerPoliciesCache.has(ownerId)) {
             const policies = await DatabaseServer.getPolicies(
-                { owner },
+                { owner: ownerId },
                 { fields: ['id', 'name', 'schemaTemplate'] } as any
             );
-            ownerPoliciesCache.set(owner, policies as any[]);
+            ownerPoliciesCache.set(ownerId, policies as any[]);
         }
-        return ownerPoliciesCache.get(owner)!;
+        return ownerPoliciesCache.get(ownerId)!;
     };
 
     const result = [];
