@@ -108,14 +108,16 @@ export class DocumentValidatorBlock {
         if (sourceValidation.onlyOwnDocuments && user?.did) {
             filter.owner = { $eq: user.did };
         }
-        if (sourceValidation.onlyOwnByGroupDocuments && user?.group) {
-            filter.group = { $eq: user.group };
+        // the restriction used to be skipped when the user had no group, leaving the source
+        // unfiltered. `$eq: null` matches group-less documents the way the direct checks do.
+        if (sourceValidation.onlyOwnByGroupDocuments) {
+            filter.group = { $eq: user?.group ?? null };
         }
         if (sourceValidation.onlyAssignDocuments && user?.did) {
             filter.assignedTo = { $eq: user.did };
         }
-        if (sourceValidation.onlyAssignByGroupDocuments && user?.group) {
-            filter.assignedToGroup = { $eq: user.group };
+        if (sourceValidation.onlyAssignByGroupDocuments) {
+            filter.assignedToGroup = { $eq: user?.group ?? null };
         }
 
         for (const f of (sourceValidation.filters || [])) {
