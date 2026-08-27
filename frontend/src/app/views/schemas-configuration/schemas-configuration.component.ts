@@ -1115,64 +1115,106 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return schemaConfig.fields[fieldKey];
     }
 
+    /*
+     * Counts every object and array level, not just field nesting. A field one level
+     * deeper costs two (its parent's `fields` array, then the field object), so this is
+     * double the ~12 levels of field nesting actually intended. Scalars return before
+     * the check and cost nothing. Too low is not harmless: the throw means "cannot
+     * prove clean", so a legitimately deep schema would latch "Unsaved changes" forever
+     * - the exact failure this fix exists to remove.
+     */
+    private static readonly SIGNATURE_MAX_DEPTH = 24;
+
+    /* Recomputed by the editor rather than edited by the user; everything else is hashed. */
+    private static readonly SIGNATURE_IGNORED_KEYS = new Set([
+        'errors', 'path', 'fullPath', 'parent', 'controlKey', '_id',
+    ]);
+
     /**
      * A stable signature of everything the editor can change.
+     *
+     * This walks the schema generically instead of hashing a hand-picked list of
+     * properties. An allow-list fails in the dangerous direction: any editable
+     * property nobody remembered to add is invisible to the check, the dirty flag
+     * clears, `saveAll()` early-returns on `!hasUnsavedChanges`, and the edit is lost
+     * on navigation with no toast and no guard dialog. Ignoring only what is provably
+     * derived inverts that - an unrecognised property makes the schema look dirty,
+     * which merely costs a redundant save.
+     *
+     * It also removes two whole classes of blind spot for free: a condition built with
+     * AND/OR has no `ifCondition.field`, so every predicate edit used to hash to the
+     * same null; and `then`/`else` targets are now reached like anything else.
      *
      * Returns null on anything it cannot model (cycle, depth blow-out, throw). Callers
      * treat null as "cannot prove clean" and leave the schema dirty: a false clean would
      * hide Save all and silently discard the user's work, which is far worse than the
      * stale "Unsaved changes" this fixes.
      */
-    private static readonly SIGNATURE_MAX_DEPTH = 12;
-
     private schemaSignature(schema: Schema | null | undefined): string | null {
         if (!schema) {
             return null;
         }
         try {
-            const seen = new WeakSet<object>();
-            const field = (f: any, depth: number): any => {
-                if (!f || typeof f !== 'object') {
-                    return f ?? null;
+            /*
+             * Path-local rather than one set for the whole traversal. A global set
+             * rejects any object reached twice, not just cycles - and two ref fields
+             * pointing at the same sub-schema IRI share their field objects, so the
+             * signature would return null and leave that schema permanently dirty.
+             */
+            const ancestors = new Set<object>();
+            const walk = (value: any, depth: number): any => {
+                if (value === undefined || typeof value === 'function') {
+                    return null;
                 }
-                if (depth > SchemasConfigurationComponent.SIGNATURE_MAX_DEPTH || seen.has(f)) {
+                if (value === null || typeof value !== 'object') {
+                    return value;
+                }
+                if (depth > SchemasConfigurationComponent.SIGNATURE_MAX_DEPTH || ancestors.has(value)) {
                     throw new Error('unbounded');
                 }
-                seen.add(f);
-                return [
-                    f.name, f.title, f.description, f.type, f.format, f.pattern, f.unit,
-                    f.unitSystem, f.property, f.customType, f.enumName, f.comment,
-                    f.textSize, f.expression, f.remoteLink, f.templateFieldId,
-                    !!f.required, !!f.isArray, !!f.isRef, !!f.readOnly, !!f.autocalculate,
-                    f.enum ?? null,
-                    f.availableOptions ?? null,
-                    f.dependency ?? null,
-                    (f.fields ?? []).map((sub: any) => field(sub, depth + 1)),
-                    (f.conditions ?? []).map((c: any) => condition(c, depth + 1)),
-                ];
-            };
-            const condition = (c: any, depth: number): any => {
-                if (!c || typeof c !== 'object') {
-                    return c ?? null;
+                ancestors.add(value);
+                try {
+                    if (Array.isArray(value)) {
+                        return value.map((item) => walk(item, depth + 1));
+                    }
+                    const out: any = {};
+                    for (const key of Object.keys(value).sort()) {
+                        if (SchemasConfigurationComponent.SIGNATURE_IGNORED_KEYS.has(key)) {
+                            continue;
+                        }
+                        const item = value[key];
+                        /*
+                         * JSON.stringify drops undefined- and function-valued keys, so the
+                         * saved schema cannot tell those from absent ones. Clearing a
+                         * property back to unset has to read as clean, or it leaves a
+                         * dirty flag nothing can ever clear.
+                         */
+                        if (item === undefined || typeof item === 'function') {
+                            continue;
+                        }
+                        out[key] = walk(item, depth + 1);
+                    }
+                    return out;
+                } finally {
+                    ancestors.delete(value);
                 }
-                if (depth > SchemasConfigurationComponent.SIGNATURE_MAX_DEPTH || seen.has(c)) {
-                    throw new Error('unbounded');
-                }
-                seen.add(c);
-                return [
-                    c.ifCondition?.field?.name ?? null,
-                    c.ifCondition?.fieldValue ?? null,
-                    (c.thenFields ?? []).map((f: any) => field(f, depth + 1)),
-                    (c.elseFields ?? []).map((f: any) => field(f, depth + 1)),
-                ];
             };
-            return JSON.stringify([
-                schema.name ?? null,
-                schema.description ?? null,
-                schema.entity ?? null,
-                (schema.fields ?? []).map((f: any) => field(f, 0)),
-                (schema.conditions ?? []).map((c: any) => condition(c, 0)),
-            ]);
+            /*
+             * The walk is generic, but it can only reach what this root names, so the
+             * root is the one remaining allow-list and needs the same scrutiny.
+             * `arrayDependencies` is user-editable (addArrayDependency /
+             * removeArrayDependency, both of which call markDirty) and is persisted on
+             * the model, so editing only an array dependency used to recompute a
+             * signature identical to the baseline and lose the edit.
+             */
+            return JSON.stringify(walk({
+                name: schema.name ?? null,
+                description: schema.description ?? null,
+                entity: schema.entity ?? null,
+                fields: schema.fields ?? [],
+                conditions: schema.conditions ?? [],
+                arrayDependencies: schema.arrayDependencies ?? [],
+            }, 0));
         } catch {
             return null;
         }
@@ -3353,8 +3395,21 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
     }
 
+    /**
+     * Drop dirty marks and saved baselines for schemas that have left the list.
+     *
+     * `dirtySchemaIds` and `savedSignatures` are a matched pair - one records that a
+     * schema changed, the other what it looked like when saved - so they are pruned
+     * together. `savedSignatures` used to only ever grow, holding a full serialised
+     * field tree per schema for as long as the page lived.
+     *
+     * Dropping a baseline can only fail safe: `reconcileDirty` treats a missing
+     * baseline as "cannot prove clean" and leaves the schema dirty, and any schema
+     * still reachable is re-snapshotted by the next list load.
+     */
     private pruneDirtySchemaIds(): void {
-        if (!this.dirtySchemaIds.size) { return; }
+        // Both maps gate entry here - a signature can outlive the last dirty mark.
+        if (!this.dirtySchemaIds.size && !this.savedSignatures.size) { return; }
         const liveKeys = new Set<string>();
         for (const schema of this.schemas) {
             const id = schema.id || (schema as any)._id;
@@ -3370,6 +3425,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             if (!liveKeys.has(dirtyId)) {
                 this.dirtySchemaIds.delete(dirtyId);
                 this.newSchemaKeys.delete(dirtyId);
+            }
+        }
+        for (const key of Array.from(this.savedSignatures.keys())) {
+            if (!liveKeys.has(key)) {
+                this.savedSignatures.delete(key);
             }
         }
     }
