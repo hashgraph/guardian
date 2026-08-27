@@ -5,6 +5,7 @@ import { MessageAPI, ModuleStatus, PolicyStatus, SchemaCategory } from '@guardia
 import {
     removePolicySchemaTemplateSnapshot,
     schemaTemplatesAPI,
+    validateSchemaNameCollisions,
 } from '../../dist/api/schema-template.service.js';
 import {
     callHandler,
@@ -330,6 +331,83 @@ describe('multi-template: APPLY_SCHEMA_TEMPLATE', () => {
         const response = await apply('template-2');
 
         assert.equal(ok(response), true, response && response.error);
+    });
+});
+
+/*
+ * Issue #6711, step 8. validateSchemaNameCollisions used to be called only from
+ * applySchemaTemplate. updateAppliedSchemaTemplate's SCHEMA_ADD path copied new
+ * schemas through createSchemaAndArtifacts with no collision check at all, so
+ * updating one applied template could introduce a name already owned by another
+ * applied template or an ordinary policy schema - exactly what the apply-time
+ * check exists to prevent. These exercise the shared validator the same way the
+ * update path now calls it: with excludeTemplateId set to the template being
+ * updated, so its own existing schemas are not compared against themselves.
+ */
+describe('multi-template: schema name collisions on update (validateSchemaNameCollisions)', () => {
+    afterEach(() => restoreStubs());
+
+    it('still catches a collision with a different applied template while excluding its own', async () => {
+        stub(DatabaseServer, 'getSchemas', async () => [
+            policySchema('policy-schema-template-1', 'Site', 'template-1'),
+            policySchema('policy-schema-template-2', 'Monitoring Report', 'template-2'),
+        ]);
+
+        const targetPolicy = policy({
+            schemaTemplates: [binding('template-1'), binding('template-2')],
+        });
+
+        await assert.rejects(
+            validateSchemaNameCollisions(
+                template('template-1'),
+                targetPolicy,
+                [{ name: 'Monitoring Report' }],
+                'template-1',
+            ),
+            /Monitoring Report/,
+            'a new schema added by updating template-1 must still collide with template-2\'s schema',
+        );
+    });
+
+    it('does not flag a new schema against an unchanged schema of the same template being updated', async () => {
+        stub(DatabaseServer, 'getSchemas', async () => [
+            policySchema('policy-schema-template-1', 'Site', 'template-1'),
+        ]);
+
+        const targetPolicy = policy({
+            schemaTemplates: [binding('template-1')],
+        });
+
+        await assert.doesNotReject(
+            validateSchemaNameCollisions(
+                template('template-1'),
+                targetPolicy,
+                [{ name: 'Site' }],
+                'template-1',
+            ),
+            'the schema being added shares a name only with its own template\'s unchanged schema, which is not a real collision',
+        );
+    });
+
+    it('still rejects a collision with an ordinary policy schema while excluding its own template', async () => {
+        stub(DatabaseServer, 'getSchemas', async () => [
+            policySchema('policy-schema-template-1', 'Site', 'template-1'),
+            policySchema('plain-schema-1', 'Custom Report'),
+        ]);
+
+        const targetPolicy = policy({
+            schemaTemplates: [binding('template-1')],
+        });
+
+        await assert.rejects(
+            validateSchemaNameCollisions(
+                template('template-1'),
+                targetPolicy,
+                [{ name: 'Custom Report' }],
+                'template-1',
+            ),
+            /Custom Report/,
+        );
     });
 });
 

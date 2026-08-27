@@ -663,6 +663,14 @@ export class PolicyImport {
      * exported with. A template that cannot be resolved is left out rather than
      * failing the whole import: the policy keeps the templates that did resolve, and
      * the rest are detached by schemaTemplateBindingsToDrop.
+     *
+     * Two source bindings can resolve to the same local template - both matched by
+     * templateMessageId, or both re-pointed to the same local template in the import
+     * preview. That breaks the "one templateId per binding" invariant everything
+     * downstream relies on: findSchemaTemplateBinding would return only the first
+     * match, stranding the second one's snapshot with no way to detach or update it.
+     * Reject rather than silently pick a winner - the ambiguity belongs in the
+     * import preview, not in the importer.
      */
     public async resolveSchemaTemplates(
         metadata: PolicyToolMetadata | null,
@@ -676,6 +684,7 @@ export class PolicyImport {
 
         const bindings = policy.schemaTemplates || [];
         const overrides = this.mapSchemaTemplateMetadata(metadata, bindings);
+        const sourceIdByLocalTemplateId = new Map<string, string>();
         for (let index = 0; index < bindings.length; index++) {
             const binding = bindings[index];
             const sourceTemplateId = binding?.templateId;
@@ -687,9 +696,20 @@ export class PolicyImport {
                 continue;
             }
             const template = await this.resolveSchemaTemplateBinding(binding, override, user, userId);
-            if (template) {
-                this.schemaTemplates.set(String(sourceTemplateId), template);
+            if (!template) {
+                continue;
             }
+            const localTemplateId = String(template.id);
+            const conflictingSourceId = sourceIdByLocalTemplateId.get(localTemplateId);
+            if (conflictingSourceId && conflictingSourceId !== String(sourceTemplateId)) {
+                throw new Error(
+                    `Schema templates "${conflictingSourceId}" and "${sourceTemplateId}" both resolve to ` +
+                    `the same local template "${localTemplateId}". Resolve the collision in the import ` +
+                    'preview before importing.'
+                );
+            }
+            sourceIdByLocalTemplateId.set(localTemplateId, String(sourceTemplateId));
+            this.schemaTemplates.set(String(sourceTemplateId), template);
         }
 
         step.complete();

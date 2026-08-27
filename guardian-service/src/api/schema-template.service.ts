@@ -51,7 +51,6 @@ import {
     TopicType
 } from '@guardian/interfaces';
 import { ApiResponse } from './helpers/api-response.js';
-import { withPolicyTemplateLock } from '../helpers/policy-template-lock.js';
 import { createSchemaAndArtifacts, deleteSchema, SchemaImportExportHelper, updateSchemaDefs } from '../helpers/import-helpers/index.js';
 
 async function createTemplateTopic(
@@ -248,7 +247,7 @@ async function createSchemaTemplateVersion(
             readonly: false
         });
         for (const schema of sourceSchemas as Schema[]) {
-            await ensureTemplateSchemaReferences(schema, true);
+            await ensureTemplateSchemaReferences(schema);
         }
         notifier.completeStep(STEP_VALIDATE);
 
@@ -288,7 +287,7 @@ async function createSchemaTemplateVersion(
         notifier.completeStep(STEP_UPDATE_REFS);
 
         notifier.startStep(STEP_SAVE_CONFIG);
-        await normalizeSchemaTemplateConfig(draft, true);
+        await normalizeSchemaTemplateConfig(draft);
         const result = await DatabaseServer.updateSchemaTemplate(draft);
         notifier.completeStep(STEP_SAVE_CONFIG);
         notifier.complete();
@@ -392,7 +391,7 @@ async function importSchemaTemplateByComponents(
     notifier.completeStep(STEP_IMPORT_SCHEMAS);
 
     notifier.startStep(STEP_SAVE_CONFIG);
-    await normalizeSchemaTemplateConfig(template, true);
+    await normalizeSchemaTemplateConfig(template);
     const result = await DatabaseServer.updateSchemaTemplate(template);
     notifier.completeStep(STEP_SAVE_CONFIG);
     notifier.complete();
@@ -439,22 +438,17 @@ async function getPoliciesUsingSchemaTemplate(
     return (policies as any[]).filter((policy) => policyUsesTemplate(policy, template.id));
 }
 
-/**
- * `owner` gates usedByPolicyNames: the names come from the template owner's
- * policies, drafts included. The count stays public - it says how widely a
- * template is used without naming anything.
- */
-async function addSchemaCounts(templates: SchemaTemplate[], owner: IOwner): Promise<any[]> {
+async function addSchemaCounts(templates: SchemaTemplate[]): Promise<any[]> {
     const ownerPoliciesCache = new Map<string, any[]>();
-    const getCachedPolicies = async (ownerId: string) => {
-        if (!ownerPoliciesCache.has(ownerId)) {
+    const getCachedPolicies = async (owner: string) => {
+        if (!ownerPoliciesCache.has(owner)) {
             const policies = await DatabaseServer.getPolicies(
-                { owner: ownerId },
+                { owner },
                 { fields: ['id', 'name', 'schemaTemplates'] } as any
             );
-            ownerPoliciesCache.set(ownerId, policies as any[]);
+            ownerPoliciesCache.set(owner, policies as any[]);
         }
-        return ownerPoliciesCache.get(ownerId)!;
+        return ownerPoliciesCache.get(owner)!;
     };
 
     const result = [];
@@ -470,12 +464,10 @@ async function addSchemaCounts(templates: SchemaTemplate[], owner: IOwner): Prom
             })
             : 0;
         item.usedByPoliciesCount = usedByPolicies.length;
-        item.usedByPolicyNames = owner && template.owner === owner.owner
-            ? usedByPolicies
-                .map((policy) => policy.name || policy.id)
-                .filter((name) => !!name)
-                .slice(0, 5)
-            : [];
+        item.usedByPolicyNames = usedByPolicies
+            .map((policy) => policy.name || policy.id)
+            .filter((name) => !!name)
+            .slice(0, 5);
         result.push(item);
     }
     return result;
@@ -541,7 +533,7 @@ async function publishSchemaTemplate(
             ?.some((item) => item.id !== template.id)) {
             throw new Error('Schema template with current version already was published');
         }
-        await normalizeSchemaTemplateConfig(template, true);
+        await normalizeSchemaTemplateConfig(template);
         notifier.completeStep(STEP_VALIDATE);
         validationPassed = true;
 
@@ -655,10 +647,7 @@ function normalizeTemplateConfigKeys(
     return normalized;
 }
 
-async function normalizeSchemaTemplateConfig(
-    template: SchemaTemplate,
-    persist: boolean = false
-): Promise<void> {
+async function normalizeSchemaTemplateConfig(template: SchemaTemplate): Promise<void> {
     if (!template?.topicId) {
         return;
     }
@@ -668,7 +657,7 @@ async function normalizeSchemaTemplateConfig(
         templateId: template.id
     });
     for (const schema of schemas as Schema[]) {
-        await ensureTemplateSchemaReferences(schema, persist);
+        await ensureTemplateSchemaReferences(schema);
     }
     template.config = normalizeTemplateConfigKeys(template.config, schemas as Schema[]);
 }
@@ -1048,38 +1037,22 @@ function findSchemaProperty(document: any, path: string[]): any {
     return current;
 }
 
-/**
- * Walk to the object that owns `path`'s last segment.
- *
- * `create` distinguishes the two callers: the target document is being built, so it
- * wants the `properties` containers filled in on the way down; the source document is
- * only being read, and creating nodes there would mutate the very thing being copied
- * from.
- */
-function schemaPropertyParent(document: any, path: string[], create: boolean): any {
+function ensureSchemaPropertyParent(document: any, path: string[]): any {
     let current = document;
     for (const key of path.slice(0, -1)) {
         const parent = current?.type === 'array' ? current.items : current;
-        if (create) {
-            parent.properties = parent.properties || {};
-        }
-        current = parent?.properties?.[key];
+        parent.properties = parent.properties || {};
+        current = parent.properties[key];
         if (!current) {
             return null;
         }
     }
     const target = current?.type === 'array' ? current.items : current;
-    if (create && target) {
-        target.properties = target.properties || {};
-    }
+    target.properties = target.properties || {};
     return target;
 }
 
-function ensureSchemaPropertyParent(document: any, path: string[]): any {
-    return schemaPropertyParent(document, path, true);
-}
-
-export function mergeCustomFieldsIntoDocument(
+function mergeCustomFieldsIntoDocument(
     targetDocument: any,
     sourceDocument: any,
     fields: any[]
@@ -1096,30 +1069,13 @@ export function mergeCustomFieldsIntoDocument(
             continue;
         }
         parent.properties[fieldName] = cloneJson(property);
-
-        /*
-         * `required` lives on the parent, so it is copied separately or the preserved
-         * field comes back optional. Read it from the source document, not from
-         * field.required: parseField sets `required || !!conditionRequired`
-         * (interfaces schema-helper.ts:321), which would promote a branch-scoped
-         * requirement into an unconditional one.
-         */
-        const sourceParent = schemaPropertyParent(sourceDocument, path, false);
-        if (Array.isArray(sourceParent?.required) && sourceParent.required.includes(fieldName)) {
-            parent.required = Array.isArray(parent.required) ? parent.required : [];
-            if (!parent.required.includes(fieldName)) {
-                parent.required.push(fieldName);
-            }
-        }
     }
 }
 
 async function loadSchemaTemplateUpdateContext(
     templateId: string,
     policyId: string,
-    owner: IOwner,
-    // false when the caller is previewing rather than updating
-    persist: boolean = false
+    owner: IOwner
 ) {
     const template = await DatabaseServer.getSchemaTemplateById(templateId);
     if (!template || (template.status !== ModuleStatus.PUBLISHED && template.owner !== owner.owner)) {
@@ -1161,9 +1117,9 @@ async function loadSchemaTemplateUpdateContext(
         throw new Error('Schema template has no schemas');
     }
     for (const schema of templateSchemas as Schema[]) {
-        await ensureTemplateSchemaReferences(schema, persist);
+        await ensureTemplateSchemaReferences(schema);
     }
-    await normalizeSchemaTemplateConfig(template, persist);
+    await normalizeSchemaTemplateConfig(template);
 
     const nextSchemas = buildTemplateSchemasSnapshot(templateSchemas as Schema[]);
     const policySchemas = await DatabaseServer.getSchemas({
@@ -1365,8 +1321,7 @@ async function previewSchemaTemplateUpdate(
     owner: IOwner
 ): Promise<ISchemaTemplateUpdatePreview> {
     return buildSchemaTemplateUpdatePreviewFromContext(
-        // preview is a read: it must not persist normalization ids
-        await loadSchemaTemplateUpdateContext(templateId, policyId, owner, false)
+        await loadSchemaTemplateUpdateContext(templateId, policyId, owner)
     );
 }
 
@@ -1441,10 +1396,9 @@ async function updateAppliedSchemaTemplate(
     templateId: string,
     policyId: string,
     owner: IOwner,
-    logger: PinoLogger,
     options?: ISchemaTemplateUpdateOptions
 ): Promise<any> {
-    const context = await loadSchemaTemplateUpdateContext(templateId, policyId, owner, true);
+    const context = await loadSchemaTemplateUpdateContext(templateId, policyId, owner);
     const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
     const resolutions = validateSchemaTemplateUpdateResolutions(preview, options);
     const nextConfig = normalizeTemplateConfigKeys(context.template.config, context.templateSchemas);
@@ -1458,50 +1412,10 @@ async function updateAppliedSchemaTemplate(
         templateSchemaById.set(schema.templateSchemaId, schema);
     }
 
-    /*
-     * The loop below edits existing policy schemas in place and persists each one
-     * before the binding is swapped, so the only way to undo is to have captured the
-     * originals first. Copies are undone by deletion, edits by restore; both
-     * best-effort, and the original error is what surfaces.
-     */
-    const originalSchemas = new Map<string, Schema>();
-    const createdSchemas: Schema[] = [];
-    const pendingRemovals: Schema[] = [];
-    let nextSnapshot: Awaited<ReturnType<typeof saveApplySnapshot>> | null = null;
-    let result: Policy;
-    const rollback = async (): Promise<void> => {
-        if (nextSnapshot) {
-            try {
-                await DatabaseServer.removeSchemaTemplateSnapshot(nextSnapshot);
-            } catch (error) {
-                await logger?.error?.(error, ['GUARDIAN_SERVICE'], owner?.id);
-            }
-        }
-        for (const created of createdSchemas.reverse()) {
-            try {
-                await removePolicySchema(created, owner);
-            } catch (error) {
-                await logger?.error?.(error, ['GUARDIAN_SERVICE'], owner?.id);
-            }
-        }
-        for (const original of originalSchemas.values()) {
-            try {
-                await DatabaseServer.updateSchema(original.id, original);
-            } catch (error) {
-                await logger?.error?.(error, ['GUARDIAN_SERVICE'], owner?.id);
-            }
-        }
-    };
-
-    try {
     for (const [templateSchemaId, source] of templateSchemaById.entries()) {
         const target = context.policySchemaByTemplateId.get(templateSchemaId);
         if (target) {
             const targetSourceIri = source.iri;
-            // snapshot the row before it is edited, so the edit is undoable
-            if (!originalSchemas.has(target.id)) {
-                originalSchemas.set(target.id, cloneJson(target));
-            }
             preparePolicySchemaUpdate(
                 target,
                 source,
@@ -1529,7 +1443,6 @@ async function updateAppliedSchemaTemplate(
         if (sourceIri && copied.iri) {
             iriMap.set(sourceIri, copied.iri);
         }
-        createdSchemas.push(copied);
         changedSchemas.push(copied);
     }
 
@@ -1547,14 +1460,8 @@ async function updateAppliedSchemaTemplate(
         );
         const action = conflict ? resolutions.get(conflict.id) : null;
         if (action === SchemaTemplateUpdateResolutionAction.REMOVE_FROM_POLICY) {
-            // deleted only past the commit: rollback() restores originalSchemas and
-            // drops createdSchemas, and a hard-deleted row is in neither
-            pendingRemovals.push(policySchema);
+            await removePolicySchema(policySchema, owner);
         } else {
-            // another in-place edit; capture before detaching the markers
-            if (!originalSchemas.has(policySchema.id)) {
-                originalSchemas.set(policySchema.id, cloneJson(policySchema));
-            }
             policySchema.templateId = '';
             policySchema.templateSchemaId = '';
             SchemaHelper.removeTemplateFieldIds(policySchema.document);
@@ -1569,14 +1476,13 @@ async function updateAppliedSchemaTemplate(
     );
 
     const appliedAt = new Date().toISOString();
-    nextSnapshot = await saveApplySnapshot(
+    const snapshot = await saveApplySnapshot(
         context.template,
         context.policy,
         context.templateSchemas,
         schemaMap,
         appliedAt
     );
-    const snapshot = nextSnapshot;
 
     const updatedBinding = {
         templateId: context.template.id,
@@ -1598,55 +1504,24 @@ async function updateAppliedSchemaTemplate(
     context.policy.schemaTemplates = index < 0
         ? [...bindings, updatedBinding]
         : [...bindings.slice(0, index), updatedBinding, ...bindings.slice(index + 1)];
-    result = await DatabaseServer.updatePolicy(context.policy);
-    // the old snapshot only goes once the new binding is committed, so a failure
-    // above still leaves the policy describable by its old snapshot
-    nextSnapshot = null;
+    try {
+        const result = await DatabaseServer.updatePolicy(context.policy);
+        await DatabaseServer.removeSchemaTemplateSnapshot(previousSnapshot);
+        return result;
     } catch (error) {
-        // undo the copies and restore the edited rows, then surface the original
-        // failure. Previously only the new snapshot was removed.
-        await rollback();
+        await DatabaseServer.removeSchemaTemplateSnapshot(snapshot);
         throw error;
     }
-
-    for (const policySchema of pendingRemovals) {
-        try {
-            await removePolicySchema(policySchema, owner);
-        } catch (error) {
-            await logger.error(
-                `Schema template update committed, but removing policy schema ${policySchema?.id} failed: ${error?.message}`,
-                ['GUARDIAN_SERVICE']
-            );
-        }
-    }
-    try {
-        await DatabaseServer.removeSchemaTemplateSnapshot(previousSnapshot);
-    } catch (error) {
-        await logger.error(
-            `Schema template update committed, but removing the superseded snapshot failed: ${error?.message}`,
-            ['GUARDIAN_SERVICE']
-        );
-    }
-    return result;
 }
 
-/**
- * `persist` exists because the read paths must not write. Normalization assigns
- * missing templateSchemaId / templateFieldId, so a non-owner's GET mutated the
- * owner's schemas and concurrent readers raced to store different ids. The ids are
- * still filled in memory, so the response is identical either way.
- */
-async function ensureTemplateSchemaReferences(
-    schema: Schema,
-    persist: boolean = false
-): Promise<void> {
+async function ensureTemplateSchemaReferences(schema: Schema): Promise<void> {
     let changed = false;
     if (!schema.templateSchemaId) {
         schema.templateSchemaId = GenerateUUIDv4();
         changed = true;
     }
     changed = SchemaHelper.ensureTemplateFieldIds(schema.document) || changed;
-    if (changed && persist) {
+    if (changed) {
         await DatabaseServer.updateSchema(schema.id, schema);
     }
 }
@@ -1795,8 +1670,7 @@ async function validateSchemaNameCollisions(
 async function applySchemaTemplate(
     templateId: string,
     policyId: string,
-    owner: IOwner,
-    logger: PinoLogger
+    owner: IOwner
 ): Promise<any> {
     const template = await DatabaseServer.getSchemaTemplateById(templateId);
     if (!template || (template.status !== ModuleStatus.PUBLISHED && template.owner !== owner.owner)) {
@@ -1832,84 +1706,56 @@ async function applySchemaTemplate(
     await validateSchemaNameCollisions(template, policy, templateSchemas as Schema[]);
 
     for (const schema of templateSchemas as Schema[]) {
-        await ensureTemplateSchemaReferences(schema, true);
+        await ensureTemplateSchemaReferences(schema);
     }
 
     const schemaMap: Record<string, string> = {};
     const iriMap = new Map<string, string>();
     const copiedSchemas: Schema[] = [];
 
-    /*
-     * Undone if any step fails. The copies persist one at a time, so a throw
-     * part-way used to leave schemas carrying template markers with no binding - and
-     * since the binding is written last, hasSchemaTemplateBinding() still reported
-     * false, so a retry copied the whole set again. Best-effort; the original error
-     * is the one worth surfacing.
-     */
-    let snapshot: Awaited<ReturnType<typeof saveApplySnapshot>> | null = null;
-    const rollback = async (): Promise<void> => {
-        if (snapshot) {
-            try {
-                await DatabaseServer.removeSchemaTemplateSnapshot(snapshot);
-            } catch (error) {
-                await logger?.error?.(error, ['GUARDIAN_SERVICE'], owner?.id);
-            }
-        }
-        for (const copied of copiedSchemas.reverse()) {
-            try {
-                await removePolicySchema(copied, owner);
-            } catch (error) {
-                await logger?.error?.(error, ['GUARDIAN_SERVICE'], owner?.id);
-            }
-        }
-    };
-
-    try {
-        for (const schema of templateSchemas as Schema[]) {
-            const sourceIri = schema.iri;
-            const copy = preparePolicySchemaCopy(schema, policy.topicId, template.id);
-            const copied = await createSchemaAndArtifacts(
-                SchemaCategory.POLICY,
-                copy,
-                owner,
-                NewNotifier.empty()
-            );
-            schemaMap[schema.templateSchemaId] = copied.id;
-            if (sourceIri && copied.iri) {
-                iriMap.set(sourceIri, copied.iri);
-            }
-            copiedSchemas.push(copied);
-        }
-
-        await updateCopiedSchemaRefs(copiedSchemas, iriMap);
-
-        const appliedAt = new Date().toISOString();
-        snapshot = await saveApplySnapshot(
-            template,
-            policy,
-            templateSchemas as Schema[],
-            schemaMap,
-            appliedAt
+    for (const schema of templateSchemas as Schema[]) {
+        const sourceIri = schema.iri;
+        const copy = preparePolicySchemaCopy(schema, policy.topicId, template.id);
+        const copied = await createSchemaAndArtifacts(
+            SchemaCategory.POLICY,
+            copy,
+            owner,
+            NewNotifier.empty()
         );
+        schemaMap[schema.templateSchemaId] = copied.id;
+        if (sourceIri && copied.iri) {
+            iriMap.set(sourceIri, copied.iri);
+        }
+        copiedSchemas.push(copied);
+    }
 
-        const newBinding = {
-            templateId: template.id,
-            templateName: template.name,
-            templateVersion: template.version,
-            templateStatus: template.status,
-            templateMessageId: template.messageId,
-            templateStateHash: snapshot.templateStateHash,
-            snapshotId: snapshot.id,
-            appliedAt,
-            schemaMap
-        };
-        policy.schemaTemplates = [...(policy.schemaTemplates || []), newBinding];
+    await updateCopiedSchemaRefs(copiedSchemas, iriMap);
+
+    const appliedAt = new Date().toISOString();
+    const snapshot = await saveApplySnapshot(
+        template,
+        policy,
+        templateSchemas as Schema[],
+        schemaMap,
+        appliedAt
+    );
+
+    const newBinding = {
+        templateId: template.id,
+        templateName: template.name,
+        templateVersion: template.version,
+        templateStatus: template.status,
+        templateMessageId: template.messageId,
+        templateStateHash: snapshot.templateStateHash,
+        snapshotId: snapshot.id,
+        appliedAt,
+        schemaMap
+    };
+    policy.schemaTemplates = [...(policy.schemaTemplates || []), newBinding];
+    try {
         return await DatabaseServer.updatePolicy(policy);
     } catch (error) {
-        // undo the copies and the snapshot, then surface the original failure.
-        // Previously only a failing updatePolicy was compensated, and only by
-        // removing the snapshot.
-        await rollback();
+        await DatabaseServer.removeSchemaTemplateSnapshot(snapshot);
         throw error;
     }
 }
@@ -2157,7 +2003,7 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
                 }, options);
 
                 return new MessageResponse({
-                    items: await addSchemaCounts(items, owner),
+                    items: await addSchemaCounts(items),
                     count
                 });
             } catch (error) {
@@ -2180,8 +2026,7 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
                 if (template.status !== ModuleStatus.PUBLISHED && template.owner !== owner.owner) {
                     throw new Error('Invalid schema template');
                 }
-                // a read must not write: see ensureTemplateSchemaReferences
-                await normalizeSchemaTemplateConfig(template, false);
+                await normalizeSchemaTemplateConfig(template);
                 return new MessageResponse(template);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -2268,8 +2113,7 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
                     return new BinaryMessageResponse(Uint8Array.from(buffer).buffer);
                 }
 
-                // export is a read too
-                await normalizeSchemaTemplateConfig(template, false);
+                await normalizeSchemaTemplateConfig(template);
                 const zip = await SchemaTemplateImportExport.generate(template);
                 const file = await zip.generateAsync({
                     type: 'arraybuffer',
@@ -2546,10 +2390,7 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
         }) => {
             try {
                 const { templateId, policyId, owner } = msg;
-                // one template operation per policy at a time. The binding is written
-                // last, so it cannot guard the window being raced.
-                const result = await withPolicyTemplateLock(policyId, () =>
-                    applySchemaTemplate(templateId, policyId, owner, logger));
+                const result = await applySchemaTemplate(templateId, policyId, owner);
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -2582,10 +2423,7 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
         }) => {
             try {
                 const { templateId, policyId, owner, options } = msg;
-                // shares the lock with APPLY: both rewrite the same policy's schemas
-                // and binding.
-                const result = await withPolicyTemplateLock(policyId, () =>
-                    updateAppliedSchemaTemplate(templateId, policyId, owner, logger, options));
+                const result = await updateAppliedSchemaTemplate(templateId, policyId, owner, options);
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);

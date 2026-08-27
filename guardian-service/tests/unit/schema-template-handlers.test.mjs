@@ -771,7 +771,7 @@ describe('GET_SCHEMA_TEMPLATES usedByPolicyNames', () => {
             topicId: '0.0.20',
         }], 1]);
         stub(DatabaseServer, 'getPolicies', async () => [
-            { id: 'policy-1', name: 'Secret Draft', schemaTemplate: { templateId: 'template-1' } },
+            { id: 'policy-1', name: 'Secret Draft', schemaTemplates: [{ templateId: 'template-1' }] },
         ]);
         stub(DatabaseServer, 'getSchemasCount', async () => 3);
     };
@@ -933,8 +933,10 @@ describe('APPLY_SCHEMA_TEMPLATE rollback', () => {
                 topicId: '0.0.20',
                 config: { schemas: {} },
             }),
-            getPolicyById: async () => policy({ schemaTemplate: null }),
-            getSchemas: async () => [templateSchema('a'), templateSchema('b')],
+            getPolicyById: async () => policy({ schemaTemplates: [] }),
+            getSchemas: async (filter) => (
+                filter?.category === SchemaCategory.POLICY ? [] : [templateSchema('a'), templateSchema('b')]
+            ),
             updateSchema: async () => null,
             saveSchemaTemplateSnapshot: async (value) => {
                 snapshotSaved = { ...value, id: 'snap-1' };
@@ -1076,12 +1078,12 @@ describe('UPDATE_APPLIED_SCHEMA_TEMPLATE rollback', () => {
                 config: { schemas: {} },
             }),
             getPolicyById: async () => policy({
-                schemaTemplate: {
+                schemaTemplates: [{
                     templateId: 'template-1',
                     snapshotId: 'snap-0',
                     appliedAt: '2026-01-01T00:00:00.000Z',
                     schemaMap: { 'tpl-a': 'ps-1' },
-                },
+                }],
             }),
             getSchemaTemplateSnapshotById: async () => ({
                 id: 'snap-0',

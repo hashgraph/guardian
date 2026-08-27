@@ -111,6 +111,23 @@ describe('multi-template import - resolving every binding', () => {
             'detach must be honoured per template, not for the whole import');
     });
 
+    it('rejects two source bindings that resolve to the same local template', async () => {
+        // Both source templates are matched by templateMessageId to one local template -
+        // the ambiguity step 7 exists to catch, since findSchemaTemplateBinding would
+        // otherwise return only the first match and strand the second one's snapshot.
+        stub(DatabaseServer, 'getSchemaTemplateById', async () => null);
+        stub(DatabaseServer, 'getSchemaTemplate', async () => localTemplate('shared-local'));
+
+        const service = makeImport();
+        service.messageServer = { tryGetMessage: async () => null };
+        const policy = { schemaTemplates: [binding('template-1'), binding('template-2')] };
+
+        await assert.rejects(
+            resolveAll(service, policy),
+            /template-1.*template-2|template-2.*template-1/s,
+        );
+    });
+
     it('resolves a template by message id when the local id is unknown', async () => {
         stub(DatabaseServer, 'getSchemaTemplateById', async () => null);
         const byMessage = [];
