@@ -2,29 +2,30 @@ import { checkHederaKey, Workers } from '@guardian/common';
 import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 import { WorkerTaskType } from '@guardian/interfaces';
 
+// key types the mirror node reports as one comparable public key
+const COMPARABLE_KEY_TYPES = ['ED25519', 'ECDSA_SECP256K1'];
+
 /**
  * Prove that a private key controls an account.
  *
- * This used to be inferred from a GET_USER_BALANCE probe whose result was discarded:
- * the pairing was assumed because that task built a signing client and did not throw.
- * PrivateKey.fromString() beside it only proves the key parses.
+ * The profile-setup "Check hedera key" step only parsed the key and probed for the
+ * account; the first real check came later at TopicHelper.create(). Comparing the
+ * derived public key with the account's on-chain one proves the pair directly, with
+ * no signing, fee or mutation.
  *
- * Deriving the public key from the supplied private key and comparing it with the
- * account's on-chain public key proves the pair directly, and needs no signing, no fee
- * and no mutation - the account is read over the keyless GET_ACCOUNT_INFO_REST task.
- *
- * @throws Error('Invalid Hedera account or key.')
+ * @throws Error('Invalid Hedera account or key.') with the underlying error as `cause`
  */
 export async function validateHederaAccountKey(
     hederaAccountId: string,
     hederaAccountKey: string,
     options?: { userId?: string; interception?: string }
 ): Promise<void> {
+    let info: any;
     try {
         AccountId.fromString(hederaAccountId);
         PrivateKey.fromString(hederaAccountKey);
 
-        const info = await new Workers().addNonRetryableTask({
+        info = await new Workers().addNonRetryableTask({
             type: WorkerTaskType.GET_ACCOUNT_INFO_REST,
             data: {
                 hederaAccountId,
@@ -35,12 +36,22 @@ export async function validateHederaAccountKey(
             userId: options?.userId ?? null,
             interception: options?.interception ?? null
         });
-
-        // the mirror node returns key as { _type, key }
-        if (!checkHederaKey(hederaAccountKey, info?.key?.key)) {
-            throw new Error('Key does not match the account');
-        }
     } catch (error) {
-        throw new Error('Invalid Hedera account or key.');
+        // keep the cause: a NATS timeout and a wrong key otherwise read identically
+        throw new Error('Invalid Hedera account or key.', { cause: error });
+    }
+
+    // a key-list account has no single key to compare against, and PublicKey.fromString
+    // throws on its ProtobufEncoded hex - defer it to the signing operations downstream
+    const keyType = info?.key?._type;
+    if (keyType && !COMPARABLE_KEY_TYPES.includes(keyType)) {
+        return;
+    }
+
+    // the mirror node returns key as { _type, key }
+    if (!checkHederaKey(hederaAccountKey, info?.key?.key)) {
+        throw new Error('Invalid Hedera account or key.', {
+            cause: new Error(`Key does not match account '${hederaAccountId}'`),
+        });
     }
 }

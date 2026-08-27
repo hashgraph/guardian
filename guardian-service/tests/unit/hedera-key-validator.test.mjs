@@ -1,11 +1,7 @@
 import { assert } from 'chai';
 import esmock from 'esmock';
 
-/*
- * The key check used to be inferred from a GET_USER_BALANCE probe whose result was
- * discarded - it only held because the worker built a signing client. These cover the
- * direct check that replaces it.
- */
+// the old check was inferred from a GET_USER_BALANCE probe whose result was discarded
 async function load({ accountKey, mirrorKey, taskError } = {}) {
     const calls = [];
     const { validateHederaAccountKey } = await esmock(
@@ -101,5 +97,85 @@ describe('@unit validateHederaAccountKey', function () {
         }
         assert.isNotNull(failed, 'expected a rejection');
         assert.equal(failed.message, 'Invalid Hedera account or key.');
+    });
+
+    // the cases above stub checkHederaKey, so they would pass against a validator that
+    // never validates; these run the real one and stub only the mirror-node read
+    describe('with the real SDK and real checkHederaKey', () => {
+        async function loadReal(mirrorKeyObject) {
+            return await esmock(
+                '../../dist/api/helpers/hedera-key-validator.js',
+                {
+                    '@guardian/common': {
+                        Workers: class {
+                            async addNonRetryableTask() { return { key: mirrorKeyObject }; }
+                        },
+                        // checkHederaKey deliberately NOT stubbed - the real one runs
+                    },
+                },
+            );
+        }
+
+        it('accepts the key that actually controls the account', async () => {
+            const { PrivateKey } = await import('@hiero-ledger/sdk');
+            const key = PrivateKey.generateED25519();
+            const { validateHederaAccountKey } = await loadReal({
+                _type: 'ED25519', key: key.publicKey.toStringRaw(),
+            });
+            await validateHederaAccountKey('0.0.123', key.toStringDer());
+        });
+
+        it('rejects a key from a different account', async () => {
+            // both keys parse; only one controls the account
+            const { PrivateKey } = await import('@hiero-ledger/sdk');
+            const owner = PrivateKey.generateED25519();
+            const stranger = PrivateKey.generateED25519();
+            const { validateHederaAccountKey } = await loadReal({
+                _type: 'ED25519', key: owner.publicKey.toStringRaw(),
+            });
+            let failed = null;
+            try {
+                await validateHederaAccountKey('0.0.123', stranger.toStringDer());
+            } catch (error) {
+                failed = error;
+            }
+            assert.isNotNull(failed, 'a key from another account must not pass');
+            assert.equal(failed.message, 'Invalid Hedera account or key.');
+        });
+
+        it('accepts an ECDSA key pair too', async () => {
+            const { PrivateKey } = await import('@hiero-ledger/sdk');
+            const key = PrivateKey.generateECDSA();
+            const { validateHederaAccountKey } = await loadReal({
+                _type: 'ECDSA_SECP256K1', key: key.publicKey.toStringRaw(),
+            });
+            await validateHederaAccountKey('0.0.123', key.toStringDer());
+        });
+
+        it('does not reject a threshold / key-list account', async () => {
+            // ProtobufEncoded hex: PublicKey.fromString throws on it, so comparing
+            // would reject a 1-of-N account that signs perfectly well later
+            const { PrivateKey } = await import('@hiero-ledger/sdk');
+            const member = PrivateKey.generateED25519();
+            const { validateHederaAccountKey } = await loadReal({
+                _type: 'ProtobufEncoded', key: '32af00112233445566778899aabbccddeeff',
+            });
+            await validateHederaAccountKey('0.0.123', member.toStringDer());
+        });
+    });
+
+    it('keeps the underlying failure as the error cause', async () => {
+        // Without this a NATS timeout, a mirror 5xx and a genuinely wrong key all
+        // surface as one sentence, and only one of the three is the user's fault.
+        const taskError = new Error('mirror down');
+        const { validateHederaAccountKey } = await load({ taskError });
+        let failed = null;
+        try {
+            await validateHederaAccountKey('0.0.123', 'priv-of-pub-1');
+        } catch (error) {
+            failed = error;
+        }
+        assert.equal(failed.message, 'Invalid Hedera account or key.');
+        assert.equal(failed.cause, taskError, 'the original error must survive');
     });
 });

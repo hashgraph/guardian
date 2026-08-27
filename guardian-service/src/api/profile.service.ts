@@ -23,7 +23,7 @@ import {
 import { RestoreDataFromHedera } from '../helpers/restore-data-from-hedera.js';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
+import { PrivateKey } from '@hiero-ledger/sdk';
 import { ICredentials, IFireblocksConfig, IOnboardingPayload, setupUserProfile, validateCommonDid } from './helpers/profile-helper.js';
 import { validateHederaAccountKey } from './helpers/hedera-key-validator.js';
 

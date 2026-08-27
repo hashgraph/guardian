@@ -27,7 +27,6 @@ import {
     Wallet,
     Workers,
 } from '@guardian/common';
-import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 import { getGlobalTopic } from './profile-helper.js';
 import { validateHederaAccountKey } from './hedera-key-validator.js';
 

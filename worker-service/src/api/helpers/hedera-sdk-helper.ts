@@ -2436,18 +2436,32 @@ export class HederaSDKHelper {
             }
         }
 
-        const res = await axios.get(
-            `${Environment.HEDERA_ACCOUNT_API}/${accountId}`,
-            { responseType: 'json' }
-        );
-        if (!res || !res.data) {
-            throw new Error(`Invalid account '${accountId}'`);
+        // a not-yet-ingested account 404s like a nonexistent one, and
+        // ONBOARD_USER_ASYNC validates moments after creating - same retry as balance()
+        for (let attempt = 1; ; attempt++) {
+            try {
+                const res = await axios.get(
+                    `${Environment.HEDERA_ACCOUNT_API}/${accountId}`,
+                    { responseType: 'json' }
+                );
+                if (res && res.data) {
+                    return {
+                        account: res.data.account,
+                        balance: res.data.balance?.balance,
+                        key: res.data.key,
+                    };
+                }
+            } catch (error) {
+                // only a 404 is worth waiting on; auth/5xx/network will not resolve
+                if (error?.response?.status !== 404) {
+                    throw error;
+                }
+            }
+            if (attempt >= HederaSDKHelper.MIRROR_NODE_INDEXING_ATTEMPTS) {
+                throw new Error(`Invalid account '${accountId}'`);
+            }
+            await delay(HederaSDKHelper.MIRROR_NODE_INDEXING_DELAY);
         }
-        return {
-            account: res.data.account,
-            balance: res.data.balance?.balance,
-            key: res.data.key,
-        };
     }
 
     /**
