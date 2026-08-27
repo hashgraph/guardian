@@ -50,6 +50,7 @@ import {
     TopicType
 } from '@guardian/interfaces';
 import { ApiResponse } from './helpers/api-response.js';
+import { withPolicyTemplateLock } from '../helpers/policy-template-lock.js';
 import { createSchemaAndArtifacts, deleteSchema, SchemaImportExportHelper, updateSchemaDefs } from '../helpers/import-helpers/index.js';
 
 async function createTemplateTopic(
@@ -440,15 +441,15 @@ async function getPoliciesUsingSchemaTemplate(
  */
 async function addSchemaCounts(templates: SchemaTemplate[], owner: IOwner): Promise<any[]> {
     const ownerPoliciesCache = new Map<string, any[]>();
-    const getCachedPolicies = async (owner: string) => {
-        if (!ownerPoliciesCache.has(owner)) {
+    const getCachedPolicies = async (ownerId: string) => {
+        if (!ownerPoliciesCache.has(ownerId)) {
             const policies = await DatabaseServer.getPolicies(
-                { owner },
+                { owner: ownerId },
                 { fields: ['id', 'name', 'schemaTemplate'] } as any
             );
-            ownerPoliciesCache.set(owner, policies as any[]);
+            ownerPoliciesCache.set(ownerId, policies as any[]);
         }
-        return ownerPoliciesCache.get(owner)!;
+        return ownerPoliciesCache.get(ownerId)!;
     };
 
     const result = [];
@@ -1436,6 +1437,7 @@ async function updateAppliedSchemaTemplate(
     templateId: string,
     policyId: string,
     owner: IOwner,
+    logger: PinoLogger,
     options?: ISchemaTemplateUpdateOptions
 ): Promise<any> {
     const context = await loadSchemaTemplateUpdateContext(templateId, policyId, owner, true);
@@ -1452,10 +1454,50 @@ async function updateAppliedSchemaTemplate(
         templateSchemaById.set(schema.templateSchemaId, schema);
     }
 
+    /*
+     * The loop below edits existing policy schemas in place and persists each one
+     * before the binding is swapped, so the only way to undo is to have captured the
+     * originals first. Copies are undone by deletion, edits by restore; both
+     * best-effort, and the original error is what surfaces.
+     */
+    const originalSchemas = new Map<string, Schema>();
+    const createdSchemas: Schema[] = [];
+    const pendingRemovals: Schema[] = [];
+    let nextSnapshot: Awaited<ReturnType<typeof saveApplySnapshot>> | null = null;
+    let result: Policy;
+    const rollback = async (): Promise<void> => {
+        if (nextSnapshot) {
+            try {
+                await DatabaseServer.removeSchemaTemplateSnapshot(nextSnapshot);
+            } catch (error) {
+                await logger?.error?.(error, ['GUARDIAN_SERVICE'], owner?.id);
+            }
+        }
+        for (const created of createdSchemas.reverse()) {
+            try {
+                await removePolicySchema(created, owner);
+            } catch (error) {
+                await logger?.error?.(error, ['GUARDIAN_SERVICE'], owner?.id);
+            }
+        }
+        for (const original of originalSchemas.values()) {
+            try {
+                await DatabaseServer.updateSchema(original.id, original);
+            } catch (error) {
+                await logger?.error?.(error, ['GUARDIAN_SERVICE'], owner?.id);
+            }
+        }
+    };
+
+    try {
     for (const [templateSchemaId, source] of templateSchemaById.entries()) {
         const target = context.policySchemaByTemplateId.get(templateSchemaId);
         if (target) {
             const targetSourceIri = source.iri;
+            // snapshot the row before it is edited, so the edit is undoable
+            if (!originalSchemas.has(target.id)) {
+                originalSchemas.set(target.id, cloneJson(target));
+            }
             preparePolicySchemaUpdate(
                 target,
                 source,
@@ -1483,6 +1525,7 @@ async function updateAppliedSchemaTemplate(
         if (sourceIri && copied.iri) {
             iriMap.set(sourceIri, copied.iri);
         }
+        createdSchemas.push(copied);
         changedSchemas.push(copied);
     }
 
@@ -1500,8 +1543,14 @@ async function updateAppliedSchemaTemplate(
         );
         const action = conflict ? resolutions.get(conflict.id) : null;
         if (action === SchemaTemplateUpdateResolutionAction.REMOVE_FROM_POLICY) {
-            await removePolicySchema(policySchema, owner);
+            // deleted only past the commit: rollback() restores originalSchemas and
+            // drops createdSchemas, and a hard-deleted row is in neither
+            pendingRemovals.push(policySchema);
         } else {
+            // another in-place edit; capture before detaching the markers
+            if (!originalSchemas.has(policySchema.id)) {
+                originalSchemas.set(policySchema.id, cloneJson(policySchema));
+            }
             policySchema.templateId = '';
             policySchema.templateSchemaId = '';
             SchemaHelper.removeTemplateFieldIds(policySchema.document);
@@ -1516,13 +1565,14 @@ async function updateAppliedSchemaTemplate(
     );
 
     const appliedAt = new Date().toISOString();
-    const snapshot = await saveApplySnapshot(
+    nextSnapshot = await saveApplySnapshot(
         context.template,
         context.policy,
         context.templateSchemas,
         schemaMap,
         appliedAt
     );
+    const snapshot = nextSnapshot;
 
     context.policy.schemaTemplate = {
         templateId: context.template.id,
@@ -1536,14 +1586,36 @@ async function updateAppliedSchemaTemplate(
         updatedAt: appliedAt,
         schemaMap
     };
-    try {
-        const result = await DatabaseServer.updatePolicy(context.policy);
-        await DatabaseServer.removeSchemaTemplateSnapshot(previousSnapshot);
-        return result;
+    result = await DatabaseServer.updatePolicy(context.policy);
+    // the old snapshot only goes once the new binding is committed, so a failure
+    // above still leaves the policy describable by its old snapshot
+    nextSnapshot = null;
     } catch (error) {
-        await DatabaseServer.removeSchemaTemplateSnapshot(snapshot);
+        // undo the copies and restore the edited rows, then surface the original
+        // failure. Previously only the new snapshot was removed.
+        await rollback();
         throw error;
     }
+
+    for (const policySchema of pendingRemovals) {
+        try {
+            await removePolicySchema(policySchema, owner);
+        } catch (error) {
+            await logger.error(
+                `Schema template update committed, but removing policy schema ${policySchema?.id} failed: ${error?.message}`,
+                ['GUARDIAN_SERVICE']
+            );
+        }
+    }
+    try {
+        await DatabaseServer.removeSchemaTemplateSnapshot(previousSnapshot);
+    } catch (error) {
+        await logger.error(
+            `Schema template update committed, but removing the superseded snapshot failed: ${error?.message}`,
+            ['GUARDIAN_SERVICE']
+        );
+    }
+    return result;
 }
 
 /**
@@ -1623,7 +1695,8 @@ async function updateCopiedSchemaRefs(
 async function applySchemaTemplate(
     templateId: string,
     policyId: string,
-    owner: IOwner
+    owner: IOwner,
+    logger: PinoLogger
 ): Promise<any> {
     const template = await DatabaseServer.getSchemaTemplateById(templateId);
     if (!template || (template.status !== ModuleStatus.PUBLISHED && template.owner !== owner.owner)) {
@@ -1664,48 +1737,76 @@ async function applySchemaTemplate(
     const iriMap = new Map<string, string>();
     const copiedSchemas: Schema[] = [];
 
-    for (const schema of templateSchemas as Schema[]) {
-        const sourceIri = schema.iri;
-        const copy = preparePolicySchemaCopy(schema, policy.topicId, template.id);
-        const copied = await createSchemaAndArtifacts(
-            SchemaCategory.POLICY,
-            copy,
-            owner,
-            NewNotifier.empty()
-        );
-        schemaMap[schema.templateSchemaId] = copied.id;
-        if (sourceIri && copied.iri) {
-            iriMap.set(sourceIri, copied.iri);
+    /*
+     * Undone if any step fails. The copies persist one at a time, so a throw
+     * part-way used to leave schemas carrying template markers with no binding - and
+     * since the binding is written last, hasSchemaTemplateBinding() still reported
+     * false, so a retry copied the whole set again. Best-effort; the original error
+     * is the one worth surfacing.
+     */
+    let snapshot: Awaited<ReturnType<typeof saveApplySnapshot>> | null = null;
+    const rollback = async (): Promise<void> => {
+        if (snapshot) {
+            try {
+                await DatabaseServer.removeSchemaTemplateSnapshot(snapshot);
+            } catch (error) {
+                await logger?.error?.(error, ['GUARDIAN_SERVICE'], owner?.id);
+            }
         }
-        copiedSchemas.push(copied);
-    }
-
-    await updateCopiedSchemaRefs(copiedSchemas, iriMap);
-
-    const appliedAt = new Date().toISOString();
-    const snapshot = await saveApplySnapshot(
-        template,
-        policy,
-        templateSchemas as Schema[],
-        schemaMap,
-        appliedAt
-    );
-
-    policy.schemaTemplate = {
-        templateId: template.id,
-        templateName: template.name,
-        templateVersion: template.version,
-        templateStatus: template.status,
-        templateMessageId: template.messageId,
-        templateStateHash: snapshot.templateStateHash,
-        snapshotId: snapshot.id,
-        appliedAt,
-        schemaMap
+        for (const copied of copiedSchemas.reverse()) {
+            try {
+                await removePolicySchema(copied, owner);
+            } catch (error) {
+                await logger?.error?.(error, ['GUARDIAN_SERVICE'], owner?.id);
+            }
+        }
     };
+
     try {
+        for (const schema of templateSchemas as Schema[]) {
+            const sourceIri = schema.iri;
+            const copy = preparePolicySchemaCopy(schema, policy.topicId, template.id);
+            const copied = await createSchemaAndArtifacts(
+                SchemaCategory.POLICY,
+                copy,
+                owner,
+                NewNotifier.empty()
+            );
+            schemaMap[schema.templateSchemaId] = copied.id;
+            if (sourceIri && copied.iri) {
+                iriMap.set(sourceIri, copied.iri);
+            }
+            copiedSchemas.push(copied);
+        }
+
+        await updateCopiedSchemaRefs(copiedSchemas, iriMap);
+
+        const appliedAt = new Date().toISOString();
+        snapshot = await saveApplySnapshot(
+            template,
+            policy,
+            templateSchemas as Schema[],
+            schemaMap,
+            appliedAt
+        );
+
+        policy.schemaTemplate = {
+            templateId: template.id,
+            templateName: template.name,
+            templateVersion: template.version,
+            templateStatus: template.status,
+            templateMessageId: template.messageId,
+            templateStateHash: snapshot.templateStateHash,
+            snapshotId: snapshot.id,
+            appliedAt,
+            schemaMap
+        };
         return await DatabaseServer.updatePolicy(policy);
     } catch (error) {
-        await DatabaseServer.removeSchemaTemplateSnapshot(snapshot);
+        // undo the copies and the snapshot, then surface the original failure.
+        // Previously only a failing updatePolicy was compensated, and only by
+        // removing the snapshot.
+        await rollback();
         throw error;
     }
 }
@@ -2319,7 +2420,10 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
         }) => {
             try {
                 const { templateId, policyId, owner } = msg;
-                const result = await applySchemaTemplate(templateId, policyId, owner);
+                // one template operation per policy at a time. The binding is written
+                // last, so it cannot guard the window being raced.
+                const result = await withPolicyTemplateLock(policyId, () =>
+                    applySchemaTemplate(templateId, policyId, owner, logger));
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -2352,7 +2456,10 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
         }) => {
             try {
                 const { templateId, policyId, owner, options } = msg;
-                const result = await updateAppliedSchemaTemplate(templateId, policyId, owner, options);
+                // shares the lock with APPLY: both rewrite the same policy's schemas
+                // and binding.
+                const result = await withPolicyTemplateLock(policyId, () =>
+                    updateAppliedSchemaTemplate(templateId, policyId, owner, logger, options));
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
