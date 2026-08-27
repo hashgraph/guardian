@@ -644,15 +644,32 @@ export class PolicyImport {
             }
         });
 
-        // Whatever is left lines up by position, which is what a single-binding file
-        // relies on. An entry naming some other binding was already claimed above, so
-        // position can only ever hand out an entry that named nobody.
+        /*
+         * Whatever is left lines up by position, which is what a single-binding file
+         * relies on. An entry naming some other binding is not up for grabs even if
+         * that binding was never claimed above - two entries can name the same
+         * binding (a duplicate templateId, or a preview override sent twice), which
+         * leaves one of them unclaimed by the id-match pass above while still naming
+         * somebody. Handing it out by position anyway would apply someone else's
+         * detach/re-point to this binding instead. The DTO does not enforce
+         * uniqueness on metadata.schemaTemplates, so this is reachable from the
+         * import API even though the current single-override preview UI never
+         * constructs it.
+         */
         bindings.forEach((_, index) => {
-            if (result[index] || claimed.has(index) || !entries[index]) {
+            if (result[index] || claimed.has(index)) {
                 return;
             }
-            result[index] = entries[index];
-            claimed.add(index);
+            const entry = entries[index];
+            if (!entry) {
+                return;
+            }
+            const namesAnotherBinding = entry.templateId &&
+                bindings.some((binding) => binding?.templateId === entry.templateId);
+            if (!namesAnotherBinding) {
+                result[index] = entry;
+                claimed.add(index);
+            }
         });
 
         return result;

@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { MessageAPI, ModuleStatus, PolicyStatus, SchemaCategory } from '@guardian/interfaces';
 import {
+    buildTemplateSchemasSnapshot,
     removePolicySchemaTemplateSnapshot,
     schemaTemplatesAPI,
     validateSchemaNameCollisions,
@@ -539,6 +540,122 @@ describe('multi-template: UPDATE_APPLIED_SCHEMA_TEMPLATE', () => {
         assert.equal(ok(response), false,
             'the templateId must be checked against the bindings, not accepted blindly');
         assert.match(response.error, /not applied|no applied/i);
+    });
+});
+
+/*
+ * The collision guard added for step 8 originally only covered SCHEMA_ADD (a
+ * newly-copied schema). preparePolicySchemaUpdate can also rename an
+ * already-mapped policy schema in place, when the template schema's own name
+ * changed and the per-schema config has schemaSettingsLocked - a template-side
+ * rename reaching the policy through an entirely different path, with no
+ * collision check at all until this was fixed alongside it.
+ */
+describe('multi-template: UPDATE_APPLIED_SCHEMA_TEMPLATE - rename-in-place collisions', () => {
+    let update;
+
+    /**
+     * @param templateRow    the template being updated, with its per-schema config
+     * @param policyRow      the policy the update runs against
+     * @param policySchemas  every POLICY-category schema already in the policy topic
+     * @param snapshotSchemas the snapshot's previous view of the template's schemas
+     */
+    const arrange = async (templateRow, policyRow, policySchemas, snapshotSchemas) => {
+        const fakeDb = {
+            getSchemaTemplateById: async () => templateRow,
+            getPolicyById: async () => policyRow,
+            getSchemas: async (filter) => (filter.category === SchemaCategory.TEMPLATE
+                ? [templateSchema(templateRow.id, 'Location')]
+                : policySchemas),
+            getSchemasCount: async () => 0,
+            getSchemaTemplateSnapshotById: async () => ({
+                id: 'snap-existing',
+                config: { schemas: {} },
+                schemas: { schemas: snapshotSchemas },
+            }),
+            updateSchema: async (_id, item) => item,
+            saveSchemaTemplateSnapshot: async (snapshot) => ({ ...snapshot, id: 'snap-new' }),
+            removeSchemaTemplateSnapshot: async () => {},
+            updatePolicy: async (item) => item,
+        };
+
+        const { handlers } = await loadAPI(
+            '../dist/api/schema-template.service.js',
+            'schemaTemplatesAPI',
+            {
+                '@guardian/common': {
+                    DatabaseServer: fakeDb,
+                    NewNotifier: Object.assign(() => {}, { empty: () => ({}) }),
+                },
+                [importHelpersPath]: {
+                    createSchemaAndArtifacts: async () => {
+                        throw new Error('this update only renames an already-mapped schema, it must not add one');
+                    },
+                    deleteSchema: async () => {},
+                    SchemaImportExportHelper: class {},
+                    updateSchemaDefs: async () => {},
+                },
+            }
+        );
+
+        update = () => handlers[MessageAPI.UPDATE_APPLIED_SCHEMA_TEMPLATE]({
+            templateId: templateRow.id,
+            policyId: 'policy-1',
+            owner,
+            options: {},
+        });
+    };
+
+    it('rejects a template-driven rename that collides with an existing policy schema', async () => {
+        const templateRow = template('template-1', {
+            config: { schemas: { 'tsid-template-1': { schemaSettingsLocked: true } } },
+        });
+        const previousTemplateSchema = templateSchema('template-1', 'Site');
+        const snapshotSchemas = buildTemplateSchemasSnapshot([previousTemplateSchema]).schemas;
+
+        await arrange(
+            templateRow,
+            policy({
+                schemaTemplates: [binding('template-1', {
+                    schemaMap: { 'tsid-template-1': 'policy-schema-template-1' },
+                })],
+            }),
+            [
+                policySchema('policy-schema-template-1', 'Site', 'template-1'),
+                policySchema('policy-schema-other', 'Location'),
+            ],
+            snapshotSchemas,
+        );
+
+        const response = await update();
+
+        assert.equal(ok(response), false,
+            'the template renamed its own schema to a name another policy schema already owns - ' +
+            'the rename must not silently produce two schemas with the same name');
+        assert.match(response.error, /Location/);
+    });
+
+    it('allows the rename when the new name is free', async () => {
+        const templateRow = template('template-1', {
+            config: { schemas: { 'tsid-template-1': { schemaSettingsLocked: true } } },
+        });
+        const previousTemplateSchema = templateSchema('template-1', 'Site');
+        const snapshotSchemas = buildTemplateSchemasSnapshot([previousTemplateSchema]).schemas;
+
+        await arrange(
+            templateRow,
+            policy({
+                schemaTemplates: [binding('template-1', {
+                    schemaMap: { 'tsid-template-1': 'policy-schema-template-1' },
+                })],
+            }),
+            [policySchema('policy-schema-template-1', 'Site', 'template-1')],
+            snapshotSchemas,
+        );
+
+        const response = await update();
+
+        assert.equal(ok(response), true, response && response.error);
     });
 });
 

@@ -111,6 +111,31 @@ describe('multi-template import - resolving every binding', () => {
             'detach must be honoured per template, not for the whole import');
     });
 
+    it('does not hand a duplicate override entry to a binding it does not name', async () => {
+        // Two entries both name template-3 (a detach instruction sent twice, or a
+        // duplicate produced upstream) - the id-match pass claims one of them for
+        // template-3, leaving the other unclaimed but still naming template-3, not
+        // template-1. Handing that leftover to template-1 by position would silently
+        // detach it too, since it still carries detach:true.
+        stub(DatabaseServer, 'getSchemaTemplateById', async (id) => localTemplate(id));
+
+        const service = makeImport();
+        const policy = { schemaTemplates: [binding('template-3'), binding('template-1')] };
+        const metadata = {
+            schemaTemplates: [
+                { templateId: 'template-3', detach: true },
+                { templateId: 'template-3', detach: true },
+            ],
+        };
+
+        await resolveAll(service, policy, metadata);
+
+        const bag = resolved(service);
+        assert.equal(bag.has('template-3'), false, 'template-3 was genuinely asked to detach');
+        assert.equal(bag.has('template-1'), true,
+            'the duplicate entry names template-3, not template-1 - template-1 must resolve on its own binding, not be swept into the detach meant for template-3');
+    });
+
     it('rejects two source bindings that resolve to the same local template', async () => {
         // Both source templates are matched by templateMessageId to one local template -
         // the ambiguity step 7 exists to catch, since findSchemaTemplateBinding would
