@@ -112,6 +112,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public previewPill: 'submitter' | 'readonly' = 'submitter';
     public previewPreset: any = null;
     public previewReadonlyFields: any = null;
+    public richTextPresetTarget: 'default' | 'suggest' | 'test' | null = null;
 
     public drillStack: DrillEntry[] = [];
     public get isDrilling(): boolean { return this.drillStack.length > 0; }
@@ -1423,6 +1424,39 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
         this.selectedField = newField;
         this.markDirty();
+    }
+
+    public openRichTextPresetDialog(target: 'default' | 'suggest' | 'test'): void {
+        this.richTextPresetTarget = target;
+    }
+
+    public closeRichTextPresetDialog(): void {
+        this.richTextPresetTarget = null;
+    }
+
+    public getRichTextPresetDialogTitle(): string {
+        if (this.richTextPresetTarget === 'default') { return 'Default value'; }
+        if (this.richTextPresetTarget === 'suggest') { return 'Suggested value'; }
+        return 'Test value';
+    }
+
+    public getRichTextPresetValue(): string {
+        if (this.richTextPresetTarget === 'default') {
+            return typeof this.selectedField?.default === 'string' ? this.selectedField.default : '';
+        }
+        if (this.richTextPresetTarget === 'suggest') {
+            return typeof this.selectedField?.suggest === 'string' ? this.selectedField.suggest : '';
+        }
+        const value = this.getFieldTestValue();
+        return typeof value === 'string' ? value : '';
+    }
+
+    public setRichTextPresetValue(value: string): void {
+        if (this.richTextPresetTarget === 'default' || this.richTextPresetTarget === 'suggest') {
+            this.setFieldPresetValue(this.richTextPresetTarget, value);
+        } else if (this.richTextPresetTarget === 'test') {
+            this.setFieldTestValue(value);
+        }
     }
 
     private removeGeoDependenciesByField(field: SchemaField, fields: SchemaField[]): void {

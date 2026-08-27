@@ -37,16 +37,18 @@ export class RichTextEditorComponent
     public showLinkDialog = false;
     public linkUrl = '';
     public isDisabled = false;
+    public linkDialogPosition = { left: 8, top: 48 };
 
     private _value = '';
     private _onChange: (value: string) => void = () => {};
     private _onTouched: () => void = () => {};
     private _savedRange: Range | null = null;
+    private _editingLink: HTMLAnchorElement | null = null;
 
     public readonly toolbarItems = [
-        { command: 'bold', icon: 'pi pi-bold', title: 'Bold (Ctrl+B)' },
-        { command: 'italic', icon: 'pi pi-italic', title: 'Italic (Ctrl+I)' },
-        { command: 'underline', icon: 'pi pi-underline', title: 'Underline (Ctrl+U)' },
+        { command: 'bold', icon: null, label: 'B', title: 'Bold (Ctrl+B)' },
+        { command: 'italic', icon: null, label: 'I', title: 'Italic (Ctrl+I)' },
+        { command: 'underline', icon: null, label: 'U', title: 'Underline (Ctrl+U)' },
         { separator: true },
         { command: 'insertUnorderedList', icon: 'pi pi-list', title: 'Bullet list' },
         { command: 'insertOrderedList', icon: 'pi pi-list-check', title: 'Numbered list' },
@@ -55,7 +57,7 @@ export class RichTextEditorComponent
         { command: 'h2', icon: null, label: 'H2', title: 'Heading 2' },
         { command: 'h3', icon: null, label: 'H3', title: 'Heading 3' },
         { separator: true },
-        { command: 'link', icon: 'pi pi-link', title: 'Insert link' },
+        { command: 'link', icon: 'pi pi-link', title: 'Insert or edit link' },
     ];
 
     constructor(private cdr: ChangeDetectorRef) {}
@@ -117,16 +119,22 @@ export class RichTextEditorComponent
         return isBlankRichText(this._value);
     }
 
+    get isEditingLink(): boolean {
+        return !!this._editingLink;
+    }
+
     execCommand(command: string, event: MouseEvent): void {
         event.preventDefault();
         if (this.readonly || this.isDisabled) { return; }
         this.editorRef.nativeElement.focus();
         if (['h1', 'h2', 'h3'].includes(command)) {
-            document.execCommand('formatBlock', false, command);
+            document.execCommand('formatBlock', false, this._nextBlockFormat(command));
         } else if (command === 'link') {
             this._savedRange = this._getSelection();
+            this._editingLink = this._getLink(this._savedRange);
+            this._setLinkDialogPosition(this._editingLink);
             this.showLinkDialog = true;
-            this.linkUrl = '';
+            this.linkUrl = this._editingLink?.getAttribute('href') || '';
             this.cdr.markForCheck();
             return;
         } else {
@@ -156,18 +164,52 @@ export class RichTextEditorComponent
             this.cdr.markForCheck();
             return;
         }
-        document.execCommand('createLink', false, url);
+        if (this._editingLink) {
+            this._setLinkAttributes(this._editingLink, url);
+        } else {
+            const existingLinks = new Set(this.editorRef.nativeElement.querySelectorAll('a'));
+            document.execCommand('createLink', false, url);
+            const link = this._getLink(this._getSelection()) ||
+                Array.from(this.editorRef.nativeElement.querySelectorAll('a'))
+                    .find(item => !existingLinks.has(item));
+            if (link) {
+                this._setLinkAttributes(link, url);
+            }
+        }
         this.showLinkDialog = false;
         this.linkUrl = '';
         this._savedRange = null;
+        this._editingLink = null;
         this.onInput();
         this.cdr.markForCheck();
+    }
+
+    removeLink(): void {
+        const link = this._editingLink;
+        if (link) {
+            link.replaceWith(...Array.from(link.childNodes));
+            this.onInput();
+        }
+        this.cancelLink();
+        this.cdr.markForCheck();
+    }
+
+    onEditorClick(event: MouseEvent): void {
+        const target = event.target;
+        if (!(target instanceof Element)) { return; }
+        const link = target.closest('a');
+        const href = link?.getAttribute('href') || '';
+        if (!href || !isSafeHref(href)) { return; }
+        if (!this.readonly && !this.isDisabled && !event.ctrlKey && !event.metaKey) { return; }
+        event.preventDefault();
+        window.open(href, '_blank', 'noopener,noreferrer');
     }
 
     cancelLink(): void {
         this.showLinkDialog = false;
         this.linkUrl = '';
         this._savedRange = null;
+        this._editingLink = null;
     }
 
     private _setEditorContent(value: string): void {
@@ -184,6 +226,49 @@ export class RichTextEditorComponent
             return sel.getRangeAt(0).cloneRange();
         }
         return null;
+    }
+
+    private _getLink(range: Range | null): HTMLAnchorElement | null {
+        if (!range) { return null; }
+        const node = range.commonAncestorContainer;
+        const element = node instanceof Element ? node : node.parentElement;
+        const link = element?.closest('a');
+        return link instanceof HTMLAnchorElement && this.editorRef.nativeElement.contains(link)
+            ? link
+            : null;
+    }
+
+    private _setLinkAttributes(link: HTMLAnchorElement, href: string): void {
+        link.setAttribute('href', href);
+        link.setAttribute('target', '_blank');
+        link.setAttribute('rel', 'noopener noreferrer');
+    }
+
+    private _setLinkDialogPosition(link: HTMLAnchorElement | null): void {
+        const wrapper = this.editorRef.nativeElement.parentElement;
+        if (!link || !wrapper) {
+            this.linkDialogPosition = { left: 8, top: 48 };
+            return;
+        }
+        const linkRect = link.getBoundingClientRect();
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const topBelow = linkRect.bottom - wrapperRect.top + 8;
+        this.linkDialogPosition = {
+            left: Math.max(8, Math.min(linkRect.left - wrapperRect.left, wrapperRect.width - 328)),
+            top: topBelow,
+        };
+    }
+
+    private _nextBlockFormat(command: string): string {
+        return this._currentBlockFormat() === command ? 'p' : command;
+    }
+
+    private _currentBlockFormat(): string {
+        try {
+            return (document.queryCommandValue('formatBlock') || '').toLowerCase();
+        } catch {
+            return '';
+        }
     }
 }
 

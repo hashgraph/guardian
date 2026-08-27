@@ -1100,11 +1100,14 @@
                                                       (ngModelChange)="setFieldPresetValue('default', $event)">
                                             </p-select>
                                         } @else if (getFieldValueInputType(selectedField!) === 'richText') {
-                                            <app-rich-text-editor class="sc-fv-rte"
-                                                [ngModel]="$any(selectedField).default"
-                                                (ngModelChange)="setFieldPresetValue('default', $event)"
-                                                placeholder="Enter value…"
-                                            ></app-rich-text-editor>
+                                            <div class="sc-rte-preset-card">
+                                                @if ($any(selectedField).default) {
+                                                    <div class="sc-rte-preset-preview" [innerHTML]="$any(selectedField).default"></div>
+                                                } @else {
+                                                    <span class="sc-rte-preset-empty">Click to write default text</span>
+                                                }
+                                                <button type="button" class="sc-rte-preset-edit" title="Edit default value" aria-label="Edit default value" (click)="openRichTextPresetDialog('default')"><i class="pi pi-pencil"></i></button>
+                                            </div>
                                         } @else {
                                             <input class="sc-fv-input" [type]="getFieldValueInputType(selectedField!)"
                                                 [ngModel]="$any(selectedField).default"
@@ -1134,11 +1137,14 @@
                                                       (ngModelChange)="setFieldPresetValue('suggest', $event)">
                                             </p-select>
                                         } @else if (getFieldValueInputType(selectedField!) === 'richText') {
-                                            <app-rich-text-editor class="sc-fv-rte"
-                                                [ngModel]="$any(selectedField).suggest"
-                                                (ngModelChange)="setFieldPresetValue('suggest', $event)"
-                                                placeholder="Enter value…"
-                                            ></app-rich-text-editor>
+                                            <div class="sc-rte-preset-card">
+                                                @if ($any(selectedField).suggest) {
+                                                    <div class="sc-rte-preset-preview" [innerHTML]="$any(selectedField).suggest"></div>
+                                                } @else {
+                                                    <span class="sc-rte-preset-empty">Click to write suggested text</span>
+                                                }
+                                                <button type="button" class="sc-rte-preset-edit" title="Edit suggested value" aria-label="Edit suggested value" (click)="openRichTextPresetDialog('suggest')"><i class="pi pi-pencil"></i></button>
+                                            </div>
                                         } @else {
                                             <input class="sc-fv-input" [type]="getFieldValueInputType(selectedField!)"
                                                 [ngModel]="$any(selectedField).suggest"
@@ -1168,11 +1174,14 @@
                                                       (ngModelChange)="setFieldTestValue($event)">
                                             </p-select>
                                         } @else if (getFieldValueInputType(selectedField!) === 'richText') {
-                                            <app-rich-text-editor class="sc-fv-rte"
-                                                [ngModel]="getFieldTestValue()"
-                                                (ngModelChange)="setFieldTestValue($event)"
-                                                placeholder="Enter value…"
-                                            ></app-rich-text-editor>
+                                            <div class="sc-rte-preset-card">
+                                                @if (getFieldTestValue()) {
+                                                    <div class="sc-rte-preset-preview" [innerHTML]="getFieldTestValue()"></div>
+                                                } @else {
+                                                    <span class="sc-rte-preset-empty">Click to write test text</span>
+                                                }
+                                                <button type="button" class="sc-rte-preset-edit" title="Edit test value" aria-label="Edit test value" (click)="openRichTextPresetDialog('test')"><i class="pi pi-pencil"></i></button>
+                                            </div>
                                         } @else {
                                             <input class="sc-fv-input" [type]="getFieldValueInputType(selectedField!)"
                                                 [ngModel]="getFieldTestValue()"
@@ -1865,6 +1874,27 @@
     }
 
 </div>
+
+<p-dialog
+    [header]="getRichTextPresetDialogTitle()"
+    [visible]="richTextPresetTarget !== null"
+    [modal]="true"
+    [draggable]="false"
+    [resizable]="false"
+    [style]="{ width: 'min(760px, 95vw)' }"
+    styleClass="sc-rte-preset-dialog"
+    (onHide)="closeRichTextPresetDialog()">
+    <div class="sc-rte-preset-dialog-body">
+        <app-rich-text-editor
+            [ngModel]="getRichTextPresetValue()"
+            (ngModelChange)="setRichTextPresetValue($event)"
+            placeholder="Write formatted text…"
+        ></app-rich-text-editor>
+    </div>
+    <ng-template pTemplate="footer">
+        <button class="sc-btn sc-btn-primary" (click)="closeRichTextPresetDialog()">Done</button>
+    </ng-template>
+</p-dialog>
 
 <!-- ══════════════════════════════════════════ NEW SCHEMA DIALOG -->
 <p-dialog

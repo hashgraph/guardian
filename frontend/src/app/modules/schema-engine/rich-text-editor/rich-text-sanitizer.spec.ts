@@ -31,7 +31,7 @@ describe('sanitizeRichText', () => {
         expect(sanitizeRichText('<p class="x" style="color:red" onclick="steal()">t</p>'))
             .toBe('<p>t</p>');
         expect(sanitizeRichText('<a href="https://example.com" onclick="steal()">t</a>'))
-            .toBe('<a href="https://example.com" rel="noopener noreferrer">t</a>');
+            .toBe('<a href="https://example.com" target="_blank" rel="noopener noreferrer">t</a>');
     });
 
     it('drops an href with an unsupported protocol but keeps the text', () => {
@@ -41,11 +41,11 @@ describe('sanitizeRichText', () => {
 
     it('keeps http, https, mailto and relative links', () => {
         expect(sanitizeRichText('<a href="http://a.b">t</a>'))
-            .toBe('<a href="http://a.b" rel="noopener noreferrer">t</a>');
+            .toBe('<a href="http://a.b" target="_blank" rel="noopener noreferrer">t</a>');
         expect(sanitizeRichText('<a href="mailto:u@a.b">t</a>'))
-            .toBe('<a href="mailto:u@a.b" rel="noopener noreferrer">t</a>');
+            .toBe('<a href="mailto:u@a.b" target="_blank" rel="noopener noreferrer">t</a>');
         expect(sanitizeRichText('<a href="/local/page">t</a>'))
-            .toBe('<a href="/local/page" rel="noopener noreferrer">t</a>');
+            .toBe('<a href="/local/page" target="_blank" rel="noopener noreferrer">t</a>');
     });
 
     it('cleans markup nested inside an allowed tag', () => {

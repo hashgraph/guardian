@@ -22,7 +22,7 @@
                     </div>
 
                     <div *ngIf="isRichText(item)" class="form-field-input guardian-input-container">
-                        <div class="rte-view-content" [innerHTML]="item.value"></div>
+                        <div class="rte-view-content" [innerHTML]="getRichTextValue(item.value)" (click)="onRichTextLinkClick($event)"></div>
                     </div>
 
                     <div *ngIf="isInput(item) && !isIPFS(item)" class="form-field-input guardian-input-container">
@@ -178,7 +178,7 @@
                             </div>
 
                             <div *ngIf="isRichText(item)" class="form-field-input guardian-input-container">
-                                <div class="rte-view-content" [innerHTML]="listItem.value"></div>
+                                <div class="rte-view-content" [innerHTML]="getRichTextValue(listItem.value)" (click)="onRichTextLinkClick($event)"></div>
                             </div>
 
                             <div *ngIf="isInput(item) && !isIPFS(item)" class="form-field-input guardian-input-container">

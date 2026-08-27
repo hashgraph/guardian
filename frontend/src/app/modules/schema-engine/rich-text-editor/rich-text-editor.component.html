@@ -15,7 +15,7 @@
             @if (item.icon) {
               <i [class]="item.icon"></i>
             } @else {
-              <span class="rte-label">{{ item.label }}</span>
+              <span class="rte-label" [class.rte-label-bold]="item.command === 'bold'" [class.rte-label-italic]="item.command === 'italic'" [class.rte-label-underline]="item.command === 'underline'">{{ item.label }}</span>
             }
           </button>
         }
@@ -30,15 +30,18 @@
     [attr.data-placeholder]="placeholder"
     (input)="onInput()"
     (paste)="onPaste($event)"
+    (click)="onEditorClick($event)"
     (blur)="onBlur()"
     role="textbox"
     aria-multiline="true"
   ></div>
   @if (showLinkDialog) {
-    <div class="rte-link-dialog" role="dialog" aria-modal="true" aria-label="Insert hyperlink">
+    <div class="rte-link-dialog" [style.left.px]="linkDialogPosition.left" [style.top.px]="linkDialogPosition.top" role="dialog" aria-label="Insert or edit hyperlink">
       <div class="rte-link-dialog-content">
-        <label class="rte-link-label">URL</label>
+        <div class="rte-link-dialog-title">{{ isEditingLink ? 'Edit link' : 'Insert link' }}</div>
+        <label class="rte-link-label" for="rte-link-url">URL</label>
         <input
+          id="rte-link-url"
           class="rte-link-input"
           type="url"
           [(ngModel)]="linkUrl"
@@ -48,8 +51,11 @@
           autofocus
         />
         <div class="rte-link-actions">
-          <button type="button" class="guardian-button guardian-button-primary" (click)="insertLink()">Insert</button>
-          <button type="button" class="guardian-button guardian-button-secondary" (click)="cancelLink()">Cancel</button>
+          @if (isEditingLink) {
+            <button type="button" class="rte-link-remove" (click)="removeLink()">Remove</button>
+          }
+          <button type="button" class="rte-link-cancel" (click)="cancelLink()">Cancel</button>
+          <button type="button" class="rte-link-submit" (click)="insertLink()">{{ isEditingLink ? 'Update' : 'Insert' }}</button>
         </div>
       </div>
     </div>

@@ -98,6 +98,39 @@ describe('RichTextEditorComponent', () => {
         expect(component.showLinkDialog).toBeTrue();
     });
 
+    it('should populate the link dialog when the caret is inside a link', () => {
+        const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
+        editor.innerHTML = '<a href="https://example.com">Example</a>';
+        selectContents(editor.querySelector('a'));
+        component.execCommand('link', new MouseEvent('mousedown'));
+        expect(component.isEditingLink).toBeTrue();
+        expect(component.linkUrl).toBe('https://example.com');
+    });
+
+    it('should position the link dialog below the link when the editor has room', () => {
+        const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
+        editor.innerHTML = '<a href="https://example.com">Example</a>';
+        const link = editor.querySelector('a');
+        const wrapper = editor.parentElement;
+        spyOn(wrapper, 'getBoundingClientRect').and.returnValue(new DOMRect(20, 10, 500, 300));
+        spyOn(link, 'getBoundingClientRect').and.returnValue(new DOMRect(50, 40, 80, 20));
+        selectContents(link);
+
+        component.execCommand('link', new MouseEvent('mousedown'));
+
+        expect(component.linkDialogPosition).toEqual({ left: 30, top: 58 });
+    });
+
+    it('should render a titled link dialog with separate actions', () => {
+        component.execCommand('link', new MouseEvent('mousedown'));
+        fixture.detectChanges();
+
+        expect(fixture.debugElement.query(By.css('.rte-link-dialog-title')).nativeElement.textContent.trim())
+            .toBe('Insert link');
+        expect(fixture.debugElement.query(By.css('.rte-link-submit')).nativeElement.textContent.trim())
+            .toBe('Insert');
+    });
+
     it('should close link dialog on cancelLink()', () => {
         component.showLinkDialog = true;
         component.linkUrl = 'https://example.com';
@@ -121,6 +154,78 @@ describe('RichTextEditorComponent', () => {
         expect(execSpy).toHaveBeenCalledWith('createLink', false, 'https://example.com');
     });
 
+    it('should make a newly created link open in a new tab', () => {
+        const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
+        editor.textContent = 'Example';
+        selectContents(editor);
+        spyOn(document, 'execCommand').and.callFake(() => {
+            const link = document.createElement('a');
+            link.textContent = 'Example';
+            editor.replaceChildren(link);
+            selectContents(link);
+            return true;
+        });
+        component.linkUrl = 'example.com';
+        component.insertLink();
+        const link = editor.querySelector('a');
+        expect(link.getAttribute('href')).toBe('https://example.com');
+        expect(link.getAttribute('target')).toBe('_blank');
+        expect(link.getAttribute('rel')).toBe('noopener noreferrer');
+    });
+
+    it('should update the link containing the caret', () => {
+        const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
+        editor.innerHTML = '<a href="https://old.example">Example</a>';
+        const link = editor.querySelector('a');
+        selectContents(link);
+        component.execCommand('link', new MouseEvent('mousedown'));
+        component.linkUrl = 'new.example';
+        component.insertLink();
+        expect(link.getAttribute('href')).toBe('https://new.example');
+        expect(link.getAttribute('target')).toBe('_blank');
+        expect(link.getAttribute('rel')).toBe('noopener noreferrer');
+    });
+
+    it('should remove the link containing the caret without removing its text', () => {
+        const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
+        editor.innerHTML = '<a href="https://example.com">Example</a>';
+        selectContents(editor.querySelector('a'));
+        component.execCommand('link', new MouseEvent('mousedown'));
+        component.removeLink();
+        expect(editor.innerHTML).toBe('Example');
+        expect(component.showLinkDialog).toBeFalse();
+    });
+
+    it('should open a link in a new tab on ctrl-click', () => {
+        const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
+        editor.innerHTML = '<a href="https://example.com">Example</a>';
+        const openSpy = spyOn(window, 'open');
+        const event = new MouseEvent('click', { bubbles: true, cancelable: true, ctrlKey: true });
+        editor.querySelector('a').dispatchEvent(event);
+        expect(openSpy).toHaveBeenCalledWith(
+            'https://example.com',
+            '_blank',
+            'noopener,noreferrer'
+        );
+        expect(event.defaultPrevented).toBeTrue();
+    });
+
+    it('should open a link in a new tab on a normal click when readonly', () => {
+        fixture.componentRef.setInput('readonly', true);
+        fixture.detectChanges();
+        const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
+        editor.innerHTML = '<a href="https://example.com">Example</a>';
+        const openSpy = spyOn(window, 'open');
+        const event = new MouseEvent('click', { bubbles: true, cancelable: true });
+        editor.querySelector('a').dispatchEvent(event);
+        expect(openSpy).toHaveBeenCalledWith(
+            'https://example.com',
+            '_blank',
+            'noopener,noreferrer'
+        );
+        expect(event.defaultPrevented).toBeTrue();
+    });
+
     it('should not prepend https:// when URL already has protocol', () => {
         const execSpy = spyOn(document, 'execCommand');
         component.showLinkDialog = true;
@@ -142,6 +247,47 @@ describe('RichTextEditorComponent', () => {
         expect(commands).toContain('h2');
         expect(commands).toContain('h3');
         expect(commands).toContain('link');
+    });
+
+    it('should show visible labels for bold, italic and underline', () => {
+        const labels = fixture.debugElement.queryAll(By.css('.rte-label'))
+            .map(item => item.nativeElement.textContent.trim());
+        expect(labels).toEqual(['B', 'I', 'U', 'H1', 'H2', 'H3']);
+    });
+
+    it('should apply a heading to a plain block', () => {
+        spyOn(document, 'queryCommandValue').and.returnValue('p');
+        const execSpy = spyOn(document, 'execCommand');
+        component.execCommand('h1', new MouseEvent('mousedown'));
+        expect(execSpy).toHaveBeenCalledWith('formatBlock', false, 'h1');
+    });
+
+    it('should turn the active heading back into a paragraph', () => {
+        spyOn(document, 'queryCommandValue').and.returnValue('h1');
+        const execSpy = spyOn(document, 'execCommand');
+        component.execCommand('h1', new MouseEvent('mousedown'));
+        expect(execSpy).toHaveBeenCalledWith('formatBlock', false, 'p');
+    });
+
+    it('should replace the active heading with a different heading', () => {
+        spyOn(document, 'queryCommandValue').and.returnValue('h1');
+        const execSpy = spyOn(document, 'execCommand');
+        component.execCommand('h2', new MouseEvent('mousedown'));
+        expect(execSpy).toHaveBeenCalledWith('formatBlock', false, 'h2');
+    });
+
+    it('should compare the active heading case-insensitively', () => {
+        spyOn(document, 'queryCommandValue').and.returnValue('H1');
+        const execSpy = spyOn(document, 'execCommand');
+        component.execCommand('h1', new MouseEvent('mousedown'));
+        expect(execSpy).toHaveBeenCalledWith('formatBlock', false, 'p');
+    });
+
+    it('should apply the heading when the active block cannot be read', () => {
+        spyOn(document, 'queryCommandValue').and.throwError('not supported');
+        const execSpy = spyOn(document, 'execCommand');
+        component.execCommand('h3', new MouseEvent('mousedown'));
+        expect(execSpy).toHaveBeenCalledWith('formatBlock', false, 'h3');
     });
 
     it('should refuse a link with an unsupported protocol', () => {
@@ -193,4 +339,12 @@ describe('RichTextEditorComponent', () => {
         component.onPaste(event);
         expect(execSpy).toHaveBeenCalledWith('insertHTML', false, '5 &lt; 6 &amp; 7');
     });
+
+    function selectContents(element: Element): void {
+        const range = document.createRange();
+        range.selectNodeContents(element);
+        const selection = window.getSelection();
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+    }
 });

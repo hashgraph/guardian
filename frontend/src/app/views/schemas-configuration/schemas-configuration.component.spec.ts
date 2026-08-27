@@ -94,6 +94,35 @@ describe('SchemasConfigurationComponent', () => {
         return component;
     }
 
+    describe('Rich Text preset dialog', () => {
+        it('opens the requested preset and routes its value back to the selected field', () => {
+            const component = createComponent();
+            component.selectedField = makeField({ default: '<p>Default</p>' });
+            component.markDirty = jasmine.createSpy('markDirty');
+
+            component.openRichTextPresetDialog('default');
+            component.setRichTextPresetValue('<p>Changed</p>');
+
+            expect(component.richTextPresetTarget).toBe('default');
+            expect(component.getRichTextPresetDialogTitle()).toBe('Default value');
+            expect(component.getRichTextPresetValue()).toBe('<p>Changed</p>');
+            expect(component.selectedField.default).toBe('<p>Changed</p>');
+            expect(component.markDirty).toHaveBeenCalled();
+        });
+
+        it('writes a Rich Text test value through the existing example value flow', () => {
+            const component = createComponent();
+            component.selectedField = makeField();
+            component.markDirty = jasmine.createSpy('markDirty');
+
+            component.openRichTextPresetDialog('test');
+            component.setRichTextPresetValue('<p>Example</p>');
+
+            expect(component.getRichTextPresetDialogTitle()).toBe('Test value');
+            expect(component.selectedField.examples).toEqual(['<p>Example</p>']);
+        });
+    });
+
     describe('a drill edit followed by a sidebar search', () => {
 
         it('keeps the sub-schema key when the search returns it, and saveAll sends the drill edits', () => {

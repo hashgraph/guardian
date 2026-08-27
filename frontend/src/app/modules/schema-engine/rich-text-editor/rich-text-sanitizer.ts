@@ -87,6 +87,7 @@ function cleanAttributes(element: Element, tag: string): void {
         }
     }
     if (tag === 'A' && element.hasAttribute('href')) {
+        element.setAttribute('target', '_blank');
         element.setAttribute('rel', 'noopener noreferrer');
     }
 }
