@@ -27,8 +27,8 @@ const plainStringField = (overrides = {}) => ({
 
 describe('FieldTypesDictionary — Rich Text entry', () => {
     it('declares Rich Text as a plain string carrying customType richText', () => {
-        const entry = FieldTypesDictionary.FieldTypes.find((t) => t.name === 'Rich Text');
-        assert.ok(entry, 'Rich Text missing from FieldTypes');
+        const entry = FieldTypesDictionary.CustomFieldTypes.find((t) => t.name === 'Rich Text');
+        assert.ok(entry, 'Rich Text missing from CustomFieldTypes');
         assert.equal(entry.type, 'string');
         assert.equal(entry.format, undefined);
         assert.equal(entry.pattern, undefined);
@@ -37,14 +37,14 @@ describe('FieldTypesDictionary — Rich Text entry', () => {
     });
 
     it('does not match a plain String field, and String does not match it', () => {
-        const rich = FieldTypesDictionary.FieldTypes.find((t) => t.name === 'Rich Text');
+        const rich = FieldTypesDictionary.CustomFieldTypes.find((t) => t.name === 'Rich Text');
         const plain = FieldTypesDictionary.FieldTypes.find((t) => t.name === 'String');
         assert.equal(FieldTypesDictionary.equal(plainStringField(), rich), false);
         assert.equal(FieldTypesDictionary.equal(richTextField(), plain), false);
     });
 
     it('matches a field that carries customType richText', () => {
-        const rich = FieldTypesDictionary.FieldTypes.find((t) => t.name === 'Rich Text');
+        const rich = FieldTypesDictionary.CustomFieldTypes.find((t) => t.name === 'Rich Text');
         assert.equal(FieldTypesDictionary.equal(richTextField(), rich), true);
     });
 });
