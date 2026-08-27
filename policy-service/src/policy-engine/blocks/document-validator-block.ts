@@ -120,34 +120,63 @@ export class DocumentValidatorBlock {
             filter.assignedToGroup = { $eq: user?.group ?? null };
         }
 
+        /*
+         * The DB filter has to match the value as STORED, not only as coerced.
+         *
+         * coerceValue turns '100' into the number 100 and '2024-06-01' into epoch
+         * milliseconds, but VC JSON stores those fields as strings and Mongo comparisons
+         * are type-bracketed. So `gte '2024-01-01'` compared a number against strings and
+         * matched nothing - fail-closed, valid sources never found - while $ne against
+         * string-stored values matched nothing to exclude and left the excluded documents
+         * as candidates: fail-open. The in-memory condition phase coerces both sides,
+         * which is what makes the DB phase's one-sided coercion a mismatch.
+         *
+         * Where coercion actually changes the value, both representations are offered.
+         */
+        const alternatives = (rawValue: any, coerced: any): any[] =>
+            (rawValue === coerced || rawValue === undefined || rawValue === null)
+                ? [coerced]
+                : [coerced, rawValue];
+        const rangeFilters: any[] = [];
+
         for (const f of (sourceValidation.filters || [])) {
             const raw = f.typeValue === 'variable'
                 ? PolicyUtils.getObjectValue(document, f.value)
                 : f.value;
             const value = this.coerceValue(raw);
+            const both = alternatives(raw, value);
 
             switch (f.type) {
-                case 'not_equal': filter[f.field] = { $ne: value }; break;
-                case 'in': {
-                    const arr = f.typeValue === 'variable'
-                        ? (Array.isArray(raw) ? raw.map((e: any) => this.coerceValue(e)) : [value])
-                        : String(f.value).split(',').map((v: string) => this.coerceValue(v.trim()));
-                    filter[f.field] = { $in: arr };
-                    break;
-                }
+                case 'not_equal': filter[f.field] = { $nin: both }; break;
+                case 'in':
                 case 'not_in': {
-                    const arr = f.typeValue === 'variable'
-                        ? (Array.isArray(raw) ? raw.map((e: any) => this.coerceValue(e)) : [value])
-                        : String(f.value).split(',').map((v: string) => this.coerceValue(v.trim()));
-                    filter[f.field] = { $nin: arr };
+                    const source: any[] = f.typeValue === 'variable'
+                        ? (Array.isArray(raw) ? raw : [raw])
+                        : String(f.value).split(',').map((v: string) => v.trim());
+                    const arr = source.flatMap((e: any) => alternatives(e, this.coerceValue(e)));
+                    filter[f.field] = f.type === 'in' ? { $in: arr } : { $nin: arr };
                     break;
                 }
-                case 'gt':        filter[f.field] = { $gt: value }; break;
-                case 'gte':       filter[f.field] = { $gte: value }; break;
-                case 'lt':        filter[f.field] = { $lt: value }; break;
-                case 'lte':       filter[f.field] = { $lte: value }; break;
-                default:          filter[f.field] = { $eq: value }; break;
+                case 'gt':
+                case 'gte':
+                case 'lt':
+                case 'lte': {
+                    const op = `$${f.type}`;
+                    if (both.length === 1) {
+                        filter[f.field] = { [op]: both[0] };
+                    } else {
+                        // type bracketing means one predicate cannot span both, so the
+                        // document qualifies if it compares true as EITHER type
+                        rangeFilters.push({ $or: both.map((v) => ({ [f.field]: { [op]: v } })) });
+                    }
+                    break;
+                }
+                default:          filter[f.field] = { $in: both }; break;
             }
+        }
+
+        if (rangeFilters.length) {
+            filter.$and = rangeFilters;
         }
 
         return filter;
