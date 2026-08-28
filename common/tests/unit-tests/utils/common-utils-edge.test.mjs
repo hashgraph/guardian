@@ -19,6 +19,8 @@ import {
     ensurePrefix,
     stripPrefix,
     findBlocks,
+    escapeRegex,
+    containsRegex,
 } from '../../../dist/helpers/utils.js';
 
 describe('@unit common/utils.findAllEntities edge', () => {
@@ -499,5 +501,46 @@ describe('@unit common/utils.findBlocks edge', () => {
         };
         const ids = findBlocks(tree, () => true).map((n) => n.id);
         assert.deepEqual(ids, ['root', 'a', 'b', 'c']);
+    });
+});
+
+describe('@unit common/utils.escapeRegex edge', () => {
+    it('escapes every MongoDB/regex special character', () => {
+        assert.equal(escapeRegex('a.b*c+d?e^f$g{h}i(j)k|l[m]n\\o'), 'a\\.b\\*c\\+d\\?e\\^f\\$g\\{h\\}i\\(j\\)k\\|l\\[m\\]n\\\\o');
+    });
+
+    it('leaves ordinary text untouched', () => {
+        assert.equal(escapeRegex('plain text 123'), 'plain text 123');
+    });
+
+    it('neutralises a regex-injection payload instead of letting it match everything', () => {
+        const payload = '.*';
+        const escaped = escapeRegex(payload);
+        assert.equal(new RegExp(escaped).test('anything at all'), false);
+        assert.equal(new RegExp(escaped).test('.*'), true);
+    });
+
+    it('coerces non-string input instead of throwing', () => {
+        assert.equal(escapeRegex(undefined), '');
+        assert.equal(escapeRegex(null), '');
+    });
+});
+
+describe('@unit common/utils.containsRegex edge', () => {
+    it('builds a case-insensitive contains filter by default', () => {
+        assert.deepEqual(containsRegex('abc'), { $regex: '.*abc.*', $options: 'i' });
+    });
+
+    it('escapes special characters inside the built pattern', () => {
+        assert.deepEqual(containsRegex('a.b'), { $regex: '.*a\\.b.*', $options: 'i' });
+    });
+
+    it('honours a caller-supplied $options string', () => {
+        assert.deepEqual(containsRegex('abc', 'si'), { $regex: '.*abc.*', $options: 'si' });
+    });
+
+    it('never lets raw user input turn the filter into a match-all', () => {
+        const filter = containsRegex('.*');
+        assert.equal(new RegExp(filter.$regex).test('some unrelated value'), false);
     });
 });
