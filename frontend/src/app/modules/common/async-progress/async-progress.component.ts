@@ -461,7 +461,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.DELETE_SCHEMAS:
             case TaskAction.IMPORT_SCHEMA_FILE:
             case TaskAction.IMPORT_SCHEMA_MESSAGE:
-                this.reportSchemaImportErrors(result);
+                this.reportSchemaErrors(result, this.action === TaskAction.DELETE_SCHEMAS ? 'deleted' : 'imported');
                 if (this.last) {
                     const schemaId = typeof result === 'string' && result ? result : null;
                     const lastWithSchema = schemaId
@@ -610,7 +610,12 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
      * ImportSchemaResult.errors is {type,uuid,name,error} and nothing downstream renders
      * it, so flatten it into one sticky toast naming each schema that failed.
      */
-    private reportSchemaImportErrors(result: any): void {
+    /**
+     * Report per-schema failures carried on a task result.
+     * @param result task result
+     * @param verb what did not happen to the schemas, e.g. 'imported' or 'deleted'
+     */
+    private reportSchemaErrors(result: any, verb: string = 'imported'): void {
         const errors = result?.errors;
         if (!Array.isArray(errors) || !errors.length) {
             return;
@@ -619,10 +624,10 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             .map((e: any) => (e?.name ? `${e.name}: ${e.error}` : e?.error))
             .filter((line: any) => !!line)
             .join('\n');
-        const msg = text || 'Some schemas could not be imported.';
+        const msg = text || `Some schemas could not be ${verb}.`;
         this.toastService.warn(
             msg,
-            errors.length === 1 ? '1 schema was not imported' : `${errors.length} schemas were not imported`,
+            errors.length === 1 ? `1 schema was not ${verb}` : `${errors.length} schemas were not ${verb}`,
             { sticky: true, logMessage: msg }
         );
     }

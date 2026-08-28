@@ -1922,7 +1922,16 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const stepMap = new Map<string, NotificationStep>();
-                const results = new Map<string, boolean>();
+                const results: Array<{ id: string, name: string, deleted: boolean }> = [];
+                // A schema still referenced by a policy schema is skipped below via
+                // blockedSchemaIds; without this the caller is never told, and the task
+                // reports success for a delete that did not happen.
+                const errors = blockedChildren.map(blocked => ({
+                    type: 'schema',
+                    uuid: blocked.schema.iri,
+                    name: blocked.schema.name,
+                    error: 'Still referenced by ' + blocked.blockingSchemas.map(s => s.name).join(', ')
+                }));
                 const schemasToDelete: SchemaCollection[] = [];
 
                 if (includeChildren) {
@@ -1959,11 +1968,11 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 for (const schema of schemasToDelete) {
 
                     const deleteSchemaStep = stepMap.get(schema.id);
-                    const result = await deleteSchema(schema.id, owner, deleteSchemaStep);
-                    results.set(schema.id, result);
+                    const deleted = await deleteSchema(schema.id, owner, deleteSchemaStep);
+                    results.push({ id: schema.id, name: schema.name, deleted: !!deleted });
                 }
 
-                notifier.result(results);
+                notifier.result({ results, errors });
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 notifier.fail(error);
