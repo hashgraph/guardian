@@ -3,6 +3,7 @@ import { assert } from 'chai';
 import { DefaultDocumentLoader } from '../../../../dist/hedera-modules/document-loader/document-loader-default.js';
 import { LocalDidLoader } from '../../../../dist/document-loader/local-did-loader.js';
 import { VCJS } from '../../../../dist/hedera-modules/vcjs/vcjs.js';
+import { ContextHelper } from '../../../../dist/hedera-modules/vcjs/context-helper.js';
 import { SignatureType } from '@guardian/interfaces';
 
 void DefaultDocumentLoader;
@@ -333,6 +334,168 @@ describe('VCJS coverage (offline paths)', function () {
                 credentialSubject: [{ '@context': [], type: 'X', name: 'alice' }]
             });
             assert.property(result, 'ok');
+        });
+
+        // #1743: verifySchema used to restore ref-field type/@context (via
+        // ContextHelper.setContext) for credentialSubject[0] only, so a
+        // multi-subject VC was checked consistently for its first subject alone.
+        it('rejects an empty credentialSubject array instead of passing vacuously', async function () {
+            const vcjs = makeVcjs();
+            await assertRejects(
+                () => vcjs.verifySchema({ credentialSubject: [] }),
+                /credentialSubject/
+            );
+        });
+
+        it('rejects an array holding no usable subject', async function () {
+            const vcjs = makeVcjs();
+            await assertRejects(
+                () => vcjs.verifySchema({ credentialSubject: [null] }),
+                /credentialSubject/
+            );
+        });
+
+        it('runs ContextHelper.setContext for every subject, not just the first', async function () {
+            const vcjs = makeVcjs();
+            vcjs.schemaLoader = async () => ({
+                type: 'object',
+                properties: {
+                    credentialSubject: {
+                        oneOf: [{ type: 'object' }, { type: 'array' }]
+                    }
+                },
+                $defs: {}
+            });
+
+            const seen = [];
+            const original = ContextHelper.setContext;
+            ContextHelper.setContext = (vc, schema) => {
+                seen.push(vc);
+                return original(vc, schema);
+            };
+            try {
+                await vcjs.verifySchema({
+                    credentialSubject: [
+                        { '@context': [], type: 'X', name: 'alice' },
+                        { '@context': [], type: 'X', name: 'bob' }
+                    ]
+                });
+            } finally {
+                ContextHelper.setContext = original;
+            }
+
+            assert.equal(seen.length, 2, 'setContext must run once per subject, not once total');
+            assert.equal(seen[0].name, 'alice');
+            assert.equal(seen[1].name, 'bob');
+        });
+
+        it('still runs ContextHelper.setContext once for a non-array credentialSubject', async function () {
+            const vcjs = makeVcjs();
+            vcjs.schemaLoader = async () => ({ type: 'object', properties: {}, $defs: {} });
+
+            const seen = [];
+            const original = ContextHelper.setContext;
+            ContextHelper.setContext = (vc, schema) => {
+                seen.push(vc);
+                return original(vc, schema);
+            };
+            try {
+                await vcjs.verifySchema({
+                    credentialSubject: { '@context': [], type: 'X', name: 'alice' }
+                });
+            } finally {
+                ContextHelper.setContext = original;
+            }
+
+            assert.equal(seen.length, 1);
+            assert.equal(seen[0].name, 'alice');
+        });
+    });
+
+    describe('prepareSchema - conditional strip on the VC wrapper path (#1743)', function () {
+        // prepareSchema's conditional-required strip used to require Array.isArray(schema.allOf)
+        // on the object passed in directly. That holds when prepareSchema runs on a subject
+        // schema (verifySubject), but verifySchema hands it the VC WRAPPER schema instead - the
+        // wrapper's own root never carries allOf, only the subject schema nested in $defs does.
+        // A cross-target field that's base-required in that nested sub-schema stayed
+        // unconditionally required, so a document valid at request time could fail later on an
+        // external-verify path. The strip must also walk each $defs entry that carries its own
+        // allOf, not just the root.
+
+        function wrapperWithSubjectConditions() {
+            return {
+                type: 'object',
+                properties: {
+                    credentialSubject: { $ref: '#Subject' }
+                },
+                required: ['credentialSubject'],
+                // deliberately no allOf here - it lives one level down, in $defs['#Subject']
+                $defs: {
+                    '#Subject': {
+                        $id: '#Subject',
+                        type: 'object',
+                        properties: {
+                            trigger: { type: 'string' },
+                            detail: { $ref: '#Detail' }
+                        },
+                        required: ['trigger', 'detail'],
+                        allOf: [{
+                            if: { properties: { trigger: { const: 'yes' } }, required: ['trigger'] },
+                            then: { properties: { detail: { required: ['note'] } } },
+                            else: { properties: { detail: { properties: { note: false } } } }
+                        }]
+                    },
+                    '#Detail': {
+                        $id: '#Detail',
+                        type: 'object',
+                        properties: { note: { type: 'string' } },
+                        required: ['note'],
+                        additionalProperties: false
+                    }
+                }
+            };
+        }
+
+        it('accepts a document that omits the base-required field while the branch is inactive', async function () {
+            const vcjs = makeVcjs();
+            vcjs.schemaLoader = async () => wrapperWithSubjectConditions();
+            const result = await vcjs.verifySchema({
+                credentialSubject: { '@context': [], type: 'X', trigger: 'no', detail: {} }
+            });
+            assert.isTrue(result.ok, `expected valid, got ${JSON.stringify(result.error?.details ?? result.errors)}`);
+        });
+
+        it('still forbids the field when the inactive branch says so', async function () {
+            const vcjs = makeVcjs();
+            vcjs.schemaLoader = async () => wrapperWithSubjectConditions();
+            const result = await vcjs.verifySchema({
+                credentialSubject: { '@context': [], type: 'X', trigger: 'no', detail: { note: 'should not be here' } }
+            });
+            assert.isFalse(result.ok, 'an inactive branch must still forbid the field');
+        });
+
+        it('requires the field when the active branch says so', async function () {
+            const vcjs = makeVcjs();
+            vcjs.schemaLoader = async () => wrapperWithSubjectConditions();
+            const missing = await vcjs.verifySchema({
+                credentialSubject: { '@context': [], type: 'X', trigger: 'yes', detail: {} }
+            });
+            assert.isFalse(missing.ok, 'an active branch must still require the field');
+
+            const present = await vcjs.verifySchema({
+                credentialSubject: { '@context': [], type: 'X', trigger: 'yes', detail: { note: 'present' } }
+            });
+            assert.isTrue(present.ok, `expected valid, got ${JSON.stringify(present.error?.details ?? present.errors)}`);
+        });
+
+        it('leaves prepareSchema a no-op when neither the root nor any $defs entry carries allOf', function () {
+            const vcjs = makeVcjs();
+            const schema = {
+                type: 'object',
+                properties: { credentialSubject: { $ref: '#Subject' } },
+                $defs: { '#Subject': { type: 'object', properties: {}, required: [] } }
+            };
+            assert.doesNotThrow(() => vcjs.prepareSchema(schema));
         });
     });
 

@@ -296,8 +296,12 @@ export class VCJS {
 
         const vcObject = JSON.parse(JSON.stringify(vc));
 
-        const subjects = vcObject.credentialSubject;
-        const subject = Array.isArray(subjects) ? subjects[0] : subjects;
+        const rawSubjects = vcObject.credentialSubject;
+        const subjects: any[] = Array.isArray(rawSubjects) ? rawSubjects : [rawSubjects];
+        if (!subjects.length || !subjects[0]) {
+            throw new Error('"credentialSubject" property is required.');
+        }
+        const subject = subjects[0];
 
         if (!this.schemaLoader) {
             throw new Error('Schema Loader not found');
@@ -318,7 +322,12 @@ export class VCJS {
 
         const schemaObject = Schema.fromVc(schema);
 
-        ContextHelper.setContext(subject, schemaObject);
+        // Every subject needs its ref-field type/@context restored before validation,
+        // not just the first - otherwise a multi-subject VC only gets subject[0]
+        // checked consistently with the schema.
+        for (const item of subjects) {
+            ContextHelper.setContext(item, schemaObject);
+        }
 
         const validate = await ajv.compileAsync(schema);
         const valid = validate(vcObject);
@@ -373,10 +382,34 @@ export class VCJS {
             nestedSchema.required = required.filter((field: any) => !nestedSchema.properties[field] || !nestedSchema.properties[field].readOnly);
         }
 
-        if (!Array.isArray(schema.allOf)) {
+        // The conditions that gate a base-required field don't only live on the
+        // document handed to us: when verifySchema compiles the VC wrapper, the
+        // wrapper's own root never carries allOf - the subject schema's allOf sits
+        // one level down, inside $defs. Run the strip against every $defs entry
+        // that carries its own allOf, in addition to the root, so a condition
+        // nested under the wrapper is honoured the same as a condition at the root
+        // (e.g. when prepareSchema is called directly on a subject schema).
+        for (const key of defsKeys) {
+            this.applyConditionalStrip(defsObj[key], defsObj, key);
+        }
+        this.applyConditionalStrip(schema, defsObj, 'root');
+    }
+
+    /**
+     * Strip conditionally-inactive required/forbidden fields from one schema
+     * container (the root schema, or one $defs entry) that carries its own allOf.
+     *
+     * @param container Schema object carrying the allOf conditions
+     * @param defsObj Shared $defs object the per-container clones are written into
+     * @param scope Identifier of the container, used to key clones so two different
+     * containers stripping the same $ref'd entry along different paths don't collide
+     */
+    private applyConditionalStrip(container: any, defsObj: any, scope: string) {
+        if (!container || !Array.isArray(container.allOf)) {
             return;
         }
-        const rootProperties = schema.properties || {};
+        const rootProperties = container.properties || {};
+        const scopeKey = String(scope).replace(/[^A-Za-z0-9_-]/g, '');
 
         // Collect fields to strip keyed by container dot-path (not by IRI).
         // Multiple conditions targeting the same container accumulate into one Set.
@@ -406,7 +439,7 @@ export class VCJS {
             }
         };
 
-        for (const condEntry of schema.allOf) {
+        for (const condEntry of container.allOf) {
             if (!condEntry?.if) { continue; }
             for (const branch of [condEntry.then, condEntry.else]) {
                 collectPath(branch, [], rootProperties);
@@ -452,7 +485,7 @@ export class VCJS {
             if (!iri) { continue; }
             const pathArr = pathKey.split('.');
             const fieldsToStrip = stripByPath.get(pathKey);
-            const cloneKey = `${iri}__${pathArr.join('__')}`;
+            const cloneKey = `${iri}__${scopeKey}__${pathArr.join('__')}`;
 
             // Deep-copy original def so the shared entry is never mutated.
             const clone = JSON.parse(JSON.stringify(defsObj[iri]));
