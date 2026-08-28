@@ -49,6 +49,19 @@ export function isBlankRichText(html: string | null | undefined): boolean {
     return (inert.body.textContent || '').trim() === '';
 }
 
+export function withNewTabLinks(value: unknown): string {
+    if (typeof value !== 'string') {
+        return '';
+    }
+    const inert = document.implementation.createHTMLDocument('');
+    inert.body.innerHTML = value;
+    for (const link of Array.from(inert.body.querySelectorAll('a[href]'))) {
+        link.setAttribute('target', '_blank');
+        link.setAttribute('rel', 'noopener noreferrer');
+    }
+    return inert.body.innerHTML;
+}
+
 function cleanChildren(parent: Node): void {
     const children = Array.from(parent.childNodes);
     for (const node of children) {

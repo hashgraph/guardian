@@ -64,8 +64,9 @@
                     ) {
                     <div
                       class="suggestion"
+                      [class.suggestion-rich]="isRichText(item)"
                       >
-                      @if (!suggestIsObject(item.suggest)) {
+                      @if (!suggestIsObject(item.suggest) && !isRichText(item)) {
                         <div
                           class="suggestion-name"
                           >
@@ -79,6 +80,11 @@
                         >
                         Fill the field with suggestion
                       </button>
+                      @if (isRichText(item)) {
+                        <div class="suggestion-popover">
+                          <div class="suggestion-popover-content" [innerHTML]="getRichTextSuggest(item.suggest)"></div>
+                        </div>
+                      }
                     </div>
                   }
                   <div
@@ -624,8 +630,9 @@
                       ) {
                       <div
                         class="suggestion"
+                        [class.suggestion-rich]="isRichText(item)"
                         >
-                        @if (!suggestIsObject(item.suggest)) {
+                        @if (!suggestIsObject(item.suggest) && !isRichText(item)) {
                           <div
                             class="suggestion-name"
                             >
@@ -639,6 +646,11 @@
                           >
                           Fill the field with suggestion
                         </button>
+                        @if (isRichText(item)) {
+                          <div class="suggestion-popover">
+                            <div class="suggestion-popover-content" [innerHTML]="getRichTextSuggest(item.suggest)"></div>
+                          </div>
+                        }
                       </div>
                     }
                     @for (listItem of item.list; track listItem; let i = $index) {

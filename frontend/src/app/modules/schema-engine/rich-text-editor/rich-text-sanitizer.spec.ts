@@ -1,4 +1,4 @@
-import { isBlankRichText, isSafeHref, sanitizeRichText } from './rich-text-sanitizer';
+import { isBlankRichText, isSafeHref, sanitizeRichText, withNewTabLinks } from './rich-text-sanitizer';
 
 describe('sanitizeRichText', () => {
     it('returns an empty string for null, undefined and empty input', () => {
@@ -82,5 +82,32 @@ describe('isBlankRichText', () => {
 
     it('treats markup with real text as not blank', () => {
         expect(isBlankRichText('<p>a</p>')).toBeFalse();
+    });
+});
+
+describe('withNewTabLinks', () => {
+    it('adds new-tab attributes to a link that has none', () => {
+        expect(withNewTabLinks('<p><a href="https://example.com">Example</a></p>'))
+            .toBe('<p><a href="https://example.com" target="_blank" rel="noopener noreferrer">Example</a></p>');
+    });
+
+    it('leaves a link that already carries the attributes unchanged', () => {
+        const value = '<a href="https://example.com" target="_blank" rel="noopener noreferrer">Example</a>';
+        expect(withNewTabLinks(value)).toBe(value);
+    });
+
+    it('keeps the surrounding structure and text', () => {
+        expect(withNewTabLinks('<h1>Title</h1><ul><li><b>one</b></li></ul>'))
+            .toBe('<h1>Title</h1><ul><li><b>one</b></li></ul>');
+    });
+
+    it('leaves an anchor without href alone', () => {
+        expect(withNewTabLinks('<a>Example</a>')).toBe('<a>Example</a>');
+    });
+
+    it('returns an empty string for a non-string value', () => {
+        expect(withNewTabLinks(null)).toBe('');
+        expect(withNewTabLinks(undefined)).toBe('');
+        expect(withNewTabLinks(42)).toBe('');
     });
 });

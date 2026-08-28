@@ -14,6 +14,7 @@ import { IPFSService } from 'src/app/services/ipfs.service';
 import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from '../../../services/api';
 import { FieldForm, IFieldControl, IFieldIndexControl } from '../schema-form-model/field-form';
 import { getMinutesAgoStream } from 'src/app/utils/autosave-utils';
+import { withNewTabLinks } from '../rich-text-editor/rich-text-sanitizer';
 import {
     GeoOption,
     GeoResolverField,
@@ -603,6 +604,10 @@ export class SchemaFormComponent implements OnInit {
 
     public parseSuggest(item: any): string {
         return this.findString(item);
+    }
+
+    public getRichTextSuggest(value: any): string {
+        return withNewTabLinks(value);
     }
 
     private findString(item: any): string {

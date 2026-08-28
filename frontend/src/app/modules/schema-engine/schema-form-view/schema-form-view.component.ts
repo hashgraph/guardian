@@ -13,7 +13,7 @@ import {
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { FormulasViewDialog } from '../../formulas/dialogs/formulas-view-dialog/formulas-view-dialog.component';
 import { DialogService } from 'primeng/dynamicdialog';
-import { isSafeHref } from '../rich-text-editor/rich-text-sanitizer';
+import { isSafeHref, withNewTabLinks } from '../rich-text-editor/rich-text-sanitizer';
 
 type SchemaFieldPredicate = { field: any; fieldValue: any } | { field: any; const: any };
 interface IFieldControl extends SchemaField {
@@ -439,16 +439,7 @@ export class SchemaFormViewComponent implements OnInit {
     }
 
     public getRichTextValue(value: unknown): string {
-        if (typeof value !== 'string') {
-            return '';
-        }
-        const documentValue = document.implementation.createHTMLDocument('');
-        documentValue.body.innerHTML = value;
-        for (const link of Array.from(documentValue.body.querySelectorAll('a[href]'))) {
-            link.setAttribute('target', '_blank');
-            link.setAttribute('rel', 'noopener noreferrer');
-        }
-        return documentValue.body.innerHTML;
+        return withNewTabLinks(value);
     }
 
     public onRichTextLinkClick(event: MouseEvent): void {
