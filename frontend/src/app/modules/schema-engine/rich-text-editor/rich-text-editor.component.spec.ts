@@ -290,6 +290,58 @@ describe('RichTextEditorComponent', () => {
         expect(execSpy).toHaveBeenCalledWith('formatBlock', false, 'h3');
     });
 
+    it('should not format a heading when the caret is inside a list item', () => {
+        const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
+        editor.innerHTML = '<ul><li>one</li></ul>';
+        selectContents(editor.querySelector('li'));
+        const execSpy = spyOn(document, 'execCommand');
+        component.execCommand('h1', new MouseEvent('mousedown'));
+        expect(execSpy).not.toHaveBeenCalled();
+    });
+
+    it('should still format a heading outside a list', () => {
+        const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
+        editor.innerHTML = '<p>one</p><ul><li>two</li></ul>';
+        selectContents(editor.querySelector('p'));
+        spyOn(document, 'queryCommandValue').and.returnValue('p');
+        const execSpy = spyOn(document, 'execCommand');
+        component.execCommand('h1', new MouseEvent('mousedown'));
+        expect(execSpy).toHaveBeenCalledWith('formatBlock', false, 'h1');
+    });
+
+    it('should disable only the heading buttons while the caret is in a list item', () => {
+        const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
+        editor.innerHTML = '<ul><li>one</li></ul>';
+        selectContents(editor.querySelector('li'));
+        document.dispatchEvent(new Event('selectionchange'));
+        fixture.detectChanges();
+
+        const buttons = fixture.debugElement.queryAll(By.css('.rte-btn'))
+            .map(item => item.nativeElement as HTMLButtonElement);
+        const disabled = buttons.filter(item => item.disabled).map(item => item.title);
+
+        expect(component.headingDisabled).toBeTrue();
+        expect(disabled.length).toBe(3);
+        expect(disabled.every(title => title === 'Headings are not available inside a list')).toBeTrue();
+    });
+
+    it('should enable the heading buttons again outside a list item', () => {
+        const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
+        editor.innerHTML = '<ul><li>one</li></ul><p>two</p>';
+        selectContents(editor.querySelector('li'));
+        document.dispatchEvent(new Event('selectionchange'));
+        fixture.detectChanges();
+        expect(component.headingDisabled).toBeTrue();
+
+        selectContents(editor.querySelector('p'));
+        document.dispatchEvent(new Event('selectionchange'));
+        fixture.detectChanges();
+
+        expect(component.headingDisabled).toBeFalse();
+        expect(fixture.debugElement.queryAll(By.css('.rte-btn'))
+            .filter(item => item.nativeElement.disabled).length).toBe(0);
+    });
+
     it('should refuse a link with an unsupported protocol', () => {
         const execSpy = spyOn(document, 'execCommand');
         component.showLinkDialog = true;

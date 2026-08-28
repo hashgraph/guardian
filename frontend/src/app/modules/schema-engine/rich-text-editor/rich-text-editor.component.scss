@@ -49,6 +49,14 @@
 
     &:hover { background: var(--guardian-hover); }
     &:active { background: var(--guardian-primary-background); }
+
+    &:disabled {
+        opacity: 0.35;
+        cursor: default;
+    }
+
+    &:disabled:hover,
+    &:disabled:active { background: transparent; }
 }
 
 .rte-label {

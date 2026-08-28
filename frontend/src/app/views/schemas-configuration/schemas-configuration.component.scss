@@ -3565,6 +3565,7 @@
 }
 
 .sc-rte-preset-preview {
+    position: relative;
     max-height: 54px;
     overflow: hidden;
     font-size: 12px;
@@ -3583,6 +3584,27 @@
     ::ng-deep h1 { font-size: 1rem; }
     ::ng-deep h2 { font-size: 0.9375rem; }
     ::ng-deep h3 { font-size: 0.875rem; }
+}
+
+.sc-rte-preset-preview[data-clipped]::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 20px;
+    background: linear-gradient(to bottom, transparent, var(--guardian-grey-background, #F9FAFC));
+}
+
+.sc-rte-preset-preview[data-clipped-x]::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    width: 24px;
+    background: linear-gradient(to right, transparent, var(--guardian-grey-background, #F9FAFC));
 }
 
 .sc-rte-preset-edit {

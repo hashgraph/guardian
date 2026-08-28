@@ -1102,7 +1102,7 @@
                                         } @else if (getFieldValueInputType(selectedField!) === 'richText') {
                                             <div class="sc-rte-preset-card">
                                                 @if ($any(selectedField).default) {
-                                                    <div class="sc-rte-preset-preview" [innerHTML]="$any(selectedField).default"></div>
+                                                    <div class="sc-rte-preset-preview" appRichTextClip [innerHTML]="$any(selectedField).default"></div>
                                                 } @else {
                                                     <span class="sc-rte-preset-empty">Click to write default text</span>
                                                 }
@@ -1139,7 +1139,7 @@
                                         } @else if (getFieldValueInputType(selectedField!) === 'richText') {
                                             <div class="sc-rte-preset-card">
                                                 @if ($any(selectedField).suggest) {
-                                                    <div class="sc-rte-preset-preview" [innerHTML]="$any(selectedField).suggest"></div>
+                                                    <div class="sc-rte-preset-preview" appRichTextClip [innerHTML]="$any(selectedField).suggest"></div>
                                                 } @else {
                                                     <span class="sc-rte-preset-empty">Click to write suggested text</span>
                                                 }
@@ -1176,7 +1176,7 @@
                                         } @else if (getFieldValueInputType(selectedField!) === 'richText') {
                                             <div class="sc-rte-preset-card">
                                                 @if (getFieldTestValue()) {
-                                                    <div class="sc-rte-preset-preview" [innerHTML]="getFieldTestValue()"></div>
+                                                    <div class="sc-rte-preset-preview" appRichTextClip [innerHTML]="getFieldTestValue()"></div>
                                                 } @else {
                                                     <span class="sc-rte-preset-empty">Click to write test text</span>
                                                 }

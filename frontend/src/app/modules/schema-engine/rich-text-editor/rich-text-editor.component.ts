@@ -38,12 +38,14 @@ export class RichTextEditorComponent
     public linkUrl = '';
     public isDisabled = false;
     public linkDialogPosition = { left: 8, top: 48 };
+    public headingDisabled = false;
 
     private _value = '';
     private _onChange: (value: string) => void = () => {};
     private _onTouched: () => void = () => {};
     private _savedRange: Range | null = null;
     private _editingLink: HTMLAnchorElement | null = null;
+    private _onSelectionChange = (): void => this._updateHeadingState();
 
     public readonly toolbarItems = [
         { command: 'bold', icon: null, label: 'B', title: 'Bold (Ctrl+B)' },
@@ -66,9 +68,12 @@ export class RichTextEditorComponent
         if (this.editorRef) {
             this._setEditorContent(this._value);
         }
+        document.addEventListener('selectionchange', this._onSelectionChange);
     }
 
-    ngOnDestroy(): void {}
+    ngOnDestroy(): void {
+        document.removeEventListener('selectionchange', this._onSelectionChange);
+    }
 
     writeValue(value: string | null): void {
         this._value = value ?? '';
@@ -123,11 +128,26 @@ export class RichTextEditorComponent
         return !!this._editingLink;
     }
 
+    isHeadingCommand(command: string | undefined): boolean {
+        return !!command && ['h1', 'h2', 'h3'].includes(command);
+    }
+
+    isCommandDisabled(command: string | undefined): boolean {
+        return this.headingDisabled && this.isHeadingCommand(command);
+    }
+
+    commandTitle(command: string | undefined, title: string): string {
+        return this.isCommandDisabled(command)
+            ? 'Headings are not available inside a list'
+            : title;
+    }
+
     execCommand(command: string, event: MouseEvent): void {
         event.preventDefault();
         if (this.readonly || this.isDisabled) { return; }
         this.editorRef.nativeElement.focus();
-        if (['h1', 'h2', 'h3'].includes(command)) {
+        if (this.isHeadingCommand(command)) {
+            if (this._isInListItem(this._getSelection())) { return; }
             document.execCommand('formatBlock', false, this._nextBlockFormat(command));
         } else if (command === 'link') {
             this._savedRange = this._getSelection();
@@ -226,6 +246,23 @@ export class RichTextEditorComponent
             return sel.getRangeAt(0).cloneRange();
         }
         return null;
+    }
+
+    private _updateHeadingState(): void {
+        if (!this.editorRef) { return; }
+        const disabled = this._isInListItem(this._getSelection());
+        if (disabled !== this.headingDisabled) {
+            this.headingDisabled = disabled;
+            this.cdr.markForCheck();
+        }
+    }
+
+    private _isInListItem(range: Range | null): boolean {
+        if (!range) { return false; }
+        const node = range.commonAncestorContainer;
+        const element = node instanceof Element ? node : node.parentElement;
+        const item = element?.closest('li');
+        return !!item && this.editorRef.nativeElement.contains(item);
     }
 
     private _getLink(range: Range | null): HTMLAnchorElement | null {

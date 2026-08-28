@@ -55,6 +55,7 @@ import { SchemaDeleteDialogComponent } from './schema-delete-dialog/schema-delet
 import { SchemaFormNavigationComponent } from './schema-form-navigation/schema-form-navigation.component';
 import { SchemaFormViewNavigationComponent } from './schema-form-view-navigation/schema-form-view-navigation.component';
 import { RichTextEditorComponent } from './rich-text-editor/rich-text-editor.component';
+import { RichTextClipDirective } from './rich-text-editor/rich-text-clip.directive';
 
 @NgModule({
     declarations: [
@@ -87,7 +88,8 @@ import { RichTextEditorComponent } from './rich-text-editor/rich-text-editor.com
         TableViewerComponent,
         SchemaFormNavigationComponent,
         SchemaFormViewNavigationComponent,
-        RichTextEditorComponent
+        RichTextEditorComponent,
+        RichTextClipDirective
     ],
     imports: [
         CommonModule,
@@ -128,7 +130,8 @@ import { RichTextEditorComponent } from './rich-text-editor/rich-text-editor.com
         SchemaFormRootComponent,
         SchemaFormNavigationComponent,
         SchemaFormViewNavigationComponent,
-        RichTextEditorComponent
+        RichTextEditorComponent,
+        RichTextClipDirective
     ],
     providers: [
         { provide: DialogService, useClass: GuardianDialogService }
