@@ -71,8 +71,15 @@ export class DocumentValidatorBlock {
     }
 
     private evaluateCrossCondition(left: any, type: string, right: any): boolean {
+        // A source/document field that's simply absent resolves to null/undefined.
+        // Every operator but an explicit `equal` null check must fail closed here -
+        // otherwise not_equal/not_in trivially pass for a side that lacks the field,
+        // validating nothing.
+        if (left === null || left === undefined) {
+            return type === 'equal' && PolicyUtils.coerceComparable(right) === null;
+        }
         switch (type) {
-            case 'not_equal': return left !== right;
+            case 'not_equal': return !PolicyUtils.comparableEquals(left, right);
             case 'in':
                 if (Array.isArray(right)) { return right.includes(left); }
                 if (Array.isArray(left)) { return left.includes(right); }
@@ -85,7 +92,11 @@ export class DocumentValidatorBlock {
             case 'gte':       return left >= right;
             case 'lt':        return left < right;
             case 'lte':       return left <= right;
-            default:          return left === right;
+            // equal/not_equal on object- or array-valued sides used to be decided by
+            // === (reference identity) - two structurally identical values loaded
+            // from two different documents are never the same reference, so equal
+            // could never hold. comparableEquals compares structurally instead.
+            default:          return PolicyUtils.comparableEquals(left, right);
         }
     }
 

@@ -122,9 +122,13 @@ export function updateBlockEvent(blocks: string[], user: PolicyUser): void {
  * @param blocks
  * @param user
  */
-export function errorBlockEvent(blockType: string, message: any, user: PolicyUser): void {
+export function errorBlockEvent(blockType: string, message: any, user: PolicyUser, data?: any): void {
     const type = 'error';
-    new BlockTreeGenerator().sendMessage(PolicyEvents.BLOCK_UPDATE_BROADCAST, { type, data: [blockType, message, user.toJson()] }, false);
+    new BlockTreeGenerator().sendMessage(
+        PolicyEvents.BLOCK_UPDATE_BROADCAST,
+        { type, data: [blockType, message, user.toJson(), data] },
+        false
+    );
 }
 
 /**
@@ -247,8 +251,8 @@ export class PolicyComponentsUtils {
     /**
      * Block error function
      */
-    public static async BlockErrorFn(blockType: string, message: any, user: PolicyUser) {
-        errorBlockEvent(blockType, message, user);
+    public static async BlockErrorFn(blockType: string, message: any, user: PolicyUser, data?: any) {
+        errorBlockEvent(blockType, message, user, data);
     };
     /**
      * Update user info function

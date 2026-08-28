@@ -440,6 +440,42 @@ export class PolicyUtils {
     }
 
     /**
+     * Key-order-independent structural stringification, used so two values loaded
+     * from different documents (objects/arrays with the same content but different
+     * key order or reference identity) compare equal.
+     * @param value
+     */
+    private static stableStringify(value: any): string {
+        if (value === null || typeof value !== 'object') {
+            return JSON.stringify(value) ?? 'undefined';
+        }
+        if (Array.isArray(value)) {
+            return `[${value.map((item) => PolicyUtils.stableStringify(item)).join(',')}]`;
+        }
+        const keys = Object.keys(value).sort();
+        return `{${keys.map((key) => `${JSON.stringify(key)}:${PolicyUtils.stableStringify(value[key])}`).join(',')}}`;
+    }
+
+    /**
+     * Equality that coerces both sides and compares objects/arrays structurally
+     * instead of by reference, so two structurally identical values loaded from two
+     * different documents compare equal.
+     * @param left
+     * @param right
+     */
+    public static comparableEquals(left: any, right: any): boolean {
+        const l = PolicyUtils.coerceComparable(left);
+        const r = PolicyUtils.coerceComparable(right);
+        if (l === r) {
+            return true;
+        }
+        if (l && r && typeof l === 'object' && typeof r === 'object') {
+            return PolicyUtils.stableStringify(l) === PolicyUtils.stableStringify(r);
+        }
+        return false;
+    }
+
+    /**
      * Check Document Field
      * @param document
      * @param filter
@@ -447,11 +483,18 @@ export class PolicyUtils {
     public static checkDocumentField(document: any, filter: any): boolean {
         if (document) {
             const value = PolicyUtils.getObjectValue(document, filter.field);
+            // A field the document doesn't carry resolves to null/undefined. Every
+            // operator but an explicit `equal` null check must fail closed here -
+            // otherwise not_equal/not_in trivially pass for a document that simply
+            // lacks the field, validating nothing.
+            if (value === null || value === undefined) {
+                return filter.type === 'equal' && PolicyUtils.coerceComparable(filter.value) === null;
+            }
             switch (filter.type) {
                 case 'equal':
-                    return filter.value === value;
+                    return PolicyUtils.comparableEquals(value, filter.value);
                 case 'not_equal':
-                    return filter.value !== value;
+                    return !PolicyUtils.comparableEquals(value, filter.value);
                 case 'in': {
                     if (Array.isArray(value)) {
                         return value.indexOf(filter.value) > -1;

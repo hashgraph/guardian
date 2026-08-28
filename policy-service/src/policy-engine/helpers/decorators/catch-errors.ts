@@ -23,7 +23,7 @@ export function CatchErrors() {
                         switch (thisArg.options.onErrorAction) {
                             case BlockErrorActions.RETRY: {
                                 await new PinoLogger().error(error, ['guardian-service', thisArg.uuid, thisArg.blockType, 'block-runtime', thisArg.policyId], userId);
-                                PolicyComponentsUtils.BlockErrorFn(thisArg.blockType, error.message, user)
+                                PolicyComponentsUtils.BlockErrorFn(thisArg.blockType, error.message, user, error?.data)
                                     .catch(async (err) => await new PinoLogger()?.error(err, ['guardian-service', thisArg?.uuid, thisArg?.blockType, 'BlockErrorFn failed', thisArg?.policyId], userId));
                                 thisArg.triggerEvents(PolicyOutputEventType.ErrorEvent, user, data);
 
@@ -33,7 +33,7 @@ export function CatchErrors() {
 
                             case BlockErrorActions.GOTO_STEP: {
                                 await new PinoLogger().error(error, ['guardian-service', thisArg.uuid, thisArg.blockType, 'block-runtime', thisArg.policyId], userId);
-                                PolicyComponentsUtils.BlockErrorFn(thisArg.blockType, error.message, user)
+                                PolicyComponentsUtils.BlockErrorFn(thisArg.blockType, error.message, user, error?.data)
                                     .catch(async (err) => await new PinoLogger()?.error(err, ['guardian-service', thisArg?.uuid, thisArg?.blockType, 'BlockErrorFn failed', thisArg?.policyId], userId));
                                 thisArg.triggerEvents(PolicyOutputEventType.ErrorEvent, user, data);
 
@@ -47,7 +47,7 @@ export function CatchErrors() {
 
                             case BlockErrorActions.GOTO_TAG: {
                                 await new PinoLogger().error(error, ['guardian-service', thisArg.uuid, thisArg.blockType, 'block-runtime', thisArg.policyId], userId);
-                                PolicyComponentsUtils.BlockErrorFn(thisArg.blockType, error.message, user)
+                                PolicyComponentsUtils.BlockErrorFn(thisArg.blockType, error.message, user, error?.data)
                                     .catch(async (err) => await new PinoLogger()?.error(err, ['guardian-service', thisArg?.uuid, thisArg?.blockType, 'BlockErrorFn failed', thisArg?.policyId], userId));
                                 thisArg.triggerEvents(PolicyOutputEventType.ErrorEvent, user, data);
 
@@ -66,7 +66,7 @@ export function CatchErrors() {
 
                             default:
                                 await new PinoLogger().error(error, ['guardian-service', thisArg.uuid, thisArg.blockType, 'block-runtime', thisArg.policyId], userId);
-                                PolicyComponentsUtils.BlockErrorFn(thisArg.blockType, error.message, user)
+                                PolicyComponentsUtils.BlockErrorFn(thisArg.blockType, error.message, user, error?.data)
                                     .catch(async (err) => await new PinoLogger()?.error(err, ['guardian-service', thisArg?.uuid, thisArg?.blockType, 'BlockErrorFn failed', thisArg?.policyId], userId));
                                 thisArg.triggerEvents(PolicyOutputEventType.ErrorEvent, user, data);
                                 return;
