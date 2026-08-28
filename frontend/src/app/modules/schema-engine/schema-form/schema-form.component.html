@@ -76,15 +76,14 @@
                       }
                       <button
                         (click)="patchSuggestValue(item)"
+                        (mouseenter)="onSuggestEnter($event, item, suggestPopover)"
+                        (mouseleave)="onSuggestLeave(suggestPopover)"
+                        (focus)="onSuggestEnter($event, item, suggestPopover)"
+                        (blur)="onSuggestLeave(suggestPopover)"
                         class="guardian-button guardian-button-secondary"
                         >
                         Fill the field with suggestion
                       </button>
-                      @if (isRichText(item)) {
-                        <div class="suggestion-popover">
-                          <div class="suggestion-popover-content" [innerHTML]="getRichTextSuggest(item.suggest)"></div>
-                        </div>
-                      }
                     </div>
                   }
                   <div
@@ -642,15 +641,14 @@
                         }
                         <button
                           (click)="patchSuggestValue(item)"
+                          (mouseenter)="onSuggestEnter($event, item, suggestPopover)"
+                          (mouseleave)="onSuggestLeave(suggestPopover)"
+                          (focus)="onSuggestEnter($event, item, suggestPopover)"
+                          (blur)="onSuggestLeave(suggestPopover)"
                           class="guardian-button guardian-button-secondary"
                           >
                           Fill the field with suggestion
                         </button>
-                        @if (isRichText(item)) {
-                          <div class="suggestion-popover">
-                            <div class="suggestion-popover-content" [innerHTML]="getRichTextSuggest(item.suggest)"></div>
-                          </div>
-                        }
                       </div>
                     }
                     @for (listItem of item.list; track listItem; let i = $index) {
@@ -1515,3 +1513,12 @@
                       }
                     </form>
                   }
+
+<p-popover #suggestPopover styleClass="suggestion-popover">
+  <div
+    class="suggestion-popover-content"
+    (mouseenter)="onSuggestPopoverEnter()"
+    (mouseleave)="onSuggestLeave(suggestPopover)"
+    [innerHTML]="suggestPopoverValue"
+  ></div>
+</p-popover>

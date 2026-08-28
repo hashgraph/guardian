@@ -427,3 +427,31 @@ tr.revoked td:not(.mat-column-history) {
     background: #EFF3F7;
     color: #848FA9;
 }
+
+.rich-text-cell {
+    cursor: help;
+}
+
+::ng-deep .rich-text-popover .rich-text-popover-content {
+    width: min(420px, 60vw);
+    max-height: 220px;
+    overflow: auto;
+    font-size: 13px;
+    line-height: 1.5;
+    text-align: left;
+    word-break: break-word;
+
+    h1 { font-size: 1.15rem; font-weight: 700; margin: 0.4em 0 0.2em; }
+    h2 { font-size: 1.05rem; font-weight: 700; margin: 0.4em 0 0.2em; }
+    h3 { font-size: 1rem; font-weight: 700; margin: 0.35em 0 0.15em; }
+    h1:first-child, h2:first-child, h3:first-child { margin-top: 0; }
+    b, strong { font-weight: 700; }
+    i, em { font-style: italic; }
+    u { text-decoration: underline; }
+    ul, ol { margin: 0.35em 0 0.25em 1.2em; padding-left: 0.65em; }
+    ul { list-style-type: disc; }
+    ol { list-style-type: decimal; }
+    li > p { margin: 0; }
+    li + li { margin-top: 0.1em; }
+    a { color: var(--color-primary); text-decoration: underline; }
+}

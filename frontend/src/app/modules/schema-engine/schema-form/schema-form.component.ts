@@ -202,6 +202,7 @@ export class SchemaFormComponent implements OnInit {
     }
 
     ngOnDestroy() {
+        this.clearSuggestHideTimer();
         this.geoSubscriptions.unsubscribe();
         this.destroy.emit();
         this.destroy$.next(true);
@@ -606,8 +607,41 @@ export class SchemaFormComponent implements OnInit {
         return this.findString(item);
     }
 
-    public getRichTextSuggest(value: any): string {
-        return withNewTabLinks(value);
+    public suggestPopoverValue = '';
+
+    private suggestHideTimer: any = null;
+
+    public onSuggestEnter(event: Event, item: IFieldControl<any>, popover: any): void {
+        if (!this.isRichText(item)) {
+            return;
+        }
+        this.clearSuggestHideTimer();
+        this.suggestPopoverValue = withNewTabLinks(item.suggest);
+        if (this.suggestPopoverValue) {
+            popover.show(event);
+        }
+    }
+
+    public onSuggestLeave(popover: any): void {
+        if (!this.suggestPopoverValue) {
+            return;
+        }
+        this.clearSuggestHideTimer();
+        this.suggestHideTimer = setTimeout(() => {
+            this.suggestHideTimer = null;
+            popover.hide();
+        }, 250);
+    }
+
+    public onSuggestPopoverEnter(): void {
+        this.clearSuggestHideTimer();
+    }
+
+    private clearSuggestHideTimer(): void {
+        if (this.suggestHideTimer) {
+            clearTimeout(this.suggestHideTimer);
+            this.suggestHideTimer = null;
+        }
     }
 
     private findString(item: any): string {

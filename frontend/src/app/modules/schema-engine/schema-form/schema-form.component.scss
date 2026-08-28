@@ -261,54 +261,11 @@ form {
             align-items: center;
 
             &.suggestion-rich {
-                position: relative;
                 height: auto;
                 min-height: 28px;
                 justify-content: flex-end;
             }
 
-            .suggestion-popover {
-                position: absolute;
-                z-index: 20;
-                bottom: calc(100% + 10px);
-                right: 0;
-                display: none;
-                width: min(420px, 60vw);
-                padding: 10px 12px;
-                border: 1px solid var(--guardian-border-color);
-                border-radius: 8px;
-                background: var(--guardian-background);
-                color: var(--guardian-font-color);
-                box-shadow: 0 8px 20px var(--guardian-shadow);
-                font-size: 13px;
-                line-height: 1.5;
-                text-align: left;
-                word-break: break-word;
-            }
-
-            .suggestion-popover::after {
-                content: '';
-                position: absolute;
-                top: 100%;
-                right: 24px;
-                width: 10px;
-                height: 10px;
-                margin-top: -6px;
-                transform: rotate(45deg);
-                background: var(--guardian-background);
-                border-right: 1px solid var(--guardian-border-color);
-                border-bottom: 1px solid var(--guardian-border-color);
-            }
-
-            .suggestion-popover-content {
-                max-height: 220px;
-                overflow: auto;
-            }
-
-            &.suggestion-rich:hover .suggestion-popover,
-            &.suggestion-rich:focus-within .suggestion-popover {
-                display: block;
-            }
 
             .suggestion-name {
                 .suggestion-header {
@@ -554,7 +511,15 @@ form::ng-deep {
     }
 }
 
-:host ::ng-deep .suggestion-popover {
+::ng-deep .suggestion-popover .suggestion-popover-content {
+    width: min(420px, 60vw);
+    max-height: 220px;
+    overflow: auto;
+    font-size: 13px;
+    line-height: 1.5;
+    text-align: left;
+    word-break: break-word;
+
     h1 { font-size: 1.15rem; font-weight: 700; margin: 0.4em 0 0.2em; }
     h2 { font-size: 1.05rem; font-weight: 700; margin: 0.4em 0 0.2em; }
     h3 { font-size: 1rem; font-weight: 700; margin: 0.35em 0 0.15em; }

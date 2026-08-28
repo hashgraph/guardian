@@ -10,6 +10,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { VCFullscreenDialog } from 'src/app/modules/schema-engine/vc-fullscreen-dialog/vc-fullscreen-dialog.component';
 import { Subject } from 'rxjs';
 import { CommentsService } from 'src/app/services/comments.service';
+import { richTextToText, withNewTabLinks } from 'src/app/modules/schema-engine/rich-text-editor/rich-text-sanitizer';
 
 /**
  * Component for display block of 'interfaceDocumentsSource' types.
@@ -77,6 +78,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
     }
 
     ngOnDestroy(): void {
+        this.clearRichTextHideTimer();
         if (this.socket) {
             this.socket.unsubscribe();
         }
@@ -319,6 +321,41 @@ export class DocumentsSourceBlockComponent implements OnInit {
                         (error) => console.error('[documents-source] comment count failed', error)
                     );
             });
+        }
+    }
+
+    public richTextValue = '';
+
+    private richTextHideTimer: any = null;
+
+    public getRichTextCellText(row: any, field: any): string {
+        return richTextToText(this.getText(row, field));
+    }
+
+    public onRichTextEnter(event: Event, row: any, field: any, popover: any): void {
+        this.clearRichTextHideTimer();
+        this.richTextValue = withNewTabLinks(this.getText(row, field));
+        if (this.richTextValue) {
+            popover.show(event);
+        }
+    }
+
+    public onRichTextLeave(popover: any): void {
+        this.clearRichTextHideTimer();
+        this.richTextHideTimer = setTimeout(() => {
+            this.richTextHideTimer = null;
+            popover.hide();
+        }, 250);
+    }
+
+    public onRichTextPopoverEnter(): void {
+        this.clearRichTextHideTimer();
+    }
+
+    private clearRichTextHideTimer(): void {
+        if (this.richTextHideTimer) {
+            clearTimeout(this.richTextHideTimer);
+            this.richTextHideTimer = null;
         }
     }
 
@@ -577,7 +614,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
     }
 
     getClass(type: string): string {
-        if (type === 'text') {
+        if (type === 'text' || type === 'richText') {
             return 'text-container';
         }
         if (type === 'button') {

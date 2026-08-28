@@ -49,6 +49,33 @@ export function isBlankRichText(html: string | null | undefined): boolean {
     return (inert.body.textContent || '').trim() === '';
 }
 
+const BLOCK_TAGS = ['P', 'DIV', 'H1', 'H2', 'H3', 'UL', 'OL', 'LI', 'BR'];
+
+export function richTextToText(value: unknown): string {
+    if (typeof value !== 'string') {
+        return '';
+    }
+    const inert = document.implementation.createHTMLDocument('');
+    inert.body.innerHTML = value;
+    return collectText(inert.body).replace(/\s+/g, ' ').trim();
+}
+
+function collectText(node: Node): string {
+    let text = '';
+    for (const child of Array.from(node.childNodes)) {
+        if (child.nodeType === Node.TEXT_NODE) {
+            text += child.textContent || '';
+            continue;
+        }
+        if (child.nodeType !== Node.ELEMENT_NODE) {
+            continue;
+        }
+        const isBlock = BLOCK_TAGS.includes((child as Element).tagName);
+        text += isBlock ? ' ' + collectText(child) + ' ' : collectText(child);
+    }
+    return text;
+}
+
 export function withNewTabLinks(value: unknown): string {
     if (typeof value !== 'string') {
         return '';

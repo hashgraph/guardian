@@ -40,6 +40,7 @@ import { CopySchemaDialog } from './copy-schema-dialog/copy-schema-dialog';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { SentinelHubTypeComponent } from './sentinel-hub-type/sentinel-hub-type.component';
 import { TooltipModule } from 'primeng/tooltip';
+import { PopoverModule } from 'primeng/popover';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { AccordionModule } from 'primeng/accordion';
 import { DateTimeComponent } from './schema-form/controls/date-time/date-time.component';
@@ -108,6 +109,7 @@ import { RichTextClipDirective } from './rich-text-editor/rich-text-clip.directi
         SelectModule,
         DatePickerModule,
         TooltipModule,
+        PopoverModule,
         RadioButtonModule,
         SelectButtonModule,
         AccordionModule,

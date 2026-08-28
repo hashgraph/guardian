@@ -1,4 +1,4 @@
-import { isBlankRichText, isSafeHref, sanitizeRichText, withNewTabLinks } from './rich-text-sanitizer';
+import { isBlankRichText, isSafeHref, richTextToText, sanitizeRichText, withNewTabLinks } from './rich-text-sanitizer';
 
 describe('sanitizeRichText', () => {
     it('returns an empty string for null, undefined and empty input', () => {
@@ -109,5 +109,27 @@ describe('withNewTabLinks', () => {
         expect(withNewTabLinks(null)).toBe('');
         expect(withNewTabLinks(undefined)).toBe('');
         expect(withNewTabLinks(42)).toBe('');
+    });
+});
+
+describe('richTextToText', () => {
+    it('returns the text of the markup without the tags', () => {
+        expect(richTextToText('<h1>Title</h1><ul><li><b>one</b></li><li>two</li></ul>'))
+            .toBe('Title one two');
+    });
+
+    it('collapses whitespace and trims', () => {
+        expect(richTextToText('<p>  a\n\n  b  </p>')).toBe('a b');
+    });
+
+    it('keeps the link text and drops its address', () => {
+        expect(richTextToText('<p>Read the <a href="https://example.com">docs</a> first.</p>'))
+            .toBe('Read the docs first.');
+    });
+
+    it('returns an empty string for blank or non-string values', () => {
+        expect(richTextToText('<p><br></p>')).toBe('');
+        expect(richTextToText(null)).toBe('');
+        expect(richTextToText(7)).toBe('');
     });
 });
