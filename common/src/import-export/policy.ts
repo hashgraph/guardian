@@ -459,20 +459,65 @@ export class PolicyImportExport {
         const metaDataFile = (Object.entries(content.files).find(file => file[0] === 'artifacts/metadata.json'));
         const metaDataString = metaDataFile && await metaDataFile[1].async('string') || '[]';
         const metaDataBody: any[] = JSON.parse(metaDataString);
+        //Artifact entries this archive could not resolve.
+        const artifactErrors: string[] = [];
 
         let artifacts: any;
         if (includeArtifactsData) {
-            const data = fileEntries.filter(file => /^artifacts\/.+/.test(file[0]) && file[0] !== 'artifacts/metadata.json').map(async file => {
-                const uuid = file[0].split('/')[1];
-                const artifactMetaData = metaDataBody.find(item => item.uuid === uuid);
-                return {
-                    name: artifactMetaData.name,
-                    extention: artifactMetaData.extention,
-                    uuid: artifactMetaData.uuid,
-                    data: await file[1].async('nodebuffer')
+            /*
+             * An artifact entry with no matching metadata record used to abort the
+             * whole import with a raw TypeError.
+             *
+             * `find` returns undefined when nothing matches and the next line
+             * dereferenced it, so the user saw "Cannot read properties of undefined
+             * (reading 'name')" raised from inside @guardian/common, with no
+             * indication that their archive was the cause and no mention of which
+             * entry. Because the throw happened inside a Promise.all over every
+             * artifact, it also took any well-formed sibling with it.
+             *
+             * Three ways in, none of them requiring malice: metadata.json absent so
+             * the '[]' fallback makes every lookup miss; a hand-edited or truncated
+             * archive that omits a record; or a NESTED path such as
+             * artifacts/sub/file, which passes the filter but whose split('/')[1]
+             * yields 'sub' and matches no uuid.
+             *
+             * Skipped and reported rather than thrown: one malformed entry should
+             * not cost the user the rest of a valid archive, and the message names
+             * the path so support can act on it.
+             */
+            const artifactEntries = fileEntries.filter(
+                file => /^artifacts\/.+/.test(file[0]) && file[0] !== 'artifacts/metadata.json'
+            );
+            const resolved = await Promise.all(artifactEntries.map(async file => {
+                const path = file[0];
+                const uuid = path.split('/')[1];
+                //Nested paths are not an artifact layout this format defines.
+                const isNested = path.split('/').length > 2;
+                const artifactMetaData = isNested
+                    ? undefined
+                    : metaDataBody.find(item => item.uuid === uuid);
+                if (!artifactMetaData) {
+                    return {
+                        error: isNested
+                            ? `Artifact "${path}" is nested; artifacts must sit directly under artifacts/.`
+                            : `Artifact metadata missing for "${path}".`
+                    };
                 }
-            })
-            artifacts = await Promise.all(data);
+                return {
+                    artifact: {
+                        name: artifactMetaData.name,
+                        extention: artifactMetaData.extention,
+                        uuid: artifactMetaData.uuid,
+                        data: await file[1].async('nodebuffer')
+                    }
+                };
+            }));
+            for (const item of resolved) {
+                if (item.error) {
+                    artifactErrors.push(item.error);
+                }
+            }
+            artifacts = resolved.filter(item => item.artifact).map(item => item.artifact);
         } else {
             artifacts = metaDataBody.map((artifactMetaData) => {
                 return {
@@ -510,7 +555,10 @@ export class PolicyImportExport {
             tools,
             tests,
             formulas,
-            schemaTemplateSnapshot
+            schemaTemplateSnapshot,
+            //Present only when something did not resolve. Excluded from the hash
+            //by cleanBeforeHash - see there for why that matters.
+            ...(artifactErrors.length ? { artifactErrors } : {})
         }
 
         const hashSum = PolicyImportExport.getPolicyHash(policyComponents);
@@ -612,6 +660,16 @@ export class PolicyImportExport {
     }
 
     private static cleanBeforeHash(components: IPolicyComponents): IPolicyComponents {
+        /*
+         * Never let a parse diagnostic reach the hash.
+         *
+         * getPolicyHash stringifies the whole components object, so an
+         * artifactErrors array would give a policy a different hash purely
+         * because its archive had a malformed artifact entry - and those are
+         * exactly the archives that get corrected and re-imported. The hash has
+         * to describe the policy's content, not how cleanly the zip parsed.
+         */
+        delete (components as any).artifactErrors;
         delete components.policy.policyTag;
         delete components.policy.name;
         delete components.policy.uuid;
