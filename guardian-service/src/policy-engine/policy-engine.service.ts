@@ -43,7 +43,8 @@ import {
     Users,
     VcHelper,
     MintTransaction,
-    XlsxToJson
+    XlsxToJson,
+    containsRegex
 } from '@guardian/common';
 import {
     DocumentCategoryType,
@@ -4769,11 +4770,12 @@ export class PolicyEngineService {
                         });
                     }
                     if (params?.search) {
+                        const searchFilter = containsRegex(params.search);
                         filters.$and.push({
                             $or: [{
-                                name: { $regex: '.*' + params.search + '.*' }
+                                name: searchFilter
                             }, {
-                                fieldName: { $regex: '.*' + params.search + '.*' }
+                                fieldName: searchFilter
                             }]
                         });
                     }
@@ -5025,14 +5027,15 @@ export class PolicyEngineService {
                         discussionId
                     };
                     if (params?.search) {
+                        const searchFilter = containsRegex(params.search);
                         filters.$or = [{
-                            text: { $regex: '.*' + params.search + '.*' }
+                            text: searchFilter
                         }, {
-                            fieldName: { $regex: '.*' + params.search + '.*' }
+                            fieldName: searchFilter
                         }, {
-                            senderName: { $regex: '.*' + params.search + '.*' }
+                            senderName: searchFilter
                         }, {
-                            senderRole: { $regex: '.*' + params.search + '.*' }
+                            senderRole: searchFilter
                         }]
                     }
                     if (params?.field) {

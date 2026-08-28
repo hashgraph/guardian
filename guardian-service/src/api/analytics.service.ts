@@ -33,7 +33,8 @@ import {
     Workers,
     PinoLogger,
     VpDocument,
-    getVCField
+    getVCField,
+    containsRegex
 } from '@guardian/common';
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { IOwner, MessageAPI, PolicyStatus, UserRole, WorkerTaskType } from '@guardian/interfaces';
@@ -110,10 +111,7 @@ async function localSearch(
         const keywords = options.text.split(' ');
         for (const keyword of keywords) {
             filter.$and.push({
-                'name': {
-                    $regex: `.*${keyword.trim()}.*`,
-                    $options: 'si',
-                },
+                'name': containsRegex(keyword.trim(), 'si'),
             });
         }
     }
@@ -129,12 +127,12 @@ async function localSearch(
     }
     if (options.toolName) {
         filter.$and.push({
-            ['tools.name']: { $regex: `.*${options.toolName.trim()}.*`, $options: 'i' }
+            ['tools.name']: containsRegex(options.toolName.trim())
         });
     }
     if (options.toolVersion) {
         filter.$and.push({
-            ['tools.version']: { $regex: `.*${options.toolVersion.trim()}.*`, $options: 'i' }
+            ['tools.version']: containsRegex(options.toolVersion.trim())
         });
     }
 

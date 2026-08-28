@@ -1,4 +1,4 @@
-import { DatabaseServer, MessageError, MessageResponse, NatsService, PinoLogger, Singleton } from '@guardian/common';
+import { DatabaseServer, MessageError, MessageResponse, NatsService, PinoLogger, Singleton, containsRegex } from '@guardian/common';
 import { AuthEvents, GenerateUUIDv4, IGroup, IOwner, PermissionsArray } from '@guardian/interfaces';
 import { DynamicRole } from '../entity/dynamic-role.js';
 import { User } from '../entity/user.js';
@@ -160,7 +160,7 @@ export class RoleService extends NatsService {
 
                     const options: any = { owner };
                     if (name) {
-                        options.name = { $regex: '.*' + name + '.*' };
+                        options.name = containsRegex(name);
                     }
 
                     if (onlyOwn) {
