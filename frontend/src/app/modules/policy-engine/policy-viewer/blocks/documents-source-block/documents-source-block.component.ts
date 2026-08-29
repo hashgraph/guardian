@@ -333,6 +333,9 @@ export class DocumentsSourceBlockComponent implements OnInit {
     }
 
     public onRichTextEnter(event: Event, row: any, field: any, popover: any): void {
+        if (!this.getRichTextCellText(row, field)) {
+            return;
+        }
         this.clearRichTextHideTimer();
         this.richTextValue = withNewTabLinks(this.getText(row, field));
         if (this.richTextValue) {

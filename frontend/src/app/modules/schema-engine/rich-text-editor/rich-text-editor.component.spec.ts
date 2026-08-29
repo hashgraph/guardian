@@ -392,6 +392,117 @@ describe('RichTextEditorComponent', () => {
         expect(execSpy).toHaveBeenCalledWith('insertHTML', false, '5 &lt; 6 &amp; 7');
     });
 
+    it('should not change the value when a paste carries no text', () => {
+        const execSpy = spyOn(document, 'execCommand');
+        const changes: string[] = [];
+        component.registerOnChange((value: string) => changes.push(value));
+        const event = new Event('paste') as any;
+        event.clipboardData = { getData: () => '' };
+        spyOn(event, 'preventDefault');
+        component.onPaste(event);
+        expect(event.preventDefault).toHaveBeenCalled();
+        expect(execSpy).not.toHaveBeenCalled();
+        expect(changes).toEqual([]);
+    });
+
+    function dropEvent(html: string, text: string): any {
+        const event = new Event('drop') as any;
+        event.clientX = 0;
+        event.clientY = 0;
+        event.dataTransfer = {
+            getData: (type: string) => (type === 'text/html' ? html : text)
+        };
+        return event;
+    }
+
+    it('should sanitize markup dropped into the editor', () => {
+        const execSpy = spyOn(document, 'execCommand');
+        const event = dropEvent(
+            '<table><tr><td><b>Bold</b></td></tr></table><img src="x"><p style="color:red">Red</p>',
+            ''
+        );
+        spyOn(event, 'preventDefault');
+        component.onDrop(event);
+        expect(event.preventDefault).toHaveBeenCalled();
+        expect(execSpy).toHaveBeenCalledWith('insertHTML', false, '<b>Bold</b><p>Red</p>');
+    });
+
+    it('should escape plain text dropped without markup', () => {
+        const execSpy = spyOn(document, 'execCommand');
+        component.onDrop(dropEvent('', '5 < 6 & 7'));
+        expect(execSpy).toHaveBeenCalledWith('insertHTML', false, '5 &lt; 6 &amp; 7');
+    });
+
+    it('should ignore a drop when readonly', () => {
+        const execSpy = spyOn(document, 'execCommand');
+        fixture.componentRef.setInput('readonly', true);
+        fixture.detectChanges();
+        const event = dropEvent('<b>Bold</b>', '');
+        spyOn(event, 'preventDefault');
+        component.onDrop(event);
+        expect(event.preventDefault).not.toHaveBeenCalled();
+        expect(execSpy).not.toHaveBeenCalled();
+    });
+
+    it('should accept the editor as a drop target only when editable', () => {
+        const first = new Event('dragover') as any;
+        spyOn(first, 'preventDefault');
+        component.onDragOver(first);
+        expect(first.preventDefault).toHaveBeenCalled();
+
+        fixture.componentRef.setInput('readonly', true);
+        fixture.detectChanges();
+        const second = new Event('dragover') as any;
+        spyOn(second, 'preventDefault');
+        component.onDragOver(second);
+        expect(second.preventDefault).not.toHaveBeenCalled();
+    });
+
+    it('should let the browser move text dragged inside the editor', () => {
+        const execSpy = spyOn(document, 'execCommand');
+        component.onDragStart();
+
+        const over = new Event('dragover') as any;
+        spyOn(over, 'preventDefault');
+        component.onDragOver(over);
+        expect(over.preventDefault).not.toHaveBeenCalled();
+
+        const drop = dropEvent('<b>Bold</b>', '');
+        spyOn(drop, 'preventDefault');
+        component.onDrop(drop);
+        expect(drop.preventDefault).not.toHaveBeenCalled();
+        expect(execSpy).not.toHaveBeenCalled();
+    });
+
+    it('should filter an external drop again once the internal drag has ended', () => {
+        const execSpy = spyOn(document, 'execCommand');
+        component.onDragStart();
+        component.onDragEnd();
+        component.onDrop(dropEvent('<b>Bold</b><img src="x">', ''));
+        expect(execSpy).toHaveBeenCalledWith('insertHTML', false, '<b>Bold</b>');
+    });
+
+    it('should not change the value when a drop carries no text', () => {
+        const execSpy = spyOn(document, 'execCommand');
+        const changes: string[] = [];
+        component.registerOnChange((value: string) => changes.push(value));
+        const event = dropEvent('', '');
+        spyOn(event, 'preventDefault');
+        component.onDrop(event);
+        expect(event.preventDefault).toHaveBeenCalled();
+        expect(execSpy).not.toHaveBeenCalled();
+        expect(changes).toEqual([]);
+    });
+
+    it('should focus the URL field when the link dialog opens', () => {
+        spyOn(document, 'execCommand');
+        const event = new MouseEvent('mousedown');
+        component.execCommand('link', event);
+        const input = fixture.debugElement.query(By.css('.rte-link-input'));
+        expect(input).toBeTruthy();
+        expect(document.activeElement).toBe(input.nativeElement);
+    });
+
     function selectContents(element: Element): void {
         const range = document.createRange();
         range.selectNodeContents(element);

@@ -121,6 +121,18 @@ describe('SchemasConfigurationComponent', () => {
             expect(component.getRichTextPresetDialogTitle()).toBe('Test value');
             expect(component.selectedField.examples).toEqual(['<p>Example</p>']);
         });
+
+        it('survives the card click and the pencil click arriving for the same preset', () => {
+            const component = createComponent();
+            component.selectedField = makeField({ suggest: '<p>Suggested</p>' });
+            component.markDirty = jasmine.createSpy('markDirty');
+
+            component.openRichTextPresetDialog('suggest');
+            component.openRichTextPresetDialog('suggest');
+
+            expect(component.richTextPresetTarget).toBe('suggest');
+            expect(component.getRichTextPresetValue()).toBe('<p>Suggested</p>');
+        });
     });
 
     describe('a drill edit followed by a sidebar search', () => {

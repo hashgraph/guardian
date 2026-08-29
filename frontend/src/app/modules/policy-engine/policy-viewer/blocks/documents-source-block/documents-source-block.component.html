@@ -74,11 +74,13 @@
                           >{{ getText(element, option) }}</span>
                         }
                         @if (option.type == 'richText') {
+                          @let richTextCellText = getRichTextCellText(element, option);
                           <span
-                            class="text rich-text-cell"
+                            class="text"
+                            [class.rich-text-cell]="!!richTextCellText"
                             (mouseenter)="onRichTextEnter($event, element, option, richTextPopover)"
                             (mouseleave)="onRichTextLeave(richTextPopover)"
-                          >{{ getRichTextCellText(element, option) }}</span>
+                          >{{ richTextCellText }}</span>
                         }
                         @if (option.type == 'issuer') {
                           <span

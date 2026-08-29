@@ -30,6 +30,7 @@ export class RichTextEditorComponent
     implements AfterViewInit, OnDestroy, ControlValueAccessor
 {
     @ViewChild('editor', { static: false }) editorRef!: ElementRef<HTMLDivElement>;
+    @ViewChild('linkInput', { static: false }) linkInputRef?: ElementRef<HTMLInputElement>;
 
     @Input() placeholder = 'Enter text here…';
     @Input() readonly = false;
@@ -45,6 +46,7 @@ export class RichTextEditorComponent
     private _onTouched: () => void = () => {};
     private _savedRange: Range | null = null;
     private _editingLink: HTMLAnchorElement | null = null;
+    private _draggingFromEditor = false;
     private _onSelectionChange = (): void => this._updateHeadingState();
 
     public readonly toolbarItems = [
@@ -112,6 +114,41 @@ export class RichTextEditorComponent
         const clean = html
             ? sanitizeRichText(html)
             : escapeText(clipboard.getData('text/plain'));
+        if (!clean) { return; }
+        document.execCommand('insertHTML', false, clean);
+        this.onInput();
+    }
+
+    onDragStart(): void {
+        this._draggingFromEditor = true;
+    }
+
+    onDragEnd(): void {
+        this._draggingFromEditor = false;
+    }
+
+    onDragOver(event: DragEvent): void {
+        if (this.readonly || this.isDisabled) { return; }
+        if (this._draggingFromEditor) { return; }
+        event.preventDefault();
+    }
+
+    onDrop(event: DragEvent): void {
+        if (this.readonly || this.isDisabled) { return; }
+        if (this._draggingFromEditor) {
+            this._draggingFromEditor = false;
+            return;
+        }
+        const transfer = event.dataTransfer;
+        if (!transfer) { return; }
+        event.preventDefault();
+        const html = transfer.getData('text/html');
+        const clean = html
+            ? sanitizeRichText(html)
+            : escapeText(transfer.getData('text/plain'));
+        if (!clean) { return; }
+        this.editorRef.nativeElement.focus();
+        this._placeCaretFromPoint(event);
         document.execCommand('insertHTML', false, clean);
         this.onInput();
     }
@@ -155,7 +192,10 @@ export class RichTextEditorComponent
             this._setLinkDialogPosition(this._editingLink);
             this.showLinkDialog = true;
             this.linkUrl = this._editingLink?.getAttribute('href') || '';
-            this.cdr.markForCheck();
+            this.cdr.detectChanges();
+            const input = this.linkInputRef?.nativeElement;
+            input?.focus();
+            input?.select();
             return;
         } else {
             document.execCommand(command, false, undefined);
@@ -244,6 +284,33 @@ export class RichTextEditorComponent
         const sel = window.getSelection();
         if (sel && sel.rangeCount > 0) {
             return sel.getRangeAt(0).cloneRange();
+        }
+        return null;
+    }
+
+    private _placeCaretFromPoint(event: DragEvent): void {
+        const range = this._rangeFromPoint(event.clientX, event.clientY);
+        if (!range || !this.editorRef.nativeElement.contains(range.commonAncestorContainer)) {
+            return;
+        }
+        const selection = window.getSelection();
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+    }
+
+    private _rangeFromPoint(x: number, y: number): Range | null {
+        if (typeof document.caretRangeFromPoint === 'function') {
+            return document.caretRangeFromPoint(x, y);
+        }
+        if (typeof document.caretPositionFromPoint === 'function') {
+            const position = document.caretPositionFromPoint(x, y);
+            if (!position) {
+                return null;
+            }
+            const range = document.createRange();
+            range.setStart(position.offsetNode, position.offset);
+            range.collapse(true);
+            return range;
         }
         return null;
     }

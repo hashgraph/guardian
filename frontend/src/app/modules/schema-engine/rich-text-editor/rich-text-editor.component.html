@@ -31,6 +31,10 @@
     [attr.data-placeholder]="placeholder"
     (input)="onInput()"
     (paste)="onPaste($event)"
+    (dragstart)="onDragStart()"
+    (dragend)="onDragEnd()"
+    (dragover)="onDragOver($event)"
+    (drop)="onDrop($event)"
     (click)="onEditorClick($event)"
     (blur)="onBlur()"
     role="textbox"
@@ -43,13 +47,13 @@
         <label class="rte-link-label" for="rte-link-url">URL</label>
         <input
           id="rte-link-url"
+          #linkInput
           class="rte-link-input"
           type="url"
           [(ngModel)]="linkUrl"
           placeholder="https://example.com"
           (keydown.enter)="insertLink()"
           (keydown.escape)="cancelLink()"
-          autofocus
         />
         <div class="rte-link-actions">
           @if (isEditingLink) {
