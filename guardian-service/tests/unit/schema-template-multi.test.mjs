@@ -342,13 +342,19 @@ describe('multi-template: APPLY_SCHEMA_TEMPLATE', () => {
  * updating one applied template could introduce a name already owned by another
  * applied template or an ordinary policy schema - exactly what the apply-time
  * check exists to prevent. These exercise the shared validator the same way the
- * update path now calls it: with excludeTemplateId set to the template being
- * updated, so its own existing schemas are not compared against themselves.
+ * update path calls it.
+ *
+ * `excludeSchemaIds` used to be `excludeTemplateId`, which excluded every schema
+ * belonging to the template being updated - not just the ones actually vacating
+ * their current name. That let a rename (or an add) silently land on an unchanged
+ * sibling schema from the same template: both ended up with the same name in the
+ * policy, exactly the ambiguity this whole check exists to prevent. Narrowed to
+ * the specific policy schema ids about to change identity.
  */
 describe('multi-template: schema name collisions on update (validateSchemaNameCollisions)', () => {
     afterEach(() => restoreStubs());
 
-    it('still catches a collision with a different applied template while excluding its own', async () => {
+    it('still catches a collision with a different applied template', async () => {
         stub(DatabaseServer, 'getSchemas', async () => [
             policySchema('policy-schema-template-1', 'Site', 'template-1'),
             policySchema('policy-schema-template-2', 'Monitoring Report', 'template-2'),
@@ -363,14 +369,13 @@ describe('multi-template: schema name collisions on update (validateSchemaNameCo
                 template('template-1'),
                 targetPolicy,
                 [{ name: 'Monitoring Report' }],
-                'template-1',
             ),
             /Monitoring Report/,
             'a new schema added by updating template-1 must still collide with template-2\'s schema',
         );
     });
 
-    it('does not flag a new schema against an unchanged schema of the same template being updated', async () => {
+    it('still rejects a new schema that collides with an unchanged sibling of the same template', async () => {
         stub(DatabaseServer, 'getSchemas', async () => [
             policySchema('policy-schema-template-1', 'Site', 'template-1'),
         ]);
@@ -379,18 +384,54 @@ describe('multi-template: schema name collisions on update (validateSchemaNameCo
             schemaTemplates: [binding('template-1')],
         });
 
+        await assert.rejects(
+            validateSchemaNameCollisions(
+                template('template-1'),
+                targetPolicy,
+                [{ name: 'Site' }],
+            ),
+            /Site/,
+            'the added schema would share a name with an untouched sibling from the same template - a real collision',
+        );
+    });
+
+    it('excludes only the schema actually being renamed, not its whole template', async () => {
+        stub(DatabaseServer, 'getSchemas', async () => [
+            policySchema('policy-schema-template-1', 'Site', 'template-1'),
+            policySchema('policy-schema-template-2', 'Region', 'template-1'),
+        ]);
+
+        const targetPolicy = policy({
+            schemaTemplates: [binding('template-1')],
+        });
+
+        // policy-schema-template-2 is being renamed to "Site"; policy-schema-template-1
+        // ("Site") is an untouched sibling and must still block the collision.
+        await assert.rejects(
+            validateSchemaNameCollisions(
+                template('template-1'),
+                targetPolicy,
+                [{ name: 'Site' }],
+                new Set(['policy-schema-template-2']),
+            ),
+            /Site/,
+            'excluding the renamed schema itself must not also exempt its unrelated sibling',
+        );
+
+        // With the sibling itself excluded too (e.g. it is being renamed away in the
+        // same update), the same new name must not be flagged as a self-collision.
         await assert.doesNotReject(
             validateSchemaNameCollisions(
                 template('template-1'),
                 targetPolicy,
                 [{ name: 'Site' }],
-                'template-1',
+                new Set(['policy-schema-template-1', 'policy-schema-template-2']),
             ),
-            'the schema being added shares a name only with its own template\'s unchanged schema, which is not a real collision',
+            'excluding both schemas (a name swap) must not flag either as colliding with itself',
         );
     });
 
-    it('still rejects a collision with an ordinary policy schema while excluding its own template', async () => {
+    it('still rejects a collision with an ordinary policy schema', async () => {
         stub(DatabaseServer, 'getSchemas', async () => [
             policySchema('policy-schema-template-1', 'Site', 'template-1'),
             policySchema('plain-schema-1', 'Custom Report'),
@@ -405,7 +446,6 @@ describe('multi-template: schema name collisions on update (validateSchemaNameCo
                 template('template-1'),
                 targetPolicy,
                 [{ name: 'Custom Report' }],
-                'template-1',
             ),
             /Custom Report/,
         );

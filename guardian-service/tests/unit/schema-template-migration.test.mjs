@@ -298,4 +298,32 @@ describe('v3-7-1 migration - policy schema template ids', () => {
         assert.equal(schemaCollection.calls.updateMany.length, 0);
         assert.equal(schemas[0].templateId, 'remote-1');
     });
+
+    /*
+     * wrapSchemaTemplateBindingInArray only ever produces one binding, but a policy
+     * imported from a peer instance already running multi-template import can reach
+     * this migration already carrying several. Every one of them needs repairing,
+     * not just the first.
+     */
+    it('repairs every binding on a policy that already has more than one', async () => {
+        const policies = [{
+            _id: 'policy-1',
+            topicId: '0.0.1',
+            schemaTemplates: [
+                { templateId: 'local-1', schemaMap: { a: SCHEMA_1 } },
+                { templateId: 'local-2', schemaMap: { a: SCHEMA_2 } },
+            ],
+        }];
+        const schemas = [
+            { _id: SCHEMA_1, topicId: '0.0.1', category: 'POLICY', templateId: 'remote-1' },
+            { _id: SCHEMA_2, topicId: '0.0.1', category: 'POLICY', templateId: 'remote-2' },
+        ];
+        const { run } = runMigration(policies, schemas);
+
+        await run();
+
+        assert.equal(schemas[0].templateId, 'local-1');
+        assert.equal(schemas[1].templateId, 'local-2',
+            'the second binding must be repaired too, not left naming the source instance');
+    });
 });

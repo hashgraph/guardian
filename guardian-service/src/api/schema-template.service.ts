@@ -1520,6 +1520,10 @@ async function updateAppliedSchemaTemplate(
     const schemaConfigByTemplateSchemaId = new Map<string, any>();
     const schemasToAdd: Schema[] = [];
     const schemasBeingRenamed: Schema[] = [];
+    // Only a schema actually vacating its current name is excluded from the
+    // collision check - an unchanged sibling from the same template keeps its
+    // name and must still be able to block a rename or add that lands on it.
+    const vacatedSchemaIds = new Set<string>();
     for (const [templateSchemaId, source] of templateSchemaById.entries()) {
         const schemaConfig = getSnapshotSchemaConfig(nextConfig, templateSchemaId);
         schemaConfigByTemplateSchemaId.set(templateSchemaId, schemaConfig);
@@ -1531,6 +1535,10 @@ async function updateAppliedSchemaTemplate(
         if (schemaConfig.schemaSettingsLocked &&
             String(source.name || '').trim() !== String(target.name || '').trim()) {
             schemasBeingRenamed.push(source);
+            const targetId = String(target.id || (target as any)?._id || '');
+            if (targetId) {
+                vacatedSchemaIds.add(targetId);
+            }
         }
     }
     const schemasToValidate = [...schemasToAdd, ...schemasBeingRenamed];
@@ -1539,7 +1547,7 @@ async function updateAppliedSchemaTemplate(
             context.template,
             context.policy,
             schemasToValidate,
-            context.template.id,
+            vacatedSchemaIds,
             context.policySchemas
         );
     }
@@ -1765,16 +1773,17 @@ async function updateCopiedSchemaRefs(
  * in the template it came from, which is the trail the whole feature depends on.
  *
  * Shared by apply (checking every template schema against everything already in
- * the policy) and update's SCHEMA_ADD path (checking only the schemas the update
- * is about to add). `excludeTemplateId` leaves the binding's own existing schemas
- * out of the comparison set, so an update to template A does not flag a new A
- * schema against an unchanged A schema that will not move.
+ * the policy) and update's SCHEMA_ADD/rename paths (checking only the schemas the
+ * update is about to add or rename). `excludeSchemaIds` leaves only the specific
+ * policy schemas about to vacate their current name out of the comparison set - an
+ * unchanged sibling schema from the same template keeps its name and must still be
+ * able to block a rename or add that collides with it.
  */
 export async function validateSchemaNameCollisions(
     template: SchemaTemplate,
     policy: Policy,
     templateSchemas: Schema[],
-    excludeTemplateId?: string,
+    excludeSchemaIds?: Set<string>,
     prefetchedPolicySchemas?: Schema[]
 ): Promise<void> {
     const allExistingSchemas = prefetchedPolicySchemas || await DatabaseServer.getSchemas(
@@ -1784,9 +1793,9 @@ export async function validateSchemaNameCollisions(
         },
         { fields: ['name', 'templateId'] } as any
     );
-    const existingSchemas = excludeTemplateId
+    const existingSchemas = excludeSchemaIds?.size
         ? (allExistingSchemas as Schema[]).filter(
-            (schema) => String(schema?.templateId || '') !== String(excludeTemplateId)
+            (schema) => !excludeSchemaIds.has(String(schema?.id || (schema as any)?._id || ''))
         )
         : (allExistingSchemas as Schema[]);
 

@@ -51,6 +51,10 @@ export class ReleaseMigration extends Migration {
      * wrong: a policy imported as a new version reuses the previous version's topic,
      * so two policies bound to two different templates can share one, and each pass
      * would overwrite the other's markers.
+     *
+     * Every binding is repaired, not just the first: wrapSchemaTemplateBindingInArray
+     * only ever produces one, but a policy imported from a peer instance already
+     * running multi-template import can already carry several by the time this runs.
      */
     async remapPolicySchemaTemplateIds() {
         const policiesCollection = this.getCollection('Policy');
@@ -61,25 +65,26 @@ export class ReleaseMigration extends Migration {
         );
         while (await policies.hasNext()) {
             const policy = await policies.next();
-            const binding = policy?.schemaTemplates?.[0];
-            const templateId = binding?.templateId;
-            if (!templateId) {
-                continue;
+            for (const binding of policy?.schemaTemplates || []) {
+                const templateId = binding?.templateId;
+                if (!templateId) {
+                    continue;
+                }
+                const schemaIds = Object.values(binding.schemaMap || {})
+                    .map((id) => this.toObjectId(id))
+                    .filter((id) => !!id);
+                if (!schemaIds.length) {
+                    continue;
+                }
+                await schemasCollection.updateMany(
+                    {
+                        _id: { $in: schemaIds },
+                        templateId: { $exists: true, $nin: [null, '', templateId] }
+                    },
+                    { $set: { templateId } },
+                    { session: this.ctx }
+                );
             }
-            const schemaIds = Object.values(binding.schemaMap || {})
-                .map((id) => this.toObjectId(id))
-                .filter((id) => !!id);
-            if (!schemaIds.length) {
-                continue;
-            }
-            await schemasCollection.updateMany(
-                {
-                    _id: { $in: schemaIds },
-                    templateId: { $exists: true, $nin: [null, '', templateId] }
-                },
-                { $set: { templateId } },
-                { session: this.ctx }
-            );
         }
     }
 
