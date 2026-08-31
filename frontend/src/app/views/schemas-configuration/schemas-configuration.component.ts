@@ -3,10 +3,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpResponse } from '@angular/common/http';
 import { EMPTY, Observable, Subject, Subscription, forkJoin, of } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, switchMap, takeUntil } from 'rxjs/operators';
-import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, relationAncestors, ModuleStatus, ISchemaTemplate, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus, ISchemaArrayDependency, ISchemaArrayDependencyMapping, DEFAULT_IWA_VERSION, IwaVersion, resolveIwaVersion, } from '@guardian/interfaces';
+import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, relationAncestors, ModuleStatus, ISchemaTemplate, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus, ISchemaArrayDependency, ISchemaArrayDependencyMapping, DEFAULT_IWA_VERSION, IwaVersion, resolveIwaVersion, IPropertySuggestionResult, } from '@guardian/interfaces';
 import { SchemaService } from 'src/app/services/schema.service';
 import { TagsService } from 'src/app/services/tag.service';
 import { ProjectComparisonService } from 'src/app/services/project-comparison.service';
+import { AISearchService } from 'src/app/services/ai-search.service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { IwaUpgradeDialogComponent } from 'src/app/modules/schema-engine/iwa-upgrade-dialog/iwa-upgrade-dialog.component';
 import { SchemaDeleteDialogComponent } from 'src/app/modules/schema-engine/schema-delete-dialog/schema-delete-dialog.component';
@@ -62,17 +63,25 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public activeTab: 'builder' | 'preview' = 'builder';
     public activeSideTab: 'fields' | 'schemas' = 'fields';
     public activeRpTab: 'settings' | 'logic' = 'settings';
-    public activeCanvasTab: 'fields' | 'conditions' | 'links' = 'fields';
+    public activeCanvasTab: 'fields' | 'conditions' | 'links' | 'propertyAi' = 'fields';
     public activeDrillTab: 'fields' | 'conditions' = 'fields';
 
     private readonly canvasTabStorageKey = 'sc-active-canvas-tab';
 
-    public setCanvasTab(tab: 'fields' | 'conditions' | 'links'): void {
+    public setCanvasTab(tab: 'fields' | 'conditions' | 'links' | 'propertyAi'): void {
         this.activeCanvasTab = tab;
         try {
             sessionStorage.setItem(this.canvasTabStorageKey, tab);
         } catch {
         }
+        this.autoLoadSuggestionsFor(tab);
+    }
+
+    private autoLoadSuggestionsFor(tab: string): void {
+        if (tab !== 'propertyAi' || this.suggestionsLoading) { return; }
+        const key = this.getContextSchemaCacheKey(this.currentContextSchema);
+        if (key && this.suggestionsCacheByContextKey.has(key)) { return; } // already checked this schema/sub-schema
+        this.loadSuggestions();
     }
 
     private forgetCanvasTab(): void {
@@ -89,8 +98,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         } catch {
             return;
         }
-        if (stored === 'fields' || stored === 'conditions' || stored === 'links') {
+        if (stored === 'fields' || stored === 'conditions' || stored === 'links' || stored === 'propertyAi') {
             this.activeCanvasTab = stored;
+            this.autoLoadSuggestionsFor(stored);
         }
     }
 
@@ -112,6 +122,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public get selectedField(): SchemaField | null { return this._selectedField; }
     public set selectedField(field: SchemaField | null) {
         this._selectedField = field;
+        this.rightPanelSuggestion = null;
+        this.rightPanelSuggestionExpanded = false;
+        this.rightPanelSuggestLoading = false;
+        this.rightPanelSuggestUnavailable = false;
         this._rebuildRefPreset();
     }
 
@@ -532,6 +546,63 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     private propertiesByVersion = new Map<string, any[]>();
     private propertyOptionsMemo: { source: any[]; current: string; result: any[] } | null = null;
 
+    public suggestionsLoading: boolean = false;
+    public suggestionsAvailable: boolean = true;
+    public suggestionResults: IPropertySuggestionResult[] = [];
+    public rightPanelSuggestion: IPropertySuggestionResult | null = null;
+    public rightPanelSuggestionExpanded: boolean = false;
+    public rightPanelSuggestLoading: boolean = false;
+    public rightPanelSuggestUnavailable: boolean = false;
+    public highlightedFieldName: string | null = null;
+
+    /** Glossary AI results per schema/sub-schema, so switching away and back doesn't re-spend AI tokens. */
+    private suggestionsCacheByContextKey = new Map<string, { results: IPropertySuggestionResult[]; available: boolean }>();
+
+    private getContextSchemaCacheKey(schema: Schema | null): string | null {
+        if (!schema) { return null; }
+        const id = schema.id || (schema as any)._id;
+        if (id) { return id; }
+        const uuid = (schema as any).uuid;
+        return uuid ? `new:${uuid}` : null;
+    }
+
+    private persistSuggestionsForContext(previousContext: Schema | null): void {
+        const key = this.getContextSchemaCacheKey(previousContext);
+        if (!key || !this.suggestionsCacheByContextKey.has(key)) { return; }
+        this.suggestionsCacheByContextKey.set(key, { results: this.suggestionResults, available: this.suggestionsAvailable });
+    }
+
+    private restoreOrClearSuggestionsForContext(): void {
+        const key = this.getContextSchemaCacheKey(this.currentContextSchema);
+        const cached = key ? this.suggestionsCacheByContextKey.get(key) : undefined;
+        if (cached) {
+            this.suggestionResults = cached.results;
+            this.suggestionsAvailable = cached.available;
+        } else {
+            this.suggestionResults = [];
+            this.suggestionsAvailable = true;
+        }
+        this.highlightedFieldName = null;
+    }
+
+    public static readonly HIGH_CONFIDENCE_THRESHOLD = 0.75;
+
+    public get pendingSuggestionCount(): number {
+        return this.suggestionResults.filter((result) => {
+            const topCandidate = result.candidates[0];
+            return topCandidate && (this.getFieldByName(result.fieldName) as any)?.property !== topCandidate.title;
+        }).length;
+    }
+
+    public get highConfidenceSuggestionCount(): number {
+        return this.suggestionResults.filter((result) => {
+            const topCandidate = result.candidates[0];
+            return topCandidate
+                && topCandidate.confidence >= SchemasConfigurationComponent.HIGH_CONFIDENCE_THRESHOLD
+                && (this.getFieldByName(result.fieldName) as any)?.property !== topCandidate.title;
+        }).length;
+    }
+
     public readonly requiredModeOptions: { label: string; value: string }[] = [
         { label: 'None',          value: 'none'          },
         { label: 'Hidden',        value: 'hidden'        },
@@ -546,6 +617,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         private tagsService: TagsService,
         private schemaTemplatesService: SchemaTemplatesService,
         private projectComparisonService: ProjectComparisonService,
+        private aiSearchService: AISearchService,
         private dialogService: DialogService,
         private _elRef: ElementRef,
         private _zone: NgZone,
@@ -639,6 +711,124 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 },
                 error: () => {}
             });
+    }
+
+    /**
+     * Load Glossary AI suggestions for every field on the current schema.
+     */
+    public loadSuggestions(): void {
+        const schema = this.currentContextSchema;
+        const fields = schema?.fields ?? [];
+        // Captured now, not read from `this.currentContextSchema` in the callbacks below - the user
+        // may switch schemas again before the response arrives, and the result must not be cached
+        // (or applied) under the wrong schema.
+        const key = this.getContextSchemaCacheKey(schema);
+        this.suggestionsLoading = true;
+        const request = {
+            schemaTitle: this.selectedSchema?.name,
+            iwaVersion: resolveIwaVersion(this.selectedSchema),
+            fields: fields.map((field) => ({
+                name: field.name,
+                title: field.title,
+                description: field.description,
+                type: field.type,
+                currentProperty: (field as any).property
+            }))
+        };
+        this.aiSearchService.suggestSchemaProperties(request)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (response) => {
+                    const results = response.results || [];
+                    if (key) { this.suggestionsCacheByContextKey.set(key, { results, available: response.available }); }
+                    if (this.getContextSchemaCacheKey(this.currentContextSchema) !== key) { return; }
+                    this.suggestionsLoading = false;
+                    this.suggestionsAvailable = response.available;
+                    this.suggestionResults = results;
+                    this._cdr.markForCheck();
+                },
+                error: () => {
+                    if (key) { this.suggestionsCacheByContextKey.set(key, { results: [], available: false }); }
+                    if (this.getContextSchemaCacheKey(this.currentContextSchema) !== key) { return; }
+                    this.suggestionsLoading = false;
+                    this._cdr.markForCheck();
+                }
+            });
+    }
+
+    public getFieldByName(fieldName: string): SchemaField | undefined {
+        return (this.currentContextSchema?.fields ?? []).find((f) => f.name === fieldName);
+    }
+
+    public acceptSuggestion(fieldName: string, title: string): void {
+        const field = this.getFieldByName(fieldName);
+        if (!field) { return; }
+        (field as any).property = title;
+        this.markDirty();
+    }
+
+    public dismissSuggestion(fieldName: string): void {
+        this.suggestionResults = this.suggestionResults.filter((result) => result.fieldName !== fieldName);
+    }
+
+    public applyAllHighConfidence(threshold: number = SchemasConfigurationComponent.HIGH_CONFIDENCE_THRESHOLD): void {
+        for (const result of this.suggestionResults) {
+            const topCandidate = result.candidates[0];
+            if (topCandidate && topCandidate.confidence >= threshold) {
+                this.acceptSuggestion(result.fieldName, topCandidate.title);
+            }
+        }
+    }
+
+    public goEditField(fieldName: string): void {
+        const field = this.getFieldByName(fieldName);
+        if (!field) { return; }
+        this.setCanvasTab('fields');
+        this.selectedField = field;
+    }
+
+    public suggestPropertyForSelectedField(): void {
+        const field = this.selectedField;
+        if (!field) { return; }
+        this.rightPanelSuggestLoading = true;
+        this.rightPanelSuggestUnavailable = false;
+        const request = {
+            schemaTitle: this.selectedSchema?.name,
+            iwaVersion: resolveIwaVersion(this.selectedSchema),
+            fields: [{
+                name: field.name,
+                title: field.title,
+                description: field.description,
+                type: field.type,
+                currentProperty: (field as any).property
+            }]
+        };
+        this.aiSearchService.suggestSchemaProperties(request)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (response) => {
+                    this.rightPanelSuggestLoading = false;
+                    this.rightPanelSuggestUnavailable = !response.available;
+                    this.rightPanelSuggestion = response.results?.[0] || null;
+                    this.rightPanelSuggestionExpanded = false;
+                    this._cdr.markForCheck();
+                },
+                error: () => {
+                    this.rightPanelSuggestLoading = false;
+                    this.rightPanelSuggestUnavailable = true;
+                    this._cdr.markForCheck();
+                }
+            });
+    }
+
+    public openInPropertyAiTab(fieldName: string): void {
+        this.setCanvasTab('propertyAi');
+        this.highlightedFieldName = fieldName;
+        setTimeout(() => {
+            if (this.highlightedFieldName === fieldName) {
+                this.highlightedFieldName = null;
+            }
+        }, 2000);
     }
 
     /**
@@ -945,12 +1135,15 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public switchSchema(schema: Schema): void {
+        const previousContext = this.currentContextSchema;
         const id = schema.id || (schema as any)._id;
         if (!id) {
             if (this.newSchemaKeys.has(`new:${(schema as any).uuid}`)) {
                 this.selectedField = null;
                 this.selectedSchema = schema;
                 this.drillStack = [];
+                this.persistSuggestionsForContext(previousContext);
+                this.restoreOrClearSuggestionsForContext();
                 this.setCanvasTab('fields');
                 this.resetArrayDependencyEditor();
                 this.schemaPropsCollapsed = false;
@@ -965,6 +1158,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.selectedSchema = schema; // optimistic: show header before fields load
         this.loadedSchemaId = null;
         this.drillStack = [];
+        this.persistSuggestionsForContext(previousContext);
+        this.restoreOrClearSuggestionsForContext();
         this.setCanvasTab('fields');
         this.resetArrayDependencyEditor();
         this.schemaPropsCollapsed = false;
@@ -2358,6 +2553,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public enterSubSchema(field: SchemaField, event: Event): void {
         event.stopPropagation();
         if (!this.canEnterSubSchema(field)) { return; }
+        const previousContext = this.currentContextSchema;
         this.selectedField = null;
         // Use Schema.fields from this.schemas so edits are tracked on the sub-schema entity.
         // Fall back to field.fields (parseFields clone) for built-in refs (GeoJSON, Sentinel).
@@ -2373,6 +2569,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             ...this.drillStack,
             { fieldLabel: field.title || field.name, fields, schemaIri: field.type || '' }
         ];
+        this.persistSuggestionsForContext(previousContext);
+        this.restoreOrClearSuggestionsForContext();
+        this.autoLoadSuggestionsFor(this.activeCanvasTab);
         this.resetArrayDependencyEditor();
         this._parentLoadId = null;
         this.loadParentSchemas();
@@ -2388,7 +2587,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public drillTo(index: number): void {
+        const previousContext = this.currentContextSchema;
         this.drillStack = this.drillStack.slice(0, index + 1);
+        this.persistSuggestionsForContext(previousContext);
+        this.restoreOrClearSuggestionsForContext();
+        this.autoLoadSuggestionsFor(this.activeCanvasTab);
         this.selectedField = null;
         this.resetArrayDependencyEditor();
         this._parentLoadId = null;
@@ -2396,7 +2599,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public drillBack(): void {
+        const previousContext = this.currentContextSchema;
         this.drillStack = this.drillStack.slice(0, -1);
+        this.persistSuggestionsForContext(previousContext);
+        this.restoreOrClearSuggestionsForContext();
+        this.autoLoadSuggestionsFor(this.activeCanvasTab);
         this.selectedField = null;
         this.activeDrillTab = 'fields';
         this.resetArrayDependencyEditor();
@@ -2405,7 +2612,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public drillClose(): void {
+        const previousContext = this.currentContextSchema;
         this.drillStack = [];
+        this.persistSuggestionsForContext(previousContext);
+        this.restoreOrClearSuggestionsForContext();
+        this.autoLoadSuggestionsFor(this.activeCanvasTab);
         this.selectedField = null;
         this.activeDrillTab = 'fields';
         this.resetArrayDependencyEditor();

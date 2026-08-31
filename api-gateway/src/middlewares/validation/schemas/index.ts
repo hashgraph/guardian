@@ -1,3 +1,4 @@
+export * from './ai-suggestions.js'
 export * from './accounts.js'
 export * from './artifacts.js'
 export * from './contracts.js'
