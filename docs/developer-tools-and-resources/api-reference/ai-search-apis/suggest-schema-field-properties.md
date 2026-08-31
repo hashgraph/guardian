@@ -1,5 +1,9 @@
 # Suggests schema field properties
 
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.SCHEMAS_SCHEMA_CREATE`
+
 {% swagger method="post" path="" baseUrl="/ai-suggestions/schema-properties" summary="Suggests schema field properties" %}
 {% swagger-description %}
 Returns ranked IWA property candidates for each schema field
