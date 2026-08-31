@@ -1,10 +1,11 @@
 import { ClientProxy } from '@nestjs/microservices';
 import { Body, Controller, Get, HttpCode, HttpStatus, Inject, Post, Put, Query } from '@nestjs/common';
 import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiExtraModels, ApiQuery, ApiBody } from '@nestjs/swagger';
+import { Auth, AuthUser } from '#auth';
 import { AISuggestions, InternalException } from '#helpers';
 import { InternalServerErrorDTO, PropertySuggestionRequestDTO, PropertySuggestionResponseDTO } from '#middlewares';
-import { PinoLogger } from '@guardian/common';
-import { IPropertySuggestionResponse } from '@guardian/interfaces';
+import { IAuthUser, PinoLogger } from '@guardian/common';
+import { IPropertySuggestionResponse, Permissions } from '@guardian/interfaces';
 
 /**
  * AI suggestions route
@@ -110,6 +111,9 @@ export class AISuggestionsAPI {
      * Suggest schema field properties
      */
     @Post('/schema-properties')
+    @Auth(
+        Permissions.SCHEMAS_SCHEMA_CREATE,
+    )
     @ApiOperation({
         summary: 'Suggest schema field properties',
         description: 'Returns ranked IWA property candidates for each schema field',
@@ -136,13 +140,14 @@ export class AISuggestionsAPI {
     @ApiExtraModels(PropertySuggestionRequestDTO, PropertySuggestionResponseDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getPropertySuggestions(
+        @AuthUser() user: IAuthUser,
         @Body() body: PropertySuggestionRequestDTO,
     ): Promise<IPropertySuggestionResponse> {
         try {
             const aiSuggestions = new AISuggestions();
             return await aiSuggestions.getPropertySuggestions(body);
         } catch (error) {
-            await InternalException(error, this.logger, null);
+            await InternalException(error, this.logger, user.id);
         }
     }
 }
