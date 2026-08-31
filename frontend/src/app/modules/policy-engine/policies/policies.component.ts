@@ -58,6 +58,7 @@ import { confirmDryRun } from '../dialogs/dry-run-dialog/dry-run-dialog.componen
 import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
 import { ApplySchemaTemplateDialog } from '../dialogs/apply-schema-template-dialog/apply-schema-template-dialog.component';
 import { SchemaTemplatesService } from 'src/app/services/schema-templates.service';
+import { formatSchemaTemplateBindingLabel } from 'src/app/utils';
 
 class MenuButton {
     public readonly visible: boolean;
@@ -512,6 +513,8 @@ export class PoliciesComponent implements OnInit {
     }
 
     public getMenu(policy: any) {
+        const isPolicyDraft = policy.status === PolicyStatus.DRAFT;
+        const schemaTemplateButtons = this.getSchemaTemplateBindingButtons(policy, isPolicyDraft);
         return {
             groups: [{
                 tooltip: 'Analytics',
@@ -595,29 +598,20 @@ export class PoliciesComponent implements OnInit {
                     }),
                     new MenuButton({
                         visible: this.user.POLICIES_POLICY_UPDATE && this.user.TEMPLATES_TEMPLATE_READ,
-                        disabled: policy.status !== PolicyStatus.DRAFT || this.hasAppliedSchemaTemplate(policy),
+                        disabled: policy.status !== PolicyStatus.DRAFT,
                         tooltip: 'Apply Schema Template',
                         icon: 'link',
                         color: 'primary-color',
                         click: () => this.openApplySchemaTemplateDialog(policy)
-                    }),
-                    new MenuButton({
-                        visible: this.user.POLICIES_POLICY_UPDATE && this.user.TEMPLATES_TEMPLATE_READ,
-                        disabled: policy.status !== PolicyStatus.DRAFT || !this.hasAppliedSchemaTemplate(policy),
-                        tooltip: 'Update Schema Template',
-                        icon: 'refresh',
-                        color: 'primary-color',
-                        click: () => this.openUpdateSchemaTemplateDialog(policy)
-                    }),
-                    new MenuButton({
-                        visible: this.user.POLICIES_POLICY_UPDATE && this.user.TEMPLATES_TEMPLATE_READ,
-                        disabled: policy.status !== PolicyStatus.DRAFT || !this.hasAppliedSchemaTemplate(policy),
-                        tooltip: 'Detach Schema Template',
-                        icon: 'link-break',
-                        color: 'primary-color',
-                        click: () => this.detachSchemaTemplate(policy)
                     })
                 ]
+            }, {
+                tooltip: 'Schema Templates',
+                group: true,
+                visible: this.user.POLICIES_POLICY_UPDATE && this.user.TEMPLATES_TEMPLATE_READ && schemaTemplateButtons.length > 0,
+                icon: 'refresh',
+                color: isPolicyDraft ? 'primary-color' : 'disabled-color',
+                buttons: schemaTemplateButtons
             }, {
                 tooltip: 'Migrate data',
                 group: true,
@@ -1884,22 +1878,41 @@ export class PoliciesComponent implements OnInit {
             .onClose.pipe(takeUntil(this._destroy$)).subscribe();
     }
 
-    private hasAppliedSchemaTemplate(policy: any): boolean {
-        return !!(policy?.schemaTemplates || []).some((binding: any) => (
-            binding?.templateId ||
-            binding?.snapshotId ||
-            Object.keys(binding?.schemaMap || {}).length
-        ));
-    }
-
     public getSchemaTemplateLabel(policy: any): string {
-        const binding = policy?.schemaTemplates?.[0];
-        if (!binding?.templateName) {
+        const names: string[] = (policy?.schemaTemplates || [])
+            .map((binding: any) => formatSchemaTemplateBindingLabel(binding))
+            .filter((name: string) => !!name);
+        if (!names.length) {
             return '';
         }
-        return binding.templateVersion
-            ? `${binding.templateName} v${binding.templateVersion}`
-            : binding.templateName;
+        return names.length > 1 ? `${names.length} templates: ${names.join(', ')}` : names[0];
+    }
+
+    private getSchemaTemplateBindingButtons(policy: any, isPolicyDraft: boolean): MenuButton[] {
+        const buttons: MenuButton[] = [];
+        for (const binding of (policy?.schemaTemplates || [])) {
+            if (!binding?.templateId) {
+                continue;
+            }
+            const name = binding.templateName || 'Schema Template';
+            buttons.push(new MenuButton({
+                visible: true,
+                disabled: !isPolicyDraft,
+                tooltip: `Update: ${name}`,
+                icon: 'refresh',
+                color: 'primary-color',
+                click: () => this.openUpdateSchemaTemplateDialog(policy, binding.templateId)
+            }));
+            buttons.push(new MenuButton({
+                visible: true,
+                disabled: !isPolicyDraft,
+                tooltip: `Detach: ${name}`,
+                icon: 'link-break',
+                color: 'primary-color',
+                click: () => this.detachSchemaTemplate(policy, binding.templateId)
+            }));
+        }
+        return buttons;
     }
 
     public openApplySchemaTemplateDialog(policy: any): void {
@@ -1915,15 +1928,17 @@ export class PoliciesComponent implements OnInit {
         this.redirectToTaskOnClose(dialogRef);
     }
 
-    public openUpdateSchemaTemplateDialog(policy: any): void {
+    public openUpdateSchemaTemplateDialog(policy: any, templateId: string): void {
         this.policyMenu?.hide();
+        this.policySubMenu?.hide();
         const dialogRef = this.dialogService.open(ApplySchemaTemplateDialog, {
             showHeader: false,
             width: '820px',
             styleClass: 'guardian-dialog',
             data: {
                 policy,
-                mode: 'update'
+                mode: 'update',
+                templateId
             }
         })!;
         this.redirectToTaskOnClose(dialogRef);
@@ -1942,13 +1957,12 @@ export class PoliciesComponent implements OnInit {
         });
     }
 
-    public detachSchemaTemplate(policy: any): void {
+    public detachSchemaTemplate(policy: any, templateId: string): void {
         this.policyMenu?.hide();
-        // The row menu still offers one action per policy; it becomes one per applied
-        // template in step 7, which is what fills in the templateId properly.
-        const binding = policy.schemaTemplates?.[0];
-        // hasAppliedSchemaTemplate treats a snapshot-only binding as applied, so the
-        // menu can offer a detach with no template to name. Sending it would put the
+        this.policySubMenu?.hide();
+        const binding = (policy.schemaTemplates || []).find((b: any) => b?.templateId === templateId);
+        // Every row menu button is built from a binding that already has a templateId,
+        // so this only guards direct callers. Sending a missing id would put the
         // string "undefined" in the request path and come back as a confusing error.
         if (!binding?.templateId) {
             this.toastService.error('This policy has no schema template to detach.');

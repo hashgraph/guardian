@@ -1990,7 +1990,7 @@ export async function removePolicySchemaTemplateSnapshot(
     const snapshotIds = ((policy as any)?.schemaTemplates || [])
         .map((binding: any) => binding?.snapshotId)
         .filter((snapshotId: any) => !!snapshotId);
-    for (const snapshotId of snapshotIds) {
+    await Promise.all(snapshotIds.map(async (snapshotId: any) => {
         try {
             const snapshot = await DatabaseServer.getSchemaTemplateSnapshotById(snapshotId);
             if (snapshot) {
@@ -1999,7 +1999,7 @@ export async function removePolicySchemaTemplateSnapshot(
         } catch (error) {
             await logger?.error(error, ['GUARDIAN_SERVICE']);
         }
-    }
+    }));
 }
 
 async function detachSchemaTemplate(
@@ -2115,11 +2115,7 @@ async function getAppliedSchemaTemplateByPolicyTopic(
     }
 
     const bindings = (policy.schemaTemplates || []).filter((binding) => !!binding?.templateId);
-    const result = [];
-    for (const binding of bindings) {
-        result.push(await describeAppliedSchemaTemplate(binding, owner));
-    }
-    return result;
+    return Promise.all(bindings.map((binding) => describeAppliedSchemaTemplate(binding, owner)));
 }
 
 /**

@@ -204,16 +204,11 @@ export class PolicyImportExport {
         );
         const systemSchemas = await PolicyImportExport.loadSystemSchemas(topicId);
         const tools = await dataBaseServer.find(PolicyTool, { messageId: { $in: toolIds } });
-        const schemaTemplateSnapshots: SchemaTemplateSnapshot[] = [];
-        for (const binding of policy.schemaTemplates || []) {
-            if (!binding?.snapshotId) {
-                continue;
-            }
-            const snapshot = await DatabaseServer.getSchemaTemplateSnapshotById(binding.snapshotId);
-            if (snapshot) {
-                schemaTemplateSnapshots.push(snapshot);
-            }
-        }
+        const schemaTemplateSnapshots: SchemaTemplateSnapshot[] = (await Promise.all(
+            (policy.schemaTemplates || [])
+                .filter((binding) => !!binding?.snapshotId)
+                .map((binding) => DatabaseServer.getSchemaTemplateSnapshotById(binding.snapshotId))
+        )).filter((snapshot): snapshot is SchemaTemplateSnapshot => !!snapshot);
         const artifacts: IArtifact[] = [];
         const artifactRows = await dataBaseServer.find(Artifact, { policyId: policy.id });
         for (const item of artifactRows) {

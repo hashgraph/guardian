@@ -32,6 +32,7 @@ import { ModulesService } from '../../services/modules.service';
 import { ToolsService } from 'src/app/services/tools.service';
 import { CopySchemaDialog } from '../../modules/schema-engine/copy-schema-dialog/copy-schema-dialog';
 import { SchemaTreeComponent } from 'src/app/modules/schema-engine/schema-tree/schema-tree.component';
+import { formatSchemaTemplateBindingLabel } from '../../utils';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ProjectComparisonService } from 'src/app/services/project-comparison.service';
 import { SchemaDeleteWarningDialogComponent } from 'src/app/modules/schema-engine/schema-delete-warning-dialog/schema-delete-warning-dialog.component';
@@ -108,7 +109,7 @@ export class SchemaConfigComponent implements OnInit {
     public selectedAll: boolean = false;
     public owner: string = '';
     public policyNameByTopic: { [x: string]: string } = {};
-    public schemaTemplateLabelByTopic: { [x: string]: string } = {};
+    public schemaTemplateLabelByTopic: { [topicId: string]: { [templateId: string]: string } } = {};
     public moduleNameByTopic: { [x: string]: string } = {};
     public toolNameByTopic: { [x: string]: string } = {};
     public readonlyByTopic: { [x: string]: boolean } = {};
@@ -524,7 +525,7 @@ export class SchemaConfigComponent implements OnInit {
                     if (policy.topicId) {
                         this.policyIdByTopic[policy.topicId] = policy.id;
                         this.policyNameByTopic[policy.topicId] = policy.name;
-                        this.schemaTemplateLabelByTopic[policy.topicId] = this.getPolicyTemplateLabel(policy);
+                        this.schemaTemplateLabelByTopic[policy.topicId] = this.getPolicyTemplateLabels(policy);
                         this.allPolicies.push(policy);
                         this.readonlyByTopic[policy.topicId] = policy.creator !== this.owner;
                     }
@@ -533,7 +534,7 @@ export class SchemaConfigComponent implements OnInit {
                     if (policy.topicId) {
                         this.policyIdByTopic[policy.topicId] = policy.id;
                         this.policyNameByTopic[policy.topicId] = policy.name;
-                        this.schemaTemplateLabelByTopic[policy.topicId] = this.getPolicyTemplateLabel(policy);
+                        this.schemaTemplateLabelByTopic[policy.topicId] = this.getPolicyTemplateLabels(policy);
                         this.allPolicies.push(policy);
                         this.readonlyByTopic[policy.topicId] = policy.creator !== this.owner;
                     }
@@ -753,21 +754,23 @@ export class SchemaConfigComponent implements OnInit {
         return result;
     }
 
-    private getPolicyTemplateLabel(policy: any): string {
-        const binding = policy?.schemaTemplates?.[0];
-        if (!binding?.templateName) {
-            return '';
+    private getPolicyTemplateLabels(policy: any): { [templateId: string]: string } {
+        const labels: { [templateId: string]: string } = {};
+        for (const binding of (policy?.schemaTemplates || [])) {
+            const label = formatSchemaTemplateBindingLabel(binding);
+            if (!binding?.templateId || !label) {
+                continue;
+            }
+            labels[binding.templateId] = label;
         }
-        return binding.templateVersion
-            ? `${binding.templateName} v${binding.templateVersion}`
-            : binding.templateName;
+        return labels;
     }
 
     public getSchemaTemplateLabel(schema: any): string {
-        if (!schema?.templateId && !schema?.templateSchemaId) {
+        if (!schema?.templateId) {
             return '';
         }
-        return this.schemaTemplateLabelByTopic[schema.topicId] || '';
+        return this.schemaTemplateLabelByTopic[schema.topicId]?.[schema.templateId] || '';
     }
 
     private loadTagsData() {

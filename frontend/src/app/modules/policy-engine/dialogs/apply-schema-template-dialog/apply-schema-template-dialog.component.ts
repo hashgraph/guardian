@@ -53,6 +53,9 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
     });
     private readonly destroy$ = new Subject<void>();
 
+    private readonly preselectTemplateId: string | null = null;
+    private preselectionApplied = false;
+
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
@@ -60,6 +63,15 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
     ) {
         this.policy = this.config.data?.policy;
         this.mode = this.config.data?.mode === 'update' ? 'update' : 'apply';
+        this.preselectTemplateId = this.config.data?.templateId || null;
+    }
+
+    private getAppliedTemplateIds(): Set<string> {
+        return new Set(
+            (this.policy?.schemaTemplates || [])
+                .map((binding: any) => binding?.templateId)
+                .filter((templateId: string | undefined) => !!templateId)
+        );
     }
 
     public ngOnInit(): void {
@@ -85,15 +97,33 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
 
     public loadTemplates(search: string = ''): void {
         this.loading = true;
+        const appliedTemplateIds = this.getAppliedTemplateIds();
         this.templatesService.page(0, 1000, search)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
             next: (response) => {
                 this.list = (response.body || []).filter((template) => {
-                    return template.status === ModuleStatus.DRAFT ||
-                        template.status === ModuleStatus.PUBLISHED;
+                    if (template.status !== ModuleStatus.DRAFT && template.status !== ModuleStatus.PUBLISHED) {
+                        return false;
+                    }
+                    const templateId = this.getTemplateId(template);
+                    const isApplied = !!templateId && appliedTemplateIds.has(templateId);
+                    // Apply can only target a template not yet bound to this policy;
+                    // update can only target one that already is.
+                    return this.mode === 'update' ? isApplied : !isApplied;
                 });
                 this.loading = false;
+                // Only ever auto-select once, on the initial load: re-applying it on every
+                // search debounce would silently override a selection the user made by hand.
+                if (this.preselectTemplateId && !this.preselectionApplied) {
+                    this.preselectionApplied = true;
+                    const preselected = this.list.find(
+                        (template) => this.getTemplateId(template) === this.preselectTemplateId
+                    );
+                    if (preselected) {
+                        this.selectTemplate(preselected);
+                    }
+                }
             },
             error: () => {
                 this.list = [];
@@ -167,6 +197,12 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
             return false;
         }
         return this.visibleConflicts.every((conflict) => !!this.resolutions[conflict.id]);
+    }
+
+    public get emptyListHeader(): string {
+        return this.mode === 'update'
+            ? 'This policy has no applied schema templates to update'
+            : 'There are no schema templates left to apply';
     }
 
     public get headerText(): string {
