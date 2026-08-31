@@ -18,6 +18,7 @@ import { ExportPolicyDialog } from 'src/app/modules/policy-engine/dialogs/export
 import { PublishSchemaTemplateDialog } from 'src/app/modules/policy-engine/dialogs/publish-schema-template-dialog/publish-schema-template-dialog.component';
 import { FieldTypeUI, FIELD_TYPES_UI } from 'src/app/modules/schema-engine/field-type-ui';
 import { SchemaTemplatesService } from 'src/app/services/schema-templates.service';
+import { ToastService } from 'src/app/services/toast.service';
 
 export interface DrillEntry {
     fieldLabel: string;
@@ -128,6 +129,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public get currentDrilledSchemaIri(): string { return this.drillStack[this.drillStack.length - 1]?.schemaIri || ''; }
 
     private dirtySchemaIds = new Set<string>();
+    // last-saved signature per schema, so a reverted edit can clear the dirty flag
+    private savedSignatures = new Map<string, string>();
     public isSaving: boolean = false;
     private _subSchemasByIri = new Map<string, Schema>();
     public newArrayDependencyField: string | null = null;
@@ -547,7 +550,17 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         private _elRef: ElementRef,
         private _zone: NgZone,
         private _cdr: ChangeDetectorRef,
+        private toastService: ToastService,
     ) {}
+
+    /**
+     * Surface a backend failure. Every error path in this component used to be a silent
+     * no-op, which makes a failed operation indistinguishable from a dead button.
+     */
+    private reportError(action: string, error: any): void {
+        const detail = error?.error?.message || error?.message || 'Unknown error';
+        this.toastService.error(detail, action, { sticky: true });
+    }
 
     /**
      * Whether the open schema can be switched to the IWA v3 property namespace.
@@ -720,7 +733,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             this.schemaLoading = false;
             const schemaId = schema.id || (schema as any)._id;
             this.loadedSchemaId = schemaId || null;
-            if (schemaId) { this.dirtySchemaIds.delete(schemaId); }
+            if (schemaId) {
+                this.dirtySchemaIds.delete(schemaId);
+                // freshly loaded from the server, so this is the saved baseline
+                this.snapshotSchema(schema, schemaId);
+            }
             if (!this.topic && schema.topicId) {
                 this.topic = schema.topicId;
             }
@@ -1215,6 +1232,142 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return schemaConfig.fields[fieldKey];
     }
 
+    /*
+     * Counts every object and array level, not just field nesting. A field one level
+     * deeper costs two (its parent's `fields` array, then the field object), so this is
+     * double the ~12 levels of field nesting actually intended. Scalars return before
+     * the check and cost nothing. Too low is not harmless: the throw means "cannot
+     * prove clean", so a legitimately deep schema would latch "Unsaved changes" forever
+     * - the exact failure this fix exists to remove.
+     */
+    private static readonly SIGNATURE_MAX_DEPTH = 24;
+
+    /* Recomputed by the editor rather than edited by the user; everything else is hashed. */
+    private static readonly SIGNATURE_IGNORED_KEYS = new Set([
+        'errors', 'path', 'fullPath', 'parent', 'controlKey', '_id',
+    ]);
+
+    /**
+     * A stable signature of everything the editor can change.
+     *
+     * This walks the schema generically instead of hashing a hand-picked list of
+     * properties. An allow-list fails in the dangerous direction: any editable
+     * property nobody remembered to add is invisible to the check, the dirty flag
+     * clears, `saveAll()` early-returns on `!hasUnsavedChanges`, and the edit is lost
+     * on navigation with no toast and no guard dialog. Ignoring only what is provably
+     * derived inverts that - an unrecognised property makes the schema look dirty,
+     * which merely costs a redundant save.
+     *
+     * It also removes two whole classes of blind spot for free: a condition built with
+     * AND/OR has no `ifCondition.field`, so every predicate edit used to hash to the
+     * same null; and `then`/`else` targets are now reached like anything else.
+     *
+     * Returns null on anything it cannot model (cycle, depth blow-out, throw). Callers
+     * treat null as "cannot prove clean" and leave the schema dirty: a false clean would
+     * hide Save all and silently discard the user's work, which is far worse than the
+     * stale "Unsaved changes" this fixes.
+     */
+    private schemaSignature(schema: Schema | null | undefined): string | null {
+        if (!schema) {
+            return null;
+        }
+        try {
+            /*
+             * Path-local rather than one set for the whole traversal. A global set
+             * rejects any object reached twice, not just cycles - and two ref fields
+             * pointing at the same sub-schema IRI share their field objects, so the
+             * signature would return null and leave that schema permanently dirty.
+             */
+            const ancestors = new Set<object>();
+            const walk = (value: any, depth: number): any => {
+                if (value === undefined || typeof value === 'function') {
+                    return null;
+                }
+                if (value === null || typeof value !== 'object') {
+                    return value;
+                }
+                if (depth > SchemasConfigurationComponent.SIGNATURE_MAX_DEPTH || ancestors.has(value)) {
+                    throw new Error('unbounded');
+                }
+                ancestors.add(value);
+                try {
+                    if (Array.isArray(value)) {
+                        return value.map((item) => walk(item, depth + 1));
+                    }
+                    const out: any = {};
+                    for (const key of Object.keys(value).sort()) {
+                        if (SchemasConfigurationComponent.SIGNATURE_IGNORED_KEYS.has(key)) {
+                            continue;
+                        }
+                        const item = value[key];
+                        /*
+                         * JSON.stringify drops undefined- and function-valued keys, so the
+                         * saved schema cannot tell those from absent ones. Clearing a
+                         * property back to unset has to read as clean, or it leaves a
+                         * dirty flag nothing can ever clear.
+                         */
+                        if (item === undefined || typeof item === 'function') {
+                            continue;
+                        }
+                        out[key] = walk(item, depth + 1);
+                    }
+                    return out;
+                } finally {
+                    ancestors.delete(value);
+                }
+            };
+            /*
+             * The walk is generic, but it can only reach what this root names, so the
+             * root is the one remaining allow-list and needs the same scrutiny.
+             * `arrayDependencies` is user-editable (addArrayDependency /
+             * removeArrayDependency, both of which call markDirty) and is persisted on
+             * the model, so editing only an array dependency used to recompute a
+             * signature identical to the baseline and lose the edit.
+             */
+            return JSON.stringify(walk({
+                name: schema.name ?? null,
+                description: schema.description ?? null,
+                entity: schema.entity ?? null,
+                fields: schema.fields ?? [],
+                conditions: schema.conditions ?? [],
+                arrayDependencies: schema.arrayDependencies ?? [],
+            }, 0));
+        } catch {
+            return null;
+        }
+    }
+
+    private snapshotSchema(schema: Schema | null | undefined, key?: string): void {
+        const id = key || schema?.id || (schema as any)?._id;
+        if (!id) {
+            return;
+        }
+        const signature = this.schemaSignature(schema);
+        if (signature === null) {
+            this.savedSignatures.delete(id);
+        } else {
+            this.savedSignatures.set(id, signature);
+        }
+    }
+
+    /**
+     * Drop the dirty mark when the schema matches what was last saved. An unknown
+     * signature or a missing baseline leaves it dirty.
+     */
+    private reconcileDirty(key: string, schema: Schema | null | undefined): void {
+        const baseline = this.savedSignatures.get(key);
+        if (baseline === undefined) {
+            this.dirtySchemaIds.add(key);
+            return;
+        }
+        const current = this.schemaSignature(schema);
+        if (current !== null && current === baseline) {
+            this.dirtySchemaIds.delete(key);
+        } else {
+            this.dirtySchemaIds.add(key);
+        }
+    }
+
     public markDirty(): void {
         if (this.isTemplateReadonly) {
             return;
@@ -1229,15 +1382,16 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             const subId = subSchema?.id || (subSchema as any)?._id;
             const subUuid = (subSchema as any)?.uuid;
             if (subId) {
-                this.dirtySchemaIds.add(subId);
+                this.reconcileDirty(subId, subSchema);
             } else if (subUuid) {
+                // a schema that has never been saved has no baseline: always dirty
                 this.dirtySchemaIds.add(`new:${subUuid}`);
             }
             return;
         }
         const rootId = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
         if (rootId) {
-            this.dirtySchemaIds.add(rootId);
+            this.reconcileDirty(rootId, this.selectedSchema);
         } else if (this.selectedSchema?.uuid) {
             this.dirtySchemaIds.add(`new:${this.selectedSchema.uuid}`);
         }
@@ -1336,13 +1490,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                                 queryParams: { last: btoa(returnUrl) },
                             });
                         },
-                        error: () => { this.isSaving = false; },
+                        error: (error) => { this.isSaving = false; this.reportError('Save all', error); },
                     });
             };
             if (createObs.length) {
                 forkJoin(createObs).pipe(takeUntil(this.destroy$)).subscribe({
                     next: triggerNewVersion,
-                    error: () => { this.isSaving = false; },
+                    error: (error) => { this.isSaving = false; this.reportError('Save all', error); },
                 });
             } else {
                 triggerNewVersion();
@@ -1363,8 +1517,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     this.isSaving = false;
                     this.dirtySchemaIds.clear();
                     this.newSchemaKeys.clear();
+                    // what was just saved becomes the new baseline
+                    allSchemas.forEach(schema => this.snapshotSchema(schema));
                 },
-                error: () => { this.isSaving = false; }
+                error: (error) => { this.isSaving = false; this.reportError('Save all', error); }
             });
     }
 
@@ -3356,8 +3512,21 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
     }
 
+    /**
+     * Drop dirty marks and saved baselines for schemas that have left the list.
+     *
+     * `dirtySchemaIds` and `savedSignatures` are a matched pair - one records that a
+     * schema changed, the other what it looked like when saved - so they are pruned
+     * together. `savedSignatures` used to only ever grow, holding a full serialised
+     * field tree per schema for as long as the page lived.
+     *
+     * Dropping a baseline can only fail safe: `reconcileDirty` treats a missing
+     * baseline as "cannot prove clean" and leaves the schema dirty, and any schema
+     * still reachable is re-snapshotted by the next list load.
+     */
     private pruneDirtySchemaIds(): void {
-        if (!this.dirtySchemaIds.size) { return; }
+        // Both maps gate entry here - a signature can outlive the last dirty mark.
+        if (!this.dirtySchemaIds.size && !this.savedSignatures.size) { return; }
         const liveKeys = new Set<string>();
         for (const schema of this.schemas) {
             const id = schema.id || (schema as any)._id;
@@ -3373,6 +3542,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             if (!liveKeys.has(dirtyId)) {
                 this.dirtySchemaIds.delete(dirtyId);
                 this.newSchemaKeys.delete(dirtyId);
+            }
+        }
+        for (const key of Array.from(this.savedSignatures.keys())) {
+            if (!liveKeys.has(key)) {
+                this.savedSignatures.delete(key);
             }
         }
     }
@@ -3440,6 +3614,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                         this.schemasLoading = false;
                     }
                     this.schemasFetched = true;
+                    // server copies are the saved baseline; a locally edited
+                    // selectedSchema still differs from its signature and stays dirty
+                    items.forEach(schema => this.snapshotSchema(schema));
                     this.loadAppliedSchemaTemplate();
                     if (this.selectedSchema) { this.upsertInSidebar(this.selectedSchema); }
                     this.pruneDirtySchemaIds();
@@ -3576,10 +3753,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                                 void this.router.navigate(['task', result.taskId], {
                                     queryParams: { last: btoa(returnUrl) },
                                 });
-                            });
+                            }, (error) => this.reportError('Delete schema', error));
                     }
                 });
-            });
+            }, (error) => this.reportError('Delete schema', error));
     }
 
     // Build $defs the same way as the old editor (SchemaHelper.findRefs + uniqueRefs),
@@ -3696,7 +3873,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     styleClass: 'custom-dialog',
                     data: { schema },
                 });
-            });
+            }, (error) => this.reportError('Export', error));
     }
 
     public onExportTemplate(): void {
@@ -3714,7 +3891,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                         schemaTemplate
                     },
                 });
-            });
+            }, (error) => this.reportError('Export', error));
     }
 
     public onSidebarScroll(event: Event): void {

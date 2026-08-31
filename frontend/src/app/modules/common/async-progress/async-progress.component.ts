@@ -461,6 +461,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.DELETE_SCHEMAS:
             case TaskAction.IMPORT_SCHEMA_FILE:
             case TaskAction.IMPORT_SCHEMA_MESSAGE:
+                this.reportSchemaImportErrors(result);
                 if (this.last) {
                     const schemaId = typeof result === 'string' && result ? result : null;
                     const lastWithSchema = schemaId
@@ -603,6 +604,27 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             }
         });
         this.applyChanges();
+    }
+
+    /**
+     * ImportSchemaResult.errors is {type,uuid,name,error} and nothing downstream renders
+     * it, so flatten it into one sticky toast naming each schema that failed.
+     */
+    private reportSchemaImportErrors(result: any): void {
+        const errors = result?.errors;
+        if (!Array.isArray(errors) || !errors.length) {
+            return;
+        }
+        const text = errors
+            .map((e: any) => (e?.name ? `${e.name}: ${e.error}` : e?.error))
+            .filter((line: any) => !!line)
+            .join('\n');
+        const msg = text || 'Some schemas could not be imported.';
+        this.toastService.warn(
+            msg,
+            errors.length === 1 ? '1 schema was not imported' : `${errors.length} schemas were not imported`,
+            { sticky: true, logMessage: msg }
+        );
     }
 
     private redirect(urlString: string, replaceUrl: boolean = false) {

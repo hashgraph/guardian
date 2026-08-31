@@ -517,12 +517,9 @@ export class PolicyUtils {
         const leftIsArray = Array.isArray(left);
         const rightIsArray = Array.isArray(right);
 
-        // Empty array vs scalar — no elements to validate, fail-closed. [] vs [] passes.
-        if (leftIsArray && left.length === 0 && !rightIsArray) { return false; }
-        if (rightIsArray && right.length === 0 && !leftIsArray) { return false; }
-
-        // in/not_in must come before the pairwise branch; otherwise equal-length arrays
-        // get positional comparison instead of membership.
+        // in/not_in must come before the pairwise branch (otherwise equal-length arrays
+        // get positional comparison instead of membership) and before the empty-array
+        // guard, which is inverted for not_in: a scalar is trivially not in the empty set.
         if (type === 'in' || type === 'not_in') {
             if (leftIsArray) {
                 if (left.length === 0) { return false; }
@@ -536,6 +533,10 @@ export class PolicyUtils {
             }
             return PolicyUtils.compareScalarPair(left, type, right);
         }
+
+        // Empty array vs scalar — no elements to validate, fail-closed. [] vs [] passes.
+        if (leftIsArray && left.length === 0 && !rightIsArray) { return false; }
+        if (rightIsArray && right.length === 0 && !leftIsArray) { return false; }
 
         if (leftIsArray && rightIsArray) {
             if (left.length !== right.length) { return false; }

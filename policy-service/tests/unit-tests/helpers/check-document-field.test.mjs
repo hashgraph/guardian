@@ -230,6 +230,24 @@ describe('PolicyUtils.evaluateFieldCondition', () => {
         assert.equal(PolicyUtils.evaluateFieldCondition('D', 'not_in', ['A', 'B', 'C']), true);
     });
 
+    it('not_in: a scalar is not in the empty set', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition('D', 'not_in', []), true);
+    });
+
+    it('in: a scalar is never in the empty set', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition('D', 'in', []), false);
+    });
+
+    it('in/not_in: an empty left side still fails closed', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition([], 'not_in', ['A']), false);
+        assert.equal(PolicyUtils.evaluateFieldCondition([], 'in', ['A']), false);
+    });
+
+    it('the empty-array guard still applies to the comparison operators', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition('A', 'equal', []), false);
+        assert.equal(PolicyUtils.evaluateFieldCondition('5', 'gte', []), false);
+    });
+
     it('in: array left — every element must be in right', () => {
         assert.equal(PolicyUtils.evaluateFieldCondition(['A', 'B'], 'in', ['A', 'B', 'C']), true);
     });

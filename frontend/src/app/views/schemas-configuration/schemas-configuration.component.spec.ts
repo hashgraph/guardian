@@ -60,10 +60,17 @@ describe('SchemasConfigurationComponent', () => {
         component.schemasPage = 0;
         component.schemaSearch = '';
         component.dirtySchemaIds = new Set<string>(state.dirtyIds || []);
+        component.savedSignatures = new Map<string, string>();
         component.newSchemaKeys = new Set<string>(state.newKeys || []);
 
         component.router = { url: state.url || '/schema-configuration', navigate: () => Promise.resolve(true) };
         component.route = {};
+        component.toasts = [];
+        component.toastService = {
+            error: (detail: string, action?: string) => { component.toasts.push({ detail, action }); },
+            success: () => {},
+            warn: () => {},
+        };
         component.schemaService = {
             update: (s: any) => { component.updated.push(s); return of([]); },
             create: (_c: any, s: any) => { component.created.push(s); return of([]); },
@@ -130,6 +137,179 @@ describe('SchemasConfigurationComponent', () => {
 
             expect(component.dirtySchemaIds.has('sub')).toBeFalse();
             expect(component.hasUnsavedChanges).toBeFalse();
+        });
+    });
+
+    // Every error path in this component was a silent no-op: the button stayed enabled,
+    // the click fired, and a failed backend call produced no toast, dialog or message -
+    // indistinguishable from a dead button.
+    describe('backend failures are surfaced', () => {
+        it('reports a failed export instead of never opening the dialog', () => {
+            const schema: any = makeSchema({ id: 'a' });
+            const component = createComponent({ schemas: [schema], selectedSchema: schema });
+            component.schemaService.exportInMessage = () => throwError(() => ({ error: { message: 'nope' } }));
+            component.dialogService = { open: () => ({ onClose: of(null) }) };
+
+            component.onExport();
+
+            expect(component.toasts.length).toBe(1);
+            expect(component.toasts[0].detail).toBe('nope');
+            expect(component.toasts[0].action).toBe('Export');
+        });
+
+        it('reports a failed deletion preview instead of doing nothing', () => {
+            const schema: any = makeSchema({ id: 'a' });
+            const component = createComponent({ schemas: [schema], selectedSchema: schema });
+            component.schemaService.getSchemaDeletionPreview = () => throwError(() => ({ error: { message: 'blocked' } }));
+            component.dialogService = { open: () => ({ onClose: of(null) }) };
+
+            component.onDeleteSchema(schema);
+
+            expect(component.toasts.length).toBe(1);
+            expect(component.toasts[0].detail).toBe('blocked');
+        });
+
+        it('reports a rejected save and clears the saving flag', () => {
+            const schema: any = makeSchema({ id: 'a', fields: [makeField()] });
+            const component = createComponent({ schemas: [schema], selectedSchema: schema, dirtyIds: ['a'] });
+            component.schemaService.update = () => throwError(() => ({ error: { message: 'rejected' } }));
+
+            component.saveAll();
+
+            expect(component.isSaving).toBeFalse();
+            expect(component.toasts.length).toBe(1);
+            expect(component.toasts[0].action).toBe('Save all');
+        });
+
+        it('falls back to a generic detail when the error carries no message', () => {
+            const schema: any = makeSchema({ id: 'a' });
+            const component = createComponent({ schemas: [schema], selectedSchema: schema });
+            component.schemaService.exportInMessage = () => throwError(() => ({}));
+            component.dialogService = { open: () => ({ onClose: of(null) }) };
+
+            component.onExport();
+
+            expect(component.toasts[0].detail).toBe('Unknown error');
+        });
+    });
+
+    // Dirty tracking was add-only: markDirty() added the schema id and nothing ever
+    // removed it, so once touched a schema stayed dirty until saved even if the user
+    // undid the change.
+    describe('reverting an edit clears the dirty flag', () => {
+
+        function withBaseline() {
+            const field = makeField({ name: 'f1', title: 'Original' });
+            const schema: any = makeSchema({ id: 'a', fields: [field] });
+            const component = createComponent({ schemas: [schema], selectedSchema: schema });
+            component.snapshotSchema(schema);
+            return { component, schema, field };
+        }
+
+        it('marks dirty on edit and clean again on revert', () => {
+            const { component, field } = withBaseline();
+
+            field.title = 'Changed';
+            component.markDirty();
+            expect(component.dirtySchemaIds.has('a')).toBeTrue();
+            expect(component.hasUnsavedChanges).toBeTrue();
+
+            field.title = 'Original';
+            component.markDirty();
+            expect(component.dirtySchemaIds.has('a')).toBeFalse();
+            expect(component.hasUnsavedChanges).toBeFalse();
+        });
+
+        it('notices an added and then removed field', () => {
+            const { component, schema } = withBaseline();
+
+            schema.fields.push(makeField({ name: 'f2' }));
+            component.markDirty();
+            expect(component.hasUnsavedChanges).toBeTrue();
+
+            schema.fields.pop();
+            component.markDirty();
+            expect(component.hasUnsavedChanges).toBeFalse();
+        });
+
+        it('notices an added and then removed condition', () => {
+            const { component, schema } = withBaseline();
+
+            schema.conditions.push({
+                ifCondition: { field: { name: 'f1' }, fieldValue: 'x' },
+                thenFields: [makeField({ name: 'then_1' })],
+                elseFields: [],
+            });
+            component.markDirty();
+            expect(component.hasUnsavedChanges).toBeTrue();
+
+            schema.conditions.pop();
+            component.markDirty();
+            expect(component.hasUnsavedChanges).toBeFalse();
+        });
+
+        it('stays dirty when only part of the edit is reverted', () => {
+            const { component, schema, field } = withBaseline();
+
+            field.title = 'Changed';
+            schema.fields.push(makeField({ name: 'f2' }));
+            component.markDirty();
+
+            field.title = 'Original';
+            component.markDirty();
+            expect(component.hasUnsavedChanges).toBeTrue();
+        });
+
+        // A false clean would hide Save all and silently discard the user's work, so
+        // anything the signature cannot model has to leave the schema dirty.
+        it('stays dirty when there is no saved baseline', () => {
+            const field = makeField({ name: 'f1' });
+            const schema: any = makeSchema({ id: 'a', fields: [field] });
+            const component = createComponent({ schemas: [schema], selectedSchema: schema });
+
+            component.markDirty();
+            expect(component.dirtySchemaIds.has('a')).toBeTrue();
+            component.markDirty();
+            expect(component.dirtySchemaIds.has('a')).toBeTrue();
+        });
+
+        it('stays dirty when the field tree is cyclic', () => {
+            const field = makeField({ name: 'f1' });
+            const schema: any = makeSchema({ id: 'a', fields: [field] });
+            const component = createComponent({ schemas: [schema], selectedSchema: schema });
+            component.snapshotSchema(schema);
+
+            field.fields = [field];
+            component.markDirty();
+            expect(component.dirtySchemaIds.has('a')).toBeTrue();
+
+            component.markDirty();
+            expect(component.dirtySchemaIds.has('a')).toBeTrue();
+        });
+
+        it('a never-saved schema is always dirty', () => {
+            const schema: any = makeSchema({ uuid: 'u-new' });
+            schema.id = undefined;
+            schema._id = undefined;
+            const component = createComponent({
+                schemas: [schema], selectedSchema: schema, newKeys: ['new:u-new'],
+            });
+
+            component.markDirty();
+            expect(component.dirtySchemaIds.has('new:u-new')).toBeTrue();
+        });
+
+        it('a successful save becomes the new baseline', () => {
+            const { component, field } = withBaseline();
+
+            field.title = 'Changed';
+            component.markDirty();
+            component.saveAll();
+            expect(component.hasUnsavedChanges).toBeFalse();
+
+            field.title = 'Original';
+            component.markDirty();
+            expect(component.hasUnsavedChanges).toBeTrue();
         });
     });
 
@@ -206,12 +386,217 @@ describe('SchemasConfigurationComponent', () => {
             expect(Array.from(component.dirtySchemaIds).sort()).toEqual(['a', 'b']);
         });
 
-        it('returns early and touches nothing when there are no dirty keys', () => {
+        it('returns early and touches nothing when there is nothing to prune', () => {
             const component = createComponent({ schemas: [], dirtyIds: [] });
 
             component.pruneDirtySchemaIds();
 
             expect(component.dirtySchemaIds.size).toBe(0);
+            expect(component.savedSignatures.size).toBe(0);
+        });
+
+        it('drops the saved baseline of a schema that is gone from the list', () => {
+            const a = makeSchema({ id: 'a' });
+            const component = createComponent({ schemas: [a] });
+            component.snapshotSchema(a);
+            component.snapshotSchema(makeSchema({ id: 'gone' }));
+            expect(component.savedSignatures.size).toBe(2);
+
+            component.pruneDirtySchemaIds();
+
+            expect(Array.from(component.savedSignatures.keys())).toEqual(['a']);
+        });
+
+        it('keeps the baseline of the open schema even when the list does not contain it', () => {
+            const open = makeSchema({ id: 'open' });
+            const component = createComponent({ schemas: [], selectedSchema: open });
+            component.snapshotSchema(open);
+
+            component.pruneDirtySchemaIds();
+
+            expect(component.savedSignatures.has('open')).toBeTrue();
+        });
+
+        it('still prunes baselines when no key is dirty', () => {
+            // The guard used to key off dirtySchemaIds alone, so a baseline could
+            // outlive every dirty mark and never be reached.
+            const component = createComponent({ schemas: [], dirtyIds: [] });
+            component.snapshotSchema(makeSchema({ id: 'gone' }));
+            expect(component.savedSignatures.size).toBe(1);
+
+            component.pruneDirtySchemaIds();
+
+            expect(component.savedSignatures.size).toBe(0);
+        });
+    });
+
+    describe('the signature covers everything the editor can change', () => {
+
+        function withBaseline(schema: any) {
+            const component = createComponent({ schemas: [schema], selectedSchema: schema });
+            component.snapshotSchema(schema);
+            return component;
+        }
+
+        // Each of these is editable in the UI but was absent from the old allow-list,
+        // so an edit touching only it hashed to the same signature and was discarded.
+        [
+            ['hidden', true],
+            ['isUpdatable', true],
+            ['textBold', true],
+            ['textColor', '#ff0000'],
+            ['default', 'a default'],
+            ['suggest', 'a suggestion'],
+            ['examples', ['an example']],
+        ].forEach(([prop, value]: any) => {
+            it(`notices a change to ${prop}`, () => {
+                const field = makeField({ name: 'f1' });
+                const schema = makeSchema({ id: 'a', fields: [field] });
+                const component = withBaseline(schema);
+
+                const before = field[prop];
+                field[prop] = value;
+                component.markDirty();
+                expect(component.hasUnsavedChanges).toBeTrue();
+
+                field[prop] = before;
+                component.markDirty();
+                expect(component.hasUnsavedChanges).toBeFalse();
+            });
+        });
+
+        it('notices an edit to a predicate inside an AND condition', () => {
+            // ifCondition is { AND: [...] } here, so it has no .field / .fieldValue of
+            // its own - reading those two returned undefined for every predicate.
+            const target = makeField({ name: 'target' });
+            const schema = makeSchema({ id: 'a', fields: [makeField({ name: 'f1' })] });
+            schema.conditions = [{
+                ifCondition: { AND: [{ field: { name: 'f1' }, fieldValue: 'yes' }] },
+                thenFields: [target],
+                elseFields: [],
+            }];
+            const component = withBaseline(schema);
+
+            schema.conditions[0].ifCondition.AND[0].fieldValue = 'no';
+            component.markDirty();
+            expect(component.hasUnsavedChanges).toBeTrue();
+
+            schema.conditions[0].ifCondition.AND[0].fieldValue = 'yes';
+            component.markDirty();
+            expect(component.hasUnsavedChanges).toBeFalse();
+        });
+
+        it('notices a predicate added to an OR condition', () => {
+            const schema = makeSchema({ id: 'a', fields: [makeField({ name: 'f1' })] });
+            schema.conditions = [{
+                ifCondition: { OR: [{ field: { name: 'f1' }, fieldValue: 'yes' }] },
+                thenFields: [],
+                elseFields: [],
+            }];
+            const component = withBaseline(schema);
+
+            schema.conditions[0].ifCondition.OR.push({ field: { name: 'f2' }, fieldValue: 'x' });
+            component.markDirty();
+            expect(component.hasUnsavedChanges).toBeTrue();
+
+            schema.conditions[0].ifCondition.OR.pop();
+            component.markDirty();
+            expect(component.hasUnsavedChanges).toBeFalse();
+        });
+
+        it('notices an edit to a then-field of a condition', () => {
+            const target = makeField({ name: 'target', title: 'Original' });
+            const schema = makeSchema({ id: 'a', fields: [makeField({ name: 'f1' })] });
+            schema.conditions = [{
+                ifCondition: { field: { name: 'f1' }, fieldValue: 'yes' },
+                thenFields: [target],
+                elseFields: [],
+            }];
+            const component = withBaseline(schema);
+
+            target.title = 'Changed';
+            component.markDirty();
+            expect(component.hasUnsavedChanges).toBeTrue();
+
+            target.title = 'Original';
+            component.markDirty();
+            expect(component.hasUnsavedChanges).toBeFalse();
+        });
+
+        it('notices an array dependency being added and removed', () => {
+            const schema = makeSchema({ id: 'a', fields: [makeField({ name: 'f1' })] });
+            schema.arrayDependencies = [];
+            const component = withBaseline(schema);
+
+            schema.arrayDependencies.push({ field: ['a'], on: ['b'], kind: 'array' });
+            component.markDirty();
+            expect(component.hasUnsavedChanges).toBeTrue();
+
+            schema.arrayDependencies.pop();
+            component.markDirty();
+            expect(component.hasUnsavedChanges).toBeFalse();
+        });
+
+        it('signs a tree that reaches the same sub-schema object twice', () => {
+            // Two ref fields pointing at one sub-schema IRI share their field objects.
+            // A single set for the whole traversal calls the second visit a cycle, so
+            // the signature came back null and the schema stayed dirty forever.
+            const shared = makeField({ name: 'shared', title: 'Original' });
+            const left = makeField({ name: 'left', isRef: true, fields: [shared] });
+            const right = makeField({ name: 'right', isRef: true, fields: [shared] });
+            const schema = makeSchema({ id: 'a', fields: [left, right] });
+            const component = withBaseline(schema);
+
+            expect(component.savedSignatures.get('a')).toBeDefined();
+
+            shared.title = 'Changed';
+            component.markDirty();
+            expect(component.hasUnsavedChanges).toBeTrue();
+
+            shared.title = 'Original';
+            component.markDirty();
+            expect(component.hasUnsavedChanges).toBeFalse();
+        });
+
+        it('treats a property cleared back to undefined as absent', () => {
+            // JSON.stringify drops undefined-valued keys, so the two states save
+            // identically; the signature has to agree or the flag can never clear.
+            const bare = makeSchema({ id: 'a', fields: [makeField({ name: 'f1' })] });
+            const withUndefined = makeSchema({ id: 'a', fields: [makeField({ name: 'f1' })] });
+            withUndefined.fields[0].hidden = undefined;
+            const component = createComponent({ schemas: [bare] });
+
+            expect(component.schemaSignature(withUndefined)).toBe(component.schemaSignature(bare));
+        });
+
+        it('still refuses to sign a genuine cycle', () => {
+            const field = makeField({ name: 'f1' });
+            field.fields = [field];
+            const schema = makeSchema({ id: 'a', fields: [field] });
+            const component = createComponent({ schemas: [schema], selectedSchema: schema });
+
+            expect(component.schemaSignature(schema)).toBeNull();
+        });
+
+        it('signs a deeply nested field tree', () => {
+            // The walk descends every object and array level, so a field one level
+            // deeper costs two of the depth budget. A realistic tree must still sign:
+            // a throw means "cannot prove clean", which latches Unsaved changes.
+            const root = makeField({ name: 'level_0' });
+            let cursor = root;
+            for (let i = 1; i <= 8; i++) {
+                const child = makeField({ name: `level_${i}` });
+                cursor.fields = [child];
+                cursor = child;
+            }
+            const schema = makeSchema({ id: 'a', fields: [root] });
+            const component = withBaseline(schema);
+
+            expect(component.savedSignatures.get('a')).toBeDefined();
+
+            cursor.title = 'Changed';
+            component.markDirty();
+            expect(component.hasUnsavedChanges).toBeTrue();
         });
     });
 

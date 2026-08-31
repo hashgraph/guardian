@@ -208,9 +208,27 @@ export class SchemaHelper {
      * @param document
      */
     public static removeTemplateFieldIds(document: any): void {
-        SchemaHelper.walkDocumentProperties(document, (property) => {
-            delete property.templateFieldId;
-        });
+        const strip = (node: any) => {
+            SchemaHelper.walkDocumentProperties(node, (property) => {
+                delete property.templateFieldId;
+            });
+            /*
+             * walkDocumentProperties only follows `properties`, so embedded sub-schema
+             * definitions under `$defs` kept their markers after a detach. That left the
+             * document inconsistent with the cleaned sub-schema rows, and the markers
+             * leaked into subsequently published documents.
+             *
+             * Only removal walks $defs; ensureTemplateFieldIds is deliberately left
+             * alone, so this cannot start minting ids in places that never had them.
+             */
+            const defs = node?.$defs;
+            if (defs && typeof defs === 'object') {
+                for (const def of Object.values<any>(defs)) {
+                    strip(def);
+                }
+            }
+        };
+        strip(document);
     }
 
     /**

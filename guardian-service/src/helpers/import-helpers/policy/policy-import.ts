@@ -597,6 +597,8 @@ export class PolicyImport {
             schema.topicId = template.topicId;
             schema.category = SchemaCategory.TEMPLATE;
             schema.templateId = template.id;
+            schema.templateSchemaId = schema.templateSchemaId || GenerateUUIDv4();
+            SchemaHelper.ensureTemplateFieldIds(schema.document);
             schema.status = SchemaStatus.PUBLISHED;
             schema.owner = message.owner;
             schema.creator = message.owner;
@@ -633,6 +635,19 @@ export class PolicyImport {
             throw new Error('Selected schema template is inaccessible');
         }
 
+        // An import that carries a snapshot keeps its binding, and no caller sets
+        // metadata.schemaTemplate, so an unpublished but owned template would otherwise
+        // fall through to the throw below. A clone has no snapshot and is detached
+        // before this runs, so it never reaches here.
+        if (binding.templateId) {
+            const template = await DatabaseServer.getSchemaTemplateById(binding.templateId);
+            if (template && (template.status === ModuleStatus.PUBLISHED || template.owner === user.owner)) {
+                this.schemaTemplate = template;
+                step.complete();
+                return;
+            }
+        }
+
         const messageId = metadata?.schemaTemplate?.templateMessageId || binding.templateMessageId;
         if (messageId) {
             const template = await this.resolveSchemaTemplateByMessage(messageId, user, userId);
@@ -646,7 +661,12 @@ export class PolicyImport {
         throw new Error('Schema template is inaccessible. Select a template or detach it.');
     }
 
-    private clearTemplateMetadataFromSchemas(schemas: Schema[]): void {
+    /** Drop the binding before the schemas are written: detached, or no snapshot to carry it. */
+    public mustDropSchemaTemplateBinding(policy: Policy, schemaTemplateSnapshot: any, metadata: any): boolean {
+        return !!metadata?.schemaTemplate?.detach || (!!policy?.schemaTemplate && !schemaTemplateSnapshot);
+    }
+
+    public clearTemplateMetadataFromSchemas(schemas: Schema[]): void {
         for (const schema of schemas) {
             schema.templateId = '';
             schema.templateSchemaId = '';
@@ -905,10 +925,17 @@ export class PolicyImport {
         const additionalPolicyConfig = options.additionalPolicyConfig;
         const metadata = options.metadata;
         const logger = options.logger;
-        const detachSchemaTemplate = !!metadata?.schemaTemplate?.detach;
-
         this.importRecords = !!options.importRecords;
-        if (detachSchemaTemplate) {
+
+        /*
+         * Drop the binding whole, not half. saveSchemaTemplateSnapshot nulls
+         * policy.schemaTemplate after the schemas are persisted, leaving them with
+         * their template markers - a policy claiming no template over schemas that do.
+         *
+         * Deciding it here, alongside the explicit detach and before the schemas are
+         * written, is what makes the strip persist.
+         */
+        if (this.mustDropSchemaTemplateBinding(policy, schemaTemplateSnapshot, metadata)) {
             policy.schemaTemplate = null;
             this.clearTemplateMetadataFromSchemas(schemas);
         }
