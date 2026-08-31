@@ -132,10 +132,19 @@
     color: var(--guardian-font-color, #23252E);
 }
 
-.iwa-grid {
-    max-height: min(420px, calc(100vh - 460px));
-    overflow-y: auto;
+/* The theme draws the grid outline as an absolutely-positioned ::before inset
+   by -1px on three sides. That overhang is harmless on a page, but inside a
+   scrolling ancestor it counts as scrollable overflow, which showed a permanent
+   1px scrollbar on both axes here. Pull it flush. */
+:host ::ng-deep .guardian-grid-container::before {
+    left: 0;
+    right: 0;
+    bottom: 0;
 }
+
+/* No max-height or overflow of our own: .guardian-dialog .dialog-body already
+   scrolls, and only when the content does not fit. A second scroller here just
+   capped the table short of the space the dialog already had. */
 
 :host ::ng-deep .guardian-grid-row {
     height: auto;
