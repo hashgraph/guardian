@@ -187,41 +187,84 @@ export class Worker extends NatsService {
             this.currentTaskId = task.id;
             const userId = task.data?.payload?.userId;
 
-            this.logger.info(`Task started: ${task.id}, ${task.type}`, [this.workerID, 'WORKER'], userId);
-
-            const result = await this.processTaskWithTimeout(task);
-
+            /*
+             * Everything below runs inside try/finally. `isInUse` used to be cleared
+             * only by the last statement of the happy path, so a throw anywhere in
+             * between left the worker marked busy for the lifetime of the process:
+             * GET_FREE_WORKERS stops answering, WORKER_READY is never re-published,
+             * and the pod stays healthy while accepting no further work. Both call
+             * sites invoke runTask without await and without catch, so the rejection
+             * has nowhere to surface either.
+             */
             try {
-                // await this.publish([task.reply, WorkerEvents.TASK_COMPLETE].join('-'), result);
-                if (result?.error) {
-                    this.logger.error(`Task error: ${this.currentTaskId}, ${result?.error}`, [this.workerID, 'WORKER'], userId);
-                } else {
-                    this.logger.info(`Task completed: ${this.currentTaskId}`, [this.workerID, 'WORKER'], userId);
+                this.logger.info(`Task started: ${task.id}, ${task.type}`, [this.workerID, 'WORKER'], userId);
+
+                const result = await this.processTaskWithTimeout(task);
+
+                try {
+                    // await this.publish([task.reply, WorkerEvents.TASK_COMPLETE].join('-'), result);
+                    if (result?.error) {
+                        this.logger.error(`Task error: ${this.currentTaskId}, ${result?.error}`, [this.workerID, 'WORKER'], userId);
+                    } else {
+                        this.logger.info(`Task completed: ${this.currentTaskId}`, [this.workerID, 'WORKER'], userId);
+                    }
+                } catch (error) {
+                    /*
+                     * Log-only failure. This used to call clearState(), which released
+                     * isInUse mid-task and let a second task be dispatched to a worker
+                     * that was still running the first one.
+                     */
+                    this.logger.error(error.message, [this.workerID, 'WORKER'], userId);
+                }
+
+                try {
+                    if (completeEvent === WorkerEvents.TASK_COMPLETE) {
+                        await this.publish(completeEvent, result);
+                    } else {
+                        await this.publish(completeEvent, {
+                            id: task.id,
+                            data: result?.data,
+                            error: result?.error,
+                            isTimeoutError: result?.isTimeoutError
+                        });
+                    }
+                } catch (error) {
+                    /*
+                     * The result could not be transmitted - typically an oversized
+                     * payload rejected at publish time rather than at task time. Tell
+                     * the requester so it fails fast instead of waiting out its own
+                     * timeout, and keep the original error for the logs.
+                     */
+                    this.logger.error(
+                        `Task result publish failed: ${task.id}, ${error?.message}`,
+                        [this.workerID, 'WORKER'], userId
+                    );
+                    try {
+                        await this.publish(completeEvent, {
+                            id: task.id,
+                            error: `Task result could not be delivered: ${error?.message}`
+                        });
+                    } catch (reportError) {
+                        this.logger.error(reportError.message, [this.workerID, 'WORKER'], userId);
+                    }
                 }
             } catch (error) {
-                this.logger.error(error.message, [this.workerID, 'WORKER'], userId);
-                this.clearState();
-
-            }
-
-            if (completeEvent === WorkerEvents.TASK_COMPLETE) {
-                const completeTask = async (data: any) => {
-                    await this.publish(completeEvent, data);
+                this.logger.error(
+                    `Task failed: ${task.id}, ${error?.message}`,
+                    [this.workerID, 'WORKER'], userId
+                );
+            } finally {
+                /*
+                 * Re-announce before releasing. A worker that recovered its flag but
+                 * never re-published WORKER_READY would still sit out of the pool.
+                 */
+                try {
+                    await this.publish(WorkerEvents.WORKER_READY);
+                } catch (error) {
+                    this.logger.error(error.message, [this.workerID, 'WORKER'], userId);
                 }
-                await completeTask(result);
-            } else {
-                const payload = {
-                    id: task.id,
-                    data: result?.data,
-                    error: result?.error,
-                    isTimeoutError: result?.isTimeoutError
-                };
-
-                await this.publish(completeEvent, payload);
+                this.clearState();
             }
-
-            await this.publish(WorkerEvents.WORKER_READY);
-            this.isInUse = false;
         }
 
         this.getMessages([this.replySubject, WorkerEvents.SEND_TASK_TO_WORKER].join('.'), async (task) => {
