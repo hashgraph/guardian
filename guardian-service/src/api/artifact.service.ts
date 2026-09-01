@@ -55,6 +55,21 @@ export async function artifactAPI(logger: PinoLogger): Promise<void> {
                 return new MessageError('There is no appropriate policy', 422);
             }
 
+            /*
+             * The parent was resolved by id alone, so verify the caller owns it.
+             * Without this an artifact can be attached to another user's draft:
+             * the row is written with the uploader as `owner`, so it is hidden
+             * from the policy owner's listing (GET_ARTIFACTS filters on owner)
+             * while export, comparison and publish key on `policyId` alone and
+             * pull it in. DELETE_ARTIFACT already scopes its lookup by owner.
+             *
+             * Answers exactly as for a missing parent: telling the caller the id
+             * exists but belongs to someone else is itself a disclosure.
+             */
+            if (parent.item?.owner !== owner.owner) {
+                return new MessageError('There is no appropriate policy', 422);
+            }
+
             const category: string = parent.type;
             if (parent.type === 'policy') {
                 if (parent.item.status !== PolicyStatus.DRAFT) {
