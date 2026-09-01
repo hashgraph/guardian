@@ -1,7 +1,7 @@
 {
     "author": "Hashgraph <guardian@hashgraph.com>",
     "dependencies": {
-        "@formulajs/formulajs": "4.6.0",
+        "@formulajs/formulajs": "4.6.1",
         "@guardian/common": "workspace:*",
         "@guardian/interfaces": "workspace:*",
         "@hiero-ledger/proto": "2.31.0",
@@ -15,7 +15,7 @@
         "dotenv": "^16.6.1",
         "ethers": "6.17.0",
         "express": "5.2.1",
-        "fs-extra": "11.3.6",
+        "fs-extra": "11.4.0",
         "imurmurhash": "0.1.4",
         "jszip": "3.10.1",
         "mathjs": "^15.2.0",
@@ -68,9 +68,9 @@
         "start": "node dist/index.js",
         "test": "mocha tests/**/*.test.mjs --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/guardian-service.xml --exit",
         "test:local": "mocha tests/**/*.test.mjs --exit",
-        "test:stability": "mocha tests/stability.test.mjs"
+        "test:stability": "mocha tests/stability.test.mjs --exit"
     },
     "type": "module",
     "types": "dist/index.d.ts",
-    "version": "3.6.0"
+    "version": "3.7.0"
 }

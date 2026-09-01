@@ -15,6 +15,7 @@ import {
     IPFS,
     JsonToXlsx,
     MessageAction,
+    loadErrorCode,
     MessageError,
     MessageResponse,
     MessageServer,
@@ -43,7 +44,8 @@ import {
     Users,
     VcHelper,
     MintTransaction,
-    XlsxToJson
+    XlsxToJson,
+    containsRegex
 } from '@guardian/common';
 import {
     DocumentCategoryType,
@@ -861,6 +863,101 @@ export class PolicyEngineService {
                 }
             });
 
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_POLICY_GRIDS,
+            async (msg: {
+                user: IAuthUser,
+                policyId: string
+            }): Promise<IMessageResponse<any>> => {
+                try {
+                    const { user, policyId } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    if (!policy) {
+                        throw Object.assign(new Error('Policy not found'), { code: 404 });
+                    }
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
+                    const result = await new GuardiansService()
+                        .sendPolicyMessage(PolicyEvents.GET_POLICY_GRIDS, policyId, { user, policyId }) as any;
+                    return new MessageResponse(result);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error, error.code);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_GRID_ACTIONS,
+            async (msg: {
+                user: IAuthUser,
+                policyId: string,
+                gridId: string
+            }): Promise<IMessageResponse<any>> => {
+                try {
+                    const { user, policyId, gridId } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    if (!policy) {
+                        throw Object.assign(new Error('Policy not found'), { code: 404 });
+                    }
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
+                    const result = await new GuardiansService()
+                        .sendPolicyMessage(PolicyEvents.GET_GRID_ACTIONS, policyId, { user, gridId }) as any;
+                    return new MessageResponse(result);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error, error.code);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_GRID_RECORDS,
+            async (msg: {
+                user: IAuthUser,
+                policyId: string,
+                gridId: string,
+                params: any
+            }): Promise<IMessageResponse<any>> => {
+                try {
+                    const { user, policyId, gridId, params } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    if (!policy) {
+                        throw Object.assign(new Error('Policy not found'), { code: 404 });
+                    }
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
+                    const result = await new GuardiansService()
+                        .sendPolicyMessage(PolicyEvents.GET_GRID_RECORDS, policyId, { user, gridId, params }) as any;
+                    return new MessageResponse(result);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error, error.code);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.EXECUTE_GRID_ACTION,
+            async (msg: {
+                user: IAuthUser,
+                policyId: string,
+                gridId: string,
+                recordId: string,
+                actionId: string,
+                body: any,
+                syncEvents?: boolean,
+                timeout?: number
+            }): Promise<IMessageResponse<any>> => {
+                try {
+                    const { user, policyId, gridId, recordId, actionId, body, syncEvents } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    if (!policy) {
+                        throw Object.assign(new Error('Policy not found'), { code: 404 });
+                    }
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
+                    const timeout = Math.min(Math.max(msg.timeout || 5 * 60 * 1000, 10), 60 * 60 * 1000);
+                    const result = await new GuardiansService()
+                        .sendBlockMessage(PolicyEvents.EXECUTE_GRID_ACTION, policyId,
+                            { user, policyId, gridId, recordId, actionId, body, syncEvents }, timeout) as any;
+                    return new MessageResponse(result);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error, error.code);
+                }
+            });
+
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_POLICY_GROUPS,
             async (msg: {
                 user: IAuthUser,
@@ -1058,6 +1155,7 @@ export class PolicyEngineService {
                             'createDate',
                             'instanceTopicId',
                             'tools',
+                            'schemaTemplate',
                             'policyGroups',
                             'policyRoles',
                             'discontinuedDate',
@@ -1532,56 +1630,48 @@ export class PolicyEngineService {
             }): Promise<IMessageResponse<any>> => {
                 try {
                     const { policyId, owner, enableMock } = msg;
-
-                    const model = await DatabaseServer.getPolicyById(policyId);
-                    await this.policyEngine.accessPolicy(model, owner, 'publish');
-
-                    if (!model.config) {
-                        throw new Error('The policy is empty');
-                    }
-                    if (model.status === PolicyStatus.PUBLISH) {
-                        throw new Error(`Policy published`);
-                    }
-                    if (model.status === PolicyStatus.DISCONTINUED) {
-                        throw new Error(`Policy is discontinued`);
-                    }
-                    if (model.status === PolicyStatus.DRY_RUN) {
-                        throw new Error(`Policy already in Dry Run`);
-                    }
-                    if (model.status === PolicyStatus.PUBLISH_ERROR) {
-                        throw new Error(`Failed policy cannot be started in dry run mode`);
-                    }
-                    if (model.status === PolicyStatus.DEMO) {
-                        throw new Error(`Policy imported in demo mode`);
-                    }
-                    if (model.status === PolicyStatus.VIEW) {
-                        throw new Error(`Policy imported in view mode`);
-                    }
-
-                    const errors = await this.policyEngine.validateModel(policyId, true);
-                    const isValid = !errors.blocks.some(block => !block.isValid);
-                    if (isValid) {
-                        await this.policyEngine.dryRunPolicy(model, owner, 'Dry Run', false, logger, enableMock);
-                        await this.policyEngine.generateModel(model.id.toString(), enableMock);
-                    }
-
-                    const savepointsCount = await DatabaseServer.getSavepointsCount(policyId);
-
-                    if (savepointsCount === 0) {
-                        await DatabaseServer.nullifyInitialDryRunSavepointIds();
-                    } else {
-                        await DatabaseServer.removeDryRunWithEmptySavepoint(policyId);
-                        PolicyDataMigrator.clearRunCacheByPolicyId(policyId);
-                    }
-
+                    const result = await this.policyEngine.validateAndDryRunPolicy(
+                        policyId,
+                        owner,
+                        enableMock,
+                        NewNotifier.empty(),
+                        logger
+                    );
                     return new MessageResponse({
-                        isValid,
-                        errors
+                        isValid: result.isValid,
+                        errors: result.errors
                     });
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                     return new MessageError(error);
                 }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.DRY_RUN_POLICIES_ASYNC,
+            async (msg: {
+                policyId: string,
+                owner: IOwner,
+                enableMock: boolean,
+                task: any
+            }): Promise<IMessageResponse<any>> => {
+                const { policyId, owner, enableMock, task } = msg;
+                const notifier = await NewNotifier.create(task);
+
+                RunFunctionAsync(async () => {
+                    const result = await this.policyEngine.validateAndDryRunPolicy(
+                        policyId,
+                        owner,
+                        enableMock,
+                        notifier,
+                        logger
+                    );
+                    notifier.result(result);
+                }, async (error) => {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                    notifier.fail(error);
+                });
+
+                return new MessageResponse(task);
             });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.DISCONTINUE_POLICY,
@@ -2075,7 +2165,8 @@ export class PolicyEngineService {
                     return new MessageResponse(true);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                    return new MessageError(error);
+                    // Forward error.code (404/422 for message load errors) instead of a generic 500.
+                    return new MessageError(error, loadErrorCode(error));
                 }
             });
 
@@ -2157,7 +2248,8 @@ export class PolicyEngineService {
                         }
                     } catch (error) {
                         await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                        notifier.fail(error);
+                        // Forward error.code (404/422 for message load errors) instead of a generic 500.
+                        notifier.fail(error, loadErrorCode(error));
                     }
                 });
                 return new MessageResponse(task);
@@ -4770,11 +4862,12 @@ export class PolicyEngineService {
                         });
                     }
                     if (params?.search) {
+                        const searchFilter = containsRegex(params.search);
                         filters.$and.push({
                             $or: [{
-                                name: { $regex: '.*' + params.search + '.*' }
+                                name: searchFilter
                             }, {
-                                fieldName: { $regex: '.*' + params.search + '.*' }
+                                fieldName: searchFilter
                             }]
                         });
                     }
@@ -5026,14 +5119,15 @@ export class PolicyEngineService {
                         discussionId
                     };
                     if (params?.search) {
+                        const searchFilter = containsRegex(params.search);
                         filters.$or = [{
-                            text: { $regex: '.*' + params.search + '.*' }
+                            text: searchFilter
                         }, {
-                            fieldName: { $regex: '.*' + params.search + '.*' }
+                            fieldName: searchFilter
                         }, {
-                            senderName: { $regex: '.*' + params.search + '.*' }
+                            senderName: searchFilter
                         }, {
-                            senderRole: { $regex: '.*' + params.search + '.*' }
+                            senderRole: searchFilter
                         }]
                     }
                     if (params?.field) {

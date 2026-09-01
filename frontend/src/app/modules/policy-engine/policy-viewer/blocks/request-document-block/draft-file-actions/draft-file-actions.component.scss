@@ -3,3 +3,19 @@
     align-items: center;
     gap: 8px;
 }
+
+.guardian-button {
+    height: 40px;
+    padding: 1px 16px;
+
+    .guardian-button-icon {
+        width: 20px;
+        height: 20px;
+
+        svg-icon,
+        svg {
+            width: 20px;
+            height: 20px;
+        }
+    }
+}

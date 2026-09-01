@@ -73,6 +73,10 @@
             (click)="routActive('SR_TOOLS')">
             Tools
           </div>
+          <div class="nav-list-item" [attr.active]="isActiveLink('SR_SCHEMA_TEMPLATES')"
+            (click)="routActive('SR_SCHEMA_TEMPLATES')">
+            Schema Templates
+          </div>
           <div class="nav-list-item" [attr.active]="isActiveLink('SR_POLICIES_LIST')"
             (click)="routActive('SR_POLICIES_LIST')">
             Policies
@@ -233,6 +237,10 @@
                 <div class="nav-list-item" [attr.active]="isActiveLink('SR_TOOLS')"
                   (click)="mobileRoutActive('SR_TOOLS')">
                   Tools
+                </div>
+                <div class="nav-list-item" [attr.active]="isActiveLink('SR_SCHEMA_TEMPLATES')"
+                  (click)="mobileRoutActive('SR_SCHEMA_TEMPLATES')">
+                  Schema Templates
                 </div>
                 <div class="nav-list-item" [attr.active]="isActiveLink('SR_POLICIES_LIST')"
                   (click)="mobileRoutActive('SR_POLICIES_LIST')">
@@ -407,7 +415,7 @@
           <div class="demo-users-list">
             <div class="demo-user"
               *ngFor="let user of testUsers$ | async"
-              (click)="authState.doLogin(user.username, 'test')">
+              (click)="authState.doLogin(user.username, 'TestPass1')">
               <div class="demo-user-avatar">{{ getInitials(user.username) }}</div>
               <div class="demo-user-info">
                 <span class="demo-user-name">{{ user.username }}</span>

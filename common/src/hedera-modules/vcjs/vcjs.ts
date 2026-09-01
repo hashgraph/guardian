@@ -5,7 +5,7 @@ import { Ed25519Signature2018 } from '@digitalbazaar/ed25519-signature-2018';
 import { Ed25519VerificationKey2018 } from '@digitalbazaar/ed25519-verification-key-2018';
 import { PrivateKey } from '@hiero-ledger/sdk';
 import { SchemaValidationResult } from './schema-validation-result.js';
-import { GenerateUUIDv4, ICredentialSubject, IVC, Schema, SignatureType } from '@guardian/interfaces';
+import { GenerateUUIDv4, ICredentialSubject, ISchemaArrayDependency, IVC, Schema, SchemaField, SchemaHelper, SignatureType } from '@guardian/interfaces';
 import { VcDocument } from './vc-document.js';
 import { VpDocument } from './vp-document.js';
 import { VcSubject } from './vc-subject.js';
@@ -19,6 +19,8 @@ import axios from 'axios';
 import { BbsBlsSignature2020, BbsBlsSignatureProof2020, Bls12381G2KeyPair, KeyPairOptions } from '@mattrglobal/jsonld-signatures-bbs';
 import { IPFS } from '../../helpers/index.js';
 import { CommonDidDocument, HederaBBSMethod, HederaDidDocument, HederaEd25519Method } from './did/index.js';
+import { validateGeoConsistency } from './geo-validator.js';
+import { ArrayGroupValidationError, validateArrayGroups } from './array-group-validator.js';
 
 import * as jsigV7Module from 'jsonld-signatures-v7';
 import { ContextHelper } from './context-helper.js';
@@ -303,11 +305,15 @@ export class VCJS {
             throw new Error('Schema Loader not found');
         }
 
-        const schema = await this.schemaLoader(subject['@context'], subject.type, 'vc');
+        const loadedSchema = await this.schemaLoader(subject['@context'], subject.type, 'vc');
 
-        if (!schema) {
+        if (!loadedSchema) {
             throw new Error('Schema not found');
         }
+
+        // prepareSchema/coerceConditionConsts rewrite the document in place; the loader may
+        // hand back a cached instance shared with other callers, so validate against a copy.
+        const schema = JSON.parse(JSON.stringify(loadedSchema));
 
         const ajv = new Ajv({
             loadSchema: this.loadSchema
@@ -315,6 +321,7 @@ export class VCJS {
         addFormats.default(ajv);
 
         this.prepareSchema(schema);
+        this.coerceConditionConsts(schema);
 
         const schemaObject = Schema.fromVc(schema);
 
@@ -322,9 +329,17 @@ export class VCJS {
 
         const validate = await ajv.compileAsync(schema);
         const valid = validate(vcObject);
-        const errors = this.enhanceConditionErrors(validate.errors as any[], schema);
+        let errors = this.enhanceConditionErrors(validate.errors as any[], schema);
+        const geoErrors = validateGeoConsistency(subject, schemaObject?.fields || []);
+        const groupErrors = validateArrayGroups(subject, schemaObject?.arrayDependencies || []);
+        const conditionErrors = VCJS.conditionErrors(subject, schemaObject);
+        errors = [...(errors || []), ...geoErrors, ...groupErrors, ...conditionErrors];
 
-        return new SchemaValidationResult(valid, 'JSON_SCHEMA_VALIDATION_ERROR', errors as any);
+        return new SchemaValidationResult(
+            valid && !geoErrors.length && !groupErrors.length && !conditionErrors.length,
+            'JSON_SCHEMA_VALIDATION_ERROR',
+            errors as any
+        );
     }
 
     /**
@@ -350,12 +365,23 @@ export class VCJS {
     }
 
     /**
+     * $ref sits directly on the property for objects, under `items` for arrays.
+     *
+     * @param prop Schema property
+     * @returns Referenced $defs key, if any
+     */
+    private readRef(prop: any): string | undefined {
+        return prop?.$ref ?? prop?.items?.$ref;
+    }
+
+    /**
      * Delete system fields from schema defs
      *
      * @param schema Schema
      */
     private prepareSchema(schema: any) {
         this.stripIfOnly(schema);
+        this.stripTemplateFieldIds(schema);
 
         const defsObj = schema.$defs;
         if (!defsObj) {
@@ -382,11 +408,17 @@ export class VCJS {
         // Multiple conditions targeting the same container accumulate into one Set.
         const stripByPath = new Map<string, Set<string>>();
 
+        const withRef = (prop: any, newRef: string): any => {
+            if (prop?.$ref) { return { ...prop, $ref: newRef }; }
+            if (prop?.items?.$ref) { return { ...prop, items: { ...prop.items, $ref: newRef } }; }
+            return prop;
+        };
+
         const collectPath = (constraint: any, pathSoFar: string[], currentProps: any) => {
             if (!constraint?.properties) { return; }
             for (const [propKey, val] of Object.entries(constraint.properties) as [string, any][]) {
                 if (!val || typeof val !== 'object') { continue; }
-                const ref = currentProps[propKey]?.$ref;
+                const ref = this.readRef(currentProps[propKey]);
                 if (!ref || !defsObj[ref]) { continue; }
                 const containerPath = [...pathSoFar, propKey];
                 const pathKey = containerPath.join('.');
@@ -420,7 +452,7 @@ export class VCJS {
         const computeOriginalIri = (pathArr: string[]): string | undefined => {
             let props = rootProperties;
             for (let i = 0; i < pathArr.length; i++) {
-                const ref = props[pathArr[i]]?.$ref;
+                const ref = this.readRef(props[pathArr[i]]);
                 if (!ref || !defsObj[ref]) { return undefined; }
                 if (i === pathArr.length - 1) { return ref; }
                 props = defsObj[ref]?.properties || {};
@@ -471,18 +503,62 @@ export class VCJS {
             // Rewrite the $ref on this specific container only.
             if (pathArr.length === 1) {
                 if (rootProperties[pathArr[0]]) {
-                    rootProperties[pathArr[0]] = { ...rootProperties[pathArr[0]], $ref: cloneKey };
+                    rootProperties[pathArr[0]] = withRef(rootProperties[pathArr[0]], cloneKey);
                 }
             } else {
                 const parentPathKey = pathArr.slice(0, -1).join('.');
                 const parentCloneKey = cloneKeys.get(parentPathKey);
                 const leafProp = pathArr[pathArr.length - 1];
                 if (parentCloneKey && defsObj[parentCloneKey]?.properties?.[leafProp]) {
-                    defsObj[parentCloneKey].properties[leafProp] = {
-                        ...defsObj[parentCloneKey].properties[leafProp],
-                        $ref: cloneKey,
-                    };
+                    defsObj[parentCloneKey].properties[leafProp] = withRef(
+                        defsObj[parentCloneKey].properties[leafProp],
+                        cloneKey
+                    );
                 }
+            }
+        }
+    }
+
+    /**
+     * Remove the schema-editor-only `templateFieldId` annotation from every property.
+     *
+     * @param schema Schema
+     */
+    private stripTemplateFieldIds(schema: any) {
+        const stripProperties = (properties: any) => {
+            if (!properties || typeof properties !== 'object') {
+                return;
+            }
+            for (const property of Object.values<any>(properties)) {
+                if (!property || typeof property !== 'object') {
+                    continue;
+                }
+
+                delete property.templateFieldId;
+
+                if (property.properties) {
+                    stripProperties(property.properties);
+                }
+                if (property.items?.properties) {
+                    stripProperties(property.items.properties);
+                }
+            }
+        };
+
+        const stripNode = (node: any) => {
+            stripProperties(node?.properties);
+            if (Array.isArray(node?.allOf)) {
+                for (const entry of node.allOf) {
+                    stripNode(entry?.then);
+                    stripNode(entry?.else);
+                }
+            }
+        };
+
+        stripNode(schema);
+        if (schema?.$defs) {
+            for (const nestedSchema of Object.values<any>(schema.$defs)) {
+                stripNode(nestedSchema);
             }
         }
     }
@@ -539,18 +615,92 @@ export class VCJS {
         return '';
     }
 
-    /**
-     * Replaces AJV messages with a human-readable description
-     */
-    private enhanceConditionErrors(errors: any[] | null | undefined, schema: any): any[] | null | undefined {
-        if (!errors?.length || !Array.isArray(schema?.allOf)) {
-            return errors;
+    private coerceConditionConsts(schema: any): void {
+        const rootDefs = schema.$defs || {};
+
+        const coerceConst = (value: any, type: string): any => {
+            if (type === 'number' || type === 'integer') {
+                const n = Number(value);
+                return isNaN(n) ? value : n;
+            }
+            if (type === 'boolean') {
+                if (typeof value === 'boolean') { return value; }
+                const s = String(value).trim().toLowerCase();
+                if (s === 'true' || s === '1') { return true; }
+                if (s === 'false' || s === '0') { return false; }
+                return value;
+            }
+            if (type === 'string' && value !== null && value !== undefined) {
+                return String(value);
+            }
+            return value;
+        };
+
+        // Mirrors describeIfConditionLeaf's shape: const, nested container, or anyOf/allOf of either.
+        const coerceValueNode = (val: any, contextProp: any, context: any): void => {
+            if (!val || typeof val !== 'object') { return; }
+            if ('const' in val) {
+                const type = contextProp?.type === 'array'
+                    ? contextProp?.items?.type
+                    : contextProp?.type;
+                if (type) { val.const = coerceConst(val.const, type); }
+                return;
+            }
+            if (val.properties) {
+                const ref = this.readRef(contextProp);
+                const subContext = ref ? (context.$defs?.[ref] ?? rootDefs[ref]) : null;
+                if (subContext) { walkIfNode(val, subContext); }
+                return;
+            }
+            if (Array.isArray(val.anyOf)) {
+                for (const branch of val.anyOf) { coerceValueNode(branch, contextProp, context); }
+            }
+            if (Array.isArray(val.allOf)) {
+                for (const branch of val.allOf) { coerceValueNode(branch, contextProp, context); }
+            }
+        };
+
+        const walkIfNode = (node: any, context: any): void => {
+            if (!node || typeof node !== 'object') { return; }
+            // allOf/anyOf may both be present on a node, so neither branch may return early.
+            if (Array.isArray(node.allOf)) {
+                for (const child of node.allOf) { walkIfNode(child, context); }
+            }
+            if (Array.isArray(node.anyOf)) {
+                for (const child of node.anyOf) { walkIfNode(child, context); }
+            }
+            if (!node.properties) { return; }
+            for (const [key, val] of Object.entries(node.properties) as [string, any][]) {
+                coerceValueNode(val, context?.properties?.[key], context);
+            }
+        };
+
+        const walkAllOf = (s: any, context: any): void => {
+            if (!Array.isArray(s?.allOf)) { return; }
+            for (const entry of s.allOf) {
+                if (entry?.if) { walkIfNode(entry.if, context); }
+            }
+        };
+
+        walkAllOf(schema, schema);
+        for (const def of Object.values(rootDefs) as any[]) {
+            if (def && typeof def === 'object') { walkAllOf(def, def); }
         }
+    }
+
+    private enhanceConditionErrors(errors: any[] | null | undefined, schema: any): any[] | null | undefined {
+        if (!errors?.length) { return errors; }
+        // Condition owner/index live in schemaPath (base "#..." is the $defs entry's own $id, never a literal "/$defs/").
+        const defs = schema.$defs ?? {};
         return errors.map(error => {
             if (error.keyword !== 'false schema') { return error; }
-            const match = (error.schemaPath as string)?.match(/^#\/allOf\/(\d+)\/(then|else)\//);
+            const match = (error.schemaPath as string)
+                ?.match(/^(#[^/]*)\/allOf\/(\d+)\/(then|else)\//);
             if (!match) { return error; }
-            const condEntry = schema.allOf[parseInt(match[1], 10)];
+            const [, base, idx] = match;
+            const owner = base === '#' ? schema : (defs[base] ?? schema);
+            if (!Array.isArray(owner?.allOf)) { return error; }
+            const condEntry = owner.allOf[parseInt(idx, 10)];
             if (!condEntry?.if) { return error; }
             const fieldName = (error.instancePath as string).split('/').filter(Boolean).pop() || 'field';
             const condition = this.describeIfCondition(condEntry.if) || 'condition not met';
@@ -573,11 +723,15 @@ export class VCJS {
             throw new Error('Schema Loader not found');
         }
 
-        const schema = await this.schemaLoader(subject['@context'], subject.type, 'subject');
+        const loadedSchema = await this.schemaLoader(subject['@context'], subject.type, 'subject');
 
-        if (!schema) {
+        if (!loadedSchema) {
             throw new Error('Schema not found');
         }
+
+        // prepareSchema/coerceConditionConsts rewrite the document in place; the loader may
+        // hand back a cached instance shared with other callers, so validate against a copy.
+        const schema = JSON.parse(JSON.stringify(loadedSchema));
 
         const ajv = new Ajv({
             loadSchema: this.loadSchema
@@ -585,12 +739,121 @@ export class VCJS {
         addFormats.default(ajv);
 
         this.prepareSchema(schema);
+        this.coerceConditionConsts(schema);
+
+        const schemaObject = Schema.fromVc(schema);
 
         const validate = await ajv.compileAsync(schema);
         const valid = validate(subject);
-        const errors = this.enhanceConditionErrors(validate.errors as any[], schema);
+        let errors = this.enhanceConditionErrors(validate.errors as any[], schema);
+        const geoErrors = validateGeoConsistency(subject, schemaObject?.fields || []);
+        const groupErrors = validateArrayGroups(subject, this.readArrayDependencies(schema));
+        const conditionErrors = VCJS.conditionErrors(subject, schemaObject);
+        errors = [...(errors || []), ...geoErrors, ...groupErrors, ...conditionErrors];
 
-        return new SchemaValidationResult(valid, 'JSON_SCHEMA_VALIDATION_ERROR', errors as any);
+        return new SchemaValidationResult(
+            valid && !geoErrors.length && !groupErrors.length && !conditionErrors.length,
+            'JSON_SCHEMA_VALIDATION_ERROR',
+            errors as any
+        );
+    }
+
+    /**
+     * Validate the fields a schema's conditions reveal.
+     *
+     * The schema document declares each branch but does not mark its fields required:
+     * JSON Schema applies `else` whenever `if` fails, including when the field the `if`
+     * reads was never asked, which would demand fields the form never showed. Those rules
+     * are enforced here instead, in the same shape ajv reports.
+     *
+     * `schemaObject.conditions` only holds the root document's own conditions — a `$ref`
+     * field's sub-schema keeps its own conditions on `field.conditions`, so they are walked
+     * here as well, recursively, against the matching slice of the submitted data.
+     * @param subject credential subject
+     * @param schemaObject parsed schema
+     */
+    private static conditionErrors(subject: any, schemaObject: Schema): ArrayGroupValidationError[] {
+        const out: ArrayGroupValidationError[] = [];
+        VCJS.pushConditionErrors(schemaObject?.conditions || [], subject, '', out);
+        VCJS.collectNestedConditionErrors(schemaObject?.fields || [], subject, '', out);
+        return out;
+    }
+
+    /**
+     * Recurse into `$ref` fields to validate the conditions declared inside their own
+     * sub-schemas, which `schemaObject.conditions` never sees.
+     * @param fields fields of the (sub-)schema currently being walked
+     * @param data matching slice of the submitted data
+     * @param path JSON-pointer path to `data`, for error reporting
+     * @param out accumulator for produced errors
+     */
+    private static collectNestedConditionErrors(
+        fields: SchemaField[],
+        data: any,
+        path: string,
+        out: ArrayGroupValidationError[]
+    ): void {
+        if (!Array.isArray(fields) || !data || typeof data !== 'object') {
+            return;
+        }
+        for (const field of fields) {
+            if (!field?.isRef) {
+                continue;
+            }
+            const value = data[field.name];
+            const entries: { entry: any; entryPath: string }[] = field.isArray
+                ? (Array.isArray(value) ? value : []).map((entry: any, index: number) => ({
+                    entry,
+                    entryPath: `${path}/${field.name}/${index}`,
+                }))
+                : [{ entry: value, entryPath: `${path}/${field.name}` }];
+
+            for (const { entry, entryPath } of entries) {
+                if (!entry || typeof entry !== 'object') {
+                    continue;
+                }
+                VCJS.pushConditionErrors(field.conditions || [], entry, entryPath, out);
+                VCJS.collectNestedConditionErrors(field.fields || [], entry, entryPath, out);
+            }
+        }
+    }
+
+    /**
+     * Run `validateConditionFields` for one (sub-)schema's conditions and append the
+     * results, in the shape ajv reports, to `out`.
+     * @param conditions conditions of the (sub-)schema being validated
+     * @param data matching slice of the submitted data
+     * @param instancePath JSON-pointer path to `data`
+     * @param out accumulator for produced errors
+     */
+    private static pushConditionErrors(
+        conditions: any[],
+        data: any,
+        instancePath: string,
+        out: ArrayGroupValidationError[]
+    ): void {
+        for (const message of SchemaHelper.validateConditionFields(conditions, data)) {
+            out.push({
+                instancePath,
+                schemaPath: '#/allOf',
+                message,
+                keyword: 'conditionFields' as any,
+                params: {} as Record<string, never>,
+            });
+        }
+    }
+
+    /**
+     * Read array dependencies from the loaded schema document
+     * @param schema
+     */
+    private readArrayDependencies(schema: any): ISchemaArrayDependency[] {
+        try {
+            const { arrayDependencies } = SchemaHelper.parseSchemaComment(schema?.$comment);
+            return Array.isArray(arrayDependencies) ? arrayDependencies : [];
+        } catch (error) {
+            return [];
+        }
     }
 
     /**

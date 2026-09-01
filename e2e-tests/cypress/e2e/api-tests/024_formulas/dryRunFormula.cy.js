@@ -1,12 +1,12 @@
 
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Put formula in Dry Run status and get formula data", { tags: ['formulas', 'firstPool', 'all'] }, () => {
+context('Put formula in Dry Run status and get formula data', { tags: ['formulas', 'firstPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
-    let firstFormula, documentId;
+    let firstFormula; let documentId;
 
     const getFormulas = (authorization, failOnStatusCode = true) =>
         cy.request({
@@ -53,8 +53,7 @@ context("Put formula in Dry Run status and get formula data", { tags: ['formulas
             failOnStatusCode,
         });
 
-
-    before("Get policy, document and schema id", () => {
+    before('Get policy, document and schema id', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             getFormulas(authorization).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
@@ -70,7 +69,7 @@ context("Put formula in Dry Run status and get formula data", { tags: ['formulas
         });
     });
 
-    it("Get formula data", () => {
+    it('Get formula data', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             postFormulaData(
                 authorization,
@@ -82,9 +81,9 @@ context("Put formula in Dry Run status and get formula data", { tags: ['formulas
                 true
             ).then((response) => {
                 expect(response.status).eql(STATUS_CODE.SUCCESS);
-                expect(response.body).to.have.property("document");
-                expect(response.body).to.have.property("relationships");
-                expect(response.body).to.have.property("schemas");
+                expect(response.body).to.have.property('document');
+                expect(response.body).to.have.property('relationships');
+                expect(response.body).to.have.property('schemas');
 
                 // Formula echoes should match the first formula fetched
                 expect(response.body.formulas.at(0).config).eql(firstFormula.config);
@@ -96,11 +95,10 @@ context("Put formula in Dry Run status and get formula data", { tags: ['formulas
                 expect(response.body.formulas.at(0).policyId).eql(firstFormula.policyId);
                 expect(response.body.formulas.at(0).policyInstanceTopicId).eql(firstFormula.policyInstanceTopicId);
                 expect(response.body.formulas.at(0).policyTopicId).eql(firstFormula.policyTopicId);
-                expect(response.body.formulas.at(0).status).eql("DRY_RUN");
+                expect(response.body.formulas.at(0).status).eql('DRY_RUN');
             });
         });
     });
-
 
     it("Draft formula and check that formula isn't displayed", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {

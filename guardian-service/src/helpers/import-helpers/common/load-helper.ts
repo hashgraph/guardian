@@ -1,4 +1,4 @@
-import { DatabaseServer, MessageAction, MessageServer, MessageType, PinoLogger, SchemaMessage, SchemaPackageMessage, UrlType } from '@guardian/common';
+import { DatabaseServer, MessageAction, MessageLoadError, MessageServer, MessageType, PinoLogger, SchemaMessage, SchemaPackageMessage, UrlType } from '@guardian/common';
 import { ISchema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
 
 export class SchemaCache {
@@ -60,8 +60,10 @@ export async function loadSchema(
         }
         const messageServer = new MessageServer(null);
         log.info(`loadSchema: ${messageId}`, ['GUARDIAN_SERVICE'], userId);
+        // An id that is not on Hedera means "skip this schema"; both callers treat a
+        // null result that way. An unreachable IPFS still throws.
         const response = await messageServer
-            .getMessage<SchemaMessage | SchemaPackageMessage>({
+            .tryGetMessage<SchemaMessage | SchemaPackageMessage>({
                 messageId,
                 loadIPFS: true,
                 type: [MessageType.Schema, MessageType.SchemaPackage],
@@ -145,6 +147,10 @@ export async function loadSchema(
         }
     } catch (error) {
         log.error(error, ['GUARDIAN_SERVICE'], userId);
+        // Keep the code and the message id from a load failure instead of a generic 500.
+        if (error instanceof MessageLoadError) {
+            throw error;
+        }
         throw new Error(`Cannot load schema ${messageId}`);
     }
 }
@@ -226,6 +232,10 @@ export async function getSchemaCategory(topicId: string): Promise<SchemaCategory
         if (item) {
             return SchemaCategory.TOOL;
         }
+        const template = await DatabaseServer.getSchemaTemplate({ topicId });
+        if (template) {
+            return SchemaCategory.TEMPLATE;
+        }
     }
     return SchemaCategory.POLICY;
 }
@@ -235,6 +245,10 @@ export async function getSchemaTarget(topicId: string): Promise<any> {
         const tool = await DatabaseServer.getTool({ topicId });
         if (tool) {
             return { category: SchemaCategory.TOOL, target: tool };
+        }
+        const template = await DatabaseServer.getSchemaTemplate({ topicId });
+        if (template) {
+            return { category: SchemaCategory.TEMPLATE, target: template };
         }
         const policy = await DatabaseServer.getPolicy({ topicId });
         if (policy) {

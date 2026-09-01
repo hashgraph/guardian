@@ -1,17 +1,28 @@
-# Guardian E2E (Docker)
+# Guardian E2E Tests suites
 
-This folder contains Cypress API and UI tests runnable via Docker.
+The `/e2e-tests` folder comprises the Guardian Cypress test automation framework and automated UI and API tests runnable on the local machine or via Docker.
 
-## Prerequisites
+Unless specified otherwise, the tests are idempotent and can be run multiple times without side effects, and in any order.
+The only requirement is preparing the environment with a few accounts using the `preparing` tag, and ensuring the accounts have enough balance for the operations performed during the tests (especially the StandardRegistry):
+
+```bash
+TAG=preparing ./run-test-by-tag.sh
+```
+
+See [Running Tests with Tags](#running-tests-with-tags) below for more details.
+
+## Guardian E2E (Docker)
+
+### Prerequisites
 
 - Docker Desktop (or Docker Engine + Compose)
 - Guardian backend reachable from Docker (default: API gateway at `host.docker.internal:3002`)
 
-## Quick Start (Most Common Commands)
+### Quick Start (Most Common Commands)
 
 Use the sections below for API/UI Docker and local runs.
 
-## Run API tests (Docker)
+### Run API tests (Docker)
 
 All API tests:
 
@@ -34,7 +45,7 @@ cd e2e-tests
 CYPRESS_grepTags="smoke" CYPRESS_grepFilterSpecs=true docker compose run --rm --build cypress-api
 ```
 
-## Run UI tests (Docker)
+### Run UI tests (Docker)
 
 All UI tests:
 
@@ -50,7 +61,7 @@ cd e2e-tests
 CYPRESS_grepTags="ui smoke" CYPRESS_grepFilterSpecs=true docker compose run --rm --build cypress-ui
 ```
 
-## Reports
+### Reports
 
 After any Docker run:
 
@@ -66,9 +77,9 @@ cd e2e-tests
 xdg-open cypress/reports/html/index.html
 ```
 
-## Useful overrides
+### Useful overrides
 
-- **API origin** (Docker Desktop): `CYPRESS_apiServer=http://host.docker.internal:3002/`
+- **API origin** (Docker Desktop): `CYPRESS_apiServer=http://host.docker.internal:3002/api/v1`
 - **UI → API gateway** (for the `ui` container): `UI_GATEWAY_HOST` / `UI_GATEWAY_PORT`
 
 Example:
@@ -78,12 +89,9 @@ cd e2e-tests
 UI_GATEWAY_HOST=host.docker.internal UI_GATEWAY_PORT=3002 docker compose run --rm --build cypress-ui
 ```
 
-# Guardian Test Automation
+## Guardian Local Machine (Non-Docker)
 
-## Description
-The `/e2e-tests` folder comprises the Guardian Cypress test automation framework and automated UI and API tests.
-
-When running API tests, remember that they depend on each other. It is recommended to run them sequentially, following the order specified in the `/e2e-tests` folder.
+### Description
 
 - [Software Requirements](#software-requirements)
 - [Installation](#installation)
@@ -95,111 +103,127 @@ When running API tests, remember that they depend on each other. It is recommend
 - [Test Reports](#test-reports)
 - [Troubleshooting](#troubleshooting)
 
-## Software Requirements
+### Software Requirements
+
 - Node.js 20 and above
 - Docker and Docker Compose (for Docker-based test execution)
 - Follow steps from the [README](https://github.com/hashgraph/guardian/blob/main/README.md) to install and deploy the Guardian application.
 
-## Installation
+### Installation
 
-### Manual Setup
+#### Manual Setup
+
 From the `/e2e-tests` folder, run the following command to install Cypress:
 
 ```bash
 npm install cypress --save-dev
 ```
 
-## Configuration
+### Configuration
 
-### Environment Variables
+#### Environment Variables
 
 If you built the Guardian in Docker, set the `portApi` variable in `cypress.env.json` file. The configuration supports the following variables:
 
 - `portApi` - API port (default: `4200/api/v1`)
 - `baseUrl` - Base URL for the application (default: `http://localhost:4200`)
-- `operatorId` - Hedera operator ID
-- `operatorKey` - Hedera operator key
+- `operatorId` - Hedera operator ID (empty by default – must be supplied)
+- `operatorKey` - Hedera operator key (empty by default – must be supplied)
+- `ipfsStorageApiKey` - IPFS storage API key (empty by default; only needed for a non-local `IPFS_PROVIDER`)
 - `MGSAdmin` - MGS tenant name
 - `MGSIndexerAPIToken` - MGS Indexer API token
 
-## Usage
+### Usage
 
-### Interactive Dashboard
+#### Interactive Dashboard
+
 To run a specific test from the UI, you can open the Cypress dashboard:
 
 ```bash
 npx cypress open
 ```
 
-### Local Command Line Execution
+#### Local Command Line Execution
 
 The project pins Cypress 14.x (`package.json`). If you use **Cypress 15+**, `--env` requires **JSON** (see [Cypress 15 and --env](#cypress-15-and---env) below).
 
-#### Run all API tests (most basic)
+##### Run all API tests (most basic)
+
 ```bash
 npx cypress run --browser chrome --env "grepTags=all,grepFilterSpecs=true"
 ```
 
-#### Run with specific tags (sanity testing with user preparation)
+##### Run with specific tags (sanity testing with user preparation)
+
 ```bash
 npx cypress run --browser chrome --headed --env "grepTags=preparing policies,grepFilterSpecs=true"
 ```
 
 **Cypress 15+ only** (if you see "Cannot parse as valid JSON"):
+
 ```bash
 npx cypress run --browser chrome --headed --env '{"grepTags":"preparing policies","grepFilterSpecs":true}'
 ```
 
-#### Run single test file
+##### Run single test file
+
 ```bash
 npx cypress run --spec "path/to/file.cy.js"
 ```
 
-#### Run all UI tests
+##### Run all UI tests
+
 ```bash
 npx cypress run --env "grepTags=ui,grepFilterSpecs=true"
 ```
 
-#### Run smoke tests
+##### Run smoke tests
+
 ```bash
 npx cypress run --env "grepTags=smoke,grepFilterSpecs=true"
 ```
 
-### Running Tests with Tags
+#### Running Tests with Tags
 
 Tags allow you to run specific test subsets. For local CLI runs using `--env "grepTags=..."`, pass multiple tags as a **space-separated** list. For Docker runs, `CYPRESS_grepTags` accepts both spaces and commas (the entrypoint normalizes them).
 
-#### Verified tag examples
+##### Verified tag examples
 
 **All API tests (basic run):**
+
 ```bash
 npx cypress run --browser chrome --env "grepTags=all,grepFilterSpecs=true"
 ```
 
 **Sanity run (preparing + specific feature, e.g. policies):**
+
 ```bash
 npx cypress run --browser chrome --headed --env "grepTags=preparing policies,grepFilterSpecs=true"
 ```
 
 **Cypress 15+:** use JSON for `--env`, e.g. `--env '{"grepTags":"preparing policies","grepFilterSpecs":true}'`
 
-#### Single Tag
+##### Single Tag
+
 ```bash
 npx cypress run --browser chrome --env "grepTags=accounts,grepFilterSpecs=true"
 ```
 
-#### Multiple Tags (AND operation)
+##### Multiple Tags (AND operation)
+
 ```bash
 npx cypress run --browser chrome --env "grepTags=preparing policies,grepFilterSpecs=true"
 ```
 
 **Important**:
+
 - **Local CLI (`--env "..."`)**: use spaces, e.g. `preparing policies`
 - **Docker (`CYPRESS_grepTags=...`)**: spaces or commas are accepted, e.g. `preparing policies` or `preparing,policies`
 
-#### Available Tags
+##### Available Tags
 
 **Feature Tags:**
+
 - `accounts` - all tests for accounts operations
 - `analytics` - all tests for analytics operations
 - `artifacts` - all tests for artifacts operations
@@ -227,22 +251,23 @@ npx cypress run --browser chrome --env "grepTags=preparing policies,grepFilterSp
 - `remote_policy` - all tests for remote policy feature (using MGS)
 
 **General Tags:**
+
 - `all` - all API tests for Guardian platform
 - `preparing` - special test used for generating accounts for tests (should be run before feature-specific tests)
 - `smoke` - all tests for the most important and frequently used functionality
 - `ui` - all UI tests
 
-**Note**: E2E tests for the Guardian platform are interdependent. When running tests using certain tags, additional tests may be executed to ensure successful test run. Always include the `preparing` tag when running feature-specific tests to ensure user accounts are created.
+**Note**: When running tests using certain tags, additional tests may be executed to ensure successful test run. Always include the `preparing` tag when running feature-specific tests to ensure user accounts are created.
 
-## Docker Setup
+### Docker Setup
 
-### Overview
+#### Overview
 
 The e2e-tests directory includes Docker setup for containerized test execution with a single Docker image definition:
 
 1. **Dockerfile** - Installs Chromium and defaults to `CYPRESS_BROWSER=chromium` for CI and local Docker runs.
 
-### Building the Docker Image
+#### Building the Docker Image
 
 ```bash
 cd e2e-tests
@@ -251,24 +276,27 @@ docker compose build
 
 The `docker-compose.yml` uses `Dockerfile` and sets `CYPRESS_BROWSER=chromium`.
 
-### Running Tests in Docker
+#### Running Tests in Docker
 
 Ensure Guardian is running and reachable (e.g. API on port 3002). From the repo root, build the image once, then run with the desired tags.
 
-#### Sanity tests (preparing + policies; common smoke/sanity run)
+##### Sanity tests (preparing + policies; common smoke/sanity run)
+
 ```bash
 cd e2e-tests
 docker-compose build
 CYPRESS_grepTags="preparing policies" CYPRESS_grepFilterSpecs=true docker-compose up
 ```
 
-#### Smoke tests only
+##### Smoke tests only
+
 ```bash
 cd e2e-tests
 CYPRESS_grepTags="smoke" CYPRESS_grepFilterSpecs=true docker-compose up
 ```
 
-#### All API tests
+##### All API tests
+
 ```bash
 cd e2e-tests
 CYPRESS_grepTags=all CYPRESS_grepFilterSpecs=true docker-compose up
@@ -277,7 +305,7 @@ CYPRESS_grepTags=all CYPRESS_grepFilterSpecs=true docker-compose up
 > Note: when running API tests in Docker, we target the API gateway directly at `:3002` (no `/api/v1` prefix).
 > If you point Cypress at `http://...:3002/api/v1/...` you’ll get 404s (the Angular `:4200/api/v1` proxy normally rewrites that prefix away).
 
-#### Recommended (one-shot) Docker Compose runs
+##### Recommended (one-shot) Docker Compose runs
 
 Prefer `docker compose run --rm` for test jobs (it exits cleanly and doesn’t leave long-lived containers).
 
@@ -341,7 +369,8 @@ cd e2e-tests
 CYPRESS_grepTags="ui smoke" CYPRESS_grepFilterSpecs=true docker compose run --rm --build cypress-ui
 ```
 
-#### Using raw Docker (from repo root)
+##### Using raw Docker (from repo root)
+
 ```bash
 docker build -t cypress-runner ./e2e-tests
 # Sanity:
@@ -350,7 +379,8 @@ docker run --rm --network host -e CYPRESS_portApi=3002 -e CYPRESS_grepTags="prep
 docker run --rm --network host -e CYPRESS_portApi=3002 -e CYPRESS_grepTags="smoke" -e CYPRESS_grepFilterSpecs=true cypress-runner
 ```
 
-#### With custom authentication:
+##### With custom authentication
+
 ```bash
 cd e2e-tests
 CYPRESS_grepTags="preparing policies" \
@@ -360,7 +390,7 @@ CYPRESS_operatorKey= \
 docker-compose up
 ```
 
-#### Using raw Docker command:
+##### Using raw Docker command
 
 ```bash
 docker run --network host --name cypress-test-run \
@@ -371,18 +401,19 @@ docker run --network host --name cypress-test-run \
   cypress-runner
 ```
 
-### Docker Environment Variables
+#### Docker Environment Variables
 
 When running Docker tests, most variables are prefixed with `CYPRESS_` (the report title override uses `ReportName`):
 
 | Variable | Default | Description |
-|----------|---------|-------------|
+| ---------- | --------- | ------------- |
 | CYPRESS_portApi | 3002 | Guardian API port (direct API gateway). For local runs via the Angular proxy, this is typically `4200/api/v1` |
 | CYPRESS_baseUrl | - | Base URL for UI tests. When using `docker compose run cypress-tests`, set `CYPRESS_UI_BASEURL` (it maps to `CYPRESS_baseUrl`) e.g. `http://host.docker.internal:4200`. When using `docker compose run cypress-ui`, it is set automatically to `http://ui`. |
 | CYPRESS_grepTags | all | Tag filter; for multiple tags use spaces (e.g. `preparing policies`). Commas are also accepted. |
 | CYPRESS_grepFilterSpecs | true | Enable tag filtering |
-| CYPRESS_operatorId | - | Hedera operator ID (optional) |
-| CYPRESS_operatorKey | - | Hedera operator key (optional) |
+| CYPRESS_operatorId | - | Hedera operator ID. Required by the `settings` specs; no value is bundled in `cypress.env.json`. Falls back to `OPERATOR_ID`. |
+| CYPRESS_operatorKey | - | Hedera operator key. Required by the `settings` specs; no value is bundled in `cypress.env.json`. Falls back to `OPERATOR_KEY`. |
+| CYPRESS_ipfsStorageApiKey | - | IPFS storage API key sent by the `settings` specs. Falls back to `IPFS_STORAGE_API_KEY`, then to a placeholder – the value is unused while `IPFS_PROVIDER=local`. |
 | CYPRESS_BROWSER | chromium | Browser: `chromium`, `electron`, or `firefox` (must exist in the image) |
 | CYPRESS_apiServer | - | Optional full API origin override (useful on Docker Desktop). Examples: `http://host.docker.internal:3002/` (direct API gateway) or `http://host.docker.internal:4200/api/v1/` (if using Angular proxy) |
 | CYPRESS_SPEC | `cypress/e2e/api-tests/**/*.cy.js` in `cypress-api` | Optional default spec pattern used by the Docker entrypoint when `--spec` is not provided |
@@ -392,41 +423,43 @@ When running Docker tests, most variables are prefixed with `CYPRESS_` (the repo
 | CYPRESS_UI_WAIT_INTERVAL | 2 | UI readiness wait interval (seconds), used when `CYPRESS_baseUrl` is set |
 | ReportName | Guardian's Cypress Report | Optional Mochawesome report title (used by `reporter-config.js`) |
 
-### Configuration File
+#### Configuration File
 
 Create `.env` file in the e2e-tests directory for persistent environment variables:
 
 ```bash
-# Required for most auth-dependent tests (choose one style):
+## Required for most auth-dependent tests (choose one style):
 OPERATOR_ID=
 OPERATOR_KEY=
 
-# Optional: only for MGS/remote-policy scenarios
+## Optional: only for MGS/remote-policy scenarios
 CYPRESS_MGSAdmin=
 CYPRESS_MGSIndexerAPIToken=
 
-# Optional: report title override
+## Optional: report title override
 ReportName="Guardian's Cypress Report"
 
-# Optional: override API/UI targets (defaults usually work)
-# CYPRESS_apiServer=http://host.docker.internal:3002/
-# CYPRESS_baseUrl=http://host.docker.internal:4200
+## Optional: override API/UI targets (defaults usually work)
+## CYPRESS_apiServer=http://host.docker.internal:3002/
+## CYPRESS_baseUrl=http://host.docker.internal:4200
 
-# Optional: test selection
-# CYPRESS_grepTags=smoke
-# CYPRESS_grepFilterSpecs=true
-# CYPRESS_SPEC=cypress/e2e/api-tests/**/*.cy.js
+## Optional: test selection
+## CYPRESS_grepTags=smoke
+## CYPRESS_grepFilterSpecs=true
+## CYPRESS_SPEC=cypress/e2e/api-tests/**/*.cy.js
 ```
 
 The `.env` file is automatically loaded by docker compose.
 Keeping `.env` mostly empty is fine; only set values you need for your run.
 
 Variable precedence for `docker compose run`:
+
 - Inline values in command (`VAR=value docker compose run ...`) win over everything.
 - Then `.env` values are used.
 - Then defaults from `docker-compose.yml` apply.
 
 Important caveat for `CYPRESS_baseUrl`:
+
 - In `cypress-ui`, `CYPRESS_baseUrl` is set to `http://ui` in `docker-compose.yml`.
 - In `cypress-api`, `CYPRESS_baseUrl` is set to empty in `docker-compose.yml`.
 - Because these are explicitly set by service config, a `.env` value for `CYPRESS_baseUrl` may not be applied for those services.
@@ -435,11 +468,12 @@ Important caveat for `CYPRESS_baseUrl`:
 When running `docker compose` from `e2e-tests/`, we also load `../guardian-service/configs/.env.guardian`, so `OPERATOR_ID` / `OPERATOR_KEY` can be picked up automatically (they’re mapped to `operatorId` / `operatorKey` inside `entrypoint.sh`).
 
 Parameter summary:
-- **Mandatory (typical runs):** `OPERATOR_ID` + `OPERATOR_KEY` (or `CYPRESS_operatorId` + `CYPRESS_operatorKey`).
+
+- **Mandatory (typical runs):** `OPERATOR_ID` + `OPERATOR_KEY` (or `CYPRESS_operatorId` + `CYPRESS_operatorKey`). No operator credentials are committed to `cypress.env.json`, so the `settings` specs fail without them. This is the only Hedera account the suite needs – specs that require their own funded account request one at runtime via `cy.getHederaKeys()` (`GET /demo/random-key`).
 - **Mandatory only for MGS/remote-policy tests:** `CYPRESS_MGSAdmin` + `CYPRESS_MGSIndexerAPIToken`.
 - **Optional:** `ReportName`, `CYPRESS_apiServer`, `CYPRESS_baseUrl`, `CYPRESS_grepTags`, `CYPRESS_grepFilterSpecs`, `CYPRESS_SPEC`.
 
-### Windows (Docker) quick run
+#### Windows (Docker) quick run
 
 Use PowerShell syntax for env vars:
 
@@ -482,13 +516,13 @@ Remove-Item Env:CYPRESS_grepTags
 Remove-Item Env:CYPRESS_grepFilterSpecs
 ```
 
-### Available Browsers in Docker
+#### Available Browsers in Docker
 
 - **Chromium** (default via `CYPRESS_BROWSER=chromium`) - Full browser, typical CI path
 - **Electron** - Lightweight, fast fallback
 - **Firefox** - Alternative browser option (use: --browser firefox)
 
-### Switching Browsers
+#### Switching Browsers
 
 Set `CYPRESS_BROWSER`; the browser must be installed in the image:
 
@@ -497,7 +531,7 @@ CYPRESS_BROWSER=chromium docker-compose up
 CYPRESS_BROWSER=electron docker run ... 
 ```
 
-### Extracting Test Results from Docker
+#### Extracting Test Results from Docker
 
 After running tests in Docker, results are automatically available in:
 
@@ -508,13 +542,13 @@ ls -la cypress/test_results/junit/
 
 These directories are mounted as volumes from the Docker container to your local machine.
 
-## CI/CD Integration
+### CI/CD Integration
 
-### GitHub Actions Workflow
+#### GitHub Actions Workflow
 
 The repository includes automated test execution via GitHub Actions (`.github/workflows/api-manual.yml`).
 
-#### Manual Workflow Run
+##### Manual Workflow Run
 
 1. Go to **Actions** → **Guardian CI API Tests (Manual)**
 2. Click **Run workflow**
@@ -522,12 +556,12 @@ The repository includes automated test execution via GitHub Actions (`.github/wo
    - **Tags**: e.g., `all`, `smoke`, `preparing policies`, etc.
    - **Report name**: Custom report title
 
-#### Available Input Parameters
+##### Available Input Parameters
 
 - `tags` (default: `all`) - Test tags to run. For multiple tags, use spaces (e.g. `policies schemas`) or commas (e.g. `policies,schemas`). In Docker/CI runs, `preparing` is automatically prepended for feature-scoped runs (not for `all`).
 - `report_name` (default: `Guardian's Cypress Report`) - Custom report name
 
-#### Workflow Features
+##### Workflow Features
 
 - Automatically builds Guardian services
 - Starts necessary services (MongoDB, NATS, Guardian services)
@@ -536,7 +570,7 @@ The repository includes automated test execution via GitHub Actions (`.github/wo
 - Uploads HTML and JSON reports as artifacts
 - Cleans up Docker resources
 
-#### Test Report Artifacts
+##### Test Report Artifacts
 
 After workflow completion:
 
@@ -545,13 +579,13 @@ After workflow completion:
 3. Unzip and open `html/index.html` in a browser to view the interactive Cypress report (test details, screenshots, etc.).
 4. **Published results** – JUnit results are also published to the workflow summary.
 
-## Test Reports
+### Test Reports
 
-### Local Test Reports
+#### Local Test Reports
 
 After running tests locally, find reports in:
 
-```
+```text
 cypress/
   ├── reports/
   │   └── html/
@@ -564,18 +598,19 @@ cypress/
 
 Open `cypress/reports/html/index.html` in your browser to view the detailed test report.
 
-### Docker Test Reports
+#### Docker Test Reports
 
 To access reports from Docker runs:
 
 1. Copy reports from container:
+
 ```bash
 docker cp cypress-test-run:/e2e/cypress/reports ./e2e-tests/cypress/reports
 ```
 
-2. Open `cypress/reports/html/index.html` in your browser
+1. Open `cypress/reports/html/index.html` in your browser
 
-### Report Contents
+#### Report Contents
 
 The HTML report includes:
 
@@ -586,20 +621,23 @@ The HTML report includes:
 - Test duration and timing
 - Detailed error messages and stack traces
 
-## Common Usage Patterns
+### Common Usage Patterns
 
-### Pattern 1: Basic API Test Run
+#### Pattern 1: Basic API Test Run
+
 ```bash
 npm install
 npx cypress run --browser chrome --env "grepTags=all,grepFilterSpecs=true"
 ```
 
-### Pattern 2: Sanity Testing (Prepare Users + Run Policies Tests)
+#### Pattern 2: Sanity Testing (Prepare Users + Run Policies Tests)
+
 ```bash
 npx cypress run --browser chrome --headed --env "grepTags=preparing policies,grepFilterSpecs=true"
 ```
 
-### Pattern 3: Docker-based Full Test Suite
+#### Pattern 3: Docker-based Full Test Suite
+
 ```bash
 docker build -t cypress-runner ./e2e-tests
 docker run --network host \
@@ -609,50 +647,58 @@ docker run --network host \
   cypress-runner
 ```
 
-### Pattern 4: Running Multiple Feature Tags
+#### Pattern 4: Running Multiple Feature Tags
+
 ```bash
 npx cypress run --browser chrome --env "grepTags=preparing policies schemas artifacts,grepFilterSpecs=true"
 ```
 
-## Troubleshooting
+### Troubleshooting
 
-### Cypress 15 and --env
+#### Cypress 15 and --env
 
 If you see **"Cannot parse as valid JSON"** when using `--env`, you are on Cypress 15+, which requires `--env` to be a JSON object.
 
 - **Option A (recommended):** Use the project’s Cypress 14 from `e2e-tests`: run `npm install` in `e2e-tests` and use `npx cypress run` from that directory so the pinned version (14.x) is used.
 - **Option B:** Use JSON for `--env`:
+
   ```bash
   npx cypress run --browser chrome --env '{"grepTags":"preparing policies","grepFilterSpecs":true}'
   ```
+
   For all API tests: `--env '{"grepTags":"all","grepFilterSpecs":true}'`
 
-### Common Issues
+#### Common Issues
 
-#### Tag Syntax Errors
+##### Tag Syntax Errors
+
 - **Wrong**: `grepTags=all, policies` (space before comma)
 - **Correct**: `grepTags=all,policies` or `grepTags=all, policies` (space only after comma)
 
-#### No Tests Found
+##### No Tests Found
+
 - Verify tags are spelled correctly
 - Ensure tests are tagged in test files with `@tag` syntax
 - Check that `grepFilterSpecs=true` is set
 
-#### Docker Connection Issues
+##### Docker Connection Issues
+
 - Use `--network host` for Docker to access localhost services
 - Verify Guardian services are running on expected ports
 - Check firewall settings
 
-#### Missing Test Results
+##### Missing Test Results
+
 - Verify Docker volume mounts are correct
 - Ensure output directories exist in container
 - Check Docker `cp` command paths
 
-#### Insufficient Balance Errors
+##### Insufficient Balance Errors
+
 - Ensure Hedera operator account has sufficient balance
 - For CI runs, verify secrets are properly configured
 
-### Debug Mode
+#### Debug Mode
 
 To run tests with more verbose output:
 
@@ -660,13 +706,6 @@ To run tests with more verbose output:
 npx cypress run --browser chrome --env "grepTags=all,grepFilterSpecs=true" --headed
 ```
 
-## Screenshots
+### Screenshots
 
 After launching the tests, a folder `cypress/screenshots` will be generated. Inside you can find the screenshots for failures of UI tests.
-
-## Notes
-
-- E2E tests for the Guardian platform are interdependent, so when running tests using certain tags, additional tests may be executed to ensure a successful test run.
-- Always ensure the `preparing` tag runs before feature-specific tags to set up necessary user accounts.
-- Test execution time varies based on network connectivity to Hedera and IPFS.
-- Ensure you have sufficient balance on your Hedera account for all operations performed during tests.

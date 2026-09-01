@@ -1,10 +1,13 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
+import { randomInt } from '../../../support/random';
 
-
-context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
+context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
+    // policyTag is unique in the DB: reusing a hardcoded one fails as soon as a run updates a policy
+    // other than the one a previous run tagged
+    const policyTag = `string_${randomInt(999999)}`;
 
     let policyId;
 
@@ -23,7 +26,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
         })
     });
 
-    it("Update policy configuration for the specified policy ID", () => {
+    it('Update policy configuration for the specified policy ID', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.PUT,
@@ -33,22 +36,22 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                 },
                 body: {
                     id: policyId,
-                    uuid: "string",
-                    name: "string",
-                    version: "string",
-                    description: "string",
-                    topicDescription: "string",
+                    uuid: 'string',
+                    name: 'string',
+                    version: 'string',
+                    description: 'string',
+                    topicDescription: 'string',
                     config: {},
-                    status: "string",
-                    owner: "string",
-                    policyRoles: ["string"],
-                    topicId: "string",
-                    policyTag: "string",
+                    status: 'string',
+                    owner: 'string',
+                    policyRoles: ['string'],
+                    topicId: 'string',
+                    policyTag,
                     policyTopics: [
                         {
-                            name: "string",
-                            description: "string",
-                            type: "string",
+                            name: 'string',
+                            description: 'string',
+                            type: 'string',
                             static: true,
                         },
                     ],

@@ -24,8 +24,9 @@
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 
-import { METHOD } from "./api/api-const";
-import API from "./ApiUrls";
+import { METHOD } from './api/api-const';
+import API from './ApiUrls';
+import { randomInt } from './random';
 
 Cypress.Commands.add('checkIfFileExistByPartialName', (partialName) => {
     cy.task('checkFile', partialName).then(fileExists => {
@@ -39,10 +40,10 @@ Cypress.Commands.add('createTag', (token, name, target, entity) => {
         url: API.ApiServer + API.Tags,
         headers: token ? { authorization: token } : {},
         body: {
-            name: name,
+            name,
             description: name,
-            entity: entity,
-            target: target,
+            entity,
+            target,
         },
         failOnStatusCode: false,
     });
@@ -51,10 +52,10 @@ Cypress.Commands.add('createTag', (token, name, target, entity) => {
 Cypress.Commands.add('searchTags', (token, targetId, entity) => {
     return cy.request({
         method: METHOD.POST,
-        url: API.ApiServer + API.Tags + "search",
+        url: API.ApiServer + API.Tags + 'search',
         headers: token ? { authorization: token } : {},
         body: {
-            entity: entity,
+            entity,
             targets: [targetId]
         },
         failOnStatusCode: false,
@@ -71,7 +72,6 @@ Cypress.Commands.add('deleteTag', (token, tagId) => {
     });
 });
 
-
 Cypress.Commands.add('getPublishedTagSchemas', (token) => {
     return cy.request({
         method: METHOD.GET,
@@ -83,7 +83,7 @@ Cypress.Commands.add('getPublishedTagSchemas', (token) => {
 });
 
 Cypress.Commands.add('importPolicyFile', (token, fileName) => {
-    return cy.fixture(fileName, "binary")
+    return cy.fixture(fileName, 'binary')
         .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
         .then((file) => {
             return cy.request({
@@ -91,7 +91,7 @@ Cypress.Commands.add('importPolicyFile', (token, fileName) => {
                 url: API.ApiServer + API.PolicisImportFile,
                 body: file,
                 headers: {
-                    "content-type": "binary/octet-stream",
+                    'content-type': 'binary/octet-stream',
                     authorization: token,
                 },
                 timeout: 180000,
@@ -106,7 +106,7 @@ Cypress.Commands.add('getPolicyByName', (token, policyName) => {
         headers: { authorization: token }
     }).then((res) => {
         const policy = res.body.find(p => p.name === policyName);
-        if (!policy) throw new Error(`Policy with name "${policyName}" not found`);
+        if (!policy) {throw new Error(`Policy with name "${policyName}" not found`);}
         return policy;
     });
 });
@@ -147,6 +147,130 @@ Cypress.Commands.add('getPolicyLabels', (token) => {
     });
 });
 
+// The specs below reuse whatever entity the earlier pools happened to leave behind, so running a
+// spec on its own (or against a fresh DB) used to fail in the `before` hook with a bare
+// "Cannot read properties of undefined". These helpers create the entity on demand instead, which
+// keeps each spec runnable in isolation without changing what it asserts.
+
+Cypress.Commands.add('getOrCreateRetireContractId', (authorization) => {
+    return cy.request({
+        method: METHOD.GET,
+        url: API.ApiServer + API.ListOfContracts,
+        headers: { authorization },
+        qs: { type: 'RETIRE' },
+    }).then((response) => {
+        const contract = response.body.at(0);
+        if (contract) {
+            return contract.id;
+        }
+        return cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.ListOfContracts,
+            headers: { authorization, 'api-version': 2 },
+            body: { description: `TagsAPIContractR_${randomInt(999999)}`, type: 'RETIRE' },
+            timeout: 180000,
+        }).then((created) => created.body.id ?? created.body._id);
+    });
+});
+
+Cypress.Commands.add('getOrCreateModuleId', (authorization) => {
+    return cy.request({
+        method: METHOD.GET,
+        url: API.ApiServer + API.ListOfAllModules,
+        headers: { authorization },
+    }).then((response) => {
+        const module = response.body.at(0);
+        if (module) {
+            return module.id;
+        }
+        const moduleName = `TagsAPIModule_${randomInt(999999)}`;
+        return cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.ListOfAllModules,
+            headers: { authorization },
+            body: {
+                name: moduleName,
+                description: `${moduleName} desc`,
+                config: { blockType: 'module' },
+            },
+        }).then((created) => created.body.id ?? created.body._id);
+    });
+});
+
+Cypress.Commands.add('getOrCreatePolicy', (authorization) => {
+    return cy.request({
+        method: METHOD.GET,
+        url: API.ApiServer + API.Policies,
+        headers: { authorization },
+    }).then((response) => {
+        const policy = response.body.at(0);
+        if (policy) {
+            return policy;
+        }
+        // policyTag is unique in the DB, so it has to be randomised per run
+        const runId = randomInt(999999);
+        return cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.Policies,
+            headers: { authorization },
+            body: { name: `TagsAPIPolicy_${runId}`, policyTag: `TagsAPIPolicyTag_${runId}` },
+            timeout: 180000,
+            // creating a policy answers with the full policy list
+        }).then((created) => created.body.at(0));
+    });
+});
+
+Cypress.Commands.add('getOrCreateSchemaId', (authorization) => {
+    return cy.request({
+        method: METHOD.GET,
+        url: API.ApiServer + API.Schemas,
+        headers: { authorization },
+    }).then((response) => {
+        const schema = response.body.at(0);
+        if (schema) {
+            return schema.id;
+        }
+        // A schema needs a topic to live in, and only a policy provides one
+        return cy.getOrCreatePolicy(authorization).then((policy) => {
+            const schemaName = `TagsAPISchema_${randomInt(999999)}`;
+            return cy.request({
+                method: METHOD.POST,
+                url: API.ApiServer + API.Schemas + policy.topicId,
+                headers: { authorization },
+                body: {
+                    name: schemaName,
+                    description: schemaName,
+                    entity: 'VC',
+                    topicId: policy.topicId,
+                    document: {
+                        $id: `#${schemaName}`,
+                        $comment: `{ "term": "${schemaName}", "@id": "#${schemaName}" }`,
+                        title: schemaName,
+                        description: schemaName,
+                        type: 'object',
+                        properties: {
+                            '@context': { oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }], readOnly: true },
+                            type: { oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }], readOnly: true },
+                            id: { type: 'string', readOnly: true },
+                        },
+                        required: [],
+                        additionalProperties: false,
+                    },
+                },
+                timeout: 180000,
+            }).then(() => cy.request({
+                method: METHOD.GET,
+                url: API.ApiServer + API.Schemas + policy.topicId,
+                headers: { authorization },
+            }).then((list) => {
+                const created = list.body.find((item) => item?.name === schemaName);
+                expect(created, `schema ${schemaName} in topic ${policy.topicId}`).to.not.be.undefined;
+                return created.id;
+            }));
+        });
+    });
+});
+
 Cypress.Commands.add('registerUserIfNeededOrMissing', (username, password, role) => {
     cy.request({ method: 'GET', url: `${API.ApiServer}${API.RegUsers}` }).then((res) => {
         const exists = res.body.some(u => u.username === username);
@@ -175,10 +299,12 @@ Cypress.Commands.add('getHederaKeys', (token) => {
         url: `${API.ApiServer}${API.RandomKey}`,
         headers: { authorization: token },
         timeout: 600000
-    }).then((res) => {
-        cy.wait(3000); // Wait for Hedera propagation
-        return { id: res.body.id, key: res.body.key };
-    });
+    }).then((res) =>
+        // The value has to be returned from inside the wait: a `.then()` callback that
+        // enqueues cy commands does not yield a synchronously returned value.
+        cy.wait(3000) // Wait for Hedera propagation
+            .then(() => ({ id: res.body.id, key: res.body.key }))
+    );
 });
 
 Cypress.Commands.add('setupLocalProfile', (username, auth, additionalBody = {}) => {

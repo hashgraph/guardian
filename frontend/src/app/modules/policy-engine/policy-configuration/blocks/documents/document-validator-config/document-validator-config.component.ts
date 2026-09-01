@@ -32,6 +32,8 @@ export class DocumentValidatorConfigComponent implements OnInit {
     };
 
     properties!: any;
+
+    private conditionsGroupInitialized = false;
     schemas!: SchemaVariables[];
 
     documentTypeOptions = [
@@ -62,7 +64,12 @@ export class DocumentValidatorConfigComponent implements OnInit {
         { label: 'Variable (Input Doc)', value: 'variable' },
     ];
 
-    conditionSourceOptions = [
+    conditionDocumentSourceOptions = [
+        { label: 'Value', value: 'value' },
+        { label: 'Input Document', value: 'document' },
+    ];
+
+    crossConditionSourceOptions = [
         { label: 'Value', value: 'value' },
         { label: 'Input Document', value: 'document' },
         { label: 'Source Document', value: 'source' },
@@ -83,6 +90,13 @@ export class DocumentValidatorConfigComponent implements OnInit {
         this.item = block;
         this.properties = block.properties;
         this.properties.conditions = this.properties.conditions || [];
+        for (const c of this.properties.conditions) {
+            c.valueSource ??= 'value';
+        }
+        if (!this.conditionsGroupInitialized) {
+            this.propHidden.conditionsGroup = this.properties.conditions.length === 0;
+            this.conditionsGroupInitialized = true;
+        }
         this.properties.sourceValidations = this.properties.sourceValidations || [];
         this.schemas = this.moduleVariables?.schemas || [];
     }
@@ -102,11 +116,20 @@ export class DocumentValidatorConfigComponent implements OnInit {
 
     // Same-doc conditions
     addCondition() {
-        this.properties.conditions.push({ value: '', field: '', type: 'equal' });
+        this.properties.conditions.push({
+            field: '',
+            type: 'equal',
+            valueSource: 'value',
+            value: '',
+        })
+        this.propHidden.conditionsGroup = false;
     }
 
     removeCondition(i: number) {
         this.properties.conditions.splice(i, 1);
+        if (this.properties.conditions.length === 0) {
+            this.propHidden.conditionsGroup = true;
+        }
         this.onSave();
     }
 

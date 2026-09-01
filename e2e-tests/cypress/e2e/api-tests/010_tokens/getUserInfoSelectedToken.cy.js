@@ -1,12 +1,12 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Tokens", { tags: ['tokens', 'thirdPool', 'all'] }, () => {
+context('Tokens', { tags: ['tokens', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-    const UserUsername = Cypress.env("User");
+    const UserUsername = Cypress.env('User');
 
-    it("Get user information for the token", () => {
+    it('Get user information for the token', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
@@ -16,9 +16,9 @@ context("Tokens", { tags: ['tokens', 'thirdPool', 'all'] }, () => {
                 },
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                expect(response.body[0]).to.have.property("_id");
-                expect(response.body[0]).to.have.property("tokenId");
-                expect(response.body[0]).to.have.property("tokenName");
+                expect(response.body[0]).to.have.property('_id');
+                expect(response.body[0]).to.have.property('tokenId');
+                expect(response.body[0]).to.have.property('tokenName');
 
                 const topicUid = response.body[0].tokenId;
 
@@ -28,15 +28,15 @@ context("Tokens", { tags: ['tokens', 'thirdPool', 'all'] }, () => {
                         API.ApiServer +
                         API.ListOfTokens +
                         topicUid +
-                        "/" +
+                        '/' +
                         UserUsername +
-                        "/info",
+                        '/info',
                     headers: {
                         authorization,
                     },
                 }).then((response) => {
                     expect(response.status).eql(STATUS_CODE.OK);
-                    expect(response.body).to.not.be.oneOf([null, ""]);
+                    expect(response.body).to.not.be.oneOf([null, '']);
                 });
             })
         });

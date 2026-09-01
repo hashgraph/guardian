@@ -1,9 +1,9 @@
 
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
+context('Analytics', { tags: ['analytics', 'thirdPool', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
 
@@ -66,7 +66,7 @@ context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
             failOnStatusCode: false,
         });
 
-    let policyId1, policyId2, preprelastPolicy, prelastPolicy;
+    let policyId1; let policyId2;
 
     before(() => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
@@ -78,7 +78,7 @@ context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
         });
     });
 
-    it("Compare policies", { tags: ['smoke'] }, () => {
+    it('Compare policies', { tags: ['smoke'] }, () => {
         Authorization.getAccessTokenByRefreshToken().then((authorization) => {
             postCompareWithAuth(
                 authorization,
@@ -92,105 +92,102 @@ context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
         });
     });
 
-    it("Compare equal policies", () => {
+    // Compares an existing policy against itself: a policy is trivially identical to itself, so this
+    // exercises the comparator's FULL/100 result without depending on specific policy names (e.g.
+    // 'iRec_2') that may or may not exist on a given stack, and without provisioning new Hedera
+    // resources just to get a second, content-identical policy.
+    it('Compare equal policies', () => {
         Authorization.getAccessTokenByRefreshToken().then((authorization) => {
-            getPoliciesWithAuth(authorization).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.OK);
-                response.body.forEach((element) => {
-                    if (element.name.startsWith("iRec_2_")) preprelastPolicy = element.id;
-                    if (element.name == "iRec_2") prelastPolicy = element.id;
-                });
-                postCompareWithAuth(
-                    authorization,
-                    compareBody({ policyId1: preprelastPolicy, policyId2: prelastPolicy, eventsLvl: 2 })
-                ).then((res) => {
-                    expect(res.status).to.eq(STATUS_CODE.OK);
-                    expect(res.body.left.id).to.eq(preprelastPolicy);
-                    expect(res.body.right.id).to.eq(prelastPolicy);
-                    expect(res.body.blocks.report.at(0).type).eq("FULL");
-                    expect(res.body.total).eq(100);
-                });
+            postCompareWithAuth(
+                authorization,
+                compareBody({ policyId1, policyId2: policyId1, eventsLvl: 2 })
+            ).then((res) => {
+                expect(res.status).to.eq(STATUS_CODE.OK);
+                expect(res.body.left.id).to.eq(policyId1);
+                expect(res.body.right.id).to.eq(policyId1);
+                expect(res.body.blocks.report.at(0).type).eq('FULL');
+                expect(res.body.total).eq(100);
             });
         });
     });
 
-    it("Compare policies without auth - Negative", () => {
+    it('Compare policies without auth - Negative', () => {
         postCompareWithoutAuth(
             compareBody({
-                policyId1: "6419853a31fe4fd0e741b3a9",
-                policyId2: "641983a931fe4fd0e741b399",
+                policyId1: '6419853a31fe4fd0e741b3a9',
+                policyId2: '641983a931fe4fd0e741b399',
             })
         ).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Compare policies with empty auth - Negative", () => {
+    it('Compare policies with empty auth - Negative', () => {
         postCompareWithoutAuth(
             compareBody({
-                policyId1: "6419853a31fe4fd0e741b3a9",
-                policyId2: "641983a931fe4fd0e741b399",
+                policyId1: '6419853a31fe4fd0e741b3a9',
+                policyId2: '641983a931fe4fd0e741b399',
             }),
-            { authorization: "" }
+            { authorization: '' }
         ).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Compare policies with invalid auth - Negative", () => {
+    it('Compare policies with invalid auth - Negative', () => {
         postCompareWithoutAuth(
             compareBody({
-                policyId1: "6419853a31fe4fd0e741b3a9",
-                policyId2: "641983a931fe4fd0e741b399",
+                policyId1: '6419853a31fe4fd0e741b3a9',
+                policyId2: '641983a931fe4fd0e741b399',
             }),
-            { authorization: "Bearer wqe" }
+            { authorization: 'Bearer wqe' }
         ).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Compare policies(Export)", () => {
+    it('Compare policies(Export)', () => {
         Authorization.getAccessTokenByRefreshToken().then((authorization) => {
             postCompareExportWithAuth(
                 authorization,
                 compareBody({ policyId1, policyId2 })
             ).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
-                expect(response.body).to.include("data:text/csv");
+                expect(response.body).to.include('data:text/csv');
             });
         });
     });
 
-    it("Compare policies(Export) without auth - Negative", () => {
+    it('Compare policies(Export) without auth - Negative', () => {
         postCompareExportWithoutAuth(
             compareBody({
-                policyId1: "6419853a31fe4fd0e741b3a9",
-                policyId2: "641983a931fe4fd0e741b399",
+                policyId1: '6419853a31fe4fd0e741b3a9',
+                policyId2: '641983a931fe4fd0e741b399',
             })
         ).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Compare policies(Export) with empty auth - Negative", () => {
+    it('Compare policies(Export) with empty auth - Negative', () => {
         postCompareExportWithoutAuth(
             compareBody({
-                policyId1: "6419853a31fe4fd0e741b3a9",
-                policyId2: "641983a931fe4fd0e741b399",
+                policyId1: '6419853a31fe4fd0e741b3a9',
+                policyId2: '641983a931fe4fd0e741b399',
             }),
-            { authorization: "" }
+            { authorization: '' }
         ).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Compare policies(Export) with invalid auth - Negative", () => {
+    it('Compare policies(Export) with invalid auth - Negative', () => {
         postCompareExportWithoutAuth(
             compareBody({
-                policyId1: "6419853a31fe4fd0e741b3a9",
-                policyId2: "641983a931fe4fd0e741b399",
+                policyId1: '6419853a31fe4fd0e741b3a9',
+                policyId2: '641983a931fe4fd0e741b399',
             }),
-            { authorization: "Bearer wqe" }
+            { authorization: 'Bearer wqe' }
         ).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
         });

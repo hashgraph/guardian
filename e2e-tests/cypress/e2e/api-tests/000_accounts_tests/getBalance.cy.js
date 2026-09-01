@@ -1,9 +1,9 @@
 
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Get balance", { tags: ['accounts', 'firstPool', 'all'] }, () => {
+context('Get balance', { tags: ['accounts', 'firstPool', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
@@ -24,43 +24,43 @@ context("Get balance", { tags: ['accounts', 'firstPool', 'all'] }, () => {
             failOnStatusCode: false,
         });
 
-    it("Get Standard Registry balance", () => {
+    it('Get Standard Registry balance', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             getBalanceWithAuth(authorization).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                expect(response.body.unit).eql("Hbar");
+                expect(response.body.unit).eql('Hbar');
                 expect(response.body.user.username).eql(SRUsername);
             });
         });
     });
 
-    it("Get User balance", () => {
+    it('Get User balance', () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             getBalanceWithAuth(authorization).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                expect(response.body.unit).eql("Hbar");
+                expect(response.body.unit).eql('Hbar');
                 expect(response.body.user.username).eql(UserUsername);
             });
         });
     });
 
-    it("Get balance without auth token - Negative", () => {
+    it('Get balance without auth token - Negative', () => {
         getBalanceWithoutAuth().then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Get balance with invalid auth token - Negative", () => {
+    it('Get balance with invalid auth token - Negative', () => {
         getBalanceWithoutAuth({
-            authorization: "Bearer wqe",
+            authorization: 'Bearer wqe',
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Get balance with empty auth token - Negative", () => {
+    it('Get balance with empty auth token - Negative', () => {
         getBalanceWithoutAuth({
-            authorization: "",
+            authorization: '',
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });

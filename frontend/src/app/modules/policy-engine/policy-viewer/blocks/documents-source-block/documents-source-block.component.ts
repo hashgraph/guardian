@@ -9,6 +9,7 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { HttpErrorResponse } from '@angular/common/http';
 import { VCFullscreenDialog } from 'src/app/modules/schema-engine/vc-fullscreen-dialog/vc-fullscreen-dialog.component';
 import { Subject } from 'rxjs';
+import { CommentsService } from 'src/app/services/comments.service';
 
 /**
  * Component for display block of 'interfaceDocumentsSource' types.
@@ -58,6 +59,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
         private policyHelper: PolicyHelper,
         private dialog: DialogService,
         private dialogService: DialogService,
+        private commentsService: CommentsService,
     ) {
         this.fields = [];
         this.columns = [];
@@ -306,6 +308,19 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 }
             })!;
             dialogRef.onClose.subscribe(async (result) => {
+                if (row.dryRunId) {
+                    // dry-run documents are never persisted as real VC records,
+                    // so the backend cannot resolve a count for this row.
+                    return;
+                }
+                this.commentsService
+                    .getPolicyCommentsCount(this.policyId, row.id)
+                    .subscribe(
+                        (count) => {
+                            row.comments = count?.count ?? row.comments;
+                        },
+                        (error) => console.error('[documents-source] comment count failed', error)
+                    );
             });
         }
     }

@@ -1,12 +1,18 @@
-import { randomInt } from "../../../support/random";
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
-
+import { randomInt } from '../../../support/random';
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
 context('Profiles', { tags: ['profiles', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-    let did
+    let did;
+    let credentials;
+
+    before(() => {
+        cy.fixture('credentials').then((creds) => {
+            credentials = creds;
+        });
+    });
 
     before(() => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
@@ -19,14 +25,14 @@ context('Profiles', { tags: ['profiles', 'thirdPool', 'all'] }, () => {
             }).then((response) => {
                 response.body.forEach(element => {
                     if (element.username == SRUsername)
-                        did = element.did
+                        {did = element.did}
                 });
             });
         })
     });
 
     it('Register a new user, login with it and set hedera credentials for it', () => {
-        const userPassword = 'test'
+        const userPassword = credentials.goodPassword
         const name = (randomInt(999) + 'testUser')
         cy.request({
             method: METHOD.POST,
@@ -42,26 +48,27 @@ context('Profiles', { tags: ['profiles', 'thirdPool', 'all'] }, () => {
             expect(response.body.username).to.equal(name)
             expect(response.body.permissionsGroup.at(0).roleName).to.equal('Default policy user')
             Authorization.getAccessToken(name).then((authorization) => {
-                cy.request({
-                    method: 'PUT',
-                    url: API.ApiServer + 'profiles/' + name,
-                    headers: {
-                        authorization
-                    },
-                    body: {
-                        //bepodo
-                        hederaAccountId: "0.0.2954463",
-                        hederaAccountKey: "3030020100300706052b8104000a042204200501fd610df433a7dd202faa6864d5f270dbb129ccc6455ab5cb1ee44838cab8",
-                        parent: did
-                    },
-                    timeout: 200000
+                cy.getHederaKeys(authorization).then((hederaAccount) => {
+                    cy.request({
+                        method: 'PUT',
+                        url: API.ApiServer + 'profiles/' + name,
+                        headers: {
+                            authorization
+                        },
+                        body: {
+                            hederaAccountId: hederaAccount.id,
+                            hederaAccountKey: hederaAccount.key,
+                            parent: did
+                        },
+                        timeout: 200000
+                    })
                 })
             })
         })
     })
 
     it('Should attempt to register a new user, login with it and set invalid hedera credentials for it', () => {
-        const userPassword = 'testTest'
+        const userPassword = credentials.goodPassword
         const name = (randomInt(999) + 'testUser')
         cy.request({
             method: METHOD.POST,
@@ -84,7 +91,7 @@ context('Profiles', { tags: ['profiles', 'thirdPool', 'all'] }, () => {
                 method: METHOD.POST,
                 url: API.ApiServer + 'accounts/login',
                 body: {
-                    username: username,
+                    username,
                     password: userPassword,
                     password_confirmation: userPassword,
                 }

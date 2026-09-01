@@ -141,6 +141,12 @@ export class PolicyBackupService {
     private async task() {
         try {
             const { backup, diff } = await this.controller.create(false);
+            if (PolicyBackup.isEmptyDiff(diff)) {
+                //Nothing changed since the last backup. Publishing would spend an
+                //IPFS upload and a Hedera transaction to record that nothing
+                //happened, and the stored backup is still current, so skip both.
+                return;
+            }
             await this.sendDiff(diff);
             await this.controller.save(backup);
         } catch (error) {

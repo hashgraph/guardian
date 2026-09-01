@@ -2,6 +2,7 @@ import {
     ChangeDetectorRef,
     Component,
     ElementRef,
+    OnDestroy,
     ViewChild,
 } from '@angular/core';
 import {
@@ -49,7 +50,7 @@ import { ViewerDialog } from '../../policy-engine/dialogs/viewer-dialog/viewer-d
     styleUrls: ['./vc-fullscreen-dialog.component.scss'],
     standalone: false
 })
-export class VCFullscreenDialog {
+export class VCFullscreenDialog implements OnDestroy {
     @ViewChild('discussionComponent', { static: false })
     discussionComponent: PolicyComments;
     @ViewChild('documentViewComponent', { static: false })
@@ -103,7 +104,14 @@ export class VCFullscreenDialog {
     public tags: any[] = [];
     public disconnected: boolean = false;
 
+    /**
+     * The caller may hand us its own subject (see the constructor), so this one
+     * cannot double as the teardown signal - completing it would tear down a
+     * subject the caller still owns. `_viewDestroyed$` is ours and is what every
+     * takeUntil below uses.
+     */
     private _destroy$ = new Subject<void>();
+    private readonly _viewDestroyed$ = new Subject<void>();
     private _subscription?: Subscription | null;
 
     constructor(
@@ -144,6 +152,14 @@ export class VCFullscreenDialog {
 
     get vcDocStatusEqRejectOrRevoke(): any {
         return this.allVcDocs.some(doc => doc?.option?.status === 'Rejected' || doc?.option?.status === 'Revoked') ?? false;
+    }
+
+    ngOnDestroy(): void {
+        this._viewDestroyed$.next();
+        this._viewDestroyed$.complete();
+        // _destroy$ may belong to the caller, so unsubscribe from it rather than complete it
+        this._subscription?.unsubscribe();
+        this._subscription = null;
     }
 
     ngOnInit() {
@@ -241,7 +257,7 @@ export class VCFullscreenDialog {
                     this.documentId
                 ),
             ])
-                .pipe(takeUntil(this._destroy$))
+                .pipe(takeUntil(this._viewDestroyed$))
                 .subscribe(
                     ([profile, count, vcDocs]) => {
                         this.user = new UserPermissions(profile);
@@ -268,7 +284,7 @@ export class VCFullscreenDialog {
                     this.documentId
                 ),
             ])
-                .pipe(takeUntil(this._destroy$))
+                .pipe(takeUntil(this._viewDestroyed$))
                 .subscribe(
                     ([profile, vcDocs]) => {
                         this.user = new UserPermissions(profile);
@@ -430,13 +446,13 @@ export class VCFullscreenDialog {
                         schemas.push(
                             this.schemaService
                                 .getSchemasByTypeAndUser(type)
-                                .pipe(takeUntil(this._destroy$))
+                                .pipe(takeUntil(this._viewDestroyed$))
                         );
                     } else {
                         schemas.push(
                             this.schemaService
                                 .getSchemasByType(type)
-                                .pipe(takeUntil(this._destroy$))
+                                .pipe(takeUntil(this._viewDestroyed$))
                         );
                     }
                 }
@@ -454,7 +470,7 @@ export class VCFullscreenDialog {
                     schemaId: this.schemaId,
                     documentId: this.documentId,
                 })
-                .pipe(takeUntil(this._destroy$));
+                .pipe(takeUntil(this._viewDestroyed$));
         }
 
         //Load Formulas
@@ -465,7 +481,7 @@ export class VCFullscreenDialog {
                     schemaId: this.schemaId,
                     documentId: this.documentId,
                 })
-                .pipe(takeUntil(this._destroy$));
+                .pipe(takeUntil(this._viewDestroyed$));
         }
 
         this.loading = true;
@@ -519,7 +535,7 @@ export class VCFullscreenDialog {
     public initForm($event: any) {
         this.dataForm = $event;
         this.dataForm.valueChanges
-            .pipe(takeUntil(this._destroy$))
+            .pipe(takeUntil(this._viewDestroyed$))
             .pipe(audit((ev) => interval(1000)))
             .subscribe();
     }

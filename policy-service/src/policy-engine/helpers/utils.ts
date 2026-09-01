@@ -440,7 +440,6 @@ export class PolicyUtils {
     }
 
     /**
-    /**
      * Resolve a dot-notation field path against a value.
      * When an intermediate segment is an array the remainder of the path is
      * mapped over each element, returning an array of leaf values.
@@ -566,7 +565,6 @@ export class PolicyUtils {
         return PolicyUtils.compareScalarPair(left, type, right);
     }
 
-    /**
     /**
      * Key-order-independent structural stringification, used so two values loaded
      * from different documents (objects/arrays with the same content but different

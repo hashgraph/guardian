@@ -1,0 +1,65 @@
+---
+tags:
+  - flagged-for-rewrite
+---
+
+# How to setup environment parameters?
+
+{% hint style="warning" %}
+**Reference only:** This article is flagged for rewriting and is provided for reference only.
+
+For definitive configuration details, see the [Guardian repository README](https://github.com/hashgraph/guardian/blob/main/README.md). Send feedback to [guardian-feedback@hashgraph.com](mailto:guardian-feedback@hashgraph.com) or [open a pull request](https://github.com/hashgraph/guardian).
+{% endhint %}
+
+### `.env / .env.docker` parameters in `guardian-service`
+
+<table><thead><tr><th width="379.1653645833333">Parameter</th><th width="271.2734375">Purpose</th><th>Example</th></tr></thead><tbody><tr><td>MQ_ADDRESS</td><td>Web Socket Address</td><td>localhost</td></tr><tr><td>SERVICE_CHANNEL</td><td>Version of the Guardian</td><td>guardian.1</td></tr><tr><td>DB_HOST</td><td>Hostname of the Database</td><td>localhost</td></tr><tr><td>DB_DATABASE</td><td>Database Name</td><td>guardian_db</td></tr><tr><td>INITIAL_BALANCE</td><td>Initial Balance Value</td><td>500</td></tr><tr><td>INITIAL_<em>STANDARD_REGISTRY_BALANCE</em></td><td>Setting Initial Standard Registry Balance</td><td>500</td></tr><tr><td>OPERATOR_ID</td><td>The ID of the operation</td><td>-</td></tr><tr><td>OPERATOR_KEY</td><td>Private key of the operator</td><td>-</td></tr><tr><td>LOCALNODE_ADDRESS</td><td>The address of the localnode server. This can be its IP address or a domain name</td><td>1.1.1.1</td></tr><tr><td>LOCALNODE_PROTOCOL</td><td>Communication protocol for interactions with the local node, can be http or https.</td><td>http/https</td></tr><tr><td>HEDERA_NET</td><td>Type of the Hedera node to transact with</td><td>testnet, localnode, mainnet</td></tr><tr><td>INITIALIZATION_<em>TOPIC_ID</em></td><td>The ID of the initialization topic.</td><td>0.0.1960</td></tr><tr><td>MESSAGE_LANG</td><td>Language of the message text of all messages</td><td>en-US</td></tr><tr><td>LOG_LEVEL</td><td>Level of the Logs</td><td>2</td></tr><tr><td>SEND_KEYS_TO_VAULT</td><td>Checked if keys to be sent to vault</td><td>True/False</td></tr><tr><td>MULTI_POLICY_SCHEDULER</td><td>to set custom cron mask (timer mask) for sync job</td><td>0 0 * * *</td></tr><tr><td>MQ_MESSAGE_CHUNK</td><td>To set up the message chunk size</td><td>500000</td></tr><tr><td>OVERRIDE_HEDERA_CONSENSUS_NODES</td><td>Define hedera nodes to execute and pay transaction fee</td><td>0.testnet.hedera.com:50211":"0.0.3</td></tr><tr><td>OVERRIDE_HEDERA_MIRROR_NODES</td><td>Define hedera mirror nodes</td><td>testnet.mirrornode.hedera.com:443"</td></tr><tr><td>MAP_API_KEY</td><td>Defines api to integrate Map schema type</td><td>ALZ_X.....</td></tr><tr><td>DOCUMENT_CACHE_FIELD_LIMIT</td><td>Defines document field symbols limit for caching.</td><td>500</td></tr><tr><td>BATCH_NFT_MINT_SIZE</td><td>Defines size of batch of mint NFT transaction</td><td>10</td></tr><tr><td>DIRECT_MESSAGE_PORT</td><td>Port for direct messages (if not set generate random port)</td><td>300</td></tr><tr><td>DIRECT_MESSAGE_HOST</td><td>Host for direct messages (if not set get hostname)</td><td>localhost</td></tr><tr><td>DIRECT_MESSAGE_PROTOCOL</td><td>Protocol https or http (http by default, https need additional server like nginx)</td><td>http</td></tr><tr><td>MQ_MAX_PAYLOAD</td><td>Max message size for send via message-broker (otherwise create direct message) if not set always send messages using message broker</td><td>35</td></tr><tr><td>RETIRE_CONTRACT_FILE_ID</td><td>Contract file ID for Retirement</td><td>0.0.4860665</td></tr><tr><td>WIPE_CONTRACT_FILE_ID</td><td>Contract file ID for wiping</td><td>0.0.4726865</td></tr><tr><td>DOCUMENTS_HANDLING_CHUNK_SIZE</td><td>To set chunk size for delete or create a lot of data (value will affect speed performance communication with DB), default is 500.</td><td>500</td></tr><tr><td>ALLOWED_PROTOCOLS="https"</td><td>This variable defines the list of allowed protocols that can be used in outbound HTTP requests made by the httpRequestBlock.</td><td>https</td></tr><tr><td>BLOCK_PRIVATE_IP</td><td>This variable controls whether the httpRequestBlock should reject outbound requests to private or sensitive IP address ranges.</td><td>True/False</td></tr><tr><td>OVERRIDE_HEDERA_MIRROR_NODES_BASE_API</td><td>This is automatically appended to every URL listed in <code>OVERRIDE_HEDERA_MIRROR_NODES</code></td><td>/api/v1</td></tr><tr><td>OVERRIDE_NETWORK_CONFIGURATION</td><td>Controls whether the <code>OVERRIDE_*</code> variables are applied at all.</td><td>True: apply override variables<br>False: ignore override variables and use default configuration</td></tr><tr><td>MIGRATION_HEARDBEAT_RUN_STALE_TIMEOUT</td><td>Defines how long a run can stay running without heartbeat updates before it is treated as stale</td><td>10</td></tr><tr><td>MIGRATION_WRITE_BATCH_SIZE</td><td>Database write batch size — number of items processed per batch.</td><td>50</td></tr></tbody></table>
+
+{% hint style="info" %}
+**Important Note:**
+
+1. Values from .env file need to be set up only on first start (when db or vault are empty). Then later if you want it to be changed, you can change it through Settings from admin Panel or through API.
+2. Now we have upgraded DB\_HOST (in guardian and indexer), DB\_LOGGER\_HOST (in guardian) settings and now it allows to set up Mongo Atlas connection string like mongodb+srv://.... which means that if you are explicitly setting up protocol it will be automatically applied OR if your using only host and port, it will automatically add mongodb:// (backward compatibility)
+3. ALLOWED\_PROTOCOLS:
+
+By default, only the https protocol is allowed:\
+ALLOWED\_PROTOCOLS="https"
+
+To allow multiple protocols, add them as a comma-separated list. For example:\
+ALLOWED\_PROTOCOLS="https,http"
+
+If a user attempts to use a protocol that is not explicitly listed, the request will be blocked during policy validation.
+
+4. BLOCK\_PRIVATE\_IP:
+
+By default, this value is set to "false", under the assumption that Guardian is not operating in an environment where internal services are exposed over https and accessible via external requests.
+
+BLOCK\_PRIVATE\_IP="false"
+
+To enforce strict protection and block all requests to private or loopback IP addresses, set the variable to:
+
+BLOCK\_PRIVATE\_IP="true"
+{% endhint %}
+
+### `.env / .env.docker` Parameters in `api-gateway`
+
+| Parameter                 | Purpose                                                                                                                             | Example                   |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| MQ\_ADDRESS               | Web Socket Address                                                                                                                  | message-broker            |
+| SERVICE\_CHANNEL          | Channel of the service                                                                                                              | api-gateway               |
+| MRV\_ADDRESS              | MRV Address location                                                                                                                | http://message-broker/mrv |
+| MQ\_MESSAGE\_CHUNK        | To set up the message chunk size                                                                                                    | 500000                    |
+| RAW\_REQUEST\_LIMIT       | Define request limit                                                                                                                | 1 gb                      |
+| JSON\_REQUEST\_LIMIT      | Define limit for body in Json format                                                                                                | 1 gb                      |
+| DIRECT\_MESSAGE\_PORT     | Port for direct messages (if not set generate random port)                                                                          | 300                       |
+| DIRECT\_MESSAGE\_HOST     | Host for direct messages (if not set get hostname)                                                                                  | localhost                 |
+| DIRECT\_MESSAGE\_PROTOCOL | Protocol https or http (http by default, https need additional server like nginx)                                                   | http                      |
+| MQ\_MAX\_PAYLOAD          | Max message size for send via message-broker (otherwise create direct message) if not set always send messages using message broker | 35                        |
+
+### `.env / .env.docker` Parameters in `auth-service`
+
+| Parameter             | Purpose                                                                                                                                                                                                                                                                                                            | Example    |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------- |
+| SR\_INITIAL\_PASSWORD | Allows to set SR initial password when it will be created first time. It also should have more than 5                                                                                                                                                                                                              | Env!s!0n!@ |
+| MIN\_PASSWORD\_LENGTH | Sets the minimum password length. Default value is 8, minimum value is 1                                                                                                                                                                                                                                           | 8          |
+| PASSWORD\_COMPLEXITY  | <p>Sets the password complexity level<br>Default value is medium<br>Available values: easy, medium, hard</p><ul><li>easy - no rules</li><li>medium - one uppercase letter, one lowercase letter, one number</li><li>hard - one uppercase letter, one lowercase letter, one number, one special character</li></ul> | medium     |

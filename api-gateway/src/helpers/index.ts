@@ -3,6 +3,7 @@ export * from './cache-service.js';
 export * from './guardians.js';
 export * from './ipfs.js';
 export * from './meeco.js';
+export * from './org-response.js';
 export * from './policy-engine.js';
 export * from './projects.js';
 export * from './schema-utils.js';

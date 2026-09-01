@@ -1,5 +1,4 @@
 import {
-    AccountBalanceQuery,
     AccountCreateTransaction,
     AccountId,
     AccountInfoQuery,
@@ -46,7 +45,7 @@ import {
     TransactionRecordQuery,
     TransferTransaction
 } from '@hiero-ledger/sdk';
-import { axiosGetWithRetry, HederaUtils, timeout } from './utils.js';
+import { axiosGetWithRetry, delay, HederaUtils, timeout } from './utils.js';
 import axios, { AxiosResponse } from 'axios';
 import { ContractParamType, FireblocksCreds, GenerateUUIDv4, HederaResponseCode, ISignOptions, SignType } from '@guardian/interfaces';
 import Long from 'long';
@@ -119,6 +118,14 @@ export interface IApiOptions {
 }
 
 /**
+ * Called with the operator account of every executed transaction
+ */
+export type TransactionResponseCallback = (
+    account: string,
+    userId: string | null
+) => void | Promise<void>;
+
+/**
  * Contains methods to simplify work with hashgraph sdk
  */
 export class HederaSDKHelper {
@@ -149,16 +156,22 @@ export class HederaSDKHelper {
      * Rest API max limit
      */
     public static readonly REST_API_MAX_LIMIT: number = 100;
+
     /**
-     * Rest API max limit
+     * Attempts allowed for the mirror node to ingest an account
      */
-    public static readonly DEFAULT_API_OPTIONS: IApiOptions = { mockId: null };
+    public static readonly MIRROR_NODE_INDEXING_ATTEMPTS: number = 10;
+
+    /**
+     * Delay between those attempts, in milliseconds
+     */
+    public static readonly MIRROR_NODE_INDEXING_DELAY: number = 1000;
 
     /**
      * Callback
      * @private
      */
-    private static fn: Function = null;
+    private static fn: TransactionResponseCallback = null;
 
     /**
      * Dry-run
@@ -210,7 +223,7 @@ export class HederaSDKHelper {
     /**
      * Set Network
      * @param networkOptions
-     * @private
+     * @returns HederaSDKHelper
      */
     public static setNetwork(networkOptions: NetworkOptions) {
         Environment.setMainnetApiUrl(HederaSDKHelper.HEDERA_MAINNET_API);
@@ -303,15 +316,15 @@ export class HederaSDKHelper {
      * @param {number} decimals - Decimals
      * @param {number} initialSupply - Initial Supply
      * @param {string} tokenMemo - Memo field
-     * @param {AccountId} treasuryId - treasury account
-     * @param {PrivateKey} treasuryKey - treasury account
-     * @param {PrivateKey} [supplyKey] - set supply key
-     * @param {PrivateKey} [adminKey] - set admin key
-     * @param {PrivateKey} [kycKey] - set kyc key
-     * @param {PrivateKey} [freezeKey] - set freeze key
-     * @param {PrivateKey} [wipeKey] - set wipe key
+     * @param {AccountId} treasuryId - Treasury account id
+     * @param {PrivateKey} treasuryKey - Treasury account key
+     * @param {PrivateKey} supplyKey - Supply key
+     * @param {PrivateKey | null} adminKey - Admin key
+     * @param {PrivateKey | null} kycKey - KYC key
+     * @param {PrivateKey | null} freezeKey - Freeze key
+     * @param {PrivateKey | ContractId | DelegateContractId | null} wipeKey - Wipe key
+     * @param {string | null} userId - User id
      *
-     * @param userId
      * @returns {string} - Token id
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Token create transaction timeout exceeded')
@@ -454,22 +467,6 @@ export class HederaSDKHelper {
     }
 
     /**
-     * Get balance account (AccountBalanceQuery)
-     *
-     * @param {string | AccountId} accountId - Account Id
-     *
-     * @returns {string} - balance
-     */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Balance query timeout exceeded')
-    public async balance(accountId: string | AccountId): Promise<string> {
-        const client = this.client;
-        const query = new AccountBalanceQuery()
-            .setAccountId(accountId);
-        const accountBalance = await query.execute(client);
-        return accountBalance.hbars.toString();
-    }
-
-    /**
      * Get associate tokens and balance (AccountInfoQuery)
      *
      * @param {string | AccountId} accountId - Account Id
@@ -477,7 +474,7 @@ export class HederaSDKHelper {
      * @returns {any} - associate tokens and balance
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Account info query timeout exceeded')
-    public async accountInfo(accountId?: string | AccountId): Promise<any> {
+    public async accountInfo(accountId: string | AccountId): Promise<any> {
         const client = this.client;
         const info = await new AccountInfoQuery()
             .setAccountId(accountId)
@@ -877,9 +874,9 @@ export class HederaSDKHelper {
      * Create new Account (AccountCreateTransaction)
      *
      * @param {number} initialBalance - Initial Balance
+     * @param {string | null} userId - User id
      *
-     * @param userId
-     * @returns {any} - Account Id and Account Private Key
+     * @returns {{id: AccountId, key: PrivateKey}} - Account Id and Account Private Key
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Account create transaction timeout exceeded')
     public async newAccount(initialBalance: number, userId: string | null): Promise<{
@@ -914,6 +911,7 @@ export class HederaSDKHelper {
      * New treasury
      * @param accountId
      * @param privateKey
+     * @returns Account Id and Account Private Key
      */
     public newTreasury(accountId: string | AccountId, privateKey: string | PrivateKey) {
         return {
@@ -1065,6 +1063,7 @@ export class HederaSDKHelper {
     /**
      * Returns token info
      * @param tokenId token id
+     * @param apiOptions API options
      * @returns info
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get token info request timeout exceeded')
@@ -1098,6 +1097,7 @@ export class HederaSDKHelper {
     /**
      * Returns topic message
      * @param timeStamp Message identifier
+     * @param apiOptions API options
      * @returns Message
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get topic message request timeout exceeded')
@@ -1157,6 +1157,7 @@ export class HederaSDKHelper {
      * Returns topic messages
      * @param topicId Topic identifier
      * @param startTimestamp start timestamp
+     * @param apiOptions API options
      * @returns Messages
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get topic messages request timeout exceeded')
@@ -1266,6 +1267,7 @@ export class HederaSDKHelper {
      * Returns topic message
      * @param topicId Topic identifier
      * @param index message index
+     * @param apiOptions API options
      * @returns Message
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get topic message request (by index) timeout exceeded')
@@ -1334,7 +1336,7 @@ export class HederaSDKHelper {
         metadata?: any
     ): Promise<TransactionReceipt> {
         if (this.mockId) {
-            return await this._mockExecuteAndReceipt(client, transaction, type, userId, metadata);
+            return await this._mockExecuteAndReceipt(client, transaction, type, userId);
         } else if (this.dryRun) {
             return await this._dryRunExecuteAndReceipt(type, userId, metadata);
         } else {
@@ -1370,18 +1372,17 @@ export class HederaSDKHelper {
     /**
      * Execute and receipt
      *
+     * @param client
      * @param transaction
      * @param type
      * @param userId
-     * @param metadata
      * @private
      */
     private async _mockExecuteAndReceipt(
         client: Client,
         transaction: Transaction,
         type: string,
-        userId: string | null,
-        metadata?: any
+        userId: string | null
     ): Promise<TransactionReceipt> {
         await this.virtualTransactionLog(this.mockId, type, userId);
         const accountId = client.operatorAccountId?.toString();
@@ -1475,6 +1476,7 @@ export class HederaSDKHelper {
 
     /**
      * Execute and record
+     * @param client
      * @param transaction
      * @param type
      * @param userId
@@ -1564,7 +1566,8 @@ export class HederaSDKHelper {
     /**
      * Receipt query
      * @param client Client
-     * @param transacationId Transaction identifier
+     * @param transactionId Transaction identifier
+     * @param count Retry attempt
      * @returns Transaction result
      */
     private async receiptQuery(
@@ -1591,7 +1594,7 @@ export class HederaSDKHelper {
                 errorMessage.indexOf(HederaResponseCode.DUPLICATE_TRANSACTION) >
                 -1
             ) {
-                return await this.receiptQuery(client, transactionId, count++);
+                return await this.receiptQuery(client, transactionId, count + 1);
             }
             throw error;
         }
@@ -1600,7 +1603,8 @@ export class HederaSDKHelper {
     /**
      * Record query
      * @param client Client
-     * @param transacationId Transaction identifier
+     * @param transactionId Transaction identifier
+     * @param count Retry attempt
      * @returns Transaction result
      */
     private async recordQuery(
@@ -1627,7 +1631,7 @@ export class HederaSDKHelper {
                 errorMessage.indexOf(HederaResponseCode.DUPLICATE_TRANSACTION) >
                 -1
             ) {
-                return await this.recordQuery(client, transactionId, count++);
+                return await this.recordQuery(client, transactionId, count + 1);
             }
             throw error;
         }
@@ -1637,7 +1641,7 @@ export class HederaSDKHelper {
      * Set transaction response callback
      * @param fn
      */
-    public static setTransactionResponseCallback(fn: Function) {
+    public static setTransactionResponseCallback(fn: TransactionResponseCallback): void {
         HederaSDKHelper.fn = fn;
     }
 
@@ -1651,7 +1655,7 @@ export class HederaSDKHelper {
         if (HederaSDKHelper.fn) {
             try {
                 const result = HederaSDKHelper.fn(account, userId);
-                if (typeof result.then === 'function') {
+                if (result && typeof result.then === 'function') {
                     result.then(null, (error) => {
                         console.error(error);
                     });
@@ -1663,9 +1667,10 @@ export class HederaSDKHelper {
     }
 
     /**
-     * Crate client
+     * Create client
      * @param operatorId
      * @param operatorKey
+     * @returns Client
      */
     public static client(operatorId?: string | AccountId, operatorKey?: string | PrivateKey) {
         const client = Environment.createClient();
@@ -1673,24 +1678,6 @@ export class HederaSDKHelper {
             client.setOperator(operatorId, operatorKey);
         }
         return client;
-    }
-
-    /**
-     * Get balance account (AccountBalanceQuery)
-     *
-     * @param {string | AccountId} accountId - Account Id
-     *
-     * @returns {string} - balance
-     */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Account balance query timeout exceeded')
-    public static async balance(client: Client, accountId: string | AccountId): Promise<number> {
-        const query = new AccountBalanceQuery()
-            .setAccountId(accountId);
-        const accountBalance = await query.execute(client);
-        if (accountBalance && accountBalance.hbars) {
-            return accountBalance.hbars.to(HbarUnit.Hbar).toNumber();
-        }
-        return NaN;
     }
 
     /**
@@ -1735,6 +1722,7 @@ export class HederaSDKHelper {
         const create = await new FileCreateTransaction()
             .setKeys([client.operatorPublicKey])
             .setContents(hex.slice(0, CHUNK))
+            .setMaxTransactionFee(MAX_FEE)
             .execute(client);
 
         const newFileId = (await create.getReceipt(client)).fileId;
@@ -1744,6 +1732,7 @@ export class HederaSDKHelper {
                 .setFileId(newFileId)
                 .setContents(hex.slice(i, i + CHUNK))
                 .setMaxChunks(Number.MAX_SAFE_INTEGER)
+                .setMaxTransactionFee(MAX_FEE)
                 .execute(client);
         }
 
@@ -1755,9 +1744,10 @@ export class HederaSDKHelper {
      *
      * @param {string | FileId} bytecodeFileId - Code File Id
      * @param {ContractFunctionParameters} parameters - Contract Parameters
-     * @param {string} contractMemo - Memo
+     * @param {number} [gas] - Gas
+     * @param {string} [contractMemo] - Memo
      *
-     * @returns {string} - Contract Id
+     * @returns {[string, ContractLogInfo]} - Contract Id and the first contract log
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Contract create transaction timeout exceeded')
     public async createContract(
@@ -1790,9 +1780,10 @@ export class HederaSDKHelper {
      *
      * @param {string | FileId} bytecodeFileId - Code File Id
      * @param {ContractFunctionParameters} parameters - Contract Parameters
-     * @param {string} contractMemo - Memo
+     * @param {number} [gas] - Gas
+     * @param {string} [contractMemo] - Memo
      *
-     * @returns {string} - Contract Id
+     * @returns {[string, ContractLogInfo]} - Contract Id and the first contract log
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Contract create transaction timeout exceeded')
     public async createContractV2(
@@ -1864,8 +1855,9 @@ export class HederaSDKHelper {
      * Query Contract Hedera
      *
      * @param {string | ContractId} contractId - Contract Id
+     * @param {number} gas - Gas
      * @param {string} functionName - Function Name
-     * @param {ContractFunctionParameters} parameters - Contract Parameters
+     * @param {{type: ContractParamType, value: any}[]} [parameters] - Contract Parameters
      *
      * @returns {ContractFunctionResult} - Contract Query Result
      */
@@ -1889,8 +1881,8 @@ export class HederaSDKHelper {
      * Query Contract Hedera
      *
      * @param {string | ContractId} contractId - Contract Id
-     * @param {string} functionName - Function Name
-     * @param {ContractFunctionParameters} parameters - Contract Parameters
+     * @param {number} gas - Gas
+     * @param {Uint8Array} parameters - Encoded function parameters
      *
      * @returns {ContractFunctionResult} - Contract Query Result
      */
@@ -1913,9 +1905,9 @@ export class HederaSDKHelper {
      * Call Contract Hedera
      *
      * @param {string | ContractId} contractId - Contract Id
+     * @param {number} gas - Gas
      * @param {string} functionName - Function Name
-     * @param {ContractFunctionParameters} parameters - Contract Parameters
-     * @param {string[]} additionalKeys - Additional Keys
+     * @param {{type: ContractParamType, value: any}[]} [parameters] - Contract Parameters
      *
      * @returns {boolean} - Status
      */
@@ -1944,9 +1936,8 @@ export class HederaSDKHelper {
      * Call Contract Hedera
      *
      * @param {string | ContractId} contractId - Contract Id
-     * @param {string} functionName - Function Name
-     * @param {ContractFunctionParameters} parameters - Contract Parameters
-     * @param {string[]} additionalKeys - Additional Keys
+     * @param {number} gas - Gas
+     * @param {Uint8Array} parameters - Encoded function parameters
      *
      * @returns {boolean} - Status
      */
@@ -1973,10 +1964,9 @@ export class HederaSDKHelper {
     /**
      * Hedera REST api
      * @param url Url
-     * @param options Options
-     * @param type Type
-     * @param filters Filters
+     * @param options Request config, response type, filters and limit
      * @returns Result
+     * @private
      */
     private static async hederaRestApi(
         url: string,
@@ -1985,8 +1975,7 @@ export class HederaSDKHelper {
             type: 'nfts' | 'transactions' | 'logs',
             filters?: { [key: string]: any },
             limit?: number,
-        },
-        apiOptions: IApiOptions
+        }
     ) {
         const config: any = {
             ...options.config,
@@ -2039,8 +2028,7 @@ export class HederaSDKHelper {
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Contract info query timeout exceeded')
     public static async getContractInfo(
-        contractId: string | ContractId,
-        apiOptions: IApiOptions
+        contractId: string | ContractId
     ): Promise<{ memo: string }> {
         const url = `${Environment.HEDERA_CONTRACT_API}/${contractId}`;
         const res = await axios.get(url, {
@@ -2059,15 +2047,13 @@ export class HederaSDKHelper {
      * @param contractId Contract identifier
      * @param timestamp Timestamp
      * @param order Order
-     * @param limit Limit
      * @returns Logs
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get contract events request timeout exceeded')
     public static async getContractEvents(
         contractId: string,
         timestamp: string | null,
-        order: string | null,
-        apiOptions: IApiOptions
+        order: string | null
     ): Promise<any[]> {
         const params: any = {
             limit: HederaSDKHelper.REST_API_MAX_LIMIT,
@@ -2086,20 +2072,18 @@ export class HederaSDKHelper {
             {
                 config,
                 type: 'logs',
-            },
-            apiOptions
+            }
         );
     }
 
     /**
-     * Get NFT serials
+     * Get NFT serials of the operator account
      * @param tokenId Token identifier
      * @returns Serials Info
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get serials request timeout exceeded')
     public async getSerialsNFT(
-        tokenId: string | null,
-        apiOptions: IApiOptions
+        tokenId: string | null
     ): Promise<any[]> {
         const client = this.client;
         const params = {
@@ -2118,21 +2102,20 @@ export class HederaSDKHelper {
             {
                 config,
                 type: 'nfts',
-            },
-            apiOptions
+            }
         );
     }
 
     /**
      * Get NFT serials
+     * @param hederaAccountId Account identifier
      * @param tokenId Token identifier
      * @returns Serials Info
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get serials request timeout exceeded')
     public static async getSerialsNFT(
         hederaAccountId: string,
-        tokenId: string | null,
-        apiOptions: IApiOptions
+        tokenId: string | null
     ): Promise<any[]> {
         const params = {
             limit: HederaSDKHelper.REST_API_MAX_LIMIT,
@@ -2150,19 +2133,14 @@ export class HederaSDKHelper {
             {
                 config,
                 type: 'nfts',
-            },
-            apiOptions
+            }
         );
     }
 
     /**
      * Get NFT token serials
      * @param tokenId Token identifier
-     * @param accountId Account identifier
-     * @param serialnumber Serial number
-     * @param order Order
-     * @param filter Filter
-     * @param limit Limit
+     * @param options Account identifier, serial number, order, filter and limit
      * @returns Serials
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get token serials request timeout exceeded')
@@ -2174,8 +2152,7 @@ export class HederaSDKHelper {
             order?: string,
             filter?: any,
             limit?: number
-        },
-        apiOptions: IApiOptions
+        }
     ): Promise<any[]> {
         if (!options.order) {
             options.order = 'asc'
@@ -2202,19 +2179,13 @@ export class HederaSDKHelper {
                 type: 'nfts',
                 filters: options.filter,
                 limit: options.limit,
-            },
-            apiOptions
+            }
         );
     }
 
     /**
      * Get transactions
-     * @param accountId Account identifier
-     * @param type Type
-     * @param timestamp Timestamp
-     * @param order Order
-     * @param filter Filter
-     * @param limit Limit
+     * @param options Account identifier, transaction type, timestamp, order, filter and limit
      * @returns Transactions
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get transactions request timeout exceeded')
@@ -2226,8 +2197,7 @@ export class HederaSDKHelper {
             order?: string,
             filter?: any,
             limit?: number,
-        },
-        apiOptions: IApiOptions
+        }
     ): Promise<any[]> {
         if (!options.order) {
             options.order = 'asc'
@@ -2257,14 +2227,14 @@ export class HederaSDKHelper {
                 type: 'transactions',
                 filters: options.filter,
                 limit: options.limit,
-            },
-            apiOptions
+            }
         );
     }
 
     /**
      * Check Account
      * @param accountId
+     * @returns Whether the account id is well formed
      */
     public static checkAccount(accountId: string): boolean {
         if (accountId) {
@@ -2280,6 +2250,7 @@ export class HederaSDKHelper {
 
     /**
      * Create Virtual Account
+     * @returns Account Id and Account Private Key
      */
     public static async createVirtualAccount(): Promise<{
         /**
@@ -2300,16 +2271,15 @@ export class HederaSDKHelper {
     }
 
     /**
-     * Get Contract Info
+     * Get Contract Info (Rest API)
      *
-     * @param {string | ContractId} contractId - Contract Id
+     * @param {string} contractId - Contract Id
      *
      * @returns {any} - Contract Info
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get contract info request timeout exceeded')
     public async getContractInfoRest(
-        contractId: string,
-        apiOptions: IApiOptions
+        contractId: string
     ): Promise<any> {
         const res = await axios.get(
             `${Environment.HEDERA_CONTRACT_API}/${contractId}`,
@@ -2331,59 +2301,76 @@ export class HederaSDKHelper {
     /**
      * Get balance account (Rest API)
      *
+     * Reads through Environment rather than the SDK's mirror-node query,
+     * which hardcodes /api/v1 and reuses the gRPC mirror address, so it
+     * ignores OVERRIDE_HEDERA_MIRROR_NODES_BASE_API and breaks localnode.
+     *
+     * An account the mirror node has not ingested yet is reported the same way
+     * as one that does not exist, so an empty result is retried: callers use
+     * this to validate an account they may have created moments ago.
+     *
      * @param {string} accountId - Account Id
      *
      * @returns {string} - balance
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get balance request timeout exceeded')
-    public static async balanceRest(
-        accountId: string,
-        apiOptions: IApiOptions
+    public static async balance(
+        accountId: string
     ): Promise<string> {
-        const res = await axios.get(
-            `${Environment.HEDERA_BALANCES_API}?account.id=${accountId}`,
-            { responseType: 'json' }
-        );
-        if (!res || !res.data || !res.data.balances || !res.data.balances.length) {
-            throw new Error(`Invalid balance '${accountId}'`);
-        }
-        const balances = res.data.balances[0];
-        const hbars = new Hbar(balances.balance, HbarUnit.Tinybar);
-        return hbars.toString();
-    }
-
-    private static async loadData(
-        url: string,
-        next: string,
-        result: any[],
-        error: string,
-        apiOptions: IApiOptions
-    ) {
-        const res = await axios.get(`${url}${next}`, { responseType: 'json' });
-        if (!res || !res.data) {
-            throw new Error(error);
-        }
-        result.push(res.data);
-        if (res.data?.links?.next) {
-            const _next = res.data.links.next.split('?')[1];
-            if (_next) {
-                await HederaSDKHelper.loadData(url, `?${_next}`, result, error, apiOptions);
+        for (let attempt = 1; ; attempt++) {
+            const res = await axios.get(
+                `${Environment.HEDERA_BALANCES_API}?account.id=${accountId}`,
+                { responseType: 'json' }
+            );
+            const balances = res?.data?.balances;
+            if (balances && balances.length) {
+                const hbars = new Hbar(balances[0].balance, HbarUnit.Tinybar);
+                return hbars.toString();
             }
+            if (attempt >= HederaSDKHelper.MIRROR_NODE_INDEXING_ATTEMPTS) {
+                throw new Error(`Invalid balance '${accountId}'`);
+            }
+            await delay(HederaSDKHelper.MIRROR_NODE_INDEXING_DELAY);
         }
-        return result;
     }
 
     /**
-     * Get balance account (Rest API)
+     * Read a paginated Rest API collection page by page
+     *
+     * @param {string} url - Request url, without the query string
+     * @param {string} query - Query string of the first page, including '?'
+     * @param {string} error - Error message for an empty response
+     *
+     * @returns {AsyncGenerator<any>} - response body of each page
+     */
+    private static async *loadPages(
+        url: string,
+        query: string,
+        error: string
+    ): AsyncGenerator<any> {
+        let next = query;
+        while (next !== null) {
+            const res = await axios.get(`${url}${next}`, { responseType: 'json' });
+            if (!res || !res.data) {
+                throw new Error(error);
+            }
+            yield res.data;
+            const link: string = res.data?.links?.next;
+            const _next = link ? link.split('?')[1] : null;
+            next = _next ? `?${_next}` : null;
+        }
+    }
+
+    /**
+     * Get account tokens (Rest API)
      *
      * @param {string} accountId - Account Id
      *
-     * @returns {any} - balances
+     * @returns {any} - token balances by token id
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get balance request timeout exceeded')
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get account tokens request timeout exceeded')
     public static async accountTokensInfo(
-        accountId: string,
-        apiOptions: IApiOptions
+        accountId: string
     ): Promise<any> {
         try {
             AccountId.fromString(accountId);
@@ -2392,12 +2379,14 @@ export class HederaSDKHelper {
         }
 
         const error = `Invalid account '${accountId}'`;
-        const responses = await HederaSDKHelper.loadData(
-            `${Environment.HEDERA_ACCOUNT_API}/${accountId}/tokens`, '', [], error, apiOptions
+        const pages = HederaSDKHelper.loadPages(
+            `${Environment.HEDERA_ACCOUNT_API}/${accountId}/tokens`,
+            `?limit=${HederaSDKHelper.REST_API_MAX_LIMIT}`,
+            error
         );
         const result: { [tokenId: string]: any } = {};
-        for (const response of responses) {
-            const tokens: any[] = response.tokens;
+        for await (const page of pages) {
+            const tokens: any[] = page.tokens || [];
             for (const token of tokens) {
                 result[token.token_id] = {
                     tokenId: token.token_id,
@@ -2414,10 +2403,11 @@ export class HederaSDKHelper {
      * Get account (Rest API)
      *
      * @param {string} accountId - Account Id
+     * @param {IApiOptions} apiOptions - API options
      *
-     * @returns {string} - balance
+     * @returns {{account: string, balance: string, key: string}} - Account info
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get balance request timeout exceeded')
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get account request timeout exceeded')
     public static async accountInfo(
         accountId: string,
         apiOptions: IApiOptions
@@ -2471,8 +2461,7 @@ export class HederaSDKHelper {
     public static async getTopicMessageChunks(
         topicId: string,
         startTimestamp: string | null,
-        next: string | null,
-        apiOptions: IApiOptions
+        next: string | null
     ): Promise<any> {
         let url: string;
         let requestParams: any;
@@ -2547,6 +2536,10 @@ export class HederaSDKHelper {
     /**
      * Resolve alias (0.0.<hex>) to numeric account id via Mirror Node.
      * Works for ECDSA alias where accountId is hex.
+     *
+     * @param accountId Account Id or alias
+     * @param apiOptions API options
+     * @returns Numeric account id
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Resolve alias request timeout exceeded')
     public static async resolveAccountAlias(

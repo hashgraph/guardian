@@ -1,0 +1,322 @@
+@if (loading) {
+  <div class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
+  </div>
+} @else {
+  <div class="guardian-page">
+    <guardian-page-header pageTitle="Schema Templates" helpKey="schema-templates"></guardian-page-header>
+
+    @if (!isConfirmed) {
+      <div class="not-exist">
+        Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
+      </div>
+    }
+
+    @if (isConfirmed) {
+      <div class="actions-container">
+        <div class="schema-template-filters">
+          <span class="p-input-icon-right">
+            <input
+              class="search-policy-input"
+              [(ngModel)]="textSearch"
+              pInputText
+              placeholder="Search by Template name"
+              type="text" />
+            <i class="pi pi-search search-icon"></i>
+          </span>
+          <button
+            (click)="applyFilters()"
+            class="button ml-8"
+            label="Apply Filters"
+            pButton>
+          </button>
+          <button
+            (click)="clearFilters()"
+            [disabled]="!textSearch"
+            class="button secondary ml-8"
+            label="Clear filters"
+            pButton>
+          </button>
+        </div>
+        <div class="schema-template-actions">
+          @if (canCreate) {
+            <p-button
+              (click)="openCreateDialog()"
+              class="toolbar-btn-primary"
+              label="Create New"
+              [pTooltip]="'Create New'"
+              tooltipPosition="bottom">
+              <svg
+                fill="none"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M20 12C20 12.6227 19.4952 13.1275 18.8725 13.1275H13.1275V18.8725C13.1275 19.4952 12.6227 20 12 20C11.3773 20 10.8725 19.4952 10.8725 18.8725V13.1275H5.12752C4.50481 13.1275 4 12.6227 4 12C4 11.3773 4.50481 10.8725 5.12752 10.8725H10.8725V5.12752C10.8725 4.50481 11.3773 4 12 4C12.6227 4 13.1275 4.50481 13.1275 5.12752V10.8725H18.8725C19.4952 10.8725 20 11.3773 20 12Z"
+                  fill="white" />
+              </svg>
+            </p-button>
+          }
+          @if (canCreate) {
+            <p-button
+              (click)="importTemplate()"
+              class="toolbar-btn-primary"
+              label="Import"
+              [pTooltip]="'Import'"
+              tooltipPosition="bottom">
+              <svg
+                fill="none"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg">
+                <path
+                  clip-rule="evenodd"
+                  d="M11.0001 3C11.0001 2.44771 11.4478 2 12.0001 2C12.5524 2 13.0001 2.44772 13.0001 3V11.5858L15.293 9.29285C15.6836 8.90232 16.3167 8.90232 16.7073 9.29285C17.0978 9.68337 17.0978 10.3165 16.7073 10.7071L12.7073 14.7071L12.7072 14.707C12.5263 14.888 12.2762 15 12.0001 15C11.7239 15 11.4739 14.888 11.2929 14.707L11.2929 14.7071L7.29289 10.7071C6.90237 10.3165 6.90237 9.68337 7.29289 9.29285C7.68342 8.90232 8.31658 8.90232 8.70711 9.29285L11.0001 11.5858V3ZM5 14.5C5 13.9477 4.55228 13.5 4 13.5C3.44772 13.5 3 13.9477 3 14.5V18C3 19.6569 4.34315 21 6 21H18C19.6569 21 21 19.6569 21 18V14.5C21 13.9477 20.5523 13.5 20 13.5C19.4477 13.5 19 13.9477 19 14.5V18C19 18.5523 18.5523 19 18 19H6C5.44772 19 5 18.5523 5 18V14.5Z"
+                  fill="white"
+                  fill-rule="evenodd" />
+              </svg>
+            </p-button>
+          }
+        </div>
+      </div>
+
+      @if (templates.length > 0) {
+        <div class="guardian-grid-container">
+          <p-table
+            [value]="templates"
+            class="guardian-grid-table"
+            [scrollable]="true">
+            <ng-template pTemplate="header">
+              <tr class="guardian-grid-header">
+                <th class="header-cell-text col-name">Name</th>
+                <th class="header-cell-text col-description">Description</th>
+                <th class="header-cell-text col-version">Version</th>
+                <th class="header-cell-text col-previous-version">Previous Version</th>
+                <th class="header-cell-text col-status">Status</th>
+                <th class="header-cell-text col-schemas">Schemas</th>
+                <th class="header-cell-text col-topic">Hedera Topic Id</th>
+                <th class="header-cell-text col-actions">Operations</th>
+              </tr>
+            </ng-template>
+            <ng-template let-template pTemplate="body">
+              <tr class="guardian-grid-row">
+                <td class="row-cell-text col-name" pTooltip="{{ template.name }}" tooltipPosition="top">
+                  <span class="text-truncate">{{ template.name || '–' }}</span>
+                </td>
+                <td class="row-cell-text col-description" pTooltip="{{ template.description }}" tooltipPosition="top">
+                  <span class="text-truncate">{{ template.description || '–' }}</span>
+                </td>
+                <td class="row-cell-text col-version" pTooltip="{{ template.version }}" tooltipPosition="top">
+                  <span class="text-truncate">{{ template.version || '–' }}</span>
+                </td>
+                <td class="row-cell-text col-previous-version" pTooltip="{{ template.previousVersion }}" tooltipPosition="top">
+                  <span class="text-truncate">{{ template.previousVersion || '–' }}</span>
+                </td>
+                <td class="row-cell-text col-status">
+                  @if (showStatusActions(template)) {
+                    <p-select
+                      class="status-actions-dropdown {{ template.status }}-dropdown"
+                      styleClass="guardian-status-select"
+                      appendTo="body"
+                      tooltipPosition="bottom"
+                      [(ngModel)]="publishMenuSelector"
+                      [options]="getStatusOptions()"
+                      [placeholder]="getStatusName(template)"
+                      (onChange)="onChangeStatus($event, template)">
+                      <ng-template let-option pTemplate="item">
+                        <div>
+                          <div
+                            class="dropdown-item-title"
+                            [ngStyle]="{ color: option.color }">
+                            {{ option.title }}
+                          </div>
+                          <span class="dropdown-item-description">
+                            {{ option.description }}
+                          </span>
+                        </div>
+                      </ng-template>
+                    </p-select>
+                  } @else {
+                    <div class="chip chip-color-{{ getStatusColor(template.status) }}">
+                      {{ getStatusLabel(template.status) }}
+                    </div>
+                  }
+                </td>
+                <td class="row-cell-text col-schemas">
+                  <button
+                    type="button"
+                    class="schema-template-link"
+                    (click)="openSchemas(template)"
+                    [disabled]="!template.topicId">
+                    {{ template.schemasCount || 0 }} schemas
+                  </button>
+                </td>
+                <td class="row-cell-text col-topic">
+                  @if (template.topicId) {
+                    <hedera-explorer [params]="template.topicId" type="topics">
+                      {{ template.topicId }}
+                    </hedera-explorer>
+                  } @else {
+                    -
+                  }
+                </td>
+                <td class="row-cell-text col-actions">
+                  <div class="commands-line">
+                    @if (user.TEMPLATES_TEMPLATE_UPDATE) {
+                      <div
+                        (click)="openEditDialog(template)"
+                        class="operations-icon-container"
+                        [class.operation-disabled]="!canEdit()"
+                        pTooltip="Edit"
+                        tooltipStyleClass="guardian-tooltip"
+                        tooltipPosition="top"
+                        [showDelay]="500"
+                        [hideDelay]="100">
+                        <svg
+                          fill="none"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg">
+                          <path
+                            [attr.class]="canEdit() ? 'primary-color' : 'disabled-color'"
+                            d="M17.204 3.796C16.1549 2.7469 14.4541 2.7469 13.405 3.796L4.793 12.408C4.4805 12.7205 4.2676 13.1186 4.181 13.552L3.514 16.887C3.3436 17.7388 4.0942 18.4894 4.946 18.319L8.281 17.652C8.7144 17.5654 9.1125 17.3525 9.425 17.04L18.037 8.428C19.0861 7.3789 19.0861 5.6781 18.037 4.629L17.204 3.796ZM14.4657 4.8567C14.9291 4.3933 15.6809 4.3933 16.1443 4.8567L16.9763 5.6887C17.4397 6.1521 17.4397 6.9039 16.9763 7.3673L15.75 8.5936L13.2394 6.083L14.4657 4.8567ZM12.1787 7.1437L14.6893 9.6543L8.3643 15.9793C8.2601 16.0835 8.1274 16.1545 7.9829 16.1834L5.232 16.7336L5.7822 13.9827C5.8111 13.8382 5.8821 13.7055 5.9863 13.6013L12.1787 7.1437Z"
+                            fill="currentColor" />
+                        </svg>
+                      </div>
+                    }
+                    @if (user.TEMPLATES_TEMPLATE_UPDATE) {
+                      <div
+                        (click)="createNewVersion(template)"
+                        class="operations-icon-container"
+                        [class.operation-disabled]="!canCreateNewVersion(template)"
+                        pTooltip="New Version"
+                        tooltipStyleClass="guardian-tooltip"
+                        tooltipPosition="top"
+                        [showDelay]="500"
+                        [hideDelay]="100">
+                        <svg
+                          fill="none"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg">
+                          <path
+                            [attr.class]="canCreateNewVersion(template) ? 'primary-color' : 'disabled-color'"
+                            clip-rule="evenodd"
+                            d="M7.75 3C6.2312 3 5 4.2312 5 5.75V15.25C5 16.7688 6.2312 18 7.75 18H14.25C15.7688 18 17 16.7688 17 15.25V5.75C17 4.2312 15.7688 3 14.25 3H7.75ZM6.5 5.75C6.5 5.0596 7.0596 4.5 7.75 4.5H14.25C14.9404 4.5 15.5 5.0596 15.5 5.75V15.25C15.5 15.9404 14.9404 16.5 14.25 16.5H7.75C7.0596 16.5 6.5 15.9404 6.5 15.25V5.75ZM9.75 8.25C9.75 7.8358 10.0858 7.5 10.5 7.5H11.5V6.5C11.5 6.0858 11.8358 5.75 12.25 5.75C12.6642 5.75 13 6.0858 13 6.5V7.5H14C14.4142 7.5 14.75 7.8358 14.75 8.25C14.75 8.6642 14.4142 9 14 9H13V10C13 10.4142 12.6642 10.75 12.25 10.75C11.8358 10.75 11.5 10.4142 11.5 10V9H10.5C10.0858 9 9.75 8.6642 9.75 8.25ZM8 20.25C8 19.8358 8.3358 19.5 8.75 19.5H16.25C17.4926 19.5 18.5 18.4926 18.5 17.25V7.75C18.5 7.3358 18.8358 7 19.25 7C19.6642 7 20 7.3358 20 7.75V17.25C20 19.3211 18.3211 21 16.25 21H8.75C8.3358 21 8 20.6642 8 20.25Z"
+                            fill="currentColor"
+                            fill-rule="evenodd" />
+                        </svg>
+                      </div>
+                    }
+                    @if (user.TEMPLATES_TEMPLATE_READ) {
+                      <div
+                        (click)="exportTemplate(template)"
+                        class="operations-icon-container"
+                        [class.operation-disabled]="!canExport()"
+                        pTooltip="Export"
+                        tooltipStyleClass="guardian-tooltip"
+                        tooltipPosition="top"
+                        [showDelay]="500"
+                        [hideDelay]="100">
+                      <svg
+                        fill="none"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path
+                          [attr.class]="canExport() ? 'primary-color' : 'disabled-color'"
+                          clip-rule="evenodd"
+                          d="M12.0001 3C12.5524 3 13.0001 3.44772 13.0001 4V12.5858L15.293 10.2929C15.6836 9.90237 16.3167 9.90237 16.7073 10.2929C17.0978 10.6834 17.0978 11.3166 16.7073 11.7071L12.7073 15.7071C12.3167 16.0976 11.6836 16.0976 11.293 15.7071L7.29289 11.7071C6.90237 11.3166 6.90237 10.6834 7.29289 10.2929C7.68342 9.90237 8.31658 9.90237 8.70711 10.2929L11.0001 12.5858V4C11.0001 3.44772 11.4478 3 12.0001 3ZM5 16.5C5.55228 16.5 6 16.9477 6 17.5V19H18V17.5C18 16.9477 18.4477 16.5 19 16.5C19.5523 16.5 20 16.9477 20 17.5V19C20 20.1046 19.1046 21 18 21H6C4.89543 21 4 20.1046 4 19V17.5C4 16.9477 4.44772 16.5 5 16.5Z"
+                          fill="currentColor"
+                          fill-rule="evenodd" />
+                      </svg>
+                      </div>
+                    }
+                    @if (user.TEMPLATES_TEMPLATE_DELETE) {
+                      <div
+                        (click)="deleteTemplate(template)"
+                        class="operations-icon-container"
+                        [class.operation-disabled]="!canDelete(template)"
+                        pTooltip="Delete"
+                        tooltipStyleClass="guardian-tooltip"
+                        tooltipPosition="top"
+                        [showDelay]="500"
+                        [hideDelay]="100">
+                        <svg
+                          fill="none"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg">
+                          <path
+                            [attr.class]="canDelete(template) ? 'accent-color-red' : 'disabled-color'"
+                            d="M9 3.75C9 3.33579 9.33579 3 9.75 3H14.25C14.6642 3 15 3.33579 15 3.75V5H19.25C19.6642 5 20 5.33579 20 5.75C20 6.16421 19.6642 6.5 19.25 6.5H18.5L17.744 19.352C17.6752 20.522 16.706 21.435 15.534 21.435H8.466C7.294 21.435 6.3248 20.522 6.256 19.352L5.5 6.5H4.75C4.33579 6.5 4 6.16421 4 5.75C4 5.33579 4.33579 5 4.75 5H9V3.75ZM10.5 5H13.5V4.5H10.5V5ZM7.003 6.5L7.753 19.264C7.7752 19.6411 8.0877 19.935 8.466 19.935H15.534C15.9123 19.935 16.2248 19.6411 16.247 19.264L16.997 6.5H7.003ZM10.25 9C10.6642 9 11 9.33579 11 9.75V16.75C11 17.1642 10.6642 17.5 10.25 17.5C9.83579 17.5 9.5 17.1642 9.5 16.75V9.75C9.5 9.33579 9.83579 9 10.25 9ZM13.75 9C14.1642 9 14.5 9.33579 14.5 9.75V16.75C14.5 17.1642 14.1642 17.5 13.75 17.5C13.3358 17.5 13 17.1642 13 16.75V9.75C13 9.33579 13.3358 9 13.75 9Z"
+                            fill="currentColor" />
+                        </svg>
+                      </div>
+                    }
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+          <div class="guardian-grid-paginator">
+            <app-paginator
+              class="guardian-grid-paginator"
+              [pageIndex]="pageIndex"
+              [pageSize]="pageSize"
+              [length]="total"
+              (page)="onPage($event)"
+            ></app-paginator>
+          </div>
+        </div>
+      } @else {
+        <div class="schema-template-empty">
+          No schema templates
+        </div>
+      }
+    }
+
+    <p-dialog
+      [(visible)]="showTemplateDialog"
+      [modal]="true"
+      [draggable]="false"
+      [resizable]="false"
+      [style]="{ width: '520px' }"
+      styleClass="guardian-dialog"
+      [header]="form.id ? 'Edit Schema Template' : 'Create Schema Template'">
+      <div class="schema-template-form">
+        <label>
+          <span>Name</span>
+          <input [(ngModel)]="form.name" pInputText type="text" />
+        </label>
+        <label>
+          <span>Description</span>
+          <textarea [(ngModel)]="form.description" pTextarea rows="4"></textarea>
+        </label>
+      </div>
+      <ng-template pTemplate="footer">
+        <button
+          type="button"
+          class="button secondary"
+          (click)="showTemplateDialog = false"
+          pButton
+          label="Cancel">
+        </button>
+        <button
+          type="button"
+          class="button"
+          (click)="saveTemplate()"
+          [disabled]="saving || !form.name.trim()"
+          pButton
+          label="Save">
+        </button>
+      </ng-template>
+    </p-dialog>
+  </div>
+}

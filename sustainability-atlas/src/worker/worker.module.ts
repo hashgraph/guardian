@@ -1,0 +1,158 @@
+import { Module, DynamicModule } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { BullModule } from '@nestjs/bullmq';
+import Redis from 'ioredis';
+import configuration from '@shared/config/configuration';
+import { getDatabaseConfig } from '@shared/config/database.config';
+import { getRedictConfig } from '@shared/config/redict.config';
+import { QUEUE_NAMES, getActiveQueues, getQueueConfigs } from '@shared/config/bullmq.config';
+
+// Modules
+import { MappingModule } from './mapping/mapping.module';
+
+// Services
+import { HederaService } from './services/hedera.service';
+import { IpfsService } from './services/ipfs.service';
+import { ProjectMapperService } from './services/project-mapper.service';
+import { TopicClassifierService } from './project-mapper/topic-classifier';
+import { DynamicTopicResolver } from './project-mapper/resolvers/dynamic-topic.resolver';
+import { CsRefResolver } from './project-mapper/resolvers/cs-ref.resolver';
+import { RelationshipsResolver } from './project-mapper/resolvers/relationships.resolver';
+import { ProjectSchemaResolver } from './project-mapper/resolvers/project-schema.resolver';
+import { ProjectKeyResolverChain } from './project-mapper/resolvers/resolver-chain.service';
+import { ReverseGeoService } from './services/reverse-geo.service';
+import { POLICY_ZIP_STORAGE } from './services/storage/policy-zip-storage.interface';
+import { LocalPolicyZipStorage } from './services/storage/local-policy-zip-storage.service';
+
+// Processors
+import { TopicSyncProcessor } from './processors/topic-sync.processor';
+import { MessageProcessProcessor } from './processors/message-process.processor';
+import { TokenSyncProcessor } from './processors/token-sync.processor';
+import { IpfsFetchProcessor } from './processors/ipfs-fetch.processor';
+import { PolicyDecodeProcessor } from './processors/policy-decode.processor';
+import { MvRefreshProcessor } from './processors/mv-refresh.processor';
+import { BusinessViewBuilderProcessor } from './processors/business-view-builder.processor';
+import { ProjectReparseProcessor } from './processors/project-reparse.processor';
+
+// Schedulers
+import { SyncSchedulerService } from './schedulers/sync-scheduler.service';
+
+// Services (extended)
+import { QueueAutoscalerService } from './services/queue-autoscaler.service';
+
+/**
+ * Maps queue names to the processor classes that handle them.
+ * Only processors for active queues will be registered.
+ */
+const PROCESSOR_MAP: Record<string, any> = {
+    [QUEUE_NAMES.TOPIC_SYNC]: TopicSyncProcessor,
+    [QUEUE_NAMES.MESSAGE_PARSE]: MessageProcessProcessor,
+    [QUEUE_NAMES.TOKEN_SYNC]: TokenSyncProcessor,
+    [QUEUE_NAMES.IPFS_FETCH]: IpfsFetchProcessor,
+    [QUEUE_NAMES.POLICY_DECODE]: PolicyDecodeProcessor,
+    [QUEUE_NAMES.MV_REFRESH]: MvRefreshProcessor,
+    [QUEUE_NAMES.BUSINESS_VIEW_BUILD]: BusinessViewBuilderProcessor,
+    [QUEUE_NAMES.PROJECT_REPARSE]: ProjectReparseProcessor,
+};
+
+@Module({})
+export class WorkerModule {
+    static register(): DynamicModule {
+        const activeQueues = getActiveQueues();
+        const allQueueNames = Object.values(QUEUE_NAMES);
+
+        // Per-queue retention defaults. Without these, BullMQ keeps EVERY
+        // completed/failed job forever — the continuous topic-sync poll loop then
+        // grows the completed set unbounded until Redict OOMs. Apply only the
+        // retention fields (not attempts/backoff) so existing retry behaviour is
+        // unchanged. Per-job opts can still override (poll jobs use `true`).
+        const retentionByName = new Map(
+            getQueueConfigs().map(q => [q.name, {
+                removeOnComplete: q.defaultJobOptions.removeOnComplete,
+                removeOnFail: q.defaultJobOptions.removeOnFail,
+            }]),
+        );
+
+        // Only register processors for queues this instance handles
+        const activeProcessors = activeQueues
+            .map(q => PROCESSOR_MAP[q])
+            .filter(Boolean);
+
+        return {
+            module: WorkerModule,
+            imports: [
+                ConfigModule.forRoot({
+                    isGlobal: true,
+                    load: [configuration],
+                }),
+
+                TypeOrmModule.forRootAsync({
+                    useFactory: () => getDatabaseConfig(),
+                }),
+
+                BullModule.forRootAsync({
+                    useFactory: () => {
+                        // Strip keyPrefix — BullMQ manages its own 'bull:' namespace
+                        // (queue.registry does the same). Spread the rest so the worker's
+                        // queue connections inherit retryStrategy + reconnectOnError and
+                        // survive a Redict restart/redeploy (the ENOTFOUND/LOADING window)
+                        // instead of throwing until the process is restarted.
+                        const { keyPrefix: _kp, ...connection } = getRedictConfig();
+                        return { connection };
+                    },
+                }),
+
+                // Register ALL queues (so processors can enqueue to any queue)
+                BullModule.registerQueue(
+                    ...allQueueNames.map(name => ({
+                        name,
+                        defaultJobOptions: retentionByName.get(name),
+                    })),
+                ),
+
+                // Mapping pipeline module
+                MappingModule,
+            ],
+            providers: [
+                // Redict pub/sub client for event publishing
+                {
+                    provide: 'REDICT_PUB',
+                    useFactory: () => {
+                        // Strip keyPrefix to preserve this client's unprefixed keys
+                        // (autoscaler) and channels ('se:events'); spread the rest so it
+                        // inherits the shared retry/reconnect resilience settings.
+                        const { keyPrefix: _kp, ...connection } = getRedictConfig();
+                        return new Redis(connection);
+                    },
+                },
+
+                // Services (always available for processors)
+                HederaService,
+                IpfsService,
+                ReverseGeoService,
+                ProjectMapperService,
+                // Project-key resolver chain (M1→M4) + its dependencies.
+                TopicClassifierService,
+                DynamicTopicResolver,
+                CsRefResolver,
+                RelationshipsResolver,
+                ProjectSchemaResolver,
+                ProjectKeyResolverChain,
+                { provide: POLICY_ZIP_STORAGE, useClass: LocalPolicyZipStorage },
+
+                // Only processors for active queues
+                ...activeProcessors,
+
+                // Scheduler (only on instances that process data queues)
+                ...(activeQueues.some(q => q.startsWith('mirror-node'))
+                    ? [SyncSchedulerService]
+                    : []),
+
+                // Autoscaler — always registered; uses @Optional() for processor
+                // injections so it gracefully handles partial processor sets.
+                QueueAutoscalerService,
+            ],
+        };
+    }
+}

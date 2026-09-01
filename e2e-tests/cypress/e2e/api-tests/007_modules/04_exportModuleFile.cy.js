@@ -1,78 +1,48 @@
 
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { STATUS_CODE } from '../../../support/api/api-const';
+import * as Modules from '../../../support/api/modules';
+import * as Authorization from '../../../support/authorization';
 
-context("Export Module as File", { tags: ['modules', 'thirdPool', 'all'] }, () => {
+context('Export Module as File', { tags: ['modules', 'thirdPool', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
+    const moduleName = 'FirstAPIModule';
 
-    const modulesUrl = `${API.ApiServer}${API.ListOfAllModules}`;
-    const exportUrl = (uuid) => `${modulesUrl}${uuid}/${API.ExportFile}`;
+    let module;
 
-    let lastModule;
-
-    const getModulesWithAuth = (authorization) =>
-        cy.request({
-            method: METHOD.GET,
-            url: modulesUrl,
-            headers: { authorization },
-        });
-
-    const getExportWithAuth = (authorization, uuid) =>
-        cy.request({
-            method: METHOD.GET,
-            url: exportUrl(uuid),
-            encoding: null,
-            headers: { authorization },
-            timeout: 180000,
-        });
-
-    const getExportWithoutAuth = (uuid, headers = {}) =>
-        cy.request({
-            method: METHOD.GET,
-            url: exportUrl(uuid),
-            headers,
-            failOnStatusCode: false,
-        });
-
-    before("Get module id", () => {
+    // The module is resolved by name: exporting the newest one (at(0)) means exporting
+    // whichever copy an earlier spec happened to leave behind
+    before('Get module', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            getModulesWithAuth(authorization).then((response) => {
-                expect(response.status).eql(STATUS_CODE.OK);
-                lastModule = response.body.at(0);
+            Modules.resolveDraftModule(authorization, moduleName).then((resolved) => {
+                module = resolved;
             });
         });
     });
 
-    it("Returns a zip file containing the published module and all associated artifacts, i.e. schemas and VCs", { tags: ['smoke', 'analytics'] }, () => {
+    it('Returns a zip file containing the published module and all associated artifacts, i.e. schemas and VCs', { tags: ['smoke', 'analytics'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            getExportWithAuth(authorization, lastModule.uuid).then((response) => {
+            Modules.exportModuleFileResponse(authorization, module.uuid).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                expect(response.body).to.not.be.oneOf([null, ""]);
-                cy.writeFile(
-                    "cypress/fixtures/exportedModule.module",
-                    Cypress.Blob.arrayBufferToBinaryString(response.body),
-                    "binary"
-                );
+                expect(response.body).to.not.be.oneOf([null, '']);
             });
         });
     });
 
-    it("Returns a zip file containing the published module and all associated artifacts, i.e. schemas and VCs without auth token - Negative", () => {
-        getExportWithoutAuth(lastModule.uuid).then((response) => {
+    it('Returns a zip file containing the published module and all associated artifacts, i.e. schemas and VCs without auth token - Negative', () => {
+        Modules.exportModuleFileResponse(undefined, module.uuid, { failOnStatusCode: false }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Returns a zip file containing the published module and all associated artifacts, i.e. schemas and VCs with invalid auth token - Negative", () => {
-        getExportWithoutAuth(lastModule.uuid, { authorization: "Bearer wqe" }).then((response) => {
+    it('Returns a zip file containing the published module and all associated artifacts, i.e. schemas and VCs with invalid auth token - Negative', () => {
+        Modules.exportModuleFileResponse('Bearer wqe', module.uuid, { failOnStatusCode: false }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Returns a zip file containing the published module and all associated artifacts, i.e. schemas and VCs with empty auth token - Negative", () => {
-        getExportWithoutAuth(lastModule.uuid, { authorization: "" }).then((response) => {
+    it('Returns a zip file containing the published module and all associated artifacts, i.e. schemas and VCs with empty auth token - Negative', () => {
+        Modules.exportModuleFileResponse('', module.uuid, { failOnStatusCode: false }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });

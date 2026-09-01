@@ -116,6 +116,65 @@ describe('VCJS coverage (offline paths)', function () {
             assert.deepEqual(schema.$defs.Bar.required, []);
         });
 
+        it('strips templateFieldId, an editor-only annotation AJV strict mode rejects as unknown', function () {
+            const vcjs = makeVcjs();
+            const schema = {
+                type: 'object',
+                properties: {
+                    root: { type: 'string', templateFieldId: 'root-id' },
+                    // SchemaHelper writes templateFieldId on the array field itself,
+                    // never on `items` directly; nested object fields get their own id.
+                    list: {
+                        type: 'array',
+                        templateFieldId: 'list-id',
+                        items: { type: 'object', properties: {
+                            nested: { type: 'string', templateFieldId: 'nested-id' }
+                        } }
+                    }
+                },
+                $defs: {
+                    Foo: {
+                        type: 'object',
+                        properties: { a: { type: 'string', templateFieldId: 'def-id' } }
+                    }
+                }
+            };
+            vcjs.prepareSchema(schema);
+            assert.notProperty(schema.properties.root, 'templateFieldId');
+            assert.notProperty(schema.properties.list, 'templateFieldId');
+            assert.notProperty(schema.properties.list.items.properties.nested, 'templateFieldId');
+            assert.notProperty(schema.$defs.Foo.properties.a, 'templateFieldId');
+        });
+
+        it('strips templateFieldId from a conditional field revealed in an allOf then/else branch', function () {
+            const vcjs = makeVcjs();
+            const schema = {
+                type: 'object',
+                properties: {
+                    trigger: { type: 'string' }
+                },
+                allOf: [{
+                    if: {
+                        properties: { trigger: { const: 'yes' } },
+                        required: ['trigger']
+                    },
+                    then: {
+                        properties: {
+                            condField: { type: 'string', templateFieldId: 'cond-id' }
+                        }
+                    },
+                    else: {
+                        properties: {
+                            otherCondField: { type: 'string', templateFieldId: 'other-cond-id' }
+                        }
+                    }
+                }]
+            };
+            vcjs.prepareSchema(schema);
+            assert.notProperty(schema.allOf[0].then.properties.condField, 'templateFieldId');
+            assert.notProperty(schema.allOf[0].else.properties.otherCondField, 'templateFieldId');
+        });
+
         describe('shared sub-schema sibling isolation', function () {
             // Two root fields (`targeted` and `sibling`) both $ref the same #Sub entry.
             // A condition in allOf targets only `targeted`. The fix must clone #Sub
@@ -240,6 +299,60 @@ describe('VCJS coverage (offline paths)', function () {
                 });
                 assert.isFalse(result.ok,
                     'sibling.b must still be required — the required-strip must not leak from targeted to sibling');
+            });
+        });
+
+        describe('array-typed sub-schema ref (items.$ref)', function () {
+            // Regression guard: a sub-schema reference under an array property sits at
+            // `items.$ref`, not `$ref` directly on the property. Before readRef/withRef
+            // handled that shape, prepareSchema silently skipped the strip-and-clone pass
+            // for any array-typed ref field entirely.
+            function makeArrayRefSchema() {
+                return {
+                    type: 'object',
+                    properties: {
+                        targetedList: { type: 'array', items: { $ref: '#Sub' } }
+                    },
+                    required: [],
+                    allOf: [{
+                        if: {
+                            properties: { targetedList: { properties: { a: { const: 1 } }, required: ['a'] } },
+                            required: ['targetedList']
+                        },
+                        then: { properties: { targetedList: { required: ['b'] } } },
+                        else: { properties: { targetedList: { properties: { b: false } } } }
+                    }],
+                    $defs: {
+                        '#Sub': {
+                            $id: '#Sub',
+                            type: 'object',
+                            properties: { a: { type: 'number' }, b: { type: 'number' } },
+                            required: ['a', 'b']
+                        }
+                    }
+                };
+            }
+
+            it('rewrites items.$ref to a per-container clone', function () {
+                const vcjs = makeVcjs();
+                const schema = makeArrayRefSchema();
+                vcjs.prepareSchema(schema);
+
+                assert.notEqual(schema.properties.targetedList.items.$ref, '#Sub',
+                    'items.$ref should point to a clone, proving the array-typed ref was recognized');
+            });
+
+            it('strips the conditional field from the clone required, without mutating the original', function () {
+                const vcjs = makeVcjs();
+                const schema = makeArrayRefSchema();
+                vcjs.prepareSchema(schema);
+
+                const cloneKey = schema.properties.targetedList.items.$ref;
+                assert.exists(schema.$defs[cloneKey], 'clone must be present in $defs');
+                assert.notInclude(schema.$defs[cloneKey].required ?? [], 'b',
+                    'b should be stripped from the clone required array');
+                assert.include(schema.$defs['#Sub'].required, 'b',
+                    'original required must not be mutated');
             });
         });
     });

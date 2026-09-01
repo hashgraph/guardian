@@ -1,69 +1,35 @@
 
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { STATUS_CODE } from '../../../support/api/api-const';
+import * as Modules from '../../../support/api/modules';
+import * as Authorization from '../../../support/authorization';
 
-context("Validate Invalid Module", { tags: ['modules', 'thirdPool', 'all'] }, () => {
+context('Validate Invalid Module', { tags: ['modules', 'thirdPool', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
-
-    const modulesUrl = `${API.ApiServer}${API.ListOfAllModules}`;
-    const validateUrl = `${modulesUrl}${API.Validate}`;
+    const moduleName = Modules.uniqueModuleName('APIModuleInvalid');
 
     let invalidModule;
 
-    const getModulesWithAuth = (authorization) =>
-        cy.request({
-            method: METHOD.GET,
-            url: modulesUrl,
-            headers: { authorization },
-        });
-
-    const getModuleWithAuth = (authorization, uuid) =>
-        cy.request({
-            method: METHOD.GET,
-            url: modulesUrl + uuid,
-            headers: { authorization },
-        });
-
-    const postValidateWithAuth = (authorization, body) =>
-        cy.request({
-            method: METHOD.POST,
-            url: validateUrl,
-            headers: { authorization },
-            body,
-            timeout: 180000,
-        });
-
-    const postValidateWithoutAuth = (body, headers = {}) =>
-        cy.request({
-            method: METHOD.POST,
-            url: validateUrl,
-            headers,
-            body,
-            failOnStatusCode: false,
-        });
-
-    before("Get module id", () => {
+    // The spec builds the module it validates: taking the newest module in the list (at(0))
+    // means validating whichever copy an earlier spec happened to leave behind, and that
+    // module is not necessarily invalid
+    before('Create invalid module', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            getModulesWithAuth(authorization).then((response) => {
-                expect(response.status).eql(STATUS_CODE.OK);
-                const firstUuid = response.body.at(0).uuid;
-                getModuleWithAuth(authorization, firstUuid).then((res) => {
-                    expect(res.status).eql(STATUS_CODE.OK);
-                    invalidModule = res.body;
-                    delete invalidModule._id;
-                    delete invalidModule.configFileId;
-                    delete invalidModule.type;
-                    delete invalidModule.updateDate;
-                });
+            Modules.createInvalidModule(authorization, moduleName).then((module) => {
+                invalidModule = module;
             });
         });
     });
 
-    it("Validate the module", { tags: ['analytics'] }, () => {
+    after('Remove the module created by this spec', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            postValidateWithAuth(authorization, invalidModule).then((response) => {
+            Modules.deleteModule(authorization, invalidModule.uuid, { failOnStatusCode: false });
+        });
+    });
+
+    it('Validate the module', { tags: ['analytics'] }, () => {
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            Modules.validateModule(authorization, invalidModule).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
                 expect(response.body.module).eql(invalidModule);
                 expect(response.body.results.isValid).eql(false);
@@ -71,20 +37,20 @@ context("Validate Invalid Module", { tags: ['modules', 'thirdPool', 'all'] }, ()
         });
     });
 
-    it("Validate the module without auth token - Negative", () => {
-        postValidateWithoutAuth(invalidModule).then((response) => {
+    it('Validate the module without auth token - Negative', () => {
+        Modules.validateModule(undefined, invalidModule, { failOnStatusCode: false }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Validate the module with invalid auth token - Negative", () => {
-        postValidateWithoutAuth(invalidModule, { authorization: "Bearer wqe" }).then((response) => {
+    it('Validate the module with invalid auth token - Negative', () => {
+        Modules.validateModule('Bearer wqe', invalidModule, { failOnStatusCode: false }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Validate the module with empty auth token - Negative", () => {
-        postValidateWithoutAuth(invalidModule, { authorization: "" }).then((response) => {
+    it('Validate the module with empty auth token - Negative', () => {
+        Modules.validateModule('', invalidModule, { failOnStatusCode: false }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });

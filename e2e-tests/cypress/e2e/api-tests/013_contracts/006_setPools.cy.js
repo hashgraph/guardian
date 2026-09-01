@@ -1,12 +1,12 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
+context('Contracts', { tags: ['contracts', 'firstPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
-    const tokenName = "FirstToken"
-    let contractIdR, contractUuidW, tokenId;
+    const tokenName = 'FirstToken'
+    let contractIdR; let contractUuidW; let tokenId;
 
     before(() => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
@@ -17,7 +17,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
                     authorization,
                 },
                 qs: {
-                    "type": "RETIRE",
+                    'type': 'RETIRE',
                 },
                 timeout: 180000
             }).then((response) => {
@@ -29,7 +29,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
                         authorization,
                     },
                     qs: {
-                        "type": "WIPE",
+                        'type': 'WIPE',
                     },
                 }).then((response) => {
                     contractUuidW = response.body.at(0).contractId;
@@ -39,11 +39,11 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
                         headers: { authorization },
                         body: {
                             draftToken: false,
-                            tokenName: tokenName,
-                            tokenSymbol: "F",
-                            tokenType: "non-fungible",
-                            decimals: "2",
-                            initialSupply: "0",
+                            tokenName,
+                            tokenSymbol: 'F',
+                            tokenType: 'non-fungible',
+                            decimals: '2',
+                            initialSupply: '0',
                             enableAdmin: true,
                             changeSupply: true,
                             enableFreeze: false,
@@ -66,11 +66,11 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
         })
     })
 
-    it("Set retire contract pool", () => {
+    it('Set retire contract pool', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.RetireContract + contractIdR + "/" + API.PoolContract,
+                url: API.ApiServer + API.RetireContract + contractIdR + '/' + API.PoolContract,
                 headers: {
                     authorization,
                 },
@@ -89,10 +89,10 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
         })
     });
 
-    it("Set retire contract pool without auth token - Negative", () => {
+    it('Set retire contract pool without auth token - Negative', () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.RetireContract + contractIdR + "/" + API.PoolContract,
+            url: API.ApiServer + API.RetireContract + contractIdR + '/' + API.PoolContract,
             failOnStatusCode: false,
             body: {
                 tokens: [
@@ -108,12 +108,12 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
         });
     });
 
-    it("Set retire contract pool with invalid auth token - Negative", () => {
+    it('Set retire contract pool with invalid auth token - Negative', () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.RetireContract + contractIdR + "/" + API.PoolContract,
+            url: API.ApiServer + API.RetireContract + contractIdR + '/' + API.PoolContract,
             headers: {
-                authorization: "Bearer wqe",
+                authorization: 'Bearer wqe',
             },
             failOnStatusCode: false,
             body: {
@@ -130,12 +130,12 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
         });
     });
 
-    it("Set retire contract pool with empty auth token - Negative", () => {
+    it('Set retire contract pool with empty auth token - Negative', () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.RetireContract + contractIdR + "/" + API.PoolContract,
+            url: API.ApiServer + API.RetireContract + contractIdR + '/' + API.PoolContract,
             headers: {
-                authorization: "",
+                authorization: '',
             },
             failOnStatusCode: false,
             body: {
@@ -152,11 +152,11 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
         });
     });
 
-    it("Set retire contract pool as User - Negative", () => {
+    it('Set retire contract pool as User - Negative', () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.RetireContract + contractIdR + "/" + API.PoolContract,
+                url: API.ApiServer + API.RetireContract + contractIdR + '/' + API.PoolContract,
                 headers: {
                     authorization
                 },

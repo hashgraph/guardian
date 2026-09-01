@@ -1,11 +1,18 @@
 
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
 
 context('Login', { tags: ['accounts', 'firstPool', 'all'] }, () => {
   const SRUsername = Cypress.env('SRUser');
   const UserUsername = Cypress.env('User');
   const loginUrl = `${API.ApiServer}${API.AccountsLogin}`;
+  let credentials;
+
+  before(() => {
+    cy.fixture('credentials').then((creds) => {
+      credentials = creds;
+    });
+  });
 
   const loginRequest = ({body, headers,failOnStatusCode = true}) => {
     return cy.request({
@@ -19,7 +26,7 @@ context('Login', { tags: ['accounts', 'firstPool', 'all'] }, () => {
 
   it('Login as Standard Registry', { tags: ['smoke'] }, () => {
     loginRequest({
-      body: { username: SRUsername, password: 'test' },
+      body: { username: SRUsername, password: credentials.goodPassword },
     }).then((response) => {
       expect(response.status).to.eq(STATUS_CODE.OK);
       expect(response.body).to.have.property('username', SRUsername);
@@ -31,7 +38,7 @@ context('Login', { tags: ['accounts', 'firstPool', 'all'] }, () => {
 
   it('Login as User', () => {
     loginRequest({
-      body: { username: UserUsername, password: 'test' },
+      body: { username: UserUsername, password: credentials.goodPassword },
     }).then((response) => {
       expect(response.status).to.eq(STATUS_CODE.OK);
       expect(response.body).to.have.property('username', UserUsername);
@@ -42,7 +49,7 @@ context('Login', { tags: ['accounts', 'firstPool', 'all'] }, () => {
 
   it.skip('Login as User with weakPassword', () => {
     loginRequest({
-      body: { username: UserUsername, password: 'test' },
+      body: { username: UserUsername, password: credentials.goodPassword },
     }).then((response) => {
       expect(response.status).to.eq(STATUS_CODE.OK);
       expect(response.body).to.have.property('weakPassword', true);
@@ -53,7 +60,7 @@ context('Login', { tags: ['accounts', 'firstPool', 'all'] }, () => {
     loginRequest({
       headers: {
         username: 'select * from users where id = 1 or 1=1',
-        password: 'test',
+        password: credentials.goodPassword,
       },
       failOnStatusCode: false,
     }).should((response) => {
@@ -65,7 +72,7 @@ context('Login', { tags: ['accounts', 'firstPool', 'all'] }, () => {
     loginRequest({
       headers: {
         username: '',
-        password: 'test',
+        password: credentials.goodPassword,
       },
       failOnStatusCode: false,
     }).then((response) => {
@@ -86,5 +93,5 @@ context('Login', { tags: ['accounts', 'firstPool', 'all'] }, () => {
       expect(response.body.message.at(2)).to.eql('password should not be empty');
     });
   });
-  
+
 });

@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
+import { AfterViewChecked, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { FeatureFlagsService } from '../../services/feature-flags.service';
 import { SettingsService } from '../../services/settings.service';
+import { AuthService } from '../../services/auth.service';
+import { IUser, UserPermissions } from '@guardian/interfaces';
 
 const FEEDBACK_MAILTO_TEMPLATE =
     'mailto:guardian-feedback@hashgraph.com?subject=Re:%20Hedera%20Guardian%20Feedback%20or%20Request%20-%20{ORIGIN}' +
@@ -13,13 +15,31 @@ const FEEDBACK_MAILTO_TEMPLATE =
     styleUrls: ['./next-gen-banner.component.scss'],
     standalone: false
 })
-export class NextGenBannerComponent {
+export class NextGenBannerComponent implements AfterViewChecked, OnDestroy {
     public guardianVersion: string = '';
+
+    @ViewChild('bannerElement')
+    private bannerElement?: ElementRef<HTMLElement>;
+
+    private resizeObserver?: ResizeObserver;
+    private publishedHeight: number = -1;
 
     constructor(
         private featureFlagsService: FeatureFlagsService,
         private settingsService: SettingsService,
+        private auth: AuthService,
     ) {
+        // Set the active role, then load the version only when the banner is enabled.
+        this.auth.sessions().subscribe((user: IUser | null) => {
+            const permissions = new UserPermissions(user);
+            this.featureFlagsService.setRole(user ? permissions.role : null);
+            if (this.enabled) {
+                this.loadVersion();
+            }
+        });
+    }
+
+    private loadVersion(): void {
         this.settingsService.getAbout().subscribe((about) => {
             this.guardianVersion = about?.version || '';
         });
@@ -27,6 +47,40 @@ export class NextGenBannerComponent {
 
     get enabled(): boolean {
         return this.featureFlagsService.isNextGenUiEnabled();
+    }
+
+    ngAfterViewChecked(): void {
+        const element = this.bannerElement?.nativeElement;
+        if (element) {
+            if (!this.resizeObserver) {
+                this.resizeObserver = new ResizeObserver(() => this.publishHeight());
+                this.resizeObserver.observe(element);
+            }
+        } else if (this.resizeObserver) {
+            this.resizeObserver.disconnect();
+            this.resizeObserver = undefined;
+        }
+        this.publishHeight();
+    }
+
+    ngOnDestroy(): void {
+        this.resizeObserver?.disconnect();
+        this.resizeObserver = undefined;
+        this.setBannerHeight(0);
+    }
+
+    private publishHeight(): void {
+        const element = this.bannerElement?.nativeElement;
+        const height = element ? Math.round(element.getBoundingClientRect().height) : 0;
+        this.setBannerHeight(height);
+    }
+
+    private setBannerHeight(height: number): void {
+        if (height === this.publishedHeight) {
+            return;
+        }
+        this.publishedHeight = height;
+        document.documentElement.style.setProperty('--banner-height', `${height}px`);
     }
 
     get feedbackMailto(): string {

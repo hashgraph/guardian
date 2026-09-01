@@ -69,12 +69,15 @@ import { recordAPI } from './api/record.service.js';
 import { projectsAPI } from './api/projects.service.js';
 import { AISuggestionsService } from './helpers/ai-suggestions.js';
 import { AssignedEntityAPI } from './api/assigned-entity.service.js';
+import { organizationAPI } from './api/organization.service.js';
 import { permissionAPI } from './api/permission.service.js';
 import { setDefaultSchema } from './api/helpers/default-schemas.js';
 import { policyLabelsAPI } from './api/policy-labels.service.js';
 import { initMathjs } from './utils/formula.js';
 import { formulasAPI } from './api/formulas.service.js';
 import { externalPoliciesAPI } from './api/external-policies.service.js';
+import { policyDataAPI } from './api/policy-data.service.js';
+import { schemaTemplatesAPI } from './api/schema-template.service.js';
 
 export const obj = {};
 
@@ -187,13 +190,16 @@ Promise.all([
         await suggestionsAPI();
         await projectsAPI(logger);
         await AssignedEntityAPI(logger)
+        await organizationAPI(logger);
         await permissionAPI(logger);
         await statisticsAPI(logger);
         await schemaRulesAPI(logger);
         await policyLabelsAPI(logger);
         await formulasAPI(logger);
         await externalPoliciesAPI(logger);
+        await schemaTemplatesAPI(logger);
         await credentialAPI(logger);
+        await policyDataAPI(dataBaseServer, logger);
     } catch (error) {
         console.error(error.message);
         process.exit(0);

@@ -1,13 +1,13 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Export formula", { tags: ['formulas', 'firstPool', 'all'] }, () => {
+context('Export formula', { tags: ['formulas', 'firstPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     let firstFormula;
 
-    before("Get first formula", () => {
+    before('Get first formula', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
@@ -22,31 +22,31 @@ context("Export formula", { tags: ['formulas', 'firstPool', 'all'] }, () => {
         })
     });
 
-    it("Export formula", () => {
+    it('Export formula', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + API.Formulas + firstFormula.id + "/" + API.ExportFile,
+                url: API.ApiServer + API.Formulas + firstFormula.id + '/' + API.ExportFile,
                 encoding: null,
                 headers: {
                     authorization,
                 },
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                expect(response.body).to.not.be.oneOf([null, ""]);
+                expect(response.body).to.not.be.oneOf([null, '']);
                 cy.writeFile(
-                    "cypress/fixtures/exportedFormula.formula",
+                    'cypress/fixtures/exportedFormula.formula',
                     Cypress.Blob.arrayBufferToBinaryString(response.body),
-                    "binary"
+                    'binary'
                 );
             });
         });
     });
 
-    it("Export formula without auth - Negative", () => {
+    it('Export formula without auth - Negative', () => {
         cy.request({
             method: METHOD.GET,
-            url: API.ApiServer + API.Formulas + firstFormula.id + "/" + API.ExportFile,
+            url: API.ApiServer + API.Formulas + firstFormula.id + '/' + API.ExportFile,
             headers: {
             },
             failOnStatusCode: false,
@@ -55,12 +55,12 @@ context("Export formula", { tags: ['formulas', 'firstPool', 'all'] }, () => {
         });
     });
 
-    it("Export formula with incorrect auth - Negative", () => {
+    it('Export formula with incorrect auth - Negative', () => {
         cy.request({
             method: METHOD.GET,
-            url: API.ApiServer + API.Formulas + firstFormula.id + "/" + API.ExportFile,
+            url: API.ApiServer + API.Formulas + firstFormula.id + '/' + API.ExportFile,
             headers: {
-                authorization: "bearer 11111111111111111111@#$",
+                authorization: 'bearer 11111111111111111111@#$',
             },
             failOnStatusCode: false,
         }).then((response) => {
@@ -68,12 +68,12 @@ context("Export formula", { tags: ['formulas', 'firstPool', 'all'] }, () => {
         });
     });
 
-    it("Export formula with empty auth - Negative", () => {
+    it('Export formula with empty auth - Negative', () => {
         cy.request({
             method: METHOD.GET,
-            url: API.ApiServer + API.Formulas + firstFormula.id + "/" + API.ExportFile,
+            url: API.ApiServer + API.Formulas + firstFormula.id + '/' + API.ExportFile,
             headers: {
-                authorization: "",
+                authorization: '',
             },
             failOnStatusCode: false,
         }).then((response) => {

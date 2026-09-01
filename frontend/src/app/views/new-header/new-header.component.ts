@@ -15,6 +15,7 @@ import { BrandingService } from '../../services/branding.service';
 import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
 import { Subscription } from 'rxjs';
 import { DocWidgetService } from '../../services/doc-widget.service';
+import { FirstStepsService } from '../../services/first-steps.service';
 
 @Component({
     selector: 'app-new-header',
@@ -67,6 +68,7 @@ export class NewHeaderComponent implements OnInit, OnDestroy, AfterViewChecked {
         private brandingService: BrandingService,
         private externalPoliciesService: ExternalPoliciesService,
         private docWidgetService: DocWidgetService,
+        public firstSteps: FirstStepsService,
         public menuLayout: MenuLayoutService) {
         this.router.events.subscribe((event) => {
             if (event instanceof NavigationEnd) {

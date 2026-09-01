@@ -1,2 +1,0 @@
-# FireBlocks Raw Signing
-

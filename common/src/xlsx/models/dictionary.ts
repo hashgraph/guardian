@@ -1,3 +1,5 @@
+import { getAllContinents, getAllCountries, getContinentName, getCountryName, isContinent, isCountry } from '@guardian/interfaces';
+
 export interface IFieldTypes {
     name?: string;
     type?: string;
@@ -9,6 +11,40 @@ export interface IFieldTypes {
     unitSystem?: string;
     customType?: string;
     pars?: (value: any) => any;
+}
+
+function geoCode(
+    value: any,
+    isCode: (code: string) => boolean,
+    options: { value: string, name: string }[]
+): string {
+    const raw = geoText(value);
+    if (!raw) {
+        return '';
+    }
+    if (isCode(raw)) {
+        return raw;
+    }
+    const lower = raw.toLowerCase();
+    const match = options.find((option) => option.name.toLowerCase() === lower);
+    return match ? match.value : '';
+}
+
+export function geoDisplayValue(customType: string, value: any): any {
+    if (typeof value !== 'string' || !value) {
+        return value;
+    }
+    if (customType === 'country') {
+        return getCountryName(value) || value;
+    }
+    if (customType === 'continent') {
+        return getContinentName(value) || value;
+    }
+    return value;
+}
+
+function geoText(value: any): string {
+    return value === undefined || value === null ? '' : String(value).trim();
 }
 
 export enum Dictionary {
@@ -318,6 +354,42 @@ export class FieldTypes {
             customType: 'subSchema',
             hidden: false,
             pars: (value: any) => value
+        },
+        {
+            name: 'Country',
+            type: 'string',
+            format: undefined,
+            pattern: undefined,
+            isRef: false,
+            unit: undefined,
+            unitSystem: undefined,
+            customType: 'country',
+            hidden: false,
+            pars: (value: any) => geoCode(value, isCountry, getAllCountries())
+        },
+        {
+            name: 'Continent',
+            type: 'string',
+            format: undefined,
+            pattern: undefined,
+            isRef: false,
+            unit: undefined,
+            unitSystem: undefined,
+            customType: 'continent',
+            hidden: false,
+            pars: (value: any) => geoCode(value, isContinent, getAllContinents())
+        },
+        {
+            name: 'State/Province',
+            type: 'string',
+            format: undefined,
+            pattern: undefined,
+            isRef: false,
+            unit: undefined,
+            unitSystem: undefined,
+            customType: 'state',
+            hidden: false,
+            pars: (value: any) => geoText(value)
         },
     ];
 

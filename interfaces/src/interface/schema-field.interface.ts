@@ -17,6 +17,10 @@ export interface SchemaField {
      */
     name: string;
     /**
+     * Stable field id inside a schema template
+     */
+    templateFieldId?: string;
+    /**
      * Title
      */
     title?: string;
@@ -68,6 +72,7 @@ export interface SchemaField {
      * Custom Type
      */
     customType: string;
+    dependency?: { on: string; kind: string };
     /**
      * Fields
      */

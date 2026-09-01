@@ -1,11 +1,11 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Schema", { tags: ['schema', 'thirdPool', 'all'] }, () => {
+context('Schema', { tags: ['schema', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
-    it("Export schema file", () => {
+    it('Export schema file', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
@@ -19,14 +19,14 @@ context("Schema", { tags: ['schema', 'thirdPool', 'all'] }, () => {
 
                 cy.request({
                     method: METHOD.GET,
-                    url: API.ApiServer + API.Schemas + schemaId + "/export/file",
+                    url: API.ApiServer + API.Schemas + schemaId + '/export/file',
                     encoding: null,
                     headers: {
                         authorization,
                     },
                 }).then((response) => {
                     expect(response.status).to.eq(STATUS_CODE.OK);
-                    expect(response.body).to.not.be.oneOf([null, ""]);
+                    expect(response.body).to.not.be.oneOf([null, '']);
                 });
             });
         })

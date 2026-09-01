@@ -36,6 +36,7 @@ export interface IFieldJson {
     isArray: boolean;
     isUpdatable: boolean;
     property: string;
+    dependency?: { on: string; kind: string };
 
     private?: boolean;
 
@@ -310,6 +311,9 @@ export class SchemaToJson {
         const privateValue = SchemaToJson.getPrivate(field);
         if (privateValue !== null) {
             fieldJson.private = privateValue;
+        }
+        if (field.dependency) {
+            fieldJson.dependency = field.dependency;
         }
 
         const enumValue = SchemaToJson.getEnum(field);
@@ -1069,6 +1073,12 @@ export class JsonToSchema {
             unit: JsonToSchema.fromUnit(value, context.add('unit')) as any,
             unitSystem: JsonToSchema.fromUnitType(value, context.add('unitSystem')) as any,
             customType: JsonToSchema.fromCustomType(value, context.add('customType')) as any,
+            dependency: value.dependency
+                ? {
+                    on: JsonToSchema.fromRequiredString(value.dependency.on, context.add('dependency.on')),
+                    kind: JsonToSchema.fromRequiredString(value.dependency.kind, context.add('dependency.kind'))
+                }
+                : undefined,
             isArray: JsonToSchema.fromBoolean(value.isArray, context.add('isArray')) || false,
             isUpdatable: JsonToSchema.fromBoolean(value.isUpdatable, context.add('isUpdatable')) || false,
             isRef: JsonToSchema.fromIsRef(value, all, context),
@@ -1381,6 +1391,49 @@ export class JsonToSchema {
         return conditions;
     }
 
+    /**
+     * Add the fields a condition reveals to the schema's own field list, and share one
+     * object between the two.
+     *
+     * `buildDocument` turns that list into `properties`, so a missing condition field is
+     * never declared — and with `additionalProperties: false` the schema then rejects the
+     * documents it describes. `schemaToJson` also emits the field in `json.fields` as well
+     * as inside `json.conditions`, and each condition parses with its own uniqueness set,
+     * so on a round trip both copies survive: the field is present but not shared, and an
+     * edit or rename in the editor reaches `allOf` while `properties` keeps the old entry.
+     */
+    private static mergeConditionFields(fields: SchemaField[], conditions: SchemaCondition[]): void {
+        const indexByName = new Map<string, number>();
+        for (let index = 0; index < fields.length; index++) {
+            if (!indexByName.has(fields[index].name)) {
+                indexByName.set(fields[index].name, index);
+            }
+        }
+        const merge = (branch?: SchemaField[]) => {
+            if (!Array.isArray(branch)) {
+                return;
+            }
+            for (let i = 0; i < branch.length; i++) {
+                const field = branch[i];
+                const index = indexByName.get(field.name);
+                if (index === undefined) {
+                    indexByName.set(field.name, fields.length);
+                    fields.push(field);
+                    continue;
+                }
+                // Keep the declared entry as the shared object, as `Schema.linkConditionFields`
+                // does; `required` is the one attribute that belongs to the branch.
+                const declared = fields[index];
+                declared.required = field.required;
+                branch[i] = declared;
+            }
+        };
+        for (const condition of (conditions || [])) {
+            merge(condition.thenFields);
+            merge(condition.elseFields);
+        }
+    }
+
     public static fromJson(json: ISchemaJson, all: Schema[]) {
         const context: ErrorContext = new ErrorContext();
         context.setPath(['schema']);
@@ -1390,6 +1443,7 @@ export class JsonToSchema {
         const entity = JsonToSchema.fromEntity(json.entity, context.add('entity'));
         const fields = JsonToSchema.fromFields(json.fields, all, entity, new Set<string>(), context.add('fields'));
         const conditions = JsonToSchema.fromConditions(json.conditions, fields, all, entity, context.add('conditions'));
+        JsonToSchema.mergeConditionFields(fields, conditions);
         JsonToSchema.fromDefaultFields(fields, entity);
         return {
             name,

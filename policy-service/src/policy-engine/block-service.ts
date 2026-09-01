@@ -1,4 +1,4 @@
-import { MessageError, MessageResponse, NatsService, Singleton } from '@guardian/common';
+import { DatabaseServer, MessageError, MessageResponse, NatsService, Singleton } from '@guardian/common';
 import { GenerateUUIDv4, PolicyEvents } from '@guardian/interfaces';
 import { BlockEngine } from './block-engine/index.js';
 import { PolicyUser } from './policy-user.js';
@@ -62,7 +62,17 @@ export class BlockService extends NatsService {
 
         this.getMessages(PolicyEvents.VALIDATE_POLICY, async (msg: any) => {
             try {
-                const { policy, isDruRun, ignoreRules, reachability } = msg;
+                let { policy } = msg;
+                const { policyId, isDruRun, ignoreRules, reachability } = msg;
+                // Id-reference path: when the sender omits the policy body, reload the
+                // persisted policy locally instead of receiving its (potentially large)
+                // config over the message broker.
+                if (!policy && policyId) {
+                    policy = await DatabaseServer.getPolicyById(policyId);
+                }
+                if (!policy) {
+                    return new MessageError('Policy not found');
+                }
                 const policyValidator = new PolicyValidator(policy, isDruRun, ignoreRules, reachability);
                 await policyValidator.build(policy);
                 await policyValidator.validate();

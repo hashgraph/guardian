@@ -16,7 +16,7 @@ import { CONFIGURATION_ERRORS } from '../../policy-engine/injectors/configuratio
     standalone: false
 })
 export class AsyncProgressComponent implements OnInit, OnDestroy {
-    public action: TaskAction | string;
+    public action: TaskAction;
     public progressValue!: number;
     public statusesCount: number = 0;
     public statuses: IStatus[] = [];
@@ -30,6 +30,9 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
     private last?: any;
     private redir?: boolean;
     private lastTimestamp: number = 0;
+    // The finished task arrives both over the websocket and from the initial
+    // request, so the result must only be handled once.
+    private resultHandled: boolean = false;
 
     @Input('taskId') inputTaskId?: string;
     @Output() completed = new EventEmitter<string>();
@@ -88,6 +91,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             this.statusesCount = 0;
             this.statuses.length = 0;
             this.progressValue = 0;
+            this.resultHandled = false;
         }
     }
 
@@ -130,9 +134,15 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
         }
         if (result) {
             this.progressValue = 100;
-            this.setResult(result);
+            if (!this.resultHandled) {
+                this.resultHandled = true;
+                this.setResult(result);
+            }
         } else if (error) {
-            this.setError(error);
+            if (!this.resultHandled) {
+                this.resultHandled = true;
+                this.setError(error);
+            }
         }
     }
 
@@ -175,6 +185,80 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                         queryParams: {
                             toolId: result,
                         },
+                        replaceUrl: true,
+                    });
+                }, 500);
+                break;
+            case TaskAction.CREATE_SCHEMA_TEMPLATE: {
+                const templateId = result?.id || result?._id || result;
+                setTimeout(() => {
+                    this.router.navigate(['schema-template-configuration'], {
+                        queryParams: {
+                            type: 'template',
+                            topic: result?.topicId,
+                            templateId
+                        },
+                        replaceUrl: true,
+                    });
+                }, 500);
+                break;
+            }
+            case TaskAction.CREATE_SCHEMA_TEMPLATE_VERSION: {
+                const templateId = result?.id || result?._id || result;
+                setTimeout(() => {
+                    this.router.navigate(['schema-template-configuration'], {
+                        queryParams: {
+                            type: 'template',
+                            topic: result?.topicId,
+                            templateId
+                        },
+                        replaceUrl: true,
+                    });
+                }, 500);
+                break;
+            }
+            case TaskAction.IMPORT_SCHEMA_TEMPLATE_FILE:
+            case TaskAction.IMPORT_SCHEMA_TEMPLATE_MESSAGE: {
+                const templateId = result?.templateId;
+                if (templateId) {
+                    setTimeout(() => {
+                        this.router.navigate(['schema-template-configuration'], {
+                            queryParams: {
+                                type: 'template',
+                                templateId
+                            },
+                            replaceUrl: true,
+                        });
+                    }, 500);
+                    break;
+                }
+                setTimeout(() => {
+                    this.router.navigate(['schema-templates'], {
+                        replaceUrl: true,
+                    });
+                }, 500);
+                break;
+            }
+            case TaskAction.PUBLISH_SCHEMA_TEMPLATE:
+                if (this.last) {
+                    this.redirect(this.last);
+                    return;
+                }
+                setTimeout(() => {
+                    this.router.navigate(['schema-templates'], {
+                        replaceUrl: true,
+                    });
+                }, 500);
+                break;
+            case TaskAction.APPLY_SCHEMA_TEMPLATE:
+            case TaskAction.DETACH_SCHEMA_TEMPLATE:
+            case TaskAction.UPDATE_APPLIED_SCHEMA_TEMPLATE:
+                if (this.last) {
+                    this.redirect(this.last);
+                    return;
+                }
+                setTimeout(() => {
+                    this.router.navigate(['policy-viewer'], {
                         replaceUrl: true,
                     });
                 }, 500);
@@ -233,6 +317,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                     });
                 }, 500);
                 break;
+            case TaskAction.DRY_RUN_POLICY:
             case TaskAction.PUBLISH_POLICY:
                 if (result) {
                     const { isValid, errors, policyId } = result;
@@ -259,7 +344,23 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                             'The policy is invalid',
                             { sticky: true, logMessage: msg }
                         );
+                        // The configuration page is the only place the block errors
+                        // can be shown, so go there instead of back to the origin.
                         this._configurationErrors.set(policyId, errors);
+                        setTimeout(() => {
+                            this.router.navigate(['policy-configuration'], {
+                                queryParams: {
+                                    policyId,
+                                },
+                                replaceUrl: true,
+                            });
+                        }, 500);
+                        break;
+                    }
+                    if (this.last) {
+                        // Replace the task page so it is not left in the history.
+                        this.redirect(this.last, true);
+                        return;
                     }
                     setTimeout(() => {
                         this.router.navigate(['policy-configuration'], {
@@ -341,6 +442,17 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                     });
                 }, 500);
                 break;
+            case TaskAction.DELETE_SCHEMA_TEMPLATE:
+                if (this.last) {
+                    this.redirect(this.last);
+                    return;
+                }
+                setTimeout(() => {
+                    this.router.navigate(['schema-templates'], {
+                        replaceUrl: true,
+                    });
+                }, 500);
+                break;
             // @ts-ignore
             case TaskAction.CREATE_SCHEMA:
                 localStorage.removeItem('restoreSchemaData');
@@ -349,8 +461,13 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.DELETE_SCHEMAS:
             case TaskAction.IMPORT_SCHEMA_FILE:
             case TaskAction.IMPORT_SCHEMA_MESSAGE:
+                this.reportSchemaImportErrors(result);
                 if (this.last) {
-                    this.redirect(this.last);
+                    const schemaId = typeof result === 'string' && result ? result : null;
+                    const lastWithSchema = schemaId
+                        ? this.last + (this.last.includes('?') ? '&' : '?') + 'schemaId=' + schemaId
+                        : this.last;
+                    this.redirect(lastWithSchema);
                     return;
                 }
                 setTimeout(() => {
@@ -371,7 +488,6 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 }, 500);
                 break;
             default:
-                debugger;
                 return;
         }
     }
@@ -381,6 +497,9 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             this.error.emit(error);
             return;
         }
+
+        // Show the failure before the redirect branches below navigate away.
+        this.toastService.processAsyncError(error);
 
         if (this.last) {
             this.redirect(this.last);
@@ -408,6 +527,8 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.IMPORT_POLICY_MESSAGE:
             case TaskAction.IMPORT_TOOL_FILE:
             case TaskAction.IMPORT_TOOL_MESSAGE:
+            case TaskAction.IMPORT_SCHEMA_TEMPLATE_FILE:
+            case TaskAction.IMPORT_SCHEMA_TEMPLATE_MESSAGE:
             case TaskAction.WIZARD_CREATE_POLICY:
             case TaskAction.PUBLISH_POLICY:
             case TaskAction.DELETE_POLICY:
@@ -425,6 +546,25 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.IMPORT_SCHEMA_MESSAGE:
                 setTimeout(() => {
                     this.router.navigate(['schemas'], {
+                        replaceUrl: true,
+                    });
+                }, 500);
+                break;
+            case TaskAction.CREATE_SCHEMA_TEMPLATE:
+            case TaskAction.CREATE_SCHEMA_TEMPLATE_VERSION:
+            case TaskAction.DELETE_SCHEMA_TEMPLATE:
+            case TaskAction.PUBLISH_SCHEMA_TEMPLATE:
+                setTimeout(() => {
+                    this.router.navigate(['schema-templates'], {
+                        replaceUrl: true,
+                    });
+                }, 500);
+                break;
+            case TaskAction.APPLY_SCHEMA_TEMPLATE:
+            case TaskAction.DETACH_SCHEMA_TEMPLATE:
+            case TaskAction.UPDATE_APPLIED_SCHEMA_TEMPLATE:
+                setTimeout(() => {
+                    this.router.navigate(['policy-viewer'], {
                         replaceUrl: true,
                     });
                 }, 500);
@@ -466,7 +606,28 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
         this.applyChanges();
     }
 
-    private redirect(urlString: string) {
+    /**
+     * ImportSchemaResult.errors is {type,uuid,name,error} and nothing downstream renders
+     * it, so flatten it into one sticky toast naming each schema that failed.
+     */
+    private reportSchemaImportErrors(result: any): void {
+        const errors = result?.errors;
+        if (!Array.isArray(errors) || !errors.length) {
+            return;
+        }
+        const text = errors
+            .map((e: any) => (e?.name ? `${e.name}: ${e.error}` : e?.error))
+            .filter((line: any) => !!line)
+            .join('\n');
+        const msg = text || 'Some schemas could not be imported.';
+        this.toastService.warn(
+            msg,
+            errors.length === 1 ? '1 schema was not imported' : `${errors.length} schemas were not imported`,
+            { sticky: true, logMessage: msg }
+        );
+    }
+
+    private redirect(urlString: string, replaceUrl: boolean = false) {
         const url = new URL(urlString);
         const path = [url.pathname];
         const queryParams: any = {};
@@ -482,7 +643,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             }
         }
         setTimeout(() => {
-            this.router.navigate(path, { queryParams });
+            this.router.navigate(path, { queryParams, replaceUrl });
         }, 500);
 
     }

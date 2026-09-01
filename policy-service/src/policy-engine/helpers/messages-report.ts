@@ -117,7 +117,7 @@ export class MessagesReport {
         this.messages.set(timestamp, null);
 
         const message = await MessageServer
-            .getMessage({
+            .tryGetMessage({
                 messageId: timestamp,
                 loadIPFS: false,
                 userId,

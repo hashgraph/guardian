@@ -82,6 +82,22 @@
     }
 }
 
+.confirmation-details {
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 18px;
+    color: #848FA9;
+    margin-top: 8px;
+    margin-bottom: 48px;
+    white-space: pre-line;
+
+    div {
+        margin-bottom: 8px;
+    }
+}
+
 .options {
     display: flex;
     flex-direction: column;

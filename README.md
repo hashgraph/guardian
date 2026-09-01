@@ -4,17 +4,13 @@
 
 ## Overview
 
-Guardian is a modular open-source solution that includes best-in-class identity management and decentralized ledger technology (DLT) libraries. At the heart of Guardian solution is a sophisticated Policy Workflow Engine (PWE) that enables applications to offer a digital (or digitized) Measurement, Reporting, and Verification requirements-based tokenization implementation.
+Guardian is an open-source platform for creating, managing, and issuing digital environmental assets — carbon credits, renewable energy certificates, biodiversity credits, emission and financial disclosures, certifications, climate-smart commodities, and more — using the Hedera network as the trust layer. At its core is a Policy Workflow Engine (PWE) that turns methodology requirements into a digitized Measurement, Reporting, and Verification (dMRV) workflow.
 
-[HIP-19](https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-19.md) · [HIP-28](https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-28.md) · [HIP-29](https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-29.md) · [Report a Bug](CONTRIBUTING.md#bug-reports) · [Request a Policy or a Feature](CONTRIBUTING.md#new-policy-or-feature-requests)
+For full documentation — concepts, guides, and platform updates — visit guardian.hedera.com.
 
-## Discovering Digital Environmental Assets assets on Hedera
+[Report a Bug](CONTRIBUTING.md#bug-reports) · [Share a Suggestion, Request a Policy or a Feature](CONTRIBUTING.md#new-policy-or-feature-requests)
 
-As identified in Hedera Improvement Proposal 19 (HIP-19), each entity on the Hedera network may contain a specific identifier in the memo field for discoverability. Guardian demonstrates this when every Hedera Consensus Service transaction is logged to a Hedera Consensus Service (HCS) Topic. Observing the Hedera Consensus Service Topic, you can discover newly minted tokens.
-
-In the memo field of each token mint transaction you will find a unique Hedera message timestamp. This message contains the url of the Verifiable Presentation (VP) associated with the token. The VP can serve as a starting point from which you can traverse the entire sequence of documents produced by Guardian policy workflow, which led to the creation of the token. This includes a digital Methodology (Policy) HCS Topic, an associated Registry HCS Topic for that Policy, and a Project HCS Topic.
-
-Please see p.17 in the FAQ for more information. This is further defined in [Hedera Improvement Proposal 28 (HIP-28)](https://hips.hedera.com/hip/hip-28).
+This README covers what you need to run Guardian locally — quickstart, prerequisites, manual installation, and troubleshooting. For platform concepts, methodology guides, and API references, see the documentation site above.
 
 ## Quickstart
 
@@ -899,4 +895,4 @@ For any questions, please reach out to the Hashgraph team at:
 
 ## License
 
-MIT License. See the [LICENSE](LICENSE) file for details.
+Apache 2.0. See the [LICENSE](LICENSE) file for details.

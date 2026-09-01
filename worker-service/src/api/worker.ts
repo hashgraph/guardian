@@ -142,7 +142,7 @@ export class Worker extends NatsService {
     constructor(
         private w3cKey: string,
         private w3cProof: string,
-        private readonly filebaseKey: string,
+        private filebaseKey: string,
         private readonly workerID: string,
         private readonly logger: PinoLogger
     ) {
@@ -256,14 +256,22 @@ export class Worker extends NatsService {
                 if (!ipfsStorageApiKey) {
                     throw new Error('Ipfs storage api key setting is empty');
                 }
-                const [w3cKey, w3cProof] = ipfsStorageApiKey.split(';');
+                // `filebase` stores the whole value as a single bucket token, while
+                // `web3storage` stores it as `key;proof` (see the worker startup validator).
+                const isFilebase = process.env.IPFS_PROVIDER === 'filebase';
+                const [w3cKey, w3cProof] = isFilebase
+                    ? [null, null]
+                    : ipfsStorageApiKey.split(';');
+                const filebaseKey = isFilebase ? ipfsStorageApiKey : this.filebaseKey;
                 const ipfsClient = new IpfsClientClass(
                     w3cKey,
-                    w3cProof
+                    w3cProof,
+                    filebaseKey
                 );
                 await ipfsClient.createClient();
                 this.w3cKey = w3cKey;
                 this.w3cProof = w3cProof;
+                this.filebaseKey = filebaseKey;
                 this.ipfsClient = ipfsClient;
                 const secretManager = SecretManager.New();
                 await secretManager.setSecrets('apikey/ipfs', { IPFS_STORAGE_API_KEY: ipfsStorageApiKey });
@@ -274,7 +282,7 @@ export class Worker extends NatsService {
 
         HederaSDKHelper.setTransactionResponseCallback(async (operatorAccountId: string, userId: string | null) => {
             try {
-                const balance = await HederaSDKHelper.balanceRest(operatorAccountId, HederaSDKHelper.DEFAULT_API_OPTIONS);
+                const balance = await HederaSDKHelper.balance(operatorAccountId);
                 await this.sendMessage('update-user-balance', {
                     balance,
                     unit: 'Hbar',
@@ -565,20 +573,10 @@ export class Worker extends NatsService {
                 }
 
                 case WorkerTaskType.GET_USER_BALANCE: {
-                    const { hederaAccountId, hederaAccountKey } = task.data;
-                    const { dryRun, mockId } = task;
-                    client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun, mockId, networkOptions);
-                    result.data = await client.balance(hederaAccountId);
-
-                    break;
-                }
-
-                case WorkerTaskType.GET_USER_BALANCE_REST: {
                     const { hederaAccountId } = task.data;
-                    const { mockId } = task;
                     result.data = await HederaSDKHelper
                         .setNetwork(networkOptions)
-                        .balanceRest(hederaAccountId, { mockId });
+                        .balance(hederaAccountId);
 
                     break;
                 }
@@ -594,10 +592,9 @@ export class Worker extends NatsService {
 
                 case WorkerTaskType.GET_ACCOUNT_TOKENS_REST: {
                     const { hederaAccountId } = task.data;
-                    const { mockId } = task;
                     result.data = await HederaSDKHelper
                         .setNetwork(networkOptions)
-                        .accountTokensInfo(hederaAccountId, { mockId });
+                        .accountTokensInfo(hederaAccountId);
                     break;
                 }
 
@@ -1022,10 +1019,9 @@ export class Worker extends NatsService {
 
                 case WorkerTaskType.GET_TOPIC_MESSAGE_CHUNKS: {
                     const { topic, timeStamp, next } = task.data;
-                    const { mockId } = task;
                     result.data = await HederaSDKHelper
                         .setNetwork(networkOptions)
-                        .getTopicMessageChunks(topic, timeStamp, next, { mockId });
+                        .getTopicMessageChunks(topic, timeStamp, next);
                     break;
                 }
 
@@ -1115,8 +1111,8 @@ export class Worker extends NatsService {
                     ]);
 
                     const routerConstructor = new ContractFunctionParameters()
-                        .addAddress(ContractId.fromString(singleContractId).toSolidityAddress())
-                        .addAddress(ContractId.fromString(doubleContractId).toSolidityAddress());
+                        .addAddress(ContractId.fromString(singleContractId).toEvmAddress())
+                        .addAddress(ContractId.fromString(doubleContractId).toEvmAddress());
 
                     const [routerContractId, logInfo] = await client.createContractV2(
                         bytecodeFileId,
@@ -1127,7 +1123,7 @@ export class Worker extends NatsService {
 
                     result.data = [routerContractId, logInfo];
 
-                    const routerAddr = ContractId.fromString(routerContractId).toSolidityAddress();
+                    const routerAddr = ContractId.fromString(routerContractId).toEvmAddress();
                     const implIds = [singleContractId, doubleContractId];
 
                     for (const implId of implIds) {
@@ -1260,10 +1256,9 @@ export class Worker extends NatsService {
 
                 case WorkerTaskType.GET_CONTRACT_INFO: {
                     const { contractId } = task.data;
-                    const { mockId } = task;
                     const info = await HederaSDKHelper
                         .setNetwork(networkOptions)
-                        .getContractInfo(contractId, { mockId });
+                        .getContractInfo(contractId);
                     result.data = {
                         memo: info.memo
                     };
@@ -1277,17 +1272,15 @@ export class Worker extends NatsService {
                         contractId,
                         order,
                     } = task.data;
-                    const { mockId } = task;
                     result.data = await HederaSDKHelper
                         .setNetwork(networkOptions)
-                        .getContractEvents(contractId, timestamp, order, { mockId });
+                        .getContractEvents(contractId, timestamp, order);
                     break;
                 }
 
                 case WorkerTaskType.GET_USER_NFTS_SERIALS: {
                     const { hederaAccountId, tokenId } = task.data;
-                    const { mockId } = task;
-                    const nfts = (await HederaSDKHelper.setNetwork(networkOptions).getSerialsNFT(hederaAccountId, tokenId, { mockId })) || [];
+                    const nfts = (await HederaSDKHelper.setNetwork(networkOptions).getSerialsNFT(hederaAccountId, tokenId)) || [];
                     const serials = {};
                     nfts.forEach(item => {
                         if (serials[item.token_id]) {
@@ -1310,7 +1303,6 @@ export class Worker extends NatsService {
                         filter,
                         limit
                     } = task.data;
-                    const { mockId } = task;
                     const nfts = await HederaSDKHelper
                         .setNetwork(networkOptions)
                         .getNFTTokenSerials(
@@ -1321,8 +1313,7 @@ export class Worker extends NatsService {
                                 order,
                                 filter,
                                 limit
-                            },
-                            { mockId }
+                            }
                         );
                     result.data = nfts?.map(nft => nft.serial_number) || [];
                     break;
@@ -1337,7 +1328,6 @@ export class Worker extends NatsService {
                         filter,
                         limit,
                     } = task.data;
-                    const { mockId } = task;
                     const transactions = await HederaSDKHelper
                         .setNetwork(networkOptions)
                         .getTransactions(
@@ -1348,8 +1338,7 @@ export class Worker extends NatsService {
                                 order,
                                 filter,
                                 limit
-                            },
-                            { mockId }
+                            }
                         );
                     result.data = transactions || [];
                     break;

@@ -1,41 +1,27 @@
-import { randomInt } from "../../../support/random";
-import { STATUS_CODE, METHOD } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { STATUS_CODE, METHOD } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-
-context("Tags", { tags: ['tags', 'thirdPool', 'all'] }, () => {
+context('Tags', { tags: ['tags', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-    const tagName = "contractTagAPI" + randomInt(999999);
-    const contactName = "contractNameAPI" + randomInt(999999);
     let contractId;
 
     before(() => {
         //create a contract for tag synchronization
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.ListOfContracts,
-                headers: {
-                    authorization,
-                },
-                qs: {
-                    type: "RETIRE"
-                }
-            }).then((response) => {
-                contractId = response.body.at(0).id;
-            })
-        })
+            cy.getOrCreateRetireContractId(authorization).then((id) => {
+                contractId = id;
+            });
+        });
     });
 
-
-    it("Synchronization a tag", () => {
+    it('Synchronization a tag', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.Tags + "synchronization",
+                url: API.ApiServer + API.Tags + 'synchronization',
                 body: {
-                    entity: "Contract",
+                    entity: 'Contract',
                     target: contractId,
                 },
                 headers: {
@@ -47,12 +33,12 @@ context("Tags", { tags: ['tags', 'thirdPool', 'all'] }, () => {
         })
     })
 
-    it("Synchronization a tag without auth token - Negative", () => {
+    it('Synchronization a tag without auth token - Negative', () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.Tags + "synchronization",
+            url: API.ApiServer + API.Tags + 'synchronization',
             body: {
-                entity: "Contract",
+                entity: 'Contract',
                 target: contractId,
             },
             failOnStatusCode: false,
@@ -61,16 +47,16 @@ context("Tags", { tags: ['tags', 'thirdPool', 'all'] }, () => {
         });
     });
 
-    it("Synchronization a tag with invalid auth token - Negative", () => {
+    it('Synchronization a tag with invalid auth token - Negative', () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.Tags + "synchronization",
+            url: API.ApiServer + API.Tags + 'synchronization',
             body: {
-                entity: "Contract",
+                entity: 'Contract',
                 target: contractId,
             },
             headers: {
-                authorization: "Bearer wqe",
+                authorization: 'Bearer wqe',
             },
             failOnStatusCode: false,
         }).then((response) => {
@@ -78,16 +64,16 @@ context("Tags", { tags: ['tags', 'thirdPool', 'all'] }, () => {
         });
     });
 
-    it("Synchronization a tag with empty auth token - Negative", () => {
+    it('Synchronization a tag with empty auth token - Negative', () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.Tags + "synchronization",
+            url: API.ApiServer + API.Tags + 'synchronization',
             body: {
-                entity: "Contract",
+                entity: 'Contract',
                 target: contractId,
             },
             headers: {
-                authorization: "",
+                authorization: '',
             },
             failOnStatusCode: false,
         }).then((response) => {

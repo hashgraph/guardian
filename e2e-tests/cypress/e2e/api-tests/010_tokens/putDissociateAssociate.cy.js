@@ -1,8 +1,8 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Tokens", { tags: ['tokens', 'thirdPool', 'all'] }, () => {
+context('Tokens', { tags: ['tokens', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
 
@@ -18,18 +18,21 @@ context("Tokens", { tags: ['tokens', 'thirdPool', 'all'] }, () => {
                 },
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
-                response.body.forEach(element => {
-                    if (element.description == "iRec Description") {
-                        policyId = element.id
-                    }
-                });
-                cy.request({
-                    method: 'PUT',
-                    url: API.ApiServer + 'policies/' + policyId + '/publish',
-                    body: { policyVersion: "1.2.5" },
-                    headers: { authorization },
-                    timeout: 600000
-                })
+                const policy = response.body.find((element) => element.description === 'iRec Description');
+                if (!policy) {
+                    throw new Error('No policy with description "iRec Description" was found. Prepare test data first.');
+                }
+                policyId = policy.id;
+                // The policy may already be published by a previous run, publishing it again returns 500
+                if (policy.status !== 'PUBLISH') {
+                    cy.request({
+                        method: 'PUT',
+                        url: API.ApiServer + 'policies/' + policyId + '/publish',
+                        body: { policyVersion: '1.2.5' },
+                        headers: { authorization },
+                        timeout: 600000
+                    })
+                }
             }).then(() => {
                 cy.request({
                     method: METHOD.POST,
@@ -46,8 +49,7 @@ context("Tokens", { tags: ['tokens', 'thirdPool', 'all'] }, () => {
         });
     })
 
-
-    it("Associate and disassociate the user with the provided Hedera token", { tags: ['smoke'] }, () => {
+    it('Associate and disassociate the user with the provided Hedera token', { tags: ['smoke'] }, () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
@@ -56,21 +58,38 @@ context("Tokens", { tags: ['tokens', 'thirdPool', 'all'] }, () => {
                     authorization
                 }
             }).then((response) => {
-                let tokenId = response.body.at(-1).tokenId
+                const token = response.body.at(-1);
+                const tokenId = token.tokenId;
+                // A previous run may have left the token associated, associating it again returns 500
+                if (token.associated) {
+                    cy.request({
+                        method: 'PUT',
+                        url: API.ApiServer + 'tokens/' + tokenId + '/dissociate',
+                        headers: {
+                            authorization
+                        }
+                    });
+                }
                 cy.request({
                     method: 'PUT',
                     url: API.ApiServer + 'tokens/' + tokenId + '/associate',
                     headers: {
                         authorization
                     }
-                })
+                }).then((response) => {
+                    expect(response.status).eql(STATUS_CODE.OK);
+                    expect(response.body.status).to.be.true;
+                });
                 cy.request({
                     method: 'PUT',
                     url: API.ApiServer + 'tokens/' + tokenId + '/dissociate',
                     headers: {
                         authorization
                     }
-                })
+                }).then((response) => {
+                    expect(response.status).eql(STATUS_CODE.OK);
+                    expect(response.body.status).to.be.true;
+                });
             })
         })
     })

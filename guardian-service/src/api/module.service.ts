@@ -1,5 +1,5 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { BinaryMessageResponse, DatabaseServer, INotificationStep, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, ModuleImportExport, ModuleMessage, NewNotifier, PinoLogger, PolicyModule, TagMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
+import { BinaryMessageResponse, DatabaseServer, INotificationStep, loadErrorCode, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, ModuleImportExport, ModuleMessage, NewNotifier, PinoLogger, PolicyModule, TagMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
 import { GenerateUUIDv4, IOwner, MessageAPI, ModuleStatus, PolicyEvents, SchemaCategory, TagType, TopicType } from '@guardian/interfaces';
 import { ISerializedErrors } from '../policy-engine/policy-validation-results-container.js';
 import { importTag } from '../helpers/import-helpers/index.js';
@@ -63,9 +63,6 @@ export async function preparePreviewMessage(
             userId: user.id,
             interception: null
         });
-    if (!message) {
-        throw new Error('Invalid Message');
-    }
     if (message.type !== MessageType.Module) {
         throw new Error('Invalid Message Type');
     }
@@ -570,7 +567,8 @@ export async function modulesAPI(logger: PinoLogger): Promise<void> {
                 return new MessageResponse(preview);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], userId);
-                return new MessageError(error);
+                // Forward error.code (404/422 for message load errors) instead of a generic 500.
+                return new MessageError(error, loadErrorCode(error));
             }
         });
 
@@ -688,7 +686,8 @@ export async function modulesAPI(logger: PinoLogger): Promise<void> {
                 return new MessageResponse(item);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], userId);
-                return new MessageError(error);
+                // Forward error.code (404/422 for message load errors) instead of a generic 500.
+                return new MessageError(error, loadErrorCode(error));
             }
         });
 

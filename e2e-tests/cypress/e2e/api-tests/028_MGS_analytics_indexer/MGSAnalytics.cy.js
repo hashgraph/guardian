@@ -1,14 +1,14 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Analytics MGS. Comparing", { tags: ['mgs-comparing', 'all'] }, () => {
+context('Analytics MGS. Comparing', { tags: ['mgs-comparing', 'all'] }, () => {
 
     const MGSAdminUsername = Cypress.env('MGSAdmin');
-    const MGSStoreUsername = "storeData";
-    let prev, tenantId, schema;
+    const MGSStoreUsername = 'storeData';
+    let prev; let tenantId; let schema;
 
-    it("Get list of registries", () => {
+    it('Get list of registries', () => {
         Authorization.getAccessTokenMGS(MGSAdminUsername, null).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
@@ -17,9 +17,9 @@ context("Analytics MGS. Comparing", { tags: ['mgs-comparing', 'all'] }, () => {
                     authorization,
                 },
                 body: {
-                    "pageSize": 10,
-                    "pageIndex": 0,
-                    "sortDirection": "desc"
+                    'pageSize': 10,
+                    'pageIndex': 0,
+                    'sortDirection': 'desc'
                 }
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
@@ -42,10 +42,10 @@ context("Analytics MGS. Comparing", { tags: ['mgs-comparing', 'all'] }, () => {
                             url: API.ApiMGS + API.Schemas + API.SchemasWithSubSchemas,
                             headers: {
                                 authorization,
-                                "Accept-Encoding": "gzip, deflate, br"
+                                'Accept-Encoding': 'gzip, deflate, br'
                             },
                             qs: {
-                                category: "POLICY",
+                                category: 'POLICY',
                                 schemaId: response.body.at(0).id,
                                 topicId: response.body.at(0).topicId
                             }
@@ -55,12 +55,12 @@ context("Analytics MGS. Comparing", { tags: ['mgs-comparing', 'all'] }, () => {
                             prev = JSON.parse(response.body.schema.document.properties.analyticsMGSStat.enum.at(0));
                             cy.request({
                                 method: METHOD.GET,
-                                url: "https://dev.guardianservice.app/analytics/analytics/testnet/dashboards",
+                                url: 'https://dev.guardianservice.app/analytics/analytics/testnet/dashboards',
                             }).then((response) => {
                                 expect(response.status).eql(STATUS_CODE.OK);
                                 cy.request({
                                     method: METHOD.GET,
-                                    url: "https://dev.guardianservice.app/analytics/analytics/testnet/dashboards/" + response.body.at(0).id,
+                                    url: 'https://dev.guardianservice.app/analytics/analytics/testnet/dashboards/' + response.body.at(0).id,
                                 }).then((response) => {
                                     expect(response.status).eql(STATUS_CODE.OK);
                                     let current = response.body.report;

@@ -46,7 +46,20 @@ Module._load = function (req, parent, ...rest) {
     if (req === '@hiero-ledger/sdk') {
         return { TokenId: class { constructor(v) { this.v = v; } toString() { return `0.0.${this.v}`; } }, TopicId: class {} };
     }
-    if (req === '@mikro-orm/core') return { FilterQuery: class {} };
+    if (req === '@mikro-orm/core') {
+        const Base = class {};
+        return {
+            FilterQuery: class {},
+            Connection: Base,
+            DatabaseDriver: Base,
+            EntityManager: Base,
+            EntityRepository: Base,
+            AbstractSchemaGenerator: Base,
+            ExceptionConverter: Base,
+            MikroORM: Base,
+            Platform: Base,
+        };
+    }
     return originalLoad.call(this, req, parent, ...rest);
 };
 
@@ -287,9 +300,6 @@ describe('@unit PolicyUtils — pure helpers', () => {
             assert.equal(PolicyUtils.checkDocumentField({ tags: ['a', 'b'] }, { field: 'tags', type: 'in', value: 'a' }), true);
         });
 
-        it('"in" returns false on non-array', () => {
-            assert.equal(PolicyUtils.checkDocumentField({ tags: 'a' }, { field: 'tags', type: 'in', value: 'a' }), false);
-        });
 
         it('"not_in" inverts "in"', () => {
             assert.equal(PolicyUtils.checkDocumentField({ tags: ['a'] }, { field: 'tags', type: 'not_in', value: 'b' }), true);

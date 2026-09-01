@@ -1,8 +1,10 @@
 export const environment = {
     production: true,
+    githubRef: 'develop',
     displayDemoAccounts: true,
     accessTokenUpdateInterval: 29 * 1000,
     isMeecoConfigured: false,
+    isAISearchConfigured: false,
     requireAuthorizationPopup: true,
     explorerSettings: {
         url: 'https://hashscan.io/${network}/${type}/${value}/${subType}/${subValue}',

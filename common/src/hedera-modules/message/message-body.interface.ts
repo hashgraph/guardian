@@ -633,6 +633,36 @@ export interface ToolMessageBody extends MessageBody {
 }
 
 /**
+ * Schema template message body
+ */
+export interface SchemaTemplateMessageBody extends MessageBody {
+    /**
+     * UUID
+     */
+    uuid: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * Owner
+     */
+    owner: string;
+    /**
+     * Topic id
+     */
+    topicId: string;
+    /**
+     * Version
+     */
+    version: string;
+}
+
+/**
  * Contract message body
  */
 export interface ContractMessageBody extends MessageBody {
@@ -1028,4 +1058,30 @@ export interface CommentMessageBody extends MessageBody {
      * Target
      */
     target: string;
+}
+
+/**
+ * Organization message body
+ */
+export interface OrganizationMessageBody extends MessageBody {
+    /**
+     * Organization DID
+     */
+    did: string;
+    /**
+     * Organization Hedera topic id
+     */
+    topicId: string;
+    /**
+     * Organization name
+     */
+    name: string;
+    /**
+     * OrgRole definitions captured on-ledger for traceability
+     */
+    roles: { name: string; permissions: string[] }[];
+    /**
+     * Arbitrary attributes (free-form key/value strings)
+     */
+    attributes: { [x: string]: string } | undefined;
 }

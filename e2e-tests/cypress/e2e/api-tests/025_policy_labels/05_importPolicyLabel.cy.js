@@ -1,13 +1,13 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Import policy label", { tags: ['policy_labels', 'firstPool', 'all'] }, () => {
+context('Import policy label', { tags: ['policy_labels', 'firstPool', 'all'] }, () => {
     const UserUsername = Cypress.env('User');
 
-    let policyLabel, policy;
+    let policyLabel; let policy;
 
-    before("Get policy label", () => {
+    before('Get policy label', () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
@@ -27,7 +27,7 @@ context("Import policy label", { tags: ['policy_labels', 'firstPool', 'all'] }, 
                 }).then((response) => {
                     expect(response.status).eql(STATUS_CODE.OK);
                     response.body.forEach(element => {
-                        if (element.name == "iRec_4") {
+                        if (element.name == 'iRec_4') {
                             policy = element;
                         }
                     })
@@ -36,17 +36,17 @@ context("Import policy label", { tags: ['policy_labels', 'firstPool', 'all'] }, 
         });
     })
 
-    it("Import policy label", () => {
+    it('Import policy label', () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
-            cy.fixture("exportedLabel.label", "binary")
+            cy.fixture('exportedLabel.label', 'binary')
                 .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
                 .then((file) => {
                     cy.request({
                         method: METHOD.POST,
-                        url: API.ApiServer + API.PolicyLabels + policy.id + "/" + API.ImportFile,
+                        url: API.ApiServer + API.PolicyLabels + policy.id + '/' + API.ImportFile,
                         body: file,
                         headers: {
-                            "content-type": "binary/octet-stream",
+                            'content-type': 'binary/octet-stream',
                             authorization,
                         },
                     }).then((response) => {
@@ -62,8 +62,8 @@ context("Import policy label", { tags: ['policy_labels', 'firstPool', 'all'] }, 
                         expect(importedPolicyLabel.policyInstanceTopicId).eql(policy.instanceTopicId);
                         expect(importedPolicyLabel.status).eql(policyLabel.status);
                         importedPolicyLabel.config.children.forEach((child, index) => {
-                            child.config.variables[0].schemaId = "";
-                            policyLabel.config.children[index].config.variables[0].schemaId = "";
+                            child.config.variables[0].schemaId = '';
+                            policyLabel.config.children[index].config.variables[0].schemaId = '';
                         })
                         expect(importedPolicyLabel.config).eql(policyLabel.config);
                     });
@@ -71,16 +71,16 @@ context("Import policy label", { tags: ['policy_labels', 'firstPool', 'all'] }, 
         })
     });
 
-    it("Import policy label without auth - Negative", () => {
-        cy.fixture("exportedLabel.label", "binary")
+    it('Import policy label without auth - Negative', () => {
+        cy.fixture('exportedLabel.label', 'binary')
             .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
             .then((file) => {
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.PolicyLabels + policy.id + "/" + API.ImportFile,
+                    url: API.ApiServer + API.PolicyLabels + policy.id + '/' + API.ImportFile,
                     body: file,
                     headers: {
-                        "content-type": "binary/octet-stream",
+                        'content-type': 'binary/octet-stream',
                     },
                     failOnStatusCode: false,
                 }).then((response) => {
@@ -89,17 +89,17 @@ context("Import policy label", { tags: ['policy_labels', 'firstPool', 'all'] }, 
             })
     });
 
-    it("Import policy label with incorrect auth - Negative", () => {
-        cy.fixture("exportedLabel.label", "binary")
+    it('Import policy label with incorrect auth - Negative', () => {
+        cy.fixture('exportedLabel.label', 'binary')
             .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
             .then((file) => {
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.PolicyLabels + policy.id + "/" + API.ImportFile,
+                    url: API.ApiServer + API.PolicyLabels + policy.id + '/' + API.ImportFile,
                     body: file,
                     headers: {
-                        "content-type": "binary/octet-stream",
-                        authorization: "bearer 11111111111111111111@#$",
+                        'content-type': 'binary/octet-stream',
+                        authorization: 'bearer 11111111111111111111@#$',
                     },
                     failOnStatusCode: false,
                 }).then((response) => {
@@ -108,17 +108,17 @@ context("Import policy label", { tags: ['policy_labels', 'firstPool', 'all'] }, 
             });
     })
 
-    it("Import policy label with empty auth - Negative", () => {
-        cy.fixture("exportedLabel.label", "binary")
+    it('Import policy label with empty auth - Negative', () => {
+        cy.fixture('exportedLabel.label', 'binary')
             .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
             .then((file) => {
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.PolicyLabels + policy.id + "/" + API.ImportFile,
+                    url: API.ApiServer + API.PolicyLabels + policy.id + '/' + API.ImportFile,
                     body: file,
                     headers: {
-                        "content-type": "binary/octet-stream",
-                        authorization: "",
+                        'content-type': 'binary/octet-stream',
+                        authorization: '',
                     },
                     failOnStatusCode: false,
                 }).then((response) => {

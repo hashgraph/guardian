@@ -1,32 +1,31 @@
+---
+tags:
+  - flagged-for-rewrite
+---
+
 # FAQs
 
-**1.How can I get started with the Guardian?**
+{% hint style="warning" %}
+This page is flagged to be updated. Don't see your questions listed? Send an inquiry to guardian-feedback@hashgraph.com
+{% endhint %}
 
-We recommend spending some time and reading carefully through the docs. You will find setup instructions, a glossary of important terms, demo walk throughs, and more.
+1. **How can I get started with the Guardian?**
 
-**2. How can I create policies?**
+To get started you can choose from one of the following options depending upon your level of technical experience. Visit [getting-started](../guardian/getting-started/ "mention") for more details.
 
-You can use the UI policy editor or APIs to create a policy workflow. Examples are found in the guardian docs here: [https://guardian.hedera.com/guardian/standard-registry/policiesreadme](https://guardian.hedera.com/guardian/standard-registry/policies)
+<table><thead><tr><th width="255.2109375">Option</th><th width="197.64453125">Format</th><th>Technical Complexity</th></tr></thead><tbody><tr><td><a href="https://www.climission.com/mgs">Managed Guardian Service</a></td><td>SaaS / Free Trial</td><td>Low</td></tr><tr><td><a href="https://github.com/hashgraph/guardian/#quickstart">Quickstart guide</a></td><td>Docker containers</td><td>Medium</td></tr><tr><td><a href="https://github.com/hashgraph/guardian/#getting-started">Building from source</a></td><td>Source code</td><td>High</td></tr></tbody></table>
 
-**3. Is there a demo to create a policy without importing it?**
+**2. How can I create a policy?**
 
-[https://guardian.hedera.com/guardian/standard-registry/policies/policy-creation/creating-a-policy-through-policy-configurator/getting-started-with-the-policy-workflows](https://guardian.hedera.com/guardian/standard-registry/policies/policy-creation/creating-a-policy-through-policy-configurator/getting-started-with-the-policy-workflows)
+You can use the policy editor or APIs to create a policy workflow. Some examples can be found in [Methodology Digitalization](https://app.gitbook.com/s/bKnJV8vV7zUxRwKIsJKg/methodology-digitalization "mention") and [creating-a-policy-through-policy-configurator](../guardian/tutorials/creating-a-policy-through-policy-configurator/ "mention")here and there is a quick start guide to help you publish your first policy.
 
-{% content-ref url="https://app.gitbook.com/o/-LuC734MpqlgwA6zyhAO/s/bKnJV8vV7zUxRwKIsJKg/" %}
-[Guardian-dev](https://app.gitbook.com/o/-LuC734MpqlgwA6zyhAO/s/bKnJV8vV7zUxRwKIsJKg/)
-{% endcontent-ref %}
+**5. Where can I get notified of updates, trainings, and workshops?**
 
-**4. Can I see the Guardian product roadmap and the current backlog?**
-
-yes! just install the free chrome extension called zenhub https://www.zenhub.com/. When installed you will be able to see the "zenhub" tab in the Guardian's github repo
-
-**5. Where can I get notified of sprint updates and demos?**
-
-Every two weeks we publish sprint updates to this youtube playlist: [https://www.youtube.com/playlist?list=PLnld0e1pwLhqb69cELqQrW87JFVIDfocL](https://www.youtube.com/playlist?list=PLnld0e1pwLhqb69cELqQrW87JFVIDfocL)
+[Subscribe to the community calendar](https://lu.ma/guardian).
 
 **6. Where can I see the most recent changes made to the Guardian?**
 
-You can see the high level release notes here: [https://github.com/hashgraph/guardian/releases](https://github.com/hashgraph/guardian/releases). Also, you can find the full changelog at the bottom on the release notes to view for yourself via Github compare.
+Learn more about past releases here, [https://github.com/hashgraph/guardian/releases](https://github.com/hashgraph/guardian/releases).&#x20;
 
 **7. How do I request a policy or an issue to be worked on?**
 
@@ -40,23 +39,13 @@ iREC Policy 2 is the up-to-date version of iREC Policy
 
 You can visit : http://localhost:3000/mrv-sender/
 
-**10. How I can avoid the field name being "off by one" ?**
+**10. How can I access the API docs?**
 
-Add an additional short name to the description in the schema configurator. If short name is not set then install field1...N.
+On the docs site, checkout the [API Reference / guardian](https://app.gitbook.com/o/-LuC734MpqlgwA6zyhAO/s/qHzrfhYRf3qLjeOsZTmp/ "mention")
 
-**11. How can I access the swagger docs for Guardian v2 ?**
+When running via docker, navigate to [https://localhost/api/v1/api-docs](https://localhost/api/v1/api-docs).&#x20;
 
-[http://localhost:3000/api-docs/v1/ ](http://localhost:3000/api-docs/v1/)(note that this URL is only available for the docker build)
-
-**12. What is the difference between requestVcDocumentBlock and externalDataBlock to report data?**
-
-Both are for reporting data, both are producing VCs at the ‘exit.’
-
-1\. requestVcDocumentBlock requires authorization, but the actual document is just json.
-
-2\. externalDataBlock does not require authorization, but the document must already be a VC and be correctly signed.
-
-**13. Why do I get the error INSUFFICENT\_TX\_FEE?**
+**11. Why do I get the error INSUFFICENT\_TX\_FEE?**
 
 The fee in the transaction is too small and needs to be increased changing setting of **MAX\_TRANSACTION\_FEE**
 
@@ -64,22 +53,16 @@ The fee in the transaction is too small and needs to be increased changing setti
 
 MongoDB does not go away, we will keep the local DB for drafts etc. Hedera messages in topics are linked to the ‘published’ policies which are immutable stored in IPFS - messages contain CID of the file in IPFS.
 
-**15. Is MRV an existing data architecture used in I-REC or Carbon Offset standards?**
-
-A standard registry is an organization that establishes science-based standards for measuring, reporting, and verifying (MRV) ecological benefit claims and issues value in the form of credit for claims that meet the standard set. A standard registry also authorizes validation and verification bodies (VVBs) to collect and process claims based on the established standard. The creation of scientific-based standards for MRV is a rigorous discipline that requires independence from commercial influence in the pursuit of accurate accounting of benefit or emissions claims. In this case iREC is a standards registry, however oftentimes folks implement the iREC standard in a voluntary way and leverage iREC certification for sign off. Some markets, like Dubai, make it a compliance standard.
-
-**16. How Guardian uses IPFS for Verifiable Presentation (VP) storage?**
+**15. How Guardian uses IPFS for Verifiable Presentation (VP) storage?**
 
 We are uploading Verifiable Presentation document to IPFS and CID will be attached in Hedera message which is linked to policy topic.
 
-**17. How does Guardian Provenance works?**
+**16. How does Guardian Provenance works?**
 
 (ONLY NFT) Open tokens page, click on appropriate token or open ledger works explorer manually https://explore.lworks.io/testnet/tokens/{tokenId} ([https://explore.lworks.io/testnet/tokens/0.0.4554172](https://explore.lworks.io/testnet/tokens/0.0.4554172)), open "NFT HOLDERS" tab and click on appropriate serial, click on "OVERVIEW" tab and in metadata you can get VP message identifier (1721049137.243457003).
 
-\
 (FT, NFT) Open tokens page, copy appropriate token identifier, open Dragonglass explorer https://testnet.dragonglass.me/tokens/{tokenId} ([https://testnet.dragonglass.me/tokens/0.0.4554298](https://testnet.dragonglass.me/tokens/0.0.4554298)), click on "All transactions" tab, click on appropriate mint transaction, in memo you can get VP message identifier (1721049808.933544003).
 
-\
 In our case it will be [https://testnet.mirrornode.hedera.com/api/v1/topics/messages/1721049137.243457003](https://testnet.mirrornode.hedera.com/api/v1/topics/messages/1721049137.243457003)\
 You will get a message content:
 
@@ -227,19 +210,19 @@ You’ll have a VP of this token.
 }
 ```
 
-**18. The VCs that are generated as part of the Guardian workflow, have you found any use cases where the status of the VC might change? For example, is there ever a time where a VC might be revoked or expires? If so, does the status get updated on the ledger?**
+**17. The VCs that are generated as part of the Guardian workflow, have you found any use cases where the status of the VC might change? For example, is there ever a time where a VC might be revoked or expires? If so, does the status get updated on the ledger?**
 
 There are many use-cases where the VCs and various other artefacts produced in the course of the policy functioning of the guardian might need to be revoked. One of the obvious examples of such situation is malfunctioning sensor generating invalid MRV data. But there are many others.
 
-**19. Is it possible to see a Guardian-minted token's value in hbar as well as its associated CO2e? If so, where does this information come from/how can we access it?**
+**18. Is it possible to see a Guardian-minted token's value in HBAR as well as its associated CO2e? If so, where does this information come from/how can we access it?**
 
-The value of the token in hbar (or USD) will be set by the market, and thus external to the token itself (so there is no way to see in the token what it is worth in \$$). And what the token represents (CO2e etc) is determined by the policy under which it was minted. These tokens are the NFTs, and the metadata can include this data if the policy under which the tokens are minted has provisions for it.
+The value of the token in HBAR (or USD) will be set by the market, and thus external to the token itself (so there is no way to see in the token what it is worth in dollars). And what the token represents (CO2e etc) is determined by the policy under which it was minted. These tokens are the NFTs, and the metadata can include this data if the policy under which the tokens are minted has provisions for it.
 
-**20. What is the semantic of the DID in the message? Is it that the standard registry signs VCs etc with the corresponding private key?**
+**19. What is the semantic of the DID in the message? Is it that the standard registry signs VCs etc with the corresponding private key?**
 
 DID is the the DID of the RA, i.e. is a globally unique reference linking to a DID document which is the identity - all VCs issued to or by an entity would then be ‘bound’ to this DID as per the ‘self-sovereign identity’ architecture.
 
-**21. How to identify data on Hedera after submitting data using sendToGuardianBlock?**
+**20. How to identify data on Hedera after submitting data using sendToGuardianBlock?**
 
 You can find it in Project/Policy topic, it depends on sendToGuardianBlock configuration.
 
