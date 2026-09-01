@@ -389,10 +389,65 @@ export class VCJS {
         // that carries its own allOf, in addition to the root, so a condition
         // nested under the wrapper is honoured the same as a condition at the root
         // (e.g. when prepareSchema is called directly on a subject schema).
-        for (const key of defsKeys) {
+        //
+        // Order matters: applyConditionalStrip deep-copies whatever currently sits
+        // in defsObj[ref] when it clones a referenced def into a container (e.g.
+        // Subject cloning Detail into Detail__copy). If Detail's own conditional
+        // strip hasn't run yet, the clone carries a stale $ref to Detail's
+        // original (unstripped) dependency, and that dependency's fix never
+        // reaches the clone - it isn't among the original defsKeys, so the flat
+        // loop this replaced would never visit it. Preparing depth-first (a def's
+        // own $ref'd dependencies before the def itself) guarantees every def is
+        // fully stripped before anything clones it. The prepared/inProgress sets
+        // make sure each def runs once and $ref cycles terminate instead of
+        // recursing forever.
+        const prepared = new Set<string>();
+        const inProgress = new Set<string>();
+        const prepareDef = (key: string) => {
+            if (prepared.has(key) || inProgress.has(key) || !defsObj[key]) {
+                return;
+            }
+            inProgress.add(key);
+            for (const ref of this.collectSchemaRefs(defsObj[key])) {
+                if (ref !== key && defsObj[ref]) {
+                    prepareDef(ref);
+                }
+            }
             this.applyConditionalStrip(defsObj[key], defsObj, key);
+            inProgress.delete(key);
+            prepared.add(key);
+        };
+        for (const key of defsKeys) {
+            prepareDef(key);
         }
         this.applyConditionalStrip(schema, defsObj, 'root');
+    }
+
+    /**
+     * Collect every $ref value reachable within a schema node, so callers can tell
+     * which $defs entries a given def depends on before deciding processing order.
+     *
+     * @param node Schema node to scan
+     */
+    private collectSchemaRefs(node: any): Set<string> {
+        const refs = new Set<string>();
+        const seen = new Set<any>();
+        const walk = (current: any) => {
+            if (!current || typeof current !== 'object' || seen.has(current)) {
+                return;
+            }
+            seen.add(current);
+            if (typeof current.$ref === 'string') {
+                refs.add(current.$ref);
+            }
+            for (const value of Object.values(current)) {
+                if (value && typeof value === 'object') {
+                    walk(value);
+                }
+            }
+        };
+        walk(node);
+        return refs;
     }
 
     /**
