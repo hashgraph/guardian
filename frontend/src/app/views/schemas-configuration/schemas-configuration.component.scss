@@ -2165,6 +2165,117 @@
     letter-spacing: 0;
 }
 
+.sc-rp-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sc-rp-suggest-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: var(--sc-radius-sm);
+    color: var(--color-primary);
+
+    i { font-size: 14px; }
+
+    svg-icon.svg-icon-16 {
+        width: 14px;
+        height: 14px;
+        line-height: 14px;
+
+        ::ng-deep svg {
+            width: 100%;
+            height: 100%;
+            fill: currentColor;
+        }
+    }
+
+    &:hover { background: var(--guardian-hover); }
+    &:disabled { cursor: default; opacity: 0.6; }
+}
+
+.sc-rp-ai-hint-link {
+    padding: 0;
+    border: none;
+    background: transparent;
+    font-size: 11px;
+    font-family: inherit;
+    color: var(--color-primary);
+    cursor: pointer;
+
+    &:hover { text-decoration: underline; }
+}
+
+.sc-rp-ai-hint {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 8px;
+    padding: 10px;
+    max-width: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
+    border-radius: var(--sc-radius-sm);
+    background: var(--guardian-grey-background, #F9FAFC);
+}
+
+.sc-rp-ai-hint-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 100%;
+
+    .sc-rp-ai-hint-title {
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--guardian-font-color);
+    }
+
+    .sc-btn, .sc-btn-primary {
+        flex: 0 0 auto;
+    }
+}
+
+.sc-rp-ai-hint-description {
+    font-size: 11.5px;
+    color: var(--color-grey-5, #848FA9);
+    word-break: break-word;
+}
+
+.sc-rp-ai-hint-confidence {
+    display: block;
+    font-size: 11px;
+    color: var(--color-grey-5, #848FA9);
+    margin-top: 2px;
+}
+
+.sc-rp-ai-hint-rationale {
+    font-size: 11px;
+    color: var(--color-grey-5, #848FA9);
+    font-style: italic;
+    word-break: break-word;
+}
+
+.sc-rp-ai-hint-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
 /* ── New schema dialog body ── */
 .sc-dialog-body {
     padding: 4px 0 8px;
@@ -2830,6 +2941,19 @@
 
     i { font-size: 14px; }
 
+    svg-icon.svg-icon-16 {
+        width: 14px;
+        height: 14px;
+        line-height: 14px;
+        vertical-align: middle;
+
+        ::ng-deep svg {
+            width: 100%;
+            height: 100%;
+            fill: currentColor;
+        }
+    }
+
     &:not(.active):hover { color: var(--guardian-font-color); }
 
     &.active {
@@ -2852,6 +2976,122 @@
     align-items: center;
     justify-content: center;
     line-height: 1;
+}
+
+.sc-suggestions-toolbar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.sc-suggestions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sc-suggestion-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 12px;
+    min-height: 56px;
+    background: var(--guardian-background);
+    border: 1px solid var(--guardian-border-color);
+    border-radius: var(--sc-radius);
+    box-shadow: var(--sc-elevation);
+
+    &--highlight {
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 12%, transparent);
+    }
+
+    &--match {
+        background: var(--guardian-grey-background);
+    }
+}
+
+.sc-suggestion-field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 0 0 170px;
+    width: 170px;
+    min-width: 0;
+
+    .sc-suggestion-field-name,
+    .sc-suggestion-current {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .sc-suggestion-field-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--guardian-font-color);
+    }
+
+    .sc-suggestion-current {
+        font-size: 11px;
+        color: var(--color-grey-5, #848FA9);
+    }
+}
+
+.sc-suggestion-candidate {
+    flex: 1 1 0%;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    max-width: 420px;
+
+    .sc-suggestion-candidate-title,
+    .sc-suggestion-candidate-confidence {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .sc-suggestion-candidate-title {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--guardian-font-color);
+    }
+
+    .sc-suggestion-candidate-confidence {
+        font-size: 11px;
+        color: var(--color-grey-5, #848FA9);
+    }
+
+    .sc-suggestion-candidate-description {
+        font-size: 11.5px;
+        color: var(--color-grey-5, #848FA9);
+        line-height: 1.35;
+        margin-top: 4px;
+    }
+
+    .sc-suggestion-candidate-rationale {
+        font-size: 11px;
+        color: var(--color-grey-5, #848FA9);
+        font-style: italic;
+        line-height: 1.35;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+}
+
+.sc-suggestion-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sc-suggestion-match-label {
+    font-size: 11px;
+    color: var(--color-grey-5, #848FA9);
 }
 
 // ── Conditions canvas (center pane) ─────────────────────────────────────────
@@ -3352,6 +3592,29 @@
 // ── Property dropdown in right panel ────────────────────────────────────────
 .sc-rp-select {
     width: 100%;
+}
+
+.sc-rp-prop-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    padding: 2px 0;
+
+    > span:first-child {
+        font-size: 13px;
+        color: var(--guardian-font-color);
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+}
+
+.sc-rp-prop-desc {
+    font-size: 11.5px;
+    color: var(--color-grey-5, #848FA9);
+    line-height: 1.35;
+    white-space: normal;
 }
 
 

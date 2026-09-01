@@ -46,6 +46,18 @@ export class AISuggestionsDB extends NatsService {
         return res;
     }
 
+    public async getPolicyProperties(iwaVersion?: string): Promise<any> {
+        const res = (await this.sendMessage(MessageAPI.GET_POLICY_PROPERTIES, { iwaVersion })) as any;
+
+        if (!res) {
+            throw new Error('Invalid AI response');
+        }
+        if (res.error) {
+            throw new Error(res.error);
+        }
+        return res;
+    }
+
     public async getFieldDescriptions(policies: Policy[]): Promise<any> {
 
         const policiesData = policies.map((policy: Policy) => ({

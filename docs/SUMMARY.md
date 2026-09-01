@@ -741,6 +741,7 @@
   * [AI Search APIs](developer-tools-and-resources/api-reference/ai-search-apis/README.md)
     * [Returns response](developer-tools-and-resources/api-reference/ai-search-apis/returns-response.md)
     * [Rebuilds vector based on policy data](developer-tools-and-resources/api-reference/ai-search-apis/rebuilds-vector-based-on-policy-data.md)
+    * [Suggests schema field properties](developer-tools-and-resources/api-reference/ai-search-apis/suggest-schema-field-properties.md)
   * [User Operations](developer-tools-and-resources/api-reference/user-operations/README.md)
     * [Account APIs](developer-tools-and-resources/api-reference/user-operations/account-apis/README.md)
       * [Authentication Process](developer-tools-and-resources/api-reference/user-operations/account-apis/authentication-process.md)

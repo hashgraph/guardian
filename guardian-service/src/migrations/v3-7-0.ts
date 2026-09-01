@@ -52,8 +52,10 @@ export class ReleaseMigration extends Migration {
             if (!row.trim()) {
                 continue;
             }
+            // >= 2, not === 2: the CSV later grew an (unquoted-here) description column;
+            // this migration only ever reads title/value, so extra columns are harmless.
             const columns = row.split(',');
-            if (columns.length !== 2 || !columns[0]) {
+            if (columns.length < 2 || !columns[0]) {
                 continue;
             }
             const title = columns[0].trim();

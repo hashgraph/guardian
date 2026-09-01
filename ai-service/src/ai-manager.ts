@@ -4,9 +4,11 @@ import { ChatOpenAI } from '@langchain/openai';
 import { OpenAIConnect } from './helpers/openai-helper.js';
 import { VectorStorage } from './helpers/vector-storage-helper.js';
 import { AISuggestionsDB } from './helpers/ai-suggestions-db.js';
+import { PropertySuggestionConnect } from './helpers/property-suggestion-helper.js';
 import { PolicyDescription } from './models/models.js';
 import * as dotenv from 'dotenv';
 import { PinoLogger, Policy, PolicyCategory } from '@guardian/common';
+import { IPropertySuggestionRequest, IPropertySuggestionResponse } from '@guardian/interfaces';
 
 dotenv.config();
 
@@ -67,6 +69,18 @@ export class AIManager {
 
         const answer = await OpenAIConnect.ask(this.chain, question, this.policies);
         return answer;
+    }
+
+    async suggestProperties(request: IPropertySuggestionRequest): Promise<IPropertySuggestionResponse> {
+        try {
+            const dbRequests = new AISuggestionsDB();
+            const properties = await dbRequests.getPolicyProperties(request?.iwaVersion);
+            const results = await PropertySuggestionConnect.suggest(this.model, request?.fields || [], properties || [], request?.schemaTitle);
+            return { available: true, results };
+        } catch (e) {
+            await this.logger.error(e.message, ['AI_SERVICE']);
+            return { available: false, results: [] };
+        }
     }
 
     async rebuildVector() {
