@@ -110,7 +110,7 @@ jobs:
           until curl -s -X POST http://127.0.0.1:5001/api/v0/id >/dev/null 2>&1; do sleep 0.5; done
 
       - name: Start MongoDB
-        uses: step-security/mongodb-github-action@9bfc4a7e812a86657abfbe923af612a0fedcd1ea
+        uses: step-security/mongodb-github-action@7bbfdaf9f5b4e8b4ffbe2905fd9e4756d3204ed6
         with:
           mongodb-version: ${{ matrix.mongodb-version }}
 
