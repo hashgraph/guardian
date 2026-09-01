@@ -204,7 +204,7 @@ export class RoleService extends NatsService {
                     const { role, owner, restore } = msg;
                     delete role._id;
                     delete role.id;
-                    role.owner = owner.creator;
+                    role.owner = owner.owner;
                     role.permissions = ListPermissions.unique(role.permissions);
                     role.default = false;
                     role.readonly = false;
@@ -244,10 +244,10 @@ export class RoleService extends NatsService {
 
                     const item = await entityRepository.findOne(DynamicRole, {
                         id,
-                        owner: owner.creator
+                        owner: owner.owner
                     });
 
-                    if (!item || item.owner !== owner.creator) {
+                    if (!item || item.owner !== owner.owner) {
                         throw new Error('Invalid role');
                     }
 
@@ -304,9 +304,9 @@ export class RoleService extends NatsService {
                     const { id, owner } = msg;
                     const item = await entityRepository.findOne(DynamicRole, {
                         id,
-                        owner: owner.creator
+                        owner: owner.owner
                     });
-                    if (!item || item.owner !== owner.creator) {
+                    if (!item || item.owner !== owner.owner) {
                         throw new Error('Invalid role');
                     }
                     await entityRepository.remove(DynamicRole, item);
