@@ -1634,7 +1634,7 @@ __metadata:
     mongodb: "npm:6.21.0"
     nats: "npm:^2.29.3"
     node-vault: "npm:^0.12.0"
-    papaparse: "npm:5.6.0"
+    papaparse: "npm:5.7.0"
     prom-client: "npm:^15.1.3"
     reflect-metadata: "npm:0.2.2"
     rxjs: "npm:7.8.2"
@@ -13232,10 +13232,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"papaparse@npm:5.6.0":
-  version: 5.6.0
-  resolution: "papaparse@npm:5.6.0"
-  checksum: 10c0/e7f338b86e4a37e828a75a3d5305aaa5132a460fa13cecc2157bfd8d3664a31fa86a52f012f945401180496d62d10c6dbd870b92a2b9abf6cf671793e406e670
+"papaparse@npm:5.7.0":
+  version: 5.7.0
+  resolution: "papaparse@npm:5.7.0"
+  checksum: 10c0/aeea2122ffa7abf33206ab9465e1adcb678ca0e9b08fbd3cea53bf6dc07d5903e69f387dc4dde2498e2478130ba3db79d1fd3956bf638c00be802f0d275e006d
   languageName: node
   linkType: hard
 
