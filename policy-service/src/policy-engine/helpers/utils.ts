@@ -440,6 +440,134 @@ export class PolicyUtils {
     }
 
     /**
+    /**
+     * Resolve a dot-notation field path against a value.
+     * When an intermediate segment is an array the remainder of the path is
+     * mapped over each element, returning an array of leaf values.
+     * @param data
+     * @param field
+     */
+    public static resolveFieldPath(data: any, field: string): any {
+        if (!field || data === null || data === undefined) {
+            return null;
+        }
+        const dot = field.indexOf('.');
+        const key = dot === -1 ? field : field.slice(0, dot);
+        const rest = dot === -1 ? null : field.slice(dot + 1);
+
+        if (Array.isArray(data)) {
+            if (key === 'L') {
+                const last = data[data.length - 1];
+                if (rest === null) {
+                    return last ?? null;
+                }
+                return PolicyUtils.resolveFieldPath(last, rest);
+            }
+            const idx = Number(key);
+            if (Number.isInteger(idx) && idx >= 0 && String(idx) === key) {
+                const item = data[idx];
+                if (rest === null) {
+                    return item ?? null;
+                }
+                return PolicyUtils.resolveFieldPath(item, rest);
+            }
+            return data.map((item) => PolicyUtils.resolveFieldPath(item, field));
+        }
+
+        const value = data[key];
+        if (rest === null) {
+            return value ?? null;
+        }
+        return PolicyUtils.resolveFieldPath(value, rest);
+    }
+
+    private static compareScalarPair(left: any, type: string, right: any): boolean {
+        // A field that's simply absent resolves to null/undefined. Every operator but
+        // an explicit `equal` null check must fail closed here - otherwise not_equal/
+        // not_in trivially pass for a side that lacks the field, validating nothing.
+        if (left === null || left === undefined) {
+            return type === 'equal' && PolicyUtils.coerceComparable(right) === null;
+        }
+        switch (type) {
+            case 'equal':
+                return PolicyUtils.comparableEquals(left, right);
+            case 'not_equal':
+                return !PolicyUtils.comparableEquals(left, right);
+            case 'in': {
+                const list = String(right).split(',').map((v: string) => v.trim());
+                return list.includes(String(left));
+            }
+            case 'not_in': {
+                const list = String(right).split(',').map((v: string) => v.trim());
+                return !list.includes(String(left));
+            }
+            case 'gt':
+                return PolicyUtils.coerceComparable(left) > PolicyUtils.coerceComparable(right);
+            case 'gte':
+                return PolicyUtils.coerceComparable(left) >= PolicyUtils.coerceComparable(right);
+            case 'lt':
+                return PolicyUtils.coerceComparable(left) < PolicyUtils.coerceComparable(right);
+            case 'lte':
+                return PolicyUtils.coerceComparable(left) <= PolicyUtils.coerceComparable(right);
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Evaluate a condition against resolved field values with for-all array semantics.
+     * @param left
+     * @param type
+     * @param right
+     */
+    public static evaluateFieldCondition(left: any, type: string, right: any): boolean {
+        const leftIsArray = Array.isArray(left);
+        const rightIsArray = Array.isArray(right);
+
+        // in/not_in must come before the pairwise branch (otherwise equal-length arrays
+        // get positional comparison instead of membership) and before the empty-array
+        // guard, which is inverted for not_in: a scalar is trivially not in the empty set.
+        if (type === 'in' || type === 'not_in') {
+            if (leftIsArray) {
+                if (left.length === 0) { return false; }
+                return left.every((l: any) => PolicyUtils.evaluateFieldCondition(l, type, right));
+            }
+            if (rightIsArray) {
+                // coerce both sides — consistent with compareScalarPair's string path
+                const cl = PolicyUtils.coerceComparable(left);
+                const haystack = right.flat(Infinity).map((v: any) => PolicyUtils.coerceComparable(v));
+                return type === 'in' ? haystack.includes(cl) : !haystack.includes(cl);
+            }
+            return PolicyUtils.compareScalarPair(left, type, right);
+        }
+
+        // Empty array vs scalar — no elements to validate, fail-closed. [] vs [] passes.
+        if (leftIsArray && left.length === 0 && !rightIsArray) { return false; }
+        if (rightIsArray && right.length === 0 && !leftIsArray) { return false; }
+
+        if (leftIsArray && rightIsArray) {
+            if (left.length !== right.length) { return false; }
+            return left.every((l: any, i: number) =>
+                PolicyUtils.evaluateFieldCondition(l, type, right[i])
+            );
+        }
+        // Array-left + scalar-right: for-all broadcast - resolveFieldPath maps over a
+        // collection and returns an array of leaf values, so this is the normal case for
+        // conditions like `items[].amount gt 5` (every item's amount must satisfy the threshold).
+        if (leftIsArray) {
+            return left.every((l: any) => PolicyUtils.evaluateFieldCondition(l, type, right));
+        }
+        // Scalar-left + array-right on non-in/not_in: reject rather than fall through to
+        // compareScalarPair, which would coerce the array via String() and produce
+        // inconsistent results (e.g. 5 gt [3] -> true, 5 gt [3,4] -> false via NaN).
+        // A scalar left with an array right means the condition paths are misconfigured —
+        // the collection field should always be on the left.
+        if (rightIsArray) { return false; }
+        return PolicyUtils.compareScalarPair(left, type, right);
+    }
+
+    /**
+    /**
      * Key-order-independent structural stringification, used so two values loaded
      * from different documents (objects/arrays with the same content but different
      * key order or reference identity) compare equal.
@@ -481,47 +609,102 @@ export class PolicyUtils {
      * @param filter
      */
     public static checkDocumentField(document: any, filter: any): boolean {
-        if (document) {
-            const value = PolicyUtils.getObjectValue(document, filter.field);
-            // A field the document doesn't carry resolves to null/undefined. Every
-            // operator but an explicit `equal` null check must fail closed here -
-            // otherwise not_equal/not_in trivially pass for a document that simply
-            // lacks the field, validating nothing.
-            if (value === null || value === undefined) {
-                return filter.type === 'equal' && PolicyUtils.coerceComparable(filter.value) === null;
+        if (!document) { return false; }
+
+        // New-style condition (valueSource explicitly set): array-aware resolution
+        if (filter.valueSource !== undefined) {
+            const left = PolicyUtils.resolveFieldPath(document, filter.field);
+            const right = filter.valueSource === 'document'
+                ? PolicyUtils.resolveFieldPath(document, filter.value)
+                : filter.value;
+            return PolicyUtils.evaluateFieldCondition(left, filter.type, right);
+        }
+
+        // Legacy path (no valueSource): keeps old policies working, but fails closed
+        // when the field is missing from the document.
+        const value = PolicyUtils.getObjectValue(document, filter.field);
+        // A field the document doesn't carry resolves to null/undefined. Every
+        // operator but an explicit `equal` null check must fail closed here -
+        // otherwise not_equal/not_in trivially pass for a document that simply
+        // lacks the field, validating nothing.
+        if (value === null || value === undefined) {
+            return filter.type === 'equal' && PolicyUtils.coerceComparable(filter.value) === null;
+        }
+        switch (filter.type) {
+            case 'equal':
+                return PolicyUtils.comparableEquals(value, filter.value);
+            case 'not_equal':
+                return !PolicyUtils.comparableEquals(value, filter.value);
+            case 'in': {
+                if (Array.isArray(value)) {
+                    return value.indexOf(filter.value) > -1;
+                }
+                const list = String(filter.value).split(',').map((v: string) => v.trim());
+                return list.includes(String(value));
             }
-            switch (filter.type) {
-                case 'equal':
-                    return PolicyUtils.comparableEquals(value, filter.value);
-                case 'not_equal':
-                    return !PolicyUtils.comparableEquals(value, filter.value);
-                case 'in': {
-                    if (Array.isArray(value)) {
-                        return value.indexOf(filter.value) > -1;
-                    }
-                    const list = String(filter.value).split(',').map((v: string) => v.trim());
-                    return list.includes(String(value));
+            case 'not_in': {
+                if (Array.isArray(value)) {
+                    return value.indexOf(filter.value) === -1;
                 }
-                case 'not_in': {
-                    if (Array.isArray(value)) {
-                        return value.indexOf(filter.value) === -1;
+                const list = String(filter.value).split(',').map((v: string) => v.trim());
+                return !list.includes(String(value));
+            }
+            case 'gt':
+                return PolicyUtils.coerceComparable(value) > PolicyUtils.coerceComparable(filter.value);
+            case 'gte':
+                return PolicyUtils.coerceComparable(value) >= PolicyUtils.coerceComparable(filter.value);
+            case 'lt':
+                return PolicyUtils.coerceComparable(value) < PolicyUtils.coerceComparable(filter.value);
+            case 'lte':
+                return PolicyUtils.coerceComparable(value) <= PolicyUtils.coerceComparable(filter.value);
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Walk the array structure to find the first scalar pair that fails the condition,
+     * returning descriptive sentinels for empty or length-mismatched arrays.
+     * @param left
+     * @param type
+     * @param right
+     */
+    public static firstFailingPair(left: any, type: string, right: any): [any, any] {
+        const leftIsArray = Array.isArray(left);
+        const rightIsArray = Array.isArray(right);
+
+        if (type === 'in' || type === 'not_in') {
+            if (leftIsArray) {
+                if (left.length === 0) { return ['(empty array)', right]; }
+                for (const l of left) {
+                    if (!PolicyUtils.evaluateFieldCondition(l, type, right)) {
+                        return PolicyUtils.firstFailingPair(l, type, right);
                     }
-                    const list = String(filter.value).split(',').map((v: string) => v.trim());
-                    return !list.includes(String(value));
                 }
-                case 'gt':
-                    return PolicyUtils.coerceComparable(value) > PolicyUtils.coerceComparable(filter.value);
-                case 'gte':
-                    return PolicyUtils.coerceComparable(value) >= PolicyUtils.coerceComparable(filter.value);
-                case 'lt':
-                    return PolicyUtils.coerceComparable(value) < PolicyUtils.coerceComparable(filter.value);
-                case 'lte':
-                    return PolicyUtils.coerceComparable(value) <= PolicyUtils.coerceComparable(filter.value);
-                default:
-                    return false;
+            }
+            return [left, right];
+        }
+
+        if (leftIsArray && rightIsArray) {
+            if (left.length === 0)  { return ['(empty array)', '(empty array)']; }
+            if (left.length !== right.length) {
+                return [`(${left.length} element(s))`, `(${right.length} element(s) – length mismatch)`];
+            }
+            for (let i = 0; i < left.length; i++) {
+                if (!PolicyUtils.evaluateFieldCondition(left[i], type, right[i])) {
+                    return PolicyUtils.firstFailingPair(left[i], type, right[i]);
+                }
+            }
+        } else if (leftIsArray) {
+            if (left.length === 0) { return ['(empty array)', right]; }
+            for (const l of left) {
+                if (!PolicyUtils.evaluateFieldCondition(l, type, right)) {
+                    return PolicyUtils.firstFailingPair(l, type, right);
+                }
             }
         }
-        return false;
+
+        return [left, right];
     }
 
     /**

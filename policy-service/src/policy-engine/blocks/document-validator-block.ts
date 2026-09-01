@@ -9,6 +9,7 @@ import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { FilterQuery } from '@mikro-orm/core';
 import { VcDocument, VpDocument } from '@guardian/common';
+import { resolveOrgMemberDids } from '../helpers/org-utils.js';
 import { BlockErrorType, IBlockErrorData, IDocumentValidatorBlockError, LocationType } from '@guardian/interfaces';
 
 /**
@@ -34,7 +35,8 @@ import { BlockErrorType, IBlockErrorData, IDocumentValidatorBlockError, Location
             PolicyOutputEventType.RefreshEvent,
             PolicyOutputEventType.ErrorEvent
         ],
-        defaultEvent: true
+        defaultEvent: true,
+        properties: []
     },
     variables: [
         { path: 'options.schema', alias: 'schema', type: 'Schema' }
@@ -46,14 +48,14 @@ export class DocumentValidatorBlock {
     }
 
     private resolveDocumentValue(path: string, document: IPolicyDocument): any {
-        return PolicyUtils.getObjectValue(document, path);
+        return PolicyUtils.resolveFieldPath(document, path);
     }
 
     private resolveSourceValue(path: string, sourceDocuments: any[], operator: string): any {
         if (operator === 'in' || operator === 'not_in') {
-            return sourceDocuments.map((doc) => PolicyUtils.getObjectValue(doc, path)).flat();
+            return sourceDocuments.map((doc) => PolicyUtils.resolveFieldPath(doc, path)).flat();
         }
-        return PolicyUtils.getObjectValue(sourceDocuments[0], path);
+        return PolicyUtils.resolveFieldPath(sourceDocuments[0], path);
     }
 
     private resolveConditionSide(
@@ -70,39 +72,16 @@ export class DocumentValidatorBlock {
         }
     }
 
-    private evaluateCrossCondition(left: any, type: string, right: any): boolean {
-        // A source/document field that's simply absent resolves to null/undefined.
-        // Every operator but an explicit `equal` null check must fail closed here -
-        // otherwise not_equal/not_in trivially pass for a side that lacks the field,
-        // validating nothing.
-        if (left === null || left === undefined) {
-            return type === 'equal' && PolicyUtils.coerceComparable(right) === null;
+    private truncateValue(v: any, maxItems = 5): string {
+        if (Array.isArray(v) && v.length > maxItems) {
+            return `[${v.slice(0, maxItems).map((x) => JSON.stringify(x)).join(', ')}, … (${v.length - maxItems} more)]`;
         }
-        switch (type) {
-            case 'not_equal': return !PolicyUtils.comparableEquals(left, right);
-            case 'in':
-                if (Array.isArray(right)) { return right.includes(left); }
-                if (Array.isArray(left)) { return left.includes(right); }
-                return String(right).split(',').map((v: string) => v.trim()).includes(String(left));
-            case 'not_in':
-                if (Array.isArray(right)) { return !right.includes(left); }
-                if (Array.isArray(left)) { return !left.includes(right); }
-                return !String(right).split(',').map((v: string) => v.trim()).includes(String(left));
-            case 'gt':        return left > right;
-            case 'gte':       return left >= right;
-            case 'lt':        return left < right;
-            case 'lte':       return left <= right;
-            // equal/not_equal on object- or array-valued sides used to be decided by
-            // === (reference identity) - two structurally identical values loaded
-            // from two different documents are never the same reference, so equal
-            // could never hold. comparableEquals compares structurally instead.
-            default:          return PolicyUtils.comparableEquals(left, right);
-        }
+        return JSON.stringify(v);
     }
 
     private describeCrossConditionFailure(type: string, left: any, right: any): string {
-        const l = JSON.stringify(left);
-        const r = JSON.stringify(right);
+        const l = this.truncateValue(left);
+        const r = this.truncateValue(right);
         switch (type) {
             case 'not_equal': return `Value ${l} must not equal ${r}`;
             case 'in':        return `Value ${l} is not in ${r}`;
@@ -129,44 +108,75 @@ export class DocumentValidatorBlock {
         if (sourceValidation.onlyOwnDocuments && user?.did) {
             filter.owner = { $eq: user.did };
         }
-        if (sourceValidation.onlyOwnByGroupDocuments && user?.group) {
-            filter.group = { $eq: user.group };
+        // the restriction used to be skipped when the user had no group, leaving the source
+        // unfiltered. `$eq: null` matches group-less documents the way the direct checks do.
+        if (sourceValidation.onlyOwnByGroupDocuments) {
+            filter.group = { $eq: user?.group ?? null };
         }
         if (sourceValidation.onlyAssignDocuments && user?.did) {
             filter.assignedTo = { $eq: user.did };
         }
-        if (sourceValidation.onlyAssignByGroupDocuments && user?.group) {
-            filter.assignedToGroup = { $eq: user.group };
+        if (sourceValidation.onlyAssignByGroupDocuments) {
+            filter.assignedToGroup = { $eq: user?.group ?? null };
         }
+
+        /*
+         * The DB filter has to match the value as STORED, not only as coerced.
+         *
+         * coerceValue turns '100' into the number 100 and '2024-06-01' into epoch
+         * milliseconds, but VC JSON stores those fields as strings and Mongo comparisons
+         * are type-bracketed. So `gte '2024-01-01'` compared a number against strings and
+         * matched nothing - fail-closed, valid sources never found - while $ne against
+         * string-stored values matched nothing to exclude and left the excluded documents
+         * as candidates: fail-open. The in-memory condition phase coerces both sides,
+         * which is what makes the DB phase's one-sided coercion a mismatch.
+         *
+         * Where coercion actually changes the value, both representations are offered.
+         */
+        const alternatives = (rawValue: any, coerced: any): any[] =>
+            (rawValue === coerced || rawValue === undefined || rawValue === null)
+                ? [coerced]
+                : [coerced, rawValue];
+        const rangeFilters: any[] = [];
 
         for (const f of (sourceValidation.filters || [])) {
             const raw = f.typeValue === 'variable'
-                ? this.resolveDocumentValue(f.value, document)
+                ? PolicyUtils.getObjectValue(document, f.value)
                 : f.value;
             const value = this.coerceValue(raw);
+            const both = alternatives(raw, value);
 
             switch (f.type) {
-                case 'not_equal': filter[f.field] = { $ne: value }; break;
-                case 'in': {
-                    const arr = f.typeValue === 'variable'
-                        ? (Array.isArray(raw) ? raw.map((e: any) => this.coerceValue(e)) : [value])
-                        : String(f.value).split(',').map((v: string) => this.coerceValue(v.trim()));
-                    filter[f.field] = { $in: arr };
-                    break;
-                }
+                case 'not_equal': filter[f.field] = { $nin: both }; break;
+                case 'in':
                 case 'not_in': {
-                    const arr = f.typeValue === 'variable'
-                        ? (Array.isArray(raw) ? raw.map((e: any) => this.coerceValue(e)) : [value])
-                        : String(f.value).split(',').map((v: string) => this.coerceValue(v.trim()));
-                    filter[f.field] = { $nin: arr };
+                    const source: any[] = f.typeValue === 'variable'
+                        ? (Array.isArray(raw) ? raw : [raw])
+                        : String(f.value).split(',').map((v: string) => v.trim());
+                    const arr = source.flatMap((e: any) => alternatives(e, this.coerceValue(e)));
+                    filter[f.field] = f.type === 'in' ? { $in: arr } : { $nin: arr };
                     break;
                 }
-                case 'gt':        filter[f.field] = { $gt: value }; break;
-                case 'gte':       filter[f.field] = { $gte: value }; break;
-                case 'lt':        filter[f.field] = { $lt: value }; break;
-                case 'lte':       filter[f.field] = { $lte: value }; break;
-                default:          filter[f.field] = { $eq: value }; break;
+                case 'gt':
+                case 'gte':
+                case 'lt':
+                case 'lte': {
+                    const op = `$${f.type}`;
+                    if (both.length === 1) {
+                        filter[f.field] = { [op]: both[0] };
+                    } else {
+                        // type bracketing means one predicate cannot span both, so the
+                        // document qualifies if it compares true as EITHER type
+                        rangeFilters.push({ $or: both.map((v) => ({ [f.field]: { [op]: v } })) });
+                    }
+                    break;
+                }
+                default:          filter[f.field] = { $in: both }; break;
             }
+        }
+
+        if (rangeFilters.length) {
+            filter.$and = rangeFilters;
         }
 
         return filter;
@@ -211,19 +221,18 @@ export class DocumentValidatorBlock {
             return null;
         }
 
-        const failureMap = new Map<string, { field: string, type: string, leftValue: any, detail: string, count: number }>();
+        const failureMap = new Map<string, { field: string, type: string, leftValue: any, rightValue: any, count: number }>();
         for (const sourceDoc of sourceDocuments) {
             let failed = false;
             const counted = new Set<string>();
             for (let ci = 0; ci < conditions.length; ci++) {
                 const condition = conditions[ci];
-                const coerceDeep = (v: any) => Array.isArray(v) ? v.map((e: any) => this.coerceValue(e)) : this.coerceValue(v);
-                const left  = coerceDeep(this.resolveConditionSide(condition.field, condition.fieldSource, condition.type, document, [sourceDoc]));
-                const right = coerceDeep(this.resolveConditionSide(condition.value, condition.valueSource, condition.type, document, [sourceDoc]));
-                if (!this.evaluateCrossCondition(left, condition.type, right)) {
+                const left  = this.resolveConditionSide(condition.field, condition.fieldSource, condition.type, document, [sourceDoc]);
+                const right = this.resolveConditionSide(condition.value, condition.valueSource, condition.type, document, [sourceDoc]);
+                if (!PolicyUtils.evaluateFieldCondition(left, condition.type, right)) {
                     const key = `${condition.field}\0${ci}`;
                     if (!failureMap.has(key)) {
-                        failureMap.set(key, { field: condition.field, type: condition.type, leftValue: left, detail: this.describeCrossConditionFailure(condition.type, left, right), count: 0 });
+                        failureMap.set(key, { field: condition.field, type: condition.type, leftValue: left, rightValue: right, count: 0 });
                     }
                     if (!counted.has(key)) {
                         failureMap.get(key).count++;
@@ -246,18 +255,21 @@ export class DocumentValidatorBlock {
         const N = failureMap.size;
         const summary = `Checked ${N} condition${N !== 1 ? 's' : ''} across ${total} source${total !== 1 ? 's' : ''}:`;
         const conditionResults: IDocumentValidatorBlockError['conditions'] = [];
-        for (const { field, type, leftValue, detail, count } of Array.from(failureMap.values())) {
+        for (const { field, type, leftValue, rightValue, count } of Array.from(failureMap.values())) {
             const rawLabel = field.split('.').filter(p => p !== 'document' && !/^\d+$/.test(p)).pop() || field;
             const label = schemaName ? `${schemaName} · ${rawLabel}` : rawLabel;
             let hint: string;
             if (count < total) {
                 hint = 'Matches some sources, conflicts with other fields';
-            } else if (type === 'in') {
-                hint = `Value ${JSON.stringify(leftValue)} not found in any sources`;
-            } else if (type === 'not_in') {
-                hint = `Value ${JSON.stringify(leftValue)} must not appear in sources`;
             } else {
-                hint = detail;
+                const [dl, dr] = PolicyUtils.firstFailingPair(leftValue, type, rightValue);
+                if (total > 1) {
+                    // each source has its own right-side value - showing one source's
+                    // value as representative would be misleading.
+                    hint = `got ${this.truncateValue(dl)}, no match across ${total} sources`;
+                } else {
+                    hint = this.describeCrossConditionFailure(type, dl, dr);
+                }
             }
             conditionResults.push({ label, hint, matched: total - count, total });
         }
@@ -373,6 +385,20 @@ export class DocumentValidatorBlock {
                 return { message: 'Invalid assigned group' };
             }
         }
+        if (options.checkOwnerOrgDocument || options.checkAssigneeOrgDocument) {
+            const orgId = event?.user?.organization;
+            const memberDids = new Set(await resolveOrgMemberDids(event?.user));
+            if (options.checkOwnerOrgDocument) {
+                if (!orgId || !memberDids.has(document.owner)) {
+                    return { message: 'Invalid owner organization' };
+                }
+            }
+            if (options.checkAssigneeOrgDocument) {
+                if (!orgId || !memberDids.has(document.assignedTo)) {
+                    return { message: 'Invalid assignee organization' };
+                }
+            }
+        }
 
         if (options.schema) {
             const schema = await PolicyUtils.loadSchemaByID(ref, options.schema);
@@ -384,9 +410,13 @@ export class DocumentValidatorBlock {
         if (options.conditions) {
             for (const filter of options.conditions) {
                 if (!PolicyUtils.checkDocumentField(document, filter)) {
-                    const actual = PolicyUtils.getObjectValue(document, filter.field);
+                    const actual = PolicyUtils.resolveFieldPath(document, filter.field);
+                    const expected = filter.valueSource === 'document'
+                        ? PolicyUtils.resolveFieldPath(document, filter.value)
+                        : filter.value;
+                    const [displayActual, displayExpected] = PolicyUtils.firstFailingPair(actual, filter.type, expected);
                     const label = String(filter.field).split('.').filter((p: string) => p !== 'document' && !/^\d+$/.test(p)).pop() || filter.field;
-                    return { message: `Field "${label}": ${this.describeCrossConditionFailure(filter.type, actual, filter.value)}` };
+                    return { message: `Field "${label}": ${this.describeCrossConditionFailure(filter.type, displayActual, displayExpected)}` };
                 }
             }
         }
