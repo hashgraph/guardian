@@ -5,11 +5,15 @@ import { SchemaImportExportHelper } from '../schema/schema-import-helper.js';
 import { ImportToolMap, ImportToolResult, ImportToolResults } from './tool-import.interface.js';
 import { resolveToolOverrides } from './tool-override-resolver.js';
 
+// backstop only - `visited` is what catches cycles
+const MAX_TOOL_IMPORT_DEPTH = 32;
+
 /**
  * Import tools by messages
  * @param owner
  * @param messages
  * @param notifier
+ * @param visited message ids on the current import path
  */
 export async function importSubTools(
     hederaAccount: IRootConfig,
@@ -19,7 +23,8 @@ export async function importSubTools(
     }[],
     user: IOwner,
     notifier: INotificationStep,
-    userId: string | null
+    userId: string | null,
+    visited: Set<string> = new Set<string>()
 ): Promise<ImportToolResults> {
     notifier.start();
 
@@ -40,7 +45,8 @@ export async function importSubTools(
                 message.messageId,
                 user,
                 step,
-                userId
+                userId,
+                visited
             );
             if (importResult.tool) {
                 tools.push(importResult.tool);
@@ -82,7 +88,8 @@ export async function importToolByMessage(
     messageId: string,
     user: IOwner,
     notifier: INotificationStep,
-    userId: string | null
+    userId: string | null,
+    visited: Set<string> = new Set<string>()
 ): Promise<ImportToolResult> {
     // <-- Steps
     const STEP_LOAD_FILE = 'Load tool file';
@@ -110,6 +117,27 @@ export async function importToolByMessage(
         throw new Error('Invalid Message Id');
     }
     messageId = messageId.trim();
+
+    /*
+     * The getTool dedup below cannot catch this: createTool writes that row only
+     * after the recursion returns, so a tool on the current path is invisible to
+     * its own check and a self-referencing archive recursed without end.
+     * `visited` is the path, not everything seen - the id is popped on the way
+     * out, so a diamond still resolves twice instead of reading as a cycle.
+     */
+    if (visited.has(messageId)) {
+        throw new Error(
+            `Circular tool reference: "${messageId}" is already being imported further up the chain.`
+        );
+    }
+    if (visited.size >= MAX_TOOL_IMPORT_DEPTH) {
+        throw new Error(
+            `Tool import nested deeper than ${MAX_TOOL_IMPORT_DEPTH} levels; refusing to continue.`
+        );
+    }
+    visited.add(messageId);
+
+    try {
     const message = await messageServer
         .getMessage<ToolMessage>({
             messageId,
@@ -161,16 +189,18 @@ export async function importToolByMessage(
     }
     notifier.completeStep(STEP_LOAD_FILE);
 
-    notifier.startStep(STEP_SAVE_FILE_IN_DB);
-    const buffer = Buffer.from(message.document);
-    const contentFileId = await DatabaseServer.saveFile(GenerateUUIDv4(), buffer);
-    notifier.completeStep(STEP_SAVE_FILE_IN_DB);
-
     notifier.startStep(STEP_PARSE_FILE);
     const components = await ToolImportExport.parseZipFile(message.document);
 
     // Import Tools
-    const toolsResults = await importSubTools(hederaAccount, components.tools, user, notifier, userId);
+    const toolsResults = await importSubTools(hederaAccount, components.tools, user, notifier, userId, visited);
+
+    // saved after the recursion: a blob written before it is orphaned by anything
+    // that throws in between, with no reference and no cleanup path
+    notifier.startStep(STEP_SAVE_FILE_IN_DB);
+    const buffer = Buffer.from(message.document);
+    const contentFileId = await DatabaseServer.saveFile(GenerateUUIDv4(), buffer);
+    notifier.completeStep(STEP_SAVE_FILE_IN_DB);
 
     delete components.tool._id;
     delete components.tool.id;
@@ -263,6 +293,9 @@ export async function importToolByMessage(
         tool: result,
         errors
     };
+    } finally {
+        visited.delete(messageId);
+    }
 }
 
 /**
