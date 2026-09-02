@@ -8,6 +8,8 @@
           <button
             type="button"
             class="rte-btn"
+            [class.rte-btn--active]="isCommandActive(item.command)"
+            [attr.aria-pressed]="isCommandActive(item.command)"
             [title]="commandTitle(item.command, item.title!)"
             [disabled]="isCommandDisabled(item.command)"
             (mousedown)="execCommand(item.command!, $event)"

@@ -660,4 +660,153 @@ describe('RichTextEditorComponent', () => {
         selection?.removeAllRanges();
         selection?.addRange(range);
     }
+
+    describe('toolbar active state', () => {
+
+        function selectInsideEditor(html: string, selector?: string): void {
+            const editor: HTMLElement = component.editorRef.nativeElement;
+            editor.innerHTML = html;
+            const target = selector ? editor.querySelector(selector)! : editor.firstChild!;
+            const range = document.createRange();
+            range.selectNodeContents(target);
+            const selection = window.getSelection()!;
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+
+        function refresh(): void {
+            document.dispatchEvent(new Event('selectionchange'));
+            fixture.detectChanges();
+        }
+
+        it('should mark a command the browser reports as on', () => {
+            spyOn(document, 'queryCommandState').and.callFake((c: string) => c === 'bold');
+            selectInsideEditor('<p>text</p>');
+            refresh();
+            expect(component.isCommandActive('bold')).toBeTrue();
+            expect(component.isCommandActive('italic')).toBeFalse();
+        });
+
+        it('should mark only the heading level the caret is in', () => {
+            spyOn(document, 'queryCommandState').and.returnValue(false);
+            spyOn(document, 'queryCommandValue').and.returnValue('h2');
+            selectInsideEditor('<h2>title</h2>');
+            refresh();
+            expect(component.isCommandActive('h2')).toBeTrue();
+            expect(component.isCommandActive('h1')).toBeFalse();
+            expect(component.isCommandActive('h3')).toBeFalse();
+        });
+
+        it('should mark the link button only when the caret is inside a link', () => {
+            spyOn(document, 'queryCommandState').and.returnValue(false);
+            selectInsideEditor('<p><a href="https://example.com">link</a></p>', 'a');
+            refresh();
+            expect(component.isCommandActive('link')).toBeTrue();
+
+            selectInsideEditor('<p>plain</p>');
+            refresh();
+            expect(component.isCommandActive('link')).toBeFalse();
+        });
+
+        it('should mark nothing when the caret is outside the editor', () => {
+            spyOn(document, 'queryCommandState').and.returnValue(true);
+            const outside = document.createElement('p');
+            outside.textContent = 'elsewhere';
+            document.body.appendChild(outside);
+            const range = document.createRange();
+            range.selectNodeContents(outside);
+            const selection = window.getSelection()!;
+            selection.removeAllRanges();
+            selection.addRange(range);
+            refresh();
+            expect(component.activeCommands.size).toBe(0);
+            outside.remove();
+        });
+
+        it('should not replace the set when nothing changed', () => {
+            spyOn(document, 'queryCommandState').and.callFake((c: string) => c === 'bold');
+            selectInsideEditor('<p>text</p>');
+            refresh();
+            const first = component.activeCommands;
+            refresh();
+            expect(component.activeCommands).toBe(first);
+        });
+
+        it('should survive a browser that throws on queryCommandState', () => {
+            spyOn(document, 'queryCommandState').and.throwError('not supported');
+            selectInsideEditor('<p>text</p>');
+            expect(() => refresh()).not.toThrow();
+            expect(component.activeCommands.has('bold')).toBeFalse();
+        });
+
+        it('should never report a disabled heading button as active', () => {
+            spyOn(document, 'queryCommandState').and.returnValue(false);
+            spyOn(document, 'queryCommandValue').and.returnValue('h2');
+            selectInsideEditor('<ul><li>item</li></ul>', 'li');
+            refresh();
+            expect(component.headingDisabled).toBeTrue();
+            expect(component.isCommandActive('h2')).toBeFalse();
+        });
+
+        it('should put the state on the button as a class and aria-pressed', () => {
+            spyOn(document, 'queryCommandState').and.callFake((c: string) => c === 'bold');
+            selectInsideEditor('<p>text</p>');
+            refresh();
+            const bold = fixture.debugElement.queryAll(By.css('.rte-btn'))
+                .find(b => b.nativeElement.getAttribute('title')?.startsWith('Bold'))!;
+            expect(bold.nativeElement.classList).toContain('rte-btn--active');
+            expect(bold.nativeElement.getAttribute('aria-pressed')).toBe('true');
+        });
+    });
+
+    describe('underline is not pasted into a Markdown field', () => {
+
+        function pasteHtml(html: string): void {
+            const event: any = new Event('paste');
+            event.clipboardData = { getData: (type: string) => (type === 'text/html' ? html : '') };
+            event.preventDefault = () => {};
+            component.onPaste(event);
+        }
+
+        it('should drop the underline and keep its text in Markdown mode', () => {
+            fixture.componentRef.setInput('format', 'markdown');
+            fixture.detectChanges();
+            const inserted: string[] = [];
+            spyOn(document, 'execCommand').and.callFake((command: string, _ui?: boolean, value?: string) => {
+                if (command === 'insertHTML') { inserted.push(value || ''); }
+                return true;
+            });
+
+            pasteHtml('<p>a <u>b</u> c</p>');
+
+            expect(inserted.length).toBe(1);
+            expect(inserted[0]).toBe('<p>a b c</p>');
+        });
+
+        it('should keep the underline in the default HTML mode', () => {
+            const inserted: string[] = [];
+            spyOn(document, 'execCommand').and.callFake((command: string, _ui?: boolean, value?: string) => {
+                if (command === 'insertHTML') { inserted.push(value || ''); }
+                return true;
+            });
+
+            pasteHtml('<p>a <u>b</u> c</p>');
+
+            expect(inserted[0]).toBe('<p>a <u>b</u> c</p>');
+        });
+
+        it('should keep bold, italic, headings and lists in Markdown mode', () => {
+            fixture.componentRef.setInput('format', 'markdown');
+            fixture.detectChanges();
+            const inserted: string[] = [];
+            spyOn(document, 'execCommand').and.callFake((command: string, _ui?: boolean, value?: string) => {
+                if (command === 'insertHTML') { inserted.push(value || ''); }
+                return true;
+            });
+
+            pasteHtml('<h2>Title</h2><ul><li><b>One</b> and <i>two</i></li></ul>');
+
+            expect(inserted[0]).toBe('<h2>Title</h2><ul><li><b>One</b> and <i>two</i></li></ul>');
+        });
+    });
 });

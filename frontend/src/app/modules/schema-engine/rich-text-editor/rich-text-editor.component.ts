@@ -42,6 +42,7 @@ export class RichTextEditorComponent
     public isDisabled = false;
     public linkDialogPosition = { left: 8, top: 48 };
     public headingDisabled = false;
+    public activeCommands = new Set<string>();
 
     private _value = '';
     private _onChange: (value: string) => void = () => {};
@@ -49,7 +50,7 @@ export class RichTextEditorComponent
     private _savedRange: Range | null = null;
     private _editingLink: HTMLAnchorElement | null = null;
     private _draggingFromEditor = false;
-    private _onSelectionChange = (): void => this._updateHeadingState();
+    private _onSelectionChange = (): void => this._updateToolbarState();
     private _onDocumentMouseDown = (event: MouseEvent): void => {
         if (!this.showLinkDialog) { return; }
         const target = event.target;
@@ -128,7 +129,7 @@ export class RichTextEditorComponent
         event.preventDefault();
         const html = clipboard.getData('text/html');
         const clean = html
-            ? sanitizeRichText(html)
+            ? sanitizeRichText(html, this.format !== 'markdown')
             : escapeText(clipboard.getData('text/plain'));
         if (!clean) { return; }
         document.execCommand('insertHTML', false, clean);
@@ -160,7 +161,7 @@ export class RichTextEditorComponent
         event.preventDefault();
         const html = transfer.getData('text/html');
         const clean = html
-            ? sanitizeRichText(html)
+            ? sanitizeRichText(html, this.format !== 'markdown')
             : escapeText(transfer.getData('text/plain'));
         if (!clean) { return; }
         this.editorRef.nativeElement.focus();
@@ -187,6 +188,10 @@ export class RichTextEditorComponent
 
     isCommandDisabled(command: string | undefined): boolean {
         return this.headingDisabled && this.isHeadingCommand(command);
+    }
+
+    isCommandActive(command: string | undefined): boolean {
+        return !!command && !this.isCommandDisabled(command) && this.activeCommands.has(command);
     }
 
     commandTitle(command: string | undefined, title: string): string {
@@ -217,6 +222,7 @@ export class RichTextEditorComponent
             document.execCommand(command, false, undefined);
         }
         this.onInput();
+        this._updateToolbarState();
         this.cdr.markForCheck();
     }
 
@@ -302,6 +308,7 @@ export class RichTextEditorComponent
         if (el.innerHTML !== value) {
             el.innerHTML = value;
         }
+        this._updateToolbarState();
     }
 
     private _getSelection(): Range | null {
@@ -339,13 +346,59 @@ export class RichTextEditorComponent
         return null;
     }
 
-    private _updateHeadingState(): void {
+    private _updateToolbarState(): void {
         if (!this.editorRef) { return; }
-        const disabled = this._isInListItem(this._getSelection());
+        const range = this._getSelection();
+        const disabled = this._isInListItem(range);
         if (disabled !== this.headingDisabled) {
             this.headingDisabled = disabled;
             this.cdr.markForCheck();
         }
+        const next = this._readActiveCommands(range);
+        if (!this._sameCommands(next, this.activeCommands)) {
+            this.activeCommands = next;
+            this.cdr.markForCheck();
+        }
+    }
+
+    private _readActiveCommands(range: Range | null): Set<string> {
+        const active = new Set<string>();
+        if (!range || !this.editorRef.nativeElement.contains(range.commonAncestorContainer)) {
+            return active;
+        }
+        for (const command of ['bold', 'italic', 'underline', 'insertUnorderedList', 'insertOrderedList']) {
+            if (this._queryCommandState(command)) {
+                active.add(command);
+            }
+        }
+        const block = this._currentBlockFormat();
+        if (this.isHeadingCommand(block)) {
+            active.add(block);
+        }
+        if (this._getLink(range)) {
+            active.add('link');
+        }
+        return active;
+    }
+
+    private _queryCommandState(command: string): boolean {
+        try {
+            return document.queryCommandState(command);
+        } catch {
+            return false;
+        }
+    }
+
+    private _sameCommands(a: Set<string>, b: Set<string>): boolean {
+        if (a.size !== b.size) {
+            return false;
+        }
+        for (const command of a) {
+            if (!b.has(command)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private _isInListItem(range: Range | null): boolean {

@@ -30,13 +30,13 @@ export function isSafeHref(value: string): boolean {
     return ALLOWED_PROTOCOLS.includes(protocol[0].toLowerCase());
 }
 
-export function sanitizeRichText(html: string | null | undefined): string {
+export function sanitizeRichText(html: string | null | undefined, allowUnderline: boolean = true): string {
     if (!html) {
         return '';
     }
     const inert = document.implementation.createHTMLDocument('');
     inert.body.innerHTML = html;
-    cleanChildren(inert.body);
+    cleanChildren(inert.body, allowUnderline);
     return inert.body.innerHTML;
 }
 
@@ -89,7 +89,7 @@ export function withNewTabLinks(value: unknown): string {
     return inert.body.innerHTML;
 }
 
-function cleanChildren(parent: Node): void {
+function cleanChildren(parent: Node, allowUnderline: boolean): void {
     const children = Array.from(parent.childNodes);
     for (const node of children) {
         if (node.nodeType === Node.TEXT_NODE) {
@@ -105,8 +105,8 @@ function cleanChildren(parent: Node): void {
             parent.removeChild(element);
             continue;
         }
-        cleanChildren(element);
-        if (ALLOWED_TAGS.has(tag)) {
+        cleanChildren(element, allowUnderline);
+        if (ALLOWED_TAGS.has(tag) && (allowUnderline || tag !== 'U')) {
             cleanAttributes(element, tag);
         } else {
             unwrap(element, parent);

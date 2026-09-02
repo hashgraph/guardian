@@ -57,6 +57,14 @@
 
     &:disabled:hover,
     &:disabled:active { background: transparent; }
+
+    &.rte-btn--active {
+        background: var(--guardian-primary-background);
+        border-color: var(--color-primary);
+        color: var(--color-primary);
+    }
+
+    &.rte-btn--active:hover { background: var(--guardian-hover); }
 }
 
 .rte-label {

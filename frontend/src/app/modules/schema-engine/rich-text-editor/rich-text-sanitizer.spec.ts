@@ -132,4 +132,26 @@ describe('richTextToText', () => {
         expect(richTextToText(null)).toBe('');
         expect(richTextToText(7)).toBe('');
     });
+
+    describe('sanitizeRichText without underline', () => {
+
+        it('should drop the underline tag and keep its text', () => {
+            expect(sanitizeRichText('<p>a <u>b</u> c</p>', false)).toBe('<p>a b c</p>');
+        });
+
+        it('should keep every other supported tag', () => {
+            const value = '<h2>Title</h2><ul><li><b>One</b> and <i>two</i></li></ul>';
+            expect(sanitizeRichText(value, false)).toBe(value);
+        });
+
+        it('should keep the underline when it is allowed, which is the default', () => {
+            expect(sanitizeRichText('<p>a <u>b</u> c</p>', true)).toBe('<p>a <u>b</u> c</p>');
+            expect(sanitizeRichText('<p>a <u>b</u> c</p>')).toBe('<p>a <u>b</u> c</p>');
+        });
+
+        it('should still drop what it always dropped', () => {
+            expect(sanitizeRichText('<p>a <font size="7">b</font> c</p>', false)).toBe('<p>a b c</p>');
+            expect(sanitizeRichText('<table><tr><td>cell</td></tr></table>', false)).toBe('cell');
+        });
+    });
 });
