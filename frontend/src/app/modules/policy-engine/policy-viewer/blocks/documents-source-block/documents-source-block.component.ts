@@ -11,6 +11,7 @@ import { VCFullscreenDialog } from 'src/app/modules/schema-engine/vc-fullscreen-
 import { Subject } from 'rxjs';
 import { CommentsService } from 'src/app/services/comments.service';
 import { richTextToText, withNewTabLinks } from 'src/app/modules/schema-engine/rich-text-editor/rich-text-sanitizer';
+import { markdownToHtml } from 'src/app/modules/schema-engine/rich-text-editor/markdown';
 
 /**
  * Component for display block of 'interfaceDocumentsSource' types.
@@ -329,7 +330,12 @@ export class DocumentsSourceBlockComponent implements OnInit {
     private richTextHideTimer: any = null;
 
     public getRichTextCellText(row: any, field: any): string {
-        return richTextToText(this.getText(row, field));
+        return richTextToText(this.toRichTextHtml(row, field));
+    }
+
+    private toRichTextHtml(row: any, field: any): string {
+        const value = this.getText(row, field);
+        return field?.type === 'markdown' ? markdownToHtml(value) : value;
     }
 
     public onRichTextEnter(event: Event, row: any, field: any, popover: any): void {
@@ -337,7 +343,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
             return;
         }
         this.clearRichTextHideTimer();
-        this.richTextValue = withNewTabLinks(this.getText(row, field));
+        this.richTextValue = withNewTabLinks(this.toRichTextHtml(row, field));
         if (this.richTextValue) {
             popover.show(event);
         }
@@ -617,7 +623,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
     }
 
     getClass(type: string): string {
-        if (type === 'text' || type === 'richText') {
+        if (type === 'text' || type === 'richText' || type === 'markdown') {
             return 'text-container';
         }
         if (type === 'button') {

@@ -107,14 +107,14 @@ function inlineToMarkdown(node: Node): string {
     return out;
 }
 
-export function htmlToMarkdown(html: string | null | undefined): string {
-    if (!html) {
-        return '';
-    }
-    const inert = document.implementation.createHTMLDocument('');
-    inert.body.innerHTML = html;
-    const blocks: string[] = [];
-    for (const node of Array.from(inert.body.childNodes)) {
+const BLOCK_TAGS = ['H1', 'H2', 'H3', 'UL', 'OL', 'P', 'DIV'];
+
+function hasBlockChildren(element: Element): boolean {
+    return Array.from(element.children).some((child) => BLOCK_TAGS.includes(child.tagName));
+}
+
+function collectBlocks(parent: Node, blocks: string[]): void {
+    for (const node of Array.from(parent.childNodes)) {
         if (node.nodeType === Node.TEXT_NODE) {
             const text = (node.textContent || '').trim();
             if (text) {
@@ -135,6 +135,8 @@ export function htmlToMarkdown(html: string | null | undefined): string {
             if (items.length) {
                 blocks.push(items.join('\n'));
             }
+        } else if (hasBlockChildren(node)) {
+            collectBlocks(node, blocks);
         } else {
             const text = inlineToMarkdown(node).trim();
             if (text) {
@@ -142,5 +144,15 @@ export function htmlToMarkdown(html: string | null | undefined): string {
             }
         }
     }
+}
+
+export function htmlToMarkdown(html: string | null | undefined): string {
+    if (!html) {
+        return '';
+    }
+    const inert = document.implementation.createHTMLDocument('');
+    inert.body.innerHTML = html;
+    const blocks: string[] = [];
+    collectBlocks(inert.body, blocks);
     return blocks.join('\n\n');
 }

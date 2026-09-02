@@ -111,6 +111,27 @@ describe('markdown converters', () => {
             expect(htmlToMarkdown('<p>a <b>**b**</b> c</p>')).toBe('a **\\*\\*b\\*\\*** c');
         });
 
+
+        it('should walk into a wrapper element instead of flattening it', () => {
+            const html = '<h2>Must survive</h2><div><h1>One</h1><p>text</p><ul><li>a</li><li>b</li></ul></div>';
+            expect(htmlToMarkdown(html)).toBe('## Must survive\n\n# One\n\ntext\n\n- a\n- b');
+        });
+
+        it('should walk into nested wrappers', () => {
+            const html = '<div><div><h1>One</h1><p>text</p></div></div>';
+            expect(htmlToMarkdown(html)).toBe('# One\n\ntext');
+        });
+
+        it('should keep a plain div as one paragraph, which is what a typed line is', () => {
+            expect(htmlToMarkdown('<div>one line</div><div>another line</div>'))
+                .toBe('one line\n\nanother line');
+            expect(htmlToMarkdown('<div>a <b>bold</b> line</div>')).toBe('a **bold** line');
+        });
+
+        it('should keep a list inside a wrapper as a list', () => {
+            expect(htmlToMarkdown('<div><ul><li>one</li><li>two</li></ul></div>')).toBe('- one\n- two');
+        });
+
         it('should ignore an empty block', () => {
             expect(htmlToMarkdown('<p>one</p><p></p><p>two</p>')).toBe('one\n\ntwo');
         });

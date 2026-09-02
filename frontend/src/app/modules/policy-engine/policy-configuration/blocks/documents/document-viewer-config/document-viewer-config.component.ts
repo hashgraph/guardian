@@ -32,6 +32,7 @@ export class DocumentSourceComponent implements OnInit {
     fieldTypeOptions = [
         {label: 'Text', value: 'text'},
         {label: 'Rich Text', value: 'richText'},
+        {label: 'Markdown', value: 'markdown'},
         {label: 'Issuer', value: 'issuer'},
         {label: 'Button', value: 'button'},
         {label: 'Block', value: 'block'},

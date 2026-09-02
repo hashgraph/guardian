@@ -73,7 +73,7 @@
                             class="text"
                           >{{ getText(element, option) }}</span>
                         }
-                        @if (option.type == 'richText') {
+                        @if (option.type == 'richText' || option.type == 'markdown') {
                           @let richTextCellText = getRichTextCellText(element, option);
                           <span
                             class="text"
