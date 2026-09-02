@@ -211,9 +211,10 @@ export class PolicyContainer extends NatsService {
      * replica. Defaults to one service's worth of capacity.
      * @private
      */
-    private readonly scaleHeadroomSlots: number = process.env.SCALE_HEADROOM_SLOTS
-        ? parseInt(process.env.SCALE_HEADROOM_SLOTS, 10)
-        : 0;
+    private readonly scaleHeadroomSlots: number | null =
+        process.env.SCALE_HEADROOM_SLOTS === undefined
+            ? null
+            : parseInt(process.env.SCALE_HEADROOM_SLOTS, 10);
 
     /**
      * Start new policy-service triggered
@@ -396,7 +397,12 @@ export class PolicyContainer extends NatsService {
              * is already full; if what is left across the fleet is under a single
              * service's worth, another replica is warranted.
              */
-            const headroom = Math.max(1, this.scaleHeadroomSlots || this.maxPolicyInstances);
+            //null is unset, not zero: an explicit SCALE_HEADROOM_SLOTS=0 asks for no
+            //buffer at all, which the floor of 1 turns into "scale when nothing is free"
+            const configured = Number.isFinite(this.scaleHeadroomSlots)
+                ? this.scaleHeadroomSlots
+                : this.maxPolicyInstances;
+            const headroom = Math.max(1, configured);
             const totalFree = freeCheck.reduce(
                 (sum, info) => sum + (info.free ? (Number.isFinite(info.count) ? info.count : 1) : 0),
                 0
@@ -413,8 +419,11 @@ export class PolicyContainer extends NatsService {
             if (freeCheck.some(info => info.instanceId !== this.instanceId && info.startNewPolicyServiceTriggered)) {
                 return;
             }
+            //a peer with capacity returns at the first line of checkForRunNewInstance and
+            //never reaches the spawn, so electing one parks the whole fleet behind a
+            //leader that cannot act
             const candidates = freeCheck
-                .filter(info => !info.startNewPolicyServiceTriggered)
+                .filter(info => !info.free && !info.startNewPolicyServiceTriggered)
                 .sort((a, b) => a.instanceId.localeCompare(b.instanceId));
             if (candidates.length && candidates[0].instanceId !== this.instanceId) {
                 // Another service is the elected scaler; hold off until the cooldown.
@@ -474,15 +483,15 @@ export class PolicyContainer extends NatsService {
              * Node emits 'error' when a process cannot be SPAWNED (EAGAIN, ENOMEM, a
              * bad process path) and 'exit' may never follow, so nothing else runs.
              * `instance.process` is already assigned and runPolicyProcess skips any
-             * instance that has one, so the policy stayed wedged forever - still
-             * counted in processCount, holding a slot it never used, and with no
-             * responder for requests addressed to it.
+             * instance that has one, so the policy stayed wedged forever, holding a
+             * slot it never used.
              *
-             * Clearing the handle is enough: the 1s sweep re-forks on its next tick,
-             * and the crash-loop guard below bounds the retries if it keeps failing.
+             * Routed through the same backoff as a non-zero exit: a spawn that keeps
+             * failing is a crash loop too, and the 1s sweep would otherwise retry it
+             * every tick with no ceiling.
              */
             if (instance.process === p) {
-                instance.process = null;
+                this.scheduleRestart(policyId, instance, policyOwnerId);
             }
         });
         p.once('exit', (code) => {
@@ -507,41 +516,49 @@ export class PolicyContainer extends NatsService {
                     }
                 }
             } else {
-                /*
-                 * Back off, and eventually stop. This used to re-fork every 10s with
-                 * no ceiling, so a policy that could not start hammered the service
-                 * forever - each attempt a full policy generation.
-                 *
-                 * Giving up RELEASES the slot rather than holding one that is never
-                 * used. guardian-service can still assign the policy again through
-                 * GENERATE_POLICY, so this is a local stop, not a permanent verdict.
-                 */
-                const attempts = (this.restartAttempts.get(policyId) || 0) + 1;
-                this.restartAttempts.set(policyId, attempts);
-
-                if (attempts >= this.maxRestartAttempts) {
-                    this.logger.error(
-                        `Policy ${policyId} failed to start ${attempts} times; releasing its slot instead of respawning`,
-                        ['POLICY_SERVICE', policyId], policyOwnerId
-                    );
-                    this.container.delete(policyId);
-                    this.restartAttempts.delete(policyId);
-                    if (this.processCount < this.maxPolicyInstances) {
-                        this.subscribeForModelGeneration();
-                    }
-                    return;
-                }
-
-                const delay = Math.min(
-                    this.restartBaseDelayMs * Math.pow(2, attempts - 1),
-                    this.restartMaxDelayMs
-                );
-                setTimeout(() => {
-                    this.logger.warn(`Process for policy with id: ${policyId} respawning (attempt ${attempts + 1}) after ${delay}ms`, ['POLICY_SERVICE', policyId], policyOwnerId);
-                    instance.process = null;
-                }, delay)
+                this.scheduleRestart(policyId, instance, policyOwnerId);
             }
         });
         instance.process = p;
+    }
+
+    /*
+     * Back off, and eventually stop. This used to re-fork every 10s with no ceiling,
+     * so a policy that could not start hammered the service forever - each attempt a
+     * full policy generation.
+     *
+     * Giving up RELEASES the slot rather than holding one that is never used.
+     * guardian-service can still assign the policy again through GENERATE_POLICY, so
+     * this is a local stop, not a permanent verdict.
+     */
+    private scheduleRestart(
+        policyId: string,
+        instance: IPolicyInstance,
+        policyOwnerId: string | null
+    ): void {
+        const attempts = (this.restartAttempts.get(policyId) || 0) + 1;
+        this.restartAttempts.set(policyId, attempts);
+
+        if (attempts >= this.maxRestartAttempts) {
+            this.logger.error(
+                `Policy ${policyId} failed to start ${attempts} times; releasing its slot instead of respawning`,
+                ['POLICY_SERVICE', policyId], policyOwnerId
+            );
+            this.container.delete(policyId);
+            this.restartAttempts.delete(policyId);
+            if (this.processCount < this.maxPolicyInstances) {
+                this.subscribeForModelGeneration();
+            }
+            return;
+        }
+
+        const delay = Math.min(
+            this.restartBaseDelayMs * Math.pow(2, attempts - 1),
+            this.restartMaxDelayMs
+        );
+        setTimeout(() => {
+            this.logger.warn(`Process for policy with id: ${policyId} respawning (attempt ${attempts + 1}) after ${delay}ms`, ['POLICY_SERVICE', policyId], policyOwnerId);
+            instance.process = null;
+        }, delay)
     }
 }

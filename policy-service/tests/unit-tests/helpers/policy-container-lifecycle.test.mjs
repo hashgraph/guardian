@@ -225,12 +225,31 @@ describe('@unit PolicyContainer spawn failure + crash loop', () => {
 
             // Spawn failure: Node emits 'error' and 'exit' may never follow.
             lastForked._fire('error', new Error('spawn EAGAIN'));
+            // released on the backoff timer, not inline - a spawn that keeps failing
+            // is a crash loop and goes through the same ceiling
+            await new Promise((r) => setTimeout(r, 20));
         } finally { console.debug = origDebug; }
 
         assert.isNull(instance.process,
             'the handle must be released or the sweep skips this policy forever');
         assert.isTrue(c.container.has('p1'),
             'the policy itself stays queued for the next sweep');
+    });
+
+    it('A2: a spawn that keeps failing gives up instead of retrying forever', async () => {
+        const { c, instance } = await withPolicy();
+        const origDebug = console.debug; console.debug = () => {};
+        try {
+            // POLICY_MAX_RESTART_ATTEMPTS is 3 for this suite
+            for (let i = 0; i < 3; i++) {
+                c.runPolicyProcess(instance);
+                lastForked._fire('error', new Error('spawn EAGAIN'));
+                await new Promise((r) => setTimeout(r, 20));
+            }
+        } finally { console.debug = origDebug; }
+
+        assert.isFalse(c.container.has('p1'),
+            'the slot is released rather than held by a policy that cannot spawn');
     });
 
     it('B: backs off between crash respawns instead of a fixed 10s', async () => {
@@ -390,6 +409,38 @@ describe('@unit PolicyContainer scale-up', () => {
         await c.checkForRunNewInstance();
         assert.lengthOf(execFileCalls, 0, 'aaa sorts first and is the elected scaler');
         assert.isTrue(c.startNewPolicyServiceTriggered, 'the loser holds off for the cooldown');
+    });
+
+    it('a free peer cannot be elected, however its id sorts', async () => {
+        // 'aaa' has capacity, so its own checkForRunNewInstance returns at the first
+        // line and it never spawns. Electing it parks the fleet behind a leader that
+        // cannot act.
+        const c = await saturated([
+            peer('aaa', true, 1),
+            peer('uuid-fixed', false, 0),
+        ]);
+        await c.checkForRunNewInstance();
+        assert.deepEqual(execFileCalls, ['/run.sh'],
+            'the saturated service scales rather than deferring to one with headroom');
+        assert.isTrue(c.startNewPolicyServiceTriggered,
+            'the cooldown is armed by the service that actually scaled');
+    });
+
+    it('an explicit SCALE_HEADROOM_SLOTS=0 is honoured, not read as unset', async () => {
+        // 0 means "no buffer": scale only once nothing is free. Read as unset it would
+        // fall through to maxPolicyInstances (2 here) and scale with a slot to spare.
+        const c = await saturated([
+            peer('uuid-fixed', false, 0),
+            peer('zzz', true, 1),
+        ], { SCALE_HEADROOM_SLOTS: '0' });
+        await c.checkForRunNewInstance();
+        assert.lengthOf(execFileCalls, 0, 'one free slot is enough when no buffer was asked for');
+    });
+
+    it('with no buffer configured it still scales once nothing is free', async () => {
+        const c = await saturated([peer('uuid-fixed', false, 0)], { SCALE_HEADROOM_SLOTS: '0' });
+        await c.checkForRunNewInstance();
+        assert.deepEqual(execFileCalls, ['/run.sh']);
     });
 
     it('overlapping runs cannot both trigger a replica', async () => {
