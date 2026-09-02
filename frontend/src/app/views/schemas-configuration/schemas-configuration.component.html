@@ -1100,11 +1100,11 @@
                                                       (ngModelChange)="setFieldPresetValue('default', $event)">
                                             </p-select>
                                         } @else if (getFieldValueInputType(selectedField!) === 'richText') {
-                                            <div class="sc-rte-preset-card" (click)="openRichTextPresetDialog('default')">
+                                            <div class="sc-rte-preset-card">
                                                 @if ($any(selectedField).default) {
                                                     <div class="sc-rte-preset-preview" appRichTextClip [innerHTML]="$any(selectedField).default"></div>
                                                 } @else {
-                                                    <span class="sc-rte-preset-empty">Click to write default text</span>
+                                                    <span class="sc-rte-preset-empty">Use the pencil to write default text</span>
                                                 }
                                                 <button type="button" class="sc-rte-preset-edit" title="Edit default value" aria-label="Edit default value" (click)="openRichTextPresetDialog('default')"><i class="pi pi-pencil"></i></button>
                                             </div>
@@ -1137,11 +1137,11 @@
                                                       (ngModelChange)="setFieldPresetValue('suggest', $event)">
                                             </p-select>
                                         } @else if (getFieldValueInputType(selectedField!) === 'richText') {
-                                            <div class="sc-rte-preset-card" (click)="openRichTextPresetDialog('suggest')">
+                                            <div class="sc-rte-preset-card">
                                                 @if ($any(selectedField).suggest) {
                                                     <div class="sc-rte-preset-preview" appRichTextClip [innerHTML]="$any(selectedField).suggest"></div>
                                                 } @else {
-                                                    <span class="sc-rte-preset-empty">Click to write suggested text</span>
+                                                    <span class="sc-rte-preset-empty">Use the pencil to write suggested text</span>
                                                 }
                                                 <button type="button" class="sc-rte-preset-edit" title="Edit suggested value" aria-label="Edit suggested value" (click)="openRichTextPresetDialog('suggest')"><i class="pi pi-pencil"></i></button>
                                             </div>
@@ -1174,11 +1174,11 @@
                                                       (ngModelChange)="setFieldTestValue($event)">
                                             </p-select>
                                         } @else if (getFieldValueInputType(selectedField!) === 'richText') {
-                                            <div class="sc-rte-preset-card" (click)="openRichTextPresetDialog('test')">
+                                            <div class="sc-rte-preset-card">
                                                 @if (getFieldTestValue()) {
                                                     <div class="sc-rte-preset-preview" appRichTextClip [innerHTML]="getFieldTestValue()"></div>
                                                 } @else {
-                                                    <span class="sc-rte-preset-empty">Click to write test text</span>
+                                                    <span class="sc-rte-preset-empty">Use the pencil to write test text</span>
                                                 }
                                                 <button type="button" class="sc-rte-preset-edit" title="Edit test value" aria-label="Edit test value" (click)="openRichTextPresetDialog('test')"><i class="pi pi-pencil"></i></button>
                                             </div>
@@ -1882,17 +1882,21 @@
     [draggable]="false"
     [resizable]="false"
     [style]="{ width: 'min(760px, 95vw)' }"
-    styleClass="sc-rte-preset-dialog"
+    [closeOnEscape]="!isRichTextPresetLinkOpen()"
+    [styleClass]="isRichTextPresetLinkOpen() ? 'sc-rte-preset-dialog sc-rte-preset-dialog--locked' : 'sc-rte-preset-dialog'"
     (onHide)="closeRichTextPresetDialog()">
     <div class="sc-rte-preset-dialog-body">
         <app-rich-text-editor
+            #richTextPresetEditor
             [ngModel]="getRichTextPresetValue()"
             (ngModelChange)="setRichTextPresetValue($event)"
             placeholder="Write formatted text…"
         ></app-rich-text-editor>
     </div>
     <ng-template pTemplate="footer">
-        <button class="sc-btn sc-btn-primary" (click)="closeRichTextPresetDialog()">Done</button>
+        <button class="sc-btn sc-btn-primary" [disabled]="isRichTextPresetLinkOpen()"
+                [title]="isRichTextPresetLinkOpen() ? 'Finish the link first' : ''"
+                (click)="closeRichTextPresetDialog()">Done</button>
     </ng-template>
 </p-dialog>
 

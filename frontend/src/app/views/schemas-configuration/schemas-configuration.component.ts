@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpResponse } from '@angular/common/http';
 import { EMPTY, Observable, Subject, Subscription, forkJoin, of } from 'rxjs';
@@ -16,6 +16,7 @@ import { CodeEditorDialogComponent } from 'src/app/modules/policy-engine/dialogs
 import { ExportPolicyDialog } from 'src/app/modules/policy-engine/dialogs/export-policy-dialog/export-policy-dialog.component';
 import { PublishSchemaTemplateDialog } from 'src/app/modules/policy-engine/dialogs/publish-schema-template-dialog/publish-schema-template-dialog.component';
 import { FieldTypeUI, FIELD_TYPES_UI } from 'src/app/modules/schema-engine/field-type-ui';
+import { RichTextEditorComponent } from 'src/app/modules/schema-engine/rich-text-editor/rich-text-editor.component';
 import { SchemaTemplatesService } from 'src/app/services/schema-templates.service';
 import { ToastService } from 'src/app/services/toast.service';
 
@@ -113,6 +114,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public previewPreset: any = null;
     public previewReadonlyFields: any = null;
     public richTextPresetTarget: 'default' | 'suggest' | 'test' | null = null;
+    @ViewChild('richTextPresetEditor') public richTextPresetEditor?: RichTextEditorComponent;
 
     public drillStack: DrillEntry[] = [];
     public get isDrilling(): boolean { return this.drillStack.length > 0; }
@@ -1430,7 +1432,15 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.richTextPresetTarget = target;
     }
 
+    public isRichTextPresetLinkOpen(): boolean {
+        return !!this.richTextPresetEditor?.showLinkDialog;
+    }
+
     public closeRichTextPresetDialog(): void {
+        if (this.isRichTextPresetLinkOpen()) {
+            return;
+        }
+        this.richTextPresetEditor?.cancelLink();
         this.richTextPresetTarget = null;
     }
 

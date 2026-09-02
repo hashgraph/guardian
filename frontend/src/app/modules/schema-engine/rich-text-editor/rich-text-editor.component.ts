@@ -48,6 +48,13 @@ export class RichTextEditorComponent
     private _editingLink: HTMLAnchorElement | null = null;
     private _draggingFromEditor = false;
     private _onSelectionChange = (): void => this._updateHeadingState();
+    private _onDocumentMouseDown = (event: MouseEvent): void => {
+        if (!this.showLinkDialog) { return; }
+        const target = event.target;
+        if (target instanceof Node && this.host.nativeElement.contains(target)) { return; }
+        this.cancelLink();
+        this.cdr.markForCheck();
+    };
 
     public readonly toolbarItems = [
         { command: 'bold', icon: null, label: 'B', title: 'Bold (Ctrl+B)' },
@@ -64,21 +71,26 @@ export class RichTextEditorComponent
         { command: 'link', icon: 'pi pi-link', title: 'Insert or edit link' },
     ];
 
-    constructor(private cdr: ChangeDetectorRef) {}
+    constructor(private cdr: ChangeDetectorRef, private host: ElementRef<HTMLElement>) {}
 
     ngAfterViewInit(): void {
         if (this.editorRef) {
             this._setEditorContent(this._value);
         }
         document.addEventListener('selectionchange', this._onSelectionChange);
+        document.addEventListener('mousedown', this._onDocumentMouseDown);
     }
 
     ngOnDestroy(): void {
         document.removeEventListener('selectionchange', this._onSelectionChange);
+        document.removeEventListener('mousedown', this._onDocumentMouseDown);
     }
 
     writeValue(value: string | null): void {
         this._value = value ?? '';
+        if (this.showLinkDialog) {
+            this.cancelLink();
+        }
         if (this.editorRef) {
             this._setEditorContent(this._value);
         }
@@ -205,7 +217,11 @@ export class RichTextEditorComponent
     }
 
     insertLink(): void {
-        if (!this.linkUrl) {
+        if (!this.linkUrl.trim()) {
+            if (this._editingLink) {
+                this.removeLink();
+                return;
+            }
             this.showLinkDialog = false;
             return;
         }

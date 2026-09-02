@@ -122,7 +122,43 @@ describe('SchemasConfigurationComponent', () => {
             expect(component.selectedField.examples).toEqual(['<p>Example</p>']);
         });
 
-        it('survives the card click and the pencil click arriving for the same preset', () => {
+        it('refuses to close while the editor still has its link dialog open', () => {
+            const component = createComponent();
+            component.selectedField = makeField({ default: '<p>Default</p>' });
+            component.richTextPresetEditor = { showLinkDialog: true, cancelLink: jasmine.createSpy('cancelLink') };
+
+            component.openRichTextPresetDialog('default');
+            component.closeRichTextPresetDialog();
+
+            expect(component.isRichTextPresetLinkOpen()).toBeTrue();
+            expect(component.richTextPresetTarget).toBe('default');
+            expect(component.richTextPresetEditor.cancelLink).not.toHaveBeenCalled();
+        });
+
+        it('clears the editor link state when it does close', () => {
+            const component = createComponent();
+            component.selectedField = makeField({ default: '<p>Default</p>' });
+            component.richTextPresetEditor = { showLinkDialog: false, cancelLink: jasmine.createSpy('cancelLink') };
+
+            component.openRichTextPresetDialog('default');
+            component.closeRichTextPresetDialog();
+
+            expect(component.richTextPresetTarget).toBeNull();
+            expect(component.richTextPresetEditor.cancelLink).toHaveBeenCalled();
+        });
+
+        it('closes when no editor is rendered at all', () => {
+            const component = createComponent();
+            component.selectedField = makeField();
+
+            component.openRichTextPresetDialog('test');
+            component.closeRichTextPresetDialog();
+
+            expect(component.isRichTextPresetLinkOpen()).toBeFalse();
+            expect(component.richTextPresetTarget).toBeNull();
+        });
+
+        it('survives two pencil clicks arriving for the same preset', () => {
             const component = createComponent();
             component.selectedField = makeField({ suggest: '<p>Suggested</p>' });
             component.markDirty = jasmine.createSpy('markDirty');

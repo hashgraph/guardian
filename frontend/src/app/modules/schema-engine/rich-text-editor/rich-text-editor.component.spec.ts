@@ -196,6 +196,70 @@ describe('RichTextEditorComponent', () => {
         expect(component.showLinkDialog).toBeFalse();
     });
 
+    it('should close the link dialog on a mousedown outside the editor', () => {
+        spyOn(document, 'execCommand');
+        component.execCommand('link', new MouseEvent('mousedown'));
+        component.linkUrl = 'https://example.com';
+        fixture.detectChanges();
+        expect(component.showLinkDialog).toBeTrue();
+
+        const outside = document.createElement('button');
+        document.body.appendChild(outside);
+        outside.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+        fixture.detectChanges();
+
+        expect(component.showLinkDialog).toBeFalse();
+        expect(component.linkUrl).toBe('');
+        expect(fixture.debugElement.query(By.css('.rte-link-input'))).toBeNull();
+        outside.remove();
+    });
+
+    it('should keep the link dialog open on a mousedown inside the editor', () => {
+        spyOn(document, 'execCommand');
+        component.execCommand('link', new MouseEvent('mousedown'));
+        component.linkUrl = 'https://example.com';
+        fixture.detectChanges();
+
+        const input = fixture.debugElement.query(By.css('.rte-link-input')).nativeElement;
+        input.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+        fixture.detectChanges();
+
+        expect(component.showLinkDialog).toBeTrue();
+        expect(component.linkUrl).toBe('https://example.com');
+    });
+
+    it('should ignore a mousedown outside while the link dialog is closed', () => {
+        const outside = document.createElement('button');
+        document.body.appendChild(outside);
+        outside.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+        fixture.detectChanges();
+
+        expect(component.showLinkDialog).toBeFalse();
+        outside.remove();
+    });
+
+    it('should remove the link when its URL is cleared and the dialog is submitted', () => {
+        const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
+        editor.innerHTML = '<a href="https://example.com">Example</a>';
+        selectContents(editor.querySelector('a'));
+        component.execCommand('link', new MouseEvent('mousedown'));
+        component.linkUrl = '';
+        component.insertLink();
+        expect(editor.innerHTML).toBe('Example');
+        expect(component.showLinkDialog).toBeFalse();
+    });
+
+    it('should remove the link when its URL is left as whitespace', () => {
+        const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
+        editor.innerHTML = '<a href="https://example.com">Example</a>';
+        selectContents(editor.querySelector('a'));
+        component.execCommand('link', new MouseEvent('mousedown'));
+        component.linkUrl = '   ';
+        component.insertLink();
+        expect(editor.innerHTML).toBe('Example');
+        expect(component.showLinkDialog).toBeFalse();
+    });
+
     it('should open a link in a new tab on ctrl-click', () => {
         const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
         editor.innerHTML = '<a href="https://example.com">Example</a>';
@@ -501,6 +565,30 @@ describe('RichTextEditorComponent', () => {
         const input = fixture.debugElement.query(By.css('.rte-link-input'));
         expect(input).toBeTruthy();
         expect(document.activeElement).toBe(input.nativeElement);
+    });
+
+    it('should close an open link dialog when a new value is written', () => {
+        spyOn(document, 'execCommand');
+        component.execCommand('link', new MouseEvent('mousedown'));
+        component.linkUrl = 'https://example.com';
+        expect(component.showLinkDialog).toBeTrue();
+
+        component.writeValue('<p>Another preset</p>');
+        fixture.detectChanges();
+
+        expect(component.showLinkDialog).toBeFalse();
+        expect(component.linkUrl).toBe('');
+        expect(component.isEditingLink).toBeFalse();
+        expect(fixture.debugElement.query(By.css('.rte-link-input'))).toBeNull();
+    });
+
+    it('should leave a closed link dialog closed when a value is written', () => {
+        component.writeValue('<p>Text</p>');
+        fixture.detectChanges();
+
+        expect(component.showLinkDialog).toBeFalse();
+        expect(fixture.debugElement.query(By.css('.rte-editor')).nativeElement.innerHTML)
+            .toBe('<p>Text</p>');
     });
 
     function selectContents(element: Element): void {
