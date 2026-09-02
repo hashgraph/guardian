@@ -13,6 +13,16 @@
 
                 <div class="form-field-value">
                     <div class="form-field-prefix" *ngIf="isPrefix(item)">{{item.unit}}</div>
+                    <div *ngIf="isRichText(item)" class="example-full-width">
+                        <div class="rte-view-content" [innerHTML]="getRichTextValue(item.value)"
+                            (click)="onRichTextLinkClick($event)"></div>
+                    </div>
+
+                    <div *ngIf="isMarkdown(item)" class="example-full-width">
+                        <div class="rte-view-content" [innerHTML]="getMarkdownValue(item.value)"
+                            (click)="onRichTextLinkClick($event)"></div>
+                    </div>
+
                     <div *ngIf="isInput(item)" class="example-full-width">
                         <input [readonly]="true" [value]="item.value" class="p-field-input" pInputText>
                     </div>
@@ -89,6 +99,16 @@
 
                         <div class="form-field-value">
                             <div class="form-field-prefix" *ngIf="isPrefix(item)">{{item.unit}}</div>
+                            <div *ngIf="isRichText(item)" class="example-full-width">
+                                <div class="rte-view-content" [innerHTML]="getRichTextValue(listItem.value)"
+                                    (click)="onRichTextLinkClick($event)"></div>
+                            </div>
+
+                            <div *ngIf="isMarkdown(item)" class="example-full-width">
+                                <div class="rte-view-content" [innerHTML]="getMarkdownValue(listItem.value)"
+                                    (click)="onRichTextLinkClick($event)"></div>
+                            </div>
+
                             <div *ngIf="isInput(item)" class="example-full-width">
                                 <input [readonly]="true" [value]="listItem.value" class="p-field-input" pInputText>
                             </div>
