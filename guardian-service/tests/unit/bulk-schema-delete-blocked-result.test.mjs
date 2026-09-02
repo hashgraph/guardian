@@ -33,7 +33,38 @@ describe('DELETE_SCHEMAS blocked-schema reporting', function () {
         document: { $id: '#policy', properties: { child: { $ref: '#target' } } },
     };
 
-    async function runDelete() {
+    // A child of the target, and a policy schema that blocks the CHILD rather than the
+    // target itself - the case where includeChildren decides whether it matters.
+    const child = {
+        id: 'schema-3',
+        iri: '#child',
+        name: 'Child Schema',
+        topicId: '0.0.10',
+        status: ModuleStatus.DRAFT,
+        document: { $id: '#child', properties: {} },
+    };
+
+    const blockingChild = {
+        id: 'schema-4',
+        iri: '#other',
+        name: 'Unrelated Policy Schema',
+        topicId: '0.0.10',
+        status: ModuleStatus.DRAFT,
+        document: { $id: '#other', properties: { c: { $ref: '#child' } } },
+    };
+
+    // deleteSchema nests steps under the step it is handed, so the stub has to nest too.
+    const step = () => ({
+        start() {}, complete() {}, completed() {}, completedAndStart() {}, sendStatus() {},
+        finish() {}, fail() {}, addStep: () => step(), createStep: () => step(),
+    });
+
+    async function runDelete({
+        requested = [target],
+        children = [],
+        scope = [blocking],
+        includeChildren = false,
+    } = {}) {
         let captured;
         // The handler fires RunFunctionAsync without awaiting it and returns the task
         // immediately, so hold on to the work and await it here.
@@ -42,19 +73,18 @@ describe('DELETE_SCHEMAS blocked-schema reporting', function () {
             '@guardian/common': {
                 DatabaseServer: class {
                     static async getSchemas(filter) {
-                        // by-id lookup -> the requested schema
-                        if (filter?.id?.$in) { return [target]; }
-                        // child-def lookup -> no children in this fixture
-                        if (filter?.iri?.$in) { return []; }
-                        // dependency-scope lookup -> the blocking policy schema
-                        return [blocking];
+                        // by-id lookup -> the requested schemas
+                        if (filter?.id?.$in) { return requested; }
+                        // child-def lookup -> the children they $ref
+                        if (filter?.iri?.$in) { return children; }
+                        // dependency-scope lookup -> what could block a delete
+                        return scope;
                     }
                 },
                 NewNotifier: {
                     create: async () => ({
                         start() {}, completed() {}, completedAndStart() {}, sendStatus() {},
-                        finish() {}, addStep: () => ({ start() {}, complete() {} }),
-                        createStep: () => ({ start() {}, complete() {} }),
+                        finish() {}, addStep: () => step(), createStep: () => step(),
                         result: (r) => { captured = r; },
                         fail() {},
                     }),
@@ -69,7 +99,7 @@ describe('DELETE_SCHEMAS blocked-schema reporting', function () {
         });
 
         await handlers[MessageAPI.DELETE_SCHEMAS]({
-            schemaIds: ['schema-1'], owner, task: { taskId: 't1' }, includeChildren: false,
+            schemaIds: requested.map(schema => schema.id), owner, task: { taskId: 't1' }, includeChildren,
         });
         await work;
         return captured;
@@ -83,6 +113,35 @@ describe('DELETE_SCHEMAS blocked-schema reporting', function () {
         assert.equal(result.errors.length, 1);
         assert.equal(result.errors[0].name, 'Target Schema');
         assert.match(result.errors[0].error, /Blocking Policy Schema/);
+    });
+
+    it('says nothing about a blocked child that was never a delete candidate', async () => {
+        // includeChildren off: the child is not up for deletion, so a policy schema
+        // holding a reference to it is not something the caller needs a toast about.
+        const parent = { ...target, document: { $id: '#target', properties: { c: { $ref: '#child' } } } };
+        const result = await runDelete({
+            requested: [parent],
+            children: [child],
+            scope: [blocking, blockingChild],
+            includeChildren: false,
+        });
+
+        assert.deepEqual(result.errors.map(e => e.name), ['Target Schema'],
+            'the blocked child must not be reported when children are not being deleted');
+    });
+
+    it('reports that same blocked child once children are in scope', async () => {
+        const parent = { ...target, document: { $id: '#target', properties: { c: { $ref: '#child' } } } };
+        const result = await runDelete({
+            requested: [parent],
+            children: [child],
+            scope: [blocking, blockingChild],
+            includeChildren: true,
+        });
+
+        const blockedChild = result.errors.find(e => e.name === 'Child Schema');
+        assert.ok(blockedChild, 'the child is a delete candidate now, so its blocker matters');
+        assert.match(blockedChild.error, /Unrelated Policy Schema/);
     });
 
     it('carries the per-schema outcome in a JSON-serialisable shape', async () => {

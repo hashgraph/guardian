@@ -1925,13 +1925,18 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 const results: Array<{ id: string, name: string, deleted: boolean }> = [];
                 // A schema still referenced by a policy schema is skipped below via
                 // blockedSchemaIds; without this the caller is never told, and the task
-                // reports success for a delete that did not happen.
-                const errors = blockedChildren.map(blocked => ({
-                    type: 'schema',
-                    uuid: blocked.schema.iri,
-                    name: blocked.schema.name,
-                    error: 'Still referenced by ' + blocked.blockingSchemas.map(s => s.name).join(', ')
-                }));
+                // reports success for a delete that did not happen. Only schemas that
+                // were delete candidates count: with includeChildren off, a blocked
+                // child was never going to be deleted, so reporting it is noise.
+                const requestedIris = new Set(schemas.map(schema => schema.iri));
+                const errors = blockedChildren
+                    .filter(blocked => includeChildren || requestedIris.has(blocked.schema.iri))
+                    .map(blocked => ({
+                        type: 'schema',
+                        uuid: blocked.schema.iri,
+                        name: blocked.schema.name,
+                        error: 'Still referenced by ' + blocked.blockingSchemas.map(s => s.name).join(', ')
+                    }));
                 const schemasToDelete: SchemaCollection[] = [];
 
                 if (includeChildren) {

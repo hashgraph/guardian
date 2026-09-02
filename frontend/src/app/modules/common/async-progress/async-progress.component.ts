@@ -607,11 +607,8 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * ImportSchemaResult.errors is {type,uuid,name,error} and nothing downstream renders
-     * it, so flatten it into one sticky toast naming each schema that failed.
-     */
-    /**
-     * Report per-schema failures carried on a task result.
+     * Report per-schema failures carried on a task result. Nothing downstream renders
+     * `errors`, so flatten it into one sticky toast naming each schema that failed.
      * @param result task result
      * @param verb what did not happen to the schemas, e.g. 'imported' or 'deleted'
      */
