@@ -196,6 +196,68 @@ describe('RichTextEditorComponent', () => {
         expect(component.showLinkDialog).toBeFalse();
     });
 
+    it('should default the format to html', () => {
+        expect(component.format).toBe('html');
+    });
+
+    it('should render markdown as html in the editor when the format is markdown', () => {
+        component.format = 'markdown';
+        component.writeValue('# Title\n\n- one\n- two');
+        fixture.detectChanges();
+
+        const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
+        expect(editor.innerHTML).toBe('<h1>Title</h1><ul><li>one</li><li>two</li></ul>');
+    });
+
+    it('should report markdown through onChange when the format is markdown', () => {
+        component.format = 'markdown';
+        const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
+        const onChange = jasmine.createSpy('onChange');
+        component.registerOnChange(onChange);
+
+        editor.innerHTML = '<h1>Title</h1><p>a <b>bold</b> line</p>';
+        component.onInput();
+
+        expect(onChange).toHaveBeenCalledWith('# Title\n\na **bold** line');
+    });
+
+    it('should still report html through onChange in the default format', () => {
+        const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
+        const onChange = jasmine.createSpy('onChange');
+        component.registerOnChange(onChange);
+
+        editor.innerHTML = '<p>text</p>';
+        component.onInput();
+
+        expect(onChange).toHaveBeenCalledWith('<p>text</p>');
+    });
+
+    it('should report an empty value for visually empty markup in markdown mode', () => {
+        component.format = 'markdown';
+        const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
+        const onChange = jasmine.createSpy('onChange');
+        component.registerOnChange(onChange);
+
+        editor.innerHTML = '<p><br></p>';
+        component.onInput();
+
+        expect(onChange).toHaveBeenCalledWith('');
+    });
+
+    it('should hide the underline button in markdown mode and keep it otherwise', () => {
+        const titles = () => fixture.debugElement
+            .queryAll(By.css('.rte-btn'))
+            .map((item) => item.nativeElement.getAttribute('title'));
+
+        expect(titles()).toContain('Underline (Ctrl+U)');
+
+        fixture.componentRef.setInput('format', 'markdown');
+        fixture.detectChanges();
+
+        expect(titles()).not.toContain('Underline (Ctrl+U)');
+        expect(titles()).toContain('Bold (Ctrl+B)');
+    });
+
     it('should close the link dialog on a mousedown outside the editor', () => {
         spyOn(document, 'execCommand');
         component.execCommand('link', new MouseEvent('mousedown'));

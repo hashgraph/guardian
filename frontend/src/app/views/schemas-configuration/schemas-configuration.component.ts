@@ -17,6 +17,7 @@ import { ExportPolicyDialog } from 'src/app/modules/policy-engine/dialogs/export
 import { PublishSchemaTemplateDialog } from 'src/app/modules/policy-engine/dialogs/publish-schema-template-dialog/publish-schema-template-dialog.component';
 import { FieldTypeUI, FIELD_TYPES_UI } from 'src/app/modules/schema-engine/field-type-ui';
 import { RichTextEditorComponent } from 'src/app/modules/schema-engine/rich-text-editor/rich-text-editor.component';
+import { markdownToHtml } from 'src/app/modules/schema-engine/rich-text-editor/markdown';
 import { SchemaTemplatesService } from 'src/app/services/schema-templates.service';
 import { ToastService } from 'src/app/services/toast.service';
 
@@ -1432,6 +1433,22 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.richTextPresetTarget = target;
     }
 
+    public isFormattedPresetField(): boolean {
+        const type = this.selectedField ? this.getFieldValueInputType(this.selectedField) : '';
+        return type === 'richText' || type === 'markdown';
+    }
+
+    public isMarkdownPresetField(): boolean {
+        return !!this.selectedField && this.getFieldValueInputType(this.selectedField) === 'markdown';
+    }
+
+    public getPresetPreviewHtml(value: any): string {
+        if (typeof value !== 'string' || !value) {
+            return '';
+        }
+        return this.isMarkdownPresetField() ? markdownToHtml(value) : value;
+    }
+
     public isRichTextPresetLinkOpen(): boolean {
         return !!this.richTextPresetEditor?.showLinkDialog;
     }
@@ -1591,6 +1608,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (key === 'time') { return 'time'; }
         if (key === 'dateTime') { return 'datetime-local'; }
         if (key === 'richText') { return 'richText'; }
+        if (key === 'markdown') { return 'markdown'; }
+
         return 'text';
     }
 

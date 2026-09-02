@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { isBlankRichText, isSafeHref, sanitizeRichText } from './rich-text-sanitizer';
+import { htmlToMarkdown, markdownToHtml } from './markdown';
 
 @Component({
     selector: 'app-rich-text-editor',
@@ -34,6 +35,7 @@ export class RichTextEditorComponent
 
     @Input() placeholder = 'Enter text here…';
     @Input() readonly = false;
+    @Input() format: 'html' | 'markdown' = 'html';
 
     public showLinkDialog = false;
     public linkUrl = '';
@@ -75,7 +77,7 @@ export class RichTextEditorComponent
 
     ngAfterViewInit(): void {
         if (this.editorRef) {
-            this._setEditorContent(this._value);
+            this._setEditorContent(this._toEditorHtml(this._value));
         }
         document.addEventListener('selectionchange', this._onSelectionChange);
         document.addEventListener('mousedown', this._onDocumentMouseDown);
@@ -92,7 +94,7 @@ export class RichTextEditorComponent
             this.cancelLink();
         }
         if (this.editorRef) {
-            this._setEditorContent(this._value);
+            this._setEditorContent(this._toEditorHtml(this._value));
         }
     }
 
@@ -111,7 +113,9 @@ export class RichTextEditorComponent
 
     onInput(): void {
         const html = this.editorRef.nativeElement.innerHTML;
-        const value = isBlankRichText(html) ? '' : html;
+        const value = isBlankRichText(html)
+            ? ''
+            : (this.format === 'markdown' ? htmlToMarkdown(html) : html);
         this._value = value;
         this._onChange(value);
         this.cdr.markForCheck();
@@ -286,6 +290,10 @@ export class RichTextEditorComponent
         this.linkUrl = '';
         this._savedRange = null;
         this._editingLink = null;
+    }
+
+    private _toEditorHtml(value: string): string {
+        return this.format === 'markdown' ? markdownToHtml(value) : value;
     }
 
     private _setEditorContent(value: string): void {

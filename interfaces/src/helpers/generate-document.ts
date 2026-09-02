@@ -276,6 +276,8 @@ export class DocumentGenerator {
                         return '0.0.1';
                     case 'richText':
                         return '<p>Example rich text</p>';
+                    case 'markdown':
+                        return '# Example\n\nExample **markdown** text.';
                     case 'table':
                         return '{"type":"table", "cid":"bafkreiaeu4w7oayfsp6oq3tuomb5tk2rkvb2bibhnxxwo4er6mls2jagay"}';
                     default:

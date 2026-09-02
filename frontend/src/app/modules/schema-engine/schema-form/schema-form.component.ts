@@ -550,12 +550,17 @@ export class SchemaFormComponent implements OnInit {
             ) && !item.remoteLink && !item.enum
             && item.customType !== 'table'
             && item.customType !== 'richText'
+            && item.customType !== 'markdown'
             && !this.isGeoLocation(item)
         );
     }
 
     public isRichText(item: IFieldControl<any>): boolean {
         return item.customType === 'richText';
+    }
+
+    public isMarkdown(item: IFieldControl<any>): boolean {
+        return item.customType === 'markdown';
     }
 
     public isHelpText(item: IFieldControl<any>): boolean {

@@ -648,7 +648,7 @@ export class XlsxToJson {
                     message: `Field Type cell is empty. `
                         + `Supported types: Number, Integer, String, Boolean, Date, Time, DateTime, Duration, `
                         + `URL, URI, Email, Image, File, Pattern, Help Text, GeoJSON, HederaAccount, `
-                        + `Rich Text, Prefix, Postfix, Auto-Calculate, Enum, Sub-Schema, `
+                        + `Rich Text, Markdown, Prefix, Postfix, Auto-Calculate, Enum, Sub-Schema, `
                         + `Country, Continent, State/Province.`,
                     worksheet: worksheet.name,
                     cell: worksheet.getPath(table.getCol(Dictionary.FIELD_TYPE), row),

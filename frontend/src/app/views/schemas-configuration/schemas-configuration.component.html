@@ -1099,10 +1099,10 @@
                                                       [ngModel]="$any(selectedField).default"
                                                       (ngModelChange)="setFieldPresetValue('default', $event)">
                                             </p-select>
-                                        } @else if (getFieldValueInputType(selectedField!) === 'richText') {
+                                        } @else if (isFormattedPresetField()) {
                                             <div class="sc-rte-preset-card">
                                                 @if ($any(selectedField).default) {
-                                                    <div class="sc-rte-preset-preview" appRichTextClip [innerHTML]="$any(selectedField).default"></div>
+                                                    <div class="sc-rte-preset-preview" appRichTextClip [innerHTML]="getPresetPreviewHtml($any(selectedField).default)"></div>
                                                 } @else {
                                                     <span class="sc-rte-preset-empty">Use the pencil to write default text</span>
                                                 }
@@ -1136,10 +1136,10 @@
                                                       [ngModel]="$any(selectedField).suggest"
                                                       (ngModelChange)="setFieldPresetValue('suggest', $event)">
                                             </p-select>
-                                        } @else if (getFieldValueInputType(selectedField!) === 'richText') {
+                                        } @else if (isFormattedPresetField()) {
                                             <div class="sc-rte-preset-card">
                                                 @if ($any(selectedField).suggest) {
-                                                    <div class="sc-rte-preset-preview" appRichTextClip [innerHTML]="$any(selectedField).suggest"></div>
+                                                    <div class="sc-rte-preset-preview" appRichTextClip [innerHTML]="getPresetPreviewHtml($any(selectedField).suggest)"></div>
                                                 } @else {
                                                     <span class="sc-rte-preset-empty">Use the pencil to write suggested text</span>
                                                 }
@@ -1173,10 +1173,10 @@
                                                       [ngModel]="getFieldTestValue()"
                                                       (ngModelChange)="setFieldTestValue($event)">
                                             </p-select>
-                                        } @else if (getFieldValueInputType(selectedField!) === 'richText') {
+                                        } @else if (isFormattedPresetField()) {
                                             <div class="sc-rte-preset-card">
                                                 @if (getFieldTestValue()) {
-                                                    <div class="sc-rte-preset-preview" appRichTextClip [innerHTML]="getFieldTestValue()"></div>
+                                                    <div class="sc-rte-preset-preview" appRichTextClip [innerHTML]="getPresetPreviewHtml(getFieldTestValue())"></div>
                                                 } @else {
                                                     <span class="sc-rte-preset-empty">Use the pencil to write test text</span>
                                                 }
@@ -1888,6 +1888,7 @@
     <div class="sc-rte-preset-dialog-body">
         <app-rich-text-editor
             #richTextPresetEditor
+            [format]="isMarkdownPresetField() ? 'markdown' : 'html'" 
             [ngModel]="getRichTextPresetValue()"
             (ngModelChange)="setRichTextPresetValue($event)"
             placeholder="Write formatted text…"

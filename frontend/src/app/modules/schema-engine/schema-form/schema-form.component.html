@@ -135,13 +135,14 @@
                         ></p-select>
                       </div>
                     }
-                    @if (isRichText(item)) {
+                    @if (isRichText(item) || isMarkdown(item)) {
                       <div
                         class="form-field-input guardian-input-container"
                         [attr.readonly-field]="isEditMode && !item.isUpdatable"
                         >
                         <app-rich-text-editor
                           [formControl]="item.control"
+                          [format]="isMarkdown(item) ? 'markdown' : 'html'"
                           [placeholder]="getPlaceholderByFieldType(item)"
                           [readonly]="!!(isEditMode && !item.isUpdatable)"
                         ></app-rich-text-editor>
@@ -689,7 +690,7 @@
                                 ></table-field>
                               </ng-container>
                             }
-                            @if (isRichText(item)) {
+                            @if (isRichText(item) || isMarkdown(item)) {
                               <div
                                 class="form-field-input guardian-input-container"
                                 [attr.readonly-field]="
@@ -698,6 +699,7 @@
                                 >
                                 <app-rich-text-editor
                                   [formControl]="listItem.control"
+                                  [format]="isMarkdown(item) ? 'markdown' : 'html'"
                                   [placeholder]="getPlaceholderByFieldType(item)"
                                   [readonly]="!!(isEditMode && !item.isUpdatable)"
                                 ></app-rich-text-editor>

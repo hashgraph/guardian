@@ -202,6 +202,14 @@ export class FieldTypesDictionary {
             pattern: undefined,
             isRef: false,
             customType: 'richText'
+        },
+        {
+            name: 'Markdown',
+            type: 'string',
+            format: undefined,
+            pattern: undefined,
+            isRef: false,
+            customType: 'markdown'
         }
     ];
 

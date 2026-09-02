@@ -332,6 +332,18 @@ export class FieldTypes {
             pars: (value: any) => String(value)
         },
         {
+            name: 'Markdown',
+            type: 'string',
+            format: undefined,
+            pattern: undefined,
+            isRef: false,
+            customType: 'markdown',
+            unit: undefined,
+            unitSystem: undefined,
+            hidden: false,
+            pars: (value: any) => String(value)
+        },
+        {
             name: 'Auto-Calculate',
             type: 'number',
             format: undefined,
