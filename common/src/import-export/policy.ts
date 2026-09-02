@@ -30,6 +30,13 @@ export interface IPolicyComponents {
     tools: PolicyTool[];
     tests: IArtifact[];
     schemaTemplateSnapshot?: SchemaTemplateSnapshot | null;
+    artifactErrors?: IArtifactError[];
+}
+
+export interface IArtifactError {
+    type: 'artifact';
+    name: string;
+    error: string;
 }
 
 /**
@@ -458,32 +465,27 @@ export class PolicyImportExport {
 
         const metaDataFile = (Object.entries(content.files).find(file => file[0] === 'artifacts/metadata.json'));
         const metaDataString = metaDataFile && await metaDataFile[1].async('string') || '[]';
-        const metaDataBody: any[] = JSON.parse(metaDataString);
         //Artifact entries this archive could not resolve.
-        const artifactErrors: string[] = [];
+        const artifactErrors: IArtifactError[] = [];
+        const parsedMetaData = JSON.parse(metaDataString);
+        //A record object rather than a list would throw from find/map below and take
+        //every artifact with it, so it degrades to "no records" and says so once.
+        const metaDataBody: any[] = Array.isArray(parsedMetaData) ? parsedMetaData : [];
+        if (!Array.isArray(parsedMetaData)) {
+            artifactErrors.push({
+                type: 'artifact',
+                name: 'artifacts/metadata.json',
+                error: 'Artifact metadata is not a list; no artifact in this archive could be resolved.'
+            });
+        }
 
         let artifacts: any;
         if (includeArtifactsData) {
             /*
-             * An artifact entry with no matching metadata record used to abort the
-             * whole import with a raw TypeError.
-             *
-             * `find` returns undefined when nothing matches and the next line
-             * dereferenced it, so the user saw "Cannot read properties of undefined
-             * (reading 'name')" raised from inside @guardian/common, with no
-             * indication that their archive was the cause and no mention of which
-             * entry. Because the throw happened inside a Promise.all over every
-             * artifact, it also took any well-formed sibling with it.
-             *
-             * Three ways in, none of them requiring malice: metadata.json absent so
-             * the '[]' fallback makes every lookup miss; a hand-edited or truncated
-             * archive that omits a record; or a NESTED path such as
-             * artifacts/sub/file, which passes the filter but whose split('/')[1]
-             * yields 'sub' and matches no uuid.
-             *
-             * Skipped and reported rather than thrown: one malformed entry should
-             * not cost the user the rest of a valid archive, and the message names
-             * the path so support can act on it.
+             * A missing metadata record used to dereference `undefined` inside a
+             * Promise.all, so one bad entry aborted the whole import with a raw
+             * TypeError. Three ways in, none needing malice: no metadata.json, a
+             * truncated archive, or a nested path whose split('/')[1] matches no uuid.
              */
             const artifactEntries = fileEntries.filter(
                 file => /^artifacts\/.+/.test(file[0]) && file[0] !== 'artifacts/metadata.json'
@@ -498,9 +500,13 @@ export class PolicyImportExport {
                     : metaDataBody.find(item => item.uuid === uuid);
                 if (!artifactMetaData) {
                     return {
-                        error: isNested
-                            ? `Artifact "${path}" is nested; artifacts must sit directly under artifacts/.`
-                            : `Artifact metadata missing for "${path}".`
+                        error: {
+                            type: 'artifact' as const,
+                            name: path,
+                            error: isNested
+                                ? 'Artifact is nested; artifacts must sit directly under artifacts/.'
+                                : 'No metadata record matches this artifact.'
+                        }
                     };
                 }
                 return {
@@ -556,8 +562,7 @@ export class PolicyImportExport {
             tests,
             formulas,
             schemaTemplateSnapshot,
-            //Present only when something did not resolve. Excluded from the hash
-            //by cleanBeforeHash - see there for why that matters.
+            //excluded from the hash by cleanBeforeHash
             ...(artifactErrors.length ? { artifactErrors } : {})
         }
 
@@ -660,16 +665,9 @@ export class PolicyImportExport {
     }
 
     private static cleanBeforeHash(components: IPolicyComponents): IPolicyComponents {
-        /*
-         * Never let a parse diagnostic reach the hash.
-         *
-         * getPolicyHash stringifies the whole components object, so an
-         * artifactErrors array would give a policy a different hash purely
-         * because its archive had a malformed artifact entry - and those are
-         * exactly the archives that get corrected and re-imported. The hash has
-         * to describe the policy's content, not how cleanly the zip parsed.
-         */
-        delete (components as any).artifactErrors;
+        //getPolicyHash stringifies the whole object, so a parse diagnostic would change
+        //the hash of a policy whose content is identical
+        delete components.artifactErrors;
         delete components.policy.policyTag;
         delete components.policy.name;
         delete components.policy.uuid;

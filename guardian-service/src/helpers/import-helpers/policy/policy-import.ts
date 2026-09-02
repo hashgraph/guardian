@@ -89,6 +89,7 @@ export class PolicyImport {
     private formulasMapping: Map<string, string>;
     private importRecords = false;
     private schemaTemplate: SchemaTemplate | null = null;
+    private artifactErrors: ImportPolicyError[] = [];
 
     constructor(mode: ImportMode, notifier: INotificationStep) {
         this.mode = mode;
@@ -897,6 +898,9 @@ export class PolicyImport {
                 errors.push(error);
             }
         }
+        for (const error of this.artifactErrors) {
+            errors.push(error);
+        }
         return errors;
     }
 
@@ -916,7 +920,12 @@ export class PolicyImport {
             tests,
             formulas,
             schemaTemplateSnapshot,
+            artifactErrors,
         } = options.policyComponents;
+
+        //parse-time diagnostics: the artifact was dropped, so say so rather than
+        //importing a policy that silently lost it
+        this.artifactErrors = artifactErrors || [];
 
         const copySchemas = schemas.map((schema) => structuredClone(schema));
 

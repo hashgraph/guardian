@@ -2,15 +2,8 @@ import assert from 'node:assert/strict';
 import JSZip from 'jszip';
 import { PolicyImportExport } from '../../../dist/import-export/policy.js';
 
-/*
- * An artifacts/ entry with no matching record in
- * artifacts/metadata.json aborted the import with a raw TypeError from inside
- * @guardian/common: `find` returns undefined and the next line dereferenced it.
- * The user saw "Cannot read properties of undefined (reading 'name')" with no
- * indication their archive was the cause and no mention of which entry - and
- * because the throw happened inside a Promise.all over every artifact, it took
- * any well-formed sibling with it.
- */
+// an artifacts/ entry with no matching metadata record used to abort the whole
+// import with a raw TypeError, taking every well-formed sibling with it
 
 const POLICY = { name: 'p', config: {} };
 
@@ -42,8 +35,9 @@ describe('@unit artifact metadata mismatch', function () {
         const buffer = await archive({ metadata: [], artifacts: { 'orphan-uuid': 'data' } });
         const result = await parse(buffer);
         assert.equal(result.artifactErrors.length, 1);
-        assert.match(result.artifactErrors[0], /artifacts\/orphan-uuid/);
-        assert.match(result.artifactErrors[0], /metadata missing/i);
+        assert.equal(result.artifactErrors[0].type, 'artifact');
+        assert.equal(result.artifactErrors[0].name, 'artifacts/orphan-uuid');
+        assert.match(result.artifactErrors[0].error, /no metadata record/i);
     });
 
     it('a well-formed sibling survives a malformed one', async () => {
@@ -75,9 +69,25 @@ describe('@unit artifact metadata mismatch', function () {
         zip.file('artifacts/sub/file.pdf', 'data');
         const result = await parse(await zip.generateAsync({ type: 'nodebuffer' }));
         assert.equal(result.artifactErrors.length, 1);
-        assert.match(result.artifactErrors[0], /nested/i);
+        assert.match(result.artifactErrors[0].error, /nested/i);
         assert.deepEqual(result.artifacts, [],
             'a nested path must not be resolved via the folder name as a uuid');
+    });
+
+    it('metadata.json that is not a list does not take the import down with it', async () => {
+        const buffer = await archive({ metadata: {}, artifacts: { u1: 'data' } });
+        const result = await parse(buffer);
+        assert.deepEqual(result.artifacts, []);
+        assert.ok(
+            result.artifactErrors.some(e => e.name === 'artifacts/metadata.json'),
+            'the shape of the metadata file is named as the cause, not just each artifact',
+        );
+    });
+
+    it('a non-list metadata.json is survivable in preview mode too', async () => {
+        const buffer = await archive({ metadata: {}, artifacts: { u1: 'data' } });
+        const result = await PolicyImportExport.parseZipFile(buffer, false);
+        assert.deepEqual(result.artifacts, []);
     });
 
     it('a clean archive reports no errors at all', async () => {
