@@ -13,6 +13,8 @@ context('Schemas', { tags: ['schema', 'thirdPool', 'all'] }, () => {
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.Schemas,
+                // a single entry is enough here, and the full schema listing grows with every run
+                qs: { pageIndex: 0, pageSize: 1 },
                 headers: {
                     authorization,
                 },
@@ -65,8 +67,12 @@ context('Schemas', { tags: ['schema', 'thirdPool', 'all'] }, () => {
                     authorization,
                 },
             }).then((response) => {
-                let schemaId = response.body.at(0).id;
                 expect(response.status).eql(STATUS_CODE.OK);
+                //The topic is shared with the schemas of earlier runs, so the one created in the
+                //before hook is addressed by its own uuid instead of by position
+                const schema = response.body.find((item) => item?.uuid === schemaUUID);
+                expect(schema, `schema ${schemaUUID} in topic ${topicUid}`).to.not.be.undefined;
+                const schemaId = schema.id;
 
                 //Delete schema
                 cy.request({

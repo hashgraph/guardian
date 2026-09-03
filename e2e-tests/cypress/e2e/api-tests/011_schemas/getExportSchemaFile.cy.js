@@ -10,6 +10,8 @@ context('Schema', { tags: ['schema', 'thirdPool', 'all'] }, () => {
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.Schemas,
+                // a single entry is enough here, and the full schema listing grows with every run
+                qs: { pageIndex: 0, pageSize: 1 },
                 headers: {
                     authorization,
                 },

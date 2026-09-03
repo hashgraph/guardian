@@ -38,7 +38,11 @@ context('Schemas', { tags: ['schema', 'thirdPool', 'all'] }, () => {
                     expect(response.status).eql(STATUS_CODE.OK);
                     expect(response.body[0]).to.have.property('uuid');
 
-                    let schemaId = response.body.at(0).id;
+                    //The listing also holds the system schemas of earlier runs, so the one created
+                    //above is addressed by its own uuid instead of by position
+                    const schema = response.body.find((item) => item?.uuid === schemaUUID);
+                    expect(schema, `system schema ${schemaUUID} in the listing`).to.not.be.undefined;
+                    const schemaId = schema.id;
 
                     const versionNum = '1.' + randomInt(999);
 
