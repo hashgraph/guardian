@@ -6,6 +6,7 @@ Unless specified otherwise, the tests are idempotent and can be run multiple tim
 The only requirement is preparing the environment with a few accounts using the `preparing` tag, and ensuring the accounts have enough balance for the operations performed during the tests (especially the StandardRegistry):
 
 ```bash
+export CYPRESS_portApi=3000/api/v1
 TAG=preparing ./run-test-by-tag.sh
 ```
 

@@ -137,8 +137,12 @@ module.exports = defineConfig({
             };
 
             require('@cypress/grep/plugin').plugin(config);
+            const { beforeRunHook } = require('cypress-mochawesome-reporter/lib');
             require('cypress-mochawesome-reporter/plugin')(on);
-            on('before:run', () => checkSrUserHbarBalance(config));
+            on('before:run', async (details) => {
+                await beforeRunHook(details);
+                await checkSrUserHbarBalance(config);
+            });
             on('task', verifyDownloadTasks);
             on('task', {
                 checkFile(partialName) {
