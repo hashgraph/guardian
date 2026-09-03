@@ -74,13 +74,18 @@ describe('@unit artifact metadata mismatch', function () {
             'a nested path must not be resolved via the folder name as a uuid');
     });
 
-    it('metadata.json that is not a list does not take the import down with it', async () => {
-        const buffer = await archive({ metadata: {}, artifacts: { u1: 'data' } });
+    it('metadata.json that is not a list is reported once, not once per artifact', async () => {
+        const buffer = await archive({
+            metadata: {},
+            artifacts: { u1: 'a', u2: 'b', u3: 'c' },
+        });
         const result = await parse(buffer);
+
         assert.deepEqual(result.artifacts, []);
-        assert.ok(
-            result.artifactErrors.some(e => e.name === 'artifacts/metadata.json'),
-            'the shape of the metadata file is named as the cause, not just each artifact',
+        assert.deepEqual(
+            result.artifactErrors.map(e => e.name),
+            ['artifacts/metadata.json'],
+            'the file is the fault; three identical per-entry misses add nothing',
         );
     });
 

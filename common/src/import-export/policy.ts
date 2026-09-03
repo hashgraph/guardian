@@ -469,9 +469,11 @@ export class PolicyImportExport {
         const artifactErrors: IArtifactError[] = [];
         const parsedMetaData = JSON.parse(metaDataString);
         //A record object rather than a list would throw from find/map below and take
-        //every artifact with it, so it degrades to "no records" and says so once.
-        const metaDataBody: any[] = Array.isArray(parsedMetaData) ? parsedMetaData : [];
-        if (!Array.isArray(parsedMetaData)) {
+        //every artifact with it. It degrades to "no records", and the file is reported
+        //once INSTEAD of one identical miss per entry - the entries are not the fault.
+        const metaDataUsable = Array.isArray(parsedMetaData);
+        const metaDataBody: any[] = metaDataUsable ? parsedMetaData : [];
+        if (!metaDataUsable) {
             artifactErrors.push({
                 type: 'artifact',
                 name: 'artifacts/metadata.json',
@@ -519,7 +521,7 @@ export class PolicyImportExport {
                 };
             }));
             for (const item of resolved) {
-                if (item.error) {
+                if (item.error && metaDataUsable) {
                     artifactErrors.push(item.error);
                 }
             }

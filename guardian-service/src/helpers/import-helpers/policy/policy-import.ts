@@ -898,9 +898,6 @@ export class PolicyImport {
                 errors.push(error);
             }
         }
-        for (const error of this.artifactErrors) {
-            errors.push(error);
-        }
         return errors;
     }
 
@@ -923,8 +920,7 @@ export class PolicyImport {
             artifactErrors,
         } = options.policyComponents;
 
-        //parse-time diagnostics: the artifact was dropped, so say so rather than
-        //importing a policy that silently lost it
+        //parse-time diagnostics, returned beside `errors` rather than in it
         this.artifactErrors = artifactErrors || [];
 
         const copySchemas = schemas.map((schema) => structuredClone(schema));
@@ -1085,7 +1081,15 @@ export class PolicyImport {
         this.notifier.complete();
 
         const errors = await this.getErrors();
-        return { policy: row, errors };
+        if (this.artifactErrors.length) {
+            //not folded into `errors`: the policy imported, and a dropped attachment
+            //must not make the API report a failure the user cannot act on
+            await logger.warn(
+                `Policy ${row.id} imported with unresolved artifacts: ${this.artifactErrors.map(e => `${e.name}: ${e.error}`).join('; ')}`,
+                ['GUARDIAN_SERVICE'], userId
+            );
+        }
+        return { policy: row, errors, artifactErrors: this.artifactErrors };
     }
 
     private async copyPolicyRecords(policy: Policy, logger: PinoLogger, copySchemas: Schema[]): Promise<void> {
