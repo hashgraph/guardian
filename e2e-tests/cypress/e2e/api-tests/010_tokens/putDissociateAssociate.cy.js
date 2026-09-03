@@ -18,10 +18,27 @@ context('Tokens', { tags: ['tokens', 'thirdPool', 'all'] }, () => {
                 },
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
-                const policy = response.body.find((element) => element.description === 'iRec Description');
-                if (!policy) {
-                    throw new Error('No policy with description "iRec Description" was found. Prepare test data first.');
+                const found = response.body.find((element) => element.description === 'iRec Description');
+                // Normally this policy is imported by 009_policies/postPoliciesImportFile.cy.js,
+                // which runs before this folder in a full suite run. When 010_tokens is run in
+                // isolation that import never happens, so import it here to stay self-sufficient.
+                if (found) {
+                    return cy.wrap(found);
                 }
+                return cy.importPolicyFile(authorization, 'exportedPolicy.policy').then(() => {
+                    return cy.request({
+                        method: METHOD.GET,
+                        url: API.ApiServer + API.Policies,
+                        headers: { authorization },
+                    }).then((response) => {
+                        const imported = response.body.find((element) => element.description === 'iRec Description');
+                        if (!imported) {
+                            throw new Error('Failed to import the "iRec Description" policy required by this suite.');
+                        }
+                        return imported;
+                    });
+                });
+            }).then((policy) => {
                 policyId = policy.id;
                 // The policy may already be published by a previous run, publishing it again returns 500
                 if (policy.status !== 'PUBLISH') {

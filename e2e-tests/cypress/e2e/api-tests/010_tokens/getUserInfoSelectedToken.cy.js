@@ -22,23 +22,54 @@ context('Tokens', { tags: ['tokens', 'thirdPool', 'all'] }, () => {
 
                 // Restrict to the fungible tokens this suite creates, not whatever token
                 // another suite (e.g. policy workflows) last created for this account.
-                const topicUid = response.body.filter((t) => t.tokenName === 'test')[0].tokenId;
+                const existing = response.body.filter((t) => t.tokenName === 'test')[0];
 
-                cy.request({
-                    method: METHOD.GET,
-                    url:
-                        API.ApiServer +
-                        API.ListOfTokens +
-                        topicUid +
-                        '/' +
-                        UserUsername +
-                        '/info',
-                    headers: {
-                        authorization,
-                    },
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.OK);
-                    expect(response.body).to.not.be.oneOf([null, '']);
+                // postTokens.cy.js/postPushTokens.cy.js normally create this token, but they
+                // run alphabetically after this file within the same folder, so on a clean
+                // environment none exists yet. Create one here to stay order-independent.
+                const tokenRequest = existing
+                    ? cy.wrap(existing)
+                    : cy.request({
+                        method: METHOD.POST,
+                        url: API.ApiServer + API.ListOfTokens,
+                        headers: { authorization },
+                        body: {
+                            'changeSupply': true,
+                            'decimals': 'string',
+                            'enableAdmin': true,
+                            'enableFreeze': true,
+                            'enableKYC': true,
+                            'enableWipe': true,
+                            'initialSupply': 'string',
+                            'tokenName': 'test',
+                            'tokenSymbol': 'string',
+                            'tokenType': 'string'
+                        },
+                        timeout: 180000,
+                    }).then((response) => {
+                        expect(response.status).eql(STATUS_CODE.SUCCESS);
+                        return response.body;
+                    });
+
+                tokenRequest.then((token) => {
+                    const topicUid = token.tokenId;
+
+                    cy.request({
+                        method: METHOD.GET,
+                        url:
+                            API.ApiServer +
+                            API.ListOfTokens +
+                            topicUid +
+                            '/' +
+                            UserUsername +
+                            '/info',
+                        headers: {
+                            authorization,
+                        },
+                    }).then((response) => {
+                        expect(response.status).eql(STATUS_CODE.OK);
+                        expect(response.body).to.not.be.oneOf([null, '']);
+                    });
                 });
             })
         });
