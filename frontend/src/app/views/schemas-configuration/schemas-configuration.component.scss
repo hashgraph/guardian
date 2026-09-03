@@ -3546,6 +3546,121 @@
     }
 }
 
+.sc-rte-preset-card {
+    position: relative;
+    min-height: 54px;
+    padding: 9px 68px 9px 10px;
+    cursor: default;
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
+    border-radius: 6px;
+    background: var(--guardian-grey-background, #F9FAFC);
+    color: var(--guardian-font-color, #23252E);
+    overflow: hidden;
+}
+
+.sc-rte-preset-empty {
+    display: block;
+    padding: 7px 0;
+    font-size: 12px;
+    color: var(--guardian-font-color-secondary, #848FA9);
+}
+
+.sc-rte-preset-preview {
+    position: relative;
+    max-height: 54px;
+    overflow: hidden;
+    font-size: 12px;
+    line-height: 1.45;
+    pointer-events: none;
+
+    ::ng-deep h1,
+    ::ng-deep h2,
+    ::ng-deep h3,
+    ::ng-deep p,
+    ::ng-deep ul,
+    ::ng-deep ol {
+        margin: 0;
+    }
+
+    ::ng-deep h1 { font-size: 1rem; }
+    ::ng-deep h2 { font-size: 0.9375rem; }
+    ::ng-deep h3 { font-size: 0.875rem; }
+}
+
+.sc-rte-preset-preview[data-clipped]::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 20px;
+    background: linear-gradient(to bottom, transparent, var(--guardian-grey-background, #F9FAFC));
+}
+
+.sc-rte-preset-preview[data-clipped-x]::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    width: 24px;
+    background: linear-gradient(to right, transparent, var(--guardian-grey-background, #F9FAFC));
+}
+
+.sc-rte-preset-edit {
+    position: absolute;
+    top: 50%;
+    right: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    transform: translateY(-50%);
+    border: 0;
+    border-radius: 4px;
+    background: var(--guardian-grey-background, #F9FAFC);
+    font-size: 13px;
+    color: var(--color-primary, #4169E2);
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+        background: var(--guardian-primary-background);
+        outline: none;
+    }
+}
+
+::ng-deep .sc-rte-preset-dialog {
+    &.p-dialog {
+        overflow: visible;
+    }
+
+    .p-dialog-content {
+        padding-top: 8px;
+        overflow: visible;
+    }
+
+    .rte-editor {
+        font-size: 15px;
+    }
+
+    .sc-btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+    }
+
+    .sc-btn:disabled:hover {
+        filter: none;
+    }
+
+    &.sc-rte-preset-dialog--locked .p-dialog-close-button {
+        opacity: 0.45;
+        pointer-events: none;
+    }
+}
+
 // Field-value enum picker is a p-select (guardian-dropdown); shrink it to match
 // the compact scalar value inputs (.sc-fv-input) instead of the full 40px control.
 .sc-fv-select { width: 100%; }

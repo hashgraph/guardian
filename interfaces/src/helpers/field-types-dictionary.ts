@@ -194,6 +194,22 @@ export class FieldTypesDictionary {
             pattern: '^\\d+\\.\\d+\\.\\d+$',
             isRef: false,
             customType: 'hederaAccount'
+        },
+        {
+            name: 'Rich Text',
+            type: 'string',
+            format: undefined,
+            pattern: undefined,
+            isRef: false,
+            customType: 'richText'
+        },
+        {
+            name: 'Markdown',
+            type: 'string',
+            format: undefined,
+            pattern: undefined,
+            isRef: false,
+            customType: 'markdown'
         }
     ];
 

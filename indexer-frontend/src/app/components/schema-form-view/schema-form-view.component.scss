@@ -213,6 +213,35 @@ form {
     width: 100%;
 }
 
+.rte-view-content {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 16px;
+    min-height: 40px;
+    border-radius: 8px;
+    border: 1px solid var(--color-grey-3, #E1E7EF);
+    background: var(--color-grey-white, #FFF);
+    color: var(--color-grey-black-1, #181818);
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.6;
+    word-break: break-word;
+    overflow-x: auto;
+
+    img, video { max-width: 100%; height: auto; }
+
+    b, strong { font-weight: 700; }
+    i, em     { font-style: italic; }
+    u         { text-decoration: underline; }
+    h1        { font-size: 1.5em; font-weight: 700; margin: 0.4em 0 0.2em; }
+    h2        { font-size: 1.25em; font-weight: 700; margin: 0.4em 0 0.2em; }
+    h3        { font-size: 1.1em; font-weight: 700; margin: 0.4em 0 0.2em; }
+    ul        { list-style-type: disc; margin-left: 1.6em; }
+    ol        { list-style-type: decimal; margin-left: 1.6em; }
+    a         { color: var(--color-primary, #4169E2); text-decoration: underline; }
+}
+
 .boolean-show {
     font-family: Inter, sans-serif;
     font-size: 12px;

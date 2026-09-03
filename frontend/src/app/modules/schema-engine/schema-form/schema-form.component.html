@@ -64,8 +64,9 @@
                     ) {
                     <div
                       class="suggestion"
+                      [class.suggestion-rich]="isRichText(item)"
                       >
-                      @if (!suggestIsObject(item.suggest)) {
+                      @if (!suggestIsObject(item.suggest) && !isRichText(item)) {
                         <div
                           class="suggestion-name"
                           >
@@ -75,6 +76,10 @@
                       }
                       <button
                         (click)="patchSuggestValue(item)"
+                        (mouseenter)="onSuggestEnter($event, item, suggestPopover)"
+                        (mouseleave)="onSuggestLeave(suggestPopover)"
+                        (focus)="onSuggestEnter($event, item, suggestPopover)"
+                        (blur)="onSuggestLeave(suggestPopover)"
                         class="guardian-button guardian-button-secondary"
                         >
                         Fill the field with suggestion
@@ -128,6 +133,19 @@
                           placeholder="Not selected"
                           panelStyleClass="guardian-dropdown-panel guardian-geo-dropdown-panel"
                         ></p-select>
+                      </div>
+                    }
+                    @if (isRichText(item) || isMarkdown(item)) {
+                      <div
+                        class="form-field-input guardian-input-container"
+                        [attr.readonly-field]="isEditMode && !item.isUpdatable"
+                        >
+                        <app-rich-text-editor
+                          [formControl]="item.control"
+                          [format]="isMarkdown(item) ? 'markdown' : 'html'"
+                          [placeholder]="getPlaceholderByFieldType(item)"
+                          [readonly]="!!(isEditMode && !item.isUpdatable)"
+                        ></app-rich-text-editor>
                       </div>
                     }
                     @if (isInput(item)) {
@@ -612,8 +630,9 @@
                       ) {
                       <div
                         class="suggestion"
+                        [class.suggestion-rich]="isRichText(item)"
                         >
-                        @if (!suggestIsObject(item.suggest)) {
+                        @if (!suggestIsObject(item.suggest) && !isRichText(item)) {
                           <div
                             class="suggestion-name"
                             >
@@ -623,6 +642,10 @@
                         }
                         <button
                           (click)="patchSuggestValue(item)"
+                          (mouseenter)="onSuggestEnter($event, item, suggestPopover)"
+                          (mouseleave)="onSuggestLeave(suggestPopover)"
+                          (focus)="onSuggestEnter($event, item, suggestPopover)"
+                          (blur)="onSuggestLeave(suggestPopover)"
                           class="guardian-button guardian-button-secondary"
                           >
                           Fill the field with suggestion
@@ -666,6 +689,21 @@
                                     "
                                 ></table-field>
                               </ng-container>
+                            }
+                            @if (isRichText(item) || isMarkdown(item)) {
+                              <div
+                                class="form-field-input guardian-input-container"
+                                [attr.readonly-field]="
+                                    isEditMode && !item.isUpdatable
+                                "
+                                >
+                                <app-rich-text-editor
+                                  [formControl]="listItem.control"
+                                  [format]="isMarkdown(item) ? 'markdown' : 'html'"
+                                  [placeholder]="getPlaceholderByFieldType(item)"
+                                  [readonly]="!!(isEditMode && !item.isUpdatable)"
+                                ></app-rich-text-editor>
+                              </div>
                             }
                             @if (isInput(item)) {
                               <div
@@ -1477,3 +1515,12 @@
                       }
                     </form>
                   }
+
+<p-popover #suggestPopover styleClass="suggestion-popover">
+  <div
+    class="suggestion-popover-content"
+    (mouseenter)="onSuggestPopoverEnter()"
+    (mouseleave)="onSuggestLeave(suggestPopover)"
+    [innerHTML]="suggestPopoverValue"
+  ></div>
+</p-popover>

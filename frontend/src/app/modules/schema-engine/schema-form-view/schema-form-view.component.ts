@@ -13,6 +13,8 @@ import {
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { FormulasViewDialog } from '../../formulas/dialogs/formulas-view-dialog/formulas-view-dialog.component';
 import { DialogService } from 'primeng/dynamicdialog';
+import { isSafeHref, withNewTabLinks } from '../rich-text-editor/rich-text-sanitizer';
+import { markdownToHtml } from '../rich-text-editor/markdown';
 
 type SchemaFieldPredicate = { field: any; fieldValue: any } | { field: any; const: any };
 interface IFieldControl extends SchemaField {
@@ -427,9 +429,41 @@ export class SchemaFormViewComponent implements OnInit {
                 item.format !== 'date' &&
                 item.format !== 'time' &&
                 item.format !== 'date-time' &&
-                item.customType !== 'table'
+                item.customType !== 'table' &&
+                item.customType !== 'richText' &&
+                item.customType !== 'markdown'
             )
         );
+    }
+
+    public isRichText(item: IFieldControl): boolean {
+        return item.customType === 'richText';
+    }
+
+    public isMarkdown(item: IFieldControl): boolean {
+        return item.customType === 'markdown';
+    }
+
+    public getRichTextValue(value: unknown): string {
+        return withNewTabLinks(value);
+    }
+
+    public getMarkdownValue(value: unknown): string {
+        return withNewTabLinks(markdownToHtml(typeof value === 'string' ? value : ''));
+    }
+
+    public onRichTextLinkClick(event: MouseEvent): void {
+        const target = event.target;
+        if (!(target instanceof Element)) {
+            return;
+        }
+        const link = target.closest('a');
+        const href = link?.getAttribute('href') || '';
+        if (!href || !isSafeHref(href)) {
+            return;
+        }
+        event.preventDefault();
+        window.open(href, '_blank', 'noopener,noreferrer');
     }
 
     public isPrefix(item: IFieldControl): boolean {

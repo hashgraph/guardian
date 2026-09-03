@@ -73,6 +73,15 @@
                             class="text"
                           >{{ getText(element, option) }}</span>
                         }
+                        @if (option.type == 'richText' || option.type == 'markdown') {
+                          @let richTextCellText = getRichTextCellText(element, option);
+                          <span
+                            class="text"
+                            [class.rich-text-cell]="!!richTextCellText"
+                            (mouseenter)="onRichTextEnter($event, element, option, richTextPopover)"
+                            (mouseleave)="onRichTextLeave(richTextPopover)"
+                          >{{ richTextCellText }}</span>
+                        }
                         @if (option.type == 'issuer') {
                           <span
                             [title]="getText(element, option)"
@@ -205,6 +214,15 @@
     </div>
   }
 </div>
+
+<p-popover #richTextPopover styleClass="rich-text-popover">
+  <div
+    class="rich-text-popover-content"
+    (mouseenter)="onRichTextPopoverEnter()"
+    (mouseleave)="onRichTextLeave(richTextPopover)"
+    [innerHTML]="richTextValue"
+  ></div>
+</p-popover>
 
 <ng-template #preloader>
   <div class="preloader-image"></div>

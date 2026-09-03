@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpResponse } from '@angular/common/http';
 import { EMPTY, Observable, Subject, Subscription, forkJoin, of } from 'rxjs';
@@ -16,6 +16,8 @@ import { CodeEditorDialogComponent } from 'src/app/modules/policy-engine/dialogs
 import { ExportPolicyDialog } from 'src/app/modules/policy-engine/dialogs/export-policy-dialog/export-policy-dialog.component';
 import { PublishSchemaTemplateDialog } from 'src/app/modules/policy-engine/dialogs/publish-schema-template-dialog/publish-schema-template-dialog.component';
 import { FieldTypeUI, FIELD_TYPES_UI } from 'src/app/modules/schema-engine/field-type-ui';
+import { RichTextEditorComponent } from 'src/app/modules/schema-engine/rich-text-editor/rich-text-editor.component';
+import { markdownToHtml } from 'src/app/modules/schema-engine/rich-text-editor/markdown';
 import { SchemaTemplatesService } from 'src/app/services/schema-templates.service';
 import { ToastService } from 'src/app/services/toast.service';
 
@@ -112,6 +114,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public previewPill: 'submitter' | 'readonly' = 'submitter';
     public previewPreset: any = null;
     public previewReadonlyFields: any = null;
+    public richTextPresetTarget: 'default' | 'suggest' | 'test' | null = null;
+    @ViewChild('richTextPresetEditor') public richTextPresetEditor?: RichTextEditorComponent;
 
     public drillStack: DrillEntry[] = [];
     public get isDrilling(): boolean { return this.drillStack.length > 0; }
@@ -1425,6 +1429,63 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.markDirty();
     }
 
+    public openRichTextPresetDialog(target: 'default' | 'suggest' | 'test'): void {
+        this.richTextPresetTarget = target;
+    }
+
+    public isFormattedPresetField(): boolean {
+        const type = this.selectedField ? this.getFieldValueInputType(this.selectedField) : '';
+        return type === 'richText' || type === 'markdown';
+    }
+
+    public isMarkdownPresetField(): boolean {
+        return !!this.selectedField && this.getFieldValueInputType(this.selectedField) === 'markdown';
+    }
+
+    public getPresetPreviewHtml(value: any): string {
+        if (typeof value !== 'string' || !value) {
+            return '';
+        }
+        return this.isMarkdownPresetField() ? markdownToHtml(value) : value;
+    }
+
+    public isRichTextPresetLinkOpen(): boolean {
+        return !!this.richTextPresetEditor?.showLinkDialog;
+    }
+
+    public closeRichTextPresetDialog(): void {
+        if (this.isRichTextPresetLinkOpen()) {
+            return;
+        }
+        this.richTextPresetEditor?.cancelLink();
+        this.richTextPresetTarget = null;
+    }
+
+    public getRichTextPresetDialogTitle(): string {
+        if (this.richTextPresetTarget === 'default') { return 'Default value'; }
+        if (this.richTextPresetTarget === 'suggest') { return 'Suggested value'; }
+        return 'Test value';
+    }
+
+    public getRichTextPresetValue(): string {
+        if (this.richTextPresetTarget === 'default') {
+            return typeof this.selectedField?.default === 'string' ? this.selectedField.default : '';
+        }
+        if (this.richTextPresetTarget === 'suggest') {
+            return typeof this.selectedField?.suggest === 'string' ? this.selectedField.suggest : '';
+        }
+        const value = this.getFieldTestValue();
+        return typeof value === 'string' ? value : '';
+    }
+
+    public setRichTextPresetValue(value: string): void {
+        if (this.richTextPresetTarget === 'default' || this.richTextPresetTarget === 'suggest') {
+            this.setFieldPresetValue(this.richTextPresetTarget, value);
+        } else if (this.richTextPresetTarget === 'test') {
+            this.setFieldTestValue(value);
+        }
+    }
+
     private removeGeoDependenciesByField(field: SchemaField, fields: SchemaField[]): void {
         for (const candidate of fields) {
             if (candidate.dependency?.kind === 'geo' && candidate.dependency.on === field.name) {
@@ -1546,6 +1607,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (key === 'date') { return 'date'; }
         if (key === 'time') { return 'time'; }
         if (key === 'dateTime') { return 'datetime-local'; }
+        if (key === 'richText') { return 'richText'; }
+        if (key === 'markdown') { return 'markdown'; }
+
         return 'text';
     }
 

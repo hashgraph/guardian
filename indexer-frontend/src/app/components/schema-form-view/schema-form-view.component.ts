@@ -19,6 +19,8 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
 import { DialogService } from 'primeng/dynamicdialog';
 import { FormulasViewDialog } from '../../dialogs/formulas-view-dialog/formulas-view-dialog.component';
 import {TableViewerComponent} from '../table-viewer/table-viewer.component';
+import { isSafeHref, withNewTabLinks } from './rich-text-view';
+import { markdownToHtml } from './markdown-view';
 
 /**
  * Form view by schema
@@ -177,8 +179,40 @@ export class SchemaFormViewComponent {
             item.format !== 'date' &&
             item.format !== 'time' &&
             item.format !== 'date-time' &&
-            item.customType !== 'table'
+            item.customType !== 'table' &&
+            item.customType !== 'richText' &&
+            item.customType !== 'markdown'
         );
+    }
+
+    isRichText(item: SchemaField): boolean {
+        return item.customType === 'richText';
+    }
+
+    isMarkdown(item: SchemaField): boolean {
+        return item.customType === 'markdown';
+    }
+
+    getRichTextValue(value: unknown): string {
+        return withNewTabLinks(value);
+    }
+
+    getMarkdownValue(value: unknown): string {
+        return withNewTabLinks(markdownToHtml(typeof value === 'string' ? value : ''));
+    }
+
+    onRichTextLinkClick(event: MouseEvent): void {
+        const target = event.target;
+        if (!(target instanceof Element)) {
+            return;
+        }
+        const link = target.closest('a');
+        const href = link?.getAttribute('href') || '';
+        if (!href || !isSafeHref(href)) {
+            return;
+        }
+        event.preventDefault();
+        window.open(href, '_blank', 'noopener,noreferrer');
     }
 
     isPrefix(item: SchemaField): boolean {

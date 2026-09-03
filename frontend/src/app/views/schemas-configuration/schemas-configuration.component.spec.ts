@@ -94,6 +94,83 @@ describe('SchemasConfigurationComponent', () => {
         return component;
     }
 
+    describe('Rich Text preset dialog', () => {
+        it('opens the requested preset and routes its value back to the selected field', () => {
+            const component = createComponent();
+            component.selectedField = makeField({ default: '<p>Default</p>' });
+            component.markDirty = jasmine.createSpy('markDirty');
+
+            component.openRichTextPresetDialog('default');
+            component.setRichTextPresetValue('<p>Changed</p>');
+
+            expect(component.richTextPresetTarget).toBe('default');
+            expect(component.getRichTextPresetDialogTitle()).toBe('Default value');
+            expect(component.getRichTextPresetValue()).toBe('<p>Changed</p>');
+            expect(component.selectedField.default).toBe('<p>Changed</p>');
+            expect(component.markDirty).toHaveBeenCalled();
+        });
+
+        it('writes a Rich Text test value through the existing example value flow', () => {
+            const component = createComponent();
+            component.selectedField = makeField();
+            component.markDirty = jasmine.createSpy('markDirty');
+
+            component.openRichTextPresetDialog('test');
+            component.setRichTextPresetValue('<p>Example</p>');
+
+            expect(component.getRichTextPresetDialogTitle()).toBe('Test value');
+            expect(component.selectedField.examples).toEqual(['<p>Example</p>']);
+        });
+
+        it('refuses to close while the editor still has its link dialog open', () => {
+            const component = createComponent();
+            component.selectedField = makeField({ default: '<p>Default</p>' });
+            component.richTextPresetEditor = { showLinkDialog: true, cancelLink: jasmine.createSpy('cancelLink') };
+
+            component.openRichTextPresetDialog('default');
+            component.closeRichTextPresetDialog();
+
+            expect(component.isRichTextPresetLinkOpen()).toBeTrue();
+            expect(component.richTextPresetTarget).toBe('default');
+            expect(component.richTextPresetEditor.cancelLink).not.toHaveBeenCalled();
+        });
+
+        it('clears the editor link state when it does close', () => {
+            const component = createComponent();
+            component.selectedField = makeField({ default: '<p>Default</p>' });
+            component.richTextPresetEditor = { showLinkDialog: false, cancelLink: jasmine.createSpy('cancelLink') };
+
+            component.openRichTextPresetDialog('default');
+            component.closeRichTextPresetDialog();
+
+            expect(component.richTextPresetTarget).toBeNull();
+            expect(component.richTextPresetEditor.cancelLink).toHaveBeenCalled();
+        });
+
+        it('closes when no editor is rendered at all', () => {
+            const component = createComponent();
+            component.selectedField = makeField();
+
+            component.openRichTextPresetDialog('test');
+            component.closeRichTextPresetDialog();
+
+            expect(component.isRichTextPresetLinkOpen()).toBeFalse();
+            expect(component.richTextPresetTarget).toBeNull();
+        });
+
+        it('survives two pencil clicks arriving for the same preset', () => {
+            const component = createComponent();
+            component.selectedField = makeField({ suggest: '<p>Suggested</p>' });
+            component.markDirty = jasmine.createSpy('markDirty');
+
+            component.openRichTextPresetDialog('suggest');
+            component.openRichTextPresetDialog('suggest');
+
+            expect(component.richTextPresetTarget).toBe('suggest');
+            expect(component.getRichTextPresetValue()).toBe('<p>Suggested</p>');
+        });
+    });
+
     describe('a drill edit followed by a sidebar search', () => {
 
         it('keeps the sub-schema key when the search returns it, and saveAll sends the drill edits', () => {
@@ -869,6 +946,46 @@ describe('SchemasConfigurationComponent', () => {
                 expect(sentCount(component))
                     .toBeGreaterThan(0, `enabled button sent nothing for state: ${state.name}`);
             });
+        });
+    });
+
+    describe('getFieldValueInputType', () => {
+        const fieldTypes = [
+            { key: 'string', schemaType: 'string' },
+            { key: 'number', schemaType: 'number' },
+            { key: 'boolean', schemaType: 'boolean' },
+            { key: 'date', schemaType: 'string', format: 'date' },
+            { key: 'hederaAccount', schemaType: 'string', pattern: '^\\d+\\.\\d+\\.\\d+$', customType: 'hederaAccount' },
+            { key: 'richText', schemaType: 'string', customType: 'richText' },
+        ];
+
+        function typeOf(field: any): string {
+            const component = createComponent();
+            component.fieldTypes = fieldTypes;
+            return component.getFieldValueInputType(field);
+        }
+
+        it('asks for the rich text editor on a rich text field', () => {
+            expect(typeOf(makeField({ type: 'string', customType: 'richText' }))).toBe('richText');
+        });
+
+        it('keeps a plain string field on a text input', () => {
+            expect(typeOf(makeField({ type: 'string' }))).toBe('text');
+        });
+
+        it('keeps the other scalar types on their own inputs', () => {
+            expect(typeOf(makeField({ type: 'boolean' }))).toBe('boolean');
+            expect(typeOf(makeField({ type: 'number' }))).toBe('number');
+            expect(typeOf(makeField({ type: 'string', format: 'date' }))).toBe('date');
+        });
+
+        it('does not treat another custom type as rich text', () => {
+            const account = makeField({
+                type: 'string',
+                pattern: '^\\d+\\.\\d+\\.\\d+$',
+                customType: 'hederaAccount',
+            });
+            expect(typeOf(account)).not.toBe('richText');
         });
     });
 });

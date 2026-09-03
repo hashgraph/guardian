@@ -14,6 +14,7 @@ import { IPFSService } from 'src/app/services/ipfs.service';
 import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from '../../../services/api';
 import { FieldForm, IFieldControl, IFieldIndexControl } from '../schema-form-model/field-form';
 import { getMinutesAgoStream } from 'src/app/utils/autosave-utils';
+import { withNewTabLinks } from '../rich-text-editor/rich-text-sanitizer';
 import {
     GeoOption,
     GeoResolverField,
@@ -201,6 +202,7 @@ export class SchemaFormComponent implements OnInit {
     }
 
     ngOnDestroy() {
+        this.clearSuggestHideTimer();
         this.geoSubscriptions.unsubscribe();
         this.destroy.emit();
         this.destroy$.next(true);
@@ -547,8 +549,18 @@ export class SchemaFormComponent implements OnInit {
                 item.format !== 'date-time'
             ) && !item.remoteLink && !item.enum
             && item.customType !== 'table'
+            && item.customType !== 'richText'
+            && item.customType !== 'markdown'
             && !this.isGeoLocation(item)
         );
+    }
+
+    public isRichText(item: IFieldControl<any>): boolean {
+        return item.customType === 'richText';
+    }
+
+    public isMarkdown(item: IFieldControl<any>): boolean {
+        return item.customType === 'markdown';
     }
 
     public isHelpText(item: IFieldControl<any>): boolean {
@@ -598,6 +610,43 @@ export class SchemaFormComponent implements OnInit {
 
     public parseSuggest(item: any): string {
         return this.findString(item);
+    }
+
+    public suggestPopoverValue = '';
+
+    private suggestHideTimer: any = null;
+
+    public onSuggestEnter(event: Event, item: IFieldControl<any>, popover: any): void {
+        if (!this.isRichText(item)) {
+            return;
+        }
+        this.clearSuggestHideTimer();
+        this.suggestPopoverValue = withNewTabLinks(item.suggest);
+        if (this.suggestPopoverValue) {
+            popover.show(event);
+        }
+    }
+
+    public onSuggestLeave(popover: any): void {
+        if (!this.suggestPopoverValue) {
+            return;
+        }
+        this.clearSuggestHideTimer();
+        this.suggestHideTimer = setTimeout(() => {
+            this.suggestHideTimer = null;
+            popover.hide();
+        }, 250);
+    }
+
+    public onSuggestPopoverEnter(): void {
+        this.clearSuggestHideTimer();
+    }
+
+    private clearSuggestHideTimer(): void {
+        if (this.suggestHideTimer) {
+            clearTimeout(this.suggestHideTimer);
+            this.suggestHideTimer = null;
+        }
     }
 
     private findString(item: any): string {
@@ -724,6 +773,8 @@ export class SchemaFormComponent implements OnInit {
             switch (customType) {
                 case 'hederaAccount':
                     return PlaceholderByFieldType.HederaAccount;
+                case 'richText':
+                    return PlaceholderByFieldType.String;
                 default:
                     return "";
             }

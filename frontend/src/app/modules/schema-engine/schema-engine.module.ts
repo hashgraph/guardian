@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ClipboardModule } from '@angular/cdk/clipboard';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import { GeojsonTypeComponent } from './geojson-type/geojson-type.component';
@@ -40,6 +40,7 @@ import { CopySchemaDialog } from './copy-schema-dialog/copy-schema-dialog';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { SentinelHubTypeComponent } from './sentinel-hub-type/sentinel-hub-type.component';
 import { TooltipModule } from 'primeng/tooltip';
+import { PopoverModule } from 'primeng/popover';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { AccordionModule } from 'primeng/accordion';
 import { DateTimeComponent } from './schema-form/controls/date-time/date-time.component';
@@ -54,6 +55,8 @@ import { SchemaDeleteWarningDialogComponent } from './schema-delete-warning-dial
 import { SchemaDeleteDialogComponent } from './schema-delete-dialog/schema-delete-dialog.component';
 import { SchemaFormNavigationComponent } from './schema-form-navigation/schema-form-navigation.component';
 import { SchemaFormViewNavigationComponent } from './schema-form-view-navigation/schema-form-view-navigation.component';
+import { RichTextEditorComponent } from './rich-text-editor/rich-text-editor.component';
+import { RichTextClipDirective } from './rich-text-editor/rich-text-clip.directive';
 
 @NgModule({
     declarations: [
@@ -85,11 +88,14 @@ import { SchemaFormViewNavigationComponent } from './schema-form-view-navigation
         TableFieldComponent,
         TableViewerComponent,
         SchemaFormNavigationComponent,
-        SchemaFormViewNavigationComponent
+        SchemaFormViewNavigationComponent,
+        RichTextEditorComponent,
+        RichTextClipDirective
     ],
     imports: [
         CommonModule,
         FormsModule,
+        ReactiveFormsModule,
         CommonComponentsModule,
         MaterialModule,
         ClipboardModule,
@@ -103,6 +109,7 @@ import { SchemaFormViewNavigationComponent } from './schema-form-view-navigation
         SelectModule,
         DatePickerModule,
         TooltipModule,
+        PopoverModule,
         RadioButtonModule,
         SelectButtonModule,
         AccordionModule,
@@ -124,7 +131,9 @@ import { SchemaFormViewNavigationComponent } from './schema-form-view-navigation
         SchemaFormDialog,
         SchemaFormRootComponent,
         SchemaFormNavigationComponent,
-        SchemaFormViewNavigationComponent
+        SchemaFormViewNavigationComponent,
+        RichTextEditorComponent,
+        RichTextClipDirective
     ],
     providers: [
         { provide: DialogService, useClass: GuardianDialogService }
