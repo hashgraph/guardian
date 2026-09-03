@@ -427,7 +427,7 @@ export class RoleService extends NatsService {
                     const roles = await entityRepository.find(DynamicRole, { id: { $in: userRoles } });
                     for (const role of roles) {
                         if (
-                            (role.owner && role.owner === owner.creator) ||
+                            (role.owner && role.owner === owner.owner) ||
                             (!role.owner && role.default)
                         ) {
                             roleMap.set(role.id, [owner.creator, role.name, role.uuid]);
