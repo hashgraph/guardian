@@ -1,3 +1,5 @@
+# dclint disable require-project-name-field
+# This is an SSL overlay meant to be combined with another compose file via `-f`, not run standalone.
 services:
   web-proxy:
     volumes:

@@ -10,13 +10,21 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
     const PPUser = Cypress.env('PPUser');
     const VVBUser = Cypress.env('VVBUser');
 
-    // The policy is imported from a message published on testnet in Aug 2025, but its payload
-    // is no longer pinned by anyone on the public network. These three values are coupled: the
-    // fixture is the very file the message points at, so re-adding it to the local IPFS node
-    // restores exactly the CID the import resolves.
-    const VM0033MessageId = '1755735271.024933000';
-    const VM0033Cid = 'QmRQLvn2GicoPDhDtDJwcUQhHgUSKqZXCkNQdP1kDzXtT9';
-    const VM0033Fixture = 'VM0033-v1.0.3.policy';
+    // The policy is imported from a Hedera message (1788455827.615076104) whose payload may not
+    // be pinned by anyone on the public network. The CID/fixture pair below is coupled to that
+    // message: the fixture is the very file the message points at, so re-adding it to the local
+    // IPFS node restores exactly the CID the import resolves.
+    const VM0033MessageId = '1788455827.615076104';
+    const VM0033Cid = 'QmYCr2Ja9gZHa57rSHyradhFVUyCXBXrUCE7mF6hKWeMnB';
+    const VM0033Fixture = 'VM0033_7_23.policy';
+
+    // VM0033 depends on two tools resolved by the messages 1788452650.434779104 and
+    // 1788452793.845170104; same coupling applies to their CID/fixture pairs.
+    const ARTool05Cid = 'QmUyYYqfHVXYM6qY5PAyfSuxgkYnQCC2JLDFxzwXCC72qS';
+    const ARTool05Fixture = 'AR-Tool-05-v3.0.2.tool';
+
+    const ARTool14Cid = 'QmRPro2V3eSgQMXKWbLKVr5qf3wxviXSsV6prcWdndSY31';
+    const ARTool14Fixture = 'AR-Tool-14-v5.0.7.tool';
 
     // The policy is reused across runs, so its grids also hold the documents of earlier runs
     // and a row can no longer be addressed by position. Every document created here carries a
@@ -29,7 +37,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
     let validationReportRef; let verificationReportRef;
 
     // Grid rows are `VcDocument` entities: the posted payload becomes `credentialSubject[0]`.
-    const projectNameOf = (row) => row?.document?.credentialSubject?.at(0)?.project_details?.G5;
+    const projectNameOf = (row) => row?.document?.credentialSubject?.at(0)?.projectTitle;
     const subjectIdOf = (row) => row?.document?.credentialSubject?.at(0)?.id;
     const refOf = (row) => row?.document?.credentialSubject?.at(0)?.ref;
     const statusOf = (row) => row?.option?.status;
@@ -70,7 +78,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
             // instead of renaming the project in place.
             const document = {
                 ...payload.document,
-                project_details: { ...payload.document.project_details, G5: name }
+                projectTitle: name
             };
             return cy.request({
                 method: METHOD.POST,
@@ -85,9 +93,15 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
         });
     };
 
-    before('Make the VM0033 policy file available on IPFS', () => {
-        cy.task('ipfsAddFixture', VM0033Fixture, { timeout: 200000 }).then((cid) => {
-            expect(cid, `${VM0033Fixture} does not match the file published in message ${VM0033MessageId}`).to.eq(VM0033Cid);
+    before('Make the VM0033 policy and its tool dependencies available on IPFS', () => {
+        [
+            [VM0033Fixture, VM0033Cid],
+            [ARTool05Fixture, ARTool05Cid],
+            [ARTool14Fixture, ARTool14Cid],
+        ].forEach(([fixture, cid]) => {
+            cy.task('ipfsAddFixture', fixture, { timeout: 200000 }).then((addedCid) => {
+                expect(addedCid, `${fixture} does not match the CID referenced by its Hedera message`).to.eq(cid);
+            });
         });
     });
 
@@ -112,44 +126,28 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
     })
 
     it('Import, publish, assign policy', () => {
-        // Importing and publishing VM0033 costs minutes and HBAR, so reuse the policy a
-        // previous run left published and only build it when it is missing.
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies,
-                qs: { pageIndex: 0, pageSize: 100 },
-                headers: { authorization },
-                timeout: 180000,
+                method: METHOD.POST,
+                url: API.ApiServer + API.PolicisImportMsg,
+                body: { messageId: VM0033MessageId },
+                headers: {
+                    authorization,
+                },
+                timeout: 1800000,
             }).then((response) => {
-                const published = response.body.find((policy) =>
-                    policy.status === 'PUBLISH' && policy.name?.startsWith('VM0033'));
-                if (published) {
-                    policyId = published.id;
-                    return;
-                }
+                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
+                policyId = response.body.at(0).id;
                 cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + API.PolicisImportMsg,
-                    body: { messageId: VM0033MessageId },
+                    method: METHOD.PUT,
+                    url: API.ApiServer + API.Policies + policyId + '/' + API.Publish,
+                    body: {
+                        policyVersion: '1.2.5'
+                    },
                     headers: {
-                        authorization,
+                        authorization
                     },
                     timeout: 1800000,
-                }).then((response) => {
-                    expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                    policyId = response.body.at(0).id;
-                    cy.request({
-                        method: METHOD.PUT,
-                        url: API.ApiServer + API.Policies + policyId + '/' + API.Publish,
-                        body: {
-                            policyVersion: '1.2.5'
-                        },
-                        headers: {
-                            authorization
-                        },
-                        timeout: 1800000,
-                    })
                 })
             })
         })
@@ -400,7 +398,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
                     // The report carries the same project name, which is what ties it to this run.
                     const document = {
                         ...payload.document,
-                        project_details: { ...payload.document.project_details, G5: projectName }
+                        projectTitle: projectName
                     };
                     cy.request({
                         method: METHOD.POST,
