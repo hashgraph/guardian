@@ -3197,6 +3197,14 @@ export class Guardians extends NatsService {
         return await this.sendMessage<any>(MessageAPI.START_RECORDING, { policyId, owner, options });
     }
 
+    public async pauseRecording(policyId: string, owner: IOwner): Promise<boolean> {
+        return await this.sendMessage<boolean>(MessageAPI.PAUSE_RECORDING, { policyId, owner });
+    }
+
+    public async resumeRecording(policyId: string, owner: IOwner): Promise<boolean> {
+        return await this.sendMessage<boolean>(MessageAPI.RESUME_RECORDING, { policyId, owner });
+    }
+
     /**
      * Stop recording
      * @param policyId

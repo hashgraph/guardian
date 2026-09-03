@@ -228,6 +228,18 @@ describe('@unit Guardians record', () => {
         assert.deepEqual(calls[0], [MessageAPI.START_RECORDING, { policyId: 'p1', owner, options: { o: 1 } }]);
     });
 
+    it('pauseRecording forwards policyId and owner', async () => {
+        const { g, calls } = make(true);
+        assert.equal(await g.pauseRecording('p1', owner), true);
+        assert.deepEqual(calls[0], [MessageAPI.PAUSE_RECORDING, { policyId: 'p1', owner }]);
+    });
+
+    it('resumeRecording forwards policyId and owner', async () => {
+        const { g, calls } = make(true);
+        assert.equal(await g.resumeRecording('p1', owner), true);
+        assert.deepEqual(calls[0], [MessageAPI.RESUME_RECORDING, { policyId: 'p1', owner }]);
+    });
+
     it('stopRecording returns base64 decoded buffer', async () => {
         const b64 = Buffer.from('record-data').toString('base64');
         const { g, calls } = make(b64);

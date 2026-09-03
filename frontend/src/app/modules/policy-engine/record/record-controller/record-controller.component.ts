@@ -47,6 +47,7 @@ export class RecordControllerComponent implements OnInit {
     private _subscription = new Subscription();
     private _resultDialog: any;
     private _overlay: any;
+    private _stopPending: boolean = false;
 
     constructor(
         private wsService: WebSocketService,
@@ -130,12 +131,16 @@ export class RecordControllerComponent implements OnInit {
     }
 
     public stopRecording() {
+        if (this._stopPending) {
+            return;
+        }
+        this._stopPending = true;
         if (this.policyTest.shouldWarnBeforeStop()) {
             this.openNoOutputWarning();
             return;
         }
 
-        this.openSaveRecordDialog(true);
+        this.pauseAndOpenSaveRecordDialog(true);
     }
 
     private openNoOutputWarning(): void {
@@ -156,8 +161,24 @@ export class RecordControllerComponent implements OnInit {
 
         dialogRef.onClose.subscribe((confirmed: boolean) => {
             if (confirmed) {
-                this.openSaveRecordDialog(false);
+                this.pauseAndOpenSaveRecordDialog(false);
+            } else {
+                this._stopPending = false;
             }
+        });
+    }
+
+    private pauseAndOpenSaveRecordDialog(includePolicyTestMetadata: boolean): void {
+        this.recordService.pauseRecording(this.policyId).subscribe((result) => {
+            if (!result) {
+                this._stopPending = false;
+                return;
+            }
+            this.recording = false;
+            this.updateActive();
+            this.openSaveRecordDialog(includePolicyTestMetadata);
+        }, () => {
+            this._stopPending = false;
         });
     }
 
@@ -174,11 +195,24 @@ export class RecordControllerComponent implements OnInit {
 
         dialogRef.onClose.subscribe((result: SavePolicyTestRecordResult | null) => {
             if (!result) {
+                this.resumeRecording();
                 return;
             }
 
             this.policyTest.setMetadata(result.name, result.description);
             this.stopRecordingInternal(result, includePolicyTestMetadata);
+        });
+    }
+
+    private resumeRecording(): void {
+        this.recordService.resumeRecording(this.policyId).subscribe((result) => {
+            if (result) {
+                this.recording = true;
+                this.updateActive();
+            }
+            this._stopPending = false;
+        }, () => {
+            this._stopPending = false;
         });
     }
 
@@ -196,6 +230,7 @@ export class RecordControllerComponent implements OnInit {
             this.updateActive();
             this.loading = false;
             this.policyTest.reset();
+            this._stopPending = false;
             if (saveMetadata.saveToFile !== false) {
                 const downloadLink = document.createElement('a');
                 downloadLink.href = window.URL.createObjectURL(
@@ -212,6 +247,7 @@ export class RecordControllerComponent implements OnInit {
             this.updateActive();
             this.loading = false;
             this.policyTest.reset();
+            this._stopPending = false;
         });
     }
 

@@ -36322,6 +36322,108 @@ paths:
       summary: Start recording.
       tags:
         - record
+  /record/{policyId}/recording/pause:
+    post:
+      description: >-
+        Pause recording. Only users with the Standard Registry role are allowed
+        to make the request.
+      operationId: RecordApi_pauseRecord
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Pause recording.
+      tags:
+        - record
+  /record/{policyId}/recording/resume:
+    post:
+      description: >-
+        Resume recording. Only users with the Standard Registry role are allowed
+        to make the request.
+      operationId: RecordApi_resumeRecord
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Resume recording.
+      tags:
+        - record
   /record/{policyId}/recording/stop:
     post:
       description: >-
