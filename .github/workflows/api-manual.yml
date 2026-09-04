@@ -15,7 +15,7 @@ on:
       tags:
         type: string
         description: Tags for test scope(s) (smoke, accounts, policies, all, ...)
-        default: "all"
+        default: "smoke"
       sr_balance:
         type: number
         description: INITIAL_STANDARD_REGISTRY_BALANCE in HBAR (max 500)
@@ -132,7 +132,7 @@ jobs:
           case "$EVENT" in
             schedule)          TAGS="all";               BALANCE=500 ;;
             push)              TAGS="smoke";             BALANCE=50  ;;
-            workflow_dispatch) TAGS="${IN_TAGS:-all}";   BALANCE="${IN_BALANCE:-50}" ;;
+            workflow_dispatch) TAGS="${IN_TAGS:-smoke}"; BALANCE="${IN_BALANCE:-50}" ;;
             *)                 TAGS="${IN_TAGS:-smoke}"; BALANCE=50  ;;
           esac
 
