@@ -8,6 +8,8 @@ www-data/
 /test_results/
 /guardian-service/config.json
 tsconfig.tsbuildinfo
+# CYPRESS_CACHE_FOLDER in .github/workflows/e2e-tests.yml
+.cache/
 .yarn/*
 !.yarn/patches
 !.yarn/plugins
