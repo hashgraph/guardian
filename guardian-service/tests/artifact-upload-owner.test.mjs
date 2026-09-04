@@ -2,15 +2,9 @@ import { assert } from 'chai';
 import { loadAPI, Interfaces } from './_handler-harness.mjs';
 
 /*
- * UPLOAD_ARTIFACT resolved its parent policy/tool by id alone and checked only
- * that it was a draft, never that the caller owned it.
- *
- * The row is written with the UPLOADER as `owner`, and GET_ARTIFACTS filters the
- * listing on `owner`, so the policy owner never sees the injected artifact - while
- * export, comparison and publish key on `policyId` alone and pull it in.
- *
- * DELETE_ARTIFACT in the same service already scopes its lookup by owner, which is
- * what makes this an omission rather than a deliberate design.
+ * UPLOAD_ARTIFACT resolved its parent by id alone and checked only that it was a
+ * draft, never that the caller owned it. The refusal reuses the not-found message
+ * so the caller cannot tell an id that exists from one that does not.
  */
 
 const M = Interfaces.MessageAPI;
