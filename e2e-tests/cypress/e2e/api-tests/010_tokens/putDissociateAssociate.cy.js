@@ -7,6 +7,7 @@ context('Tokens', { tags: ['tokens', 'thirdPool', 'all'] }, () => {
     const UserUsername = Cypress.env('User');
 
     let policyId;
+    let tokenId;
 
     before(() => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
@@ -62,64 +63,53 @@ context('Tokens', { tags: ['tokens', 'thirdPool', 'all'] }, () => {
                         assign: true
                     }
                 })
+            }).then(() => {
+                // postTokens.cy.js normally creates the fungible "test" token, but it may
+                // not have run (different order, or filtered out by tag), so create it here
+                // if needed to stay self-sufficient.
+                return cy.getOrCreateTestToken(authorization, authorization);
+            }).then((token) => {
+                tokenId = token.tokenId;
             })
         });
     })
 
     it('Associate and disassociate the user with the provided Hedera token', { tags: ['smoke'] }, () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
+            // The `associated` flag from the list endpoint can be stale relative to the
+            // actual Hedera state, so it can't be trusted to decide whether a cleanup
+            // dissociate is needed. Unconditionally dissociate first and ignore the
+            // result (a previous run may not have left it associated, in which case this
+            // returns a 500 with TOKEN_NOT_ASSOCIATED_TO_ACCOUNT) so the test always
+            // starts from a known, dissociated state.
             cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + 'tokens',
-                // By default a User only sees tokens tied to policies assigned to them (here,
-                // the iRec policy's token), which may already have NFTs minted to the account
-                // by unrelated policy-workflow runs and can't be dissociated. `status=All`
-                // returns the full token list instead, so we can target the fungible tokens
-                // this suite itself creates (postTokens.cy.js) and stay independent of that.
-                qs: {
-                    status: 'All'
+                method: 'PUT',
+                url: API.ApiServer + 'tokens/' + tokenId + '/dissociate',
+                headers: {
+                    authorization
                 },
+                failOnStatusCode: false
+            });
+            cy.request({
+                method: 'PUT',
+                url: API.ApiServer + 'tokens/' + tokenId + '/associate',
                 headers: {
                     authorization
                 }
             }).then((response) => {
-                const token = response.body.filter((t) => t.tokenName === 'test').at(-1);
-                const tokenId = token.tokenId;
-                // The `associated` flag from the list endpoint can be stale relative to the
-                // actual Hedera state, so it can't be trusted to decide whether a cleanup
-                // dissociate is needed. Unconditionally dissociate first and ignore the
-                // result (a previous run may not have left it associated, in which case this
-                // returns a 500 with TOKEN_NOT_ASSOCIATED_TO_ACCOUNT) so the test always
-                // starts from a known, dissociated state.
-                cy.request({
-                    method: 'PUT',
-                    url: API.ApiServer + 'tokens/' + tokenId + '/dissociate',
-                    headers: {
-                        authorization
-                    },
-                    failOnStatusCode: false
-                });
-                cy.request({
-                    method: 'PUT',
-                    url: API.ApiServer + 'tokens/' + tokenId + '/associate',
-                    headers: {
-                        authorization
-                    }
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.OK);
-                    expect(response.body.status).to.be.true;
-                });
-                cy.request({
-                    method: 'PUT',
-                    url: API.ApiServer + 'tokens/' + tokenId + '/dissociate',
-                    headers: {
-                        authorization
-                    }
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.OK);
-                    expect(response.body.status).to.be.true;
-                });
-            })
+                expect(response.status).eql(STATUS_CODE.OK);
+                expect(response.body.status).to.be.true;
+            });
+            cy.request({
+                method: 'PUT',
+                url: API.ApiServer + 'tokens/' + tokenId + '/dissociate',
+                headers: {
+                    authorization
+                }
+            }).then((response) => {
+                expect(response.status).eql(STATUS_CODE.OK);
+                expect(response.body.status).to.be.true;
+            });
         })
     })
 })

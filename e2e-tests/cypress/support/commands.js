@@ -121,6 +121,48 @@ Cypress.Commands.add('getUserProfile', (token, username) => {
     }).then(res => res.body);
 });
 
+// Several 010_tokens specs need a fungible "test" token to exist and normally rely on
+// postTokens.cy.js/postPushTokens.cy.js (which create it unconditionally) having already
+// run earlier in the same folder. That assumption breaks whenever specs are filtered by
+// tag (e.g. `--env grepTags=smoke`) and those creator specs get skipped. This command makes
+// each caller self-sufficient: reuse the token if one already exists, otherwise create it.
+Cypress.Commands.add('getOrCreateTestToken', (srToken, listToken, listQs = {}) => {
+    const findTestToken = () => cy.request({
+        method: METHOD.GET,
+        url: `${API.ApiServer}${API.ListOfTokens}`,
+        qs: listQs,
+        headers: { authorization: listToken },
+    }).then(({ body }) => body.filter((t) => t.tokenName === 'test').at(-1));
+
+    return findTestToken().then((existing) => {
+        if (existing) { return existing; }
+
+        return cy.request({
+            method: METHOD.POST,
+            url: `${API.ApiServer}${API.ListOfTokens}`,
+            headers: { authorization: srToken },
+            body: {
+                changeSupply: true,
+                decimals: 'string',
+                enableAdmin: true,
+                enableFreeze: true,
+                enableKYC: true,
+                enableWipe: true,
+                initialSupply: 'string',
+                tokenName: 'test',
+                tokenSymbol: 'string',
+                tokenType: 'string',
+            },
+            timeout: 180000,
+        }).then((response) => {
+            expect(response.status).to.eql(STATUS_CODE.SUCCESS);
+            // The POST response doesn't include tokenId, so re-fetch to find the token
+            // we just created.
+            return findTestToken();
+        });
+    });
+});
+
 Cypress.Commands.add('getTokenByPolicyId', (token, policyId) => {
     return cy.request({
         method: METHOD.GET,
