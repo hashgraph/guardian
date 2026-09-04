@@ -4,14 +4,9 @@ import { WorkerEvents } from '@guardian/interfaces';
 import { HederaSDKHelper } from '../dist/api/helpers/hedera-sdk-helper.js';
 
 /*
- * runTask marks the worker busy and used to clear that flag only with the last
- * statement of the happy path. A throw anywhere in between left isInUse stuck at
- * true for the lifetime of the process: GET_FREE_WORKERS stops replying,
- * WORKER_READY is never re-published, and the pod keeps passing its liveness
- * probe while accepting no further work.
- *
- * Both call sites invoke runTask without await and without catch, so the
- * rejection has nowhere to surface either.
+ * runTask used to clear isInUse only with the last statement of the happy path, so a
+ * throw anywhere left the worker busy for the process lifetime: GET_FREE_WORKERS
+ * stops replying and WORKER_READY is never re-published, while the pod stays healthy.
  */
 
 process.env.MIN_PRIORITY = process.env.MIN_PRIORITY || '0';
@@ -100,6 +95,27 @@ describe('@unit Worker runTask releases the worker on every exit path', () => {
         await dispatch(h);
         const ready = h.captured.publishes.filter(p => p.subject === WorkerEvents.WORKER_READY);
         assert.equal(ready.length, 1, 'WORKER_READY must be re-published after a failure');
+    });
+
+    it('releases even if the WORKER_READY catch itself throws', async () => {
+        // clearState() is the one line that must always run. Behind an unguarded catch
+        // its safety was borrowed from whatever `publish` rejects with, in two other
+        // packages; a nested finally makes it independent of that.
+        h = makeHarness();
+        h.captured.publishThrowsOn = WorkerEvents.WORKER_READY;
+        await h.worker.init();
+        // installed after init, which logs on its own. Synchronous: an async throw is
+        // only a rejected promise the catch never awaits, so it proves nothing here.
+        h.worker.logger = {
+            ...fakeLogger,
+            error: () => { throw new Error('logger unavailable'); },
+        };
+
+        await dispatch(h);
+
+        assert.equal(h.worker.isInUse, false,
+            'the release must not depend on the catch body surviving');
+        assert.equal(h.worker.currentTaskId, null);
     });
 
     it('still answers GET_FREE_WORKERS after a failed task', async () => {

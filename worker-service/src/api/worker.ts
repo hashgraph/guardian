@@ -187,15 +187,8 @@ export class Worker extends NatsService {
             this.currentTaskId = task.id;
             const userId = task.data?.payload?.userId;
 
-            /*
-             * Everything below runs inside try/finally. `isInUse` used to be cleared
-             * only by the last statement of the happy path, so a throw anywhere in
-             * between left the worker marked busy for the lifetime of the process:
-             * GET_FREE_WORKERS stops answering, WORKER_READY is never re-published,
-             * and the pod stays healthy while accepting no further work. Both call
-             * sites invoke runTask without await and without catch, so the rejection
-             * has nowhere to surface either.
-             */
+            // isInUse used to be cleared only by the last statement of the happy path,
+            // so a throw anywhere left the worker marked busy for the process lifetime
             try {
                 this.logger.info(`Task started: ${task.id}, ${task.type}`, [this.workerID, 'WORKER'], userId);
 
@@ -209,11 +202,7 @@ export class Worker extends NatsService {
                         this.logger.info(`Task completed: ${this.currentTaskId}`, [this.workerID, 'WORKER'], userId);
                     }
                 } catch (error) {
-                    /*
-                     * Log-only failure. This used to call clearState(), which released
-                     * isInUse mid-task and let a second task be dispatched to a worker
-                     * that was still running the first one.
-                     */
+                    // this used to call clearState(), releasing isInUse mid-task
                     this.logger.error(error.message, [this.workerID, 'WORKER'], userId);
                 }
 
@@ -229,12 +218,8 @@ export class Worker extends NatsService {
                         });
                     }
                 } catch (error) {
-                    /*
-                     * The result could not be transmitted - typically an oversized
-                     * payload rejected at publish time rather than at task time. Tell
-                     * the requester so it fails fast instead of waiting out its own
-                     * timeout, and keep the original error for the logs.
-                     */
+                    // undeliverable result, typically an oversized payload: tell the
+                    // requester so it fails fast instead of waiting out its own timeout
                     this.logger.error(
                         `Task result publish failed: ${task.id}, ${error?.message}`,
                         [this.workerID, 'WORKER'], userId
@@ -254,16 +239,15 @@ export class Worker extends NatsService {
                     [this.workerID, 'WORKER'], userId
                 );
             } finally {
-                /*
-                 * Re-announce before releasing. A worker that recovered its flag but
-                 * never re-published WORKER_READY would still sit out of the pool.
-                 */
+                // re-announce before releasing: a worker that recovered its flag but
+                // never re-published WORKER_READY would still sit out of the pool
                 try {
                     await this.publish(WorkerEvents.WORKER_READY);
                 } catch (error) {
-                    this.logger.error(error.message, [this.workerID, 'WORKER'], userId);
+                    this.logger.error(error?.message, [this.workerID, 'WORKER'], userId);
+                } finally {
+                    this.clearState();
                 }
-                this.clearState();
             }
         }
 
