@@ -312,6 +312,71 @@ describe('@unit PolicyUtils — pure helpers', () => {
         it('null document returns false', () => {
             assert.equal(PolicyUtils.checkDocumentField(null, { field: 'a', type: 'equal', value: 1 }), false);
         });
+
+        // #1743: a field the document doesn't carry resolves to undefined, and
+        // undefined !== <anything configured> was trivially true - so not_equal
+        // (and not_in) passed for every document that simply lacked the field.
+        it('missing field cannot satisfy not_equal - fails closed instead of fail-open', () => {
+            assert.equal(PolicyUtils.checkDocumentField({ a: 'x' }, { field: 'missing', type: 'not_equal', value: 'Approved' }), false);
+        });
+
+        it('missing field cannot satisfy not_in - fails closed instead of fail-open', () => {
+            assert.equal(PolicyUtils.checkDocumentField({ a: 'x' }, { field: 'missing', type: 'not_in', value: 'A,B' }), false);
+        });
+
+        it('missing field satisfies an explicit equal-null check', () => {
+            assert.equal(PolicyUtils.checkDocumentField({ a: 'x' }, { field: 'missing', type: 'equal', value: 'null' }), true);
+        });
+
+        it('missing field fails a non-null equal check', () => {
+            assert.equal(PolicyUtils.checkDocumentField({ a: 'x' }, { field: 'missing', type: 'equal', value: 'Approved' }), false);
+        });
+
+        // equal/not_equal used to compare by === (reference identity), so two
+        // structurally identical objects/arrays loaded from different documents
+        // could never be equal, and not_equal could never fail.
+        it('"equal" compares object values structurally, not by reference', () => {
+            const doc = { a: { x: 1, y: 2 } };
+            assert.equal(PolicyUtils.checkDocumentField(doc, { field: 'a', type: 'equal', value: { y: 2, x: 1 } }), true);
+        });
+
+        it('"equal" compares array values structurally, not by reference', () => {
+            const doc = { a: [1, 2, 3] };
+            assert.equal(PolicyUtils.checkDocumentField(doc, { field: 'a', type: 'equal', value: [1, 2, 3] }), true);
+            assert.equal(PolicyUtils.checkDocumentField(doc, { field: 'a', type: 'equal', value: [1, 2, 4] }), false);
+        });
+
+        it('"not_equal" on structurally-equal objects is false', () => {
+            const doc = { a: { x: 1 } };
+            assert.equal(PolicyUtils.checkDocumentField(doc, { field: 'a', type: 'not_equal', value: { x: 1 } }), false);
+        });
+
+        it('"equal" still coerces a numeric-looking string against a number field', () => {
+            assert.equal(PolicyUtils.checkDocumentField({ amount: 10 }, { field: 'amount', type: 'equal', value: '10' }), true);
+            assert.equal(PolicyUtils.checkDocumentField({ amount: 10 }, { field: 'amount', type: 'not_equal', value: '10' }), false);
+        });
+    });
+
+    describe('comparableEquals', () => {
+        it('coerces both sides before comparing', () => {
+            assert.equal(PolicyUtils.comparableEquals('10', 10), true);
+            assert.equal(PolicyUtils.comparableEquals('true', true), true);
+        });
+
+        it('compares arrays structurally regardless of reference identity', () => {
+            assert.equal(PolicyUtils.comparableEquals([1, { a: 2 }], [1, { a: 2 }]), true);
+            assert.equal(PolicyUtils.comparableEquals([1, 2], [2, 1]), false);
+        });
+
+        it('compares objects structurally regardless of key order', () => {
+            assert.equal(PolicyUtils.comparableEquals({ a: 1, b: 2 }, { b: 2, a: 1 }), true);
+            assert.equal(PolicyUtils.comparableEquals({ a: 1 }, { a: 2 }), false);
+        });
+
+        it('null/undefined are never equal to a defined object', () => {
+            assert.equal(PolicyUtils.comparableEquals(null, { a: 1 }), false);
+            assert.equal(PolicyUtils.comparableEquals(undefined, [1]), false);
+        });
     });
 
     describe('getDocumentRef', () => {
