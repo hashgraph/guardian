@@ -149,7 +149,7 @@ jobs:
           {
             echo "tags=$TAGS"
             echo "sr_balance=$BALANCE"
-            echo "report_name=Guardian E2E Report - $TAGS - ${GITHUB_SHA:0:8}"
+            echo "report_name=Guardian e2e Report - $TAGS - ${GITHUB_SHA:0:8}"
           } >> "$GITHUB_OUTPUT"
 
       - name: Print run configuration
@@ -176,7 +176,7 @@ jobs:
           # SERVICE_JWT_*, MGS* and IPFS_STORAGE_API_KEY stay confined to the `env:` of
           # the individual steps that need them.
           {
-            echo "## E2E run configuration"
+            echo "## e2e run configuration"
             echo
             echo "| Parameter | Value |"
             echo "|---|---|"
@@ -275,7 +275,7 @@ jobs:
       - name: Install Guardian dependencies
         run: yarn install --immutable
 
-      - name: Install E2E tests dependencies
+      - name: Install e2e tests dependencies
         working-directory: e2e-tests
         run: npm ci --prefer-offline --no-audit --fund=false
 
@@ -450,7 +450,7 @@ jobs:
             e2e-tests/cypress/reports \
             "$GUARDIAN_LOG_DIR"
 
-      - name: Publish E2E summary
+      - name: Publish e2e summary
         if: always()
         working-directory: e2e-tests
         env:
@@ -462,7 +462,7 @@ jobs:
         if: always()
         with:
           files: e2e-tests/cypress/test_results/**/*.xml
-          check_name: E2E Test Results
+          check_name: e2e Test Results
           report_individual_runs: true
           comment_mode: 'off'
 
