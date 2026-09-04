@@ -21,4 +21,11 @@ export class PolicyProperty extends BaseEntity {
      */
     @Property({ nullable: true })
     iwaVersion?: string;
+
+    /**
+     * What this property means, sourced from the IWA dMRV specification.
+     * Absent/empty for IWA v1 properties - no real IWA source exists for that namespace.
+     */
+    @Property({ nullable: true })
+    description?: string;
 }

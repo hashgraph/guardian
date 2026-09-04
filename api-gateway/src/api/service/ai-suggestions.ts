@@ -1,9 +1,11 @@
 import { ClientProxy } from '@nestjs/microservices';
-import { Controller, Get, HttpCode, HttpStatus, Inject, Put, Query } from '@nestjs/common';
-import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiExtraModels, ApiQuery } from '@nestjs/swagger';
+import { Body, Controller, Get, HttpCode, HttpStatus, Inject, Post, Put, Query } from '@nestjs/common';
+import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiExtraModels, ApiQuery, ApiBody } from '@nestjs/swagger';
+import { Auth, AuthUser } from '#auth';
 import { AISuggestions, InternalException } from '#helpers';
-import { InternalServerErrorDTO} from '#middlewares';
-import { PinoLogger } from '@guardian/common';
+import { InternalServerErrorDTO, PropertySuggestionRequestDTO, PropertySuggestionResponseDTO } from '#middlewares';
+import { IAuthUser, PinoLogger } from '@guardian/common';
+import { IPropertySuggestionResponse, Permissions } from '@guardian/interfaces';
 
 /**
  * AI suggestions route
@@ -102,6 +104,50 @@ export class AISuggestionsAPI {
             return await aiSuggestions.rebuildAIVector();
         } catch (error) {
             await InternalException(error, this.logger, null);
+        }
+    }
+
+    /**
+     * Suggest schema field properties
+     */
+    @Post('/schema-properties')
+    @Auth(
+        Permissions.SCHEMAS_SCHEMA_CREATE,
+    )
+    @ApiOperation({
+        summary: 'Suggest schema field properties',
+        description: 'Returns ranked IWA property candidates for each schema field',
+    })
+    @ApiBody({
+        description: 'Schema fields to tag.',
+        required: true,
+        type: PropertySuggestionRequestDTO
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: PropertySuggestionResponseDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
+    })
+    @ApiExtraModels(PropertySuggestionRequestDTO, PropertySuggestionResponseDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getPropertySuggestions(
+        @AuthUser() user: IAuthUser,
+        @Body() body: PropertySuggestionRequestDTO,
+    ): Promise<IPropertySuggestionResponse> {
+        try {
+            const aiSuggestions = new AISuggestions();
+            return await aiSuggestions.getPropertySuggestions(body);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
         }
     }
 }

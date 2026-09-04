@@ -462,6 +462,14 @@
                                         <span class="sc-ctp-count">{{ arrayDependencyCount }}</span>
                                     }
                                 </button>
+                                <button class="sc-ctp-btn"
+                                    [class.active]="activeCanvasTab === 'propertyAi'"
+                                    (click)="setCanvasTab('propertyAi')">
+                                    <svg-icon class="svg-icon-16" src="/assets/images/icons/auto_awesome.svg"></svg-icon>Glossary AI
+                                    @if (pendingSuggestionCount) {
+                                        <span class="sc-ctp-count">{{ pendingSuggestionCount }}</span>
+                                    }
+                                </button>
                             </div>
                         </div>
                         }
@@ -522,6 +530,9 @@
                         }
                         @if (activeCanvasTab === 'links') {
                             <ng-container *ngTemplateOutlet="arrayDependenciesCanvas"></ng-container>
+                        }
+                        @if (activeCanvasTab === 'propertyAi') {
+                            <ng-container *ngTemplateOutlet="propertyAiCanvas"></ng-container>
                         }
                     </div>
 
@@ -985,7 +996,18 @@
                         @if (propertyOptions.length) {
                             <div class="sc-rp-divider"></div>
                             <div class="sc-rp-group">
-                                <label class="sc-rp-label">Property</label>
+                                <div class="sc-rp-label-row">
+                                    <label class="sc-rp-label">Property</label>
+                                    <button type="button" class="sc-rp-suggest-btn" title="Suggest with Glossary AI"
+                                        [disabled]="rightPanelSuggestLoading"
+                                        (click)="suggestPropertyForSelectedField()">
+                                        @if (rightPanelSuggestLoading) {
+                                            <i class="pi pi-spin pi-spinner"></i>
+                                        } @else {
+                                            <svg-icon class="svg-icon-16" src="/assets/images/icons/auto_awesome.svg"></svg-icon>
+                                        }
+                                    </button>
+                                </div>
                                 <p-select
                                     class="guardian-dropdown sc-rp-select"
                                     panelStyleClass="guardian-dropdown-panel"
@@ -999,7 +1021,49 @@
                                     placeholder="Select a property"
                                     [(ngModel)]="$any(selectedField).property"
                                     (ngModelChange)="markDirty()">
+                                    <ng-template pTemplate="item" let-p>
+                                        <div class="sc-rp-prop-item">
+                                            <span [title]="p.title">{{ p.title }}</span>
+                                            @if (p.description) {
+                                                <span class="sc-rp-prop-desc">{{ p.description }}</span>
+                                            }
+                                        </div>
+                                    </ng-template>
                                 </p-select>
+                                @if (rightPanelSuggestUnavailable) {
+                                    <div class="sc-rp-ai-hint">
+                                        <span class="sc-rp-ai-hint-rationale">Glossary AI is unavailable right now.</span>
+                                    </div>
+                                } @else if (rightPanelSuggestion; as suggestion) {
+                                    @if (suggestion.candidates[0]; as topCandidate) {
+                                        <div class="sc-rp-ai-hint">
+                                            <div class="sc-rp-ai-hint-row">
+                                                <span class="sc-rp-ai-hint-title" [title]="topCandidate.title">{{ topCandidate.title }}</span>
+                                                <button type="button" class="sc-btn sc-btn-primary" (click)="acceptSuggestion(selectedField.name, topCandidate.title)">Apply</button>
+                                            </div>
+                                            @if (topCandidate.description) {
+                                                <div class="sc-rp-ai-hint-description">{{ topCandidate.description }}</div>
+                                            }
+                                            <span class="sc-rp-ai-hint-confidence">{{ (topCandidate.confidence * 100).toFixed(0) }}%</span>
+                                            <div class="sc-rp-ai-hint-rationale">{{ topCandidate.rationale }}</div>
+                                            <div class="sc-rp-ai-hint-actions">
+                                                @if (suggestion.candidates.length > 1) {
+                                                    <button type="button" class="sc-rp-ai-hint-link" (click)="rightPanelSuggestionExpanded = !rightPanelSuggestionExpanded">See more</button>
+                                                }
+                                                <button type="button" class="sc-rp-ai-hint-link" (click)="openInPropertyAiTab(selectedField.name)">Move to Glossary AI</button>
+                                            </div>
+                                            @if (rightPanelSuggestionExpanded) {
+                                                @for (candidate of suggestion.candidates.slice(1); track candidate.title) {
+                                                    <div class="sc-rp-ai-hint-row">
+                                                        <span class="sc-rp-ai-hint-title" [title]="candidate.title">{{ candidate.title }}</span>
+                                                        <span class="sc-rp-ai-hint-confidence">{{ (candidate.confidence * 100).toFixed(0) }}%</span>
+                                                        <button type="button" class="sc-btn" (click)="acceptSuggestion(selectedField.name, candidate.title)">Apply</button>
+                                                    </div>
+                                                }
+                                            }
+                                        </div>
+                                    }
+                                }
                             </div>
                         }
 
@@ -1556,6 +1620,90 @@
                     </button>
                 </div>
             </div>
+        </div>
+    </ng-template>
+
+    <ng-template #propertyAiCanvas>
+        <div class="sc-array-link-canvas">
+            <div class="sc-suggestions-toolbar">
+                <button type="button" class="sc-btn"
+                    [disabled]="suggestionsLoading || !highConfidenceSuggestionCount"
+                    [title]="highConfidenceSuggestionCount ? '' : 'No suggestions are at or above the 75% confidence threshold yet'"
+                    (click)="applyAllHighConfidence()">
+                    <i class="pi pi-check-circle"></i>Apply all high-confidence ({{ highConfidenceSuggestionCount }})
+                </button>
+                <button type="button" class="sc-btn"
+                    [disabled]="suggestionsLoading"
+                    (click)="loadSuggestions()">
+                    <i class="pi pi-refresh"></i>Refresh
+                </button>
+            </div>
+
+            @if (suggestionsLoading) {
+                <div class="sc-array-link-empty">
+                    <i class="pi pi-spin pi-spinner"></i>
+                    <span>Getting Glossary AI suggestions…</span>
+                </div>
+            } @else if (!(currentContextSchema?.fields ?? []).length) {
+                <div class="sc-array-link-empty">
+                    <i class="pi pi-list"></i>
+                    <span>Add fields to this schema first.</span>
+                </div>
+            } @else if (!suggestionsAvailable) {
+                <div class="sc-array-link-empty">
+                    <i class="pi pi-exclamation-triangle"></i>
+                    <span>Glossary AI is unavailable right now — you can still set properties manually.</span>
+                </div>
+            } @else if (!suggestionResults.length) {
+                <div class="sc-array-link-empty">
+                    <i class="pi pi-sparkles"></i>
+                    <span>Refresh to get Glossary AI suggestions for this schema.</span>
+                </div>
+            } @else if (!pendingSuggestionCount) {
+                <div class="sc-array-link-empty">
+                    <i class="pi pi-check"></i>
+                    <span>No property changes suggested.</span>
+                </div>
+            } @else {
+                <div class="sc-suggestions-list">
+                    @for (result of suggestionResults; track result.fieldName) {
+                        <div class="sc-suggestion-row"
+                            [class.sc-suggestion-row--highlight]="highlightedFieldName === result.fieldName"
+                            [class.sc-suggestion-row--match]="result.candidates[0]?.title === getFieldByName(result.fieldName)?.property">
+                            <div class="sc-suggestion-field">
+                                <span class="sc-suggestion-field-name" [title]="result.fieldName">{{ result.fieldName }}</span>
+                                <span class="sc-suggestion-current" [title]="'Current: ' + (getFieldByName(result.fieldName)?.property || 'None')">Current: {{ getFieldByName(result.fieldName)?.property || 'None' }}</span>
+                            </div>
+                            @if (result.candidates[0]; as topCandidate) {
+                                <div class="sc-suggestion-candidate">
+                                    <span class="sc-suggestion-candidate-title" [title]="topCandidate.title">{{ topCandidate.title }}</span>
+                                    @if (topCandidate.description) {
+                                        <span class="sc-suggestion-candidate-description" [title]="topCandidate.description">{{ topCandidate.description }}</span>
+                                    }
+                                    <span class="sc-suggestion-candidate-confidence">{{ (topCandidate.confidence * 100).toFixed(0) }}%</span>
+                                    <span class="sc-suggestion-candidate-rationale" [title]="topCandidate.rationale">{{ topCandidate.rationale }}</span>
+                                </div>
+                                <div class="sc-suggestion-actions">
+                                    @if (topCandidate.title !== getFieldByName(result.fieldName)?.property) {
+                                        <button type="button" class="sc-btn sc-btn-primary" (click)="acceptSuggestion(result.fieldName, topCandidate.title)">Accept</button>
+                                    } @else {
+                                        <span class="sc-suggestion-match-label">Already matches</span>
+                                    }
+                                    <button type="button" class="sc-btn" (click)="goEditField(result.fieldName)">Change</button>
+                                    <button type="button" class="sc-btn" (click)="dismissSuggestion(result.fieldName)">Dismiss</button>
+                                </div>
+                            } @else {
+                                <div class="sc-suggestion-candidate">
+                                    <span class="sc-suggestion-current">No candidates found.</span>
+                                </div>
+                                <div class="sc-suggestion-actions">
+                                    <button type="button" class="sc-btn" (click)="dismissSuggestion(result.fieldName)">Dismiss</button>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
         </div>
     </ng-template>
 

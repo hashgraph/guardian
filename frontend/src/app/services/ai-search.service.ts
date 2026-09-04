@@ -4,7 +4,8 @@ import { Observable, of } from 'rxjs';
 import { API_BASE_URL } from './api';
 import { AuthService } from './auth.service';
 import { AISearchRequest, AISearchResponse, MOCK_AI_SEARCH_MESSAGE } from '../views/policy-search/policy-ai-search/ai-search.model';
-import { delay } from 'rxjs/operators';
+import { delay, catchError } from 'rxjs/operators';
+import { IPropertySuggestionRequest, IPropertySuggestionResponse } from '@guardian/interfaces';
 
 /**
  * Services for working with AI Search message.
@@ -28,5 +29,10 @@ export class AISearchService {
         } else {
             return this.http.get<AISearchResponse>(`${this.url}`, {params: {q: message.message}});
         }
+    }
+
+    public suggestSchemaProperties(request: IPropertySuggestionRequest): Observable<IPropertySuggestionResponse> {
+        return this.http.post<IPropertySuggestionResponse>(`${API_BASE_URL}/ai-suggestions/schema-properties`, request)
+            .pipe(catchError(() => of({ available: false, results: [] })));
     }
 }
