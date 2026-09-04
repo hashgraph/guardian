@@ -491,7 +491,11 @@ export class DocumentPropertyModel extends PropertyModel<any> {
             ) {
                 return true;
             }
-            if (type === 'MintToken' || type?.split('&')[0] === 'MintToken') {
+            // `type` is not always a string: on the root of a VC/VP it is the document type
+            // array, e.g. ["VerifiableCredential"]. Calling split on it throws, and the catch
+            // below turns the exception into "not a system field", which silently skips every
+            // rule after this one. At the time of this note, for example, the path and the did:hedera: rule.
+            if (type === 'MintToken' || (typeof type === 'string' && type.split('&')[0] === 'MintToken')) {
                 if (
                     name === 'date'
                 ) {

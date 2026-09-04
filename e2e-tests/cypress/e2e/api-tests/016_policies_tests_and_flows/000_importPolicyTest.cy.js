@@ -59,6 +59,31 @@ context('Import policy test', { tags: ['policies', 'secondPool', 'all'] }, () =>
         });
     });
 
+    //Importing a record whose test is already on the policy answers 409, and the test is only
+    //removed by the deletion spec at the end of the folder: a run that stopped earlier leaves one
+    //behind, so the policy is emptied of its tests before importing.
+    before('Remove the tests of earlier runs', () => {
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            cy.request({
+                method: METHOD.GET,
+                url: API.ApiServer + API.Policies + policyId,
+                headers: { authorization },
+                timeout: 180000,
+            }).then((response) => {
+                expect(response.status).to.eq(STATUS_CODE.OK);
+                (response.body.tests ?? []).forEach((test) => {
+                    cy.request({
+                        method: METHOD.DELETE,
+                        url: API.ApiServer + API.Policies + policyId + '/' + API.Test + test.id,
+                        headers: { authorization },
+                        failOnStatusCode: false,
+                        timeout: 180000,
+                    });
+                });
+            });
+        });
+    });
+
     it('Import a new policy test', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             importPolicyTest(policyId, 'iRecFullFlow.record', { authorization }).then((response) => {
@@ -101,4 +126,3 @@ context('Import policy test', { tags: ['policies', 'secondPool', 'all'] }, () =>
         });
     });
 });
-``
