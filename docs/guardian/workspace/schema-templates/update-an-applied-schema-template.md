@@ -12,20 +12,20 @@ Update a draft policy after its template changes. See [Schema Templates Concept]
 
 * You are signed in as a Standard Registry user.
 * You can manage draft policies and schema templates.
-* The policy is a draft with an applied schema template.
+* The policy is a draft with at least one applied schema template.
 
 ### Steps
 
 1. Open the draft policy with the applied template.
-2. Select **Update Schema Template**.
-3. Select the template version to apply.
+2. Open the **Schema Templates** submenu on the policy row.
+3. Select **Update: \<template name\>** for the binding you want to refresh. If more than one template is applied, each has its own Update action, and only the selected one is affected.
 4. Review the comparison preview.
 5. Resolve any reported schema or field conflicts.
 6. Confirm the update.
 
 ### Result
 
-The policy receives the selected template changes. Its stored template snapshot updates with the binding.
+The policy receives the selected template's changes. Its stored template snapshot updates for that binding only - any other applied templates and their schemas are left unchanged.
 
 ### Troubleshooting
 

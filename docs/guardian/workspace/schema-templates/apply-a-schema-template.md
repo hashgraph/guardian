@@ -10,7 +10,7 @@ tags:
 
 * You are signed in as a Standard Registry user.
 * You can manage draft policies and schema templates.
-* The target policy is a draft without an applied template.
+* The target policy is a draft. It may already have other templates applied - a policy can have more than one template at the same time, as long as each is applied once.
 
 ### Steps
 
@@ -28,7 +28,7 @@ The policy receives copies of the template schemas. The policy stores a template
 
 **Why is Apply Schema Template unavailable?**
 
-The policy already has a template binding. Update the applied template instead. Detach the current template before applying a different template.
+The policy is not a draft, or every existing template is already applied to it. The template picker only lists templates that are not yet applied; to change one that already is, use **Update** or **Detach** for that binding instead (under the policy row's **Schema Templates** submenu).
 
 **Why can't the policy be published?**
 

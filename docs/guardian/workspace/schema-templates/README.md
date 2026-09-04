@@ -16,6 +16,7 @@ Schema Templates solve this by introducing a standalone Guardian entity that own
 This supports:
 
 * reusable schema standards across policies;
+* more than one template applied to the same policy at once, each mapping to a distinct form type or version (for example VCS Project Description v5a and VCS Monitoring Report v5a applied together);
 * schema and field restrictions enforced in both UI and backend;
 * safe detach from a template without losing imported schemas;
 * template versioning and update previews;
@@ -82,7 +83,9 @@ The update preview groups changes by schema and field. Locked template fields an
 * Published templates are immutable; changes require a new draft version.
 * Detach keeps imported schemas but removes template restrictions.
 * Template-owned policy schemas cannot be deleted before detach.
-* A policy with an applied template shows Update Schema Template and Detach Schema Template instead of Apply Schema Template.
+* A policy can have more than one applied template at the same time, each bound independently with its own snapshot and schema map.
+* **Apply Schema Template** stays available on a draft policy as long as at least one template is not yet applied to it; the picker excludes templates already applied.
+* Each applied template gets its own **Update: \<name\>** and **Detach: \<name\>** action, grouped under a **Schema Templates** submenu on the policy row.
 * A policy linked to a draft template or unresolved snapshot cannot be published.
 * Policy import can link to a matching template, select a local template, or detach restrictions.
 
