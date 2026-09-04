@@ -283,6 +283,41 @@ export class EntitiesService {
         ) as any;
     }
     //#endregion
+    //#region MINT TOKENS
+    public getMintTokenDocuments(filters: PageFilters): Observable<Page<VP>> {
+        const entity = 'mint-tokens';
+        const options = ApiUtils.getOptions(filters);
+        return this.http.get<Page<VP>>(`${this.url}/${entity}`, options) as any;
+    }
+
+    public getMintTokenDocument(messageId: string): Observable<VPDetails> {
+        const entity = 'mint-tokens';
+        return this.http.get<VPDetails>(
+            `${this.url}/${entity}/${messageId}`
+        ) as any;
+    }
+
+    public getMintTokenFilters(): Observable<any> {
+        const entity = 'mint-tokens';
+        return this.http.get<any>(
+            `${this.url}/${entity}/filters`
+        ) as any;
+    }
+    //#endregion
+    //#region PROJECT PRACTICES
+    public getProjectPractices(filters: PageFilters): Observable<Page<VC>> {
+        const entity = 'project-practices';
+        const options = ApiUtils.getOptions(filters);
+        return this.http.get<Page<VC>>(`${this.url}/${entity}`, options) as any;
+    }
+
+    public getProjectPracticesFilters(): Observable<any> {
+        const entity = 'project-practices';
+        return this.http.get<any>(
+            `${this.url}/${entity}/filters`
+        ) as any;
+    }
+    //#endregion
     //#region VCS
     public getVcDocuments(filters: PageFilters): Observable<Page<VC>> {
         const entity = 'vc-documents';
