@@ -238,6 +238,12 @@ export class PolicyEngine extends NatsService {
     private readonly policyReadyCallbacks: Map<string, (data: any, error?: any) => void> = new Map();
 
     /**
+     * Starts currently in flight, keyed by policy id
+     * @private
+     */
+    private readonly inFlightStarts: Map<string, Promise<any>> = new Map();
+
+    /**
      * Policy initialization errors container
      * @private
      */
@@ -2453,6 +2459,28 @@ export class PolicyEngine extends NatsService {
      * @param policyId
      */
     public async generateModel(policyId: string, enableMock: boolean): Promise<any> {
+        const inFlight = this.inFlightStarts.get(policyId);
+        if (inFlight) {
+            return inFlight;
+        }
+
+        const start = this.startModel(policyId, enableMock)
+            // Released before the caller settles, so a `.then` that starts the policy
+            // again cannot observe a stale entry. `finally` runs too late for that.
+            .then(
+                (result) => { this.inFlightStarts.delete(policyId); return result; },
+                (error) => { this.inFlightStarts.delete(policyId); throw error; }
+            );
+        this.inFlightStarts.set(policyId, start);
+        return start;
+    }
+
+    /**
+     * Start the policy process. Callers go through generateModel, which serialises
+     * concurrent starts of the same policy.
+     * @param policyId
+     */
+    private async startModel(policyId: string, enableMock: boolean): Promise<any> {
         const policy = await DatabaseServer.getPolicyById(policyId);
         if (!policy || (typeof policy !== 'object')) {
             throw new Error('Policy was not exist');
@@ -2493,7 +2521,7 @@ export class PolicyEngine extends NatsService {
             } else {
                 await new Promise(resolve => setTimeout(resolve, 10000));
 
-                return this.generateModel(policyId, enableMock);
+                return this.startModel(policyId, enableMock);
             }
         } else {
             return Promise.resolve();
