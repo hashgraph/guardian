@@ -31,25 +31,53 @@ context('Savepoints CRUD', { tags: ['savepoints', 'secondPool', 'all'] }, () => 
                             timeout: 180000
                         }).then((response) => {
                             expect(response.status).to.eq(STATUS_CODE.OK);
-                            response.body.forEach(element => {
-                                if (element.name == 'iRecDRS') {
-                                    policyId = element.id
-                                }
-                            })
-                            cy.request({
-                                method: METHOD.PUT,
-                                url:
-                                    API.ApiServer + API.Policies + policyId + '/' + API.DryRun,
-                                headers: {
-                                    authorization,
-                                },
-                                timeout: 180000,
-                            }).then((response) => {
-                                expect(response.status).to.eq(STATUS_CODE.OK);
-                            });
+                            const policy = response.body.find((element) => element.name === 'iRecDRS');
+                            expect(policy, 'the iRecDRS policy').to.not.be.undefined;
+                            policyId = policy.id
+                            //Asking for the transition again once the policy already is in dry run
+                            //answers 500, so it is only requested when it is still needed
+                            if (policy.status !== 'DRY-RUN') {
+                                cy.request({
+                                    method: METHOD.PUT,
+                                    url:
+                                        API.ApiServer + API.Policies + policyId + '/' + API.DryRun,
+                                    headers: {
+                                        authorization,
+                                    },
+                                    timeout: 180000,
+                                }).then((response) => {
+                                    expect(response.status).to.eq(STATUS_CODE.OK);
+                                });
+                            }
                         })
                     })
                 })
+        });
+    })
+
+    //The savepoints of a policy form a tree, and the ones an earlier run left behind make the
+    //creation of a new root below answer 500. Deleting them one by one is not enough - one of them
+    //is always the current savepoint and answers "Cannot delete the current savepoint" - so the dry
+    //run is restarted instead, which empties the tree.
+    before('Empty the savepoint tree of earlier runs', () => {
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            cy.request({
+                method: METHOD.GET,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.Savepoint,
+                headers: { authorization },
+                timeout: 180000,
+            }).then((response) => {
+                const savepoints = response.body?.items ?? response.body ?? [];
+                if (savepoints.length === 0) {
+                    return;
+                }
+                cy.request({
+                    method: METHOD.POST,
+                    url: `${API.ApiServer}${API.Policies}${policyId}/${API.DryRun}restart`,
+                    headers: { authorization },
+                    timeout: 400000,
+                });
+            });
         });
     })
 

@@ -1,21 +1,19 @@
-const BASE = `http://localhost:${Cypress.env('portApi')}/`;
+// Allow overriding full API origins (e.g. Docker Desktop), falling back to the configured port.
+const resolveOrigin = (overrideKey, portKey) => {
+    const override = Cypress.env(overrideKey);
+    if (override) {
+        return override.endsWith('/') ? override : `${override}/`;
+    }
+    return `http://localhost:${Cypress.env(portKey)}/`;
+};
+
+// The same origin the rest of the API urls use: building it separately makes the urls below ignore
+// the override and address whatever runs on the configured port instead.
+const BASE = resolveOrigin('apiServer', 'portApi');
 
 const API = {
-    // Allow overriding full API origins (e.g. Docker Desktop).
-    ApiServer: (() => {
-        const apiServer = Cypress.env('apiServer');
-        if (apiServer) {
-            return apiServer.endsWith('/') ? apiServer : `${apiServer}/`;
-        }
-        return `http://localhost:${Cypress.env('portApi')}/`;
-    })(),
-    ApiIndexer: (() => {
-        const apiIndexer = Cypress.env('apiIndexer');
-        if (apiIndexer) {
-            return apiIndexer.endsWith('/') ? apiIndexer : `${apiIndexer}/`;
-        }
-        return `http://localhost:${Cypress.env('portIndexer')}/`;
-    })(),
+    ApiServer: BASE,
+    ApiIndexer: resolveOrigin('apiIndexer', 'portIndexer'),
     ApiMGS: `https://dev.guardianservice.app/api/v1/`,
 
     //Discussions:
@@ -177,8 +175,8 @@ const API = {
     RegWorkflowSteps: 'tag/registrants_workflow_steps/blocks',
     Savepoint: 'savepoints/',
     SavepointDelete: 'savepoints/delete',
-    PolicyDocumentation: (policyId) => `${BASE}policies/${policyId}/about`,
-    BlockByTag: (policyId, tag) => `${BASE}policies/${policyId}/tag/${tag}/blocks`,
+    PolicyDocumentation: (policyId) => `${API.ApiServer}policies/${policyId}/about`,
+    BlockByTag: (policyId, tag) => `${API.ApiServer}policies/${policyId}/tag/${tag}/blocks`,
 
     //Records
     Record: 'record/',
@@ -282,11 +280,11 @@ const API = {
     DeleteNotification: 'notifications/delete/',
 
     //Policy Grid Actions
-    PolicyGrids: (policyId) => `${BASE}policies/${policyId}/grids`,
-    PolicyGridActions: (policyId, gridId) => `${BASE}policies/${policyId}/grids/${gridId}/actions`,
-    PolicyGridRecords: (policyId, gridId) => `${BASE}policies/${policyId}/grids/${gridId}/records`,
+    PolicyGrids: (policyId) => `${API.ApiServer}policies/${policyId}/grids`,
+    PolicyGridActions: (policyId, gridId) => `${API.ApiServer}policies/${policyId}/grids/${gridId}/actions`,
+    PolicyGridRecords: (policyId, gridId) => `${API.ApiServer}policies/${policyId}/grids/${gridId}/records`,
     PolicyGridExecuteAction: (policyId, gridId, recordId, actionId) =>
-        `${BASE}policies/${policyId}/grids/${gridId}/records/${recordId}/actions/${actionId}`,
+        `${API.ApiServer}policies/${policyId}/grids/${gridId}/records/${recordId}/actions/${actionId}`,
 
     //Wizard
     WizardPolicy: 'wizard/policy/',

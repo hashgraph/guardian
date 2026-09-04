@@ -27,20 +27,10 @@ context('Contracts', { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
                 contractUuidR = response.body.at(0).contractId;
             })
 
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies,
-                headers: {
-                    authorization,
-                },
-                timeout: 180000
-            }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.OK);
-                response.body.forEach(element => {
-                    if (element.name == 'iRec_4') {
-                        policyId = element.id
-                    }
-                })
+            //The policy this spec works on is seeded on demand, so the folder does not depend on
+            //another suite having imported it
+            cy.getOrCreateIRec4Policy(SRUsername).then((policy) => {
+                policyId = policy.id
                 //Get token(Irec token) draft id to update it
                 cy.request({
                     method: METHOD.GET,

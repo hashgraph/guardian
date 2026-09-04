@@ -2,6 +2,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Checks from '../../../support/checkingMethods';
 import * as Authorization from '../../../support/authorization';
+import { randomInt } from '../../../support/random';
 
 context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
 
@@ -9,77 +10,127 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
     const PPUser = Cypress.env('PPUser');
     const VVBUser = Cypress.env('VVBUser');
 
-    let tokenId; let policyId; let SRDid; let VVBDid;
+    // The policy is imported from a Hedera message (1788455827.615076104) whose payload may not
+    // be pinned by anyone on the public network. The CID/fixture pair below is coupled to that
+    // message: the fixture is the very file the message points at, so re-adding it to the local
+    // IPFS node restores exactly the CID the import resolves.
+    const VM0033MessageId = '1788455827.615076104';
+    const VM0033Cid = 'QmYCr2Ja9gZHa57rSHyradhFVUyCXBXrUCE7mF6hKWeMnB';
+    const VM0033Fixture = 'VM0033_7_23.policy';
+
+    // VM0033 depends on two tools resolved by the messages 1788452650.434779104 and
+    // 1788452793.845170104; same coupling applies to their CID/fixture pairs.
+    const ARTool05Cid = 'QmUyYYqfHVXYM6qY5PAyfSuxgkYnQCC2JLDFxzwXCC72qS';
+    const ARTool05Fixture = 'AR-Tool-05-v3.0.2.tool';
+
+    const ARTool14Cid = 'QmRPro2V3eSgQMXKWbLKVr5qf3wxviXSsV6prcWdndSY31';
+    const ARTool14Fixture = 'AR-Tool-14-v5.0.7.tool';
+
+    // The policy is reused across runs, so its grids also hold the documents of earlier runs
+    // and a row can no longer be addressed by position. Every document created here carries a
+    // run-scoped project name and is looked up by that name instead.
+    const runId = randomInt(999999);
+    const projectName = `E2E project ${runId}`;
+    const revokedProjectName = `E2E project to revoke ${runId}`;
+
+    let policyId; let tokenId; let VVBDid;
+    let validationReportRef; let verificationReportRef;
+
+    // Grid rows are `VcDocument` entities: the posted payload becomes `credentialSubject[0]`.
+    const projectNameOf = (row) => row?.document?.credentialSubject?.at(0)?.projectTitle;
+    const subjectIdOf = (row) => row?.document?.credentialSubject?.at(0)?.id;
+    const refOf = (row) => row?.document?.credentialSubject?.at(0)?.ref;
+    const statusOf = (row) => row?.option?.status;
+
+    const blockRequest = (authorization, tag, extra = {}) => ({
+        method: METHOD.GET,
+        url: API.ApiServer + API.Policies + policyId + '/' + tag,
+        headers: { authorization },
+        failOnStatusCode: false,
+        timeout: 60000,
+        ...extra
+    });
+
+    // A user keeps the role it picked on a previous run, and picking it twice is not allowed.
+    const chooseRoleIfNeeded = (authorization, role) => {
+        return cy.request({
+            method: METHOD.GET,
+            url: API.ApiServer + API.Policies + policyId + '/' + API.PolicyGroups,
+            headers: { authorization },
+            failOnStatusCode: false,
+        }).then((response) => {
+            if (Array.isArray(response.body) && response.body.length) {
+                return cy.wrap(null);
+            }
+            return cy.request({
+                method: METHOD.POST,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.ChooseRole,
+                headers: { authorization },
+                body: { role },
+                timeout: 180000,
+            });
+        });
+    };
+
+    const createProject = (authorization, name) => {
+        return cy.fixture('payload.json').then((payload) => {
+            // `cy.fixture` hands out the same cached object on every call, so build a copy
+            // instead of renaming the project in place.
+            const document = {
+                ...payload.document,
+                projectTitle: name
+            };
+            return cy.request({
+                method: METHOD.POST,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.ProjectBtn,
+                headers: { authorization },
+                body: { document, ref: null },
+                timeout: 600000
+            }).then(() => Checks.waitForRow(
+                blockRequest(authorization, API.ProjectGridPP2),
+                (row) => projectNameOf(row) === name && statusOf(row) === 'Waiting to be Added'
+            ));
+        });
+    };
+
+    before('Make the VM0033 policy and its tool dependencies available on IPFS', () => {
+        [
+            [VM0033Fixture, VM0033Cid],
+            [ARTool05Fixture, ARTool05Cid],
+            [ARTool14Fixture, ARTool14Cid],
+        ].forEach(([fixture, cid]) => {
+            cy.task('ipfsAddFixture', fixture, { timeout: 200000 }).then((addedCid) => {
+                expect(addedCid, `${fixture} does not match the CID referenced by its Hedera message`).to.eq(cid);
+            });
+        });
+    });
+
+    // Re-registering a profile that is already set up fails with `401 User DID already exists`,
+    // so `setupLocalProfile` links the user to the SR only when the profile is not confirmed yet.
+    const linkToStandardRegistry = (username) => {
+        Authorization.getAccessToken(username).then((authorization) => {
+            cy.request({
+                method: METHOD.GET,
+                url: API.ApiServer + 'accounts/standard-registries/aggregated',
+                headers: { authorization }
+            }).then((response) => {
+                const SRDid = response.body.find(element => element.username === SRUsername).did;
+                cy.setupLocalProfile(username, authorization, { parent: SRDid });
+            })
+        })
+    };
 
     it('Register PP and VVB', () => {
-        Authorization.getAccessToken(PPUser).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + 'accounts/standard-registries/aggregated',
-                headers: { authorization }
-            }).then((response) => {
-                response.body.forEach(element => {
-                    if (element.username == SRUsername) {SRDid = element.did;}
-                })
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.RandomKey,
-                    headers: { authorization },
-                    timeout: 600000
-                }).then((response) => {
-                    cy.request({
-                        method: METHOD.PUT,
-                        url: API.ApiServer + 'profiles/' + PPUser,
-                        headers: { authorization },
-                        body: {
-                            hederaAccountId: response.body.id,
-                            hederaAccountKey: response.body.key,
-                            parent: SRDid
-                        },
-                        timeout: 400000,
-                    })
-                })
-            })
-        })
-
-        Authorization.getAccessToken(VVBUser).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + 'accounts/standard-registries/aggregated',
-                headers: { authorization }
-            }).then((response) => {
-                response.body.forEach(element => {
-                    if (element.username == SRUsername) {SRDid = element.did;}
-                })
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.RandomKey,
-                    headers: { authorization },
-                    timeout: 600000
-                }).then((response) => {
-                    cy.request({
-                        method: METHOD.PUT,
-                        url: API.ApiServer + 'profiles/' + VVBUser,
-                        headers: { authorization },
-                        body: {
-                            hederaAccountId: response.body.id,
-                            hederaAccountKey: response.body.key,
-                            parent: SRDid
-                        },
-                        timeout: 400000,
-                    })
-                })
-            })
-        })
+        linkToStandardRegistry(PPUser);
+        linkToStandardRegistry(VVBUser);
     })
 
     it('Import, publish, assign policy', () => {
-        //Create retire contract and save id
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
                 url: API.ApiServer + API.PolicisImportMsg,
-                body: { messageId: '1755735271.024933000' }, //VM0033
+                body: { messageId: VM0033MessageId },
                 headers: {
                     authorization,
                 },
@@ -87,22 +138,21 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.SUCCESS);
                 policyId = response.body.at(0).id;
-                Authorization.getAccessToken(SRUsername).then((authorization) => {
-                    cy.request({
-                        method: METHOD.PUT,
-                        url: API.ApiServer + API.Policies + policyId + '/' + API.Publish,
-                        body: {
-                            policyVersion: '1.2.5'
-                        },
-                        headers: {
-                            authorization
-                        },
-                        timeout: 1800000,
-                    })
+                cy.request({
+                    method: METHOD.PUT,
+                    url: API.ApiServer + API.Policies + policyId + '/' + API.Publish,
+                    body: {
+                        policyVersion: '1.2.5'
+                    },
+                    headers: {
+                        authorization
+                    },
+                    timeout: 1800000,
                 })
             })
         })
 
+        // Assigning is a flag update, so re-assigning an already assigned policy is harmless.
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
@@ -142,62 +192,54 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
 
     it('Token associate and grant kyc', () => {
         Authorization.getAccessToken(PPUser).then((authorization) => {
-            cy.request({
+            const listTokens = {
                 method: METHOD.GET,
-                url: API.ApiServer + 'tokens',
-                headers: {
-                    authorization
+                url: API.ApiServer + API.ListOfTokens,
+                headers: { authorization },
+                timeout: 180000
+            };
+            cy.request(listTokens).then((response) => {
+                const token = response.body.find(element =>
+                    (element.policyIds ?? [element.policyId]).includes(policyId));
+                expect(token, `no token found for policy ${policyId}`).to.not.equal(undefined);
+                tokenId = token.tokenId;
+                // Associating twice is rejected by Hedera, so only do it on the first run.
+                if (token.associated) {
+                    return cy.wrap(token);
                 }
-            }).then((response) => {
-                response.body.forEach(element => {
-                    if (element.policyIds.at(0) == policyId) {
-                        tokenId = element.tokenId
-                    }
-                });
-                cy.request({
-                    method: 'PUT',
-                    url: API.ApiServer + 'tokens/' + tokenId + '/associate',
-                    headers: {
-                        authorization
-                    }
-                }).then(() => {
-                    Authorization.getAccessToken(SRUsername).then((authorization) => {
-                        cy.request({
-                            method: METHOD.PUT,
-                            url:
-                                API.ApiServer + API.ListOfTokens + tokenId + '/' + PPUser + '/grant-kyc',
-                            headers: { authorization }
-                        }).then((response) => {
-                            expect(response.status).eql(STATUS_CODE.OK);
-                        });
+                return cy.request({
+                    method: METHOD.PUT,
+                    url: API.ApiServer + API.ListOfTokens + tokenId + '/associate',
+                    headers: { authorization },
+                    timeout: 180000
+                }).then(() => cy.request(listTokens)
+                    .then((refreshed) => refreshed.body.find(element => element.tokenId === tokenId)));
+            }).then((token) => {
+                if (token.kyc) {
+                    return;
+                }
+                Authorization.getAccessToken(SRUsername).then((srAuthorization) => {
+                    cy.request({
+                        method: METHOD.PUT,
+                        url: API.ApiServer + API.ListOfTokens + tokenId + '/' + PPUser + '/grant-kyc',
+                        headers: { authorization: srAuthorization },
+                        timeout: 180000
+                    }).then((response) => {
+                        expect(response.status).eql(STATUS_CODE.OK);
                     });
-                })
+                });
             })
         })
     })
 
-    it('Register PP in policy and create application', () => {
-        //Choose role
+    it('Register PP in policy', () => {
         Authorization.getAccessToken(PPUser).then((authorization) => {
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.Policies + policyId + '/' + API.ChooseRole,
-                headers: {
-                    authorization
-                },
-                body: {
-                    role: 'Project_Proponent'
-                }
-            }).then(() => {
-                const waitCreateProjectButton = {
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.Policies + policyId + '/' + API.ProjectBtn,
-                    headers: {
-                        authorization
-                    },
-                    failOnStatusCode: false,
-                }
-                Checks.whileRequestProccessing(waitCreateProjectButton, 'New project', 'uiMetaData.content')
+            chooseRoleIfNeeded(authorization, 'Project_Proponent').then(() => {
+                Checks.whileRequestProccessing(
+                    blockRequest(authorization, API.ProjectBtn),
+                    'New project',
+                    'uiMetaData.content'
+                )
             })
         })
     })
@@ -207,74 +249,36 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.Profiles + VVBUser,
-                headers: {
-                    authorization
-                }
+                headers: { authorization }
             }).then((response) => {
                 VVBDid = response.body.did
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + API.Policies + policyId + '/' + API.ChooseRole,
-                    headers: {
-                        authorization
-                    },
-                    body: {
-                        role: 'VVB'
-                    }
-                })
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + API.Policies + policyId + '/' + API.CreateVVB,
-                    headers: {
-                        authorization
-                    },
-                    body: {
-                        document: {
-                            field0: 'TestingVVBName'
-                        },
-                        ref: null
-                    }
-                }).then(() => {
-                    const waitProjectApproveStatus = {
-                        method: METHOD.GET,
-                        url: API.ApiServer + API.Policies + policyId + '/' + API.NewVVB,
-                        headers: {
-                            authorization
-                        },
-                        failOnStatusCode: false,
-                    }
-                    Checks.whileRequestProccessing(waitProjectApproveStatus, 'Waiting for approval', 'blocks.3.uiMetaData.title')
-                })
-            })
-        })
-    })
-
-    it('Create application', () => {
-        //Choose role
-        Authorization.getAccessToken(PPUser).then((authorization) => {
-            cy.fixture('payload.json').then((payload) => {
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + API.Policies + policyId + '/' + API.ProjectBtn,
-                    headers: {
-                        authorization
-                    },
-                    body: {
-                        document: payload.document,
-                        ref: null
-                    },
-                    timeout: 600000
-                }).then(() => {
-                    const waitProjectAddStatus = {
-                        method: METHOD.GET,
-                        url: API.ApiServer + API.Policies + policyId + '/' + API.ProjectGridPP2,
-                        headers: {
-                            authorization
-                        },
-                        failOnStatusCode: false,
-                        timeout: 60000
-                    }
-                    Checks.whileRequestProccessing(waitProjectAddStatus, 'Waiting to be Added', 'data.0.option.status')
+                chooseRoleIfNeeded(authorization, 'VVB').then(() => {
+                    // `create_new_vvb` derives the document id from the owner DID, so a VVB user
+                    // can hold exactly one VVB document: create it once, reuse it afterwards.
+                    Authorization.getAccessToken(SRUsername).then((srAuthorization) => {
+                        cy.request(blockRequest(srAuthorization, API.VVBGrid)).then((grid) => {
+                            const existing = (grid.body?.data ?? []).find(row => subjectIdOf(row) === VVBDid);
+                            if (existing) {
+                                return;
+                            }
+                            cy.request({
+                                method: METHOD.POST,
+                                url: API.ApiServer + API.Policies + policyId + '/' + API.CreateVVB,
+                                headers: { authorization },
+                                body: {
+                                    document: {
+                                        field0: 'TestingVVBName'
+                                    },
+                                    ref: null
+                                }
+                            }).then(() => {
+                                Checks.waitForRow(
+                                    blockRequest(srAuthorization, API.VVBGrid),
+                                    (row) => subjectIdOf(row) === VVBDid
+                                )
+                            })
+                        })
+                    })
                 })
             })
         })
@@ -282,14 +286,13 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
 
     it('Approve VVB', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + '/' + API.VVBGrid,
-                headers: {
-                    authorization
+            Checks.waitForRow(
+                blockRequest(authorization, API.VVBGrid),
+                (row) => subjectIdOf(row) === VVBDid
+            ).then((vvbData) => {
+                if (vvbData.type === 'approved_vvb') {
+                    return;
                 }
-            }).then((response) => {
-                let vvbData = response.body.data[0];
                 vvbData.option.status = 'APPROVED'
                 cy.request({
                     method: METHOD.POST,
@@ -302,31 +305,27 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
                         tag: 'Button_0'
                     }
                 }).then(() => {
-                    const waitVVBApproved = {
-                        method: METHOD.GET,
-                        url: API.ApiServer + API.Policies + policyId + '/' + API.VVBGrid,
-                        headers: {
-                            authorization
-                        },
-                        failOnStatusCode: false,
-                        timeout: 60000
-                    }
-                    Checks.whileRequestProccessing(waitVVBApproved, 'APPROVED', 'data.0.option.status')
+                    Checks.waitForRow(
+                        blockRequest(authorization, API.VVBGrid),
+                        (row) => subjectIdOf(row) === VVBDid && row.type === 'approved_vvb'
+                    )
                 })
             })
         })
     })
 
+    it('Create application', () => {
+        Authorization.getAccessToken(PPUser).then((authorization) => {
+            createProject(authorization, projectName)
+        })
+    })
+
     it('Add project', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + '/' + API.ProjGridVVB,
-                headers: {
-                    authorization
-                }
-            }).then((response) => {
-                let projData = response.body.data[0];
+            Checks.waitForRow(
+                blockRequest(authorization, API.ProjGridVVB),
+                (row) => projectNameOf(row) === projectName && statusOf(row) === 'Waiting to be Added'
+            ).then((projData) => {
                 projData.option.status = 'Waiting to Validate'
                 cy.request({
                     method: METHOD.POST,
@@ -339,16 +338,10 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
                         tag: 'Option_0'
                     }
                 }).then(() => {
-                    const waitProjValidate = {
-                        method: METHOD.GET,
-                        url: API.ApiServer + API.Policies + policyId + '/' + API.ProjGridVVB,
-                        headers: {
-                            authorization
-                        },
-                        failOnStatusCode: false,
-                        timeout: 60000
-                    }
-                    Checks.whileRequestProccessing(waitProjValidate, 'Waiting to Validate', 'data.0.option.status')
+                    Checks.waitForRow(
+                        blockRequest(authorization, API.ProjGridVVB),
+                        (row) => projectNameOf(row) === projectName && statusOf(row) === 'Waiting to Validate'
+                    )
                 })
             })
         })
@@ -356,14 +349,10 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
 
     it('Assign project', () => {
         Authorization.getAccessToken(PPUser).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + '/' + API.ProjectGridPP2,
-                headers: {
-                    authorization
-                }
-            }).then((response) => {
-                let projDataAssign = response.body.data[0];
+            Checks.waitForRow(
+                blockRequest(authorization, API.ProjectGridPP2),
+                (row) => projectNameOf(row) === projectName && statusOf(row) === 'Waiting to Validate'
+            ).then((projDataAssign) => {
                 projDataAssign.assignedTo = VVBDid;
                 cy.request({
                     method: METHOD.POST,
@@ -379,23 +368,10 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
 
     it('Approve project', () => {
         Authorization.getAccessToken(VVBUser).then((authorization) => {
-            const waitProjectValidateStatus = {
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + '/' + API.ProjGridVVB2,
-                headers: {
-                    authorization
-                },
-                failOnStatusCode: false,
-            }
-            Checks.whileRequestProccessing(waitProjectValidateStatus, 'Waiting to Validate', 'data.0.option.status')
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + '/' + API.ProjGridVVB2,
-                headers: {
-                    authorization
-                }
-            }).then((response) => {
-                let projDataApprove = response.body.data[0];
+            Checks.waitForRow(
+                blockRequest(authorization, API.ProjGridVVB2),
+                (row) => projectNameOf(row) === projectName && statusOf(row) === 'Waiting to Validate'
+            ).then((projDataApprove) => {
                 projDataApprove.option.status = 'Validated';
                 cy.request({
                     method: METHOD.POST,
@@ -414,27 +390,16 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
 
     it('Create report', () => {
         Authorization.getAccessToken(PPUser).then((authorization) => {
-            const waitProjectValidated = {
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + '/' + API.ProjectGridPP2,
-                headers: {
-                    authorization
-                },
-                failOnStatusCode: false
-            }
-            Checks.whileRequestProccessing(waitProjectValidated, 'approved_project', 'data.0.type')
-            cy.request(waitProjectValidated).then((response) => {
-                cy.task('log', response.body.data.length)
-            });
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + '/' + API.ProjectGridPP2,
-                headers: {
-                    authorization
-                }
-            }).then((response) => {
-                let projectDataRef = response.body.data[0];
+            Checks.waitForRow(
+                blockRequest(authorization, API.ProjectGridPP2),
+                (row) => projectNameOf(row) === projectName && row.type === 'approved_project'
+            ).then((projectDataRef) => {
                 cy.fixture('payload.json').then((payload) => {
+                    // The report carries the same project name, which is what ties it to this run.
+                    const document = {
+                        ...payload.document,
+                        projectTitle: projectName
+                    };
                     cy.request({
                         method: METHOD.POST,
                         url: API.ApiServer + API.Policies + policyId + '/' + API.AddReportBtn,
@@ -442,21 +407,15 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
                             authorization
                         },
                         body: {
-                            document: payload.document,
+                            document,
                             ref: projectDataRef
                         },
                         timeout: 600000
                     }).then(() => {
-                        const waitReportCreating = {
-                            method: METHOD.GET,
-                            url: API.ApiServer + API.Policies + policyId + '/' + API.ReportGridPP,
-                            headers: {
-                                authorization
-                            },
-                            timeout: 600000,
-                            failOnStatusCode: false,
-                        }
-                        Checks.whileRequestProccessing(waitReportCreating, 'Waiting for Verification', 'data.0.option.status')
+                        Checks.waitForRow(
+                            blockRequest(authorization, API.ReportGridPP, { timeout: 600000 }),
+                            (row) => projectNameOf(row) === projectName && statusOf(row) === 'Waiting for Verification'
+                        )
                     })
                 })
             })
@@ -465,15 +424,10 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
 
     it('Assign report', () => {
         Authorization.getAccessToken(PPUser).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + '/' + API.ReportGridPP,
-                headers: {
-                    authorization
-                },
-                timeout: 120000,
-            }).then((response) => {
-                let reportAssignData = response.body.data[0];
+            Checks.waitForRow(
+                blockRequest(authorization, API.ReportGridPP, { timeout: 120000 }),
+                (row) => projectNameOf(row) === projectName && statusOf(row) === 'Waiting for Verification'
+            ).then((reportAssignData) => {
                 reportAssignData.assignedTo = VVBDid;
                 cy.request({
                     method: METHOD.POST,
@@ -490,23 +444,10 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
 
     it('Verify report', () => {
         Authorization.getAccessToken(VVBUser).then((authorization) => {
-            const waitProjectValidateStatus = {
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + '/' + API.ReportGridVVB,
-                headers: {
-                    authorization
-                },
-                failOnStatusCode: false,
-            }
-            Checks.whileRequestProccessing(waitProjectValidateStatus, 'Waiting for Verification', 'data.0.option.status')
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + '/' + API.ReportGridVVB,
-                headers: {
-                    authorization
-                }
-            }).then((response) => {
-                let reportVerifyData = response.body.data[0];
+            Checks.waitForRow(
+                blockRequest(authorization, API.ReportGridVVB),
+                (row) => projectNameOf(row) === projectName && statusOf(row) === 'Waiting for Verification'
+            ).then((reportVerifyData) => {
                 reportVerifyData.option.status = 'Verified';
                 cy.request({
                     method: METHOD.POST,
@@ -520,16 +461,10 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
                     },
                     timeout: 60000
                 }).then(() => {
-                    const waitReportIsVerifying = {
-                        method: METHOD.GET,
-                        url: API.ApiServer + API.Policies + policyId + '/' + API.ReportGridVVB,
-                        headers: {
-                            authorization
-                        },
-                        failOnStatusCode: false,
-                        timeout: 60000
-                    }
-                    Checks.whileRequestProccessing(waitReportIsVerifying, 'Verified', 'data.0.option.status')
+                    Checks.waitForRow(
+                        blockRequest(authorization, API.ReportGridVVB),
+                        (row) => projectNameOf(row) === projectName && statusOf(row) === 'Verified'
+                    )
                 })
             })
         })
@@ -538,14 +473,13 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
     it('Create validation report', () => {
         Authorization.getAccessToken(VVBUser).then((authorization) => {
             cy.fixture('valrep.json').then((payload) => {
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.Policies + policyId + '/' + API.ProjGridVVB2,
-                    headers: {
-                        authorization
-                    }
-                }).then((response) => {
-                    let referenceValidationReport = response.body.data[0];
+                Checks.waitForRow(
+                    blockRequest(authorization, API.ProjGridVVB2),
+                    (row) => projectNameOf(row) === projectName && row.type === 'approved_project'
+                ).then((referenceValidationReport) => {
+                    // The validation report has no project name of its own: it is identified by
+                    // the subject id of the project it references.
+                    validationReportRef = subjectIdOf(referenceValidationReport);
                     referenceValidationReport.option.status = 'Verified';
                     cy.request({
                         method: METHOD.POST,
@@ -566,24 +500,10 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
 
     it('Approve validation report', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            const waitValidationReportIsCreating = {
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + '/' + API.ValidationReportsVerra,
-                headers: {
-                    authorization
-                },
-                failOnStatusCode: false,
-            }
-            Checks.whileRequestProccessing(waitValidationReportIsCreating, 'Submitted', 'data.0.option.status')
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + '/' + API.ValidationReportsVerra,
-                headers: {
-                    authorization
-                }
-            }).then((response) => {
-                let reportVerifyData = response.body.data[0];
-                cy.task('log', reportVerifyData);
+            Checks.waitForRow(
+                blockRequest(authorization, API.ValidationReportsVerra),
+                (row) => refOf(row) === validationReportRef && statusOf(row) === 'Submitted'
+            ).then((reportVerifyData) => {
                 reportVerifyData.option.status = 'APPROVED';
                 cy.request({
                     method: METHOD.POST,
@@ -604,15 +524,12 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
     it('Create verification report', () => {
         Authorization.getAccessToken(VVBUser).then((authorization) => {
             cy.fixture('verrep.json').then((payload) => {
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.Policies + policyId + '/' + API.ReportGridVVB,
-                    headers: {
-                        authorization
-                    }
-                }).then((response) => {
-                    let referenceValidationReport = response.body.data[0];
-                    referenceValidationReport.option.status = 'Verified';
+                Checks.waitForRow(
+                    blockRequest(authorization, API.ReportGridVVB),
+                    (row) => projectNameOf(row) === projectName && row.type === 'approved_report'
+                ).then((referenceVerificationReport) => {
+                    verificationReportRef = subjectIdOf(referenceVerificationReport);
+                    referenceVerificationReport.option.status = 'Verified';
                     cy.request({
                         method: METHOD.POST,
                         url: API.ApiServer + API.Policies + policyId + '/' + API.AddVerificationReport,
@@ -621,7 +538,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
                         },
                         body: {
                             document: payload,
-                            ref: referenceValidationReport
+                            ref: referenceVerificationReport
                         },
                         timeout: 60000
                     })
@@ -632,24 +549,10 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
 
     it('Approve verification report', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            const waitValidationReportIsCreating = {
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + '/' + API.VerificationReportsVerra,
-                headers: {
-                    authorization
-                },
-                failOnStatusCode: false,
-            }
-            Checks.whileRequestProccessing(waitValidationReportIsCreating, 'Submitted', 'data.0.option.status')
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + '/' + API.VerificationReportsVerra,
-                headers: {
-                    authorization
-                }
-            }).then((response) => {
-                let reportVerifyData = response.body.data[0];
-                cy.task('log', reportVerifyData);
+            Checks.waitForRow(
+                blockRequest(authorization, API.VerificationReportsVerra),
+                (row) => refOf(row) === verificationReportRef && statusOf(row) === 'Submitted'
+            ).then((reportVerifyData) => {
                 reportVerifyData.option.status = 'APPROVED';
                 cy.request({
                     method: METHOD.POST,
@@ -669,44 +572,16 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
 
     it('Create one more project for revoke', () => {
         Authorization.getAccessToken(PPUser).then((authorization) => {
-            cy.fixture('payload.json').then((payload) => {
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + API.Policies + policyId + '/' + API.ProjectBtn,
-                    headers: {
-                        authorization
-                    },
-                    body: {
-                        document: payload.document,
-                        ref: null
-                    },
-                    timeout: 600000
-                }).then(() => {
-                    const waitProjectAddStatus = {
-                        method: METHOD.GET,
-                        url: API.ApiServer + API.Policies + policyId + '/' + API.ProjectGridPP2,
-                        headers: {
-                            authorization
-                        },
-                        failOnStatusCode: false,
-                        timeout: 60000
-                    }
-                    Checks.whileRequestProccessing(waitProjectAddStatus, 'Waiting to be Added', 'data.0.option.status')
-                })
-            })
+            createProject(authorization, revokedProjectName)
         })
     })
 
     it('Reject project', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + '/' + API.ProjGridVVB,
-                headers: {
-                    authorization
-                }
-            }).then((response) => {
-                let projData = response.body.data[0];
+            Checks.waitForRow(
+                blockRequest(authorization, API.ProjGridVVB),
+                (row) => projectNameOf(row) === revokedProjectName && statusOf(row) === 'Waiting to be Added'
+            ).then((projData) => {
                 projData.option.status = {
                     'status': 'REJECTED',
                     'comment': [
@@ -724,44 +599,30 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
                         tag: 'Option_1'
                     }
                 }).then(() => {
-                    const waitProjValidate = {
-                        method: METHOD.GET,
-                        url: API.ApiServer + API.Policies + policyId + '/' + API.ProjGridVVB,
-                        headers: {
-                            authorization
-                        },
-                        failOnStatusCode: false,
-                        timeout: 60000
-                    }
-                    Checks.whileRequestProccessing(waitProjValidate, 'Revoked', 'data.1.option.status')
+                    Checks.waitForRow(
+                        blockRequest(authorization, API.ProjGridVVB),
+                        (row) => projectNameOf(row) === revokedProjectName && statusOf(row) === 'Revoked'
+                    )
                 })
             })
         })
 
         Authorization.getAccessToken(PPUser).then((authorization) => {
-            const waitProjValidate = {
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + '/' + API.ProjectGridPP2,
-                headers: {
-                    authorization
-                },
-                failOnStatusCode: false,
-                timeout: 60000
-            }
-            Checks.whileRequestProccessing(waitProjValidate, 'Revoked', 'data.2.option.status')
+            Checks.waitForRow(
+                blockRequest(authorization, API.ProjectGridPP2),
+                (row) => projectNameOf(row) === revokedProjectName && statusOf(row) === 'Revoked'
+            )
         })
     })
 
     it('Revoke project', () => {
         Authorization.getAccessToken(PPUser).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + '/' + API.ProjectGridPP2,
-                headers: {
-                    authorization
-                }
-            }).then((response) => {
-                let projData = response.body.data[1];
+            // `revoke_project_pp_btn` is bound to the sources holding the PP's own, not yet
+            // revoked `project` rows, which is the project this run validated.
+            Checks.waitForRow(
+                blockRequest(authorization, API.ProjectGridPP2),
+                (row) => projectNameOf(row) === projectName && row.type === 'project' && statusOf(row) !== 'Revoked'
+            ).then((projData) => {
                 projData.option.comment = ['testRevoke'];
                 cy.request({
                     method: METHOD.POST,
@@ -774,31 +635,19 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
                         tag: 'Button_0'
                     }
                 }).then(() => {
-                    const waitProjValidate = {
-                        method: METHOD.GET,
-                        url: API.ApiServer + API.Policies + policyId + '/' + API.ProjectGridPP2,
-                        headers: {
-                            authorization
-                        },
-                        failOnStatusCode: false,
-                        timeout: 60000
-                    }
-                    Checks.whileRequestProccessing(waitProjValidate, 'Revoked', 'data.0.option.status')
+                    Checks.waitForRow(
+                        blockRequest(authorization, API.ProjectGridPP2),
+                        (row) => projectNameOf(row) === projectName && statusOf(row) === 'Revoked'
+                    )
                 })
             })
         })
 
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            const waitProjValidate = {
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId + '/' + API.ProjGridVVB,
-                headers: {
-                    authorization
-                },
-                failOnStatusCode: false,
-                timeout: 60000
-            }
-            Checks.whileRequestProccessing(waitProjValidate, 'Revoked', 'data.0.option.status')
+            Checks.waitForRow(
+                blockRequest(authorization, API.ProjGridVVB),
+                (row) => projectNameOf(row) === projectName && statusOf(row) === 'Revoked'
+            )
         })
     })
 

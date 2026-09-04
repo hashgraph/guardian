@@ -18,13 +18,33 @@ context('Update role', { tags: ['permissions', 'firstPool', 'all'] }, () => {
                 },
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                response.body.forEach(item => {
-                    if (item.name == roleName) {
-                        roleId = item.id;
-                        roleDesc = item.description;
-                        rolePerms = item.permissions;
-                    }
-                });
+                //The role is renamed by the test below, and the rename outlives the run: it is
+                //looked up under either name so a second run still finds it
+                const role = response.body.find(item =>
+                    item.name === roleName || item.name === roleName + 'Edited');
+                expect(role, `the "${roleName}" role`).to.not.be.undefined;
+                roleId = role.id;
+                roleDesc = role.description;
+                rolePerms = role.permissions;
+            });
+        })
+    })
+
+    //The role is shared with the rest of the instance, so its name is put back as it was
+    after('Restore the role name', () => {
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            cy.request({
+                method: METHOD.PUT,
+                url: API.ApiServer + API.Permissions + API.Roles + roleId,
+                body: {
+                    'name': roleName,
+                    'description': roleDesc,
+                    'permissions': rolePerms
+                },
+                headers: {
+                    authorization,
+                },
+                failOnStatusCode: false,
             });
         })
     })

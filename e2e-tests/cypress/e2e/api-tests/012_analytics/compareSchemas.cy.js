@@ -28,6 +28,8 @@ context('Analytics', { tags: ['analytics', 'thirdPool', 'all'] }, () => {
         cy.request({
             method: METHOD.GET,
             url: URLS.schemas,
+            // only the two schemas compared below are needed, and the full listing grows with every run
+            qs: { pageIndex: 0, pageSize: 2 },
             headers: { authorization },
         });
 

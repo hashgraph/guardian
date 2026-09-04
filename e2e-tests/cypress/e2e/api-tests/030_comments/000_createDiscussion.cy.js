@@ -51,9 +51,16 @@ context('Create discuissons', { tags: ['comments', 'firstPool', 'all'] }, () => 
                 timeout: 180000
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
-                response.body.forEach(element => {
-                    if (element.name == 'iRec_3') {policyId = element.id}
-                })
+                //The iRec 3 flow imports its policy from a fixture, and the import suffixes the
+                //name of every copy after the first, so the published copies are matched on the
+                //common prefix and the most recent one is taken
+                const policy = response.body
+                    .filter((element) => String(element.name).startsWith('iRec_3')
+                        && element.status === 'PUBLISH')
+                    .sort((a, b) => String(b.createDate).localeCompare(String(a.createDate)))
+                    .at(0);
+                expect(policy, 'a published iRec_3 policy').to.not.be.undefined;
+                policyId = policy.id;
                 cy.getBlockByTag(authorization, policyId, 'registrants_grid').then((response) => {
                     documentId = response.body.data.at(0).id;
                     userDid = response.body.data.at(0).owner;

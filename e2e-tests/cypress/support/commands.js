@@ -24,9 +24,11 @@
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 
-import { METHOD } from './api/api-const';
+import { METHOD, STATUS_CODE } from './api/api-const';
 import API from './ApiUrls';
 import { randomInt } from './random';
+import * as Authorization from './authorization';
+import { importPolicyFromMessage } from './CustomHelpers/ipfsSeeding';
 
 Cypress.Commands.add('checkIfFileExistByPartialName', (partialName) => {
     cy.task('checkFile', partialName).then(fileExists => {
@@ -224,6 +226,8 @@ Cypress.Commands.add('getOrCreateSchemaId', (authorization) => {
     return cy.request({
         method: METHOD.GET,
         url: API.ApiServer + API.Schemas,
+        // a single entry is enough here, and the full schema listing grows with every run
+        qs: { pageIndex: 0, pageSize: 1 },
         headers: { authorization },
     }).then((response) => {
         const schema = response.body.at(0);
@@ -269,6 +273,75 @@ Cypress.Commands.add('getOrCreateSchemaId', (authorization) => {
             }));
         });
     });
+});
+
+/**
+ * Yields the published `iRec_4` policy, importing it from its Hedera message and publishing it when
+ * the instance does not hold it yet.
+ *
+ * Several API specs (contracts, trustchains, formulas, policy labels) are written against this
+ * policy, and no API spec creates it: it is imported here so those folders run on their own and
+ * keep working across runs, reusing the policy already present instead of importing a second copy.
+ *
+ * Pass `{ publish: false }` when the caller has to work on the policy while it is still a draft,
+ * as the specs that attach a wipe contract to its token do, and publishes it itself afterwards.
+ */
+Cypress.Commands.add('getOrCreateIRec4Policy', (username, { publish: shouldPublish = true } = {}) => {
+    const policyName = 'iRec_4';
+
+    const findPolicy = (authorization) => cy.request({
+        method: METHOD.GET,
+        url: API.ApiServer + API.Policies,
+        headers: { authorization },
+        timeout: 180000,
+    }).then((response) => {
+        expect(response.status).to.eq(STATUS_CODE.OK);
+        const matches = response.body.filter((policy) => policy?.name === policyName);
+        //Callers that publish want the published copy; callers that need a draft to work on want a
+        //draft, and fall back to whatever is there when the policy has already been published
+        const preferred = shouldPublish
+            ? matches.find((policy) => policy.status === 'PUBLISH')
+            : matches.find((policy) => policy.status === 'DRAFT');
+        //`null` rather than `undefined`: a `.then()` returning undefined yields the previous
+        //subject, which would make the "not found" case look like a hit
+        return cy.wrap(preferred ?? matches.at(0) ?? null, { log: false });
+    });
+
+    const publish = (authorization, policy) => {
+        if (!shouldPublish || policy.status === 'PUBLISH') {
+            return cy.wrap(policy, { log: false });
+        }
+        return cy.request({
+            method: METHOD.PUT,
+            url: `${API.ApiServer}${API.Policies}${policy.id}/${API.Publish}`,
+            body: { policyVersion: '1.2.5' },
+            headers: { authorization },
+            timeout: 600000,
+            failOnStatusCode: false,
+        }).then((response) => {
+            const message = String(response.body?.message ?? '');
+            if (response.status !== STATUS_CODE.OK && message !== 'Policy already published') {
+                throw new Error(`Publishing ${policyName} failed: ${response.status} ${message}`);
+            }
+            return findPolicy(authorization).then((published) => {
+                expect(published, `${policyName} after publishing`).to.not.be.null;
+                return published;
+            });
+        });
+    };
+
+    return Authorization.getAccessToken(username).then((authorization) =>
+        findPolicy(authorization).then((existing) => {
+            if (existing) {
+                return publish(authorization, existing);
+            }
+            return importPolicyFromMessage(username, Cypress.env('policy_for_compare1'))
+                .then(() => findPolicy(authorization))
+                .then((imported) => {
+                    expect(imported, `${policyName} after importing it from its message`).to.not.be.null;
+                    return publish(authorization, imported);
+                });
+        }));
 });
 
 Cypress.Commands.add('registerUserIfNeededOrMissing', (username, password, role) => {

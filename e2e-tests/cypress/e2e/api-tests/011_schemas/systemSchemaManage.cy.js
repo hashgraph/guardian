@@ -4,7 +4,9 @@ import * as Authorization from '../../../support/authorization';
 
 context('Schemas', { tags: ['schema', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-    const schemaUUID = '1111b23a-b1ea-408f-a573-6d8bd1a2060a';
+    //A run interrupted before the deletion at the end leaves its schema behind, so the uuid is
+    //drawn per run to keep the creation below free of collisions
+    const schemaUUID = crypto.randomUUID();
     const username = 'StandartRegistry';
 
     it('Delete the system schema with the provided schema ID', () => {
@@ -21,12 +23,10 @@ context('Schemas', { tags: ['schema', 'thirdPool', 'all'] }, () => {
                     entity: 'USER',
                     status: 'DRAFT',
                     readonly: false,
-                    name: 'test',
-                    entity: 'USER',
                     document:
                     {
                         $id: schemaUUID,
-                        $comment: '{\"term\\": \"${schemaUUID}\\", \"@id\\": \"https://localhost/schema#${schemaUUID}\\"}',
+                        $comment: '{"term": "${schemaUUID}", "@id": "https://localhost/schema#${schemaUUID}"}',
                         title: 'test',
                         description: ' test',
                         type: 'object',
@@ -53,9 +53,12 @@ context('Schemas', { tags: ['schema', 'thirdPool', 'all'] }, () => {
                     expect(response.status).eql(STATUS_CODE.OK);
                     expect(response.body[0]).to.have.property('uuid');
 
-                    let schemaUd = response.body.at(0).uuid;
-                    expect(schemaUd).to.equal(schemaUUID);
-                    let schemaId = response.body.at(0).id;
+                    //The listing also holds the system schemas of earlier runs, so the one created
+                    //above is addressed by its own uuid instead of by position
+                    const schema = response.body.find((item) => item?.uuid === schemaUUID);
+                    expect(schema, `system schema ${schemaUUID} in the listing`).to.not.be.undefined;
+                    let schemaUd = schema.uuid;
+                    let schemaId = schema.id;
 
                     cy.request({
                         method: METHOD.PUT,
@@ -73,7 +76,7 @@ context('Schemas', { tags: ['schema', 'thirdPool', 'all'] }, () => {
                             document:
                             {
                                 $id: schemaUUID,
-                                $comment: '{\"term\\": \"${schemaUUID}\\", \"@id\\": \"https://localhost/schema#${schemaUUID}\\"}',
+                                $comment: '{"term": "${schemaUUID}", "@id": "https://localhost/schema#${schemaUUID}"}',
                                 title: 'test',
                                 description: ' test',
                                 type: 'object',

@@ -18,10 +18,27 @@ context('Tokens', { tags: ['tokens', 'thirdPool', 'all'] }, () => {
                 },
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
-                const policy = response.body.find((element) => element.description === 'iRec Description');
-                if (!policy) {
-                    throw new Error('No policy with description "iRec Description" was found. Prepare test data first.');
+                const found = response.body.find((element) => element.description === 'iRec Description');
+                // Normally this policy is imported by 009_policies/postPoliciesImportFile.cy.js,
+                // which runs before this folder in a full suite run. When 010_tokens is run in
+                // isolation that import never happens, so import it here to stay self-sufficient.
+                if (found) {
+                    return cy.wrap(found);
                 }
+                return cy.importPolicyFile(authorization, 'exportedPolicy.policy').then(() => {
+                    return cy.request({
+                        method: METHOD.GET,
+                        url: API.ApiServer + API.Policies,
+                        headers: { authorization },
+                    }).then((response) => {
+                        const imported = response.body.find((element) => element.description === 'iRec Description');
+                        if (!imported) {
+                            throw new Error('Failed to import the "iRec Description" policy required by this suite.');
+                        }
+                        return imported;
+                    });
+                });
+            }).then((policy) => {
                 policyId = policy.id;
                 // The policy may already be published by a previous run, publishing it again returns 500
                 if (policy.status !== 'PUBLISH') {
@@ -54,22 +71,34 @@ context('Tokens', { tags: ['tokens', 'thirdPool', 'all'] }, () => {
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + 'tokens',
+                // By default a User only sees tokens tied to policies assigned to them (here,
+                // the iRec policy's token), which may already have NFTs minted to the account
+                // by unrelated policy-workflow runs and can't be dissociated. `status=All`
+                // returns the full token list instead, so we can target the fungible tokens
+                // this suite itself creates (postTokens.cy.js) and stay independent of that.
+                qs: {
+                    status: 'All'
+                },
                 headers: {
                     authorization
                 }
             }).then((response) => {
-                const token = response.body.at(-1);
+                const token = response.body.filter((t) => t.tokenName === 'test').at(-1);
                 const tokenId = token.tokenId;
-                // A previous run may have left the token associated, associating it again returns 500
-                if (token.associated) {
-                    cy.request({
-                        method: 'PUT',
-                        url: API.ApiServer + 'tokens/' + tokenId + '/dissociate',
-                        headers: {
-                            authorization
-                        }
-                    });
-                }
+                // The `associated` flag from the list endpoint can be stale relative to the
+                // actual Hedera state, so it can't be trusted to decide whether a cleanup
+                // dissociate is needed. Unconditionally dissociate first and ignore the
+                // result (a previous run may not have left it associated, in which case this
+                // returns a 500 with TOKEN_NOT_ASSOCIATED_TO_ACCOUNT) so the test always
+                // starts from a known, dissociated state.
+                cy.request({
+                    method: 'PUT',
+                    url: API.ApiServer + 'tokens/' + tokenId + '/dissociate',
+                    headers: {
+                        authorization
+                    },
+                    failOnStatusCode: false
+                });
                 cy.request({
                     method: 'PUT',
                     url: API.ApiServer + 'tokens/' + tokenId + '/associate',

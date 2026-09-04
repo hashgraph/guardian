@@ -32,9 +32,16 @@ context('Get discussions', { tags: ['comments', 'firstPool', 'all'] }, () => {
                 timeout: 180000
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
-                response.body.forEach(element => {
-                    if (element.name == 'iRec_3') {policyId = element.id}
-                })
+                //The iRec 3 flow imports its policy from a fixture, and the import suffixes the
+                //name of every copy after the first, so the published copies are matched on the
+                //common prefix and the most recent one is taken
+                const policy = response.body
+                    .filter((element) => String(element.name).startsWith('iRec_3')
+                        && element.status === 'PUBLISH')
+                    .sort((a, b) => String(b.createDate).localeCompare(String(a.createDate)))
+                    .at(0);
+                expect(policy, 'a published iRec_3 policy').to.not.be.undefined;
+                policyId = policy.id;
                 cy.getBlockByTag(authorization, policyId, 'registrants_grid').then((response) => {
                     documentId = response.body.data.at(0).id;
                     userDid = response.body.data.at(0).owner;
@@ -44,15 +51,27 @@ context('Get discussions', { tags: ['comments', 'firstPool', 'all'] }, () => {
         })
     })
 
+    //Every run adds its discussions to the same document, so they are looked up by name and the
+    //most recent one is this run's, instead of asserting how many there are in total
+    const newestNamed = (discussions, name) => {
+        const found = discussions
+            .filter((item) => item.name === name)
+            .sort((a, b) => String(a.createDate).localeCompare(String(b.createDate)))
+            .at(-1);
+        expect(found, `a discussion named "${name}"`).to.not.be.undefined;
+        return found;
+    };
+
     it('Get discussions by SR', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             getDiscussions({ authorization, policyId, documentId }).then((response) => {
                 expect(response.status).eq(STATUS_CODE.OK);
-                expect(response.body.length).eq(1);
-                expect(response.body.at(0).name).eq(discussionName);
-                expect(response.body.at(0).policyId).eq(policyId);
-                expect(response.body.at(0).privacy).eq('public');
-                discussionId = response.body.at(0).id;
+                //The SR is only shown the public ones
+                expect(response.body.every((item) => item.privacy === 'public')).to.be.true;
+                const publicDiscussion = newestNamed(response.body, discussionName);
+                expect(publicDiscussion.policyId).eq(policyId);
+                expect(publicDiscussion.privacy).eq('public');
+                discussionId = publicDiscussion.id;
             })
         });
     })
@@ -61,22 +80,21 @@ context('Get discussions', { tags: ['comments', 'firstPool', 'all'] }, () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             getDiscussions({ authorization, policyId, documentId }).then((response) => {
                 expect(response.status).eq(STATUS_CODE.OK);
-                expect(response.body.length).eq(3);
+                //The user is shown the role and user ones on top of the public ones
+                const roleDiscussion = newestNamed(response.body, discussionNameRole);
+                expect(roleDiscussion.policyId).eq(policyId);
+                expect(roleDiscussion.privacy).eq('roles');
+                expect(roleDiscussion.roles).to.deep.equal(['Registrant']);
 
-                expect(response.body.at(0).name).eq(discussionNameRole);
-                expect(response.body.at(0).policyId).eq(policyId);
-                expect(response.body.at(0).privacy).eq('roles');
-                expect(response.body.at(0).roles).to.deep.equal(['Registrant']);
+                const userDiscussion = newestNamed(response.body, discussionNameUser);
+                expect(userDiscussion.policyId).eq(policyId);
+                expect(userDiscussion.privacy).eq('users');
+                expect(userDiscussion.users).to.deep.equal([userDid]);
 
-                expect(response.body.at(1).name).eq(discussionNameUser);
-                expect(response.body.at(1).policyId).eq(policyId);
-                expect(response.body.at(1).privacy).eq('users');
-                expect(response.body.at(1).users).to.deep.equal([userDid]);
-
-                expect(response.body.at(2).name).eq(discussionName);
-                expect(response.body.at(2).policyId).eq(policyId);
-                expect(response.body.at(2).privacy).eq('public');
-                expect(response.body.at(2).id).eq(discussionId);
+                const publicDiscussion = newestNamed(response.body, discussionName);
+                expect(publicDiscussion.policyId).eq(policyId);
+                expect(publicDiscussion.privacy).eq('public');
+                expect(publicDiscussion.id).eq(discussionId);
             })
         });
     })

@@ -38,16 +38,46 @@ context('Import policy test', { tags: ['policies', 'secondPool', 'all'] }, () =>
                     headers: { authorization },
                     timeout: 180000
                 }).then((response) => {
-                    policyId = response.body.find(p => p.name === 'iRecDRF')?.id;
+                    const policy = response.body.find(p => p.name === 'iRecDRF');
+                    expect(policy, 'the imported iRecDRF policy').to.not.be.undefined;
+                    policyId = policy.id;
 
-                    // 3. Set to Dry Run
+                    // 3. Set to Dry Run, unless the policy already is in it: asking for the
+                    // transition a second time answers 500
+                    if (policy.status !== 'DRY-RUN') {
+                        cy.request({
+                            method: METHOD.PUT,
+                            url: `${API.ApiServer}${API.Policies}${policyId}/${API.DryRun}`,
+                            headers: { authorization },
+                            timeout: 180000,
+                        }).then((response) => {
+                            expect(response.status).to.eq(STATUS_CODE.OK);
+                        });
+                    }
+                });
+            });
+        });
+    });
+
+    //Importing a record whose test is already on the policy answers 409, and the test is only
+    //removed by the deletion spec at the end of the folder: a run that stopped earlier leaves one
+    //behind, so the policy is emptied of its tests before importing.
+    before('Remove the tests of earlier runs', () => {
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            cy.request({
+                method: METHOD.GET,
+                url: API.ApiServer + API.Policies + policyId,
+                headers: { authorization },
+                timeout: 180000,
+            }).then((response) => {
+                expect(response.status).to.eq(STATUS_CODE.OK);
+                (response.body.tests ?? []).forEach((test) => {
                     cy.request({
-                        method: METHOD.PUT,
-                        url: `${API.ApiServer}${API.Policies}${policyId}/${API.DryRun}`,
+                        method: METHOD.DELETE,
+                        url: API.ApiServer + API.Policies + policyId + '/' + API.Test + test.id,
                         headers: { authorization },
+                        failOnStatusCode: false,
                         timeout: 180000,
-                    }).then((response) => {
-                        expect(response.status).to.eq(STATUS_CODE.OK);
                     });
                 });
             });
@@ -96,4 +126,3 @@ context('Import policy test', { tags: ['policies', 'secondPool', 'all'] }, () =>
         });
     });
 });
-``

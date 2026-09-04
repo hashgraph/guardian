@@ -12,6 +12,7 @@ services:
       - CYPRESS_portApi=${CYPRESS_portApi:-3002}
       - CYPRESS_baseUrl=
       - CYPRESS_apiServer=${CYPRESS_apiServer:-http://host.docker.internal:3002/}
+      - CYPRESS_ipfsApi=${CYPRESS_ipfsApi:-http://host.docker.internal:5001}
       - CYPRESS_BROWSER=${CYPRESS_BROWSER:-chromium}
       - CYPRESS_VERIFY_TIMEOUT=${CYPRESS_VERIFY_TIMEOUT:-300000}
       - CYPRESS_grepTags=${CYPRESS_grepTags:-all}
@@ -56,6 +57,7 @@ services:
       - CYPRESS_portApi=${CYPRESS_portApi:-3002}
       - CYPRESS_baseUrl=http://ui
       - CYPRESS_apiServer=${CYPRESS_apiServer:-http://host.docker.internal:3002/}
+      - CYPRESS_ipfsApi=${CYPRESS_ipfsApi:-http://host.docker.internal:5001}
       - CYPRESS_BROWSER=${CYPRESS_BROWSER:-chromium}
       - CYPRESS_VERIFY_TIMEOUT=${CYPRESS_VERIFY_TIMEOUT:-300000}
       - CYPRESS_grepTags=${CYPRESS_grepTags:-ui}
