@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpResponse } from '@angular/common/http';
 import { EMPTY, Observable, Subject, Subscription, forkJoin, of } from 'rxjs';
@@ -123,12 +123,16 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     private savedSignatures = new Map<string, string>();
     public isSaving: boolean = false;
     private _subSchemasByIri = new Map<string, Schema>();
+    @ViewChild('arrayLinkEditor')
+    public arrayDependencyEditor?: ElementRef<HTMLElement>;
+
     public newArrayDependencyField: string | null = null;
     public newArrayDependencyOn: string | null = null;
     public newArrayDependencyTitle: string | null = null;
     public newArrayDependencyMappingSource: string | null = null;
     public newArrayDependencyMappingTarget: string | null = null;
     public newArrayDependencyValueMappings: ISchemaArrayDependencyMapping[] = [];
+    public editingArrayDependency: ISchemaArrayDependency | null = null;
     public templateConfigSaving: boolean = false;
     private templateConfigDirty: boolean = false;
 
@@ -1943,6 +1947,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     private resetArrayDependencyEditor(): void {
+        this.editingArrayDependency = null;
         this.newArrayDependencyField = null;
         this.newArrayDependencyOn = null;
         this.newArrayDependencyTitle = null;
@@ -2117,9 +2122,14 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return this.arrayDependencies.length;
     }
 
-    private createsArrayDependencyCycle(field: string, on: string): boolean {
+    private createsArrayDependencyCycle(
+        field: string,
+        on: string,
+        ignore: ISchemaArrayDependency | null,
+    ): boolean {
         const graph = new Map<string, string[]>();
         for (const dependency of this.arrayDependencies) {
+            if (dependency === ignore) { continue; }
             const source = dependency.on.join('.');
             const targets = graph.get(source) ?? [];
             targets.push(dependency.field.join('.'));
@@ -2138,24 +2148,56 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return false;
     }
 
-    public canAddArrayDependency(): boolean {
+    public canApplyArrayDependency(): boolean {
         const field = this.newArrayDependencyField;
         const on = this.newArrayDependencyOn;
+        const ignore = this.editingArrayDependency;
         if (!field || !on || field === on) { return false; }
         const availablePaths = new Set(
             this.arrayDependencyFieldGroups.flatMap(group => group.items.map(item => item.pathStr))
         );
         if (!availablePaths.has(field) || !availablePaths.has(on)) { return false; }
-        if (this.arrayDependencies.some(item => item.field.join('.') === field)) { return false; }
-        if (this.arrayDependencies.some(item => item.on.join('.') === field)) { return false; }
-        return !this.createsArrayDependencyCycle(field, on);
+        const others = this.arrayDependencies.filter(item => item !== ignore);
+        if (others.some(item => item.field.join('.') === field)) { return false; }
+        if (!ignore && others.some(item => item.on.join('.') === field)) { return false; }
+        return !this.createsArrayDependencyCycle(field, on, ignore);
     }
 
-    public addArrayDependency(): void {
+    public isEditingArrayDependency(dependency: ISchemaArrayDependency): boolean {
+        return this.editingArrayDependency === dependency;
+    }
+
+    public startEditArrayDependency(dependency: ISchemaArrayDependency): void {
+        this.editingArrayDependency = dependency;
+        this.newArrayDependencyOn = dependency.on.join('.');
+        this.newArrayDependencyField = dependency.field.join('.');
+        this.newArrayDependencyTitle = dependency.title?.length
+            ? dependency.title.join('.')
+            : null;
+        this.newArrayDependencyMappingSource = null;
+        this.newArrayDependencyMappingTarget = null;
+        this.newArrayDependencyValueMappings = (dependency.valueMappings ?? [])
+            .map(item => ({ source: [...item.source], target: [...item.target] }));
+        this.scrollArrayDependencyEditorIntoView();
+    }
+
+    public cancelEditArrayDependency(): void {
+        this.resetArrayDependencyEditor();
+    }
+
+    private scrollArrayDependencyEditorIntoView(): void {
+        setTimeout(() => {
+            this.arrayDependencyEditor?.nativeElement
+                ?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+    }
+
+    public applyArrayDependency(): void {
         const schema = this.selectedSchema;
         const field = this.newArrayDependencyField;
         const on = this.newArrayDependencyOn;
-        if (!schema || !field || !on || !this.canAddArrayDependency()) { return; }
+        const editing = this.editingArrayDependency;
+        if (!schema || !field || !on || !this.canApplyArrayDependency()) { return; }
         const dependency: ISchemaArrayDependency = {
             field: field.split('.'),
             on: on.split('.'),
@@ -2168,7 +2210,15 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             dependency.valueMappings = this.newArrayDependencyValueMappings
                 .map(item => ({ source: [...item.source], target: [...item.target] }));
         }
-        schema.arrayDependencies = [...(schema.arrayDependencies ?? []), dependency];
+        const current = schema.arrayDependencies ?? [];
+        const index = editing ? current.indexOf(editing) : -1;
+        if (editing && index < 0) {
+            this.resetArrayDependencyEditor();
+            return;
+        }
+        schema.arrayDependencies = index < 0
+            ? [...current, dependency]
+            : current.map((item, position) => position === index ? dependency : item);
         this.resetArrayDependencyEditor();
         this.markDirty();
     }
@@ -2176,6 +2226,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public removeArrayDependency(dependency: ISchemaArrayDependency): void {
         const schema = this.selectedSchema;
         if (!schema) { return; }
+        if (this.editingArrayDependency === dependency) {
+            this.resetArrayDependencyEditor();
+        }
         schema.arrayDependencies = (schema.arrayDependencies ?? [])
             .filter(item => item !== dependency);
         this.markDirty();
