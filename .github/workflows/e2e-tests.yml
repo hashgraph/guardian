@@ -98,8 +98,7 @@ jobs:
       #
       # Image tags are literal on purpose: the `env` context is NOT available inside
       # jobs.<id>.services.<id>, so ${{ env.KUBO_VERSION }} would silently expand to an
-      # empty string. The "Show runner properties" step reports the images that are
-      # actually running instead.
+      # empty string.
       ipfs-node:
         image: ipfs/kubo:v0.43.0
         env:
@@ -199,60 +198,6 @@ jobs:
             echo "| Report name | \`${REPORT_NAME}\` |"
             echo
           } | tee -a "$GITHUB_STEP_SUMMARY"
-
-      # The runner image is not under our control, so record what we actually got.
-      # Mostly there to tell a missing system library apart from a real test failure
-      # when Cypress cannot start. Note the "Cypress runtime dependencies" group runs
-      # *before* the apt step below, so MISSING entries there are expected -- they are
-      # exactly what that step installs.
-      - name: Show runner properties
-        shell: bash
-        continue-on-error: true
-        run: |
-          echo "::group::Runner context"
-          echo "name:        ${{ runner.name }}"
-          echo "os / arch:   ${{ runner.os }} / ${{ runner.arch }}"
-          echo "environment: ${{ runner.environment }}"
-          echo "workspace:   ${{ github.workspace }}"
-          echo "temp:        ${{ runner.temp }}"
-          echo "::endgroup::"
-
-          echo "::group::Operating system"
-          uname -a
-          cat /etc/os-release || true
-          echo "::endgroup::"
-
-          echo "::group::CPU / memory / disk"
-          echo "nproc: $(nproc)"
-          lscpu | grep -E 'Model name|^CPU\(s\)|Thread|Core' || true
-          free -h || true
-          df -h || true
-          echo "::endgroup::"
-
-          echo "::group::Toolchain"
-          echo "node:   $(node --version 2>&1 || echo n/a)"
-          echo "npm:    $(npm --version 2>&1 || echo n/a)"
-          echo "yarn:   $(yarn --version 2>&1 || echo n/a)"
-          echo "docker: $(docker --version 2>&1 || echo n/a)"
-          echo "::endgroup::"
-
-          echo "::group::Service containers"
-          docker ps --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}' || true
-          echo "::endgroup::"
-
-          echo "::group::Cypress runtime dependencies"
-          for lib in libgtk-3.so.0 libgbm.so.1 libnotify.so.4 libnss3.so \
-                     libXss.so.1 libasound.so.2 libXtst.so.6; do
-            if ldconfig -p | grep -q "$lib"; then echo "OK      $lib"; else echo "MISSING $lib"; fi
-          done
-          for bin in Xvfb xauth google-chrome chromium firefox; do
-            if command -v "$bin" >/dev/null 2>&1; then
-              echo "OK      $bin -> $(command -v "$bin")"
-            else
-              echo "MISSING $bin"
-            fi
-          done
-          echo "::endgroup::"
 
       - name: Checkout Guardian code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
