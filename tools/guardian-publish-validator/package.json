@@ -1,0 +1,30 @@
+{
+  "name": "guardian-publish-validator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "description": "Scans a Hedera Guardian methodology library for policy, tool, module, and schema references whose Hedera consensus messages or IPFS payloads are no longer retrievable. CLI validator, web UI for browsing reports, and built-in CI/CD integration via --fail-on flags.",
+  "homepage": "https://github.com/hashgraph/guardian/tree/main/tools/guardian-publish-validator",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hashgraph/guardian.git",
+    "directory": "tools/guardian-publish-validator"
+  },
+  "bin": {
+    "guardian-publish-validator": "./bin/validator.js"
+  },
+  "scripts": {
+    "validate": "node bin/validator.js",
+    "ui": "node bin/ui.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.17",
+    "express": "^5.2.1",
+    "p-limit": "^7.3.0"
+  }
+}
