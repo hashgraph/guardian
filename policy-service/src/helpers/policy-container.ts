@@ -283,6 +283,14 @@ export class PolicyContainer extends NatsService {
      * @param config
      */
     public addPolicy(config: IPolicyStartOptions): boolean {
+        // Already hosted here: keep the existing entry. Replacing it would hand
+        // runPolicyProcess a `process: null` instance and defeat its guard, forking a
+        // second child while the first keeps running and stays subscribed. Checked
+        // before the capacity test because re-adding a hosted policy costs no slot.
+        if (this.container.has(config.policyId)) {
+            return true;
+        }
+
         if (this.processCount >= this.maxPolicyInstances) {
             this.unsubscribeFromModelGeneration();
             return false
