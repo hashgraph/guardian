@@ -46,53 +46,6 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
-      # The runner image is not under our control, so record what we actually got.
-      # Mostly there to tell a missing system library apart from a real test failure
-      # when Cypress cannot start.
-      - name: Show runner properties
-        shell: bash
-        continue-on-error: true
-        run: |
-          echo "::group::Runner context"
-          echo "name:        ${{ runner.name }}"
-          echo "os / arch:   ${{ runner.os }} / ${{ runner.arch }}"
-          echo "environment: ${{ runner.environment }}"
-          echo "workspace:   ${{ runner.workspace }}"
-          echo "::endgroup::"
-
-          echo "::group::Operating system"
-          uname -a
-          cat /etc/os-release || true
-          echo "::endgroup::"
-
-          echo "::group::CPU / memory / disk"
-          echo "nproc: $(nproc)"
-          lscpu | grep -E 'Model name|^CPU\(s\)|Thread|Core' || true
-          free -h || true
-          df -h || true
-          echo "::endgroup::"
-
-          echo "::group::Toolchain"
-          echo "node:   $(node --version 2>&1)"
-          echo "npm:    $(npm --version 2>&1)"
-          echo "yarn:   $(yarn --version 2>&1 || echo n/a)"
-          echo "docker: $(docker --version 2>&1 || echo n/a)"
-          echo "::endgroup::"
-
-          echo "::group::Cypress runtime dependencies"
-          for lib in libgtk-3.so.0 libgbm.so.1 libnotify.so.4 libnss3.so \
-                     libXss.so.1 libasound.so.2 libXtst.so.6; do
-            if ldconfig -p | grep -q "$lib"; then echo "OK      $lib"; else echo "MISSING $lib"; fi
-          done
-          for bin in Xvfb xauth google-chrome chromium firefox; do
-            if command -v "$bin" >/dev/null 2>&1; then
-              echo "OK      $bin -> $(command -v "$bin")"
-            else
-              echo "MISSING $bin"
-            fi
-          done
-          echo "::endgroup::"
-
       - name: Cache yarn
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
@@ -220,13 +173,22 @@ jobs:
           key: ${{ runner.os }}-cypress-${{ hashFiles('e2e-tests/package-lock.json') }}
           restore-keys: ${{ runner.os }}-cypress-
 
-      # Cypress always needs an X server on Linux, even for a headless API run:
-      # `cypress verify` smoke-tests the Electron binary against a display before
-      # any browser is chosen. cypress/included shipped one, a bare runner does not.
-      - name: Install Xvfb
+      # This runner is a bare self-hosted container (see "Show runner properties":
+      # every library below reports MISSING), so it provides none of what the
+      # cypress/included image used to. Xvfb is needed even for a headless API run,
+      # because `cypress verify` smoke-tests the Electron binary against a display.
+      # Package names are Ubuntu 22.04 (jammy); on 24.04+ libasound2 becomes libasound2t64.
+      - name: Install Cypress system dependencies
+        shell: bash
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends xvfb
+          SUDO=""
+          [ "$(id -u)" -eq 0 ] || SUDO=sudo
+          $SUDO apt-get update
+          $SUDO apt-get install -y --no-install-recommends \
+            xvfb xauth \
+            libgtk-3-0 libgbm1 libnotify4 \
+            libnss3 libnspr4 \
+            libxss1 libxtst6 libasound2
 
       - name: Install Cypress dependencies
         working-directory: e2e-tests
@@ -238,6 +200,8 @@ jobs:
         env:
           CYPRESS_portApi: 3002
           CYPRESS_BROWSER: electron
+          # /dev/shm is 64 MB in this container, well under what Chromium expects
+          ELECTRON_EXTRA_LAUNCH_ARGS: --disable-dev-shm-usage
           CYPRESS_operatorId: ${{ secrets.CI_HEDERA_ACCOUNT }}
           CYPRESS_operatorKey: ${{ secrets.CI_HEDERA_PRIV_KEY }}
           CYPRESS_ipfsStorageApiKey: ${{ secrets.IPFS_STORAGE_API_KEY }}
