@@ -109,6 +109,12 @@ jobs:
             || { docker logs ipfs-node; exit 1; }
           curl -fsS -X POST http://127.0.0.1:5001/api/v0/id
 
+          # the gateway is what worker-service reads through, so wait for it too
+          # (bafkqaaa is the empty block, served without touching the network)
+          echo "Waiting for the IPFS gateway on :8080..."
+          timeout 180 bash -c 'until curl -fsS http://127.0.0.1:8080/ipfs/bafkqaaa >/dev/null 2>&1; do sleep 2; done' \
+            || { docker logs ipfs-node; exit 1; }
+
       - name: Start MongoDB
         uses: step-security/mongodb-github-action@7bbfdaf9f5b4e8b4ffbe2905fd9e4756d3204ed6
         with:
@@ -141,12 +147,10 @@ jobs:
           JWT_PUBLIC_KEY: ${{ secrets.CI_JWT_PUBLIC_KEY }}
           SERVICE_JWT_PUBLIC_KEY_ALL: ${{ secrets.CI_JWT_PUBLIC_KEY }}
           SERVICE_JWT_SECRET_KEY_ALL: ${{ secrets.CI_JWT_PRIVATE_KEY }}
-          IPFS_NODE_ADDRESS: http://127.0.0.1:5001
           IPFS_PROVIDER: local
-          IPFS_PUBLIC_GATEWAY: https://ipfs.filebase.io/ipfs/{cid}
-          IPFS_STORAGE_KEY: ${{ secrets.E2E_IPFS_STORAGE_KEY }}
-          IPFS_STORAGE_PROOF: ${{ secrets.E2E_IPFS_STORAGE_PROOF }}
-          IPFS_STORAGE_API_KEY: ${{ secrets.IPFS_STORAGE_API_KEY }}
+          IPFS_NODE_ADDRESS: http://127.0.0.1:5001
+          IPFS_PUBLIC_GATEWAY: http://127.0.0.1:8080/ipfs/{cid}
+          IPFS_TIMEOUT: 720
           ACCESS_TOKEN_UPDATE_INTERVAL: 600000
           INITIAL_BALANCE: 5
           INITIAL_STANDARD_REGISTRY_BALANCE: 50
