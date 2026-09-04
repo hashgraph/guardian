@@ -77,7 +77,11 @@ export class SchemaHelper {
     }
 
     /**
-     * Walk through every JSON schema property, including nested object and array item properties.
+     * Walk through every JSON schema property, including nested object and array item
+     * properties, and fields declared only inside a condition's `then`/`else` branch.
+     * Condition branches reuse the same path as the enclosing document rather than
+     * appending a segment, since they describe alternate states of the same field set,
+     * not a nested sub-structure.
      * @param document
      * @param visitor
      * @param path
@@ -85,20 +89,47 @@ export class SchemaHelper {
     public static walkDocumentProperties(
         document: any,
         visitor: (property: any, path: string[], name: string) => void,
-        path: string[] = []
+        path: string[] = [],
+        insideConditionBranch: boolean = false
     ): void {
         if (!document || typeof document !== 'object') {
             return;
         }
         const properties = document.properties;
-        if (!properties || typeof properties !== 'object') {
-            return;
+        if (properties && typeof properties === 'object') {
+            for (const [name, property] of Object.entries<any>(properties)) {
+                // A condition branch can carry `false` for a field it forbids
+                // (buildForbid); that is a marker, not a field, and has no
+                // slot for a templateFieldId.
+                if (!property || typeof property !== 'object') {
+                    continue;
+                }
+                /*
+                 * A condition branch can also carry a cross-schema constraint
+                 * wrapper (buildCrossRequired/buildCrossForbidden), keyed by
+                 * the name of a real ref field elsewhere in this document -
+                 * e.g. `parentRef: { required: ['childField'] }`. Every real
+                 * field built inside a condition carries `type` or `$ref`;
+                 * the wrapper carries neither, only `properties`/`required`.
+                 * Scoped to condition branches only: outside one, a bare
+                 * `oneOf` with no `type`/`$ref` is a legitimate top-level
+                 * shape (buildDocument's own `@context`/`type` properties),
+                 * which this must not start excluding.
+                 */
+                if (insideConditionBranch && property.type === undefined && property.$ref === undefined) {
+                    continue;
+                }
+                const fieldPath = [...path, name];
+                visitor(property, fieldPath, name);
+                const target = property?.type === SchemaDataTypes.array ? property.items : property;
+                SchemaHelper.walkDocumentProperties(target, visitor, fieldPath, insideConditionBranch);
+            }
         }
-        for (const [name, property] of Object.entries<any>(properties)) {
-            const fieldPath = [...path, name];
-            visitor(property, fieldPath, name);
-            const target = property?.type === SchemaDataTypes.array ? property.items : property;
-            SchemaHelper.walkDocumentProperties(target, visitor, fieldPath);
+        if (Array.isArray(document.allOf)) {
+            for (const entry of document.allOf) {
+                SchemaHelper.walkDocumentProperties(entry?.then, visitor, path, true);
+                SchemaHelper.walkDocumentProperties(entry?.else, visitor, path, true);
+            }
         }
     }
 
