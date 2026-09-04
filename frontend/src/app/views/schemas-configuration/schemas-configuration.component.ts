@@ -194,6 +194,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public get canPublishTemplate(): boolean {
         if (!this.isTemplateConfigMode || !this.schemaTemplate?.id) { return false; }
+        if (this.hasUnsavedChanges) { return false; }
         const status = this.schemaTemplate.status;
         return status === ModuleStatus.DRAFT || status === ModuleStatus.PUBLISH_ERROR;
     }
@@ -1331,7 +1332,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const createObs = toCreate.map(s =>
             this.schemaService.create(s.category ?? this.getCategory(), s, this.topic).pipe(
                 map((schemas: ISchema[]) => {
-                    const saved = schemas.find(r => r.uuid === s.uuid && r.topicId === this.topic);
+                    const matches = schemas.filter(r => r.uuid === s.uuid);
+                    const saved = matches.find(r => r.topicId === this.topic) ?? matches[0];
                     const savedId = saved?.id || (saved as any)?._id;
                     if (savedId) {
                         s.id = savedId;
