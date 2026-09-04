@@ -23,8 +23,9 @@ import {
 import { RestoreDataFromHedera } from '../helpers/restore-data-from-hedera.js';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
+import { PrivateKey } from '@hiero-ledger/sdk';
 import { ICredentials, IFireblocksConfig, IOnboardingPayload, setupUserProfile, validateCommonDid } from './helpers/profile-helper.js';
+import { validateHederaAccountKey } from './helpers/hedera-key-validator.js';
 
 @Controller()
 export class ProfileController {
@@ -316,21 +317,9 @@ export function profileAPI(logger: PinoLogger) {
 
                 const target = await new Users().getUser(username, user.id);
 
-                try {
-                    const workers = new Workers();
-                    AccountId.fromString(hederaAccountId);
-                    PrivateKey.fromString(hederaAccountKey);
-                    await workers.addNonRetryableTask({
-                        type: WorkerTaskType.GET_USER_BALANCE,
-                        data: { hederaAccountId, hederaAccountKey }
-                    }, {
-                        priority: 20,
-                        userId: target.id.toString(),
-                        interception: null
-                    });
-                } catch (error) {
-                    throw new Error(`Invalid Hedera account or key.`);
-                }
+                await validateHederaAccountKey(hederaAccountId, hederaAccountKey, {
+                    userId: target.id.toString()
+                });
 
                 const vcHelper = new VcHelper();
                 let oldDidDocument: CommonDidDocument;
