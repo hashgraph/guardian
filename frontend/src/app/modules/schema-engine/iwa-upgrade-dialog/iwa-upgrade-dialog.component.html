@@ -1,0 +1,122 @@
+<div class="dialog-header">
+  <div class="header-container">
+    <div class="header-text">{{ header }}</div>
+  </div>
+  <div class="header-icon" (click)="onClose()">
+    <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+  </div>
+</div>
+
+<div class="dialog-body iwa-body">
+  @if (loading) {
+    <div class="loading">
+      <div class="preloader-image preloader-image-l-size"></div>
+    </div>
+  }
+
+  @if (removedCount > 0) {
+    <div class="iwa-warning-banner">
+      <i class="pi pi-exclamation-triangle"></i>
+      <span>
+        {{ removedCount }} {{ removedCount === 1 ? 'property has' : 'properties have' }}
+        no IWA v3 equivalent and will be cleared. Reassign
+        {{ removedCount === 1 ? 'it' : 'them' }} after upgrading.
+      </span>
+    </div>
+  }
+
+  <!-- Colour keys double as filters, as in the compare-schema view.
+       Real buttons so they are keyboard-reachable and announce their state. -->
+  <div class="legend">
+    @if (removedCount > 0) {
+      <button type="button" class="legend-item" [class.is-off]="!showRemoved"
+              [attr.aria-pressed]="showRemoved" (click)="toggle('removed')">
+        <span class="legend-icon legend-removed"></span>
+        <span class="legend-text">No v3 equivalent &mdash; will be cleared ({{ removedCount }})</span>
+      </button>
+    }
+    <button type="button" class="legend-item" [class.is-off]="!showRenamed"
+            [attr.aria-pressed]="showRenamed" (click)="toggle('renamed')">
+      <span class="legend-icon legend-renamed"></span>
+      <span class="legend-text">Renamed or moved in v3 ({{ renamedCount }})</span>
+    </button>
+    <button type="button" class="legend-item" [class.is-off]="!showUnchanged"
+            [attr.aria-pressed]="showUnchanged" (click)="toggle('unchanged')">
+      <span class="legend-icon legend-unchanged"></span>
+      <span class="legend-text">Identical in both versions ({{ unchangedCount }})</span>
+    </button>
+  </div>
+
+  <div class="guardian-grid-container">
+    <p-table [value]="pagedRows"
+      class="guardian-grid-table"
+      [scrollable]="true">
+      <ng-template pTemplate="header">
+        <tr class="guardian-grid-header">
+          <th class="header-cell-text" style="width: 26%;">Field</th>
+          <th class="header-cell-text" style="width: 37%;">Current property (v1)</th>
+          <th class="header-cell-text" style="width: 37%;">New property (v3)</th>
+        </tr>
+      </ng-template>
+      <ng-template let-row pTemplate="body">
+        <tr class="guardian-grid-row" [attr.remap-status]="row.status">
+          <td class="row-cell-text">
+            <span class="iwa-field" [pTooltip]="row.field" tooltipStyleClass="guardian-tooltip">{{ row.field }}</span>
+          </td>
+          <td class="row-cell-text">
+            <span class="iwa-path">
+              <span class="iwa-path__entity">{{ entityOf(row.from) }}</span>{{ fieldOf(row.from) }}
+            </span>
+          </td>
+          <td class="row-cell-text">
+            @switch (row.status) {
+              @case ('removed') {
+                <span class="iwa-removed-text">Removed in v3</span>
+              }
+              @case ('unchanged') {
+                <span class="iwa-muted">No change</span>
+              }
+              @default {
+                <span class="iwa-path">
+                  <span class="iwa-path__entity"
+                        [class.moved]="movedEntity(row)">{{ entityOf(row.to || '') }}</span>{{ fieldOf(row.to || '') }}
+                </span>
+              }
+            }
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr class="guardian-grid-row">
+          <td class="row-cell-text iwa-empty" colspan="3">
+            All categories are hidden. Select a colour key above to show rows.
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  @if (filteredRows.length > pageSizeOptions[0]) {
+    <div class="guardian-grid-paginator">
+      <app-paginator
+        class="guardian-grid-paginator"
+        [pageIndex]="pageIndex"
+        [pageSize]="pageSize"
+        [length]="filteredRows.length"
+        [options]="pageSizeOptions"
+        (page)="onPage($event)"
+      ></app-paginator>
+    </div>
+  }
+</div>
+
+<div class="dialog-footer">
+  <div class="action-buttons">
+    <div class="secondary-button">
+      <button (click)="onClose()" class="guardian-button guardian-button-secondary">Cancel</button>
+    </div>
+    <div class="primary-button">
+      <button (click)="onUpgrade()" class="guardian-button guardian-button-primary">Upgrade</button>
+    </div>
+  </div>
+</div>

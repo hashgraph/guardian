@@ -298,6 +298,20 @@ export class SchemaService {
         return this.http.delete<any>(`${this.url}/topic/${topicId}`, {});
     }
 
+    /**
+     * Preview remapping a draft schema's field properties from IWA v1 to v3.
+     */
+    public iwaUpgradePreview(schemaId: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/${schemaId}/iwa-upgrade/preview`);
+    }
+
+    /**
+     * Apply the IWA v1 -> v3 remap to a draft schema.
+     */
+    public upgradeToIwaV3(schemaId: string): Observable<any> {
+        return this.http.post<any>(`${this.url}/${schemaId}/iwa-upgrade`, {});
+    }
+
     public properties(): Observable<any[]> {
         return this.http.get<any>(`${API_BASE_URL}/projects/properties`);
     }

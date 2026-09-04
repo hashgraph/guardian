@@ -232,6 +232,15 @@ export class SchemaDTO {
     codeVersion?: string;
 
     @ApiProperty({
+        type: 'string',
+        required: false,
+        nullable: true,
+        description: 'IWA dMRV specification version the field properties are authored against. Absent means v1.',
+        example: '3.0.0'
+    })
+    iwaVersion?: string;
+
+    @ApiProperty({
         type: 'number',
         required: false,
         nullable: true,

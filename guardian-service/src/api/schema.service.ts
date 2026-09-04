@@ -33,7 +33,9 @@ import {
     SchemaHelper,
     SchemaNode,
     SchemaStatus,
-    TopicType
+    TopicType,
+    IwaVersion,
+    resolveIwaVersion
 } from '@guardian/interfaces';
 import {
     checkForCircularDependency,
@@ -680,6 +682,76 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 );
 
                 return new MessageResponse(parents);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Load a draft schema that is eligible for an IWA v3 upgrade.
+     *
+     * Published schemas are excluded: their document is frozen on IPFS, so the
+     * only way forward there is to create a new version and upgrade that draft.
+     */
+    async function loadUpgradableSchema(
+        schemaId: string,
+        owner: IOwner
+    ): Promise<{ schema?: SchemaCollection, error?: string, code?: number }> {
+        const schema = await DatabaseServer.getSchemaById(schemaId);
+        if (!schema) {
+            return { error: 'Schema is not found', code: 404 };
+        }
+        if (schema.owner !== owner.owner) {
+            return { error: 'Invalid schema owner', code: 403 };
+        }
+        if (schema.status !== SchemaStatus.DRAFT && schema.status !== SchemaStatus.ERROR) {
+            return {
+                error: 'Only a draft schema can be upgraded. Create a new version first.',
+                code: 422
+            };
+        }
+        if (resolveIwaVersion(schema) === IwaVersion.V3) {
+            return { error: 'Schema is already on IWA v3', code: 422 };
+        }
+        return { schema };
+    }
+
+    ApiResponse(MessageAPI.GET_SCHEMA_IWA_UPGRADE_PREVIEW,
+        async (msg: { schemaId: string, owner: IOwner }) => {
+            try {
+                if (!msg?.schemaId || !msg?.owner) {
+                    return new MessageError('Invalid upgrade preview parameters', 400);
+                }
+                const { schema, error, code } = await loadUpgradableSchema(msg.schemaId, msg.owner);
+                if (error) {
+                    return new MessageError(error, code);
+                }
+                const report = SchemaHelper.remapIwaPropertiesToV3(schema.document, false);
+                return new MessageResponse(report);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.UPGRADE_SCHEMA_TO_IWA_V3,
+        async (msg: { schemaId: string, owner: IOwner }) => {
+            try {
+                if (!msg?.schemaId || !msg?.owner) {
+                    return new MessageError('Invalid upgrade parameters', 400);
+                }
+                const { schema, error, code } = await loadUpgradableSchema(msg.schemaId, msg.owner);
+                if (error) {
+                    return new MessageError(error, code);
+                }
+                const document = schema.document;
+                const report = SchemaHelper.remapIwaPropertiesToV3(document, true);
+                schema.document = document;
+                schema.iwaVersion = IwaVersion.V3;
+                await DatabaseServer.updateSchema(schema.id, schema);
+                await updateSchemaDefs(schema.iri);
+                return new MessageResponse({ report, schema });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);

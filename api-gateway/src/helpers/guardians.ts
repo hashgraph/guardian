@@ -860,6 +860,24 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Preview what an IWA v1 -> v3 upgrade would do to a draft schema
+     * @param schemaId Schema identifier
+     * @returns Per-field remap report
+     */
+    public async getSchemaIwaUpgradePreview(schemaId: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.GET_SCHEMA_IWA_UPGRADE_PREVIEW, { schemaId, owner });
+    }
+
+    /**
+     * Remap a draft schema's field properties from IWA v1 to v3
+     * @param schemaId Schema identifier
+     * @returns Remap report and the updated schema
+     */
+    public async upgradeSchemaToIwaV3(schemaId: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.UPGRADE_SCHEMA_TO_IWA_V3, { schemaId, owner });
+    }
+
+    /**
      * Get schema tree
      * @param id Id
      * @param owner Owner

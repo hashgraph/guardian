@@ -4,6 +4,7 @@ import { IURL, UrlType } from './url.interface.js';
 import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { SchemaMessageBody } from './message-body.interface.js';
+import { resolveIwaVersion } from '@guardian/interfaces';
 
 /**
  * Schema message
@@ -40,6 +41,11 @@ export class SchemaMessage extends Message {
     public codeVersion: string;
 
     /**
+     * IWA dMRV specification version
+     */
+    public iwaVersion: string;
+
+    /**
      * Documents
      */
     public documents: any[];
@@ -65,6 +71,7 @@ export class SchemaMessage extends Message {
         this.uuid = schema.uuid;
         this.version = schema.version;
         this.codeVersion = schema.codeVersion;
+        this.iwaVersion = resolveIwaVersion(schema);
         const document = schema.document;
         const context = schema.context;
         this.documents = [document, context];
@@ -115,7 +122,8 @@ export class SchemaMessage extends Message {
             document_uri: this.getDocumentUrl(UrlType.url),
             context_cid: this.getContextUrl(UrlType.cid),
             context_uri: this.getContextUrl(UrlType.url),
-            code_version: this.codeVersion
+            code_version: this.codeVersion,
+            iwa_version: this.iwaVersion
         };
     }
 
@@ -182,6 +190,7 @@ export class SchemaMessage extends Message {
         message.uuid = json.uuid;
         message.version = json.version;
         message.codeVersion = json.code_version;
+        message.iwaVersion = resolveIwaVersion({ iwaVersion: json.iwa_version });
         message.relationships = json.relationships;
         const urls = [{
             cid: json.document_cid,
@@ -237,6 +246,7 @@ export class SchemaMessage extends Message {
         result.uuid = this.uuid;
         result.version = this.version;
         result.codeVersion = this.codeVersion;
+        result.iwaVersion = this.iwaVersion;
         result.relationships = this.relationships;
         result.documentUrl = this.getDocumentUrl(UrlType.url);
         result.contextUrl = this.getContextUrl(UrlType.url);
@@ -260,6 +270,7 @@ export class SchemaMessage extends Message {
         result.uuid = json.uuid;
         result.version = json.version;
         result.codeVersion = json.codeVersion;
+        result.iwaVersion = resolveIwaVersion({ iwaVersion: json.iwaVersion });
         result.relationships = json.relationships;
         result.documents = [json.document, json.context];
         return result;
