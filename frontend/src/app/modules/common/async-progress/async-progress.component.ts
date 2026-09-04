@@ -253,6 +253,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.APPLY_SCHEMA_TEMPLATE:
             case TaskAction.DETACH_SCHEMA_TEMPLATE:
             case TaskAction.UPDATE_APPLIED_SCHEMA_TEMPLATE:
+                this.reportSchemaTemplateDeleteErrors(result);
                 if (this.last) {
                     this.redirect(this.last);
                     return;
@@ -623,6 +624,24 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
         this.toastService.warn(
             msg,
             errors.length === 1 ? '1 schema was not imported' : `${errors.length} schemas were not imported`,
+            { sticky: true, logMessage: msg }
+        );
+    }
+
+    /**
+     * detachSchemaTemplate's "also delete the schemas" option deletes on a best-effort
+     * basis so detach itself always succeeds; any per-schema failures come back as
+     * result.deleteErrors and would otherwise vanish since nothing else renders them.
+     */
+    private reportSchemaTemplateDeleteErrors(result: any): void {
+        const deleteErrors = result?.deleteErrors;
+        if (!Array.isArray(deleteErrors) || !deleteErrors.length) {
+            return;
+        }
+        const msg = deleteErrors.join('\n');
+        this.toastService.warn(
+            msg,
+            deleteErrors.length === 1 ? '1 schema was not deleted' : `${deleteErrors.length} schemas were not deleted`,
             { sticky: true, logMessage: msg }
         );
     }

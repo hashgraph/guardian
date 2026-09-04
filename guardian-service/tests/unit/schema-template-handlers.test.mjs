@@ -197,6 +197,8 @@ describe('schema template handlers', () => {
             policyId: 'policy-1',
             templateId: 'template-1',
             detachedSchemas: 1,
+            deletedSchemas: 0,
+            deleteErrors: [],
         });
         assert.equal(updatedSchemas.length, 1);
         assert.equal(updatedSchemas[0].id, 'policy-schema-1');

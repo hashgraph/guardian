@@ -1,6 +1,6 @@
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
-import { ISchemaTemplate, ISchemaTemplateUpdateOptions, ISchemaTemplateUpdatePreview, Permissions, StatusType, TaskAction } from '@guardian/interfaces';
+import { ISchemaTemplate, ISchemaTemplateDetachOptions, ISchemaTemplateUpdateOptions, ISchemaTemplateUpdatePreview, Permissions, StatusType, TaskAction } from '@guardian/interfaces';
 import { ApiAcceptedResponse, ApiBody, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AuthUser, Auth } from '#auth';
 import { CacheService, EntityOwner, Guardians, InternalException, ServiceError, TaskManager } from '#helpers';
@@ -901,7 +901,8 @@ export class SchemaTemplatesApi {
     async detachSchemaTemplateAsync(
         @AuthUser() user: IAuthUser,
         @Param('templateId') templateId: string,
-        @Param('policyId') policyId: string
+        @Param('policyId') policyId: string,
+        @Body() body: ISchemaTemplateDetachOptions
     ): Promise<TaskDTO> {
         try {
             const guardians = new Guardians();
@@ -912,7 +913,7 @@ export class SchemaTemplatesApi {
                 taskManager.addStatus(task.taskId, 'Validate policy template binding', StatusType.PROCESSING);
                 taskManager.addStatus(task.taskId, 'Validate policy template binding', StatusType.COMPLETED);
                 taskManager.addStatus(task.taskId, 'Detach template from policy schemas', StatusType.PROCESSING);
-                const result = await guardians.detachSchemaTemplate(policyId, templateId, owner);
+                const result = await guardians.detachSchemaTemplate(policyId, templateId, owner, body?.deleteSchemas);
                 taskManager.addStatus(task.taskId, 'Detach template from policy schemas', StatusType.COMPLETED);
                 taskManager.addStatus(task.taskId, 'Finalize policy binding', StatusType.PROCESSING);
                 await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS);

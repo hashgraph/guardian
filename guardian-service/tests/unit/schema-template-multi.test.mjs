@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { MessageAPI, ModuleStatus, PolicyStatus, SchemaCategory } from '@guardian/interfaces';
+import { MessageAPI, ModuleStatus, PolicyStatus, SchemaCategory, SchemaStatus } from '@guardian/interfaces';
 import {
     buildTemplateSchemasSnapshot,
     removePolicySchemaTemplateSnapshot,
@@ -480,10 +480,11 @@ describe('multi-template: DETACH_SCHEMA_TEMPLATE', () => {
         });
     };
 
-    const detach = (templateId) => callHandler(handlers, MessageAPI.DETACH_SCHEMA_TEMPLATE, {
+    const detach = (templateId, deleteSchemas) => callHandler(handlers, MessageAPI.DETACH_SCHEMA_TEMPLATE, {
         policyId: 'policy-1',
         templateId,
         owner,
+        deleteSchemas,
     });
 
     const twoBindings = () => policy({
@@ -552,6 +553,38 @@ describe('multi-template: DETACH_SCHEMA_TEMPLATE', () => {
 
         assert.equal(ok(response), false,
             'with several bindings, an unnamed detach is ambiguous and must not guess');
+    });
+
+    it('also deletes the bound schemas when deleteSchemas is true', async () => {
+        arrange(twoBindings(), twoTemplatesSchemas());
+        const deleted = [];
+        stub(DatabaseServer, 'getSchema', async (id) => ({ id, status: SchemaStatus.DRAFT }));
+        stub(DatabaseServer, 'deleteSchemas', async (id) => { deleted.push(id); });
+
+        const response = await detach('template-2', true);
+
+        assert.equal(ok(response), true, response && response.error);
+        assert.deepEqual(deleted, ['policy-schema-template-2']);
+        assert.equal(response.body.deletedSchemas, 1);
+        assert.deepEqual(response.body.deleteErrors, []);
+    });
+
+    it('reports a schema that cannot be deleted without failing the detach', async () => {
+        arrange(twoBindings(), twoTemplatesSchemas());
+        const deleted = [];
+        stub(DatabaseServer, 'getSchema', async () => ({ id: 'policy-schema-template-2', status: SchemaStatus.PUBLISHED }));
+        stub(DatabaseServer, 'deleteSchemas', async (id) => { deleted.push(id); });
+
+        const response = await detach('template-2', true);
+
+        assert.equal(ok(response), true,
+            'a schema that cannot be deleted must not fail the detach itself');
+        assert.equal(deleted.length, 0);
+        assert.equal(response.body.deletedSchemas, 0);
+        assert.equal(response.body.detachedSchemas, 1,
+            'the schema is still detached (markers cleared) even though it could not be deleted');
+        assert.equal(response.body.deleteErrors.length, 1);
+        assert.match(response.body.deleteErrors[0], /Monitoring Report/);
     });
 });
 

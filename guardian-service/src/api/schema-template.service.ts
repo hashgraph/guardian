@@ -2014,7 +2014,8 @@ export async function removePolicySchemaTemplateSnapshot(
 async function detachSchemaTemplate(
     policyId: string,
     owner: IOwner,
-    templateId: string
+    templateId: string,
+    deleteSchemas: boolean = false
 ): Promise<any> {
     // A policy can hold several bindings, so an unnamed detach is ambiguous.
     // Guessing here would silently detach somebody else's template.
@@ -2038,6 +2039,8 @@ async function detachSchemaTemplate(
 
     const schemaIds = new Set(Object.values(binding.schemaMap || {}).filter(id => !!id).map(id => String(id)));
     let detachedSchemas = 0;
+    let deletedSchemas = 0;
+    const deleteErrors: string[] = [];
     const schemas = await DatabaseServer.getSchemas({
         topicId: policy.topicId,
         category: SchemaCategory.POLICY
@@ -2049,11 +2052,23 @@ async function detachSchemaTemplate(
         if (!isBoundSchema) {
             continue;
         }
+        const schemaName = schema.name || schemaId;
         schema.templateId = '';
         schema.templateSchemaId = '';
         SchemaHelper.removeTemplateFieldIds(schema.document);
         await DatabaseServer.updateSchema(schema.id, schema);
         detachedSchemas++;
+
+        // Detach must always succeed even if some schemas cannot be deleted (e.g. already
+        // published), so a delete failure here is reported back, not thrown.
+        if (deleteSchemas) {
+            try {
+                await deleteSchema(schema.id, owner, NewNotifier.empty());
+                deletedSchemas++;
+            } catch (error) {
+                deleteErrors.push(`${schemaName}: ${error.message}`);
+            }
+        }
     }
 
     if (binding.snapshotId) {
@@ -2068,7 +2083,9 @@ async function detachSchemaTemplate(
     return {
         policyId: policy.id,
         templateId: binding.templateId,
-        detachedSchemas
+        detachedSchemas,
+        deletedSchemas,
+        deleteErrors
     };
 }
 
@@ -2666,11 +2683,12 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
         async (msg: {
             policyId: string,
             templateId: string,
-            owner: IOwner
+            owner: IOwner,
+            deleteSchemas?: boolean
         }) => {
             try {
-                const { policyId, templateId, owner } = msg;
-                const result = await detachSchemaTemplate(policyId, owner, templateId);
+                const { policyId, templateId, owner, deleteSchemas } = msg;
+                const result = await detachSchemaTemplate(policyId, owner, templateId, deleteSchemas);
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);

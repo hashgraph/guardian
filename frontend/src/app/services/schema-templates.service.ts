@@ -54,6 +54,10 @@ export interface SchemaTemplateUpdateOptions {
     }>;
 }
 
+export interface SchemaTemplateDetachOptions {
+    deleteSchemas?: boolean;
+}
+
 @Injectable()
 export class SchemaTemplatesService {
     private readonly url: string = `${API_BASE_URL}/schema-templates`;
@@ -163,7 +167,7 @@ export class SchemaTemplatesService {
         return this.http.post<TaskResponse>(`${this.url}/${templateId}/policies/${policyId}/push/update`, options || {});
     }
 
-    public pushDetach(templateId: string, policyId: string): Observable<TaskResponse> {
-        return this.http.post<TaskResponse>(`${this.url}/${templateId}/policies/${policyId}/push/detach`, {});
+    public pushDetach(templateId: string, policyId: string, options?: SchemaTemplateDetachOptions): Observable<TaskResponse> {
+        return this.http.post<TaskResponse>(`${this.url}/${templateId}/policies/${policyId}/push/detach`, options || {});
     }
 }

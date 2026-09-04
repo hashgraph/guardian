@@ -56,8 +56,7 @@ import { UserPolicyDialog } from '../dialogs/user-policy-dialog/user-policy-dial
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { confirmDryRun } from '../dialogs/dry-run-dialog/dry-run-dialog.component';
 import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
-import { ApplySchemaTemplateDialog } from '../dialogs/apply-schema-template-dialog/apply-schema-template-dialog.component';
-import { SchemaTemplatesService } from 'src/app/services/schema-templates.service';
+import { ManageSchemaTemplatesDialog } from '../dialogs/manage-schema-templates-dialog/manage-schema-templates-dialog.component';
 import { formatSchemaTemplateBindingLabel } from 'src/app/utils';
 
 class MenuButton {
@@ -513,8 +512,6 @@ export class PoliciesComponent implements OnInit {
     }
 
     public getMenu(policy: any) {
-        const isPolicyDraft = policy.status === PolicyStatus.DRAFT;
-        const schemaTemplateButtons = this.getSchemaTemplateBindingButtons(policy, isPolicyDraft);
         return {
             groups: [{
                 tooltip: 'Analytics',
@@ -595,23 +592,23 @@ export class PoliciesComponent implements OnInit {
                         icon: 'import-xls',
                         color: 'primary-color',
                         click: () => this.importFromExcel(policy)
-                    }),
-                    new MenuButton({
-                        visible: this.user.POLICIES_POLICY_UPDATE && this.user.TEMPLATES_TEMPLATE_READ,
-                        disabled: policy.status !== PolicyStatus.DRAFT,
-                        tooltip: 'Apply Schema Template',
-                        icon: 'link',
-                        color: 'primary-color',
-                        click: () => this.openApplySchemaTemplateDialog(policy)
                     })
                 ]
             }, {
                 tooltip: 'Schema Templates',
-                group: true,
-                visible: this.user.POLICIES_POLICY_UPDATE && this.user.TEMPLATES_TEMPLATE_READ && schemaTemplateButtons.length > 0,
-                icon: 'refresh',
-                color: isPolicyDraft ? 'primary-color' : 'disabled-color',
-                buttons: schemaTemplateButtons
+                group: false,
+                visible: true,
+                color: 'primary-color',
+                buttons: [
+                    new MenuButton({
+                        visible: this.user.POLICIES_POLICY_UPDATE && this.user.TEMPLATES_TEMPLATE_READ,
+                        disabled: policy.status !== PolicyStatus.DRAFT,
+                        tooltip: 'Schema Templates',
+                        icon: 'link',
+                        color: 'primary-color',
+                        click: () => this.openManageSchemaTemplatesDialog(policy)
+                    })
+                ]
             }, {
                 tooltip: 'Migrate data',
                 group: true,
@@ -756,7 +753,6 @@ export class PoliciesComponent implements OnInit {
         private dialogService: DialogService,
         private toastService: ToastService,
         private schemaService: SchemaService,
-        private schemaTemplatesService: SchemaTemplatesService,
         private wizardService: WizardService,
         private tokenService: TokenService,
         private contractSerivce: ContractService,
@@ -1888,57 +1884,14 @@ export class PoliciesComponent implements OnInit {
         return names.length > 1 ? `${names.length} templates: ${names.join(', ')}` : names[0];
     }
 
-    private getSchemaTemplateBindingButtons(policy: any, isPolicyDraft: boolean): MenuButton[] {
-        const buttons: MenuButton[] = [];
-        for (const binding of (policy?.schemaTemplates || [])) {
-            if (!binding?.templateId) {
-                continue;
-            }
-            const name = binding.templateName || 'Schema Template';
-            buttons.push(new MenuButton({
-                visible: true,
-                disabled: !isPolicyDraft,
-                tooltip: `Update: ${name}`,
-                icon: 'refresh',
-                color: 'primary-color',
-                click: () => this.openUpdateSchemaTemplateDialog(policy, binding.templateId)
-            }));
-            buttons.push(new MenuButton({
-                visible: true,
-                disabled: !isPolicyDraft,
-                tooltip: `Detach: ${name}`,
-                icon: 'link-break',
-                color: 'primary-color',
-                click: () => this.detachSchemaTemplate(policy, binding.templateId)
-            }));
-        }
-        return buttons;
-    }
-
-    public openApplySchemaTemplateDialog(policy: any): void {
+    public openManageSchemaTemplatesDialog(policy: any): void {
         this.policyMenu?.hide();
-        const dialogRef = this.dialogService.open(ApplySchemaTemplateDialog, {
+        const dialogRef = this.dialogService.open(ManageSchemaTemplatesDialog, {
             showHeader: false,
-            width: '720px',
+            width: '900px',
             styleClass: 'guardian-dialog',
             data: {
                 policy
-            }
-        })!;
-        this.redirectToTaskOnClose(dialogRef);
-    }
-
-    public openUpdateSchemaTemplateDialog(policy: any, templateId: string): void {
-        this.policyMenu?.hide();
-        this.policySubMenu?.hide();
-        const dialogRef = this.dialogService.open(ApplySchemaTemplateDialog, {
-            showHeader: false,
-            width: '820px',
-            styleClass: 'guardian-dialog',
-            data: {
-                policy,
-                mode: 'update',
-                templateId
             }
         })!;
         this.redirectToTaskOnClose(dialogRef);
@@ -1952,60 +1905,6 @@ export class PoliciesComponent implements OnInit {
             void this.router.navigate(['task', task.taskId], {
                 queryParams: {
                     last: btoa(location.href)
-                }
-            });
-        });
-    }
-
-    public detachSchemaTemplate(policy: any, templateId: string): void {
-        this.policyMenu?.hide();
-        this.policySubMenu?.hide();
-        const binding = (policy.schemaTemplates || []).find((b: any) => b?.templateId === templateId);
-        // Every row menu button is built from a binding that already has a templateId,
-        // so this only guards direct callers. Sending a missing id would put the
-        // string "undefined" in the request path and come back as a confusing error.
-        if (!binding?.templateId) {
-            this.toastService.error('This policy has no schema template to detach.');
-            return;
-        }
-        const templateName = binding.templateName || 'schema template';
-        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
-            showHeader: false,
-            width: '640px',
-            styleClass: 'guardian-dialog',
-            data: {
-                header: 'Detach Schema Template',
-                text: `Detach "${templateName}" from this policy?`,
-                details: [
-                    'The imported from template schemas will remain in the policy.',
-                    'Template locks and field restrictions will be removed.'
-                ],
-                buttons: [{
-                    name: 'Cancel',
-                    class: 'secondary'
-                }, {
-                    name: 'Detach',
-                    class: 'primary'
-                }]
-            },
-        })!;
-        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result) => {
-            if (result !== 'Detach') {
-                return;
-            }
-            this.schemaTemplatesService.pushDetach(binding.templateId, policy.id).subscribe({
-                next: (task) => {
-                    if (!task?.taskId) {
-                        return;
-                    }
-                    void this.router.navigate(['task', task.taskId], {
-                        queryParams: {
-                            last: btoa(location.href)
-                        }
-                    });
-                },
-                error: ({ message }) => {
-                    this.toastService.error(message);
                 }
             });
         });

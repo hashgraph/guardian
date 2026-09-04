@@ -1,0 +1,122 @@
+<div class="dialog-header">
+  <div class="header-container">
+    <div class="header-text">Schema Templates</div>
+  </div>
+  <div class="header-icon" (click)="onClose()">
+    <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+  </div>
+</div>
+
+<div class="dialog-body">
+  <div class="context">
+    @if (loading) {
+      <div class="loading">
+        <div class="preloader-image preloader-image-l-size"></div>
+      </div>
+    }
+
+    <form [formGroup]="filtersForm" class="filters">
+      <div class="filter-row">
+        <div class="p-input-icon-right guardian-input-container">
+          <input
+            class="search-policy-input"
+            formControlName="name"
+            pInputText
+            placeholder="Search by template name"
+            type="text" />
+          <i class="pi pi-search search-icon"></i>
+        </div>
+      </div>
+    </form>
+
+    <div class="section-title">Applied templates</div>
+    @if (filteredAppliedRows.length) {
+      <div class="grid-container">
+        <div class="grid-header">
+          <div class="col-auto">Name</div>
+          <div class="col-120">Status</div>
+          <div class="col-120">Version</div>
+          <div class="col-actions">Actions</div>
+        </div>
+        <div class="grid-body">
+          @for (row of filteredAppliedRows; track row.templateId) {
+            <div class="grid-row">
+              <div class="col-auto">
+                <div class="template-name">{{ row.templateName }}</div>
+              </div>
+              <div class="col-120">
+                <span class="chip chip-color-{{ getStatusColor(row.templateStatus) }}">
+                  {{ getStatusLabel(row.templateStatus) }}
+                </span>
+              </div>
+              <div class="col-120">{{ row.templateVersion || '' }}</div>
+              <div class="col-actions">
+                <button
+                  type="button"
+                  class="row-action-button"
+                  pTooltip="Update"
+                  (click)="openUpdate(row)">
+                  <svg-icon src="/assets/images/icons/refresh.svg" svgClass="row-action-icon"></svg-icon>
+                </button>
+                <button
+                  type="button"
+                  class="row-action-button"
+                  pTooltip="Detach"
+                  (click)="detach(row)">
+                  <svg-icon src="/assets/images/icons/link-break.svg" svgClass="row-action-icon"></svg-icon>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    } @else {
+      <div class="empty-grid">This policy has no applied schema templates.</div>
+    }
+
+    <div class="section-title">Available templates</div>
+    @if (availableTemplates.length) {
+      <div class="grid-container">
+        <div class="grid-header">
+          <div class="col-auto">Name</div>
+          <div class="col-120">Status</div>
+          <div class="col-120">Version</div>
+          <div class="col-actions">Actions</div>
+        </div>
+        <div class="grid-body">
+          @for (template of availableTemplates; track template) {
+            <div class="grid-row">
+              <div class="col-auto">
+                <div class="template-name">{{ template.name }}</div>
+                <div class="template-description">{{ template.description }}</div>
+              </div>
+              <div class="col-120">
+                <span class="chip chip-color-{{ getStatusColor(template.status) }}">
+                  {{ getStatusLabel(template.status) }}
+                </span>
+              </div>
+              <div class="col-120">{{ template.version || '' }}</div>
+              <div class="col-actions">
+                <button
+                  type="button"
+                  class="row-action-button"
+                  pTooltip="Apply"
+                  (click)="openApply(template)">
+                  <svg-icon src="/assets/images/icons/link.svg" svgClass="row-action-icon"></svg-icon>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    } @else {
+      <div class="empty-grid">There are no schema templates left to apply.</div>
+    }
+  </div>
+</div>
+
+<div class="dialog-footer">
+  <div class="action-buttons">
+    <button (click)="onClose()" class="guardian-button guardian-button-secondary">Close</button>
+  </div>
+</div>

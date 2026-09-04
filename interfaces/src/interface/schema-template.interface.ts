@@ -128,6 +128,10 @@ export interface ISchemaTemplateUpdateOptions {
     resolutions?: ISchemaTemplateUpdateResolution[];
 }
 
+export interface ISchemaTemplateDetachOptions {
+    deleteSchemas?: boolean;
+}
+
 export interface ISchemaTemplateFieldConfig {
     locked?: boolean;
 }
