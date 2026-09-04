@@ -183,7 +183,8 @@ export class Worker extends NatsService {
         });
 
         const runTask = async (task, completeEvent: WorkerEvents = WorkerEvents.TASK_COMPLETE) => {
-            this.isInUse = true;
+            // isInUse is already true here - claimed in claimIfFree (beforeDecode), before this
+            // task's payload was decoded.
             this.currentTaskId = task.id;
             const userId = task.data?.payload?.userId;
 
@@ -224,31 +225,39 @@ export class Worker extends NatsService {
             this.isInUse = false;
         }
 
-        this.getMessages([this.replySubject, WorkerEvents.SEND_TASK_TO_WORKER].join('.'), async (task) => {
-            if (!this.isInUse) {
-                runTask(task);
-
-                return new MessageResponse({
-                    result: true
-                })
+        // `isInUse` is claimed here, in `beforeDecode`, rather than in the handler below: decode
+        // can HTTP-fetch an out-of-band `directLink` payload, which for a large task takes far
+        // longer than authenticating the message. Claiming after decode (the handler runs only
+        // once decode resolves) leaves a window sized to the payload during which this worker
+        // still looks free to GET_FREE_WORKERS - a concurrently-decoded second task (from either
+        // SEND_TASK_TO_WORKER or the direct-dispatch path below) can win the race and get
+        // accepted first, and the original task is then busy-rejected after downloading in full.
+        // `beforeDecode` runs synchronously right after auth and before decode starts, so
+        // whichever message's callback resumes first claims `isInUse` atomically - the claim no
+        // longer races the decode.
+        const claimIfFree = (): MessageResponse<{ result: boolean }> | undefined => {
+            if (this.isInUse) {
+                return new MessageResponse({ result: false });
             }
+            this.isInUse = true;
+            return undefined;
+        };
+
+        this.getMessages([this.replySubject, WorkerEvents.SEND_TASK_TO_WORKER].join('.'), async (task) => {
+            runTask(task);
+
             return new MessageResponse({
-                result: false
+                result: true
             })
-        })
+        }, false, claimIfFree)
 
         this.getMessages([this.replySubject, WorkerEvents.SEND_TASK_TO_WORKER_DIRECT].join('.'), async (task) => {
-            if (!this.isInUse) {
-                runTask(task, WorkerEvents.TASK_COMPLETE_DIRECT);
+            runTask(task, WorkerEvents.TASK_COMPLETE_DIRECT);
 
-                return new MessageResponse({
-                    result: true
-                })
-            }
             return new MessageResponse({
-                result: false
+                result: true
             })
-        })
+        }, false, claimIfFree)
 
         this.subscribe(WorkerEvents.UPDATE_SETTINGS, async (msg: any) => {
             try {

@@ -123,6 +123,12 @@ export interface ITask {
     attempt?: number
 
     /**
+     * Number of failed dispatch (hand-off to a worker) attempts, as opposed to `attempt`, which
+     * counts worker-reported business failures. Queue-service only.
+     */
+    dispatchAttempt?: number;
+
+    /**
      * UserId
      */
     interception?: string | null | undefined;
