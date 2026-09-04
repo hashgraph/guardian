@@ -127,12 +127,20 @@ Cypress.Commands.add('getUserProfile', (token, username) => {
 // tag (e.g. `--env grepTags=smoke`) and those creator specs get skipped. This command makes
 // each caller self-sufficient: reuse the token if one already exists, otherwise create it.
 Cypress.Commands.add('getOrCreateTestToken', (srToken, listToken, listQs = {}) => {
+    // `.then()` yields the *previous* subject whenever its callback returns undefined, so a
+    // lookup that finds nothing would yield the whole cy.request response here: a truthy object
+    // with no `tokenId`, which silently passes the "already exists" check below and leaves every
+    // caller building `tokens/undefined/...` URLs. Yield an explicit null instead.
     const findTestToken = () => cy.request({
         method: METHOD.GET,
         url: `${API.ApiServer}${API.ListOfTokens}`,
         qs: listQs,
         headers: { authorization: listToken },
-    }).then(({ body }) => body.filter((t) => t.tokenName === 'test').at(-1));
+    }).then(({ body }) => cy.wrap(
+        // a token still without its Hedera id is of no use to the callers either
+        body.filter((t) => t.tokenName === 'test' && t.tokenId).at(-1) ?? null,
+        { log: false }
+    ));
 
     return findTestToken().then((existing) => {
         if (existing) { return existing; }
@@ -159,6 +167,9 @@ Cypress.Commands.add('getOrCreateTestToken', (srToken, listToken, listQs = {}) =
             // The POST response doesn't include tokenId, so re-fetch to find the token
             // we just created.
             return findTestToken();
+        }).then((created) => {
+            expect(created, 'the "test" token just created').to.not.be.null;
+            return created;
         });
     });
 });
