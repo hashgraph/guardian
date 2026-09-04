@@ -38,17 +38,22 @@ context('Import policy test', { tags: ['policies', 'secondPool', 'all'] }, () =>
                     headers: { authorization },
                     timeout: 180000
                 }).then((response) => {
-                    policyId = response.body.find(p => p.name === 'iRecDRF')?.id;
+                    const policy = response.body.find(p => p.name === 'iRecDRF');
+                    expect(policy, 'the imported iRecDRF policy').to.not.be.undefined;
+                    policyId = policy.id;
 
-                    // 3. Set to Dry Run
-                    cy.request({
-                        method: METHOD.PUT,
-                        url: `${API.ApiServer}${API.Policies}${policyId}/${API.DryRun}`,
-                        headers: { authorization },
-                        timeout: 180000,
-                    }).then((response) => {
-                        expect(response.status).to.eq(STATUS_CODE.OK);
-                    });
+                    // 3. Set to Dry Run, unless the policy already is in it: asking for the
+                    // transition a second time answers 500
+                    if (policy.status !== 'DRY-RUN') {
+                        cy.request({
+                            method: METHOD.PUT,
+                            url: `${API.ApiServer}${API.Policies}${policyId}/${API.DryRun}`,
+                            headers: { authorization },
+                            timeout: 180000,
+                        }).then((response) => {
+                            expect(response.status).to.eq(STATUS_CODE.OK);
+                        });
+                    }
                 });
             });
         });

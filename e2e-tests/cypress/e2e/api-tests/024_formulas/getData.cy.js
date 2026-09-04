@@ -49,12 +49,19 @@ context('Get formula data', { tags: ['formulas', 'firstPool', 'all'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             getFormulas(authorization).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                firstFormula = response.body.at(0);
-                publishFormula(authorization, firstFormula.id).then((response) => {
+                const formulaId = response.body.at(0).id;
+                publishFormula(authorization, formulaId).then((response) => {
                     expect(response.status).eql(STATUS_CODE.OK);
-                    getPolicyApplications(authorization, firstFormula.policyId).then((appsRes) => {
-                        expect(appsRes.status).eql(STATUS_CODE.OK);
-                        documentId = appsRes.body.data.at(0).id;
+                    //Publishing changes the formula, so it is read back afterwards: comparing the
+                    //echo below against the values it had before publishing does not match
+                    getFormulas(authorization).then((listRes) => {
+                        expect(listRes.status).eql(STATUS_CODE.OK);
+                        firstFormula = listRes.body.find((item) => item.id === formulaId);
+                        expect(firstFormula, `formula ${formulaId}`).to.not.be.undefined;
+                        getPolicyApplications(authorization, firstFormula.policyId).then((appsRes) => {
+                            expect(appsRes.status).eql(STATUS_CODE.OK);
+                            documentId = appsRes.body.data.at(0).id;
+                        });
                     });
                 })
             });
@@ -77,17 +84,20 @@ context('Get formula data', { tags: ['formulas', 'firstPool', 'all'] }, () => {
                 expect(response.body).to.have.property('relationships');
                 expect(response.body).to.have.property('schemas');
 
-                // Formula echoes should match the first formula fetched
-                expect(response.body.formulas.at(0).config).eql(firstFormula.config);
-                expect(response.body.formulas.at(0).creator).eql(firstFormula.creator);
-                expect(response.body.formulas.at(0).id).eql(firstFormula.id);
-                expect(response.body.formulas.at(0).description).eql(firstFormula.description);
-                expect(response.body.formulas.at(0).name).eql(firstFormula.name);
-                expect(response.body.formulas.at(0).owner).eql(firstFormula.owner);
-                expect(response.body.formulas.at(0).policyId).eql(firstFormula.policyId);
-                expect(response.body.formulas.at(0).policyInstanceTopicId).eql(firstFormula.policyInstanceTopicId);
-                expect(response.body.formulas.at(0).policyTopicId).eql(firstFormula.policyTopicId);
-                expect(response.body.formulas.at(0).status).eql('PUBLISHED');
+                // Formula echoes should match the formula published in the setup. The echoed
+                // list holds the formulas of earlier runs too, so it is matched on the id
+                const echoed = response.body.formulas.find((item) => item.id === firstFormula.id);
+                expect(echoed, `formula ${firstFormula.id} in the answer`).to.not.be.undefined;
+                expect(echoed.config).eql(firstFormula.config);
+                expect(echoed.creator).eql(firstFormula.creator);
+                expect(echoed.id).eql(firstFormula.id);
+                expect(echoed.description).eql(firstFormula.description);
+                expect(echoed.name).eql(firstFormula.name);
+                expect(echoed.owner).eql(firstFormula.owner);
+                expect(echoed.policyId).eql(firstFormula.policyId);
+                expect(echoed.policyInstanceTopicId).eql(firstFormula.policyInstanceTopicId);
+                expect(echoed.policyTopicId).eql(firstFormula.policyTopicId);
+                expect(echoed.status).eql('PUBLISHED');
             });
         });
     });

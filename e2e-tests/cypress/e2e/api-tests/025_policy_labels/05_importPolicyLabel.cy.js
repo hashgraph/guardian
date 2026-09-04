@@ -5,32 +5,36 @@ import * as Authorization from '../../../support/authorization';
 context('Import policy label', { tags: ['policy_labels', 'firstPool', 'all'] }, () => {
     const UserUsername = Cypress.env('User');
 
+    const labelName = 'testPolicyLabelAPI';
+
     let policyLabel; let policy;
 
     before('Get policy label', () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + API.PolicyLabels,
+                url: API.ApiServer + API.Policies,
                 headers: {
                     authorization,
                 },
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                policyLabel = response.body.at(-1);
+                policy = response.body.find((element) => element.name === 'iRec_4');
+                expect(policy, 'the iRec_4 policy').to.not.be.undefined;
                 cy.request({
                     method: METHOD.GET,
-                    url: API.ApiServer + API.Policies,
+                    url: API.ApiServer + API.PolicyLabels,
                     headers: {
                         authorization,
                     },
                 }).then((response) => {
                     expect(response.status).eql(STATUS_CODE.OK);
-                    response.body.forEach(element => {
-                        if (element.name == 'iRec_4') {
-                            policy = element;
-                        }
-                    })
+                    //Every run leaves its labels behind, and the import below adds one more, so the
+                    //label the imported one is compared against is picked by name on this policy
+                    policyLabel = response.body
+                        .filter((item) => item.name === labelName && item.policyId === policy.id)
+                        .at(-1);
+                    expect(policyLabel, `a "${labelName}" label on policy ${policy.id}`).to.not.be.undefined;
                 })
             })
         });
@@ -64,6 +68,10 @@ context('Import policy label', { tags: ['policy_labels', 'firstPool', 'all'] }, 
                         importedPolicyLabel.config.children.forEach((child, index) => {
                             child.config.variables[0].schemaId = '';
                             policyLabel.config.children[index].config.variables[0].schemaId = '';
+                            //Each import assigns fresh ids to the nodes, so they are left out of
+                            //the comparison the same way the schema ids are
+                            child.id = '';
+                            policyLabel.config.children[index].id = '';
                         })
                         expect(importedPolicyLabel.config).eql(policyLabel.config);
                     });

@@ -42,6 +42,28 @@ export const waitForRow = (request, predicate, attempts = 0) => {
     });
 }
 
+/**
+ * Polls a request until its body equals `expected`, then yields it.
+ *
+ * Contract permissions are granted on Hedera and mirrored back asynchronously, so a read issued
+ * right after the grant still answers with the previous value. Polling adapts to how long the
+ * mirroring actually takes, where a fixed wait is either too short or wasted time.
+ */
+export const waitForResponseBody = (request, expected, maxAttempts = 40, interval = 5000) => {
+    const poll = (attemptsLeft) => cy.request(request).then((response) => {
+        expect(response.status).to.eq(STATUS_CODE.OK);
+        if (response.body === expected) {
+            return cy.wrap(response.body, { log: false });
+        }
+        if (attemptsLeft <= 0) {
+            throw new Error(`${request.url} still answers ${JSON.stringify(response.body)} instead of ${JSON.stringify(expected)}`);
+        }
+        // eslint-disable-next-line cypress/no-unnecessary-waiting -- back off between polls
+        return cy.wait(interval, { log: false }).then(() => poll(attemptsLeft - 1));
+    });
+    return poll(maxAttempts);
+}
+
 export const whileWipeRequestCreating = (dataToCompare, request, attempts) => {
     if (attempts < 100) {
         attempts++
