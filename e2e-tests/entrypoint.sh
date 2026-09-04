@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# The suite runs both inside the cypress-runner container (WORKDIR /e2e) and
+# directly on a CI runner, so anchor everything to this script's own directory
+# instead of hard-coding absolute container paths.
+cd "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 ensure_trailing_slash() {
   local url="${1:-}"
   if [[ -z "$url" ]]; then
@@ -147,12 +152,12 @@ elif contains_tag "$TAGS" "ui"; then
 fi
 
 mkdir -p \
-  /e2e/cypress/reports/html/.jsons \
-  /e2e/cypress/test_results/junit \
-  /e2e/cypress/downloads
+  cypress/reports/html/.jsons \
+  cypress/test_results/junit \
+  cypress/downloads
 
 if [[ "$IS_UI_RUN" == "true" ]]; then
-  mkdir -p /e2e/cypress/screenshots /e2e/cypress/videos
+  mkdir -p cypress/screenshots cypress/videos
 else
   export CYPRESS_screenshotOnRunFailure=false
 fi
