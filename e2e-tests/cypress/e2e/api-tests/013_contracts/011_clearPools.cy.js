@@ -1,11 +1,13 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import * as Contracts from '../../../support/api/contracts';
 
 context('Contracts', { tags: ['contracts', 'firstPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
+    const contractNameR = 'FirstAPIContractR';
 
-    let contractIdR;
+    let contractIdR; let contractUuidR;
 
     const clearContractPools = (token, id) => {
         return cy.request({
@@ -18,15 +20,11 @@ context('Contracts', { tags: ['contracts', 'firstPool', 'all'] }, () => {
 
     before(() => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.ListOfContracts,
-                headers: { authorization },
-                qs: { 'type': 'RETIRE' },
-                timeout: 180000
-            }).then((response) => {
-                contractIdR = response.body.at(0).id;
-            });
+            Contracts.getContractByDescription(authorization, 'RETIRE', contractNameR)
+                .then((contract) => {
+                    contractIdR = contract.id;
+                    contractUuidR = contract.contractId;
+                });
         });
     });
 
@@ -54,14 +52,20 @@ context('Contracts', { tags: ['contracts', 'firstPool', 'all'] }, () => {
                 expect(response.status).eql(STATUS_CODE.OK);
             });
 
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.RetireContract + API.PoolContract,
-                headers: { authorization },
-                qs: { contractId: contractIdR }
-            }).then((response) => {
-                expect(response.status).eql(STATUS_CODE.OK);
-                expect(response.body).eql([]);
+            //Filtered by the Hedera id, which is what a pool record carries. Passing the database id
+            //here - as this check used to - matches no pool whatever the state of the contract, so
+            //the assertion held even when nothing had been cleared.
+            //The rows go when the clear is synchronized back from the contract, so it is polled for.
+            Contracts.pollUntil({
+                request: {
+                    method: METHOD.GET,
+                    url: API.ApiServer + API.RetirePools,
+                    headers: { authorization },
+                    qs: { contractId: contractUuidR },
+                },
+                predicate: (response) => response.status === STATUS_CODE.OK &&
+                    (response.body ?? []).length === 0,
+                description: `every pool of contract ${contractUuidR} to be cleared`,
             });
         });
     });

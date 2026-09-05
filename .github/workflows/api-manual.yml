@@ -18,7 +18,7 @@ on:
         default: "smoke"
       sr_balance:
         type: number
-        description: INITIAL_STANDARD_REGISTRY_BALANCE in HBAR (max 500)
+        description: INITIAL_STANDARD_REGISTRY_BALANCE in HBAR (max 500. 50 suggested for smoke, 500 for full e2e)
         default: 50
 
 permissions:

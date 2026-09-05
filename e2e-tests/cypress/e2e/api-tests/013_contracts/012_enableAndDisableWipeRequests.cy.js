@@ -3,10 +3,13 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Checks from '../../../support/checkingMethods';
 import * as Authorization from '../../../support/authorization';
+import * as Contracts from '../../../support/api/contracts';
 
 context('Contracts', { tags: ['policy_labels', 'formulas', 'trustchains', 'contracts', 'firstPool', 'all'] }, () => {
 	const SRUsername = Cypress.env('SRUser');
 	const UserUsername = Cypress.env('User');
+	const contractNameR = 'FirstAPIContractR';
+	const contractNameW = 'FirstAPIContractW';
 
 	const optionKey = 'option';
 	let contractIdW; let contractIdR; let tokenId; let policyId; let hederaId; let contractUuidR; let contractUuidW; let poolId; let wipeRequestId;
@@ -39,18 +42,6 @@ context('Contracts', { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 		failOnStatusCode,
 	});
 
-	const getWipeRequests = ({
-		authorization,
-		contractId,
-		failOnStatusCode = true,
-	}) => cy.request({
-		method: METHOD.GET,
-		url: `${API.ApiServer}${API.WipeRequests}`,
-		headers: authorization ? { authorization } : {},
-		qs: contractId ? { contractId } : {},
-		failOnStatusCode,
-	});
-
 	const deleteRetirePool = ({
 		authorization,
 		retirePoolId,
@@ -76,32 +67,13 @@ context('Contracts', { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 	before('Get contracts, policy and register new user', () => {
 		//Create retire contract and save id
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
-			cy.request({
-				method: METHOD.GET,
-				url: API.ApiServer + API.ListOfContracts,
-				headers: {
-					authorization,
-				},
-				qs: {
-					'type': 'RETIRE',
-				},
-				timeout: 180000
-			}).then((response) => {
-				contractIdR = response.body.at(0).id;
-				contractUuidR = response.body.at(0).contractId;
-				cy.request({
-					method: METHOD.GET,
-					url: API.ApiServer + API.ListOfContracts,
-					headers: {
-						authorization,
-					},
-					qs: {
-						'type': 'WIPE',
-					},
-				}).then((response) => {
-					contractIdW = response.body.at(0).id;
-					contractUuidW = response.body.at(0).contractId;
-				})
+			Contracts.getContractByDescription(authorization, 'RETIRE', contractNameR).then((contract) => {
+				contractIdR = contract.id;
+				contractUuidR = contract.contractId;
+			})
+			Contracts.getContractByDescription(authorization, 'WIPE', contractNameW).then((contract) => {
+				contractIdW = contract.id;
+				contractUuidW = contract.contractId;
 			})
 
 			//The policy this spec works on is seeded on demand, so the folder does not depend on
@@ -119,7 +91,7 @@ context('Contracts', { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 				}).then((response) => {
 					expect(response.status).eql(STATUS_CODE.OK);
 					response.body.forEach(element => {
-						if (element.policyIds.at(0) == policyId) {
+						if (element.policyIds.at(0) === policyId) {
 							tokenId = element.tokenId
 						}
 					});
@@ -150,7 +122,7 @@ context('Contracts', { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 							timeout: 600000,
 							failOnStatusCode: false,
 						}).then((response) => {
-							if (response.status == STATUS_CODE.ERROR && response.body.message != 'Policy already published')
+							if (response.status === STATUS_CODE.ERROR && response.body.message !== 'Policy already published')
 								{throw new Error('Issue with policy publish')}
 						})
 					})
@@ -224,7 +196,7 @@ context('Contracts', { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 			}).then((response) => {
 				expect(response.status).eql(STATUS_CODE.OK);
 				response.body.forEach(element => {
-					if (element.policyIds.at(0) == policyId) {
+					if (element.policyIds.at(0) === policyId) {
 						tokenId = element.tokenId
 					}
 				});
@@ -246,7 +218,20 @@ context('Contracts', { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 				}
 			})
 
-			cy.wait(10000)
+			//The role is applied by the policy asynchronously, and the application form is gated on
+			//it: the form block is polled until it answers, instead of waiting a fixed span and
+			//hoping. Note it has to be this block and not the one the next step waits on - that one
+			//only opens once the application has been submitted, which is what happens below.
+			Contracts.pollUntil({
+				request: {
+					method: METHOD.GET,
+					url: API.ApiServer + API.Policies + policyId + '/' + API.CreateApplication,
+					headers: { authorization },
+				},
+				predicate: (response) => response.status === STATUS_CODE.OK,
+				description: 'the Registrant role to be applied to the policy',
+				timeout: 120000,
+			})
 
 			//Create app and wait while it in progress
 			cy.request({
@@ -478,16 +463,9 @@ context('Contracts', { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 
 			Checks.whileIssueRequestApproving('Approved', requestForIssueApproveProgress, 0)
 
-			let requestForBalance = {
-				method: METHOD.GET,
-				url: API.ApiServer + API.ListOfTokens,
-				headers: {
-					authorization
-				}
-			}
-
-			Checks.whileBalanceVerifying('10', requestForBalance, 91, tokenId)
-			Checks.whileBalanceVerifying('10', requestForBalance, 91, tokenId)
+			//The mint lands on Hedera and the balance is read back from the mirror node, so it is
+			//polled until the ten minted tokens show up and fails loudly if they never do
+			Contracts.waitForTokenBalance(authorization, { tokenId, expected: '10' })
 		})
 	})
 
@@ -522,17 +500,10 @@ context('Contracts', { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 				expect(response.status).eql(STATUS_CODE.OK);
 			})
 
-			cy.wait(120000)
-
-			// GET /wipe-requests?contractId={contractIdW}
-			getWipeRequests({
-				authorization,
-				contractId: contractIdW,
-				failOnStatusCode: true,
-			}).then((response) => {
-				expect(response.status).eql(STATUS_CODE.OK);
-				expect(response.body).eql([]);
-			})
+			//With requests disabled the pool above must raise nothing: the listing is watched for
+			//longer than one synchronization cycle, so the assertion covers the window in which a
+			//request would have surfaced rather than a single read at an arbitrary moment
+			Contracts.expectNoWipeRequest(authorization, contractUuidW, { token: tokenId })
 		})
 	})
 
@@ -655,7 +626,8 @@ context('Contracts', { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 				expect(response.status).eql(STATUS_CODE.OK);
 			})
 
-			Checks.whileRetireRequestCreating(contractUuidW, authorization, 0)
+			Contracts.waitForWipeRequest(authorization, contractUuidW, { token: tokenId })
+				.then((request) => wipeRequestId = request.id)
 		})
 	})
 
@@ -724,34 +696,19 @@ context('Contracts', { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 
 	it('Approve wipe contract requests', () => {
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
-			getWipeRequests({
+			approveWipeRequest({
 				authorization,
-				contractId: contractUuidW,
+				requestId: wipeRequestId,
 				failOnStatusCode: true,
 			}).then((response) => {
 				expect(response.status).eql(STATUS_CODE.OK);
-				wipeRequestId = response.body.at(0).id;
-
-				approveWipeRequest({
-					authorization,
-					requestId: wipeRequestId,
-					failOnStatusCode: true,
-				}).then((response) => {
-					expect(response.status).eql(STATUS_CODE.OK);
-				});
 			});
 		})
-		cy.wait(60000)
+		//Approving grants the retire contract the wiper role on the token, and only then is the
+		//pool listed to a plain user - the grant travels through Hedera, so it is polled for
 		Authorization.getAccessToken(UserUsername).then((authorization) => {
-			cy.request({
-				method: METHOD.GET,
-				url: API.ApiServer + API.RetirePools,
-				headers: {
-					authorization
-				}
-			}).then((response) => {
-				expect(response.status).eql(STATUS_CODE.OK);
-				expect(response.body.at(0)).to.have.property('id');
+			Contracts.waitForRetirePool(authorization, { tokenId }).then((pool) => {
+				expect(pool).to.have.property('id');
 			})
 		})
 	})

@@ -1,35 +1,22 @@
-import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
-import API from '../../../support/ApiUrls';
-import * as Checks from '../../../support/checkingMethods';
+import { STATUS_CODE } from '../../../support/api/api-const';
 import * as Authorization from '../../../support/authorization';
+import * as Contracts from '../../../support/api/contracts';
 
 context('Contracts', { tags: ['contracts', 'firstPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
+    const contractNameW = 'FirstAPIContractW';
     let contractUuidW;
 
-    const getWipeRequests = (auth, qs = {}) => {
-        return cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.WipeRequests,
-            headers: auth ? { authorization: auth } : {},
-            qs,
-            failOnStatusCode: false
-        });
-    };
+    const getWipeRequests = Contracts.getWipeRequests;
 
     before('Wait request', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.ListOfContracts,
-                headers: { authorization },
-                qs: { 'type': 'WIPE' },
-            }).then((response) => {
-                contractUuidW = response.body.at(0).contractId;
-                Checks.whileRetireRequestCreating(contractUuidW, authorization, 0);
-                getWipeRequests(authorization, { contractId: contractUuidW }).then((res) => {
-                    expect(res.status).eql(STATUS_CODE.OK);
-                });
+            Contracts.getContractByDescription(authorization, 'WIPE', contractNameW).then((contract) => {
+                contractUuidW = contract.contractId;
+                //The pool the previous spec set raised the request on-chain; Guardian picks it up
+                //from the mirror node on a once-a-minute synchronization task, so it is polled for
+                //rather than read once
+                Contracts.waitForWipeRequest(authorization, contractUuidW);
             });
         });
     });

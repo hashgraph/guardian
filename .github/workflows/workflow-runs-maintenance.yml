@@ -1,0 +1,37 @@
+name: Workflow Runs Maintenance
+
+# Deletes cancelled/skipped Actions runs and runs older than 20 weeks, to keep the
+# Actions history and artifact storage manageable.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */6 * * *"  # Runs every 6 hours, at the top of the hour (UTC).
+
+concurrency:
+  group: run-cleanup
+  cancel-in-progress: false  # let a deletion pass finish rather than truncating it
+
+permissions:
+  contents: read
+
+jobs:
+  cleanup:
+    runs-on: guardian-linux-medium
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          fetch-depth: 1
+      - name: Delete cancelled or skipped runs
+        env:
+          GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+        run: |
+          bash .github/maintenance-scripts/github-delete-cancelled-or-skipped-runs.sh || true
+      - name: Delete runs older than 20 weeks
+        env:
+          GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+        run: |
+          bash .github/maintenance-scripts/github-delete-old-runs.sh 20 || true

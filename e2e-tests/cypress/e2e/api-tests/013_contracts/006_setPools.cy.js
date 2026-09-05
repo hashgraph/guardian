@@ -1,91 +1,38 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import * as Contracts from '../../../support/api/contracts';
 
 context('Contracts', { tags: ['contracts', 'firstPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
+    const contractNameR = 'FirstAPIContractR';
+    const contractNameW = 'FirstAPIContractW';
     const tokenName = 'FirstToken'
     let contractIdR; let contractUuidW; let tokenId;
 
     before(() => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.ListOfContracts,
-                headers: {
-                    authorization,
-                },
-                qs: {
-                    'type': 'RETIRE',
-                },
-                timeout: 180000
-            }).then((response) => {
-                contractIdR = response.body.at(0).id;
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.ListOfContracts,
-                    headers: {
-                        authorization,
-                    },
-                    qs: {
-                        'type': 'WIPE',
-                    },
-                }).then((response) => {
-                    contractUuidW = response.body.at(0).contractId;
-                    cy.request({
-                        method: METHOD.POST,
-                        url: API.ApiServer + API.ListOfTokens,
-                        headers: { authorization },
-                        body: {
-                            draftToken: false,
-                            tokenName,
-                            tokenSymbol: 'F',
-                            tokenType: 'non-fungible',
-                            decimals: '2',
-                            initialSupply: '0',
-                            enableAdmin: true,
-                            changeSupply: true,
-                            enableFreeze: false,
-                            enableKYC: false,
-                            enableWipe: true,
-                            wipeContractId: contractUuidW,
-                            tokenId: null,
-                        },
-                        timeout: 180000,
-                    }).then((response) => {
-                        expect(response.status).eql(STATUS_CODE.SUCCESS);
-                        response.body.forEach(element => {
-                            if (element.tokenName == tokenName) {
-                                tokenId = element.tokenId
-                            }
-                        });
-                    });
-                })
-            })
+            Contracts.getContractByDescription(authorization, 'RETIRE', contractNameR)
+                .then((contract) => contractIdR = contract.id);
+            Contracts.getContractByDescription(authorization, 'WIPE', contractNameW)
+                .then((contract) => {
+                    contractUuidW = contract.contractId;
+                    //A token whose wipe key is the wipe contract: setting a pool on it is what
+                    //makes the retire contract ask that contract for the wiper role, which is the
+                    //wipe request the later specs read, reject and approve
+                    Contracts.createWipeBoundToken(authorization, {
+                        tokenName,
+                        tokenSymbol: 'F',
+                        wipeContractId: contractUuidW,
+                    }).then((id) => tokenId = id);
+                });
         })
     })
 
     it('Set retire contract pool', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.RetireContract + contractIdR + '/' + API.PoolContract,
-                headers: {
-                    authorization,
-                },
-                body: {
-                    tokens: [
-                        {
-                            token: tokenId,
-                            count: 1
-                        }
-                    ],
-                    immediately: false
-                }
-            }).then((response) => {
-                expect(response.status).eql(STATUS_CODE.OK);
-            })
+            Contracts.setRetirePool(authorization, { contractId: contractIdR, tokenId });
         })
     });
 
