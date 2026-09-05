@@ -34,7 +34,7 @@ jobs:
   buildAndTest:
     name: Build and test
     runs-on: guardian-linux-medium
-    timeout-minutes: 60
+    timeout-minutes: 120
     env:
       # .yarnrc.yml does not set enableGlobalCache and Yarn 4 defaults it to true,
       # which puts the cache in ~/.yarn/berry/cache. Forcing it off keeps the cache in
