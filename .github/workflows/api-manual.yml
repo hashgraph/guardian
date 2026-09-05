@@ -3,7 +3,7 @@ run-name: E2E Tests · ${{ github.event_name == 'schedule' && 'all' || (inputs.t
 
 on:
   schedule:
-    - cron: '0 6 * * 1,3,5,0'
+    - cron: '0 3 * * *' # Run at 03:00 UTC every day (nightly)
   push:
     branches-ignore:
       - 'dependabot/**'
