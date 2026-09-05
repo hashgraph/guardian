@@ -149,55 +149,8 @@ jobs:
           {
             echo "tags=$TAGS"
             echo "sr_balance=$BALANCE"
-            echo "report_name=Guardian e2e Report - $TAGS - ${GITHUB_SHA:0:8}"
+            echo "report_name=Guardian e2e test report - $TAGS - ${GITHUB_SHA:0:8}"
           } >> "$GITHUB_OUTPUT"
-
-      - name: Print run configuration
-        shell: bash
-        env:
-          TAGS: ${{ steps.params.outputs.tags }}
-          SR_BALANCE: ${{ steps.params.outputs.sr_balance }}
-          REPORT_NAME: ${{ steps.params.outputs.report_name }}
-          INITIAL_BALANCE: 20
-          IPFS_TIMEOUT: 720
-          ACCESS_TOKEN_UPDATE_INTERVAL: 600000
-          # Everything below goes through env rather than being interpolated into the
-          # script: a branch named `$(...)` would otherwise be command-substituted
-          # inside the double-quoted echoes.
-          EVENT_NAME: ${{ github.event_name }}
-          REF_NAME: ${{ github.ref_name }}
-          COMMIT_SHA: ${{ github.sha }}
-          ACTOR: ${{ github.actor }}
-          RUNNER_LABEL: ${{ runner.name }}
-          RUNNER_PLATFORM: ${{ runner.os }}/${{ runner.arch }}
-        run: |
-          set -euo pipefail
-          # Only non-secret job parameters are printed here. OPERATOR_*, JWT_*,
-          # SERVICE_JWT_*, MGS* and IPFS_STORAGE_API_KEY stay confined to the `env:` of
-          # the individual steps that need them.
-          {
-            echo "## e2e run configuration"
-            echo
-            echo "| Parameter | Value |"
-            echo "|---|---|"
-            echo "| Trigger | \`${EVENT_NAME}\` |"
-            echo "| Ref | \`${REF_NAME}\` |"
-            echo "| Commit | \`${COMMIT_SHA}\` |"
-            echo "| Actor | \`${ACTOR}\` |"
-            echo "| Runner | \`${RUNNER_LABEL}\` (\`${RUNNER_PLATFORM}\`) |"
-            echo "| CYPRESS_grepTags | \`${TAGS}\` |"
-            echo "| INITIAL_STANDARD_REGISTRY_BALANCE | \`${SR_BALANCE}\` |"
-            echo "| INITIAL_BALANCE | \`${INITIAL_BALANCE}\` |"
-            echo "| MIN_PASSWORD_LENGTH | \`${MIN_PASSWORD_LENGTH}\` |"
-            echo "| PASSWORD_COMPLEXITY | \`${PASSWORD_COMPLEXITY}\` |"
-            echo "| NODE_VERSION | \`${NODE_VERSION}\` |"
-            echo "| WORKER_COUNT | \`${WORKER_COUNT}\` |"
-            echo "| IPFS_PROVIDER | \`local\` |"
-            echo "| IPFS_TIMEOUT | \`${IPFS_TIMEOUT}\` |"
-            echo "| ACCESS_TOKEN_UPDATE_INTERVAL | \`${ACCESS_TOKEN_UPDATE_INTERVAL}\` |"
-            echo "| Report name | \`${REPORT_NAME}\` |"
-            echo
-          } | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Checkout Guardian code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -275,7 +228,7 @@ jobs:
       - name: Install Guardian dependencies
         run: yarn install --immutable
 
-      - name: Install e2e tests dependencies
+      - name: Install tests dependencies
         working-directory: e2e-tests
         run: npm ci --prefer-offline --no-audit --fund=false
 
@@ -450,21 +403,67 @@ jobs:
             e2e-tests/cypress/reports \
             "$GUARDIAN_LOG_DIR"
 
-      - name: Publish e2e summary
+      - name: Print test results
+        uses: step-security/publish-unit-test-result-action@681100d67b09305624c089873f12c545ee7cbc24 # v2.23.0
+        if: always()
+        with:
+          files: e2e-tests/cypress/test_results/**/*.xml
+          check_name: Test results
+          report_individual_runs: true
+          comment_mode: 'off'
+
+      - name: Print test details
         if: always()
         working-directory: e2e-tests
         env:
           CYPRESS_grepTags: ${{ steps.params.outputs.tags }}
         run: node scripts/report-summary.mjs
 
-      - name: Publish API Test Results
-        uses: step-security/publish-unit-test-result-action@681100d67b09305624c089873f12c545ee7cbc24 # v2.23.0
+      - name: Print run configuration
+        shell: bash
+        env:
+          TAGS: ${{ steps.params.outputs.tags }}
+          SR_BALANCE: ${{ steps.params.outputs.sr_balance }}
+          REPORT_NAME: ${{ steps.params.outputs.report_name }}
+          INITIAL_BALANCE: 20
+          IPFS_TIMEOUT: 720
+          ACCESS_TOKEN_UPDATE_INTERVAL: 600000
+          # Everything below goes through env rather than being interpolated into the
+          # script: a branch named `$(...)` would otherwise be command-substituted
+          # inside the double-quoted echoes.
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          COMMIT_SHA: ${{ github.sha }}
+          ACTOR: ${{ github.actor }}
+          RUNNER_LABEL: ${{ runner.name }}
+          RUNNER_PLATFORM: ${{ runner.os }}/${{ runner.arch }}
         if: always()
-        with:
-          files: e2e-tests/cypress/test_results/**/*.xml
-          check_name: e2e Test Results
-          report_individual_runs: true
-          comment_mode: 'off'
+        run: |
+          set -euo pipefail
+          # Only non-secret job parameters are printed here. OPERATOR_*, JWT_*,
+          # SERVICE_JWT_*, MGS* and IPFS_STORAGE_API_KEY stay confined to the `env:` of
+          # the individual steps that need them.
+          {
+            echo "## Workflow run configuration"
+            echo
+            echo "| Parameter | Value |"
+            echo "|---|---|"
+            echo "| Report name | \`${REPORT_NAME}\` |"
+            echo "| Trigger | \`${EVENT_NAME}\` |"
+            echo "| Ref | \`${REF_NAME}\` |"
+            echo "| Commit | \`${COMMIT_SHA}\` |"
+            echo "| CYPRESS_grepTags | \`${TAGS}\` |"
+            echo "| INITIAL_STANDARD_REGISTRY_BALANCE | \`${SR_BALANCE}\` |"
+            echo "| INITIAL_BALANCE | \`${INITIAL_BALANCE}\` |"
+            echo "| MIN_PASSWORD_LENGTH | \`${MIN_PASSWORD_LENGTH}\` |"
+            echo "| PASSWORD_COMPLEXITY | \`${PASSWORD_COMPLEXITY}\` |"
+            echo "| NODE_VERSION | \`${NODE_VERSION}\` |"
+            echo "| WORKER_COUNT | \`${WORKER_COUNT}\` |"
+            echo "| IPFS_PROVIDER | \`local\` |"
+            echo "| IPFS_TIMEOUT | \`${IPFS_TIMEOUT}\` |"
+            echo "| ACCESS_TOKEN_UPDATE_INTERVAL | \`${ACCESS_TOKEN_UPDATE_INTERVAL}\` |"
+            echo
+          } | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Upload tests results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
