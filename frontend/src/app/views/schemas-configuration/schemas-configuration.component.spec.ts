@@ -1,5 +1,6 @@
 import { of, Subject, throwError } from 'rxjs';
 import { SchemasConfigurationComponent } from './schemas-configuration.component';
+import { FIELD_TYPES_UI } from 'src/app/modules/schema-engine/field-type-ui';
 
 describe('SchemasConfigurationComponent', () => {
 
@@ -869,6 +870,428 @@ describe('SchemasConfigurationComponent', () => {
                 expect(sentCount(component))
                     .toBeGreaterThan(0, `enabled button sent nothing for state: ${state.name}`);
             });
+        });
+    });
+
+    describe('table column configuration', () => {
+
+        function tableComponent(fieldOverrides: any = {}): any {
+            const field = makeField({ type: 'string', customType: 'table', ...fieldOverrides });
+            const schema = makeSchema({ id: 'root', iri: '#root', fields: [field] });
+            const component = createComponent({ schemas: [schema], selectedSchema: schema });
+            component.fieldTypes = FIELD_TYPES_UI;
+            component.tableColumnKeyUnlocked = new WeakSet<object>();
+            component.tableColumnDragIndex = -1;
+            component.tableColumnDragOverIndex = -1;
+            component.isTableColumnDragActive = false;
+            component.selectedField = field;
+            return component;
+        }
+
+        function typeUi(key: string): any {
+            return FIELD_TYPES_UI.find(ft => ft.key === key);
+        }
+
+        it('shows the section only for the Table type', () => {
+            const component = tableComponent();
+            expect(component.selectedFieldIsTable).toBeTrue();
+
+            component.selectedField = makeField({ type: 'string', customType: '' });
+            expect(component.selectedFieldIsTable).toBeFalse();
+        });
+
+        it('reads the toggle as off when the field has no declared columns', () => {
+            const component = tableComponent();
+
+            expect(component.selectedFieldTableColumnsEnabled).toBeFalse();
+            expect(component.selectedFieldTableColumns).toEqual([]);
+        });
+
+        it('turning the toggle on creates exactly one empty row', () => {
+            const component = tableComponent();
+
+            component.toggleTableColumns();
+
+            expect(component.selectedFieldTableColumnsEnabled).toBeTrue();
+            expect(component.selectedField.tableColumns).toEqual([{ name: '', key: '' }]);
+        });
+
+        it('turning the toggle off removes the property entirely', () => {
+            const component = tableComponent({ tableColumns: [{ name: 'Year', key: 'year' }] });
+
+            component.toggleTableColumns();
+
+            expect(component.selectedFieldTableColumnsEnabled).toBeFalse();
+            expect('tableColumns' in component.selectedField).toBeFalse();
+        });
+
+        it('adds an empty row at the end', () => {
+            const component = tableComponent({ tableColumns: [{ name: 'Year', key: 'year' }] });
+
+            component.addTableColumn();
+
+            expect(component.selectedField.tableColumns).toEqual([
+                { name: 'Year', key: 'year' },
+                { name: '', key: '' },
+            ]);
+        });
+
+        it('removes a row but refuses to remove the last one', () => {
+            const component = tableComponent({
+                tableColumns: [{ name: 'Year', key: 'year' }, { name: 'CO2', key: 'co2' }],
+            });
+
+            component.removeTableColumn(0);
+            expect(component.selectedField.tableColumns).toEqual([{ name: 'CO2', key: 'co2' }]);
+
+            component.removeTableColumn(0);
+            expect(component.selectedField.tableColumns).toEqual([{ name: 'CO2', key: 'co2' }]);
+        });
+
+        it('reorders rows and refuses to move past either end', () => {
+            const component = tableComponent({
+                tableColumns: [
+                    { name: 'A', key: 'a' },
+                    { name: 'B', key: 'b' },
+                    { name: 'C', key: 'c' },
+                ],
+            });
+
+            component.moveTableColumn(2, -1);
+            expect(component.selectedField.tableColumns.map((c: any) => c.key)).toEqual(['a', 'c', 'b']);
+
+            component.moveTableColumn(0, -1);
+            expect(component.selectedField.tableColumns.map((c: any) => c.key)).toEqual(['a', 'c', 'b']);
+
+            component.moveTableColumn(2, 1);
+            expect(component.selectedField.tableColumns.map((c: any) => c.key)).toEqual(['a', 'c', 'b']);
+        });
+
+        function armDrag(component: any, from: number, over: number): void {
+            component.tableColumnDragIndex = from;
+            component.tableColumnDragOverIndex = over;
+            component.isTableColumnDragActive = true;
+        }
+
+        it('gives a duplicated field its own copy of the columns', () => {
+            const component = tableComponent({
+                tableColumns: [{ name: 'Year', key: 'year' }, { name: 'CO2', key: 'co2' }],
+            });
+            const original = component.selectedField;
+
+            component.duplicateField(original, { stopPropagation: () => {} } as any);
+
+            const fields = component.selectedSchema.fields;
+            const clone = fields[fields.indexOf(original) + 1];
+
+            expect(clone).toBeDefined();
+            expect(clone.tableColumns).toEqual(original.tableColumns);
+            expect(clone.tableColumns).not.toBe(original.tableColumns);
+
+            clone.tableColumns[0].name = 'Changed';
+            expect(original.tableColumns[0].name).toBe('Year');
+        });
+
+        it('refuses to start a drag while there is only one column', () => {
+            const component = tableComponent({ tableColumns: [{ name: 'A', key: 'a' }] });
+            const event: any = { preventDefault: () => {}, clientX: 0, clientY: 0, currentTarget: null };
+
+            expect(component.selectedFieldTableColumnsDraggable).toBeFalse();
+
+            component.onTableColumnMouseDown(event, 0);
+
+            expect(component.tableColumnDragIndex).toBe(-1);
+            expect(component.isTableColumnDragActive).toBeFalse();
+        });
+
+        it('allows a drag once a second column exists', () => {
+            const component = tableComponent({
+                tableColumns: [{ name: 'A', key: 'a' }, { name: 'B', key: 'b' }],
+            });
+
+            expect(component.selectedFieldTableColumnsDraggable).toBeTrue();
+        });
+
+        it('exposes the dragged column for the floating card', () => {
+            const component = tableComponent({
+                tableColumns: [{ name: 'A', key: 'a' }, { name: 'B', key: 'b' }],
+            });
+
+            expect(component.tableColumnDragged).toBeNull();
+
+            component.tableColumnDragIndex = 1;
+
+            expect(component.tableColumnDragged).toEqual({ name: 'B', key: 'b' });
+        });
+
+        it('reorders a row onto the row it was dragged over', () => {
+            const component = tableComponent({
+                tableColumns: [
+                    { name: 'A', key: 'a' },
+                    { name: 'B', key: 'b' },
+                    { name: 'C', key: 'c' },
+                ],
+            });
+
+            armDrag(component, 0, 2);
+            component.applyTableColumnDrag();
+
+            expect(component.selectedField.tableColumns.map((c: any) => c.key)).toEqual(['b', 'c', 'a']);
+        });
+
+        it('reorders upwards as well as downwards', () => {
+            const component = tableComponent({
+                tableColumns: [
+                    { name: 'A', key: 'a' },
+                    { name: 'B', key: 'b' },
+                    { name: 'C', key: 'c' },
+                ],
+            });
+
+            armDrag(component, 2, 0);
+            component.applyTableColumnDrag();
+
+            expect(component.selectedField.tableColumns.map((c: any) => c.key)).toEqual(['c', 'a', 'b']);
+        });
+
+        it('does nothing when the row is dropped on itself', () => {
+            const component = tableComponent({
+                tableColumns: [{ name: 'A', key: 'a' }, { name: 'B', key: 'b' }],
+            });
+
+            armDrag(component, 1, 1);
+            component.applyTableColumnDrag();
+
+            expect(component.selectedField.tableColumns.map((c: any) => c.key)).toEqual(['a', 'b']);
+        });
+
+        it('does nothing when the pointer never passed the drag threshold', () => {
+            const component = tableComponent({
+                tableColumns: [{ name: 'A', key: 'a' }, { name: 'B', key: 'b' }],
+            });
+
+            component.tableColumnDragIndex = 0;
+            component.tableColumnDragOverIndex = 1;
+            component.isTableColumnDragActive = false;
+
+            component.applyTableColumnDrag();
+
+            expect(component.selectedField.tableColumns.map((c: any) => c.key)).toEqual(['a', 'b']);
+        });
+
+        it('does nothing when the drag ended outside every row', () => {
+            const component = tableComponent({
+                tableColumns: [{ name: 'A', key: 'a' }, { name: 'B', key: 'b' }],
+            });
+
+            armDrag(component, 0, -1);
+            component.applyTableColumnDrag();
+
+            expect(component.selectedField.tableColumns.map((c: any) => c.key)).toEqual(['a', 'b']);
+        });
+
+        it('clears the drag state and the document styles when the drag ends', () => {
+            const component = tableComponent({
+                tableColumns: [{ name: 'A', key: 'a' }, { name: 'B', key: 'b' }],
+            });
+            armDrag(component, 0, 1);
+
+            component.clearTableColumnDrag();
+
+            expect(component.tableColumnDragIndex).toBe(-1);
+            expect(component.tableColumnDragOverIndex).toBe(-1);
+            expect(component.isTableColumnDragActive).toBeFalse();
+            expect(document.body.style.userSelect).toBe('');
+            expect(document.body.style.cursor).toBe('');
+        });
+
+        it('writes a typed value into the right row and field', () => {
+            const component = tableComponent({
+                tableColumns: [{ name: '', key: '' }, { name: '', key: '' }],
+            });
+
+            component.setTableColumnValue(1, 'name', 'Site');
+
+            expect(component.selectedField.tableColumns[0]).toEqual({ name: '', key: '' });
+            expect(component.selectedField.tableColumns[1].name).toBe('Site');
+        });
+
+        it('derives the key from the name while the key is locked', () => {
+            const component = tableComponent({ tableColumns: [{ name: '', key: '' }] });
+
+            component.setTableColumnValue(0, 'name', 'CO2 (tonnes)');
+
+            expect(component.selectedField.tableColumns[0])
+                .toEqual({ name: 'CO2 (tonnes)', key: 'co2_tonnes' });
+        });
+
+        it('keeps the derived key in step with later edits to the name', () => {
+            const component = tableComponent({ tableColumns: [{ name: '', key: '' }] });
+
+            component.setTableColumnValue(0, 'name', 'Year');
+            expect(component.selectedField.tableColumns[0].key).toBe('year');
+
+            component.setTableColumnValue(0, 'name', 'Reporting Year');
+            expect(component.selectedField.tableColumns[0].key).toBe('reporting_year');
+        });
+
+        it('leaves the key empty when the name produces no usable slug', () => {
+            const component = tableComponent({ tableColumns: [{ name: '', key: '' }] });
+
+            component.setTableColumnValue(0, 'name', 'Год');
+
+            expect(component.selectedField.tableColumns[0].key).toBe('');
+        });
+
+        it('reports the key as locked while it matches the name', () => {
+            const component = tableComponent({ tableColumns: [{ name: 'Year', key: 'year' }] });
+            const column = component.selectedField.tableColumns[0];
+
+            expect(component.isTableColumnKeyUnlocked(column)).toBeFalse();
+        });
+
+        it('stops deriving the key once it has been unlocked', () => {
+            const component = tableComponent({ tableColumns: [{ name: 'Year', key: 'year' }] });
+            const column = component.selectedField.tableColumns[0];
+
+            component.toggleTableColumnKeyLock(0);
+            expect(component.isTableColumnKeyUnlocked(column)).toBeTrue();
+
+            component.setTableColumnValue(0, 'key', 'yr');
+            component.setTableColumnValue(0, 'name', 'Reporting Year');
+
+            expect(column.key).toBe('yr');
+            expect(column.name).toBe('Reporting Year');
+        });
+
+        it('locking again rebuilds the key from the current name', () => {
+            const component = tableComponent({ tableColumns: [{ name: 'Year', key: 'year' }] });
+            const column = component.selectedField.tableColumns[0];
+
+            component.toggleTableColumnKeyLock(0);
+            component.setTableColumnValue(0, 'key', 'yr');
+            component.setTableColumnValue(0, 'name', 'Reporting Year');
+            expect(column.key).toBe('yr');
+
+            component.toggleTableColumnKeyLock(0);
+
+            expect(component.isTableColumnKeyUnlocked(column)).toBeFalse();
+            expect(column.key).toBe('reporting_year');
+        });
+
+        it('follows the name again after it has been locked back', () => {
+            const component = tableComponent({ tableColumns: [{ name: 'Year', key: 'year' }] });
+            const column = component.selectedField.tableColumns[0];
+
+            component.toggleTableColumnKeyLock(0);
+            component.setTableColumnValue(0, 'key', 'yr');
+            component.toggleTableColumnKeyLock(0);
+
+            component.setTableColumnValue(0, 'name', 'Site Code');
+
+            expect(column.key).toBe('site_code');
+        });
+
+        it('treats a stored key that differs from its name as already unlocked', () => {
+            const component = tableComponent({ tableColumns: [{ name: 'Year', key: 'yr' }] });
+            const column = component.selectedField.tableColumns[0];
+
+            expect(component.isTableColumnKeyUnlocked(column)).toBeTrue();
+
+            component.setTableColumnValue(0, 'name', 'Reporting Year');
+
+            expect(column.key).toBe('yr');
+        });
+
+        it('keeps the unlocked key with its own row after a reorder', () => {
+            const component = tableComponent({
+                tableColumns: [{ name: 'A', key: 'a' }, { name: 'B', key: 'b' }],
+            });
+            component.toggleTableColumnKeyLock(1);
+
+            component.moveTableColumn(1, -1);
+
+            const moved = component.selectedField.tableColumns[0];
+            expect(moved.name).toBe('B');
+            expect(component.isTableColumnKeyUnlocked(moved)).toBeTrue();
+        });
+
+        it('seeds one row when the type becomes Table', () => {
+            const component = tableComponent({ customType: '' });
+
+            component.changeFieldType(typeUi('table'));
+
+            expect(component.selectedField.tableColumns).toEqual([{ name: '', key: '' }]);
+        });
+
+        it('drops the columns when the type stops being Table', () => {
+            const component = tableComponent({ tableColumns: [{ name: 'Year', key: 'year' }] });
+
+            component.changeFieldType(typeUi('string'));
+
+            expect('tableColumns' in component.selectedField).toBeFalse();
+        });
+
+        it('reports nothing while the toggle is off', () => {
+            const component = tableComponent();
+            const field = component.selectedField;
+
+            const errors = component.getFieldErrors(field, [field]);
+
+            expect(errors.some((e: string) => e.toLowerCase().includes('column'))).toBeFalse();
+        });
+
+        it('reports an empty display name', () => {
+            const component = tableComponent({ tableColumns: [{ name: '  ', key: 'year' }] });
+            const field = component.selectedField;
+
+            expect(component.getFieldErrors(field, [field]))
+                .toContain('Every column needs a display name');
+        });
+
+        it('reports an empty key', () => {
+            const component = tableComponent({ tableColumns: [{ name: 'Year', key: '' }] });
+            const field = component.selectedField;
+
+            expect(component.getFieldErrors(field, [field]))
+                .toContain('Every column needs a key');
+        });
+
+        it('reports a key with a space, once the keys are filled', () => {
+            const component = tableComponent({ tableColumns: [{ name: 'Year', key: 'the year' }] });
+            const field = component.selectedField;
+
+            expect(component.getFieldErrors(field, [field]))
+                .toContain('Column key must not contain spaces');
+        });
+
+        it('reports duplicate keys inside the same field', () => {
+            const component = tableComponent({
+                tableColumns: [{ name: 'Year', key: 'year' }, { name: 'Year again', key: 'year' }],
+            });
+            const field = component.selectedField;
+
+            expect(component.getFieldErrors(field, [field]))
+                .toContain('Column keys must be unique within the field');
+        });
+
+        it('reports an empty column list while the toggle is on', () => {
+            const component = tableComponent({ tableColumns: [] });
+            const field = component.selectedField;
+
+            expect(component.getFieldErrors(field, [field]))
+                .toContain('Table must have at least one column');
+        });
+
+        it('accepts a fully filled, unique column list', () => {
+            const component = tableComponent({
+                tableColumns: [{ name: 'Year', key: 'year' }, { name: 'CO2', key: 'co2_tonnes' }],
+            });
+            const field = component.selectedField;
+
+            const errors = component.getFieldErrors(field, [field]);
+
+            expect(errors.some((e: string) => e.toLowerCase().includes('column'))).toBeFalse();
         });
     });
 });

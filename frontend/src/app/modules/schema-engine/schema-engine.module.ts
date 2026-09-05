@@ -22,7 +22,6 @@ import { GeoImageComponent } from './geo-image/geo-image.component';
 import { SchemaViewDialog } from './schema-view-dialog/schema-view-dialog.component';
 import { ExportSchemaDialog } from './export-schema-dialog/export-schema-dialog.component';
 import { ExportPlantUMLDialog } from './export-plantuml-dialog/export-plantuml-dialog.component';
-import { SchemaFieldConfigurationComponent } from './schema-field-configuration/schema-field-configuration.component';
 import { EnumEditorDialog } from './enum-editor-dialog/enum-editor-dialog.component';
 import { CompareSchemaDialog } from './compare-schema-dialog/compare-schema-dialog.component';
 import { ButtonModule } from 'primeng/button';
@@ -69,7 +68,6 @@ import { SchemaFormViewNavigationComponent } from './schema-form-view-navigation
         SchemaViewDialog,
         ExportSchemaDialog,
         ExportPlantUMLDialog,
-        SchemaFieldConfigurationComponent,
         EnumEditorDialog,
         CompareSchemaDialog,
         SchemaDeleteWarningDialogComponent,
@@ -120,7 +118,6 @@ import { SchemaFormViewNavigationComponent } from './schema-form-view-navigation
         VCFullscreenDialog,
         GeoImageComponent,
         ExportSchemaDialog,
-        SchemaFieldConfigurationComponent,
         SchemaFormDialog,
         SchemaFormRootComponent,
         SchemaFormNavigationComponent,

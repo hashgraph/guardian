@@ -763,6 +763,23 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             errors.push('Enum must have at least one value');
         }
 
+        if (Array.isArray(field.tableColumns)) {
+            if (!field.tableColumns.length) {
+                errors.push('Table must have at least one column');
+            }
+            const columnKeys = field.tableColumns.map((column) => (column?.key || '').trim());
+            if (field.tableColumns.some((column) => !(column?.name || '').trim())) {
+                errors.push('Every column needs a display name');
+            }
+            if (columnKeys.some((columnKey) => !columnKey)) {
+                errors.push('Every column needs a key');
+            } else if (columnKeys.some((columnKey) => /\s/.test(columnKey))) {
+                errors.push('Column key must not contain spaces');
+            } else if (new Set(columnKeys).size !== columnKeys.length) {
+                errors.push('Column keys must be unique within the field');
+            }
+        }
+
         const geoDependencyError = this.getGeoDependencyError(field, allFields);
         if (geoDependencyError) {
             errors.push(geoDependencyError);
@@ -1464,6 +1481,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (Array.isArray(f.enum)) { clone.enum = [...f.enum]; }
         if (Array.isArray(f.fields)) { clone.fields = [...f.fields]; }
         if (Array.isArray(f.availableOptions)) { clone.availableOptions = [...f.availableOptions]; }
+        if (Array.isArray(f.tableColumns)) {
+            clone.tableColumns = f.tableColumns.map((column: any) => ({ ...column }));
+        }
         this.clearTemplateFieldMetadata(clone);
         const srcIdx = targetFields.indexOf(field);
         if (srcIdx !== -1) {
@@ -1683,6 +1703,197 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public get selectedFieldIsGeoJson(): boolean {
         return this.selectedField ? this.getFieldCurrentType(this.selectedField) === 'geo' : false;
+    }
+
+    private readonly tableColumnKeyUnlocked = new WeakSet<object>();
+
+    public get selectedFieldIsTable(): boolean {
+        return this.selectedField ? this.getFieldCurrentType(this.selectedField) === 'table' : false;
+    }
+
+    public get selectedFieldTableColumnsEnabled(): boolean {
+        return Array.isArray(this.selectedField?.tableColumns);
+    }
+
+    public get selectedFieldTableColumns(): { name: string; key: string }[] {
+        return this.selectedField?.tableColumns ?? [];
+    }
+
+    public toggleTableColumns(): void {
+        if (!this.selectedField) { return; }
+        if (Array.isArray(this.selectedField.tableColumns)) {
+            delete this.selectedField.tableColumns;
+        } else {
+            this.selectedField.tableColumns = [{ name: '', key: '' }];
+        }
+        this.markDirty();
+    }
+
+    public addTableColumn(): void {
+        if (!Array.isArray(this.selectedField?.tableColumns)) { return; }
+        this.selectedField.tableColumns.push({ name: '', key: '' });
+        this.markDirty();
+    }
+
+    public removeTableColumn(index: number): void {
+        const columns = this.selectedField?.tableColumns;
+        if (!Array.isArray(columns) || columns.length <= 1) { return; }
+        if (index < 0 || index >= columns.length) { return; }
+        columns.splice(index, 1);
+        this.markDirty();
+    }
+
+    public moveTableColumn(index: number, offset: number): void {
+        const columns = this.selectedField?.tableColumns;
+        if (!Array.isArray(columns)) { return; }
+        const target = index + offset;
+        if (index < 0 || index >= columns.length) { return; }
+        if (target < 0 || target >= columns.length) { return; }
+        const [moved] = columns.splice(index, 1);
+        columns.splice(target, 0, moved);
+        this.markDirty();
+    }
+
+    public setTableColumnValue(index: number, key: 'name' | 'key', value: string): void {
+        const columns = this.selectedField?.tableColumns;
+        if (!Array.isArray(columns) || index < 0 || index >= columns.length) { return; }
+        const column = columns[index];
+        const derivedKey = key === 'name' && !this.isTableColumnKeyUnlocked(column);
+        column[key] = value;
+        if (derivedKey) {
+            column.key = SchemasConfigurationComponent.toColumnKey(value);
+        }
+        this.markDirty();
+    }
+
+    public isTableColumnKeyUnlocked(column: { name: string; key: string }): boolean {
+        if (this.tableColumnKeyUnlocked.has(column)) { return true; }
+        return !!column.key && column.key !== SchemasConfigurationComponent.toColumnKey(column.name);
+    }
+
+    public tableColumnDragIndex = -1;
+    public tableColumnDragOverIndex = -1;
+    public isTableColumnDragActive = false;
+    private _tableColumnMouseMove: ((event: MouseEvent) => void) | null = null;
+    private _tableColumnMouseUp: ((event: MouseEvent) => void) | null = null;
+    private _tableColumnStartX = 0;
+    private _tableColumnStartY = 0;
+    public tableColumnFloatX = 0;
+    public tableColumnFloatY = 0;
+    public tableColumnFloatWidth = 0;
+    private _tableColumnOffsetX = 0;
+    private _tableColumnOffsetY = 0;
+
+    public get tableColumnDragged(): { name: string; key: string } | null {
+        const columns = this.selectedField?.tableColumns;
+        if (!Array.isArray(columns)) { return null; }
+        return columns[this.tableColumnDragIndex] ?? null;
+    }
+
+    public get selectedFieldTableColumnsDraggable(): boolean {
+        return this.selectedFieldTableColumns.length > 1;
+    }
+
+    public onTableColumnMouseDown(event: MouseEvent, index: number): void {
+        if (!this.selectedFieldTableColumnsDraggable) { return; }
+        event.preventDefault();
+        if (this._tableColumnMouseMove) { this.clearTableColumnDrag(); }
+        const row = (event.currentTarget as HTMLElement).closest('.sc-table-column');
+        if (row) {
+            const rect = row.getBoundingClientRect();
+            this.tableColumnFloatWidth = rect.width;
+            this._tableColumnOffsetX = event.clientX - rect.left;
+            this._tableColumnOffsetY = event.clientY - rect.top;
+        }
+        this.tableColumnDragIndex = index;
+        this.tableColumnDragOverIndex = -1;
+        this.isTableColumnDragActive = false;
+        this._tableColumnStartX = event.clientX;
+        this._tableColumnStartY = event.clientY;
+        document.body.style.userSelect = 'none';
+        document.body.style.cursor = 'grabbing';
+        this._tableColumnMouseMove = (e: MouseEvent) => this.onTableColumnMouseMove(e);
+        this._tableColumnMouseUp = () => this._zone.run(() => this.onTableColumnMouseUp());
+        document.addEventListener('mousemove', this._tableColumnMouseMove);
+        document.addEventListener('mouseup', this._tableColumnMouseUp);
+    }
+
+    private onTableColumnMouseMove(event: MouseEvent): void {
+        if (this.tableColumnDragIndex === -1) { return; }
+        const dx = event.clientX - this._tableColumnStartX;
+        const dy = event.clientY - this._tableColumnStartY;
+        if (!this.isTableColumnDragActive && Math.hypot(dx, dy) > 4) {
+            this.isTableColumnDragActive = true;
+        }
+        if (!this.isTableColumnDragActive) { return; }
+        this.tableColumnFloatX = event.clientX - this._tableColumnOffsetX;
+        this.tableColumnFloatY = event.clientY - this._tableColumnOffsetY;
+        this.updateTableColumnDropIndicator(event.clientY);
+        this._cdr.detectChanges();
+    }
+
+    private onTableColumnMouseUp(): void {
+        this.applyTableColumnDrag();
+        this.clearTableColumnDrag();
+    }
+
+    private updateTableColumnDropIndicator(clientY: number): void {
+        const root = this._elRef.nativeElement as HTMLElement;
+        const rows = Array.from(root.querySelectorAll<HTMLElement>('.sc-table-column'));
+        this.tableColumnDragOverIndex = -1;
+        for (let i = 0; i < rows.length; i++) {
+            if (i === this.tableColumnDragIndex) { continue; }
+            const rect = rows[i].getBoundingClientRect();
+            if (clientY >= rect.top && clientY <= rect.bottom) {
+                this.tableColumnDragOverIndex = i;
+                return;
+            }
+        }
+    }
+
+    public applyTableColumnDrag(): void {
+        if (!this.isTableColumnDragActive) { return; }
+        const from = this.tableColumnDragIndex;
+        const to = this.tableColumnDragOverIndex;
+        if (from === -1 || to === -1 || from === to) { return; }
+        this.moveTableColumn(from, to - from);
+    }
+
+    public clearTableColumnDrag(): void {
+        if (this._tableColumnMouseMove) {
+            document.removeEventListener('mousemove', this._tableColumnMouseMove);
+            this._tableColumnMouseMove = null;
+        }
+        if (this._tableColumnMouseUp) {
+            document.removeEventListener('mouseup', this._tableColumnMouseUp);
+            this._tableColumnMouseUp = null;
+        }
+        document.body.style.userSelect = '';
+        document.body.style.cursor = '';
+        this.tableColumnDragIndex = -1;
+        this.tableColumnDragOverIndex = -1;
+        this.isTableColumnDragActive = false;
+    }
+
+    public toggleTableColumnKeyLock(index: number): void {
+        const columns = this.selectedField?.tableColumns;
+        if (!Array.isArray(columns) || index < 0 || index >= columns.length) { return; }
+        const column = columns[index];
+        if (this.isTableColumnKeyUnlocked(column)) {
+            this.tableColumnKeyUnlocked.delete(column);
+            column.key = SchemasConfigurationComponent.toColumnKey(column.name);
+        } else {
+            this.tableColumnKeyUnlocked.add(column);
+        }
+        this.markDirty();
+    }
+
+    private static toColumnKey(name: string): string {
+        return (name || '')
+            .trim()
+            .toLowerCase()
+            .replace(/\s+/g, '_')
+            .replace(/[^a-z0-9_]/g, '');
     }
 
     public get selectedFieldCanBeArray(): boolean {
@@ -1915,7 +2126,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         f.unitSystem = ft.unitSystem || '';
         delete f.fields;
         delete f.enum;
+        delete f.tableColumns;
         if (ft.key === 'enum') { f.enum = []; }
+        if (ft.key === 'table') { f.tableColumns = [{ name: '', key: '' }]; }
         if (SchemasConfigurationComponent.NON_UPDATABLE_TYPES.has(ft.key)) { f.isUpdatable = false; }
         f.default = null;
         f.suggest = null;

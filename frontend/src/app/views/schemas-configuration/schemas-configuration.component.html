@@ -1059,6 +1059,79 @@
                             </div>
                         }
 
+                        @if (selectedFieldIsTable) {
+                            <div class="sc-rp-divider"></div>
+                            <div class="sc-rp-label">Table columns</div>
+                            <div class="sc-check-list">
+                                <div class="sc-check-item" (click)="toggleTableColumns()">
+                                    <p-checkbox class="guardian-checkbox checkbox-24" [binary]="true"
+                                                style="pointer-events:none"
+                                                [ngModel]="selectedFieldTableColumnsEnabled"></p-checkbox>
+                                    <div class="sc-check-desc">
+                                        <strong>Define columns</strong>
+                                        <span>Declare the table structure in the schema</span>
+                                    </div>
+                                </div>
+                            </div>
+                            @if (selectedFieldTableColumnsEnabled) {
+                                <div class="sc-rp-group sc-table-columns">
+                                    @for (column of selectedFieldTableColumns; track column) {
+                                        <div
+                                            class="sc-table-column"
+                                            [class.sc-table-column--dragging]="isTableColumnDragActive
+                                                && tableColumnDragIndex === $index"
+                                            [class.sc-table-column--drag-target]="isTableColumnDragActive
+                                                && tableColumnDragOverIndex === $index">
+                                            <span
+                                                class="sc-drag-handle sc-table-column-handle"
+                                                [class.sc-table-column-handle--off]="!selectedFieldTableColumnsDraggable"
+                                                [title]="selectedFieldTableColumnsDraggable
+                                                    ? 'Drag to reorder'
+                                                    : 'Add a second column to reorder'"
+                                                (mousedown)="onTableColumnMouseDown($event, $index)">
+                                                <i class="pi pi-bars"></i>
+                                            </span>
+                                            <input
+                                                class="sc-rp-input sc-table-column-name"
+                                                type="text"
+                                                placeholder="Column name"
+                                                [ngModel]="column.name"
+                                                (ngModelChange)="setTableColumnValue($index, 'name', $event)" />
+                                            <button
+                                                class="sc-icon-btn sc-icon-btn--danger sc-table-column-remove"
+                                                title="Remove column"
+                                                [disabled]="selectedFieldTableColumns.length <= 1"
+                                                (click)="removeTableColumn($index)">
+                                                <i class="pi pi-trash"></i>
+                                            </button>
+                                            <div class="sc-table-column-key-wrap">
+                                                <input
+                                                    class="sc-rp-input sc-table-column-key"
+                                                    type="text"
+                                                    placeholder="key"
+                                                    [disabled]="!isTableColumnKeyUnlocked(column)"
+                                                    [ngModel]="column.key"
+                                                    (ngModelChange)="setTableColumnValue($index, 'key', $event)" />
+                                                <button
+                                                    class="sc-table-column-key-lock"
+                                                    [class.active]="isTableColumnKeyUnlocked(column)"
+                                                    [title]="isTableColumnKeyUnlocked(column)
+                                                        ? 'Back to a key built from the name'
+                                                        : 'Write the key by hand'"
+                                                    (click)="toggleTableColumnKeyLock($index)">
+                                                    <i class="pi pi-pencil"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    }
+                                    <button class="sc-btn sc-btn--sm sc-table-column-add" (click)="addTableColumn()">
+                                        <i class="pi pi-plus"></i>
+                                        Add column
+                                    </button>
+                                </div>
+                            }
+                        }
+
                         @if (selectedFieldShowValues) {
                             <div class="sc-rp-divider"></div>
                             <div class="sc-rp-label">Values</div>
@@ -1842,6 +1915,20 @@
             <div class="sc-field-info">
                 <span class="sc-field-key">{{ reorderField.description || reorderField.title || reorderField.name }}</span>
                 <span class="sc-field-desc">{{ reorderField.name }}</span>
+            </div>
+        </div>
+    }
+
+    <!-- ── Floating drag card for a table column ── -->
+    @if (isTableColumnDragActive && tableColumnDragged) {
+        <div class="sc-float-card"
+             [style.left.px]="tableColumnFloatX"
+             [style.top.px]="tableColumnFloatY"
+             [style.width.px]="tableColumnFloatWidth">
+            <span class="sc-drag-handle"><i class="pi pi-bars"></i></span>
+            <div class="sc-field-info">
+                <span class="sc-field-key">{{ tableColumnDragged.name || 'Column' }}</span>
+                <span class="sc-field-desc">{{ tableColumnDragged.key }}</span>
             </div>
         </div>
     }

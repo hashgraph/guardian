@@ -42,6 +42,7 @@ export interface IFieldJson {
 
     enum?: string[] | string;
     enumName?: string;
+    tableColumns?: { name: string; key: string }[];
     availableOptions?: string[] | string;
 
     textSize?: string;
@@ -322,6 +323,9 @@ export class SchemaToJson {
         }
         if (field.enumName) {
             fieldJson.enumName = field.enumName;
+        }
+        if (Array.isArray(field.tableColumns) && field.tableColumns.length) {
+            fieldJson.tableColumns = field.tableColumns;
         }
 
         const availableOptionsValue = SchemaToJson.getAvailableOptions(field);
@@ -938,6 +942,29 @@ export class JsonToSchema {
         }
     }
 
+    private static fromTableColumns(
+        value: IFieldJson,
+        context: ErrorContext
+    ): { name: string; key: string }[] | undefined {
+        context = context.add('tableColumns');
+
+        if (!Array.isArray(value.tableColumns)) {
+            return undefined;
+        }
+
+        const columns: { name: string; key: string }[] = [];
+        for (let i = 0; i < value.tableColumns.length; i++) {
+            const columnContext = context.add(`[${i}]`);
+            const column = value.tableColumns[i];
+            columns.push({
+                name: JsonToSchema.fromRequiredString(column?.name, columnContext.add('name')),
+                key: JsonToSchema.fromRequiredString(column?.key, columnContext.add('key')),
+            });
+        }
+
+        return columns;
+    }
+
     private static fromExpression(
         value: IFieldJson,
         context: ErrorContext
@@ -1094,6 +1121,7 @@ export class JsonToSchema {
 
             enum: JsonToSchema.fromEnum(value, context).enum,
             enumName: JsonToSchema.fromString(value.enumName, context.add('enumName')) as any,
+            tableColumns: JsonToSchema.fromTableColumns(value, context),
             availableOptions: JsonToSchema.fromAvailableOptions(value, context).availableOptions,
             remoteLink: JsonToSchema.fromEnum(value, context).link,
 
