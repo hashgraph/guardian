@@ -26,15 +26,15 @@ permissions:
   checks: write        # required by publish-unit-test-result-action
 
 concurrency:
-  group: e2e-tests-${{ github.ref }}
+  group: e2e-tests-${{ github.event_name }}-${{ github.ref }}
   # Superseded pushes are pointless; a nightly or a hand-triggered run is not.
   cancel-in-progress: ${{ github.event_name == 'push' }}
 
 jobs:
   buildAndTest:
-    name: Build and Test
+    name: Build and test
     runs-on: guardian-linux-medium
-    timeout-minutes: 240
+    timeout-minutes: 60
     env:
       # .yarnrc.yml does not set enableGlobalCache and Yarn 4 defaults it to true,
       # which puts the cache in ~/.yarn/berry/cache. Forcing it off keeps the cache in
