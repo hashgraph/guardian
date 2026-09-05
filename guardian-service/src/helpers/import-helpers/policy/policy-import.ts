@@ -612,70 +612,6 @@ export class PolicyImport {
     }
 
     /**
-     * The caller's instruction for one binding.
-     *
-     * `templateId` on a detach entry names the binding to detach; on any other entry
-     * it names the local template to bind to instead. Those readings coincide in the
-     * ordinary case, so match on the id first and fall back to position, which is
-     * what a single-binding file (and every file written before this change) relies
-     * on.
-     */
-    private mapSchemaTemplateMetadata(
-        metadata: PolicyToolMetadata | null | undefined,
-        bindings: any[]
-    ): any[] {
-        const result: any[] = new Array(bindings.length).fill(undefined);
-        const entries = metadata?.schemaTemplates;
-        if (!entries?.length) {
-            return result;
-        }
-
-        // An entry that names a binding claims it, wherever it sits in the list.
-        const claimed = new Set<number>();
-        bindings.forEach((binding, index) => {
-            const entryIndex = entries.findIndex((entry, position) =>
-                !claimed.has(position) &&
-                entry?.templateId &&
-                entry.templateId === binding?.templateId
-            );
-            if (entryIndex >= 0) {
-                result[index] = entries[entryIndex];
-                claimed.add(entryIndex);
-            }
-        });
-
-        /*
-         * Whatever is left lines up by position, which is what a single-binding file
-         * relies on. An entry naming some other binding is not up for grabs even if
-         * that binding was never claimed above - two entries can name the same
-         * binding (a duplicate templateId, or a preview override sent twice), which
-         * leaves one of them unclaimed by the id-match pass above while still naming
-         * somebody. Handing it out by position anyway would apply someone else's
-         * detach/re-point to this binding instead. The DTO does not enforce
-         * uniqueness on metadata.schemaTemplates, so this is reachable from the
-         * import API even though the current single-override preview UI never
-         * constructs it.
-         */
-        bindings.forEach((_, index) => {
-            if (result[index] || claimed.has(index)) {
-                return;
-            }
-            const entry = entries[index];
-            if (!entry) {
-                return;
-            }
-            const namesAnotherBinding = entry.templateId &&
-                bindings.some((binding) => binding?.templateId === entry.templateId);
-            if (!namesAnotherBinding) {
-                result[index] = entry;
-                claimed.add(index);
-            }
-        });
-
-        return result;
-    }
-
-    /**
      * Resolve every binding independently, keyed by the template id the file was
      * exported with. A template that cannot be resolved is left out rather than
      * failing the whole import: the policy keeps the templates that did resolve, and
@@ -700,15 +636,14 @@ export class PolicyImport {
         this.schemaTemplates = new Map<string, SchemaTemplate>();
 
         const bindings = policy.schemaTemplates || [];
-        const overrides = this.mapSchemaTemplateMetadata(metadata, bindings);
         const sourceIdByLocalTemplateId = new Map<string, string>();
         for (let index = 0; index < bindings.length; index++) {
             const binding = bindings[index];
-            const sourceTemplateId = binding?.templateId;
-            if (!sourceTemplateId) {
+            if (!binding?.templateId) {
                 continue;
             }
-            const override = overrides[index];
+            const sourceTemplateId = String(binding.templateId);
+            const override = metadata?.schemaTemplates?.[sourceTemplateId];
             if (override?.detach) {
                 continue;
             }
@@ -718,15 +653,15 @@ export class PolicyImport {
             }
             const localTemplateId = String(template.id);
             const conflictingSourceId = sourceIdByLocalTemplateId.get(localTemplateId);
-            if (conflictingSourceId && conflictingSourceId !== String(sourceTemplateId)) {
+            if (conflictingSourceId && conflictingSourceId !== sourceTemplateId) {
                 throw new Error(
                     `Schema templates "${conflictingSourceId}" and "${sourceTemplateId}" both resolve to ` +
                     `the same local template "${localTemplateId}". Resolve the collision in the import ` +
                     'preview before importing.'
                 );
             }
-            sourceIdByLocalTemplateId.set(localTemplateId, String(sourceTemplateId));
-            this.schemaTemplates.set(String(sourceTemplateId), template);
+            sourceIdByLocalTemplateId.set(localTemplateId, sourceTemplateId);
+            this.schemaTemplates.set(sourceTemplateId, template);
         }
 
         step.complete();
@@ -814,17 +749,16 @@ export class PolicyImport {
                 .map((templateId) => String(templateId))
         );
 
-        const overrides = this.mapSchemaTemplateMetadata(metadata, bindings);
         const dropped: string[] = [];
         for (let index = 0; index < bindings.length; index++) {
             const binding = bindings[index];
-            const templateId = binding?.templateId;
-            if (!templateId) {
+            if (!binding?.templateId) {
                 continue;
             }
-            const override = overrides[index];
-            if (override?.detach || !snapshotTemplateIds.has(String(templateId))) {
-                dropped.push(String(templateId));
+            const templateId = String(binding.templateId);
+            const override = metadata?.schemaTemplates?.[templateId];
+            if (override?.detach || !snapshotTemplateIds.has(templateId)) {
+                dropped.push(templateId);
             }
         }
         return dropped;

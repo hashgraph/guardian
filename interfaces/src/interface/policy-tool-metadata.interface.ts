@@ -7,13 +7,16 @@ export interface PolicyToolMetadata {
      */
     tools?: { [key: string]: string };
     /**
-     * Schema template import behavior, one entry per applied template.
+     * Schema template import behavior, keyed by the source template id the
+     * binding was exported with - same shape as `tools`, keyed by messageId.
      */
     schemaTemplates?: {
-        detach?: boolean;
-        templateId?: string;
-        templateMessageId?: string;
-    }[];
+        [sourceTemplateId: string]: {
+            detach?: boolean;
+            templateId?: string;
+            templateMessageId?: string;
+        };
+    };
     /**
      * Copy recorded steps flag
      */

@@ -2656,9 +2656,10 @@ export class Guardians extends NatsService {
     public async previewSchemaTemplateUpdate(
         templateId: string,
         policyId: string,
-        owner: IOwner
+        owner: IOwner,
+        targetTemplateId?: string
     ): Promise<ISchemaTemplateUpdatePreview> {
-        return await this.sendMessage(MessageAPI.PREVIEW_SCHEMA_TEMPLATE_UPDATE, { templateId, policyId, owner });
+        return await this.sendMessage(MessageAPI.PREVIEW_SCHEMA_TEMPLATE_UPDATE, { templateId, policyId, owner, targetTemplateId });
     }
 
     /**

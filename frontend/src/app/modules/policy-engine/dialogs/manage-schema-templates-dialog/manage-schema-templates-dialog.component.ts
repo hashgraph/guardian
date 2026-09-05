@@ -138,22 +138,54 @@ export class ManageSchemaTemplatesDialog implements OnInit, OnDestroy {
     }
 
     public openApply(template: SchemaTemplateGridItem): void {
-        this.openApplyOrUpdateDialog('apply', this.getTemplateId(template));
+        const templateId = this.getTemplateId(template);
+        if (!templateId) {
+            return;
+        }
+        const templateName = template.name || 'schema template';
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Apply Schema Template',
+                text: `Apply "${templateName}" to this policy?`,
+                buttons: [{
+                    name: 'Cancel',
+                    class: 'secondary'
+                }, {
+                    name: 'Apply',
+                    class: 'primary'
+                }]
+            },
+        })!;
+        dialogRef.onClose.pipe(takeUntil(this.destroy$)).subscribe((result) => {
+            if (result !== 'Apply') {
+                return;
+            }
+            this.templatesService.pushApply(templateId, this.policy.id).subscribe({
+                next: (task) => {
+                    if (!task?.taskId) {
+                        return;
+                    }
+                    this.ref.close(task);
+                },
+                error: ({ message }) => {
+                    this.toastService.error(message);
+                }
+            });
+        });
     }
 
     public openUpdate(row: AppliedTemplateRow): void {
-        this.openApplyOrUpdateDialog('update', row.templateId);
-    }
-
-    private openApplyOrUpdateDialog(mode: 'apply' | 'update', templateId: string | null): void {
         const dialogRef = this.dialogService.open(ApplySchemaTemplateDialog, {
             showHeader: false,
-            width: mode === 'update' ? '820px' : '720px',
+            width: '820px',
             styleClass: 'guardian-dialog',
             data: {
                 policy: this.policy,
-                mode,
-                templateId
+                mode: 'update',
+                templateId: row.templateId
             }
         })!;
         dialogRef.onClose.pipe(takeUntil(this.destroy$)).subscribe((task: any) => {

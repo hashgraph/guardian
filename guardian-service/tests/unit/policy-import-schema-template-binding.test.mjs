@@ -78,7 +78,7 @@ describe('PolicyImport - schema template binding', () => {
 
             const service = makeImport();
             await service.resolveSchemaTemplates(
-                { schemaTemplates: [{ detach: true }] },
+                { schemaTemplates: { 'template-1': { detach: true } } },
                 { schemaTemplates: [{ templateId: 'template-1' }] },
                 owner, step(), null
             );
@@ -109,7 +109,7 @@ describe('PolicyImport - schema template binding', () => {
         it('drops on an explicit detach even when a snapshot exists', () => {
             assert.deepEqual(
                 makeImport().schemaTemplateBindingsToDrop(
-                    bound, snapshot, { schemaTemplates: [{ detach: true }] }
+                    bound, snapshot, { schemaTemplates: { 'template-1': { detach: true } } }
                 ),
                 ['template-1']
             );

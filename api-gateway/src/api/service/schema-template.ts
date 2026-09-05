@@ -783,6 +783,12 @@ export class SchemaTemplatesApi {
         type: String,
         required: true
     })
+    @ApiQuery({
+        name: 'targetTemplateId',
+        type: String,
+        required: false,
+        description: 'Preview switching the binding to a different template instead of refreshing the same one.'
+    })
     @ApiOkResponse({
         description: 'Schema template update preview.',
     })
@@ -795,11 +801,12 @@ export class SchemaTemplatesApi {
     async previewSchemaTemplateUpdate(
         @AuthUser() user: IAuthUser,
         @Param('templateId') templateId: string,
-        @Param('policyId') policyId: string
+        @Param('policyId') policyId: string,
+        @Query('targetTemplateId') targetTemplateId?: string
     ): Promise<ISchemaTemplateUpdatePreview> {
         try {
             const guardians = new Guardians();
-            return await guardians.previewSchemaTemplateUpdate(templateId, policyId, new EntityOwner(user));
+            return await guardians.previewSchemaTemplateUpdate(templateId, policyId, new EntityOwner(user), targetTemplateId);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

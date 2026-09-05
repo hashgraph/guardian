@@ -52,6 +52,7 @@ export interface SchemaTemplateUpdateOptions {
         conflictId: string;
         action: SchemaTemplateUpdateResolutionAction;
     }>;
+    targetTemplateId?: string;
 }
 
 export interface SchemaTemplateDetachOptions {
@@ -159,8 +160,12 @@ export class SchemaTemplatesService {
         return this.http.post<TaskResponse>(`${this.url}/${templateId}/policies/${policyId}/push/apply`, {});
     }
 
-    public previewUpdate(templateId: string, policyId: string): Observable<SchemaTemplateUpdatePreview> {
-        return this.http.get<SchemaTemplateUpdatePreview>(`${this.url}/${templateId}/policies/${policyId}/update/preview`);
+    public previewUpdate(templateId: string, policyId: string, targetTemplateId?: string): Observable<SchemaTemplateUpdatePreview> {
+        let params = new HttpParams();
+        if (targetTemplateId) {
+            params = params.set('targetTemplateId', targetTemplateId);
+        }
+        return this.http.get<SchemaTemplateUpdatePreview>(`${this.url}/${templateId}/policies/${policyId}/update/preview`, { params });
     }
 
     public pushUpdate(templateId: string, policyId: string, options: SchemaTemplateUpdateOptions): Observable<TaskResponse> {

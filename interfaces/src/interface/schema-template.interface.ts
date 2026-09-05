@@ -126,6 +126,8 @@ export interface ISchemaTemplateUpdateResolution {
 
 export interface ISchemaTemplateUpdateOptions {
     resolutions?: ISchemaTemplateUpdateResolution[];
+    /** Switch the binding to a different template instead of refreshing the same one. */
+    targetTemplateId?: string;
 }
 
 export interface ISchemaTemplateDetachOptions {

@@ -617,6 +617,207 @@ describe('multi-template: UPDATE_APPLIED_SCHEMA_TEMPLATE', () => {
 });
 
 /*
+ * Update was previously always a same-template refresh: `templateId` named both the
+ * binding being touched and the template supplying the "next" state, and they could
+ * never diverge. Adding a `targetTemplateId` lets a user pick a different template as
+ * the new target while `templateId` still names which binding to replace - a "swap"
+ * rather than a "refresh".
+ */
+describe('multi-template: UPDATE_APPLIED_SCHEMA_TEMPLATE - switching to a different template', () => {
+    let handlers;
+
+    beforeEach(async () => {
+        handlers = await register(schemaTemplatesAPI, silentLogger());
+    });
+
+    afterEach(() => restoreStubs());
+
+    it('previews a swap against the target template, not the currently bound one', async () => {
+        const boundPolicy = policy({
+            schemaTemplates: [binding('template-1', { schemaMap: { 'tsid-template-1': 'policy-schema-1' } })],
+        });
+        const previousSnapshotSchemas = buildTemplateSchemasSnapshot(
+            [templateSchema('template-1', 'Site')]
+        ).schemas;
+
+        stub(DatabaseServer, 'getSchemaTemplateById', async (id) => template(id));
+        stub(DatabaseServer, 'getPolicyById', async () => boundPolicy);
+        stub(DatabaseServer, 'getSchemas', async (filter) => {
+            if (filter.category === SchemaCategory.TEMPLATE) {
+                return filter.templateId === 'template-2'
+                    ? [templateSchema('template-2', 'Location')]
+                    : [templateSchema('template-1', 'Site')];
+            }
+            return [policySchema('policy-schema-1', 'Site', 'template-1')];
+        });
+        stub(DatabaseServer, 'getSchemaTemplateSnapshotById', async () => ({
+            id: 'snap-existing',
+            config: { schemas: {} },
+            schemas: { schemas: previousSnapshotSchemas },
+        }));
+
+        const response = await callHandler(handlers, MessageAPI.PREVIEW_SCHEMA_TEMPLATE_UPDATE, {
+            templateId: 'template-1',
+            policyId: 'policy-1',
+            owner,
+            targetTemplateId: 'template-2',
+        });
+
+        assert.equal(ok(response), true, response && response.error);
+        assert.equal(response.body.templateId, 'template-2',
+            'the preview must describe what the binding would become, not what it already is');
+        assert.equal(response.body.previousTemplateId, 'template-1');
+        const schemaAdd = response.body.changes.find((change) => change.type === 'SCHEMA_ADD');
+        assert.ok(schemaAdd, 'template-2 has an entirely different schema, so it must show as added');
+        const schemaRemove = response.body.changes.find((change) => change.type === 'SCHEMA_REMOVE');
+        assert.ok(schemaRemove,
+            'template-1\'s own schema is gone from the target and must show as removed, not silently dropped - ' +
+            'the policy schema is keyed by templateId=template-1, and looking it up under the target\'s id would find nothing');
+        assert.equal(schemaRemove.schemaName, 'Site');
+    });
+
+    it('rejects switching to a template already applied via another binding', async () => {
+        const boundPolicy = policy({
+            schemaTemplates: [
+                binding('template-1', { schemaMap: { 'tsid-template-1': 'policy-schema-1' } }),
+                binding('template-2', { schemaMap: { 'tsid-template-2': 'policy-schema-2' } }),
+            ],
+        });
+
+        stub(DatabaseServer, 'getSchemaTemplateById', async (id) => template(id));
+        stub(DatabaseServer, 'getPolicyById', async () => boundPolicy);
+
+        const response = await callHandler(handlers, MessageAPI.PREVIEW_SCHEMA_TEMPLATE_UPDATE, {
+            templateId: 'template-1',
+            policyId: 'policy-1',
+            owner,
+            targetTemplateId: 'template-2',
+        });
+
+        assert.equal(ok(response), false,
+            'template-2 is already bound elsewhere on this policy - switching to it would create a second binding for the same template');
+        assert.match(response.error, /already applied/i);
+    });
+
+    /*
+     * The most common real reason to switch targets: publishing a new version of a
+     * template makes a new template row with its own schemas, so a schema that is
+     * name-for-name and content-for-content "the same" as before still gets a new
+     * templateSchemaId and cannot be matched by id - it goes through SCHEMA_ADD for
+     * the new one and SCHEMA_REMOVE for the old one, same as a swap to a genuinely
+     * different template. Collision validation ran before the old schema's removal
+     * was accounted for, so the incoming schema was rejected as colliding with the
+     * very schema it was about to replace - exactly the failure a real "update to
+     * the next version" hits immediately, since the two versions almost always share
+     * schema names by design.
+     */
+    it('does not block the incoming schema on the name the outgoing one is about to give up', async () => {
+        const boundPolicy = policy({
+            schemaTemplates: [binding('template-1', { schemaMap: { 'tsid-template-1': 'policy-schema-1' } })],
+        });
+        const policySchemas = [policySchema('policy-schema-1', 'Project Description', 'template-1')];
+        const previousSnapshotSchemas = buildTemplateSchemasSnapshot(
+            [templateSchema('template-1', 'Project Description')]
+        ).schemas;
+
+        const fakeDb = {
+            getSchemaTemplateById: async (id) => template(id),
+            getPolicyById: async () => boundPolicy,
+            getSchemas: async (filter) => (filter.category === SchemaCategory.TEMPLATE
+                ? [templateSchema('template-2', 'Project Description')]
+                : policySchemas),
+            getSchemasCount: async () => 0,
+            getSchemaTemplateSnapshotById: async () => ({
+                id: 'snap-existing',
+                config: { schemas: {} },
+                schemas: { schemas: previousSnapshotSchemas },
+            }),
+            updateSchema: async (_id, item) => item,
+            saveSchemaTemplateSnapshot: async (snapshot) => ({ ...snapshot, id: 'snap-new' }),
+            removeSchemaTemplateSnapshot: async () => {},
+            updatePolicy: async (item) => item,
+        };
+
+        const created = [];
+        const deleted = [];
+        const { handlers: isolated } = await loadAPI(
+            '../dist/api/schema-template.service.js',
+            'schemaTemplatesAPI',
+            {
+                '@guardian/common': {
+                    DatabaseServer: fakeDb,
+                    NewNotifier: Object.assign(() => {}, { empty: () => ({}) }),
+                },
+                [importHelpersPath]: {
+                    createSchemaAndArtifacts: async (_category, copy) => {
+                        created.push(copy);
+                        return { ...copy, id: 'policy-schema-2' };
+                    },
+                    deleteSchema: async (id) => { deleted.push(id); },
+                    SchemaImportExportHelper: class {},
+                    updateSchemaDefs: async () => {},
+                },
+            }
+        );
+
+        const preview = await isolated[MessageAPI.PREVIEW_SCHEMA_TEMPLATE_UPDATE]({
+            templateId: 'template-1',
+            policyId: 'policy-1',
+            owner,
+            targetTemplateId: 'template-2',
+        });
+        assert.equal(ok(preview), true, preview && preview.error);
+        const conflict = preview.body.conflicts.find((item) => item.templateSchemaId === 'tsid-template-1');
+        assert.ok(conflict, 'the outgoing schema must still surface a resolvable conflict');
+
+        const response = await isolated[MessageAPI.UPDATE_APPLIED_SCHEMA_TEMPLATE]({
+            templateId: 'template-1',
+            policyId: 'policy-1',
+            owner,
+            options: {
+                targetTemplateId: 'template-2',
+                resolutions: [{ conflictId: conflict.id, action: 'REMOVE_FROM_POLICY' }],
+            },
+        });
+
+        assert.equal(ok(response), true,
+            response && response.error);
+        assert.deepEqual(created.map((copy) => copy.name), ['Project Description'],
+            'the new template\'s schema must still be copied in under its real name');
+        assert.deepEqual(deleted, ['policy-schema-1'],
+            'the outgoing schema must actually be removed once resolved that way');
+    });
+});
+
+/*
+ * @context/type/id are the fixed VC envelope Guardian always generates for a
+ * VC-entity schema, not template-authored content. Their templateFieldId
+ * bookkeeping is not guaranteed to stay in sync with the live template between an
+ * apply and a later preview (observed via export -> import -> update preview),
+ * which showed up as a spurious "removed" diff nothing could actually resolve -
+ * re-applying does not touch them, since they are regenerated unconditionally.
+ * They must never be captured as comparable snapshot fields in the first place.
+ */
+describe('multi-template: snapshot excludes the VC envelope from comparable fields', () => {
+    it('does not include @context, type, or id in a template snapshot', () => {
+        const schemaWithEnvelope = templateSchema('template-1', 'Site');
+        schemaWithEnvelope.entity = 'VC';
+        schemaWithEnvelope.document.properties = {
+            '@context': { readOnly: true, oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }] },
+            type: { readOnly: true, oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }] },
+            id: { type: 'string' },
+            name: { type: 'string', title: 'Name' },
+        };
+
+        const snapshot = buildTemplateSchemasSnapshot([schemaWithEnvelope]).schemas['tsid-template-1'];
+        const fieldNames = snapshot.fields.map((field) => field.name);
+
+        assert.deepEqual(fieldNames, ['name'],
+            'the VC envelope must never be captured as template content, only the real field');
+    });
+});
+
+/*
  * The collision guard added for step 8 originally only covered SCHEMA_ADD (a
  * newly-copied schema). preparePolicySchemaUpdate can also rename an
  * already-mapped policy schema in place, when the template schema's own name

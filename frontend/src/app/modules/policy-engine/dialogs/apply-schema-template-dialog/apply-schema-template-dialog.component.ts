@@ -53,7 +53,13 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
     });
     private readonly destroy$ = new Subject<void>();
 
-    private readonly preselectTemplateId: string | null = null;
+    /**
+     * The binding being touched, in update mode - fixed for the life of the dialog.
+     * `selectedTemplateId` is the target and can be changed freely: picking one
+     * other than this compares against, and switches to, a different template
+     * entirely rather than just refreshing this one.
+     */
+    private readonly baseTemplateId: string | null = null;
     private preselectionApplied = false;
 
     constructor(
@@ -63,7 +69,7 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
     ) {
         this.policy = this.config.data?.policy;
         this.mode = this.config.data?.mode === 'update' ? 'update' : 'apply';
-        this.preselectTemplateId = this.config.data?.templateId || null;
+        this.baseTemplateId = this.config.data?.templateId || null;
     }
 
     private getAppliedTemplateIds(): Set<string> {
@@ -108,17 +114,23 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
                     }
                     const templateId = this.getTemplateId(template);
                     const isApplied = !!templateId && appliedTemplateIds.has(templateId);
-                    // Apply can only target a template not yet bound to this policy;
-                    // update can only target one that already is.
-                    return this.mode === 'update' ? isApplied : !isApplied;
+                    // Apply can only target a template not yet bound to this policy.
+                    // Update can target the template already bound here (the common
+                    // "refresh to the latest state" case) or any template not bound to
+                    // some *other* binding - picking a different one is a swap, not a
+                    // refresh, and previews/applies as such.
+                    if (this.mode === 'update') {
+                        return templateId === this.baseTemplateId || !isApplied;
+                    }
+                    return !isApplied;
                 });
                 this.loading = false;
                 // Only ever auto-select once, on the initial load: re-applying it on every
                 // search debounce would silently override a selection the user made by hand.
-                if (this.preselectTemplateId && !this.preselectionApplied) {
+                if (this.baseTemplateId && !this.preselectionApplied) {
                     this.preselectionApplied = true;
                     const preselected = this.list.find(
-                        (template) => this.getTemplateId(template) === this.preselectTemplateId
+                        (template) => this.getTemplateId(template) === this.baseTemplateId
                     );
                     if (preselected) {
                         this.selectTemplate(preselected);
@@ -141,9 +153,10 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
         }
     }
 
-    public loadUpdatePreview(templateId: string): void {
+    /** @param targetTemplateId the template to compare/switch to - the base (this dialog's own binding) stays fixed. */
+    public loadUpdatePreview(targetTemplateId: string): void {
         this.previewLoading = true;
-        this.templatesService.previewUpdate(templateId, this.policy.id)
+        this.templatesService.previewUpdate(this.baseTemplateId!, this.policy.id, targetTemplateId)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (preview) => {
@@ -168,8 +181,9 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
         }
         this.applying = true;
         const request = this.mode === 'update'
-            ? this.templatesService.pushUpdate(this.selectedTemplateId, this.policy.id, {
-                resolutions: Object.entries(this.resolutions).map(([conflictId, action]) => ({ conflictId, action }))
+            ? this.templatesService.pushUpdate(this.baseTemplateId!, this.policy.id, {
+                resolutions: Object.entries(this.resolutions).map(([conflictId, action]) => ({ conflictId, action })),
+                targetTemplateId: this.selectedTemplateId
             })
             : this.templatesService.pushApply(this.selectedTemplateId, this.policy.id);
         request.subscribe({
@@ -201,7 +215,7 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
 
     public get emptyListHeader(): string {
         return this.mode === 'update'
-            ? 'This policy has no applied schema templates to update'
+            ? 'There are no schema templates available to update to'
             : 'There are no schema templates left to apply';
     }
 

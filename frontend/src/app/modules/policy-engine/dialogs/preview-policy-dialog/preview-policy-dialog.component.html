@@ -215,39 +215,39 @@
               </form>
             </div>
           }
-          @if (schemaTemplate) {
+          @for (row of schemaTemplateRows; track row.templateId) {
             <div class="schema-template-panel">
               <div class="schema-template-panel__header">
                 <div>
                   <div class="schema-template-panel__eyebrow">Schema Template</div>
                   <div class="schema-template-panel__title">
-                    {{ schemaTemplate.templateName || 'N/A' }}
-                    @if (schemaTemplate.templateVersion) {
-                      <span>v{{schemaTemplate.templateVersion}}</span>
+                    {{ row.templateName || 'N/A' }}
+                    @if (row.templateVersion) {
+                      <span>v{{row.templateVersion}}</span>
                     }
                   </div>
                 </div>
                 <div class="schema-template-panel__badges">
-                  @if (schemaTemplate.templateStatus) {
-                    <span class="schema-template-badge">{{schemaTemplate.templateStatus}}</span>
+                  @if (row.templateStatus) {
+                    <span class="schema-template-badge">{{row.templateStatus}}</span>
                   }
-                  @if (schemaTemplateStatus==='local') {
+                  @if (row.status==='local') {
                     <span class="schema-template-badge schema-template-badge--success">Local</span>
                   }
-                  @if (schemaTemplateStatus==='network') {
+                  @if (row.status==='network') {
                     <span class="schema-template-badge schema-template-badge--success">Network</span>
                   }
-                  @if (schemaTemplateStatus==='invalid' && !detachSchemaTemplate) {
+                  @if (row.status==='invalid' && !row.detach) {
                     <span class="schema-template-badge schema-template-badge--warning">Needs selection</span>
                   }
                 </div>
               </div>
 
-              <label class="schema-template-option" for="detach-schema-template">
+              <label class="schema-template-option" for="detach-schema-template-{{row.templateId}}">
                 <p-checkbox
-                  [(ngModel)]="detachSchemaTemplate"
-                  (onChange)="onDetachSchemaTemplateChange()"
-                  inputId="detach-schema-template"
+                  [(ngModel)]="row.detach"
+                  (onChange)="onDetachSchemaTemplateChange(row)"
+                  inputId="detach-schema-template-{{row.templateId}}"
                   binary="true"
                   tabindex="-1"
                 ></p-checkbox>
@@ -258,26 +258,26 @@
               </label>
 
               <div class="schema-template-message">
-                <label for="schema-template-message-id">Template message ID</label>
+                <label for="schema-template-message-id-{{row.templateId}}">Template message ID</label>
                 <div class="schema-template-message__control">
                   <input
-                    id="schema-template-message-id"
+                    id="schema-template-message-id-{{row.templateId}}"
                     class="input"
                     type="text"
                     pInputText
-                    [(ngModel)]="schemaTemplateMessageId"
-                    (change)="onSchemaTemplateMessageChange($event)"
-                    [disabled]="detachSchemaTemplate"
-                    [attr.status]="schemaTemplateStatus === 'invalid' ? 'invalid' : ''"
+                    [(ngModel)]="row.messageId"
+                    (change)="onSchemaTemplateMessageChange(row, $event)"
+                    [disabled]="row.detach"
+                    [attr.status]="row.status === 'invalid' ? 'invalid' : ''"
                     maxlength="20"
                     tabindex="-1">
                   <div class="schema-template-message__actions">
-                    @if (schemaTemplateStatus==='load') {
+                    @if (row.status==='load') {
                       <div class="preloader-image"></div>
                     }
-                    @if (schemaTemplateStatus==='local' || schemaTemplateStatus==='network') {
+                    @if (row.status==='local' || row.status==='network') {
                       <div
-                        [pTooltip]="schemaTemplateStatus === 'local' ? 'Template found locally.' : 'Template found in Hedera/IPFS and will be imported.'"
+                        [pTooltip]="row.status === 'local' ? 'Template found locally.' : 'Template found in Hedera/IPFS and will be imported.'"
                         [tooltipOptions]="{showDelay: 300}"
                         tooltipPosition="top">
                         <svg-icon
@@ -287,7 +287,7 @@
                         </svg-icon>
                       </div>
                     }
-                    @if (schemaTemplateStatus==='invalid' && !detachSchemaTemplate) {
+                    @if (row.status==='invalid' && !row.detach) {
                       <div
                         pTooltip="Template is inaccessible. Select a local template or detach restrictions."
                         [tooltipOptions]="{showDelay: 300}"
@@ -301,8 +301,8 @@
                     }
                     <div
                       class="guardian-icon-button"
-                      [class.guardian-disabled]="detachSchemaTemplate"
-                      (click)="!detachSchemaTemplate && onSchemaTemplateSearch()">
+                      [class.guardian-disabled]="row.detach"
+                      (click)="!row.detach && onSchemaTemplateSearch(row)">
                       <svg-icon
                         class="icon-btn svg-icon"
                         src="/assets/images/icons/search.svg"
@@ -312,15 +312,15 @@
                 </div>
               </div>
 
-              @if (selectedSchemaTemplate) {
+              @if (row.selectedOverride) {
                 <div class="schema-template-selected">
-                  Selected local template: <strong>{{selectedSchemaTemplate.name}}</strong>
-                  @if (selectedSchemaTemplate.version) {
-                    <span>v{{selectedSchemaTemplate.version}}</span>
+                  Selected local template: <strong>{{row.selectedOverride.name}}</strong>
+                  @if (row.selectedOverride.version) {
+                    <span>v{{row.selectedOverride.version}}</span>
                   }
                 </div>
               }
-              @if (detachSchemaTemplate) {
+              @if (row.detach) {
                 <div class="schema-template-warning">
                   Imported schemas will remain in the policy. Template locks and field restrictions will be removed.
                 </div>

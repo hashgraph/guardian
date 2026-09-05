@@ -714,6 +714,19 @@ function toSnapshotField(
     return snapshotField;
 }
 
+/*
+ * `@context`/`type`/`id` are the fixed VC envelope Guardian always generates for a
+ * VC-entity schema, not template-authored content. `includeSystemProperties: true`
+ * below is needed to catch other readOnly/locked fields, but it also pulls these
+ * three in - and unlike real fields, their `templateFieldId` bookkeeping is not
+ * guaranteed to stay in sync with the live template between an apply and a later
+ * preview, which showed up as a spurious "removed" diff a user could never actually
+ * resolve (re-applying does not touch them - they are regenerated unconditionally).
+ * Excluding them by name keeps the diff to fields a template author can actually add,
+ * change, or remove.
+ */
+const SYSTEM_ENVELOPE_FIELD_NAMES = new Set(['@context', 'type', 'id']);
+
 function toSnapshotSchema(
     schema: Schema,
     templateSchemaByIri: Map<string, string>
@@ -725,7 +738,9 @@ function toSnapshotSchema(
         description: schema.description,
         entity: schema.entity,
         version: schema.version,
-        fields: (parsed.fields || []).map((field) => toSnapshotField(field, templateSchemaByIri)),
+        fields: (parsed.fields || [])
+            .filter((field) => !SYSTEM_ENVELOPE_FIELD_NAMES.has(field?.name))
+            .map((field) => toSnapshotField(field, templateSchemaByIri)),
         conditions: SchemaHelper.cloneSchemaRuntimeValue(parsed.conditions || [])
     };
 }
@@ -1132,9 +1147,14 @@ async function loadSchemaTemplateUpdateContext(
     policyId: string,
     owner: IOwner,
     // false when the caller is previewing rather than updating
-    persist: boolean = false
+    persist: boolean = false,
+    // absent: refresh the binding against its own template's current state.
+    // present: swap the binding to a different template - `templateId` still names
+    // which binding to replace, `targetTemplateId` names what it becomes.
+    targetTemplateId?: string
 ) {
-    const template = await DatabaseServer.getSchemaTemplateById(templateId);
+    const resolvedTemplateId = targetTemplateId || templateId;
+    const template = await DatabaseServer.getSchemaTemplateById(resolvedTemplateId);
     if (!template || (template.status !== ModuleStatus.PUBLISHED && template.owner !== owner.owner)) {
         throw new Error('Invalid schema template');
     }
@@ -1158,6 +1178,9 @@ async function loadSchemaTemplateUpdateContext(
     }
     if (!binding.snapshotId) {
         throw new Error('Policy has no applied schema template snapshot');
+    }
+    if (resolvedTemplateId !== templateId && policyUsesTemplate(policy, template.id)) {
+        throw new Error('Schema template is already applied to policy');
     }
 
     const snapshot = await DatabaseServer.getSchemaTemplateSnapshotById(binding.snapshotId);
@@ -1191,7 +1214,11 @@ async function loadSchemaTemplateUpdateContext(
         templateSchemas: templateSchemas as Schema[],
         nextSchemas,
         policySchemas: policySchemas as Schema[],
-        policySchemaByTemplateId: getPolicySchemaByTemplateId(policySchemas as Schema[], binding.schemaMap, template.id)
+        // Keyed by what the policy's schemas are currently marked with (the binding
+        // being replaced), not by the target - those diverge once update switches to
+        // a different template, and this map is how the diff finds what already
+        // exists in the policy to compare against or remove.
+        policySchemaByTemplateId: getPolicySchemaByTemplateId(policySchemas as Schema[], binding.schemaMap, binding.templateId)
     };
 }
 
@@ -1375,11 +1402,12 @@ function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<ReturnType
 async function previewSchemaTemplateUpdate(
     templateId: string,
     policyId: string,
-    owner: IOwner
+    owner: IOwner,
+    targetTemplateId?: string
 ): Promise<ISchemaTemplateUpdatePreview> {
     return buildSchemaTemplateUpdatePreviewFromContext(
         // preview is a read: it must not persist normalization ids
-        await loadSchemaTemplateUpdateContext(templateId, policyId, owner, false)
+        await loadSchemaTemplateUpdateContext(templateId, policyId, owner, false, targetTemplateId)
     );
 }
 
@@ -1457,7 +1485,7 @@ async function updateAppliedSchemaTemplate(
     logger: PinoLogger,
     options?: ISchemaTemplateUpdateOptions
 ): Promise<any> {
-    const context = await loadSchemaTemplateUpdateContext(templateId, policyId, owner, true);
+    const context = await loadSchemaTemplateUpdateContext(templateId, policyId, owner, true, options?.targetTemplateId);
     const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
     const resolutions = validateSchemaTemplateUpdateResolutions(preview, options);
     const nextConfig = normalizeTemplateConfigKeys(context.template.config, context.templateSchemas);
@@ -1539,6 +1567,31 @@ async function updateAppliedSchemaTemplate(
             if (targetId) {
                 vacatedSchemaIds.add(targetId);
             }
+        }
+    }
+    /*
+     * A schema whose templateSchemaId no longer exists in the target (typically
+     * because the target is a different template - a genuine swap, or a newer
+     * version of the same template whose schemas were republished under new
+     * templateSchemaIds) is not renamed in place; it goes through the
+     * SCHEMA_REMOVE/conflict path below instead. Its name is not actually freed up
+     * unless the caller chose to remove it rather than keep it as a plain custom
+     * schema - keeping it leaves it occupying the name, so only a resolved removal
+     * excludes it here.
+     */
+    for (const conflict of preview.conflicts) {
+        if (conflict.type !== SchemaTemplateUpdateConflictType.SCHEMA_REMOVED_WITH_POLICY_USAGE) {
+            continue;
+        }
+        if (resolutions.get(conflict.id) !== SchemaTemplateUpdateResolutionAction.REMOVE_FROM_POLICY) {
+            continue;
+        }
+        const removedSchema = conflict.templateSchemaId
+            ? context.policySchemaByTemplateId.get(conflict.templateSchemaId)
+            : undefined;
+        const removedSchemaId = String(removedSchema?.id || (removedSchema as any)?._id || '');
+        if (removedSchemaId) {
+            vacatedSchemaIds.add(removedSchemaId);
         }
     }
     const schemasToValidate = [...schemasToAdd, ...schemasBeingRenamed];
@@ -1653,7 +1706,10 @@ async function updateAppliedSchemaTemplate(
     // which is invisible with one binding and silently re-points anything still
     // reading a fixed position once there are several.
     const bindings = context.policy.schemaTemplates || [];
-    const index = bindings.findIndex((b) => b.templateId === context.template.id);
+    // The slot being replaced is the binding being updated, not wherever the target
+    // template happens to sit - those diverge as soon as the update switches the
+    // binding to a different template than the one it started with.
+    const index = bindings.findIndex((b) => b.templateId === context.binding.templateId);
     context.policy.schemaTemplates = index < 0
         ? [...bindings, updatedBinding]
         : [...bindings.slice(0, index), updatedBinding, ...bindings.slice(index + 1)];
@@ -2647,11 +2703,12 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
         async (msg: {
             templateId: string,
             policyId: string,
-            owner: IOwner
+            owner: IOwner,
+            targetTemplateId?: string
         }) => {
             try {
-                const { templateId, policyId, owner } = msg;
-                const result = await previewSchemaTemplateUpdate(templateId, policyId, owner);
+                const { templateId, policyId, owner, targetTemplateId } = msg;
+                const result = await previewSchemaTemplateUpdate(templateId, policyId, owner, targetTemplateId);
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
