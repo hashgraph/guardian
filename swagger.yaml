@@ -53078,6 +53078,14 @@ paths:
           in: path
           schema:
             type: string
+        - name: targetTemplateId
+          required: false
+          in: query
+          description: >-
+            Preview switching the binding to a different template instead of
+            refreshing the same one.
+          schema:
+            type: string
       responses:
         '200':
           description: Schema template update preview.
