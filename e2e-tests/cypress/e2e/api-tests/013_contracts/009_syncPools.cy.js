@@ -1,9 +1,11 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import * as Contracts from '../../../support/api/contracts';
 
 context('Contracts', { tags: ['contracts', 'firstPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
+    const contractNameR = 'FirstAPIContractR';
     const UserUsername = Cypress.env('User');
 
     let contractIdR;
@@ -19,16 +21,8 @@ context('Contracts', { tags: ['contracts', 'firstPool', 'all'] }, () => {
 
     before(() => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.ListOfContracts,
-                headers: { authorization },
-                qs: { 'type': 'RETIRE' },
-                timeout: 180000
-            }).then((response) => {
-                expect(response.status).eql(STATUS_CODE.OK);
-                contractIdR = response.body.at(0).id;
-            });
+            Contracts.getContractByDescription(authorization, 'RETIRE', contractNameR)
+                .then((contract) => contractIdR = contract.id);
         });
     });
 

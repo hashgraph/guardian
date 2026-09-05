@@ -1,10 +1,13 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import * as Contracts from '../../../support/api/contracts';
 
 context('Contracts2', { tags: ['contracts', 'firstPool', 'all'] }, () => {
     const SR2Username = Cypress.env('SR2User');
     const UserUsername = Cypress.env('User');
+    const contractNameR = 'FirstAPIContractR';
+    const contractNameW = 'FirstAPIContractW';
 
     let contractIdR; let contractIdW;
 
@@ -17,6 +20,9 @@ context('Contracts2', { tags: ['contracts', 'firstPool', 'all'] }, () => {
         });
     };
 
+    //Deliberately read without a cache-busting parameter: this is the assertion that the
+    //listing cache is dropped when a contract is removed, so busting it here would hide a
+    //regression in the invalidation rather than test it
     const verifyContractDeleted = (token, type, contractId) => {
         return cy.request({
             method: METHOD.GET,
@@ -32,26 +38,12 @@ context('Contracts2', { tags: ['contracts', 'firstPool', 'all'] }, () => {
 
     before(() => {
         Authorization.getAccessToken(SR2Username).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.ListOfContracts,
-                headers: { authorization },
-                qs: { 'type': 'RETIRE' },
-                timeout: 180000
-            }).then((response) => {
-                expect(response.status).eql(STATUS_CODE.OK);
-                contractIdR = response.body.at(0).id;
-            });
-
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.ListOfContracts,
-                headers: { authorization },
-                qs: { 'type': 'WIPE' },
-            }).then((response) => {
-                expect(response.status).eql(STATUS_CODE.OK);
-                contractIdW = response.body.at(0).id;
-            });
+            //The records the import spec created under this registry, not whatever happens to
+            //sit first in the listing: earlier runs leave contracts of both types behind
+            Contracts.getContractByDescription(authorization, 'RETIRE', contractNameR)
+                .then((contract) => contractIdR = contract.id);
+            Contracts.getContractByDescription(authorization, 'WIPE', contractNameW)
+                .then((contract) => contractIdW = contract.id);
         });
     });
 

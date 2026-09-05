@@ -349,15 +349,24 @@ Cypress.Commands.add('getOrCreateIRec4Policy', (username, { publish: shouldPubli
         timeout: 180000,
     }).then((response) => {
         expect(response.status).to.eq(STATUS_CODE.OK);
-        const matches = response.body.filter((policy) => policy?.name === policyName);
-        //Callers that publish want the published copy; callers that need a draft to work on want a
-        //draft, and fall back to whatever is there when the policy has already been published
+        //Guardian keeps policy names unique by appending a timestamp, so every import after the
+        //first is called `iRec_4_<ms>`: the whole family has to be matched, or an imported copy is
+        //invisible to the very lookup that asked for it.
+        //Newest first, because every run that publishes leaves another copy behind and a caller
+        //that has just published one has to get that one back rather than a predecessor.
+        const matches = response.body
+            .filter((policy) => policy?.name === policyName || String(policy?.name).startsWith(`${policyName}_`))
+            .sort((a, b) => String(b.createDate ?? '').localeCompare(String(a.createDate ?? '')));
+        //A caller that publishes takes the published copy, or a draft it can publish itself. A
+        //caller that asked for a draft gets a draft or nothing: handing it a published policy would
+        //let it carry on against a policy whose token can no longer be configured, and fail later
+        //and further away.
         const preferred = shouldPublish
-            ? matches.find((policy) => policy.status === 'PUBLISH')
+            ? (matches.find((policy) => policy.status === 'PUBLISH') ?? matches.at(0))
             : matches.find((policy) => policy.status === 'DRAFT');
         //`null` rather than `undefined`: a `.then()` returning undefined yields the previous
         //subject, which would make the "not found" case look like a hit
-        return cy.wrap(preferred ?? matches.at(0) ?? null, { log: false });
+        return cy.wrap(preferred ?? null, { log: false });
     });
 
     const publish = (authorization, policy) => {

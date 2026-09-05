@@ -2,6 +2,7 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/checkingMethods';
+import * as Contracts from '../../../support/api/contracts';
 
 context('Contracts', { tags: ['contracts', 'firstPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
@@ -11,18 +12,9 @@ context('Contracts', { tags: ['contracts', 'firstPool', 'all'] }, () => {
     const contractNameR = 'FirstAPIContractR';
     const contractNameW = 'FirstAPIContractW';
 
-    const contractsUrl = `${API.ApiServer}${API.ListOfContracts}`;
     const importContractsUrl = `${API.ApiServer}${API.ImportContracts}`;
 
     let contractIdW; let contractIdR;
-
-    const listContractsWithAuth = (authorization, qs = {}) =>
-        cy.request({
-            method: METHOD.GET,
-            url: contractsUrl,
-            headers: { authorization },
-            qs,
-        });
 
     const importContractWithAuth = (authorization, body, opts = {}) =>
         cy.request({
@@ -45,16 +37,15 @@ context('Contracts', { tags: ['contracts', 'firstPool', 'all'] }, () => {
 
     before('Get contract ids for import', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            listContractsWithAuth(authorization, { type: 'WIPE' }).then((response) => {
-                response.body.forEach((element) => {
-                    if (element.description === contractNameW) {contractIdW = element.contractId;}
-                });
-            });
-            listContractsWithAuth(authorization, { type: 'RETIRE' }).then((response) => {
-                response.body.forEach((element) => {
-                    if (element.description === contractNameR) {contractIdR = element.contractId;}
-                });
-            });
+            //The contracts the current run created, which is what the specs after this one look the
+            //imported copies up by. Scanning the listing and keeping the last match picked the
+            //*oldest* namesake instead, because the listing is ordered by creation date descending:
+            //the import then landed on a contract of an earlier run and the next spec could not
+            //find the one it expected.
+            Contracts.getContractByDescription(authorization, 'WIPE', contractNameW)
+                .then((contract) => contractIdW = contract.contractId);
+            Contracts.getContractByDescription(authorization, 'RETIRE', contractNameR)
+                .then((contract) => contractIdR = contract.contractId);
         });
     });
 

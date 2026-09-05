@@ -37,7 +37,7 @@ context('Create policy labels', { tags: ['policy_labels', 'firstPool', 'all'] },
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
                 response.body.forEach(element => {
-                    if (element.name == 'iRec_4') {
+                    if (element.name === 'iRec_4') {
                         policy = element;
                     }
                 })

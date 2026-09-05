@@ -2,6 +2,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import * as Checks from '../../../support/checkingMethods';
+import * as Contracts from '../../../support/api/contracts';
 
 context('Contracts', { tags: ['contracts', 'firstPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
@@ -11,37 +12,6 @@ context('Contracts', { tags: ['contracts', 'firstPool', 'all'] }, () => {
 
     let idW; let idR; let idW2; let idR2; let hederaIdSR2;
     let contractUuidW; let contractUuidR;
-
-    //Contracts of earlier runs carry the same description, so the last match is the one the current
-    //run created, in step with how the import spec picks the contract it imports
-    const getContract = (token, type, description) => {
-        return cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.ListOfContracts,
-            headers: { authorization: token },
-            qs: { type }
-        }).then((response) => {
-            const contract = response.body.filter(c => c.description === description).at(-1);
-            expect(contract, `${type} contract "${description}"`).to.not.be.undefined;
-            return cy.wrap(contract, { log: false });
-        });
-    };
-
-    //The importing registry keeps its own record of the contract, and the on-chain id is what ties
-    //the two records together: matching on the description alone can pair up contracts of two
-    //different runs, and the roles then get granted on one contract and read back from the other
-    const getImportedContractId = (token, type, contractId) => {
-        return cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.ListOfContracts,
-            headers: { authorization: token },
-            qs: { type }
-        }).then((response) => {
-            const contract = response.body.find(c => c.contractId === contractId);
-            expect(contract, `imported ${type} contract ${contractId}`).to.not.be.undefined;
-            return cy.wrap(contract.id, { log: false });
-        });
-    };
 
     const manageRole = (method, baseUrl, contractId, role, targetHederaId, token = null) => {
         return cy.request({
@@ -54,11 +24,11 @@ context('Contracts', { tags: ['contracts', 'firstPool', 'all'] }, () => {
 
     before(() => {
         Authorization.getAccessToken(SRUsername).then((token) => {
-            getContract(token, 'WIPE', contractNameW).then((contract) => {
+            Contracts.getContractByDescription(token, 'WIPE', contractNameW).then((contract) => {
                 idW = contract.id;
                 contractUuidW = contract.contractId;
             });
-            getContract(token, 'RETIRE', contractNameR).then((contract) => {
+            Contracts.getContractByDescription(token, 'RETIRE', contractNameR).then((contract) => {
                 idR = contract.id;
                 contractUuidR = contract.contractId;
             });
@@ -71,8 +41,8 @@ context('Contracts', { tags: ['contracts', 'firstPool', 'all'] }, () => {
                 headers: { authorization: token }
             }).then(res => hederaIdSR2 = res.body.hederaAccountId);
 
-            getImportedContractId(token, 'WIPE', contractUuidW).then(id => idW2 = id);
-            getImportedContractId(token, 'RETIRE', contractUuidR).then(id => idR2 = id);
+            Contracts.getContractByContractId(token, 'WIPE', contractUuidW).then(c => idW2 = c.id);
+            Contracts.getContractByContractId(token, 'RETIRE', contractUuidR).then(c => idR2 = c.id);
         });
     });
 
@@ -260,25 +230,25 @@ context('Contracts', { tags: ['contracts', 'firstPool', 'all'] }, () => {
         });
     });
 
-    it.skip('Verify roles(wipe)', () => {
-        cy.clearCookies();
-        cy.wait(240000);
+    it('Verify roles removed(wipe)', () => {
         Authorization.getAccessToken(SR2Username).then((token) => {
-            cy.request({
+            //The revocations above travel through Hedera exactly like the grants did, so the
+            //permissions are polled down to zero rather than read once after a fixed wait
+            Checks.waitForResponseBody({
                 method: METHOD.GET,
                 url: `${API.ApiServer}${API.ListOfContracts}${idW2}/${API.Permissions}`,
-                headers: { authorization: token }
-            }).then(res => expect(res.body).eql(0));
+                headers: { authorization: token },
+            }, 0);
         });
     });
 
-    it.skip('Verify roles(retire)', () => {
+    it('Verify roles removed(retire)', () => {
         Authorization.getAccessToken(SR2Username).then((token) => {
-            cy.request({
+            Checks.waitForResponseBody({
                 method: METHOD.GET,
                 url: `${API.ApiServer}${API.ListOfContracts}${idR2}/${API.Permissions}`,
-                headers: { authorization: token }
-            }).then(res => expect(res.body).eql(0));
+                headers: { authorization: token },
+            }, 0);
         });
     });
 

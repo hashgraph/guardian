@@ -201,101 +201,54 @@ export const whileRetireRRequestCreating = (dataToCompare, authorization, attemp
     }
 }
 
-export const whileApplicationCreating = (dataToCompare, request, attempts) => {
-    if (attempts < 100) {
-        attempts++
-        cy.wait(30000)
-        cy.request(request).then((response) => {
-            if (!response?.body?.uiMetaData?.title)
-                {whileApplicationCreating(dataToCompare, request, attempts)}
-            else {
-                let data = response.body.uiMetaData.title
-                if (data !== dataToCompare)
-                    {whileApplicationCreating(dataToCompare, request, attempts)}
-            }
-        })
-    }
+/**
+ * Polls a policy block until `read(response)` equals `expected`.
+ *
+ * Reads before it waits, so a step the policy has already finished costs nothing, and throws when
+ * the budget runs out quoting what it last saw. The loops this replaced waited thirty seconds
+ * before looking even once, and on exhaustion returned quietly - which turned a policy that never
+ * advanced into a fifty-minute pause followed by an `undefined` several lines further down.
+ */
+const whileBlockReaches = (expected, request, read, description, timeout = 900000, interval = 5000) => {
+    const deadline = Date.now() + timeout;
+
+    const attempt = () => cy.request({ failOnStatusCode: false, ...request }).then((response) => {
+        const actual = read(response);
+        if (actual === expected) {
+            return cy.wrap(response.body, { log: false });
+        }
+        if (Date.now() >= deadline) {
+            throw new Error(
+                `Timed out after ${timeout} ms waiting for ${description} to reach "${expected}" ` +
+                `on ${request.url}. Last seen: ${JSON.stringify(actual)}`
+            );
+        }
+        // eslint-disable-next-line cypress/no-unnecessary-waiting -- back off between polls
+        return cy.wait(interval, { log: false }).then(attempt);
+    });
+
+    return attempt();
 }
 
-export const whileApplicationApproving = (dataToCompare, request, attempts) => {
-    if (attempts < 100) {
-        attempts++
-        cy.wait(30000)
-        cy.request(request).then((response) => {
-            if (!response?.body?.fields)
-                {whileApplicationApproving(dataToCompare, request, attempts)}
-            else {
-                let data = response.body.fields[0]?.title
-                if (data !== dataToCompare)
-                    {whileApplicationApproving(dataToCompare, request, attempts)}
-            }
-        })
-    }
-}
+const readGridRowStatus = (response) => response?.body?.data?.[0]?.[optionKey]?.status;
 
-export const whileDeviceCreating = (dataToCompare, request, attempts) => {
-    if (attempts < 100) {
-        attempts++
-        cy.wait(30000)
-        cy.request(request).then((response) => {
-            if (!response?.body?.data)
-                {whileDeviceCreating(dataToCompare, request, attempts)}
-            else {
-                let data = response.body.data[0]?.[optionKey]?.status
-                if (data !== dataToCompare)
-                    {whileDeviceCreating(dataToCompare, request, attempts)}
-            }
-        })
-    }
-}
+export const whileApplicationCreating = (dataToCompare, request) =>
+    whileBlockReaches(dataToCompare, request, (response) => response?.body?.uiMetaData?.title, 'the application block');
 
-export const whileDeviceApproving = (dataToCompare, request, attempts) => {
-    if (attempts < 100) {
-        attempts++
-        cy.wait(30000)
-        cy.request(request).then((response) => {
-            if (!response?.body?.data)
-                {whileDeviceApproving(dataToCompare, request, attempts)}
-            else {
-                let data = response.body.data[0]?.[optionKey]?.status
-                if (data !== dataToCompare)
-                    {whileDeviceApproving(dataToCompare, request, attempts)}
-            }
-        })
-    }
-}
+export const whileApplicationApproving = (dataToCompare, request) =>
+    whileBlockReaches(dataToCompare, request, (response) => response?.body?.fields?.[0]?.title, 'the approved application block');
 
-export const whileIssueRequestCreating = (dataToCompare, request, attempts) => {
-    if (attempts < 100) {
-        attempts++
-        cy.wait(30000)
-        cy.request(request).then((response) => {
-            if (!response?.body?.data)
-                {whileIssueRequestCreating(dataToCompare, request, attempts)}
-            else {
-                let data = response.body.data[0]?.[optionKey]?.status
-                if (data !== dataToCompare)
-                    {whileIssueRequestCreating(dataToCompare, request, attempts)}
-            }
-        })
-    }
-}
+export const whileDeviceCreating = (dataToCompare, request) =>
+    whileBlockReaches(dataToCompare, request, readGridRowStatus, 'the device grid');
 
-export const whileIssueRequestApproving = (dataToCompare, request, attempts) => {
-    if (attempts < 100) {
-        attempts++
-        cy.wait(30000)
-        cy.request(request).then((response) => {
-            if (!response?.body?.data)
-                {whileIssueRequestApproving(dataToCompare, request, attempts)}
-            else {
-                let data = response.body.data[0]?.[optionKey]?.status
-                if (data !== dataToCompare)
-                    {whileIssueRequestApproving(dataToCompare, request, attempts)}
-            }
-        })
-    }
-}
+export const whileDeviceApproving = (dataToCompare, request) =>
+    whileBlockReaches(dataToCompare, request, readGridRowStatus, 'the device grid');
+
+export const whileIssueRequestCreating = (dataToCompare, request) =>
+    whileBlockReaches(dataToCompare, request, readGridRowStatus, 'the issue request grid');
+
+export const whileIssueRequestApproving = (dataToCompare, request) =>
+    whileBlockReaches(dataToCompare, request, readGridRowStatus, 'the issue request grid');
 
 export const whileBalanceVerifying = (dataToCompare, request, attempts, tokenId) => {
     if (attempts < 100) {
