@@ -1,0 +1,52 @@
+id: hackathon-2026-vmr0017-hydropower-dmrv
+name: VMR0017 / ACM0002 Grid-Connected Renewable Energy dMRV
+version: "1.0.0"
+description: >
+  Hedera Guardian dMRV policy digitizing Verra VMR0017 v1.0 (applied to
+  CDM ACM0002 v22.0) for grid-connected electricity generation from renewable
+  sources, with a hydropower focus. Implements the full crediting workflow —
+  project description, monitoring reports, multi-role verification, an automated
+  emission-reduction calculation engine, and on-chain VCU minting.
+policy_type: proof-of-concept
+status: draft
+license: Apache-2.0
+category: other
+category_note: Energy — grid-connected renewable electricity generation (hydropower); VCS VMR0017 / ACM0002
+authors:
+  - name: Bikram Biswas
+    type: individual
+    github: BikramBiswas786
+tags:
+  - hackathon
+  - community
+  - carbon-credits
+  - renewable-energy
+  - hydropower
+maintainers:
+  - name: Bikram Biswas
+    email: bikrambiswas000@gmail.com
+resources:
+  - type: repository
+    label: Project repository (Hedera hydropower dMRV, 5-layer verification)
+    url: https://github.com/BikramBiswas786/Hedera-hydropower-dMRV-with-5-layer-verification-
+  - type: other
+    label: Apex Hackathon 2026 project hub
+    url: https://github.com/BikramBiswas786/Hedera-hydropower-dMRV-with-5-layer-verification-/tree/main/Apex%20Hackathon26
+support: https://github.com/BikramBiswas786/Hedera-hydropower-dMRV-with-5-layer-verification-/issues
+
+# ---------------------------------------------------------------------------
+# Status note (hackathon submission — work in progress).
+# The folder README and Daniel Swid (Hedera Guardian) both note that including
+# current status is useful for others learning from the ecosystem.
+# ---------------------------------------------------------------------------
+# Working now:
+#   - Multi-role crediting workflow (Proponent -> VVB -> Registry -> mint)
+#   - Automated emission-reduction calculation engine (5 mathBlocks, LaTeX/CortexJS 0.27.0)
+#   - Signed report VCs publishing to Hedera testnet
+#   - VMR0017 equations: baseline, 6-term project emissions, embodied leakage, net ER
+#   - 58 description-complete schemas (VCS PD/MR sections + methodology parameters + safeguards)
+# In progress:
+#   - Full 1-to-1 transcription of every VCS v5.0B PD (~37) and MR (~32) section
+#   - Decomposition of SEP / ESG / VT-tool schemas into granular sub-schemas
+#   - End-to-end mint confirmation on a live Guardian instance
+# Developed on Guardian 3.6.0. Policy bundle: 58 schemas, 566 blocks, 5 mathBlocks, 1 mint block.
