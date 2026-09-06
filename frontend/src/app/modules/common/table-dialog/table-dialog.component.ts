@@ -18,6 +18,9 @@ export class TableDialogComponent implements OnInit {
 
     public readOnly: boolean = false;
 
+    private fixedColumns: boolean = false;
+    private fixedColumnKeys: string[] = [];
+
     private dataColumnDefs: ColDef[] = [];
 
     get columnDefs(): ColDef[] { return [this.rowNumberCol, ...this.dataColumnDefs]; }
@@ -56,7 +59,12 @@ export class TableDialogComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
-        const data = (this.config?.data ?? {}) as { columnDefs?: ColDef[]; rowData?: any[]; readOnly?: boolean };
+        const data = (this.config?.data ?? {}) as {
+            columnDefs?: ColDef[];
+            rowData?: any[];
+            readOnly?: boolean;
+            fixedColumns?: boolean;
+        };
 
         this.readOnly = !!data.readOnly;
 
@@ -65,6 +73,18 @@ export class TableDialogComponent implements OnInit {
         }
         if (data.rowData?.length) {
             this.rowData = data.rowData.map(r => ({ ...r }));
+        }
+
+        this.fixedColumns = !!data.fixedColumns && this.dataColumnDefs.length > 0;
+
+        if (this.fixedColumns) {
+            this.fixedColumnKeys = this.dataColumnDefs.map(def => String(def.field || ''));
+
+            if (!this.rowData.length) {
+                this.rowData = Array.from({ length: this.initRows }, () => this.makeEmptyRow());
+            }
+
+            return;
         }
 
         if (!this.dataColumnDefs.length || !this.rowData.length) {
@@ -95,6 +115,11 @@ export class TableDialogComponent implements OnInit {
             this.api?.sizeColumnsToFit();
             this.updateRowNumberWidth();
         }, 0);
+    }
+
+    onGridSizeChanged(): void {
+        this.api?.sizeColumnsToFit();
+        this.updateRowNumberWidth();
     }
 
     onPasteStart(ev: any): void {
@@ -156,7 +181,7 @@ export class TableDialogComponent implements OnInit {
         let columnsChanged = false;
         let rowsChanged = false;
 
-        if (minCols > this.dataColumnDefs.length) {
+        if (!this.fixedColumns && minCols > this.dataColumnDefs.length) {
             const start = this.dataColumnDefs.length;
             for (let i = start; i < minCols; i++) {
                 this.dataColumnDefs.push(this.makeColDef(i));
@@ -194,7 +219,7 @@ export class TableDialogComponent implements OnInit {
 
     private makeEmptyRow(): any {
         const obj: any = {};
-        for (let i = 0; i < this.dataColumnDefs.length; i++) { obj[this.colKey(i)] = ''; }
+        for (const def of this.dataColumnDefs) { obj[String(def.field || '')] = ''; }
         return obj;
     }
 
@@ -206,7 +231,12 @@ export class TableDialogComponent implements OnInit {
     }
 
     private colKey(i: number): string { return `C${i + 1}`; }
-    private colIndexByKey(key: string): number { return parseInt(key.slice(1), 10) - 1; }
+    private colIndexByKey(key: string): number {
+        if (this.fixedColumns) {
+            return this.fixedColumnKeys.indexOf(key);
+        }
+        return parseInt(key.slice(1), 10) - 1;
+    }
 
     cancel(): void {
         this.ref.close(null);

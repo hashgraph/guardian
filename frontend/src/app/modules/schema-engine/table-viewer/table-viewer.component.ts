@@ -11,7 +11,13 @@ import { GzipService } from '../../../services/gzip.service';
 import { DB_NAME, STORES_NAME } from '../../../constants';
 import { IPFSService } from 'src/app/services/ipfs.service';
 
-type TableRefLike = { type?: string; fileId?: string; cid?: string } | string | null | undefined;
+type TableRefLike = {
+    type?: string;
+    fileId?: string;
+    cid?: string;
+    columnKeys?: string[];
+    columnNames?: string[];
+} | string | null | undefined;
 
 @Component({
     selector: 'table-viewer',
@@ -59,6 +65,55 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
 
     public get cid(): string | null {
         return this.getCidFromValue(this.value);
+    }
+
+    public get storedColumnKeys(): string[] {
+        return this.getStringListFromValue(this.value, 'columnKeys');
+    }
+
+    public get storedColumnNames(): string[] {
+        return this.getStringListFromValue(this.value, 'columnNames');
+    }
+
+    private getStringListFromValue(input: TableRefLike, property: string): string[] {
+        if (!input) {
+            return [];
+        }
+
+        if (typeof input === 'string') {
+            const trimmed = input.trim();
+
+            if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+                try {
+                    return this.getStringListFromValue(JSON.parse(trimmed), property);
+                } catch {
+                    return [];
+                }
+            }
+
+            return [];
+        }
+
+        const list = (input as Record<string, unknown>)[property];
+        return Array.isArray(list) ? list.map((entry) => String(entry)) : [];
+    }
+
+    public previewHeaderNameFor(columnKey: string, columnIndex: number): string {
+        return this.columnHeaderFor(columnKey, columnIndex);
+    }
+
+    public get previewGridTemplate(): string {
+        const count = this.previewHeaderKeysLimited.length || this.PREVIEW_COLUMNS_LIMIT;
+        return `48px repeat(${count}, minmax(80px, 1fr))`;
+    }
+
+    private columnHeaderFor(key: string, index: number): string {
+        const name = this.storedColumnNames[index];
+        if (name) {
+            return name;
+        }
+
+        return this.storedColumnKeys.length ? key : this.buildColumnHeader(index);
     }
 
     public get hasData(): boolean {
@@ -355,11 +410,11 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
                 return
             }
 
-            const parsed = this.csvService.parseCsvToTable(csvText, ',');
+            const parsed = this.csvService.parseCsvToTable(csvText, ',', this.storedColumnKeys);
             const columnDefs: ColDef[] = parsed.columnKeys.map((key: string, index: number) => ({
                 field: key,
                 colId: key,
-                headerName: this.buildColumnHeader(index),
+                headerName: this.columnHeaderFor(key, index),
                 editable: false,
                 minWidth: 100,
                 resizable: true,
@@ -389,6 +444,10 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
             (this as any)[flag] = false;
             this.mark();
         });
+    }
+
+    private makeDownloadFileName(): string {
+        return `table-${Date.now()}.csv`;
     }
 
     public downloadCsv(): void {
@@ -424,7 +483,7 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
 
             const link = document.createElement('a');
             link.href = objectUrl;
-            link.download = `${idbId}.csv`.replace(/"/g, '');
+            link.download = this.makeDownloadFileName();
 
             document.body.appendChild(link);
             link.click();
@@ -583,9 +642,9 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
             const decoder = new TextDecoder('utf-8');
             csvText = decoder.decode(uint8);
         }
-        const parsed = this.csvService.parseCsvToTable(csvText, ',');
+        const parsed = this.csvService.parseCsvToTable(csvText, ',', this.storedColumnKeys);
 
-        const csvFile = this.buildCsvFile(parsed.columnKeys, parsed.rows);
+        const csvFile = this.buildCsvFile(parsed.columnKeys, parsed.rows, 'table.csv', this.storedColumnNames);
         const gzippedFile = await this.gzip.gzip(csvFile);
 
         await this.idb.put(DB_NAME.TABLES, STORES_NAME.FILES_VIEW_STORE, {
@@ -605,7 +664,7 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
             return
         }
 
-        const parsed = this.csvService.parseCsvToTable(csvText, ',');
+        const parsed = this.csvService.parseCsvToTable(csvText, ',', this.storedColumnKeys);
 
         const preview = this.makePreview(
             parsed.columnKeys,
@@ -616,7 +675,7 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
 
         this.previewColumnDefs = preview.columns.map((key: string, index: number) => ({
             field: key,
-            headerName: this.buildColumnHeader(index),
+            headerName: this.columnHeaderFor(key, index),
             editable: false,
             minWidth: 100,
             resizable: true,
@@ -630,12 +689,14 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
     private buildCsvFile(
         columnKeys: string[],
         rows: Record<string, string>[],
-        filename: string = 'table.csv'
+        filename: string = 'table.csv',
+        headerRow?: string[]
     ): File {
         return this.csvService.toCsvFile(columnKeys, rows, filename, {
             delimiter: this.delimiter,
             bom: false,
             mime: 'text/csv;charset=utf-8',
+            headerRow,
         });
     }
 }
