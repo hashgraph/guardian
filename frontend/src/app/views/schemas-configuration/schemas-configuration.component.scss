@@ -462,8 +462,14 @@
 
     i { font-size: 13px; }
 
-    &:hover {
+    &:hover:not(:disabled) {
         background: var(--guardian-grey-background, #F9FAFC);
+    }
+
+    &:disabled {
+        cursor: default;
+        opacity: 0.45;
+        filter: none;
     }
 }
 
@@ -472,9 +478,15 @@
     color: #fff;
     border-color: var(--color-primary, #4169E2);
 
-    &:hover {
+    &:hover:not(:disabled) {
         filter: brightness(0.92);
         background: var(--color-primary, #4169E2);
+    }
+
+    &:disabled {
+        cursor: default;
+        opacity: 0.45;
+        filter: none;
     }
 }
 
