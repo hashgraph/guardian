@@ -61,7 +61,7 @@ export class SendToGuardianBlock {
      */
     private mapDocument(old: IPolicyDocument, doc: IPolicyDocument): IPolicyDocument {
         for (const key in doc) {
-            if (key !== 'id' && key !== '_id' && typeof doc[key] !== 'function') {
+            if (key !== 'id' && key !== '_id' && key !== 'owner' && typeof doc[key] !== 'function') {
                 old[key] = doc[key];
             }
         }
@@ -80,6 +80,7 @@ export class SendToGuardianBlock {
             old = await ref.databaseServer.getVcDocument({
                 id: { $eq: document?.draftId },
                 policyId: { $eq: ref.policyId },
+                owner: { $eq: document?.owner },
                 draft: { $eq: true }
             });
         }
