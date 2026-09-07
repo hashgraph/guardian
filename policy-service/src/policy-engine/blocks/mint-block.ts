@@ -550,10 +550,7 @@ export class MintBlock {
         // entry events (RunEvent and AdditionalMintEvent) — a guard in runAction() alone
         // would be bypassed by AdditionalMintEvent.
         const mintUser = event.user;
-        const mintOptions = await ref.getOptions(mintUser);
-        if (mintOptions.accountType === 'custom-value') {
-            await checkOrgTokenPermission(ref, mintUser, targetAccount, OrgRolePermission.TOKEN_MINTING, userId);
-        }
+        await checkOrgTokenPermission(ref, mintUser, targetAccount, OrgRolePermission.TOKEN_MINTING, userId);
         if (relayerAccount !== mintUser?.hederaAccountId) {
             await checkOrgTokenPermission(ref, mintUser, relayerAccount, OrgRolePermission.TOKEN_TRANSFER, userId);
         }
