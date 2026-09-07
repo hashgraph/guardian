@@ -1,5 +1,23 @@
 import * as mathjs from 'mathjs';
 
+/**
+ * Largest span a single range (A1:A9999) may expand to.
+ *
+ * parseRange builds one string per row, so an unbounded range from an uploaded
+ * file is an allocation the process cannot survive: `=SUM(A1:A99999999)` asks for
+ * 100 million strings. That is an OOM abort rather than an exception, so the
+ * try/catch around the parse cannot contain it.
+ *
+ * Excel's own ceiling of 1,048,576 rows is an upper bound, not a safe one.
+ */
+export const MAX_RANGE_CELLS = 10_000;
+
+/** Total cells one expression may reference across all of its ranges. */
+export const MAX_EXPRESSION_CELLS = 50_000;
+
+/** Raised when a formula asks for more cells than the caps above allow. */
+export class RangeTooLargeError extends Error { }
+
 export class Expression {
     public readonly name: string;
     public readonly formulae: string;
@@ -10,12 +28,15 @@ export class Expression {
     public validated: boolean;
     public transformed: string;
 
+    private cellCount: number;
+
     constructor(name: string, formulae: string) {
         this.name = name;
         this.formulae = formulae;
         this.symbols = new Set<string>();
         this.functions = new Map<string, string[]>();
         this.ranges = new Map<string, string[]>();
+        this.cellCount = 0;
     }
 
     public parse(): void {
@@ -72,11 +93,28 @@ export class Expression {
             }
             const max = Math.max(startRow, endRow);
             const min = Math.min(startRow, endRow);
+
+            const cells = max - min + 1;
+            if (cells > MAX_RANGE_CELLS) {
+                throw new RangeTooLargeError(
+                    `Range ${start}:${end} spans ${cells} cells, more than the ${MAX_RANGE_CELLS} allowed.`
+                );
+            }
+            this.cellCount += cells;
+            if (this.cellCount > MAX_EXPRESSION_CELLS) {
+                throw new RangeTooLargeError(
+                    `Formula references ${this.cellCount} cells, more than the ${MAX_EXPRESSION_CELLS} allowed.`
+                );
+            }
+
             for (let i = min; i <= max; i++) {
                 result.push(`${startCol}${i}`);
             }
             return result;
         } catch (error) {
+            if (error instanceof RangeTooLargeError) {
+                throw error;
+            }
             throw new Error('Invalid range');
         }
     }
