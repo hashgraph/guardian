@@ -8,7 +8,8 @@ import {
     isTableWithFileId,
     parseIfJson,
     hydrateTablesInObject,
-    collectTablesPack
+    collectTablesPack,
+    hasDeclaredTableColumns
 } from '../../../dist/policy-engine/helpers/table-field.js';
 
 describe('table-field helpers', () => {
@@ -21,6 +22,16 @@ describe('table-field helpers', () => {
         assert.equal(typeof parseIfJson, 'function');
         assert.equal(typeof hydrateTablesInObject, 'function');
         assert.equal(typeof collectTablesPack, 'function');
+        assert.equal(typeof hasDeclaredTableColumns, 'function');
+    });
+
+    describe('hasDeclaredTableColumns', () => {
+        it('is true only when both declaration lists are non-empty', () => {
+            assert.equal(hasDeclaredTableColumns({ columnNames: ['Year'], columnKeys: ['year'] }), true);
+            assert.equal(hasDeclaredTableColumns({ columnKeys: ['year'] }), false);
+            assert.equal(hasDeclaredTableColumns({ columnNames: [], columnKeys: ['year'] }), false);
+            assert.equal(hasDeclaredTableColumns({}), false);
+        });
     });
 
     describe('parseCsvToTable', () => {
@@ -31,6 +42,37 @@ describe('table-field helpers', () => {
                 { a: '1', b: '2', c: '3' },
                 { a: '4', b: '5', c: '6' }
             ]);
+        });
+
+        it('maps declared tables by stable keys instead of display names', () => {
+            const { columnKeys, rows } = parseCsvToTable(
+                'Year,CO2 (tonnes)\n2023,42\n2024,45',
+                ',',
+                ['year', 'co2_tonnes']
+            );
+            assert.deepEqual(columnKeys, ['year', 'co2_tonnes']);
+            assert.deepEqual(rows, [
+                { year: '2023', co2_tonnes: '42' },
+                { year: '2024', co2_tonnes: '45' }
+            ]);
+        });
+
+        it('uses the declared width for missing and extra cells', () => {
+            const { rows } = parseCsvToTable(
+                'A,B,C\n1\n2,3,4',
+                ',',
+                ['first', 'second']
+            );
+            assert.deepEqual(rows, [
+                { first: '1', second: '' },
+                { first: '2', second: '3' }
+            ]);
+        });
+
+        it('keeps the CSV header path when the declared list is empty', () => {
+            const { columnKeys, rows } = parseCsvToTable('a,b\n1,2', ',', []);
+            assert.deepEqual(columnKeys, ['a', 'b']);
+            assert.deepEqual(rows, [{ a: '1', b: '2' }]);
         });
 
         it('returns empty result for empty input', () => {
@@ -274,6 +316,73 @@ describe('table-field helpers', () => {
             dispose();
             assert.equal(root.table.columnKeys, undefined);
             assert.equal(root.table.rows, undefined);
+        });
+
+        it('uses declared keys only when columnNames marks the fixed-column path', async () => {
+            const root = {
+                table: {
+                    type: 'table',
+                    fileId: 'f1',
+                    columnNames: ['Year', 'CO2 (tonnes)'],
+                    columnKeys: ['year', 'co2_tonnes']
+                }
+            };
+            const dispose = await hydrateTablesInObject(root, async () => 'Year,CO2 (tonnes)\n2024,45');
+            assert.deepEqual(root.table.rows, [{ year: '2024', co2_tonnes: '45' }]);
+            dispose();
+            assert.deepEqual(root.table.columnKeys, ['year', 'co2_tonnes']);
+            assert.equal(root.table.rows, undefined);
+        });
+
+        it('keeps the legacy header path when columnNames is absent', async () => {
+            const root = {
+                table: {
+                    type: 'table',
+                    fileId: 'f1',
+                    columnKeys: ['C1', 'C2']
+                }
+            };
+            const dispose = await hydrateTablesInObject(root, async () => 'amount,year\n42,2024');
+            assert.deepEqual(root.table.columnKeys, ['amount', 'year']);
+            assert.deepEqual(root.table.rows, [{ amount: '42', year: '2024' }]);
+            dispose();
+            assert.equal(root.table.columnKeys, undefined);
+            assert.equal(root.table.rows, undefined);
+        });
+
+        it('does not load a table rejected by the hydration filter', async () => {
+            const original = JSON.stringify({ type: 'table', fileId: 'legacy' });
+            const root = { table: original };
+            let called = false;
+            const dispose = await hydrateTablesInObject(root, async () => {
+                called = true;
+                return 'amount\n42';
+            }, ',', () => false);
+            assert.equal(called, false);
+            assert.equal(root.table, original);
+            dispose();
+            assert.equal(root.table, original);
+        });
+
+        it('hydrates only the declared table when filtered by hasDeclaredTableColumns', async () => {
+            const root = {
+                declared: {
+                    type: 'table',
+                    fileId: 'declared',
+                    columnNames: ['CO2 (tonnes)'],
+                    columnKeys: ['co2_tonnes']
+                },
+                legacy: { type: 'table', fileId: 'legacy' }
+            };
+            const loaded = [];
+            const dispose = await hydrateTablesInObject(root, async (fileId) => {
+                loaded.push(fileId);
+                return 'CO2 (tonnes)\n42';
+            }, ',', hasDeclaredTableColumns);
+            assert.deepEqual(loaded, ['declared']);
+            assert.deepEqual(root.declared.rows, [{ co2_tonnes: '42' }]);
+            assert.equal(root.legacy.rows, undefined);
+            dispose();
         });
 
         it('does not reload a table already containing columns and rows', async () => {

@@ -17,7 +17,8 @@ export type TableFileLoader = (fileId: string) => Promise<string>;
  */
 export function parseCsvToTable(
     csvText: string,
-    delimiter: string = ','
+    delimiter: string = ',',
+    declaredColumnKeys?: string[]
 ): {
     columnKeys: string[];
     rows: Record<string, string>[];
@@ -92,6 +93,9 @@ export function parseCsvToTable(
 
     const headerRow: string[] = parsedRows[0].map((s) => s.trim());
 
+    const hasDeclaredKeys = Array.isArray(declaredColumnKeys) && declaredColumnKeys.length > 0;
+    const columnKeys: string[] = hasDeclaredKeys ? declaredColumnKeys : headerRow;
+
     const dataRows: string[][] = parsedRows
         .slice(1)
         .filter((row) => {
@@ -102,8 +106,8 @@ export function parseCsvToTable(
     const objects: Record<string, string>[] = dataRows.map((row) => {
         const obj: Record<string, string> = {};
 
-        for (let columnIndex = 0; columnIndex < headerRow.length; columnIndex++) {
-            const headerKey = headerRow[columnIndex] || String(columnIndex);
+        for (let columnIndex = 0; columnIndex < columnKeys.length; columnIndex++) {
+            const headerKey = columnKeys[columnIndex] || String(columnIndex);
             const rawValue = row[columnIndex] ?? '';
             obj[headerKey] = rawValue.trim();
         }
@@ -112,9 +116,23 @@ export function parseCsvToTable(
     });
 
     return {
-        columnKeys: headerRow,
+        columnKeys,
         rows: objects
     };
+}
+
+export type TableHydrationFilter = (
+    table: ITableField & { fileId: string }
+) => boolean;
+
+/**
+ * Returns true if the table value carries the declared column marker written by the schema editor.
+ */
+export function hasDeclaredTableColumns(table: ITableField): boolean {
+    const names = table.columnNames;
+    const keys = table.columnKeys;
+
+    return Array.isArray(names) && names.length > 0 && Array.isArray(keys) && keys.length > 0;
 }
 
 export async function decodeGridFileText(
@@ -248,7 +266,8 @@ export function parseIfJson(input: unknown): unknown {
 export async function hydrateTablesInObject(
     root: unknown,
     loadFileText: TableFileLoader,
-    delimiter: string = ','
+    delimiter: string = ',',
+    shouldHydrate?: TableHydrationFilter
 ): Promise<() => void> {
     if (root === null || root === undefined) {
         return () => {
@@ -265,14 +284,21 @@ export async function hydrateTablesInObject(
             return;
         }
 
-        const csvText = await loadFileText(table.fileId);
-        const parsed = parseCsvToTable(csvText, delimiter);
+        const hasDeclaredColumns = hasDeclaredTableColumns(table);
+        const declaredColumnKeys = hasDeclaredColumns ? table.columnKeys : undefined;
 
-        defineHidden(table, 'columnKeys', parsed.columnKeys);
+        const csvText = await loadFileText(table.fileId);
+        const parsed = parseCsvToTable(csvText, delimiter, declaredColumnKeys);
+
+        if (!hasDeclaredColumns) {
+            defineHidden(table, 'columnKeys', parsed.columnKeys);
+            disposers.push(() => {
+                delete (table as any).columnKeys;
+            });
+        }
         defineHidden(table, 'rows', parsed.rows);
 
         disposers.push(() => {
-            delete (table as any).columnKeys;
             delete (table as any).rows;
         });
     };
@@ -285,6 +311,11 @@ export async function hydrateTablesInObject(
 
         if (isTableWithFileId(parsed)) {
             const tableObject = parsed as ITableField & { fileId: string };
+
+            if (shouldHydrate && !shouldHydrate(tableObject)) {
+                return;
+            }
+
             const replaced = currentValue !== tableObject;
 
             if (replaced) {
