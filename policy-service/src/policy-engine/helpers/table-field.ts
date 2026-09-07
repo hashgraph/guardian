@@ -2,155 +2,33 @@ import { BlockActionError } from '../errors/index.js';
 import { AnyBlockType } from '../policy-engine.interface.js';
 import { PolicyUtils } from '../helpers/utils.js';
 
-import { DatabaseServer } from '@guardian/common';
+import {
+    DatabaseServer,
+    decodeGridFileText,
+    hasDeclaredTableColumns,
+    isPlainObject,
+    isTableValue,
+    isTableWithFileId,
+    parseCsvToTable,
+    parseIfJson
+} from '@guardian/common';
 import { ITableField } from '@guardian/interfaces';
 
-import { promisify } from 'node:util';
-import { gunzip as gunzipRaw } from 'node:zlib';
-
-const gunzipBuffer = promisify(gunzipRaw);
+export {
+    decodeGridFileText,
+    hasDeclaredTableColumns,
+    isPlainObject,
+    isTableValue,
+    isTableWithFileId,
+    parseCsvToTable,
+    parseIfJson
+};
 
 export type TableFileLoader = (fileId: string) => Promise<string>;
-
-/**
- * Parse CSV text into the internal table representation.
- */
-export function parseCsvToTable(
-    csvText: string,
-    delimiter: string = ',',
-    declaredColumnKeys?: string[]
-): {
-    columnKeys: string[];
-    rows: Record<string, string>[];
-} {
-    if (csvText && csvText.charCodeAt(0) === 0xFEFF) {
-        csvText = csvText.slice(1);
-    }
-
-    const parsedRows: string[][] = [];
-
-    let currentCell: string = '';
-    let currentRow: string[] = [];
-    let insideQuotes: boolean = false;
-
-    const pushCurrentCell = (): void => {
-        currentRow.push(currentCell);
-        currentCell = '';
-    };
-
-    const pushCurrentRow = (): void => {
-        parsedRows.push(currentRow);
-        currentRow = [];
-    };
-
-    for (let i = 0; i < csvText.length; i++) {
-        const char = csvText[i];
-
-        if (char === '"') {
-            const nextChar = csvText[i + 1];
-
-            if (insideQuotes && nextChar === '"') {
-                currentCell += '"';
-                i += 1;
-                continue;
-            }
-
-            insideQuotes = !insideQuotes;
-            continue;
-        }
-
-        const isDelimiter = char === delimiter;
-        const isLineBreak = char === '\n' || char === '\r';
-
-        if (isDelimiter && !insideQuotes) {
-            pushCurrentCell();
-            continue;
-        }
-
-        if (isLineBreak && !insideQuotes) {
-            if (char === '\r' && csvText[i + 1] === '\n') {
-                i += 1;
-            }
-            pushCurrentCell();
-            pushCurrentRow();
-            continue;
-        }
-
-        currentCell += char;
-    }
-
-    if (currentCell.length > 0 || currentRow.length > 0) {
-        pushCurrentCell();
-        pushCurrentRow();
-    }
-
-    if (parsedRows.length === 0) {
-        return {
-            columnKeys: [],
-            rows: []
-        };
-    }
-
-    const headerRow: string[] = parsedRows[0].map((s) => s.trim());
-
-    const hasDeclaredKeys = Array.isArray(declaredColumnKeys) && declaredColumnKeys.length > 0;
-    const columnKeys: string[] = hasDeclaredKeys ? declaredColumnKeys : headerRow;
-
-    const dataRows: string[][] = parsedRows
-        .slice(1)
-        .filter((row) => {
-            const hasAnyValue = row.some((value) => value.trim() !== '');
-            return row.length > 0 && hasAnyValue;
-        });
-
-    const objects: Record<string, string>[] = dataRows.map((row) => {
-        const obj: Record<string, string> = {};
-
-        for (let columnIndex = 0; columnIndex < columnKeys.length; columnIndex++) {
-            const headerKey = columnKeys[columnIndex] || String(columnIndex);
-            const rawValue = row[columnIndex] ?? '';
-            obj[headerKey] = rawValue.trim();
-        }
-
-        return obj;
-    });
-
-    return {
-        columnKeys,
-        rows: objects
-    };
-}
 
 export type TableHydrationFilter = (
     table: ITableField & { fileId: string }
 ) => boolean;
-
-/**
- * Returns true if the table value carries the declared column marker written by the schema editor.
- */
-export function hasDeclaredTableColumns(table: ITableField): boolean {
-    const names = table.columnNames;
-    const keys = table.columnKeys;
-
-    return Array.isArray(names) && names.length > 0 && Array.isArray(keys) && keys.length > 0;
-}
-
-export async function decodeGridFileText(
-    fileBuffer: Buffer,
-    encoding: BufferEncoding = 'utf8'
-): Promise<string> {
-    const isGzip =
-        fileBuffer.length >= 2 &&
-        fileBuffer[0] === 0x1f &&
-        fileBuffer[1] === 0x8b;
-
-    if (isGzip) {
-        const uncompressed = await gunzipBuffer(fileBuffer);
-        return uncompressed.toString(encoding);
-    }
-
-    return fileBuffer.toString(encoding);
-}
 
 /**
  * Loads a text file by its identifier.
@@ -171,53 +49,6 @@ export async function loadFileTextById(ref: AnyBlockType, fileId: string, encodi
     }
 }
 
-/**
- * Returns true if the value is a plain object (i.e., created via object literal or Object).
- */
-export function isPlainObject(value: unknown): value is Record<string, unknown> {
-    const isDefined = value !== null && value !== undefined;
-    if (!isDefined) {
-        return false;
-    }
-
-    const isObjectType = typeof value === 'object';
-    if (!isObjectType) {
-        return false;
-    }
-
-    return (value as object).constructor === Object;
-}
-
-/**
- * Returns true if the value is a TableValue-like object (has type === "table").
- */
-export function isTableValue(value: unknown): value is ITableField {
-    const isPlain = isPlainObject(value);
-    if (!isPlain) {
-        return false;
-    }
-
-    return (value as any).type === 'table';
-}
-
-/**
- * Returns true if the value is a TableValue-like object with a non-empty string fileId.
- */
-export function isTableWithFileId(value: unknown): value is ITableField & { fileId: string } {
-    const isTableLike = isTableValue(value);
-    if (!isTableLike) {
-        return false;
-    }
-
-    const fileIdValue = (value as any).fileId;
-    const isStringFileId = typeof fileIdValue === 'string';
-    if (!isStringFileId) {
-        return false;
-    }
-
-    return  fileIdValue.trim().length > 0;
-}
-
 function defineHidden<T extends object, K extends string>(
     obj: T,
     key: K,
@@ -229,35 +60,6 @@ function defineHidden<T extends object, K extends string>(
         writable: true,
         enumerable: false,
     });
-}
-
-/**
- * If the input is a JSON-string (object or array), returns the parsed value; otherwise returns the original input.
- */
-export function parseIfJson(input: unknown): unknown {
-    const isString = typeof input === 'string';
-    if (!isString) {
-        return input;
-    }
-
-    const trimmed = (input as string).trim();
-    const isNonEmpty = trimmed.length > 0;
-    if (!isNonEmpty) {
-        return input;
-    }
-
-    const startsWithObject = trimmed.startsWith('{');
-    const startsWithArray = trimmed.startsWith('[');
-    const looksLikeJson = startsWithObject || startsWithArray;
-    if (!looksLikeJson) {
-        return input;
-    }
-
-    try {
-        return JSON.parse(trimmed);
-    } catch {
-        return input;
-    }
 }
 
 /**

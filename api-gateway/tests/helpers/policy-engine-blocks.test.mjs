@@ -396,6 +396,17 @@ describe('PolicyEngine documents', () => {
         }]);
     });
 
+    it('getDocuments carries the table window only when one is given', async () => {
+        const { pe, calls } = makeEngine();
+        await pe.getDocuments(OWNER, 'pid', true, 'VC', 0, 20, {
+            expand: true, offset: 1000, limit: 500, columns: 'year,co2_tonnes'
+        });
+        assert.deepEqual(calls[0], [PolicyEngineEvents.GET_POLICY_DOCUMENTS, {
+            owner: OWNER, policyId: 'pid', includeDocument: true, type: 'VC', pageIndex: 0, pageSize: 20,
+            tables: { expand: true, offset: 1000, limit: 500, columns: 'year,co2_tonnes' }
+        }]);
+    });
+
     it('searchDocuments forwards SEARCH_POLICY_DOCUMENTS', async () => {
         const { pe, calls } = makeEngine();
         await pe.searchDocuments(OWNER, 'pid', 'txt', ['s'], ['o'], ['t'], ['r'], 1, 10);

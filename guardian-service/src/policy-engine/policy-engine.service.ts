@@ -45,7 +45,8 @@ import {
     VcHelper,
     MintTransaction,
     XlsxToJson,
-    containsRegex
+    containsRegex,
+    expandTablesInDocument
 } from '@guardian/common';
 import {
     DocumentCategoryType,
@@ -3675,6 +3676,12 @@ export class PolicyEngineService {
                 owner: IOwner,
                 policyId: string,
                 includeDocument: boolean,
+                tables: {
+                    expand?: boolean,
+                    offset?: number | string,
+                    limit?: number | string,
+                    columns?: string
+                },
                 type: DocumentType,
                 pageIndex: string,
                 pageSize: string
@@ -3684,6 +3691,7 @@ export class PolicyEngineService {
                         owner,
                         policyId,
                         includeDocument,
+                        tables,
                         type,
                         pageIndex,
                         pageSize,
@@ -3775,10 +3783,35 @@ export class PolicyEngineService {
                     } else {
                         throw new Error(`Unknown type: ${type}`);
                     }
-                    return new MessageResponse([
-                        await loader.get(filters, otherOptions),
-                        await loader.get(filters, null, true),
-                    ]);
+                    const rows = await loader.get(filters, otherOptions);
+                    const total = await loader.get(filters, null, true);
+
+                    if (!tables?.expand || !includeDocument) {
+                        return new MessageResponse([rows, total]);
+                    }
+
+                    const parsedOffset = parseInt(String(tables.offset), 10);
+                    const parsedLimit = parseInt(String(tables.limit), 10);
+                    const tableOptions = {
+                        offset: Number.isInteger(parsedOffset) ? parsedOffset : undefined,
+                        limit: Number.isInteger(parsedLimit) ? parsedLimit : undefined,
+                        columns: typeof tables.columns === 'string' && tables.columns.trim()
+                            ? tables.columns.split(',').map((key: string) => key.trim()).filter(Boolean)
+                            : undefined
+                    };
+
+                    const expanded = [];
+                    for (const row of rows as any[]) {
+                        const copy = Object.assign(Object.create(Object.getPrototypeOf(row)), row);
+                        copy.document = await expandTablesInDocument(
+                            row.document,
+                            async (fileId: string) => (await DatabaseServer.getGridFile(fileId)).buffer,
+                            tableOptions
+                        );
+                        expanded.push(copy);
+                    }
+
+                    return new MessageResponse([expanded, total]);
                 } catch (error) {
                     return new MessageError(error);
                 }

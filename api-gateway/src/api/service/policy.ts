@@ -2760,6 +2760,34 @@ export class PolicyApi {
         example: true
     })
     @ApiQuery({
+        name: 'expandTables',
+        type: Boolean,
+        description: 'Expand table fields into rows in the response only. The stored document is unchanged. Requires includeDocument.',
+        required: false,
+        example: true
+    })
+    @ApiQuery({
+        name: 'tableOffset',
+        type: Number,
+        description: 'First table row to return when expandTables is set. Defaults to 0.',
+        required: false,
+        example: 0
+    })
+    @ApiQuery({
+        name: 'tableLimit',
+        type: Number,
+        description: 'Table rows to return when expandTables is set. Defaults to 1000 and is capped by the server. Each expanded table carries rowsTotal, rowsOffset and rowsTruncated so the rest can be paged.',
+        required: false,
+        example: 1000
+    })
+    @ApiQuery({
+        name: 'tableColumns',
+        type: String,
+        description: 'Comma-separated column keys to return when expandTables is set. Defaults to every column. A key that no table carries is simply absent from that table; the returned columnKeys says what was actually included.',
+        required: false,
+        example: 'year,co2_tonnes'
+    })
+    @ApiQuery({
         name: 'type',
         enum: DocumentType,
         description: 'Document type.',
@@ -2812,6 +2840,10 @@ export class PolicyApi {
         @Param('policyId') policyId: string,
         @Query('type') type?: DocumentType,
         @Query('includeDocument') includeDocument?: boolean,
+        @Query('expandTables') expandTables?: boolean,
+        @Query('tableOffset') tableOffset?: number,
+        @Query('tableLimit') tableLimit?: number,
+        @Query('tableColumns') tableColumns?: string,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
     ): Promise<any> {
@@ -2824,6 +2856,12 @@ export class PolicyApi {
                 type,
                 pageIndex,
                 pageSize,
+                {
+                    expand: String(expandTables)?.toLowerCase() === 'true',
+                    offset: tableOffset,
+                    limit: tableLimit,
+                    columns: tableColumns
+                },
             );
             return res.header('X-Total-Count', count).send(documents);
         } catch (error) {
