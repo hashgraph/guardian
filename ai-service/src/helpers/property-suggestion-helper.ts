@@ -8,6 +8,8 @@ import {
 const promptTemplate = `You are assisting with tagging schema fields to standardized IWA glossary properties.
 
 Schema: {schemaTitle}
+{schemaDescriptionLine}
+All fields below are given so you can use sibling fields as context, but only return a "results" entry for these field(s), which are the ones that actually need a suggestion: {targetFieldNames}. Do not include any other field in "results".
 
 For each field below, choose up to 3 candidate properties from the allowed list that best match the field's meaning. Rank candidates by confidence (0 to 1, most confident first). For each candidate, set reasonCode to the single strongest signal for that match:
 - "name": the field's name/title most strongly suggests it
@@ -46,15 +48,22 @@ export class PropertySuggestionConnect {
         model: ChatOpenAI,
         fields: IPropertySuggestionFieldInput[],
         properties: any[],
-        schemaTitle?: string
+        schemaTitle?: string,
+        schemaDescription?: string,
+        targetFieldNames?: string[]
     ): Promise<IPropertySuggestionResult[]> {
+        // Which fields we actually owe a suggestion for. `fields` stays the full schema
+        // (context only, for consistency), defaulting to it here keeps the old "suggest
+        // for everything passed in" behavior for any caller that doesn't pass a target list.
+        const targets = targetFieldNames?.length ? targetFieldNames : (fields || []).map((field) => field.name);
+
         const propertyTitles: string[] = properties.map((p) => p?.title).filter(Boolean);
         const propertyTitleSet = new Set(propertyTitles);
         const descriptionByTitle = new Map<string, string | undefined>(properties.map((p) => [p?.title, p?.description]));
 
-        // No properties to choose from, or nothing to tag - skip the LLM call entirely.
-        if (!fields?.length || !propertyTitles.length) {
-            return (fields || []).map((field) => ({ fieldName: field.name, candidates: [] }));
+        // Nothing to tag, or no properties to choose from - skip the LLM call entirely.
+        if (!targets.length || !fields?.length || !propertyTitles.length) {
+            return targets.map((name) => ({ fieldName: name, candidates: [] }));
         }
 
         const schema = {
@@ -66,7 +75,7 @@ export class PropertySuggestionConnect {
                     items: {
                         type: 'object',
                         properties: {
-                            fieldName: { type: 'string' },
+                            fieldName: { type: 'string', enum: targets },
                             candidates: {
                                 type: 'array',
                                 items: {
@@ -98,8 +107,12 @@ export class PropertySuggestionConnect {
             })
             .join('\n');
 
+        const schemaDescriptionLine = schemaDescription ? `Schema description: ${schemaDescription}\n` : '';
+
         const prompt = promptTemplate
             .replace('{schemaTitle}', schemaTitle || 'Untitled schema')
+            .replace('{schemaDescriptionLine}', schemaDescriptionLine)
+            .replace('{targetFieldNames}', targets.join(', '))
             .replace('{properties}', propertyTitles.join(', '))
             .replace('{fields}', fieldsText);
 
@@ -139,9 +152,9 @@ export class PropertySuggestionConnect {
             resultsByField.set(item.fieldName, candidates);
         }
 
-        return fields.map((field) => ({
-            fieldName: field.name,
-            candidates: resultsByField.get(field.name) || []
+        return targets.map((name) => ({
+            fieldName: name,
+            candidates: resultsByField.get(name) || []
         }));
     }
 }

@@ -725,15 +725,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const key = this.getContextSchemaCacheKey(schema);
         this.suggestionsLoading = true;
         const request = {
-            schemaTitle: this.selectedSchema?.name,
-            iwaVersion: resolveIwaVersion(this.selectedSchema),
-            fields: fields.map((field) => ({
-                name: field.name,
-                title: field.title,
-                description: field.description,
-                type: field.type,
-                currentProperty: (field as any).property
-            }))
+            schemaId: schema?.id || (schema as any)?._id,
+            fieldNames: fields.map((field) => field.name)
         };
         this.aiSearchService.suggestSchemaProperties(request)
             .pipe(takeUntil(this.destroy$))
@@ -792,16 +785,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (!field) { return; }
         this.rightPanelSuggestLoading = true;
         this.rightPanelSuggestUnavailable = false;
+        const contextSchema = this.currentContextSchema;
         const request = {
-            schemaTitle: this.selectedSchema?.name,
-            iwaVersion: resolveIwaVersion(this.selectedSchema),
-            fields: [{
-                name: field.name,
-                title: field.title,
-                description: field.description,
-                type: field.type,
-                currentProperty: (field as any).property
-            }]
+            schemaId: contextSchema?.id || (contextSchema as any)?._id,
+            fieldNames: [field.name]
         };
         this.aiSearchService.suggestSchemaProperties(request)
             .pipe(takeUntil(this.destroy$))

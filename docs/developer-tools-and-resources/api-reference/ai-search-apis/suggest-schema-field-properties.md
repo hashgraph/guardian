@@ -9,16 +9,12 @@
 Returns ranked IWA property candidates for each schema field
 {% endswagger-description %}
 
-{% swagger-parameter in="body" name="schemaTitle" type="String" %}
-Name of the schema the fields belong to
+{% swagger-parameter in="body" name="schemaId" type="String" required="true" %}
+Id of the schema the field(s) needing a suggestion belong to. The schema itself (its fields, name, description and IWA version) is always fetched server-side from this id, never trusted from the request body.
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="iwaVersion" type="String" %}
-IWA dMRV specification version to match properties against, e.g. 3.0.0
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="fields" type="Array" required="true" %}
-Schema fields to tag, each with name, title, description, type, currentProperty
+{% swagger-parameter in="body" name="fieldNames" type="Array" required="true" %}
+Names of the fields to return suggestions for. Suggestions are computed using every field on the schema as context, so the same field gets the same candidates regardless of how many fields are requested alongside it.
 {% endswagger-parameter %}
 
 {% swagger-response status="200: OK" description="Successful Operation" %}

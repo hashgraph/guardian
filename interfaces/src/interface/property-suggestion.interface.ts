@@ -29,17 +29,17 @@ export interface IPropertySuggestionFieldInput {
  */
 export interface IPropertySuggestionRequest {
     /**
-     * Schema title
+     * Id of the schema the field(s) needing a suggestion belong to.
+     * The schema itself (all its fields, name and description) is always
+     * fetched server-side from this id, never trusted from the client.
      */
-    schemaTitle?: string;
+    schemaId: string;
     /**
-     * IWA dMRV specification version
+     * Names of the fields to return suggestions for. Suggestions are still
+     * computed with the full schema as context, so the same field gets the
+     * same candidates regardless of how many fields were requested alongside it.
      */
-    iwaVersion?: string;
-    /**
-     * Fields
-     */
-    fields: IPropertySuggestionFieldInput[];
+    fieldNames: string[];
 }
 
 /**

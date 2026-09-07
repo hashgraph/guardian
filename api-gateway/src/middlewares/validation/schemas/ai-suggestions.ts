@@ -1,53 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-
-export class PropertySuggestionFieldDTO {
-    @ApiProperty()
-    @IsString()
-    @IsNotEmpty()
-    name: string;
-
-    @ApiProperty({ required: false })
-    @IsString()
-    @IsOptional()
-    title?: string;
-
-    @ApiProperty({ required: false })
-    @IsString()
-    @IsOptional()
-    description?: string;
-
-    @ApiProperty({ required: false })
-    @IsString()
-    @IsOptional()
-    type?: string;
-
-    @ApiProperty({ required: false })
-    @IsString()
-    @IsOptional()
-    currentProperty?: string;
-}
+import { IsArray, IsNotEmpty, IsString } from 'class-validator';
 
 export class PropertySuggestionRequestDTO {
-    @ApiProperty({ required: false })
+    @ApiProperty({ description: 'Id of the schema the field(s) needing a suggestion belong to' })
     @IsString()
-    @IsOptional()
-    schemaTitle?: string;
+    @IsNotEmpty()
+    schemaId: string;
 
     @ApiProperty({
-        description: 'IWA dMRV specification version this property belongs to',
-        example: '3.0.0',
-        required: false
+        description: 'Names of the schema fields to return suggestions for',
+        type: [String]
     })
-    @IsString()
-    @IsOptional()
-    iwaVersion?: string;
-
-    @ApiProperty({ type: () => PropertySuggestionFieldDTO, isArray: true })
     @IsArray()
-    @Type(() => PropertySuggestionFieldDTO)
-    fields: PropertySuggestionFieldDTO[];
+    @IsString({ each: true })
+    fieldNames: string[];
 }
 
 export class PropertySuggestionCandidateDTO {
