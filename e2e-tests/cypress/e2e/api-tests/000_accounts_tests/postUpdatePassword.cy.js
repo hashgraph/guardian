@@ -6,7 +6,7 @@ import * as Authorization from '../../../support/authorization';
 import { registerUser } from '../../../support/api/accounts';
 import { expectedPasswordError } from '../../../support/passwordPolicy';
 
-context('Update password', { tags: ['accounts', 'firstPool', 'all'] }, () => {
+context('Update password', { tags: ['accounts', 'firstPool', 'all', 'all-no-mgs'] }, () => {
 
     // NOTE: a dedicated user per run, so the suite stays idempotent: the password
     // is changed here and never restored, so a shared user would break on re-run

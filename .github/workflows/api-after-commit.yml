@@ -14,15 +14,14 @@ jobs:
       YARN_ENABLE_GLOBAL_CACHE: 'false'
       MIN_PASSWORD_LENGTH: 4
       PASSWORD_COMPLEXITY: easy
+      NODE_VERSION: '24.18.1'
+      MONGODB_VERSION: '7.0.21'
+      KUBO_VERSION: '0.43.0'
     services:
       cache:
         image: valkey/valkey:8.1-alpine
         ports:
           - 6379:6379
-    strategy:
-      matrix:
-        node-version: [ 24.18.1 ]
-        mongodb-version: [ 7.0.21 ]
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
@@ -31,11 +30,13 @@ jobs:
 
       - name: Checkout Code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Enable Corepack
         run: corepack enable
@@ -91,28 +92,33 @@ jobs:
         with:
           port: '4222'
 
-      - name: Set up IPFS
-        uses: oduwsdl/setup-ipfs@678755ac20f92d2dfca7e16138e40ae75f7a0f6f # v0.8.0
-        with:
-          ipfs_version: 0.42.0
-
-      - name: Start IPFS offline
+      - name: Start IPFS node
         shell: bash
         run: |
-          # setup-ipfs always starts an online daemon (run_daemon is a no-op); stop it before our offline node.
-          ipfs shutdown || true
-          until ! curl -s -X POST http://127.0.0.1:5001/api/v0/id >/dev/null 2>&1; do sleep 0.5; done
-          ipfs config profile apply test    # Routing.Type=none, no bootstrap, mDNS off
-          ipfs bootstrap rm --all
-          ipfs config Addresses.API /ip4/127.0.0.1/tcp/5001   # test profile randomizes ports; pin RPC for the app and probe
-          ipfs config --json Discovery.MDNS.Enabled false
-          ipfs daemon --offline &
-          until curl -s -X POST http://127.0.0.1:5001/api/v0/id >/dev/null 2>&1; do sleep 0.5; done
+          # Same Kubo node as docker-compose-quickstart.yml: stock image, default (online)
+          # profile, telemetry off, RPC/gateway/swarm published on the loopback interface.
+          docker run -d --name ipfs-node --init \
+            -e IPFS_TELEMETRY=off \
+            -p 127.0.0.1:4001:4001 \
+            -p 127.0.0.1:5001:5001 \
+            -p 127.0.0.1:8080:8080 \
+            ipfs/kubo:v${{ env.KUBO_VERSION }}
+
+          echo "Waiting for the IPFS RPC API on :5001..."
+          timeout 180 bash -c 'until curl -fsS -X POST http://127.0.0.1:5001/api/v0/id >/dev/null 2>&1; do sleep 2; done' \
+            || { docker logs ipfs-node; exit 1; }
+          curl -fsS -X POST http://127.0.0.1:5001/api/v0/id
+
+          # the gateway is what worker-service reads through, so wait for it too
+          # (bafkqaaa is the empty block, served without touching the network)
+          echo "Waiting for the IPFS gateway on :8080..."
+          timeout 180 bash -c 'until curl -fsS http://127.0.0.1:8080/ipfs/bafkqaaa >/dev/null 2>&1; do sleep 2; done' \
+            || { docker logs ipfs-node; exit 1; }
 
       - name: Start MongoDB
-        uses: step-security/mongodb-github-action@9bfc4a7e812a86657abfbe923af612a0fedcd1ea
+        uses: step-security/mongodb-github-action@7bbfdaf9f5b4e8b4ffbe2905fd9e4756d3204ed6
         with:
-          mongodb-version: ${{ matrix.mongodb-version }}
+          mongodb-version: ${{ env.MONGODB_VERSION }}
 
       - name: Run Guardian
         run: |
@@ -141,15 +147,13 @@ jobs:
           JWT_PUBLIC_KEY: ${{ secrets.CI_JWT_PUBLIC_KEY }}
           SERVICE_JWT_PUBLIC_KEY_ALL: ${{ secrets.CI_JWT_PUBLIC_KEY }}
           SERVICE_JWT_SECRET_KEY_ALL: ${{ secrets.CI_JWT_PRIVATE_KEY }}
-          IPFS_NODE_ADDRESS: http://127.0.0.1:5001
           IPFS_PROVIDER: local
-          IPFS_PUBLIC_GATEWAY: https://ipfs.filebase.io/ipfs/{cid}
-          IPFS_STORAGE_KEY: ${{ secrets.E2E_IPFS_STORAGE_KEY }}
-          IPFS_STORAGE_PROOF: ${{ secrets.E2E_IPFS_STORAGE_PROOF }}
-          IPFS_STORAGE_API_KEY: ${{ secrets.IPFS_STORAGE_API_KEY }}
+          IPFS_NODE_ADDRESS: http://127.0.0.1:5001
+          IPFS_PUBLIC_GATEWAY: http://127.0.0.1:8080/ipfs/{cid}
+          IPFS_TIMEOUT: 720
           ACCESS_TOKEN_UPDATE_INTERVAL: 600000
           INITIAL_BALANCE: 5
-          INITIAL_STANDARD_REGISTRY_BALANCE: 30
+          INITIAL_STANDARD_REGISTRY_BALANCE: 50
 
       - name: Set up Docker Buildx
         uses: step-security/setup-buildx-action@a4709e2865773e1792246433e8eb922f9743a875 # v4.2.0
@@ -186,6 +190,7 @@ jobs:
         if: always()
         run: |
           docker rm -f cypress-test-run || true
+          docker rm -f ipfs-node || true
 
       - name: Publish API Test Results
         uses: step-security/publish-unit-test-result-action@681100d67b09305624c089873f12c545ee7cbc24 # v2.23.0

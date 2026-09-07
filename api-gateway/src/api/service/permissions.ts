@@ -15,7 +15,7 @@ import {
     Req,
     Response
 } from '@nestjs/common';
-import { ApiBody, ApiCreatedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
+import { ApiBody, ApiCreatedResponse, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import { AssignPolicyDTO, Examples, InternalServerErrorDTO, UnprocessableEntityErrorDTO, ObjectExamples, PermissionsDTO, PolicyDTO, RoleDTO, UserDTO, pageHeader } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
 import { CacheService, EntityOwner, getCacheKey, Guardians, InternalException, Users } from '#helpers';
@@ -288,14 +288,14 @@ export class PermissionsApi {
         }
     })
     @ApiNotFoundResponse({ description: 'Role not found.', type: InternalServerErrorDTO, examples: { default: { summary: 'Default example', value: { statusCode: 404, message: 'Role does not exist.' } }}})
+    @ApiForbiddenResponse({
+        description: 'Forbidden. The role does not belong to this tenant.',
+        example: { statusCode: 403, message: 'Invalid role', error: 'Forbidden' }
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
         examples: {
-            invalidRole: {
-                summary: 'Role not found or invalid',
-                value: { statusCode: 500, message: 'Invalid role' }
-            },
             userNotFound: {
                 summary: 'User does not exist',
                 value: { statusCode: 500, message: 'User does not exist' }
@@ -339,6 +339,9 @@ export class PermissionsApi {
 
             return result;
         } catch (error) {
+            if (error?.message === 'Invalid role') {
+                throw new HttpException('Invalid role', HttpStatus.FORBIDDEN);
+            }
             await InternalException(error, this.logger, user.id);
         }
     }
@@ -372,14 +375,14 @@ export class PermissionsApi {
         }
     })
     @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { default: { summary: 'Default example', value: { statusCode: 422, message: 'Invalid id' } }}})
+    @ApiForbiddenResponse({
+        description: 'Forbidden. The role does not belong to this tenant.',
+        example: { statusCode: 403, message: 'Invalid role', error: 'Forbidden' }
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
         examples: {
-            invalidRole: {
-                summary: 'Role not found or invalid',
-                value: { statusCode: 500, message: 'Invalid role' }
-            },
             userNotFound: {
                 summary: 'User does not exist',
                 value: { statusCode: 500, message: 'User does not exist' }
@@ -409,6 +412,9 @@ export class PermissionsApi {
             wsService.updatePermissions(users);
             return result;
         } catch (error) {
+            if (error?.message === 'Invalid role') {
+                throw new HttpException('Invalid role', HttpStatus.FORBIDDEN);
+            }
             await InternalException(error, this.logger, user.id);
         }
     }
@@ -481,7 +487,8 @@ export class PermissionsApi {
         @Body() body: { id: string }
     ): Promise<RoleDTO> {
         try {
-            return await (new Users()).setDefaultRole(body?.id, user.did, user.id);
+            const owner = user.parent || user.did;
+            return await (new Users()).setDefaultRole(body?.id, owner, user.id);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

@@ -37477,7 +37477,10 @@ paths:
                 statusCode: 401
                 message: Unauthorized request
         '403':
-          description: Forbidden
+          description: |-
+            Forbidden. The role does not belong to this tenant.
+
+            Forbidden
           content:
             application/json:
               schema:
@@ -37505,11 +37508,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               examples:
-                invalidRole:
-                  summary: Role not found or invalid
-                  value:
-                    statusCode: 500
-                    message: Invalid role
                 userNotFound:
                   summary: User does not exist
                   value:
@@ -37557,7 +37555,10 @@ paths:
                 statusCode: 401
                 message: Unauthorized request
         '403':
-          description: Forbidden
+          description: |-
+            Forbidden. The role does not belong to this tenant.
+
+            Forbidden
           content:
             application/json:
               schema:
@@ -37585,11 +37586,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               examples:
-                invalidRole:
-                  summary: Role not found or invalid
-                  value:
-                    statusCode: 500
-                    message: Invalid role
                 userNotFound:
                   summary: User does not exist
                   value:

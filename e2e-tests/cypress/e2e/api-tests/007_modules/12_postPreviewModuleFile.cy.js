@@ -4,7 +4,7 @@ import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import { randomInt } from '../../../support/random';
 
-context('Modules', { tags: ['modules', 'thirdPool', 'all'] }, () => {
+context('Modules', { tags: ['modules', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const moduleName = 'APIModuleForPreview';
