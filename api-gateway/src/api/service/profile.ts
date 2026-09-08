@@ -375,9 +375,8 @@ export class ProfileApi {
             await guardians.restoreUserProfileCommonAsync(user, username, profile, task);
         }, async (error) => {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
+            //addError runs the registered callback, which invalidates
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
-
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
         });
         return task;
     }
@@ -453,9 +452,8 @@ export class ProfileApi {
             await guardians.getAllUserTopicsAsync(user, username, profile, task);
         }, async (error) => {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
+            //addError runs the registered callback, which invalidates
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
-
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
         });
         return task;
     }
