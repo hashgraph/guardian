@@ -183,7 +183,7 @@ export class Worker extends NatsService {
         });
 
         const runTask = async (task, completeEvent: WorkerEvents = WorkerEvents.TASK_COMPLETE) => {
-            this.isInUse = true;
+            // isInUse already claimed in claimIfFree (beforeDecode), before decode.
             this.currentTaskId = task.id;
             const userId = task.data?.payload?.userId;
 
@@ -224,31 +224,38 @@ export class Worker extends NatsService {
             this.isInUse = false;
         }
 
-        this.getMessages([this.replySubject, WorkerEvents.SEND_TASK_TO_WORKER].join('.'), async (task) => {
-            if (!this.isInUse) {
-                runTask(task);
-
-                return new MessageResponse({
-                    result: true
-                })
+        // Claim isInUse before decode (not after), so a second task can't win the race while
+        // this one's directLink payload is still downloading.
+        const claimIfFree = (): MessageResponse<{ result: boolean }> | undefined => {
+            if (this.isInUse) {
+                return new MessageResponse({ result: false });
             }
+            this.isInUse = true;
+            return undefined;
+        };
+
+        // Releases isInUse if decode/cb throws before runTask can.
+        const releaseClaimOnError = (error: unknown, claimed: boolean) => {
+            if (claimed) {
+                this.isInUse = false;
+            }
+        };
+
+        this.getMessages([this.replySubject, WorkerEvents.SEND_TASK_TO_WORKER].join('.'), async (task) => {
+            runTask(task);
+
             return new MessageResponse({
-                result: false
+                result: true
             })
-        })
+        }, false, claimIfFree, releaseClaimOnError)
 
         this.getMessages([this.replySubject, WorkerEvents.SEND_TASK_TO_WORKER_DIRECT].join('.'), async (task) => {
-            if (!this.isInUse) {
-                runTask(task, WorkerEvents.TASK_COMPLETE_DIRECT);
+            runTask(task, WorkerEvents.TASK_COMPLETE_DIRECT);
 
-                return new MessageResponse({
-                    result: true
-                })
-            }
             return new MessageResponse({
-                result: false
+                result: true
             })
-        })
+        }, false, claimIfFree, releaseClaimOnError)
 
         this.subscribe(WorkerEvents.UPDATE_SETTINGS, async (msg: any) => {
             try {
