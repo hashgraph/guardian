@@ -183,8 +183,7 @@ export class Worker extends NatsService {
         });
 
         const runTask = async (task, completeEvent: WorkerEvents = WorkerEvents.TASK_COMPLETE) => {
-            // isInUse is already true here - claimed in claimIfFree (beforeDecode), before this
-            // task's payload was decoded.
+            // isInUse already claimed in claimIfFree (beforeDecode), before decode.
             this.currentTaskId = task.id;
             const userId = task.data?.payload?.userId;
 
@@ -225,16 +224,8 @@ export class Worker extends NatsService {
             this.isInUse = false;
         }
 
-        // `isInUse` is claimed here, in `beforeDecode`, rather than in the handler below: decode
-        // can HTTP-fetch an out-of-band `directLink` payload, which for a large task takes far
-        // longer than authenticating the message. Claiming after decode (the handler runs only
-        // once decode resolves) leaves a window sized to the payload during which this worker
-        // still looks free to GET_FREE_WORKERS - a concurrently-decoded second task (from either
-        // SEND_TASK_TO_WORKER or the direct-dispatch path below) can win the race and get
-        // accepted first, and the original task is then busy-rejected after downloading in full.
-        // `beforeDecode` runs synchronously right after auth and before decode starts, so
-        // whichever message's callback resumes first claims `isInUse` atomically - the claim no
-        // longer races the decode.
+        // Claim isInUse before decode (not after), so a second task can't win the race while
+        // this one's directLink payload is still downloading.
         const claimIfFree = (): MessageResponse<{ result: boolean }> | undefined => {
             if (this.isInUse) {
                 return new MessageResponse({ result: false });
@@ -243,7 +234,7 @@ export class Worker extends NatsService {
             return undefined;
         };
 
-        // Releases isInUse if decode/cb throws before runTask can (else worker stays busy forever).
+        // Releases isInUse if decode/cb throws before runTask can.
         const releaseClaimOnError = (error: unknown, claimed: boolean) => {
             if (claimed) {
                 this.isInUse = false;
