@@ -52263,6 +52263,14 @@ paths:
           in: query
           schema:
             type: string
+        - name: excludeIds
+          required: false
+          in: query
+          description: >-
+            Comma-separated template ids to leave out, so a picker's count and
+            pages match what it shows.
+          schema:
+            type: string
       responses:
         '200':
           description: Schema templates page.
