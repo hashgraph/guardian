@@ -1,5 +1,6 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import { ModuleStatus } from '@guardian/interfaces';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { SchemaTemplatesService } from 'src/app/services/schema-templates.service';
 
@@ -69,6 +70,34 @@ export class SearchSchemaTemplateDialog {
 
     public onSelect(template: any): void {
         this.ref.close(template);
+    }
+
+    public getStatusLabel(status?: ModuleStatus): string {
+        switch (status) {
+            case ModuleStatus.PUBLISHED:
+                return 'Published';
+            case ModuleStatus.PUBLISH_ERROR:
+                return 'Publish Error';
+            case ModuleStatus.DRY_RUN:
+                return 'Dry Run';
+            case ModuleStatus.DRAFT:
+            default:
+                return 'Draft';
+        }
+    }
+
+    public getStatusColor(status?: ModuleStatus): string {
+        switch (status) {
+            case ModuleStatus.PUBLISHED:
+                return 'green';
+            case ModuleStatus.PUBLISH_ERROR:
+                return 'red';
+            case ModuleStatus.DRY_RUN:
+                return 'blue';
+            case ModuleStatus.DRAFT:
+            default:
+                return 'grey';
+        }
     }
 
     public toggleSize(): void {

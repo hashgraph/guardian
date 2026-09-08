@@ -7,6 +7,7 @@ import { Subject } from 'rxjs';
 import { SearchToolDialog } from '../search-tool-dialog/search-tool-dialog.component';
 import { SchemaTemplatesService } from 'src/app/services/schema-templates.service';
 import { SearchSchemaTemplateDialog } from '../search-schema-template-dialog/search-schema-template-dialog.component';
+import { ModuleStatus } from '@guardian/interfaces';
 
 /** One row per binding on the imported policy - a policy can carry several templates. */
 interface SchemaTemplateRow {
@@ -396,6 +397,25 @@ export class PreviewPolicyDialog {
                 this.checkTool(toolConfig.messageId, result);
             }
         });
+    }
+
+    /**
+     * The binding carries the status as it was on the source instance, so an
+     * unrecognised value is echoed back rather than collapsed into 'Draft'.
+     */
+    public getTemplateStatusLabel(status?: string): string {
+        switch (status) {
+            case ModuleStatus.PUBLISHED:
+                return 'Published';
+            case ModuleStatus.PUBLISH_ERROR:
+                return 'Publish Error';
+            case ModuleStatus.DRY_RUN:
+                return 'Dry Run';
+            case ModuleStatus.DRAFT:
+                return 'Draft';
+            default:
+                return status || '';
+        }
     }
 
     public onSchemaTemplateSearch(row: SchemaTemplateRow): void {

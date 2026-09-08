@@ -229,7 +229,7 @@
                 </div>
                 <div class="schema-template-panel__badges">
                   @if (row.templateStatus) {
-                    <span class="schema-template-badge">{{row.templateStatus}}</span>
+                    <span class="schema-template-badge">{{ getTemplateStatusLabel(row.templateStatus) }}</span>
                   }
                   @if (row.status==='local') {
                     <span class="schema-template-badge schema-template-badge--success">Local</span>
