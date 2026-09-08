@@ -245,10 +245,13 @@ export class GenerateBlocks {
                 expression.validated = true;
             } catch (error) {
                 expression.validated = false;
+                //carry the cause: a range cap says which range and by how much, which a
+                //generic parse failure does not
+                const reason = `Failed to parse formula (${expression.name}=${expression.formulae}). ${error?.message ?? ''}`.trim();
                 xlsxResult.addError({
                     type: 'error',
-                    text: `Failed to parse formula (${expression.name}=${expression.formulae}).`,
-                    message: `Failed to parse formula (${expression.name}=${expression.formulae}).`,
+                    text: reason,
+                    message: reason,
                     worksheet: xlsxSchema.worksheet.name
                 }, null);
             }
