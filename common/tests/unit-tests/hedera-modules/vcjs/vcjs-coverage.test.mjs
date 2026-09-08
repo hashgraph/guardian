@@ -336,9 +336,6 @@ describe('VCJS coverage (offline paths)', function () {
             assert.property(result, 'ok');
         });
 
-        // #1743: verifySchema used to restore ref-field type/@context (via
-        // ContextHelper.setContext) for credentialSubject[0] only, so a
-        // multi-subject VC was checked consistently for its first subject alone.
         it('rejects an empty credentialSubject array instead of passing vacuously', async function () {
             const vcjs = makeVcjs();
             await assertRejects(
