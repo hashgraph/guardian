@@ -364,17 +364,19 @@ export class ProfileApi {
         const username: string = user.username;
 
         const invalidedCacheTags = [`/${PREFIXES.PROFILES}/${username}`];
+
+        taskManager.registerCallback(task, async () => {
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+            await this.invalidateAccountsCache(user.id);
+        });
+
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
             await guardians.restoreUserProfileCommonAsync(user, username, profile, task);
-
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
-            await this.invalidateAccountsCache(user.id);
         }, async (error) => {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
+            //addError runs the registered callback, which invalidates
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
-
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
         });
         return task;
     }
@@ -440,16 +442,18 @@ export class ProfileApi {
         const username: string = user.username;
 
         const invalidedCacheTags = [`/${PREFIXES.PROFILES}/${username}`];
+
+        taskManager.registerCallback(task, async () => {
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+        });
+
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
             await guardians.getAllUserTopicsAsync(user, username, profile, task);
-
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
         }, async (error) => {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
+            //addError runs the registered callback, which invalidates
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
-
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
         });
         return task;
     }
