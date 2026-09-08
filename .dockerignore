@@ -1,0 +1,23 @@
+# Dependencies
+**/node_modules
+.yarn/install-state.gz
+
+# Build outputs
+**/dist
+**/.output
+**/.angular
+**/.nuxt
+**/coverage
+
+# VCS and tooling
+.git
+.gitignore
+.github
+.claude
+**/.DS_Store
+**/*.log
+
+# Local env files
+**/.env
+**/.env.local
+!**/.env.docker
