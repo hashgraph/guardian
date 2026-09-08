@@ -201,7 +201,7 @@ export class PolicyEngineService {
      * @param user
      * @private
      */
-    private async blockErrorCb(blockType: string, message: any, user: IAuthUser) {
+    private async blockErrorCb(blockType: string, message: any, user: IAuthUser, data?: any) {
         if (!user || !user.did) {
             return;
         }
@@ -209,7 +209,8 @@ export class PolicyEngineService {
         await this.channel.publish('block-error', {
             blockType,
             message,
-            user
+            user,
+            data
         });
     }
 
@@ -313,8 +314,8 @@ export class PolicyEngineService {
                         break;
                     }
                     case 'error': {
-                        const [blockType, message, user] = data;
-                        PolicyComponentsUtils.BlockErrorFn(blockType, message, user);
+                        const [blockType, message, user, errorData] = data;
+                        PolicyComponentsUtils.BlockErrorFn(blockType, message, user, errorData);
                         break;
                     }
                     case 'update-user': {
