@@ -563,7 +563,18 @@ describe('APPLY_SCHEMA_TEMPLATE success path', () => {
                 status: ModuleStatus.DRAFT,
                 topicId: '0.0.20',
                 messageId: 'msg-1',
-                config: { schemas: {} }
+                config: {
+                    schemas: {
+                        'tpl-schema-1': {
+                            guidelines: 'Use this schema for project registration.',
+                            fields: {
+                                'tpl-field-1': {
+                                    guidelines: 'Use the external registry identifier.'
+                                }
+                            }
+                        }
+                    }
+                }
             }),
             getPolicyById: async () => ({
                 id: 'policy-1',
@@ -608,6 +619,8 @@ describe('APPLY_SCHEMA_TEMPLATE success path', () => {
         assert.ok(savedSnapshot.templateStateHash.length > 0, 'state hash is empty');
         assert.equal(savedSnapshot.templateId, 'template-1');
         assert.deepEqual(savedSnapshot.schemaMap, { 'tpl-schema-1': 'ps-1' });
+        assert.equal(savedSnapshot.config.schemas['tpl-schema-1'].guidelines, 'Use this schema for project registration.');
+        assert.equal(savedSnapshot.config.schemas['tpl-schema-1'].fields['tpl-field-1'].guidelines, 'Use the external registry identifier.');
 
         assert.ok(updatedPolicy, 'policy was not updated');
         assert.equal(updatedPolicy.schemaTemplate.templateId, 'template-1');
