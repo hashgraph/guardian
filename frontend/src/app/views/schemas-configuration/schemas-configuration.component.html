@@ -1309,7 +1309,8 @@
             </div>
 
             @for (dependency of arrayDependencies; track dependency) {
-                <div class="sc-array-link-card">
+                <div class="sc-array-link-card"
+                    [class.sc-array-link-card--editing]="isEditingArrayDependency(dependency)">
                     <div class="sc-array-link-paths">
                         <div class="sc-array-link-path">
                             <span class="sc-array-link-label">Source</span>
@@ -1354,6 +1355,10 @@
                             </div>
                         }
                     </div>
+                    <button class="sc-array-link-edit" title="Edit link"
+                        (click)="startEditArrayDependency(dependency)">
+                        <i class="pi pi-pencil"></i>
+                    </button>
                     <button class="sc-array-link-remove" title="Remove link"
                         (click)="removeArrayDependency(dependency)">
                         <i class="pi pi-trash"></i>
@@ -1366,8 +1371,11 @@
                 </div>
             }
 
-            <div class="sc-array-link-editor">
-                <div class="sc-array-link-editor-title">Add repeatable field link</div>
+            <div class="sc-array-link-editor" #arrayLinkEditor
+                [class.sc-array-link-editor--editing]="editingArrayDependency">
+                <div class="sc-array-link-editor-title">
+                    {{ editingArrayDependency ? 'Edit repeatable field link' : 'Add repeatable field link' }}
+                </div>
                 <div class="sc-array-link-editor-grid">
                     <label>
                         <span>Source array</span>
@@ -1539,11 +1547,23 @@
                 </div>
                 <div class="sc-array-link-editor-actions">
                     <span>Build chains top-down: add the parent link before using its child as a source.</span>
-                    <button class="sc-btn sc-btn-primary"
-                        [disabled]="!canAddArrayDependency()"
-                        (click)="addArrayDependency()">
-                        <i class="pi pi-plus"></i>Add link
-                    </button>
+                    <div class="sc-array-link-editor-buttons">
+                        @if (editingArrayDependency) {
+                            <button class="sc-btn"
+                                (click)="cancelEditArrayDependency()">
+                                Cancel
+                            </button>
+                        }
+                        <button class="sc-btn sc-btn-primary"
+                            [disabled]="!canApplyArrayDependency()"
+                            (click)="applyArrayDependency()">
+                            @if (editingArrayDependency) {
+                                <i class="pi pi-check"></i>Save link
+                            } @else {
+                                <i class="pi pi-plus"></i>Add link
+                            }
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

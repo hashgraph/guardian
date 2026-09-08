@@ -871,4 +871,255 @@ describe('SchemasConfigurationComponent', () => {
             });
         });
     });
+
+    describe('editing a saved repeatable field link', () => {
+
+        function arrayField(name: string, itemFields: string[] = ['a', 'b']): any {
+            return {
+                name,
+                title: name,
+                description: name,
+                type: `#${name}`,
+                isRef: true,
+                isArray: true,
+                readOnly: false,
+                fields: itemFields.map((item) => ({
+                    name: item,
+                    title: item,
+                    description: item,
+                    type: 'string',
+                    isRef: false,
+                    isArray: false,
+                    readOnly: false,
+                })),
+            };
+        }
+
+        function link(on: string, field: string, extra: any = {}): any {
+            return { on: on.split('.'), field: field.split('.'), kind: 'array', ...extra };
+        }
+
+        function createLinkComponent(links: any[], arrays: string[] = ['one', 'two', 'three']): any {
+            const schema = makeSchema({ id: 'a', fields: arrays.map((name) => arrayField(name)) });
+            schema.arrayDependencies = links;
+            const component = createComponent({ schemas: [schema], selectedSchema: schema });
+            component.resolveRefSchema = () => undefined;
+            component.editingArrayDependency = null;
+            component.newArrayDependencyOn = null;
+            component.newArrayDependencyField = null;
+            component.newArrayDependencyTitle = null;
+            component.newArrayDependencyMappingSource = null;
+            component.newArrayDependencyMappingTarget = null;
+            component.newArrayDependencyValueMappings = [];
+            component.dirtyCalls = 0;
+            component.markDirty = () => { component.dirtyCalls++; };
+            return component;
+        }
+
+        it('fills the form from the saved link and copies its pairs by value', () => {
+            const saved = link('one', 'two', {
+                title: ['a'],
+                valueMappings: [{ source: ['a'], target: ['b'] }],
+            });
+            const component = createLinkComponent([saved]);
+
+            component.startEditArrayDependency(saved);
+
+            expect(component.editingArrayDependency).toBe(saved);
+            expect(component.isEditingArrayDependency(saved)).toBeTrue();
+            expect(component.newArrayDependencyOn).toBe('one');
+            expect(component.newArrayDependencyField).toBe('two');
+            expect(component.newArrayDependencyTitle).toBe('a');
+            expect(component.newArrayDependencyMappingSource).toBeNull();
+            expect(component.newArrayDependencyMappingTarget).toBeNull();
+            expect(component.newArrayDependencyValueMappings).toEqual([{ source: ['a'], target: ['b'] }]);
+            expect(component.newArrayDependencyValueMappings[0]).not.toBe(saved.valueMappings[0]);
+            expect(component.newArrayDependencyValueMappings[0].source).not.toBe(saved.valueMappings[0].source);
+        });
+
+        it('leaves the display name empty when the saved link has none', () => {
+            const saved = link('one', 'two');
+            const component = createLinkComponent([saved]);
+
+            component.startEditArrayDependency(saved);
+
+            expect(component.newArrayDependencyTitle).toBeNull();
+            expect(component.newArrayDependencyValueMappings).toEqual([]);
+        });
+
+        it('clears the form and the editing state on cancel, leaving the saved link untouched', () => {
+            const saved = link('one', 'two', { title: ['a'] });
+            const component = createLinkComponent([saved]);
+            const before = component.selectedSchema.arrayDependencies;
+
+            component.startEditArrayDependency(saved);
+            component.cancelEditArrayDependency();
+
+            expect(component.editingArrayDependency).toBeNull();
+            expect(component.newArrayDependencyOn).toBeNull();
+            expect(component.newArrayDependencyField).toBeNull();
+            expect(component.newArrayDependencyTitle).toBeNull();
+            expect(component.selectedSchema.arrayDependencies).toBe(before);
+            expect(before[0]).toBe(saved);
+            expect(saved.title).toEqual(['a']);
+        });
+
+        it('accepts the edited link with its own unchanged values', () => {
+            const saved = link('one', 'two');
+            const component = createLinkComponent([saved]);
+
+            component.startEditArrayDependency(saved);
+
+            expect(component.canApplyArrayDependency()).toBeTrue();
+        });
+
+        it('accepts a changed source array for the edited link', () => {
+            const saved = link('one', 'two');
+            const component = createLinkComponent([saved]);
+
+            component.startEditArrayDependency(saved);
+            component.newArrayDependencyOn = 'three';
+
+            expect(component.canApplyArrayDependency()).toBeTrue();
+        });
+
+        it('rejects a dependent array another link already depends on', () => {
+            const edited = link('one', 'two');
+            const other = link('one', 'three');
+            const component = createLinkComponent([edited, other]);
+
+            component.startEditArrayDependency(edited);
+            component.newArrayDependencyField = 'three';
+
+            expect(component.canApplyArrayDependency()).toBeFalse();
+        });
+
+        it('rejects an edit that closes a cycle', () => {
+            const edited = link('one', 'two');
+            const chain = link('two', 'three');
+            const component = createLinkComponent([edited, chain]);
+
+            component.startEditArrayDependency(edited);
+            component.newArrayDependencyOn = 'three';
+            component.newArrayDependencyField = 'two';
+
+            expect(component.canApplyArrayDependency()).toBeFalse();
+        });
+
+        it('accepts an edit that leaves a longer chain unclosed', () => {
+            const edited = link('one', 'two');
+            const chain = link('two', 'three');
+            const component = createLinkComponent([edited, chain]);
+
+            component.startEditArrayDependency(edited);
+            component.newArrayDependencyOn = 'three';
+            component.newArrayDependencyField = 'one';
+
+            expect(component.canApplyArrayDependency()).toBeTrue();
+        });
+
+        it('accepts re-saving a link whose dependent is itself a source', () => {
+            const edited = link('one', 'two');
+            const chain = link('two', 'three');
+            const component = createLinkComponent([edited, chain]);
+
+            component.startEditArrayDependency(edited);
+
+            expect(component.canApplyArrayDependency()).toBeTrue();
+        });
+
+        it('still refuses to add a link whose dependent is already a source', () => {
+            const chain = link('two', 'three');
+            const component = createLinkComponent([chain]);
+
+            component.newArrayDependencyOn = 'one';
+            component.newArrayDependencyField = 'two';
+
+            expect(component.canApplyArrayDependency()).toBeFalse();
+        });
+
+        it('accepts an edit whose only cycle ran through the edge being replaced', () => {
+            const saved = link('one', 'two');
+            const component = createLinkComponent([saved]);
+
+            component.startEditArrayDependency(saved);
+            component.newArrayDependencyOn = 'two';
+            component.newArrayDependencyField = 'one';
+
+            expect(component.canApplyArrayDependency()).toBeTrue();
+        });
+
+        it('replaces the edited link at its own position and marks the schema dirty', () => {
+            const first = link('one', 'two');
+            const second = link('two', 'three');
+            const component = createLinkComponent([first, second]);
+
+            component.startEditArrayDependency(first);
+            component.newArrayDependencyTitle = 'b';
+            component.applyArrayDependency();
+
+            const links = component.selectedSchema.arrayDependencies;
+            expect(links.length).toBe(2);
+            expect(links[0].on).toEqual(['one']);
+            expect(links[0].field).toEqual(['two']);
+            expect(links[0].title).toEqual(['b']);
+            expect(links[0]).not.toBe(first);
+            expect(links[1]).toBe(second);
+            expect(component.editingArrayDependency).toBeNull();
+            expect(component.dirtyCalls).toBe(1);
+        });
+
+        it('still appends when no link is being edited', () => {
+            const existing = link('one', 'two');
+            const component = createLinkComponent([existing]);
+
+            component.newArrayDependencyOn = 'two';
+            component.newArrayDependencyField = 'three';
+            component.applyArrayDependency();
+
+            const links = component.selectedSchema.arrayDependencies;
+            expect(links.length).toBe(2);
+            expect(links[0]).toBe(existing);
+            expect(links[1].on).toEqual(['two']);
+            expect(links[1].field).toEqual(['three']);
+            expect(component.dirtyCalls).toBe(1);
+        });
+
+        it('touches nothing when the edited link is no longer in the list', () => {
+            const saved = link('one', 'two');
+            const component = createLinkComponent([saved]);
+
+            component.startEditArrayDependency(saved);
+            component.selectedSchema.arrayDependencies = [];
+            component.applyArrayDependency();
+
+            expect(component.selectedSchema.arrayDependencies).toEqual([]);
+            expect(component.editingArrayDependency).toBeNull();
+            expect(component.dirtyCalls).toBe(0);
+        });
+
+        it('clears the editor when the link being edited is removed', () => {
+            const saved = link('one', 'two');
+            const component = createLinkComponent([saved]);
+
+            component.startEditArrayDependency(saved);
+            component.removeArrayDependency(saved);
+
+            expect(component.selectedSchema.arrayDependencies).toEqual([]);
+            expect(component.editingArrayDependency).toBeNull();
+            expect(component.newArrayDependencyOn).toBeNull();
+        });
+
+        it('keeps the editor open when a different link is removed', () => {
+            const edited = link('one', 'two');
+            const other = link('two', 'three');
+            const component = createLinkComponent([edited, other]);
+
+            component.startEditArrayDependency(edited);
+            component.removeArrayDependency(other);
+
+            expect(component.editingArrayDependency).toBe(edited);
+            expect(component.newArrayDependencyOn).toBe('one');
+        });
+    });
 });
