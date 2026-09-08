@@ -313,9 +313,6 @@ describe('@unit PolicyUtils — pure helpers', () => {
             assert.equal(PolicyUtils.checkDocumentField(null, { field: 'a', type: 'equal', value: 1 }), false);
         });
 
-        // #1743: a field the document doesn't carry resolves to undefined, and
-        // undefined !== <anything configured> was trivially true - so not_equal
-        // (and not_in) passed for every document that simply lacked the field.
         it('missing field cannot satisfy not_equal - fails closed instead of fail-open', () => {
             assert.equal(PolicyUtils.checkDocumentField({ a: 'x' }, { field: 'missing', type: 'not_equal', value: 'Approved' }), false);
         });

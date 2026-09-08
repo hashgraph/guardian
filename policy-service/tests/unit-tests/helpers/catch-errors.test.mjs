@@ -63,11 +63,6 @@ describe('CatchErrors decorator', () => {
         assert.equal(captured, boom);
     });
 
-    // #1743: documentValidatorBlock (and other blocks) attach a structured
-    // breakdown to the error as `error.data`, but BlockErrorFn was only ever
-    // called with (blockType, message, user) - the detail was dropped at this
-    // hop before it could reach the event-driven (websocket) path, even though
-    // the HTTP response path rendered it fine via BlockActionError.errorObject.
     it('forwards error.data to BlockErrorFn as a fourth argument', async () => {
         const boom = Object.assign(new Error('validation failed'), { data: { type: 'x', conditions: [] } });
         const wrapped = wrap(async function () { throw boom; });
