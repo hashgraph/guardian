@@ -3,9 +3,9 @@ import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { ModuleStatus } from '@guardian/interfaces';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
-import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { CustomConfirmDialogComponent, IConfirmOptionDetailGroup } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { ToastService } from 'src/app/services/toast.service';
-import { SchemaTemplateGridItem, SchemaTemplatesService } from 'src/app/services/schema-templates.service';
+import { SchemaTemplateDetachPreview, SchemaTemplateGridItem, SchemaTemplatesService } from 'src/app/services/schema-templates.service';
 import { ApplySchemaTemplateDialog } from '../apply-schema-template-dialog/apply-schema-template-dialog.component';
 
 interface AppliedTemplateRow {
@@ -197,7 +197,57 @@ export class ManageSchemaTemplatesDialog implements OnInit, OnDestroy {
     }
 
     public detach(row: AppliedTemplateRow): void {
+        // What the delete option would actually do depends on which copies other schemas
+        // still point at, so the confirmation is built from the server's own plan rather
+        // than from a generic warning.
+        this.loading = true;
+        this.templatesService.previewDetach(row.templateId, this.policy.id)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (preview) => {
+                    this.loading = false;
+                    this.openDetachConfirm(row, preview);
+                },
+                error: ({ message }) => {
+                    this.loading = false;
+                    this.toastService.error(message);
+                }
+            });
+    }
+
+    private openDetachConfirm(row: AppliedTemplateRow, preview?: SchemaTemplateDetachPreview): void {
         const templateName = row.templateName || 'schema template';
+        const deletable = preview?.deletable || [];
+        const blocked = preview?.blocked || [];
+
+        // Everything the delete option would and would not do belongs on the option
+        // itself: finding out from a toast once the schemas are already gone is too late.
+        const deleteDetails: IConfirmOptionDetailGroup[] = [];
+        if (deletable.length) {
+            deleteDetails.push({
+                label: `Will be deleted (${deletable.length}):`,
+                items: deletable
+            });
+        }
+        if (blocked.length) {
+            deleteDetails.push({
+                label: `Cannot be deleted, stays in the policy (${blocked.length}):`,
+                items: blocked.map((item) => `${item.name} - still used by ${item.usedBy.join(', ')}`),
+                warning: true
+            });
+        }
+
+        let deleteSub: string;
+        if (!deletable.length) {
+            deleteSub = blocked.length
+                ? 'Nothing can be deleted: every schema of this template is still used elsewhere in the policy.'
+                : 'This template has no schemas left to delete.';
+        } else if (blocked.length) {
+            deleteSub = `Permanently deletes ${deletable.length} of ${deletable.length + blocked.length} schemas. This cannot be undone.`;
+        } else {
+            deleteSub = `Permanently deletes ${deletable.length} schema${deletable.length === 1 ? '' : 's'}. This cannot be undone.`;
+        }
+
         const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
             showHeader: false,
             width: '640px',
@@ -205,16 +255,15 @@ export class ManageSchemaTemplatesDialog implements OnInit, OnDestroy {
             data: {
                 header: 'Detach Schema Template',
                 text: `Detach "${templateName}" from this policy?`,
-                details: [
-                    'Template locks and field restrictions will be removed.'
-                ],
+                details: ['Template locks and field restrictions will be removed.'],
                 options: [{
                     title: 'Keep the schemas',
                     sub: 'The imported from template schemas remain in the policy as regular schemas.',
                     value: false
                 }, {
                     title: 'Also delete the schemas',
-                    sub: 'Permanently deletes the imported from template schemas. This cannot be undone and fails for any schema already used by a submitted document.',
+                    sub: deleteSub,
+                    details: deleteDetails,
                     value: true
                 }],
                 optionValue: false,

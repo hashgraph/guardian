@@ -134,6 +134,19 @@ export interface ISchemaTemplateDetachOptions {
     deleteSchemas?: boolean;
 }
 
+/** A copy that cannot be deleted on detach because something still points at it. */
+export interface ISchemaTemplateDetachBlockedSchema {
+    name: string;
+    usedBy: string[];
+}
+
+export interface ISchemaTemplateDetachPreview {
+    /** Names of the copies a detach would delete when 'delete the schemas' is chosen. */
+    deletable: string[];
+    /** Copies that would be kept instead, each with what still references it. */
+    blocked: ISchemaTemplateDetachBlockedSchema[];
+}
+
 export interface ISchemaTemplateFieldConfig {
     locked?: boolean;
 }

@@ -569,6 +569,64 @@ describe('multi-template: DETACH_SCHEMA_TEMPLATE', () => {
         assert.deepEqual(response.body.deleteErrors, []);
     });
 
+    /*
+     * A policy schema outside the binding can hold a sub-schema field pointing at one of
+     * the copies. Deleting that copy leaves the pointer dangling, which is the state these
+     * two cases exist to prevent.
+     */
+    const withRef = (schema, refIri) => ({
+        ...schema,
+        iri: `#${schema.id}`,
+        document: {
+            $id: `#${schema.id}`,
+            type: 'object',
+            properties: refIri ? { child: { $ref: refIri } } : {},
+        },
+    });
+
+    it('keeps a copy another policy schema still points at, and says which', async () => {
+        const bound = withRef(policySchema('policy-schema-template-2', 'Monitoring Report', 'template-2'));
+        const root = withRef(policySchema('policy-schema-root', 'Root Schema'), '#policy-schema-template-2');
+        arrange(twoBindings(), [bound, root]);
+        const deleted = [];
+        stub(DatabaseServer, 'getSchema', async (id) => ({ id, status: SchemaStatus.DRAFT }));
+        stub(DatabaseServer, 'deleteSchemas', async (id) => { deleted.push(id); });
+
+        const response = await detach('template-2', true);
+
+        assert.equal(ok(response), true, response && response.error);
+        assert.deepEqual(deleted, [],
+            'deleting a schema another schema references would leave it with a dangling $ref');
+        assert.equal(response.body.deletedSchemas, 0);
+        assert.equal(response.body.detachedSchemas, 1,
+            'the copy is still detached, it is only the delete that is refused');
+        assert.equal(response.body.deleteErrors.length, 1);
+        assert.match(response.body.deleteErrors[0], /Monitoring Report/);
+        assert.match(response.body.deleteErrors[0], /Root Schema/);
+    });
+
+    it('keeps what a kept copy points at too', async () => {
+        // root -> copy A -> copy B. Deleting B would move the dangling ref into A.
+        const copyA = withRef(
+            policySchema('policy-schema-a', 'Copy A', 'template-2'),
+            '#policy-schema-b'
+        );
+        const copyB = withRef(policySchema('policy-schema-b', 'Copy B', 'template-2'));
+        const root = withRef(policySchema('policy-schema-root', 'Root Schema'), '#policy-schema-a');
+        arrange(twoBindings(), [copyA, copyB, root]);
+        const deleted = [];
+        stub(DatabaseServer, 'getSchema', async (id) => ({ id, status: SchemaStatus.DRAFT }));
+        stub(DatabaseServer, 'deleteSchemas', async (id) => { deleted.push(id); });
+
+        const response = await detach('template-2', true);
+
+        assert.equal(ok(response), true, response && response.error);
+        assert.deepEqual(deleted, [],
+            'keeping A must keep B, otherwise the dangling ref just moves one level down');
+        assert.equal(response.body.detachedSchemas, 2);
+        assert.equal(response.body.deleteErrors.length, 2);
+    });
+
     it('reports a schema that cannot be deleted without failing the detach', async () => {
         arrange(twoBindings(), twoTemplatesSchemas());
         const deleted = [];

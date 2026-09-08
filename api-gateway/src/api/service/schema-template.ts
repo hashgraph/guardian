@@ -1,6 +1,6 @@
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
-import { ISchemaTemplate, ISchemaTemplateDetachOptions, ISchemaTemplateUpdateOptions, ISchemaTemplateUpdatePreview, Permissions, StatusType, TaskAction } from '@guardian/interfaces';
+import { ISchemaTemplate, ISchemaTemplateDetachOptions, ISchemaTemplateDetachPreview, ISchemaTemplateUpdateOptions, ISchemaTemplateUpdatePreview, Permissions, StatusType, TaskAction } from '@guardian/interfaces';
 import { ApiAcceptedResponse, ApiBody, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AuthUser, Auth } from '#auth';
 import { CacheService, EntityOwner, Guardians, InternalException, ServiceError, TaskManager } from '#helpers';
@@ -756,6 +756,50 @@ export class SchemaTemplatesApi {
                 taskManager.addError(task.taskId, { code: 500, message: error.message });
             });
             return task;
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Preview detaching an applied schema template.
+     */
+    @Get('/:templateId/policies/:policyId/detach/preview')
+    @Auth(
+        Permissions.POLICIES_POLICY_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Previews detaching an applied schema template.',
+        description: 'Lists the copied schemas a detach would delete, and the ones it would keep because another schema still references them.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'templateId',
+        type: String,
+        required: true
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        required: true
+    })
+    @ApiOkResponse({
+        description: 'Schema template detach preview.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
+    })
+    @HttpCode(HttpStatus.OK)
+    async previewSchemaTemplateDetach(
+        @AuthUser() user: IAuthUser,
+        @Param('templateId') templateId: string,
+        @Param('policyId') policyId: string
+    ): Promise<ISchemaTemplateDetachPreview> {
+        try {
+            const guardians = new Guardians();
+            return await guardians.previewSchemaTemplateDetach(policyId, templateId, new EntityOwner(user));
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

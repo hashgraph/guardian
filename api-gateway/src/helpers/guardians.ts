@@ -2680,6 +2680,20 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Preview what a detach would delete and what it would have to keep
+     * @param policyId
+     * @param templateId
+     * @param owner
+     */
+    public async previewSchemaTemplateDetach(
+        policyId: string,
+        templateId: string,
+        owner: IOwner
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.PREVIEW_SCHEMA_TEMPLATE_DETACH, { policyId, templateId, owner });
+    }
+
+    /**
      * Detach schema template from policy
      * @param policyId
      * @param owner

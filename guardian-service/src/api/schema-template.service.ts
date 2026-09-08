@@ -29,6 +29,8 @@ import {
     ISchemaTemplate,
     IPolicySchemaTemplateBinding,
     ISchemaTemplateConfig,
+    ISchemaTemplateDetachBlockedSchema,
+    ISchemaTemplateDetachPreview,
     ISchemaTemplateSnapshot,
     ISchemaTemplateSnapshotField,
     ISchemaTemplateSnapshotSchema,
@@ -53,6 +55,7 @@ import {
 import { ApiResponse } from './helpers/api-response.js';
 import { withPolicyTemplateLock } from '../helpers/policy-template-lock.js';
 import { createSchemaAndArtifacts, deleteSchema, SchemaImportExportHelper, updateSchemaDefs } from '../helpers/import-helpers/index.js';
+import { getSchemaReferenceIris } from './schema.service.js';
 
 async function createTemplateTopic(
     template: SchemaTemplate,
@@ -2067,12 +2070,73 @@ export async function removePolicySchemaTemplateSnapshot(
     }));
 }
 
-async function detachSchemaTemplate(
+/**
+ * Which of the schemas about to be deleted are still pointed at from outside the set.
+ * Deleting one of those would leave the referencing schema with a $ref to nothing,
+ * so the reference wins and the copy is kept.
+ *
+ * @returns iri -> names of the schemas still referencing it
+ */
+function findSchemasBlockingDelete(
+    schemasToDelete: Schema[],
+    otherSchemas: Schema[]
+): Map<string, string[]> {
+    const blocked = new Map<string, string[]>();
+    const byIri = new Map<string, Schema>();
+    for (const schema of schemasToDelete) {
+        if (schema.iri) {
+            byIri.set(schema.iri, schema);
+        }
+    }
+    if (!byIri.size) {
+        return blocked;
+    }
+
+    // Keeping a copy keeps everything it points at too, otherwise the dangling $ref
+    // just moves one level down, so this walks outwards until nothing new is kept.
+    let holders: Schema[] = otherSchemas;
+    while (holders.length) {
+        const keptThisRound: Schema[] = [];
+        for (const holder of holders) {
+            const holderName = holder.name || holder.iri;
+            for (const iri of getSchemaReferenceIris(holder)) {
+                const target = byIri.get(iri);
+                if (!target) {
+                    continue;
+                }
+                const names = blocked.get(iri);
+                if (names) {
+                    if (!names.includes(holderName)) {
+                        names.push(holderName);
+                    }
+                } else {
+                    blocked.set(iri, [holderName]);
+                    keptThisRound.push(target);
+                }
+            }
+        }
+        holders = keptThisRound;
+    }
+    return blocked;
+}
+
+interface ISchemaTemplateDetachPlan {
+    policy: Policy;
+    binding: IPolicySchemaTemplateBinding;
+    boundSchemas: Schema[];
+    blockedByIri: Map<string, string[]>;
+}
+
+/**
+ * Everything detach needs to know before it changes anything: which schemas the binding
+ * owns and which of them another schema still points at. The preview endpoint runs the
+ * same function, so what the user is warned about is what actually happens.
+ */
+async function buildSchemaTemplateDetachPlan(
     policyId: string,
     owner: IOwner,
-    templateId: string,
-    deleteSchemas: boolean = false
-): Promise<any> {
+    templateId: string
+): Promise<ISchemaTemplateDetachPlan> {
     // A policy can hold several bindings, so an unnamed detach is ambiguous.
     // Guessing here would silently detach somebody else's template.
     if (!templateId) {
@@ -2094,20 +2158,72 @@ async function detachSchemaTemplate(
     }
 
     const schemaIds = new Set(Object.values(binding.schemaMap || {}).filter(id => !!id).map(id => String(id)));
-    let detachedSchemas = 0;
-    let deletedSchemas = 0;
-    const deleteErrors: string[] = [];
     const schemas = await DatabaseServer.getSchemas({
         topicId: policy.topicId,
         category: SchemaCategory.POLICY
     });
 
+    const boundSchemas: Schema[] = [];
+    const otherSchemas: Schema[] = [];
     for (const schema of schemas as Schema[]) {
         const schemaId = String(schema.id || (schema as any)?._id || '');
         const isBoundSchema = schemaIds.has(schemaId) || schema.templateId === binding.templateId;
-        if (!isBoundSchema) {
-            continue;
+        if (isBoundSchema) {
+            boundSchemas.push(schema);
+        } else {
+            otherSchemas.push(schema);
         }
+    }
+
+    // A policy schema outside the binding may hold a sub-schema field pointing at one of
+    // the copies. Deleting that copy would leave the pointer dangling, so the blocked
+    // copies are detached like the rest and simply not deleted.
+    return {
+        policy,
+        binding,
+        boundSchemas,
+        blockedByIri: findSchemasBlockingDelete(boundSchemas, otherSchemas)
+    };
+}
+
+/**
+ * What a detach would do, without doing it.
+ */
+async function previewSchemaTemplateDetach(
+    policyId: string,
+    owner: IOwner,
+    templateId: string
+): Promise<ISchemaTemplateDetachPreview> {
+    const { boundSchemas, blockedByIri } = await buildSchemaTemplateDetachPlan(policyId, owner, templateId);
+    const deletable: string[] = [];
+    const blocked: ISchemaTemplateDetachBlockedSchema[] = [];
+    for (const schema of boundSchemas) {
+        const schemaName = schema.name || schema.iri || String(schema.id);
+        const usedBy = schema.iri ? blockedByIri.get(schema.iri) : undefined;
+        if (usedBy?.length) {
+            blocked.push({ name: schemaName, usedBy: [...usedBy] });
+        } else {
+            deletable.push(schemaName);
+        }
+    }
+    return { deletable, blocked };
+}
+
+async function detachSchemaTemplate(
+    policyId: string,
+    owner: IOwner,
+    templateId: string,
+    deleteSchemas: boolean = false
+): Promise<any> {
+    const { policy, binding, boundSchemas, blockedByIri } =
+        await buildSchemaTemplateDetachPlan(policyId, owner, templateId);
+
+    let detachedSchemas = 0;
+    let deletedSchemas = 0;
+    const deleteErrors: string[] = [];
+
+    for (const schema of boundSchemas) {
+        const schemaId = String(schema.id || (schema as any)?._id || '');
         const schemaName = schema.name || schemaId;
         schema.templateId = '';
         schema.templateSchemaId = '';
@@ -2115,15 +2231,23 @@ async function detachSchemaTemplate(
         await DatabaseServer.updateSchema(schema.id, schema);
         detachedSchemas++;
 
+        if (!deleteSchemas) {
+            continue;
+        }
+
+        const blockingNames = schema.iri ? blockedByIri.get(schema.iri) : undefined;
+        if (blockingNames?.length) {
+            deleteErrors.push(`${schemaName}: kept, still used by ${blockingNames.join(', ')}`);
+            continue;
+        }
+
         // Detach must always succeed even if some schemas cannot be deleted (e.g. already
         // published), so a delete failure here is reported back, not thrown.
-        if (deleteSchemas) {
-            try {
-                await deleteSchema(schema.id, owner, NewNotifier.empty());
-                deletedSchemas++;
-            } catch (error) {
-                deleteErrors.push(`${schemaName}: ${error.message}`);
-            }
+        try {
+            await deleteSchema(schema.id, owner, NewNotifier.empty());
+            deletedSchemas++;
+        } catch (error) {
+            deleteErrors.push(`${schemaName}: ${error.message}`);
         }
     }
 
@@ -2692,6 +2816,22 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
                 // last, so it cannot guard the window being raced.
                 const result = await withPolicyTemplateLock(policyId, () =>
                     applySchemaTemplate(templateId, policyId, owner, logger));
+                return new MessageResponse(result);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.PREVIEW_SCHEMA_TEMPLATE_DETACH,
+        async (msg: {
+            templateId: string,
+            policyId: string,
+            owner: IOwner
+        }) => {
+            try {
+                const { templateId, policyId, owner } = msg;
+                const result = await previewSchemaTemplateDetach(policyId, owner, templateId);
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);

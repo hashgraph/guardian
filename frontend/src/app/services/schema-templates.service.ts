@@ -59,6 +59,16 @@ export interface SchemaTemplateDetachOptions {
     deleteSchemas?: boolean;
 }
 
+export interface SchemaTemplateDetachBlockedSchema {
+    name: string;
+    usedBy: string[];
+}
+
+export interface SchemaTemplateDetachPreview {
+    deletable: string[];
+    blocked: SchemaTemplateDetachBlockedSchema[];
+}
+
 @Injectable()
 export class SchemaTemplatesService {
     private readonly url: string = `${API_BASE_URL}/schema-templates`;
@@ -170,6 +180,10 @@ export class SchemaTemplatesService {
 
     public pushUpdate(templateId: string, policyId: string, options: SchemaTemplateUpdateOptions): Observable<TaskResponse> {
         return this.http.post<TaskResponse>(`${this.url}/${templateId}/policies/${policyId}/push/update`, options || {});
+    }
+
+    public previewDetach(templateId: string, policyId: string): Observable<SchemaTemplateDetachPreview> {
+        return this.http.get<SchemaTemplateDetachPreview>(`${this.url}/${templateId}/policies/${policyId}/detach/preview`);
     }
 
     public pushDetach(templateId: string, policyId: string, options?: SchemaTemplateDetachOptions): Observable<TaskResponse> {
