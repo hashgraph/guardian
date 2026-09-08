@@ -57,8 +57,32 @@ describe('multi-template import - resolving every binding', () => {
     const resolveAll = async (service, policy, metadata) => {
         assert.equal(typeof service.resolveSchemaTemplates, 'function',
             'resolveSchemaTemplate becomes resolveSchemaTemplates, one pass per binding');
-        return service.resolveSchemaTemplates(metadata, policy, owner, step(), null);
+        return service.resolveSchemaTemplates(metadata, policy, owner, step(), null, logSpy);
     };
+
+    /** Captures what the importer says about a binding it gives up on. */
+    let logSpy;
+    let logged;
+    beforeEach(() => {
+        logged = [];
+        logSpy = { error: async (message) => { logged.push(message); } };
+    });
+
+    it('logs the template it could not resolve rather than dropping it in silence', async () => {
+        stub(DatabaseServer, 'getSchemaTemplateById', async () => null);
+        stub(DatabaseServer, 'getSchemaTemplates', async () => []);
+
+        const service = makeImport();
+        const target = { schemaTemplates: [binding('template-1', { templateMessageId: '' })] };
+
+        await resolveAll(service, target);
+
+        assert.equal(resolved(service).size, 0, 'nothing resolved, so the binding is on its way out');
+        assert.equal(logged.length, 1,
+            'import no longer fails on an unresolvable template, so the log is the only trace left');
+        assert.match(logged[0], /template-1/);
+        assert.match(logged[0], /could not be resolved/i);
+    });
 
     it('resolves both templates of a two-template policy', async () => {
         stub(DatabaseServer, 'getSchemaTemplateById', async (id) => localTemplate(id));

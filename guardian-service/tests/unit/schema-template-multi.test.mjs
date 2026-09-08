@@ -1058,6 +1058,59 @@ describe('multi-template: snapshot excludes the VC envelope from comparable fiel
  * rename reaching the policy through an entirely different path, with no
  * collision check at all until this was fixed alongside it.
  */
+describe('multi-template: a snapshot written before the envelope filter', () => {
+    let handlers;
+
+    beforeEach(async () => {
+        handlers = await register(schemaTemplatesAPI, silentLogger());
+    });
+
+    afterEach(() => restoreStubs());
+
+    it('does not report the VC envelope fields as removed', async () => {
+        const boundPolicy = policy({
+            schemaTemplates: [binding('template-1', { schemaMap: { 'tsid-template-1': 'policy-schema-1' } })],
+        });
+        // as saveApplySnapshot used to write it: envelope fields included
+        const legacySnapshotSchemas = buildTemplateSchemasSnapshot(
+            [templateSchema('template-1', 'Site')]
+        ).schemas;
+        for (const schema of Object.values(legacySnapshotSchemas)) {
+            schema.fields = [
+                { name: '@context', title: '@context', templateFieldId: 'tfid-context' },
+                { name: 'type', title: 'type', templateFieldId: 'tfid-type' },
+                { name: 'id', title: 'id', templateFieldId: 'tfid-id' },
+                ...schema.fields,
+            ];
+        }
+
+        stub(DatabaseServer, 'getSchemaTemplateById', async (id) => template(id));
+        stub(DatabaseServer, 'getPolicyById', async () => boundPolicy);
+        stub(DatabaseServer, 'getSchemas', async (filter) => (filter.category === SchemaCategory.TEMPLATE
+            ? [templateSchema('template-1', 'Site')]
+            : [policySchema('policy-schema-1', 'Site', 'template-1')]));
+        stub(DatabaseServer, 'getSchemaTemplateSnapshotById', async () => ({
+            id: 'snap-existing',
+            config: { schemas: {} },
+            schemas: { schemas: legacySnapshotSchemas },
+        }));
+
+        const response = await callHandler(handlers, MessageAPI.PREVIEW_SCHEMA_TEMPLATE_UPDATE, {
+            templateId: 'template-1',
+            policyId: 'policy-1',
+            owner,
+        });
+
+        assert.equal(ok(response), true, response && response.error);
+        const removedEnvelope = response.body.changes.filter((change) =>
+            change.type === 'FIELD_REMOVE' &&
+            ['@context', 'type', 'id'].includes(change.fieldName));
+        assert.deepEqual(removedEnvelope, [],
+            'the envelope fields are regenerated unconditionally, so a snapshot that predates ' +
+            'the filter must not make them look like the template dropped them');
+    });
+});
+
 describe('multi-template: UPDATE_APPLIED_SCHEMA_TEMPLATE - rename-in-place collisions', () => {
     let update;
 

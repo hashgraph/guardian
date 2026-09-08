@@ -127,12 +127,16 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
                 this.loading = false;
                 // Only ever auto-select once, on the initial load: re-applying it on every
                 // search debounce would silently override a selection the user made by hand.
-                if (this.baseTemplateId && !this.preselectionApplied) {
-                    this.preselectionApplied = true;
+                // Latch only once it actually worked: the bound template can be absent
+                // from the first page (or filtered out by status), and latching on the
+                // attempt left the dialog with nothing selected and no way to recover.
+                // The user's own pick still wins, which is what the latch guarded.
+                if (this.baseTemplateId && !this.preselectionApplied && !this.selectedTemplateId) {
                     const preselected = this.list.find(
                         (template) => this.getTemplateId(template) === this.baseTemplateId
                     );
                     if (preselected) {
+                        this.preselectionApplied = true;
                         this.selectTemplate(preselected);
                     }
                 }
@@ -160,8 +164,10 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (preview) => {
-                    this.updatePreview = preview;
+                    // Clear first: assigning the preview runs the setter, which
+                    // auto-resolves every conflict left with a single option.
                     this.resolutions = {};
+                    this.updatePreview = preview;
                     this.previewLoading = false;
                 },
                 error: () => {

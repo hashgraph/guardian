@@ -352,7 +352,14 @@ export class PolicyImportExport {
             for (const snapshot of preparedComponents.schemaTemplateSnapshots) {
                 const templateId = snapshot?.templateId;
                 if (!templateId) {
-                    continue;
+                    // Skipping quietly writes a zip whose policy.json still names the
+                    // binding while no snapshot file backs it. Import then drops that
+                    // binding and strips its schemas' markers, so every lock is lost
+                    // with nothing anywhere saying why - fail the export instead.
+                    throw new Error(
+                        `Schema template snapshot ${snapshot?.id || '(no id)'} has no templateId ` +
+                        'and cannot be exported. The policy binding it belongs to would be lost on import.'
+                    );
                 }
                 zip.folder(`schemaTemplate/${templateId}`);
                 zip.file(

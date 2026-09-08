@@ -271,9 +271,11 @@ export class PreviewPolicyDialog {
             detach: false,
             valid: false,
         };
-        if (row.messageId) {
-            this.checkSchemaTemplateRow(row, row.messageId);
-        }
+        // Always check, including with no message id at all: a template applied while
+        // still draft has none, and leaving status at '' makes the row block the import
+        // while rendering no error affordance at all - every one of them keys off
+        // status === 'invalid', which is exactly what the empty string resolves to here.
+        this.checkSchemaTemplateRow(row, row.messageId);
         return row;
     }
 

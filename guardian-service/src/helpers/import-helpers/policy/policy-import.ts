@@ -630,7 +630,8 @@ export class PolicyImport {
         policy: Policy,
         user: IOwner,
         step: INotificationStep,
-        userId: string | null
+        userId: string | null,
+        logger?: PinoLogger
     ): Promise<void> {
         step.start();
         this.schemaTemplates = new Map<string, SchemaTemplate>();
@@ -649,6 +650,18 @@ export class PolicyImport {
             }
             const template = await this.resolveSchemaTemplateBinding(binding, override, user, userId);
             if (!template) {
+                // Import used to fail outright here. Dropping the binding instead keeps
+                // one unavailable template from killing an otherwise fine import, but
+                // the policy loses that template's locks with nothing on screen saying
+                // so, so it must at least be recoverable from the log. A deliberate
+                // detach never reaches this point - it is skipped above.
+                await logger?.error?.(
+                    `Policy import: schema template "${binding.templateName || sourceTemplateId}" ` +
+                    `(${sourceTemplateId}) could not be resolved on this instance. ` +
+                    'The binding was dropped and its schemas lost their template restrictions.',
+                    ['GUARDIAN_SERVICE'],
+                    userId
+                );
                 continue;
             }
             const localTemplateId = String(template.id);
@@ -1199,7 +1212,8 @@ export class PolicyImport {
             policy,
             user,
             this.notifier.getStep(STEP_RESOLVE_SCHEMA_TEMPLATE),
-            userId
+            userId,
+            logger
         );
         /*
          * A binding can survive the snapshot check above and still fail to resolve to

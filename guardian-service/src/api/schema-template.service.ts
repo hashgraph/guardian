@@ -730,6 +730,27 @@ function toSnapshotField(
  */
 const SYSTEM_ENVELOPE_FIELD_NAMES = new Set(['@context', 'type', 'id']);
 
+/**
+ * Snapshots written before the envelope filter landed still carry `@context`, `type`
+ * and `id` in their fields. Diffing one of those against a freshly built (filtered)
+ * snapshot reports all three as removed on the first preview after the upgrade - the
+ * exact diff the filter exists to prevent - so the stored side is normalised the same
+ * way at read time rather than migrated.
+ */
+function normalizeSnapshotSchemas(
+    schemas: Record<string, ISchemaTemplateSnapshotSchema>
+): Record<string, ISchemaTemplateSnapshotSchema> {
+    const result: Record<string, ISchemaTemplateSnapshotSchema> = {};
+    for (const [templateSchemaId, schema] of Object.entries(schemas || {})) {
+        const fields = schema?.fields || [];
+        const filtered = fields.filter((field) => !SYSTEM_ENVELOPE_FIELD_NAMES.has(field?.name));
+        result[templateSchemaId] = filtered.length === fields.length
+            ? schema
+            : { ...schema, fields: filtered };
+    }
+    return result;
+}
+
 function toSnapshotSchema(
     schema: Schema,
     templateSchemaByIri: Map<string, string>
@@ -1228,7 +1249,7 @@ async function loadSchemaTemplateUpdateContext(
 function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<ReturnType<typeof loadSchemaTemplateUpdateContext>>): ISchemaTemplateUpdatePreview {
     const changes: ISchemaTemplateUpdateChange[] = [];
     const conflicts: ISchemaTemplateUpdateConflict[] = [];
-    const previousSchemas = context.snapshot.schemas?.schemas || {};
+    const previousSchemas = normalizeSnapshotSchemas(context.snapshot.schemas?.schemas || {});
     const nextSchemas = context.nextSchemas.schemas || {};
     const previousConfig = context.snapshot.config || { schemas: {} };
     const nextConfig = normalizeTemplateConfigKeys(context.template.config, context.templateSchemas);
