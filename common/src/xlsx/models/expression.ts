@@ -1,14 +1,8 @@
 import * as mathjs from 'mathjs';
 
 /**
- * Largest span a single range (A1:A9999) may expand to.
- *
- * parseRange builds one string per row, so an unbounded range from an uploaded
- * file is an allocation the process cannot survive: `=SUM(A1:A99999999)` asks for
- * 100 million strings. That is an OOM abort rather than an exception, so the
- * try/catch around the parse cannot contain it.
- *
- * Excel's own ceiling of 1,048,576 rows is an upper bound, not a safe one.
+ * Largest span a single range may expand to. parseRange builds one string per row,
+ * so `=SUM(A1:A99999999)` is an OOM abort rather than a catchable exception.
  */
 export const MAX_RANGE_CELLS = 10_000;
 

@@ -4,15 +4,12 @@ import {
 } from '../../../dist/xlsx/models/expression.js';
 
 /*
- * parseRange expands a range into one string per row, with the row
- * numbers taken from the formula text of an uploaded .xlsx and no bound of any
- * kind. `=SUM(A1:A99999999)` asks for 100 million strings; the process aborts on
- * OOM, which the try/catch around the parse cannot contain because a heap abort
- * is not an exception.
+ * parseRange expands a range into one string per row, unbounded, from the formula
+ * text of an uploaded .xlsx: `=SUM(A1:A99999999)` asks for 100 million strings and
+ * aborts the process on OOM, which no try/catch can contain.
  *
- * These tests deliberately do NOT attempt the unbounded allocation - a test that
- * reproduced the crash would take the runner down with it. They assert the bound
- * instead: the refusal happens before anything is allocated.
+ * These tests deliberately do NOT attempt that allocation - they assert the refusal
+ * happens before anything is allocated.
  */
 describe('@unit Expression range bounds', () => {
     it('expands an ordinary range unchanged', () => {
@@ -44,6 +41,22 @@ describe('@unit Expression range bounds', () => {
     it('says why, rather than reporting a syntax error', () => {
         const e = new Expression('eq', 'sum(A1:A99999999)');
         assert.throws(() => e.parse(), /spans 99999999 cells/);
+    });
+
+    it('the reason survives into what generate-blocks reports', () => {
+        // the catch there used to discard the error and report a generic failure, so
+        // "says why" held in this suite and not for anyone uploading a file
+        const e = new Expression('F1', 'sum(A1:A99999999)');
+
+        let message;
+        try {
+            e.parse();
+        } catch (error) {
+            message = `Failed to parse formula (${e.name}=${e.formulae}). ${error?.message ?? ''}`.trim();
+        }
+
+        assert.match(message, /A1:A99999999/);
+        assert.match(message, new RegExp(`more than the ${MAX_RANGE_CELLS} allowed`));
     });
 
     it('still reports a genuinely malformed range as invalid', () => {
