@@ -14148,7 +14148,11 @@ paths:
         the response and pass them **out of band** to another person.
         **Import:** the recipient calls this endpoint with the same `messageId`
         plus the DER-encoded private `key` they received, so their account can
-        use the policy like the original owner.
+        use the policy like the original owner. Either way the call is refused
+        with **409** when this DID already holds a key for that `messageId`: one
+        vault slot is addressed per `did#messageId`, so a second key would
+        overwrite the first with no way to recover it. Delete the existing key
+        before creating another.
       operationId: ProfileApi_generateKey
       parameters: []
       requestBody:
@@ -14216,6 +14220,17 @@ paths:
                 message: Forbidden resource
                 error: Forbidden
                 statusCode: 403
+        '409':
+          description: Conflict.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictErrorDTO'
+              example:
+                statusCode: 409
+                message: >-
+                  A key for this policy already exists. Delete it before
+                  creating another.
         '422':
           description: Unprocessable entity.
           content:
