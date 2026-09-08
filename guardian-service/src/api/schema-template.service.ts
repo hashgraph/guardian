@@ -1352,6 +1352,30 @@ function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<ReturnType
         }
     }
 
+    /*
+     * Removal candidates first, so the "who still points at this" check below can tell
+     * a real holder from a sibling that is about to be removed as well. A sibling is
+     * only optimistically excluded here - the user may still choose to keep it, which
+     * is why the update path recomputes this exactly against the chosen set.
+     */
+    const removalCandidates: Schema[] = [];
+    for (const templateSchemaId of Object.keys(previousSchemas)) {
+        if (nextSchemas[templateSchemaId]) {
+            continue;
+        }
+        const policySchema = context.policySchemaByTemplateId.get(templateSchemaId);
+        if (policySchema) {
+            removalCandidates.push(policySchema);
+        }
+    }
+    const candidateIds = new Set(removalCandidates.map((item) => String(item.id || (item as any)?._id || '')));
+    const removalHolders = findSchemasBlockingDelete(
+        removalCandidates,
+        (context.policySchemas || []).filter(
+            (item) => !candidateIds.has(String(item.id || (item as any)?._id || ''))
+        )
+    );
+
     for (const [templateSchemaId, previousSchema] of Object.entries(previousSchemas)) {
         if (nextSchemas[templateSchemaId]) {
             continue;
@@ -1361,9 +1385,15 @@ function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<ReturnType
             continue;
         }
         const customFieldsCount = getRuntimeCustomFields(policySchema).length;
-        const conflictReason = customFieldsCount
-            ? ` It contains ${customFieldsCount} custom policy field${customFieldsCount === 1 ? '' : 's'}, so choose whether to keep it as a custom schema or remove it from the policy.`
-            : ' Choose whether to keep it as a custom schema or remove it from the policy.';
+        const blockedBy = (policySchema.iri ? removalHolders.get(policySchema.iri) : undefined) || [];
+        const customFieldsReason = customFieldsCount
+            ? ` It contains ${customFieldsCount} custom policy field${customFieldsCount === 1 ? '' : 's'}.`
+            : '';
+        // Removing a schema another one still points at would leave that one with a
+        // $ref to nothing, so keeping it is the only offer worth making.
+        const conflictReason = blockedBy.length
+            ? `${customFieldsReason} It is still used by ${blockedBy.join(', ')}, so it can only be kept as a custom schema.`
+            : `${customFieldsReason} Choose whether to keep it as a custom schema or remove it from the policy.`;
         changes.push(createChange(
             SchemaTemplateUpdateChangeType.SCHEMA_REMOVE,
             `Schema "${previousSchema.name}" was removed from the template.`,
@@ -1380,10 +1410,13 @@ function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<ReturnType
             {
                 templateSchemaId,
                 schemaName: previousSchema.name,
-                allowedActions: [
-                    SchemaTemplateUpdateResolutionAction.KEEP_AS_CUSTOM_SCHEMA,
-                    SchemaTemplateUpdateResolutionAction.REMOVE_FROM_POLICY
-                ]
+                blockedBy,
+                allowedActions: blockedBy.length
+                    ? [SchemaTemplateUpdateResolutionAction.KEEP_AS_CUSTOM_SCHEMA]
+                    : [
+                        SchemaTemplateUpdateResolutionAction.KEEP_AS_CUSTOM_SCHEMA,
+                        SchemaTemplateUpdateResolutionAction.REMOVE_FROM_POLICY
+                    ]
             }
         ));
     }
@@ -1429,13 +1462,84 @@ function validateSchemaTemplateUpdateResolutions(
     options?: ISchemaTemplateUpdateOptions
 ): Map<string, SchemaTemplateUpdateResolutionAction> {
     const resolutions = getResolutionMap(options);
-    for (const conflict of preview.conflicts.filter((item) => item.allowedActions.length > 1)) {
+    for (const conflict of preview.conflicts) {
         const action = resolutions.get(conflict.id);
-        if (!action || !conflict.allowedActions.includes(action)) {
+        // A conflict with one allowed action needs no answer, but an answer naming a
+        // different action is still wrong - a client holding a stale preview must not
+        // be able to ask for a removal this conflict has since stopped offering.
+        if (action && !conflict.allowedActions.includes(action)) {
+            throw new Error(`Schema template update conflict does not allow this resolution: ${conflict.message}`);
+        }
+        if (conflict.allowedActions.length > 1 && !action) {
             throw new Error(`Schema template update conflict requires resolution: ${conflict.message}`);
         }
     }
     return resolutions;
+}
+
+/**
+ * "Remove from policy" is a hard delete, and it runs after the binding is committed
+ * (rollback cannot bring a deleted row back). So everything that could make it fail
+ * has to be caught here, while the whole update can still be refused.
+ *
+ * The preview already drops the remove option for a schema another one references,
+ * but it has to guess about sibling candidates - it excludes them, since the user
+ * usually removes the whole group. This runs against the set actually chosen, so a
+ * sibling the user decided to keep is counted as the holder it now is.
+ */
+function validateSchemaTemplateRemovals(
+    context: Awaited<ReturnType<typeof loadSchemaTemplateUpdateContext>>,
+    preview: ISchemaTemplateUpdatePreview,
+    resolutions: Map<string, SchemaTemplateUpdateResolutionAction>
+): void {
+    const removals: Schema[] = [];
+    const removalIds = new Set<string>();
+    for (const conflict of preview.conflicts) {
+        if (conflict.type !== SchemaTemplateUpdateConflictType.SCHEMA_REMOVED_WITH_POLICY_USAGE) {
+            continue;
+        }
+        if (resolutions.get(conflict.id) !== SchemaTemplateUpdateResolutionAction.REMOVE_FROM_POLICY) {
+            continue;
+        }
+        const schema = conflict.templateSchemaId
+            ? context.policySchemaByTemplateId.get(conflict.templateSchemaId)
+            : undefined;
+        if (!schema) {
+            continue;
+        }
+        removals.push(schema);
+        removalIds.add(String(schema.id || (schema as any)?._id || ''));
+    }
+    if (!removals.length) {
+        return;
+    }
+
+    for (const schema of removals) {
+        if (schema.status !== SchemaStatus.DRAFT && schema.status !== SchemaStatus.ERROR) {
+            throw new Error(
+                `Schema "${schema.name}" cannot be removed from the policy because it is ${schema.status}. ` +
+                'Keep it as a custom schema instead.'
+            );
+        }
+    }
+
+    const survivors = (context.policySchemas || []).filter(
+        (item) => !removalIds.has(String(item.id || (item as any)?._id || ''))
+    );
+    const blocked = findSchemasBlockingDelete(removals, survivors);
+    const messages: string[] = [];
+    for (const schema of removals) {
+        const holders = schema.iri ? blocked.get(schema.iri) : undefined;
+        if (holders?.length) {
+            messages.push(`"${schema.name}" is still used by ${holders.join(', ')}`);
+        }
+    }
+    if (messages.length) {
+        throw new Error(
+            'These schemas cannot be removed from the policy, keep them as custom schemas instead: ' +
+            `${messages.join('; ')}.`
+        );
+    }
 }
 
 function applySchemaDocumentSettings(document: any, name: string, description: string): void {
@@ -1491,6 +1595,7 @@ async function updateAppliedSchemaTemplate(
     const context = await loadSchemaTemplateUpdateContext(templateId, policyId, owner, true, options?.targetTemplateId);
     const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
     const resolutions = validateSchemaTemplateUpdateResolutions(preview, options);
+    validateSchemaTemplateRemovals(context, preview, resolutions);
     const nextConfig = normalizeTemplateConfigKeys(context.template.config, context.templateSchemas);
     const previousSnapshot = context.snapshot;
     const schemaMap: Record<string, string> = {};
@@ -1727,10 +1832,15 @@ async function updateAppliedSchemaTemplate(
         throw error;
     }
 
+    // Pre-validated above, so a failure here is a race rather than the normal case -
+    // but it still leaves a schema the binding says is gone, which the caller has to
+    // hear about instead of it living only in the service log.
+    const deleteErrors: string[] = [];
     for (const policySchema of pendingRemovals) {
         try {
             await removePolicySchema(policySchema, owner);
         } catch (error) {
+            deleteErrors.push(`${policySchema?.name || policySchema?.id}: ${error?.message}`);
             await logger.error(
                 `Schema template update committed, but removing policy schema ${policySchema?.id} failed: ${error?.message}`,
                 ['GUARDIAN_SERVICE']
@@ -1744,6 +1854,9 @@ async function updateAppliedSchemaTemplate(
             `Schema template update committed, but removing the superseded snapshot failed: ${error?.message}`,
             ['GUARDIAN_SERVICE']
         );
+    }
+    if (deleteErrors.length) {
+        (result as any).deleteErrors = deleteErrors;
     }
     return result;
 }

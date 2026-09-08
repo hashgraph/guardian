@@ -244,8 +244,15 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
             return this.hasDetails(change);
         });
         this.visibleChangesCount = this.visibleChanges.length;
+        // A conflict left with a single option is still worth showing - it is how the
+        // user finds out a schema will be kept rather than removed, and why.
         this.visibleConflicts = (this._updatePreview?.conflicts || [])
-            .filter((conflict) => (conflict.allowedActions || []).length > 1);
+            .filter((conflict) => (conflict.allowedActions || []).length > 0);
+        for (const conflict of this.visibleConflicts) {
+            if (conflict.allowedActions.length === 1 && !this.resolutions[conflict.id]) {
+                this.resolutions[conflict.id] = conflict.allowedActions[0];
+            }
+        }
         this.visibleConflictsCount = this.visibleConflicts.length;
 
         const groups = new Map<string, SchemaTemplateDiffGroup>();

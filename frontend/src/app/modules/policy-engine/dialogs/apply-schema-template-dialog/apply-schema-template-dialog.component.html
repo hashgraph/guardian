@@ -216,6 +216,15 @@
                       }
                     </button>
                   }
+                  @if (conflict.blockedBy?.length) {
+                    <button
+                      type="button"
+                      class="resolution-button resolution-button-blocked"
+                      disabled
+                      title="Still used by {{ conflict.blockedBy?.join(', ') }}">
+                      Remove
+                    </button>
+                  }
                 </div>
               </div>
             }

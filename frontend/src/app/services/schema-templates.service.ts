@@ -24,6 +24,8 @@ export interface SchemaTemplateUpdateConflict {
     id: string;
     message: string;
     allowedActions: SchemaTemplateUpdateResolutionAction[];
+    /** Schemas that still reference this one, so removing it is not on offer. */
+    blockedBy?: string[];
 }
 
 export interface SchemaTemplateUpdatePreview {

@@ -99,6 +99,7 @@ const policySchema = (id, name, templateId = '') => ({
     id,
     name,
     templateId,
+    status: SchemaStatus.DRAFT,
     templateSchemaId: templateId ? `tsid-${templateId}` : '',
     topicId: '0.0.10',
     category: SchemaCategory.POLICY,
@@ -732,6 +733,180 @@ describe('multi-template: UPDATE_APPLIED_SCHEMA_TEMPLATE - switching to a differ
             'template-1\'s own schema is gone from the target and must show as removed, not silently dropped - ' +
             'the policy schema is keyed by templateId=template-1, and looking it up under the target\'s id would find nothing');
         assert.equal(schemaRemove.schemaName, 'Site');
+    });
+
+    /*
+     * "Remove from policy" is a hard delete that runs after the binding is committed,
+     * so an offer to remove a schema another one still references is an offer to break
+     * the policy with no way back.
+     */
+    const referencing = (schema, refIri) => ({
+        ...schema,
+        iri: `#${schema.id}`,
+        document: {
+            $id: `#${schema.id}`,
+            type: 'object',
+            properties: refIri ? { child: { $ref: refIri } } : {},
+            // a real sub-schema field carries the referenced definition alongside it;
+            // without it the Schema model cannot resolve the field and throws
+            $defs: refIri
+                ? { [refIri]: { $id: refIri, type: 'object', properties: {} } }
+                : {},
+        },
+    });
+
+    const removalCase = (extraPolicySchemas = []) => {
+        const boundPolicy = policy({
+            schemaTemplates: [binding('template-1', { schemaMap: { 'tsid-template-1': 'policy-schema-1' } })],
+        });
+        const previousSnapshotSchemas = buildTemplateSchemasSnapshot(
+            [templateSchema('template-1', 'Monitoring Report')]
+        ).schemas;
+        const bound = referencing(policySchema('policy-schema-1', 'Monitoring Report', 'template-1'));
+
+        stub(DatabaseServer, 'getSchemaTemplateById', async (id) => template(id));
+        stub(DatabaseServer, 'getPolicyById', async () => boundPolicy);
+        stub(DatabaseServer, 'getSchemas', async (filter) => {
+            if (filter.category === SchemaCategory.TEMPLATE) {
+                return filter.templateId === 'template-2'
+                    ? [templateSchema('template-2', 'Location')]
+                    : [templateSchema('template-1', 'Monitoring Report')];
+            }
+            return [bound, ...extraPolicySchemas];
+        });
+        stub(DatabaseServer, 'getSchemaTemplateSnapshotById', async () => ({
+            id: 'snap-existing',
+            config: { schemas: {} },
+            schemas: { schemas: previousSnapshotSchemas },
+        }));
+        return { boundPolicy, bound };
+    };
+
+    const previewSwap = () => callHandler(handlers, MessageAPI.PREVIEW_SCHEMA_TEMPLATE_UPDATE, {
+        templateId: 'template-1',
+        policyId: 'policy-1',
+        owner,
+        targetTemplateId: 'template-2',
+    });
+
+    const findRemovalConflict = (body) => body.conflicts
+        .find((item) => item.type === 'SCHEMA_REMOVED_WITH_POLICY_USAGE');
+
+    it('offers removal for a schema nothing else points at', async () => {
+        removalCase();
+
+        const response = await previewSwap();
+
+        assert.equal(ok(response), true, response && response.error);
+        const conflict = findRemovalConflict(response.body);
+        assert.ok(conflict);
+        assert.deepEqual(conflict.blockedBy, []);
+        assert.ok(conflict.allowedActions.includes('REMOVE_FROM_POLICY'));
+    });
+
+    it('withdraws the removal option when another policy schema still points at it', async () => {
+        removalCase([referencing(policySchema('policy-schema-root', 'Root Schema'), '#policy-schema-1')]);
+
+        const response = await previewSwap();
+
+        assert.equal(ok(response), true, response && response.error);
+        const conflict = findRemovalConflict(response.body);
+        assert.ok(conflict);
+        assert.deepEqual(conflict.blockedBy, ['Root Schema']);
+        assert.deepEqual(conflict.allowedActions, ['KEEP_AS_CUSTOM_SCHEMA'],
+            'removing it would leave Root Schema with a $ref to nothing');
+        assert.match(conflict.message, /still used by Root Schema/);
+    });
+
+    it('refuses a removal resolution the conflict no longer allows', async () => {
+        removalCase([referencing(policySchema('policy-schema-root', 'Root Schema'), '#policy-schema-1')]);
+        const removed = [];
+        stub(DatabaseServer, 'deleteSchemas', async (id) => { removed.push(id); });
+        stub(DatabaseServer, 'updatePolicy', async (item) => item);
+
+        const response = await callHandler(handlers, MessageAPI.UPDATE_APPLIED_SCHEMA_TEMPLATE, {
+            templateId: 'template-1',
+            policyId: 'policy-1',
+            owner,
+            options: {
+                targetTemplateId: 'template-2',
+                resolutions: [{
+                    conflictId: 'SCHEMA_REMOVED_WITH_POLICY_USAGE:tsid-template-1::',
+                    action: 'REMOVE_FROM_POLICY',
+                }],
+            },
+        });
+
+        assert.equal(ok(response), false,
+            'a client holding a stale preview must not be able to ask for a withdrawn removal');
+        assert.deepEqual(removed, [], 'nothing may be deleted when the update is refused');
+    });
+
+    /*
+     * The preview has to guess about siblings: it excludes other removal candidates
+     * when working out who still points at a schema, because the usual case is that
+     * the whole outgoing group goes. Keeping one of them turns it back into a holder,
+     * and only the update path knows that, so it re-checks against the chosen set.
+     */
+    it('refuses to remove a schema a sibling the user kept still points at', async () => {
+        const boundPolicy = policy({
+            schemaTemplates: [binding('template-1', {
+                schemaMap: { 'tsid-a': 'policy-schema-a', 'tsid-b': 'policy-schema-b' },
+            })],
+        });
+        const outgoing = [
+            { ...templateSchema('template-1', 'Copy A'), templateSchemaId: 'tsid-a' },
+            { ...templateSchema('template-1', 'Copy B'), templateSchemaId: 'tsid-b' },
+        ];
+        const previousSnapshotSchemas = buildTemplateSchemasSnapshot(outgoing).schemas;
+        const copyA = referencing(
+            { ...policySchema('policy-schema-a', 'Copy A', 'template-1'), templateSchemaId: 'tsid-a' },
+            '#policy-schema-b'
+        );
+        const copyB = referencing(
+            { ...policySchema('policy-schema-b', 'Copy B', 'template-1'), templateSchemaId: 'tsid-b' }
+        );
+
+        stub(DatabaseServer, 'getSchemaTemplateById', async (id) => template(id));
+        stub(DatabaseServer, 'getPolicyById', async () => boundPolicy);
+        stub(DatabaseServer, 'getSchemas', async (filter) => (filter.category === SchemaCategory.TEMPLATE
+            ? (filter.templateId === 'template-2' ? [templateSchema('template-2', 'Location')] : outgoing)
+            : [copyA, copyB]));
+        stub(DatabaseServer, 'getSchemaTemplateSnapshotById', async () => ({
+            id: 'snap-existing',
+            config: { schemas: {} },
+            schemas: { schemas: previousSnapshotSchemas },
+        }));
+
+        const preview = await previewSwap();
+        assert.equal(ok(preview), true, preview && preview.error);
+        const conflictB = preview.body.conflicts.find((item) => item.templateSchemaId === 'tsid-b');
+        assert.ok(conflictB);
+        assert.ok(conflictB.allowedActions.includes('REMOVE_FROM_POLICY'),
+            'Copy A is itself on the way out, so at preview time removing Copy B looks fine');
+
+        const conflictA = preview.body.conflicts.find((item) => item.templateSchemaId === 'tsid-a');
+        const removed = [];
+        stub(DatabaseServer, 'deleteSchemas', async (id) => { removed.push(id); });
+        stub(DatabaseServer, 'updatePolicy', async (item) => item);
+
+        const response = await callHandler(handlers, MessageAPI.UPDATE_APPLIED_SCHEMA_TEMPLATE, {
+            templateId: 'template-1',
+            policyId: 'policy-1',
+            owner,
+            options: {
+                targetTemplateId: 'template-2',
+                resolutions: [
+                    { conflictId: conflictA.id, action: 'KEEP_AS_CUSTOM_SCHEMA' },
+                    { conflictId: conflictB.id, action: 'REMOVE_FROM_POLICY' },
+                ],
+            },
+        });
+
+        assert.equal(ok(response), false,
+            'keeping Copy A makes it a holder, so removing Copy B would leave it with a dangling $ref');
+        assert.match(response.error, /Copy B.*still used by.*Copy A/);
+        assert.deepEqual(removed, [], 'the update must be refused before anything is written');
     });
 
     it('rejects switching to a template already applied via another binding', async () => {
