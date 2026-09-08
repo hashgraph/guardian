@@ -15,9 +15,14 @@ export const TABLE_EXPAND_DEFAULT_ROWS = 1000;
  * Roughly 20 MB of row objects and their serialised form at about 200 bytes a row.
  * Set TABLE_EXPAND_MAX_ROWS to override, or to 0 for no ceiling.
  */
+const tableExpandMaxRowsValue = process.env.TABLE_EXPAND_MAX_ROWS?.trim();
+const tableExpandMaxRows = Number(tableExpandMaxRowsValue);
+
 export const TABLE_EXPAND_MAX_ROWS =
-    Number.isInteger(Number(process.env.TABLE_EXPAND_MAX_ROWS))
-        ? Number(process.env.TABLE_EXPAND_MAX_ROWS)
+    tableExpandMaxRowsValue &&
+    Number.isInteger(tableExpandMaxRows) &&
+    tableExpandMaxRows >= 0
+        ? tableExpandMaxRows
         : 100000;
 
 /**
@@ -35,38 +40,10 @@ export interface TableExpandOptions {
     delimiter?: string;
 }
 
-/**
- * Parse CSV text into the internal table representation.
- */
-export function parseCsvToTable(
-    csvText: string,
-    delimiter: string = ',',
-    declaredColumnKeys?: string[],
-    window?: { offset?: number, limit?: number, columns?: string[] }
-): {
-    columnKeys: string[];
-    rows: Record<string, string>[];
-    rowsTotal: number;
-} {
-    if (csvText && csvText.charCodeAt(0) === 0xFEFF) {
-        csvText = csvText.slice(1);
-    }
-
-    const parsedRows: string[][] = [];
-
+function* iterateCsvRows(csvText: string, delimiter: string): Generator<string[]> {
     let currentCell: string = '';
     let currentRow: string[] = [];
     let insideQuotes: boolean = false;
-
-    const pushCurrentCell = (): void => {
-        currentRow.push(currentCell);
-        currentCell = '';
-    };
-
-    const pushCurrentRow = (): void => {
-        parsedRows.push(currentRow);
-        currentRow = [];
-    };
 
     for (let i = 0; i < csvText.length; i++) {
         const char = csvText[i];
@@ -88,7 +65,8 @@ export function parseCsvToTable(
         const isLineBreak = char === '\n' || char === '\r';
 
         if (isDelimiter && !insideQuotes) {
-            pushCurrentCell();
+            currentRow.push(currentCell);
+            currentCell = '';
             continue;
         }
 
@@ -96,8 +74,10 @@ export function parseCsvToTable(
             if (char === '\r' && csvText[i + 1] === '\n') {
                 i += 1;
             }
-            pushCurrentCell();
-            pushCurrentRow();
+            currentRow.push(currentCell);
+            yield currentRow;
+            currentCell = '';
+            currentRow = [];
             continue;
         }
 
@@ -105,11 +85,32 @@ export function parseCsvToTable(
     }
 
     if (currentCell.length > 0 || currentRow.length > 0) {
-        pushCurrentCell();
-        pushCurrentRow();
+        currentRow.push(currentCell);
+        yield currentRow;
+    }
+}
+
+/**
+ * Parse CSV text into the internal table representation.
+ */
+export function parseCsvToTable(
+    csvText: string,
+    delimiter: string = ',',
+    declaredColumnKeys?: string[],
+    window?: { offset?: number, limit?: number, columns?: string[] }
+): {
+    columnKeys: string[];
+    rows: Record<string, string>[];
+    rowsTotal: number;
+} {
+    if (csvText && csvText.charCodeAt(0) === 0xFEFF) {
+        csvText = csvText.slice(1);
     }
 
-    if (parsedRows.length === 0) {
+    const parsedRows = iterateCsvRows(csvText, delimiter);
+    const firstRow = parsedRows.next();
+
+    if (firstRow.done) {
         return {
             columnKeys: [],
             rows: [],
@@ -117,17 +118,10 @@ export function parseCsvToTable(
         };
     }
 
-    const headerRow: string[] = parsedRows[0].map((s) => s.trim());
+    const headerRow: string[] = firstRow.value.map((s) => s.trim());
 
     const hasDeclaredKeys = Array.isArray(declaredColumnKeys) && declaredColumnKeys.length > 0;
     const columnKeys: string[] = hasDeclaredKeys ? declaredColumnKeys : headerRow;
-
-    const dataRows: string[][] = parsedRows
-        .slice(1)
-        .filter((row) => {
-            const hasAnyValue = row.some((value) => value.trim() !== '');
-            return row.length > 0 && hasAnyValue;
-        });
 
     const requestedColumns = window && Array.isArray(window.columns) ? window.columns : [];
     const filterColumns = requestedColumns.length > 0;
@@ -136,19 +130,26 @@ export function parseCsvToTable(
         : columnKeys;
 
     const offset = Math.max(0, Math.trunc(window?.offset ?? 0));
-    const requested = Math.trunc(window?.limit ?? dataRows.length);
+    const requested = Math.trunc(window?.limit ?? Number.POSITIVE_INFINITY);
     const limit = Math.max(0, requested);
 
     const objects: Record<string, string>[] = [];
-
     const nothingToReturn = filterColumns && wantedColumns.length === 0;
+    let rowsTotal = 0;
 
-    for (let rowIndex = offset; !nothingToReturn && rowIndex < dataRows.length; rowIndex++) {
-        if (objects.length >= limit) {
-            break;
+    for (const row of parsedRows) {
+        const hasAnyValue = row.some((value) => value.trim() !== '');
+        if (row.length === 0 || !hasAnyValue) {
+            continue;
         }
 
-        const row = dataRows[rowIndex];
+        const rowIndex = rowsTotal;
+        rowsTotal += 1;
+
+        if (nothingToReturn || !(rowIndex >= offset) || objects.length >= limit) {
+            continue;
+        }
+
         const obj: Record<string, string> = {};
 
         for (let columnIndex = 0; columnIndex < columnKeys.length; columnIndex++) {
@@ -166,7 +167,7 @@ export function parseCsvToTable(
     return {
         columnKeys: wantedColumns,
         rows: objects,
-        rowsTotal: dataRows.length
+        rowsTotal
     };
 }
 

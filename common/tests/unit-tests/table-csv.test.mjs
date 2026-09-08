@@ -8,7 +8,36 @@ import {
     parseIfJson
 } from '../../dist/helpers/table-csv.js';
 
+async function loadConfiguredMaxRows(value) {
+    const previousValue = process.env.TABLE_EXPAND_MAX_ROWS;
+    process.env.TABLE_EXPAND_MAX_ROWS = value;
+
+    try {
+        const moduleUrl = new URL('../../dist/helpers/table-csv.js', import.meta.url);
+        moduleUrl.searchParams.set('maxRows', `${value}-${Date.now()}-${Math.random()}`);
+        const module = await import(moduleUrl.href);
+        return module.TABLE_EXPAND_MAX_ROWS;
+    } finally {
+        if (previousValue === undefined) {
+            delete process.env.TABLE_EXPAND_MAX_ROWS;
+        } else {
+            process.env.TABLE_EXPAND_MAX_ROWS = previousValue;
+        }
+    }
+}
+
 describe('table-csv helpers moved into common', () => {
+    it('uses the default maximum when its environment value is unsafe', async () => {
+        assert.equal(await loadConfiguredMaxRows(''), 100000);
+        assert.equal(await loadConfiguredMaxRows('   '), 100000);
+        assert.equal(await loadConfiguredMaxRows('invalid'), 100000);
+        assert.equal(await loadConfiguredMaxRows('-1'), 100000);
+    });
+
+    it('preserves explicit zero as the no-ceiling value', async () => {
+        assert.equal(await loadConfiguredMaxRows('0'), 0);
+    });
+
     it('exports the helpers the policy service re-exports', () => {
         assert.equal(typeof parseCsvToTable, 'function');
         assert.equal(typeof decodeGridFileText, 'function');
@@ -58,6 +87,58 @@ describe('table-csv helpers moved into common', () => {
             const { columnKeys, rows } = parseCsvToTable('a;b\n1;2', ';');
             assert.deepEqual(columnKeys, ['a', 'b']);
             assert.deepEqual(rows, [{ a: '1', b: '2' }]);
+        });
+
+        it('returns only the requested row window and keeps the exact total', () => {
+            const result = parseCsvToTable(
+                'a,b\n1,one\n2,two\n3,three\n4,four',
+                ',',
+                undefined,
+                { offset: 1, limit: 2 }
+            );
+
+            assert.deepEqual(result.rows, [
+                { a: '2', b: 'two' },
+                { a: '3', b: 'three' }
+            ]);
+            assert.equal(result.rowsTotal, 4);
+        });
+
+        it('counts every data row when the requested limit is zero', () => {
+            const result = parseCsvToTable(
+                'a\n1\n2\n3',
+                ',',
+                undefined,
+                { limit: 0 }
+            );
+
+            assert.deepEqual(result.rows, []);
+            assert.equal(result.rowsTotal, 3);
+        });
+
+        it('keeps a quoted line break inside one windowed row', () => {
+            const result = parseCsvToTable(
+                'id,text\n1,"first\nline"\n2,second',
+                ',',
+                undefined,
+                { limit: 1 }
+            );
+
+            assert.deepEqual(result.rows, [{ id: '1', text: 'first\nline' }]);
+            assert.equal(result.rowsTotal, 2);
+        });
+
+        it('applies declared keys and a column filter only to the requested window', () => {
+            const result = parseCsvToTable(
+                'Year,Amount\n2023,41\n2024,42\n2025,43',
+                ',',
+                ['year', 'amount'],
+                { offset: 1, limit: 1, columns: ['amount'] }
+            );
+
+            assert.deepEqual(result.columnKeys, ['amount']);
+            assert.deepEqual(result.rows, [{ amount: '42' }]);
+            assert.equal(result.rowsTotal, 3);
         });
     });
 
