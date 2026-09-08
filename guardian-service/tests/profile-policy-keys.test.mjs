@@ -2,16 +2,10 @@ import { assert } from 'chai';
 import { loadAPI, Interfaces } from './_handler-harness.mjs';
 
 /*
- * GENERATE_USER_KEYS writes one row per creation, but the vault slot it fills is
- * addressed by `${user.did}#${item.messageId}` and carries no row id. A second
- * create for the same policy therefore added a second row while setUserKey
- * overwrote the first row's secret: the keys list showed two entries for one
- * policy, only the newer one resolved, and nothing said the older was dead.
- *
- * messageId is free text in the create dialog, so entering the same policy id
- * twice is enough to reach it.
+ * GENERATE_USER_KEYS writes one row per creation, but the vault slot is addressed by
+ * `did#messageId` alone - so a second create overwrote the first row's secret and left
+ * a dead entry in the list. messageId is free text in the create dialog.
  */
-
 const M = Interfaces.MessageAPI;
 
 let H, state;

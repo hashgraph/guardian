@@ -631,23 +631,15 @@ export function profileAPI(logger: PinoLogger) {
                 const { messageId, user } = msg;
                 let { key } = msg;
 
-                /*
-                 * One row per creation, but a single vault slot per
-                 * `${did}#${messageId}`: the address below carries no row id. A
-                 * second create for the same policy would add a second row while
-                 * setUserKey overwrote the first row's secret, leaving a keys list
-                 * where the older entry is dead and nothing says so.
-                 *
-                 * Refused rather than silently replaced, because the previous
-                 * secret cannot be recovered. Rotation is delete-then-create.
-                 */
+                // one vault slot per `did#messageId`, so a second create would overwrite
+                // the first row's secret with no way to recover it
                 const existing = await DatabaseServer.getKeys({
                     messageId,
                     owner: user.did
                 });
                 if (existing?.length) {
                     return new MessageError(
-                        `A key for this policy already exists. Delete it before creating another.`,
+                        'A key for this policy already exists. Delete it before creating another.',
                         409
                     );
                 }
