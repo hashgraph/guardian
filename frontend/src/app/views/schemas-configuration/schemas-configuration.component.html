@@ -385,11 +385,30 @@
                                     </span>
                                     <span class="st-toggle" [class.active]="canAddCustomFieldsToSelectedSchema"></span>
                                 </button>
+                                <div class="st-guidelines-editor">
+                                    <label class="st-guidelines-label">Guidelines</label>
+                                    <textarea
+                                        class="st-guidelines-textarea"
+                                        [ngModel]="selectedSchemaGuidelines"
+                                        [readonly]="isTemplateReadonly"
+                                        (ngModelChange)="setSelectedSchemaGuidelines($event)"
+                                        rows="3"
+                                        placeholder="Add guidance for this schema when the template is applied."></textarea>
+                                </div>
                             } @else if (!schemaPropsCollapsed) {
                                 @if (selectedSchemaSettingsLocked) {
                                     <div class="st-lock-note st-lock-note--inline">
                                         <i class="pi pi-lock"></i>
                                         <span>Schema settings are locked by the applied template.</span>
+                                    </div>
+                                }
+                                @if (selectedSchemaGuidelines) {
+                                    <div class="st-guidelines-note">
+                                        <div class="st-guidelines-note-title">
+                                            <i class="pi pi-info-circle"></i>
+                                            <span>Guidelines</span>
+                                        </div>
+                                        <div class="st-guidelines-note-text">{{ selectedSchemaGuidelines }}</div>
                                     </div>
                                 }
                                 <div class="sc-schema-props-row sc-schema-props-row--main">
@@ -694,6 +713,16 @@
                             </span>
                             <span class="st-toggle" [class.active]="canEditSelectedFieldInTemplate"></span>
                         </button>
+                        <div class="st-guidelines-editor">
+                            <label class="st-guidelines-label">Guidelines</label>
+                            <textarea
+                                class="st-guidelines-textarea"
+                                [ngModel]="selectedFieldGuidelines"
+                                [readonly]="isTemplateReadonly"
+                                (ngModelChange)="setSelectedFieldGuidelines($event)"
+                                rows="4"
+                                placeholder="Add guidance for this field when the template is applied."></textarea>
+                        </div>
                     </div>
                 </aside>
             }
@@ -710,6 +739,15 @@
                         <div class="st-lock-note">
                             <i class="pi pi-lock"></i>
                             <span>Field editing is locked by the applied template.</span>
+                        </div>
+                    }
+                    @if (selectedFieldGuidelines) {
+                        <div class="st-guidelines-note">
+                            <div class="st-guidelines-note-title">
+                                <i class="pi pi-info-circle"></i>
+                                <span>Guidelines</span>
+                            </div>
+                            <div class="st-guidelines-note-text">{{ selectedFieldGuidelines }}</div>
                         </div>
                     }
 
