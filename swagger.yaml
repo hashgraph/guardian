@@ -53060,6 +53060,60 @@ paths:
       summary: Applies schema template to policy asynchronously.
       tags:
         - schema-templates
+  /schema-templates/{templateId}/policies/{policyId}/detach/preview:
+    get:
+      description: >-
+        Lists the copied schemas a detach would delete, and the ones it would
+        keep because another schema still references them. Only users with the
+        Standard Registry role are allowed to make the request.
+      operationId: SchemaTemplatesApi_previewSchemaTemplateDetach
+      parameters:
+        - name: templateId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Schema template detach preview.
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Previews detaching an applied schema template.
+      tags:
+        - schema-templates
   /schema-templates/{templateId}/policies/{policyId}/update/preview:
     get:
       description: >-
