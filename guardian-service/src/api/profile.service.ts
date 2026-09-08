@@ -619,6 +619,20 @@ export function profileAPI(logger: PinoLogger) {
                 }
                 const { messageId, user } = msg;
                 let { key } = msg;
+
+                // one vault slot per `did#messageId`, so a second create would overwrite
+                // the first row's secret with no way to recover it
+                const existing = await DatabaseServer.getKeys({
+                    messageId,
+                    owner: user.did
+                });
+                if (existing?.length) {
+                    return new MessageError(
+                        'A key for this policy already exists. Delete it before creating another.',
+                        409
+                    );
+                }
+
                 const item = await DatabaseServer.saveKey({
                     messageId,
                     owner: user.did
