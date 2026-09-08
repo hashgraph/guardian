@@ -140,6 +140,7 @@ export interface ISchemaTemplateDetachOptions {
 export interface ISchemaTemplateDetachBlockedSchema {
     name: string;
     usedBy: string[];
+    status?: string;
 }
 
 export interface ISchemaTemplateDetachPreview {

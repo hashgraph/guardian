@@ -197,6 +197,12 @@ export class SchemaTemplatesApi {
         type: String,
         required: false
     })
+    @ApiQuery({
+        name: 'excludeIds',
+        type: String,
+        required: false,
+        description: 'Comma-separated template ids to leave out, so a picker\'s count and pages match what it shows.'
+    })
     @ApiOkResponse({
         description: 'Schema templates page.',
         headers: pageHeader,
@@ -216,14 +222,16 @@ export class SchemaTemplatesApi {
         @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
-        @Query('search') search?: string
+        @Query('search') search?: string,
+        @Query('excludeIds') excludeIds?: string
     ): Promise<ISchemaTemplate[]> {
         try {
             const guardians = new Guardians();
             const { items, count } = await guardians.getSchemaTemplates({
                 pageIndex,
                 pageSize,
-                search
+                search,
+                excludeIds
             }, new EntityOwner(user));
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {

@@ -69,6 +69,16 @@
         </div>
       </div>
     }
+    @if (count) {
+      <div class="guardian-grid-paginator">
+        <app-paginator
+          [pageIndex]="pageIndex"
+          [pageSize]="pageSize"
+          [length]="count"
+          (page)="onPage($event)"
+        ></app-paginator>
+      </div>
+    }
     @if (!list || !list.length) {
       <div class="empty-grid">
         <div class="empty-grid-icon">

@@ -1394,7 +1394,8 @@ function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<ReturnType
         removalCandidates,
         (context.policySchemas || []).filter(
             (item) => !candidateIds.has(String(item.id || (item as any)?._id || ''))
-        )
+        ),
+        buildPostUpdateRefsResolver(context)
     );
 
     for (const [templateSchemaId, previousSchema] of Object.entries(previousSchemas)) {
@@ -1547,7 +1548,7 @@ function validateSchemaTemplateRemovals(
     const survivors = (context.policySchemas || []).filter(
         (item) => !removalIds.has(String(item.id || (item as any)?._id || ''))
     );
-    const blocked = findSchemasBlockingDelete(removals, survivors);
+    const blocked = findSchemasBlockingDelete(removals, survivors, buildPostUpdateRefsResolver(context));
     const messages: string[] = [];
     for (const schema of removals) {
         const holders = schema.iri ? blocked.get(schema.iri) : undefined;
@@ -2213,7 +2214,8 @@ export async function removePolicySchemaTemplateSnapshot(
  */
 function findSchemasBlockingDelete(
     schemasToDelete: Schema[],
-    otherSchemas: Schema[]
+    otherSchemas: Schema[],
+    refsOf: (schema: Schema) => Set<string> = getSchemaReferenceIris
 ): Map<string, string[]> {
     const blocked = new Map<string, string[]>();
     const byIri = new Map<string, Schema>();
@@ -2233,7 +2235,7 @@ function findSchemasBlockingDelete(
         const keptThisRound: Schema[] = [];
         for (const holder of holders) {
             const holderName = holder.name || holder.iri;
-            for (const iri of getSchemaReferenceIris(holder)) {
+            for (const iri of refsOf(holder)) {
                 const target = byIri.get(iri);
                 if (!target) {
                     continue;
@@ -2254,10 +2256,67 @@ function findSchemasBlockingDelete(
     return blocked;
 }
 
+/**
+ * References a schema will still hold *after* the update, for judging what a removal
+ * would strand. Its current ones are the wrong question: a template version that drops
+ * schema B usually drops the field in A that pointed at B, and judging by pre-update A
+ * would keep B un-removable forever.
+ *
+ * Two sources, because `preparePolicySchemaUpdate` does not replace the document
+ * wholesale: the incoming template document (still in template iris, since
+ * `updateCopiedSchemaRefs` rewrites them only after the copies exist), plus the custom
+ * fields it merges back in, which keep their refs. Custom fields are counted even when
+ * `customFieldsLocked` would drop them - over-blocking only costs the user a "Keep",
+ * while under-blocking costs a dangling $ref.
+ *
+ * A schema with no incoming counterpart is not being updated, so its current document
+ * is what it will still have.
+ */
+function buildPostUpdateRefsResolver(
+    context: Awaited<ReturnType<typeof loadSchemaTemplateUpdateContext>>
+): (schema: Schema) => Set<string> {
+    const policyIriByTemplateIri = new Map<string, string>();
+    const incomingByPolicySchemaId = new Map<string, Schema>();
+    for (const templateSchema of (context.templateSchemas || []) as Schema[]) {
+        const policyCopy = context.policySchemaByTemplateId.get(templateSchema.templateSchemaId);
+        if (!policyCopy) {
+            continue;
+        }
+        if (templateSchema.iri && policyCopy.iri) {
+            policyIriByTemplateIri.set(templateSchema.iri, policyCopy.iri);
+        }
+        incomingByPolicySchemaId.set(String(policyCopy.id || (policyCopy as any)?._id || ''), templateSchema);
+    }
+    const customFieldRefs = (schema: Schema): string[] => {
+        try {
+            return getRuntimeCustomFields(schema)
+                .filter((field: any) => field?.isRef && field?.type)
+                .map((field: any) => String(field.type));
+        } catch {
+            return [];
+        }
+    };
+    return (schema: Schema): Set<string> => {
+        const incoming = incomingByPolicySchemaId.get(String(schema.id || (schema as any)?._id || ''));
+        if (!incoming) {
+            return getSchemaReferenceIris(schema);
+        }
+        const refs = new Set<string>();
+        for (const iri of getSchemaReferenceIris(incoming)) {
+            refs.add(policyIriByTemplateIri.get(iri) ?? iri);
+        }
+        for (const iri of customFieldRefs(schema)) {
+            refs.add(iri);
+        }
+        return refs;
+    };
+}
+
 interface ISchemaTemplateDetachPlan {
     policy: Policy;
     binding: IPolicySchemaTemplateBinding;
     boundSchemas: Schema[];
+    undeletable: Map<string, SchemaStatus>;
     blockedByIri: Map<string, string[]>;
 }
 
@@ -2309,6 +2368,24 @@ async function buildSchemaTemplateDetachPlan(
         }
     }
 
+    /*
+     * A copy `deleteSchema` will refuse counts as a survivor, not as one of the deletions.
+     * Otherwise a bound parent that cannot be deleted (published, say) fails to block its
+     * bound child: the child is deleted first because its only holder is "also going", the
+     * parent's own delete then throws, and the parent is left pointing at nothing. Status
+     * is therefore resolved before the reference closure, not after it.
+     */
+    const undeletable = new Map<string, SchemaStatus>();
+    const deletable: Schema[] = [];
+    for (const schema of boundSchemas) {
+        if (schema.status === SchemaStatus.DRAFT || schema.status === SchemaStatus.ERROR) {
+            deletable.push(schema);
+        } else {
+            undeletable.set(String(schema.id || (schema as any)?._id || ''), schema.status);
+            otherSchemas.push(schema);
+        }
+    }
+
     // A policy schema outside the binding may hold a sub-schema field pointing at one of
     // the copies. Deleting that copy would leave the pointer dangling, so the blocked
     // copies are detached like the rest and simply not deleted.
@@ -2316,7 +2393,8 @@ async function buildSchemaTemplateDetachPlan(
         policy,
         binding,
         boundSchemas,
-        blockedByIri: findSchemasBlockingDelete(boundSchemas, otherSchemas)
+        undeletable,
+        blockedByIri: findSchemasBlockingDelete(deletable, otherSchemas)
     };
 }
 
@@ -2328,11 +2406,17 @@ async function previewSchemaTemplateDetach(
     owner: IOwner,
     templateId: string
 ): Promise<ISchemaTemplateDetachPreview> {
-    const { boundSchemas, blockedByIri } = await buildSchemaTemplateDetachPlan(policyId, owner, templateId);
+    const { boundSchemas, undeletable, blockedByIri } =
+        await buildSchemaTemplateDetachPlan(policyId, owner, templateId);
     const deletable: string[] = [];
     const blocked: ISchemaTemplateDetachBlockedSchema[] = [];
     for (const schema of boundSchemas) {
         const schemaName = schema.name || schema.iri || String(schema.id);
+        const status = undeletable.get(String(schema.id || (schema as any)?._id || ''));
+        if (status) {
+            blocked.push({ name: schemaName, usedBy: [], status });
+            continue;
+        }
         const usedBy = schema.iri ? blockedByIri.get(schema.iri) : undefined;
         if (usedBy?.length) {
             blocked.push({ name: schemaName, usedBy: [...usedBy] });
@@ -2349,7 +2433,7 @@ async function detachSchemaTemplate(
     templateId: string,
     deleteSchemas: boolean = false
 ): Promise<any> {
-    const { policy, binding, boundSchemas, blockedByIri } =
+    const { policy, binding, boundSchemas, undeletable, blockedByIri } =
         await buildSchemaTemplateDetachPlan(policyId, owner, templateId);
 
     let detachedSchemas = 0;
@@ -2366,6 +2450,12 @@ async function detachSchemaTemplate(
         detachedSchemas++;
 
         if (!deleteSchemas) {
+            continue;
+        }
+
+        const blockedStatus = undeletable.get(schemaId);
+        if (blockedStatus) {
+            deleteErrors.push(`${schemaName}: kept, cannot be deleted while it is ${blockedStatus}`);
             continue;
         }
 
@@ -2533,24 +2623,29 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const search = String(filters?.search || '').trim();
-                const visibilityFilter: any = {
+                const clauses: any[] = [{
                     $or: [
                         { owner: owner.owner },
                         { status: ModuleStatus.PUBLISHED }
                     ]
-                };
-                const templateFilter: any = search
-                    ? {
-                        $and: [
-                            visibilityFilter,
-                            {
-                                name: {
-                                    $re: new RegExp(escapeRegExp(search), 'i')
-                                }
-                            }
-                        ]
-                    }
-                    : visibilityFilter;
+                }];
+                if (search) {
+                    clauses.push({ name: { $re: new RegExp(escapeRegExp(search), 'i') } });
+                }
+                /*
+                 * Exclusions belong here rather than in the caller: a picker that drops
+                 * rows after the fact gets a count that disagrees with what it renders,
+                 * and pages that come up short - or empty - while more pages remain.
+                 */
+                const excludeIds = (Array.isArray(filters?.excludeIds)
+                    ? filters.excludeIds
+                    : String(filters?.excludeIds || '').split(','))
+                    .map((id: any) => String(id || '').trim())
+                    .filter((id: string) => !!id);
+                if (excludeIds.length) {
+                    clauses.push({ id: { $nin: excludeIds } });
+                }
+                const templateFilter: any = clauses.length > 1 ? { $and: clauses } : clauses[0];
 
                 const [items, count] = await DatabaseServer.getSchemaTemplatesAndCount({
                     ...templateFilter
@@ -2946,8 +3041,6 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
         }) => {
             try {
                 const { templateId, policyId, owner } = msg;
-                // one template operation per policy at a time. The binding is written
-                // last, so it cannot guard the window being raced.
                 const result = await withPolicyTemplateLock(policyId, () =>
                     applySchemaTemplate(templateId, policyId, owner, logger));
                 return new MessageResponse(result);
@@ -2999,8 +3092,6 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
         }) => {
             try {
                 const { templateId, policyId, owner, options } = msg;
-                // shares the lock with APPLY: both rewrite the same policy's schemas
-                // and binding.
                 const result = await withPolicyTemplateLock(policyId, () =>
                     updateAppliedSchemaTemplate(templateId, policyId, owner, logger, options));
                 return new MessageResponse(result);
@@ -3019,7 +3110,8 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
         }) => {
             try {
                 const { policyId, templateId, owner, deleteSchemas } = msg;
-                const result = await detachSchemaTemplate(policyId, owner, templateId, deleteSchemas);
+                const result = await withPolicyTemplateLock(policyId, () =>
+                    detachSchemaTemplate(policyId, owner, templateId, deleteSchemas));
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);

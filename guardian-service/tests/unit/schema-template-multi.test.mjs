@@ -453,6 +453,61 @@ describe('multi-template: schema name collisions on update (validateSchemaNameCo
     });
 });
 
+/*
+ * The picker's count has to be a count of what the picker shows. Dropping the applied
+ * templates in the browser instead gave a total that disagreed with the rows, pages that
+ * came up short, and pages that came up empty while more pages remained.
+ */
+describe('multi-template: GET_SCHEMA_TEMPLATES excludeIds', () => {
+    let handlers;
+    let capturedFilter;
+
+    beforeEach(async () => {
+        handlers = await register(schemaTemplatesAPI, silentLogger());
+        capturedFilter = null;
+        stub(DatabaseServer, 'getSchemaTemplatesAndCount', async (filter) => {
+            capturedFilter = filter;
+            return [[], 0];
+        });
+    });
+
+    afterEach(() => restoreStubs());
+
+    const list = (filters) => callHandler(handlers, MessageAPI.GET_SCHEMA_TEMPLATES, { filters, owner });
+
+    const clauseWithId = (filter) => (filter?.$and || [])
+        .find((clause) => !!clause.id);
+
+    it('excludes the given ids so the count matches the rows', async () => {
+        const response = await list({ excludeIds: ['template-1', 'template-2'] });
+
+        assert.equal(ok(response), true, response && response.error);
+        assert.deepEqual(clauseWithId(capturedFilter), { id: { $nin: ['template-1', 'template-2'] } });
+    });
+
+    it('accepts the comma-separated form the query string carries', async () => {
+        await list({ excludeIds: 'template-1,template-2' });
+
+        assert.deepEqual(clauseWithId(capturedFilter), { id: { $nin: ['template-1', 'template-2'] } });
+    });
+
+    it('adds no exclusion clause when none is asked for', async () => {
+        await list({ search: 'Report' });
+
+        assert.equal(clauseWithId(capturedFilter), undefined,
+            'an absent excludeIds must not turn into an empty $nin, which matches nothing useful');
+    });
+
+    it('keeps the visibility and name filters alongside the exclusion', async () => {
+        await list({ search: 'Report', excludeIds: ['template-1'] });
+
+        const clauses = capturedFilter?.$and || [];
+        assert.ok(clauses.some((clause) => !!clause.$or), 'visibility clause must survive');
+        assert.ok(clauses.some((clause) => !!clause.name), 'name filter must survive');
+        assert.ok(clauses.some((clause) => !!clause.id), 'exclusion must survive');
+    });
+});
+
 describe('multi-template: DETACH_SCHEMA_TEMPLATE', () => {
     let handlers;
     let state;
@@ -628,6 +683,34 @@ describe('multi-template: DETACH_SCHEMA_TEMPLATE', () => {
         assert.equal(response.body.deleteErrors.length, 2);
     });
 
+    it('keeps a bound child whose bound parent cannot be deleted', async () => {
+        // parent -> child, both owned by the binding, parent published. The child's only
+        // holder is "also going", so nothing blocked it - then the parent's delete threw
+        // and it was left pointing at a schema that no longer existed.
+        const parent = {
+            ...withRef(
+                policySchema('policy-schema-parent', 'Parent Copy', 'template-2'),
+                '#policy-schema-child'
+            ),
+            status: SchemaStatus.PUBLISHED,
+        };
+        const child = withRef(policySchema('policy-schema-child', 'Child Copy', 'template-2'));
+        arrange(twoBindings(), [parent, child]);
+        const deleted = [];
+        stub(DatabaseServer, 'getSchema', async (id) => ({ id, status: SchemaStatus.DRAFT }));
+        stub(DatabaseServer, 'deleteSchemas', async (id) => { deleted.push(id); });
+
+        const response = await detach('template-2', true);
+
+        assert.equal(ok(response), true, response && response.error);
+        assert.deepEqual(deleted, [],
+            'the published parent survives, so deleting the child it points at would strand it');
+        assert.equal(response.body.detachedSchemas, 2);
+        assert.equal(response.body.deleteErrors.length, 2);
+        assert.ok(response.body.deleteErrors.some((line) => /Parent Copy.*PUBLISHED/.test(line)));
+        assert.ok(response.body.deleteErrors.some((line) => /Child Copy.*still used by Parent Copy/.test(line)));
+    });
+
     it('reports a schema that cannot be deleted without failing the detach', async () => {
         arrange(twoBindings(), twoTemplatesSchemas());
         const deleted = [];
@@ -740,13 +823,20 @@ describe('multi-template: UPDATE_APPLIED_SCHEMA_TEMPLATE - switching to a differ
      * so an offer to remove a schema another one still references is an offer to break
      * the policy with no way back.
      */
-    const referencing = (schema, refIri) => ({
+    /*
+     * `custom: true` leaves the ref field without a templateFieldId, which is exactly how
+     * a field the policy author added by hand looks - and what tells the update path to
+     * merge it back in rather than let the template's document replace it.
+     */
+    const referencing = (schema, refIri, custom = false) => ({
         ...schema,
         iri: `#${schema.id}`,
         document: {
             $id: `#${schema.id}`,
             type: 'object',
-            properties: refIri ? { child: { $ref: refIri } } : {},
+            properties: refIri
+                ? { child: custom ? { $ref: refIri } : { $ref: refIri, templateFieldId: `tfid-${schema.id}-child` } }
+                : {},
             // a real sub-schema field carries the referenced definition alongside it;
             // without it the Schema model cannot resolve the field and throws
             $defs: refIri
@@ -848,6 +938,95 @@ describe('multi-template: UPDATE_APPLIED_SCHEMA_TEMPLATE - switching to a differ
      * the whole outgoing group goes. Keeping one of them turns it back into a holder,
      * and only the update path knows that, so it re-checks against the chosen set.
      */
+    it('offers removal when only the outgoing version of a surviving schema referenced it', async () => {
+        // The ordinary shape of a schema removal: v2 drops "Site" and, necessarily, the
+        // field in "Report" that pointed at it. Judging by Report's pre-update document
+        // would keep Site un-removable forever.
+        const boundPolicy = policy({
+            schemaTemplates: [binding('template-1', {
+                schemaMap: { 'tsid-report': 'policy-schema-report', 'tsid-site': 'policy-schema-site' },
+            })],
+        });
+        const oldReport = { ...templateSchema('template-1', 'Report'), templateSchemaId: 'tsid-report' };
+        const oldSite = { ...templateSchema('template-1', 'Site'), templateSchemaId: 'tsid-site' };
+        const previousSnapshotSchemas = buildTemplateSchemasSnapshot([oldReport, oldSite]).schemas;
+
+        // v2 keeps Report (same templateSchemaId) but its document no longer refs Site.
+        const newReport = { ...templateSchema('template-2', 'Report'), templateSchemaId: 'tsid-report' };
+
+        const policyReport = referencing(
+            { ...policySchema('policy-schema-report', 'Report', 'template-1'), templateSchemaId: 'tsid-report' },
+            '#policy-schema-site'
+        );
+        const policySite = referencing(
+            { ...policySchema('policy-schema-site', 'Site', 'template-1'), templateSchemaId: 'tsid-site' }
+        );
+
+        stub(DatabaseServer, 'getSchemaTemplateById', async (id) => template(id));
+        stub(DatabaseServer, 'getPolicyById', async () => boundPolicy);
+        stub(DatabaseServer, 'getSchemas', async (filter) => (filter.category === SchemaCategory.TEMPLATE
+            ? (filter.templateId === 'template-2' ? [newReport] : [oldReport, oldSite])
+            : [policyReport, policySite]));
+        stub(DatabaseServer, 'getSchemaTemplateSnapshotById', async () => ({
+            id: 'snap-existing',
+            config: { schemas: {} },
+            schemas: { schemas: previousSnapshotSchemas },
+        }));
+
+        const response = await previewSwap();
+
+        assert.equal(ok(response), true, response && response.error);
+        const conflict = response.body.conflicts.find((item) => item.templateSchemaId === 'tsid-site');
+        assert.ok(conflict, 'Site is gone from the target and must surface a conflict');
+        assert.deepEqual(conflict.blockedBy, [],
+            'Report drops the reference in the same version, so nothing will point at Site after the update');
+        assert.ok(conflict.allowedActions.includes('REMOVE_FROM_POLICY'));
+    });
+
+    it('refuses removal when a custom field of a surviving schema still points at it', async () => {
+        // preparePolicySchemaUpdate does not replace the document wholesale: custom fields
+        // (no templateFieldId) are merged back in, refs and all. Reading only the incoming
+        // template document would miss this one and strand it.
+        const boundPolicy = policy({
+            schemaTemplates: [binding('template-1', {
+                schemaMap: { 'tsid-report': 'policy-schema-report', 'tsid-site': 'policy-schema-site' },
+            })],
+        });
+        const oldReport = { ...templateSchema('template-1', 'Report'), templateSchemaId: 'tsid-report' };
+        const oldSite = { ...templateSchema('template-1', 'Site'), templateSchemaId: 'tsid-site' };
+        const previousSnapshotSchemas = buildTemplateSchemasSnapshot([oldReport, oldSite]).schemas;
+        const newReport = { ...templateSchema('template-2', 'Report'), templateSchemaId: 'tsid-report' };
+
+        const policyReport = referencing(
+            { ...policySchema('policy-schema-report', 'Report', 'template-1'), templateSchemaId: 'tsid-report' },
+            '#policy-schema-site',
+            true
+        );
+        const policySite = referencing(
+            { ...policySchema('policy-schema-site', 'Site', 'template-1'), templateSchemaId: 'tsid-site' }
+        );
+
+        stub(DatabaseServer, 'getSchemaTemplateById', async (id) => template(id));
+        stub(DatabaseServer, 'getPolicyById', async () => boundPolicy);
+        stub(DatabaseServer, 'getSchemas', async (filter) => (filter.category === SchemaCategory.TEMPLATE
+            ? (filter.templateId === 'template-2' ? [newReport] : [oldReport, oldSite])
+            : [policyReport, policySite]));
+        stub(DatabaseServer, 'getSchemaTemplateSnapshotById', async () => ({
+            id: 'snap-existing',
+            config: { schemas: {} },
+            schemas: { schemas: previousSnapshotSchemas },
+        }));
+
+        const response = await previewSwap();
+
+        assert.equal(ok(response), true, response && response.error);
+        const conflict = response.body.conflicts.find((item) => item.templateSchemaId === 'tsid-site');
+        assert.ok(conflict);
+        assert.deepEqual(conflict.blockedBy, ['Report'],
+            'the custom ref survives the update, so removing Site would leave it dangling');
+        assert.deepEqual(conflict.allowedActions, ['KEEP_AS_CUSTOM_SCHEMA']);
+    });
+
     it('refuses to remove a schema a sibling the user kept still points at', async () => {
         const boundPolicy = policy({
             schemaTemplates: [binding('template-1', {

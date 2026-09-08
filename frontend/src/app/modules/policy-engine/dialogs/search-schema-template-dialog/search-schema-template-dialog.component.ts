@@ -16,9 +16,11 @@ export class SearchSchemaTemplateDialog {
     public filtersForm = new UntypedFormGroup({
         name: new UntypedFormControl(''),
     });
-    public templates: any[] = [];
     public list: any[] = [];
     public isLargeSize = true;
+    public pageIndex = 0;
+    public pageSize = 25;
+    public count = 0;
 
     @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
 
@@ -36,32 +38,42 @@ export class SearchSchemaTemplateDialog {
     }
 
     public load(): void {
-        this.list = [];
         this.loading = true;
+        // The name filter is applied by the server, so the grid can page through every
+        // match instead of filtering whatever happened to land on the first page.
         this.schemaTemplatesService
-            .page(0, 100, '')
+            .page(this.pageIndex, this.pageSize, this.filtersForm.value?.name || '')
             .subscribe((response) => {
-                this.templates = response.body || [];
-                for (const template of this.templates) {
-                    template.search = template.name?.toLowerCase();
-                }
-                this.onFilters();
+                this.list = response.body || [];
+                const header = response.headers.get('X-Total-Count');
+                const total = header === null ? NaN : Number(header);
+                this.count = Number.isFinite(total) && total >= 0
+                    ? total
+                    // No header: assume at least what has been paged through so far,
+                    // rather than collapsing to one page and stranding the user.
+                    : this.pageIndex * this.pageSize + this.list.length;
                 this.loading = false;
             }, () => {
-                this.templates = [];
                 this.list = [];
+                this.count = 0;
                 this.loading = false;
             });
     }
 
     public onFilters(): void {
-        let name: string = this.filtersForm.value?.name;
-        if (name) {
-            name = name.toLowerCase();
-            this.list = this.templates.filter((template) => template.search?.includes(name));
+        this.pageIndex = 0;
+        this.load();
+    }
+
+    public onPage(event: any): void {
+        if (this.pageSize !== event.pageSize) {
+            this.pageIndex = 0;
+            this.pageSize = event.pageSize;
         } else {
-            this.list = this.templates;
+            this.pageIndex = event.pageIndex;
+            this.pageSize = event.pageSize;
         }
+        this.load();
     }
 
     public onClose(): void {

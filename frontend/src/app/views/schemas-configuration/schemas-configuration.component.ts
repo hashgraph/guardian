@@ -941,9 +941,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (this.isTemplateMode) {
             return;
         }
-        const templateId = this.selectedSchema?.templateId ||
-            this.schemas.find(schema => !!schema.templateId)?.templateId ||
-            '';
+        const templateId = this.selectedSchema?.templateId || '';
         if (!templateId) {
             this.schemaTemplate = null;
             return;

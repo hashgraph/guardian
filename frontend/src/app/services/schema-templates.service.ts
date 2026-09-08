@@ -64,6 +64,7 @@ export interface SchemaTemplateDetachOptions {
 export interface SchemaTemplateDetachBlockedSchema {
     name: string;
     usedBy: string[];
+    status?: string;
 }
 
 export interface SchemaTemplateDetachPreview {
@@ -81,12 +82,16 @@ export class SchemaTemplatesService {
     public page(
         pageIndex: number = 0,
         pageSize: number = 20,
-        search?: string
+        search?: string,
+        excludeIds?: string[]
     ): Observable<HttpResponse<SchemaTemplateGridItem[]>> {
-        const params = new HttpParams()
+        let params = new HttpParams()
             .set('pageIndex', String(pageIndex))
             .set('pageSize', String(pageSize))
             .set('search', search || '');
+        if (excludeIds?.length) {
+            params = params.set('excludeIds', excludeIds.join(','));
+        }
         return this.http.get<SchemaTemplateGridItem[]>(this.url, {
             observe: 'response',
             params

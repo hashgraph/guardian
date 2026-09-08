@@ -26,6 +26,9 @@ export class ManageSchemaTemplatesDialog implements OnInit, OnDestroy {
     public loading = true;
     public appliedRows: AppliedTemplateRow[] = [];
     public availableTemplates: SchemaTemplateGridItem[] = [];
+    public availablePageIndex = 0;
+    public availablePageSize = 10;
+    public availableCount = 0;
     public filtersForm = new UntypedFormGroup({
         name: new UntypedFormControl('')
     });
@@ -60,6 +63,10 @@ export class ManageSchemaTemplatesDialog implements OnInit, OnDestroy {
             )
             .subscribe((value) => {
                 this.searchValue = String(value || '').trim();
+                // A new search starts at the first page. Keeping the old page index
+                // shows an empty grid whenever the new result has fewer pages than
+                // that, which reads as "no matches" for a filter that does match.
+                this.availablePageIndex = 0;
                 this.loadAvailableTemplates(this.searchValue);
             });
         this.loadAvailableTemplates();
@@ -86,25 +93,45 @@ export class ManageSchemaTemplatesDialog implements OnInit, OnDestroy {
 
     public loadAvailableTemplates(search: string = ''): void {
         this.loading = true;
-        const appliedTemplateIds = this.getAppliedTemplateIds();
-        this.templatesService.page(0, 1000, search)
+        // The already-applied ones are excluded by the server, so the count below is a
+        // count of what this grid actually shows and every page comes back full.
+        this.templatesService
+            .page(
+                this.availablePageIndex,
+                this.availablePageSize,
+                search,
+                [...this.getAppliedTemplateIds()]
+            )
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (response) => {
-                    this.availableTemplates = (response.body || []).filter((template) => {
-                        if (template.status !== ModuleStatus.DRAFT && template.status !== ModuleStatus.PUBLISHED) {
-                            return false;
-                        }
-                        const templateId = this.getTemplateId(template);
-                        return !!templateId && !appliedTemplateIds.has(templateId);
-                    });
+                    this.availableTemplates = response.body || [];
+                    const header = response.headers.get('X-Total-Count');
+                    const total = header === null ? NaN : Number(header);
+                    this.availableCount = Number.isFinite(total) && total >= 0
+                        ? total
+                        // No header: assume at least what has been paged through so far,
+                        // rather than collapsing to one page and stranding the user.
+                        : this.availablePageIndex * this.availablePageSize + this.availableTemplates.length;
                     this.loading = false;
                 },
                 error: () => {
                     this.availableTemplates = [];
+                    this.availableCount = 0;
                     this.loading = false;
                 }
             });
+    }
+
+    public onAvailablePage(event: any): void {
+        if (this.availablePageSize !== event.pageSize) {
+            this.availablePageIndex = 0;
+            this.availablePageSize = event.pageSize;
+        } else {
+            this.availablePageIndex = event.pageIndex;
+            this.availablePageSize = event.pageSize;
+        }
+        this.loadAvailableTemplates(this.searchValue);
     }
 
     public getTemplateId(template: SchemaTemplateGridItem): string | null {
@@ -115,6 +142,8 @@ export class ManageSchemaTemplatesDialog implements OnInit, OnDestroy {
         switch (status) {
             case ModuleStatus.PUBLISHED:
                 return 'Published';
+            case ModuleStatus.PUBLISH_ERROR:
+                return 'Publish Error';
             case ModuleStatus.DRY_RUN:
                 return 'Dry Run';
             case ModuleStatus.DRAFT:
@@ -232,7 +261,9 @@ export class ManageSchemaTemplatesDialog implements OnInit, OnDestroy {
         if (blocked.length) {
             deleteDetails.push({
                 label: `Cannot be deleted, stays in the policy (${blocked.length}):`,
-                items: blocked.map((item) => `${item.name} - still used by ${item.usedBy.join(', ')}`),
+                items: blocked.map((item) => (item.status
+                    ? `${item.name} - cannot be deleted while it is ${item.status}`
+                    : `${item.name} - still used by ${item.usedBy.join(', ')}`)),
                 warning: true
             });
         }

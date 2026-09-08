@@ -112,6 +112,21 @@
     } @else {
       <div class="empty-grid">There are no schema templates left to apply.</div>
     }
+    <!-- Shown whenever the server has matches, like every other grid in the app: it
+         carries the range readout and the rows-per-page control, not just the arrows.
+         Outside the branch above on purpose - a page whose rows are all already applied
+         renders the empty state, and a paginator inside it would vanish with no way to
+         page on. -->
+    @if (availableCount) {
+      <div class="guardian-grid-paginator">
+        <app-paginator
+          [pageIndex]="availablePageIndex"
+          [pageSize]="availablePageSize"
+          [length]="availableCount"
+          (page)="onAvailablePage($event)"
+        ></app-paginator>
+      </div>
+    }
   </div>
 </div>
 
