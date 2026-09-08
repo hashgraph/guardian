@@ -243,13 +243,20 @@ export class Worker extends NatsService {
             return undefined;
         };
 
+        // Releases isInUse if decode/cb throws before runTask can (else worker stays busy forever).
+        const releaseClaimOnError = (error: unknown, claimed: boolean) => {
+            if (claimed) {
+                this.isInUse = false;
+            }
+        };
+
         this.getMessages([this.replySubject, WorkerEvents.SEND_TASK_TO_WORKER].join('.'), async (task) => {
             runTask(task);
 
             return new MessageResponse({
                 result: true
             })
-        }, false, claimIfFree)
+        }, false, claimIfFree, releaseClaimOnError)
 
         this.getMessages([this.replySubject, WorkerEvents.SEND_TASK_TO_WORKER_DIRECT].join('.'), async (task) => {
             runTask(task, WorkerEvents.TASK_COMPLETE_DIRECT);
@@ -257,7 +264,7 @@ export class Worker extends NatsService {
             return new MessageResponse({
                 result: true
             })
-        }, false, claimIfFree)
+        }, false, claimIfFree, releaseClaimOnError)
 
         this.subscribe(WorkerEvents.UPDATE_SETTINGS, async (msg: any) => {
             try {

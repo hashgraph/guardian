@@ -330,23 +330,55 @@ export class QueueService extends NatsService {
             console.log('task sent error');
             await this.releaseOrParkTask(task, `Task was rejected by the worker: ${JSON.stringify(r)}`);
         } catch (error) {
-            if (error?.code === 'DISPATCH_TIMEOUT') {
-                // An ack timeout does not prove the task was never delivered - a worker only acks
-                // an out-of-band payload after fetching and parsing it in full, and a genuinely
-                // hung worker times out on every attempt regardless of whether it received the
-                // task. Re-queueing here (as releaseOrParkTask does for provably-undelivered
-                // transport errors) could run a Hedera mint/transfer a second time while the first
-                // attempt is still in flight. Leave the claim in place instead: clearLongPendingTasks
-                // reclaims it once processTimeout is reached, same as it did before dispatch had a
-                // timeout at all.
-                console.warn(
-                    `[Queue] dispatch ack timed out, leaving claim in place for clearLongPendingTasks. ` +
-                    `taskId: ${task.taskId}, type: ${task.type}, size: ${task.dataSize ?? 'n/a'}`
-                );
+            if (error?.code === 'REQUEST_TIMEOUT') {
+                // Ack timeout: keep the claim (may still be running), but count it against the
+                // dispatch budget - clearLongPendingTasks can't reclaim it (createDate-based).
+                await this.recordDispatchTimeout(task, error?.message || String(error));
                 return;
             }
             await this.releaseOrParkTask(task, error?.message || String(error));
         }
+    }
+
+    /**
+     * Spends the dispatch budget on an ack timeout without releasing the claim; dead-letters
+     * once exhausted.
+     */
+    private async recordDispatchTimeout(task: TaskEntity, reason: string): Promise<void> {
+        const dataBaseServer = new DatabaseServer();
+
+        const current = await dataBaseServer.findOne(TaskEntity, { taskId: task.taskId });
+        if (!current || current.done || current.isError) {
+            return;
+        }
+
+        current.dispatchAttempt = (current.dispatchAttempt || 0) + 1;
+
+        if (current.dispatchAttempt < this.dispatchMaxAttempts) {
+            // processedTime/sent untouched - claim stays in place.
+            await dataBaseServer.save(TaskEntity, current);
+            console.warn(
+                `[Queue] dispatch ack timed out, leaving claim in place. taskId: ${current.taskId}, ` +
+                `type: ${current.type}, attempt: ${current.dispatchAttempt}/${this.dispatchMaxAttempts}, ` +
+                `size: ${current.dataSize ?? 'n/a'}, reason: ${reason}`
+            );
+            return;
+        }
+
+        current.isError = true;
+        current.errorReason = reason;
+        await dataBaseServer.save(TaskEntity, current);
+
+        console.error(
+            `[Queue] task dead-lettered after ${current.dispatchAttempt} ack timeouts. ` +
+            `taskId: ${current.taskId}, type: ${current.type}, size: ${current.dataSize ?? 'n/a'}, reason: ${reason}`
+        );
+
+        await this.publish(QueueEvents.TASK_COMPLETE, {
+            id: current.taskId,
+            data: null,
+            error: reason
+        });
     }
 
     /**

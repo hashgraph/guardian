@@ -255,10 +255,9 @@ export abstract class NatsService {
         const timeoutPromise = new Promise<T>((_, reject) => {
             setTimeout(() => {
                 this.responseCallbacksMap.delete(messageId);
-                // Tagged so callers can tell "no ack within the deadline" apart from a transport
-                // error: a timeout does not prove the message was never delivered.
+                // Reuse REQUEST_TIMEOUT - same "no ack" code requestOrThrow uses below.
                 const error: any = new Error(`Timeout exceed (${subject})`);
-                error.code = 'DISPATCH_TIMEOUT';
+                error.code = 'REQUEST_TIMEOUT';
                 reject(error);
             }, timeout);
         });
@@ -385,17 +384,27 @@ export abstract class NatsService {
      * arriving mid-decode observes the stale pre-claim state. Return a value to short-circuit:
      * skip `cb`/decode entirely and respond with it (or, if `noRespond`, just skip). Return
      * `undefined` to proceed normally.
+     * @param onError Runs if auth/decode/cb throws before a response was sent, so a stranded
+     * `beforeDecode` claim can be released. `claimed` is true only for this message's own claim.
      */
-    public getMessages<T, A>(subject: string, cb: Function, noRespond = false, beforeDecode?: () => unknown): Subscription {
+    public getMessages<T, A>(
+        subject: string,
+        cb: Function,
+        noRespond = false,
+        beforeDecode?: () => unknown,
+        onError?: (error: unknown, claimed: boolean) => void
+    ): Subscription {
         this.addAdditionalAvailableEvents([subject]);
         return this.connection.subscribe(subject, {
             queue: this.messageQueueName,
             callback: async (error, msg) => {
+                let head: ReturnType<typeof headers> | undefined;
+                let claimed = false;
                 try {
                     const messageId = msg.headers?.get('messageId');
                     const serviceToken = msg.headers?.get('serviceToken');
                     // const isRaw = msg.headers.get('rawMessage');
-                    const head = headers();
+                    head = headers();
                     if (messageId) {
                         head.append('messageId', messageId);
                     }
@@ -433,6 +442,7 @@ export abstract class NatsService {
                             }
                             return;
                         }
+                        claimed = true;
                     }
 
                     if (!noRespond) {
@@ -442,6 +452,29 @@ export abstract class NatsService {
                     }
                 } catch (error) {
                     console.error(error);
+
+                    // Release a stranded beforeDecode claim and reply with an error.
+                    if (onError) {
+                        try {
+                            onError(error, claimed);
+                        } catch (hookError) {
+                            console.error(hookError);
+                        }
+                    }
+
+                    if (!noRespond && head) {
+                        try {
+                            await msg.respond(await this.codec.encode({
+                                body: null,
+                                error: error instanceof Error ? error.message : String(error),
+                                code: 500,
+                                name: 'Error',
+                                message: error instanceof Error ? error.message : String(error)
+                            }), { headers: head });
+                        } catch (respondError) {
+                            console.error(respondError);
+                        }
+                    }
                 }
             }
         });
