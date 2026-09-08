@@ -16,7 +16,6 @@ import { Worker } from 'node:worker_threads';
 import path from 'node:path'
 import {
     collectTablesPack,
-    hasDeclaredTableColumns,
     hydrateTablesInObject,
     loadFileTextById
 } from '../helpers/table-field.js';
@@ -155,8 +154,7 @@ export class MathBlock {
         await hydrateTablesInObject(
             tableDocuments,
             async (fileId: string) => loadFileTextById(ref, fileId),
-            ',',
-            hasDeclaredTableColumns
+            ','
         );
         const tablesPack = collectTablesPack(tableDocuments);
 

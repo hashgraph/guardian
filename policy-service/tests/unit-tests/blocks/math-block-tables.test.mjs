@@ -91,7 +91,7 @@ describe('@unit mathBlock table hydration', () => {
         assert.equal(worker().documents.target.field4.rows, undefined);
     });
 
-    it('does not read a table without the declaration marker', async () => {
+    it('reads a table without the declaration marker alongside a declared one', async () => {
         const { block, map, worker } = setup({
             field4: declaredTable(),
             field5: legacyTable()
@@ -99,17 +99,44 @@ describe('@unit mathBlock table hydration', () => {
 
         await block.calculate(refWith(), map, makeUser());
 
-        assert.deepEqual(reads, ['declared']);
-        assert.deepEqual(Object.keys(worker().tablesPack), ['declared']);
+        assert.deepEqual(reads, ['declared', 'legacy']);
+        assert.deepEqual(Object.keys(worker().tablesPack).sort(), ['declared', 'legacy']);
     });
 
-    it('reads no file at all when every table is unmarked', async () => {
+    it('reads the file when every table is unmarked', async () => {
         const { block, map, worker } = setup({ field5: legacyTable() });
 
         await block.calculate(refWith(), map, makeUser());
 
-        assert.deepEqual(reads, []);
-        assert.deepEqual(worker().tablesPack, {});
+        assert.deepEqual(reads, ['legacy']);
+        assert.deepEqual(Object.keys(worker().tablesPack), ['legacy']);
+    });
+
+    it('keys an unmarked table by its own CSV header row', async () => {
+        const { block, map, worker } = setup({ field5: legacyTable() });
+
+        await block.calculate(refWith(), map, makeUser());
+
+        assert.deepEqual(worker().tablesPack, {
+            legacy: {
+                columnKeys: ['CO2 (tonnes)'],
+                rows: [{ 'CO2 (tonnes)': '42' }, { 'CO2 (tonnes)': '45' }]
+            }
+        });
+    });
+
+    it('keeps the declared key for a declared table read from the same file text', async () => {
+        const { block, map, worker } = setup({
+            field4: declaredTable(),
+            field5: legacyTable()
+        });
+
+        await block.calculate(refWith(), map, makeUser());
+
+        assert.deepEqual(worker().tablesPack.declared, {
+            columnKeys: ['co2_tonnes'],
+            rows: [{ co2_tonnes: '42' }, { co2_tonnes: '45' }]
+        });
     });
 
     it('hydrates a declared table carried by a relationship document', async () => {
