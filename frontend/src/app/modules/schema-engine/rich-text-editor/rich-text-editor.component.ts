@@ -112,7 +112,10 @@ export class RichTextEditorComponent
         this.cdr.markForCheck();
     }
 
-    onInput(): void {
+    onInput(event?: Event): void {
+        if (this._isDeletionEvent(event)) {
+            this._clearEmptyFormatting();
+        }
         const html = this.editorRef.nativeElement.innerHTML;
         const value = isBlankRichText(html)
             ? ''
@@ -308,6 +311,25 @@ export class RichTextEditorComponent
         if (el.innerHTML !== value) {
             el.innerHTML = value;
         }
+        this._updateToolbarState();
+    }
+
+    private _isDeletionEvent(event?: Event): boolean {
+        return event instanceof InputEvent
+            && typeof event.inputType === 'string'
+            && event.inputType.startsWith('delete');
+    }
+
+    private _clearEmptyFormatting(): void {
+        const el = this.editorRef?.nativeElement;
+        if (!el || !el.innerHTML || !isBlankRichText(el.innerHTML)) { return; }
+        el.innerHTML = '';
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        range.collapse(true);
+        const selection = window.getSelection();
+        selection?.removeAllRanges();
+        selection?.addRange(range);
         this._updateToolbarState();
     }
 

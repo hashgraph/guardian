@@ -31,7 +31,7 @@
     [class.rte-empty]="isEmpty"
     [attr.contenteditable]="(readonly || isDisabled) ? false : true"
     [attr.data-placeholder]="placeholder"
-    (input)="onInput()"
+    (input)="onInput($event)"
     (paste)="onPaste($event)"
     (dragstart)="onDragStart()"
     (dragend)="onDragEnd()"

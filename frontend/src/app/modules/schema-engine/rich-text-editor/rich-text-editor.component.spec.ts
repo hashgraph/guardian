@@ -59,6 +59,55 @@ describe('RichTextEditorComponent', () => {
         expect(changeSpy).toHaveBeenCalledWith('<b>Test</b>');
     });
 
+    it('should clear an emptied block after a deletion', () => {
+        const changeSpy = jasmine.createSpy('onChange');
+        component.registerOnChange(changeSpy);
+        const editor = fixture.debugElement.query(By.css('.rte-editor'));
+        editor.nativeElement.innerHTML = '<h1><br></h1>';
+        editor.nativeElement.dispatchEvent(new InputEvent('input', { inputType: 'deleteContentBackward' }));
+        expect(editor.nativeElement.innerHTML).toBe('');
+        expect(changeSpy).toHaveBeenCalledWith('');
+    });
+
+    it('should clear an emptied block after a cut', () => {
+        const editor = fixture.debugElement.query(By.css('.rte-editor'));
+        editor.nativeElement.innerHTML = '<ul><li><br></li></ul>';
+        editor.nativeElement.dispatchEvent(new InputEvent('input', { inputType: 'deleteByCut' }));
+        expect(editor.nativeElement.innerHTML).toBe('');
+    });
+
+    it('should place the caret inside the editor after clearing', () => {
+        const editor = fixture.debugElement.query(By.css('.rte-editor'));
+        editor.nativeElement.innerHTML = '<h1><br></h1>';
+        editor.nativeElement.dispatchEvent(new InputEvent('input', { inputType: 'deleteContentBackward' }));
+        const selection = window.getSelection();
+        expect(selection?.anchorNode).toBe(editor.nativeElement);
+    });
+
+    it('should keep an empty block when the input event is not a deletion', () => {
+        const editor = fixture.debugElement.query(By.css('.rte-editor'));
+        editor.nativeElement.innerHTML = '<h1><br></h1>';
+        editor.nativeElement.dispatchEvent(new InputEvent('input', { inputType: 'insertParagraph' }));
+        expect(editor.nativeElement.innerHTML).toBe('<h1><br></h1>');
+    });
+
+    it('should keep an empty block when onInput is called without an event', () => {
+        const editor = fixture.debugElement.query(By.css('.rte-editor'));
+        editor.nativeElement.innerHTML = '<h2><br></h2>';
+        component.onInput();
+        expect(editor.nativeElement.innerHTML).toBe('<h2><br></h2>');
+    });
+
+    it('should leave the content alone when a deletion leaves text behind', () => {
+        const changeSpy = jasmine.createSpy('onChange');
+        component.registerOnChange(changeSpy);
+        const editor = fixture.debugElement.query(By.css('.rte-editor'));
+        editor.nativeElement.innerHTML = '<h1>Kept</h1>';
+        editor.nativeElement.dispatchEvent(new InputEvent('input', { inputType: 'deleteContentBackward' }));
+        expect(editor.nativeElement.innerHTML).toBe('<h1>Kept</h1>');
+        expect(changeSpy).toHaveBeenCalledWith('<h1>Kept</h1>');
+    });
+
     it('should call onTouched when editor blurs', () => {
         const touchedSpy = jasmine.createSpy('onTouched');
         component.registerOnTouched(touchedSpy);
