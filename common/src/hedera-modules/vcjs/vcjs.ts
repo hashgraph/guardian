@@ -382,25 +382,8 @@ export class VCJS {
             nestedSchema.required = required.filter((field: any) => !nestedSchema.properties[field] || !nestedSchema.properties[field].readOnly);
         }
 
-        // The conditions that gate a base-required field don't only live on the
-        // document handed to us: when verifySchema compiles the VC wrapper, the
-        // wrapper's own root never carries allOf - the subject schema's allOf sits
-        // one level down, inside $defs. Run the strip against every $defs entry
-        // that carries its own allOf, in addition to the root, so a condition
-        // nested under the wrapper is honoured the same as a condition at the root
-        // (e.g. when prepareSchema is called directly on a subject schema).
-        //
-        // Order matters: applyConditionalStrip deep-copies whatever currently sits
-        // in defsObj[ref] when it clones a referenced def into a container (e.g.
-        // Subject cloning Detail into Detail__copy). If Detail's own conditional
-        // strip hasn't run yet, the clone carries a stale $ref to Detail's
-        // original (unstripped) dependency, and that dependency's fix never
-        // reaches the clone - it isn't among the original defsKeys, so the flat
-        // loop this replaced would never visit it. Preparing depth-first (a def's
-        // own $ref'd dependencies before the def itself) guarantees every def is
-        // fully stripped before anything clones it. The prepared/inProgress sets
-        // make sure each def runs once and $ref cycles terminate instead of
-        // recursing forever.
+        // Strip the root and every $defs entry with its own allOf, deps first,
+        // so a def is fully stripped before it's cloned elsewhere.
         const prepared = new Set<string>();
         const inProgress = new Set<string>();
         const prepareDef = (key: string) => {
