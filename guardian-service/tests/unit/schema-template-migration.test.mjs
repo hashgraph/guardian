@@ -88,6 +88,15 @@ function runMigration(policyDocuments, schemaDocuments = []) {
         assert.ok(collections[name], `unexpected collection "${name}"`);
         return collections[name];
     };
+    // the Meeco whitelist drop asks the driver whether that collection exists;
+    // these fixtures never have it, so the step is a no-op
+    migration.driver = {
+        getConnection: () => ({
+            getDb: () => ({
+                listCollections: () => ({ async hasNext() { return false; } }),
+            }),
+        }),
+    };
     return { collection: policies, policies, schemas, run: () => migration.up() };
 }
 

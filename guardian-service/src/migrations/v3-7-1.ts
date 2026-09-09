@@ -11,6 +11,25 @@ export class ReleaseMigration extends Migration {
     async up(): Promise<void> {
         await this.wrapSchemaTemplateBindingInArray();
         await this.remapPolicySchemaTemplateIds();
+        await this.dropMeecoIssuerWhitelist();
+    }
+
+    /**
+     * Drops the issuer whitelist left over from the Meeco Wallet integration.
+     * Lives here rather than in auth-service because both services share one
+     * database, so a second v3-7-1 would be recorded as applied and skipped.
+     */
+    async dropMeecoIssuerWhitelist() {
+        const collectionName = 'MeecoIssuerWhitelist';
+        const db = this.driver.getConnection().getDb();
+        const exists = await db
+            .listCollections({ name: collectionName }, { nameOnly: true })
+            .hasNext();
+        if (!exists) {
+            // Fresh database: nothing to drop, and drop() would throw NamespaceNotFound.
+            return;
+        }
+        await this.getCollection(collectionName).drop();
     }
 
     /**
