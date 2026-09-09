@@ -4,7 +4,7 @@
       @for (item of toolbarItems; track $index) {
         @if (item.separator) {
           <span class="rte-separator"></span>
-        } @else if (!(format === 'markdown' && item.command === 'underline')) {
+        } @else {
           <button
             type="button"
             class="rte-btn"
@@ -18,7 +18,7 @@
             @if (item.icon) {
               <i [class]="item.icon"></i>
             } @else {
-              <span class="rte-label" [class.rte-label-bold]="item.command === 'bold'" [class.rte-label-italic]="item.command === 'italic'" [class.rte-label-underline]="item.command === 'underline'">{{ item.label }}</span>
+              <span class="rte-label" [class.rte-label-bold]="item.command === 'bold'" [class.rte-label-italic]="item.command === 'italic'">{{ item.label }}</span>
             }
           </button>
         }

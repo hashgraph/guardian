@@ -1490,18 +1490,14 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public isFormattedPresetField(): boolean {
         const type = this.selectedField ? this.getFieldValueInputType(this.selectedField) : '';
-        return type === 'richText' || type === 'markdown';
-    }
-
-    public isMarkdownPresetField(): boolean {
-        return !!this.selectedField && this.getFieldValueInputType(this.selectedField) === 'markdown';
+        return type === 'richText';
     }
 
     public getPresetPreviewHtml(value: any): string {
         if (typeof value !== 'string' || !value) {
             return '';
         }
-        return this.isMarkdownPresetField() ? markdownToHtml(value) : value;
+        return markdownToHtml(value);
     }
 
     public isRichTextPresetLinkOpen(): boolean {
@@ -1663,7 +1659,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (key === 'time') { return 'time'; }
         if (key === 'dateTime') { return 'datetime-local'; }
         if (key === 'richText') { return 'richText'; }
-        if (key === 'markdown') { return 'markdown'; }
 
         return 'text';
     }

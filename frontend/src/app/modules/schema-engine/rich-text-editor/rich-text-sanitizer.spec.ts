@@ -9,7 +9,7 @@ describe('sanitizeRichText', () => {
 
     it('keeps every tag the ticket asks for', () => {
         const html = '<h1>A</h1><h2>B</h2><h3>C</h3><p><b>b</b><strong>s</strong>' +
-            '<i>i</i><em>e</em><u>u</u></p><ul><li>x</li></ul><ol><li>y</li></ol>';
+            '<i>i</i><em>e</em></p><ul><li>x</li></ul><ol><li>y</li></ol>';
         expect(sanitizeRichText(html)).toBe(html);
     });
 
@@ -133,25 +133,20 @@ describe('richTextToText', () => {
         expect(richTextToText(7)).toBe('');
     });
 
-    describe('sanitizeRichText without underline', () => {
+    describe('sanitizeRichText and underline', () => {
 
         it('should drop the underline tag and keep its text', () => {
-            expect(sanitizeRichText('<p>a <u>b</u> c</p>', false)).toBe('<p>a b c</p>');
+            expect(sanitizeRichText('<p>a <u>b</u> c</p>')).toBe('<p>a b c</p>');
         });
 
         it('should keep every other supported tag', () => {
             const value = '<h2>Title</h2><ul><li><b>One</b> and <i>two</i></li></ul>';
-            expect(sanitizeRichText(value, false)).toBe(value);
-        });
-
-        it('should keep the underline when it is allowed, which is the default', () => {
-            expect(sanitizeRichText('<p>a <u>b</u> c</p>', true)).toBe('<p>a <u>b</u> c</p>');
-            expect(sanitizeRichText('<p>a <u>b</u> c</p>')).toBe('<p>a <u>b</u> c</p>');
+            expect(sanitizeRichText(value)).toBe(value);
         });
 
         it('should still drop what it always dropped', () => {
-            expect(sanitizeRichText('<p>a <font size="7">b</font> c</p>', false)).toBe('<p>a b c</p>');
-            expect(sanitizeRichText('<table><tr><td>cell</td></tr></table>', false)).toBe('cell');
+            expect(sanitizeRichText('<p>a <font size="7">b</font> c</p>')).toBe('<p>a b c</p>');
+            expect(sanitizeRichText('<table><tr><td>cell</td></tr></table>')).toBe('cell');
         });
     });
 });

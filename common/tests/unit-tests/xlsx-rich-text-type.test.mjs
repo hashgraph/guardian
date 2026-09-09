@@ -28,7 +28,11 @@ describe('FieldTypes — Rich Text', () => {
 
     it('exports a value as a string', () => {
         const type = FieldTypes.findByName('Rich Text');
-        assert.equal(type.pars('<p>x</p>'), '<p>x</p>');
+        assert.equal(type.pars('# Title\n\n**bold**'), '# Title\n\n**bold**');
+    });
+
+    it('is the only formatted text type — Markdown is no longer registered', () => {
+        assert.equal(FieldTypes.findByName('Markdown'), null);
     });
 
     it('resolves a rich text field to the Rich Text type, not to String', () => {

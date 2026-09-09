@@ -29,21 +29,6 @@ describe('SchemaFormViewComponent', () => {
         });
     });
 
-    describe('isMarkdown', () => {
-
-        it('should recognise a Markdown field', () => {
-            const component = createComponent();
-            expect(component.isMarkdown(makeField({ customType: 'markdown' }))).toBeTrue();
-        });
-
-        it('should not recognise a Rich Text field, a plain string or another custom type', () => {
-            const component = createComponent();
-            expect(component.isMarkdown(makeField({ customType: 'richText' }))).toBeFalse();
-            expect(component.isMarkdown(makeField())).toBeFalse();
-            expect(component.isMarkdown(makeField({ customType: 'table' }))).toBeFalse();
-        });
-    });
-
     describe('isInput', () => {
 
         it('should not claim a Rich Text field', () => {
@@ -51,9 +36,9 @@ describe('SchemaFormViewComponent', () => {
             expect(component.isInput(makeField({ customType: 'richText' }))).toBeFalse();
         });
 
-        it('should not claim a Markdown field', () => {
+        it('should claim a string carrying a custom type it does not know', () => {
             const component = createComponent();
-            expect(component.isInput(makeField({ customType: 'markdown' }))).toBeFalse();
+            expect(component.isInput(makeField({ customType: 'markdown' }))).toBeTrue();
         });
 
         it('should still claim a plain string, number and integer', () => {
@@ -116,39 +101,29 @@ describe('SchemaFormViewComponent', () => {
 
     describe('getRichTextValue', () => {
 
-        it('should mark links for a new tab', () => {
+        it('should render the stored Markdown as HTML', () => {
             const component = createComponent();
-            const result = component.getRichTextValue('<p><a href="https://example.com">link</a></p>');
-            expect(result).toContain('target="_blank"');
-            expect(result).toContain('rel="noopener noreferrer"');
-        });
-    });
-
-    describe('getMarkdownValue', () => {
-
-        it('should render Markdown as HTML', () => {
-            const component = createComponent();
-            expect(component.getMarkdownValue('# Title')).toBe('<h1>Title</h1>');
-            expect(component.getMarkdownValue('- one\n- two')).toBe('<ul><li>one</li><li>two</li></ul>');
+            expect(component.getRichTextValue('# Title')).toBe('<h1>Title</h1>');
+            expect(component.getRichTextValue('- one\n- two')).toBe('<ul><li>one</li><li>two</li></ul>');
         });
 
         it('should mark a link for a new tab', () => {
             const component = createComponent();
-            const result = component.getMarkdownValue('[text](https://example.com)');
+            const result = component.getRichTextValue('[text](https://example.com)');
             expect(result).toContain('target="_blank"');
             expect(result).toContain('rel="noopener noreferrer"');
         });
 
         it('should return an empty string for a value that is not a string', () => {
             const component = createComponent();
-            expect(component.getMarkdownValue(null)).toBe('');
-            expect(component.getMarkdownValue(undefined)).toBe('');
-            expect(component.getMarkdownValue(42)).toBe('');
+            expect(component.getRichTextValue(null)).toBe('');
+            expect(component.getRichTextValue(undefined)).toBe('');
+            expect(component.getRichTextValue(42)).toBe('');
         });
 
         it('should not let markup inside the value become markup', () => {
             const component = createComponent();
-            expect(component.getMarkdownValue('<img src="x">')).toBe('<p>&lt;img src="x"&gt;</p>');
+            expect(component.getRichTextValue('<img src="x">')).toBe('<p>&lt;img src="x"&gt;</p>');
         });
     });
 });

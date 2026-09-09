@@ -15,6 +15,7 @@ import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from '../../../services/api';
 import { FieldForm, IFieldControl, IFieldIndexControl } from '../schema-form-model/field-form';
 import { getMinutesAgoStream } from 'src/app/utils/autosave-utils';
 import { withNewTabLinks } from '../rich-text-editor/rich-text-sanitizer';
+import { markdownToHtml } from '../rich-text-editor/markdown';
 import {
     GeoOption,
     GeoResolverField,
@@ -550,17 +551,12 @@ export class SchemaFormComponent implements OnInit {
             ) && !item.remoteLink && !item.enum
             && item.customType !== 'table'
             && item.customType !== 'richText'
-            && item.customType !== 'markdown'
             && !this.isGeoLocation(item)
         );
     }
 
     public isRichText(item: IFieldControl<any>): boolean {
         return item.customType === 'richText';
-    }
-
-    public isMarkdown(item: IFieldControl<any>): boolean {
-        return item.customType === 'markdown';
     }
 
     public isHelpText(item: IFieldControl<any>): boolean {
@@ -621,7 +617,9 @@ export class SchemaFormComponent implements OnInit {
             return;
         }
         this.clearSuggestHideTimer();
-        this.suggestPopoverValue = withNewTabLinks(item.suggest);
+        this.suggestPopoverValue = withNewTabLinks(
+            markdownToHtml(typeof item.suggest === 'string' ? item.suggest : '')
+        );
         if (this.suggestPopoverValue) {
             popover.show(event);
         }

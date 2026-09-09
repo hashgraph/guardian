@@ -25,7 +25,7 @@ describe('DocumentsSourceBlockComponent', () => {
     afterEach(() => jasmine.clock().uninstall());
 
     it('shows the popover with the cell value when the cell has text', () => {
-        const component = createComponent({ a: '<p>Hello <a href="https://x.io">link</a></p>' });
+        const component = createComponent({ a: 'Hello [link](https://x.io)' });
         const popover = makePopover();
         const event = new Event('mouseenter');
 
@@ -36,7 +36,7 @@ describe('DocumentsSourceBlockComponent', () => {
     });
 
     it('does not open the popover for a cell that renders no text', () => {
-        const component = createComponent({ a: '<p><br></p>' });
+        const component = createComponent({ a: '   ' });
         const popover = makePopover();
 
         component.onRichTextEnter(new Event('mouseenter'), { id: 'a' }, field, popover);
@@ -46,7 +46,7 @@ describe('DocumentsSourceBlockComponent', () => {
     });
 
     it('closes the open popover when the pointer moves from a filled cell to an empty one', () => {
-        const component = createComponent({ a: '<p>Hello</p>', b: '' });
+        const component = createComponent({ a: 'Hello', b: '' });
         const popover = makePopover();
 
         component.onRichTextEnter(new Event('mouseenter'), { id: 'a' }, field, popover);
@@ -62,7 +62,7 @@ describe('DocumentsSourceBlockComponent', () => {
     });
 
     it('keeps the popover open and swaps the value when the pointer moves between filled cells', () => {
-        const component = createComponent({ a: '<p>First</p>', b: '<p>Second</p>' });
+        const component = createComponent({ a: 'First', b: 'Second' });
         const popover = makePopover();
 
         component.onRichTextEnter(new Event('mouseenter'), { id: 'a' }, field, popover);
@@ -77,7 +77,7 @@ describe('DocumentsSourceBlockComponent', () => {
     });
 
     it('keeps the popover open while the pointer is over the popover itself', () => {
-        const component = createComponent({ a: '<p>Hello</p>' });
+        const component = createComponent({ a: 'Hello' });
         const popover = makePopover();
 
         component.onRichTextEnter(new Event('mouseenter'), { id: 'a' }, field, popover);
@@ -90,18 +90,16 @@ describe('DocumentsSourceBlockComponent', () => {
     });
 
     it('reads a cell as plain text with the markup removed', () => {
-        const component = createComponent({ a: '<p>Line <b>one</b></p><p>two</p>' });
+        const component = createComponent({ a: 'Line **one**\n\ntwo' });
 
         expect(component.getRichTextCellText({ id: 'a' }, field)).toBe('Line one two');
     });
 
-    describe('a Markdown column', () => {
-
-        const markdownField: any = { type: 'markdown', name: 'note' };
+    describe('a Rich Text column', () => {
 
         it('shows the rendered text in the cell, not the syntax', () => {
             const component = createComponent({ a: '# Title\n\nSome **bold** text' });
-            const text = component.getRichTextCellText({ id: 'a' }, markdownField);
+            const text = component.getRichTextCellText({ id: 'a' }, field);
             expect(text).toContain('Title');
             expect(text).toContain('bold');
             expect(text).not.toContain('#');
@@ -112,7 +110,7 @@ describe('DocumentsSourceBlockComponent', () => {
             const component = createComponent({ a: '# Title\n\n- one\n- two' });
             const popover = makePopover();
 
-            component.onRichTextEnter(new Event('mouseenter'), { id: 'a' }, markdownField, popover);
+            component.onRichTextEnter(new Event('mouseenter'), { id: 'a' }, field, popover);
 
             expect(popover.shown.length).toBe(1);
             expect(component.richTextValue).toContain('<h1>Title</h1>');
@@ -123,7 +121,7 @@ describe('DocumentsSourceBlockComponent', () => {
             const component = createComponent({ a: '[text](https://example.com)' });
             const popover = makePopover();
 
-            component.onRichTextEnter(new Event('mouseenter'), { id: 'a' }, markdownField, popover);
+            component.onRichTextEnter(new Event('mouseenter'), { id: 'a' }, field, popover);
 
             expect(component.richTextValue).toContain('target="_blank"');
             expect(component.richTextValue).toContain('rel="noopener noreferrer"');
@@ -133,7 +131,7 @@ describe('DocumentsSourceBlockComponent', () => {
             const component = createComponent({ a: '' });
             const popover = makePopover();
 
-            component.onRichTextEnter(new Event('mouseenter'), { id: 'a' }, markdownField, popover);
+            component.onRichTextEnter(new Event('mouseenter'), { id: 'a' }, field, popover);
 
             expect(popover.shown).toEqual([]);
             expect(component.richTextValue).toBe('');
@@ -143,26 +141,20 @@ describe('DocumentsSourceBlockComponent', () => {
             const component = createComponent({ a: '<img src="x"> and <b>tags</b>' });
             const popover = makePopover();
 
-            component.onRichTextEnter(new Event('mouseenter'), { id: 'a' }, markdownField, popover);
+            component.onRichTextEnter(new Event('mouseenter'), { id: 'a' }, field, popover);
 
             expect(component.richTextValue).toContain('&lt;img src="x"&gt;');
             expect(component.richTextValue).not.toContain('<img');
         });
 
-        it('leaves a Rich Text column exactly as it was', () => {
-            const component = createComponent({ a: '<h1>Title</h1><p>text</p>' });
-            const popover = makePopover();
-
-            component.onRichTextEnter(new Event('mouseenter'), { id: 'a' }, field, popover);
-
-            expect(component.richTextValue).toContain('<h1>Title</h1>');
-            expect(component.getRichTextCellText({ id: 'a' }, field)).toBe('Title text');
+        it('gives a Rich Text cell the text container class', () => {
+            const component = createComponent();
+            expect(component.getClass('richText')).toBe('text-container');
         });
 
-        it('gives a Markdown cell the same container class as a Rich Text one', () => {
+        it('no longer knows a markdown column type', () => {
             const component = createComponent();
-            expect(component.getClass('markdown')).toBe(component.getClass('richText'));
-            expect(component.getClass('markdown')).toBe('text-container');
+            expect(component.getClass('markdown')).not.toBe('text-container');
         });
     });
 });

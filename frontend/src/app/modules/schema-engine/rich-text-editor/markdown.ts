@@ -79,30 +79,35 @@ export function markdownToHtml(markdown: string | null | undefined): string {
     return blocks.join('');
 }
 
+function inlineNode(node: Node): string {
+    if (node.nodeType === Node.TEXT_NODE) {
+        return escapeMarkdown((node.textContent || '').replace(/\u00a0/g, ' '));
+    }
+    if (!(node instanceof Element)) {
+        return '';
+    }
+    const tag = node.tagName;
+    const text = inlineToMarkdown(node);
+    if (tag === 'B' || tag === 'STRONG') {
+        return text ? `**${text}**` : '';
+    }
+    if (tag === 'I' || tag === 'EM') {
+        return text ? `*${text}*` : '';
+    }
+    if (tag === 'A') {
+        const href = node.getAttribute('href') || '';
+        return href ? `[${text}](${href})` : text;
+    }
+    if (tag === 'BR') {
+        return '\n';
+    }
+    return text;
+}
+
 function inlineToMarkdown(node: Node): string {
     let out = '';
     for (const child of Array.from(node.childNodes)) {
-        if (child.nodeType === Node.TEXT_NODE) {
-            out += escapeMarkdown((child.textContent || '').replace(/ /g, ' '));
-            continue;
-        }
-        if (!(child instanceof Element)) {
-            continue;
-        }
-        const tag = child.tagName;
-        const text = inlineToMarkdown(child);
-        if (tag === 'B' || tag === 'STRONG') {
-            out += text ? `**${text}**` : '';
-        } else if (tag === 'I' || tag === 'EM') {
-            out += text ? `*${text}*` : '';
-        } else if (tag === 'A') {
-            const href = child.getAttribute('href') || '';
-            out += href ? `[${text}](${href})` : text;
-        } else if (tag === 'BR') {
-            out += '\n';
-        } else {
-            out += text;
-        }
+        out += inlineNode(child);
     }
     return out;
 }
@@ -138,7 +143,7 @@ function collectBlocks(parent: Node, blocks: string[]): void {
         } else if (hasBlockChildren(node)) {
             collectBlocks(node, blocks);
         } else {
-            const text = inlineToMarkdown(node).trim();
+            const text = inlineNode(node).trim();
             if (text) {
                 blocks.push(escapeLineStarts(text));
             }

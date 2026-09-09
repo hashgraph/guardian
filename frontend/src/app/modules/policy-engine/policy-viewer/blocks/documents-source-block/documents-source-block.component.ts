@@ -338,7 +338,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
 
     private toRichTextHtml(row: any, field: any): string {
         const value = this.getText(row, field);
-        return field?.type === 'markdown' ? markdownToHtml(value) : value;
+        return markdownToHtml(typeof value === 'string' ? value : '');
     }
 
     public onRichTextEnter(event: Event, row: any, field: any, popover: any): void {
@@ -626,7 +626,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
     }
 
     getClass(type: string): string {
-        if (type === 'text' || type === 'richText' || type === 'markdown') {
+        if (type === 'text' || type === 'richText') {
             return 'text-container';
         }
         if (type === 'button') {

@@ -1,6 +1,6 @@
 const ALLOWED_TAGS = new Set([
     'P', 'BR', 'DIV', 'SPAN',
-    'B', 'STRONG', 'I', 'EM', 'U',
+    'B', 'STRONG', 'I', 'EM',
     'H1', 'H2', 'H3',
     'UL', 'OL', 'LI',
     'A'
@@ -30,13 +30,13 @@ export function isSafeHref(value: string): boolean {
     return ALLOWED_PROTOCOLS.includes(protocol[0].toLowerCase());
 }
 
-export function sanitizeRichText(html: string | null | undefined, allowUnderline: boolean = true): string {
+export function sanitizeRichText(html: string | null | undefined): string {
     if (!html) {
         return '';
     }
     const inert = document.implementation.createHTMLDocument('');
     inert.body.innerHTML = html;
-    cleanChildren(inert.body, allowUnderline);
+    cleanChildren(inert.body);
     return inert.body.innerHTML;
 }
 
@@ -89,7 +89,7 @@ export function withNewTabLinks(value: unknown): string {
     return inert.body.innerHTML;
 }
 
-function cleanChildren(parent: Node, allowUnderline: boolean): void {
+function cleanChildren(parent: Node): void {
     const children = Array.from(parent.childNodes);
     for (const node of children) {
         if (node.nodeType === Node.TEXT_NODE) {
@@ -105,8 +105,8 @@ function cleanChildren(parent: Node, allowUnderline: boolean): void {
             parent.removeChild(element);
             continue;
         }
-        cleanChildren(element, allowUnderline);
-        if (ALLOWED_TAGS.has(tag) && (allowUnderline || tag !== 'U')) {
+        cleanChildren(element);
+        if (ALLOWED_TAGS.has(tag)) {
             cleanAttributes(element, tag);
         } else {
             unwrap(element, parent);

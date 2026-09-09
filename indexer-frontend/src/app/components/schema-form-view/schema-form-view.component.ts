@@ -180,8 +180,7 @@ export class SchemaFormViewComponent {
             item.format !== 'time' &&
             item.format !== 'date-time' &&
             item.customType !== 'table' &&
-            item.customType !== 'richText' &&
-            item.customType !== 'markdown'
+            item.customType !== 'richText'
         );
     }
 
@@ -189,15 +188,7 @@ export class SchemaFormViewComponent {
         return item.customType === 'richText';
     }
 
-    isMarkdown(item: SchemaField): boolean {
-        return item.customType === 'markdown';
-    }
-
     getRichTextValue(value: unknown): string {
-        return withNewTabLinks(value);
-    }
-
-    getMarkdownValue(value: unknown): string {
         return withNewTabLinks(markdownToHtml(typeof value === 'string' ? value : ''));
     }
 

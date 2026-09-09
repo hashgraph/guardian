@@ -47,14 +47,26 @@ describe('FieldTypesDictionary — Rich Text entry', () => {
         const rich = FieldTypesDictionary.CustomFieldTypes.find((t) => t.name === 'Rich Text');
         assert.equal(FieldTypesDictionary.equal(richTextField(), rich), true);
     });
+
+    it('is the only formatted text type — Markdown is no longer registered', () => {
+        assert.equal(
+            FieldTypesDictionary.CustomFieldTypes.find((t) => t.name === 'Markdown'),
+            undefined
+        );
+        assert.equal(
+            FieldTypesDictionary.CustomFieldTypes.find((t) => t.customType === 'markdown'),
+            undefined
+        );
+    });
 });
 
 describe('DocumentGenerator — Rich Text example', () => {
-    it('generates markup for a rich text field', () => {
-        assert.equal(
-            DocumentGenerator.generateExample(richTextField()),
-            '<p>Example rich text</p>'
-        );
+    it('generates a markdown sample for a rich text field', () => {
+        const value = DocumentGenerator.generateExample(richTextField());
+        assert.equal(typeof value, 'string');
+        assert.ok(value.includes('#'), 'expected a heading in the example value');
+        assert.ok(value.includes('**'), 'expected bold syntax in the example value');
+        assert.ok(!value.includes('<'), 'the example must be markdown, not markup');
     });
 
     it('leaves a plain string field on its own example', () => {
@@ -69,5 +81,9 @@ describe('SchemaToJson — Rich Text type name', () => {
 
     it('still exports a plain string field as String', () => {
         assert.equal(SchemaToJson.fieldToJson(plainStringField(), 0).type, 'String');
+    });
+
+    it('no longer resolves a markdown custom type to its own name', () => {
+        assert.equal(SchemaToJson.getType(richTextField({ customType: 'markdown' })), 'String');
     });
 });

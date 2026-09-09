@@ -135,6 +135,23 @@ describe('markdown converters', () => {
         it('should ignore an empty block', () => {
             expect(htmlToMarkdown('<p>one</p><p></p><p>two</p>')).toBe('one\n\ntwo');
         });
+
+        it('should keep the formatting of an element that sits at the top level with no block around it', () => {
+            expect(htmlToMarkdown('<b>Test</b>')).toBe('**Test**');
+            expect(htmlToMarkdown('<i>Test</i>')).toBe('*Test*');
+            expect(htmlToMarkdown('<strong>a</strong><em>b</em>')).toBe('**a**\n\n*b*');
+        });
+
+        it('should keep a top-level link', () => {
+            expect(htmlToMarkdown('<a href="https://example.com">text</a>'))
+                .toBe('[text](https://example.com)');
+        });
+
+        it('should still drop the wrapper of a top-level block', () => {
+            expect(htmlToMarkdown('<p>Test</p>')).toBe('Test');
+            expect(htmlToMarkdown('<div>Test</div>')).toBe('Test');
+            expect(htmlToMarkdown('<span>Test</span>')).toBe('Test');
+        });
     });
 
     describe('round trips', () => {

@@ -81,10 +81,6 @@
     font-style: italic;
 }
 
-.rte-label-underline {
-    text-decoration: underline;
-}
-
 .rte-editor {
     min-height: 80px;
     max-height: 400px;
@@ -107,7 +103,6 @@
 :host ::ng-deep .rte-editor {
     b, strong { font-weight: 700; }
     i, em     { font-style: italic; }
-    u         { text-decoration: underline; }
     h1        { font-size: 1.375rem; font-weight: 700; margin: 0.5em 0 0.2em; }
     h2        { font-size: 1.1875rem; font-weight: 700; margin: 0.45em 0 0.2em; }
     h3        { font-size: 1.0625rem; font-weight: 700; margin: 0.4em 0 0.15em; }

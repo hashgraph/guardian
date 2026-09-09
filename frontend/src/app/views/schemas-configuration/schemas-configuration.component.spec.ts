@@ -1066,6 +1066,63 @@ describe('SchemasConfigurationComponent', () => {
             });
             expect(typeOf(account)).not.toBe('richText');
         });
+
+        it('no longer knows a markdown custom type', () => {
+            expect(typeOf(makeField({ type: 'string', customType: 'markdown' }))).toBe('text');
+        });
+    });
+
+    describe('Rich Text preset preview', () => {
+
+        function componentWithRichTextField(): any {
+            const component = createComponent();
+            component.fieldTypes = [{ key: 'richText', schemaType: 'string', customType: 'richText' }];
+            component.selectedField = makeField({ type: 'string', customType: 'richText' });
+            return component;
+        }
+
+        it('treats a rich text field as the formatted preset field', () => {
+            expect(componentWithRichTextField().isFormattedPresetField()).toBeTrue();
+        });
+
+        it('renders the stored markdown as html', () => {
+            const component = componentWithRichTextField();
+            expect(component.getPresetPreviewHtml('# Title')).toBe('<h1>Title</h1>');
+            expect(component.getPresetPreviewHtml('a **bold** word'))
+                .toBe('<p>a <b>bold</b> word</p>');
+        });
+
+        it('returns an empty string for a value that is not text', () => {
+            const component = componentWithRichTextField();
+            expect(component.getPresetPreviewHtml(null)).toBe('');
+            expect(component.getPresetPreviewHtml(42)).toBe('');
+            expect(component.getPresetPreviewHtml('')).toBe('');
+        });
+
+        it('clears a default and a suggested value from the card', () => {
+            const component = componentWithRichTextField();
+            component.selectedField.default = '# Title';
+            component.selectedField.suggest = '# Other';
+            component.markDirty = jasmine.createSpy('markDirty');
+
+            component.clearFieldValue('default');
+            component.clearFieldValue('suggest');
+
+            expect(component.selectedField.default).toBeNull();
+            expect(component.selectedField.suggest).toBeNull();
+            expect(component.markDirty).toHaveBeenCalledTimes(2);
+        });
+
+        it('clears a test value from the card', () => {
+            const component = componentWithRichTextField();
+            component.selectedField.examples = ['# Title'];
+            component.markDirty = jasmine.createSpy('markDirty');
+
+            component.clearFieldTestValue();
+
+            expect(component.getFieldTestValue()).toBeNull();
+            expect(component.markDirty).toHaveBeenCalled();
+        });
     });
 
     describe('editing a saved repeatable field link', () => {

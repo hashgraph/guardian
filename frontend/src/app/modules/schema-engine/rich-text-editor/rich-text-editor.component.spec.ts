@@ -38,10 +38,10 @@ describe('RichTextEditorComponent', () => {
     });
 
     it('should implement ControlValueAccessor: writeValue sets editor content', () => {
-        component.writeValue('<b>Hello</b>');
+        component.writeValue('**Hello**');
         fixture.detectChanges();
         const editor = fixture.debugElement.query(By.css('.rte-editor'));
-        expect(editor.nativeElement.innerHTML).toBe('<b>Hello</b>');
+        expect(editor.nativeElement.innerHTML).toBe('<p><b>Hello</b></p>');
     });
 
     it('should treat null writeValue as empty string', () => {
@@ -56,7 +56,7 @@ describe('RichTextEditorComponent', () => {
         const editor = fixture.debugElement.query(By.css('.rte-editor'));
         editor.nativeElement.innerHTML = '<b>Test</b>';
         editor.nativeElement.dispatchEvent(new Event('input'));
-        expect(changeSpy).toHaveBeenCalledWith('<b>Test</b>');
+        expect(changeSpy).toHaveBeenCalledWith('**Test**');
     });
 
     it('should clear an emptied block after a deletion', () => {
@@ -105,7 +105,7 @@ describe('RichTextEditorComponent', () => {
         editor.nativeElement.innerHTML = '<h1>Kept</h1>';
         editor.nativeElement.dispatchEvent(new InputEvent('input', { inputType: 'deleteContentBackward' }));
         expect(editor.nativeElement.innerHTML).toBe('<h1>Kept</h1>');
-        expect(changeSpy).toHaveBeenCalledWith('<h1>Kept</h1>');
+        expect(changeSpy).toHaveBeenCalledWith('# Kept');
     });
 
     it('should call onTouched when editor blurs', () => {
@@ -245,12 +245,7 @@ describe('RichTextEditorComponent', () => {
         expect(component.showLinkDialog).toBeFalse();
     });
 
-    it('should default the format to html', () => {
-        expect(component.format).toBe('html');
-    });
-
-    it('should render markdown as html in the editor when the format is markdown', () => {
-        component.format = 'markdown';
+    it('should render the stored markdown as html in the editor', () => {
         component.writeValue('# Title\n\n- one\n- two');
         fixture.detectChanges();
 
@@ -258,8 +253,7 @@ describe('RichTextEditorComponent', () => {
         expect(editor.innerHTML).toBe('<h1>Title</h1><ul><li>one</li><li>two</li></ul>');
     });
 
-    it('should report markdown through onChange when the format is markdown', () => {
-        component.format = 'markdown';
+    it('should report markdown through onChange', () => {
         const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
         const onChange = jasmine.createSpy('onChange');
         component.registerOnChange(onChange);
@@ -270,7 +264,7 @@ describe('RichTextEditorComponent', () => {
         expect(onChange).toHaveBeenCalledWith('# Title\n\na **bold** line');
     });
 
-    it('should still report html through onChange in the default format', () => {
+    it('should never report html through onChange', () => {
         const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
         const onChange = jasmine.createSpy('onChange');
         component.registerOnChange(onChange);
@@ -278,11 +272,10 @@ describe('RichTextEditorComponent', () => {
         editor.innerHTML = '<p>text</p>';
         component.onInput();
 
-        expect(onChange).toHaveBeenCalledWith('<p>text</p>');
+        expect(onChange).toHaveBeenCalledWith('text');
     });
 
-    it('should report an empty value for visually empty markup in markdown mode', () => {
-        component.format = 'markdown';
+    it('should report an empty value for visually empty markup', () => {
         const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
         const onChange = jasmine.createSpy('onChange');
         component.registerOnChange(onChange);
@@ -293,18 +286,13 @@ describe('RichTextEditorComponent', () => {
         expect(onChange).toHaveBeenCalledWith('');
     });
 
-    it('should hide the underline button in markdown mode and keep it otherwise', () => {
-        const titles = () => fixture.debugElement
+    it('should not offer an underline button', () => {
+        const titles = fixture.debugElement
             .queryAll(By.css('.rte-btn'))
             .map((item) => item.nativeElement.getAttribute('title'));
 
-        expect(titles()).toContain('Underline (Ctrl+U)');
-
-        fixture.componentRef.setInput('format', 'markdown');
-        fixture.detectChanges();
-
-        expect(titles()).not.toContain('Underline (Ctrl+U)');
-        expect(titles()).toContain('Bold (Ctrl+B)');
+        expect(titles).not.toContain('Underline (Ctrl+U)');
+        expect(titles).toContain('Bold (Ctrl+B)');
     });
 
     it('should close the link dialog on a mousedown outside the editor', () => {
@@ -415,7 +403,7 @@ describe('RichTextEditorComponent', () => {
             .map(t => t.command);
         expect(commands).toContain('bold');
         expect(commands).toContain('italic');
-        expect(commands).toContain('underline');
+        expect(commands).not.toContain('underline');
         expect(commands).toContain('insertUnorderedList');
         expect(commands).toContain('insertOrderedList');
         expect(commands).toContain('h1');
@@ -424,10 +412,10 @@ describe('RichTextEditorComponent', () => {
         expect(commands).toContain('link');
     });
 
-    it('should show visible labels for bold, italic and underline', () => {
+    it('should show visible labels for bold and italic', () => {
         const labels = fixture.debugElement.queryAll(By.css('.rte-label'))
             .map(item => item.nativeElement.textContent.trim());
-        expect(labels).toEqual(['B', 'I', 'U', 'H1', 'H2', 'H3']);
+        expect(labels).toEqual(['B', 'I', 'H1', 'H2', 'H3']);
     });
 
     it('should apply a heading to a plain block', () => {
@@ -694,7 +682,7 @@ describe('RichTextEditorComponent', () => {
     });
 
     it('should leave a closed link dialog closed when a value is written', () => {
-        component.writeValue('<p>Text</p>');
+        component.writeValue('Text');
         fixture.detectChanges();
 
         expect(component.showLinkDialog).toBeFalse();
@@ -808,7 +796,7 @@ describe('RichTextEditorComponent', () => {
         });
     });
 
-    describe('underline is not pasted into a Markdown field', () => {
+    describe('underline is not pasted into a Rich Text field', () => {
 
         function pasteHtml(html: string): void {
             const event: any = new Event('paste');
@@ -817,9 +805,7 @@ describe('RichTextEditorComponent', () => {
             component.onPaste(event);
         }
 
-        it('should drop the underline and keep its text in Markdown mode', () => {
-            fixture.componentRef.setInput('format', 'markdown');
-            fixture.detectChanges();
+        it('should drop the underline and keep its text', () => {
             const inserted: string[] = [];
             spyOn(document, 'execCommand').and.callFake((command: string, _ui?: boolean, value?: string) => {
                 if (command === 'insertHTML') { inserted.push(value || ''); }
@@ -832,21 +818,7 @@ describe('RichTextEditorComponent', () => {
             expect(inserted[0]).toBe('<p>a b c</p>');
         });
 
-        it('should keep the underline in the default HTML mode', () => {
-            const inserted: string[] = [];
-            spyOn(document, 'execCommand').and.callFake((command: string, _ui?: boolean, value?: string) => {
-                if (command === 'insertHTML') { inserted.push(value || ''); }
-                return true;
-            });
-
-            pasteHtml('<p>a <u>b</u> c</p>');
-
-            expect(inserted[0]).toBe('<p>a <u>b</u> c</p>');
-        });
-
-        it('should keep bold, italic, headings and lists in Markdown mode', () => {
-            fixture.componentRef.setInput('format', 'markdown');
-            fixture.detectChanges();
+        it('should keep bold, italic, headings and lists', () => {
             const inserted: string[] = [];
             spyOn(document, 'execCommand').and.callFake((command: string, _ui?: boolean, value?: string) => {
                 if (command === 'insertHTML') { inserted.push(value || ''); }

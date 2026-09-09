@@ -188,10 +188,6 @@ export class SchemaToJson {
             return 'Rich Text';
         }
 
-        if (field.customType === 'markdown') {
-            return 'Markdown';
-        }
-
         for (const type of FieldTypesDictionary.FieldTypes) {
             if (FieldTypesDictionary.equal(field, type)) {
                 return type.name;

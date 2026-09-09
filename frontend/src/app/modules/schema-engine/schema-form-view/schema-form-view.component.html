@@ -25,10 +25,6 @@
                         <div class="rte-view-content" [innerHTML]="getRichTextValue(item.value)" (click)="onRichTextLinkClick($event)"></div>
                     </div>
 
-                    <div *ngIf="isMarkdown(item)" class="form-field-input guardian-input-container">
-                        <div class="rte-view-content" [innerHTML]="getMarkdownValue(item.value)" (click)="onRichTextLinkClick($event)"></div>
-                    </div>
-
                     <div *ngIf="isInput(item) && !isIPFS(item)" class="form-field-input guardian-input-container">
                         <textarea
                             pInputTextarea
@@ -183,10 +179,6 @@
 
                             <div *ngIf="isRichText(item)" class="form-field-input guardian-input-container">
                                 <div class="rte-view-content" [innerHTML]="getRichTextValue(listItem.value)" (click)="onRichTextLinkClick($event)"></div>
-                            </div>
-
-                            <div *ngIf="isMarkdown(item)" class="form-field-input guardian-input-container">
-                                <div class="rte-view-content" [innerHTML]="getMarkdownValue(listItem.value)" (click)="onRichTextLinkClick($event)"></div>
                             </div>
 
                             <div *ngIf="isInput(item) && !isIPFS(item)" class="form-field-input guardian-input-container">

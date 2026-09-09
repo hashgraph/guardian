@@ -79,9 +79,13 @@ describe('SchemaFormViewComponent', () => {
     });
 
     describe('getRichTextValue', () => {
-        it('adds new-tab attributes to an existing link without changing its text', () => {
-            expect(component.getRichTextValue('<p><a href="https://example.com">Example</a></p>'))
+        it('renders the stored markdown and opens its link in a new tab', () => {
+            expect(component.getRichTextValue('[Example](https://example.com)'))
                 .toBe('<p><a href="https://example.com" target="_blank" rel="noopener noreferrer">Example</a></p>');
+        });
+
+        it('does not let markup inside the value become markup', () => {
+            expect(component.getRichTextValue('<img src="x">')).toBe('<p>&lt;img src="x"&gt;</p>');
         });
 
         it('returns an empty string for a non-string value', () => {

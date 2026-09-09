@@ -35,7 +35,6 @@ export class RichTextEditorComponent
 
     @Input() placeholder = 'Enter text here…';
     @Input() readonly = false;
-    @Input() format: 'html' | 'markdown' = 'html';
 
     public showLinkDialog = false;
     public linkUrl = '';
@@ -62,7 +61,6 @@ export class RichTextEditorComponent
     public readonly toolbarItems = [
         { command: 'bold', icon: null, label: 'B', title: 'Bold (Ctrl+B)' },
         { command: 'italic', icon: null, label: 'I', title: 'Italic (Ctrl+I)' },
-        { command: 'underline', icon: null, label: 'U', title: 'Underline (Ctrl+U)' },
         { separator: true },
         { command: 'insertUnorderedList', icon: 'pi pi-list', title: 'Bullet list' },
         { command: 'insertOrderedList', icon: 'pi pi-list-check', title: 'Numbered list' },
@@ -117,9 +115,7 @@ export class RichTextEditorComponent
             this._clearEmptyFormatting();
         }
         const html = this.editorRef.nativeElement.innerHTML;
-        const value = isBlankRichText(html)
-            ? ''
-            : (this.format === 'markdown' ? htmlToMarkdown(html) : html);
+        const value = isBlankRichText(html) ? '' : htmlToMarkdown(html);
         this._value = value;
         this._onChange(value);
         this.cdr.markForCheck();
@@ -132,7 +128,7 @@ export class RichTextEditorComponent
         event.preventDefault();
         const html = clipboard.getData('text/html');
         const clean = html
-            ? sanitizeRichText(html, this.format !== 'markdown')
+            ? sanitizeRichText(html)
             : escapeText(clipboard.getData('text/plain'));
         if (!clean) { return; }
         document.execCommand('insertHTML', false, clean);
@@ -164,7 +160,7 @@ export class RichTextEditorComponent
         event.preventDefault();
         const html = transfer.getData('text/html');
         const clean = html
-            ? sanitizeRichText(html, this.format !== 'markdown')
+            ? sanitizeRichText(html)
             : escapeText(transfer.getData('text/plain'));
         if (!clean) { return; }
         this.editorRef.nativeElement.focus();
@@ -302,7 +298,7 @@ export class RichTextEditorComponent
     }
 
     private _toEditorHtml(value: string): string {
-        return this.format === 'markdown' ? markdownToHtml(value) : value;
+        return markdownToHtml(value);
     }
 
     private _setEditorContent(value: string): void {
@@ -388,7 +384,7 @@ export class RichTextEditorComponent
         if (!range || !this.editorRef.nativeElement.contains(range.commonAncestorContainer)) {
             return active;
         }
-        for (const command of ['bold', 'italic', 'underline', 'insertUnorderedList', 'insertOrderedList']) {
+        for (const command of ['bold', 'italic', 'insertUnorderedList', 'insertOrderedList']) {
             if (this._queryCommandState(command)) {
                 active.add(command);
             }

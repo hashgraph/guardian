@@ -1122,7 +1122,9 @@
                                     <div class="sc-fv-item">
                                         <div class="sc-fv-label">
                                             <span class="sc-fv-label-text"><i class="pi pi-map-marker"></i>Default</span>
-                                            <button class="sc-fv-clear" title="Clear" (click)="clearFieldValue('default')">✕</button>
+                                            @if (!isFormattedPresetField()) {
+                                                <button class="sc-fv-clear" title="Clear" (click)="clearFieldValue('default')">✕</button>
+                                            }
                                         </div>
                                         @if (getFieldValueInputType(selectedField!) === 'boolean') {
                                             <div class="sc-fv-yesno">
@@ -1140,13 +1142,16 @@
                                                       (ngModelChange)="setFieldPresetValue('default', $event)">
                                             </p-select>
                                         } @else if (isFormattedPresetField()) {
-                                            <div class="sc-rte-preset-card">
+                                            <div class="sc-rte-preset-card" [class.sc-rte-preset-card--no-clear]="!$any(selectedField).default">
                                                 @if ($any(selectedField).default) {
                                                     <div class="sc-rte-preset-preview" appRichTextClip [innerHTML]="getPresetPreviewHtml($any(selectedField).default)"></div>
                                                 } @else {
                                                     <span class="sc-rte-preset-empty">Use the pencil to write default text</span>
                                                 }
                                                 <button type="button" class="sc-rte-preset-edit" title="Edit default value" aria-label="Edit default value" (click)="openRichTextPresetDialog('default')"><i class="pi pi-pencil"></i></button>
+                                                @if ($any(selectedField).default) {
+                                                    <button type="button" class="sc-rte-preset-clear" title="Clear default value" aria-label="Clear default value" (click)="clearFieldValue('default')"><i class="pi pi-times"></i></button>
+                                                }
                                             </div>
                                         } @else {
                                             <input class="sc-fv-input" [type]="getFieldValueInputType(selectedField!)"
@@ -1159,7 +1164,9 @@
                                     <div class="sc-fv-item">
                                         <div class="sc-fv-label">
                                             <span class="sc-fv-label-text"><i class="pi pi-lightbulb"></i>Suggested</span>
-                                            <button class="sc-fv-clear" title="Clear" (click)="clearFieldValue('suggest')">✕</button>
+                                            @if (!isFormattedPresetField()) {
+                                                <button class="sc-fv-clear" title="Clear" (click)="clearFieldValue('suggest')">✕</button>
+                                            }
                                         </div>
                                         @if (getFieldValueInputType(selectedField!) === 'boolean') {
                                             <div class="sc-fv-yesno">
@@ -1177,13 +1184,16 @@
                                                       (ngModelChange)="setFieldPresetValue('suggest', $event)">
                                             </p-select>
                                         } @else if (isFormattedPresetField()) {
-                                            <div class="sc-rte-preset-card">
+                                            <div class="sc-rte-preset-card" [class.sc-rte-preset-card--no-clear]="!$any(selectedField).suggest">
                                                 @if ($any(selectedField).suggest) {
                                                     <div class="sc-rte-preset-preview" appRichTextClip [innerHTML]="getPresetPreviewHtml($any(selectedField).suggest)"></div>
                                                 } @else {
                                                     <span class="sc-rte-preset-empty">Use the pencil to write suggested text</span>
                                                 }
                                                 <button type="button" class="sc-rte-preset-edit" title="Edit suggested value" aria-label="Edit suggested value" (click)="openRichTextPresetDialog('suggest')"><i class="pi pi-pencil"></i></button>
+                                                @if ($any(selectedField).suggest) {
+                                                    <button type="button" class="sc-rte-preset-clear" title="Clear suggested value" aria-label="Clear suggested value" (click)="clearFieldValue('suggest')"><i class="pi pi-times"></i></button>
+                                                }
                                             </div>
                                         } @else {
                                             <input class="sc-fv-input" [type]="getFieldValueInputType(selectedField!)"
@@ -1196,7 +1206,9 @@
                                     <div class="sc-fv-item">
                                         <div class="sc-fv-label">
                                             <span class="sc-fv-label-text"><i class="pi pi-wrench"></i>Test value</span>
-                                            <button class="sc-fv-clear" title="Clear" (click)="clearFieldTestValue()">✕</button>
+                                            @if (!isFormattedPresetField()) {
+                                                <button class="sc-fv-clear" title="Clear" (click)="clearFieldTestValue()">✕</button>
+                                            }
                                         </div>
                                         @if (getFieldValueInputType(selectedField!) === 'boolean') {
                                             <div class="sc-fv-yesno">
@@ -1214,13 +1226,16 @@
                                                       (ngModelChange)="setFieldTestValue($event)">
                                             </p-select>
                                         } @else if (isFormattedPresetField()) {
-                                            <div class="sc-rte-preset-card">
+                                            <div class="sc-rte-preset-card" [class.sc-rte-preset-card--no-clear]="!getFieldTestValue()">
                                                 @if (getFieldTestValue()) {
                                                     <div class="sc-rte-preset-preview" appRichTextClip [innerHTML]="getPresetPreviewHtml(getFieldTestValue())"></div>
                                                 } @else {
                                                     <span class="sc-rte-preset-empty">Use the pencil to write test text</span>
                                                 }
                                                 <button type="button" class="sc-rte-preset-edit" title="Edit test value" aria-label="Edit test value" (click)="openRichTextPresetDialog('test')"><i class="pi pi-pencil"></i></button>
+                                                @if (getFieldTestValue()) {
+                                                    <button type="button" class="sc-rte-preset-clear" title="Clear test value" aria-label="Clear test value" (click)="clearFieldTestValue()"><i class="pi pi-times"></i></button>
+                                                }
                                             </div>
                                         } @else {
                                             <input class="sc-fv-input" [type]="getFieldValueInputType(selectedField!)"
@@ -1948,7 +1963,6 @@
     <div class="sc-rte-preset-dialog-body">
         <app-rich-text-editor
             #richTextPresetEditor
-            [format]="isMarkdownPresetField() ? 'markdown' : 'html'" 
             [ngModel]="getRichTextPresetValue()"
             (ngModelChange)="setRichTextPresetValue($event)"
             placeholder="Write formatted text…"
