@@ -386,8 +386,9 @@
                                     <span class="st-toggle" [class.active]="canAddCustomFieldsToSelectedSchema"></span>
                                 </button>
                                 <div class="st-guidelines-editor">
-                                    <label class="st-guidelines-label">Guidelines</label>
+                                    <label class="st-guidelines-label" for="st-schema-guidelines-textarea">Guidelines</label>
                                     <textarea
+                                        id="st-schema-guidelines-textarea"
                                         class="st-guidelines-textarea"
                                         [ngModel]="selectedSchemaGuidelines"
                                         [readonly]="isTemplateReadonly"
@@ -714,8 +715,9 @@
                             <span class="st-toggle" [class.active]="canEditSelectedFieldInTemplate"></span>
                         </button>
                         <div class="st-guidelines-editor">
-                            <label class="st-guidelines-label">Guidelines</label>
+                            <label class="st-guidelines-label" for="st-field-guidelines-textarea">Guidelines</label>
                             <textarea
+                                id="st-field-guidelines-textarea"
                                 class="st-guidelines-textarea"
                                 [ngModel]="selectedFieldGuidelines"
                                 [readonly]="isTemplateReadonly"
