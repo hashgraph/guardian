@@ -42,7 +42,7 @@
         "helmet": "^8.0.0",
         "ioredis": "^5.4.0",
         "jszip": "^3.10.1",
-        "nodemailer": "^9.0.1",
+        "nodemailer": "^9.1.1",
         "pdfmake": "0.3.11",
         "pg": "^8.13.0",
         "reflect-metadata": "^0.2.2",
