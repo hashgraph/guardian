@@ -125,12 +125,8 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
                     return !isApplied;
                 });
                 this.loading = false;
-                // Only ever auto-select once, on the initial load: re-applying it on every
-                // search debounce would silently override a selection the user made by hand.
-                // Latch only once it actually worked: the bound template can be absent
-                // from the first page (or filtered out by status), and latching on the
-                // attempt left the dialog with nothing selected and no way to recover.
-                // The user's own pick still wins, which is what the latch guarded.
+                // Auto-select the bound template once; only latch when it's actually found, in case
+                // it's absent from this page, so a later load can still try again.
                 if (this.baseTemplateId && !this.preselectionApplied && !this.selectedTemplateId) {
                     const preselected = this.list.find(
                         (template) => this.getTemplateId(template) === this.baseTemplateId

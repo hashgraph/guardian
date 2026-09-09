@@ -39,22 +39,9 @@ export class ReleaseMigration extends Migration {
     }
 
     /**
-     * A template id is local to the instance that issued it. Policy import re-pointed
-     * the binding at the locally resolved template but left the schemas carrying the
-     * source instance's id, so an imported policy has a binding and schemas naming
-     * two different templates. That was harmless while lock resolution read "the one
-     * binding"; it stops being harmless as soon as a policy can hold several and the
-     * schema's own id is the only way to tell them apart.
-     *
-     * The binding's own schemaMap is what says which schemas the template created, so
-     * the repair is scoped to those ids. Scoping by policy topic instead would be
-     * wrong: a policy imported as a new version reuses the previous version's topic,
-     * so two policies bound to two different templates can share one, and each pass
-     * would overwrite the other's markers.
-     *
-     * Every binding is repaired, not just the first: wrapSchemaTemplateBindingInArray
-     * only ever produces one, but a policy imported from a peer instance already
-     * running multi-template import can already carry several by the time this runs.
+     * Repoints each schema's templateId to match its binding's, using the binding's
+     * own schemaMap to scope the update. Scoping by policy topic instead would be
+     * wrong, since re-imported policy versions can share a topic across different templates.
      */
     async remapPolicySchemaTemplateIds() {
         const policiesCollection = this.getCollection('Policy');

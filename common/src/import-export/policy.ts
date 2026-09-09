@@ -343,19 +343,12 @@ export class PolicyImportExport {
             zip.file(`tools/${tool.hash}.json`, JSON.stringify(tool));
         }
 
-        /*
-         * One folder per template. The old layout wrote a single fixed
-         * `schemaTemplate/snapshot.json`, which a second template would overwrite.
-         */
+        // One folder per template, keyed by templateId, so multiple templates don't overwrite each other.
         if (preparedComponents.schemaTemplateSnapshots?.length) {
             zip.folder('schemaTemplate');
             for (const snapshot of preparedComponents.schemaTemplateSnapshots) {
                 const templateId = snapshot?.templateId;
                 if (!templateId) {
-                    // Skipping quietly writes a zip whose policy.json still names the
-                    // binding while no snapshot file backs it. Import then drops that
-                    // binding and strips its schemas' markers, so every lock is lost
-                    // with nothing anywhere saying why - fail the export instead.
                     throw new Error(
                         `Schema template snapshot ${snapshot?.id || '(no id)'} has no templateId ` +
                         'and cannot be exported. The policy binding it belongs to would be lost on import.'
@@ -445,12 +438,7 @@ export class PolicyImportExport {
         }
         const policyString = await content.files[PolicyImportExport.policyFileName].async('string');
         const policy = JSON.parse(policyString);
-        /*
-         * A policy written before the plural shape carries one binding under the
-         * singular `schemaTemplate` key. Normalising it at the parse boundary covers
-         * the import preview as well as the import itself, so neither can see the
-         * legacy key and conclude the policy has no template.
-         */
+        // Normalise the legacy singular `schemaTemplate` key so callers only ever see `schemaTemplates`.
         if (policy.schemaTemplate && !policy.schemaTemplates?.length) {
             policy.schemaTemplates = [policy.schemaTemplate];
         }
@@ -486,12 +474,7 @@ export class PolicyImportExport {
         const tags = tagsStringArray.map(item => JSON.parse(item));
         const formulas = formulasStringArray.map(item => JSON.parse(item));
         const systemSchemas = systemSchemasStringArray.map(item => JSON.parse(item));
-        /*
-         * Every policy exported or published before the per-template layout carries
-         * one snapshot at the fixed path, and IPFS content cannot be rewritten, so
-         * that path has to keep working. Reading it into the same array is what stops
-         * an old file importing as an untemplated policy with no error at all.
-         */
+        // IPFS content is immutable, so the legacy fixed-path snapshot must still be read into the same array.
         const schemaTemplateSnapshots = schemaTemplateSnapshotStringArray.map(item => JSON.parse(item));
         if (!schemaTemplateSnapshots.length && legacySchemaTemplateSnapshotString) {
             schemaTemplateSnapshots.push(JSON.parse(legacySchemaTemplateSnapshotString));

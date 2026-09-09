@@ -126,13 +126,7 @@ async function getTemplateSchemaValidationContext(
     }
 
     const policy = await DatabaseServer.getPolicy({ topicId: schema.topicId });
-    /*
-     * A policy can hold several bindings, so the schema's own templateId is what
-     * says which one owns it. That only works because import now re-points imported
-     * schemas at the locally resolved template (and the v3-7-1 migration repairs the
-     * ones imported before it did); without that the two ids never match and every
-     * lock silently disappears.
-     */
+    // A policy can hold several bindings, so match on the schema's own templateId to find the right one.
     const binding = policy?.schemaTemplates?.find((item) => item.templateId === schema.templateId);
     if (!binding?.templateId) {
         return null;

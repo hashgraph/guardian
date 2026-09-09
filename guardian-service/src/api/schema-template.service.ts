@@ -562,11 +562,7 @@ async function publishSchemaTemplate(
         notifier.completeStep(STEP_GENERATE_FILE);
 
         notifier.startStep(STEP_SAVE_FILE);
-        /*
-         * contentFileId has no _configFileId-style previous-handle mechanism, so each
-         * publish overwrote the handle and stranded the old file. Deleted after the new
-         * one is stored, best-effort: losing it must not fail a publish.
-         */
+        // Delete the superseded file after the new one is stored, best-effort so a cleanup failure can't fail the publish.
         const supersededContentFileId = template.contentFileId;
         template.contentFileId = await DatabaseServer.saveFile(GenerateUUIDv4(), Buffer.from(buffer));
         if (supersededContentFileId) {
@@ -717,26 +713,11 @@ function toSnapshotField(
     return snapshotField;
 }
 
-/*
- * `@context`/`type`/`id` are the fixed VC envelope Guardian always generates for a
- * VC-entity schema, not template-authored content. `includeSystemProperties: true`
- * below is needed to catch other readOnly/locked fields, but it also pulls these
- * three in - and unlike real fields, their `templateFieldId` bookkeeping is not
- * guaranteed to stay in sync with the live template between an apply and a later
- * preview, which showed up as a spurious "removed" diff a user could never actually
- * resolve (re-applying does not touch them - they are regenerated unconditionally).
- * Excluding them by name keeps the diff to fields a template author can actually add,
- * change, or remove.
- */
+// `@context`/`type`/`id` are the fixed VC envelope, not template-authored content; excluded so the diff only
+// ever covers fields a template author can actually add, change, or remove.
 const SYSTEM_ENVELOPE_FIELD_NAMES = new Set(['@context', 'type', 'id']);
 
-/**
- * Snapshots written before the envelope filter landed still carry `@context`, `type`
- * and `id` in their fields. Diffing one of those against a freshly built (filtered)
- * snapshot reports all three as removed on the first preview after the upgrade - the
- * exact diff the filter exists to prevent - so the stored side is normalised the same
- * way at read time rather than migrated.
- */
+// Normalises stored snapshots the same way, at read time, in case they were written before this filter existed.
 function normalizeSnapshotSchemas(
     schemas: Record<string, ISchemaTemplateSnapshotSchema>
 ): Record<string, ISchemaTemplateSnapshotSchema> {
@@ -1051,13 +1032,9 @@ export function buildFieldChangeDetails(previous: any, next: any): ISchemaTempla
 }
 
 /**
- * `templateSchemaId` is deliberately stable across template versions and forks, so
- * two lineage-sharing templates applied to the same policy can carry policy schemas
- * with the same `templateSchemaId`. Indexing every policy schema in the topic by
- * that id - without checking which template it belongs to - lets a schema still
- * being added for `templateId` resolve to a sibling template's schema instead and
- * get overwritten. Scoping to this binding's own schemas up front is what keeps two
- * applied templates from reaching into each other's schemaMap.
+ * `templateSchemaId` is stable across template versions and forks, so two
+ * lineage-sharing templates applied to the same policy can share one. Scoped to
+ * this binding's own schemas so they don't reach into each other's schemaMap.
  */
 export function getPolicySchemaByTemplateId(
     policySchemas: Schema[],
@@ -1101,12 +1078,8 @@ function findSchemaProperty(document: any, path: string[]): any {
 }
 
 /**
- * Walk to the object that owns `path`'s last segment.
- *
- * `create` distinguishes the two callers: the target document is being built, so it
- * wants the `properties` containers filled in on the way down; the source document is
- * only being read, and creating nodes there would mutate the very thing being copied
- * from.
+ * Walk to the object that owns `path`'s last segment. `create` fills in missing
+ * `properties` containers for a target being built; a source is only read, never mutated.
  */
 function schemaPropertyParent(document: any, path: string[], create: boolean): any {
     let current = document;
@@ -1149,13 +1122,8 @@ export function mergeCustomFieldsIntoDocument(
         }
         parent.properties[fieldName] = cloneJson(property);
 
-        /*
-         * `required` lives on the parent, so it is copied separately or the preserved
-         * field comes back optional. Read it from the source document, not from
-         * field.required: parseField sets `required || !!conditionRequired`
-         * (interfaces schema-helper.ts:321), which would promote a branch-scoped
-         * requirement into an unconditional one.
-         */
+        // `required` lives on the parent; read from the source document rather than field.required,
+        // which folds in conditionRequired and would wrongly promote a branch-scoped requirement.
         const sourceParent = schemaPropertyParent(sourceDocument, path, false);
         if (Array.isArray(sourceParent?.required) && sourceParent.required.includes(fieldName)) {
             parent.required = Array.isArray(parent.required) ? parent.required : [];
@@ -1373,12 +1341,8 @@ function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<ReturnType
         }
     }
 
-    /*
-     * Removal candidates first, so the "who still points at this" check below can tell
-     * a real holder from a sibling that is about to be removed as well. A sibling is
-     * only optimistically excluded here - the user may still choose to keep it, which
-     * is why the update path recomputes this exactly against the chosen set.
-     */
+    // Computed first so the reference check below can tell a real holder from a sibling also being removed.
+    // This is only optimistic; the update path recomputes it against the set the user actually chooses.
     const removalCandidates: Schema[] = [];
     for (const templateSchemaId of Object.keys(previousSchemas)) {
         if (nextSchemas[templateSchemaId]) {
@@ -1500,14 +1464,10 @@ function validateSchemaTemplateUpdateResolutions(
 }
 
 /**
- * "Remove from policy" is a hard delete, and it runs after the binding is committed
- * (rollback cannot bring a deleted row back). So everything that could make it fail
- * has to be caught here, while the whole update can still be refused.
- *
- * The preview already drops the remove option for a schema another one references,
- * but it has to guess about sibling candidates - it excludes them, since the user
- * usually removes the whole group. This runs against the set actually chosen, so a
- * sibling the user decided to keep is counted as the holder it now is.
+ * "Remove from policy" is a hard delete that runs after the binding is committed, so
+ * anything that could make it fail must be caught here, before the update is committed.
+ * Re-checks references against the set of removals actually chosen, since the preview
+ * only guessed by excluding sibling candidates optimistically.
  */
 function validateSchemaTemplateRemovals(
     context: Awaited<ReturnType<typeof loadSchemaTemplateUpdateContext>>,
@@ -1629,12 +1589,8 @@ async function updateAppliedSchemaTemplate(
         templateSchemaById.set(schema.templateSchemaId, schema);
     }
 
-    /*
-     * The loop below edits existing policy schemas in place and persists each one
-     * before the binding is swapped, so the only way to undo is to have captured the
-     * originals first. Copies are undone by deletion, edits by restore; both
-     * best-effort, and the original error is what surfaces.
-     */
+    // In-place edits are persisted before the binding swaps, so originals must be captured up front to
+    // support rollback (restore for edits, delete for copies); both best-effort, original error surfaces.
     const originalSchemas = new Map<string, Schema>();
     const createdSchemas: Schema[] = [];
     const pendingRemovals: Schema[] = [];
@@ -1664,17 +1620,8 @@ async function updateAppliedSchemaTemplate(
         }
     };
 
-    /*
-     * Apply checks name collisions before copying any schema; update must check the
-     * same way before it changes any schema name, or updating one template can
-     * silently introduce a name already owned by another applied template or an
-     * ordinary policy schema. That happens two ways, not just one: a SCHEMA_ADD
-     * copies a schema under a new name, and a schemaSettingsLocked SCHEMA_UPDATE
-     * overwrites an already-mapped schema's name with the template's current name
-     * (preparePolicySchemaUpdate) - a template-side rename reaching the policy. Both
-     * are checked here, before either mutates anything. Runs before the try block: a
-     * rejected collision has nothing to roll back yet.
-     */
+    // Checked up front, before anything mutates: both SCHEMA_ADD (new name) and a locked-settings
+    // SCHEMA_UPDATE (template-driven rename) can introduce a name collision and must be caught first.
     const schemaConfigByTemplateSchemaId = new Map<string, any>();
     const schemasToAdd: Schema[] = [];
     const schemasBeingRenamed: Schema[] = [];
@@ -1699,16 +1646,8 @@ async function updateAppliedSchemaTemplate(
             }
         }
     }
-    /*
-     * A schema whose templateSchemaId no longer exists in the target (typically
-     * because the target is a different template - a genuine swap, or a newer
-     * version of the same template whose schemas were republished under new
-     * templateSchemaIds) is not renamed in place; it goes through the
-     * SCHEMA_REMOVE/conflict path below instead. Its name is not actually freed up
-     * unless the caller chose to remove it rather than keep it as a plain custom
-     * schema - keeping it leaves it occupying the name, so only a resolved removal
-     * excludes it here.
-     */
+    // A schema going through the SCHEMA_REMOVE/conflict path only frees its name if removal was chosen;
+    // keeping it as a plain custom schema leaves the name occupied.
     for (const conflict of preview.conflicts) {
         if (conflict.type !== SchemaTemplateUpdateConflictType.SCHEMA_REMOVED_WITH_POLICY_USAGE) {
             continue;
@@ -1832,31 +1771,23 @@ async function updateAppliedSchemaTemplate(
         updatedAt: appliedAt,
         schemaMap
     };
-    // Replace in place. Moving the updated binding to the end reorders the list,
-    // which is invisible with one binding and silently re-points anything still
-    // reading a fixed position once there are several.
+    // Replace in place, at the slot of the binding being updated, not the target template's position -
+    // moving it to the end would silently re-point anything reading a fixed position.
     const bindings = context.policy.schemaTemplates || [];
-    // The slot being replaced is the binding being updated, not wherever the target
-    // template happens to sit - those diverge as soon as the update switches the
-    // binding to a different template than the one it started with.
     const index = bindings.findIndex((b) => b.templateId === context.binding.templateId);
     context.policy.schemaTemplates = index < 0
         ? [...bindings, updatedBinding]
         : [...bindings.slice(0, index), updatedBinding, ...bindings.slice(index + 1)];
     result = await DatabaseServer.updatePolicy(context.policy);
-    // the old snapshot only goes once the new binding is committed, so a failure
-    // above still leaves the policy describable by its old snapshot
+    // Old snapshot is only dropped once the new binding is committed, so a failure above still
+    // leaves the policy describable by its old snapshot.
     nextSnapshot = null;
     } catch (error) {
-        // undo the copies and restore the edited rows, then surface the original
-        // failure. Previously only the new snapshot was removed.
         await rollback();
         throw error;
     }
 
-    // Pre-validated above, so a failure here is a race rather than the normal case -
-    // but it still leaves a schema the binding says is gone, which the caller has to
-    // hear about instead of it living only in the service log.
+    // Pre-validated above, so a failure here is a race, not the normal case - still surfaced to the caller.
     const deleteErrors: string[] = [];
     for (const policySchema of pendingRemovals) {
         try {
@@ -1884,10 +1815,9 @@ async function updateAppliedSchemaTemplate(
 }
 
 /**
- * `persist` exists because the read paths must not write. Normalization assigns
- * missing templateSchemaId / templateFieldId, so a non-owner's GET mutated the
- * owner's schemas and concurrent readers raced to store different ids. The ids are
- * still filled in memory, so the response is identical either way.
+ * `persist` is false for read paths: normalization backfills missing templateSchemaId /
+ * templateFieldId, but a GET must not write those into someone else's schema. The ids
+ * are still filled in memory either way, so the response is identical.
  */
 async function ensureTemplateSchemaReferences(
     schema: Schema,
@@ -1958,20 +1888,11 @@ async function updateCopiedSchemaRefs(
 }
 
 /**
- * Applying a template copies its schemas into the policy topic under their own
- * names. Nothing downstream enforces name uniqueness there, so two templates that
- * each define a "Project Description" would both land and be told apart only by
- * their iri - indistinguishable in every picker that shows a schema by name.
- *
- * Reject the apply instead of renaming: a renamed copy no longer matches the name
- * in the template it came from, which is the trail the whole feature depends on.
- *
- * Shared by apply (checking every template schema against everything already in
- * the policy) and update's SCHEMA_ADD/rename paths (checking only the schemas the
- * update is about to add or rename). `excludeSchemaIds` leaves only the specific
- * policy schemas about to vacate their current name out of the comparison set - an
- * unchanged sibling schema from the same template keeps its name and must still be
- * able to block a rename or add that collides with it.
+ * Rejects the apply/update instead of renaming on a name collision, since a renamed
+ * copy would no longer match the name in the template it came from. Shared by apply
+ * (all template schemas vs. the whole policy) and update's add/rename paths (just the
+ * schemas being added or renamed). `excludeSchemaIds` exempts only schemas actually
+ * vacating their name, so an unchanged sibling can still block a collision.
  */
 export async function validateSchemaNameCollisions(
     template: SchemaTemplate,
@@ -2011,12 +1932,8 @@ export async function validateSchemaNameCollisions(
         }
     }
 
-    /*
-     * The two cases need different advice. A name held by another applied template is
-     * freed by detaching that template. A name held by an ordinary schema is not:
-     * detach leaves the copied schemas behind under their original names, so telling
-     * the user to detach after a detach would send them round the same loop.
-     */
+    // Different advice per case: a name held by another applied template is freed by detaching it,
+    // but a name held by an ordinary schema is not (detach leaves that schema's name untouched).
     const ownedByTemplate: string[] = [];
     const alreadyInPolicy: string[] = [];
     const reported = new Set<string>();
@@ -2106,13 +2023,8 @@ async function applySchemaTemplate(
     const iriMap = new Map<string, string>();
     const copiedSchemas: Schema[] = [];
 
-    /*
-     * Undone if any step fails. The copies persist one at a time, so a throw
-     * part-way used to leave schemas carrying template markers with no binding - and
-     * since the binding is written last, hasSchemaTemplateBinding() still reported
-     * false, so a retry copied the whole set again. Best-effort; the original error
-     * is the one worth surfacing.
-     */
+    // Copies persist one at a time and the binding is written last, so a mid-way throw is rolled back
+    // rather than left with schemas carrying template markers but no binding. Best-effort; original error surfaces.
     let snapshot: Awaited<ReturnType<typeof saveApplySnapshot>> | null = null;
     const rollback = async (): Promise<void> => {
         if (snapshot) {
@@ -2173,9 +2085,6 @@ async function applySchemaTemplate(
         policy.schemaTemplates = [...(policy.schemaTemplates || []), newBinding];
         return await DatabaseServer.updatePolicy(policy);
     } catch (error) {
-        // undo the copies and the snapshot, then surface the original failure.
-        // Previously only a failing updatePolicy was compensated, and only by
-        // removing the snapshot.
         await rollback();
         throw error;
     }
@@ -2257,20 +2166,11 @@ function findSchemasBlockingDelete(
 }
 
 /**
- * References a schema will still hold *after* the update, for judging what a removal
- * would strand. Its current ones are the wrong question: a template version that drops
- * schema B usually drops the field in A that pointed at B, and judging by pre-update A
- * would keep B un-removable forever.
- *
- * Two sources, because `preparePolicySchemaUpdate` does not replace the document
- * wholesale: the incoming template document (still in template iris, since
- * `updateCopiedSchemaRefs` rewrites them only after the copies exist), plus the custom
- * fields it merges back in, which keep their refs. Custom fields are counted even when
- * `customFieldsLocked` would drop them - over-blocking only costs the user a "Keep",
- * while under-blocking costs a dangling $ref.
- *
- * A schema with no incoming counterpart is not being updated, so its current document
- * is what it will still have.
+ * References a schema will still hold *after* the update, not its current ones, so a
+ * removal that only looks stranded pre-update isn't blocked forever. Combines the
+ * incoming template document with the merged-back custom fields, since
+ * `preparePolicySchemaUpdate` doesn't replace the document wholesale; a schema with no
+ * incoming counterpart keeps its current document.
  */
 function buildPostUpdateRefsResolver(
     context: Awaited<ReturnType<typeof loadSchemaTemplateUpdateContext>>
@@ -2368,13 +2268,8 @@ async function buildSchemaTemplateDetachPlan(
         }
     }
 
-    /*
-     * A copy `deleteSchema` will refuse counts as a survivor, not as one of the deletions.
-     * Otherwise a bound parent that cannot be deleted (published, say) fails to block its
-     * bound child: the child is deleted first because its only holder is "also going", the
-     * parent's own delete then throws, and the parent is left pointing at nothing. Status
-     * is therefore resolved before the reference closure, not after it.
-     */
+    // Status is resolved before the reference closure: a copy `deleteSchema` will refuse (e.g. published)
+    // must count as a survivor, or its dependents get deleted first and leave it pointing at nothing.
     const undeletable = new Map<string, SchemaStatus>();
     const deletable: Schema[] = [];
     for (const schema of boundSchemas) {
@@ -2632,11 +2527,7 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
                 if (search) {
                     clauses.push({ name: { $re: new RegExp(escapeRegExp(search), 'i') } });
                 }
-                /*
-                 * Exclusions belong here rather than in the caller: a picker that drops
-                 * rows after the fact gets a count that disagrees with what it renders,
-                 * and pages that come up short - or empty - while more pages remain.
-                 */
+                // Excluded here, not by the caller, so pagination counts still match what's rendered.
                 const excludeIds = (Array.isArray(filters?.excludeIds)
                     ? filters.excludeIds
                     : String(filters?.excludeIds || '').split(','))

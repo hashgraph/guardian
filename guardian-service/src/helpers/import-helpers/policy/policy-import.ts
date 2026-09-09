@@ -612,18 +612,9 @@ export class PolicyImport {
     }
 
     /**
-     * Resolve every binding independently, keyed by the template id the file was
-     * exported with. A template that cannot be resolved is left out rather than
-     * failing the whole import: the policy keeps the templates that did resolve, and
-     * the rest are detached by schemaTemplateBindingsToDrop.
-     *
-     * Two source bindings can resolve to the same local template - both matched by
-     * templateMessageId, or both re-pointed to the same local template in the import
-     * preview. That breaks the "one templateId per binding" invariant everything
-     * downstream relies on: findSchemaTemplateBinding would return only the first
-     * match, stranding the second one's snapshot with no way to detach or update it.
-     * Reject rather than silently pick a winner - the ambiguity belongs in the
-     * import preview, not in the importer.
+     * Resolves each binding independently; an unresolved template is dropped rather
+     * than failing the whole import. Throws if two bindings resolve to the same
+     * local template, since only one templateId per binding is supported downstream.
      */
     public async resolveSchemaTemplates(
         metadata: PolicyToolMetadata | null,
@@ -650,11 +641,7 @@ export class PolicyImport {
             }
             const template = await this.resolveSchemaTemplateBinding(binding, override, user, userId);
             if (!template) {
-                // Import used to fail outright here. Dropping the binding instead keeps
-                // one unavailable template from killing an otherwise fine import, but
-                // the policy loses that template's locks with nothing on screen saying
-                // so, so it must at least be recoverable from the log. A deliberate
-                // detach never reaches this point - it is skipped above.
+                // Unresolved templates are dropped, not fatal; logged since the UI won't surface the lost locks.
                 await logger?.error?.(
                     `Policy import: schema template "${binding.templateName || sourceTemplateId}" ` +
                     `(${sourceTemplateId}) could not be resolved on this instance. ` +
@@ -697,10 +684,7 @@ export class PolicyImport {
             throw new Error('Selected schema template is inaccessible');
         }
 
-        // An import that carries a snapshot keeps its binding, and no caller sets
-        // metadata.schemaTemplates, so an unpublished but owned template would
-        // otherwise never resolve. A clone has no snapshot and is dropped before this
-        // runs, so it never reaches here.
+        // Falls back to the binding's own templateId when no override is given.
         const local = await DatabaseServer.getSchemaTemplateById(binding.templateId);
         if (isAccessible(local)) {
             return local;
@@ -713,13 +697,7 @@ export class PolicyImport {
         return null;
     }
 
-    /**
-     * A legacy file carries one binding under the singular `schemaTemplate` key.
-     * Those files are frozen - anything published to IPFS cannot be rewritten - so
-     * the key has to keep being understood. Normalising it here, before the rest of
-     * the pipeline runs, is what stops an old policy importing as untemplated with no
-     * error at all.
-     */
+    /** Normalizes the legacy singular `schemaTemplate` key into `schemaTemplates[]`. */
     public normalizeSchemaTemplateBindings(policy: any): void {
         if (!policy) {
             return;
@@ -743,12 +721,7 @@ export class PolicyImport {
         delete components.schemaTemplateSnapshot;
     }
 
-    /**
-     * Which bindings cannot survive the import: the ones the caller detached, and the
-     * ones with no snapshot to carry them (what a clone produces). Deciding it per
-     * binding is what keeps one unresolvable template from costing the policy the
-     * rest of them.
-     */
+    /** Bindings that cannot survive the import: caller-detached, or missing a snapshot (a clone). */
     public schemaTemplateBindingsToDrop(
         policy: Policy,
         snapshots: any[] | null | undefined,
@@ -777,11 +750,7 @@ export class PolicyImport {
         return dropped;
     }
 
-    /**
-     * Detach the bindings whose template did not resolve, taking their schemas'
-     * markers with them. Dropping the binding on its own would leave a policy
-     * claiming no template over schemas that still claim one.
-     */
+    /** Detaches unresolved bindings and clears the template markers on their schemas. */
     public dropUnresolvedSchemaTemplates(policy: Policy, schemas: Schema[]): void {
         const bindings = policy?.schemaTemplates || [];
         const unresolved = new Set(
@@ -808,18 +777,9 @@ export class PolicyImport {
     }
 
     /**
-     * A template id only means something on the instance that issued it. An imported
-     * schema still carries the id of the instance it was exported from, while its
-     * binding is re-pointed at the locally resolved template, so the two stop naming
-     * the same template. Anything that resolves template locks by comparing them then
-     * finds nothing and silently drops every lock, so the schemas have to be
-     * re-pointed too.
-     *
-     * Only the template id is instance-specific. templateSchemaId and the per-field
-     * templateFieldId markers are stable by design and are left alone.
-     *
-     * A schema whose template was detached has no entry in the map and keeps what it
-     * has; clearTemplateMetadataFromSchemas is what strips those.
+     * Re-points each schema's templateId from the source instance's id to the locally
+     * resolved template, so lock resolution matches. templateSchemaId and per-field
+     * templateFieldId markers are instance-agnostic and left alone.
      */
     public remapSchemaTemplateIds(
         schemas: Schema[],
@@ -1126,16 +1086,7 @@ export class PolicyImport {
         const logger = options.logger;
         this.importRecords = !!options.importRecords;
 
-        /*
-         * Drop a binding whole, not half. saveSchemaTemplateSnapshots rewrites
-         * policy.schemaTemplates after the schemas are persisted, so a binding
-         * dropped there would leave its schemas still carrying template markers - a
-         * policy claiming no template over schemas that do.
-         *
-         * Deciding it here, before the schemas are written, is what makes the strip
-         * persist, and doing it per binding is what keeps one dropped template from
-         * stripping the markers of the templates that survived.
-         */
+        // Drop the binding and its schemas' template markers together, before the schemas are written.
         const droppedTemplateIds = this.schemaTemplateBindingsToDrop(
             policy,
             schemaTemplateSnapshots,
@@ -1215,15 +1166,8 @@ export class PolicyImport {
             userId,
             logger
         );
-        /*
-         * A binding can survive the snapshot check above and still fail to resolve to
-         * a local template. saveSchemaTemplateSnapshots would then leave it out, so
-         * the binding has to go here instead - before the schemas are written - or its
-         * schemas keep markers naming a template the policy no longer claims.
-         */
+        // A binding can still fail to resolve after the snapshot check; drop it and its schemas' markers here.
         this.dropUnresolvedSchemaTemplates(policy, schemas);
-        // The binding is about to point at a local template; the schemas must follow
-        // it, and they have to do so before importSchemas persists them.
         this.remapSchemaTemplateIds(schemas, this.schemaTemplates);
         await this.importTokens(
             tokens,
