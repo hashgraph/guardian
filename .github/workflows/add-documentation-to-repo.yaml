@@ -1,10 +1,14 @@
-name: Generate Documentation
+name: Generate API Documentation
 on:
   workflow_dispatch:
   push:
     branches-ignore:
       - 'dependabot/**'
       - 'main'
+    paths-ignore:
+      - '.github/**'
+      - 'docs/**'
+      - '**/*.md'
 
 jobs:
   runService:
