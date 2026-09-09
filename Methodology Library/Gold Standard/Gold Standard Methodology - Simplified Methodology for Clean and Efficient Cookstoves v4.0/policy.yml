@@ -37,7 +37,7 @@ registry_status: none
 
 sdg_alignment: [13]
 sector: energy
-guardian_version_min: 3.6.0
+guardian_version_min: 3.7.0
 
 roles:
   - Admin
