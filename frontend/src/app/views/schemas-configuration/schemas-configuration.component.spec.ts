@@ -16,6 +16,8 @@ describe('SchemasConfigurationComponent', () => {
             conditions: [],
             fields: overrides.fields || [],
             document: overrides.document || { $defs: {} },
+            templateId: overrides.templateId,
+            templateSchemaId: overrides.templateSchemaId,
             update: () => {},
         };
         return schema;
@@ -168,6 +170,83 @@ describe('SchemasConfigurationComponent', () => {
 
             expect(component.richTextPresetTarget).toBe('suggest');
             expect(component.getRichTextPresetValue()).toBe('<p>Suggested</p>');
+        });
+    });
+
+    describe('schema template guidelines', () => {
+        it('stores selected schema guidelines in template config and marks it dirty', () => {
+            const schema = makeSchema({ id: 'schema-1', templateSchemaId: 'template-schema-1' });
+            const component = createComponent({
+                url: '/schema-template-configuration',
+                selectedSchema: schema,
+                schemaTemplate: { id: 'template-1', status: 'DRAFT', config: {} },
+            });
+
+            component.setSelectedSchemaGuidelines('Use this schema for project registration.');
+
+            expect(component.schemaTemplate.config.schemas['template-schema-1'].guidelines)
+                .toBe('Use this schema for project registration.');
+            expect(component.selectedSchemaGuidelines).toBe('Use this schema for project registration.');
+            expect(component.hasUnsavedChanges).toBeTrue();
+        });
+
+        it('stores selected field guidelines in template config and marks it dirty', () => {
+            const field = makeField({ name: 'field_1', templateFieldId: 'template-field-1' });
+            const schema = makeSchema({
+                id: 'schema-1',
+                templateSchemaId: 'template-schema-1',
+                fields: [field],
+            });
+            const component = createComponent({
+                url: '/schema-template-configuration',
+                selectedSchema: schema,
+                schemaTemplate: { id: 'template-1', status: 'DRAFT', config: {} },
+            });
+            component.selectedField = field;
+
+            component.setSelectedFieldGuidelines('Use the external registry identifier.');
+
+            expect(component.schemaTemplate.config.schemas['template-schema-1'].fields['template-field-1'].guidelines)
+                .toBe('Use the external registry identifier.');
+            expect(component.selectedFieldGuidelines).toBe('Use the external registry identifier.');
+            expect(component.hasUnsavedChanges).toBeTrue();
+        });
+
+        it('does not change guidelines on a published template', () => {
+            const field = makeField({ name: 'field_1', templateFieldId: 'template-field-1' });
+            const schema = makeSchema({
+                id: 'schema-1',
+                templateSchemaId: 'template-schema-1',
+                fields: [field],
+            });
+            const component = createComponent({
+                type: 'template',
+                selectedSchema: schema,
+                schemaTemplate: {
+                    id: 'template-1',
+                    status: 'PUBLISHED',
+                    config: {
+                        schemas: {
+                            'template-schema-1': {
+                                guidelines: 'Existing schema note',
+                                fields: {
+                                    'template-field-1': {
+                                        guidelines: 'Existing field note',
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+            component.selectedField = field;
+
+            component.setSelectedSchemaGuidelines('Changed schema note');
+            component.setSelectedFieldGuidelines('Changed field note');
+
+            expect(component.selectedSchemaGuidelines).toBe('Existing schema note');
+            expect(component.selectedFieldGuidelines).toBe('Existing field note');
+            expect(component.hasUnsavedChanges).toBeFalse();
         });
     });
 
