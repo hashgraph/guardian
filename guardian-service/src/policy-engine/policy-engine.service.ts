@@ -1155,7 +1155,7 @@ export class PolicyEngineService {
                             'createDate',
                             'instanceTopicId',
                             'tools',
-                            'schemaTemplate',
+                            'schemaTemplates',
                             'policyGroups',
                             'policyRoles',
                             'discontinuedDate',

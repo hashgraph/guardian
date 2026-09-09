@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, OnInit, Vi
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpResponse } from '@angular/common/http';
 import { EMPTY, Observable, Subject, Subscription, forkJoin, of } from 'rxjs';
-import { catchError, debounceTime, distinctUntilChanged, map, switchMap, takeUntil } from 'rxjs/operators';
+import { catchError, debounceTime, distinctUntilChanged, map, shareReplay, switchMap, takeUntil } from 'rxjs/operators';
 import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, relationAncestors, ModuleStatus, ISchemaTemplate, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus, ISchemaArrayDependency, ISchemaArrayDependencyMapping, } from '@guardian/interfaces';
 import { SchemaService } from 'src/app/services/schema.service';
 import { TagsService } from 'src/app/services/tag.service';
@@ -90,7 +90,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public readonly schemaSearch$ = new Subject<string>();
     private readonly _cancelLoadSchemas$ = new Subject<void>();
     private loadedTemplateId: string = '';
-    private loadedAppliedTemplateId: string = '';
+    private readonly appliedTemplateListByTopic = new Map<string, Observable<ISchemaTemplate[]>>();
     private pendingTemplateSchemaId: string = '';
     public schemasPage: number = 0;
     public schemasPageSize: number = 50;
@@ -946,11 +946,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (this.isTemplateMode) {
             return;
         }
-        const templateId = this.selectedSchema?.templateId ||
-            this.schemas.find(schema => !!schema.templateId)?.templateId ||
-            '';
+        const templateId = this.selectedSchema?.templateId || '';
         if (!templateId) {
-            this.loadedAppliedTemplateId = '';
             this.schemaTemplate = null;
             return;
         }
@@ -965,27 +962,39 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         templateId: string,
         topicId: string
     ): Observable<ISchemaTemplate | null> {
-        const cacheKey = `${templateId}:${topicId}`;
-        if (cacheKey === this.loadedAppliedTemplateId && this.schemaTemplate) {
-            return of(this.schemaTemplate);
-        }
         if (!topicId) {
             return of(null);
         }
-        this.loadedAppliedTemplateId = cacheKey;
-        return this.schemaTemplatesService.getAppliedByPolicyTopic(topicId).pipe(
+        // The policy can have several templates applied; the locks that apply to
+        // this schema are the ones from the template the schema itself names.
+        return this.getAppliedTemplatesForTopic(topicId).pipe(
+            map((applied) => (applied || []).find((item) => item.id === templateId) || null),
             map((template) => template
                 ? ({
                     ...template,
                     config: template.config || { schemas: {} }
                 } as ISchemaTemplate)
                 : null
-            ),
-            catchError(() => {
-                this.loadedAppliedTemplateId = '';
-                return of(null);
-            })
+            )
         );
+    }
+
+    // One request per topic, shared and cached across every distinct templateId a
+    // policy's schemas name, so switching the selection between schemas owned by
+    // different applied templates no longer re-fetches the same topic's binding list.
+    private getAppliedTemplatesForTopic(topicId: string): Observable<ISchemaTemplate[]> {
+        let cached = this.appliedTemplateListByTopic.get(topicId);
+        if (!cached) {
+            cached = this.schemaTemplatesService.getAppliedByPolicyTopic(topicId).pipe(
+                shareReplay({ bufferSize: 1, refCount: false }),
+                catchError(() => {
+                    this.appliedTemplateListByTopic.delete(topicId);
+                    return of([]);
+                })
+            );
+            this.appliedTemplateListByTopic.set(topicId, cached);
+        }
+        return cached;
     }
 
     public toggleCanAddCustomFieldsToSelectedSchema(): void {

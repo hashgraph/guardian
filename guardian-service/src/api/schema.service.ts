@@ -126,17 +126,19 @@ async function getTemplateSchemaValidationContext(
     }
 
     const policy = await DatabaseServer.getPolicy({ topicId: schema.topicId });
-    if (!policy?.schemaTemplate?.templateId) {
+    // A policy can hold several bindings, so match on the schema's own templateId to find the right one.
+    const binding = policy?.schemaTemplates?.find((item) => item.templateId === schema.templateId);
+    if (!binding?.templateId) {
         return null;
     }
 
     let config: ISchemaTemplateConfig | null | undefined;
-    if (policy.schemaTemplate.snapshotId) {
-        const snapshot = await DatabaseServer.getSchemaTemplateSnapshotById(policy.schemaTemplate.snapshotId);
+    if (binding.snapshotId) {
+        const snapshot = await DatabaseServer.getSchemaTemplateSnapshotById(binding.snapshotId);
         config = snapshot?.config;
     }
     if (!config) {
-        const template = await DatabaseServer.getSchemaTemplateById(policy.schemaTemplate.templateId);
+        const template = await DatabaseServer.getSchemaTemplateById(binding.templateId);
         config = template?.config;
     }
 
