@@ -629,8 +629,7 @@ export class PolicyImport {
 
         const bindings = policy.schemaTemplates || [];
         const sourceIdByLocalTemplateId = new Map<string, string>();
-        for (let index = 0; index < bindings.length; index++) {
-            const binding = bindings[index];
+        for (const binding of bindings) {
             if (!binding?.templateId) {
                 continue;
             }
@@ -736,8 +735,7 @@ export class PolicyImport {
         );
 
         const dropped: string[] = [];
-        for (let index = 0; index < bindings.length; index++) {
-            const binding = bindings[index];
+        for (const binding of bindings) {
             if (!binding?.templateId) {
                 continue;
             }
