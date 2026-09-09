@@ -1421,6 +1421,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 }
                 const { options, owner } = msg;
                 const otherOptions: any = getPageOptions(options);
+                otherOptions.orderBy = { templateFeatured: 'DESC', ...otherOptions.orderBy };
                 const filter: any = {
                     readonly: false,
                     system: false

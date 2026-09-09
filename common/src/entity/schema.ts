@@ -24,6 +24,10 @@ import { BaseEntity } from '../models/index.js';
     properties: ['defs'],
     name: 'defs_index',
 })
+@Index({
+    properties: ['templateFeatured', 'createDate'],
+    name: 'templateFeatured_createDate_index',
+})
 export class Schema extends BaseEntity implements ISchema {
     /**
      * Schema uuid
@@ -180,6 +184,14 @@ export class Schema extends BaseEntity implements ISchema {
         index: true
     })
     templateSchemaId?: string;
+
+    /**
+     * Denormalized copy of config.schemas[id].featured from the owning schema template,
+     * kept in sync by schema-template.service.ts. SchemaTemplate.config itself is not
+     * queryable (GridFS-backed), so this is what grid sort / cross-context display use.
+     */
+    @Property({ nullable: true })
+    templateFeatured?: boolean;
 
     /**
      * Schema code version
