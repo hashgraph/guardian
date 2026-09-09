@@ -4,7 +4,9 @@ on:
     branches-ignore:
       - 'dependabot/**'
     paths-ignore:
+      - '.github/**'
       - 'docs/**'
+      - '**/*.md'
 
 jobs:
   buildAndTest:

@@ -16,6 +16,7 @@ Schema Templates solve this by introducing a standalone Guardian entity that own
 This supports:
 
 * reusable schema standards across policies;
+* more than one template applied to the same policy at once, each mapping to a distinct form type or version (for example VCS Project Description v5a and VCS Monitoring Report v5a applied together);
 * schema and field restrictions enforced in both UI and backend;
 * safe detach from a template without losing imported schemas;
 * template versioning and update previews;
@@ -86,9 +87,12 @@ The update preview groups changes by schema and field. Locked template fields an
 * Policy editor locks come from the applied snapshot, not directly from the mutable template.
 * Draft template changes do not automatically change already-applied policies.
 * Published templates are immutable; changes require a new draft version.
-* Detach keeps imported schemas but removes template restrictions.
+* Detach removes template restrictions and, unless you ask for the schemas to be deleted as well, keeps the imported schemas.
 * Template-owned policy schemas cannot be deleted before detach.
-* A policy with an applied template shows Update Schema Template and Detach Schema Template instead of Apply Schema Template.
+* A policy can have more than one applied template at the same time, each bound independently with its own snapshot and schema map.
+* **Schema Templates** on the policy row opens one management dialog listing **Applied templates** (each with its own update and detach action) and **Available templates** (each with an apply action). The action is enabled only on draft policies.
+* Updating a binding can either refresh it from the same template or switch it to a different template or version.
+* Detaching can optionally delete the copied schemas, except any that another schema in the policy still references.
 * A policy linked to a draft template or unresolved snapshot cannot be published.
 * Policy import can link to a matching template, select a local template, or detach restrictions.
 

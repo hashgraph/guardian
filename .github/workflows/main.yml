@@ -3,7 +3,9 @@ on:
   workflow_dispatch:
   push:
     paths-ignore:
+      - '.github/**'
       - 'docs/**'
+      - '**/*.md'
 jobs:
   buildAndTest:
     name: Build and Test (Manual - Main)

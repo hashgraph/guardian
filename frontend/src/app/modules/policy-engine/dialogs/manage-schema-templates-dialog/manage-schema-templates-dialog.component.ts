@@ -1,0 +1,332 @@
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import { ModuleStatus } from '@guardian/interfaces';
+import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
+import { CustomConfirmDialogComponent, IConfirmOptionDetailGroup } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { ToastService } from 'src/app/services/toast.service';
+import { SchemaTemplateDetachPreview, SchemaTemplateGridItem, SchemaTemplatesService } from 'src/app/services/schema-templates.service';
+import { ApplySchemaTemplateDialog } from '../apply-schema-template-dialog/apply-schema-template-dialog.component';
+
+interface AppliedTemplateRow {
+    templateId: string;
+    templateName: string;
+    templateVersion?: string;
+    templateStatus?: ModuleStatus;
+}
+
+@Component({
+    selector: 'manage-schema-templates-dialog',
+    templateUrl: './manage-schema-templates-dialog.component.html',
+    styleUrls: ['./manage-schema-templates-dialog.component.scss'],
+    standalone: false
+})
+export class ManageSchemaTemplatesDialog implements OnInit, OnDestroy {
+    public policy: any;
+    public loading = true;
+    public appliedRows: AppliedTemplateRow[] = [];
+    public availableTemplates: SchemaTemplateGridItem[] = [];
+    public availablePageIndex = 0;
+    public availablePageSize = 10;
+    public availableCount = 0;
+    public filtersForm = new UntypedFormGroup({
+        name: new UntypedFormControl('')
+    });
+
+    private readonly destroy$ = new Subject<void>();
+
+    constructor(
+        public ref: DynamicDialogRef,
+        public config: DynamicDialogConfig,
+        private readonly dialogService: DialogService,
+        private readonly templatesService: SchemaTemplatesService,
+        private readonly toastService: ToastService
+    ) {
+        this.policy = this.config.data?.policy;
+    }
+
+    public ngOnInit(): void {
+        this.appliedRows = (this.policy?.schemaTemplates || [])
+            .filter((binding: any) => !!binding?.templateId)
+            .map((binding: any) => ({
+                templateId: binding.templateId,
+                templateName: binding.templateName || 'Schema Template',
+                templateVersion: binding.templateVersion,
+                templateStatus: binding.templateStatus
+            }));
+
+        this.filtersForm.get('name')?.valueChanges
+            .pipe(
+                debounceTime(300),
+                distinctUntilChanged(),
+                takeUntil(this.destroy$)
+            )
+            .subscribe((value) => {
+                this.searchValue = String(value || '').trim();
+                // A new search starts at the first page. Keeping the old page index
+                // shows an empty grid whenever the new result has fewer pages than
+                // that, which reads as "no matches" for a filter that does match.
+                this.availablePageIndex = 0;
+                this.loadAvailableTemplates(this.searchValue);
+            });
+        this.loadAvailableTemplates();
+    }
+
+    public searchValue: string = '';
+
+    public get filteredAppliedRows(): AppliedTemplateRow[] {
+        if (!this.searchValue) {
+            return this.appliedRows;
+        }
+        const search = this.searchValue.toLowerCase();
+        return this.appliedRows.filter((row) => (row.templateName || '').toLowerCase().includes(search));
+    }
+
+    public ngOnDestroy(): void {
+        this.destroy$.next();
+        this.destroy$.complete();
+    }
+
+    private getAppliedTemplateIds(): Set<string> {
+        return new Set(this.appliedRows.map((row) => row.templateId));
+    }
+
+    public loadAvailableTemplates(search: string = ''): void {
+        this.loading = true;
+        // The already-applied ones are excluded by the server, so the count below is a
+        // count of what this grid actually shows and every page comes back full.
+        this.templatesService
+            .page(
+                this.availablePageIndex,
+                this.availablePageSize,
+                search,
+                [...this.getAppliedTemplateIds()]
+            )
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (response) => {
+                    this.availableTemplates = response.body || [];
+                    const header = response.headers.get('X-Total-Count');
+                    const total = header === null ? NaN : Number(header);
+                    this.availableCount = Number.isFinite(total) && total >= 0
+                        ? total
+                        // No header: assume at least what has been paged through so far,
+                        // rather than collapsing to one page and stranding the user.
+                        : this.availablePageIndex * this.availablePageSize + this.availableTemplates.length;
+                    this.loading = false;
+                },
+                error: () => {
+                    this.availableTemplates = [];
+                    this.availableCount = 0;
+                    this.loading = false;
+                }
+            });
+    }
+
+    public onAvailablePage(event: any): void {
+        if (this.availablePageSize !== event.pageSize) {
+            this.availablePageIndex = 0;
+            this.availablePageSize = event.pageSize;
+        } else {
+            this.availablePageIndex = event.pageIndex;
+            this.availablePageSize = event.pageSize;
+        }
+        this.loadAvailableTemplates(this.searchValue);
+    }
+
+    public getTemplateId(template: SchemaTemplateGridItem): string | null {
+        return template.id || (template as any)._id || null;
+    }
+
+    public getStatusLabel(status?: ModuleStatus): string {
+        switch (status) {
+            case ModuleStatus.PUBLISHED:
+                return 'Published';
+            case ModuleStatus.PUBLISH_ERROR:
+                return 'Publish Error';
+            case ModuleStatus.DRY_RUN:
+                return 'Dry Run';
+            case ModuleStatus.DRAFT:
+            default:
+                return 'Draft';
+        }
+    }
+
+    public getStatusColor(status?: ModuleStatus): string {
+        switch (status) {
+            case ModuleStatus.PUBLISHED:
+                return 'green';
+            case ModuleStatus.PUBLISH_ERROR:
+                return 'red';
+            case ModuleStatus.DRY_RUN:
+                return 'blue';
+            case ModuleStatus.DRAFT:
+            default:
+                return 'grey';
+        }
+    }
+
+    public openApply(template: SchemaTemplateGridItem): void {
+        const templateId = this.getTemplateId(template);
+        if (!templateId) {
+            return;
+        }
+        const templateName = template.name || 'schema template';
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Apply Schema Template',
+                text: `Apply "${templateName}" to this policy?`,
+                buttons: [{
+                    name: 'Cancel',
+                    class: 'secondary'
+                }, {
+                    name: 'Apply',
+                    class: 'primary'
+                }]
+            },
+        })!;
+        dialogRef.onClose.pipe(takeUntil(this.destroy$)).subscribe((result) => {
+            if (result !== 'Apply') {
+                return;
+            }
+            this.templatesService.pushApply(templateId, this.policy.id).subscribe({
+                next: (task) => {
+                    if (!task?.taskId) {
+                        return;
+                    }
+                    this.ref.close(task);
+                },
+                error: ({ message }) => {
+                    this.toastService.error(message);
+                }
+            });
+        });
+    }
+
+    public openUpdate(row: AppliedTemplateRow): void {
+        const dialogRef = this.dialogService.open(ApplySchemaTemplateDialog, {
+            showHeader: false,
+            width: '820px',
+            styleClass: 'guardian-dialog',
+            data: {
+                policy: this.policy,
+                mode: 'update',
+                templateId: row.templateId
+            }
+        })!;
+        dialogRef.onClose.pipe(takeUntil(this.destroy$)).subscribe((task: any) => {
+            if (!task?.taskId) {
+                return;
+            }
+            this.ref.close(task);
+        });
+    }
+
+    public detach(row: AppliedTemplateRow): void {
+        // What the delete option would actually do depends on which copies other schemas
+        // still point at, so the confirmation is built from the server's own plan rather
+        // than from a generic warning.
+        this.loading = true;
+        this.templatesService.previewDetach(row.templateId, this.policy.id)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (preview) => {
+                    this.loading = false;
+                    this.openDetachConfirm(row, preview);
+                },
+                error: ({ message }) => {
+                    this.loading = false;
+                    this.toastService.error(message);
+                }
+            });
+    }
+
+    private openDetachConfirm(row: AppliedTemplateRow, preview?: SchemaTemplateDetachPreview): void {
+        const templateName = row.templateName || 'schema template';
+        const deletable = preview?.deletable || [];
+        const blocked = preview?.blocked || [];
+
+        // Everything the delete option would and would not do belongs on the option
+        // itself: finding out from a toast once the schemas are already gone is too late.
+        const deleteDetails: IConfirmOptionDetailGroup[] = [];
+        if (deletable.length) {
+            deleteDetails.push({
+                label: `Will be deleted (${deletable.length}):`,
+                items: deletable
+            });
+        }
+        if (blocked.length) {
+            deleteDetails.push({
+                label: `Cannot be deleted, stays in the policy (${blocked.length}):`,
+                items: blocked.map((item) => (item.status
+                    ? `${item.name} - cannot be deleted while it is ${item.status}`
+                    : `${item.name} - still used by ${item.usedBy.join(', ')}`)),
+                warning: true
+            });
+        }
+
+        let deleteSub: string;
+        if (!deletable.length) {
+            deleteSub = blocked.length
+                ? 'Nothing can be deleted: every schema of this template is still used elsewhere in the policy.'
+                : 'This template has no schemas left to delete.';
+        } else if (blocked.length) {
+            deleteSub = `Permanently deletes ${deletable.length} of ${deletable.length + blocked.length} schemas. This cannot be undone.`;
+        } else {
+            deleteSub = `Permanently deletes ${deletable.length} schema${deletable.length === 1 ? '' : 's'}. This cannot be undone.`;
+        }
+
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Detach Schema Template',
+                text: `Detach "${templateName}" from this policy?`,
+                details: ['Template locks and field restrictions will be removed.'],
+                options: [{
+                    title: 'Keep the schemas',
+                    sub: 'The imported from template schemas remain in the policy as regular schemas.',
+                    value: false
+                }, {
+                    title: 'Also delete the schemas',
+                    sub: deleteSub,
+                    details: deleteDetails,
+                    value: true
+                }],
+                optionValue: false,
+                buttons: [{
+                    name: 'Cancel',
+                    class: 'secondary'
+                }, {
+                    name: 'Detach',
+                    class: 'primary'
+                }]
+            },
+        })!;
+        dialogRef.onClose.pipe(takeUntil(this.destroy$)).subscribe((result) => {
+            if (result?.button !== 'Detach') {
+                return;
+            }
+            const deleteSchemas = !!result.option;
+            this.templatesService.pushDetach(row.templateId, this.policy.id, { deleteSchemas }).subscribe({
+                next: (task) => {
+                    if (!task?.taskId) {
+                        return;
+                    }
+                    this.ref.close(task);
+                },
+                error: ({ message }) => {
+                    this.toastService.error(message);
+                }
+            });
+        });
+    }
+
+    public onClose(): void {
+        this.ref.close(null);
+    }
+}
