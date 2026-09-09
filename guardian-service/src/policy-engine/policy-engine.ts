@@ -106,27 +106,34 @@ export enum PolicyAccessCode {
 }
 
 export async function validatePolicySchemaTemplateBeforePublish(model: Policy): Promise<void> {
-    const binding = model.schemaTemplate;
-    const hasTemplateBinding = !!(
-        binding?.templateId ||
-        binding?.snapshotId ||
-        Object.keys(binding?.schemaMap || {}).length
-    );
-    if (!hasTemplateBinding) {
-        return;
-    }
-    if (!binding?.templateId) {
-        throw new Error(
-            'Policy cannot be published while it uses a schema template snapshot without a linked template. ' +
-            'Select a published schema template or detach it from the policy.'
+    const bindings = model.schemaTemplates || [];
+    const errors: string[] = [];
+    for (const binding of bindings) {
+        const hasTemplateBinding = !!(
+            binding?.templateId ||
+            binding?.snapshotId ||
+            Object.keys(binding?.schemaMap || {}).length
         );
+        if (!hasTemplateBinding) {
+            continue;
+        }
+        if (!binding?.templateId) {
+            errors.push(
+                'Policy cannot be published while it uses a schema template snapshot without a linked template. ' +
+                'Select a published schema template or detach it from the policy.'
+            );
+            continue;
+        }
+        const template = await DatabaseServer.getSchemaTemplateById(binding.templateId);
+        if (!template || template.status !== ModuleStatus.PUBLISHED) {
+            errors.push(
+                `Policy cannot be published while it uses a draft schema template ("${binding.templateName || binding.templateId}"). ` +
+                'Publish the schema template first or detach it from the policy.'
+            );
+        }
     }
-    const template = await DatabaseServer.getSchemaTemplateById(binding.templateId);
-    if (!template || template.status !== ModuleStatus.PUBLISHED) {
-        throw new Error(
-            'Policy cannot be published while it uses a draft schema template. ' +
-            'Publish the schema template first or detach it from the policy.'
-        );
+    if (errors.length) {
+        throw new Error(errors.join(' '));
     }
 }
 

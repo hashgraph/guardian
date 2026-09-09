@@ -11,7 +11,7 @@ import * as Authorization from '../../../support/authorization';
  *   POST /policies/:id/grids/:gridId/records/:recordId/actions/:actionId
  *
  */
-context('Policy Grid Actions API', { tags: ['policies', 'gridActions', 'all'] }, () => {
+context('Policy Grid Actions API', { tags: ['policies', 'gridActions', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     let policyId;
@@ -360,6 +360,7 @@ context('Policy Grid Actions API', { tags: ['policies', 'gridActions', 'all'] },
     describe('End-to-end: execute action on a record', () => {
         let e2eGridId;
         let e2eRecordId;
+        let e2eRecordOwner;
         let e2eActionId;
 
         before(() => {
@@ -388,11 +389,14 @@ context('Policy Grid Actions API', { tags: ['policies', 'gridActions', 'all'] },
                         if (recordsResponse.status !== STATUS_CODE.OK) {return;}
 
                         const data = recordsResponse.body.data ?? [];
-                        const record = data.find((r) => r._actions?.length > 0);
+                        // `owner` is what identifies the row across the action: see the
+                        // post-execute check below.
+                        const record = data.find((r) => r._actions?.length > 0 && r.owner);
                         if (!record) {return;}
 
                         e2eGridId = firstGridId;
                         e2eRecordId = String(record._id);
+                        e2eRecordOwner = record.owner;
                         e2eActionId = record._actions[0];
                     });
                 });
@@ -422,8 +426,14 @@ context('Policy Grid Actions API', { tags: ['policies', 'gridActions', 'all'] },
             });
         });
 
+        // A row action re-issues the document it acts on rather than updating it in place: the row
+        // stays in the grid, but under a new `_id`. Approving the single registrant of
+        // `registrants_grid`, for instance, leaves `totalCount` at 1 and the row still `Approved`,
+        // while its `_id` changes -- so looking the row up by the `_id` captured before the call
+        // reports it as gone no matter how long you wait. `owner` (the subject DID) is what survives
+        // the re-issue, so that is what identifies the row here.
         it('record remains visible in grid after action execution', () => {
-            if (!e2eGridId || !e2eRecordId) {
+            if (!e2eGridId || !e2eRecordOwner) {
                 cy.log('No record found — skipping post-execute check');
                 return;
             }
@@ -439,10 +449,13 @@ context('Policy Grid Actions API', { tags: ['policies', 'gridActions', 'all'] },
                 }).then((response) => {
                     if (response.status !== STATUS_CODE.OK) {return;}
 
-                    const found = (response.body.data ?? []).some(
-                        (r) => String(r._id) === e2eRecordId,
-                    );
-                    expect(found, 'record must still be visible after action execution').to.be.true;
+                    const rows = response.body.data ?? [];
+                    const row = rows.find((r) => r.owner === e2eRecordOwner);
+                    expect(row, `a row for ${e2eRecordOwner} must still be in the grid after the action`)
+                        .to.not.be.undefined;
+                    // Whether it was re-issued or left untouched, the row stays addressable through
+                    // the same API.
+                    expect(row._actions, 'the row still exposes its actions').to.be.an('array');
                 });
             });
         });

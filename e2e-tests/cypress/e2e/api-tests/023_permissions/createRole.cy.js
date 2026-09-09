@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
-context('Create role', { tags: ['permissions', 'firstPool', 'all'] }, () => {
+context('Create role', { tags: ['permissions', 'firstPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const newRole = 'TestRole';
 

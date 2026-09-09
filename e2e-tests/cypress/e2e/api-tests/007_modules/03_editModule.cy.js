@@ -4,7 +4,7 @@ import { STATUS_CODE } from '../../../support/api/api-const';
 import * as Modules from '../../../support/api/modules';
 import * as Authorization from '../../../support/authorization';
 
-context('Edit Module', { tags: ['modules', 'thirdPool', 'all'] }, () => {
+context('Edit Module', { tags: ['modules', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
 
   const SRUsername = Cypress.env('SRUser');
   const moduleName = 'FirstAPIModule';

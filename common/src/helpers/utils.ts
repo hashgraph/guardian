@@ -412,3 +412,20 @@ function _findBlocks(node: any, filter: (block: any) => boolean, result: any[]):
         }
     }
 }
+
+/**
+ * Escape a string so it can be safely embedded inside a MongoDB $regex pattern.
+ * @param value
+ */
+export function escapeRegex(value: string): string {
+    return String(value ?? '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Build a case-insensitive "contains" $regex filter from raw, unescaped user input.
+ * @param value
+ * @param options
+ */
+export function containsRegex(value: string, options: string = 'i'): { $regex: string; $options: string } {
+    return { $regex: `.*${escapeRegex(value)}.*`, $options: options };
+}

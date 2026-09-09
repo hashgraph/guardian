@@ -1,4 +1,4 @@
-import { DatabaseServer, IAuthUser, KeyType, MessageError, MessageResponse, NatsService, PinoLogger, Singleton, Wallet, Workers } from '@guardian/common';
+import { DatabaseServer, IAuthUser, KeyType, MessageError, MessageResponse, NatsService, PinoLogger, Singleton, Wallet, Workers, containsRegex } from '@guardian/common';
 import { AuthEvents, GenerateUUIDv4, WorkerTaskType } from '@guardian/interfaces';
 import { RelayerAccount } from '../entity/relayer-account.js';
 import { User } from '../entity/user.js';
@@ -162,10 +162,11 @@ export class RelayerAccountsService extends NatsService {
                         owner: user.did
                     };
                     if (search) {
+                        const searchFilter = containsRegex(search);
                         query.$or = [{
-                            name: { $regex: '.*' + search + '.*', $options: 'i' },
+                            name: searchFilter,
                         }, {
-                            account: { $regex: '.*' + search + '.*', $options: 'i' }
+                            account: searchFilter
                         }]
                     }
 
@@ -427,16 +428,17 @@ export class RelayerAccountsService extends NatsService {
                     }];
 
                     if (search) {
+                        const searchFilter = containsRegex(search);
                         aggregate.push({
                             $match: {
                                 $or: [{
-                                    username: { $regex: '.*' + search + '.*', $options: 'i' },
+                                    username: searchFilter,
                                 }, {
-                                    hederaAccountId: { $regex: '.*' + search + '.*', $options: 'i' }
+                                    hederaAccountId: searchFilter
                                 }, {
-                                    relayerAccountId: { $regex: '.*' + search + '.*', $options: 'i' }
+                                    relayerAccountId: searchFilter
                                 }, {
-                                    relayerAccountName: { $regex: '.*' + search + '.*', $options: 'i' }
+                                    relayerAccountName: searchFilter
                                 }]
                             }
                         })

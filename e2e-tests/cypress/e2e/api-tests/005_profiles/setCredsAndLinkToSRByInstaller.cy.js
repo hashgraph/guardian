@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
-context('Profiles', { tags: ['profiles', 'thirdPool', 'all'] }, () => {
+context('Profiles', { tags: ['profiles', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
     const Installer = Cypress.env('Installer');
 
     it('Set Hedera credentials for the Installer', () => {

@@ -22,7 +22,7 @@ jobs:
         mongodb-version: [ 7.0.21 ]
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           egress-policy: audit
 
@@ -109,7 +109,7 @@ jobs:
           until curl -s -X POST http://127.0.0.1:5001/api/v0/id >/dev/null 2>&1; do sleep 0.5; done
 
       - name: Start MongoDB
-        uses: step-security/mongodb-github-action@9bfc4a7e812a86657abfbe923af612a0fedcd1ea
+        uses: step-security/mongodb-github-action@7bbfdaf9f5b4e8b4ffbe2905fd9e4756d3204ed6
         with:
           mongodb-version: ${{ matrix.mongodb-version }}
 

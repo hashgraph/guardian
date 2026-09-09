@@ -16,7 +16,7 @@ describe('PoliciesComponent', () => {
             {} as any, {} as any, {} as any, {} as any, {} as any,
             { queryParams: { subscribe: jasmine.createSpy('subscribe') } } as any,
             dialogService as any,
-            {} as any, {} as any, {} as any, {} as any, {} as any, {} as any, {} as any,
+            {} as any, {} as any, {} as any, {} as any, {} as any, {} as any,
             new Map<string, any>(),
             {} as any,
             indexedDb as any

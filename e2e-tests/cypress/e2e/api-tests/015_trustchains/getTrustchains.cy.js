@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
-context('Trustchains', { tags: ['trustchains', 'thirdPool', 'all'] }, () => {
+context('Trustchains', { tags: ['trustchains', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     let policyId;
 
@@ -15,17 +15,8 @@ context('Trustchains', { tags: ['trustchains', 'thirdPool', 'all'] }, () => {
         });
 
     before('Get policy id for trustchain', () => {
-        Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies,
-                headers: { authorization },
-            }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.OK);
-                // Prefer the named policy "iRec_4"; fallback to the first one
-                const targetPolicy = response.body.find((p) => p.name === 'iRec_4');
-                policyId = targetPolicy ? targetPolicy.id : response.body.at(0).id;
-            });
+        cy.getOrCreateIRec4Policy(SRUsername).then((policy) => {
+            policyId = policy.id;
         });
     });
 

@@ -17,6 +17,7 @@ import {
     RunFunctionAsync,
     INotificationStep,
     NewNotifier,
+    containsRegex,
 } from '@guardian/common';
 import {
     EntityStatus,
@@ -583,10 +584,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                     const keywords = options.text.split(' ');
                     for (const keyword of keywords) {
                         filter.$and.push({
-                            'name': {
-                                $regex: `.*${keyword.trim()}.*`,
-                                $options: 'si',
-                            },
+                            'name': containsRegex(keyword.trim(), 'si'),
                         });
                     }
                 }

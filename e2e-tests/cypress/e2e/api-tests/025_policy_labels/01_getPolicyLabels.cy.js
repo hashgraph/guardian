@@ -1,18 +1,19 @@
 import { STATUS_CODE } from '../../../support/api/api-const';
 import * as Authorization from '../../../support/authorization';
 
-context('Get policy labels', { tags: ['policy_labels', 'firstPool', 'all'] }, () => {
+context('Get policy labels', { tags: ['policy_labels', 'firstPool', 'all', 'all-no-mgs'] }, () => {
     const UserUsername = Cypress.env('User');
+    const SRUsername = Cypress.env('SRUser');
     const labelName = 'testPolicyLabelAPI';
 
     let policy; let did; let SRDid;
 
     before('Get policy ids and did', () => {
-        Authorization.getAccessToken(UserUsername).then((auth) => {
-            cy.getPolicyByName(auth, 'iRec_4').then((p) => {
-                policy = p;
-            });
+        cy.getOrCreateIRec4Policy(SRUsername).then((p) => {
+            policy = p;
+        });
 
+        Authorization.getAccessToken(UserUsername).then((auth) => {
             cy.getUserProfile(auth, UserUsername).then((profile) => {
                 did = profile.did;
                 SRDid = profile.parent;

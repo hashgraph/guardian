@@ -5,7 +5,7 @@ import * as Checks from '../../../support/checkingMethods';
 import * as Authorization from '../../../support/authorization';
 import * as IpfsSeeding from '../../../support/CustomHelpers/ipfsSeeding';
 
-context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
+context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
