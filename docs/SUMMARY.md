@@ -278,6 +278,7 @@
   * [Schema Templates](guardian/workspace/schema-templates/README.md)
     * [Create a Schema Template](guardian/workspace/schema-templates/create-a-schema-template.md)
     * [Configure Schema Template Guidelines](guardian/workspace/schema-templates/configure-schema-template-guidelines.md)
+    * [Mark a Schema as Featured](guardian/workspace/schema-templates/mark-a-schema-as-featured.md)
     * [Apply a Schema Template](guardian/workspace/schema-templates/apply-a-schema-template.md)
     * [Update an Applied Schema Template](guardian/workspace/schema-templates/update-an-applied-schema-template.md)
     * [Detach a Schema Template](guardian/workspace/schema-templates/detach-a-schema-template.md)

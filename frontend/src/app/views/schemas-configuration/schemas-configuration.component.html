@@ -349,7 +349,7 @@
                                         <i class="pi" [class.pi-star-fill]="isSelectedSchemaFeatured" [class.pi-star]="!isSelectedSchemaFeatured"></i>
                                     </button>
                                 }
-                                @if (isSchemaFeatured(selectedSchema)) {
+                                @if (isSchemaFeatured(selectedSchema) && !isTemplateConfigMode) {
                                     <i class="pi pi-star-fill schema-featured-icon" pTooltip="Featured" tooltipPosition="right"></i>
                                 }
                                 <span class="sc-editor-title">{{ selectedSchema.name }}</span>

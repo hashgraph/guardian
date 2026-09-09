@@ -1,0 +1,44 @@
+---
+description: Highlight a template schema so it stands out in schema lists and sorts first on the Schemas grid.
+tags:
+  - tasks
+---
+
+# Mark a Schema as Featured
+
+Featuring a schema highlights it with a star in schema lists and pins it to the top of the main Schemas grid. Use it to call out the schemas policy authors are most likely to need from a template. See [Schema Templates Concept](./) for how the flag is stored and propagated.
+
+### Prerequisites
+
+* The user is signed in as a Standard Registry user.
+* The user has permissions to manage schema templates.
+* A draft schema template exists with at least one schema.
+
+### Steps
+
+1. Open the Schema Templates grid and open the template's editor.
+2. Open the template's settings (the configuration step, not the schema editor).
+3. Select a schema in the sidebar.
+4. Click the star icon next to the schema name in the header.
+
+   An outlined star means the schema is not featured. A filled, yellow star means it is. Clicking toggles between the two and marks the template as having unsaved changes.
+5. Save the template.
+
+   Saving writes `featured` into the template's configuration for that schema, and denormalizes it onto the schema itself as `templateFeatured`.
+
+### Result
+
+The schema shows a filled star everywhere its template schemas are listed: the template editor, the template-scoped schema editor, and the policy schema editor for policies with this template applied. On the main Schemas grid (`/schemas`), featured schemas sort before non-featured ones within the same topic.
+
+### Troubleshooting
+
+**Why doesn't a policy's copy of the schema show as featured after I feature it in the template?**
+
+Featuring a schema in the template does not push live to policies that already have the template applied - the same as every other template restriction. It takes effect the next time the template is applied to a new policy, or when an applied template is updated.
+
+### Related
+
+* Concept: [Schema Templates Concept](./)
+* Task: [Create a Schema Template](create-a-schema-template.md)
+* Task: [Apply a Schema Template](apply-a-schema-template.md)
+* Task: [Update an Applied Schema Template](update-an-applied-schema-template.md)

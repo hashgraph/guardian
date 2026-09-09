@@ -405,6 +405,100 @@ describe('schema template CRUD and query handlers', () => {
         assert.equal(saved.config.schemas['template-schema-1'].fields['template-field-1'].guidelines, 'Enter the external registry identifier.');
     });
 
+    /*
+     * SchemaTemplate.config is GridFS-backed and not queryable, so grid sort and
+     * sidebars outside the template config editor read Schema.templateFeatured
+     * instead. This denormalized copy is only ever written here, on save - a
+     * template schema that never triggers it (or a schema created directly, never
+     * saved through the template) is missing it forever.
+     */
+    it('UPDATE_SCHEMA_TEMPLATE syncs templateFeatured onto the template\'s own schemas', async () => {
+        const updatedSchemas = [];
+        const featuredSchema = { id: 'tpl-schema-featured', templateSchemaId: 'tpl-a', templateFeatured: false };
+        const unfeaturedSchema = { id: 'tpl-schema-unfeatured', templateSchemaId: 'tpl-b', templateFeatured: true };
+
+        stub(DatabaseServer, 'getSchemaTemplateById', async () => ({
+            id: 'template-1',
+            owner: owner.owner,
+            status: ModuleStatus.DRAFT,
+            name: 'Old',
+            description: 'Old desc',
+            topicId: '0.0.20',
+            config: {}
+        }));
+        stub(DatabaseServer, 'updateSchemaTemplate', async (item) => item);
+        stub(DatabaseServer, 'getSchemas', async (filter) => {
+            assert.deepEqual(filter, {
+                topicId: '0.0.20',
+                category: SchemaCategory.TEMPLATE,
+                templateId: 'template-1',
+            });
+            return [featuredSchema, unfeaturedSchema];
+        });
+        stub(DatabaseServer, 'updateSchema', async (id, schema) => {
+            updatedSchemas.push({ id, templateFeatured: schema.templateFeatured });
+            return schema;
+        });
+
+        const response = await callHandler(handlers, MessageAPI.UPDATE_SCHEMA_TEMPLATE, {
+            id: 'template-1',
+            template: {
+                name: 'New',
+                description: 'New desc',
+                config: {
+                    schemas: {
+                        'tpl-a': { featured: true },
+                        'tpl-b': { featured: false },
+                    },
+                },
+            },
+            owner
+        });
+
+        assert.equal(ok(response), true);
+        assert.deepEqual(
+            updatedSchemas.sort((a, b) => a.id.localeCompare(b.id)),
+            [
+                { id: 'tpl-schema-featured', templateFeatured: true },
+                { id: 'tpl-schema-unfeatured', templateFeatured: false },
+            ]
+        );
+    });
+
+    it('UPDATE_SCHEMA_TEMPLATE does not rewrite a template schema whose templateFeatured already matches config', async () => {
+        const updatedSchemas = [];
+        const alreadyFeatured = { id: 'tpl-schema-featured', templateSchemaId: 'tpl-a', templateFeatured: true };
+
+        stub(DatabaseServer, 'getSchemaTemplateById', async () => ({
+            id: 'template-1',
+            owner: owner.owner,
+            status: ModuleStatus.DRAFT,
+            name: 'Old',
+            description: 'Old desc',
+            topicId: '0.0.20',
+            config: {}
+        }));
+        stub(DatabaseServer, 'updateSchemaTemplate', async (item) => item);
+        stub(DatabaseServer, 'getSchemas', async () => [alreadyFeatured]);
+        stub(DatabaseServer, 'updateSchema', async (id, schema) => {
+            updatedSchemas.push(id);
+            return schema;
+        });
+
+        const response = await callHandler(handlers, MessageAPI.UPDATE_SCHEMA_TEMPLATE, {
+            id: 'template-1',
+            template: {
+                name: 'New',
+                description: 'New desc',
+                config: { schemas: { 'tpl-a': { featured: true } } },
+            },
+            owner
+        });
+
+        assert.equal(ok(response), true);
+        assert.deepEqual(updatedSchemas, [], 'a schema already matching config must not be rewritten');
+    });
+
     it('DELETE_SCHEMA_TEMPLATE removes a draft not bound to any policy', async () => {
         let removed = null;
         stub(DatabaseServer, 'getSchemaTemplateById', async () => ({
@@ -1193,5 +1287,114 @@ describe('UPDATE_APPLIED_SCHEMA_TEMPLATE rollback', () => {
 
         assert.equal(ok(response), true, response.error);
         assert.deepEqual(removedSnapshots, ['snap-0']);
+    });
+});
+
+/*
+ * preparePolicySchemaCopy (new schemas the template gained) deep-clones the
+ * template's own Schema doc, so it carries templateFeatured forward for free.
+ * preparePolicySchemaUpdate (schemas already applied, edited in place) sets every
+ * field explicitly instead of cloning, so templateFeatured needs its own line -
+ * this is the one place that line can regress silently.
+ */
+describe('UPDATE_APPLIED_SCHEMA_TEMPLATE templateFeatured sync', () => {
+    const document = (properties) => ({
+        $id: '#a&1.0.0',
+        title: 'A',
+        type: 'object',
+        properties,
+        required: [],
+    });
+
+    it('writes templateFeatured from the template config onto the in-place-edited policy schema', async () => {
+        const writes = [];
+        const templateSchema = {
+            id: 'ts-a',
+            templateSchemaId: 'tpl-a',
+            iri: '#a&1.0.0',
+            uuid: 'a',
+            version: '1.0.0',
+            name: 'A',
+            topicId: '0.0.20',
+            category: SchemaCategory.TEMPLATE,
+            document: document({}),
+        };
+        const policySchema = {
+            id: 'ps-1',
+            templateId: 'template-1',
+            templateSchemaId: 'tpl-a',
+            iri: '#a&1.0.0',
+            uuid: 'a',
+            version: '1.0.0',
+            name: 'A',
+            topicId: '0.0.10',
+            category: SchemaCategory.POLICY,
+            templateFeatured: false,
+            document: document({}),
+        };
+
+        const fakeDb = {
+            getSchemaTemplateById: async () => ({
+                id: 'template-1',
+                name: 'Template',
+                owner: owner.owner,
+                status: ModuleStatus.PUBLISHED,
+                topicId: '0.0.20',
+                config: { schemas: { 'tpl-a': { featured: true } } },
+            }),
+            getPolicyById: async () => policy({
+                schemaTemplate: {
+                    templateId: 'template-1',
+                    snapshotId: 'snap-0',
+                    appliedAt: '2026-01-01T00:00:00.000Z',
+                    schemaMap: { 'tpl-a': 'ps-1' },
+                },
+            }),
+            getSchemaTemplateSnapshotById: async () => ({
+                id: 'snap-0',
+                config: { schemas: {} },
+                schemas: { schemas: { 'tpl-a': { templateSchemaId: 'tpl-a', name: 'A (old)', fields: [], conditions: [] } } },
+            }),
+            getSchemas: async (filter) => (
+                filter?.category === SchemaCategory.TEMPLATE ? [templateSchema] : [policySchema]
+            ),
+            updateSchema: async (id, value) => {
+                writes.push({ id, templateFeatured: value.templateFeatured });
+                return value;
+            },
+            saveSchemaTemplateSnapshot: async (value) => ({ ...value, id: 'snap-1' }),
+            removeSchemaTemplateSnapshot: async () => {},
+            updatePolicy: async (value) => value,
+        };
+
+        const { handlers } = await loadAPI(
+            '../dist/api/schema-template.service.js',
+            'schemaTemplatesAPI',
+            {
+                '@guardian/common': {
+                    DatabaseServer: fakeDb,
+                    NewNotifier: Object.assign(() => {}, { empty: () => ({}) }),
+                },
+                [lockPath]: passThroughLock,
+                [importHelpersPath]: {
+                    createSchemaAndArtifacts: async (_category, copy) => ({ ...copy, id: 'copy-1' }),
+                    deleteSchema: async () => {},
+                    SchemaImportExportHelper: class {},
+                    updateSchemaDefs: async () => {}
+                }
+            }
+        );
+
+        const response = await handlers[MessageAPI.UPDATE_APPLIED_SCHEMA_TEMPLATE]({
+            templateId: 'template-1',
+            policyId: 'policy-1',
+            owner
+        });
+
+        assert.equal(ok(response), true, response.error);
+        const edit = writes.filter((write) => write.id === 'ps-1').at(-1);
+        assert.ok(edit, 'the policy schema should have been edited in place');
+        assert.equal(edit.templateFeatured, true,
+            'the in-place update must carry config.schemas[id].featured onto the policy copy');
     });
 });
