@@ -26,10 +26,16 @@ describe('PolicyUtils.checkDocumentField', () => {
             assert.equal(PolicyUtils.checkDocumentField(null, filter('field', 'equal', 'x')), false);
         });
 
-        it('legacy equal: number field vs string value uses strict comparison (no coercion)', () => {
-            // legacy path (no valueSource) must NOT coerce; amount=10 (number) !== '10' (string)
+        it('legacy equal: number field matches its numeric string value', () => {
+            // Filter values always arrive as strings from the policy config, so the legacy
+            // path coerces before comparing - amount=10 (number) equals '10' (string).
             const d = { document: { credentialSubject: [{ amount: 10 }] } };
-            assert.equal(PolicyUtils.checkDocumentField(d, { field: 'document.credentialSubject.0.amount', type: 'equal', value: '10' }), false);
+            assert.equal(PolicyUtils.checkDocumentField(d, { field: 'document.credentialSubject.0.amount', type: 'equal', value: '10' }), true);
+        });
+
+        it('legacy equal: number field does not match a different numeric string', () => {
+            const d = { document: { credentialSubject: [{ amount: 10 }] } };
+            assert.equal(PolicyUtils.checkDocumentField(d, { field: 'document.credentialSubject.0.amount', type: 'equal', value: '11' }), false);
         });
     });
 
