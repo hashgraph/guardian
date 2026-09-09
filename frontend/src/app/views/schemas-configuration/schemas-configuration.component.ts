@@ -1040,7 +1040,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (!config) {
             return;
         }
-        config.guidelines = guidelines || '';
+        if (guidelines) {
+            config.guidelines = guidelines;
+        } else {
+            delete config.guidelines;
+        }
         this.templateConfigDirty = true;
     }
 
@@ -1052,7 +1056,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (!config) {
             return;
         }
-        config.guidelines = guidelines || '';
+        if (guidelines) {
+            config.guidelines = guidelines;
+        } else {
+            delete config.guidelines;
+        }
         this.templateConfigDirty = true;
     }
 
