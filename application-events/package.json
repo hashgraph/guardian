@@ -51,5 +51,5 @@
         "test": "mocha --require ts-node/register tests/**/*.ts --timeout 10000"
     },
     "type": "module",
-    "version": "3.6.0"
+    "version": "3.7.0"
 }

@@ -16,7 +16,7 @@
     position: fixed;
     top: var(--header-height);
     right: 0;
-    left: var(--header-width-expand);
+    left: var(--header-width);
     height: calc(100vh - var(--header-height));
     overflow: auto;
     transition: left 0.125s ease-in-out, right 0.125s ease-in-out, max-height 0.25s ease-in-out;

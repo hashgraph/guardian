@@ -1,59 +1,59 @@
-import * as Checks from "../../../support/checkingMethods";
-import CommonElements from "../../../support/defaultUIElements";
+import * as Checks from '../../../support/checkingMethods';
+import CommonElements from '../../../support/defaultUIElements';
 
 const PoliciesPageLocators = {
     backButton: "div[title='Back']",
     savePolicyEditing: "div.readonly-status[title='Save Policy']",
-    dynamicDialog: "p-dynamicdialog",
+    dynamicDialog: 'p-dynamicdialog',
     deleteButton: "p-button[label='Delete']",
-    actionsMore: "div.btn-icon-menu",
-    editPolicy: "div.btn-icon-edit",
+    actionsMore: 'div.btn-icon-menu',
+    editPolicy: 'div.btn-icon-edit',
     createPolicyButton: 'p-button[ng-reflect-content="Create a Policy"]',
     importPolicyButton: 'p-button[ng-reflect-content="Import"]',
     inputName: "[formcontrolname='name']",
     policyBlock: '[class="block-item"]',
-    policyDeleteButton: "Delete Policy",
-    createButton: "Create",
-    exportPolicy: "Export policy",
-    exportFileButton: " Save to file ",
-    BackToManagePolicies: "Back to Manage Policies",
-    exportMessageIdButton: " Copy message identifier ",
+    policyDeleteButton: 'Delete Policy',
+    createButton: 'Create',
+    exportPolicy: 'Export policy',
+    exportFileButton: ' Save to file ',
+    BackToManagePolicies: 'Back to Manage Policies',
+    exportMessageIdButton: ' Copy message identifier ',
     publishPolicyButton: 'Publish',
     discontinuePolicyButton: ' Discontinue ',
     discontinuePolicyOkButton: 'button[ng-reflect-label="OK"]',
     versionInput: 'input[id="version"]',
     importButton: 'button:contains("Import")',
-    importIPFSOption: " Import from IPFS ",
+    importIPFSOption: ' Import from IPFS ',
     asNewPolicyRadioButton: "p-radiobutton[inputid='new-mode']",
     approveButton: 'div.btn-approve',
-    revokeOption: "div.btn-option",
-    deviceTab: "Devices",
-    issueRequestsTab: "Issue Requests",
+    revokeOption: 'div.btn-option',
+    deviceTab: 'Devices',
+    issueRequestsTab: 'Issue Requests',
     approvedLabel: "span[title = 'Approved']",
     createTagButton: 'span:contains("Create a Tag")',
     inputName: 'input[formcontrolname="name"]',
-    tagsExplorer: "tags-explorer",
+    tagsExplorer: 'tags-explorer',
     closeButton: 'span:contains("Close")',
     deleteTagIcon: "svg-icon[svgclass='accent-color-red']",
-    projectPipelineTab: "Project Pipeline",
+    projectPipelineTab: 'Project Pipeline',
     waitingForValidation: "span[title = 'Waiting for Validation']",
-    monitoringReports: "Monitoring Reports",
+    monitoringReports: 'Monitoring Reports',
     minted: "span[title = 'Minted']",
-    descriptionPolicy: "td.cell-description",
+    descriptionPolicy: 'td.cell-description',
     componentsBlock: `span.drag-component-name`,
     blockItemName: (name) => `div.block-item-name:contains(${name})`,
     expandBlockBtn: (value) => `[block-instance="${value}"] .block-expand`,
     deleteBlockBtn: 'button[class*="delete-action"]:visible',
-    componentsContainer: ".components-container:not(:hidden)",
-    favoriteButton: ".component-btn-favorite",
-    componentBtn: ".component-btn",
+    componentsContainer: '.components-container:not(:hidden)',
+    favoriteButton: '.component-btn-favorite',
+    componentBtn: '.component-btn',
     moduleIcon: 'svg-icon[ng-reflect-src="/assets/images/icons/policy-mo"]',
-    containerJson: ".textarea-code",
-    treeContainer: ".tree-container",
+    containerJson: '.textarea-code',
+    treeContainer: '.tree-container',
     undo: "div[title='Undo']",
     redo: "div[title='Redo']",
     successValidationElement: "[title='Validation Policy']",
-    errorCountElement: ".error-count",
+    errorCountElement: '.error-count',
     nextButton: "button[label='Next']",
 
     // importBtn: '[label="Import"]',
@@ -110,9 +110,9 @@ export class PoliciesPage {
 
     openPoliciesTab() {
         cy.get(CommonElements.navBar).should('exist')
-        cy.get("body").then(($body) => {
+        cy.get('body').then(($body) => {
             if ($body.find(`span:contains(${CommonElements.policiesTab})`).length == 0)
-                cy.get(CommonElements.navBar).contains(CommonElements.mainPoliciesTab).should('exist').click();
+                {cy.get(CommonElements.navBar).contains(CommonElements.mainPoliciesTab).should('exist').click();}
         })
         cy.get(CommonElements.navBar).contains(CommonElements.policiesTab).should('exist').click();
         Checks.waitForLoading();
@@ -140,7 +140,7 @@ export class PoliciesPage {
     }
 
     checkStatus(name, status) {
-        cy.contains("td", name).siblings().contains(status).should("exist");
+        cy.contains('td', name).siblings().contains(status).should('exist');
     }
 
     deletePolicy(policyName) {
@@ -148,18 +148,18 @@ export class PoliciesPage {
         cy.contains(PoliciesPageLocators.policyDeleteButton).click();
         cy.get(PoliciesPageLocators.dynamicDialog).find(PoliciesPageLocators.deleteButton).click();
         Checks.waitForElement(PoliciesPageLocators.createPolicyButton);
-        cy.contains(new RegExp("^" + policyName + "$", "g")).should("not.exist");
+        cy.contains(new RegExp('^' + policyName + '$', 'g')).should('not.exist');
     }
 
     startDryRun(name) {
-        cy.contains("td", name).siblings().contains("Draft").click();
-        cy.contains("div.dropdown-item-title", "Dry Run").click();
+        cy.contains('td', name).siblings().contains('Draft').click();
+        cy.contains('div.dropdown-item-title', 'Dry Run').click();
         Checks.waitForLoading();
     }
 
     stopDryRun(name) {
-        cy.contains("td", name).siblings().contains("div", "In Dry Run").click();
-        cy.contains("div.dropdown-item-title", "Stop").click();
+        cy.contains('td', name).siblings().contains('div', 'In Dry Run').click();
+        cy.contains('div.dropdown-item-title', 'Stop').click();
         Checks.waitForLoading();
     }
 
@@ -196,24 +196,24 @@ export class PoliciesPage {
     }
 
     publishPolicy(name) {
-        cy.contains("td", name).siblings().eq(3).click();
-        cy.contains("div.dropdown-item-title", PoliciesPageLocators.publishPolicyButton).click();
-        cy.get(PoliciesPageLocators.versionInput).type("0.8.4");
+        cy.contains('td', name).siblings().eq(3).click();
+        cy.contains('div.dropdown-item-title', PoliciesPageLocators.publishPolicyButton).click();
+        cy.get(PoliciesPageLocators.versionInput).type('0.8.4');
         cy.contains(CommonElements.Button, PoliciesPageLocators.publishPolicyButton).click();
         Checks.waitForElement(PoliciesPageLocators.policyBlock, undefined, 5000);
     }
 
     discontinuePolicy(name) {
-        cy.contains("td", name).siblings().eq(3).click();
-        cy.contains("div.dropdown-item-title", PoliciesPageLocators.discontinuePolicyButton).click();
-        cy.contains("span", 'Immediate').click();
+        cy.contains('td', name).siblings().eq(3).click();
+        cy.contains('div.dropdown-item-title', PoliciesPageLocators.discontinuePolicyButton).click();
+        cy.contains('span', 'Immediate').click();
         cy.get(PoliciesPageLocators.discontinuePolicyOkButton).click();
     }
 
     importPolicyFromFile(policyFileName) {
         cy.get(PoliciesPageLocators.importPolicyButton).click();
-        cy.fixture(policyFileName, { encoding: null }).as("policyForImport");
-        cy.get(CommonElements.dialogWindow).find(CommonElements.fileInput).selectFile("@policyForImport", { force: true });
+        cy.fixture(policyFileName, { encoding: null }).as('policyForImport');
+        cy.get(CommonElements.dialogWindow).find(CommonElements.fileInput).selectFile('@policyForImport', { force: true });
         Checks.waitForElement(PoliciesPageLocators.asNewPolicyRadioButton);
         cy.get(CommonElements.dialogWindow).find(PoliciesPageLocators.importButton).last().click();
         Checks.waitForElement(PoliciesPageLocators.policyBlock, undefined, 5000);
@@ -223,7 +223,7 @@ export class PoliciesPage {
         cy.get(PoliciesPageLocators.importPolicyButton).click();
         cy.contains(PoliciesPageLocators.importIPFSOption).should('be.visible').click();
         cy.get(CommonElements.dialogWindow).find(CommonElements.Input).type(messageId);
-        cy.get(CommonElements.dialogWindow).find(PoliciesPageLocators.importButton).should("have.not.attr", "disabled");
+        cy.get(CommonElements.dialogWindow).find(PoliciesPageLocators.importButton).should('have.not.attr', 'disabled');
         cy.get(CommonElements.dialogWindow).find(PoliciesPageLocators.importButton).click();
         Checks.waitForElement(PoliciesPageLocators.asNewPolicyRadioButton);
         cy.get(CommonElements.dialogWindow).last().find(PoliciesPageLocators.importButton).click();
@@ -232,18 +232,18 @@ export class PoliciesPage {
 
     approve(waitFor) {
         cy.get(PoliciesPageLocators.approveButton).click();
-        if (waitFor == "revoke")
-            Checks.waitForElement(PoliciesPageLocators.revokeOption);
-        if (waitFor == "approvedLabel")
-            Checks.waitForElement(PoliciesPageLocators.approvedLabel);
-        if (waitFor == "validationLabel")
-            Checks.waitForElement(PoliciesPageLocators.waitingForValidation);
-        if (waitFor == "minted")
-            Checks.waitForElement(PoliciesPageLocators.minted);
+        if (waitFor == 'revoke')
+            {Checks.waitForElement(PoliciesPageLocators.revokeOption);}
+        if (waitFor == 'approvedLabel')
+            {Checks.waitForElement(PoliciesPageLocators.approvedLabel);}
+        if (waitFor == 'validationLabel')
+            {Checks.waitForElement(PoliciesPageLocators.waitingForValidation);}
+        if (waitFor == 'minted')
+            {Checks.waitForElement(PoliciesPageLocators.minted);}
     }
 
     openPolicy(name) {
-        cy.contains("td", name).siblings().eq(0).click();
+        cy.contains('td', name).siblings().eq(0).click();
     }
 
     openEditingPolicy(name) {
@@ -251,7 +251,7 @@ export class PoliciesPage {
         Checks.waitForElement(PoliciesPageLocators.policyBlock, undefined, 5000);
     }
 
-    approveUserInPolicy(waitFor = "revoke") {
+    approveUserInPolicy(waitFor = 'revoke') {
         this.approve(waitFor);
     }
 
@@ -269,7 +269,7 @@ export class PoliciesPage {
         cy.get("p:contains('Project Participants')").click();
     }
 
-    approveDeviceInPolicy(waitFor = "revoke") {
+    approveDeviceInPolicy(waitFor = 'revoke') {
         Checks.waitForLoading();
         cy.contains(PoliciesPageLocators.deviceTab).should('exist');
         cy.get('.preloader-image').should('not.exist');
@@ -277,7 +277,7 @@ export class PoliciesPage {
         this.approve(waitFor);
     }
 
-    approveIssueRequestInPolicy(waitFor = "revoke") {
+    approveIssueRequestInPolicy(waitFor = 'revoke') {
         Checks.waitForLoading();
         cy.contains(PoliciesPageLocators.issueRequestsTab).should('exist');
         cy.get('.preloader-image').should('not.exist');
@@ -286,23 +286,23 @@ export class PoliciesPage {
     }
 
     createTag(policyName, name) {
-        cy.contains("td", policyName).siblings().find(PoliciesPageLocators.tagsExplorer).click();
+        cy.contains('td', policyName).siblings().find(PoliciesPageLocators.tagsExplorer).click();
         Checks.waitForLoading();
         cy.get('body').then((body) => {
             if (body.find(PoliciesPageLocators.createTagButton).length == 1)
-                cy.get(PoliciesPageLocators.createTagButton).click();
+                {cy.get(PoliciesPageLocators.createTagButton).click();}
         })
         cy.get(CommonElements.dialogWindow).last().find(PoliciesPageLocators.inputName).type(name);
         cy.get(CommonElements.dialogWindow).last().contains(PoliciesPageLocators.createButton).click();
         cy.get('body').then((body) => {
             if (body.find(PoliciesPageLocators.closeButton).length == 1)
-                cy.get(PoliciesPageLocators.closeButton).click();
+                {cy.get(PoliciesPageLocators.closeButton).click();}
         })
         Checks.waitForLoading();
     }
 
     deleteTag(policyName, name) {
-        cy.contains("td", policyName).siblings().find(PoliciesPageLocators.tagsExplorer).click();
+        cy.contains('td', policyName).siblings().find(PoliciesPageLocators.tagsExplorer).click();
         Checks.waitForLoading();
         cy.get(CommonElements.dialogWindow).contains(name).click();
         cy.get(PoliciesPageLocators.deleteTagIcon).click();
@@ -312,22 +312,22 @@ export class PoliciesPage {
 
     addProject() {
         cy.contains(PoliciesPageLocators.projectPipelineTab).click();
-        this.approve("validationLabel");
+        this.approve('validationLabel');
     }
 
     approveReport() {
         Checks.waitForLoading();
         cy.get("p:contains('Monitoring reports')").click();
         Checks.waitForElement(PoliciesPageLocators.approveButton);
-        this.approve("minted");
+        this.approve('minted');
     }
 
     editPolicyProperty(property, name) {
         cy.wait(500)
-        if (property == "Description")
-            cy.contains("td.cellName", new RegExp("^" + property + "$", "g")).parent().find(CommonElements.textarea).clear().type(name);
+        if (property == 'Description')
+            {cy.contains('td.cellName', new RegExp('^' + property + '$', 'g')).parent().find(CommonElements.textarea).clear().type(name);}
         else
-            cy.contains("td.cellName", new RegExp("^" + property + "$", "g")).parent().find(CommonElements.Input).clear().type(name);
+            {cy.contains('td.cellName', new RegExp('^' + property + '$', 'g')).parent().find(CommonElements.Input).clear().type(name);}
     }
 
     savePolicyEditing() {
@@ -335,15 +335,15 @@ export class PoliciesPage {
     }
 
     verifyPolicyProperty(name, property, value) {
-        if (property == "Description")
-            cy.contains("td", name).siblings(".cell-description").should('have.text', value + " ");
+        if (property == 'Description')
+            {cy.contains('td', name).siblings('.cell-description').should('have.text', value + ' ');}
     }
 
     checkFieldsInEditPolicyIsNotEditable() {
-        cy.contains("td", new RegExp("^Name$", "g")).parent().find(CommonElements.Input).should('have.attr', 'readonly', 'readonly');
-        cy.contains("td", new RegExp("^Policy Tag$", "g")).parent().find(CommonElements.Input).should('have.attr', 'readonly', 'readonly');
-        cy.contains("td", new RegExp("^Topic Description$", "g")).parent().find(CommonElements.Input).should('have.attr', 'readonly', 'readonly');
-        cy.contains("td", new RegExp("^Description$", "g")).parent().find(CommonElements.textarea).should('have.attr', 'readonly', 'readonly');
+        cy.contains('td', new RegExp('^Name$', 'g')).parent().find(CommonElements.Input).should('have.attr', 'readonly', 'readonly');
+        cy.contains('td', new RegExp('^Policy Tag$', 'g')).parent().find(CommonElements.Input).should('have.attr', 'readonly', 'readonly');
+        cy.contains('td', new RegExp('^Topic Description$', 'g')).parent().find(CommonElements.Input).should('have.attr', 'readonly', 'readonly');
+        cy.contains('td', new RegExp('^Description$', 'g')).parent().find(CommonElements.textarea).should('have.attr', 'readonly', 'readonly');
     }
 
     addNewBlock(name) {
@@ -351,12 +351,12 @@ export class PoliciesPage {
     }
 
     checkBlockExists(name) {
-        cy.get(PoliciesPageLocators.blockItemName(name)).should("be.visible");
+        cy.get(PoliciesPageLocators.blockItemName(name)).should('be.visible');
     }
 
     editBlockName(name, newName) {
         this.clickOnBlock(name);
-        this.editPolicyProperty("Tag", newName);
+        this.editPolicyProperty('Tag', newName);
     }
 
     clickOnBlock(name) {
@@ -369,7 +369,7 @@ export class PoliciesPage {
 
     checkBlockNotExist(name) {
         cy.wait(10000)
-        cy.get(PoliciesPageLocators.blockItemName(name)).should("not.exist");
+        cy.get(PoliciesPageLocators.blockItemName(name)).should('not.exist');
     }
 
     clickOnDeleteBlockButton() {
@@ -398,13 +398,13 @@ export class PoliciesPage {
     }
 
     verifyIfSearchResultIsEmpty() {
-        cy.get(PoliciesPageLocators.componentsContainer).as("fieldName");
-        cy.get("@fieldName").get(".components-group-body").as("fieldNameChild");
-        cy.get("@fieldNameChild").should("be.empty");
+        cy.get(PoliciesPageLocators.componentsContainer).as('fieldName');
+        cy.get('@fieldName').get('.components-group-body').as('fieldNameChild');
+        cy.get('@fieldNameChild').should('be.empty');
     }
 
     clickOnButtonByText(text) {
-        cy.contains(new RegExp("^" + text + "$", "g")).click({ force: true });
+        cy.contains(new RegExp('^' + text + '$', 'g')).click({ force: true });
     }
 
     verifyIfTextExists(text) {
@@ -420,11 +420,11 @@ export class PoliciesPage {
     }
 
     undo() {
-        cy.get(PoliciesPageLocators.undo).should('have.attr', "storage-active", "true").click();
+        cy.get(PoliciesPageLocators.undo).should('have.attr', 'storage-active', 'true').click();
     }
 
     redo() {
-        cy.get(PoliciesPageLocators.redo).should('have.attr', "storage-active", "true").click();
+        cy.get(PoliciesPageLocators.redo).should('have.attr', 'storage-active', 'true').click();
     }
 
     verifyIfValidationIsSuccessful() {
@@ -444,8 +444,8 @@ export class PoliciesPage {
         Checks.waitForLoading();
     }
 
-    openDryRunUser(user = "1") {
-        if (user == "Administrator") {
+    openDryRunUser(user = '1') {
+        if (user == 'Administrator') {
             cy.contains('Users').realClick();
             cy.get(CommonElements.Loading).should('not.exist');
             cy.contains(user).click();
@@ -505,7 +505,7 @@ export class PoliciesPage {
 
     validateTypesRequired() {
         this.createDryRunUser();
-        this.openDryRunUser("2");
+        this.openDryRunUser('2');
         this.registerAs('RoleR');
         //number
         cy.get('input').eq(0).should('have.class', 'ng-invalid');
@@ -541,7 +541,7 @@ export class PoliciesPage {
 
     validateTypesMultiplie() {
         this.createDryRunUser();
-        this.openDryRunUser("3");
+        this.openDryRunUser('3');
         this.registerAs('RoleMD');
         //number
         cy.get('button.guardian-button-secondary').eq(1).click();
@@ -582,7 +582,7 @@ export class PoliciesPage {
 
     validateTypesMultiplieRequired() {
         this.createDryRunUser();
-        this.openDryRunUser("4");
+        this.openDryRunUser('4');
         this.registerAs('RoleMR');
         //number
         cy.get('input').eq(0).should('have.class', 'ng-invalid');
@@ -618,21 +618,11 @@ export class PoliciesPage {
     }
 
     approveProject() {
-        cy.contains("Projects").should('exist');
+        cy.contains('Projects').should('exist');
         cy.get('.preloader-image').should('not.exist');
-        cy.contains("Projects").click();
+        cy.contains('Projects').click();
         this.approve();
     }
-
-
-
-
-
-
-
-
-
-
 
     clickOnDivByText(text) {
         // cy.contains('div.tab-header', text).click({ force: true });

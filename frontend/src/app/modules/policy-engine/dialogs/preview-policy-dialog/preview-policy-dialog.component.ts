@@ -5,6 +5,8 @@ import { ToolsService } from 'src/app/services/tools.service';
 import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { SearchToolDialog } from '../search-tool-dialog/search-tool-dialog.component';
+import { SchemaTemplatesService } from 'src/app/services/schema-templates.service';
+import { SearchSchemaTemplateDialog } from '../search-schema-template-dialog/search-schema-template-dialog.component';
 /**
  * Dialog for export/import policy.
  */
@@ -40,6 +42,13 @@ export class PreviewPolicyDialog {
         [messageId: string]: '' | 'load' | 'valid' | 'invalid'
     } = {};
     public validTools: boolean = true;
+    public schemaTemplate: any;
+    public schemaTemplateSnapshot: any;
+    public schemaTemplateMessageId: string = '';
+    public selectedSchemaTemplate: any = null;
+    public detachSchemaTemplate: boolean = false;
+    public schemaTemplateStatus: '' | 'load' | 'local' | 'network' | 'invalid' = '';
+    public validSchemaTemplate: boolean = true;
     public importRecords: boolean = false;
     public canImportRecords: boolean = false;
     private _destroy$ = new Subject<void>();
@@ -59,6 +68,9 @@ export class PreviewPolicyDialog {
         if (!this.validTools) {
             return true;
         }
+        if (!this.validSchemaTemplate) {
+            return true;
+        }
         if (this.mode === 'version') {
             if (!this.versionOfTopicId) {
                 return true;
@@ -70,6 +82,7 @@ export class PreviewPolicyDialog {
     constructor(
         public ref: DynamicDialogRef,
         private toolsService: ToolsService,
+        private schemaTemplatesService: SchemaTemplatesService,
         private dialogService: DialogService,
         public config: DynamicDialogConfig
     ) {
@@ -115,6 +128,15 @@ export class PreviewPolicyDialog {
                 .join(', ');
 
             this.toolConfigs = importFile.tools || [];
+            this.schemaTemplate = this.policy.schemaTemplate;
+            this.schemaTemplateSnapshot = importFile.schemaTemplateSnapshot;
+            if (this.schemaTemplate) {
+                this.schemaTemplateMessageId = this.schemaTemplate.templateMessageId || '';
+                this.validSchemaTemplate = false;
+                if (this.schemaTemplateMessageId) {
+                    this.checkSchemaTemplate(this.schemaTemplateMessageId);
+                }
+            }
             this.canImportRecords = !!importFile.withRecords;
             for (const toolConfigs of this.toolConfigs) {
                 this.toolForm.addControl(
@@ -226,6 +248,53 @@ export class PreviewPolicyDialog {
         }
     }
 
+    public onSchemaTemplateMessageChange(event: any): void {
+        const value = event.target.value;
+        this.schemaTemplateMessageId = value;
+        this.selectedSchemaTemplate = null;
+        this.checkSchemaTemplate(value);
+    }
+
+    private checkSchemaTemplate(messageId: string): void {
+        if (!this.schemaTemplate || this.detachSchemaTemplate) {
+            this.validSchemaTemplate = true;
+            return;
+        }
+        if (typeof messageId !== 'string' || !(/^[0-9]{10}\.[0-9]{9}$/.test(messageId))) {
+            this.schemaTemplateStatus = 'invalid';
+            this.validSchemaTemplate = false;
+            return;
+        }
+        this.schemaTemplateStatus = 'load';
+        this.validSchemaTemplate = false;
+        this.schemaTemplatesService
+            .checkMessage(messageId)
+            .pipe(takeUntil(this._destroy$))
+            .subscribe((result) => {
+                this.schemaTemplateStatus = result?.status === 'local'
+                    ? 'local'
+                    : result?.status === 'network'
+                        ? 'network'
+                        : 'invalid';
+                this.validSchemaTemplate = this.schemaTemplateStatus === 'local' || this.schemaTemplateStatus === 'network';
+            }, () => {
+                this.schemaTemplateStatus = 'invalid';
+                this.validSchemaTemplate = false;
+            });
+    }
+
+    public onDetachSchemaTemplateChange(): void {
+        if (this.detachSchemaTemplate) {
+            this.validSchemaTemplate = true;
+            return;
+        }
+        if (this.selectedSchemaTemplate) {
+            this.validSchemaTemplate = true;
+            return;
+        }
+        this.checkSchemaTemplate(this.schemaTemplateMessageId);
+    }
+
     ngOnInit() {
         this.loading = false;
     }
@@ -246,6 +315,7 @@ export class PreviewPolicyDialog {
         this.ref.close({
             versionOfTopicId: this.versionOfTopicId,
             tools: this.toolForm?.value,
+            schemaTemplate: this.getSchemaTemplateMetadata(),
             demo: this.mode === 'demo',
             importRecords: this.canImportRecords ? this.importRecords : false,
             originalTracking: this.originalTracking
@@ -256,6 +326,7 @@ export class PreviewPolicyDialog {
         this.ref.close({
             messageId,
             tools: this.toolForm?.value,
+            schemaTemplate: this.getSchemaTemplateMetadata(),
         });
     }
 
@@ -282,6 +353,42 @@ export class PreviewPolicyDialog {
                 this.checkTool(toolConfig.messageId, result);
             }
         });
+    }
+
+    public onSchemaTemplateSearch(): void {
+        const dialogRef = this.dialogService.open(SearchSchemaTemplateDialog, {
+            showHeader: false,
+            width: '90%',
+            styleClass: 'guardian-dialog',
+            data: {
+                name: this.schemaTemplate?.templateName || ''
+            },
+        })!;
+        dialogRef.onClose.subscribe((result: any) => {
+            if (result) {
+                this.selectedSchemaTemplate = result;
+                this.schemaTemplateMessageId = result.messageId || '';
+                this.schemaTemplateStatus = 'local';
+                this.validSchemaTemplate = true;
+            }
+        });
+    }
+
+    private getSchemaTemplateMetadata(): any {
+        if (!this.schemaTemplate) {
+            return undefined;
+        }
+        if (this.detachSchemaTemplate) {
+            return { detach: true };
+        }
+        if (this.selectedSchemaTemplate?.id) {
+            return {
+                templateId: this.selectedSchemaTemplate.id
+            };
+        }
+        return {
+            templateMessageId: this.schemaTemplateMessageId
+        };
     }
 
     public enforceMask(messageId: string, event: any): void {

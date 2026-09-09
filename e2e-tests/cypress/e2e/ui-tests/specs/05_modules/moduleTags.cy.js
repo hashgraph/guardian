@@ -1,14 +1,14 @@
-import { ModulesPage } from "../../pages/modulesPage";
+import { ModulesPage } from '../../pages/modulesPage';
 const modulesPage = new ModulesPage();
 
-import { HomePage } from "../../pages/homePage";
+import { HomePage } from '../../pages/homePage';
 const homePage = new HomePage();
 
-context("Workflow Module Tags", { tags: ['ui'] }, () => {
+context('Workflow Module Tags', { tags: ['ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
-    const moduleName = "UIModule";
-    const tagName = "tagTestName";
+    const moduleName = 'UIModule';
+    const tagName = 'tagTestName';
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
@@ -17,11 +17,11 @@ context("Workflow Module Tags", { tags: ['ui'] }, () => {
         modulesPage.openModulesTab();
     })
 
-    it("add module tag", () => {
+    it('add module tag', () => {
         modulesPage.addTag(moduleName, tagName);
     });
 
-    it("delete module tag", () => {
+    it('delete module tag', () => {
         modulesPage.deleteTag(moduleName, tagName);
     });
 });

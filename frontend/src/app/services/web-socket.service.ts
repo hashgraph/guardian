@@ -291,7 +291,7 @@ export class WebSocketService {
                 }
                 case MessageAPI.ERROR_EVENT: {
                     if (!data.blockType.includes('401')) {
-                        this.toastService.error(data.message, data.blockType);
+                        this.toastService.error(data.message, data.blockType, { blockErrorData: data.errorData });
                     }
                     break;
                 }

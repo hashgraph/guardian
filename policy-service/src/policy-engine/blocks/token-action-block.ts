@@ -8,9 +8,10 @@ import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyUser } from '../policy-user.js';
 import { BlockActionError } from '../errors/index.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
-import { LocationType } from '@guardian/interfaces';
+import { LocationType, OrgRolePermission } from '@guardian/interfaces';
 import { Token } from '@guardian/common';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
+import { checkOrgTokenPermission } from '../helpers/org-utils.js';
 
 const IDEMPOTENT_ERROR_MAP: Partial<Record<string, string[]>> = {
     grantKyc: ['Token already granted kyc'],
@@ -151,6 +152,7 @@ export class TokenActionBlock {
 
         switch (options.action) {
             case 'associate': {
+                await checkOrgTokenPermission(ref, event.user, relayerAccount, OrgRolePermission.TOKEN_ASSOCIATE, userId);
                 await PolicyActionsUtils.associateToken({
                     ref,
                     token,
@@ -161,6 +163,7 @@ export class TokenActionBlock {
                 break;
             }
             case 'dissociate': {
+                await checkOrgTokenPermission(ref, event.user, relayerAccount, OrgRolePermission.TOKEN_DISSOCIATE, userId);
                 await PolicyActionsUtils.dissociateToken({
                     ref,
                     token,

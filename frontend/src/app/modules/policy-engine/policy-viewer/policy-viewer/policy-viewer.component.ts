@@ -197,7 +197,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         this.subscription.add(
             this.route.queryParams.subscribe((queryParams) => {
                 if (queryParams.tab) {
-                    this.activeTabIndex = queryParams.tab;
+                    this.activeTabIndex = Number(queryParams.tab);
                 }
 
                 this.loadPolicy();

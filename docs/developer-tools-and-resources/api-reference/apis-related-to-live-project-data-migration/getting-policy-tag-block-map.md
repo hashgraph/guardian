@@ -1,0 +1,5 @@
+# Getting Policy Tag Block Map
+
+{% openapi src="../../../.gitbook/assets/swagger (1) (1) (1) (1) (1).yaml" path="/policies/{policyId}/tag-block-map" method="get" %}
+[swagger (1) (1) (1) (1) (1).yaml](<../../../.gitbook/assets/swagger (1) (1) (1) (1) (1).yaml>)
+{% endopenapi %}

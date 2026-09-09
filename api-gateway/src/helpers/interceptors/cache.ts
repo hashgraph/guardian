@@ -48,7 +48,7 @@ export class CacheInterceptor implements NestInterceptor {
         const { url: route } = request;
 
         const [cacheKey] = getCacheKey([route], user, CACHE_PREFIXES.CACHE);
-        const [cacheTag] = getCacheKey([route.split('?')[0]], user);
+        const [cacheTag] = getCacheKey([route], user);
 
         return of(null).pipe(
             switchMap(async () => {

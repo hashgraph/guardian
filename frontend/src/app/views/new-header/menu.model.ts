@@ -34,6 +34,10 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
                 routerLink: '/schema-rules'
             },
             {
+                title: 'Schema Templates',
+                routerLink: '/schema-templates'
+            },
+            {
                 title: 'Artifacts',
                 routerLink: '/artifacts'
             },
@@ -58,11 +62,11 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
         active: false,
         childItems: [
             {
-                title: 'Manage Tokens',
+                title: 'Tokens',
                 routerLink: '/tokens'
             },
             {
-                title: 'Retirement Contracts',
+                title: 'Contracts',
                 routerLink: '/contracts'
             },
             {
@@ -79,7 +83,7 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
         section: 'Administration',
         childItems: [
             {
-                title: 'Manage Roles',
+                title: 'Roles',
                 routerLink: '/roles'
             },
             {
@@ -87,12 +91,12 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
                 routerLink: '/user-management'
             },
             {
-                title: 'Application Branding',
-                routerLink: '/branding'
+                title: 'Remote Policy Requests',
+                routerLink: '/external-policies'
             },
             {
-                title: 'Remote Policy Request',
-                routerLink: '/external-policies'
+                title: 'Services Status',
+                routerLink: '/admin/status'
             },
             {
                 title: 'Worker Tasks',
@@ -103,12 +107,12 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
                 routerLink: '/admin/logs'
             },
             {
-                title: 'Settings',
-                routerLink: '/admin/settings'
+                title: 'Application Branding',
+                routerLink: '/branding'
             },
             {
-                title: 'Status',
-                routerLink: '/admin/status'
+                title: 'Settings',
+                routerLink: '/admin/settings'
             },
         ],
     },
@@ -141,7 +145,11 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
         user.POLICIES_POLICY_READ ||
         user.POLICIES_POLICY_EXECUTE ||
         user.POLICIES_POLICY_MANAGE ||
-        user.TOOLS_TOOL_READ
+        user.TOOLS_TOOL_READ ||
+        // without this a template-only role opens no Manage section at all, so gating
+        // the item below on TEMPLATES_TEMPLATE_READ would hide it from the very users
+        // who can use it
+        user.TEMPLATES_TEMPLATE_READ
     ) {
         const childItems: any = [];
         const canReadPolicies = user.POLICIES_POLICY_READ ||
@@ -183,6 +191,13 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
             childItems.push({
                 title: 'Schema Rules',
                 routerLink: '/schema-rules'
+            });
+        }
+        // gated on the permission the ROUTE requires, not on schema-read
+        if (user.TEMPLATES_TEMPLATE_READ) {
+            childItems.push({
+                title: 'Schema Templates',
+                routerLink: '/schema-templates'
             });
         }
         if (user.ARTIFACTS_FILE_READ) {
@@ -251,7 +266,7 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
                 user.TOKENS_TOKEN_MANAGE
             ) {
                 childItems.push({
-                    title: 'Manage Tokens',
+                    title: 'Tokens',
                     routerLink: '/tokens'
                 });
             }
@@ -270,7 +285,7 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
                 user.CONTRACTS_CONTRACT_MANAGE
             ) {
                 childItems.push({
-                    title: 'Retirement Contracts',
+                    title: 'Contracts',
                     routerLink: '/contracts'
                 });
             }
@@ -301,7 +316,7 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
             user.PERMISSIONS_ROLE_DELETE
         ) {
             childItems.push({
-                title: 'Manage Roles',
+                title: 'Roles',
                 routerLink: '/roles'
             });
         }
@@ -316,15 +331,9 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
             });
         }
 
-        if (user.BRANDING_CONFIG_UPDATE) {
-            childItems.push({
-                title: 'Application Branding',
-                routerLink: '/branding'
-            });
-        }
         if (user.POLICIES_EXTERNAL_POLICY_READ) {
             childItems.push({
-                title: 'Remote Policy Request',
+                title: 'Remote Policy Requests',
                 routerLink: '/external-policies'
             });
         }
@@ -338,6 +347,12 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
             childItems.push({
                 title: 'Logs',
                 routerLink: '/admin/logs'
+            });
+        }
+        if (user.BRANDING_CONFIG_UPDATE) {
+            childItems.push({
+                title: 'Application Branding',
+                routerLink: '/branding'
             });
         }
         if (user.SETTINGS_SETTINGS_READ) {

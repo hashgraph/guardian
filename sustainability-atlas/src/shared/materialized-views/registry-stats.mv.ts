@@ -1,0 +1,125 @@
+/**
+ * Materialized view: mv_registry_stats
+ *
+ * Aggregates per-registry counts of policies, projects, and issuances.
+ * Each network lives in its own database, so network is NOT part of the key.
+ * Keyed by registryDid.
+ *
+ * Refreshed periodically by MvRefreshProcessor.
+ */
+export const MV_REGISTRY_STATS_NAME = 'mv_registry_stats';
+
+export const MV_REGISTRY_STATS_CREATE_SQL = `
+    CREATE MATERIALIZED VIEW IF NOT EXISTS ${MV_REGISTRY_STATS_NAME} AS
+    WITH canonical AS (
+        -- The canonical (newest) REGISTRY row per DID. Precomputed so the list
+        -- endpoints test canonicality with an equality check against a column
+        -- they already join, instead of deduplicating every REGISTRY row per request.
+        SELECT DISTINCT ON ("registryDid") "registryDid", id
+        FROM business_view
+        WHERE "viewType" = 'REGISTRY' AND "registryDid" IS NOT NULL
+        ORDER BY "registryDid", "sourceTimestamp"::numeric DESC, id DESC
+    )
+    SELECT
+        bv."registryDid",
+        MAX(c.id) AS canonical_id,
+        COUNT(*) FILTER (WHERE bv."viewType" = 'METHODOLOGY') AS policy_count,
+        COUNT(*) FILTER (WHERE bv."viewType" = 'PROJECT')     AS project_count,
+        -- Issuance count = number of mint events per token (matches the
+        -- project/methodology tables), not the number of distinct tokens minted.
+        --
+        -- The bv.id = (SELECT ... LIMIT 1) guard counts each tokenId ONCE. business_view holds one row
+        -- per HCS message, so a republished token has several CREDIT rows; without the guard this SUM added
+        -- that token's entire mint count once per duplicate row, multiplying the result (TolamEarth reported
+        -- 209 issuances against the 39 the Issuances page counts). Same fan-out, and the same fix, as the
+        -- METHODOLOGY policy-version dedup in the LATERAL join below; the canonical-row selection also
+        -- mirrors PgCreditRepository's MINT_FROM CREDIT lookup, which picks the newest row by "createdAt".
+        COALESCE(SUM(
+            CASE WHEN bv."viewType" = 'CREDIT'
+                  AND bv.id = (
+                      SELECT b2.id
+                      FROM business_view b2
+                      WHERE b2."viewType" = 'CREDIT'
+                        AND b2."businessData"->>'tokenId' = bv."businessData"->>'tokenId'
+                      ORDER BY b2."createdAt" DESC NULLS LAST, b2.id DESC
+                      LIMIT 1
+                  )
+            THEN (
+                SELECT COUNT(*) FROM message m_mint
+                WHERE m_mint.type = 'VC-Document'
+                  AND m_mint.documents IS NOT NULL
+                  AND m_mint.documents->'credentialSubject'->0->>'type' LIKE 'MintToken%'
+                  AND m_mint.documents->'credentialSubject'->0->>'tokenId' = bv."businessData"->>'tokenId'
+            ) ELSE 0 END
+        ), 0) AS issuance_count,
+        0::bigint AS user_count,
+        -- Issued/retired volume per registry, summed from mv_project_stats,
+        -- which must therefore be created first (see ./index.ts ordering).
+        COALESCE((
+            SELECT SUM(mps.total_issued)
+            FROM business_view proj
+            JOIN mv_project_stats mps ON mps."projectKey" = proj."projectKey"
+            WHERE proj."viewType" = 'PROJECT'
+              AND proj."registryDid" = bv."registryDid"
+        ), 0)::bigint AS total_issued,
+        COALESCE((
+            SELECT SUM(mps.total_retired)
+            FROM business_view proj
+            JOIN mv_project_stats mps ON mps."projectKey" = proj."projectKey"
+            WHERE proj."viewType" = 'PROJECT'
+              AND proj."registryDid" = bv."registryDid"
+        ), 0)::bigint AS total_retired,
+        MAX(bv."lastUpdate") AS last_update,
+        -- Decode-status counts: grouped per registry across all METHODOLOGY rows.
+        -- methodology_decode_success_count = number of methodologies under this registry
+        --   whose ZIP was decoded successfully.
+        COUNT(*) FILTER (
+            WHERE bv."viewType" = 'METHODOLOGY'
+              AND p."decodeStatus" = 'decoded'
+        ) AS methodology_decode_success_count,
+        COUNT(*) FILTER (
+            WHERE bv."viewType" = 'METHODOLOGY'
+              AND p."decodeStatus" = 'failed'
+        ) AS methodology_decode_failed_count,
+        COUNT(*) FILTER (
+            WHERE bv."viewType" = 'METHODOLOGY'
+              AND p."decodeStatus" = 'pending'
+        ) AS methodology_decode_pending_count,
+        -- methodologies with no policy row yet (never attempted)
+        COUNT(*) FILTER (
+            WHERE bv."viewType" = 'METHODOLOGY'
+              AND p."decodeStatus" IS NULL
+        ) AS methodology_decode_unknown_count
+    FROM business_view bv
+    -- LATERAL join with LIMIT 1 so a topic with multiple policy versions
+    -- contributes a single row per methodology. Without this the plain join
+    -- multiplied each METHODOLOGY by its policy-version count, inflating
+    -- policy_count and the decode-status buckets (e.g. Gold Standard showed
+    -- 4 methodologies on the registry card vs 2 on the methodologies page).
+    -- Selection rule mirrors PgPolicySchemaRepository.findDecoded: prefer
+    -- the decoded row, then the most recently updated one.
+    LEFT JOIN LATERAL (
+        SELECT pp."decodeStatus"
+        FROM policy pp
+        WHERE pp."policyTopicId" = bv."businessData"->>'topicId'
+        ORDER BY (pp."decodeStatus" = 'decoded') DESC NULLS LAST,
+                 pp."updatedAt" DESC NULLS LAST
+        LIMIT 1
+    ) p ON bv."viewType" = 'METHODOLOGY'
+    LEFT JOIN canonical c ON c."registryDid" = bv."registryDid"
+    WHERE bv."registryDid" IS NOT NULL
+      -- REGISTRY is included so every registryDid gets a row (and therefore a
+      -- canonical_id), including registries that have produced nothing yet.
+      -- The counts below are all viewType-FILTERed, so they are unaffected;
+      -- such rows still score 0 and are still excluded by hideEmpty.
+      AND bv."viewType" IN ('REGISTRY', 'METHODOLOGY', 'PROJECT', 'CREDIT')
+    GROUP BY bv."registryDid";
+`;
+
+// Unique index required for REFRESH MATERIALIZED VIEW CONCURRENTLY
+export const MV_REGISTRY_STATS_INDEX_SQL = `
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_${MV_REGISTRY_STATS_NAME}_registry_did
+    ON ${MV_REGISTRY_STATS_NAME} ("registryDid");
+    CREATE INDEX IF NOT EXISTS idx_${MV_REGISTRY_STATS_NAME}_canonical_id
+    ON ${MV_REGISTRY_STATS_NAME} (canonical_id);
+`;

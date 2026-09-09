@@ -61,6 +61,7 @@ export class TaskManager {
         [TaskAction.CREATE_POLICY, 8],
         [TaskAction.WIZARD_CREATE_POLICY, 8],
         [TaskAction.PUBLISH_POLICY, 13],
+        [TaskAction.DRY_RUN_POLICY, 6],
         [TaskAction.IMPORT_POLICY_FILE, 15],
         [TaskAction.IMPORT_POLICY_MESSAGE, 17],
         [TaskAction.PUBLISH_SCHEMA, 8],
@@ -81,6 +82,13 @@ export class TaskManager {
         [TaskAction.DELETE_POLICIES, 3],
         [TaskAction.CLONE_POLICY, 5],
         [TaskAction.CREATE_TOOL, 8],
+        [TaskAction.CREATE_SCHEMA_TEMPLATE, 3],
+        [TaskAction.DELETE_SCHEMA_TEMPLATE, 3],
+        [TaskAction.IMPORT_SCHEMA_TEMPLATE_FILE, 3],
+        [TaskAction.IMPORT_SCHEMA_TEMPLATE_MESSAGE, 4],
+        [TaskAction.APPLY_SCHEMA_TEMPLATE, 3],
+        [TaskAction.DETACH_SCHEMA_TEMPLATE, 3],
+        [TaskAction.UPDATE_APPLIED_SCHEMA_TEMPLATE, 3],
         [TaskAction.IMPORT_TOOL_FILE, 9],
         [TaskAction.IMPORT_TOOL_MESSAGE, 11],
         [TaskAction.MIGRATE_DATA, 4],
@@ -267,8 +275,16 @@ export class TaskManager {
             return;
         }
 
+        // A task can be completed twice (a result followed by an error, or the
+        // other way around): the callback has to run once, otherwise the second
+        // run would clear the pending flag while the first one is still going.
+        this.callbacks.delete(task.taskId);
+        task.callbackPending = true;
         callback(task)
-            .finally(() => this.cleanupAfterCallback(taskId));
+            .finally(() => {
+                task.callbackPending = false;
+                this.cleanupAfterCallback(taskId);
+            });
     }
 
     /**
@@ -330,7 +346,20 @@ export class TaskManager {
     ): Task {
         const task = this.tasks[taskId];
         if (task && task.userId === userId) {
-            return this.tasks[taskId];
+            if (task.callbackPending) {
+                // The completion callback (e.g. cache invalidation) is still
+                // running: hide the result until it is done, otherwise a client
+                // polling this endpoint can act on a state the gateway has not
+                // caught up with yet.
+                const pending: Task = Object.assign(
+                    Object.create(Object.getPrototypeOf(task)),
+                    task
+                );
+                pending.result = undefined;
+                pending.error = undefined;
+                return pending;
+            }
+            return task;
         } else if (skipIfNotFound) {
             return;
         } else {
@@ -371,9 +400,9 @@ export class TaskManager {
             taskId: task.taskId,
             action: task.action,
             expectation: task.expectation,
-            completed: task.result !== null,
-            failed: task.error !== null,
-            error: task.error
+            completed: !task.callbackPending && task.result !== null,
+            failed: !task.callbackPending && task.error !== null,
+            error: !task.callbackPending && task.error
                 ? { message: task.error.message ?? 'Task failed' }
                 : null,
         };
@@ -468,6 +497,10 @@ class Task {
      * Info of task
      */
     public info: any;
+    /**
+     * Completion callback is still running
+     */
+    public callbackPending: boolean = false;
 
     constructor(
         public action: TaskAction | string,

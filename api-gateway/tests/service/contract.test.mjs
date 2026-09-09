@@ -85,7 +85,7 @@ describe('ContractsApi controller logic', function () {
     it('getContracts sets count header from tuple', async () => {
         const { api } = makeApi(Api);
         const res = makeRes();
-        await api.getContracts(makeUser(), res, 'wipe', 0, 10);
+        await api.getContracts(makeUser(), makeReq(), res, 'wipe', 0, 10);
         assert.equal(res.headers['X-Total-Count'], 2);
     });
 
@@ -93,7 +93,7 @@ describe('ContractsApi controller logic', function () {
         let seen;
         stub.getContracts = async (owner, type, pi, ps) => { seen = { type, pi, ps, owner }; return [[], 0]; };
         const { api } = makeApi(Api);
-        await api.getContracts(makeUser(), makeRes(), 'retire', 2, 25);
+        await api.getContracts(makeUser(), makeReq(), makeRes(), 'retire', 2, 25);
         assert.equal(seen.type, 'retire');
         assert.equal(seen.pi, 2);
         assert.ok(seen.owner instanceof FakeEntityOwner);
@@ -120,6 +120,36 @@ describe('ContractsApi controller logic', function () {
         await api.importContract(makeUser(), { contractId: 'C1', description: 'd' });
         assert.deepEqual(seen, { contractId: 'C1', desc: 'd' });
     });
+
+    // The listing is read both with and without a trailing slash and under any combination of
+    // query parameters. A tag covers a whole path, so a mutation that drops only the path its own
+    // request carried leaves the other spelling serving pre-mutation data for the rest of the TTL.
+    for (const [name, invoke] of [
+        ['createContract', (api) => api.createContract(makeUser(), { description: 'd', type: 'wipe' }, makeReq())],
+        ['createContractV2', (api) => api.createContractV2(makeUser(), { description: 'd', type: 'wipe' }, makeReq())],
+        ['importContract', (api) => api.importContract(makeUser(), { contractId: 'C1', description: 'd' })],
+        ['removeContract', (api) => api.removeContract(makeUser(), 'c1')],
+    ]) {
+        it(`${name} invalidates the contract listing under both spellings of the path`, async () => {
+            const { api, cache } = makeApi(Api);
+            await invoke(api);
+            assert.deepEqual(cache.calls.invalidate, ['k:/contracts|/contracts/']);
+        });
+
+        // Invalidating first leaves a window in which a concurrent read repopulates the cache from
+        // the state the mutation is about to replace.
+        it(`${name} invalidates only after the mutation has succeeded`, async () => {
+            const order = [];
+            const { api, cache } = makeApi(Api);
+            cache.invalidate = async (key) => { order.push('invalidate'); cache.calls.invalidate.push(key); };
+            for (const method of ['createContract', 'createContractV2', 'importContract', 'removeContract']) {
+                const original = stub[method];
+                stub[method] = async (...args) => { order.push('mutate'); return original(...args); };
+            }
+            await invoke(api);
+            assert.deepEqual(order, ['mutate', 'invalidate']);
+        });
+    }
 
     it('contractPermissions delegates', async () => {
         const { api } = makeApi(Api);

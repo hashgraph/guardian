@@ -1,22 +1,24 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Schemas", { tags: ['schema', 'thirdPool', 'all'] }, () => {
+context('Schemas', { tags: ['schema', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
-    it("Import new schema from a file", { tags: ['smoke'] }, () => {
+    it('Import new schema from a file', { tags: ['smoke'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.Schemas,
+                // a single entry is enough here, and the full schema listing grows with every run
+                qs: { pageIndex: 0, pageSize: 1 },
                 headers: {
                     authorization,
                 },
             }).then((response) => {
                 const topicUid = response.body[0].topicId;
 
-                cy.fixture("exportedSchema.schema", "binary")
+                cy.fixture('exportedSchema.schema', 'binary')
                     .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
                     .then((file) => {
                         cy.request({
@@ -25,15 +27,15 @@ context("Schemas", { tags: ['schema', 'thirdPool', 'all'] }, () => {
                                 API.ApiServer +
                                 API.Schemas +
                                 topicUid +
-                                "/import/file",
+                                '/import/file',
                             body: file,
                             headers: {
-                                "content-type": "binary/octet-stream",
+                                'content-type': 'binary/octet-stream',
                                 authorization,
                             },
                         }).then((response) => {
                             expect(response.status).eql(STATUS_CODE.SUCCESS);
-                            expect(response.body).to.not.be.oneOf([null, ""]);
+                            expect(response.body).to.not.be.oneOf([null, '']);
                         });
                     });
             });

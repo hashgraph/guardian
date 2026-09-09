@@ -154,7 +154,7 @@ export class StatisticAssessmentViewComponent implements OnInit {
         this.formulas = [];
 
         let document: any = this.assessment?.document?.credentialSubject;
-        if (Array(document)) {
+        if (Array.isArray(document)) {
             document = document[0];
         }
         if (!document) {

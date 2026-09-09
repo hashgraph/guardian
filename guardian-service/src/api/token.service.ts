@@ -1,8 +1,9 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { ArrayMessageResponse, DatabaseServer, IAuthUser, INotificationStep, KeyType, MessageError, MessageResponse, NewNotifier, NotificationStep, PinoLogger, RunFunctionAsync, Token, TopicHelper, Users, Wallet, Workers } from '@guardian/common';
-import { GenerateUUIDv4, IOwner, IRootConfig, MessageAPI, OrderDirection, TokenType, TopicType, WorkerTaskType } from '@guardian/interfaces';
+import { GenerateUUIDv4, IOwner, IRootConfig, MessageAPI, OrderDirection, OrgRolePermission, TokenType, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { FilterObject } from '@mikro-orm/core';
 import { publishTokenTags } from '../helpers/import-helpers/index.js'
+import { getOrgTokenAccessError } from './helpers/org-token-access.js';
 
 /**
  * Create token in Hedera network
@@ -474,20 +475,24 @@ async function deleteToken(
 }
 
 /**
- * Associate/dissociate token
+ * Shared core of token association/dissociation: finds the token, resolves the acting
+ * Hedera account via the caller-supplied resolver, and dispatches the
+ * `WorkerTaskType.ASSOCIATE_TOKEN` worker task. Used by both the personal
+ * (`associateToken`) and organization (`associateOrgToken`) cores so the notifier-step
+ * shape and worker-dispatch payload are defined in exactly one place.
  * @param tokenId
- * @param did
  * @param associate
  * @param dataBaseServer
  * @param notifier
+ * @param resolveAccount - resolves the acting Hedera account id, signing key, and the
+ * user id to attribute the worker payload to. Runs between the FIND_TOKEN and ACTION steps.
  */
-async function associateToken(
+async function dispatchAssociateWorker(
     tokenId: string,
-    accountId: string | null,
-    target: IOwner,
     associate: any,
     dataBaseServer: DatabaseServer,
-    notifier: INotificationStep
+    notifier: INotificationStep,
+    resolveAccount: () => Promise<{ accountId: string, accountKey: string, payloadUserId: string }>
 ): Promise<{ tokenName: string; status: boolean }> {
     // <-- Steps
     const STEP_FIND_TOKEN = 'Find token data';
@@ -508,21 +513,7 @@ async function associateToken(
     notifier.completeStep(STEP_FIND_TOKEN);
 
     notifier.startStep(STEP_RESOLVE_ACCOUNT);
-    const users = new Users();
-    const user = await users.getUserById(target.creator, target.id);
-    if (!user) {
-        throw new Error('User not found');
-    }
-
-    const account: any = await users.getUserRelayerAccount(target.creator, accountId, target.id);
-    if (!account) {
-        throw new Error('Hedera Account not found');
-    }
-    if (account.default) {
-        account.key = await (new Wallet()).getKey(user.walletToken, KeyType.KEY, user.did);
-    } else {
-        account.key = await (new Wallet()).getKey(user.walletToken, KeyType.RELAYER_ACCOUNT, `${user.did}/${account.account}`);
-    }
+    const { accountId, accountKey, payloadUserId } = await resolveAccount();
     notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
     notifier.startStep(STEP_ACTION);
@@ -531,10 +522,10 @@ async function associateToken(
         type: WorkerTaskType.ASSOCIATE_TOKEN,
         data: {
             tokenId,
-            userID: account.account,
-            userKey: account.key,
+            userID: accountId,
+            userKey: accountKey,
             associate,
-            payload: { userId: user.id }
+            payload: { userId: payloadUserId }
         }
     }, {
         priority: 20
@@ -546,21 +537,105 @@ async function associateToken(
 }
 
 /**
- * Grant/revoke KYC
+ * Associate/dissociate token
  * @param tokenId
- * @param username
- * @param owner
- * @param grant
+ * @param did
+ * @param associate
  * @param dataBaseServer
  * @param notifier
  */
-async function grantKycToken(
-    tokenId: any,
-    username: string,
-    owner: IOwner,
-    grant: boolean,
+async function associateToken(
+    tokenId: string,
+    accountId: string | null,
+    target: IOwner,
+    associate: any,
     dataBaseServer: DatabaseServer,
     notifier: INotificationStep
+): Promise<{ tokenName: string; status: boolean }> {
+    const users = new Users();
+    return dispatchAssociateWorker(tokenId, associate, dataBaseServer, notifier, async () => {
+        const user = await users.getUserById(target.creator, target.id);
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        const account: any = await users.getUserRelayerAccount(target.creator, accountId, target.id);
+        if (!account) {
+            throw new Error('Hedera Account not found');
+        }
+        if (account.default) {
+            account.key = await (new Wallet()).getKey(user.walletToken, KeyType.KEY, user.did);
+        } else {
+            account.key = await (new Wallet()).getKey(user.walletToken, KeyType.RELAYER_ACCOUNT, `${user.did}/${account.account}`);
+        }
+        return { accountId: account.account, accountKey: account.key, payloadUserId: user.id };
+    });
+}
+
+/**
+ * Associate/dissociate a token with an Organization's Hedera wallet.
+ * Gated by the org-role permissions TOKEN_ASSOCIATE/TOKEN_DISSOCIATE (`getOrgTokenAccessError`),
+ * with an org-owner bypass. The permission check (and the org/context lookups it depends on)
+ * runs before any notifier step is started, so a rejected user or non-member never triggers
+ * a Hedera-side effect (fail closed).
+ * @param orgId
+ * @param tokenId
+ * @param associate
+ * @param actingOwner - the calling user, evaluated against the organization's membership/roles
+ * @param dataBaseServer
+ * @param notifier
+ */
+async function associateOrgToken(
+    orgId: string,
+    tokenId: string,
+    associate: any,
+    actingOwner: IOwner,
+    dataBaseServer: DatabaseServer,
+    notifier: INotificationStep
+): Promise<{ tokenName: string; status: boolean }> {
+    const users = new Users();
+
+    const ctx = await users.getOrgContextByDid(actingOwner.creator, actingOwner.id);
+    const org = await users.getOrgHederaInfo(orgId, actingOwner.id);
+    if (!org) {
+        throw new Error('Organization not found');
+    }
+    const isOwner = org.owner === actingOwner.creator;
+    const permission = associate ? OrgRolePermission.TOKEN_ASSOCIATE : OrgRolePermission.TOKEN_DISSOCIATE;
+    const permissionError = getOrgTokenAccessError(ctx, isOwner, orgId, permission);
+    if (permissionError) {
+        throw new Error(permissionError);
+    }
+    if (!org.hederaAccountId) {
+        throw new Error('Organization is not linked to an Hedera Account');
+    }
+
+    return dispatchAssociateWorker(tokenId, associate, dataBaseServer, notifier, async () => {
+        const key = await new Wallet().getKey(org.walletToken, KeyType.KEY, org.did);
+        return { accountId: org.hederaAccountId, accountKey: key, payloadUserId: actingOwner.id };
+    });
+}
+
+/**
+ * Shared grant/revoke-KYC worker dispatch used by both the user (`grantKycToken`) and
+ * organization (`grantKycOrgToken`) cores so the notifier-step discipline, KYC-key
+ * resolution, worker payload shape, and confirmation lookup stay in one place
+ * (mirrors `dispatchAssociateWorker`).
+ * @param tokenId
+ * @param grant
+ * @param owner - the caller; supplies the payer root account and the KYC key owner
+ * @param dataBaseServer
+ * @param notifier
+ * @param resolveTargetAccount - resolves the Hedera account id receiving the KYC flag and
+ * the user id to attribute the worker payload to. Runs inside the RESOLVE_ACCOUNT step.
+ */
+async function dispatchGrantKycWorker(
+    tokenId: string,
+    grant: boolean,
+    owner: IOwner,
+    dataBaseServer: DatabaseServer,
+    notifier: INotificationStep,
+    resolveTargetAccount: () => Promise<{ accountId: string, payloadUserId: string }>
 ): Promise<any> {
     // <-- Steps
     const STEP_FIND_TOKEN = 'Find token data';
@@ -582,14 +657,7 @@ async function grantKycToken(
 
     notifier.startStep(STEP_RESOLVE_ACCOUNT);
     const users = new Users();
-    const user = await users.getUser(username, owner.id);
-    if (!user) {
-        throw new Error('User not found');
-    }
-    if (!user.hederaAccountId) {
-        throw new Error('User is not linked to an Hedera Account');
-    }
-
+    const { accountId, payloadUserId } = await resolveTargetAccount();
     const root = await users.getHederaAccount(owner.creator, owner.id);
     notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
@@ -606,17 +674,17 @@ async function grantKycToken(
         data: {
             hederaAccountId: root.hederaAccountId,
             hederaAccountKey: root.hederaAccountKey,
-            userHederaAccountId: user.hederaAccountId,
+            userHederaAccountId: accountId,
             token,
             kycKey,
             grant,
-            payload: { userId: user.id }
+            payload: { userId: payloadUserId }
         }
     }, {
         priority: 20,
         attempts: 0,
-        userId: user.id.toString(),
-        interception: user.id.toString(),
+        userId: payloadUserId.toString(),
+        interception: payloadUserId.toString(),
         registerCallback: true
     });
 
@@ -627,14 +695,14 @@ async function grantKycToken(
         data: {
             userID: root.hederaAccountId,
             userKey: root.hederaAccountKey,
-            hederaAccountId: user.hederaAccountId,
-            payload: { userId: user.id }
+            hederaAccountId: accountId,
+            payload: { userId: payloadUserId }
         }
     }, {
         priority: 20,
         attempts: 0,
-        userId: user.id.toString(),
-        interception: user.id.toString(),
+        userId: payloadUserId.toString(),
+        interception: payloadUserId.toString(),
         registerCallback: true
     });
 
@@ -643,6 +711,75 @@ async function grantKycToken(
 
     notifier.complete();
     return result;
+}
+
+/**
+ * Grant/revoke KYC
+ * @param tokenId
+ * @param username
+ * @param owner
+ * @param grant
+ * @param dataBaseServer
+ * @param notifier
+ */
+async function grantKycToken(
+    tokenId: any,
+    username: string,
+    owner: IOwner,
+    grant: boolean,
+    dataBaseServer: DatabaseServer,
+    notifier: INotificationStep
+): Promise<any> {
+    const users = new Users();
+    return dispatchGrantKycWorker(tokenId, grant, owner, dataBaseServer, notifier, async () => {
+        const user = await users.getUser(username, owner.id);
+        if (!user) {
+            throw new Error('User not found');
+        }
+        if (!user.hederaAccountId) {
+            throw new Error('User is not linked to an Hedera Account');
+        }
+        return { accountId: user.hederaAccountId, payloadUserId: user.id };
+    });
+}
+
+/**
+ * Grant/revoke KYC for a token on an Organization's Hedera wallet.
+ * SR org-owner only: the KYC signature comes from the SR's TOKEN_KYC_KEY (vault),
+ * so this is a token-owner action — org-role permissions do not apply here.
+ * The ownership check runs before any notifier step, so a rejected caller never
+ * triggers a Hedera-side effect (fail closed).
+ * @param orgId
+ * @param tokenId
+ * @param grant
+ * @param owner - the calling user, must be the organization's owner (SR)
+ * @param dataBaseServer
+ * @param notifier
+ */
+async function grantKycOrgToken(
+    orgId: string,
+    tokenId: string,
+    grant: boolean,
+    owner: IOwner,
+    dataBaseServer: DatabaseServer,
+    notifier: INotificationStep
+): Promise<any> {
+    const users = new Users();
+
+    const org = await users.getOrgHederaInfo(orgId, owner.id);
+    if (!org) {
+        throw new Error('Organization not found');
+    }
+    if (org.owner !== owner.creator) {
+        throw new Error('Insufficient permissions to manage KYC for this organization');
+    }
+    if (!org.hederaAccountId) {
+        throw new Error('Organization is not linked to an Hedera Account');
+    }
+
+    return dispatchGrantKycWorker(tokenId, grant, owner, dataBaseServer, notifier, async () => {
+        return { accountId: org.hederaAccountId, payloadUserId: owner.id };
+    });
 }
 
 /**
@@ -1039,6 +1176,40 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
             return new MessageResponse(task);
         })
 
+    ApiResponse(MessageAPI.ASSOCIATE_ORG_TOKEN,
+        async (msg: {
+            orgId: string,
+            tokenId: string,
+            associate: boolean,
+            owner: IOwner
+        }) => {
+            try {
+                const { orgId, tokenId, associate, owner } = msg;
+                const result = await associateOrgToken(orgId, tokenId, associate, owner, dataBaseServer, NewNotifier.empty());
+                return new MessageResponse(result);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error, 400);
+            }
+        })
+
+    ApiResponse(MessageAPI.GRANT_ORG_KYC_TOKEN,
+        async (msg: {
+            orgId: string,
+            tokenId: string,
+            grant: boolean,
+            owner: IOwner
+        }) => {
+            try {
+                const { orgId, tokenId, grant, owner } = msg;
+                const result = await grantKycOrgToken(orgId, tokenId, grant, owner, dataBaseServer, NewNotifier.empty());
+                return new MessageResponse(result);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error, 400);
+            }
+        })
+
     ApiResponse(MessageAPI.GET_INFO_TOKEN,
         async (msg: {
             tokenId: string,
@@ -1402,27 +1573,37 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
             }
         });
 
+    const NFT_TRANSFER_MAX_BATCH_SIZE = 10;
+
     /**
-     * Transfer token
+     * Shared transfer dispatch used by both the personal (`transferTokenCore`) and organization
+     * (`transferOrgTokenCore`) cores, so the notifier-step discipline, FT/NFT branching, serial
+     * resolution, batch cap and worker payload shape live in exactly one place
+     * (mirrors `dispatchAssociateWorker` / `dispatchGrantKycWorker`).
      * @param tokenId
      * @param targetAccount
      * @param amount
      * @param serialNumbers
      * @param memo
-     * @param owner
      * @param notifier
+     * @param options
+     * @param resolveSender - resolves the debited Hedera account, a lazy signing-key fetcher,
+     * and the user id to attribute the worker payload to. `resolveKey` is deliberately lazy so
+     * the self-transfer guard runs before any vault read.
      */
-    const NFT_TRANSFER_MAX_BATCH_SIZE = 10;
-
-    async function transferTokenCore(
+    async function dispatchTransferWorker(
         tokenId: string,
         targetAccount: string,
         amount: number | undefined,
         serialNumbers: number[] | undefined,
         memo: string | undefined,
-        owner: IOwner,
         notifier: INotificationStep,
-        options: { maxNFTSerials?: number }
+        options: { maxNFTSerials?: number },
+        resolveSender: () => Promise<{
+            accountId: string,
+            resolveKey: () => Promise<string>,
+            payloadUserId: string
+        }>
     ): Promise<{ status: boolean; serials?: number[] }> {
         const STEP_FIND_TOKEN = 'Find token data';
         const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
@@ -1446,26 +1627,12 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
         notifier.completeStep(STEP_FIND_TOKEN);
 
         notifier.startStep(STEP_RESOLVE_ACCOUNT);
-        const users = new Users();
-        const user = await users.getUserById(owner.creator, owner.id);
-        if (!user) {
-            throw new Error('User not found');
-        }
-        const account: any = await users.getUserRelayerAccount(owner.creator, null, owner.id);
-        if (!account) {
-            throw new Error('Hedera Account not found');
-        }
-
-        if (targetAccount === account.account) {
+        const { accountId, resolveKey, payloadUserId } = await resolveSender();
+        if (targetAccount === accountId) {
             throw new Error('Cannot transfer tokens to the sender account');
         }
-
-        if (account.default) {
-            account.key = await (new Wallet()).getKey(user.walletToken, KeyType.KEY, user.did);
-        } else {
-            account.key = await (new Wallet()).getKey(user.walletToken, KeyType.RELAYER_ACCOUNT, `${user.did}/${account.account}`);
-        }
-        if (!account.key) {
+        const accountKey = await resolveKey();
+        if (!accountKey) {
             throw new Error('Hedera account key not found');
         }
         notifier.completeStep(STEP_RESOLVE_ACCOUNT);
@@ -1485,20 +1652,20 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
             const result = await workers.addRetryableTask({
                 type: WorkerTaskType.TRANSFER_FT,
                 data: {
-                    hederaAccountId: account.account,
-                    hederaAccountKey: account.key,
+                    hederaAccountId: accountId,
+                    hederaAccountKey: accountKey,
                     tokenId: token.tokenId,
                     targetAccount,
-                    treasuryId: account.account,
-                    treasuryKey: account.key,
+                    treasuryId: accountId,
+                    treasuryKey: accountKey,
                     tokenValue,
                     transactionMemo: memo || '',
-                    payload: { userId: user.id }
+                    payload: { userId: payloadUserId }
                 }
             }, {
                 priority: 20,
                 attempts: 1,
-                userId: user.id
+                userId: payloadUserId
             });
             notifier.completeStep(STEP_TRANSFER);
             notifier.complete();
@@ -1519,9 +1686,9 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                 const serials = await workers.addNonRetryableTask({
                     type: WorkerTaskType.GET_USER_NFTS_SERIALS,
                     data: {
-                        hederaAccountId: account.account,
+                        hederaAccountId: accountId,
                         tokenId: token.tokenId,
-                        payload: { userId: user.id }
+                        payload: { userId: payloadUserId }
                     }
                 }, {
                     priority: 20
@@ -1557,20 +1724,20 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                 const result = await workers.addRetryableTask({
                     type: WorkerTaskType.TRANSFER_NFT,
                     data: {
-                        hederaAccountId: account.account,
-                        hederaAccountKey: account.key,
+                        hederaAccountId: accountId,
+                        hederaAccountKey: accountKey,
                         tokenId: token.tokenId,
                         targetAccount,
-                        treasuryId: account.account,
-                        treasuryKey: account.key,
+                        treasuryId: accountId,
+                        treasuryKey: accountKey,
                         element: chunk,
                         transactionMemo: memo || '',
-                        payload: { userId: user.id }
+                        payload: { userId: payloadUserId }
                     }
                 }, {
                     priority: 20,
                     attempts: 1,
-                    userId: user.id
+                    userId: payloadUserId
                 });
                 if (!Array.isArray(result)) {
                     break;
@@ -1588,6 +1755,108 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
         } else {
             throw new Error(`Unsupported token type: ${token.tokenType}`);
         }
+    }
+
+    /**
+     * Transfer token
+     * @param tokenId
+     * @param targetAccount
+     * @param amount
+     * @param serialNumbers
+     * @param memo
+     * @param owner
+     * @param notifier
+     * @param options
+     */
+    async function transferTokenCore(
+        tokenId: string,
+        targetAccount: string,
+        amount: number | undefined,
+        serialNumbers: number[] | undefined,
+        memo: string | undefined,
+        owner: IOwner,
+        notifier: INotificationStep,
+        options: { maxNFTSerials?: number }
+    ): Promise<{ status: boolean; serials?: number[] }> {
+        const users = new Users();
+        return dispatchTransferWorker(
+            tokenId, targetAccount, amount, serialNumbers, memo, notifier, options,
+            async () => {
+                const user = await users.getUserById(owner.creator, owner.id);
+                if (!user) {
+                    throw new Error('User not found');
+                }
+                const account: any = await users.getUserRelayerAccount(owner.creator, null, owner.id);
+                if (!account) {
+                    throw new Error('Hedera Account not found');
+                }
+                const resolveKey = async () => {
+                    if (account.default) {
+                        return await (new Wallet()).getKey(user.walletToken, KeyType.KEY, user.did);
+                    }
+                    return await (new Wallet()).getKey(
+                        user.walletToken, KeyType.RELAYER_ACCOUNT, `${user.did}/${account.account}`
+                    );
+                };
+                return { accountId: account.account, resolveKey, payloadUserId: user.id };
+            }
+        );
+    }
+
+    /**
+     * Transfer tokens FROM an Organization's Hedera wallet. The org account is both the payer
+     * and the sender, and the transaction is signed with the org key.
+     * Gated by `OrgRolePermission.TOKEN_TRANSFER` (`getOrgTokenAccessError`) with an org-owner
+     * bypass. The permission check and the lookups it depends on run before any notifier step,
+     * so a rejected caller never triggers a Hedera-side effect (fail closed).
+     * @param orgId
+     * @param tokenId
+     * @param targetAccount
+     * @param amount
+     * @param serialNumbers
+     * @param memo
+     * @param actingOwner
+     * @param notifier
+     * @param options
+     */
+    async function transferOrgTokenCore(
+        orgId: string,
+        tokenId: string,
+        targetAccount: string,
+        amount: number | undefined,
+        serialNumbers: number[] | undefined,
+        memo: string | undefined,
+        actingOwner: IOwner,
+        notifier: INotificationStep,
+        options: { maxNFTSerials?: number }
+    ): Promise<{ status: boolean; serials?: number[] }> {
+        const users = new Users();
+
+        const ctx = await users.getOrgContextByDid(actingOwner.creator, actingOwner.id);
+        const org = await users.getOrgHederaInfo(orgId, actingOwner.id);
+        if (!org) {
+            throw new Error('Organization not found');
+        }
+        const isOwner = org.owner === actingOwner.creator;
+        const permissionError = getOrgTokenAccessError(
+            ctx, isOwner, orgId, OrgRolePermission.TOKEN_TRANSFER
+        );
+        if (permissionError) {
+            throw new Error(permissionError);
+        }
+        if (!org.hederaAccountId) {
+            throw new Error('Organization is not linked to an Hedera Account');
+        }
+
+        return dispatchTransferWorker(
+            tokenId, targetAccount, amount, serialNumbers, memo, notifier, options,
+            async () => ({
+                accountId: org.hederaAccountId,
+                resolveKey: async () =>
+                    await new Wallet().getKey(org.walletToken, KeyType.KEY, org.did),
+                payloadUserId: actingOwner.id
+            })
+        );
     }
 
     /**
@@ -1651,5 +1920,35 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
             });
 
             return new MessageResponse(task);
+        });
+
+    /**
+     * Transfer token from an organization's wallet (sync)
+     */
+    ApiResponse(MessageAPI.TRANSFER_ORG_TOKEN,
+        async (msg: {
+            orgId: string,
+            tokenId: string,
+            body: {
+                targetAccount: string,
+                amount?: number,
+                serialNumbers?: number[],
+                memo?: string
+            },
+            owner: IOwner
+        }) => {
+            try {
+                const { orgId, tokenId, body, owner } = msg;
+                const { targetAccount, amount, serialNumbers, memo } = body;
+                const result = await transferOrgTokenCore(
+                    orgId, tokenId, targetAccount, amount, serialNumbers, memo,
+                    owner, NewNotifier.empty(),
+                    { maxNFTSerials: NFT_TRANSFER_MAX_BATCH_SIZE }
+                );
+                return new MessageResponse(result);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error, 400);
+            }
         });
 }

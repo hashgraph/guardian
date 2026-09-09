@@ -48,7 +48,7 @@ export class CompareSchemaComponent implements OnInit {
         this.schema2 = this.value.right;
 
         const fields = this.value.fields;
-        this.report = fields?.report;
+        this.report = Array.isArray(fields?.report) ? fields.report : [];
         this.columns = fields?.columns || [];
         this.displayedColumns = this.columns
             .filter(c => c.label)

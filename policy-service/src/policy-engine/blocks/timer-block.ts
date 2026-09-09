@@ -118,7 +118,7 @@ export class TimerBlock {
     private startCron(ref: AnyBlockType) {
         try {
             let sd = moment(ref.options.startDate).utc();
-            if (sd.isValid()) {
+            if (!sd.isValid()) {
                 sd = moment().utc();
             }
 

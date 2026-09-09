@@ -1,4 +1,4 @@
-import { DatabaseServer, MessageError, MessageResponse, NatsService, PinoLogger, Singleton } from '@guardian/common';
+import { DatabaseServer, MessageError, MessageResponse, NatsService, PinoLogger, Singleton, containsRegex } from '@guardian/common';
 import { AuthEvents, GenerateUUIDv4, IGroup, IOwner, PermissionsArray } from '@guardian/interfaces';
 import { DynamicRole } from '../entity/dynamic-role.js';
 import { User } from '../entity/user.js';
@@ -160,7 +160,7 @@ export class RoleService extends NatsService {
 
                     const options: any = { owner };
                     if (name) {
-                        options.name = { $regex: '.*' + name + '.*' };
+                        options.name = containsRegex(name);
                     }
 
                     if (onlyOwn) {
@@ -204,7 +204,7 @@ export class RoleService extends NatsService {
                     const { role, owner, restore } = msg;
                     delete role._id;
                     delete role.id;
-                    role.owner = owner.creator;
+                    role.owner = owner.owner;
                     role.permissions = ListPermissions.unique(role.permissions);
                     role.default = false;
                     role.readonly = false;
@@ -244,10 +244,10 @@ export class RoleService extends NatsService {
 
                     const item = await entityRepository.findOne(DynamicRole, {
                         id,
-                        owner: owner.creator
+                        owner: owner.owner
                     });
 
-                    if (!item || item.owner !== owner.creator) {
+                    if (!item || item.owner !== owner.owner) {
                         throw new Error('Invalid role');
                     }
 
@@ -304,9 +304,9 @@ export class RoleService extends NatsService {
                     const { id, owner } = msg;
                     const item = await entityRepository.findOne(DynamicRole, {
                         id,
-                        owner: owner.creator
+                        owner: owner.owner
                     });
-                    if (!item || item.owner !== owner.creator) {
+                    if (!item || item.owner !== owner.owner) {
                         throw new Error('Invalid role');
                     }
                     await entityRepository.remove(DynamicRole, item);
@@ -427,7 +427,7 @@ export class RoleService extends NatsService {
                     const roles = await entityRepository.find(DynamicRole, { id: { $in: userRoles } });
                     for (const role of roles) {
                         if (
-                            (role.owner && role.owner === owner.creator) ||
+                            (role.owner && role.owner === owner.owner) ||
                             (!role.owner && role.default)
                         ) {
                             roleMap.set(role.id, [owner.creator, role.name, role.uuid]);

@@ -157,6 +157,7 @@ export class SendMessage {
 
             return true;
         } catch (error) {
+            console.error(error);
             return false;
         }
     }

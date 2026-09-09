@@ -1,0 +1,791 @@
+import { BadRequestException } from '@nestjs/common';
+import { DataSource } from 'typeorm';
+import { MV_REGISTRY_STATS_NAME, MV_METHODOLOGY_STATS_NAME } from '@shared/materialized-views';
+import {
+    CreditRepository,
+    CreditListQuery,
+    CreditListResult,
+    CreditRow,
+    CreditRawDetail,
+    CreditProjectLink,
+    CreditExportFilters,
+    CreditExportRow,
+    CreditStats,
+} from './credit.repository';
+import { QueryBuilder } from './query-builder';
+import { CREDIT_FIELD_SCHEMA, SUPPLY_EXPR, MINT_DATE_EXPR } from './schemas/credit.schema';
+
+/** Batch size for the internally-batched `findAllForExport` LIMIT/OFFSET loop. */
+const EXPORT_BATCH_SIZE = 2000;
+
+/** Ceiling on rows a single export may stream; exceeding it throws rather than truncating. */
+const EXPORT_MAX_ROWS = 100_000;
+
+interface RawRow {
+    tokenId: string | null;
+    name: string | null;
+    symbol: string | null;
+    /** Raw type from token_cache: 'FUNGIBLE_COMMON' | 'NON_FUNGIBLE_UNIQUE' | null */
+    raw_type: string | null;
+    /** Fallback token type from businessData->options->tokenType (findRaw only) */
+    options_token_type: string | null;
+    total_supply: string | null;
+    registryDid: string | null;
+    registry_name: string | null;
+    mint_date: Date | null;
+    project_id: string | null;
+    project_name: string | null;
+    methodology_id: string | null;
+    methodology_name: string | null;
+    mintConsensusTimestamp: string | null;
+}
+
+/** Raw row shape for `findAllForExport` — one MintToken VC per row (see `CreditExportRow` doc). */
+interface RawExportRow {
+    _consensusTimestamp: string | null;
+    _tokenId: string | null;
+    _topicId: string | null;
+    _dataSource: string | null;
+    _ipfsCids: string[] | null;
+    project_name: string | null;
+    registry_name: string | null;
+    proj_developer: string | null;
+    proj_country: string | null;
+    proj_vintage: string | null;
+    token_name: string | null;
+    token_symbol: string | null;
+    token_type_raw: string | null;
+    emissions_reduced: string | null;
+    mint_date: Date | string | null;
+    standard: string | null;
+    mitigation_type_raw: unknown;
+}
+
+// credentialSubject[0] tokenId path — used in SELECT and WHERE
+const TOKEN_ID_EXPR = `(m.documents->'credentialSubject'->0->>'tokenId')`;
+
+/**
+ * Base FROM clause: every MintToken VC in the message table, LEFT JOINed with
+ * project_mint_link (pre-computed per-project attribution) and token_cache.
+ * Rows where pml.* is NULL are unattributed mints — still included so the
+ * table is complete regardless of worker attribution state.
+ *
+ * Split from the `cred` LATERAL below so the count query can omit that lookup
+ * when nothing references it — see buildJoins().
+ */
+const MINT_FROM_LEAN = `
+    message m
+    LEFT JOIN project_mint_link pml
+           ON pml.mint_consensus_timestamp = m."consensusTimestamp"
+    LEFT JOIN token_cache tc
+           ON tc."tokenId" = ${TOKEN_ID_EXPR}
+`;
+
+/** LATERAL: the token's own registryDid, the fallback for mints not attributed to a project. */
+const CREDIT_REGISTRY_JOIN = `
+    LEFT JOIN LATERAL (
+        SELECT bv_c."registryDid" AS registry_did
+        FROM business_view bv_c
+        WHERE bv_c."viewType" = 'CREDIT'
+          AND bv_c."businessData"->>'tokenId' = ${TOKEN_ID_EXPR}
+        ORDER BY bv_c."createdAt" DESC NULLS LAST
+        LIMIT 1
+    ) cred ON true
+`;
+
+const MINT_FROM = `${MINT_FROM_LEAN}${CREDIT_REGISTRY_JOIN}`;
+
+/**
+ * LATERAL: resolve project metadata from the pre-attributed project_mint_link
+ * row. Returns NULL for all fields when pml.project_key is NULL.
+ */
+const PROJECT_JOIN = `
+    LEFT JOIN LATERAL (
+        SELECT
+            bv_proj."projectKey"                   AS project_id,
+            bv_proj."displayName"                  AS project_name,
+            bv_proj."relatedTopicId"               AS proj_topic_id,
+            bv_proj."businessData"->>'methodology' AS proj_methodology_name,
+            bv_proj."registryDid"                  AS registry_did,
+            bv_proj."businessData"->>'developer'   AS proj_developer,
+            bv_proj."businessData"->>'country'     AS proj_country,
+            bv_proj."businessData"->>'vintage'     AS proj_vintage
+        FROM business_view bv_proj
+        WHERE bv_proj."viewType"   = 'PROJECT'
+          AND bv_proj."projectKey" = pml.project_key
+        LIMIT 1
+    ) proj ON true
+`;
+
+/**
+ * Two LATERALs: resolve methodology from the project's instance topic, with a
+ * displayName fallback for cases where relatedTopicId chain is not yet linked.
+ * Emits relatedTopicId as methodology_id so links match the methodology detail route.
+ * Returns NULL when no project was resolved (unattributed mints). Callers read
+ * `COALESCE(meth_primary.x, meth_fallback.x)` for each column.
+ *
+ * meth_primary reads mv_methodology_stats (unique-indexed on relatedTopicId,
+ * emission_reduction_approach precomputed) joined to business_view by primary
+ * key — O(1) instead of scanning every raw METHODOLOGY row for the topic and
+ * sorting them, which on testnet's ~187x republish-duplicate ratio dominated
+ * the Issuances table's search/count latency.
+ *
+ * meth_fallback is byte-for-byte the original pre-mv_methodology_stats LATERAL
+ * (same SELECT list, same OR'd WHERE, same ORDER BY/LIMIT) for the rare case a
+ * project's topic-id chain isn't linked yet — with one added NOT EXISTS guard
+ * so it only runs when meth_primary found nothing. It's deliberately its own
+ * LATERAL correlated only on `proj` columns (not on meth_primary's output):
+ * an earlier version gated it via `meth_primary.methodology_id IS NULL`
+ * instead, which measured 25s+ locally, because a LATERAL correlated on a
+ * sibling LATERAL's result loses Postgres's Memoize optimization entirely
+ * (confirmed via EXPLAIN ANALYZE —
+ * Memoize's cache hit rate on this fallback collapsed from 1988/2042 to 0
+ * hits when parameterized that way). Re-deriving the same "did the primary
+ * branch find anything" check as a direct NOT EXISTS against
+ * mv_methodology_stats keeps the correlation shape identical to the original
+ * query, which Postgres already knew how to memoize effectively.
+ */
+const METHODOLOGY_JOIN = `
+    LEFT JOIN LATERAL (
+        SELECT
+            meth_mv."relatedTopicId"            AS methodology_id,
+            bv_meth."displayName"               AS methodology_name,
+            meth_mv.emission_reduction_approach AS emission_reduction_approach
+        FROM ${MV_METHODOLOGY_STATS_NAME} meth_mv
+        JOIN business_view bv_meth ON bv_meth.id = meth_mv.canonical_id
+        WHERE meth_mv."relatedTopicId" = proj.proj_topic_id
+    ) meth_primary ON true
+    LEFT JOIN LATERAL (
+        SELECT
+            bv_meth2."relatedTopicId" AS methodology_id,
+            bv_meth2."displayName"    AS methodology_name,
+            (
+                SELECT p."policyMapping"->'emissionReductionApproach'
+                FROM policy p
+                WHERE p."policyTopicId" = bv_meth2."businessData"->>'topicId'
+                  AND p."decodeStatus" = 'decoded'
+                ORDER BY p."updatedAt" DESC NULLS LAST
+                LIMIT 1
+            ) AS emission_reduction_approach
+        FROM business_view bv_meth2
+        WHERE bv_meth2."viewType" = 'METHODOLOGY'
+          AND (
+              bv_meth2."relatedTopicId" = proj.proj_topic_id
+              OR bv_meth2."displayName" = proj.proj_methodology_name
+          )
+          AND NOT EXISTS (
+              SELECT 1 FROM ${MV_METHODOLOGY_STATS_NAME} mm_guard
+              WHERE mm_guard."relatedTopicId" = proj.proj_topic_id
+          )
+        ORDER BY
+            (bv_meth2."relatedTopicId" = proj.proj_topic_id) DESC,
+            bv_meth2."sourceTimestamp"::numeric DESC NULLS LAST,
+            bv_meth2."createdAt" DESC NULLS LAST
+        LIMIT 1
+    ) meth_fallback ON true
+`;
+
+/**
+ * LATERAL: resolve registry display name from the project's registryDid,
+ * falling back to the token's own registryDid (cred) for mints not yet
+ * attributed to a project, so unlinked mints still show their registry.
+ *
+ * Reads mv_registry_stats (unique-indexed on registryDid) joined to
+ * business_view by primary key, instead of scanning every raw REGISTRY row
+ * for the DID and sorting them — same fix as METHODOLOGY_JOIN above, for the
+ * same reason (testnet's ~233x republish-duplicate ratio on REGISTRY rows).
+ */
+const REGISTRY_JOIN = `
+    LEFT JOIN LATERAL (
+        SELECT bv_reg."displayName" AS registry_name
+        FROM ${MV_REGISTRY_STATS_NAME} reg_mv
+        JOIN business_view bv_reg ON bv_reg.id = reg_mv.canonical_id
+        WHERE reg_mv."registryDid" = COALESCE(proj.registry_did, cred.registry_did)
+    ) reg ON true
+`;
+
+/** Which optional joins a given filter set actually requires. */
+interface JoinRequirements {
+    registry?: string;
+    registryDid?: string;
+    methodologyId?: string;
+    search?: string;
+    linkedOnly?: boolean;
+    /** Include the project/registry joins regardless of filters, for queries that select from them. */
+    forceAttribution?: boolean;
+}
+
+/**
+ * Builds the minimum join graph a query needs.
+ *
+ * The row query selects project/methodology/registry columns and needs them
+ * all; the COUNT only needs a join when a filter references it.
+ *
+ * Dependencies (from CREDIT_FIELD_SCHEMA):
+ *   registry      -> reg.registry_name                          -> REGISTRY_JOIN
+ *   search        -> reg.registry_name (plus tc.*, always there) -> REGISTRY_JOIN
+ *   registryDid   -> COALESCE(proj.registry_did, cred.registry_did)
+ *   methodologyId -> COALESCE(meth_primary.methodology_id, meth_fallback.methodology_id) -> METHODOLOGY_JOIN
+ * REGISTRY_JOIN and METHODOLOGY_JOIN both read `proj.*`, and REGISTRY_JOIN also
+ * reads `cred.*`, so those pull in their dependencies.
+ * projectKey filters `pml.project_key` and `type` filters `tc.type` — both
+ * already in MINT_FROM_LEAN, so neither forces an extra join.
+ */
+function buildJoins(req: JoinRequirements): string {
+    const needsRegistry = Boolean(req.registry || req.search || req.forceAttribution);
+    const needsMethodology = Boolean(req.methodologyId);
+    const needsCred = needsRegistry || Boolean(req.registryDid);
+    const needsProject = needsRegistry || needsMethodology || Boolean(req.registryDid || req.linkedOnly);
+
+    return [
+        MINT_FROM_LEAN,
+        needsCred ? CREDIT_REGISTRY_JOIN : '',
+        needsProject ? PROJECT_JOIN : '',
+        needsMethodology ? METHODOLOGY_JOIN : '',
+        needsRegistry ? REGISTRY_JOIN : '',
+    ].join('\n');
+}
+
+/** PostgreSQL implementation of the CreditRepository; `findAll()` sources MintToken VC documents joined with `project_mint_link` for per-project attribution, including unattributed mints as rows with null project/methodology fields (registry still resolves via the token's own CREDIT row). One row per mint event (message row) — matches `findAllForExport()` and the project detail page's "Linked Issuances" grain, so the Issuances count/list is consistent everywhere, filtered or not. */
+export class PgCreditRepository extends CreditRepository {
+    constructor(private readonly dataSource: DataSource) {
+        super();
+    }
+
+    /** Builds the WHERE clause shared by findAll, its count, and findStats, plus the search-rank expression. */
+    private buildFilters(query: CreditListQuery): { builder: QueryBuilder; rankExpr: string } {
+        const builder = new QueryBuilder(CREDIT_FIELD_SCHEMA);
+
+        builder.addClause(`m.type = 'VC-Document'`);
+        builder.addClause(`m.documents IS NOT NULL`);
+        builder.addClause(`(m.documents->'credentialSubject'->0->>'type') LIKE 'MintToken%'`);
+        builder.addClause(`${TOKEN_ID_EXPR} IS NOT NULL`);
+
+        builder.addFilters({
+            registryDid:  query.registryDid,
+            registry:     query.registry,
+            tokenId:      query.tokenId,
+            supplyMin:    query.supplyMin,
+            supplyMax:    query.supplyMax,
+            mintDateFrom: query.mintDateFrom,
+            mintDateTo:   query.mintDateTo,
+        });
+
+        // Accepts a `|`-delimited list so Portfolio can scope one query to its
+        // whole watchlist instead of paging network-wide.
+        builder.addFilter('pml.project_key', 'eq', query.projectKey);
+
+        if (query.methodologyId) {
+            const param = builder.nextParam(query.methodologyId);
+            builder.addClause(`COALESCE(meth_primary.methodology_id, meth_fallback.methodology_id) = ${param}`);
+        }
+
+        if (query.linkedOnly) {
+            builder.addClause(`proj.project_id IS NOT NULL`);
+        }
+
+        if (query.type) {
+            const normalised = query.type.toLowerCase();
+            if (normalised === 'fungible') {
+                builder.addClause(`tc.type = 'FUNGIBLE_COMMON'`);
+            } else if (normalised === 'non-fungible') {
+                builder.addClause(`tc.type = 'NON_FUNGIBLE_UNIQUE'`);
+            }
+        }
+
+        let rankExpr = '0';
+        if (query.search) {
+            const term = query.search.trim();
+            const likeParam = builder.nextParam(`%${term}%`);
+            const simParam  = builder.nextParam(term);
+
+            builder.addClause(`(
+                tc.name ILIKE ${likeParam}
+                OR tc.symbol ILIKE ${likeParam}
+                OR ${TOKEN_ID_EXPR} ILIKE ${likeParam}
+                OR reg.registry_name ILIKE ${likeParam}
+                OR similarity(COALESCE(tc.name, ''), ${simParam}) > 0.3
+            )`);
+
+            rankExpr = `COALESCE(similarity(COALESCE(tc.name, ''), ${simParam}), 0)`;
+        }
+
+        return { builder, rankExpr };
+    }
+
+    /** Supply total and distinct registry/project counts across the whole filtered set. */
+    async findStats(query: CreditListQuery): Promise<CreditStats> {
+        const { builder } = this.buildFilters(query);
+
+        const sql = `
+            SELECT
+                COALESCE(SUM(${SUPPLY_EXPR}), 0)::numeric        AS total_supply,
+                COUNT(DISTINCT reg.registry_name)::int           AS unique_registries,
+                COUNT(DISTINCT proj.project_id)::int             AS unique_projects
+            FROM ${buildJoins({
+                registry: query.registry,
+                registryDid: query.registryDid,
+                methodologyId: query.methodologyId,
+                search: query.search,
+                // The stat columns themselves read proj/reg, so both are always required here.
+                forceAttribution: true,
+            })}
+            WHERE ${builder.getWhereClause()}
+        `;
+
+        const rows: Array<{ total_supply: string; unique_registries: number; unique_projects: number }> =
+            await this.dataSource.query(sql, builder.getParams());
+
+        return {
+            totalSupply: parseFloat(rows[0]?.total_supply ?? '0') || 0,
+            uniqueRegistries: rows[0]?.unique_registries ?? 0,
+            uniqueProjects: rows[0]?.unique_projects ?? 0,
+        };
+    }
+
+    async findAll(query: CreditListQuery): Promise<CreditListResult> {
+        const { page, limit, search, sortBy, sortDir } = query;
+        const offset = (page - 1) * limit;
+
+        const { builder, rankExpr } = this.buildFilters(query);
+
+        const orderBy = search
+            ? `search_rank DESC, m."consensusTimestamp" DESC`
+            : builder.buildOrderBy({
+                sortBy,
+                sortDir,
+                defaultExpr: 'm."consensusTimestamp" DESC',
+            });
+
+        const whereSql = builder.getWhereClause();
+        const params   = builder.getParams();
+
+        const limitParam  = builder.nextParam(limit);
+        const offsetParam = builder.nextParam(offset);
+
+        // Scoped to exactly one project or one methodology (the two Projects-table /
+        // One row per mint event (message row) — no aggregation, filtered or not.
+        // Supply/date/id come straight off the row: pml.amount/mint_date for
+        // attributed mints, falling back to the raw VC's amount/consensus timestamp
+        // for unattributed ones.
+        const rowsSql = `
+            SELECT
+                ${TOKEN_ID_EXPR}                                                                AS "tokenId",
+                tc.name,
+                tc.symbol,
+                tc.type                                                                         AS raw_type,
+                NULL::text                                                                      AS options_token_type,
+                ${SUPPLY_EXPR}                                                                  AS total_supply,
+                COALESCE(proj.registry_did, cred.registry_did)                                  AS "registryDid",
+                reg.registry_name,
+                ${MINT_DATE_EXPR}                                                               AS mint_date,
+                proj.project_id,
+                proj.project_name,
+                COALESCE(meth_primary.methodology_id, meth_fallback.methodology_id)             AS methodology_id,
+                COALESCE(meth_primary.methodology_name, meth_fallback.methodology_name, proj.proj_methodology_name) AS methodology_name,
+                m."consensusTimestamp"                                                          AS "mintConsensusTimestamp",
+                ${rankExpr}                                                                     AS search_rank
+            FROM ${MINT_FROM}
+            ${PROJECT_JOIN}
+            ${METHODOLOGY_JOIN}
+            ${REGISTRY_JOIN}
+            WHERE ${whereSql}
+            ORDER BY ${orderBy}
+            LIMIT ${limitParam} OFFSET ${offsetParam}
+        `;
+
+        // Count: one row per mint event, so a plain COUNT(*) over the filtered
+        // set — carrying only the joins the active filters actually reference.
+        // Unfiltered this collapses to message ⟕ project_mint_link ⟕ token_cache.
+        const countParams = params.slice(0, params.length - 2);
+        const countSql = `
+            SELECT COUNT(*)::int AS total
+            FROM ${buildJoins({
+                registry: query.registry,
+                registryDid: query.registryDid,
+                methodologyId: query.methodologyId,
+                linkedOnly: query.linkedOnly,
+                search,
+            })}
+            WHERE ${whereSql}
+        `;
+
+        const [rawRows, countResult]: [RawRow[], Array<{ total: number }>] = await Promise.all([
+            this.dataSource.query(rowsSql, params),
+            this.dataSource.query(countSql, countParams),
+        ]);
+
+        return {
+            rows: rawRows.map(row => PgCreditRepository.mapRow(row)),
+            total: countResult[0]?.total ?? 0,
+        };
+    }
+
+    private static mapRow(row: RawRow): CreditRow {
+        return {
+            tokenId: row.tokenId ?? null,
+            name: row.name ?? null,
+            symbol: row.symbol ?? null,
+            type: PgCreditRepository.normaliseType(row.raw_type, row.options_token_type),
+            supply: row.total_supply != null ? parseFloat(row.total_supply) : 0,
+            projectId: row.project_id ?? null,
+            project: row.project_name ?? null,
+            methodologyId: row.methodology_id ?? null,
+            methodology: row.methodology_name ?? null,
+            registry: row.registry_name ?? null,
+            registryDid: row.registryDid ?? null,
+            mintDate: row.mint_date ? row.mint_date.toISOString() : null,
+            mintConsensusTimestamp: row.mintConsensusTimestamp ?? null,
+        };
+    }
+
+    /** Maps raw token type strings to the normalised display values; prefers token_cache.type (set by the worker from Mirror Node), falling back to businessData->options->tokenType (set by the Guardian policy message). */
+    private static normaliseType(
+        rawType: string | null,
+        optionsTokenType: string | null,
+    ): 'Fungible' | 'Non-Fungible' | null {
+        if (rawType) {
+            if (rawType === 'FUNGIBLE_COMMON') return 'Fungible';
+            if (rawType === 'NON_FUNGIBLE_UNIQUE') return 'Non-Fungible';
+        }
+        if (optionsTokenType) {
+            const lower = optionsTokenType.toLowerCase();
+            if (lower === 'fungible') return 'Fungible';
+            if (lower === 'non-fungible') return 'Non-Fungible';
+        }
+        return null;
+    }
+
+    /** Full filtered credits dataset for the export engine — one row per mint event (not aggregated by tokenId+project like `findAll`) so `transaction_id` never collapses distinct transactions into one row; batches internally via a LIMIT/OFFSET loop ordered by consensus timestamp. */
+    async findAllForExport(filters: CreditExportFilters): Promise<CreditExportRow[]> {
+        const builder = new QueryBuilder(CREDIT_FIELD_SCHEMA);
+
+        builder.addClause(`m.type = 'VC-Document'`);
+        builder.addClause(`m.documents IS NOT NULL`);
+        builder.addClause(`(m.documents->'credentialSubject'->0->>'type') LIKE 'MintToken%'`);
+        builder.addClause(`${TOKEN_ID_EXPR} IS NOT NULL`);
+
+        builder.addFilters({
+            registryDid: filters.registryDid,
+            registry: filters.registry,
+            tokenId: filters.tokenId,
+        });
+
+        if (filters.projectKey) {
+            const param = builder.nextParam(filters.projectKey);
+            builder.addClause(`pml.project_key = ${param}`);
+        }
+
+        if (filters.methodologyId) {
+            const param = builder.nextParam(filters.methodologyId);
+            builder.addClause(`COALESCE(meth_primary.methodology_id, meth_fallback.methodology_id) = ${param}`);
+        }
+
+        if (filters.type) {
+            const normalised = filters.type.toLowerCase();
+            if (normalised === 'fungible') {
+                builder.addClause(`tc.type = 'FUNGIBLE_COMMON'`);
+            } else if (normalised === 'non-fungible') {
+                builder.addClause(`tc.type = 'NON_FUNGIBLE_UNIQUE'`);
+            }
+        }
+
+        if (filters.search) {
+            const term = filters.search.trim();
+            const likeParam = builder.nextParam(`%${term}%`);
+            const simParam = builder.nextParam(term);
+
+            builder.addClause(`(
+                tc.name ILIKE ${likeParam}
+                OR tc.symbol ILIKE ${likeParam}
+                OR ${TOKEN_ID_EXPR} ILIKE ${likeParam}
+                OR reg.registry_name ILIKE ${likeParam}
+                OR similarity(COALESCE(tc.name, ''), ${simParam}) > 0.3
+            )`);
+        }
+
+        const whereSql = builder.getWhereClause();
+        const baseParams = builder.getParams();
+        const limitParam = `$${baseParams.length + 1}`;
+        const offsetParam = `$${baseParams.length + 2}`;
+
+        const rows: CreditExportRow[] = [];
+        for (let offset = 0; ; offset += EXPORT_BATCH_SIZE) {
+            const params = [...baseParams, EXPORT_BATCH_SIZE, offset];
+
+            const batchSql = `
+                SELECT
+                    m."consensusTimestamp"                                                          AS "_consensusTimestamp",
+                    ${TOKEN_ID_EXPR}                                                                AS "_tokenId",
+                    m."topicId"                                                                      AS "_topicId",
+                    m."dataSource"                                                                   AS "_dataSource",
+                    m.files                                                                          AS "_ipfsCids",
+                    proj.project_name,
+                    reg.registry_name,
+                    proj.proj_developer,
+                    proj.proj_country,
+                    proj.proj_vintage,
+                    tc.name                                                                         AS token_name,
+                    tc.symbol                                                                        AS token_symbol,
+                    tc.type                                                                          AS token_type_raw,
+                    ${SUPPLY_EXPR}                                                                AS emissions_reduced,
+                    ${MINT_DATE_EXPR}                                                             AS mint_date,
+                    COALESCE(meth_primary.methodology_name, meth_fallback.methodology_name, proj.proj_methodology_name) AS standard,
+                    COALESCE(meth_primary.emission_reduction_approach, meth_fallback.emission_reduction_approach) AS mitigation_type_raw
+                FROM ${MINT_FROM}
+                ${PROJECT_JOIN}
+                ${METHODOLOGY_JOIN}
+                ${REGISTRY_JOIN}
+                WHERE ${whereSql}
+                ORDER BY m."consensusTimestamp" ASC
+                LIMIT ${limitParam} OFFSET ${offsetParam}
+            `;
+
+            const batch: RawExportRow[] = await this.dataSource.query(batchSql, params);
+            rows.push(...batch.map(PgCreditRepository.mapExportRow));
+
+            if (batch.length < EXPORT_BATCH_SIZE) break;
+            if (rows.length >= EXPORT_MAX_ROWS) {
+                throw new BadRequestException(
+                    `Export matched more than ${EXPORT_MAX_ROWS.toLocaleString()} rows. ` +
+                    'Narrow the filters (date range, registry, or search) and try again.',
+                );
+            }
+        }
+
+        return rows;
+    }
+
+    private static mapExportRow(row: RawExportRow): CreditExportRow {
+        const mintDate = row.mint_date ? new Date(row.mint_date) : null;
+        const cids = Array.isArray(row._ipfsCids)
+            ? row._ipfsCids.filter((c): c is string => typeof c === 'string' && c.length > 0)
+            : [];
+
+        return {
+            project_name: row.project_name ?? null,
+            registry: row.registry_name ?? null,
+            developer: row.proj_developer ?? null,
+            country: row.proj_country ?? null,
+            token_name: row.token_name ?? null,
+            token_symbol: row.token_symbol ?? null,
+            token_type: PgCreditRepository.normaliseType(row.token_type_raw, null),
+            emissions_reduced: row.emissions_reduced != null ? parseFloat(row.emissions_reduced) : null,
+            // Same UTC basis as `reporting_year` below, so the date's year and the year column always agree.
+            issuance_date: mintDate ? mintDate.toISOString().slice(0, 10) : null,
+            reporting_year: mintDate ? mintDate.getUTCFullYear() : null,
+            mitigation_type: PgCreditRepository.extractEmissionReductionApproach(row.mitigation_type_raw),
+            standard: row.standard ?? null,
+            mint_amount: row.emissions_reduced != null ? parseFloat(row.emissions_reduced) : null,
+            vintage: row.proj_vintage ?? null,
+            ipfs_document_ref: cids.length > 0 ? cids.join('; ') : null,
+            _consensusTimestamp: row._consensusTimestamp ?? null,
+            _tokenId: row._tokenId ?? null,
+            _topicId: row._topicId ?? null,
+            _dataSource: row._dataSource ?? null,
+        };
+    }
+
+    /** `emissionReductionApproach` arrives as a JSONB array of policyMapping entries; the resolved label lives in `entry.schemaName` (first non-empty value). Mirrors `PgMethodologyRepository`'s identical extraction logic, duplicated per this codebase's self-contained-repository convention. */
+    private static extractEmissionReductionApproach(raw: unknown): string | null {
+        if (!Array.isArray(raw)) return null;
+        for (const entry of raw) {
+            if (entry && typeof entry === 'object' && 'schemaName' in entry) {
+                const v = (entry as Record<string, unknown>)['schemaName'];
+                if (typeof v === 'string' && v) return v;
+            }
+        }
+        return null;
+    }
+
+    /** Returns the underlying HCS messages backing a credit: the original Token message and any MintToken VC documents that minted credits against this token, used by the raw-data viewer. */
+    async findRaw(tokenId: string): Promise<CreditRawDetail | null> {
+        // 1. The full credit row (reusing the same JOINs as findAll).
+        const creditRows: RawRow[] = await this.dataSource.query(
+            `SELECT
+                COALESCE(bv."businessData"->>'tokenId', tc."tokenId") AS "tokenId",
+                COALESCE(bv."displayName", bv."businessData"->'options'->>'tokenName', tc.name) AS name,
+                COALESCE(bv."businessData"->'options'->>'tokenSymbol', tc.symbol) AS symbol,
+                tc.type AS raw_type,
+                bv."businessData"->'options'->>'tokenType' AS options_token_type,
+                tc."totalSupply"::text AS total_supply,
+                bv."registryDid" AS "registryDid",
+                reg.registry_name AS registry_name,
+                to_char(to_timestamp(bv."sourceTimestamp"::numeric) AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS mint_date,
+                NULL::jsonb AS "businessData",
+                proj.project_id,
+                proj.project_name,
+                meth.methodology_id,
+                COALESCE(meth.methodology_name, proj.proj_methodology_name) AS methodology_name
+             FROM business_view bv
+             LEFT JOIN token_cache tc ON tc."tokenId" = bv."businessData"->>'tokenId'
+             LEFT JOIN LATERAL (
+                 SELECT "displayName" AS registry_name
+                 FROM business_view
+                 WHERE "viewType" = 'REGISTRY' AND "registryDid" = bv."registryDid"
+                 ORDER BY "createdAt" DESC NULLS LAST
+                 LIMIT 1
+             ) reg ON true
+             LEFT JOIN LATERAL (
+                 SELECT
+                     bv_proj."projectKey"                    AS project_id,
+                     bv_proj."displayName"                   AS project_name,
+                     bv_proj."relatedTopicId"                AS proj_topic_id,
+                     bv_proj."businessData"->>'methodology'  AS proj_methodology_name
+                 FROM project_mint_link pml
+                 JOIN business_view bv_proj
+                     ON bv_proj."projectKey" = pml.project_key
+                    AND bv_proj."viewType" = 'PROJECT'
+                 WHERE pml.token_id = bv."businessData"->>'tokenId'
+                 ORDER BY pml.mint_consensus_timestamp DESC
+                 LIMIT 1
+             ) proj ON true
+             LEFT JOIN LATERAL (
+                 SELECT
+                     bv_meth."relatedTopicId" AS methodology_id,
+                     bv_meth."displayName"    AS methodology_name
+                 FROM business_view bv_meth
+                 WHERE bv_meth."viewType" = 'METHODOLOGY'
+                   AND (
+                       bv_meth."relatedTopicId" = COALESCE(proj.proj_topic_id, bv."relatedTopicId")
+                       OR bv_meth."displayName" = proj.proj_methodology_name
+                   )
+                 ORDER BY
+                     (bv_meth."relatedTopicId" = COALESCE(proj.proj_topic_id, bv."relatedTopicId")) DESC,
+                     bv_meth."sourceTimestamp"::numeric DESC NULLS LAST,
+                     bv_meth."createdAt" DESC NULLS LAST
+                 LIMIT 1
+             ) meth ON true
+             WHERE bv."viewType" = 'CREDIT' AND bv."businessData"->>'tokenId' = $1
+             LIMIT 1`,
+            [tokenId],
+        );
+
+        const credit: CreditRow | null = creditRows[0] ? {
+            tokenId: creditRows[0].tokenId,
+            name: creditRows[0].name,
+            symbol: creditRows[0].symbol,
+            type: PgCreditRepository.normaliseType(creditRows[0].raw_type, creditRows[0].options_token_type),
+            supply: parseFloat(creditRows[0].total_supply ?? '0') || 0,
+            projectId: creditRows[0].project_id ?? null,
+            project: creditRows[0].project_name ?? null,
+            methodologyId: creditRows[0].methodology_id ?? null,
+            methodology: creditRows[0].methodology_name ?? null,
+            registry: creditRows[0].registry_name ?? null,
+            registryDid: creditRows[0].registryDid,
+            mintDate: creditRows[0].mint_date instanceof Date
+                ? creditRows[0].mint_date.toISOString()
+                : (creditRows[0].mint_date ?? null),
+            mintConsensusTimestamp: null,
+        } : null;
+
+        // 2. The raw Token message from HCS.
+        const tokenMessageRows: Array<Record<string, unknown>> = await this.dataSource.query(
+            `SELECT "consensusTimestamp", "topicId", owner, uuid, type, action, status, options, files, topics, tokens, "sequenceNumber", "lastUpdate", "createdAt"
+             FROM message
+             WHERE type = 'Token' AND options->>'tokenId' = $1
+             ORDER BY "consensusTimestamp" ASC
+             LIMIT 1`,
+            [tokenId],
+        );
+        const tokenMessage = tokenMessageRows[0] ?? null;
+
+        // 2b. Resolve the policy governing this token via its linked project's originating VC message: neither
+        //     the Token-creation message nor MintToken VCs carry a policyId, so join back through
+        //     business_view.sourceTimestamp -> message.consensusTimestamp to recover it.
+        let policyId: string | null = null;
+        let policyName: string | null = null;
+        let policyTopicId: string | null = null;
+        if (credit?.projectId) {
+            const projectPolicyRows: Array<{ policyId: string | null }> = await this.dataSource.query(
+                `SELECT m."policyId"
+                 FROM business_view bv
+                 JOIN message m ON m."consensusTimestamp" = bv."sourceTimestamp"
+                 WHERE bv."viewType" = 'PROJECT' AND bv."projectKey" = $1
+                 LIMIT 1`,
+                [credit.projectId],
+            );
+            policyId = projectPolicyRows[0]?.policyId ?? null;
+        }
+        if (policyId) {
+            const policyNameRows: Array<{ policyName: string | null; policyTopicId: string | null }> = await this.dataSource.query(
+                `SELECT ip.options->>'name' AS "policyName",
+                        p."policyTopicId"   AS "policyTopicId"
+                 FROM policy p
+                 JOIN message ip
+                     ON ip.type = 'Instance-Policy'
+                    AND ip.action = 'publish-policy'
+                    AND ip."topicId" = p."policyTopicId"
+                 WHERE p."policyId" = $1
+                 ORDER BY ip."consensusTimestamp" DESC
+                 LIMIT 1`,
+                [policyId],
+            );
+            policyName = policyNameRows[0]?.policyName ?? null;
+            policyTopicId = policyNameRows[0]?.policyTopicId ?? null;
+        }
+
+        // 3. MintToken VC documents that minted credits for this tokenId.
+        const mintRows: Array<{
+            consensusTimestamp: string;
+            topicId: string;
+            amount: string | null;
+            date: string | null;
+            document: Record<string, unknown> | null;
+            projectKey: string | null;
+            type: string | null;
+        }> = await this.dataSource.query(
+            `SELECT
+                m."consensusTimestamp",
+                m."topicId",
+                m.documents->'credentialSubject'->0->>'amount' AS amount,
+                m.documents->'credentialSubject'->0->>'date'   AS date,
+                m.documents                                    AS document,
+                pml.project_key                                AS "projectKey",
+                m.documents->'credentialSubject'->0->>'type'  AS type
+             FROM message m
+             LEFT JOIN project_mint_link pml
+                 ON pml.mint_consensus_timestamp = m."consensusTimestamp"
+                AND pml.token_id = $1
+             WHERE m.type = 'VC-Document'
+               AND m.documents IS NOT NULL
+               AND m.documents->'credentialSubject'->0->>'type'    LIKE 'MintToken%'
+               AND m.documents->'credentialSubject'->0->>'tokenId' = $1
+             ORDER BY m."consensusTimestamp" ASC
+             LIMIT 200`,
+            [tokenId],
+        );
+
+        // 4. All distinct projects linked to this tokenId (not just the most recent).
+        const projectRows: Array<{ project_id: string | null; project_name: string | null }> =
+            await this.dataSource.query(
+                `SELECT DISTINCT
+                     bv_proj."projectKey"  AS project_id,
+                     bv_proj."displayName" AS project_name
+                 FROM project_mint_link pml
+                 JOIN business_view bv_proj
+                     ON bv_proj."projectKey" = pml.project_key
+                    AND bv_proj."viewType" = 'PROJECT'
+                 WHERE pml.token_id = $1
+                 ORDER BY bv_proj."displayName" ASC NULLS LAST`,
+                [tokenId],
+            );
+
+        const projects: CreditProjectLink[] = projectRows.map(r => ({
+            projectId: r.project_id ?? null,
+            project: r.project_name ?? null,
+        }));
+
+        if (!credit && !tokenMessage && mintRows.length === 0 && projects.length === 0) return null;
+
+        return {
+            credit,
+            projects,
+            tokenMessage,
+            policyId,
+            policyName,
+            policyTopicId,
+            mintEvents: mintRows,
+        };
+    }
+}

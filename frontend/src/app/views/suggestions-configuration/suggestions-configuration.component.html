@@ -31,7 +31,7 @@
             <span cdkDragHandle class="re-order-handler">
               <i class="pi pi-equals"></i>
             </span>
-            <span>{{ item.name }}</span>
+            <span class="item-name" [title]="item.name">{{ item.name }}</span>
             <span (click)="move(item)" class="move-right-btn">
               <i class="pi  pi-arrow-right"></i>
             </span>
@@ -49,7 +49,7 @@
             <span cdkDragHandle class="re-order-handler">
               <i class="pi pi-equals"></i>
             </span>
-            <span>{{ item.name }}</span>
+            <span class="item-name" [title]="item.name">{{ item.name }}</span>
             <span (click)="remove(item)" class="delete-btn">
               <i class="pi pi-trash"></i>
             </span>

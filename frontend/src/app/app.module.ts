@@ -69,6 +69,7 @@ import { DetailsLogDialog } from './views/admin/details-log-dialog/details-log-d
 import { ServiceStatusComponent } from './views/admin/service-status/service-status.component';
 import { SchemaConfigComponent } from './views/schemas/schemas.component';
 import { SchemasConfigurationComponent } from './views/schemas-configuration/schemas-configuration.component';
+import { SchemaTemplatesComponent } from './views/schema-templates/schema-templates.component';
 import { NotificationsComponent } from './views/notifications/notifications.component';
 import { RolesViewComponent } from './views/roles/roles-view.component';
 import { UsersManagementComponent } from './views/user-management/user-management.component';
@@ -107,6 +108,7 @@ import { QRCodeComponent } from 'angularx-qrcode';
 import { MeecoVCSubmitDialogComponent } from './components/meeco-vc-submit-dialog/meeco-vc-submit-dialog.component';
 import { CompareStorage } from './services/compare-storage.service';
 import { ToolsService } from './services/tools.service';
+import { SchemaTemplatesService } from './services/schema-templates.service';
 import { NewHeaderComponent } from './views/new-header/new-header.component';
 import { SearchResultCardComponent } from './components/search-result-card/search-result-card.component';
 import { PolicyAISearchComponent } from './views/policy-search/policy-ai-search/policy-ai-search.component';
@@ -224,6 +226,7 @@ const GuardianPreset = definePreset(Aura, {
         InfoComponent,
         SchemaConfigComponent,
         SchemasConfigurationComponent,
+        SchemaTemplatesComponent,
         BrandingComponent,
         SuggestionsConfigurationComponent,
         StandardRegistryCardComponent,
@@ -334,6 +337,7 @@ const GuardianPreset = definePreset(Aura, {
         ContractService,
         ModulesService,
         ToolsService,
+        SchemaTemplatesService,
         MapService,
         TagsService,
         ThemeService,

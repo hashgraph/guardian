@@ -1,4 +1,4 @@
-import { AuthEvents, GenerateUUIDv4, IOwner, IRootConfig, UserRole } from '@guardian/interfaces';
+import { AuthEvents, GenerateUUIDv4, IOwner, IRootConfig, OrgRolePermission, UserRole } from '@guardian/interfaces';
 import { Singleton } from '../decorators/singleton.js';
 import { KeyType, Wallet } from './wallet.js';
 import { NatsService } from '../mq/index.js';
@@ -367,5 +367,112 @@ export class Users extends NatsService {
 
     public async otpGenerateSecret(userId: string) {
         return await this.sendMessage(AuthEvents.OTP_GENERATE_SECRET, { userId });
+    }
+
+    /**
+     * Get an organization's Hedera credential locators by org id (internal lookup)
+     * @param organizationId
+     * @param userId
+     */
+    public async getOrgHederaInfo(
+        organizationId: string,
+        userId: string | null
+    ): Promise<{ did: string, hederaAccountId: string, walletToken: string, owner?: string } | null> {
+        return await this.sendMessage(AuthEvents.GET_ORG_HEDERA_INFO, { organizationId, userId });
+    }
+
+    /**
+     * Get a user's org context (active membership joined with its OrgRole) by DID (internal lookup)
+     * @param did
+     * @param userId
+     */
+    public async getOrgContextByDid(
+        did: string,
+        userId: string | null
+    ): Promise<{ organizationId: string, orgRoleName: string | null, orgRolePermissions: OrgRolePermission[] } | null> {
+        return await this.sendMessage(AuthEvents.GET_ORG_CONTEXT_BY_DID, { did, userId });
+    }
+
+    /**
+     * Get the DIDs of an organization's active members (internal lookup)
+     * @param organizationId
+     * @param userId
+     */
+    public async getOrgMemberDids(
+        organizationId: string,
+        userId: string | null
+    ): Promise<string[]> {
+        return await this.sendMessage(AuthEvents.GET_ORG_MEMBER_DIDS, { organizationId, userId });
+    }
+
+    /**
+     * Get the deduped IDs of all policies actively assigned to an organization (internal lookup).
+     * Wraps AuthEvents.GET_POLICIES_FOR_ORG. Drives both the ACCESS_POLICY_ASSIGNED* policy
+     * *list* filter (guardian-service addAccessFilters) and the policy *access gate*
+     * (accessPolicyCode / policy-service accessPolicy) — org assignment grants visibility and
+     * open/execute access, not auto-enrollment into policy groups.
+     * @param organizationId
+     * @param userId
+     */
+    public async getOrgPolicyIds(
+        organizationId: string,
+        userId: string | null
+    ): Promise<string[]> {
+        const assignments = await this.sendMessage<{ policyId?: string }[]>(
+            AuthEvents.GET_POLICIES_FOR_ORG,
+            { organizationId, userId }
+        );
+        if (!Array.isArray(assignments) || assignments.length === 0) {
+            return [];
+        }
+        const ids = new Set<string>();
+        for (const a of assignments) {
+            if (a && typeof a.policyId === 'string' && a.policyId) {
+                ids.add(a.policyId);
+            }
+        }
+        return Array.from(ids);
+    }
+
+    /**
+     * Validate that the caller (SR owner or MEMBER_MANAGE admin) may manage the given
+     * organization, and — when `orgRoleId` is supplied — that role is a valid assignment target
+     * under R1/R2 on the admin branch. Internal lookup for guardian-service's enroll pre-flight;
+     * the authoritative re-check remains at the persist handler (e.g. ENROLL_ORG_MEMBER).
+     * @param organizationId
+     * @param orgRoleId
+     * @param owner
+     * @param userId
+     */
+    public async validateOrgManagementAccess(
+        organizationId: string,
+        orgRoleId: string | null,
+        owner: IOwner,
+        userId: string | null
+    ): Promise<{
+        organization: {
+            id: string,
+            name?: string,
+            description?: string,
+            owner?: string,
+            did?: string,
+            walletToken?: string,
+            hederaAccountId?: string,
+            topicId?: string,
+            parentTopicId?: string,
+            status?: string
+        },
+        orgRole: {
+            id: string,
+            organizationId?: string,
+            name?: string,
+            description?: string,
+            permissions?: OrgRolePermission[]
+        } | null
+    }> {
+        return await this.sendMessage(
+            AuthEvents.VALIDATE_ORG_MANAGEMENT_ACCESS,
+            { organizationId, orgRoleId, owner, userId }
+        );
     }
 }

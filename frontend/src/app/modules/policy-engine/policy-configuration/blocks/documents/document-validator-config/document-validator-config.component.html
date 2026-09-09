@@ -76,6 +76,28 @@
         </p-toggleswitch>
       </td>
     </tr>
+    <tr class="propRow">
+      <td class="propRowCol"></td>
+      <td class="propRowCell cellName">Check Owned by Organization</td>
+      <td class="propRowCell">
+        <p-toggleswitch
+          [(ngModel)]="properties.checkOwnerOrgDocument"
+          [disabled]="readonly"
+          (onChange)="onSave()">
+        </p-toggleswitch>
+      </td>
+    </tr>
+    <tr class="propRow">
+      <td class="propRowCol"></td>
+      <td class="propRowCell cellName">Check Assigned to Organization</td>
+      <td class="propRowCell">
+        <p-toggleswitch
+          [(ngModel)]="properties.checkAssigneeOrgDocument"
+          [disabled]="readonly"
+          (onChange)="onSave()">
+        </p-toggleswitch>
+      </td>
+    </tr>
     <tr class="propHeader" (click)="onHide(propHidden, 'conditionsGroup')">
       <td class="propRowCol"></td>
       <td class="propHeaderCell cellName document-validator-section-header" [attr.collapse]="propHidden.conditionsGroup">
@@ -98,13 +120,20 @@
         </td>
         <td class="propRowCell">
           @if (condition.field && condition.type && condition.value) {
-            <span [title]="condition.field + ' ' + condition.type + ' ' + condition.value">
-              {{ condition.field }} {{ condition.type }} {{ condition.value }}
+            <span [title]="condition.field + ' ' + condition.type + ' ' + (condition.valueSource === 'document' ? '[field] ' : '') + condition.value">
+              {{ condition.field }} {{ condition.type }} {{ condition.valueSource === 'document' ? '[field] ' : '' }}{{ condition.value }}
             </span>
           }
           <span class="remove-prop" [attr.readonly]="readonly" (click)="$event.stopPropagation(); removeCondition(i)">
             <i class="pi pi-trash"></i>
           </span>
+        </td>
+      </tr>
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Field</td>
+        <td class="propRowCell field">
+          <document-path [(value)]="condition.field" [readonly]="readonly" (change)="onSave()"></document-path>
         </td>
       </tr>
       <tr class="propRow" lvl="1" [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
@@ -124,16 +153,27 @@
       </tr>
       <tr class="propRow" lvl="1" [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Field</td>
-        <td class="propRowCell field">
-          <document-path [(value)]="condition.field" [readonly]="readonly" (change)="onSave()"></document-path>
+        <td class="propRowCell cellName">Value Type</td>
+        <td class="propRowCell">
+          <p-select
+            panelStyleClass="pc-select-panel"
+            [(ngModel)]="condition.valueSource"
+            [disabled]="readonly"
+            (onChange)="onSave()"
+            [appendTo]="'body'"
+            [options]="conditionDocumentSourceOptions">
+          </p-select>
         </td>
       </tr>
       <tr class="propRow" lvl="1" [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Value</td>
-        <td class="propRowCell">
-          <input class="prop-input" [(ngModel)]="condition.value" [readonly]="readonly" (blur)="onSave()">
+        <td class="propRowCell field">
+          @if (condition.valueSource === 'document') {
+            <document-path [(value)]="condition.value" [readonly]="readonly" (change)="onSave()"></document-path>
+          } @else {
+            <input class="prop-input" [(ngModel)]="condition.value" [readonly]="readonly" (blur)="onSave()">
+          }
         </td>
       </tr>
     }
@@ -192,32 +232,36 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Owned by User</td>
         <td class="propRowCell">
-          <input class="prop-input" type="checkbox" [(ngModel)]="validation.onlyOwnDocuments"
-            [readonly]="readonly" (change)="onSave()">
+          <p-toggleswitch [(ngModel)]="validation.onlyOwnDocuments"
+            [disabled]="readonly" (onChange)="onSave()">
+          </p-toggleswitch>
         </td>
       </tr>
       <tr class="propRow subRow" [attr.collapse]="propHidden.sourceValidationsGroup || propHidden.sourceValidations[vi]">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Owned by Group</td>
         <td class="propRowCell">
-          <input class="prop-input" type="checkbox" [(ngModel)]="validation.onlyOwnByGroupDocuments"
-            [readonly]="readonly" (change)="onSave()">
+          <p-toggleswitch [(ngModel)]="validation.onlyOwnByGroupDocuments"
+            [disabled]="readonly" (onChange)="onSave()">
+          </p-toggleswitch>
         </td>
       </tr>
       <tr class="propRow subRow" [attr.collapse]="propHidden.sourceValidationsGroup || propHidden.sourceValidations[vi]">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Assigned to User</td>
         <td class="propRowCell">
-          <input class="prop-input" type="checkbox" [(ngModel)]="validation.onlyAssignDocuments"
-            [readonly]="readonly" (change)="onSave()">
+          <p-toggleswitch [(ngModel)]="validation.onlyAssignDocuments"
+            [disabled]="readonly" (onChange)="onSave()">
+          </p-toggleswitch>
         </td>
       </tr>
       <tr class="propRow subRow" [attr.collapse]="propHidden.sourceValidationsGroup || propHidden.sourceValidations[vi]">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Assigned to Group</td>
         <td class="propRowCell">
-          <input class="prop-input" type="checkbox" [(ngModel)]="validation.onlyAssignByGroupDocuments"
-            [readonly]="readonly" (change)="onSave()">
+          <p-toggleswitch [(ngModel)]="validation.onlyAssignByGroupDocuments"
+            [disabled]="readonly" (onChange)="onSave()">
+          </p-toggleswitch>
         </td>
       </tr>
 
@@ -339,7 +383,7 @@
           <td class="propRowCell cellName">Left Source</td>
           <td class="propRowCell">
             <p-select [(ngModel)]="condition.fieldSource" [disabled]="readonly" (onChange)="onSave()"
-              [appendTo]="'body'" [options]="conditionSourceOptions">
+              [appendTo]="'body'" [options]="crossConditionSourceOptions">
             </p-select>
           </td>
         </tr>
@@ -371,7 +415,7 @@
           <td class="propRowCell cellName">Right Source</td>
           <td class="propRowCell">
             <p-select [(ngModel)]="condition.valueSource" [disabled]="readonly" (onChange)="onSave()"
-              [appendTo]="'body'" [options]="conditionSourceOptions">
+              [appendTo]="'body'" [options]="crossConditionSourceOptions">
             </p-select>
           </td>
         </tr>

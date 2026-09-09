@@ -146,7 +146,14 @@ export class RequestVcDocumentBlock {
                 ref.actionType === LocationType.REMOTE &&
                 user.location === LocationType.REMOTE
             ),
-            schema: { ...this._schema, fields: [], conditions: [] },
+            // Lightweight schema reference; the client resolves the full schema by id.
+            schema: {
+                id: this._schema.id,
+                iri: this._schema.iri,
+                uuid: this._schema.uuid,
+                name: this._schema.name,
+                version: this._schema.version,
+            },
             presetSchema: options.presetSchema,
             presetFields: options.presetFields,
             editType: options.editType || 'new',
@@ -265,9 +272,9 @@ export class RequestVcDocumentBlock {
 
             //Validate
             if (!draft) {
-                const error = await this.validateDocuments(user, state);
-                if (error) {
-                    throw new BlockActionError(error.message, ref.blockType, ref.uuid, error.data);
+                const validationError = await this.validateDocuments(user, state);
+                if (validationError) {
+                    throw new BlockActionError(validationError.message, ref.blockType, ref.uuid, validationError.data);
                 }
             }
 

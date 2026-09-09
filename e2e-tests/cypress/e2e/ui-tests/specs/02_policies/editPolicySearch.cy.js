@@ -1,14 +1,14 @@
-import { randomInt } from "../../../../support/random";
-import { HomePage } from "../../pages/homePage";
+import { randomInt } from '../../../../support/random';
+import { HomePage } from '../../pages/homePage';
 const homePage = new HomePage();
 
-import { PoliciesPage } from "../../pages/policiesPage";
+import { PoliciesPage } from '../../pages/policiesPage';
 const policiesPage = new PoliciesPage();
 
-context("Edit Policy. Search flow", { tags: ['ui'] }, () => {
+context('Edit Policy. Search flow', { tags: ['ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
-    const name = randomInt(999) + "testName";
+    const name = randomInt(999) + 'testName';
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
@@ -17,20 +17,20 @@ context("Edit Policy. Search flow", { tags: ['ui'] }, () => {
         policiesPage.openPoliciesTab();
     });
 
-    it("Verify if it possible to search by Components", () => {
+    it('Verify if it possible to search by Components', () => {
         policiesPage.createPolicy();
         policiesPage.fillNewPolicyForm(name);
         policiesPage.backToPoliciesList();
-        policiesPage.checkStatus(name, "Draft");
+        policiesPage.checkStatus(name, 'Draft');
         policiesPage.openEditingPolicy(name);
-        policiesPage.fillSearchField("Aggregate Data");
-        policiesPage.verifyIfSearchResultContains("Aggregate Data");
+        policiesPage.fillSearchField('Aggregate Data');
+        policiesPage.verifyIfSearchResultContains('Aggregate Data');
     });
 
-    it("Verify if it possible to search by Modules", () => {
+    it('Verify if it possible to search by Modules', () => {
         policiesPage.openEditingPolicy(name);
         policiesPage.openModulesInPolicy();
-        policiesPage.fillSearchField("testModule");
+        policiesPage.fillSearchField('testModule');
         policiesPage.verifyIfSearchResultIsEmpty();
     });
 

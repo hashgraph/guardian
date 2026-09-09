@@ -14,6 +14,7 @@ import { MeecoAuthService } from './api/meeco-service.js';
 import { ApplicationEnvironment } from './environment.js';
 import { RoleService } from './api/role-service.js';
 import { RelayerAccountsService } from './api/relayer-accounts.js';
+import { OrganizationService } from './api/organization-service.js';
 import { DEFAULT_MONGO } from '#constants';
 import { checkValidJwt } from './utils/index.js';
 
@@ -82,6 +83,9 @@ Promise.all([
 
         await new RelayerAccountsService().setConnection(cn).init();
         new RelayerAccountsService().registerListeners(logger);
+
+        await new OrganizationService().setConnection(cn).init();
+        new OrganizationService().registerListeners(logger);
 
         const validator = new ValidateConfiguration();
 

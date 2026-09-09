@@ -1,3 +1,12 @@
+/**
+ * Network tests for HederaSDKHelper.
+ *
+ * They run against a live Hedera network and create accounts, tokens and topics,
+ * so a full run takes several minutes.
+ *
+ * Requires OPERATOR_ID and OPERATOR_KEY in the environment, read from
+ * worker-service/.env. HEDERA_NET selects the network and defaults to testnet.
+ */
 import { assert } from 'chai';
 import dotenv from 'dotenv';
 
@@ -23,7 +32,7 @@ describe('Hedera SDK Helper', function () {
     this.timeout(60 * transactionTimeout);
 
     before(async function () {
-        sdk = new HederaSDKHelper(OPERATOR_ID, OPERATOR_KEY, null, { network: HEDERA_NET });
+        sdk = new HederaSDKHelper(OPERATOR_ID, OPERATOR_KEY, null, null, { network: HEDERA_NET });
     });
 
     it('Test SDK newAccount', async function () {

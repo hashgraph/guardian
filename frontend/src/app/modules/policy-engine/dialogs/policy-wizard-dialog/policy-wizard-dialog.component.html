@@ -17,6 +17,17 @@
 </div>
 <div class="dialog-footer">
   {{this.dataForm.errors}}
+  @if (missingSubSchemas.length) {
+    <div class="wizard-missing-schemas">
+      <div>The selected schemas reference sub-schemas that are not available in this policy:</div>
+      <ul>
+        @for (iri of missingSubSchemas; track iri) {
+          <li>{{ iri }}</li>
+        }
+      </ul>
+      <div>Add the missing schemas, or deselect the schemas that depend on them, before creating the policy.</div>
+    </div>
+  }
   <div class="action-buttons">
     <div class="create-policy-button">
       <div class="dialog-button">
@@ -258,7 +269,6 @@
       [group]="true"
       [ngModel]="selectedSchemas"
       [options]="groupedSchemas"
-      appendTo="body"
       placeholder="Select Schema"
       >
     </p-multiSelect>

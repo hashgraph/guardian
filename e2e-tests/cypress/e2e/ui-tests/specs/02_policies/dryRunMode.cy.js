@@ -1,14 +1,14 @@
-import { randomInt } from "../../../../support/random";
-import { HomePage } from "../../pages/homePage";
+import { randomInt } from '../../../../support/random';
+import { HomePage } from '../../pages/homePage';
 const homepage = new HomePage();
 
-import { PoliciesPage } from "../../pages/policiesPage";
+import { PoliciesPage } from '../../pages/policiesPage';
 const policiesPage = new PoliciesPage();
 
-context("Dry run Policy", { tags: ['ui'] }, () => {
+context('Dry run Policy', { tags: ['ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
-    const name = randomInt(999) + "testName";
+    const name = randomInt(999) + 'testName';
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
@@ -18,13 +18,13 @@ context("Dry run Policy", { tags: ['ui'] }, () => {
     })
 
     //TBD: Full policy flow with tokens minting
-    it("checks dry run workflow", () => {
+    it('checks dry run workflow', () => {
         policiesPage.createPolicy();
         policiesPage.fillNewPolicyForm(name);
         policiesPage.backToPoliciesList();
-        policiesPage.checkStatus(name, "Draft");
+        policiesPage.checkStatus(name, 'Draft');
         policiesPage.startDryRun(name);
-        policiesPage.checkStatus(name, "In Dry Run");
+        policiesPage.checkStatus(name, 'In Dry Run');
         policiesPage.stopDryRun(name);
     });
 

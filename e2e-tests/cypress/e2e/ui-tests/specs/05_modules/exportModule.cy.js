@@ -1,13 +1,13 @@
-import { ModulesPage } from "../../pages/modulesPage";
+import { ModulesPage } from '../../pages/modulesPage';
 const modulesPage = new ModulesPage();
 
-import { HomePage } from "../../pages/homePage";
+import { HomePage } from '../../pages/homePage';
 const homePage = new HomePage();
 
-context("Workflow Module Export", { tags: ['ui'] }, () => {
+context('Workflow Module Export', { tags: ['ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
-    const moduleName = "UIModule";
+    const moduleName = 'UIModule';
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
@@ -16,14 +16,14 @@ context("Workflow Module Export", { tags: ['ui'] }, () => {
         modulesPage.openModulesTab();
     })
 
-    it("Verify if it impossible to Export draft module using message identifier", () => {
-        modulesPage.checkStatus(moduleName, "Draft");
+    it('Verify if it impossible to Export draft module using message identifier', () => {
+        modulesPage.checkStatus(moduleName, 'Draft');
         modulesPage.openExportModal(moduleName);
-        modulesPage.verifyThatButtonDisabled("Copy message identifier");
+        modulesPage.verifyThatButtonDisabled('Copy message identifier');
     });
 
-    it("Verify if it possible to Export draft module using file", () => {
-        modulesPage.checkStatus(moduleName, "Draft");
+    it('Verify if it possible to Export draft module using file', () => {
+        modulesPage.checkStatus(moduleName, 'Draft');
         modulesPage.exportModuleAsFile(moduleName);
     });
 });

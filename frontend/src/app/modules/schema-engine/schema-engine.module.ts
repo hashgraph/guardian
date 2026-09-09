@@ -11,9 +11,7 @@ import { ArtifactEngineModule } from '../artifact-engine/artifact-engine.module'
 import { DynamicDialogModule } from 'primeng/dynamicdialog';
 import { AgGridModule } from 'ag-grid-angular';
 //Components
-import { SchemaDialog } from './schema-dialog/schema-dialog.component';
 import { SchemaFormComponent } from './schema-form/schema-form.component';
-import { SchemaConfigurationComponent } from './schema-configuration/schema-configuration.component';
 import { ImportSchemaDialog } from './import-schema/import-schema-dialog.component';
 import { SchemaFormViewComponent } from './schema-form-view/schema-form-view.component';
 import { DocumentViewComponent } from './document-view/document-view.component';
@@ -59,10 +57,8 @@ import { SchemaFormViewNavigationComponent } from './schema-form-view-navigation
 
 @NgModule({
     declarations: [
-        SchemaDialog,
         SchemaFormComponent,
         CopySchemaDialog,
-        SchemaConfigurationComponent,
         ImportSchemaDialog,
         SchemaFormViewComponent,
         DocumentViewComponent,
@@ -115,9 +111,7 @@ import { SchemaFormViewNavigationComponent } from './schema-form-view-navigation
         DynamicDialogModule,
     ],
     exports: [
-        SchemaDialog,
         SchemaFormComponent,
-        SchemaConfigurationComponent,
         ImportSchemaDialog,
         SchemaFormViewComponent,
         DocumentViewComponent,

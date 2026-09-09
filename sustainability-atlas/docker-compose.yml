@@ -1,0 +1,281 @@
+# =============================================================================
+# Sustainability Atlas — Production Deployment
+# =============================================================================
+#
+# This compose file runs the full stack:
+#   - postgres        : PostgreSQL 16 (per-network databases)
+#   - redict          : Redis-compatible store for BullMQ + leader election
+#   - ipfs            : Local Kubo node for fetching VC documents
+#   - worker-mainnet  : Hedera mainnet sync worker
+#   - worker-testnet  : Hedera testnet sync worker (commented out — uncomment to enable)
+#   - api             : REST API serving all configured networks
+#   - frontend        : Nuxt 3 SSR frontend
+#   - bull-board      : BullMQ dashboard (optional, useful for monitoring)
+#
+# Usage:
+#   cp .env.example .env       # configure secrets / overrides
+#   docker compose up -d
+#
+# All inter-service communication uses Docker DNS (service names). Only the
+# API and frontend ports are exposed to the host. Internal stores (postgres,
+# redict, ipfs) are not exposed by default — uncomment their `ports` blocks
+# if you need direct access from the host for debugging.
+# =============================================================================
+
+services:
+    # ─── Infrastructure ─────────────────────────────────────────────────────
+    postgres:
+        image: postgres:16-alpine
+        container_name: se-postgres
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: postgres
+            POSTGRES_USER: ${DB_USER:-explorer}
+            POSTGRES_PASSWORD: ${DB_PASSWORD:-explorer_password}
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+            # Auto-import any *.sql / *.sql.gz / *.sh files placed here when the
+            # data volume is empty. `scripts/export-snapshot.sh` writes a
+            # `01-restore.sql.gz` here and `import-snapshot.sh` extracts one,
+            # so a fresh `docker compose up -d` on a new host bootstraps the
+            # per-network databases from the snapshot.
+            - ./snapshot/postgres-init:/docker-entrypoint-initdb.d:ro
+        # ports:
+        #     - '5432:5432'   # uncomment for host debugging access
+        healthcheck:
+            test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-explorer}']
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    redict:
+        image: registry.redict.io/redict:7.3.6-alpine
+        container_name: se-redict
+        restart: unless-stopped
+        command: >
+            redict-server
+            --appendonly yes
+            --maxmemory 1500mb
+            --maxmemory-policy noeviction
+            --auto-aof-rewrite-percentage 50
+            --auto-aof-rewrite-min-size 64mb
+        volumes:
+            - redict_data:/data
+        # ports:
+        #     - '6379:6379'   # uncomment for host debugging access
+        deploy:
+            resources:
+                limits:
+                    memory: 2G
+                    cpus: '0.5'
+                reservations:
+                    memory: 256M
+                    cpus: '0.1'
+        healthcheck:
+            test: ['CMD-SHELL', 'redict-cli ping || redis-cli ping']
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 30s
+
+    ipfs:
+        image: ipfs/kubo:latest
+        container_name: se-ipfs
+        restart: unless-stopped
+        environment:
+            - IPFS_PROFILE=flatfs
+        volumes:
+            - ipfs_data:/data/ipfs
+        # ports:
+        #     - '8080:8080'   # gateway (uncomment for host debugging)
+        #     - '5001:5001'   # API (uncomment for host debugging)
+
+    # One-shot helper that fixes ownership on the bind-mounted policy-zips
+    # directory before the workers (which run as a non-root user) start.
+    # No-op if the directory is already writable by the worker user.
+    policy-zips-init:
+        image: alpine:3.20
+        container_name: se-policy-zips-init
+        command: sh -c "mkdir -p /target && chown -R 1000:1000 /target"
+        volumes:
+            - ./data/policy-zips:/target
+        restart: 'no'
+
+    # ─── Workers (one per network) ──────────────────────────────────────────
+    worker-mainnet:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: se-worker-mainnet
+        restart: unless-stopped
+        env_file:
+            - .env
+        environment:
+            HEDERA_NET: mainnet
+            DB_HOST: postgres
+            DB_PORT: '5432'
+            REDICT_HOST: redict
+            REDICT_PORT: '6379'
+            IPFS_GATEWAYS: http://ipfs:8080/ipfs/,https://${cid}.ipfs.w3s.link
+            # Persist decoded policy zips on the host so they survive container
+            # rebuilds and can be packaged into a snapshot.
+            POLICY_ZIP_STORAGE_PATH: /app/data/policy-zips
+        volumes:
+            - ./data/policy-zips:/app/data/policy-zips
+        command: node dist/src/worker/main.js
+        depends_on:
+            postgres:
+                condition: service_healthy
+            redict:
+                condition: service_healthy
+            ipfs:
+                condition: service_started
+            policy-zips-init:
+                condition: service_completed_successfully
+
+    # Uncomment to enable testnet syncing:
+
+    worker-testnet:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: se-worker-testnet
+        restart: unless-stopped
+        env_file:
+            - .env
+        environment:
+            HEDERA_NET: testnet
+            DB_HOST: postgres
+            DB_PORT: '5432'
+            REDICT_HOST: redict
+            REDICT_PORT: '6379'
+            IPFS_GATEWAYS: http://ipfs:8080/ipfs/,https://${cid}.ipfs.w3s.link
+            POLICY_ZIP_STORAGE_PATH: /app/data/policy-zips
+        volumes:
+            - ./data/policy-zips:/app/data/policy-zips
+        command: node dist/src/worker/main.js
+        depends_on:
+            postgres:
+                condition: service_healthy
+            redict:
+                condition: service_healthy
+            ipfs:
+                condition: service_started
+            policy-zips-init:
+                condition: service_completed_successfully
+
+    # ─── Guardian event-sync (OPT-IN) ────────────────────────────────────────
+    # Consumes Guardian Application Events Module stream(s) and enqueues targeted
+    # jobs onto the paired worker's queues, reducing mirror-node polling load.
+    # Commented out by default — it does NOT auto-start.
+    #
+    # ONE guardian-sync process per HEDERA_NET. It activates every GUARDIAN_INSTANCES
+    # entry whose target network — GUARDIAN_<ID>_NETWORK, default = its Hedera net —
+    # equals HEDERA_NET, so SEVERAL Guardians on the same net feed ONE dataset.
+    # Pair it with the worker on the same HEDERA_NET (here: worker-testnet).
+    # For an ISOLATED dataset instead, set GUARDIAN_<ID>_NETWORK=<unique> and run a
+    # dedicated worker (with its own SEED_TOPIC_ID + HEDERA_MIRROR_NODE_URL) at it.
+    # guardian-sync-testnet:
+    #     build:
+    #         context: .
+    #         dockerfile: Dockerfile
+    #     container_name: se-guardian-sync-testnet
+    #     restart: unless-stopped
+    #     env_file:
+    #         - .env
+    #     environment:
+    #         HEDERA_NET: testnet
+    #         DB_HOST: postgres
+    #         DB_PORT: '5432'
+    #         REDICT_HOST: redict
+    #         REDICT_PORT: '6379'
+    #         # Two Guardians, both on Hedera testnet, feeding the shared testnet dataset:
+    #         GUARDIAN_INSTANCES: local-testnet,deploy-testnet
+    #         GUARDIAN_LOCAL_TESTNET_AEM_URL: http://guardian-aem:3012
+    #         GUARDIAN_DEPLOY_TESTNET_AEM_URL: http://34.194.124.200:3012
+    #         # GUARDIAN_DEPLOY_TESTNET_AUTH_HEADER: "Bearer ${DEPLOY_AEM_TOKEN}"
+    #     command: node dist/src/guardian-sync/main.js
+    #     depends_on:
+    #         postgres:
+    #             condition: service_healthy
+    #         redict:
+    #             condition: service_healthy
+
+    # ─── API ────────────────────────────────────────────────────────────────
+    api:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: se-api
+        restart: unless-stopped
+        env_file:
+            - .env
+        environment:
+            # Comma-separated list of networks this API instance exposes.
+            # Must include every network that has a running worker.
+            HEDERA_NETWORKS: mainnet,testnet
+            DB_HOST: postgres
+            DB_PORT: '5432'
+            REDICT_HOST: redict
+            REDICT_PORT: '6379'
+            API_PORT: '3030'
+            API_CORS_ORIGINS: ${API_CORS_ORIGINS:-http://localhost:3000}
+        ports:
+            - '${API_PORT:-3030}:3030'
+        command: node dist/src/api/main.js
+        depends_on:
+            postgres:
+                condition: service_healthy
+            redict:
+                condition: service_healthy
+
+    # ─── Frontend ───────────────────────────────────────────────────────────
+    frontend:
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile
+        container_name: se-frontend
+        restart: unless-stopped
+        environment:
+            NODE_ENV: production
+            NITRO_HOST: 0.0.0.0
+            NITRO_PORT: '3000'
+            # Server-side API base URL (used during SSR fetches).
+            # Uses Docker DNS so the frontend container reaches the API container.
+            NUXT_API_BASE_URL: http://api:3030
+            # Client-side API base URL (used by the browser after hydration).
+            # Must be externally reachable from end-user machines.
+            # Example: http://3.93.78.104:3030 or https://api.yourdomain.com
+            NUXT_PUBLIC_API_BASE_URL: ${NUXT_PUBLIC_API_BASE_URL:-http://localhost:3030}
+            # SSE base URL — must bypass Nitro proxy (Nitro buffers the body,
+            # which breaks text/event-stream). Must be publicly reachable.
+            NUXT_PUBLIC_SSE_API_BASE_URL: ${NUXT_PUBLIC_SSE_API_BASE_URL:-http://localhost:3030}
+            # Shared secret marking SSR server-to-server requests as the trusted
+            # frontend (sent as X-Frontend-Key so DataAccessGuard exempts them from
+            # the API-key gate + rate limits). MUST match the API's
+            # FRONTEND_SHARED_SECRET. Server-only — never exposed to the browser.
+            FRONTEND_SHARED_SECRET: ${FRONTEND_SHARED_SECRET:-}
+        ports:
+            - '${FRONTEND_PORT:-3000}:3000'
+        depends_on:
+            api:
+                condition: service_started
+
+    # ─── Monitoring (optional) ──────────────────────────────────────────────
+    bull-board:
+        image: deadly0/bull-board
+        container_name: se-bull-board
+        restart: unless-stopped
+        environment:
+            REDIS_HOST: redict
+            REDIS_PORT: '6379'
+        ports:
+            - '${BULL_BOARD_PORT:-3010}:3000'
+        depends_on:
+            redict:
+                condition: service_healthy
+
+volumes:
+    postgres_data:
+    redict_data:
+    ipfs_data:

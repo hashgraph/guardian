@@ -7,7 +7,9 @@ import {
     SchemaRuleValidateResult,
     UnitSystem
 } from '@guardian/interfaces';
+import { DialogService } from 'primeng/dynamicdialog';
 import { Subject, Subscription, takeUntil } from 'rxjs';
+import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from '../../../services/api';
 import { FieldForm, IFieldControl, IFieldIndexControl } from '../schema-form-model/field-form';
@@ -126,7 +128,8 @@ export class SchemaFormComponent implements OnInit {
 
     constructor(
         private ipfs: IPFSService,
-        protected changeDetectorRef: ChangeDetectorRef
+        protected changeDetectorRef: ChangeDetectorRef,
+        private readonly dialog: DialogService
     ) { }
 
     ngOnInit(): void {
@@ -343,10 +346,56 @@ export class SchemaFormComponent implements OnInit {
         if (event?.stopPropagation) {
             event.stopPropagation();
         }
+        const dependents = this.formModel?.rootForm?.getDependentArrays(item) || [];
+        if (!dependents.length) {
+            this.applyRemoveItem(item, listItem);
+            return;
+        }
+        this.dialog.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Delete entry',
+                text: 'Linked entries will be deleted together with this one.',
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Delete',
+                    class: 'delete'
+                }]
+            },
+        })!.onClose.subscribe((result: string) => {
+            if (result === 'Delete') {
+                this.applyRemoveItem(item, listItem);
+            }
+        });
+    }
+
+    private applyRemoveItem(item: IFieldControl<any>, listItem: IFieldIndexControl<any>): void {
         this.formModel?.removeItem(item, listItem);
         this.formModel?.updateValueAndValidity();
         this.changeDetectorRef.detectChanges();
         this.change.emit();
+    }
+
+    public isManagedArray(item: IFieldControl<any>): boolean {
+        return !!this.formModel?.rootForm?.isManagedArray(item);
+    }
+
+    public entryTitleLabel(item: IFieldControl<any>): string {
+        return this.formModel?.getEntryTitleLabel(item) || 'Source entry';
+    }
+
+    public entryTitle(item: IFieldControl<any>, listItem: IFieldIndexControl<any>): string {
+        return this.formModel?.getEntryTitle(item, listItem)
+            || `${item.description} #${listItem.index2}`;
+    }
+
+    public entryTitleNumber(item: IFieldControl<any>, listItem: IFieldIndexControl<any>): string {
+        const fallback = `${item.description} #${listItem.index2}`;
+        return this.entryTitle(item, listItem) === fallback ? '' : `#${listItem.index2}`;
     }
 
     public patchSuggestValue(item: IFieldControl<any>) {
@@ -1088,18 +1137,24 @@ export class SchemaFormComponent implements OnInit {
         );
     }
 
-    public getTableHeaderFields(item: IFieldControl<any>): any[] | undefined {
-        if (this.hide) {
-            return item.fields?.filter(f => f.type !== 'null' && !this.hide[f.name] && !f.hidden);
-        }
-        return item.fields?.filter(f => f.type !== 'null' && !f.hidden);
+    private getTitleMappedNames(item: IFieldControl<any>): Set<string> {
+        return this.formModel?.getTitleMappedNames(item) || new Set<string>();
     }
 
-    public getTableRowFields(item: IFieldIndexControl<any>): any[] | undefined {
+    public getTableHeaderFields(item: IFieldControl<any>): any[] | undefined {
+        const mapped = this.getTitleMappedNames(item);
         if (this.hide) {
-            return item.model.controls?.filter((f: any) => f.type !== 'null' && !this.hide[f.name] && !f.hidden);
+            return item.fields?.filter(f => f.type !== 'null' && !this.hide[f.name] && !f.hidden && !mapped.has(f.name));
         }
-        return item.model.controls?.filter((f: any) => f.type !== 'null' && !f.hidden);
+        return item.fields?.filter(f => f.type !== 'null' && !f.hidden && !mapped.has(f.name));
+    }
+
+    public getTableRowFields(item: IFieldIndexControl<any>, owner?: IFieldControl<any>): any[] | undefined {
+        const mapped = owner ? this.getTitleMappedNames(owner) : new Set<string>();
+        if (this.hide) {
+            return item.model.controls?.filter((f: any) => f.type !== 'null' && !this.hide[f.name] && !f.hidden && !mapped.has(f.name));
+        }
+        return item.model.controls?.filter((f: any) => f.type !== 'null' && !f.hidden && !mapped.has(f.name));
     }
 }
 

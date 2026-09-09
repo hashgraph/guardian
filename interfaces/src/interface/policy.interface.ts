@@ -1,3 +1,5 @@
+import { IPolicySchemaTemplateBinding } from './schema-template.interface.js';
+
 /**
  * Allowed shape of a policy documentation alias.
  * One or more `[a-z0-9-]+` segments separated by single `/`
@@ -124,4 +126,8 @@ export interface IPolicy {
    * policyDocumentation
    */
   policyDocumentation?: IPolicyDocumentationEntry[];
+  /**
+   * Server-managed schema template binding.
+   */
+  schemaTemplate?: IPolicySchemaTemplateBinding;
 }

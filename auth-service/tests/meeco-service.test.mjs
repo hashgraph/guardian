@@ -54,7 +54,6 @@ describe('MeecoService', function () {
                     return { decoded: token };
                 },
             },
-            base64url: { default: { encode: (b) => `b64:${Buffer.from(b).length}` } },
             tweetnacl: {
                 default: {
                     sign: {
@@ -172,7 +171,7 @@ describe('MeecoService', function () {
             await svc.signPresentationRequestToken('REQ-9', 'UNSIGNED');
             const submitCall = svc.meecoApi.calls.find(c => c[0] === 'submit');
             assert.equal(submitCall[1], 'REQ-9');
-            assert.ok(submitCall[2].startsWith('UNSIGNED.b64:'));
+            assert.equal(submitCall[2], 'UNSIGNED.AQID');
         });
     });
 

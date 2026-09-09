@@ -24,7 +24,7 @@ const registry_params = {
 // Link parameters for guardian registration
 const link_params = {
     username: "Installer",
-    password: "test",
+    password: "TestPass1",
 }
 
 module.exports = {

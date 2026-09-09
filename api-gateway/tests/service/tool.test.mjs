@@ -110,14 +110,14 @@ describe('ToolsApi controller logic', function () {
 
     it('getTools sets count header', async () => {
         const res = makeRes();
-        await makeApi(Api).api.getTools(makeUser(), res, 0, 10);
+        await makeApi(Api).api.getTools(makeUser(), makeReq(), res, 0, 10);
         assert.equal(res.headers['X-Total-Count'], 5);
     });
 
     it('getTools passes paging options', async () => {
         let seen;
         stub.getTools = async (o) => { seen = o; return { items: [], count: 0 }; };
-        await makeApi(Api).api.getTools(makeUser(), makeRes(), 2, 20);
+        await makeApi(Api).api.getTools(makeUser(), makeReq(), makeRes(), 2, 20);
         assert.deepEqual(seen, { pageIndex: 2, pageSize: 20 });
     });
 

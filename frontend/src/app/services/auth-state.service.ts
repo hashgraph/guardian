@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, ReplaySubject, Subject } from 'rxjs';
 import { AuthService } from './auth.service';
+import { AppThemeService } from './app-theme.service';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -14,7 +15,8 @@ export class AuthStateService {
     private refreshTokenTimer: any;
 
     constructor(
-        private authService: AuthService
+        private authService: AuthService,
+        private appThemeService: AppThemeService
     ) {
         this.updateState(false, true);
         this._value.subscribe((isLogin) => {
@@ -47,6 +49,19 @@ export class AuthStateService {
         if (!noClearLocalStorage && !state) {
             localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
+        }
+        /*
+         * The theme belongs to the account, not to the browser: adopt the signing-in
+         * user's preference, and drop back to the default when the session ends.
+         *
+         * `noClearLocalStorage` distinguishes the constructor's bootstrap call - "we
+         * do not know yet" - from a real sign-out. Resetting on bootstrap would
+         * discard the theme on every page refresh.
+         */
+        if (state) {
+            this.appThemeService.applyForUser(this.authService.getUserKey());
+        } else if (!noClearLocalStorage) {
+            this.appThemeService.reset();
         }
         this._value.next(state);
     }

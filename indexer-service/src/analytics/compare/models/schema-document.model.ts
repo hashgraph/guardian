@@ -96,7 +96,7 @@ export class SchemaDocumentModel {
         const combinedDefs = document.$defs || defs;
 
         for (const condition of document.allOf) {
-            if (!condition.if) {
+            if (!condition.if?.properties) {
                 continue;
             }
             const ifConditionFieldName = Object.keys(condition.if.properties)[0];

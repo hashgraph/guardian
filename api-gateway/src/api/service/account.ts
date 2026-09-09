@@ -31,11 +31,11 @@ import {
     OTPStatusResponseDTO
 } from '#middlewares';
 import { Auth, AuthUser, checkPermission } from '#auth';
-import { EntityOwner, Guardians, InternalException, PolicyEngine, ServiceError, TaskManager, UseCache, Users } from '#helpers';
+import { CacheService, EntityOwner, Guardians, InternalException, PolicyEngine, ServiceError, TaskManager, UseCache, Users } from '#helpers';
 import { PolicyListResponse } from '../../entities/policy.js';
 import { StandardRegistryAccountResponse } from '../../entities/account.js';
 import { ApplicationEnvironment } from '../../environment.js';
-import { CACHE } from '#constants';
+import { CACHE, CACHE_TAG_PREFIXES } from '#constants';
 
 /**
  * User account route
@@ -44,7 +44,29 @@ import { CACHE } from '#constants';
 @ApiTags('accounts')
 export class AccountApi {
 
-    constructor(@Inject('GUARDIANS') public readonly client: ClientProxy, private readonly logger: PinoLogger) {
+    constructor(
+        @Inject('GUARDIANS') public readonly client: ClientProxy,
+        private readonly cacheService: CacheService,
+        private readonly logger: PinoLogger
+    ) {
+    }
+
+    /**
+     * Drops every cached accounts response.
+     *
+     * The mutation is already applied when this runs, so a cache failure must
+     * not turn a successful request into an error - it is logged instead.
+     */
+    private async invalidateAccountsCache(userId: string | null): Promise<void> {
+        try {
+            await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.ACCOUNTS);
+        } catch (error) {
+            await this.logger.warn(
+                `Failed to invalidate the accounts cache: ${error.message}`,
+                ['API_GATEWAY'],
+                userId
+            );
+        }
     }
 
     /**
@@ -177,6 +199,9 @@ export class AccountApi {
                 'Next register your account in hedera',
                 childUser.id,
             );
+
+            await this.invalidateAccountsCache(childUser.id);
+
             return childUser;
         } catch (error) {
             await this.logger.error(error, ['API_GATEWAY'], parentUser?.id);
@@ -321,6 +346,10 @@ export class AccountApi {
 
         // After the task completes, transfer ownership to the newly created user
         taskManager.registerCallback(task, async (completedTask) => {
+            // The account only exists once the task is done, so the listing cache
+            // cannot be dropped when the request returns.
+            await this.invalidateAccountsCache(parentUser?.id ?? null);
+
             if (completedTask.result?.username) {
                 try {
                     const usersService = new Users();
@@ -360,7 +389,7 @@ export class AccountApi {
             loginBody: {
                 value: {
                     username: Examples.USER_NAME_SR_1,
-                    password: 'test'
+                    password: 'TestPass1'
                 }
             }
         }
@@ -439,7 +468,7 @@ export class AccountApi {
             changePasswordBody: {
                 value: {
                     username: Examples.USER_NAME_SR_1,
-                    oldPassword: 'test',
+                    oldPassword: 'TestPass1',
                     newPassword: 'AnotherStrongPassword3#'
                 }
             }
@@ -478,7 +507,11 @@ export class AccountApi {
         try {
             const { username, oldPassword, newPassword } = body;
             const users = new Users();
-            return await users.changeUserPassword(user, username, oldPassword, newPassword);
+            const result = await users.changeUserPassword(user, username, oldPassword, newPassword);
+
+            await this.invalidateAccountsCache(user.id);
+
+            return result;
         } catch (error) {
             await this.logger.warn(error.message, ['API_GATEWAY'], null);
             throw new HttpException(error.message, error.code || HttpStatus.UNAUTHORIZED);
@@ -828,6 +861,8 @@ export class AccountApi {
             const token = body.token;
             const result = await users.otpConfirmSecret(user.id, token);
 
+            await this.invalidateAccountsCache(user.id);
+
             return result;
 
         } catch (error) {
@@ -893,6 +928,8 @@ export class AccountApi {
         const users = new Users();
         try {
             const result = await users.otpDeactivate(user.id);
+
+            await this.invalidateAccountsCache(user.id);
 
             return result;
 

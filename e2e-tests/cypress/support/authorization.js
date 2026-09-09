@@ -1,26 +1,28 @@
-import { METHOD } from "../support/api/api-const";
-import API from "../support/ApiUrls";
+import { METHOD } from '../support/api/api-const';
+import API from '../support/ApiUrls';
 let refreshToken;
 
 export const getAccessToken = (username) => {
-    return cy.request({
-        method: METHOD.POST,
-        url: API.ApiServer + API.AccountsLogin,
-        body: {
-            username: username,
-            password: "test"
-        }
-    }).then((response) => {
-        //Get AT
-        refreshToken = response.body.refreshToken
-        cy.request({
+    return cy.fixture('credentials').then(({ goodPassword }) => {
+        return cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.AccessToken,
+            url: API.ApiServer + API.AccountsLogin,
             body: {
-                refreshToken: response.body.refreshToken
+                username,
+                password: goodPassword
             }
         }).then((response) => {
-            return "Bearer " + response.body.accessToken;
+            //Get AT
+            refreshToken = response.body.refreshToken
+            cy.request({
+                method: METHOD.POST,
+                url: API.ApiServer + API.AccessToken,
+                body: {
+                    refreshToken: response.body.refreshToken
+                }
+            }).then((response) => {
+                return 'Bearer ' + response.body.accessToken;
+            })
         })
     })
 }
@@ -30,8 +32,8 @@ export const getAccessTokenWithPass = (username, password) => {
         method: METHOD.POST,
         url: API.ApiServer + API.AccountsLogin,
         body: {
-            username: username,
-            password: password
+            username,
+            password
         }
     }).then((response) => {
         //Get AT
@@ -43,31 +45,33 @@ export const getAccessTokenWithPass = (username, password) => {
                 refreshToken: response.body.refreshToken
             }
         }).then((response) => {
-            return "Bearer " + response.body.accessToken;
+            return 'Bearer ' + response.body.accessToken;
         })
     })
 }
 
 export const getAccessTokenMGS = (username, tenantId) => {
-    return cy.request({
-        method: METHOD.POST,
-        url: API.ApiMGS + API.AccountsLogin,
-        body: {
-            username: username,
-            password: "test",
-            tenantId: tenantId
-        }
-    }).then((response) => {
-        //Get AT
-        refreshToken = response.body.refreshToken
-        cy.request({
+    return cy.fixture('credentials').then(({ goodPassword }) => {
+        return cy.request({
             method: METHOD.POST,
-            url: API.ApiMGS + API.AccessToken,
+            url: API.ApiMGS + API.AccountsLogin,
             body: {
-                refreshToken: response.body.refreshToken
+                username,
+                password: goodPassword,
+                tenantId
             }
         }).then((response) => {
-            return "Bearer " + response.body.accessToken;
+            //Get AT
+            refreshToken = response.body.refreshToken
+            cy.request({
+                method: METHOD.POST,
+                url: API.ApiMGS + API.AccessToken,
+                body: {
+                    refreshToken: response.body.refreshToken
+                }
+            }).then((response) => {
+                return 'Bearer ' + response.body.accessToken;
+            })
         })
     })
 }
@@ -77,9 +81,9 @@ export const getAccessTokenByRefreshToken = () => {
         method: METHOD.POST,
         url: API.ApiServer + API.AccessToken,
         body: {
-            refreshToken: refreshToken
+            refreshToken
         }
     }).then((response) => {
-        return "Bearer " + response.body.accessToken;
+        return 'Bearer ' + response.body.accessToken;
     })
 }

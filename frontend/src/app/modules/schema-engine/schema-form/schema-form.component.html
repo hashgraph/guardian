@@ -325,6 +325,9 @@
                     <ng-template pTemplate="header">
                       <tr [attr.accordiontabid]="item.id">
                         <th style="width: 3rem">#</th>
+                        @if (isManagedArray(item)) {
+                          <th class="table-header">{{ entryTitleLabel(item) }}</th>
+                        }
                         @for (col of getTableHeaderFields(item); track col) {
                           <th
                             class="table-header"
@@ -338,7 +341,10 @@
                     <ng-template pTemplate="body" let-rowData>
                       <tr [attr.accordiontabid]="item.id + '-' + rowData.index2">
                         <td>{{ rowData.index2 }}</td>
-                        @for (itemControl of getTableRowFields(rowData); track itemControl) {
+                        @if (isManagedArray(item)) {
+                          <td>{{ entryTitle(item, rowData) }}</td>
+                        }
+                        @for (itemControl of getTableRowFields(rowData, item); track itemControl) {
                           <td>
                             <div class="table-content form-field-value">
                               @if (ifRequiredField(itemControl)) {
@@ -507,7 +513,7 @@
                         }
                         <td>
                           @if (
-                            !item.control.disabled && (!isEditMode || item?.isUpdatable)
+                            !item.control.disabled && !isManagedArray(item) && (!isEditMode || item?.isUpdatable)
                             ) {
                             <div
                               class="guardian-icon-button big"
@@ -531,7 +537,7 @@
                       </tr>
                     </ng-template>
                   </p-table>
-                  @if (!item.control.disabled && (!isEditMode || item?.isUpdatable)) {
+                  @if (!item.control.disabled && !isManagedArray(item) && (!isEditMode || item?.isUpdatable)) {
                     <button
                       (click)="addItem(item)"
                       class="guardian-button guardian-button-secondary add-btn"
@@ -870,7 +876,7 @@
                                   }
                                 </div>
                                 @if (
-                                  !item.control.disabled && (!isEditMode || item?.isUpdatable)
+                                  !item.control.disabled && !isManagedArray(item) && (!isEditMode || item?.isUpdatable)
                                   ) {
                                   <div
                                     class="fields-remove"
@@ -899,7 +905,7 @@
                             </div>
                           }
                           @if (
-                            !item.control.disabled && (!isEditMode || item?.isUpdatable)
+                            !item.control.disabled && !isManagedArray(item) && (!isEditMode || item?.isUpdatable)
                             ) {
                             <button
                               (click)="addItem(item)"
@@ -1242,12 +1248,11 @@
                                                         !item.control.dirty
                                                     "
                                                         >
-                                                        {{ item.description }} #{{
-                                                        listItem.index2
-                                                        }}
+                                                        {{ entryTitleNumber(item, listItem) }}
+                                                        {{ entryTitle(item, listItem) }}
                                                       </span>
                                                       @if (
-                                                        !item.control.disabled && (!isEditMode || item?.isUpdatable)
+                                                        !item.control.disabled && !isManagedArray(item) && (!isEditMode || item?.isUpdatable)
                                                         ) {
                                                         <div
                                                           class="guardian-icon-button big"
@@ -1358,7 +1363,7 @@
                                               </p-accordion>
                                             </div>
                                           }
-                                          @if (!item.control.disabled && (!isEditMode || item?.isUpdatable)) {
+                                          @if (!item.control.disabled && !isManagedArray(item) && (!isEditMode || item?.isUpdatable)) {
                                             <button
                                               (click)="addItem(item)"
                                               class="guardian-button guardian-button-secondary add-btn"

@@ -1,14 +1,14 @@
-import { TokensPage } from "../../pages/tokensPage";
+import { TokensPage } from '../../pages/tokensPage';
 const tokensPage = new TokensPage();
 
-import { HomePage } from "../../pages/homePage";
+import { HomePage } from '../../pages/homePage';
 const homePage = new HomePage();
 
-context("Token Tags", { tags: ['ui'] }, () => {
+context('Token Tags', { tags: ['ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
-    const tagName = "UITokenTag";
-    const tokenName = "NFTPublishChangedUITokenName";
+    const tagName = 'UITokenTag';
+    const tokenName = 'NFTPublishChangedUITokenName';
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
@@ -17,11 +17,11 @@ context("Token Tags", { tags: ['ui'] }, () => {
         tokensPage.openTokensTab();
     })
 
-    it("add token tag", () => {
+    it('add token tag', () => {
         tokensPage.addTag(tokenName, tagName);
     });
 
-    it("delete token tag", () => {
+    it('delete token tag', () => {
         tokensPage.deleteTag(tokenName, tagName);
     });
 });

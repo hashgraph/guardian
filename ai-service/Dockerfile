@@ -1,14 +1,9 @@
 # syntax=docker/dockerfile:1
 # Stage 0: Use node image for base image for all stages
-ARG NODE_VERSION=24.18.0-alpine
+ARG NODE_VERSION=24.18.1-alpine
 
 # JS compile: run on the builder's native arch (fast, output is arch-agnostic)
 FROM --platform=$BUILDPLATFORM node:${NODE_VERSION} AS base
-WORKDIR /usr/local/app
-RUN corepack enable
-
-# Production deps: native to the target arch
-FROM node:${NODE_VERSION} AS base-target
 WORKDIR /usr/local/app
 RUN corepack enable
 
@@ -32,13 +27,18 @@ RUN yarn workspace @guardian/interfaces run build \
  && yarn workspace @guardian/common run build \
  && yarn workspace ai-service run build:prod
 
-# Stage 3: FOCUSED production install TARGET platform.
-FROM base-target AS deps-prod
+# Stage 3: FOCUSED production install for the target arch, run on the
+# builder's arch with the target declared to Yarn instead of emulated.
+FROM base AS deps-prod
+ARG TARGETOS
+ARG TARGETARCH
 COPY --link package.json yarn.lock .yarnrc.yml ./
 COPY --link .yarn .yarn
 COPY --link --parents */package.json ./
 RUN --mount=type=cache,target=/root/.yarn/berry/cache,sharing=private \
-    yarn workspaces focus --production ai-service
+    printf '\nsupportedArchitectures:\n  os: ["%s"]\n  cpu: ["%s"]\n' \
+      "${TARGETOS}" "$(echo "${TARGETARCH}" | sed 's/^amd64$/x64/')" >> .yarnrc.yml \
+ && yarn workspaces focus --production ai-service
 
 # Stage 4: Create the final image.
 FROM node:${NODE_VERSION} AS image

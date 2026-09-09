@@ -77,7 +77,11 @@
         height: var(--guardian-page-header-height);
         padding: var(--guardian-page-header-padding);
         position: relative;
-        margin-bottom: var(--guardian-page-header-gap);
+        margin-bottom: var(--guardian-page-header-block-gap);
+    }
+
+    .guardian-user-page-header--with-help {
+        margin-bottom: 0;
     }
 
     .tabs-nav {

@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EWD-RB VVB Assessment Record",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "methodology_id": {
+      "type": "string",
+      "const": "EWD-RB"
+    },
+    "methodology_version": {
+      "type": "string",
+      "const": "0.3"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "0.3.0"
+    },
+    "assessment_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "target_type": {
+      "type": "string",
+      "enum": [
+        "WasteDelivery",
+        "WasteBatch",
+        "ImpactCalculation",
+        "EGGOCOIN_Issuance"
+      ]
+    },
+    "target_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "vvb_org": {
+      "type": "string"
+    },
+
+    "decision": {
+      "type": "string",
+      "enum": [
+        "Approved",
+        "Rejected",
+        "Approved_With_Findings"
+      ]
+    },
+
+    "assessed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "assessment_evidence": {
+      "$ref": "#/$defs/evidenceRefs"
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidenceRefs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "methodology_id",
+    "methodology_version",
+    "schema_version",
+    "assessment_id",
+    "target_type",
+    "target_id",
+    "decision",
+    "assessed_at",
+    "assessment_evidence"
+  ]
+}

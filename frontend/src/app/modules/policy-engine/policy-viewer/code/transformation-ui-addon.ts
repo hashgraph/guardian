@@ -9,7 +9,6 @@ export class TransformationUIAddonCode {
             ${this.code}
             return { document, history, params };
         `;
-        console.log(code);
         this.func = new Function('document', 'history', 'params', code);
     }
 

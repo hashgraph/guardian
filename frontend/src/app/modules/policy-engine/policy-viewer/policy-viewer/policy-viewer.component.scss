@@ -177,6 +177,48 @@ a.go-back-link svg {
     font-size: 20px;
 }
 
+.policy-header[policy-status="PUBLISH"]:not([expired="true"]) {
+    padding: 42px 48px 16px 48px;
+    border-bottom: 1px solid var(--guardian-border-color, #E1E7EF);
+
+    .policy-info-container {
+        margin-top: 0;
+        margin-bottom: 0;
+    }
+}
+
+.schema-breadcrumb {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+
+    .breadcrumb-back {
+        color: var(--guardian-primary-color, #4169E2);
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 16px;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .breadcrumb-sep {
+        color: var(--guardian-grid-color, #848fa9);
+        font-size: 12px;
+        line-height: 16px;
+        padding: 0 4px;
+        height: auto;
+    }
+
+    .breadcrumb-current {
+        color: var(--guardian-grid-color, #848fa9);
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 16px;
+        height: auto;
+        padding: 0;
+    }
+}
+
 .back-button {
     font-weight: 700;
     font-size: 12px;
@@ -765,7 +807,8 @@ a.go-back-link svg {
 
 .policy-info-container {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
     margin-top: 12px;
     margin-bottom: 24px;
 }
@@ -775,7 +818,7 @@ a.go-back-link svg {
 }
 
 .policy-name-container {
-    color: var(--guardian-secondary-color, #FFFFFF);
+    color: var(--guardian-font-color, #23252e);
     font-family: Poppins, sans-serif;
     font-size: 32px;
     font-style: normal;
@@ -795,10 +838,31 @@ a.go-back-link svg {
     }
 }
 
+.policy-header[policy-status="DEMO"] .policy-name-container,
+.policy-header[policy-status="DRY-RUN"] .policy-name-container,
+.policy-header[expired="true"] .policy-name-container {
+    color: var(--guardian-secondary-color, #FFFFFF);
+}
+
+.policy-header[policy-status="DEMO"] .schema-breadcrumb,
+.policy-header[policy-status="DRY-RUN"] .schema-breadcrumb {
+    .breadcrumb-back {
+        color: var(--guardian-secondary-color, #FFFFFF);
+    }
+
+    .breadcrumb-sep {
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .breadcrumb-current {
+        color: rgba(255, 255, 255, 0.6);
+    }
+}
+
 .policy-additional-info-container {
     display: flex;
     gap: 15px;
-    margin-left: auto;
+    margin-top: 4px;
 }
 
 .additional-policy-info-text {
@@ -944,7 +1008,7 @@ a.go-back-link svg {
 }
 
 :host ::ng-deep .content {
-    right: inherit !important;
+    right: auto !important;
     min-width: 100% !important;
 }
 

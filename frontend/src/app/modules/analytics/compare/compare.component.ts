@@ -241,6 +241,23 @@ export class CompareComponent implements OnInit {
         return results;
     }
 
+    /**
+     * Every load error used to be swallowed into console.error, leaving a stopped
+     * spinner over a blank page: the template's `@if (error)` banner was only ever
+     * reachable from the local "Invalid params" pre-check.
+     */
+    private onLoadFailed(message?: string): void {
+        this.loading = false;
+        this.error = message || 'The comparison could not be loaded. Please try again.';
+        console.error(message);
+    }
+
+    private onExportFailed(message?: string): void {
+        this.loading = false;
+        this.error = message || 'The report could not be exported. Please try again.';
+        console.error(message);
+    }
+
     private loadDocument() {
         this.error = null;
         const options = {
@@ -262,8 +279,7 @@ export class CompareComponent implements OnInit {
                 this.loading = false;
             }, 500);
         }, ({ message }) => {
-            this.loading = false;
-            console.error(message);
+            this.onLoadFailed(message);
         });
     }
 
@@ -287,8 +303,7 @@ export class CompareComponent implements OnInit {
             }
             this.loading = false;
         }, ({ message }) => {
-            this.loading = false;
-            console.error(message);
+            this.onExportFailed(message);
         });
     }
     private loadOriginalPolicy(policyId: string) {
@@ -307,8 +322,7 @@ export class CompareComponent implements OnInit {
                 this.loading = false;
             }, 500);
         }, ({ message }) => {
-            this.loading = false;
-            console.error(message);
+            this.onLoadFailed(message);
         });
     }
 
@@ -333,8 +347,7 @@ export class CompareComponent implements OnInit {
                 this.loading = false;
             }, 500);
         }, ({ message }) => {
-            this.loading = false;
-            console.error(message);
+            this.onLoadFailed(message);
         });
     }
 
@@ -358,8 +371,7 @@ export class CompareComponent implements OnInit {
             }
             this.loading = false;
         }, ({ message }) => {
-            this.loading = false;
-            console.error(message);
+            this.onExportFailed(message);
         });
     }
 
@@ -382,8 +394,7 @@ export class CompareComponent implements OnInit {
                 this.loading = false;
             }, 500);
         }, ({ message }) => {
-            this.loading = false;
-            console.error(message);
+            this.onLoadFailed(message);
         });
     }
 
@@ -405,8 +416,7 @@ export class CompareComponent implements OnInit {
             }
             this.loading = false;
         }, ({ message }) => {
-            this.loading = false;
-            console.error(message);
+            this.onExportFailed(message);
         });
     }
 
@@ -433,8 +443,7 @@ export class CompareComponent implements OnInit {
                 this.loading = false;
             }, 500);
         }, ({ message }) => {
-            this.loading = false;
-            console.error(message);
+            this.onLoadFailed(message);
         });
     }
 
@@ -460,8 +469,7 @@ export class CompareComponent implements OnInit {
             }
             this.loading = false;
         }, ({ message }) => {
-            this.loading = false;
-            console.error(message);
+            this.onExportFailed(message);
         });
     }
 
@@ -486,8 +494,7 @@ export class CompareComponent implements OnInit {
                 this.loading = false;
             }, 500);
         }, ({ message }) => {
-            this.loading = false;
-            console.error(message);
+            this.onLoadFailed(message);
         });
     }
 
@@ -511,8 +518,7 @@ export class CompareComponent implements OnInit {
             }
             this.loading = false;
         }, ({ message }) => {
-            this.loading = false;
-            console.error(message);
+            this.onExportFailed(message);
         });
     }
 

@@ -91,6 +91,26 @@ export class PolicyBackup {
         }
     }
 
+    /**
+     * Check whether a diff carries no changes at all.
+     *
+     * Only an incremental 'diff' can be meaningfully empty: a full backup is
+     * always worth publishing, and key documents are produced by a separate
+     * path. A diff is empty when every collection it carries has no actions.
+     */
+    public static isEmptyDiff(diff: IPolicyCollectionDiff): boolean {
+        if (!diff || diff.type !== 'diff') {
+            return false;
+        }
+        const collections = Object.values(diff) as any[];
+        for (const collection of collections) {
+            if (collection && Array.isArray(collection.actions) && collection.actions.length > 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public async create(full = false): Promise<{ backup: IPolicyCollectionDiff, diff: IPolicyCollectionDiff }> {
         if (this.lastDiff.file && !full) {
             return await this._createDiff(this.lastDiff.file);

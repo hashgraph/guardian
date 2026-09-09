@@ -1,2 +1,0 @@
-# Renewable Energy Credits
-

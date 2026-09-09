@@ -27,13 +27,16 @@ import {
     FormulaImportExport,
     getArtifactType,
     INotificationStep,
+    IPFS,
     IPolicyComponents,
     MessageAction,
     MessageServer,
     MessageType,
+    MockEntityType,
     MockHelper,
     MultiPolicy,
     NatsService,
+    NewNotifier,
     NotificationHelper, PinoLogger,
     Policy,
     PolicyImportExport,
@@ -51,7 +54,6 @@ import {
     Topic,
     TopicConfig,
     TopicHelper,
-    UrlType,
     Users,
     VcHelper
 } from '@guardian/common';
@@ -72,10 +74,12 @@ import { ISerializedErrors } from './policy-validation-results-container.js';
 import { PolicyServiceChannelsContainer } from '../helpers/policy-service-channels-container.js';
 import { createHederaToken } from '../api/token.service.js';
 import { GuardiansService } from '../helpers/guardians.js';
+import { getOrgPolicyIdsForUser } from '../api/helpers/organization-helper.js';
 import { AISuggestionsService } from '../helpers/ai-suggestions.js';
 import { publishFormula } from '../api/helpers/formulas-helpers.js';
 import { FilterObject } from '@mikro-orm/core';
 import { PolicyDataMigrator } from './helpers/policy-data-migrator.js';
+import { removePolicySchemaTemplateSnapshot } from '../api/schema-template.service.js';
 
 /**
  * Result of publishing
@@ -99,6 +103,94 @@ export enum PolicyAccessCode {
     AVAILABLE = 0,
     NOT_EXIST = 1,
     UNAVAILABLE = 2
+}
+
+export async function validatePolicySchemaTemplateBeforePublish(model: Policy): Promise<void> {
+    const binding = model.schemaTemplate;
+    const hasTemplateBinding = !!(
+        binding?.templateId ||
+        binding?.snapshotId ||
+        Object.keys(binding?.schemaMap || {}).length
+    );
+    if (!hasTemplateBinding) {
+        return;
+    }
+    if (!binding?.templateId) {
+        throw new Error(
+            'Policy cannot be published while it uses a schema template snapshot without a linked template. ' +
+            'Select a published schema template or detach it from the policy.'
+        );
+    }
+    const template = await DatabaseServer.getSchemaTemplateById(binding.templateId);
+    if (!template || template.status !== ModuleStatus.PUBLISHED) {
+        throw new Error(
+            'Policy cannot be published while it uses a draft schema template. ' +
+            'Publish the schema template first or detach it from the policy.'
+        );
+    }
+}
+
+/**
+ * Pure decision core for accessPolicyCode, factored out for unit testing.
+ * `isAssigned` already reflects both per-user AssignEntity and (when applicable)
+ * organization-assignment lookups — this function only encodes the AccessType ×
+ * published × isAssigned truth table, unchanged from the original inline switch.
+ * @param access
+ * @param published
+ * @param isAssigned
+ */
+export function resolvePolicyAccessCode(
+    access: AccessType,
+    published: boolean,
+    isAssigned: boolean
+): PolicyAccessCode {
+    switch (access) {
+        case AccessType.ALL: {
+            return PolicyAccessCode.AVAILABLE;
+        }
+        case AccessType.ASSIGNED_OR_PUBLISHED: {
+            return (published || isAssigned) ? PolicyAccessCode.AVAILABLE : PolicyAccessCode.UNAVAILABLE;
+        }
+        case AccessType.PUBLISHED: {
+            return (published) ? PolicyAccessCode.AVAILABLE : PolicyAccessCode.UNAVAILABLE;
+        }
+        case AccessType.ASSIGNED: {
+            return (isAssigned) ? PolicyAccessCode.AVAILABLE : PolicyAccessCode.UNAVAILABLE;
+        }
+        case AccessType.ASSIGNED_AND_PUBLISHED: {
+            return (published && isAssigned) ? PolicyAccessCode.AVAILABLE : PolicyAccessCode.UNAVAILABLE;
+        }
+        case AccessType.NONE: {
+            //Insufficient permissions
+            return PolicyAccessCode.UNAVAILABLE;
+        }
+        default: {
+            //Insufficient permissions
+            return PolicyAccessCode.UNAVAILABLE;
+        }
+    }
+}
+
+/**
+ * Select draft tokens that no other policy references
+ * @param tokens
+ * @param tokenIdsUsedElsewhere
+ */
+export function resolveDraftTokensToDelete(
+    tokens: Token[],
+    tokenIdsUsedElsewhere: Set<string>
+): Token[] {
+    const result: Token[] = [];
+    for (const token of tokens) {
+        if (!token.draftToken) {
+            continue;
+        }
+        if (token.tokenId && tokenIdsUsedElsewhere.has(token.tokenId)) {
+            continue;
+        }
+        result.push(token);
+    }
+    return result;
 }
 
 /**
@@ -223,31 +315,26 @@ export class PolicyEngine extends NatsService {
         const published = (policy.status === PolicyStatus.PUBLISH || policy.status === PolicyStatus.DISCONTINUED);
         const assigned = await DatabaseServer.getAssignedEntity(AssignedEntityType.Policy, policy.id, user.creator);
 
-        switch (user.access) {
-            case AccessType.ALL: {
-                return PolicyAccessCode.AVAILABLE;
-            }
-            case AccessType.ASSIGNED_OR_PUBLISHED: {
-                return (published || assigned) ? PolicyAccessCode.AVAILABLE : PolicyAccessCode.UNAVAILABLE;
-            }
-            case AccessType.PUBLISHED: {
-                return (published) ? PolicyAccessCode.AVAILABLE : PolicyAccessCode.UNAVAILABLE;
-            }
-            case AccessType.ASSIGNED: {
-                return (assigned) ? PolicyAccessCode.AVAILABLE : PolicyAccessCode.UNAVAILABLE;
-            }
-            case AccessType.ASSIGNED_AND_PUBLISHED: {
-                return (published && assigned) ? PolicyAccessCode.AVAILABLE : PolicyAccessCode.UNAVAILABLE;
-            }
-            case AccessType.NONE: {
-                //Insufficient permissions
-                return PolicyAccessCode.UNAVAILABLE;
-            }
-            default: {
-                //Insufficient permissions
-                return PolicyAccessCode.UNAVAILABLE;
+        let isAssigned = !!assigned;
+        // Additive: org-assigned ≡ personally-assigned for access purposes (visibility already
+        // works via addAccessFilters). Only consult the org lookup when the personal assignment
+        // didn't already decide the outcome for this AccessType, to avoid a needless NATS hop.
+        // Fail closed on lookup errors — unlike the list path's fail-open best-effort behavior.
+        if (
+            !isAssigned &&
+            user.creator &&
+            (user.access === AccessType.ASSIGNED ||
+                (user.access === AccessType.ASSIGNED_OR_PUBLISHED && !published) ||
+                (user.access === AccessType.ASSIGNED_AND_PUBLISHED && published))
+        ) {
+            try {
+                isAssigned = (await getOrgPolicyIdsForUser(user.creator, user.id || null)).includes(policy.id);
+            } catch {
+                isAssigned = false;
             }
         }
+
+        return resolvePolicyAccessCode(user.access, published, isAssigned);
     }
 
     /**
@@ -287,6 +374,25 @@ export class PolicyEngine extends NatsService {
         //Local
         const localFilters: any = {};
         localFilters.owner = user.owner;
+
+        // Additive: extend ACCESS_POLICY_ASSIGNED visibility through Organization membership.
+        // For users on an ASSIGNED-flavoured AccessType, also surface policies their organization
+        // has been assigned to via PolicyOrgAssignment. Empty array → bit-for-bit identical to the
+        // pre-Organization behavior. Best-effort; failures never block the existing filter path.
+        let orgPolicyIds: string[] = [];
+        if (
+            user?.creator &&
+            (user.access === AccessType.ASSIGNED ||
+                user.access === AccessType.ASSIGNED_OR_PUBLISHED ||
+                user.access === AccessType.ASSIGNED_AND_PUBLISHED)
+        ) {
+            try {
+                orgPolicyIds = await getOrgPolicyIdsForUser(user.creator, user.id || null);
+            } catch {
+                orgPolicyIds = [];
+            }
+        }
+
         switch (user.access) {
             case AccessType.ALL: {
                 break;
@@ -294,9 +400,12 @@ export class PolicyEngine extends NatsService {
             case AccessType.ASSIGNED_OR_PUBLISHED: {
                 const assigned1 = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
                 const assignedMap1 = assigned1.map((e) => e.entityId);
+                const allIds1 = orgPolicyIds.length
+                    ? Array.from(new Set([...assignedMap1, ...orgPolicyIds]))
+                    : assignedMap1;
                 localFilters.$or = [
                     { status: { $in: [PolicyStatus.PUBLISH, PolicyStatus.DISCONTINUED] } },
-                    { id: { $in: assignedMap1 } }
+                    { id: { $in: allIds1 } }
                 ];
                 break;
             }
@@ -307,13 +416,19 @@ export class PolicyEngine extends NatsService {
             case AccessType.ASSIGNED: {
                 const assigned2 = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
                 const assignedMap2 = assigned2.map((e) => e.entityId);
-                localFilters.id = { $in: assignedMap2 };
+                const allIds2 = orgPolicyIds.length
+                    ? Array.from(new Set([...assignedMap2, ...orgPolicyIds]))
+                    : assignedMap2;
+                localFilters.id = { $in: allIds2 };
                 break;
             }
             case AccessType.ASSIGNED_AND_PUBLISHED: {
                 const assigned3 = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
                 const assignedMap3 = assigned3.map((e) => e.entityId);
-                localFilters.id = { $in: assignedMap3 };
+                const allIds3 = orgPolicyIds.length
+                    ? Array.from(new Set([...assignedMap3, ...orgPolicyIds]))
+                    : assignedMap3;
+                localFilters.id = { $in: allIds3 };
                 localFilters.status = { $in: [PolicyStatus.PUBLISH, PolicyStatus.DISCONTINUED] };
                 break;
             }
@@ -707,6 +822,41 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
+     * Delete draft tokens that belong only to this policy
+     * @param policyToDelete
+     */
+    private async deletePolicyTokens(policyToDelete: Policy): Promise<void> {
+        const tokenIds = findAllEntities(policyToDelete.config, ['tokenId']);
+        const candidates = await DatabaseServer.getTokens({
+            $or: [
+                { tokenId: { $in: tokenIds } },
+                { policyId: policyToDelete.id.toString() }
+            ],
+            owner: policyToDelete.owner,
+            draftToken: true
+        });
+        if (!candidates.length) {
+            return;
+        }
+        const otherPolicies = await DatabaseServer.getPolicies({
+            owner: policyToDelete.owner
+        });
+        const tokenIdsUsedElsewhere = new Set<string>();
+        for (const policy of otherPolicies) {
+            if (policy.id === policyToDelete.id) {
+                continue;
+            }
+            for (const tokenId of findAllEntities(policy.config, ['tokenId'])) {
+                tokenIdsUsedElsewhere.add(tokenId);
+            }
+        }
+        const databaseServer = new DatabaseServer();
+        for (const token of resolveDraftTokensToDelete(candidates, tokenIdsUsedElsewhere)) {
+            await databaseServer.deleteEntity(Token, token.id);
+        }
+    }
+
+    /**
      * Delete policy
      * @param policyId Policy ID
      * @param owner User
@@ -724,6 +874,7 @@ export class PolicyEngine extends NatsService {
         const STEP_DELETE_INSTANCE = 'Delete policy instance';
         const STEP_DELETE_SCHEMAS = 'Delete schemas';
         const STEP_DELETE_ARTIFACTS = 'Delete artifacts';
+        const STEP_DELETE_TOKENS = 'Delete tokens';
         const STEP_DELETE_TESTS = 'Delete tests';
         const STEP_DELETE_CREDENTIALS = 'Delete credentials';
         const STEP_DELETE_POLICY = 'Delete policy from DB';
@@ -732,6 +883,7 @@ export class PolicyEngine extends NatsService {
         notifier.addStep(STEP_DELETE_INSTANCE);
         notifier.addStep(STEP_DELETE_SCHEMAS);
         notifier.addStep(STEP_DELETE_ARTIFACTS);
+        notifier.addStep(STEP_DELETE_TOKENS);
         notifier.addStep(STEP_DELETE_TESTS);
         notifier.addStep(STEP_DELETE_CREDENTIALS);
         notifier.addStep(STEP_DELETE_POLICY);
@@ -776,6 +928,10 @@ export class PolicyEngine extends NatsService {
         }
         notifier.completeStep(STEP_DELETE_ARTIFACTS);
 
+        notifier.startStep(STEP_DELETE_TOKENS);
+        await this.deletePolicyTokens(policyToDelete);
+        notifier.completeStep(STEP_DELETE_TOKENS);
+
         notifier.startStep(STEP_DELETE_TESTS);
         await DatabaseServer.deletePolicyTests(policyToDelete.id);
         notifier.completeStep(STEP_DELETE_TESTS);
@@ -785,6 +941,8 @@ export class PolicyEngine extends NatsService {
         notifier.completeStep(STEP_DELETE_CREDENTIALS);
 
         notifier.startStep(STEP_DELETE_POLICY);
+        // must run before the policy row goes: snapshotId lives on it
+        await removePolicySchemaTemplateSnapshot(policyToDelete, logger);
         await DatabaseServer.deletePolicy(policyToDelete.id);
         notifier.completeStep(STEP_DELETE_POLICY);
 
@@ -811,6 +969,7 @@ export class PolicyEngine extends NatsService {
         const STEP_DELETE_INSTANCE = 'Delete policy instance';
         const STEP_DELETE_SCHEMAS = 'Delete schemas';
         const STEP_DELETE_ARTIFACTS = 'Delete artifacts';
+        const STEP_DELETE_TOKENS = 'Delete tokens';
         const STEP_DELETE_TESTS = 'Delete tests';
         const STEP_DELETE_CREDENTIALS = 'Delete credentials';
         const STEP_DELETE_POLICY = 'Delete policy from DB';
@@ -819,6 +978,7 @@ export class PolicyEngine extends NatsService {
         notifier.addStep(STEP_DELETE_INSTANCE);
         notifier.addStep(STEP_DELETE_SCHEMAS);
         notifier.addStep(STEP_DELETE_ARTIFACTS);
+        notifier.addStep(STEP_DELETE_TOKENS);
         notifier.addStep(STEP_DELETE_TESTS);
         notifier.addStep(STEP_DELETE_CREDENTIALS);
         notifier.addStep(STEP_DELETE_POLICY);
@@ -864,6 +1024,10 @@ export class PolicyEngine extends NatsService {
         }
         notifier.completeStep(STEP_DELETE_ARTIFACTS);
 
+        notifier.startStep(STEP_DELETE_TOKENS);
+        await this.deletePolicyTokens(policyToDelete);
+        notifier.completeStep(STEP_DELETE_TOKENS);
+
         notifier.startStep(STEP_DELETE_TESTS);
         await DatabaseServer.deletePolicyTests(policyToDelete.id);
         notifier.completeStep(STEP_DELETE_TESTS);
@@ -873,6 +1037,8 @@ export class PolicyEngine extends NatsService {
         notifier.completeStep(STEP_DELETE_CREDENTIALS);
 
         notifier.startStep(STEP_DELETE_POLICY);
+        // must run before the policy row goes: snapshotId lives on it
+        await removePolicySchemaTemplateSnapshot(policyToDelete, logger);
         await DatabaseServer.deletePolicy(policyToDelete.id);
         notifier.completeStep(STEP_DELETE_POLICY);
 
@@ -898,6 +1064,7 @@ export class PolicyEngine extends NatsService {
         // <-- Steps
         const STEP_DELETE_SCHEMAS = 'Delete schemas';
         const STEP_DELETE_ARTIFACTS = 'Delete artifacts';
+        const STEP_DELETE_TOKENS = 'Delete tokens';
         const STEP_DELETE_TESTS = 'Delete tests';
         const STEP_DELETE_CREDENTIALS = 'Delete credentials';
         const STEP_DELETE_POLICY_MESSAGE = 'Publishing delete policy message';
@@ -906,6 +1073,7 @@ export class PolicyEngine extends NatsService {
 
         notifier.addStep(STEP_DELETE_SCHEMAS);
         notifier.addStep(STEP_DELETE_ARTIFACTS);
+        notifier.addStep(STEP_DELETE_TOKENS);
         notifier.addStep(STEP_DELETE_TESTS);
         notifier.addStep(STEP_DELETE_CREDENTIALS);
         notifier.addStep(STEP_DELETE_POLICY_MESSAGE);
@@ -950,6 +1118,10 @@ export class PolicyEngine extends NatsService {
         }
         notifier.completeStep(STEP_DELETE_ARTIFACTS);
 
+        notifier.startStep(STEP_DELETE_TOKENS);
+        await this.deletePolicyTokens(policyToDelete);
+        notifier.completeStep(STEP_DELETE_TOKENS);
+
         notifier.startStep(STEP_DELETE_TESTS);
         await DatabaseServer.deletePolicyTests(policyToDelete.id);
         notifier.completeStep(STEP_DELETE_TESTS);
@@ -979,6 +1151,8 @@ export class PolicyEngine extends NatsService {
         notifier.completeStep(STEP_DELETE_CREDENTIALS);
 
         notifier.startStep(STEP_DELETE_POLICY);
+        // must run before the policy row goes: snapshotId lives on it
+        await removePolicySchemaTemplateSnapshot(policyToDelete, logger);
         await DatabaseServer.deletePolicy(policyToDelete.id);
         notifier.completeStep(STEP_DELETE_POLICY);
 
@@ -1130,46 +1304,80 @@ export class PolicyEngine extends NatsService {
     public async dryRunSchemas(
         model: Policy,
         user: IOwner,
-        messageServer: MessageServer,
-        mockId: string
+        accountId: string,
+        mockId: string,
+        notifier: INotificationStep = NewNotifier.empty()
     ): Promise<Policy> {
         const schemas = await DatabaseServer.getSchemas({ topicId: model.topicId });
 
-        // const draftSchemas: SchemaCollection[] = [];
+        const topicId = (model.topicId || '').toString();
+        const updatedSchemas: SchemaCollection[] = [];
+        const mockRows: any[] = [];
+
+        const STEP_SAVE_MOCK_DATA = 'Save mock data';
+        const pendingCount = schemas.filter((schema) => schema.status !== SchemaStatus.PUBLISHED).length;
+
+        notifier.start();
+        // Mock data is persisted in a single batch after the loop, so it needs one extra step.
+        notifier.setEstimate(mockId ? pendingCount + 1 : pendingCount);
+
         for (const schema of schemas) {
             if (schema.status === SchemaStatus.PUBLISHED) {
                 continue;
             }
 
+            const schemaStep = notifier.addStep(`${schema.name || '-'}`, 1, true);
+            schemaStep.start();
+
             schema.context = generateSchemaContext(schema);
             SchemaHelper.updateIRI(schema);
-            await DatabaseServer.updateSchema(schema.id, schema);
+            updatedSchemas.push(schema);
 
             if (mockId) {
+                // Build the mock schema-publish records in-process with the final context CID
+                // already set, so no per-schema worker round-trip or replaceSchema read-back is
+                // needed. All rows are batch-inserted after the loop.
                 const message = new SchemaMessage(MessageAction.PublishSchema);
                 message.setDocument(schema);
                 message.setRelationships([]);
-                const result = await messageServer
-                    .sendMessage(message, {
-                        sendToIPFS: true,
-                        memo: null,
-                        userId: user.id,
-                        interception: user.id,
-                        mockId
-                    });
+                const [documentBuffer, contextBuffer] = await message.toDocuments();
 
-                const messageId = result.getId();
-                const contextCid = result.getContextUrl(UrlType.cid);
+                const documentCid = GenerateUUIDv4();
+                const contextCid = (schema.contextURL || '').replace('schema:', '');
+                message.setUrls([
+                    { cid: documentCid, url: IPFS.IPFS_PROTOCOL + documentCid },
+                    { cid: contextCid, url: schema.contextURL }
+                ]);
 
-                await MockHelper.replaceSchema(
-                    mockId,
-                    messageId,
-                    contextCid,
-                    schema.contextURL
-                );
+                if (documentBuffer) {
+                    mockRows.push({ type: MockEntityType.FILE, cid: documentCid, document: MockHelper.getBuffer(documentBuffer) });
+                }
+                if (contextBuffer) {
+                    mockRows.push({ type: MockEntityType.FILE, cid: contextCid, document: MockHelper.getBuffer(contextBuffer) });
+                }
+                mockRows.push(MockHelper.getMessageRecord(topicId, message.toMessage(), accountId));
             }
+
+            schemaStep.complete();
         }
+
+        const mockStep = mockId ? notifier.addStep(STEP_SAVE_MOCK_DATA, 1) : null;
+        mockStep?.start();
+
+        // Independent bulk writes to different collections - run them concurrently.
+        await Promise.all([
+            DatabaseServer.updateSchemas(updatedSchemas),
+            DatabaseServer.saveMockBatch(mockId, mockRows)
+        ]);
+
+        mockStep?.complete();
+
+        notifier.complete();
         return model;
+    }
+
+    private async validateSchemaTemplateBeforePublish(model: Policy): Promise<void> {
+        await validatePolicySchemaTemplateBeforePublish(model);
     }
 
     /**
@@ -1226,6 +1434,8 @@ export class PolicyEngine extends NatsService {
         notifier.addStep(STEP_PUBLISH_TAGS, 4);
         notifier.addStep(STEP_SAVE, 2);
         notifier.start();
+
+        await this.validateSchemaTemplateBeforePublish(model);
 
         model.version = version;
         model.availability = availability;
@@ -1676,6 +1886,8 @@ export class PolicyEngine extends NatsService {
      * @param version
      * @param demo
      * @param logger
+     * @param enableMock
+     * @param notifier
      */
     public async dryRunPolicy(
         model: Policy,
@@ -1683,14 +1895,37 @@ export class PolicyEngine extends NatsService {
         version: string,
         demo: boolean,
         logger: PinoLogger,
-        enableMock: boolean
+        enableMock: boolean,
+        notifier: INotificationStep = NewNotifier.empty()
     ): Promise<Policy> {
+        // <-- Steps
+        const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+        const STEP_PUBLISH_TOPIC = 'Publish policy topic';
+        const STEP_PUBLISH_SCHEMAS = 'Publish schemas';
+        const STEP_CREATE_TOPIC = 'Create instance topic';
+        const STEP_PUBLISH_MESSAGE = 'Publish policy message';
+        const STEP_CREATE_VC = 'Create policy credential';
+        const STEP_CREATE_USER = 'Create virtual user';
+        const STEP_SAVE = 'Save policy';
+        // Steps -->
+
+        notifier.addStep(STEP_RESOLVE_ACCOUNT, 2);
+        notifier.addStep(STEP_PUBLISH_TOPIC, 3);
+        notifier.addStep(STEP_PUBLISH_SCHEMAS, 70);
+        notifier.addStep(STEP_CREATE_TOPIC, 5);
+        notifier.addStep(STEP_PUBLISH_MESSAGE, 8);
+        notifier.addStep(STEP_CREATE_VC, 5);
+        notifier.addStep(STEP_CREATE_USER, 2);
+        notifier.addStep(STEP_SAVE, 5);
+        notifier.start();
+
         if (demo) {
             logger.info('Demo Policy', ['GUARDIAN_SERVICE'], user.id);
         } else {
             logger.info('Dry-run Policy', ['GUARDIAN_SERVICE'], user.id);
         }
 
+        notifier.startStep(STEP_RESOLVE_ACCOUNT);
         const dryRunId = model.id.toString();
         const databaseServer = new DatabaseServer(dryRunId);
         const root = await this.users.getHederaAccount(user.owner, user.id);
@@ -1699,6 +1934,7 @@ export class PolicyEngine extends NatsService {
         )
 
         const mockId = enableMock ? dryRunId : null;
+        notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
         // Create Services
         const messageServer = new MessageServer({
@@ -1709,6 +1945,7 @@ export class PolicyEngine extends NatsService {
         }).setTopicObject(policyTopic);
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions, dryRunId);
 
+        notifier.startStep(STEP_PUBLISH_TOPIC);
         const topicMessage = await MessageServer.getTopic(policyTopic.topicId, user.id, {});
         await messageServer.sendMessage(topicMessage, {
             sendToIPFS: true,
@@ -1717,9 +1954,17 @@ export class PolicyEngine extends NatsService {
             interception: null,
             mockId
         });
+        notifier.completeStep(STEP_PUBLISH_TOPIC);
 
         //'Publish' policy schemas
-        model = await this.dryRunSchemas(model, user, messageServer, mockId);
+        notifier.startStep(STEP_PUBLISH_SCHEMAS);
+        model = await this.dryRunSchemas(
+            model,
+            user,
+            root.hederaAccountId,
+            mockId,
+            notifier.getStep(STEP_PUBLISH_SCHEMAS)
+        );
         model.status = demo ? PolicyStatus.DEMO : PolicyStatus.DRY_RUN;
         model.version = version;
 
@@ -1727,8 +1972,10 @@ export class PolicyEngine extends NatsService {
         if (demo || savepointsCount === 0) {
             this.regenerateIds(model.config);
         }
+        notifier.completeStep(STEP_PUBLISH_SCHEMAS);
 
         //Create instance topic
+        notifier.startStep(STEP_CREATE_TOPIC);
         const instancePolicyTopic = await topicHelper.create(
             {
                 type: TopicType.InstancePolicyTopic,
@@ -1751,8 +1998,10 @@ export class PolicyEngine extends NatsService {
         await databaseServer.saveTopic(instancePolicyTopic.toObject());
 
         model.instanceTopicId = instancePolicyTopic.topicId;
+        notifier.completeStep(STEP_CREATE_TOPIC);
 
         //Send Message
+        notifier.startStep(STEP_PUBLISH_MESSAGE);
         const zip = await PolicyImportExport.generate(model);
         const buffer = await zip.generateAsync({
             type: 'arraybuffer',
@@ -1778,8 +2027,10 @@ export class PolicyEngine extends NatsService {
             userId: user.id,
             mockId
         });
+        notifier.completeStep(STEP_PUBLISH_MESSAGE);
 
         //Create Policy VC
+        notifier.startStep(STEP_CREATE_VC);
         const messageId = result.getId();
         const url = result.getUrl();
         let credentialSubject: any = {
@@ -1810,8 +2061,10 @@ export class PolicyEngine extends NatsService {
             type: SchemaEntity.POLICY,
             policyId: `${model.id}`
         });
+        notifier.completeStep(STEP_CREATE_VC);
 
         //Create default user
+        notifier.startStep(STEP_CREATE_USER);
         await databaseServer.createVirtualUser(
             'Administrator',
             root.did,
@@ -1819,7 +2072,9 @@ export class PolicyEngine extends NatsService {
             root.hederaAccountKey,
             true
         );
+        notifier.completeStep(STEP_CREATE_USER);
 
+        notifier.startStep(STEP_SAVE);
         let [, retVal] = await Promise.all([
             //Update dry-run table (mark readonly rows)
             DatabaseServer.setSystemMode(dryRunId, true),
@@ -1828,8 +2083,10 @@ export class PolicyEngine extends NatsService {
         ]);
 
         retVal = await PolicyImportExportHelper.updatePolicyComponents(retVal, logger, user.id);
+        notifier.completeStep(STEP_SAVE);
 
         logger.info('Run Policy', ['GUARDIAN_SERVICE'], user.id);
+        notifier.complete();
         return retVal;
     }
 
@@ -1999,6 +2256,103 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
+     * Validate and dry-run policy
+     * @param policyId
+     * @param owner
+     * @param enableMock
+     * @param notifier
+     * @param logger
+     */
+    public async validateAndDryRunPolicy(
+        policyId: string,
+        owner: IOwner,
+        enableMock: boolean,
+        notifier: INotificationStep,
+        logger: PinoLogger
+    ): Promise<IPublishResult> {
+        // <-- Steps
+        const STEP_FIND_POLICY = 'Find policy';
+        const STEP_VALIDATE_POLICY = 'Validate policy';
+        const STEP_DRY_RUN_POLICY = 'Start dry-run';
+        const STEP_RUN_POLICY = 'Run policy';
+        // Steps -->
+
+        notifier.addStep(STEP_FIND_POLICY, 1);
+        notifier.addStep(STEP_VALIDATE_POLICY, 5);
+        notifier.addStep(STEP_DRY_RUN_POLICY, 80);
+        notifier.addStep(STEP_RUN_POLICY, 14);
+        notifier.start();
+
+        notifier.startStep(STEP_FIND_POLICY);
+        const model = await DatabaseServer.getPolicyById(policyId);
+        await this.accessPolicy(model, owner, 'publish');
+
+        if (!model.config) {
+            throw new Error('The policy is empty');
+        }
+        if (model.status === PolicyStatus.PUBLISH) {
+            throw new Error(`Policy published`);
+        }
+        if (model.status === PolicyStatus.DISCONTINUED) {
+            throw new Error(`Policy is discontinued`);
+        }
+        if (model.status === PolicyStatus.DRY_RUN) {
+            throw new Error(`Policy already in Dry Run`);
+        }
+        if (model.status === PolicyStatus.PUBLISH_ERROR) {
+            throw new Error(`Failed policy cannot be started in dry run mode`);
+        }
+        if (model.status === PolicyStatus.DEMO) {
+            throw new Error(`Policy imported in demo mode`);
+        }
+        if (model.status === PolicyStatus.VIEW) {
+            throw new Error(`Policy imported in view mode`);
+        }
+        notifier.completeStep(STEP_FIND_POLICY);
+
+        notifier.startStep(STEP_VALIDATE_POLICY);
+        const errors = await this.validateModel(policyId, true);
+        const isValid = !errors.blocks.some(block => !block.isValid);
+        notifier.completeStep(STEP_VALIDATE_POLICY);
+
+        if (isValid) {
+            notifier.startStep(STEP_DRY_RUN_POLICY);
+            await this.dryRunPolicy(
+                model,
+                owner,
+                'Dry Run',
+                false,
+                logger,
+                enableMock,
+                notifier.getStep(STEP_DRY_RUN_POLICY)
+            );
+            notifier.completeStep(STEP_DRY_RUN_POLICY);
+
+            notifier.startStep(STEP_RUN_POLICY);
+            await this.generateModel(policyId, enableMock);
+            notifier.completeStep(STEP_RUN_POLICY);
+        } else {
+            notifier.skipStep(STEP_DRY_RUN_POLICY);
+            notifier.skipStep(STEP_RUN_POLICY);
+        }
+
+        const savepointsCount = await DatabaseServer.getSavepointsCount(policyId);
+        if (savepointsCount === 0) {
+            await DatabaseServer.nullifyInitialDryRunSavepointIds();
+        } else {
+            await DatabaseServer.removeDryRunWithEmptySavepoint(policyId);
+            PolicyDataMigrator.clearRunCacheByPolicyId(policyId);
+        }
+
+        notifier.complete();
+        return {
+            policyId: model.id.toString(),
+            isValid,
+            errors
+        };
+    }
+
+    /**
      * Prepare policy for preview by message
      * @param messageId
      * @param user
@@ -2044,9 +2398,6 @@ export class PolicyEngine extends NatsService {
                 userId,
                 interception: null
             });
-        if (!message) {
-            throw new Error('Invalid Message');
-        }
         if (message.type !== MessageType.InstancePolicy) {
             throw new Error('Invalid Message Type');
         }
@@ -2265,23 +2616,27 @@ export class PolicyEngine extends NatsService {
         isDruRun: boolean = false,
         ignoreRules?: ReadonlyArray<IgnoreRule>
     ): Promise<ISerializedErrors> {
-        let policyId: string;
         if (typeof policy === 'string') {
-            policyId = policy
-            policy = await DatabaseServer.getPolicyById(policyId);
-        } else {
-            if (!policy.id) {
-                policy.id = GenerateUUIDv4();
-            }
-            policyId = policy.id.toString();
+            // Persisted policy: send only the id reference and let the handler reload it
+            // locally (policy-service has DB access), instead of shipping the full policy -
+            // including its potentially large config - over the message broker.
+            return await this.sendMessageWithTimeout<any>(PolicyEvents.VALIDATE_POLICY, 60 * 1000, {
+                policyId: policy,
+                isDruRun,
+                ignoreRules,
+                reachability: true
+            });
         }
-        const result = await this.sendMessageWithTimeout<any>(PolicyEvents.VALIDATE_POLICY, 60 * 1000, {
+        if (!policy.id) {
+            policy.id = GenerateUUIDv4();
+        }
+        // Unsaved/in-memory policy (editor validation): send the full object as before.
+        return await this.sendMessageWithTimeout<any>(PolicyEvents.VALIDATE_POLICY, 60 * 1000, {
             policy,
             isDruRun,
             ignoreRules,
             reachability: true
         });
-        return result;
     }
 
     /**

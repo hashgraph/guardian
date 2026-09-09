@@ -1,30 +1,30 @@
-import { randomInt } from "../../support/random";
+import { randomInt } from '../../support/random';
 
 const Locators = {
-    createNew: "Create new",
-    srBtn: "Standard Registry",
+    createNew: 'Create new',
+    srBtn: 'Standard Registry',
     submitBtn: '[type="submit"]',
-    restoreDataBtn: "Restore data",
-    refreshBtn: "refresh",
+    restoreDataBtn: 'Restore data',
+    refreshBtn: 'refresh',
     username: '[formcontrolname="login"]',
-    nextBtn: "Next",
-    connectBtn: "Connect",
+    nextBtn: 'Next',
+    connectBtn: 'Connect',
     inputGeo: '[ng-reflect-name="geography"]',
     inputLaw:  '[ng-reflect-name="law"]',
     inputTags:  '[ng-reflect-name="tags"]',
 };
 
-describe("Disaster Recovery Testing", { tags: "@recovery" }, () => {
-    const name = randomInt(999) + "testName";
-    it("checks ", () => {
+describe('Disaster Recovery Testing', { tags: '@recovery' }, () => {
+    const name = randomInt(999) + 'testName';
+    it('checks ', () => {
         cy.viewport(1440, 900);
 
-        cy.visit("http://localhost:3000/");
+        cy.visit('http://localhost:3000/');
 
         //create new
-        cy.get("div > form > a")
-            .should("have.attr", "href")
-            .and("include", "/register")
+        cy.get('div > form > a')
+            .should('have.attr', 'href')
+            .and('include', '/register')
             .then(() => {
                 cy.contains(Locators.createNew).click();
                 cy.contains(Locators.srBtn).click();
@@ -34,23 +34,22 @@ describe("Disaster Recovery Testing", { tags: "@recovery" }, () => {
 
                 cy.get(Locators.submitBtn).click();
 
-                cy.contains("Generate").click();
+                cy.contains('Generate').click();
                 cy.wait(5000);
 
                 cy.get('[formcontrolname="hederaAccountId"]')
-                    .invoke("val")
+                    .invoke('val')
                     .then((hederaAccountId) => {
                         cy.log(hederaAccountId);
                         let accountId = hederaAccountId;
 
                         cy.get('[formcontrolname="hederaAccountKey"]')
-                            .invoke("val")
+                            .invoke('val')
                             .then((hederaAccountKey) => {
                                 cy.log(hederaAccountKey);
                                 let accountKey = hederaAccountKey;
 
                                 cy.contains(Locators.nextBtn).click();
-
 
                                 const inputGeography = cy.get(Locators.inputGeo);
                                 inputGeography.type('test');
@@ -59,17 +58,16 @@ describe("Disaster Recovery Testing", { tags: "@recovery" }, () => {
                                 const inputTags = cy.get(Locators.inputTags);
                                 inputTags.type('test');
 
-
                                 cy.contains(Locators.connectBtn).click();
                                 cy.wait(16000);
 
                                 const standartRegistry = cy.contains(name);
                                 standartRegistry.click({ force: true });
-                                cy.contains("Log out").click({ force: true });
+                                cy.contains('Log out').click({ force: true });
 
-                                cy.get("div > form > a")
-                                    .should("have.attr", "href")
-                                    .and("include", "/register")
+                                cy.get('div > form > a')
+                                    .should('have.attr', 'href')
+                                    .and('include', '/register')
                                     .then(() => {
                                         cy.contains(Locators.createNew).click();
                                         cy.contains(Locators.srBtn).click();
@@ -93,9 +91,9 @@ describe("Disaster Recovery Testing", { tags: "@recovery" }, () => {
 
                                         cy.contains(
                                             "*[role='img']",
-                                            "arrow_drop_down"
+                                            'arrow_drop_down'
                                         )
-                                            .trigger("mouseover")
+                                            .trigger('mouseover')
                                             .click();
                                         cy.contains(
                                             Locators.restoreDataBtn

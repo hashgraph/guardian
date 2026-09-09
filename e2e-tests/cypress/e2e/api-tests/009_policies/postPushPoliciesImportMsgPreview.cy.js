@@ -1,12 +1,19 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
+import { seededMessageId } from '../../../support/CustomHelpers/ipfsSeeding';
 
-context("Schemas", { tags: ['policies', 'secondPool', 'all'] }, () => {
+context('Schemas', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-    const policyMessageId = Cypress.env('irec_policy');
+    let policyMessageId;
 
-    it("Push preview the policy from IPFS", () => {
+    before(() => {
+        seededMessageId('irec_policy').then((messageId) => {
+            policyMessageId = messageId;
+        });
+    });
+
+    it('Push preview the policy from IPFS', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
@@ -15,7 +22,7 @@ context("Schemas", { tags: ['policies', 'secondPool', 'all'] }, () => {
                     authorization,
                 },
                 body: {
-                    "messageId": policyMessageId
+                    'messageId': policyMessageId
                 },
                 timeout: 600000
             }).then((response) => {

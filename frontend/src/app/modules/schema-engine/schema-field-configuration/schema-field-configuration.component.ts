@@ -432,6 +432,11 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
         this.geoAncestorTypes = this.geoLocation
             ? relationAncestors('geo', geoType)
             : [];
+        if (!this.enum) {
+            this.field.controlEnum.clear();
+            this.field.controlEnumName.patchValue('');
+            this.field.controlRemoteLink.patchValue('');
+        }
         if (!item) {
             this.field.isUpdatable.setValue(false);
             this.field.isUpdatable.disable()

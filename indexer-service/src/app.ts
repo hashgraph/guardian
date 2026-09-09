@@ -72,6 +72,7 @@ async function updateIndexes() {
                 options: {
                     name: channelName,
                     servers: [`nats://${process.env.MQ_ADDRESS}:4222`],
+                    maxReconnectAttempts: -1, // reconnect forever
                 },
             },
         ]),
@@ -112,7 +113,8 @@ Promise.all([
             name: channelName,
             queue: 'INDEXER_SERVICES',
             servers: [`nats://${process.env.MQ_ADDRESS}:4222`],
-            tls: GenerateTLSOptionsNats()
+            tls: GenerateTLSOptionsNats(),
+            maxReconnectAttempts: -1 // reconnect forever
         },
     }),
 ]).then(

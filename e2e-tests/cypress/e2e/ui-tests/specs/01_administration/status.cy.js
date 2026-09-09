@@ -1,10 +1,10 @@
-import { HomePage } from "../../pages/homePage";
+import { HomePage } from '../../pages/homePage';
 const homepage = new HomePage();
 
-import {StatusPage} from "../../pages/status";
+import {StatusPage} from '../../pages/status';
 const status = new StatusPage();
 
-context("Verify status of services", { tags: ['ui'] }, () => {
+context('Verify status of services', { tags: ['ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
 
@@ -15,7 +15,7 @@ context("Verify status of services", { tags: ['ui'] }, () => {
         status.openStatusTab();
     })
 
-    it("Verify if all services are running successfully on status page", () => {
+    it('Verify if all services are running successfully on status page', () => {
         status.verifyIfServicesIsRunning();
     });
 

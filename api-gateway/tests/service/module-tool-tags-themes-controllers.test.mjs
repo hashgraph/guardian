@@ -354,7 +354,7 @@ describe('ToolsApi', function () {
         guardiansStub.getTools = async (options, owner) => { seen = options; return { items: ['a'], count: 3 }; };
         const api = makeApi(ToolsApi);
         const res = makeRes();
-        await api.getTools(makeUser(), res, 0, 10);
+        await api.getTools(makeUser(), {}, res, 0, 10);
         assert.deepEqual(seen, { pageIndex: 0, pageSize: 10 });
         assert.equal(res.headers['X-Total-Count'], 3);
         assert.deepEqual(res.sent, ['a']);

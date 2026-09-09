@@ -7,13 +7,17 @@
         [value]="selectedIndex"
         [ngStyle]="{'height': 'calc(100vh - 120px)'}">
         <p-tablist>
-          <p-tab [value]="0">Search with AI</p-tab>
+          @if (aiSearchEnabled) {
+            <p-tab [value]="0">Search with AI</p-tab>
+          }
           <p-tab [value]="1">Guided Search</p-tab>
         </p-tablist>
         <p-tabpanels>
-          <p-tabpanel [value]="0">
-            <app-policy-ai-search class="possible-problems-with-empty-tab-here"></app-policy-ai-search>
-          </p-tabpanel>
+          @if (aiSearchEnabled) {
+            <p-tabpanel [value]="0">
+              <app-policy-ai-search class="possible-problems-with-empty-tab-here"></app-policy-ai-search>
+            </p-tabpanel>
+          }
           <p-tabpanel [value]="1">
             <app-policy-guided-search></app-policy-guided-search>
           </p-tabpanel>

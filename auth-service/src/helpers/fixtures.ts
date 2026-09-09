@@ -19,7 +19,7 @@ export async function fixtures(): Promise<void> {
         }]
 
         for (const user of users) {
-            const password = await UserPassword.generatePasswordV2(process.env.SR_INITIAL_PASSWORD || 'test');
+            const password = await UserPassword.generatePasswordV2(process.env.SR_INITIAL_PASSWORD || 'TestPass1');
             const row = usersRepository.create(User, {
                 ...user,
                 password: password.password,

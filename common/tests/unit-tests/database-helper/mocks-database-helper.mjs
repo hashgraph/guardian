@@ -207,6 +207,7 @@ export const ormMock = {
 
 const gridFSStub = {
 	openUploadStream: sandbox.stub().returns({
+		on: sandbox.stub(),
 		write: sandbox.stub(),
 		end: sandbox.stub().callsFake(function (callback) {
 			if (callback) callback();

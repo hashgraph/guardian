@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import esmock from 'esmock';
 
 const { schemasToContext } = await esmock('../../../dist/helpers/schemas-to-context.js', {
-    '@transmute/jsonld-schema': {
+    '../../../dist/helpers/jsonld-schema/index.js': {
         schemasToContext: (schemas) => ({
             '@context': {
                 name: { '@id': 'https://www.schema.org/text' },

@@ -34,7 +34,7 @@ const loadProvider = async (env) => {
     }
     try {
         const mod = await esmock('../../dist/helpers/providers/cache-provider.js', {
-            ioredis: { default: FakeCache },
+            ioredis: { Redis: FakeCache },
         });
         return mod;
     } finally {

@@ -2,7 +2,7 @@ import { MikroORM, CreateRequestContext, wrap, FilterObject, FilterQuery, FindAl
 import { MongoDriver, MongoEntityManager, MongoEntityRepository, ObjectId } from '@mikro-orm/mongodb';
 import { BaseEntity } from '../models/index.js';
 import { DataBaseNamingStrategy } from './db-naming-strategy.js';
-import { Db, GridFSBucket } from 'mongodb';
+import { Db, GridFSBucket, GridFSBucketWriteStream } from 'mongodb';
 import fixConnectionString from './fix-connection-string.js';
 import { MintTransactionStatus } from '@guardian/interfaces';
 import { AbstractDataBaseHelper, ICommonConnectionConfig, IGetAggregationFilters, IGetDocumentAggregationFilters } from '../interfaces/index.js';
@@ -136,23 +136,55 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
     }
 
     /**
+     * Write content to a GridFS upload stream and resolve with the file id only
+     * after a successful finish. Registers an 'error' handler so async write
+     * failures reject instead of hanging, crashing, or leaving a phantom id.
+     * Rejects on null/undefined content (empty buffers/strings are valid).
+     * @param content file content
+     * @param label context label for error messages
+     * @param openStream opens the target upload stream
+     * @returns file Id
+     */
+    public static writeToGridFS(
+        content: string | Buffer,
+        label: string,
+        openStream: () => GridFSBucketWriteStream
+    ): Promise<ObjectId> {
+        return new Promise<ObjectId>((resolve, reject) => {
+            try {
+                if (content === null || content === undefined) {
+                    reject(new Error(`GridFS write (${label}): content is null/undefined`));
+                    return;
+                }
+                const stream = openStream();
+                const fileId = stream.id;
+                let settled = false;
+                // resolve only after a successful finish; surface async write errors instead of leaving a phantom id
+                const done = (err?: any) => {
+                    if (settled) { return; }
+                    settled = true;
+                    if (err) { reject(err); } else { resolve(fileId); }
+                };
+                stream.on('error', done);
+                stream.write(content);
+                //forward the end callback's error too: it is the only signal when a stream
+                //reports failure through the callback instead of emitting 'error', which is
+                //how saveFileWithId used to surface it via end(buffer, (err) => ...)
+                stream.end((err?: any) => done(err));
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    /**
      * Save file
      * @param uuid
      * @param buffer
      * @returns file ID
      */
     public static async saveFile(uuid: string, buffer: Buffer): Promise<ObjectId> {
-        return new Promise<ObjectId>((resolve, reject) => {
-            try {
-                const fileStream = DataBaseHelper.gridFS.openUploadStream(uuid);
-                fileStream.write(buffer);
-                fileStream.end(() => {
-                    resolve(fileStream.id);
-                });
-            } catch (error) {
-                reject(error);
-            }
-        });
+        return DataBaseHelper.writeToGridFS(buffer, uuid, () => DataBaseHelper.gridFS.openUploadStream(uuid));
     }
 
     /**
@@ -163,14 +195,7 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
      * @returns file ID
      */
     public static async saveFileWithId(id: ObjectId, filename: string, buffer: Buffer): Promise<ObjectId> {
-        return new Promise<ObjectId>((resolve, reject) => {
-            try {
-                const stream = DataBaseHelper.gridFS.openUploadStreamWithId(id, filename);
-                stream.end(buffer, (err?: any) => err ? reject(err) : resolve(id));
-            } catch (e) {
-                reject(e);
-            }
-        });
+        return DataBaseHelper.writeToGridFS(buffer, filename, () => DataBaseHelper.gridFS.openUploadStreamWithId(id, filename));
     }
 
     /**

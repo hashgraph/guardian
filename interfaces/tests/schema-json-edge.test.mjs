@@ -195,9 +195,9 @@ describe('@unit schema-json edge — SchemaToJson.conditionToJson branches', () 
         assert.equal(j.if.AND.length, 2);
     });
 
-    it('LATENT: multi-AND entries use key "value" not "fieldValue"', () => {
+    it('multi-AND entries use key "fieldValue", matching multi-OR', () => {
         const j = SchemaToJson.conditionToJson({ ifCondition: { AND: [{ field: { name: 'a' }, fieldValue: 1 }, { field: { name: 'b' }, fieldValue: 2 }] }, thenFields: [], elseFields: [] });
-        assert.deepEqual(j.if.AND, [{ field: 'a', value: 1 }, { field: 'b', value: 2 }]);
+        assert.deepEqual(j.if.AND, [{ field: 'a', fieldValue: 1 }, { field: 'b', fieldValue: 2 }]);
     });
 
     it('multi-OR entries use key "fieldValue"', () => {

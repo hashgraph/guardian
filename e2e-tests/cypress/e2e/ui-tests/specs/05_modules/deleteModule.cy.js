@@ -1,13 +1,13 @@
-import { ModulesPage } from "../../pages/modulesPage";
+import { ModulesPage } from '../../pages/modulesPage';
 const modulesPage = new ModulesPage();
 
-import { HomePage } from "../../pages/homePage";
+import { HomePage } from '../../pages/homePage';
 const homePage = new HomePage();
 
-context("Workflow Module Deletion", { tags: ['ui'] }, () => {
+context('Workflow Module Deletion', { tags: ['ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
-    const moduleNameFileImported = "ComparedModuleFile";
+    const moduleNameFileImported = 'ComparedModuleFile';
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
@@ -16,7 +16,7 @@ context("Workflow Module Deletion", { tags: ['ui'] }, () => {
         modulesPage.openModulesTab();
     })
 
-    it("module deletion", () => {
+    it('module deletion', () => {
         modulesPage.deleteModule(moduleNameFileImported);
     });
 });

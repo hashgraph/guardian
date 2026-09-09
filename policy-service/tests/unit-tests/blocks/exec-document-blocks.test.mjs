@@ -58,21 +58,23 @@ describe('@unit document-validator-block runtime', () => {
     after(() => restoreHarness());
 
     const ev = (data, user = makeUser()) => ({ user, data: { data } });
+    // validation failures are reported as { message, data? }; success stays null
+    const msg = (r) => (r ? r.message : r);
 
     it('run returns Invalid document when event has no data', async () => {
         const { block } = makeBlock(DocumentValidatorBlock, { options: { documentType: 'vc-document' } });
-        assert.equal(await block.run(ev(null)), 'Invalid document');
+        assert.equal(msg(await block.run(ev(null))), 'Invalid document');
     });
 
     it('run returns Invalid document when data is undefined', async () => {
         const { block } = makeBlock(DocumentValidatorBlock, { options: { documentType: 'vc-document' } });
-        assert.equal(await block.run({ user: makeUser(), data: {} }), 'Invalid document');
+        assert.equal(msg(await block.run({ user: makeUser(), data: {} })), 'Invalid document');
     });
 
     it('validateDocument returns Invalid document for null doc', async () => {
         const { block } = makeBlock(DocumentValidatorBlock, { options: { documentType: 'vc-document' } });
         const r = await block.validateDocument(block, ev(null), null);
-        assert.equal(r, 'Invalid document');
+        assert.equal(msg(r), 'Invalid document');
     });
 
     it('vc-document passes a real VC', async () => {
@@ -83,7 +85,7 @@ describe('@unit document-validator-block runtime', () => {
     it('vc-document rejects a VP document type', async () => {
         const { block } = makeBlock(DocumentValidatorBlock, { options: { documentType: 'vc-document' } });
         const vp = { document: { verifiableCredential: [{ credentialSubject: [{}] }] } };
-        assert.equal(await block.run(ev(vp)), 'Invalid document type');
+        assert.equal(msg(await block.run(ev(vp))), 'Invalid document type');
     });
 
     it('vp-document passes a VP document', async () => {
@@ -94,19 +96,19 @@ describe('@unit document-validator-block runtime', () => {
 
     it('vp-document rejects a plain VC', async () => {
         const { block } = makeBlock(DocumentValidatorBlock, { options: { documentType: 'vp-document' } });
-        assert.equal(await block.run(ev(vcDoc())), 'Invalid document type');
+        assert.equal(msg(await block.run(ev(vcDoc()))), 'Invalid document type');
     });
 
     it('document with no .document yields Document does not exist (getDocumentType null path)', async () => {
         const { block } = makeBlock(DocumentValidatorBlock, { options: { documentType: 'vc-document' } });
         const r = await block.run(ev({ id: 'x' }));
-        assert.equal(r, 'Invalid document type');
+        assert.equal(msg(r), 'Invalid document type');
     });
 
     it('checkOwnerDocument rejects mismatched owner', async () => {
         const { block } = makeBlock(DocumentValidatorBlock, { options: { documentType: 'vc-document', checkOwnerDocument: true } });
         const r = await block.run(ev(vcDoc({ owner: 'did:other' }), makeUser({ did: 'did:me' })));
-        assert.equal(r, 'Invalid owner');
+        assert.equal(msg(r), 'Invalid owner');
     });
 
     it('checkOwnerDocument passes matching owner', async () => {
@@ -118,7 +120,7 @@ describe('@unit document-validator-block runtime', () => {
     it('checkOwnerByGroupDocument rejects mismatched group', async () => {
         const { block } = makeBlock(DocumentValidatorBlock, { options: { documentType: 'vc-document', checkOwnerByGroupDocument: true } });
         const r = await block.run(ev(vcDoc({ group: 'g1' }), makeUser({ group: 'g2' })));
-        assert.equal(r, 'Invalid group');
+        assert.equal(msg(r), 'Invalid group');
     });
 
     it('checkOwnerByGroupDocument passes matching group', async () => {
@@ -130,7 +132,7 @@ describe('@unit document-validator-block runtime', () => {
     it('checkAssignDocument rejects mismatched assignee', async () => {
         const { block } = makeBlock(DocumentValidatorBlock, { options: { documentType: 'vc-document', checkAssignDocument: true } });
         const r = await block.run(ev(vcDoc({ assignedTo: 'did:a' }), makeUser({ did: 'did:b' })));
-        assert.equal(r, 'Invalid assigned user');
+        assert.equal(msg(r), 'Invalid assigned user');
     });
 
     it('checkAssignDocument passes matching assignee', async () => {
@@ -142,7 +144,7 @@ describe('@unit document-validator-block runtime', () => {
     it('checkAssignByGroupDocument rejects mismatched assigned group', async () => {
         const { block } = makeBlock(DocumentValidatorBlock, { options: { documentType: 'vc-document', checkAssignByGroupDocument: true } });
         const r = await block.run(ev(vcDoc({ assignedToGroup: 'g1' }), makeUser({ group: 'g2' })));
-        assert.equal(r, 'Invalid assigned group');
+        assert.equal(msg(r), 'Invalid assigned group');
     });
 
     it('conditions equal filter passes', async () => {
@@ -152,7 +154,7 @@ describe('@unit document-validator-block runtime', () => {
 
     it('conditions equal filter fails', async () => {
         const { block } = makeBlock(DocumentValidatorBlock, { options: { documentType: 'vc-document', conditions: [{ type: 'equal', field: 'owner', value: 'nope' }] } });
-        assert.equal(await block.run(ev(vcDoc())), 'Invalid document');
+        assert.equal(msg(await block.run(ev(vcDoc()))), 'Field "owner": got "did:owner", expected "nope"');
     });
 
     it('conditions not_equal filter passes', async () => {
@@ -162,7 +164,7 @@ describe('@unit document-validator-block runtime', () => {
 
     it('multiple conditions short-circuit on first failure', async () => {
         const { block } = makeBlock(DocumentValidatorBlock, { options: { documentType: 'vc-document', conditions: [{ type: 'equal', field: 'owner', value: 'did:owner' }, { type: 'equal', field: 'owner', value: 'x' }] } });
-        assert.equal(await block.run(ev(vcDoc())), 'Invalid document');
+        assert.equal(msg(await block.run(ev(vcDoc()))), 'Field "owner": got "did:owner", expected "x"');
     });
 
     it('run over an array returns null when all pass', async () => {
@@ -173,13 +175,13 @@ describe('@unit document-validator-block runtime', () => {
     it('run over an array returns the first error encountered', async () => {
         const { block } = makeBlock(DocumentValidatorBlock, { options: { documentType: 'vc-document' } });
         const bad = { document: { verifiableCredential: [{}] } };
-        assert.equal(await block.run(ev([vcDoc(), bad])), 'Invalid document type');
+        assert.equal(msg(await block.run(ev([vcDoc(), bad]))), 'Invalid document type');
     });
 
     it('related-vc-document with no ref resolves to Document does not exist', async () => {
         const { block } = makeBlock(DocumentValidatorBlock, { options: { documentType: 'related-vc-document' } });
         const r = await block.run(ev(vcDoc()));
-        assert.equal(r, 'Document does not exist');
+        assert.equal(msg(r), 'Document does not exist');
     });
 
     it('related-vc-document loads the referenced VC and validates type', async () => {
@@ -203,7 +205,7 @@ describe('@unit document-validator-block runtime', () => {
             componentsOverrides: { databaseServer: db },
         });
         const doc = { document: { credentialSubject: [{ ref: 'ref-123' }] } };
-        assert.equal(await block.run(ev(doc)), 'Document does not exist');
+        assert.equal(msg(await block.run(ev(doc))), 'Document does not exist');
     });
 
     it('related-vp-document loads the referenced VP', async () => {

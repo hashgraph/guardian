@@ -49,8 +49,9 @@ The success of the Guardian project relies heavily on the community's active par
 
 Effective communication is a cornerstone of any successful open-source community. For the Guardian ecosystem, we primarily leverage three channels to facilitate dialogue and collaboration:
 
-* **GitHub**: GitHub serves as our primary platform for code hosting, version control, and collaboration. It's where you can find the latest versions of the codebase, contribute to the project, submit issues, and review ongoing proposals.
-* **Community Calls**: These scheduled calls are listed on the [Guardian Calendar](https://lu.ma/guardian) and serve as a platform for structured discussions and updates. It's an opportunity for contributors to present proposals, share updates on ongoing work, discuss issues, and receive feedback from the Guardian team and the broader community.&#x20;
+* **GitHub**: GitHub serves as our primary platform for hosting code, version control, and issue management. It's where you can find the latest versions of the codebase, contribute to the project, submit issues, and review ongoing proposals.
+* **Community Calls**: These scheduled calls are listed on the [Guardian Calendar](https://lu.ma/guardian) and serve as a platform for structured discussions and updates. It's an opportunity for contributors to present proposals, share updates on ongoing work, discuss issues, and receive feedback from the Guardian team and the broader community.
+* **Platform Calls:** Each Guardian release a platform update call is hosted. During this time, an overview of the latest major features will be reviewed. &#x20;
 
 ## Code of Conduct
 

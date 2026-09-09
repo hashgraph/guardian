@@ -735,7 +735,7 @@ function main() {
             'http://localhost:3002/'
         )
         .option('-u --user <user>', 'User', 'StandardRegistry')
-        .option('-p --password <password>', 'Password', 'test')
+        .option('-p --password <password>', 'Password', 'TestPass1')
         .option('-o --output <path>', 'Output information file path')
         .action(async (policiesDirectory, options) => {
             try {

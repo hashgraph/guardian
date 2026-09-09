@@ -64,4 +64,9 @@ export enum PolicyEvents {
     GET_MOCK_CONFIG = 'policy-event-get-mock-config',
     SET_MOCK_CONFIG = 'policy-event-set-mock-config',
     RETRY_MINT = 'policy-event-retry-mint',
+
+    GET_POLICY_GRIDS = 'policy-event-get-policy-grids',
+    GET_GRID_ACTIONS = 'policy-event-get-grid-actions',
+    GET_GRID_RECORDS = 'policy-event-get-grid-records',
+    EXECUTE_GRID_ACTION = 'policy-event-execute-grid-action',
 }

@@ -19,7 +19,8 @@ const channelName = (process.env.SERVICE_CHANNEL || `indexer-worker.${Utils.Gene
                 name: channelName,
                 servers: [
                     `nats://${process.env.MQ_ADDRESS}:4222`
-                ]
+                ],
+                maxReconnectAttempts: -1 // reconnect forever
             }
         }])
     ],
@@ -47,7 +48,8 @@ Promise.all([
             servers: [
                 `nats://${process.env.MQ_ADDRESS}:4222`
             ],
-            tls: GenerateTLSOptionsNats()
+            tls: GenerateTLSOptionsNats(),
+            maxReconnectAttempts: -1 // reconnect forever
         },
     }),
 ]).then(async values => {

@@ -22,7 +22,7 @@
         "node": ">=24.15.0"
     },
     "dependencies": {
-        "@hiero-ledger/sdk": "2.86.2",
+        "@hiero-ledger/sdk": "2.87.0",
         "axios": "^1.16.1",
         "commander": "^11.1.0",
         "solc": "0.8.36",

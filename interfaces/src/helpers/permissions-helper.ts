@@ -374,6 +374,27 @@ export class UserPermissions {
         return this.check(Permissions.TOOL_MIGRATION_CREATE);
     }
 
+    //TEMPLATES
+    public get TEMPLATES_TEMPLATE_READ(): boolean {
+        return this.check(Permissions.TEMPLATES_TEMPLATE_READ);
+    }
+
+    public get TEMPLATES_TEMPLATE_CREATE(): boolean {
+        return this.check(Permissions.TEMPLATES_TEMPLATE_CREATE);
+    }
+
+    public get TEMPLATES_TEMPLATE_UPDATE(): boolean {
+        return this.check(Permissions.TEMPLATES_TEMPLATE_UPDATE);
+    }
+
+    public get TEMPLATES_TEMPLATE_DELETE(): boolean {
+        return this.check(Permissions.TEMPLATES_TEMPLATE_DELETE);
+    }
+
+    public get TEMPLATES_TEMPLATE_REVIEW(): boolean {
+        return this.check(Permissions.TEMPLATES_TEMPLATE_REVIEW);
+    }
+
     //TOKENS
     public get TOKENS_TOKEN_READ(): boolean {
         return this.check(Permissions.TOKENS_TOKEN_READ);

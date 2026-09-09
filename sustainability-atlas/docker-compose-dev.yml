@@ -1,0 +1,66 @@
+version: '3.9'
+
+# Infrastructure only — run worker and frontend locally with yarn
+# Usage: docker compose -f docker-compose-dev.yml up -d
+
+services:
+    postgres:
+        image: postgres:16-alpine
+        container_name: se-postgres
+        ports:
+            - '5432:5432'
+        environment:
+            POSTGRES_DB: postgres
+            POSTGRES_USER: explorer
+            POSTGRES_PASSWORD: explorer_password
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        healthcheck:
+            test: ['CMD-SHELL', 'pg_isready -U explorer -d sustainable_explorer']
+            interval: 5s
+            timeout: 3s
+            retries: 5
+
+    redict:
+        image: registry.redict.io/redict:7.3.6-alpine
+        container_name: se-redict
+        ports:
+            - '6379:6379'
+        command: redict-server --appendonly yes
+        volumes:
+            - redict_data:/data
+        healthcheck:
+            test: ['CMD', 'redict-cli', 'ping']
+            interval: 5s
+            timeout: 3s
+            retries: 5
+
+    ipfs:
+        image: ipfs/kubo:latest
+        container_name: se-ipfs
+        restart: unless-stopped
+        ports:
+            - '5001:5001'
+            - '8080:8080'
+        volumes:
+            - ipfs_data:/data/ipfs
+        environment:
+            - IPFS_PROFILE=flatfs
+
+    bull-board:
+        image: deadly0/bull-board
+        container_name: se-bull-board
+        restart: unless-stopped
+        ports:
+            - '3010:3000'
+        environment:
+            REDIS_HOST: redict
+            REDIS_PORT: 6379
+        depends_on:
+            redict:
+                condition: service_healthy
+
+volumes:
+    postgres_data:
+    redict_data:
+    ipfs_data:

@@ -96,6 +96,115 @@ describe('resolveGeoDependencies', () => {
         expect(result.values.continent).toBe('NA');
     });
 
+    it('keeps every Continent available once the whole chain is filled', () => {
+        const result = resolveGeoDependencies(
+            fields({ continent: 'NA', country: 'US', state: 'US-CA' })
+        );
+        const values = result.options.continent.map((option) => option.value);
+        expect(values).toContain('NA');
+        expect(values).toContain('EU');
+        expect(values).toContain('AS');
+    });
+
+    it('keeps sibling Countries available once a State is selected', () => {
+        const result = resolveGeoDependencies(
+            fields({ continent: 'NA', country: 'US', state: 'US-CA' })
+        );
+        const values = result.options.country.map((option) => option.value);
+        expect(values).toContain('US');
+        expect(values).toContain('CA');
+        expect(values).toContain('MX');
+        expect(values).not.toContain('DE');
+    });
+
+    it('clears Country and State when the Continent changes', () => {
+        const result = resolveGeoDependencies(
+            fields({ continent: 'EU', country: 'US', state: 'US-CA' }),
+            'continent'
+        );
+        expect(result.values.continent).toBe('EU');
+        expect(result.values.country).toBeNull();
+        expect(result.values.state).toBeNull();
+    });
+
+    it('keeps the Continent and clears the State when the Country changes under a selected State', () => {
+        const result = resolveGeoDependencies(
+            fields({ continent: 'NA', country: 'MX', state: 'US-CA' }),
+            'country'
+        );
+        expect(result.values.continent).toBe('NA');
+        expect(result.values.country).toBe('MX');
+        expect(result.values.state).toBeNull();
+    });
+
+    it('offers every Country of the derived Continent after a State is picked first', () => {
+        const result = resolveGeoDependencies(
+            fields({ continent: null, country: null, state: 'US-CA' }),
+            'state'
+        );
+        const countries = result.options.country.map((option) => option.value);
+        expect(countries).toContain('US');
+        expect(countries).toContain('CA');
+        expect(countries).toContain('MX');
+        expect(countries).not.toContain('DE');
+        expect(result.options.continent.length).toBe(
+            resolveGeoDependencies(
+                fields({ continent: null, country: null, state: null })
+            ).options.continent.length
+        );
+    });
+
+    it('leaves every Country available when Country is the top of the chain', () => {
+        const pair: GeoResolverField[] = [
+            {
+                name: 'country',
+                type: 'country',
+                value: 'US',
+            },
+            {
+                name: 'state',
+                type: 'state',
+                value: 'US-CA',
+                dependency: { on: 'country', kind: 'geo' },
+            },
+        ];
+        const result = resolveGeoDependencies(pair);
+        const countries = result.options.country.map((option) => option.value);
+        expect(countries).toContain('US');
+        expect(countries).toContain('DE');
+        expect(countries).toContain('BY');
+    });
+
+    it('clears Country and State when the Continent is cleared', () => {
+        const result = resolveGeoDependencies(
+            fields({ continent: null, country: 'US', state: 'US-CA' }),
+            'continent'
+        );
+        expect(result.values.continent).toBeNull();
+        expect(result.values.country).toBeNull();
+        expect(result.values.state).toBeNull();
+    });
+
+    it('clears the State but keeps the Continent when the Country is cleared', () => {
+        const result = resolveGeoDependencies(
+            fields({ continent: 'NA', country: null, state: 'US-CA' }),
+            'country'
+        );
+        expect(result.values.continent).toBe('NA');
+        expect(result.values.country).toBeNull();
+        expect(result.values.state).toBeNull();
+    });
+
+    it('changes nothing above when the State is cleared', () => {
+        const result = resolveGeoDependencies(
+            fields({ continent: 'NA', country: 'US', state: null }),
+            'state'
+        );
+        expect(result.values.continent).toBe('NA');
+        expect(result.values.country).toBe('US');
+        expect(result.values.state).toBeNull();
+    });
+
     it('has no cross-continent ambiguous State values in the bundled dataset', () => {
         const occurrences = new Map<string, string[]>();
         for (const country of getAllCountries()) {

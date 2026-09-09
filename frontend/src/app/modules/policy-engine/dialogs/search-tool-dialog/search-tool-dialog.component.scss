@@ -206,55 +206,6 @@
     }
 }
 
-.dialog-header {
-    height: 80px;
-    display: flex;
-    width: 100%;
-    position: relative;
-    color: #495057;
-    padding: 1.5rem 0;
-
-    .header-container {
-        width: 100%;
-        position: relative;
-        flex: 1;
-        display: flex;
-        flex-direction: row;
-
-        .header-text {
-            font-weight: 600;
-            font-size: 1.25rem;
-            font-family: Poppins, sans-serif;
-            font-style: normal;
-            padding: 0px 0px;
-        }
-
-        .header-item {
-            padding: 6px 12px;
-            background: var(--guardian-grey-background, #E1E7EF);
-            margin: 0px 16px;
-            border-radius: 6px;
-            color: #6f7279;
-            font-size: 14px;
-        }
-    }
-
-    .header-icon {
-        width: 32px;
-        min-width: 32px;
-        max-width: 32px;
-        position: relative;
-        flex: 32px;
-        padding: 4px;
-        border-radius: 100%;
-        cursor: pointer;
-
-        &:hover {
-            background: var(--guardian-grey-background, #e9ecef);
-        }
-    }
-}
-
 .dialog-body {
     height: 45vh;
     overflow-y: auto;

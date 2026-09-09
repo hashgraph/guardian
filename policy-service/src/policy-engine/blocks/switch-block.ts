@@ -72,7 +72,7 @@ import { LocationType } from '@guardian/interfaces';
                             editable: true
                         },
                         {
-                            name: 'condition',
+                            name: 'value',
                             label: 'Condition',
                             title: 'Condition',
                             type: PropertyType.Input,

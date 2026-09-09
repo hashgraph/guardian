@@ -1,9 +1,9 @@
-import URL from "../../../support/GuardianUrls";
-import CommonElements from "../../../support/defaultUIElements";
+import URL from '../../../support/GuardianUrls';
+import CommonElements from '../../../support/defaultUIElements';
 
 const LogsPageLocators = {
     LogModal: 'div.p-dialog',
-    detailsButton: "Details",
+    detailsButton: 'Details',
     apllyBtn: 'button[label="Apply"]',
     messageField: '[placeholder="Message"]',
     logData: 'tr.row-item',
@@ -35,7 +35,7 @@ export class LogsPage {
 
     verifyLogModalIsDisplayed() {
         cy.get(LogsPageLocators.LogModal).should('be.visible');
-        cy.contains("Details Log").should('be.visible');
+        cy.contains('Details Log').should('be.visible');
         cy.get('[formcontrolname="type"]').should('be.visible');
         cy.get('[formcontrolname="datetime"]').should('be.visible');
         cy.get('[formcontrolname="message"]').should('be.visible');
@@ -63,11 +63,11 @@ export class LogsPage {
     }
 
     verifyIfTypeColumnContains(type) {
-        cy.get("body").then(($body) => {
+        cy.get('body').then(($body) => {
             if ($body.find(LogsPageLocators.logData).length != 0)
-                cy.wrap($body).find(LogsPageLocators.logData).each($element => {
+                {cy.wrap($body).find(LogsPageLocators.logData).each($element => {
                     cy.wrap($element).find('td').eq(0).contains(type);
-                });
+                });}
         })
     }
 
@@ -98,7 +98,7 @@ export class LogsPage {
     }
 
     verifyIfTypeFieldHasDefaultValue() {
-        cy.get(LogsPageLocators.typeDefaultOption).should("exist");
+        cy.get(LogsPageLocators.typeDefaultOption).should('exist');
     }
 
     verifyIfDateRangeFieldIsEmpty() {

@@ -1,6 +1,6 @@
 <div class="guardian-page">
 
-  <div class="guardian-user-page-header">Tools</div>
+  <guardian-page-header pageTitle="Tools" helpKey="tools"></guardian-page-header>
   @if (!isConfirmed) {
     <div class="not-exist">
       Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
@@ -256,7 +256,7 @@
                 @if (showStatus(tool)) {
                   <p-select
                     class="status-actions-dropdown {{tool.status}}-dropdown"
-                    styleClass="guardian-status-select"
+                    styleClass="guardian-status-select tool-status-select"
                     appendTo="body"
                     tooltipPosition="bottom"
                     [attr.published]="tool.status == 'PUBLISH'"

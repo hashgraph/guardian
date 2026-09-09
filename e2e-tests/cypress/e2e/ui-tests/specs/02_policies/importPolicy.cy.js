@@ -1,14 +1,14 @@
-import { HomePage } from "../../pages/homePage";
+import { HomePage } from '../../pages/homePage';
 const homepage = new HomePage();
 
-import { PoliciesPage } from "../../pages/policiesPage";
+import { PoliciesPage } from '../../pages/policiesPage';
 const policiesPage = new PoliciesPage();
 
-context("Import Policy", { tags: ['ui'] }, () => {
+context('Import Policy', { tags: ['ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
-    const importedFromFilePolicyName = "60testName";
-    const importedFromIPFSPolicyName = "406testName";
+    const importedFromFilePolicyName = '60testName';
+    const importedFromIPFSPolicyName = '406testName';
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
@@ -17,16 +17,16 @@ context("Import Policy", { tags: ['ui'] }, () => {
         policiesPage.openPoliciesTab();
     })
 
-    it("Verify if it possible to Import published policy from file", () => {
-        policiesPage.importPolicyFromFile("policyImportPublished.policy");
+    it('Verify if it possible to Import published policy from file', () => {
+        policiesPage.importPolicyFromFile('policyImportPublished.policy');
         policiesPage.backToPoliciesList();
-        policiesPage.checkStatus(importedFromFilePolicyName, "Draft");
+        policiesPage.checkStatus(importedFromFilePolicyName, 'Draft');
     });
 
-    it("Verify if it possible to Import published policy from IPFS", () => {
-        policiesPage.importPolicyFromIPFS("1738845461.094286000");
+    it('Verify if it possible to Import published policy from IPFS', () => {
+        policiesPage.importPolicyFromIPFS('1738845461.094286000');
         policiesPage.backToPoliciesList();
-        policiesPage.checkStatus(importedFromIPFSPolicyName, "Draft");
+        policiesPage.checkStatus(importedFromIPFSPolicyName, 'Draft');
     });
 
     after(() => {

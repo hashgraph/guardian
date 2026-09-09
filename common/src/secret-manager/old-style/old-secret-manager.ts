@@ -19,13 +19,47 @@ export class OldSecretManager extends NatsService implements SecretManagerBase {
      * @private
      */
     public replySubject = 'settings-reply-' + GenerateUUIDv4();
+
+    // Bounded-retry configuration for secret operations (see withRetry).
+    private static readonly RETRY_ATTEMPTS = 3;
+    private static readonly RETRY_DELAY_MS = 3000;
+
+    /**
+     * Run a secret operation with bounded retries. Each attempt is still guarded
+     * by the per-call {@link timeout} decorator; retrying tolerates a dependency
+     * (auth-service / MQ) that is briefly slow or not yet ready, so a transient
+     * delay does not surface as an unhandled rejection that can crash a service
+     * during startup.
+     * @param operation operation to run
+     * @private
+     */
+    private async withRetry<T>(operation: () => Promise<T>): Promise<T> {
+        let lastError: unknown;
+        for (let attempt = 1; attempt <= OldSecretManager.RETRY_ATTEMPTS; attempt++) {
+            try {
+                return await operation();
+            } catch (error) {
+                lastError = error;
+                if (attempt < OldSecretManager.RETRY_ATTEMPTS) {
+                    console.warn(`[OldSecretManager] secret operation attempt ${attempt}/${OldSecretManager.RETRY_ATTEMPTS} failed, retrying in ${OldSecretManager.RETRY_DELAY_MS}ms:`, error?.message || error);
+                    await new Promise((resolve) => setTimeout(resolve, OldSecretManager.RETRY_DELAY_MS));
+                }
+            }
+        }
+        throw lastError;
+    }
+
     /**
      * Get secrets
      * @param path
      * @param addition
      */
+    async getSecrets(path: string, addition?: any): Promise<any> {
+        return this.withRetry(() => this.getSecretsOnce(path, addition));
+    }
+
     @timeout(10000)
-    async getSecrets(path: string, addition: any): Promise<any> {
+    private async getSecretsOnce(path: string, addition: any): Promise<any> {
         switch (path) {
             case 'keys/operator':
                 const OPERATOR_ID = await this.sendMessage<IGetKeyResponse>(WalletEvents.GET_GLOBAL_APPLICATION_KEY, { type: 'OPERATOR_ID' });
@@ -62,8 +96,12 @@ export class OldSecretManager extends NatsService implements SecretManagerBase {
      * @async
      * @public
      */
-    @timeout(10000)
     async setSecrets(path: string, data: any, addition?: any): Promise<void> {
+        return this.withRetry(() => this.setSecretsOnce(path, data, addition));
+    }
+
+    @timeout(10000)
+    private async setSecretsOnce(path: string, data: any, addition?: any): Promise<void> {
         switch (path) {
             case 'keys/operator':
                 await this.sendMessage<IGetKeyResponse>(WalletEvents.SET_GLOBAL_APPLICATION_KEY, { type: 'OPERATOR_ID', key: data.OPERATOR_ID });

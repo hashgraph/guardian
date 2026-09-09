@@ -75,6 +75,31 @@
       </div>
     </div>
   }
+
+  @if (schemaTemplate) {
+    <div class="policy">
+      <div class="field">
+        <div class="field-name">Name</div>
+        <div class="field-value">{{ schemaTemplate.name }}</div>
+      </div>
+      @if (schemaTemplate.description) {
+        <div class="field">
+          <div class="field-name">Description</div>
+          <div class="field-value">{{ schemaTemplate.description }}</div>
+        </div>
+      }
+      @if (schemaTemplate.version) {
+        <div class="field">
+          <div class="field-name">Version</div>
+          <div class="field-value">{{ schemaTemplate.version }}</div>
+        </div>
+      }
+      <div class="field">
+        <div class="field-name">Creator</div>
+        <div class="field-value">{{ schemaTemplate.owner }}</div>
+      </div>
+    </div>
+  }
 </div>
 <div class="dialog-footer">
   <div class="action-buttons">

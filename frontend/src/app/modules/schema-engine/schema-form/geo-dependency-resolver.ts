@@ -201,6 +201,14 @@ export function resolveGeoDependencies(
         }
     }
 
+    if (changed && !changedValue) {
+        for (const descendant of fields) {
+            if (isRelatedAncestor(descendant, changed, fieldsByName)) {
+                values[descendant.name] = null;
+            }
+        }
+    }
+
     let populated = !!(changed && changedValue);
     while (populated) {
         populated = false;
@@ -251,10 +259,6 @@ export function resolveGeoDependencies(
                 descendant.type,
                 ancestor.type,
                 descendantValue
-            );
-            options[ancestor.name] = intersect(
-                options[ancestor.name],
-                candidates
             );
             if (ancestorValue && !candidates.includes(ancestorValue)) {
                 const message = conflictMessage(descendant, ancestor, values);

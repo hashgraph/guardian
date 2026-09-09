@@ -88,8 +88,21 @@ export class NotificationComponent implements OnInit {
         }
     }
 
+    /**
+     * The backend sends the same constant for every async task, so the toast read like a
+     * generic success and never said what had actually begun. A message that is not the
+     * constant is passed through untouched.
+     */
+    private static readonly GENERIC_PROGRESS_MESSAGE = 'Operation started';
+
     toastProgress(notification: any) {
-        this.toastService.info(notification.message, notification.action);
+        const action = notification?.action;
+        const message = notification?.message;
+        const isGeneric = !message || message === NotificationComponent.GENERIC_PROGRESS_MESSAGE;
+        const detail = isGeneric && action
+            ? `${action} is running. You will be notified when it finishes.`
+            : message;
+        this.toastService.info(detail, action || 'In progress');
     }
 
     countUnreadNotification() {

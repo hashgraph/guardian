@@ -1,0 +1,100 @@
+export default defineNuxtConfig({
+    ssr: true,
+
+    modules: ['@nuxtjs/i18n'],
+
+    i18n: {
+        strategy: 'no_prefix',
+        defaultLocale: 'en',
+        langDir: 'locales',
+        lazy: true,
+        locales: [
+            { code: 'en', name: 'English', file: 'en.json' },
+            { code: 'es', name: 'Español', file: 'es.json' },
+        ],
+        detectBrowserLanguage: false,
+        bundle: {
+            optimizeTranslationDirective: false,
+        },
+    },
+
+    css: ['~/assets/css/main.css'],
+
+    // @vue-flow/core ships untranspiled ESM and must be transpiled for SSR, or SSR crashes at module-eval ("Cannot read properties of null (reading 'ce')").
+    build: {
+        transpile: ['@vue-flow/core'],
+    },
+
+    vite: {
+        plugins: [
+            // @ts-ignore
+            import('@tailwindcss/vite').then((m) => m.default()),
+        ],
+    },
+
+    components: [
+        { path: '~/components/ui', pathPrefix: false },
+        { path: '~/components/layout', pathPrefix: false },
+        { path: '~/components/shared', pathPrefix: false },
+        { path: '~/components/project', pathPrefix: false },
+        { path: '~/components/portfolio', pathPrefix: false },
+        { path: '~/components/auth', pathPrefix: false },
+        { path: '~/components/admin', pathPrefix: false },
+        { path: '~/components/account', pathPrefix: false },
+        { path: '~/components/saved-search', pathPrefix: false },
+        { path: '~/components/reports', pathPrefix: false },
+    ],
+
+    imports: {
+        dirs: ['composables/**'],
+    },
+
+    // Dev-only proxy so yarn dev can use relative /api/v1 paths; production calls the API directly via runtimeConfig.public.apiBaseUrl.
+    routeRules: {
+        '/api/v1/**': {
+            proxy: 'http://localhost:3030/api/v1/**',
+        },
+    },
+
+    runtimeConfig: {
+        // Server-side API base URL used during SSR useFetch calls; in Docker, set via NUXT_API_BASE_URL.
+        apiBaseUrl: process.env.NUXT_API_BASE_URL || 'http://localhost:3030',
+        public: {
+            // Client-side API base URL; leave empty in dev (Vite proxies via routeRules), set via NUXT_PUBLIC_API_BASE_URL in prod.
+            apiBaseUrl: '',
+            // SSE (EventSource) must bypass the Nitro proxy and connect directly to the API; override via NUXT_PUBLIC_SSE_API_BASE_URL in production.
+            sseApiBaseUrl: process.env.NUXT_PUBLIC_SSE_API_BASE_URL || 'http://localhost:3030',
+            // Nominatim geocoding endpoints. Override via NUXT_PUBLIC_GEOCODER_URL / NUXT_PUBLIC_GEOCODER_SEARCH_URL.
+            geocoderUrl: 'https://nominatim.openstreetmap.org/reverse',
+            geocoderSearchUrl: 'https://nominatim.openstreetmap.org/search',
+            // Google Apps Script Web App URL that receives feedback submissions; leave empty to hide the feedback widget (set via NUXT_PUBLIC_FEEDBACK_WEBHOOK_URL).
+            feedbackWebhookUrl: process.env.NUXT_PUBLIC_FEEDBACK_WEBHOOK_URL || '',
+            // Optional shared secret sent with feedback; must match SHARED_SECRET in the Apps Script (set via NUXT_PUBLIC_FEEDBACK_TOKEN).
+            feedbackToken: process.env.NUXT_PUBLIC_FEEDBACK_TOKEN || '',
+        },
+    },
+
+    app: {
+        head: {
+            title: 'Sustainability Atlas',
+            meta: [
+                { name: 'description', content: 'Explore sustainability data on Hedera Guardian' },
+            ],
+            link: [
+                { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+                { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32x32.png' },
+                { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16x16.png' },
+            ],
+        },
+    },
+
+    typescript: {
+        strict: true,
+    },
+
+    compatibilityDate: '2025-01-01',
+
+    experimental: {
+        appManifest: false,
+    },
+});

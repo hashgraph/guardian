@@ -34,6 +34,7 @@ import { PolicyTreeComponent } from '../policy-tree/policy-tree.component';
 import { catchError, takeUntil, tap } from 'rxjs/operators';
 import { TestCodeDialog } from '../../dialogs/test-code-dialog/test-code-dialog.component';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { confirmDryRun } from '../../dialogs/dry-run-dialog/dry-run-dialog.component';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { DB_NAME, STORES_NAME } from 'src/app/constants';
 import { IgnoreRule } from '@guardian/interfaces';
@@ -339,6 +340,13 @@ export class PolicyConfigurationComponent implements OnInit {
 
     public get isTree(): boolean {
         return this.currentView === 'blocks';
+    }
+
+    public get visibleConfigurations(): OrderOption[] {
+        if (this.isTree) {
+            return this.options.configurationOrder;
+        }
+        return this.options.configurationOrder.filter((item) => item.id === 'tree');
     }
 
     public get isModuleValid(): boolean {
@@ -1293,51 +1301,32 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     private dryRunPolicy() {
-        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
-            showHeader: false,
-            width: '640px',
-            styleClass: 'guardian-dialog',
-            data: {
-                header: 'Enable Mock',
-                texts: [
-                    `Mock Data intercepts all external service calls (IPFS, Topics, Tokens, and API requests) and returns pre-configured test responses instead of making real network calls. This lets you run and test your policy in a fully self-contained offline environment.`,
-                    `You can change this setting and configure individual blocks at any time from the 'Mock Config' panel.`,
-                    `Note: enabling Mock pre-records responses for every schema in the policy, so moving to Dry-Run may take several minutes.`
-                ],
-                buttons: [{
-                    name: 'Disable',
-                    class: 'secondary'
-                }, {
-                    name: 'Enable',
-                    class: 'primary'
-                }]
-            },
-        })!;
-        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result: string) => {
-            this.loading = true;
-            this.policyEngineService
-                .dryRun(this.policyId, {
-                    enableMock: result === 'Enable'
-                })
-                .pipe(takeUntil(this._destroy$))
-                .subscribe((data: any) => {
-                    const { policies, isValid, errors } = data;
-                    if (isValid) {
-                        this.clearState();
-                        this.loadData();
-                    } else {
-                        this.setErrors(errors, 'policy');
+        confirmDryRun(this.dialogService, this.policyId)
+            .pipe(takeUntil(this._destroy$))
+            .subscribe((choice) => {
+                if (choice) {
+                    this.executeDryRun(choice.enableMock);
+                }
+            });
+    }
 
-                        this.emptyWarningsStates()
-                        this.emptyInfosStates()
-
-                        this.loading = false;
-                    }
-                }, (e) => {
-                    console.error(e.error);
-                    this.loading = false;
+    private executeDryRun(enableMock: boolean) {
+        this.loading = true;
+        this.policyEngineService
+            .pushDryRun(this.policyId, { enableMock })
+            .pipe(takeUntil(this._destroy$))
+            .subscribe((result) => {
+                const { taskId } = result;
+                this.clearState();
+                this.router.navigate(['task', taskId], {
+                    queryParams: {
+                        last: btoa(location.href),
+                    },
                 });
-        });
+            }, (e) => {
+                console.error(e.error);
+                this.loading = false;
+            });
     }
 
     private updatePolicyTemplate(policy: any) {

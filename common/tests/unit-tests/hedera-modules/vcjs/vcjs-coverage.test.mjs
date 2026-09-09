@@ -3,6 +3,7 @@ import { assert } from 'chai';
 import { DefaultDocumentLoader } from '../../../../dist/hedera-modules/document-loader/document-loader-default.js';
 import { LocalDidLoader } from '../../../../dist/document-loader/local-did-loader.js';
 import { VCJS } from '../../../../dist/hedera-modules/vcjs/vcjs.js';
+import { ContextHelper } from '../../../../dist/hedera-modules/vcjs/context-helper.js';
 import { SignatureType } from '@guardian/interfaces';
 
 void DefaultDocumentLoader;
@@ -114,6 +115,65 @@ describe('VCJS coverage (offline paths)', function () {
             vcjs.prepareSchema(schema);
             assert.deepEqual(schema.$defs.Foo.required, ['b']);
             assert.deepEqual(schema.$defs.Bar.required, []);
+        });
+
+        it('strips templateFieldId, an editor-only annotation AJV strict mode rejects as unknown', function () {
+            const vcjs = makeVcjs();
+            const schema = {
+                type: 'object',
+                properties: {
+                    root: { type: 'string', templateFieldId: 'root-id' },
+                    // SchemaHelper writes templateFieldId on the array field itself,
+                    // never on `items` directly; nested object fields get their own id.
+                    list: {
+                        type: 'array',
+                        templateFieldId: 'list-id',
+                        items: { type: 'object', properties: {
+                            nested: { type: 'string', templateFieldId: 'nested-id' }
+                        } }
+                    }
+                },
+                $defs: {
+                    Foo: {
+                        type: 'object',
+                        properties: { a: { type: 'string', templateFieldId: 'def-id' } }
+                    }
+                }
+            };
+            vcjs.prepareSchema(schema);
+            assert.notProperty(schema.properties.root, 'templateFieldId');
+            assert.notProperty(schema.properties.list, 'templateFieldId');
+            assert.notProperty(schema.properties.list.items.properties.nested, 'templateFieldId');
+            assert.notProperty(schema.$defs.Foo.properties.a, 'templateFieldId');
+        });
+
+        it('strips templateFieldId from a conditional field revealed in an allOf then/else branch', function () {
+            const vcjs = makeVcjs();
+            const schema = {
+                type: 'object',
+                properties: {
+                    trigger: { type: 'string' }
+                },
+                allOf: [{
+                    if: {
+                        properties: { trigger: { const: 'yes' } },
+                        required: ['trigger']
+                    },
+                    then: {
+                        properties: {
+                            condField: { type: 'string', templateFieldId: 'cond-id' }
+                        }
+                    },
+                    else: {
+                        properties: {
+                            otherCondField: { type: 'string', templateFieldId: 'other-cond-id' }
+                        }
+                    }
+                }]
+            };
+            vcjs.prepareSchema(schema);
+            assert.notProperty(schema.allOf[0].then.properties.condField, 'templateFieldId');
+            assert.notProperty(schema.allOf[0].else.properties.otherCondField, 'templateFieldId');
         });
 
         describe('shared sub-schema sibling isolation', function () {
@@ -242,6 +302,60 @@ describe('VCJS coverage (offline paths)', function () {
                     'sibling.b must still be required — the required-strip must not leak from targeted to sibling');
             });
         });
+
+        describe('array-typed sub-schema ref (items.$ref)', function () {
+            // Regression guard: a sub-schema reference under an array property sits at
+            // `items.$ref`, not `$ref` directly on the property. Before readRef/withRef
+            // handled that shape, prepareSchema silently skipped the strip-and-clone pass
+            // for any array-typed ref field entirely.
+            function makeArrayRefSchema() {
+                return {
+                    type: 'object',
+                    properties: {
+                        targetedList: { type: 'array', items: { $ref: '#Sub' } }
+                    },
+                    required: [],
+                    allOf: [{
+                        if: {
+                            properties: { targetedList: { properties: { a: { const: 1 } }, required: ['a'] } },
+                            required: ['targetedList']
+                        },
+                        then: { properties: { targetedList: { required: ['b'] } } },
+                        else: { properties: { targetedList: { properties: { b: false } } } }
+                    }],
+                    $defs: {
+                        '#Sub': {
+                            $id: '#Sub',
+                            type: 'object',
+                            properties: { a: { type: 'number' }, b: { type: 'number' } },
+                            required: ['a', 'b']
+                        }
+                    }
+                };
+            }
+
+            it('rewrites items.$ref to a per-container clone', function () {
+                const vcjs = makeVcjs();
+                const schema = makeArrayRefSchema();
+                vcjs.prepareSchema(schema);
+
+                assert.notEqual(schema.properties.targetedList.items.$ref, '#Sub',
+                    'items.$ref should point to a clone, proving the array-typed ref was recognized');
+            });
+
+            it('strips the conditional field from the clone required, without mutating the original', function () {
+                const vcjs = makeVcjs();
+                const schema = makeArrayRefSchema();
+                vcjs.prepareSchema(schema);
+
+                const cloneKey = schema.properties.targetedList.items.$ref;
+                assert.exists(schema.$defs[cloneKey], 'clone must be present in $defs');
+                assert.notInclude(schema.$defs[cloneKey].required ?? [], 'b',
+                    'b should be stripped from the clone required array');
+                assert.include(schema.$defs['#Sub'].required, 'b',
+                    'original required must not be mutated');
+            });
+        });
     });
 
     describe('verifySubject', function () {
@@ -333,6 +447,165 @@ describe('VCJS coverage (offline paths)', function () {
                 credentialSubject: [{ '@context': [], type: 'X', name: 'alice' }]
             });
             assert.property(result, 'ok');
+        });
+
+        it('rejects an empty credentialSubject array instead of passing vacuously', async function () {
+            const vcjs = makeVcjs();
+            await assertRejects(
+                () => vcjs.verifySchema({ credentialSubject: [] }),
+                /credentialSubject/
+            );
+        });
+
+        it('rejects an array holding no usable subject', async function () {
+            const vcjs = makeVcjs();
+            await assertRejects(
+                () => vcjs.verifySchema({ credentialSubject: [null] }),
+                /credentialSubject/
+            );
+        });
+
+        it('runs ContextHelper.setContext for every subject, not just the first', async function () {
+            const vcjs = makeVcjs();
+            vcjs.schemaLoader = async () => ({
+                type: 'object',
+                properties: {
+                    credentialSubject: {
+                        oneOf: [{ type: 'object' }, { type: 'array' }]
+                    }
+                },
+                $defs: {}
+            });
+
+            const seen = [];
+            const original = ContextHelper.setContext;
+            ContextHelper.setContext = (vc, schema) => {
+                seen.push(vc);
+                return original(vc, schema);
+            };
+            try {
+                await vcjs.verifySchema({
+                    credentialSubject: [
+                        { '@context': [], type: 'X', name: 'alice' },
+                        { '@context': [], type: 'X', name: 'bob' }
+                    ]
+                });
+            } finally {
+                ContextHelper.setContext = original;
+            }
+
+            assert.equal(seen.length, 2, 'setContext must run once per subject, not once total');
+            assert.equal(seen[0].name, 'alice');
+            assert.equal(seen[1].name, 'bob');
+        });
+
+        it('still runs ContextHelper.setContext once for a non-array credentialSubject', async function () {
+            const vcjs = makeVcjs();
+            vcjs.schemaLoader = async () => ({ type: 'object', properties: {}, $defs: {} });
+
+            const seen = [];
+            const original = ContextHelper.setContext;
+            ContextHelper.setContext = (vc, schema) => {
+                seen.push(vc);
+                return original(vc, schema);
+            };
+            try {
+                await vcjs.verifySchema({
+                    credentialSubject: { '@context': [], type: 'X', name: 'alice' }
+                });
+            } finally {
+                ContextHelper.setContext = original;
+            }
+
+            assert.equal(seen.length, 1);
+            assert.equal(seen[0].name, 'alice');
+        });
+    });
+
+    describe('prepareSchema - conditional strip on the VC wrapper path (#1743)', function () {
+        // prepareSchema's conditional-required strip used to require Array.isArray(schema.allOf)
+        // on the object passed in directly. That holds when prepareSchema runs on a subject
+        // schema (verifySubject), but verifySchema hands it the VC WRAPPER schema instead - the
+        // wrapper's own root never carries allOf, only the subject schema nested in $defs does.
+        // A cross-target field that's base-required in that nested sub-schema stayed
+        // unconditionally required, so a document valid at request time could fail later on an
+        // external-verify path. The strip must also walk each $defs entry that carries its own
+        // allOf, not just the root.
+
+        function wrapperWithSubjectConditions() {
+            return {
+                type: 'object',
+                properties: {
+                    credentialSubject: { $ref: '#Subject' }
+                },
+                required: ['credentialSubject'],
+                // deliberately no allOf here - it lives one level down, in $defs['#Subject']
+                $defs: {
+                    '#Subject': {
+                        $id: '#Subject',
+                        type: 'object',
+                        properties: {
+                            trigger: { type: 'string' },
+                            detail: { $ref: '#Detail' }
+                        },
+                        required: ['trigger', 'detail'],
+                        allOf: [{
+                            if: { properties: { trigger: { const: 'yes' } }, required: ['trigger'] },
+                            then: { properties: { detail: { required: ['note'] } } },
+                            else: { properties: { detail: { properties: { note: false } } } }
+                        }]
+                    },
+                    '#Detail': {
+                        $id: '#Detail',
+                        type: 'object',
+                        properties: { note: { type: 'string' } },
+                        required: ['note'],
+                        additionalProperties: false
+                    }
+                }
+            };
+        }
+
+        it('accepts a document that omits the base-required field while the branch is inactive', async function () {
+            const vcjs = makeVcjs();
+            vcjs.schemaLoader = async () => wrapperWithSubjectConditions();
+            const result = await vcjs.verifySchema({
+                credentialSubject: { '@context': [], type: 'X', trigger: 'no', detail: {} }
+            });
+            assert.isTrue(result.ok, `expected valid, got ${JSON.stringify(result.error?.details ?? result.errors)}`);
+        });
+
+        it('still forbids the field when the inactive branch says so', async function () {
+            const vcjs = makeVcjs();
+            vcjs.schemaLoader = async () => wrapperWithSubjectConditions();
+            const result = await vcjs.verifySchema({
+                credentialSubject: { '@context': [], type: 'X', trigger: 'no', detail: { note: 'should not be here' } }
+            });
+            assert.isFalse(result.ok, 'an inactive branch must still forbid the field');
+        });
+
+        it('requires the field when the active branch says so', async function () {
+            const vcjs = makeVcjs();
+            vcjs.schemaLoader = async () => wrapperWithSubjectConditions();
+            const missing = await vcjs.verifySchema({
+                credentialSubject: { '@context': [], type: 'X', trigger: 'yes', detail: {} }
+            });
+            assert.isFalse(missing.ok, 'an active branch must still require the field');
+
+            const present = await vcjs.verifySchema({
+                credentialSubject: { '@context': [], type: 'X', trigger: 'yes', detail: { note: 'present' } }
+            });
+            assert.isTrue(present.ok, `expected valid, got ${JSON.stringify(present.error?.details ?? present.errors)}`);
+        });
+
+        it('leaves prepareSchema a no-op when neither the root nor any $defs entry carries allOf', function () {
+            const vcjs = makeVcjs();
+            const schema = {
+                type: 'object',
+                properties: { credentialSubject: { $ref: '#Subject' } },
+                $defs: { '#Subject': { type: 'object', properties: {}, required: [] } }
+            };
+            assert.doesNotThrow(() => vcjs.prepareSchema(schema));
         });
     });
 

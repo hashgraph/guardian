@@ -24,6 +24,13 @@
       }
     </div>
   }
+  @if (details) {
+    <div class="confirmation-details">
+      @for (detail of details; track detail) {
+        <div>{{detail}}</div>
+      }
+    </div>
+  }
 
   @if (options) {
     <div class="options">

@@ -64,7 +64,12 @@ export class DocumentValidatorConfigComponent implements OnInit {
         { label: 'Variable (Input Doc)', value: 'variable' },
     ];
 
-    conditionSourceOptions = [
+    conditionDocumentSourceOptions = [
+        { label: 'Value', value: 'value' },
+        { label: 'Input Document', value: 'document' },
+    ];
+
+    crossConditionSourceOptions = [
         { label: 'Value', value: 'value' },
         { label: 'Input Document', value: 'document' },
         { label: 'Source Document', value: 'source' },
@@ -85,6 +90,9 @@ export class DocumentValidatorConfigComponent implements OnInit {
         this.item = block;
         this.properties = block.properties;
         this.properties.conditions = this.properties.conditions || [];
+        for (const c of this.properties.conditions) {
+            c.valueSource ??= 'value';
+        }
         if (!this.conditionsGroupInitialized) {
             this.propHidden.conditionsGroup = this.properties.conditions.length === 0;
             this.conditionsGroupInitialized = true;
@@ -109,9 +117,10 @@ export class DocumentValidatorConfigComponent implements OnInit {
     // Same-doc conditions
     addCondition() {
         this.properties.conditions.push({
-            value: '',
             field: '',
             type: 'equal',
+            valueSource: 'value',
+            value: '',
         })
         this.propHidden.conditionsGroup = false;
     }

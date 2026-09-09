@@ -9,8 +9,9 @@ import { Token as TokenCollection } from '@guardian/common';
 import { BlockActionError } from '../errors/index.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
-import { LocationType } from '@guardian/interfaces';
+import { LocationType, OrgRolePermission } from '@guardian/interfaces';
 import { RecordActionStep } from '../record-action-step.js';
+import { checkOrgTokenPermission } from '../helpers/org-utils.js';
 /**
  * Information block
  */
@@ -234,6 +235,14 @@ export class TokenConfirmationBlock {
 
         if (!token) {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
+        }
+
+        if (user) {
+            if (options.action === 'associate') {
+                await checkOrgTokenPermission(ref, user, account.hederaAccountId, OrgRolePermission.TOKEN_ASSOCIATE, userId);
+            } else if (options.action === 'dissociate') {
+                await checkOrgTokenPermission(ref, user, account.hederaAccountId, OrgRolePermission.TOKEN_DISSOCIATE, userId);
+            }
         }
 
         switch (options.action) {

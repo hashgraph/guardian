@@ -1,14 +1,14 @@
-import { randomInt } from "../../../../support/random";
-import { HomePage } from "../../pages/homePage";
+import { randomInt } from '../../../../support/random';
+import { HomePage } from '../../pages/homePage';
 const homepage = new HomePage();
 
-import { PoliciesPage } from "../../pages/policiesPage";
+import { PoliciesPage } from '../../pages/policiesPage';
 const policiesPage = new PoliciesPage();
 
-context("Workflow Policy Deletion", { tags: ['ui'] }, () => {
+context('Workflow Policy Deletion', { tags: ['ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
-    const name = randomInt(999) + "testName";
+    const name = randomInt(999) + 'testName';
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
@@ -17,17 +17,17 @@ context("Workflow Policy Deletion", { tags: ['ui'] }, () => {
         policiesPage.openPoliciesTab();
     })
 
-    it("Verify if it impossible to delete dry run policy", () => {
+    it('Verify if it impossible to delete dry run policy', () => {
         policiesPage.createPolicy();
         policiesPage.fillNewPolicyForm(name);
         policiesPage.backToPoliciesList();
-        policiesPage.checkStatus(name, "Draft");
+        policiesPage.checkStatus(name, 'Draft');
         policiesPage.startDryRun(name);
         policiesPage.verifyThatDeleteButtonIsNotActive(name);
         policiesPage.stopDryRun(name);
     });
 
-    it("Verify if it possible to delete draft policy", () => {
+    it('Verify if it possible to delete draft policy', () => {
         policiesPage.deletePolicy(name);
     });
 });

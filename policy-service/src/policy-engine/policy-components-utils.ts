@@ -122,9 +122,13 @@ export function updateBlockEvent(blocks: string[], user: PolicyUser): void {
  * @param blocks
  * @param user
  */
-export function errorBlockEvent(blockType: string, message: any, user: PolicyUser): void {
+export function errorBlockEvent(blockType: string, message: any, user: PolicyUser, data?: any): void {
     const type = 'error';
-    new BlockTreeGenerator().sendMessage(PolicyEvents.BLOCK_UPDATE_BROADCAST, { type, data: [blockType, message, user.toJson()] }, false);
+    new BlockTreeGenerator().sendMessage(
+        PolicyEvents.BLOCK_UPDATE_BROADCAST,
+        { type, data: [blockType, message, user.toJson(), data] },
+        false
+    );
 }
 
 /**
@@ -247,8 +251,8 @@ export class PolicyComponentsUtils {
     /**
      * Block error function
      */
-    public static async BlockErrorFn(blockType: string, message: any, user: PolicyUser) {
-        errorBlockEvent(blockType, message, user);
+    public static async BlockErrorFn(blockType: string, message: any, user: PolicyUser, data?: any) {
+        errorBlockEvent(blockType, message, user, data);
     };
     /**
      * Update user info function
@@ -1284,6 +1288,15 @@ export class PolicyComponentsUtils {
         return null;
     }
 
+    private static async populateOrgContext(user: PolicyUser): Promise<void> {
+        const context = await new Users().getOrgContextByDid(user.did, user.userId ?? null);
+        if (context?.organizationId) {
+            user.organization = context.organizationId;
+            user.organizationRole = context.orgRoleName ?? null;
+            user.organizationRolePermissions = context.orgRolePermissions ?? [];
+        }
+    }
+
     /**
      * Get user by account
      * @param account
@@ -1304,6 +1317,8 @@ export class PolicyComponentsUtils {
         }
 
         const userFull = new PolicyUser(regUser, instance);
+        await PolicyComponentsUtils.populateOrgContext(userFull);
+
         const groups = await instance
             .components
             .databaseServer
@@ -1347,6 +1362,10 @@ export class PolicyComponentsUtils {
             userFull = new PolicyUser(regUser, instance);
         }
 
+        if (!virtual) {
+            await PolicyComponentsUtils.populateOrgContext(userFull);
+        }
+
         const groups = await instance
             .components
             .databaseServer
@@ -1378,6 +1397,10 @@ export class PolicyComponentsUtils {
             } else {
                 userFull = new PolicyUser(did, instance);
             }
+        }
+
+        if (!virtual) {
+            await PolicyComponentsUtils.populateOrgContext(userFull);
         }
 
         if (groupUUID) {
@@ -1414,6 +1437,11 @@ export class PolicyComponentsUtils {
                 userFull = new PolicyUser(group.did, instance);
             }
         }
+
+        if (!virtual) {
+            await PolicyComponentsUtils.populateOrgContext(userFull);
+        }
+
         return userFull.setCurrentGroup(group);
     }
 

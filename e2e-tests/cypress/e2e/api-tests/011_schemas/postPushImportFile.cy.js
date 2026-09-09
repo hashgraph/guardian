@@ -1,8 +1,8 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Schemas", { tags: ['schema', 'thirdPool', 'all'] }, () => {
+context('Schemas', { tags: ['schema', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     let schema;
 
@@ -11,6 +11,8 @@ context("Schemas", { tags: ['schema', 'thirdPool', 'all'] }, () => {
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.Schemas,
+                // a single entry is enough here, and the full schema listing grows with every run
+                qs: { pageIndex: 0, pageSize: 1 },
                 headers: {
                     authorization,
                 },
@@ -23,14 +25,14 @@ context("Schemas", { tags: ['schema', 'thirdPool', 'all'] }, () => {
                         API.ApiServer +
                         API.Schemas +
                         schemaId +
-                        "/export/file",
+                        '/export/file',
                     encoding: null,
                     headers: {
                         authorization,
                     },
                 }).then((response) => {
                     expect(response.status).to.eq(STATUS_CODE.OK);
-                    expect(response.body).to.not.be.oneOf([null, ""]);
+                    expect(response.body).to.not.be.oneOf([null, '']);
                     schema = Cypress.Blob.arrayBufferToBinaryString(
                         response.body
                     );
@@ -39,11 +41,13 @@ context("Schemas", { tags: ['schema', 'thirdPool', 'all'] }, () => {
         });
     });
 
-    it("Push import new schema from a file", () => {
+    it('Push import new schema from a file', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.Schemas,
+                // a single entry is enough here, and the full schema listing grows with every run
+                qs: { pageIndex: 0, pageSize: 1 },
                 headers: {
                     authorization,
                 },
@@ -54,17 +58,17 @@ context("Schemas", { tags: ['schema', 'thirdPool', 'all'] }, () => {
                     url:
                         API.ApiServer +
                         API.Schemas +
-                        "push/" +
+                        'push/' +
                         topicUid +
-                        "/import/file",
+                        '/import/file',
                     body: schema,
                     headers: {
-                        "content-type": "binary/octet-stream",
+                        'content-type': 'binary/octet-stream',
                         authorization,
                     },
                 }).then((response) => {
                     expect(response.status).to.eq(STATUS_CODE.ACCEPTED);
-                    expect(response.body).to.not.be.oneOf([null, ""]);
+                    expect(response.body).to.not.be.oneOf([null, '']);
                 });
             });
         });

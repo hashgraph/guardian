@@ -47,6 +47,7 @@
     --pc-server-block-accent: #2aa9c4;
     --pc-addon-block-accent: #e08a1e;
     --pc-tool-block-accent: #c37a29;
+    --pc-module-block-accent: var(--guardian-grey-color-3, #AAB7C4);
 
     --pc-ui-block-background-color: color-mix(in srgb, var(--pc-ui-block-accent) 12%, var(--guardian-background, #fff));
     --pc-server-block-background-color: color-mix(in srgb, var(--pc-server-block-accent) 12%, var(--guardian-background, #fff));
@@ -149,7 +150,7 @@
     left: 0;
     right: 0;
     top: 0;
-    height: calc(100vh - 2px);
+    height: calc(100vh - var(--header-height) - 2px);
     overflow: hidden;
     min-width: 1000px;
     font-family: var(--font-family-inter, 'Inter', sans-serif);
@@ -1283,12 +1284,41 @@
             display: none;
         }
 
+        // Library colour coding is deliberately static: it maps a block to its type,
+        // so it must stay readable regardless of the customer's brand colours. Every
+        // value below resolves to a --pc-*-block-accent, never to --color-primary.
         .components-group-item {
+            --pc-library-icon-color: var(--pc-module-block-accent);
             position: relative;
             width: 100%;
             max-width: 100%;
             height: auto;
             overflow: hidden;
+
+            &[block-type="UI Components"] {
+                --pc-library-icon-color: var(--pc-ui-block-accent);
+            }
+
+            &[block-type="Server Blocks"] {
+                --pc-library-icon-color: var(--pc-server-block-accent);
+            }
+
+            &[block-type="Addons"] {
+                --pc-library-icon-color: var(--pc-addon-block-accent);
+            }
+
+            &[block-type="Tool"] {
+                --pc-library-icon-color: var(--pc-tool-block-accent);
+            }
+
+            .component-btn-icon {
+                svg-icon,
+                svg,
+                i {
+                    color: var(--pc-library-icon-color);
+                    fill: var(--pc-library-icon-color);
+                }
+            }
 
             .drag-btn {
                 position: absolute !important;
@@ -1347,7 +1377,7 @@
                 height: 20px;
                 font-size: 16px;
                 pointer-events: none;
-                color: var(--pc-active-icon-color);
+                color: var(--pc-library-icon-color, var(--pc-module-block-accent));
             }
 
             > span {
