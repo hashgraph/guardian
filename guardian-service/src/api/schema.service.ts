@@ -1922,7 +1922,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const stepMap = new Map<string, NotificationStep>();
-                const results: Array<{ id: string, name: string, deleted: boolean }> = [];
+                const results: { id: string, name: string, deleted: boolean }[] = [];
                 // A schema still referenced by a policy schema is skipped below via
                 // blockedSchemaIds; without this the caller is never told, and the task
                 // reports success for a delete that did not happen. Only schemas that
