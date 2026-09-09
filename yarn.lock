@@ -5716,7 +5716,6 @@ __metadata:
   dependencies:
     "@guardian/common": "workspace:*"
     "@guardian/interfaces": "workspace:*"
-    "@meeco/cryppo": "npm:^3.0.1"
     "@mikro-orm/core": "npm:6.6.16"
     "@mikro-orm/mongodb": "npm:6.6.16"
     "@nestjs/common": "npm:^11.1.24"

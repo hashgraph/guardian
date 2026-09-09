@@ -15,7 +15,6 @@ import { SwaggerModule } from '@nestjs/swagger';
 import { SwaggerConfig } from './helpers/swagger-config.js';
 import { applyScalarTagMetadata } from './helpers/swagger-tags.js';
 import { setupApiDocs } from './helpers/setup-api-docs.js';
-import { MeecoAuth } from './helpers/meeco.js';
 import * as extraModels from './middlewares/index.js'
 import { ProjectService } from './helpers/projects.js';
 import { AISuggestions } from './helpers/ai-suggestions.js';
@@ -86,9 +85,6 @@ Promise.all([
         await new Wallet().setConnection(cn).init();
         await new AISuggestions().setConnection(cn).init();
         await new ProjectService().setConnection(cn).init();
-
-        await new MeecoAuth().setConnection(cn).init();
-        new MeecoAuth().registerListeners();
 
         const server = app.getHttpServer();
         const wsService = new WebSocketsService(logger);
