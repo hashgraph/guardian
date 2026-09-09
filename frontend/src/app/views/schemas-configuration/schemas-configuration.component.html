@@ -262,7 +262,7 @@
                                     <div class="sc-schema-info">
                                         <span class="sc-schema-name">
                                             @if (isSchemaFeatured(schema)) {
-                                                <i class="pi pi-star-fill sc-schema-featured-icon" pTooltip="Featured" tooltipPosition="right"></i>
+                                                <i class="pi pi-star-fill schema-featured-icon" pTooltip="Featured" tooltipPosition="right"></i>
                                             }
                                             {{ schema.name }}
                                         </span>
@@ -350,7 +350,7 @@
                                     </button>
                                 }
                                 @if (isSchemaFeatured(selectedSchema)) {
-                                    <i class="pi pi-star-fill sc-schema-featured-icon" pTooltip="Featured" tooltipPosition="right"></i>
+                                    <i class="pi pi-star-fill schema-featured-icon" pTooltip="Featured" tooltipPosition="right"></i>
                                 }
                                 <span class="sc-editor-title">{{ selectedSchema.name }}</span>
                                 <span class="sc-schema-status" [class.sc-schema-status--draft]="isDraft(selectedSchema)">

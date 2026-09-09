@@ -234,6 +234,10 @@ export class SchemaConfigComponent implements OnInit {
         )
     }
 
+    public isSchemaFeatured(schema: Schema): boolean {
+        return !!(schema as any)?.templateFeatured;
+    }
+
     public get canCreate(): boolean {
         return (
             this.isConfirmed &&
