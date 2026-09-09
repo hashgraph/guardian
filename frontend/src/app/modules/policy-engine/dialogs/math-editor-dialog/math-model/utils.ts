@@ -239,3 +239,80 @@ export function parseValue(value: any): any {
     }
     return value;
 }
+
+/**
+ * Pretty-prints a document for display in the test result editors.
+ *
+ * `JSON.stringify(value, null, 4)` puts every array element on its own line, so a
+ * GeoJSON boundary of a few hundred thousand coordinates becomes a multi-hundred-
+ * thousand-line string. Arrays whose inline form fits in `maxInlineWidth` characters
+ * are kept on one line instead, which keeps numeric tables and coordinate pairs
+ * compact while objects stay one-key-per-line.
+ */
+export function formatDocument(value: any, indent: number = 4, maxInlineWidth: number = 100): string {
+    const pad = ' '.repeat(indent);
+    const seen = new WeakSet<object>();
+
+    const inlineArray = (arr: any[]): string | null => {
+        const parts: string[] = [];
+        let width = 2;
+        for (const item of arr) {
+            let part: string | null;
+            if (Array.isArray(item)) {
+                part = inlineArray(item);
+            } else if (item !== null && typeof item === 'object') {
+                return null;
+            } else {
+                part = JSON.stringify(item === undefined ? null : item);
+            }
+            if (part === null) {
+                return null;
+            }
+            width += part.length + 2;
+            if (width > maxInlineWidth) {
+                return null;
+            }
+            parts.push(part);
+        }
+        return `[${parts.join(', ')}]`;
+    };
+
+    const format = (v: any, depth: number): string => {
+        if (v === null || v === undefined) {
+            return 'null';
+        }
+        if (typeof v !== 'object') {
+            return JSON.stringify(v) ?? 'null';
+        }
+        if (typeof v.toJSON === 'function') {
+            return format(v.toJSON(), depth);
+        }
+        if (seen.has(v)) {
+            throw new TypeError('Converting circular structure to JSON');
+        }
+        seen.add(v);
+        try {
+            const inner = pad.repeat(depth + 1);
+            const outer = pad.repeat(depth);
+            if (Array.isArray(v)) {
+                if (v.length === 0) {
+                    return '[]';
+                }
+                const inline = inlineArray(v);
+                if (inline !== null) {
+                    return inline;
+                }
+                return `[\n${Array.from(v, (item) => inner + format(item, depth + 1)).join(',\n')}\n${outer}]`;
+            }
+            const keys = Object.keys(v).filter((k) => v[k] !== undefined && typeof v[k] !== 'function');
+            if (keys.length === 0) {
+                return '{}';
+            }
+            return `{\n${keys.map((k) => `${inner}${JSON.stringify(k)}: ${format(v[k], depth + 1)}`).join(',\n')}\n${outer}}`;
+        } finally {
+            seen.delete(v);
+        }
+    };
+
+    return format(value, 0);
+}
