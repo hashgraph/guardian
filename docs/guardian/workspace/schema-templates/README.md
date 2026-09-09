@@ -36,9 +36,11 @@ Template configuration is a map keyed by template schema identity:
     "template-schema-id": {
       "schemaSettingsLocked": true,
       "customFieldsLocked": false,
+      "guidelines": "Use this schema for project registration data.",
       "fields": {
         "template-field-id": {
-          "locked": true
+          "locked": true,
+          "guidelines": "Enter the external registry identifier."
         }
       }
     }
@@ -50,11 +52,15 @@ The configuration controls:
 
 * **Change schema settings**: whether schema name, description, and entity type can be changed.
   * `schemaSettingsLocked: false` allows changes. `true` prevents them.
-* **Can add custom fields**: lets policy users add custom fields to the schema.
+* **Can add custom fields**: lets policy developers add custom fields to the schema.
   * `customFieldsLocked`: `false` allows custom fields, while `true` prevents them.
 * **Can edit selected field**: whether an individual template field can be edited or removed.
   * `locked: false` allows edits or removal. `true` prevents them.
   * Template-owned fields are locked by default.
+* **Guidelines**: notes written by the template author for policy developers.
+  * Schema guidelines are stored on the schema configuration.
+  * Field guidelines are stored on the field configuration.
+  * Guidelines are copied into the policy snapshot and shown in the schema editor after the template is applied.
 
 When a template is applied to a policy, Guardian copies the template schemas into the policy topic as `POLICY` schemas. The copied schemas keep `templateId`, `templateSchemaId`, and field-level `templateFieldId` metadata. Guardian also rewrites sub-schema references so copied policy schemas point to each other instead of the original template schemas.
 
@@ -103,6 +109,7 @@ The referenced template is unavailable on this instance. In the import preview, 
 ### Related
 
 * Task: [Create a Schema Template](create-a-schema-template.md)
+* Task: [Configure Schema Template Guidelines](configure-schema-template-guidelines.md)
 * Task: [Apply a Schema Template](apply-a-schema-template.md)
 * Task: [Update an Applied Schema Template](update-an-applied-schema-template.md)
 * Task: [Detach a Schema Template](detach-a-schema-template.md)

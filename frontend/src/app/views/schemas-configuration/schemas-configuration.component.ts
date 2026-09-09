@@ -275,6 +275,14 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return this.getFieldConfigKey(this.selectedField);
     }
 
+    public get selectedSchemaGuidelines(): string {
+        return this.selectedSchemaConfig?.guidelines || '';
+    }
+
+    public get selectedFieldGuidelines(): string {
+        return this.selectedFieldConfig?.guidelines || '';
+    }
+
     public get canAddCustomFieldsToSelectedSchema(): boolean {
         return !this.selectedSchemaConfig?.customFieldsLocked;
     }
@@ -1030,6 +1038,38 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             return;
         }
         config.locked = this.canEditSelectedFieldInTemplate;
+        this.templateConfigDirty = true;
+    }
+
+    public setSelectedSchemaGuidelines(guidelines: string): void {
+        if (this.isTemplateReadonly) {
+            return;
+        }
+        const config = this.ensureSelectedSchemaConfig();
+        if (!config) {
+            return;
+        }
+        if (guidelines) {
+            config.guidelines = guidelines;
+        } else {
+            delete config.guidelines;
+        }
+        this.templateConfigDirty = true;
+    }
+
+    public setSelectedFieldGuidelines(guidelines: string): void {
+        if (this.isTemplateReadonly) {
+            return;
+        }
+        const config = this.ensureSelectedFieldConfig();
+        if (!config) {
+            return;
+        }
+        if (guidelines) {
+            config.guidelines = guidelines;
+        } else {
+            delete config.guidelines;
+        }
         this.templateConfigDirty = true;
     }
 
