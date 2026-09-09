@@ -415,6 +415,7 @@ When running Docker tests, most variables are prefixed with `CYPRESS_` (the repo
 | CYPRESS_operatorId | - | Hedera operator ID. Required by the `settings` specs; no value is bundled in `cypress.env.json`. Falls back to `OPERATOR_ID`. |
 | CYPRESS_operatorKey | - | Hedera operator key. Required by the `settings` specs; no value is bundled in `cypress.env.json`. Falls back to `OPERATOR_KEY`. |
 | CYPRESS_ipfsStorageApiKey | - | IPFS storage API key sent by the `settings` specs. Falls back to `IPFS_STORAGE_API_KEY`, then to a placeholder – the value is unused while `IPFS_PROVIDER=local`. |
+| CYPRESS_hederaNet | testnet | Which Hedera network the Guardian stack under test is on. Anything other than `testnet` makes the suite publish its own Hedera artefacts instead of importing the testnet messages pinned in `cypress.env.json`. Falls back to `HEDERA_NET`. See [Running against a local Hiero network](#running-against-a-local-hiero-network). |
 | CYPRESS_BROWSER | chromium | Browser: `chromium`, `electron`, or `firefox` (must exist in the image) |
 | CYPRESS_apiServer | - | Optional full API origin override (useful on Docker Desktop). Examples: `http://host.docker.internal:3002/` (direct API gateway) or `http://host.docker.internal:4200/api/v1/` (if using Angular proxy) |
 | CYPRESS_SPEC | `cypress/e2e/api-tests/**/*.cy.js` in `cypress-api` | Optional default spec pattern used by the Docker entrypoint when `--spec` is not provided |
@@ -542,6 +543,120 @@ ls -la cypress/test_results/junit/
 ```
 
 These directories are mounted as volumes from the Docker container to your local machine.
+
+### Running against a local Hiero network
+
+The suite defaults to Hedera testnet, and nothing below is needed for that. A local network is worth
+the setup when you want to run the whole suite without spending testnet HBAR, without waiting on real
+consensus and mirror-node indexing, or on a ledger that starts empty every time. It is what the
+`E2E Tests` workflow (`.github/workflows/api-manual.yml`) does on every run.
+
+#### The `hederaNet` parameter
+
+`hederaNet` tells the suite which network the Guardian stack under test is on. It defaults to
+`testnet` in `cypress.env.json`, so an existing invocation keeps behaving exactly as it does today.
+
+Two things change when it is set to anything else:
+
+- `006_settings/getSettingsEnv` asserts that `GET /settings/environment` reports that network.
+- `000_accounts_creating/seedHederaArtefacts` runs. `cypress.env.json` pins Hedera message IDs that
+  were published on testnet and resolve nowhere else, so that spec publishes the same artefacts from
+  local fixtures and records the resulting message IDs in `cypress/fixtures/seededMessages.json`.
+  Every consuming spec asks `seededMessageId(<key>)`
+  (`cypress/support/CustomHelpers/ipfsSeeding.js`) for the ID and stays network-agnostic; that
+  resolver is the only place the branch lives.
+
+  The seven seeded keys are `irec_policy`, `policy_with_artifacts`, `policy_for_compare1/2`,
+  `module_for_import` and `tool_for_compare1/2`. Two more are pinned but not seeded:
+  `schema_for_import`, which only a UI spec uses, and `contract_for_import`, which no spec
+  references at all.
+
+`entrypoint.sh` back-fills `CYPRESS_hederaNet` from a bare `HEDERA_NET`, so pointing the suite at a
+stack you started with `HEDERA_NET=localnode` needs no extra flag:
+
+```bash
+# testnet, unchanged
+CYPRESS_grepTags="smoke" npx cypress run
+
+# local Hiero network, native
+CYPRESS_hederaNet=localnode CYPRESS_grepTags="smoke" ./entrypoint.sh
+
+# local Hiero network, dockerized
+CYPRESS_hederaNet=localnode CYPRESS_grepTags="smoke" docker compose run --rm cypress-api
+```
+
+#### Bringing the network up with Solo
+
+[Solo](https://solo.hiero.org) provisions a single-node Hiero network on Kubernetes-in-Docker. The
+lightest configuration Guardian can use is a consensus node plus a mirror node — no explorer, no
+JSON-RPC relay, no block node.
+
+```bash
+npm install -g @hiero-ledger/solo@latest
+solo one-shot single deploy
+```
+
+The port forwards are **not** free choices. Guardian's `localnode` branch hardcodes the consensus
+node on `:50211` as account `0.0.3`, the mirror node gRPC endpoint on `:5600` and the mirror node
+REST API on `:5551` (`common/src/hedera-modules/environment.ts`). The `OVERRIDE_HEDERA_*` variables
+cannot be used to move them: only `guardian-service` and `policy-service` read those, while
+`topic-listener-service` goes straight to `HEDERA_NET` + `LOCALNODE_*`. So publish Solo on the ports
+Guardian already expects:
+
+```bash
+kubectl port-forward svc/haproxy-node1-svc -n <namespace> 50211:50211 &
+kubectl port-forward svc/mirror-1-rest     -n <namespace> 5551:80     &
+kubectl port-forward svc/mirror-1-grpc     -n <namespace> 5600:5600   &
+```
+
+These are plain background processes: if one dies, the whole stack silently loses the network. The
+workflow supervises them for exactly that reason.
+
+Then create the operator account. It pays for every account, topic, token and contract the run
+creates, and HBAR is free here, so fund it generously:
+
+```bash
+solo ledger account create --deployment <deployment> --hbar-amount 50000000
+```
+
+The command prints the account ID; its private key is in the cluster:
+
+```bash
+kubectl get secret account-key-<accountId> -n <namespace> -o jsonpath='{.data.privateKey}' | base64 -d
+```
+
+#### Contract bytecode
+
+`guardian-service` deploys the retire/wipe contracts from Hedera File IDs, and the ones shipped in
+`configs/.env..guardian.system` are testnet files that a fresh network does not have — without
+replacing them every spec in `013_contracts/` fails on the first deploy. Compile and upload them:
+
+```bash
+# RPC_URL is not used by `compile`, but Hardhat validates every declared network at config load
+# and all four remote ones take their url from it, so it has to be set to something.
+cd contracts && npm install && RPC_URL=http://localhost:7546 npx hardhat compile && cd -
+
+OPERATOR_ID=<accountId> OPERATOR_KEY=<privateKey> \
+  node .github/scripts/upload-contract-bytecode.mjs
+```
+
+It prints the four File IDs both as it uploads them and, at the end, as the four
+`*_FILE_ID` lines to paste into the env file below.
+
+#### Pointing Guardian at it
+
+`configs/.env.localnode.guardian.system` is the ecosystem env file for this setup; fill in
+`OPERATOR_ID`, `OPERATOR_KEY` and the four `*_FILE_ID` variables, then:
+
+```bash
+GUARDIAN_ENV=localnode docker compose up
+```
+
+One caveat for the compose path: the services run in containers, so `LOCALNODE_ADDRESS` has to be
+`host.docker.internal` rather than `127.0.0.1` — and on Linux that also needs
+`extra_hosts: ["host.docker.internal:host-gateway"]` on every Guardian service, which the root
+`docker-compose*.yml` do not declare. Running the services natively (`npm start` per service, as the
+workflow does) has no such problem and `LOCALNODE_ADDRESS=127.0.0.1` is enough.
 
 ### CI/CD Integration
 

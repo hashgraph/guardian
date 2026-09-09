@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
-context('Savepoints CRUD', { tags: ['savepoints', 'secondPool', 'all'] }, () => {
+context('Savepoints CRUD', { tags: ['savepoints', 'secondPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     let policyId; let sv1; let sv2; let sv3; let sv4; let sv5; let sv6;
 

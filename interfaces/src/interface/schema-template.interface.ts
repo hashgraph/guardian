@@ -104,6 +104,8 @@ export interface ISchemaTemplateUpdateConflict {
     fieldName?: string;
     message: string;
     allowedActions: SchemaTemplateUpdateResolutionAction[];
+    /** Schemas that still reference this one, so removing it is not on offer. */
+    blockedBy?: string[];
 }
 
 export interface ISchemaTemplateUpdatePreview {
@@ -126,6 +128,26 @@ export interface ISchemaTemplateUpdateResolution {
 
 export interface ISchemaTemplateUpdateOptions {
     resolutions?: ISchemaTemplateUpdateResolution[];
+    /** Switch the binding to a different template instead of refreshing the same one. */
+    targetTemplateId?: string;
+}
+
+export interface ISchemaTemplateDetachOptions {
+    deleteSchemas?: boolean;
+}
+
+/** A copy that cannot be deleted on detach because something still points at it. */
+export interface ISchemaTemplateDetachBlockedSchema {
+    name: string;
+    usedBy: string[];
+    status?: string;
+}
+
+export interface ISchemaTemplateDetachPreview {
+    /** Names of the copies a detach would delete when 'delete the schemas' is chosen. */
+    deletable: string[];
+    /** Copies that would be kept instead, each with what still references it. */
+    blocked: ISchemaTemplateDetachBlockedSchema[];
 }
 
 export interface ISchemaTemplateFieldConfig {

@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
-context('Worker tasks', { tags: ['worker', 'secondPool', 'all'] }, () => {
+context('Worker tasks', { tags: ['worker', 'secondPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     //TBD: check failed tasks, auto-retry, manual retry

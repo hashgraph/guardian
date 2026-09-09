@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
-context('Start policy test', { tags: ['policies', 'secondPool', 'all'] }, () => {
+context('Start policy test', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, () => {
 	const SRUsername = Cypress.env('SRUser');
 	let policyId; let testId;
 

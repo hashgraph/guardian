@@ -3,7 +3,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
-context('Get formula data', { tags: ['formulas', 'firstPool', 'all'] }, () => {
+context('Get formula data', { tags: ['formulas', 'firstPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     let firstFormula; let documentId;

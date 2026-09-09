@@ -1,7 +1,7 @@
 import { STATUS_CODE } from '../../../support/api/api-const';
 import * as Authorization from '../../../support/authorization';
 
-context('Tags', { tags: ['tags', 'thirdPool', 'all'] }, () => {
+context('Tags', { tags: ['tags', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const tagName = 'policyTag';
 

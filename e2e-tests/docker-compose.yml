@@ -18,6 +18,9 @@ services:
       - CYPRESS_grepTags=${CYPRESS_grepTags:-all}
       - CYPRESS_grepFilterSpecs=${CYPRESS_grepFilterSpecs:-true}
       - CYPRESS_SPEC=${CYPRESS_SPEC:-cypress/e2e/api-tests/**/*.cy.js}
+      # Left empty on purpose: entrypoint.sh falls back to HEDERA_NET from the Guardian env file
+      # above, and to the `testnet` default in cypress.env.json when that is unset too.
+      - CYPRESS_hederaNet=${CYPRESS_hederaNet:-}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:

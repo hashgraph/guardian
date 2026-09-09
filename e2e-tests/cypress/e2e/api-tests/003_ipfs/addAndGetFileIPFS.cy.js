@@ -5,7 +5,7 @@ import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import * as Checks from '../../../support/checkingMethods';
 
-context('IPFS', { tags: ['ipfs', 'secondPool', 'all'] }, () => {
+context('IPFS', { tags: ['ipfs', 'secondPool', 'all', 'all-no-mgs'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const ipfsFileUrl = `${API.ApiServer}${API.IPFSFile}`;

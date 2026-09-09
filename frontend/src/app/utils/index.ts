@@ -5,3 +5,4 @@ export { PermissionsGroup } from "./permissions";
 export { MergeUtils } from "./merge-utils";
 export { getUserInitials } from "./user-initials";
 export { formatBalance } from "./balance";
+export { formatSchemaTemplateBindingLabel } from "./schema-template-label";

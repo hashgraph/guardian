@@ -10,25 +10,14 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
     const PPUser = Cypress.env('PPUser');
     const VVBUser = Cypress.env('VVBUser');
 
-    // The policy is imported from a Hedera message (1788455827.615076104) whose payload may not
-    // be pinned by anyone on the public network. The CID/fixture pair below is coupled to that
-    // message: the fixture is the very file the message points at, so re-adding it to the local
-    // IPFS node restores exactly the CID the import resolves.
-    const VM0033MessageId = '1788455827.615076104';
-    const VM0033Cid = 'QmYCr2Ja9gZHa57rSHyradhFVUyCXBXrUCE7mF6hKWeMnB';
+    // The policy under test is the fixture in this repository, imported from file.
+    //
+    // The fixture embeds both tools in full (`tools/*.json` inside the archive), so importing it
+    // from file needs no IPFS seeding and no Hedera message at all.
     const VM0033Fixture = 'VM0033_7_23.policy';
 
-    // VM0033 depends on two tools resolved by the messages 1788452650.434779104 and
-    // 1788452793.845170104; same coupling applies to their CID/fixture pairs.
-    const ARTool05Cid = 'QmUyYYqfHVXYM6qY5PAyfSuxgkYnQCC2JLDFxzwXCC72qS';
-    const ARTool05Fixture = 'AR-Tool-05-v3.0.2.tool';
-
-    const ARTool14Cid = 'QmRPro2V3eSgQMXKWbLKVr5qf3wxviXSsV6prcWdndSY31';
-    const ARTool14Fixture = 'AR-Tool-14-v5.0.7.tool';
-
-    // The policy is reused across runs, so its grids also hold the documents of earlier runs
-    // and a row can no longer be addressed by position. Every document created here carries a
-    // run-scoped project name and is looked up by that name instead.
+    // A fresh copy is imported per run, so its grids only ever hold this run's documents. The
+    // run-scoped names are kept so a failure still names the document it was waiting for.
     const runId = randomInt(999999);
     const projectName = `E2E project ${runId}`;
     const revokedProjectName = `E2E project to revoke ${runId}`;
@@ -93,18 +82,6 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
         });
     };
 
-    before('Make the VM0033 policy and its tool dependencies available on IPFS', () => {
-        [
-            [VM0033Fixture, VM0033Cid],
-            [ARTool05Fixture, ARTool05Cid],
-            [ARTool14Fixture, ARTool14Cid],
-        ].forEach(([fixture, cid]) => {
-            cy.task('ipfsAddFixture', fixture, { timeout: 200000 }).then((addedCid) => {
-                expect(addedCid, `${fixture} does not match the CID referenced by its Hedera message`).to.eq(cid);
-            });
-        });
-    });
-
     // Re-registering a profile that is already set up fails with `401 User DID already exists`,
     // so `setupLocalProfile` links the user to the SR only when the profile is not confirmed yet.
     const linkToStandardRegistry = (username) => {
@@ -127,29 +104,43 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
 
     it('Import, publish, assign policy', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.PolicisImportMsg,
-                body: { messageId: VM0033MessageId },
-                headers: {
-                    authorization,
-                },
-                timeout: 1800000,
-            }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                policyId = response.body.at(0).id;
-                cy.request({
-                    method: METHOD.PUT,
-                    url: API.ApiServer + API.Policies + policyId + '/' + API.Publish,
-                    body: {
-                        policyVersion: '1.2.5'
-                    },
+            cy.fixture(VM0033Fixture, 'binary')
+                .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
+                .then((file) => cy.request({
+                    method: METHOD.POST,
+                    url: API.ApiServer + API.PolicisImportFile,
+                    body: file,
                     headers: {
-                        authorization
+                        'content-type': 'binary/octet-stream',
+                        authorization,
                     },
                     timeout: 1800000,
+                }))
+                .then((response) => {
+                    expect(response.status, `import of ${VM0033Fixture}`).to.eq(STATUS_CODE.SUCCESS);
+                    // The request body is a Blob, so the response comes back as an ArrayBuffer.
+                    policyId = JSON.parse(new TextDecoder().decode(response.body)).at(0).id;
+                    return cy.request({
+                        method: METHOD.PUT,
+                        url: API.ApiServer + API.Policies + policyId + '/' + API.Publish,
+                        body: {
+                            policyVersion: '1.2.5'
+                        },
+                        headers: {
+                            authorization
+                        },
+                        timeout: 1800000,
+                    });
                 })
-            })
+                // Publishing answers 200 whether or not it published; only `isValid` says so, and
+                // an unpublished policy fails much later as an empty grid.
+                .then((response) => {
+                    expect(response.status, `publish of ${VM0033Fixture}`).to.eq(STATUS_CODE.OK);
+                    expect(
+                        response.body.isValid,
+                        `publish of ${VM0033Fixture} validation: ${JSON.stringify(response.body.errors)}`
+                    ).to.be.true;
+                })
         })
 
         // Assigning is a flag update, so re-assigning an already assigned policy is harmless.

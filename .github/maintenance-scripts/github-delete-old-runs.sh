@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-WEEKS=${1:-2}  # default: 2 weeks
+WEEKS=${1:-20}      # default: 20 weeks (~5 months) of runs will be kept, so we always include the last release and the previous one.
+WORKFLOW=${2:-}     # optional: workflow name or file
 
 # --- OS detection and date calculation --------------------------
 OS="$(uname -s)"
@@ -20,9 +21,8 @@ esac
 
 LIMIT=500
 
-# -- Check if there are enough runs to delete --------------------
-# We have 3 workflows scheduled per day, so don't run the deletion process if there are less than 3 * 15 = 45 runs in the list
-SKIP_IF_LESS_THAN=45
+# -- Keep a minimum amount of workflows --------------------
+SKIP_IF_LESS_THAN=500
 TOTAL_RUNS=$(gh run list --limit "$LIMIT" | wc -l | tr -d ' ')
 echo "📋 Found $TOTAL_RUNS total runs (query limit: $LIMIT)."
 if [ "$TOTAL_RUNS" -lt "$SKIP_IF_LESS_THAN" ]; then
@@ -30,11 +30,14 @@ if [ "$TOTAL_RUNS" -lt "$SKIP_IF_LESS_THAN" ]; then
   exit 0
 fi
 
-echo "🔍 Searching for runs created before $WEEK_AGO (limit: $LIMIT results per page)"
+SEARCH_MSG="🔍 Searching for runs created before $WEEK_AGO (limit: $LIMIT results per page)"
+[ -n "$WORKFLOW" ] && SEARCH_MSG="$SEARCH_MSG for workflow '$WORKFLOW'"
+echo "$SEARCH_MSG"
 
 # -- Retrieving runs ---------------------------------------------
 RUNS=$(gh run list \
   --created "<=$WEEK_AGO" \
+  ${WORKFLOW:+--workflow "$WORKFLOW"} \
   --limit "$LIMIT" \
   --json databaseId,name,createdAt \
   -q '.[] | "\(.databaseId)\t\(.name)\t\(.createdAt)"'

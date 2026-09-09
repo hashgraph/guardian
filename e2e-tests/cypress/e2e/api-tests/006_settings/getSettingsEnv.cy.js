@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
-context('Settings', { tags: ['settings', 'thirdPool', 'all'] }, () => {
+context('Settings', { tags: ['settings', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     it('Get current environment name', () => {
@@ -15,7 +15,9 @@ context('Settings', { tags: ['settings', 'thirdPool', 'all'] }, () => {
                 },
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                expect(response.body).eql('testnet');
+                // The endpoint reports Environment.network, i.e. the network Guardian is configured
+                // for -- which is the network the suite was pointed at.
+                expect(response.body).eql(Cypress.env('hederaNet'));
             });
         });
     })

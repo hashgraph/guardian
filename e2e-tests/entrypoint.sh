@@ -171,6 +171,17 @@ fi
 if [[ -z "${CYPRESS_ipfsStorageApiKey:-}" && -n "${IPFS_STORAGE_API_KEY:-}" ]]; then
   export CYPRESS_ipfsStorageApiKey="$IPFS_STORAGE_API_KEY"
 fi
+# Defaults to `testnet` in cypress.env.json. Pointing the suite at a stack started with
+# HEDERA_NET=localnode then needs no extra flag: the Guardian env file is enough.
+# An empty value has to be dropped rather than exported: Cypress would take it as an explicit
+# `hederaNet: ""` and shadow the default.
+if [[ -z "${CYPRESS_hederaNet:-}" ]]; then
+  if [[ -n "${HEDERA_NET:-}" ]]; then
+    export CYPRESS_hederaNet="$HEDERA_NET"
+  else
+    unset CYPRESS_hederaNet
+  fi
+fi
 
 if [[ -n "${CYPRESS_apiServer:-}" ]]; then
   wait_for_api "$CYPRESS_apiServer" "${CYPRESS_API_WAIT_TIMEOUT:-60}" "${CYPRESS_API_WAIT_INTERVAL:-2}"

@@ -333,6 +333,7 @@ export class WebSocketsService {
                         data: {
                             blockType: msg.blockType,
                             message: msg.message,
+                            errorData: msg.data,
                         },
                     });
                 }

@@ -2,40 +2,34 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
-context('Import policy label', { tags: ['policy_labels', 'firstPool', 'all'] }, () => {
+context('Import policy label', { tags: ['policy_labels', 'firstPool', 'all', 'all-no-mgs'] }, () => {
     const UserUsername = Cypress.env('User');
+    const SRUsername = Cypress.env('SRUser');
 
     const labelName = 'testPolicyLabelAPI';
 
     let policyLabel; let policy;
 
     before('Get policy label', () => {
+        cy.getOrCreateIRec4Policy(SRUsername).then((createdPolicy) => {
+            policy = createdPolicy;
+        });
+
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + API.Policies,
+                url: API.ApiServer + API.PolicyLabels,
                 headers: {
                     authorization,
                 },
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                policy = response.body.find((element) => element.name === 'iRec_4');
-                expect(policy, 'the iRec_4 policy').to.not.be.undefined;
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.PolicyLabels,
-                    headers: {
-                        authorization,
-                    },
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.OK);
-                    //Every run leaves its labels behind, and the import below adds one more, so the
-                    //label the imported one is compared against is picked by name on this policy
-                    policyLabel = response.body
-                        .filter((item) => item.name === labelName && item.policyId === policy.id)
-                        .at(-1);
-                    expect(policyLabel, `a "${labelName}" label on policy ${policy.id}`).to.not.be.undefined;
-                })
+                //Every run leaves its labels behind, and the import below adds one more, so the
+                //label the imported one is compared against is picked by name on this policy
+                policyLabel = response.body
+                    .filter((item) => item.name === labelName && item.policyId === policy.id)
+                    .at(-1);
+                expect(policyLabel, `a "${labelName}" label on policy ${policy.id}`).to.not.be.undefined;
             })
         });
     })

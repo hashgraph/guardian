@@ -14,7 +14,7 @@ export class PolicyComponentsUtils {
     /**
      * Block error function
      */
-    public static BlockErrorFn: (blockType: string, message: any, user: IPolicyUser) => Promise<void>;
+    public static BlockErrorFn: (blockType: string, message: any, user: IPolicyUser, data?: any) => Promise<void>;
     /**
      * Update user info function
      */
