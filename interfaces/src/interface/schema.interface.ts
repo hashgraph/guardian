@@ -112,6 +112,10 @@ export interface ISchema {
      */
     templateSchemaId?: string;
     /**
+     * Denormalized copy of the schema's featured flag in the owning template's config
+     */
+    templateFeatured?: boolean;
+    /**
      * Is system schema
      */
     system?: boolean;

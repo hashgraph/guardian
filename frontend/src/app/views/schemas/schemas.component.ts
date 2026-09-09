@@ -700,6 +700,13 @@ export class SchemaConfigComponent implements OnInit {
                     return topicCompare;
                 }
 
+                // Featured schemas first, preserving backend ordering
+                const featuredA = (a as Record<string, unknown>).templateFeatured ? 1 : 0;
+                const featuredB = (b as Record<string, unknown>).templateFeatured ? 1 : 0;
+                if (featuredA !== featuredB) {
+                    return featuredB - featuredA;
+                }
+
                 // If topicIds are the same, compare by version
                 return ModelHelper.versionCompare(b.version || b.sourceVersion || '', a.version || a.sourceVersion || '');
             });

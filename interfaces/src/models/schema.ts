@@ -136,6 +136,10 @@ export class Schema implements ISchema {
      */
     public templateSchemaId?: string;
     /**
+     * Schema's featured flag in the owning template's config
+     */
+    public templateFeatured?: boolean;
+    /**
      * Parent component
      */
     public component?: string;
@@ -183,6 +187,7 @@ export class Schema implements ISchema {
             this.topicId = schema.topicId || '';
             this.templateId = schema.templateId || '';
             this.templateSchemaId = schema.templateSchemaId || '';
+            this.templateFeatured = !!schema.templateFeatured;
             this.messageId = schema.messageId || '';
             this.documentURL = schema.documentURL || '';
             this.contextURL = schema.contextURL || '';

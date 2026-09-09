@@ -287,6 +287,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return !this.selectedSchemaConfig?.customFieldsLocked;
     }
 
+    public get isSelectedSchemaFeatured(): boolean {
+        return !!this.selectedSchemaConfig?.featured;
+    }
+
     public get canChangeSelectedSchemaSettings(): boolean {
         return !this.selectedSchemaConfig?.schemaSettingsLocked;
     }
@@ -362,6 +366,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             return false;
         }
         return this.getSchemaTemplateConfig(schema)?.customFieldsLocked === true;
+    }
+
+    public isSchemaFeatured(schema: Schema): boolean {
+        if (this.isTemplateConfigMode) {
+            return !!this.getSchemaTemplateConfig(schema)?.featured;
+        }
+        return !!(schema as any)?.templateFeatured;
     }
 
     public isTemplateSchemaDeleteLocked(schema: Schema): boolean {
@@ -1031,6 +1042,18 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             return;
         }
         config.customFieldsLocked = !config.customFieldsLocked;
+        this.templateConfigDirty = true;
+    }
+
+    public toggleFeaturedForSelectedSchema(): void {
+        if (this.isTemplateReadonly) {
+            return;
+        }
+        const config = this.ensureSelectedSchemaConfig();
+        if (!config) {
+            return;
+        }
+        config.featured = !config.featured;
         this.templateConfigDirty = true;
     }
 

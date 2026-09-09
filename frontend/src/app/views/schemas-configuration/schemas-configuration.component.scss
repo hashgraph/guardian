@@ -816,6 +816,12 @@
     text-overflow: ellipsis;
 }
 
+.sc-schema-featured-icon {
+    font-size: 11px;
+    margin-left: 4px;
+    color: var(--color-accent-yellow-1, #DA9B22);
+}
+
 .sc-schema-meta-row {
     display: flex;
     align-items: center;
@@ -1044,6 +1050,30 @@
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 320px;
+}
+
+.sc-schema-featured-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+
+    i { font-size: 15px; color: var(--guardian-font-color-secondary, #848FA9); }
+
+    &.active i {
+        color: var(--color-accent-yellow-1, #DA9B22);
+    }
+
+    &:disabled {
+        cursor: default;
+        opacity: 0.6;
+    }
 }
 
 .sc-editor-version {
