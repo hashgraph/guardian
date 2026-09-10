@@ -35,4 +35,9 @@ export class AISearchService {
         return this.http.post<IPropertySuggestionResponse>(`${API_BASE_URL}/ai-suggestions/schema-properties`, request)
             .pipe(catchError(() => of({ available: false, results: [] })));
     }
+
+    public isGlossaryAiEnabled(): Observable<boolean> {
+        return this.http.get<boolean>(`${API_BASE_URL}/ai-suggestions/schema-properties/enabled`)
+            .pipe(catchError(() => of(false)));
+    }
 }

@@ -546,6 +546,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     private propertiesByVersion = new Map<string, any[]>();
     private propertyOptionsMemo: { source: any[]; current: string; result: any[] } | null = null;
 
+    /** Whether Glossary AI is turned on for this deployment - fetched once in ngOnInit(). */
+    public glossaryAiEnabled: boolean = false;
     public suggestionsLoading: boolean = false;
     public suggestionsAvailable: boolean = true;
     public suggestionResults: IPropertySuggestionResult[] = [];
@@ -717,6 +719,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
      * Load Glossary AI suggestions for every field on the current schema.
      */
     public loadSuggestions(): void {
+        if (!this.glossaryAiEnabled) { return; }
         const schema = this.currentContextSchema;
         const fields = schema?.fields ?? [];
         // Captured now, not read from `this.currentContextSchema` in the callbacks below - the user
@@ -781,6 +784,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public suggestPropertyForSelectedField(): void {
+        if (!this.glossaryAiEnabled) { return; }
         const field = this.selectedField;
         if (!field) { return; }
         this.rightPanelSuggestLoading = true;
@@ -842,6 +846,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public ngOnInit(): void {
         this.restoreCanvasTab();
+
+        this.aiSearchService.isGlossaryAiEnabled()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((enabled) => { this.glossaryAiEnabled = enabled; });
 
         // A brand-new schema is authored against the current IWA version; an
         // existing one keeps whatever version it was authored against.

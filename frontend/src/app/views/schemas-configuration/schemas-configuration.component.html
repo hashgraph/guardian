@@ -462,14 +462,16 @@
                                         <span class="sc-ctp-count">{{ arrayDependencyCount }}</span>
                                     }
                                 </button>
-                                <button class="sc-ctp-btn"
-                                    [class.active]="activeCanvasTab === 'propertyAi'"
-                                    (click)="setCanvasTab('propertyAi')">
-                                    <svg-icon class="svg-icon-16" src="/assets/images/icons/auto_awesome.svg"></svg-icon>Glossary AI
-                                    @if (pendingSuggestionCount) {
-                                        <span class="sc-ctp-count">{{ pendingSuggestionCount }}</span>
-                                    }
-                                </button>
+                                @if (glossaryAiEnabled) {
+                                    <button class="sc-ctp-btn"
+                                        [class.active]="activeCanvasTab === 'propertyAi'"
+                                        (click)="setCanvasTab('propertyAi')">
+                                        <svg-icon class="svg-icon-16" src="/assets/images/icons/auto_awesome.svg"></svg-icon>Glossary AI
+                                        @if (pendingSuggestionCount) {
+                                            <span class="sc-ctp-count">{{ pendingSuggestionCount }}</span>
+                                        }
+                                    </button>
+                                }
                             </div>
                         </div>
                         }
@@ -531,7 +533,7 @@
                         @if (activeCanvasTab === 'links') {
                             <ng-container *ngTemplateOutlet="arrayDependenciesCanvas"></ng-container>
                         }
-                        @if (activeCanvasTab === 'propertyAi') {
+                        @if (activeCanvasTab === 'propertyAi' && glossaryAiEnabled) {
                             <ng-container *ngTemplateOutlet="propertyAiCanvas"></ng-container>
                         }
                     </div>
@@ -998,15 +1000,17 @@
                             <div class="sc-rp-group">
                                 <div class="sc-rp-label-row">
                                     <label class="sc-rp-label">Property</label>
-                                    <button type="button" class="sc-rp-suggest-btn" title="Suggest with Glossary AI"
-                                        [disabled]="rightPanelSuggestLoading"
-                                        (click)="suggestPropertyForSelectedField()">
-                                        @if (rightPanelSuggestLoading) {
-                                            <i class="pi pi-spin pi-spinner"></i>
-                                        } @else {
-                                            <svg-icon class="svg-icon-16" src="/assets/images/icons/auto_awesome.svg"></svg-icon>
-                                        }
-                                    </button>
+                                    @if (glossaryAiEnabled) {
+                                        <button type="button" class="sc-rp-suggest-btn" title="Suggest with Glossary AI"
+                                            [disabled]="rightPanelSuggestLoading"
+                                            (click)="suggestPropertyForSelectedField()">
+                                            @if (rightPanelSuggestLoading) {
+                                                <i class="pi pi-spin pi-spinner"></i>
+                                            } @else {
+                                                <svg-icon class="svg-icon-16" src="/assets/images/icons/auto_awesome.svg"></svg-icon>
+                                            }
+                                        </button>
+                                    }
                                 </div>
                                 <p-select
                                     class="guardian-dropdown sc-rp-select"
