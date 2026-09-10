@@ -109,7 +109,7 @@ Every submission in Guardian generates a verifiable credential — a tamper-proo
 
 * [Concept: Policies](../workspace/policies/)
 * [Concept: Schemas](../workspace/schemas/)
-* Concept: Methodology Library
+* [Concept: Methodology Library](../../methodology-digitalization/methodology-library.md)
 * [Methodology Digitization Guide](https://guardian.hedera.com/methodology-digitization)
 * [Subscribe to community calendar](https://lu.ma/guardian)
 * [Share your feedback or request support](https://tiny.cc/grd-feedback)
