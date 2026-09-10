@@ -704,7 +704,7 @@ export class SchemaConfigComponent implements OnInit {
                     return topicCompare;
                 }
 
-                // Featured schemas first, preserving backend ordering
+                // Featured first
                 const featuredA = (a as Record<string, unknown>).templateFeatured ? 1 : 0;
                 const featuredB = (b as Record<string, unknown>).templateFeatured ? 1 : 0;
                 if (featuredA !== featuredB) {

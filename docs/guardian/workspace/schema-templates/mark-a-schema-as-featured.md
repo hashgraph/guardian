@@ -1,12 +1,12 @@
 ---
-description: Highlight a template schema so it stands out in schema lists and sorts first on the Schemas grid.
+description: Highlight a template schema so it stands out in schema lists and sorts first wherever it's listed.
 tags:
   - tasks
 ---
 
 # Mark a Schema as Featured
 
-Featuring a schema highlights it with a star in schema lists and pins it to the top of the main Schemas grid. Use it to call out the schemas policy authors are most likely to need from a template. See [Schema Templates Concept](./) for how the flag is stored and propagated.
+Featuring a schema highlights it with a star and pins it to the top of every schema list it appears in. Use it to call out the schemas policy authors are most likely to need from a template. See [Schema Templates Concept](./) for how the flag is stored and propagated.
 
 ### Prerequisites
 
@@ -28,7 +28,7 @@ Featuring a schema highlights it with a star in schema lists and pins it to the 
 
 ### Result
 
-The schema shows a filled star everywhere its template schemas are listed: the template editor, the template-scoped schema editor, and the policy schema editor for policies with this template applied. On the main Schemas grid (`/schemas`), featured schemas sort before non-featured ones within the same topic.
+The schema shows a filled star, and sorts before non-featured schemas within the same topic, everywhere its template schemas are listed: the main Schemas grid (`/schemas`), the template editor's own schema sidebar, the template-scoped schema editor, and the policy schema editor for policies with this template applied.
 
 ### Troubleshooting
 

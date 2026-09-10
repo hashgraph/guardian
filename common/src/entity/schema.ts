@@ -186,9 +186,7 @@ export class Schema extends BaseEntity implements ISchema {
     templateSchemaId?: string;
 
     /**
-     * Denormalized copy of config.schemas[id].featured from the owning schema template,
-     * kept in sync by schema-template.service.ts. SchemaTemplate.config itself is not
-     * queryable (GridFS-backed), so this is what grid sort / cross-context display use.
+     * Denormalized featured flag from the owning template's config (see schema-template.service.ts)
      */
     @Property({ nullable: true })
     templateFeatured?: boolean;

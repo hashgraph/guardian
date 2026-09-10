@@ -827,9 +827,8 @@ function getSnapshotSchemaConfig(
 }
 
 /*
- * Denormalizes config.schemas[id].featured onto the template's own Schemas,
- * so contexts that can't read the (non-queryable, GridFS-backed) SchemaTemplate.config
- * directly (grid sort, sidebars, police configurator) outside the template config editor can still see it
+ * Denormalizes config.schemas[id].featured onto the template's Schemas, since
+ * SchemaTemplate.config (GridFS-backed) isn't queryable outside the config editor.
  */
 async function syncTemplateSchemasFeatured(template: SchemaTemplate): Promise<void> {
     if (!template?.topicId) {

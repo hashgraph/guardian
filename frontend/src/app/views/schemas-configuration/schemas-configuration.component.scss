@@ -9,6 +9,7 @@
     --sc-radius-sm: 8px;
     --sc-elevation: 0 1px 2px var(--guardian-shadow, #00000014), 0 1px 1px var(--guardian-shadow, #00000014);
     --sc-elevation-overlay: 0 8px 24px var(--guardian-shadow, #00000014), 0 2px 6px var(--guardian-shadow, #00000014);
+    --sc-featured-color: var(--color-accent-yellow-1, #DA9B22);
 }
 
 .sc-page {
@@ -818,7 +819,7 @@
 
 .schema-featured-icon {
     font-size: 12px;
-    color: var(--color-accent-yellow-1, #DA9B22);
+    color: var(--sc-featured-color);
 }
 
 .sc-schema-meta-row {
@@ -1066,7 +1067,7 @@
     i { font-size: 15px; color: var(--guardian-font-color-secondary, #848FA9); }
 
     &.active i {
-        color: var(--color-accent-yellow-1, #DA9B22);
+        color: var(--sc-featured-color);
     }
 
     &:disabled {

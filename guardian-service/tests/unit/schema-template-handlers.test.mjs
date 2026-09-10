@@ -406,11 +406,8 @@ describe('schema template CRUD and query handlers', () => {
     });
 
     /*
-     * SchemaTemplate.config is GridFS-backed and not queryable, so grid sort and
-     * sidebars outside the template config editor read Schema.templateFeatured
-     * instead. This denormalized copy is only ever written here, on save - a
-     * template schema that never triggers it (or a schema created directly, never
-     * saved through the template) is missing it forever.
+     * templateFeatured is denormalized here, on template save (SchemaTemplate.config
+     * itself isn't queryable). A schema never saved through the template lacks it.
      */
     it('UPDATE_SCHEMA_TEMPLATE syncs templateFeatured onto the template\'s own schemas', async () => {
         const updatedSchemas = [];
@@ -1291,11 +1288,8 @@ describe('UPDATE_APPLIED_SCHEMA_TEMPLATE rollback', () => {
 });
 
 /*
- * preparePolicySchemaCopy (new schemas the template gained) deep-clones the
- * template's own Schema doc, so it carries templateFeatured forward for free.
- * preparePolicySchemaUpdate (schemas already applied, edited in place) sets every
- * field explicitly instead of cloning, so templateFeatured needs its own line -
- * this is the one place that line can regress silently.
+ * preparePolicySchemaUpdate sets fields explicitly instead of cloning, so
+ * templateFeatured needs its own line here - easy to regress silently.
  */
 describe('UPDATE_APPLIED_SCHEMA_TEMPLATE templateFeatured sync', () => {
     const document = (properties) => ({
