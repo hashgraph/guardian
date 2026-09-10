@@ -36,7 +36,12 @@ function makeHarness() {
         publish() {},
     };
     worker.subscribe = (event, handler) => { captured.subscribe.set(event, handler); return { unsubscribe() {} }; };
-    worker.getMessages = (event, handler) => { captured.getMessages.set(event, handler); return { unsubscribe() {} }; };
+    // isInUse is claimed by the beforeDecode hook, not by runTask, so the stub has to
+    // keep it - otherwise the release assertions pass against a flag nobody ever set.
+    worker.getMessages = (event, handler, noRespond, beforeDecode, onError) => {
+        captured.getMessages.set(event, { handler, beforeDecode, onError });
+        return { unsubscribe() {} };
+    };
     worker.publish = async (subject, data) => {
         captured.publishes.push({ subject, data });
         if (captured.publishThrowsOn && subject === captured.publishThrowsOn) {
@@ -52,7 +57,11 @@ function makeHarness() {
 async function dispatch(h, task = { id: 't-1', type: 'GET_FILE', data: {} }) {
     const sendKey = [...h.captured.getMessages.keys()]
         .find(k => k.endsWith(WorkerEvents.SEND_TASK_TO_WORKER));
-    await h.captured.getMessages.get(sendKey)(task);
+    const { handler, beforeDecode } = h.captured.getMessages.get(sendKey);
+    const early = beforeDecode?.();
+    assert.equal(early, undefined, 'the worker must have been free to claim');
+    assert.equal(h.worker.isInUse, true, 'the claim must be in place before the task runs');
+    await handler(task);
     for (let i = 0; i < 20; i++) { await new Promise(r => setImmediate(r)); }
 }
 
