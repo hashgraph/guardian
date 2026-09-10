@@ -628,6 +628,14 @@
                 color: var(--guardian-primary-color, #4169e2);
                 background: rgba(65, 105, 226, 0.08);
             }
+
+            &.resolution-button-blocked {
+                cursor: not-allowed;
+                border-style: dashed;
+                border-color: var(--guardian-border-color, #e1e7ef);
+                color: var(--guardian-disabled-color, #848fa9);
+                background: var(--guardian-disabled-background, #eff3f7);
+            }
         }
 
         .preview-empty {

@@ -17,10 +17,10 @@ describe('validatePolicySchemaTemplateBeforePublish', () => {
     it('rejects a snapshot binding without a linked template id', async () => {
         await assert.rejects(
             () => validatePolicySchemaTemplateBeforePublish({
-                schemaTemplate: {
+                schemaTemplates: [{
                     snapshotId: 'snapshot-1',
                     schemaMap: {},
-                },
+                }],
             }),
             /snapshot without a linked template/
         );
@@ -34,10 +34,10 @@ describe('validatePolicySchemaTemplateBeforePublish', () => {
 
         await assert.rejects(
             () => validatePolicySchemaTemplateBeforePublish({
-                schemaTemplate: {
+                schemaTemplates: [{
                     templateId: 'template-1',
                     schemaMap: {},
-                },
+                }],
             }),
             /draft schema template/
         );
@@ -48,10 +48,10 @@ describe('validatePolicySchemaTemplateBeforePublish', () => {
 
         await assert.rejects(
             () => validatePolicySchemaTemplateBeforePublish({
-                schemaTemplate: {
+                schemaTemplates: [{
                     templateId: 'missing-template',
                     schemaMap: {},
-                },
+                }],
             }),
             /draft schema template/
         );
@@ -64,12 +64,34 @@ describe('validatePolicySchemaTemplateBeforePublish', () => {
         }));
 
         await assert.doesNotReject(() => validatePolicySchemaTemplateBeforePublish({
-            schemaTemplate: {
+            schemaTemplates: [{
                 templateId: 'template-1',
                 schemaMap: {
                     'template-schema-1': 'policy-schema-1',
                 },
-            },
+            }],
         }));
+    });
+
+    it('names every applied template that blocks the publish', async () => {
+        stub(DatabaseServer, 'getSchemaTemplateById', async (id) => ({
+            id,
+            status: ModuleStatus.DRAFT,
+        }));
+
+        await assert.rejects(
+            () => validatePolicySchemaTemplateBeforePublish({
+                schemaTemplates: [
+                    { templateId: 'template-1', templateName: 'First', schemaMap: {} },
+                    { templateId: 'template-2', templateName: 'Second', schemaMap: {} },
+                ],
+            }),
+            (error) => {
+                assert.match(error.message, /"First"/);
+                assert.match(error.message, /"Second"/,
+                    'the error must not stop at the first offending template');
+                return true;
+            }
+        );
     });
 });

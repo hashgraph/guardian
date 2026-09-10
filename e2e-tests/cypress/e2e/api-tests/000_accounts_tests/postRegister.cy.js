@@ -4,7 +4,7 @@ import API from '../../../support/ApiUrls';
 import { registerUser } from '../../../support/api/accounts';
 import { expectedPasswordError } from '../../../support/passwordPolicy';
 
-context('Register', { tags: ['accounts', 'firstPool', 'all'] }, () => {
+context('Register', { tags: ['accounts', 'firstPool', 'all', 'all-no-mgs'] }, () => {
     // NODE: using a fixed name until a cleanup via DELETE account is implemented in the API
     const name = `TestUserRegistration2_${randomInt(99999)}`;
     const SRUsername = Cypress.env('SRUser');

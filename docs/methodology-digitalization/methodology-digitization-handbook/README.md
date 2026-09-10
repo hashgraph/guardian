@@ -2,11 +2,12 @@
 description: >-
   A comprehensive guide to digitalizing environmental methodologies on Guardian
   platform
+icon: book
 tags:
   - guide
 ---
 
-# 📚 Methodology Digitalization Handbook
+# Methodology Digitalization Handbook
 
 {% hint style="warning" %}
 This handbook was written for an earlier version of Guardian and will be updated for the latest release in the future.

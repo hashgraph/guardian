@@ -24,6 +24,8 @@ export interface SchemaTemplateUpdateConflict {
     id: string;
     message: string;
     allowedActions: SchemaTemplateUpdateResolutionAction[];
+    /** Schemas that still reference this one, so removing it is not on offer. */
+    blockedBy?: string[];
 }
 
 export interface SchemaTemplateUpdatePreview {
@@ -52,6 +54,22 @@ export interface SchemaTemplateUpdateOptions {
         conflictId: string;
         action: SchemaTemplateUpdateResolutionAction;
     }>;
+    targetTemplateId?: string;
+}
+
+export interface SchemaTemplateDetachOptions {
+    deleteSchemas?: boolean;
+}
+
+export interface SchemaTemplateDetachBlockedSchema {
+    name: string;
+    usedBy: string[];
+    status?: string;
+}
+
+export interface SchemaTemplateDetachPreview {
+    deletable: string[];
+    blocked: SchemaTemplateDetachBlockedSchema[];
 }
 
 @Injectable()
@@ -64,12 +82,16 @@ export class SchemaTemplatesService {
     public page(
         pageIndex: number = 0,
         pageSize: number = 20,
-        search?: string
+        search?: string,
+        excludeIds?: string[]
     ): Observable<HttpResponse<SchemaTemplateGridItem[]>> {
-        const params = new HttpParams()
+        let params = new HttpParams()
             .set('pageIndex', String(pageIndex))
             .set('pageSize', String(pageSize))
             .set('search', search || '');
+        if (excludeIds?.length) {
+            params = params.set('excludeIds', excludeIds.join(','));
+        }
         return this.http.get<SchemaTemplateGridItem[]>(this.url, {
             observe: 'response',
             params
@@ -80,8 +102,9 @@ export class SchemaTemplatesService {
         return this.http.get<SchemaTemplateGridItem>(`${this.url}/${id}`);
     }
 
-    public getAppliedByPolicyTopic(topicId: string): Observable<SchemaTemplateGridItem | null> {
-        return this.http.get<SchemaTemplateGridItem | null>(`${this.url}/policies/topic/${topicId}/applied`);
+    /** One entry per template applied to the policy that owns this topic. */
+    public getAppliedByPolicyTopic(topicId: string): Observable<SchemaTemplateGridItem[]> {
+        return this.http.get<SchemaTemplateGridItem[]>(`${this.url}/policies/topic/${topicId}/applied`);
     }
 
     public create(template: Partial<ISchemaTemplate>): Observable<SchemaTemplateGridItem> {
@@ -154,15 +177,23 @@ export class SchemaTemplatesService {
         return this.http.post<TaskResponse>(`${this.url}/${templateId}/policies/${policyId}/push/apply`, {});
     }
 
-    public previewUpdate(templateId: string, policyId: string): Observable<SchemaTemplateUpdatePreview> {
-        return this.http.get<SchemaTemplateUpdatePreview>(`${this.url}/${templateId}/policies/${policyId}/update/preview`);
+    public previewUpdate(templateId: string, policyId: string, targetTemplateId?: string): Observable<SchemaTemplateUpdatePreview> {
+        let params = new HttpParams();
+        if (targetTemplateId) {
+            params = params.set('targetTemplateId', targetTemplateId);
+        }
+        return this.http.get<SchemaTemplateUpdatePreview>(`${this.url}/${templateId}/policies/${policyId}/update/preview`, { params });
     }
 
     public pushUpdate(templateId: string, policyId: string, options: SchemaTemplateUpdateOptions): Observable<TaskResponse> {
         return this.http.post<TaskResponse>(`${this.url}/${templateId}/policies/${policyId}/push/update`, options || {});
     }
 
-    public pushDetach(policyId: string): Observable<TaskResponse> {
-        return this.http.post<TaskResponse>(`${this.url}/policies/${policyId}/push/detach`, {});
+    public previewDetach(templateId: string, policyId: string): Observable<SchemaTemplateDetachPreview> {
+        return this.http.get<SchemaTemplateDetachPreview>(`${this.url}/${templateId}/policies/${policyId}/detach/preview`);
+    }
+
+    public pushDetach(templateId: string, policyId: string, options?: SchemaTemplateDetachOptions): Observable<TaskResponse> {
+        return this.http.post<TaskResponse>(`${this.url}/${templateId}/policies/${policyId}/push/detach`, options || {});
     }
 }

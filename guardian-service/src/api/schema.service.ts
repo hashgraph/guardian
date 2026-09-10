@@ -126,17 +126,19 @@ async function getTemplateSchemaValidationContext(
     }
 
     const policy = await DatabaseServer.getPolicy({ topicId: schema.topicId });
-    if (!policy?.schemaTemplate?.templateId) {
+    // A policy can hold several bindings, so match on the schema's own templateId to find the right one.
+    const binding = policy?.schemaTemplates?.find((item) => item.templateId === schema.templateId);
+    if (!binding?.templateId) {
         return null;
     }
 
     let config: ISchemaTemplateConfig | null | undefined;
-    if (policy.schemaTemplate.snapshotId) {
-        const snapshot = await DatabaseServer.getSchemaTemplateSnapshotById(policy.schemaTemplate.snapshotId);
+    if (binding.snapshotId) {
+        const snapshot = await DatabaseServer.getSchemaTemplateSnapshotById(binding.snapshotId);
         config = snapshot?.config;
     }
     if (!config) {
-        const template = await DatabaseServer.getSchemaTemplateById(policy.schemaTemplate.templateId);
+        const template = await DatabaseServer.getSchemaTemplateById(binding.templateId);
         config = template?.config;
     }
 
@@ -1922,7 +1924,21 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const stepMap = new Map<string, NotificationStep>();
-                const results = new Map<string, boolean>();
+                const results: { id: string, name: string, deleted: boolean }[] = [];
+                // A schema still referenced by a policy schema is skipped below via
+                // blockedSchemaIds; without this the caller is never told, and the task
+                // reports success for a delete that did not happen. Only schemas that
+                // were delete candidates count: with includeChildren off, a blocked
+                // child was never going to be deleted, so reporting it is noise.
+                const requestedIris = new Set(schemas.map(schema => schema.iri));
+                const errors = blockedChildren
+                    .filter(blocked => includeChildren || requestedIris.has(blocked.schema.iri))
+                    .map(blocked => ({
+                        type: 'schema',
+                        uuid: blocked.schema.iri,
+                        name: blocked.schema.name,
+                        error: 'Still referenced by ' + blocked.blockingSchemas.map(s => s.name).join(', ')
+                    }));
                 const schemasToDelete: SchemaCollection[] = [];
 
                 if (includeChildren) {
@@ -1959,11 +1975,11 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 for (const schema of schemasToDelete) {
 
                     const deleteSchemaStep = stepMap.get(schema.id);
-                    const result = await deleteSchema(schema.id, owner, deleteSchemaStep);
-                    results.set(schema.id, result);
+                    const deleted = await deleteSchema(schema.id, owner, deleteSchemaStep);
+                    results.push({ id: schema.id, name: schema.name, deleted: !!deleted });
                 }
 
-                notifier.result(results);
+                notifier.result({ results, errors });
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 notifier.fail(error);

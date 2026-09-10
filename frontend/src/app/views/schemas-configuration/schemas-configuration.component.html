@@ -385,11 +385,31 @@
                                     </span>
                                     <span class="st-toggle" [class.active]="canAddCustomFieldsToSelectedSchema"></span>
                                 </button>
+                                <div class="st-guidelines-editor">
+                                    <label class="st-guidelines-label" for="st-schema-guidelines-textarea">Guidelines</label>
+                                    <textarea
+                                        id="st-schema-guidelines-textarea"
+                                        class="st-guidelines-textarea"
+                                        [ngModel]="selectedSchemaGuidelines"
+                                        [readonly]="isTemplateReadonly"
+                                        (ngModelChange)="setSelectedSchemaGuidelines($event)"
+                                        rows="3"
+                                        placeholder="Add guidance for this schema when the template is applied."></textarea>
+                                </div>
                             } @else if (!schemaPropsCollapsed) {
                                 @if (selectedSchemaSettingsLocked) {
                                     <div class="st-lock-note st-lock-note--inline">
                                         <i class="pi pi-lock"></i>
                                         <span>Schema settings are locked by the applied template.</span>
+                                    </div>
+                                }
+                                @if (selectedSchemaGuidelines) {
+                                    <div class="st-guidelines-note">
+                                        <div class="st-guidelines-note-title">
+                                            <i class="pi pi-info-circle"></i>
+                                            <span>Guidelines</span>
+                                        </div>
+                                        <div class="st-guidelines-note-text">{{ selectedSchemaGuidelines }}</div>
                                     </div>
                                 }
                                 <div class="sc-schema-props-row sc-schema-props-row--main">
@@ -694,6 +714,17 @@
                             </span>
                             <span class="st-toggle" [class.active]="canEditSelectedFieldInTemplate"></span>
                         </button>
+                        <div class="st-guidelines-editor">
+                            <label class="st-guidelines-label" for="st-field-guidelines-textarea">Guidelines</label>
+                            <textarea
+                                id="st-field-guidelines-textarea"
+                                class="st-guidelines-textarea"
+                                [ngModel]="selectedFieldGuidelines"
+                                [readonly]="isTemplateReadonly"
+                                (ngModelChange)="setSelectedFieldGuidelines($event)"
+                                rows="4"
+                                placeholder="Add guidance for this field when the template is applied."></textarea>
+                        </div>
                     </div>
                 </aside>
             }
@@ -710,6 +741,15 @@
                         <div class="st-lock-note">
                             <i class="pi pi-lock"></i>
                             <span>Field editing is locked by the applied template.</span>
+                        </div>
+                    }
+                    @if (selectedFieldGuidelines) {
+                        <div class="st-guidelines-note">
+                            <div class="st-guidelines-note-title">
+                                <i class="pi pi-info-circle"></i>
+                                <span>Guidelines</span>
+                            </div>
+                            <div class="st-guidelines-note-text">{{ selectedFieldGuidelines }}</div>
                         </div>
                     }
 
@@ -1309,7 +1349,8 @@
             </div>
 
             @for (dependency of arrayDependencies; track dependency) {
-                <div class="sc-array-link-card">
+                <div class="sc-array-link-card"
+                    [class.sc-array-link-card--editing]="isEditingArrayDependency(dependency)">
                     <div class="sc-array-link-paths">
                         <div class="sc-array-link-path">
                             <span class="sc-array-link-label">Source</span>
@@ -1354,6 +1395,10 @@
                             </div>
                         }
                     </div>
+                    <button class="sc-array-link-edit" title="Edit link"
+                        (click)="startEditArrayDependency(dependency)">
+                        <i class="pi pi-pencil"></i>
+                    </button>
                     <button class="sc-array-link-remove" title="Remove link"
                         (click)="removeArrayDependency(dependency)">
                         <i class="pi pi-trash"></i>
@@ -1366,8 +1411,11 @@
                 </div>
             }
 
-            <div class="sc-array-link-editor">
-                <div class="sc-array-link-editor-title">Add repeatable field link</div>
+            <div class="sc-array-link-editor" #arrayLinkEditor
+                [class.sc-array-link-editor--editing]="editingArrayDependency">
+                <div class="sc-array-link-editor-title">
+                    {{ editingArrayDependency ? 'Edit repeatable field link' : 'Add repeatable field link' }}
+                </div>
                 <div class="sc-array-link-editor-grid">
                     <label>
                         <span>Source array</span>
@@ -1539,11 +1587,23 @@
                 </div>
                 <div class="sc-array-link-editor-actions">
                     <span>Build chains top-down: add the parent link before using its child as a source.</span>
-                    <button class="sc-btn sc-btn-primary"
-                        [disabled]="!canAddArrayDependency()"
-                        (click)="addArrayDependency()">
-                        <i class="pi pi-plus"></i>Add link
-                    </button>
+                    <div class="sc-array-link-editor-buttons">
+                        @if (editingArrayDependency) {
+                            <button class="sc-btn"
+                                (click)="cancelEditArrayDependency()">
+                                Cancel
+                            </button>
+                        }
+                        <button class="sc-btn sc-btn-primary"
+                            [disabled]="!canApplyArrayDependency()"
+                            (click)="applyArrayDependency()">
+                            @if (editingArrayDependency) {
+                                <i class="pi pi-check"></i>Save link
+                            } @else {
+                                <i class="pi pi-plus"></i>Add link
+                            }
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
