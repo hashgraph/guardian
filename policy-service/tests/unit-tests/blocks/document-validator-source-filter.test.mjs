@@ -52,4 +52,53 @@ describe('documentValidatorBlock source filter', () => {
         });
     });
 
+    describe('two filters on the same field', () => {
+        const filtersFor = (filters) => block().buildSourceFilter({ filters }, ref, {}, {}).$and;
+
+        const range = { field: 'document.credentialSubject.0.projectId', type: 'gte', value: 'PRJ-100', typeValue: 'value' };
+        const exclude = { field: 'document.credentialSubject.0.projectId', type: 'not_equal', value: 'PRJ-150', typeValue: 'value' };
+
+        it('composes both predicates instead of overwriting one', () => {
+            // assigning into filter[field] kept only the last filter, so the range
+            // bound vanished and PRJ-050 satisfied the source validation
+            assert.deepEqual(filtersFor([range, exclude]), [
+                { 'document.credentialSubject.0.projectId': { $gte: 'PRJ-100' } },
+                { 'document.credentialSubject.0.projectId': { $nin: ['PRJ-150'] } }
+            ]);
+        });
+
+        it('does not depend on the order the author configured them in', () => {
+            const reversed = filtersFor([exclude, range]);
+
+            assert.sameDeepMembers(reversed, filtersFor([range, exclude]));
+        });
+
+        it('keeps a widened range alongside a same-field in list', () => {
+            const $and = filtersFor([
+                { field: 'amount', type: 'gte', value: '100', typeValue: 'value' },
+                { field: 'amount', type: 'in', value: '100, 200', typeValue: 'value' }
+            ]);
+
+            assert.lengthOf($and, 2);
+            assert.deepEqual($and[0].$or, [
+                { amount: { $gte: 100 } },
+                { amount: { $gte: '100' } }
+            ]);
+            assert.deepEqual($and[1], { amount: { $in: [100, '100', 200, '200'] } });
+        });
+
+        it('gives distinct fields one clause each', () => {
+            assert.deepEqual(filtersFor([
+                { field: 'a', type: 'equal', value: 'x', typeValue: 'value' },
+                { field: 'b', type: 'equal', value: 'y', typeValue: 'value' }
+            ]), [
+                { a: { $in: ['x'] } },
+                { b: { $in: ['y'] } }
+            ]);
+        });
+
+        it('adds no $and when there are no filters', () => {
+            assert.isUndefined(block().buildSourceFilter({}, ref, {}, {}).$and);
+        });
+    });
 });

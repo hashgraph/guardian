@@ -4,6 +4,9 @@ import { DocumentValidatorBlock } from '../../../dist/policy-engine/blocks/docum
 const block = () => Object.create(DocumentValidatorBlock.prototype);
 const ref = { policyId: 'policy-1' };
 
+// every filter predicate is composed into $and, so repeated fields survive
+const clauseFor = (filter, field) => (filter.$and || []).find((c) => field in c)?.[field];
+
 describe('documentValidatorBlock source filter coercion', () => {
     describe('type coercion against string-stored values', () => {
         const filterFor = (type, value) => block().buildSourceFilter(
@@ -16,13 +19,13 @@ describe('documentValidatorBlock source filter coercion', () => {
 
             // '100' coerces to the number 100; VC JSON stores the string, and Mongo
             // comparisons are type-bracketed, so one representation alone misses
-            assert.deepEqual(filter['document.credentialSubject.0.date'], { $in: [100, '100'] });
+            assert.deepEqual(clauseFor(filter, 'document.credentialSubject.0.date'), { $in: [100, '100'] });
         });
 
         it('excludes both representations for not_equal', () => {
             const filter = filterFor('not_equal', '100');
 
-            assert.deepEqual(filter['document.credentialSubject.0.date'], { $nin: [100, '100'] });
+            assert.deepEqual(clauseFor(filter, 'document.credentialSubject.0.date'), { $nin: [100, '100'] });
         });
 
         it('compares a date range as either type', () => {
@@ -38,8 +41,9 @@ describe('documentValidatorBlock source filter coercion', () => {
         it('keeps a single predicate when coercion changes nothing', () => {
             const filter = filterFor('gte', 'abc');
 
-            assert.isUndefined(filter.$and);
-            assert.deepEqual(filter['document.credentialSubject.0.date'], { $gte: 'abc' });
+            assert.lengthOf(filter.$and, 1);
+
+            assert.deepEqual(clauseFor(filter, 'document.credentialSubject.0.date'), { $gte: 'abc' });
         });
 
         it('widens every element of an in list', () => {
@@ -48,7 +52,7 @@ describe('documentValidatorBlock source filter coercion', () => {
                 ref, {}, {}
             );
 
-            assert.deepEqual(filter.f, { $in: [1, '1', 2, '2'] });
+            assert.deepEqual(clauseFor(filter, 'f'), { $in: [1, '1', 2, '2'] });
         });
     });
 
@@ -74,7 +78,7 @@ describe('documentValidatorBlock source filter coercion', () => {
                 ref, document, {}
             );
 
-            assert.deepEqual(filter.f, { $in: [1, '1', 2, '2'] });
+            assert.deepEqual(clauseFor(filter, 'f'), { $in: [1, '1', 2, '2'] });
         });
     });
 });
