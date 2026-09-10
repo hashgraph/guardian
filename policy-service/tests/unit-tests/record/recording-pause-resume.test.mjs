@@ -100,6 +100,97 @@ describe('@unit Recording pause and resume', () => {
         assert.equal(recording.getStatus().pausedAt, null);
     });
 
+    it('keeps wall-clock time and records the paused total on a later action', async () => {
+        const recording = new Recording('policy-1', 'did:owner');
+        await recording.start();
+        now = 1500;
+        await recording.selectGroup({ did: 'did:user' }, 'group-1');
+        now = 2000;
+        await recording.pause();
+        now = 5000;
+        await recording.resume();
+        now = 6000;
+        await recording.selectGroup({ did: 'did:user' }, 'group-2');
+        assert.equal(rows.at(-2).time, 1500);
+        assert.equal(rows.at(-2).pausedOffset, 0);
+        assert.equal(rows.at(-1).time, 6000);
+        assert.equal(rows.at(-1).pausedOffset, 3000);
+    });
+
+    it('accumulates several paused intervals', async () => {
+        const recording = new Recording('policy-1', 'did:owner');
+        await recording.start();
+        now = 2000;
+        await recording.pause();
+        now = 3000;
+        await recording.resume();
+        now = 4000;
+        await recording.selectGroup({ did: 'did:user' }, 'group-1');
+        now = 5000;
+        await recording.pause();
+        now = 6000;
+        await recording.resume();
+        now = 7000;
+        await recording.selectGroup({ did: 'did:user' }, 'group-2');
+        assert.equal(rows.at(-2).pausedOffset, 1000);
+        assert.equal(rows.at(-1).pausedOffset, 2000);
+    });
+
+    it('records the paused total on the final stop', async () => {
+        const recording = new Recording('policy-1', 'did:owner');
+        await recording.start();
+        now = 2000;
+        await recording.pause();
+        now = 5000;
+        await recording.resume();
+        now = 8000;
+        await recording.pause();
+        now = 9000;
+        await recording.stop();
+        assert.equal(rows.at(-1).method, 'STOP');
+        assert.equal(rows.at(-1).time, 8000);
+        assert.equal(rows.at(-1).pausedOffset, 3000);
+    });
+
+    it('uses the offset that applied when a deferred action started', async () => {
+        const recording = new Recording('policy-1', 'did:owner');
+        await recording.start();
+        now = 2000;
+        await recording.pause();
+        now = 5000;
+        await recording.resume();
+        now = 6000;
+        await recording.externalData({ payload: 1 }, 'ra-1', 1500);
+        assert.equal(rows.at(-1).time, 1500);
+        assert.equal(rows.at(-1).pausedOffset, 0);
+    });
+
+    it('counts only the pause elapsed before an action that started inside it', async () => {
+        const recording = new Recording('policy-1', 'did:owner');
+        await recording.start();
+        now = 2000;
+        await recording.pause();
+        now = 5000;
+        await recording.resume();
+        now = 6000;
+        await recording.externalData({ payload: 1 }, 'ra-1', 3000);
+        assert.equal(rows.at(-1).time, 3000);
+        assert.equal(rows.at(-1).pausedOffset, 1000);
+    });
+
+    it('leaves the paused total at zero when no pause was canceled', async () => {
+        const recording = new Recording('policy-1', 'did:owner');
+        await recording.start();
+        now = 4000;
+        await recording.selectGroup({ did: 'did:user' }, 'group-1');
+        now = 7000;
+        await recording.stop();
+        assert.equal(rows.at(-2).time, 4000);
+        assert.equal(rows.at(-2).pausedOffset, 0);
+        assert.equal(rows.at(-1).time, 7000);
+        assert.equal(rows.at(-1).pausedOffset, 0);
+    });
+
     it('clears the pause boundary in the status after stop', async () => {
         const recording = new Recording('policy-1', 'did:owner');
         await recording.start();
