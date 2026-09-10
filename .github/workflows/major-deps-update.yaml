@@ -31,9 +31,9 @@ jobs:
       - name: Find major updates
         id: ncu
         run: |
-          npx npm-check-updates --workspaces --target major --jsonUpgraded > majors.raw.json
-          # ncu emits a per-workspace map keyed by package.json path; flatten to one pkg -> version object
-          jq '[.[]] | add // {}' majors.raw.json > majors.json
+          npx npm-check-updates@22 --workspaces --root --target latest --jsonUpgraded > majors.raw.json
+          # ncu has no "major" target; keep only the breaking bumps and flatten to one pkg -> version object
+          node .github/scripts/filter-major-updates.mjs majors.raw.json majors.json
           echo "count=$(jq 'length' majors.json)" >> "$GITHUB_OUTPUT"
 
       - name: Close existing major-updates issue
