@@ -60478,11 +60478,19 @@ components:
           type: string
           description: Current status of the recording/running session
           example: New
+        pausedAt:
+          type: number
+          nullable: true
+          description: >-
+            Timestamp at which capture was paused, or null when capture is
+            running
+          example: 1757500000000
       required:
         - type
         - policyId
         - uuid
         - status
+        - pausedAt
     RecordActionDTO:
       type: object
       properties:
