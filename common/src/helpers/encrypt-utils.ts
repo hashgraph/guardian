@@ -2,7 +2,7 @@ import {
     CipherStrategy,
     decryptWithKeyDerivedFromString,
     encryptWithKeyDerivedFromString,
-} from '@meeco/cryppo';
+} from './cryppo/index.js';
 
 export class EncryptUtils {
     public static async encrypt(data: ArrayBuffer, key: string): Promise<ArrayBuffer> {
