@@ -5,7 +5,7 @@ import { FieldLinkDialog } from '../field-link-dialog/field-link-dialog.componen
 import { SchemaVariables } from '../../structures';
 import { Validators } from '@angular/forms';
 import { TreeListData, TreeListView } from 'src/app/modules/common/tree-graph/tree-list';
-import { Code, FieldLink, MathContext, MathFormula, MathEngine, setDocumentValueByPath, DocumentMap, formatDocument } from './math-model/index';
+import { Code, FieldLink, MathContext, MathFormula, MathEngine, setDocumentValueByPath, DocumentMap } from './math-model/index';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { MathGroups } from './math-model/math-groups';
 import { MathGroup } from './math-model/math-group';
@@ -1067,7 +1067,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
 
             let input: string = '';
             try {
-                input = inputDocument ? formatDocument(inputDocument) : '';
+                input = inputDocument ? JSON.stringify(inputDocument, null, 4) : '';
             } catch (error) {
                 input = '';
             }
@@ -1099,7 +1099,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 const output = builtCode();
                 let _output: string = '';
                 try {
-                    _output = output ? formatDocument(output) : '';
+                    _output = output ? JSON.stringify(output, null, 4) : '';
                 } catch (error) {
                     _output = '';
                 }
