@@ -467,28 +467,32 @@ export class PolicyImportExport {
         const metaDataString = metaDataFile && await metaDataFile[1].async('string') || '[]';
         //Artifact entries this archive could not resolve.
         const artifactErrors: IArtifactError[] = [];
-        const parsedMetaData = JSON.parse(metaDataString);
-        //A record object rather than a list would throw from find/map below and take
-        //every artifact with it. It degrades to "no records", and the file is reported
-        //once INSTEAD of one identical miss per entry - the entries are not the fault.
-        const metaDataUsable = Array.isArray(parsedMetaData);
+        //Unreadable metadata degrades to "no records" and is reported once, instead of
+        //throwing or blaming each entry for a file-level fault.
+        let parsedMetaData: any;
+        let metaDataFault: string | null = null;
+        try {
+            parsedMetaData = JSON.parse(metaDataString);
+            if (!Array.isArray(parsedMetaData)) {
+                metaDataFault = 'is not a list';
+            }
+        } catch (error) {
+            metaDataFault = 'is not valid JSON';
+        }
+        const metaDataUsable = !metaDataFault;
         const metaDataBody: any[] = metaDataUsable ? parsedMetaData : [];
-        if (!metaDataUsable) {
+        if (metaDataFault) {
             artifactErrors.push({
                 type: 'artifact',
                 name: 'artifacts/metadata.json',
-                error: 'Artifact metadata is not a list; no artifact in this archive could be resolved.'
+                error: `Artifact metadata ${metaDataFault}; no artifact in this archive could be resolved.`
             });
         }
 
         let artifacts: any;
         if (includeArtifactsData) {
-            /*
-             * A missing metadata record used to dereference `undefined` inside a
-             * Promise.all, so one bad entry aborted the whole import with a raw
-             * TypeError. Three ways in, none needing malice: no metadata.json, a
-             * truncated archive, or a nested path whose split('/')[1] matches no uuid.
-             */
+            //a missing record used to dereference `undefined` inside a Promise.all, so
+            //one bad entry aborted the whole import
             const artifactEntries = fileEntries.filter(
                 file => /^artifacts\/.+/.test(file[0]) && file[0] !== 'artifacts/metadata.json'
             );

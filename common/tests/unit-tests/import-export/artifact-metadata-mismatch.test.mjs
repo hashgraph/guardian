@@ -7,10 +7,12 @@ import { PolicyImportExport } from '../../../dist/import-export/policy.js';
 
 const POLICY = { name: 'p', config: {} };
 
-async function archive({ metadata, artifacts = {} }) {
+async function archive({ metadata, rawMetadata, artifacts = {} }) {
     const zip = new JSZip();
     zip.file('policy.json', JSON.stringify(POLICY));
-    if (metadata !== undefined) {
+    if (rawMetadata !== undefined) {
+        zip.file('artifacts/metadata.json', rawMetadata);
+    } else if (metadata !== undefined) {
         zip.file('artifacts/metadata.json', JSON.stringify(metadata));
     }
     for (const [name, body] of Object.entries(artifacts)) {
@@ -91,6 +93,27 @@ describe('@unit artifact metadata mismatch', function () {
 
     it('a non-list metadata.json is survivable in preview mode too', async () => {
         const buffer = await archive({ metadata: {}, artifacts: { u1: 'data' } });
+        const result = await PolicyImportExport.parseZipFile(buffer, false);
+        assert.deepEqual(result.artifacts, []);
+    });
+
+    it('a truncated metadata.json is reported, not thrown', async () => {
+        // JSON.parse itself throws a SyntaxError - the Array.isArray check only sees
+        // values parse already returned, so it never covered this
+        const buffer = await archive({
+            rawMetadata: '[{"uuid":',
+            artifacts: { u1: 'a', u2: 'b' },
+        });
+
+        const result = await parse(buffer);
+
+        assert.deepEqual(result.artifacts, []);
+        assert.deepEqual(result.artifactErrors.map(e => e.name), ['artifacts/metadata.json']);
+        assert.match(result.artifactErrors[0].error, /not valid JSON/);
+    });
+
+    it('a truncated metadata.json is survivable in preview mode too', async () => {
+        const buffer = await archive({ rawMetadata: '[{"uuid":', artifacts: { u1: 'a' } });
         const result = await PolicyImportExport.parseZipFile(buffer, false);
         assert.deepEqual(result.artifacts, []);
     });
