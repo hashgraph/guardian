@@ -23,7 +23,7 @@ Visit that section for additional details and advanced topics.
 
 ### Ready for your first steps?
 
-After installation, follow the [hello world tutorial here in the docs](standard-registry.md) or directly within the Guardian to learn about core concepts hands on.
+After installation, follow the [hello world tutorial here in the docs](hello-world-tutorial.md) or directly within the Guardian to learn about core concepts hands on.
 
 {% include "../../.gitbook/includes/footer-have-questions-or-suggestions.md" %}
 

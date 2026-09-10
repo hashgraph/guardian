@@ -8,7 +8,7 @@
   * [Installation Guide](guardian/getting-started/installation-guide.md)
   * [Guardian Glossary](guardian/getting-started/guardian-glossary.md)
   * [Frameworks/Libraries](guardian/getting-started/built-with.md)
-  * [First steps with Guardian: A hello world tutorial](guardian/getting-started/standard-registry.md)
+  * [First steps with Guardian: A hello world tutorial](guardian/getting-started/hello-world-tutorial.md)
 * [Architecture](guardian/architecture/README.md)
   * [High Level Architecture](guardian/architecture/architecture-2.md)
   * [Deep Dive Architecture](guardian/architecture/reference-architecture.md)

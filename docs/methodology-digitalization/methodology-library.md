@@ -29,7 +29,7 @@ A policy is the general Guardian construct for a digital workflow. The Methodolo
 
 **Related**
 
-* Task: [Import a Policy from the Methodology Library](../guardian/getting-started/standard-registry.md)
+* Task: [Import a Policy from the Methodology Library](../guardian/getting-started/hello-world-tutorial.md)
 * Reference: [Policy Manifest Spec RFC](../community-and-contributing/community-standards/rfcs/policy_manifest_prd.md)
 * Concept: [Methodology Digitalization Best Practices](methodology-digitalization-best-practices.md)
 * Concept: [Policies](../guardian/workspace/policies/)
