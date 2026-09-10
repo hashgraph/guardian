@@ -30,7 +30,7 @@ function makeHarness() {
     HederaSDKHelper.setTransactionResponseCallback = () => {};
     restorers.push(() => { HederaSDKHelper.setTransactionResponseCallback = origTxCb; });
 
-    const worker = new Worker('w3c-key', 'w3c-proof', 'filebase-key', 'worker-release', fakeLogger);
+    const worker = new Worker('filebase-key', 'worker-release', fakeLogger);
     worker.connection = {
         subscribe() { return { async *[Symbol.asyncIterator]() {}, unsubscribe() {} }; },
         publish() {},
