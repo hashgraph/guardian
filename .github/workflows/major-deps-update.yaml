@@ -11,9 +11,8 @@ permissions:
 jobs:
   check-majors:
     runs-on: guardian-linux-medium
-    strategy:
-      matrix:
-        node-version: [ 20.20.2 ]
+    env:
+      NODE_VERSION: "24.18.1"
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
@@ -23,17 +22,17 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Find major updates
         id: ncu
         run: |
-          npx npm-check-updates --workspaces --target major --jsonUpgraded > majors.raw.json
-          # ncu emits a per-workspace map keyed by package.json path; flatten to one pkg -> version object
-          jq '[.[]] | add // {}' majors.raw.json > majors.json
+          npx npm-check-updates@22 --workspaces --root --target latest --jsonUpgraded > majors.raw.json
+          # ncu has no "major" target; keep only the breaking bumps and flatten to one pkg -> version object
+          node .github/scripts/filter-major-updates.mjs majors.raw.json majors.json
           echo "count=$(jq 'length' majors.json)" >> "$GITHUB_OUTPUT"
 
       - name: Close existing major-updates issue
