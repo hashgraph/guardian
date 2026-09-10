@@ -148,7 +148,7 @@ export class RecordControllerComponent implements OnInit {
                 }
                 this.recording = false;
                 this.updateActive();
-                this.policyTest.whenLoaded().then(() => {
+                this.policyTest.ensureLoaded(this.policyId).then(() => {
                     if (this.policyTest.shouldWarnBeforeStop()) {
                         return this.policyTest.setStopStage('warning').then(() => {
                             this.openNoOutputWarning();
@@ -241,7 +241,7 @@ export class RecordControllerComponent implements OnInit {
         this._stopPending = true;
         this.recording = false;
         this.updateActive();
-        this.policyTest.whenLoaded().then(() => {
+        this.policyTest.ensureLoaded(this.policyId).then(() => {
             if (this.policyTest.state.stopStage === 'warning') {
                 this.openNoOutputWarning();
                 return;

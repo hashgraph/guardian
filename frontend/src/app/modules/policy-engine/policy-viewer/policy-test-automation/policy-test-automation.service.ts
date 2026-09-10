@@ -76,6 +76,7 @@ export class PolicyTestAutomationService {
     private currentPolicyId: string | null = null;
     private dbPromise: Promise<IDBPDatabase> | null = null;
     private loadPromise: Promise<void> = Promise.resolve();
+    private loaded = false;
     private _recordSub: Subscription | null = null;
     private readonly _captureSubject$ = new Subject<{ caseId: string; policyId: string; recordActionId: string }>();
     private readonly _wsSignal$ = new Subject<{ policyId: string; status: string }>();
@@ -120,11 +121,20 @@ export class PolicyTestAutomationService {
 
     public loadForPolicy(policyId: string): void {
         this.currentPolicyId = policyId;
+        this.loaded = false;
         this.stateSubject.next(createInitialState());
         this.loadPromise = this.loadFromIdb(policyId);
     }
 
-    public whenLoaded(): Promise<void> {
+    public ensureLoaded(policyId: string): Promise<void> {
+        if (this.currentPolicyId !== policyId) {
+            if (this.currentPolicyId) {
+                this.stateSubject.next(createInitialState());
+            }
+            this.currentPolicyId = policyId;
+            this.loaded = false;
+            this.loadPromise = this.loadFromIdb(policyId);
+        }
         return this.loadPromise;
     }
 
@@ -307,7 +317,12 @@ export class PolicyTestAutomationService {
                     });
                 });
             }
-        } catch { }
+        } catch {
+        } finally {
+            if (this.currentPolicyId === policyId) {
+                this.loaded = true;
+            }
+        }
     }
 
     private update(patch: Partial<PolicyTestAutomationState>): void {
@@ -318,7 +333,7 @@ export class PolicyTestAutomationService {
     }
 
     private persistToIdb(): Promise<void> {
-        if (!this.currentPolicyId) { return Promise.resolve(); }
+        if (!this.currentPolicyId || !this.loaded) { return Promise.resolve(); }
         const policyId = this.currentPolicyId;
         const { captureNextFormSubmit, testCases, stopStage } = this.state;
         const lightweight = testCases.map((tc) => ({

@@ -49,12 +49,12 @@ describe('RecordControllerComponent stop flow', () => {
             'getRecordMetadata',
             'reset',
             'setStopStage',
-            'whenLoaded',
+            'ensureLoaded',
         ], {
             state: policyTestState,
         });
         policyTest.shouldWarnBeforeStop.and.returnValue(false);
-        policyTest.whenLoaded.and.returnValue(Promise.resolve());
+        policyTest.ensureLoaded.and.returnValue(Promise.resolve());
         policyTest.setStopStage.and.callFake((stage: any) => {
             policyTestState.stopStage = stage;
             return Promise.resolve();
@@ -109,7 +109,7 @@ describe('RecordControllerComponent stop flow', () => {
 
     it('waits for the draft to load before choosing a dialog', async () => {
         let loadResolve: () => void = () => {};
-        policyTest.whenLoaded.and.returnValue(new Promise<void>((resolve) => {
+        policyTest.ensureLoaded.and.returnValue(new Promise<void>((resolve) => {
             loadResolve = resolve;
         }));
         policyTest.shouldWarnBeforeStop.and.returnValue(false);
@@ -345,6 +345,37 @@ describe('RecordControllerComponent stop flow', () => {
             SavePolicyTestRecordDialog,
             jasmine.anything()
         );
+    });
+
+    it('reopens the stored warning when the draft loads after the restore starts', async () => {
+        let loadResolve: () => void = () => {};
+        policyTest.ensureLoaded.and.returnValue(new Promise<void>((resolve) => {
+            loadResolve = resolve;
+        }));
+        component['updateRecordLogs']({
+            type: 'Recording',
+            uuid: 'record-1',
+            status: 'Recording',
+            pausedAt: 1757500000000
+        });
+        await flush();
+        expect(dialog.open).not.toHaveBeenCalled();
+        policyTestState.stopStage = 'warning';
+        loadResolve();
+        await flush();
+        expect(dialog.open).toHaveBeenCalledOnceWith(ConfirmDialog, jasmine.anything());
+        expect(policyTest.setStopStage).not.toHaveBeenCalledWith('save');
+    });
+
+    it('asks the draft service for the policy it is restoring', async () => {
+        component['updateRecordLogs']({
+            type: 'Recording',
+            uuid: 'record-1',
+            status: 'Recording',
+            pausedAt: 1757500000000
+        });
+        await flush();
+        expect(policyTest.ensureLoaded).toHaveBeenCalledWith('policy-1');
     });
 
     it('opens no dialog when the status carries no pause boundary', async () => {
