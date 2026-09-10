@@ -118,6 +118,33 @@ describe('@unit Worker runTask releases the worker on every exit path', () => {
         assert.equal(h.worker.currentTaskId, null);
     });
 
+    it('a throwing catch body does not escape as an unhandled rejection', async () => {
+        // the finally guarantees the release, but the catch bodies can throw themselves,
+        // and both call sites are fire-and-forget. Mocha installs its own
+        // unhandledRejection listener, so asserting on state alone hides this.
+        h = makeHarness();
+        h.captured.publishThrowsOn = WorkerEvents.WORKER_READY;
+        await h.worker.init();
+        h.worker.logger = {
+            ...fakeLogger,
+            error: () => { throw new Error('logger unavailable'); },
+        };
+
+        const escaped = [];
+        const onUnhandled = (reason) => escaped.push(reason);
+        process.on('unhandledRejection', onUnhandled);
+        try {
+            await dispatch(h);
+            await new Promise((r) => setTimeout(r, 50));
+        } finally {
+            process.off('unhandledRejection', onUnhandled);
+        }
+
+        assert.equal(escaped.length, 0,
+            `runTask rejected into the process: ${escaped.map((e) => e?.message).join(', ')}`);
+        assert.equal(h.worker.isInUse, false, 'and the worker is still released');
+    });
+
     it('still answers GET_FREE_WORKERS after a failed task', async () => {
         h = makeHarness();
         await h.worker.init();

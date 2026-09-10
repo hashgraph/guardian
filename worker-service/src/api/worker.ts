@@ -253,7 +253,9 @@ export class Worker extends NatsService {
 
         this.getMessages([this.replySubject, WorkerEvents.SEND_TASK_TO_WORKER].join('.'), async (task) => {
             if (!this.isInUse) {
-                runTask(task);
+                //fire-and-forget: without this a throw from runTask's own error handling
+                //is an unhandled rejection, which takes the process down
+                runTask(task).catch((error) => this.logTaskFailure(error, task));
 
                 return new MessageResponse({
                     result: true
@@ -266,7 +268,8 @@ export class Worker extends NatsService {
 
         this.getMessages([this.replySubject, WorkerEvents.SEND_TASK_TO_WORKER_DIRECT].join('.'), async (task) => {
             if (!this.isInUse) {
-                runTask(task, WorkerEvents.TASK_COMPLETE_DIRECT);
+                runTask(task, WorkerEvents.TASK_COMPLETE_DIRECT)
+                    .catch((error) => this.logTaskFailure(error, task));
 
                 return new MessageResponse({
                     result: true
@@ -320,6 +323,19 @@ export class Worker extends NatsService {
                 throw new Error(`Worker (${['api-gateway', 'update-user-balance'].join('.')}) send: ` + error);
             }
         })
+    }
+
+    /**
+     * Last-resort handler for a runTask rejection. The task is already released by the
+     * time this runs; this only keeps the rejection from reaching the process.
+     * @private
+     */
+    private logTaskFailure(error: any, task: any): void {
+        try {
+            console.error(`Task ${task?.id} failed after release: ${error?.message ?? error}`);
+        } catch {
+            // nothing left to report with
+        }
     }
 
     /**
