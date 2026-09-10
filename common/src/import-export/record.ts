@@ -175,7 +175,7 @@ export class RecordImportExport {
     public static async generateSingleRecordZip(
     record: Record,
     results?: IRecordResult[]): Promise<JSZip> {
-        const baseTime = record.time ? Number(record.time) : Date.now();
+        const baseTime = record.time ? RecordImportExport.elapsedTime(record) : Date.now();
 
         const components: IRecordComponents = {
             records: [record],
@@ -216,6 +216,17 @@ export class RecordImportExport {
 
     private static duration(first: string | number | Date, last: string | number | Date): number {
         return (Number(last) - Number(first));
+    }
+
+    /**
+     * Get elapsed recording time, with paused time removed
+     * @param item
+     *
+     * @returns time
+     * @private
+     */
+    private static elapsedTime(item: any): number {
+        return Number(item?.time) - Number(item?.pausedOffset || 0);
     }
 
     /**
@@ -348,7 +359,10 @@ export class RecordImportExport {
         const time: any = first ? first.time : null;
         if (first && last) {
             const results = await RecordImportExport.loadRecordResults(first.policyId, first.time, last.time);
-            const duration = RecordImportExport.duration(first.time, last.time);
+            const duration = RecordImportExport.duration(
+                RecordImportExport.elapsedTime(first),
+                RecordImportExport.elapsedTime(last)
+            );
             return { records, time, duration, results };
         } else {
             return { records, time, duration: 0, results: [] };
@@ -389,7 +403,7 @@ export class RecordImportExport {
         for (const item of components.records) {
             const row = [
                 item.method,
-                RecordImportExport.diffTime(item.time, components.time)
+                RecordImportExport.diffTime(RecordImportExport.elapsedTime(item), components.time)
             ];
             if (item.method === 'START') {
                 row.push('');
