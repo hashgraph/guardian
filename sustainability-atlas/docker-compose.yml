@@ -116,7 +116,7 @@ services:
             DB_PORT: '5432'
             REDICT_HOST: redict
             REDICT_PORT: '6379'
-            IPFS_GATEWAYS: http://ipfs:8080/ipfs/,https://${cid}.ipfs.w3s.link
+            IPFS_GATEWAYS: http://ipfs:8080/ipfs/,https://ipfs.io/ipfs/{cid}
             # Persist decoded policy zips on the host so they survive container
             # rebuilds and can be packaged into a snapshot.
             POLICY_ZIP_STORAGE_PATH: /app/data/policy-zips
@@ -149,7 +149,7 @@ services:
             DB_PORT: '5432'
             REDICT_HOST: redict
             REDICT_PORT: '6379'
-            IPFS_GATEWAYS: http://ipfs:8080/ipfs/,https://${cid}.ipfs.w3s.link
+            IPFS_GATEWAYS: http://ipfs:8080/ipfs/,https://ipfs.io/ipfs/{cid}
             POLICY_ZIP_STORAGE_PATH: /app/data/policy-zips
         volumes:
             - ./data/policy-zips:/app/data/policy-zips
