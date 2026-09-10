@@ -485,6 +485,10 @@ export class PolicyUtils {
         // an explicit `equal` null check must fail closed here - otherwise not_equal/
         // not_in trivially pass for a side that lacks the field, validating nothing.
         if (left === null || left === undefined) {
+            // Both sides unresolved - nothing to compare, so the condition is not applicable.
+            if (right === null || right === undefined) {
+                return true;
+            }
             return type === 'equal' && PolicyUtils.coerceComparable(right) === null;
         }
         switch (type) {

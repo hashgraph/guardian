@@ -39,6 +39,60 @@ describe('PolicyUtils.checkDocumentField', () => {
         });
     });
 
+    describe('unresolved operands', () => {
+        // [operator, satisfying pair, violating pair]
+        const CASES = [
+            ['equal',     ['A', 'A'],   ['A', 'B']],
+            ['not_equal', ['A', 'B'],   ['A', 'A']],
+            ['gt',        [10, 5],      [5, 10]],
+            ['gte',       [5, 5],       [4, 5]],
+            ['lt',        [5, 10],      [10, 5]],
+            ['lte',       [5, 5],       [6, 5]],
+            ['in',        ['B', 'A,B,C'], ['D', 'A,B,C']],
+            ['not_in',    ['D', 'A,B,C'], ['B', 'A,B,C']],
+        ];
+
+        it('both sides absent: not applicable, for every operator', () => {
+            for (const [type] of CASES) {
+                assert.equal(PolicyUtils.evaluateFieldCondition(null, type, null), true, type);
+                assert.equal(PolicyUtils.evaluateFieldCondition(undefined, type, undefined), true, type);
+            }
+        });
+
+        it('absent left against a present right still fails closed, for every operator', () => {
+            for (const [type, [, right]] of CASES) {
+                assert.equal(PolicyUtils.evaluateFieldCondition(null, type, right), false, type);
+            }
+            assert.equal(PolicyUtils.evaluateFieldCondition(null, 'equal', 'null'), true);
+        });
+
+        it('both sides present: unchanged, for every operator', () => {
+            for (const [type, ok, bad] of CASES) {
+                assert.equal(PolicyUtils.evaluateFieldCondition(ok[0], type, ok[1]), true, `${type} pass`);
+                assert.equal(PolicyUtils.evaluateFieldCondition(bad[0], type, bad[1]), false, `${type} fail`);
+            }
+        });
+
+        it('a rule against a configured value cannot be bypassed by omitting the field', () => {
+            for (const [type, , bad] of CASES) {
+                const f = { field: 'document.credentialSubject.0.missing', type, valueSource: 'value', value: bad[1] };
+                assert.equal(PolicyUtils.checkDocumentField(doc({}), f), false, type);
+            }
+        });
+
+        it('a condition on a schema branch the document omits does not block it', () => {
+            // if/then/else discriminator: cert_type "A" forbids branch_b entirely
+            const d = doc({ cert_type: 'A', branch_a: { from: '2024-01-01', to: '2024-06-01' } });
+            const cond = (field, value) => ({ field, type: 'gte', valueSource: 'document', value });
+            assert.equal(PolicyUtils.checkDocumentField(d, cond(
+                'document.credentialSubject.0.branch_a.to',
+                'document.credentialSubject.0.branch_a.from')), true);
+            assert.equal(PolicyUtils.checkDocumentField(d, cond(
+                'document.credentialSubject.0.branch_b.to',
+                'document.credentialSubject.0.branch_b.from')), true);
+        });
+    });
+
     describe('in / not_in (comma-separated list)', () => {
         it('in: field value is in the list', () => {
             assert.equal(PolicyUtils.checkDocumentField(doc({ type: 'B' }), filter('document.credentialSubject.0.type', 'in', 'A,B,C')), true);
