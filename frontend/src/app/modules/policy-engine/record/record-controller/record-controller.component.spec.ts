@@ -131,6 +131,64 @@ describe('RecordControllerComponent stop flow', () => {
         expect(dialog.open).not.toHaveBeenCalled();
     });
 
+    it('clears the stale recording panel when pause answers falsy', async () => {
+        recordService.pauseRecording.and.returnValue(of(false));
+        recordService.getStatus.and.returnValue(of(null));
+        component.stopRecording();
+        await flush();
+        expect(recordService.getStatus).toHaveBeenCalledWith('policy-1');
+        expect(component.recording).toBeFalse();
+        expect(dialog.open).not.toHaveBeenCalled();
+    });
+
+    it('allows a new stop flow after a falsy pause', async () => {
+        recordService.pauseRecording.and.returnValue(of(false));
+        component.stopRecording();
+        await flush();
+        recordService.pauseRecording.and.returnValue(of(true));
+        component.stopRecording();
+        await flush();
+        expect(dialog.open).toHaveBeenCalledWith(
+            SavePolicyTestRecordDialog,
+            jasmine.anything()
+        );
+    });
+
+    it('restores a still-active recording when resume answers falsy', async () => {
+        recordService.pauseRecording.and.returnValue(of(true));
+        recordService.resumeRecording.and.returnValue(of(false));
+        recordService.getStatus.and.returnValue(of({
+            type: 'Recording',
+            uuid: 'record-1',
+            status: 'Recording',
+            pausedAt: null
+        }));
+        component.stopRecording();
+        await flush();
+        expect(component.recording).toBeFalse();
+        saveClose.next(null);
+        await flush();
+        expect(recordService.getStatus).toHaveBeenCalledWith('policy-1');
+        expect(component.recording).toBeTrue();
+    });
+
+    it('reopens the stop flow when resume answers falsy on a paused recording', async () => {
+        recordService.pauseRecording.and.returnValue(of(true));
+        recordService.resumeRecording.and.returnValue(of(false));
+        component.stopRecording();
+        await flush();
+        recordService.getStatus.and.returnValue(of({
+            type: 'Recording',
+            uuid: 'record-1',
+            status: 'Recording',
+            pausedAt: 1757500000000
+        }));
+        saveClose.next(null);
+        await flush();
+        expect(component.recording).toBeFalse();
+        expect(dialog.open).toHaveBeenCalledTimes(2);
+    });
+
     it('pauses before the no-output warning is shown', async () => {
         policyTest.shouldWarnBeforeStop.and.returnValue(true);
         recordService.pauseRecording.and.returnValue(of(true));

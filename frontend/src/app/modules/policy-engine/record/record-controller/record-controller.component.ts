@@ -139,25 +139,29 @@ export class RecordControllerComponent implements OnInit {
     }
 
     private pauseAndOpenStopFlow(): void {
-        this.recordService.pauseRecording(this.policyId).subscribe((result) => {
-            if (!result) {
-                this._stopPending = false;
-                return;
-            }
-            this.recording = false;
-            this.updateActive();
-            this.policyTest.whenLoaded().then(() => {
-                if (this.policyTest.shouldWarnBeforeStop()) {
-                    return this.policyTest.setStopStage('warning').then(() => {
-                        this.openNoOutputWarning();
-                    });
+        this.recordService.pauseRecording(this.policyId).subscribe({
+            next: (result) => {
+                if (!result) {
+                    this._stopPending = false;
+                    this.loadStatus();
+                    return;
                 }
-                return this.policyTest.setStopStage('save').then(() => {
-                    this.openSaveRecordDialog();
+                this.recording = false;
+                this.updateActive();
+                this.policyTest.whenLoaded().then(() => {
+                    if (this.policyTest.shouldWarnBeforeStop()) {
+                        return this.policyTest.setStopStage('warning').then(() => {
+                            this.openNoOutputWarning();
+                        });
+                    }
+                    return this.policyTest.setStopStage('save').then(() => {
+                        this.openSaveRecordDialog();
+                    });
                 });
-            });
-        }, () => {
-            this._stopPending = false;
+            },
+            error: () => {
+                this._stopPending = false;
+            }
         });
     }
 
@@ -214,14 +218,19 @@ export class RecordControllerComponent implements OnInit {
     }
 
     private resumeRecording(): void {
-        this.recordService.resumeRecording(this.policyId).subscribe((result) => {
-            if (result) {
-                this.recording = true;
-                this.updateActive();
+        this.recordService.resumeRecording(this.policyId).subscribe({
+            next: (result) => {
+                this._stopPending = false;
+                if (result) {
+                    this.recording = true;
+                    this.updateActive();
+                    return;
+                }
+                this.loadStatus();
+            },
+            error: () => {
+                this._stopPending = false;
             }
-            this._stopPending = false;
-        }, () => {
-            this._stopPending = false;
         });
     }
 
@@ -251,30 +260,33 @@ export class RecordControllerComponent implements OnInit {
             saveMetadata,
             !this.policyTest.shouldWarnBeforeStop()
         );
-        this.recordService.stopRecording(this.policyId, { policyTest }).subscribe((fileBuffer) => {
-            this.recording = false;
-            this.running = false;
-            this.updateActive();
-            this.loading = false;
-            this.policyTest.reset();
-            this._stopPending = false;
-            if (saveMetadata.saveToFile !== false) {
-                const downloadLink = document.createElement('a');
-                downloadLink.href = window.URL.createObjectURL(
-                    new Blob([new Uint8Array(fileBuffer)], {
-                        type: 'application/guardian-policy-record'
-                    }));
-                downloadLink.setAttribute('download', filename);
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
+        this.recordService.stopRecording(this.policyId, { policyTest }).subscribe({
+            next: (fileBuffer) => {
+                this.recording = false;
+                this.running = false;
+                this.updateActive();
+                this.loading = false;
+                this.policyTest.reset();
+                this._stopPending = false;
+                if (saveMetadata.saveToFile !== false) {
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = window.URL.createObjectURL(
+                        new Blob([new Uint8Array(fileBuffer)], {
+                            type: 'application/guardian-policy-record'
+                        }));
+                    downloadLink.setAttribute('download', filename);
+                    document.body.appendChild(downloadLink);
+                    downloadLink.click();
+                }
+            },
+            error: () => {
+                this.recording = false;
+                this.running = false;
+                this.updateActive();
+                this.loading = false;
+                this.policyTest.reset();
+                this._stopPending = false;
             }
-        }, (e) => {
-            this.recording = false;
-            this.running = false;
-            this.updateActive();
-            this.loading = false;
-            this.policyTest.reset();
-            this._stopPending = false;
         });
     }
 
