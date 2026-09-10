@@ -279,15 +279,34 @@ export class PolicyContainer extends NatsService {
         this.subscribeForModelGeneration();
     }
     /**
+     * Whether a start request asks for the same process the policy already has.
+     */
+    private static sameStartOptions(a: IPolicyStartOptions, b: IPolicyStartOptions): boolean {
+        return !!a.enableMock === !!b.enableMock
+            && !!a.skipRegistration === !!b.skipRegistration;
+    }
+
+    /**
      * Add policy to run queue
      * @param config
      */
     public addPolicy(config: IPolicyStartOptions): boolean {
-        // Already hosted here: keep the existing entry. Replacing it would hand
-        // runPolicyProcess a `process: null` instance and defeat its guard, forking a
-        // second child while the first keeps running and stays subscribed. Checked
-        // before the capacity test because re-adding a hosted policy costs no slot.
-        if (this.container.has(config.policyId)) {
+        // Already hosted here: keep the existing entry rather than replacing it, which
+        // would hand runPolicyProcess a `process: null` instance and fork a second child.
+        const hosted = this.container.get(config.policyId);
+        if (hosted) {
+            // ...but only claim it when the request matches what the child was forked
+            // with. Accepting a different enableMock/skipRegistration would serve it
+            // from the old process while the caller waits for a POLICY_READY that
+            // describes a policy it did not ask for; declining routes it to a pod that
+            // can honour it.
+            if (!PolicyContainer.sameStartOptions(hosted.options, config)) {
+                this.logger.warn(
+                    `Policy ${config.policyId} is already hosted with different start options; declining`,
+                    ['POLICY_SERVICE', config.policyId], config.policyOwnerId
+                );
+                return false;
+            }
             return true;
         }
 

@@ -244,6 +244,12 @@ export class PolicyEngine extends NatsService {
     private readonly inFlightStarts: Map<string, Promise<any>> = new Map();
 
     /**
+     * Ceiling on one start attempt, after which the entry is released so a later
+     * caller can retry rather than await a promise that will never settle.
+     */
+    private static readonly START_TIMEOUT_MS = 15 * 60 * 1000;
+
+    /**
      * Policy initialization errors container
      * @private
      */
@@ -2450,8 +2456,19 @@ export class PolicyEngine extends NatsService {
      * @param policyOwnerId
      */
     public async destroyModel(policyId: string, policyOwnerId: string | null): Promise<void> {
+        //a start in flight can no longer complete: the child exits with code 0 and no
+        //ready event follows, so the entry has to go with it
+        this.clearInFlightStart(policyId);
         PolicyServiceChannelsContainer.deletePolicyServiceChannel(policyId);
         new GuardiansService().sendPolicyMessage(PolicyEvents.DELETE_POLICY, policyId, { policyOwnerId });
+    }
+
+    /**
+     * Drop a recorded start attempt, so the next caller starts afresh.
+     * @param policyId
+     */
+    private clearInFlightStart(policyId: string): void {
+        this.inFlightStarts.delete(policyId);
     }
 
     /**
@@ -2464,12 +2481,25 @@ export class PolicyEngine extends NatsService {
             return inFlight;
         }
 
-        const start = this.startModel(policyId, enableMock)
+        // Bounded: startModel's confirmed branch waits on POLICY_READY with no timeout,
+        // and that event never arrives if policy-service gives up after
+        // maxRestartAttempts or the policy is destroyed mid-start. An unbounded entry
+        // would make every later caller await a promise that cannot settle, leaving the
+        // policy unstartable for the lifetime of the process.
+        let expiry: any;
+        const bound = new Promise((_resolve, reject) => {
+            expiry = setTimeout(
+                () => reject(new Error(`Policy ${policyId} did not start within ${PolicyEngine.START_TIMEOUT_MS}ms`)),
+                PolicyEngine.START_TIMEOUT_MS
+            );
+        });
+
+        const start = Promise.race([this.startModel(policyId, enableMock), bound])
             // Released before the caller settles, so a `.then` that starts the policy
             // again cannot observe a stale entry. `finally` runs too late for that.
             .then(
-                (result) => { this.inFlightStarts.delete(policyId); return result; },
-                (error) => { this.inFlightStarts.delete(policyId); throw error; }
+                (result) => { clearTimeout(expiry); this.clearInFlightStart(policyId); return result; },
+                (error) => { clearTimeout(expiry); this.clearInFlightStart(policyId); throw error; }
             );
         this.inFlightStarts.set(policyId, start);
         return start;
@@ -2554,6 +2584,7 @@ export class PolicyEngine extends NatsService {
      * @param policyOwnerId
      */
     public async destroyModelForMigration(policyId: string, policyOwnerId: string | null): Promise<void> {
+        this.clearInFlightStart(policyId);
         PolicyServiceChannelsContainer.deletePolicyServiceChannel(policyId);
 
         const guardians = new GuardiansService();

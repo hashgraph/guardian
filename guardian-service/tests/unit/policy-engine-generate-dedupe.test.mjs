@@ -2,17 +2,10 @@ import assert from 'node:assert/strict';
 import esmock from 'esmock';
 
 /*
- * A policy could be started twice and end up hosted by two policy-service pods.
- *
- * checkIfPolicyAlive is a short ping, and a policy needs tens of seconds from fork to
- * answering it. A second caller entering that window saw "not alive" and sent its own
- * GENERATE_POLICY, which a different pod accepted - addPolicy does not check whether
- * the policy is already hosted elsewhere. Both processes then joined the same NATS
- * queue group for the policy, so block requests were split between two instances with
- * divergent in-memory block state and roughly half returned "Block Unavailable".
- *
- * Every start path funnels through generateModel, so the guard belongs there:
- * concurrent callers join the attempt already running instead of racing it.
+ * A policy could be started twice and end up hosted by two pods: checkIfPolicyAlive is
+ * a short ping, and a policy needs tens of seconds from fork to answering it, so a
+ * second caller in that window sent its own GENERATE_POLICY and a different pod took
+ * it. Every start path funnels through generateModel, so the guard belongs there.
  */
 
 let PolicyEngine;
@@ -28,6 +21,7 @@ async function loadEngine() {
                 GuardiansService: class {
                     constructor() {}
                     async checkIfPolicyAlive() { return false; }
+                    sendPolicyMessage() {}
                 },
             },
         },
@@ -117,6 +111,39 @@ describe('@unit PolicyEngine.generateModel start dedupe', () => {
         assert.deepEqual(sent, ['p1', 'p1'], 'a failed start must not wedge the guard shut');
         engine.policyReadyCallbacks.get('p1')({ ok: true }, null);
         await second;
+    });
+
+    it('a start that never settles is released, so a later caller can retry', async () => {
+        // startModel's confirmed branch waits on POLICY_READY with no timeout, and that
+        // event never arrives when policy-service gives up after maxRestartAttempts or
+        // the policy is destroyed mid-start. An unbounded entry would leave the policy
+        // unstartable for the lifetime of the process.
+        const sent = [];
+        const engine = makeEngine(sent);
+        const realTimeout = PolicyEngine.START_TIMEOUT_MS;
+        PolicyEngine.START_TIMEOUT_MS = 30;
+        engine.startModel = () => new Promise(() => { });   // never settles
+
+        try {
+            await assert.rejects(engine.generateModel('p1', false), /did not start within/);
+        } finally {
+            PolicyEngine.START_TIMEOUT_MS = realTimeout;
+        }
+
+        assert.equal(engine.inFlightStarts.has('p1'), false,
+            'the dead attempt must not be handed to the next caller');
+    });
+
+    it('destroying a policy drops a start still in flight', async () => {
+        const engine = makeEngine([]);
+        engine.startModel = () => new Promise(() => { });
+        engine.generateModel('p1', false).catch(() => { });
+
+        assert.equal(engine.inFlightStarts.has('p1'), true, 'precondition');
+        await engine.destroyModel('p1', 'owner');
+
+        assert.equal(engine.inFlightStarts.has('p1'), false,
+            'the child exits with code 0 and no ready event follows');
     });
 
     it('a caller joining an in-flight start receives its failure too', async () => {
