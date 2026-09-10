@@ -108,8 +108,8 @@ function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
 
 function encodeSafe64(bytes: Uint8Array): string {
     let binary = '';
-    for (let i = 0; i < bytes.length; i++) {
-        binary += String.fromCharCode(bytes[i]);
+    for (const byte of bytes) {
+        binary += String.fromCharCode(byte);
     }
     // Padding is intentionally kept - see the format note above.
     return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_');
@@ -222,6 +222,23 @@ export function readArtifacts(segment: string, versionByte: string): BsonDocumen
 }
 
 /** Exported so the test suite can assert the artifact codec is byte-exact. */
+/**
+ * The artifact documents are index signatures, so their fields have to be read through
+ * brackets. Going through a variable key keeps both `common`'s lint rules and the indexer
+ * frontend's `noPropertyAccessFromIndexSignature` satisfied.
+ */
+function bsonBytes(document: BsonDocument, field: string): Uint8Array {
+    return document[field] as Uint8Array;
+}
+
+function bsonNumber(document: BsonDocument, field: string): number {
+    return document[field] as number;
+}
+
+function bsonText(document: BsonDocument, field: string, fallback: string): string {
+    return (document[field] as string) || fallback;
+}
+
 export function writeArtifacts(versionByte: string, fields: [string, BsonValue][]): string {
     return encodeSafe64(concatBytes([utf8ToBytes(versionByte), writeBsonDocument(fields)]));
 }
@@ -359,21 +376,21 @@ export async function decryptWithKeyDerivedFromString({
 
     const key = await deriveKey(
         passphrase,
-        derivation['iv'] as Uint8Array,
-        derivation['i'] as number,
-        derivation['l'] as number,
-        (derivation['hash'] as string) || DEFAULT_HASH,
+        bsonBytes(derivation, 'iv'),
+        bsonNumber(derivation, 'i'),
+        bsonNumber(derivation, 'l'),
+        bsonText(derivation, 'hash', DEFAULT_HASH),
         'decrypt'
     );
 
     // AES-GCM in WebCrypto expects the authentication tag appended to the ciphertext.
-    const sealed = concatBytes([decodeSafe64(payload), artifacts['at'] as Uint8Array]);
+    const sealed = concatBytes([decodeSafe64(payload), bsonBytes(artifacts, 'at')]);
     try {
         const decrypted = await crypto.subtle.decrypt(
             {
                 name: CipherStrategy.AES_GCM,
-                iv: toArrayBuffer(artifacts['iv'] as Uint8Array),
-                additionalData: toArrayBuffer(utf8ToBytes((artifacts['ad'] as string) || '')),
+                iv: toArrayBuffer(bsonBytes(artifacts, 'iv')),
+                additionalData: toArrayBuffer(utf8ToBytes(bsonText(artifacts, 'ad', ''))),
                 tagLength: TAG_LENGTH_BITS,
             },
             key,
