@@ -5,9 +5,10 @@
 ## Guardian
 
 * [Getting Started](guardian/getting-started/README.md)
-  * [Guardian Glossary](guardian/getting-started/guardian-glossary.md)
   * [Installation Guide](guardian/getting-started/installation-guide.md)
+  * [Guardian Glossary](guardian/getting-started/guardian-glossary.md)
   * [Frameworks/Libraries](guardian/getting-started/built-with.md)
+  * [First steps with Guardian: A hello world tutorial](guardian/getting-started/standard-registry.md)
 * [Architecture](guardian/architecture/README.md)
   * [High Level Architecture](guardian/architecture/architecture-2.md)
   * [Deep Dive Architecture](guardian/architecture/reference-architecture.md)
@@ -368,6 +369,7 @@
     * [Policy Workflow Step 25](guardian/tutorials/creating-a-policy-through-policy-configurator/policy-workflow-step-24-1.md)
     * [Policy Workflow Wrap Up](guardian/tutorials/creating-a-policy-through-policy-configurator/policy-workflow-wrap-up.md)
   * [VM0033 API Walkthrough](guardian/tutorials/vm0033-api-workthrough.md)
+  * [Review & Approval Workflows with VM0033 for Auditors & VVBs](guardian/tutorials/review-and-approval-vm0033.md)
   * [Renewable Energy Credits](guardian/tutorials/renewable-energy-credits/README.md)
     * [Introduction to International Renewable Energy Credit Standard (iREC)](guardian/tutorials/renewable-energy-credits/introduction-to-international-renewable-energy-credit-standard-irec.md)
     * [iREC API Demo Guide](guardian/tutorials/renewable-energy-credits/api-workflow-of-irec-demo.md)
@@ -430,7 +432,6 @@
     * [GHGP Corporate Standard](guardian/tutorials/carbon-emissions/ghgp-corporate-standard.md)
     * [GHGP Corporate Standard V2](guardian/tutorials/carbon-emissions/ghgp-corporate-standard-v2.md)
     * [Climate Action Reserve’s U.S. Landfill Protocol Version 6.0](guardian/tutorials/carbon-emissions/climate-action-reserves-u.s.-landfill-protocol-version-6.0.md)
-  * [Review & Approval Workflows with VM0033 for Auditors & VVBs](guardian/tutorials/review-and-approval-vm0033.md)
 
 ## Explorers
 
@@ -442,7 +443,7 @@
 ## Methodology Digitalization
 
 * [Methodology Digitalization Best Practices](methodology-digitalization/methodology-digitalization-best-practices.md)
-* [📚 Methodology Digitalization Handbook](methodology-digitalization/methodology-digitization-handbook/README.md)
+* [Methodology Digitalization Handbook](methodology-digitalization/methodology-digitization-handbook/README.md)
   * [📋 Table of Contents](methodology-digitalization/methodology-digitization-handbook/table-of-contents.md)
   * [📝 Chapter Outlines](methodology-digitalization/methodology-digitization-handbook/chapter-outlines.md)
   * [🏗️ Part I: Foundation and Preparation](methodology-digitalization/methodology-digitization-handbook/part-1/README.md)
@@ -483,6 +484,7 @@
     * [🔗 VM0033 Integration](methodology-digitalization/methodology-digitization-handbook/_shared/vm0033-integration.md)
     * [⚙️ Guardian Integration](methodology-digitalization/methodology-digitization-handbook/_shared/guardian-integration.md)
     * [🗂️ Artifacts Collection](methodology-digitalization/methodology-digitization-handbook/_shared/artifacts.md)
+* [Methodology Library](methodology-digitalization/methodology-library.md)
 
 ## Security, Identity, and Privacy
 
