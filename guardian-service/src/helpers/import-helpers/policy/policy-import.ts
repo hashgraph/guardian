@@ -90,6 +90,7 @@ export class PolicyImport {
     private importRecords = false;
     /** Source template id -> the template that binding resolved to on this instance. */
     public schemaTemplates: Map<string, SchemaTemplate> = new Map();
+    private artifactErrors: ImportPolicyError[] = [];
 
     constructor(mode: ImportMode, notifier: INotificationStep) {
         this.mode = mode;
@@ -1063,7 +1064,11 @@ export class PolicyImport {
             tools,
             tests,
             formulas,
+            artifactErrors,
         } = options.policyComponents;
+
+        //parse-time diagnostics, returned beside `errors` rather than in it
+        this.artifactErrors = artifactErrors || [];
 
         /*
          * A file written before the plural shape carries one binding under
@@ -1239,7 +1244,15 @@ export class PolicyImport {
         this.notifier.complete();
 
         const errors = await this.getErrors();
-        return { policy: row, errors };
+        if (this.artifactErrors.length) {
+            //not folded into `errors`: the policy imported, and a dropped attachment
+            //must not make the API report a failure the user cannot act on
+            await logger.warn(
+                `Policy ${row.id} imported with unresolved artifacts: ${this.artifactErrors.map(e => `${e.name}: ${e.error}`).join('; ')}`,
+                ['GUARDIAN_SERVICE'], userId
+            );
+        }
+        return { policy: row, errors, artifactErrors: this.artifactErrors };
     }
 
     private async copyPolicyRecords(policy: Policy, logger: PinoLogger, copySchemas: Schema[]): Promise<void> {
