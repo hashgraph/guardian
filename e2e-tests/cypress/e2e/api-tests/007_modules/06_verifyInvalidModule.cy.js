@@ -3,7 +3,7 @@ import { STATUS_CODE } from '../../../support/api/api-const';
 import * as Modules from '../../../support/api/modules';
 import * as Authorization from '../../../support/authorization';
 
-context('Validate Invalid Module', { tags: ['modules', 'thirdPool', 'all'] }, () => {
+context('Validate Invalid Module', { tags: ['modules', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const moduleName = Modules.uniqueModuleName('APIModuleInvalid');

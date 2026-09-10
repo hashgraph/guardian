@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
-context('Set role as default', { tags: ['permissions', 'firstPool', 'all'] }, () => {
+context('Set role as default', { tags: ['permissions', 'firstPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const roleName = 'Policy User';
 

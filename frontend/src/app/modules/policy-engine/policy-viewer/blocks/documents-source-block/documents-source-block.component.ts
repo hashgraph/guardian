@@ -308,14 +308,17 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 }
             })!;
             dialogRef.onClose.subscribe(async (result) => {
+                if (row.dryRunId) {
+                    // dry-run documents are never persisted as real VC records,
+                    // so the backend cannot resolve a count for this row.
+                    return;
+                }
                 this.commentsService
                     .getPolicyCommentsCount(this.policyId, row.id)
                     .subscribe(
                         (count) => {
                             row.comments = count?.count ?? row.comments;
                         },
-                        // not resolvable in dry-run. The row keeps its previous count
-                        // either way; this only stops the failure being swallowed.
                         (error) => console.error('[documents-source] comment count failed', error)
                     );
             });

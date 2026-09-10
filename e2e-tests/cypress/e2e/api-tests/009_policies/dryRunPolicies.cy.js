@@ -2,10 +2,10 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { seededMessageId } from '../../../support/CustomHelpers/ipfsSeeding';
 
-context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
+context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-    const policyMessageId = Cypress.env('irec_policy');
     const importMsgUrl = `${API.ApiServer}${API.PolicisImportMsg}`;
     const policiesUrl = `${API.ApiServer}${API.Policies}`;
     const dryRunBase = (policyId) => `${policiesUrl}${policyId}/${API.DryRun}`;
@@ -51,12 +51,14 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
         });
 
     before(() => {
-        Authorization.getAccessToken(SRUsername).then((authorization) => {
-            postWithAuth(authorization, importMsgUrl, { messageId: policyMessageId }, { timeout: 600000 })
-                .then((response) => {
-                    expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                    policyId = response.body.at(0).id;
-                });
+        seededMessageId('irec_policy').then((policyMessageId) => {
+            Authorization.getAccessToken(SRUsername).then((authorization) => {
+                postWithAuth(authorization, importMsgUrl, { messageId: policyMessageId }, { timeout: 600000 })
+                    .then((response) => {
+                        expect(response.status).to.eq(STATUS_CODE.SUCCESS);
+                        policyId = response.body.at(0).id;
+                    });
+            });
         });
     });
 

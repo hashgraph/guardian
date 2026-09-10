@@ -656,24 +656,31 @@ npm start
 
 ### Configuring a Hedera local network
 
-- Install a Hedera Local Network following the [official documentation](https://github.com/hashgraph/hedera-local-node#docker)
-- Configure Guardian's configuration files `/.env/.env.docker` accordingly:
+- Provision a single-node local network with [Solo](https://solo.hiero.org), which supersedes the
+  deprecated `hashgraph/hedera-local-node`. Guardian needs a consensus node and a mirror node; the
+  explorer, the JSON-RPC relay and the block node are not used.
+- Configure `./configs/.env.localnode.guardian.system` (already provided as an example) accordingly:
 
   ```shell
-  OPERATOR_ID=""
-  OPERATOR_KEY=""
+  HEDERA_NET="localnode"
+  PREUSED_HEDERA_NET="localnode"
   LOCALNODE_ADDRESS="11.11.11.11"
   LOCALNODE_PROTOCOL="http"
-  HEDERA_NET="localnode"
+  OPERATOR_ID=""
+  OPERATOR_KEY=""
+  INITIALIZATION_TOPIC_ID=""
   ```
+
+  and start the stack with `GUARDIAN_ENV=localnode docker compose up`.
 
 Note:
 
-- Set `LOCALNODE_ADDRESS` to the IP address of your local node instance. The value above is given as an example.
-- Set `HEDERA_NET` to `localnode`. If not specified, the default value is `testnet`.
+- Set `LOCALNODE_ADDRESS` to the address of your local node instance, as reachable from the Guardian services. The value above is given as an example; from inside a container it has to be `host.docker.internal`, not `127.0.0.1`.
+- Set `HEDERA_NET` to `localnode`. If not specified, the default value is `testnet`. Any other spelling (`local-node`, for instance) makes the services fail at startup.
 - Configure `OPERATOR_ID` and `OPERATOR_KEY` accordingly with your local node configuration.
-- Remove `INITIALIZATION_TOPIC_ID` as the topic will be created automatically.
+- Leave `INITIALIZATION_TOPIC_ID` empty, as the topic will be created automatically.
 - Set `LOCALNODE_PROTOCOL` to `http` or `https` accordingly with your local node configuration (it uses HTTP by default).
+- The retire/wipe contract File IDs are testnet-specific and have to be regenerated on a local network. See [Running against a local Hiero network](./e2e-tests/README.md#running-against-a-local-hiero-network), which also covers the exact Solo commands and the port forwards Guardian's `localnode` support requires.
 
 ### Configuring Hashicorp Vault
 

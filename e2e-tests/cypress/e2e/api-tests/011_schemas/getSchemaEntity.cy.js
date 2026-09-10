@@ -3,7 +3,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
-context('Schemas', { tags: ['schema', 'thirdPool', 'all'] }, () => {
+context('Schemas', { tags: ['schema', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     it('Find the schema using the schema type', () => {
