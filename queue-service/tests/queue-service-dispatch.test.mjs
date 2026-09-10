@@ -309,23 +309,42 @@ describe('QueueService.dispatchClaimedTask (stubbed DB + transport)', () => {
         assert.equal(calls.saved[0].dispatchAttempt, 1);
     });
 
-    // A DISPATCH_TIMEOUT means the ack deadline passed, not that the task was never delivered -
+    // A REQUEST_TIMEOUT means the ack deadline passed, not that the task was never delivered -
     // the worker only acks an out-of-band payload after fetching and parsing it in full, and a
     // genuinely hung worker times out regardless of delivery. Re-queueing on this (like a proven
     // transport error) could run a Hedera mint/transfer twice while the first attempt is still in
-    // flight, so it must leave the claim untouched instead of going through releaseOrParkTask.
-    it('leaves the claim untouched on an ack timeout instead of re-queueing or dead-lettering', async () => {
+    // flight, so the claim is kept in place; only the dispatch budget is spent, because
+    // clearLongPendingTasks is createDate-based and can never reclaim it.
+    it('keeps the claim on an ack timeout and only spends the dispatch budget', async () => {
         const error = new Error('Timeout exceed (w-1)');
-        error.code = 'DISPATCH_TIMEOUT';
+        error.code = 'REQUEST_TIMEOUT';
         service.sendMessageWithTimeout = async () => { throw error; };
         calls = stubDb({ found: makeTask({ dispatchAttempt: 0 }) });
 
         const task = makeTask({ dispatchAttempt: 0 });
         await service.dispatchClaimedTask({ subject: 'w-1' }, task, { id: 't-1' }, 1000);
 
-        assert.equal(calls.findOneFilters.length, 0);
-        assert.equal(calls.saved.length, 0);
+        assert.equal(calls.findOneFilters.length, 1);
+        assert.equal(calls.saved.length, 1);
+        assert.equal(calls.saved[0].dispatchAttempt, 1);
+        assert.equal(calls.saved[0].sent, true);
+        assert.ok(calls.saved[0].processedTime instanceof Date);
+        assert.equal(calls.saved[0].isError, false);
         assert.equal(calls.published.length, 0);
+    });
+
+    it('dead-letters once the dispatch budget is exhausted by ack timeouts', async () => {
+        const error = new Error('Timeout exceed (w-1)');
+        error.code = 'REQUEST_TIMEOUT';
+        service.sendMessageWithTimeout = async () => { throw error; };
+        calls = stubDb({ found: makeTask({ dispatchAttempt: service.dispatchMaxAttempts - 1 }) });
+
+        const task = makeTask();
+        await service.dispatchClaimedTask({ subject: 'w-1' }, task, { id: 't-1' }, 1000);
+
+        assert.equal(calls.saved[0].isError, true);
+        assert.equal(calls.published.length, 1);
+        assert.equal(calls.published[0].subject, QueueEvents.TASK_COMPLETE);
     });
 
     it('resets the dispatch budget on success via a fresh read, not the stale snapshot', async () => {
