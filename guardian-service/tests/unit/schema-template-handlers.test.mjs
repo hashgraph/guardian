@@ -363,7 +363,7 @@ describe('schema template CRUD and query handlers', () => {
         assert.equal(response.body.template.version, '1.0.0');
     });
 
-    it('UPDATE_SCHEMA_TEMPLATE persists name, description and config', async () => {
+    it('UPDATE_SCHEMA_TEMPLATE persists name, description and config guidelines', async () => {
         let saved = null;
         stub(DatabaseServer, 'getSchemaTemplateById', async () => ({
             id: 'template-1',
@@ -377,14 +377,32 @@ describe('schema template CRUD and query handlers', () => {
 
         const response = await callHandler(handlers, MessageAPI.UPDATE_SCHEMA_TEMPLATE, {
             id: 'template-1',
-            template: { name: 'New', description: 'New desc', config: { schemas: {} } },
+            template: {
+                name: 'New',
+                description: 'New desc',
+                config: {
+                    schemas: {
+                        'template-schema-1': {
+                            schemaSettingsLocked: true,
+                            guidelines: 'Use the project schema for registration data.',
+                            fields: {
+                                'template-field-1': {
+                                    locked: false,
+                                    guidelines: 'Enter the external registry identifier.'
+                                }
+                            }
+                        }
+                    }
+                }
+            },
             owner
         });
 
         assert.equal(ok(response), true);
         assert.equal(saved.name, 'New');
         assert.equal(saved.description, 'New desc');
-        assert.deepEqual(saved.config, { schemas: {} });
+        assert.equal(saved.config.schemas['template-schema-1'].guidelines, 'Use the project schema for registration data.');
+        assert.equal(saved.config.schemas['template-schema-1'].fields['template-field-1'].guidelines, 'Enter the external registry identifier.');
     });
 
     it('DELETE_SCHEMA_TEMPLATE removes a draft not bound to any policy', async () => {
@@ -549,7 +567,18 @@ describe('APPLY_SCHEMA_TEMPLATE success path', () => {
                 status: ModuleStatus.DRAFT,
                 topicId: '0.0.20',
                 messageId: 'msg-1',
-                config: { schemas: {} }
+                config: {
+                    schemas: {
+                        'tpl-schema-1': {
+                            guidelines: 'Use this schema for project registration.',
+                            fields: {
+                                'tpl-field-1': {
+                                    guidelines: 'Use the external registry identifier.'
+                                }
+                            }
+                        }
+                    }
+                }
             }),
             getPolicyById: async () => ({
                 id: 'policy-1',
@@ -598,6 +627,8 @@ describe('APPLY_SCHEMA_TEMPLATE success path', () => {
         assert.ok(savedSnapshot.templateStateHash.length > 0, 'state hash is empty');
         assert.equal(savedSnapshot.templateId, 'template-1');
         assert.deepEqual(savedSnapshot.schemaMap, { 'tpl-schema-1': 'ps-1' });
+        assert.equal(savedSnapshot.config.schemas['tpl-schema-1'].guidelines, 'Use this schema for project registration.');
+        assert.equal(savedSnapshot.config.schemas['tpl-schema-1'].fields['tpl-field-1'].guidelines, 'Use the external registry identifier.');
 
         assert.ok(updatedPolicy, 'policy was not updated');
         assert.equal(updatedPolicy.schemaTemplates.length, 1);

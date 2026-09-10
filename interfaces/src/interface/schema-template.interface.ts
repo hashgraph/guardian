@@ -152,11 +152,13 @@ export interface ISchemaTemplateDetachPreview {
 
 export interface ISchemaTemplateFieldConfig {
     locked?: boolean;
+    guidelines?: string;
 }
 
 export interface ISchemaTemplateSchemaConfig {
     schemaSettingsLocked?: boolean;
     customFieldsLocked?: boolean;
+    guidelines?: string;
     fields?: Record<string, ISchemaTemplateFieldConfig>;
 }
 

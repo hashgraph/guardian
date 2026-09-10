@@ -35,6 +35,7 @@ tags:
 * **Can add custom fields** (`customFieldsLocked`): prevents adding custom fields to the schema.
 * **Can edit selected field** (`fields[fieldId].locked`): prevents editing and removing an individual template field.
   * Template-owned fields are locked by default; set `locked: false` explicitly to allow policy users to edit or remove the field.
+* **Guidelines** (`guidelines`): adds schema-level or field-level notes that are shown in the policy schema editor after the template is applied.
 
 ### Result
 
@@ -49,5 +50,6 @@ The template restriction can lock individual fields. Update the restriction befo
 ### Related
 
 * Concept: [Schema Templates Concept](./)
+* Task: [Configure Schema Template Guidelines](configure-schema-template-guidelines.md)
 * Task: [Apply a Schema Template](apply-a-schema-template.md)
 * Task: [Import a Schema Template](import-a-schema-template.md)
