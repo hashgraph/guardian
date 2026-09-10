@@ -1,33 +1,27 @@
 /**
  * Password-derived AES-256-GCM encryption, wire-compatible with `@meeco/cryppo`.
  *
- * This replaces the `@meeco/cryppo` dependency (and its `node-forge` / `bson` / `yaml`
- * transitive tree) with the ~1% of it Guardian actually used. It MUST keep reading the
- * existing serialized format: Hedera messages and IPFS documents published since 2023 were
+ * Replaces the `@meeco/cryppo` dependency with the small part of it Guardian used. It MUST keep
+ * reading the existing format: Hedera messages and IPFS documents published since 2023 were
  * encrypted with cryppo 2.x/3.x and cannot be re-encrypted.
  *
- * NOTE: a byte-compatible copy of this module lives at
- * `indexer-frontend/src/app/utils/cryppo.ts`. The two trees have separate dependency graphs
- * (the indexer frontend does not link Guardian's `common`), so the code is duplicated on
- * purpose - keep the two files in sync. The generated fixture vectors in both test suites
- * (`common/tests/fixtures/cryppo/legacy-vectors.json`) pin the shared wire format.
+ * NOTE: `indexer-frontend/src/app/utils/cryppo.ts` is a copy of this file - the two trees have
+ * separate dependency graphs, so keep them in sync. The generated fixtures in both test suites
+ * pin the wire format.
  *
  * Wire format, five dot-separated segments:
  *
  *     Aes256Gcm.safe64(ciphertext).safe64("A" + BSON{iv,at,ad}).Pbkdf2Hmac.safe64("K" + BSON{iv,i,l,hash})
  *
- * - `safe64` is base64 with `+`->`-` and `/`->`_`, padding RETAINED (cryppo mirrors Ruby's
- *   `Base64.urlsafe_encode64`, which keeps the `=`).
- * - Encryption artifacts (version byte `A`): `iv` 12 random bytes, `at` the 128-bit GCM tag,
- *   `ad` the literal string `"none"` - it is passed as AAD, not omitted.
- * - Derivation artifacts (version byte `K`): `iv` is the salt (20 random bytes), `i` the
- *   iteration count, `l` the derived key length, `hash` the PBKDF2 digest name.
+ * - `safe64` is base64 with `+`->`-` and `/`->`_`, padding RETAINED (Ruby `urlsafe_encode64`).
+ * - Encryption artifacts (version byte `A`): `iv`, `at` the GCM tag, `ad` the literal `"none"`,
+ *   which is passed as AAD rather than omitted.
+ * - Derivation artifacts (version byte `K`): `iv` is the salt, `i` iterations, `l` key length,
+ *   `hash` the PBKDF2 digest name.
  * - The key is PBKDF2-HMAC-SHA256 over the UTF-8 bytes of the passphrase.
  *
- * cryppo's legacy YAML artifact serialization and its UTF-16 passphrase fallback are not
- * implemented: both cryppo majors default to BSON artifacts and UTF-8 keys, and Guardian never
- * selected anything else, so no published document can use them. They are detected and
- * rejected explicitly rather than failing as a corrupt payload.
+ * cryppo's legacy YAML artifacts and UTF-16 passphrase fallback are rejected explicitly: both
+ * cryppo majors defaulted to BSON artifacts and UTF-8 keys, so no published document uses them.
  */
 
 const ENCRYPTION_STRATEGY = 'Aes256Gcm';
@@ -35,7 +29,6 @@ const KEY_DERIVATION_STRATEGY = 'Pbkdf2Hmac';
 const ENCRYPTION_ARTIFACTS_VERSION = 'A';
 const DERIVATION_ARTIFACTS_VERSION = 'K';
 
-/** cryppo passes the literal string 'none' as AES-GCM additional authenticated data. */
 const ADDITIONAL_DATA = 'none';
 const IV_LENGTH = 12;
 const TAG_LENGTH_BITS = 128;
@@ -95,10 +88,8 @@ function concatBytes(chunks: Uint8Array[]): Uint8Array {
 }
 
 /**
- * WebCrypto's `BufferSource` will not accept a `Uint8Array` view over an arbitrary buffer under
- * recent TypeScript lib definitions, so hand it a standalone ArrayBuffer. The payloads here are
- * small enough that the copy is irrelevant, and this keeps the file compiling on both the
- * TypeScript version used by `common` and the older one used by the indexer frontend.
+ * Recent TypeScript lib definitions reject a `Uint8Array` view over an arbitrary buffer where
+ * WebCrypto wants a `BufferSource`, so hand it a standalone ArrayBuffer. Payloads are small.
  */
 function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
     const copy = new ArrayBuffer(bytes.length);
@@ -111,7 +102,7 @@ function encodeSafe64(bytes: Uint8Array): string {
     for (const byte of bytes) {
         binary += String.fromCharCode(byte);
     }
-    // Padding is intentionally kept - see the format note above.
+    // Padding is kept deliberately - see the format note above.
     return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_');
 }
 
@@ -124,10 +115,7 @@ function decodeSafe64(text: string): Uint8Array {
     return bytes;
 }
 
-/**
- * Minimal BSON reader covering the three value types cryppo artifacts use. The leading int32
- * is the total document length (including itself and the trailing null terminator).
- */
+/** The leading int32 is the document length, including itself and the null terminator. */
 function readBsonDocument(bytes: Uint8Array): BsonDocument {
     const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
     const documentLength = view.getInt32(0, true);
@@ -172,10 +160,7 @@ function readBsonDocument(bytes: Uint8Array): BsonDocument {
     return document;
 }
 
-/**
- * Minimal BSON writer. Field order is significant for reproducing cryppo's exact bytes, so
- * callers pass entries rather than an object.
- */
+/** Callers pass entries because field order has to reproduce cryppo's exact bytes. */
 function writeBsonDocument(fields: [string, BsonValue][]): Uint8Array {
     const chunks: Uint8Array[] = [];
     for (const [name, value] of fields) {
@@ -221,11 +206,9 @@ export function readArtifacts(segment: string, versionByte: string): BsonDocumen
     return readBsonDocument(raw.subarray(1));
 }
 
-/** Exported so the test suite can assert the artifact codec is byte-exact. */
 /**
- * The artifact documents are index signatures, so their fields have to be read through
- * brackets. Going through a variable key keeps both `common`'s lint rules and the indexer
- * frontend's `noPropertyAccessFromIndexSignature` satisfied.
+ * Indexing with a variable key satisfies both `common`'s `no-string-literal` lint rule and the
+ * indexer frontend's `noPropertyAccessFromIndexSignature`.
  */
 function bsonBytes(document: BsonDocument, field: string): Uint8Array {
     return document[field] as Uint8Array;
@@ -247,7 +230,7 @@ function randomBytes(length: number): Uint8Array {
     return crypto.getRandomValues(new Uint8Array(length));
 }
 
-/** cryppo stores the digest in Ruby's naming ('SHA256'); WebCrypto wants 'SHA-256'. */
+/** cryppo stores the digest as 'SHA256'; WebCrypto wants 'SHA-256'. */
 function toWebCryptoHash(hash: string): string {
     const normalized = /^SHA-?(1|256|384|512)$/i.exec(hash);
     if (!normalized) {
@@ -279,10 +262,7 @@ async function deriveKey(
     return crypto.subtle.importKey('raw', bits, CipherStrategy.AES_GCM, false, [usage]);
 }
 
-/**
- * Derive a key from `passphrase` and encrypt `data` with AES-256-GCM, returning the cryppo
- * serialized envelope.
- */
+/** Encrypts `data` with AES-256-GCM under a key derived from `passphrase`. */
 export async function encryptWithKeyDerivedFromString({
     passphrase,
     data,
@@ -305,8 +285,7 @@ export async function encryptWithKeyDerivedFromString({
         ]
     )}`;
 
-    // cryppo returns a null payload for empty input and still appends the derivation
-    // segment, producing the literal string 'null' as the first half. Kept for parity.
+    // cryppo emits the literal string 'null' as the payload for empty input. Kept for parity.
     if (!data || data.length === 0) {
         return { serialized: `${null}.${serializedKey}` };
     }
@@ -326,7 +305,7 @@ export async function encryptWithKeyDerivedFromString({
         )
     );
 
-    // WebCrypto appends the authentication tag; cryppo stores it as a separate artifact.
+    // WebCrypto appends the tag; cryppo stores it as a separate artifact.
     const tagLength = TAG_LENGTH_BITS / 8;
     const encrypted = sealed.subarray(0, sealed.length - tagLength);
     const tag = sealed.subarray(sealed.length - tagLength);
@@ -343,8 +322,8 @@ export async function encryptWithKeyDerivedFromString({
 }
 
 /**
- * Decrypt a cryppo serialized envelope using a key derived from `passphrase`. Returns null for
- * an empty payload, and throws if the passphrase is wrong or the payload has been tampered with.
+ * Decrypts a cryppo envelope. Returns null for an empty payload, and throws if the passphrase is
+ * wrong or the payload was tampered with.
  */
 export async function decryptWithKeyDerivedFromString({
     serialized,
@@ -383,7 +362,7 @@ export async function decryptWithKeyDerivedFromString({
         'decrypt'
     );
 
-    // AES-GCM in WebCrypto expects the authentication tag appended to the ciphertext.
+    // WebCrypto expects the tag appended to the ciphertext.
     const sealed = concatBytes([decodeSafe64(payload), bsonBytes(artifacts, 'at')]);
     try {
         const decrypted = await crypto.subtle.decrypt(
