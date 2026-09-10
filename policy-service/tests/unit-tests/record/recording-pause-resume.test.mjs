@@ -87,4 +87,26 @@ describe('@unit Recording pause and resume', () => {
             true
         );
     });
+
+    it('reports the pause boundary in the status', async () => {
+        const recording = new Recording('policy-1', 'did:owner');
+        await recording.start();
+        assert.equal(recording.getStatus().pausedAt, null);
+        now = 2000;
+        await recording.pause();
+        assert.equal(recording.getStatus().pausedAt, 2000);
+        now = 5000;
+        await recording.resume();
+        assert.equal(recording.getStatus().pausedAt, null);
+    });
+
+    it('clears the pause boundary in the status after stop', async () => {
+        const recording = new Recording('policy-1', 'did:owner');
+        await recording.start();
+        now = 3000;
+        await recording.pause();
+        now = 8000;
+        await recording.stop();
+        assert.equal(recording.getStatus().pausedAt, null);
+    });
 });

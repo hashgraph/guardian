@@ -436,7 +436,8 @@ export class Recording {
             type: this.type,
             policyId: this.policyId,
             uuid: this.uuid,
-            status: this._status
+            status: this._status,
+            pausedAt: this._pausedAt
         }
     }
 

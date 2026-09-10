@@ -3,6 +3,8 @@ import { ConfirmDialog } from 'src/app/modules/common/confirm-dialog/confirm-dia
 import { SavePolicyTestRecordDialog } from '../save-policy-test-record-dialog/save-policy-test-record-dialog.component';
 import { RecordControllerComponent } from './record-controller.component';
 
+const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
+
 describe('RecordControllerComponent stop flow', () => {
     let component: RecordControllerComponent;
     let recordService: jasmine.SpyObj<any>;
@@ -11,6 +13,7 @@ describe('RecordControllerComponent stop flow', () => {
     let pauseResult: Subject<boolean>;
     let warningClose: Subject<boolean>;
     let saveClose: Subject<any>;
+    let policyTestState: any;
     let anchorClick: jasmine.Spy;
 
     beforeEach(() => {
@@ -21,10 +24,14 @@ describe('RecordControllerComponent stop flow', () => {
             'pauseRecording',
             'resumeRecording',
             'stopRecording',
+            'getRecordedActions',
+            'getStatus',
         ]);
         recordService.pauseRecording.and.returnValue(pauseResult);
         recordService.resumeRecording.and.returnValue(of(true));
         recordService.stopRecording.and.returnValue(of(new ArrayBuffer(0)));
+        recordService.getRecordedActions.and.returnValue(of([]));
+        recordService.getStatus.and.returnValue(of(null));
         dialog = jasmine.createSpyObj('DialogService', ['open']);
         dialog.open.and.callFake((type: any) => {
             if (type === ConfirmDialog) {
@@ -35,15 +42,23 @@ describe('RecordControllerComponent stop flow', () => {
             }
             return { onClose: new Subject() };
         });
+        policyTestState = { name: 'Draft', description: 'Description', stopStage: null };
         policyTest = jasmine.createSpyObj('PolicyTestAutomationService', [
             'shouldWarnBeforeStop',
             'setMetadata',
             'getRecordMetadata',
             'reset',
+            'setStopStage',
+            'whenLoaded',
         ], {
-            state: { name: 'Draft', description: 'Description' },
+            state: policyTestState,
         });
         policyTest.shouldWarnBeforeStop.and.returnValue(false);
+        policyTest.whenLoaded.and.returnValue(Promise.resolve());
+        policyTest.setStopStage.and.callFake((stage: any) => {
+            policyTestState.stopStage = stage;
+            return Promise.resolve();
+        });
         policyTest.getRecordMetadata.and.returnValue({ outputActions: { a: 'b' } });
         spyOn(window.URL, 'createObjectURL').and.returnValue('blob:record');
         anchorClick = spyOn(HTMLAnchorElement.prototype, 'click');
@@ -59,7 +74,7 @@ describe('RecordControllerComponent stop flow', () => {
         component.recording = true;
     });
 
-    it('opens the save dialog only after pause succeeds', () => {
+    it('opens the save dialog only after pause succeeds', async () => {
         component.stopRecording();
         expect(recordService.pauseRecording).toHaveBeenCalledOnceWith('policy-1');
         expect(dialog.open).not.toHaveBeenCalledWith(
@@ -67,11 +82,46 @@ describe('RecordControllerComponent stop flow', () => {
             jasmine.anything()
         );
         pauseResult.next(true);
+        await flush();
         expect(component.recording).toBeFalse();
         expect(dialog.open).toHaveBeenCalledWith(
             SavePolicyTestRecordDialog,
             jasmine.anything()
         );
+    });
+
+    it('opens the save dialog only after the stage is stored', async () => {
+        let storeResolve: () => void = () => {};
+        policyTest.setStopStage.and.callFake(() => new Promise<void>((resolve) => {
+            storeResolve = resolve;
+        }));
+        component.stopRecording();
+        pauseResult.next(true);
+        await flush();
+        expect(dialog.open).not.toHaveBeenCalled();
+        storeResolve();
+        await flush();
+        expect(dialog.open).toHaveBeenCalledWith(
+            SavePolicyTestRecordDialog,
+            jasmine.anything()
+        );
+    });
+
+    it('waits for the draft to load before choosing a dialog', async () => {
+        let loadResolve: () => void = () => {};
+        policyTest.whenLoaded.and.returnValue(new Promise<void>((resolve) => {
+            loadResolve = resolve;
+        }));
+        policyTest.shouldWarnBeforeStop.and.returnValue(false);
+        recordService.pauseRecording.and.returnValue(of(true));
+        component.stopRecording();
+        await flush();
+        expect(dialog.open).not.toHaveBeenCalled();
+        policyTest.shouldWarnBeforeStop.and.returnValue(true);
+        loadResolve();
+        await flush();
+        expect(policyTest.setStopStage).toHaveBeenCalledWith('warning');
+        expect(dialog.open).toHaveBeenCalledOnceWith(ConfirmDialog, jasmine.anything());
     });
 
     it('does not open the save dialog when pause fails', () => {
@@ -81,24 +131,58 @@ describe('RecordControllerComponent stop flow', () => {
         expect(dialog.open).not.toHaveBeenCalled();
     });
 
-    it('does not pause when the no-output warning is canceled', () => {
+    it('pauses before the no-output warning is shown', async () => {
         policyTest.shouldWarnBeforeStop.and.returnValue(true);
+        recordService.pauseRecording.and.returnValue(of(true));
         component.stopRecording();
+        await flush();
+        expect(recordService.pauseRecording).toHaveBeenCalledOnceWith('policy-1');
+        expect(dialog.open).toHaveBeenCalledWith(ConfirmDialog, jasmine.anything());
+        expect(policyTest.setStopStage).toHaveBeenCalledWith('warning');
+        expect(component.recording).toBeFalse();
+    });
+
+    it('resumes the paused recording when the no-output warning is canceled', async () => {
+        policyTest.shouldWarnBeforeStop.and.returnValue(true);
+        recordService.pauseRecording.and.returnValue(of(true));
+        component.stopRecording();
+        await flush();
         warningClose.next(false);
-        expect(recordService.pauseRecording).not.toHaveBeenCalled();
+        expect(policyTest.setStopStage).toHaveBeenCalledWith(null);
+        expect(recordService.resumeRecording).toHaveBeenCalledOnceWith('policy-1');
         expect(component.recording).toBeTrue();
     });
 
-    it('pauses after the no-output warning is confirmed', () => {
+    it('moves to the save dialog when the no-output warning is confirmed', async () => {
         policyTest.shouldWarnBeforeStop.and.returnValue(true);
+        recordService.pauseRecording.and.returnValue(of(true));
         component.stopRecording();
+        await flush();
         warningClose.next(true);
-        expect(recordService.pauseRecording).toHaveBeenCalledOnceWith('policy-1');
+        await flush();
+        expect(recordService.pauseRecording).toHaveBeenCalledTimes(1);
+        expect(policyTest.setStopStage).toHaveBeenCalledWith('save');
+        expect(dialog.open).toHaveBeenCalledWith(
+            SavePolicyTestRecordDialog,
+            jasmine.anything()
+        );
     });
 
-    it('resumes the same recording when the save dialog returns null', () => {
+    it('omits the metadata on Save after a confirmed warning', async () => {
+        policyTest.shouldWarnBeforeStop.and.returnValue(true);
+        recordService.pauseRecording.and.returnValue(of(true));
+        component.stopRecording();
+        await flush();
+        warningClose.next(true);
+        await flush();
+        saveClose.next({ name: 'Saved', description: 'Text' });
+        expect(policyTest.getRecordMetadata).not.toHaveBeenCalled();
+    });
+
+    it('resumes the same recording when the save dialog returns null', async () => {
         component.stopRecording();
         pauseResult.next(true);
+        await flush();
         saveClose.next(null);
         expect(recordService.resumeRecording).toHaveBeenCalledOnceWith('policy-1');
         expect(recordService.stopRecording).not.toHaveBeenCalled();
@@ -106,17 +190,19 @@ describe('RecordControllerComponent stop flow', () => {
         expect(policyTest.reset).not.toHaveBeenCalled();
     });
 
-    it('keeps the stopped UI when resume fails', () => {
+    it('keeps the stopped UI when resume fails', async () => {
         recordService.resumeRecording.and.returnValue(throwError(() => new Error('resume')));
         component.stopRecording();
         pauseResult.next(true);
+        await flush();
         saveClose.next(null);
         expect(component.recording).toBeFalse();
     });
 
-    it('uses the existing stop request for Save', () => {
+    it('uses the existing stop request for Save', async () => {
         component.stopRecording();
         pauseResult.next(true);
+        await flush();
         saveClose.next({ name: 'Saved', description: 'Text' });
         expect(policyTest.setMetadata).toHaveBeenCalledWith('Saved', 'Text');
         expect(recordService.stopRecording).toHaveBeenCalledWith(
@@ -126,9 +212,10 @@ describe('RecordControllerComponent stop flow', () => {
         expect(anchorClick).toHaveBeenCalledTimes(1);
     });
 
-    it('uses the existing stop request for Stop & Discard', () => {
+    it('uses the existing stop request for Stop & Discard', async () => {
         component.stopRecording();
         pauseResult.next(true);
+        await flush();
         saveClose.next({ name: '', description: '', saveToFile: false });
         expect(recordService.stopRecording).toHaveBeenCalledWith(
             'policy-1',
@@ -139,19 +226,78 @@ describe('RecordControllerComponent stop flow', () => {
         expect(anchorClick).not.toHaveBeenCalled();
     });
 
-    it('ignores repeated Stop clicks while the flow is pending', () => {
+    it('ignores repeated Stop clicks while the flow is pending', async () => {
         component.stopRecording();
         component.stopRecording();
         expect(recordService.pauseRecording).toHaveBeenCalledTimes(1);
         pauseResult.next(true);
+        await flush();
         expect(dialog.open).toHaveBeenCalledTimes(1);
     });
 
-    it('allows a new stop flow after warning Cancel', () => {
+    it('allows a new stop flow after warning Cancel', async () => {
         policyTest.shouldWarnBeforeStop.and.returnValue(true);
+        recordService.pauseRecording.and.returnValue(of(true));
         component.stopRecording();
+        await flush();
         warningClose.next(false);
         component.stopRecording();
+        await flush();
         expect(dialog.open).toHaveBeenCalledTimes(2);
+    });
+
+    it('reopens the warning after a reload when that stage was stored', async () => {
+        policyTestState.stopStage = 'warning';
+        component['updateRecordLogs']({
+            type: 'Recording',
+            uuid: 'record-1',
+            status: 'Recording',
+            pausedAt: 1757500000000
+        });
+        await flush();
+        expect(component.recording).toBeFalse();
+        expect(dialog.open).toHaveBeenCalledOnceWith(ConfirmDialog, jasmine.anything());
+    });
+
+    it('reopens the save dialog after a reload when that stage was stored', async () => {
+        policyTestState.stopStage = 'save';
+        component['updateRecordLogs']({
+            type: 'Recording',
+            uuid: 'record-1',
+            status: 'Recording',
+            pausedAt: 1757500000000
+        });
+        await flush();
+        expect(dialog.open).toHaveBeenCalledOnceWith(
+            SavePolicyTestRecordDialog,
+            jasmine.anything()
+        );
+    });
+
+    it('falls back to the save dialog when no stage was stored', async () => {
+        component['updateRecordLogs']({
+            type: 'Recording',
+            uuid: 'record-1',
+            status: 'Recording',
+            pausedAt: 1757500000000
+        });
+        await flush();
+        expect(policyTest.setStopStage).toHaveBeenCalledWith('save');
+        expect(dialog.open).toHaveBeenCalledOnceWith(
+            SavePolicyTestRecordDialog,
+            jasmine.anything()
+        );
+    });
+
+    it('opens no dialog when the status carries no pause boundary', async () => {
+        component['updateRecordLogs']({
+            type: 'Recording',
+            uuid: 'record-1',
+            status: 'Recording',
+            pausedAt: null
+        });
+        await flush();
+        expect(dialog.open).not.toHaveBeenCalled();
+        expect(component.recording).toBeTrue();
     });
 });

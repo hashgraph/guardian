@@ -135,12 +135,30 @@ export class RecordControllerComponent implements OnInit {
             return;
         }
         this._stopPending = true;
-        if (this.policyTest.shouldWarnBeforeStop()) {
-            this.openNoOutputWarning();
-            return;
-        }
+        this.pauseAndOpenStopFlow();
+    }
 
-        this.pauseAndOpenSaveRecordDialog(true);
+    private pauseAndOpenStopFlow(): void {
+        this.recordService.pauseRecording(this.policyId).subscribe((result) => {
+            if (!result) {
+                this._stopPending = false;
+                return;
+            }
+            this.recording = false;
+            this.updateActive();
+            this.policyTest.whenLoaded().then(() => {
+                if (this.policyTest.shouldWarnBeforeStop()) {
+                    return this.policyTest.setStopStage('warning').then(() => {
+                        this.openNoOutputWarning();
+                    });
+                }
+                return this.policyTest.setStopStage('save').then(() => {
+                    this.openSaveRecordDialog();
+                });
+            });
+        }, () => {
+            this._stopPending = false;
+        });
     }
 
     private openNoOutputWarning(): void {
@@ -161,28 +179,17 @@ export class RecordControllerComponent implements OnInit {
 
         dialogRef.onClose.subscribe((confirmed: boolean) => {
             if (confirmed) {
-                this.pauseAndOpenSaveRecordDialog(false);
-            } else {
-                this._stopPending = false;
-            }
-        });
-    }
-
-    private pauseAndOpenSaveRecordDialog(includePolicyTestMetadata: boolean): void {
-        this.recordService.pauseRecording(this.policyId).subscribe((result) => {
-            if (!result) {
-                this._stopPending = false;
+                this.policyTest.setStopStage('save').then(() => {
+                    this.openSaveRecordDialog();
+                });
                 return;
             }
-            this.recording = false;
-            this.updateActive();
-            this.openSaveRecordDialog(includePolicyTestMetadata);
-        }, () => {
-            this._stopPending = false;
+            void this.policyTest.setStopStage(null);
+            this.resumeRecording();
         });
     }
 
-    private openSaveRecordDialog(includePolicyTestMetadata: boolean): void {
+    private openSaveRecordDialog(): void {
         const dialogRef = this.dialog.open(SavePolicyTestRecordDialog, {
             showHeader: false,
             width: '560px',
@@ -195,12 +202,14 @@ export class RecordControllerComponent implements OnInit {
 
         dialogRef.onClose.subscribe((result: SavePolicyTestRecordResult | null) => {
             if (!result) {
+                void this.policyTest.setStopStage(null);
                 this.resumeRecording();
                 return;
             }
 
+            void this.policyTest.setStopStage(null);
             this.policyTest.setMetadata(result.name, result.description);
-            this.stopRecordingInternal(result, includePolicyTestMetadata);
+            this.stopRecordingInternal(result);
         });
     }
 
@@ -216,14 +225,32 @@ export class RecordControllerComponent implements OnInit {
         });
     }
 
-    private stopRecordingInternal(
-        saveMetadata: SavePolicyTestRecordResult,
-        includePolicyTestMetadata: boolean
-    ): void {
+    private restoreStopFlow(): void {
+        if (this._stopPending) {
+            return;
+        }
+        this._stopPending = true;
+        this.recording = false;
+        this.updateActive();
+        this.policyTest.whenLoaded().then(() => {
+            if (this.policyTest.state.stopStage === 'warning') {
+                this.openNoOutputWarning();
+                return;
+            }
+            return this.policyTest.setStopStage('save').then(() => {
+                this.openSaveRecordDialog();
+            });
+        });
+    }
+
+    private stopRecordingInternal(saveMetadata: SavePolicyTestRecordResult): void {
         this.loading = true;
         this.recordItems = [];
         const filename = this.sanitizeRecordFilename(saveMetadata.name);
-        const policyTest = this.buildPolicyTestMetadata(saveMetadata, includePolicyTestMetadata);
+        const policyTest = this.buildPolicyTestMetadata(
+            saveMetadata,
+            !this.policyTest.shouldWarnBeforeStop()
+        );
         this.recordService.stopRecording(this.policyId, { policyTest }).subscribe((fileBuffer) => {
             this.recording = false;
             this.running = false;
@@ -417,6 +444,10 @@ export class RecordControllerComponent implements OnInit {
 
         if (this.running) {
             this.updatePolicy();
+        }
+
+        if (this.recording && data?.pausedAt) {
+            this.restoreStopFlow();
         }
 
         this.updateActive();
