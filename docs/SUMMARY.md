@@ -257,6 +257,8 @@
       * [Set up Repeatable Field Links](guardian/workspace/schemas/repeatable-field-links/set-up-repeatable-field-links.md)
     * [Geo Fields](guardian/workspace/schemas/geo-fields/README.md)
       * [Configure Geo Fields](guardian/workspace/schemas/geo-fields/configure-geo-fields.md)
+    * [Rich Text Fields](guardian/workspace/schemas/rich-text-fields/README.md)
+      * [Configure Rich Text Fields](guardian/workspace/schemas/rich-text-fields/configure-rich-text-fields.md)
     * [Data Entry Updatability](guardian/workspace/schemas/data-entry-updatability/README.md)
       * [Demo using UI](guardian/workspace/schemas/data-entry-updatability/demo-using-ui.md)
       * [Demo using VM0042](guardian/workspace/schemas/data-entry-updatability/demo-using-vm0042.md)
