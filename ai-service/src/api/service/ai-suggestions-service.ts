@@ -46,4 +46,18 @@ export async function aiSuggestionsAPI(aiManager: AIManager, logger: PinoLogger)
             return new MessageError(error.message);
         }
     });
+
+    ApiResponse(MessageAPI.SUGGESTIONS_GET_PROPERTIES, async (msg) => {
+        try {
+            if (!msg) {
+                throw new Error('Invalid msg is missing');
+            }
+
+            const result = await aiManager.suggestProperties(msg);
+
+            return new MessageResponse(result);
+        } catch (error) {
+            return new MessageError(error.message);
+        }
+    });
 }

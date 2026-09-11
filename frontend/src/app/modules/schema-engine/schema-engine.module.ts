@@ -42,6 +42,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { PopoverModule } from 'primeng/popover';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { AccordionModule } from 'primeng/accordion';
+import { TableModule } from 'primeng/table';
 import { DateTimeComponent } from './schema-form/controls/date-time/date-time.component';
 import { FormulasModule } from '../formulas/formulas.module';
 import { DialogService } from 'primeng/dynamicdialog';
@@ -52,6 +53,7 @@ import {TableFieldComponent} from './table-field/table-field.component';
 import {TableViewerComponent} from "./table-viewer/table-viewer.component";
 import { SchemaDeleteWarningDialogComponent } from './schema-delete-warning-dialog/schema-delete-warning-dialog.component';
 import { SchemaDeleteDialogComponent } from './schema-delete-dialog/schema-delete-dialog.component';
+import { IwaUpgradeDialogComponent } from './iwa-upgrade-dialog/iwa-upgrade-dialog.component';
 import { SchemaFormNavigationComponent } from './schema-form-navigation/schema-form-navigation.component';
 import { SchemaFormViewNavigationComponent } from './schema-form-view-navigation/schema-form-view-navigation.component';
 import { RichTextEditorComponent } from './rich-text-editor/rich-text-editor.component';
@@ -75,6 +77,7 @@ import { RichTextClipDirective } from './rich-text-editor/rich-text-clip.directi
         CompareSchemaDialog,
         SchemaDeleteWarningDialogComponent,
         SchemaDeleteDialogComponent,
+        IwaUpgradeDialogComponent,
         GeojsonTypeComponent,
         UploadGeoDataDialog,
         SentinelHubTypeComponent,
@@ -111,6 +114,7 @@ import { RichTextClipDirective } from './rich-text-editor/rich-text-clip.directi
         RadioButtonModule,
         SelectButtonModule,
         AccordionModule,
+        TableModule,
         FormulasModule,
         AngularSvgIconModule.forRoot(),
         DynamicDialogModule,

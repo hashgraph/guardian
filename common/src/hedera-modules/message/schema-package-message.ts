@@ -4,6 +4,7 @@ import { IURL, UrlType } from './url.interface.js';
 import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { SchemaPackageMessageBody } from './message-body.interface.js';
+import { resolveIwaVersion } from '@guardian/interfaces';
 
 interface IMetadata {
     schemas: {
@@ -15,6 +16,7 @@ interface IMetadata {
         owner: string,
         version: string,
         codeVersion: string,
+        iwaVersion?: string,
     }[],
     relationships: string[]
 }
@@ -88,7 +90,8 @@ export class SchemaPackageMessage extends Message {
                     entity: schema.entity,
                     owner: schema.owner,
                     version: schema.version,
-                    codeVersion: schema.codeVersion
+                    codeVersion: schema.codeVersion,
+                    iwaVersion: resolveIwaVersion(schema)
                 })
             }
         }

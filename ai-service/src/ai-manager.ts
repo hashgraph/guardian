@@ -4,9 +4,11 @@ import { ChatOpenAI } from '@langchain/openai';
 import { OpenAIConnect } from './helpers/openai-helper.js';
 import { VectorStorage } from './helpers/vector-storage-helper.js';
 import { AISuggestionsDB } from './helpers/ai-suggestions-db.js';
+import { PropertySuggestionConnect } from './helpers/property-suggestion-helper.js';
 import { PolicyDescription } from './models/models.js';
 import * as dotenv from 'dotenv';
 import { PinoLogger, Policy, PolicyCategory } from '@guardian/common';
+import { IPropertySuggestionFieldInput, IPropertySuggestionRequest, IPropertySuggestionResponse, Schema } from '@guardian/interfaces';
 
 dotenv.config();
 
@@ -67,6 +69,47 @@ export class AIManager {
 
         const answer = await OpenAIConnect.ask(this.chain, question, this.policies);
         return answer;
+    }
+
+    async suggestProperties(request: IPropertySuggestionRequest): Promise<IPropertySuggestionResponse> {
+        try {
+            const fieldNames = request?.fieldNames || [];
+            if (!request?.schemaId || !fieldNames.length) {
+                return { available: true, results: [] };
+            }
+
+            const dbRequests = new AISuggestionsDB();
+            const rawSchema = await dbRequests.getSchemaById(request.schemaId);
+            if (!rawSchema) {
+                return { available: false, results: [] };
+            }
+            // Full schema
+            const schema = new Schema(rawSchema);
+
+            const allFields: IPropertySuggestionFieldInput[] = (schema.fields || []).map((field) => ({
+                name: field.name,
+                title: field.title,
+                description: field.description,
+                type: field.type,
+                currentProperty: field.property
+            }));
+
+            const existingFieldNames = new Set(allFields.map((field) => field.name));
+            const targetFieldNames = fieldNames.filter((name) => existingFieldNames.has(name));
+            if (!targetFieldNames.length) {
+                return { available: true, results: [] };
+            }
+
+            const properties = await dbRequests.getPolicyProperties(schema.iwaVersion);
+            const results = await PropertySuggestionConnect.suggest(
+                this.model, allFields, properties || [], schema.name, schema.description, targetFieldNames
+            );
+
+            return { available: true, results };
+        } catch (e) {
+            await this.logger.error(e.message, ['AI_SERVICE']);
+            return { available: false, results: [] };
+        }
     }
 
     async rebuildVector() {

@@ -202,6 +202,11 @@ export interface SchemaMessageBody extends MessageBody {
      */
     code_version: string;
     /**
+     * IWA dMRV specification version. Absent on schemas published before
+     * IWA v3 support was added; those resolve to v1.
+     */
+    iwa_version?: string;
+    /**
      * Relationships
      */
     relationships: string[];

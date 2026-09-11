@@ -64,6 +64,18 @@ Guardian's Property Glossary provides standardized data definitions based on the
 
 For complete property definitions, see [Available Schema Types](../../../guardian/workspace/schemas/available-schema-types/) and [Property Glossary](../../../guardian/workspace/schemas/property-glossary.md).
 
+**Choosing a specification version**: Guardian supports two versions of the IWA dMRV
+property namespace. Schemas created from Guardian 3.7.0 onward are tagged IWA v3.0.0
+and author against the v3 list; schemas created earlier are treated as IWA v1 and keep
+the v1 list. The schema editor only offers the properties belonging to the schema's own
+version, so a schema never mixes the two.
+
+A published schema cannot change version — its field properties are frozen on IPFS. To
+move an existing schema to v3, create a new version and use the **Upgrade to IWA v3**
+action on the resulting draft, which remaps every field property and reports any the v3
+specification removed. See the [Property Glossary](../../../guardian/workspace/schemas/property-glossary.md)
+for the full v1 → v3 mapping.
+
 **Purpose of Standardized Properties**:
 
 * **Data Consistency**: Ensure uniform interpretation of data across different methodology schemas
