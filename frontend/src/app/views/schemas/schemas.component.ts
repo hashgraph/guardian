@@ -234,6 +234,10 @@ export class SchemaConfigComponent implements OnInit {
         )
     }
 
+    public isSchemaFeatured(schema: Schema): boolean {
+        return !!(schema as any)?.templateFeatured;
+    }
+
     public get canCreate(): boolean {
         return (
             this.isConfirmed &&
@@ -698,6 +702,13 @@ export class SchemaConfigComponent implements OnInit {
                 // If topicIds are different, return the topic comparison result
                 if (topicCompare !== 0) {
                     return topicCompare;
+                }
+
+                // Featured first
+                const featuredA = (a as Record<string, unknown>).templateFeatured ? 1 : 0;
+                const featuredB = (b as Record<string, unknown>).templateFeatured ? 1 : 0;
+                if (featuredA !== featuredB) {
+                    return featuredB - featuredA;
                 }
 
                 // If topicIds are the same, compare by version

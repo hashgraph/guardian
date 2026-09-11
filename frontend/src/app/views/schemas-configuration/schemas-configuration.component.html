@@ -270,7 +270,12 @@
                                         <i class="pi pi-file"></i>
                                     </div>
                                     <div class="sc-schema-info">
-                                        <span class="sc-schema-name">{{ schema.name }}</span>
+                                        <span class="sc-schema-name">
+                                            @if (isSchemaFeatured(schema)) {
+                                                <i class="pi pi-star-fill schema-featured-icon" pTooltip="Featured" tooltipPosition="right"></i>
+                                            }
+                                            {{ schema.name }}
+                                        </span>
                                         <div class="sc-schema-meta-row">
                                             @if (schema.version) {
                                                 <span class="sc-schema-version">v{{ schema.version }}</span>
@@ -343,6 +348,20 @@
 
                         <div class="sc-editor-header">
                             <div class="sc-editor-header-info">
+                                @if (isTemplateConfigMode) {
+                                    <button
+                                        class="sc-schema-featured-btn"
+                                        [class.active]="isSelectedSchemaFeatured"
+                                        [disabled]="isTemplateReadonly"
+                                        [pTooltip]="isSelectedSchemaFeatured ? 'Unmark as featured' : 'Mark as featured'"
+                                        tooltipPosition="top"
+                                        (click)="toggleFeaturedForSelectedSchema()">
+                                        <i class="pi" [class.pi-star-fill]="isSelectedSchemaFeatured" [class.pi-star]="!isSelectedSchemaFeatured"></i>
+                                    </button>
+                                }
+                                @if (isSchemaFeatured(selectedSchema) && !isTemplateConfigMode) {
+                                    <i class="pi pi-star-fill schema-featured-icon" pTooltip="Featured" tooltipPosition="right"></i>
+                                }
                                 <span class="sc-editor-title">{{ selectedSchema.name }}</span>
                                 <span class="sc-schema-status" [class.sc-schema-status--draft]="isDraft(selectedSchema)">
                                     {{ selectedSchema.status }}

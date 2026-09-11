@@ -9,6 +9,7 @@
     --sc-radius-sm: 8px;
     --sc-elevation: 0 1px 2px var(--guardian-shadow, #00000014), 0 1px 1px var(--guardian-shadow, #00000014);
     --sc-elevation-overlay: 0 8px 24px var(--guardian-shadow, #00000014), 0 2px 6px var(--guardian-shadow, #00000014);
+    --sc-featured-color: var(--color-accent-yellow-1, #DA9B22);
 }
 
 .sc-page {
@@ -816,6 +817,11 @@
     text-overflow: ellipsis;
 }
 
+.schema-featured-icon {
+    font-size: 12px;
+    color: var(--sc-featured-color);
+}
+
 .sc-schema-meta-row {
     display: flex;
     align-items: center;
@@ -1044,6 +1050,30 @@
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 320px;
+}
+
+.sc-schema-featured-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+
+    i { font-size: 15px; color: var(--guardian-font-color-secondary, #848FA9); }
+
+    &.active i {
+        color: var(--sc-featured-color);
+    }
+
+    &:disabled {
+        cursor: default;
+        opacity: 0.6;
+    }
 }
 
 .sc-editor-version {

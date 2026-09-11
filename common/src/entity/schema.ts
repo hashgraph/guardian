@@ -24,6 +24,10 @@ import { BaseEntity } from '../models/index.js';
     properties: ['defs'],
     name: 'defs_index',
 })
+@Index({
+     properties: ['owner', 'category', 'templateFeatured', 'createDate'],
+     name: 'owner_category_templateFeatured_createDate_index',
+ })
 export class Schema extends BaseEntity implements ISchema {
     /**
      * Schema uuid
@@ -180,6 +184,12 @@ export class Schema extends BaseEntity implements ISchema {
         index: true
     })
     templateSchemaId?: string;
+
+    /**
+     * Denormalized featured flag from the owning template's config (see schema-template.service.ts)
+     */
+    @Property({ nullable: true })
+    templateFeatured?: boolean;
 
     /**
      * Schema code version
