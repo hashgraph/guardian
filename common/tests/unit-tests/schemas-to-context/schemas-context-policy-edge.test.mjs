@@ -185,36 +185,36 @@ describe('@unit GetPropertiesFromFile (edge)', () => {
         const file = await writeTemp('a,\nb,');
         const out = await GetPropertiesFromFile(file);
         assert.deepEqual(out, [
-            { title: 'a', value: '' },
-            { title: 'b', value: '' },
+            { title: 'a', value: '', description: undefined },
+            { title: 'b', value: '', description: undefined },
         ]);
     });
 
     it('does not trim surrounding whitespace from title or value', async () => {
         const file = await writeTemp(' a , 1 ');
         const out = await GetPropertiesFromFile(file);
-        assert.deepEqual(out, [{ title: ' a ', value: ' 1 ' }]);
+        assert.deepEqual(out, [{ title: ' a ', value: ' 1 ', description: undefined }]);
     });
 
-    it('leaves a trailing CR attached to the value on CRLF input', async () => {
+    it('strips the trailing CR from the value on CRLF input', async () => {
         const file = await writeTemp('a,1\r\nb,2\r\n');
         const out = await GetPropertiesFromFile(file);
         assert.deepEqual(out, [
-            { title: 'a', value: '1\r' },
-            { title: 'b', value: '2\r' },
+            { title: 'a', value: '1', description: undefined },
+            { title: 'b', value: '2', description: undefined },
         ]);
     });
 
-    it('skips a quoted field containing a comma (no CSV quote handling)', async () => {
+    it('keeps a quoted field containing a comma as a single value', async () => {
         const file = await writeTemp('name,"x,y"');
         const out = await GetPropertiesFromFile(file);
-        assert.deepEqual(out, []);
+        assert.deepEqual(out, [{ title: 'name', value: 'x,y', description: undefined }]);
     });
 
     it('preserves unicode in title and value', async () => {
         const file = await writeTemp('café,naïve');
         const out = await GetPropertiesFromFile(file);
-        assert.deepEqual(out, [{ title: 'café', value: 'naïve' }]);
+        assert.deepEqual(out, [{ title: 'café', value: 'naïve', description: undefined }]);
     });
 
     it('skips a single-column row with no comma', async () => {
@@ -241,10 +241,13 @@ describe('@unit GetPropertiesFromFile (edge)', () => {
         assert.deepEqual(out, []);
     });
 
-    it('skips rows with three or more columns', async () => {
+    it('reads a third column as description and ignores any beyond it', async () => {
         const file = await writeTemp('a,1,2\nb,2\n');
         const out = await GetPropertiesFromFile(file);
-        assert.deepEqual(out, [{ title: 'b', value: '2' }]);
+        assert.deepEqual(out, [
+            { title: 'a', value: '1', description: '2' },
+            { title: 'b', value: '2', description: undefined },
+        ]);
     });
 
     it('treats a numeric-looking value as a string', async () => {
@@ -256,7 +259,7 @@ describe('@unit GetPropertiesFromFile (edge)', () => {
     it('handles a file with no trailing newline', async () => {
         const file = await writeTemp('a,1');
         const out = await GetPropertiesFromFile(file);
-        assert.deepEqual(out, [{ title: 'a', value: '1' }]);
+        assert.deepEqual(out, [{ title: 'a', value: '1', description: undefined }]);
     });
 
     it('rejects when the file does not exist', async () => {
