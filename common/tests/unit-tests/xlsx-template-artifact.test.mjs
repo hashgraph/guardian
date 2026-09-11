@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { XlsxToJson } from '../../dist/xlsx/xlsx-to-json.js';
+import { Workbook } from '../../dist/xlsx/models/workbook.js';
 
 const TEMPLATE = fileURLToPath(
     new URL('../../../guardian-service/artifacts/template.xlsx', import.meta.url)
@@ -14,10 +15,14 @@ function findByCustomType(fields, customType) {
 describe('Schema template artifact', () => {
     let result;
     let fields;
+    let workbook;
 
     before(async () => {
-        result = await XlsxToJson.parse(await readFile(TEMPLATE));
+        const template = await readFile(TEMPLATE);
+        result = await XlsxToJson.parse(template);
         fields = result.xlsxSchemas.flatMap((schema) => schema.fields);
+        workbook = new Workbook();
+        await workbook.read(template);
     });
 
     it('parses with no errors', () => {
@@ -72,5 +77,21 @@ describe('Schema template artifact', () => {
             )
         );
         assert.ok(twoLevels, 'the second level of sub-schema nesting was lost');
+    });
+
+    it('documents that Enum fields reference Enum Name through Parameter', () => {
+        const readme = workbook.getWorksheet('README');
+        assert.equal(
+            readme.getValue(2, 20),
+            'Type-dependent: enum name (Enum), unit symbol (Prefix/Postfix), regex (Pattern), math expression (Auto-Calculate), JSON font object (Help Text), JSON column array (Table), parent field key (Country, State/Province). Blank for all other types.'
+        );
+        assert.equal(
+            readme.getValue(2, 49),
+            'Dropdown list — values defined in the Enums tab. The field\'s Parameter must exactly match the "Enum Name" column and the schema name (row 1) must match "Schema name" — both case-sensitive.'
+        );
+        assert.equal(
+            readme.getValue(2, 61),
+            'The field\'s Parameter value must exactly match the "Enum Name" column in the Enums tab, and the schema name (row 1) must exactly match the "Schema name" column (both case-sensitive).'
+        );
     });
 });
