@@ -46,6 +46,7 @@ import {
 import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 import { serDefaultRole } from '../permission.service.js';
 import { publishSystemSchema } from '../../helpers/import-helpers/index.js';
+import { validateHederaAccountKey } from './hedera-key-validator.js';
 
 export interface IFireblocksConfig {
     fireBlocksVaultId: string;
@@ -365,23 +366,10 @@ export async function createUserProfile({
     // <-- Check hedera key
     // ------------------------
     notifier.startStep(STEP_RESOLVE_ACCOUNT);
-    try {
-        const workers = new Workers();
-        AccountId.fromString(hederaAccountId);
-        PrivateKey.fromString(hederaAccountKey);
-        await workers.addNonRetryableTask({
-            type: WorkerTaskType.GET_USER_BALANCE,
-            data: { hederaAccountId, hederaAccountKey }
-        }, {
-            priority: 20,
-            attempts: 0,
-            registerCallback: true,
-            interception: user.id.toString(),
-            userId: user.id.toString()
-        });
-    } catch (error) {
-        throw new Error(`Invalid Hedera account or key.`);
-    }
+    await validateHederaAccountKey(hederaAccountId, hederaAccountKey, {
+        userId: user.id.toString(),
+        interception: user.id.toString()
+    });
     notifier.completeStep(STEP_RESOLVE_ACCOUNT);
     // ------------------------
     // Check hedera key -->

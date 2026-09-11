@@ -1,5 +1,6 @@
 import { assert } from 'chai';
 import { Code } from '../../../dist/policy-engine/helpers/math-model/code.js';
+import { buildTableHelper } from '../../../dist/policy-engine/helpers/table-field-core.js';
 
 describe('Code (math-model script)', () => {
     it('constructs with empty text by default', () => {
@@ -92,6 +93,31 @@ describe('Code (math-model script)', () => {
             const code = new Code('return 0;');
             code.setContext({ result: 'fallback' });
             assert.equal(code.run(), 'fallback');
+        });
+
+        it('exposes the table helper without changing the stored document value', () => {
+            const tableValue = JSON.stringify({
+                type: 'table',
+                fileId: 'f1',
+                columnNames: ['CO2 (tonnes)'],
+                columnKeys: ['co2_tonnes']
+            });
+            const code = new Code("return table.col(getField('field4'), 'co2_tonnes').map(table.num);");
+            code.setContext({
+                document: { field4: tableValue },
+                getField: (path) => path === 'field4' ? tableValue : undefined,
+                table: buildTableHelper({
+                    f1: { columnKeys: ['co2_tonnes'], rows: [{ co2_tonnes: '42' }] }
+                })
+            });
+            assert.deepEqual(code.run(), [42]);
+            assert.equal(code.context.document.field4, tableValue);
+        });
+
+        it('leaves table undefined when the context carries no helper', () => {
+            const code = new Code('return typeof table;');
+            code.setContext({ result: 'fallback' });
+            assert.equal(code.run(), 'undefined');
         });
     });
 });

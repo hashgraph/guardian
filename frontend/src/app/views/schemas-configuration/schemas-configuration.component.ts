@@ -1,8 +1,8 @@
-import { ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpResponse } from '@angular/common/http';
 import { EMPTY, Observable, Subject, Subscription, forkJoin, of } from 'rxjs';
-import { catchError, debounceTime, distinctUntilChanged, map, switchMap, takeUntil } from 'rxjs/operators';
+import { catchError, debounceTime, distinctUntilChanged, map, shareReplay, switchMap, takeUntil } from 'rxjs/operators';
 import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, relationAncestors, ModuleStatus, ISchemaTemplate, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus, ISchemaArrayDependency, ISchemaArrayDependencyMapping, DEFAULT_IWA_VERSION, IwaVersion, resolveIwaVersion, IPropertySuggestionResult, } from '@guardian/interfaces';
 import { SchemaService } from 'src/app/services/schema.service';
 import { TagsService } from 'src/app/services/tag.service';
@@ -18,6 +18,8 @@ import { CodeEditorDialogComponent } from 'src/app/modules/policy-engine/dialogs
 import { ExportPolicyDialog } from 'src/app/modules/policy-engine/dialogs/export-policy-dialog/export-policy-dialog.component';
 import { PublishSchemaTemplateDialog } from 'src/app/modules/policy-engine/dialogs/publish-schema-template-dialog/publish-schema-template-dialog.component';
 import { FieldTypeUI, FIELD_TYPES_UI } from 'src/app/modules/schema-engine/field-type-ui';
+import { RichTextEditorComponent } from 'src/app/modules/schema-engine/rich-text-editor/rich-text-editor.component';
+import { markdownToHtml } from 'src/app/modules/schema-engine/rich-text-editor/markdown';
 import { SchemaTemplatesService } from 'src/app/services/schema-templates.service';
 import { ToastService } from 'src/app/services/toast.service';
 
@@ -110,7 +112,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public readonly schemaSearch$ = new Subject<string>();
     private readonly _cancelLoadSchemas$ = new Subject<void>();
     private loadedTemplateId: string = '';
-    private loadedAppliedTemplateId: string = '';
+    private readonly appliedTemplateListByTopic = new Map<string, Observable<ISchemaTemplate[]>>();
     private pendingTemplateSchemaId: string = '';
     public schemasPage: number = 0;
     public schemasPageSize: number = 50;
@@ -136,6 +138,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public previewPill: 'submitter' | 'readonly' = 'submitter';
     public previewPreset: any = null;
     public previewReadonlyFields: any = null;
+    public richTextPresetTarget: 'default' | 'suggest' | 'test' | null = null;
+    @ViewChild('richTextPresetEditor') public richTextPresetEditor?: RichTextEditorComponent;
 
     public drillStack: DrillEntry[] = [];
     public get isDrilling(): boolean { return this.drillStack.length > 0; }
@@ -147,12 +151,16 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     private savedSignatures = new Map<string, string>();
     public isSaving: boolean = false;
     private _subSchemasByIri = new Map<string, Schema>();
+    @ViewChild('arrayLinkEditor')
+    public arrayDependencyEditor?: ElementRef<HTMLElement>;
+
     public newArrayDependencyField: string | null = null;
     public newArrayDependencyOn: string | null = null;
     public newArrayDependencyTitle: string | null = null;
     public newArrayDependencyMappingSource: string | null = null;
     public newArrayDependencyMappingTarget: string | null = null;
     public newArrayDependencyValueMappings: ISchemaArrayDependencyMapping[] = [];
+    public editingArrayDependency: ISchemaArrayDependency | null = null;
     public templateConfigSaving: boolean = false;
     private templateConfigDirty: boolean = false;
 
@@ -218,6 +226,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public get canPublishTemplate(): boolean {
         if (!this.isTemplateConfigMode || !this.schemaTemplate?.id) { return false; }
+        if (this.hasUnsavedChanges) { return false; }
         const status = this.schemaTemplate.status;
         return status === ModuleStatus.DRAFT || status === ModuleStatus.PUBLISH_ERROR;
     }
@@ -292,6 +301,14 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public get selectedFieldPath(): string {
         return this.getFieldConfigKey(this.selectedField);
+    }
+
+    public get selectedSchemaGuidelines(): string {
+        return this.selectedSchemaConfig?.guidelines || '';
+    }
+
+    public get selectedFieldGuidelines(): string {
+        return this.selectedFieldConfig?.guidelines || '';
     }
 
     public get canAddCustomFieldsToSelectedSchema(): boolean {
@@ -1064,6 +1081,23 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             errors.push('Enum must have at least one value');
         }
 
+        if (Array.isArray(field.tableColumns)) {
+            if (!field.tableColumns.length) {
+                errors.push('Table must have at least one column');
+            }
+            const columnKeys = field.tableColumns.map((column) => (column?.key || '').trim());
+            if (field.tableColumns.some((column) => !(column?.name || '').trim())) {
+                errors.push('Every column needs a display name');
+            }
+            if (columnKeys.some((columnKey) => !columnKey)) {
+                errors.push('Every column needs a key');
+            } else if (columnKeys.some((columnKey) => /\s/.test(columnKey))) {
+                errors.push('Column key must not contain spaces');
+            } else if (new Set(columnKeys).size !== columnKeys.length) {
+                errors.push('Column keys must be unique within the field');
+            }
+        }
+
         const geoDependencyError = this.getGeoDependencyError(field, allFields);
         if (geoDependencyError) {
             errors.push(geoDependencyError);
@@ -1248,11 +1282,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (this.isTemplateMode) {
             return;
         }
-        const templateId = this.selectedSchema?.templateId ||
-            this.schemas.find(schema => !!schema.templateId)?.templateId ||
-            '';
+        const templateId = this.selectedSchema?.templateId || '';
         if (!templateId) {
-            this.loadedAppliedTemplateId = '';
             this.schemaTemplate = null;
             return;
         }
@@ -1267,27 +1298,39 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         templateId: string,
         topicId: string
     ): Observable<ISchemaTemplate | null> {
-        const cacheKey = `${templateId}:${topicId}`;
-        if (cacheKey === this.loadedAppliedTemplateId && this.schemaTemplate) {
-            return of(this.schemaTemplate);
-        }
         if (!topicId) {
             return of(null);
         }
-        this.loadedAppliedTemplateId = cacheKey;
-        return this.schemaTemplatesService.getAppliedByPolicyTopic(topicId).pipe(
+        // The policy can have several templates applied; the locks that apply to
+        // this schema are the ones from the template the schema itself names.
+        return this.getAppliedTemplatesForTopic(topicId).pipe(
+            map((applied) => (applied || []).find((item) => item.id === templateId) || null),
             map((template) => template
                 ? ({
                     ...template,
                     config: template.config || { schemas: {} }
                 } as ISchemaTemplate)
                 : null
-            ),
-            catchError(() => {
-                this.loadedAppliedTemplateId = '';
-                return of(null);
-            })
+            )
         );
+    }
+
+    // One request per topic, shared and cached across every distinct templateId a
+    // policy's schemas name, so switching the selection between schemas owned by
+    // different applied templates no longer re-fetches the same topic's binding list.
+    private getAppliedTemplatesForTopic(topicId: string): Observable<ISchemaTemplate[]> {
+        let cached = this.appliedTemplateListByTopic.get(topicId);
+        if (!cached) {
+            cached = this.schemaTemplatesService.getAppliedByPolicyTopic(topicId).pipe(
+                shareReplay({ bufferSize: 1, refCount: false }),
+                catchError(() => {
+                    this.appliedTemplateListByTopic.delete(topicId);
+                    return of([]);
+                })
+            );
+            this.appliedTemplateListByTopic.set(topicId, cached);
+        }
+        return cached;
     }
 
     public toggleCanAddCustomFieldsToSelectedSchema(): void {
@@ -1323,6 +1366,38 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             return;
         }
         config.locked = this.canEditSelectedFieldInTemplate;
+        this.templateConfigDirty = true;
+    }
+
+    public setSelectedSchemaGuidelines(guidelines: string): void {
+        if (this.isTemplateReadonly) {
+            return;
+        }
+        const config = this.ensureSelectedSchemaConfig();
+        if (!config) {
+            return;
+        }
+        if (guidelines) {
+            config.guidelines = guidelines;
+        } else {
+            delete config.guidelines;
+        }
+        this.templateConfigDirty = true;
+    }
+
+    public setSelectedFieldGuidelines(guidelines: string): void {
+        if (this.isTemplateReadonly) {
+            return;
+        }
+        const config = this.ensureSelectedFieldConfig();
+        if (!config) {
+            return;
+        }
+        if (guidelines) {
+            config.guidelines = guidelines;
+        } else {
+            delete config.guidelines;
+        }
         this.templateConfigDirty = true;
     }
 
@@ -1638,7 +1713,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const createObs = toCreate.map(s =>
             this.schemaService.create(s.category ?? this.getCategory(), s, this.topic).pipe(
                 map((schemas: ISchema[]) => {
-                    const saved = schemas.find(r => r.uuid === s.uuid && r.topicId === this.topic);
+                    const matches = schemas.filter(r => r.uuid === s.uuid);
+                    const saved = matches.find(r => r.topicId === this.topic) ?? matches[0];
                     const savedId = saved?.id || (saved as any)?._id;
                     if (savedId) {
                         s.id = savedId;
@@ -1732,6 +1808,59 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.markDirty();
     }
 
+    public openRichTextPresetDialog(target: 'default' | 'suggest' | 'test'): void {
+        this.richTextPresetTarget = target;
+    }
+
+    public isFormattedPresetField(): boolean {
+        const type = this.selectedField ? this.getFieldValueInputType(this.selectedField) : '';
+        return type === 'richText';
+    }
+
+    public getPresetPreviewHtml(value: any): string {
+        if (typeof value !== 'string' || !value) {
+            return '';
+        }
+        return markdownToHtml(value);
+    }
+
+    public isRichTextPresetLinkOpen(): boolean {
+        return !!this.richTextPresetEditor?.showLinkDialog;
+    }
+
+    public closeRichTextPresetDialog(): void {
+        if (this.isRichTextPresetLinkOpen()) {
+            return;
+        }
+        this.richTextPresetEditor?.cancelLink();
+        this.richTextPresetTarget = null;
+    }
+
+    public getRichTextPresetDialogTitle(): string {
+        if (this.richTextPresetTarget === 'default') { return 'Default value'; }
+        if (this.richTextPresetTarget === 'suggest') { return 'Suggested value'; }
+        return 'Test value';
+    }
+
+    public getRichTextPresetValue(): string {
+        if (this.richTextPresetTarget === 'default') {
+            return typeof this.selectedField?.default === 'string' ? this.selectedField.default : '';
+        }
+        if (this.richTextPresetTarget === 'suggest') {
+            return typeof this.selectedField?.suggest === 'string' ? this.selectedField.suggest : '';
+        }
+        const value = this.getFieldTestValue();
+        return typeof value === 'string' ? value : '';
+    }
+
+    public setRichTextPresetValue(value: string): void {
+        if (this.richTextPresetTarget === 'default' || this.richTextPresetTarget === 'suggest') {
+            this.setFieldPresetValue(this.richTextPresetTarget, value);
+        } else if (this.richTextPresetTarget === 'test') {
+            this.setFieldTestValue(value);
+        }
+    }
+
     private removeGeoDependenciesByField(field: SchemaField, fields: SchemaField[]): void {
         for (const candidate of fields) {
             if (candidate.dependency?.kind === 'geo' && candidate.dependency.on === field.name) {
@@ -1771,6 +1900,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (Array.isArray(f.enum)) { clone.enum = [...f.enum]; }
         if (Array.isArray(f.fields)) { clone.fields = [...f.fields]; }
         if (Array.isArray(f.availableOptions)) { clone.availableOptions = [...f.availableOptions]; }
+        if (Array.isArray(f.tableColumns)) {
+            clone.tableColumns = f.tableColumns.map((column: any) => ({ ...column }));
+        }
         this.clearTemplateFieldMetadata(clone);
         const srcIdx = targetFields.indexOf(field);
         if (srcIdx !== -1) {
@@ -1853,6 +1985,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (key === 'date') { return 'date'; }
         if (key === 'time') { return 'time'; }
         if (key === 'dateTime') { return 'datetime-local'; }
+        if (key === 'richText') { return 'richText'; }
+
         return 'text';
     }
 
@@ -1990,6 +2124,197 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public get selectedFieldIsGeoJson(): boolean {
         return this.selectedField ? this.getFieldCurrentType(this.selectedField) === 'geo' : false;
+    }
+
+    private readonly tableColumnKeyUnlocked = new WeakSet<object>();
+
+    public get selectedFieldIsTable(): boolean {
+        return this.selectedField ? this.getFieldCurrentType(this.selectedField) === 'table' : false;
+    }
+
+    public get selectedFieldTableColumnsEnabled(): boolean {
+        return Array.isArray(this.selectedField?.tableColumns);
+    }
+
+    public get selectedFieldTableColumns(): { name: string; key: string }[] {
+        return this.selectedField?.tableColumns ?? [];
+    }
+
+    public toggleTableColumns(): void {
+        if (!this.selectedField) { return; }
+        if (Array.isArray(this.selectedField.tableColumns)) {
+            delete this.selectedField.tableColumns;
+        } else {
+            this.selectedField.tableColumns = [{ name: '', key: '' }];
+        }
+        this.markDirty();
+    }
+
+    public addTableColumn(): void {
+        if (!Array.isArray(this.selectedField?.tableColumns)) { return; }
+        this.selectedField.tableColumns.push({ name: '', key: '' });
+        this.markDirty();
+    }
+
+    public removeTableColumn(index: number): void {
+        const columns = this.selectedField?.tableColumns;
+        if (!Array.isArray(columns) || columns.length <= 1) { return; }
+        if (index < 0 || index >= columns.length) { return; }
+        columns.splice(index, 1);
+        this.markDirty();
+    }
+
+    public moveTableColumn(index: number, offset: number): void {
+        const columns = this.selectedField?.tableColumns;
+        if (!Array.isArray(columns)) { return; }
+        const target = index + offset;
+        if (index < 0 || index >= columns.length) { return; }
+        if (target < 0 || target >= columns.length) { return; }
+        const [moved] = columns.splice(index, 1);
+        columns.splice(target, 0, moved);
+        this.markDirty();
+    }
+
+    public setTableColumnValue(index: number, key: 'name' | 'key', value: string): void {
+        const columns = this.selectedField?.tableColumns;
+        if (!Array.isArray(columns) || index < 0 || index >= columns.length) { return; }
+        const column = columns[index];
+        const derivedKey = key === 'name' && !this.isTableColumnKeyUnlocked(column);
+        column[key] = value;
+        if (derivedKey) {
+            column.key = SchemasConfigurationComponent.toColumnKey(value);
+        }
+        this.markDirty();
+    }
+
+    public isTableColumnKeyUnlocked(column: { name: string; key: string }): boolean {
+        if (this.tableColumnKeyUnlocked.has(column)) { return true; }
+        return !!column.key && column.key !== SchemasConfigurationComponent.toColumnKey(column.name);
+    }
+
+    public tableColumnDragIndex = -1;
+    public tableColumnDragOverIndex = -1;
+    public isTableColumnDragActive = false;
+    private _tableColumnMouseMove: ((event: MouseEvent) => void) | null = null;
+    private _tableColumnMouseUp: ((event: MouseEvent) => void) | null = null;
+    private _tableColumnStartX = 0;
+    private _tableColumnStartY = 0;
+    public tableColumnFloatX = 0;
+    public tableColumnFloatY = 0;
+    public tableColumnFloatWidth = 0;
+    private _tableColumnOffsetX = 0;
+    private _tableColumnOffsetY = 0;
+
+    public get tableColumnDragged(): { name: string; key: string } | null {
+        const columns = this.selectedField?.tableColumns;
+        if (!Array.isArray(columns)) { return null; }
+        return columns[this.tableColumnDragIndex] ?? null;
+    }
+
+    public get selectedFieldTableColumnsDraggable(): boolean {
+        return this.selectedFieldTableColumns.length > 1;
+    }
+
+    public onTableColumnMouseDown(event: MouseEvent, index: number): void {
+        if (!this.selectedFieldTableColumnsDraggable) { return; }
+        event.preventDefault();
+        if (this._tableColumnMouseMove) { this.clearTableColumnDrag(); }
+        const row = (event.currentTarget as HTMLElement).closest('.sc-table-column');
+        if (row) {
+            const rect = row.getBoundingClientRect();
+            this.tableColumnFloatWidth = rect.width;
+            this._tableColumnOffsetX = event.clientX - rect.left;
+            this._tableColumnOffsetY = event.clientY - rect.top;
+        }
+        this.tableColumnDragIndex = index;
+        this.tableColumnDragOverIndex = -1;
+        this.isTableColumnDragActive = false;
+        this._tableColumnStartX = event.clientX;
+        this._tableColumnStartY = event.clientY;
+        document.body.style.userSelect = 'none';
+        document.body.style.cursor = 'grabbing';
+        this._tableColumnMouseMove = (e: MouseEvent) => this.onTableColumnMouseMove(e);
+        this._tableColumnMouseUp = () => this._zone.run(() => this.onTableColumnMouseUp());
+        document.addEventListener('mousemove', this._tableColumnMouseMove);
+        document.addEventListener('mouseup', this._tableColumnMouseUp);
+    }
+
+    private onTableColumnMouseMove(event: MouseEvent): void {
+        if (this.tableColumnDragIndex === -1) { return; }
+        const dx = event.clientX - this._tableColumnStartX;
+        const dy = event.clientY - this._tableColumnStartY;
+        if (!this.isTableColumnDragActive && Math.hypot(dx, dy) > 4) {
+            this.isTableColumnDragActive = true;
+        }
+        if (!this.isTableColumnDragActive) { return; }
+        this.tableColumnFloatX = event.clientX - this._tableColumnOffsetX;
+        this.tableColumnFloatY = event.clientY - this._tableColumnOffsetY;
+        this.updateTableColumnDropIndicator(event.clientY);
+        this._cdr.detectChanges();
+    }
+
+    private onTableColumnMouseUp(): void {
+        this.applyTableColumnDrag();
+        this.clearTableColumnDrag();
+    }
+
+    private updateTableColumnDropIndicator(clientY: number): void {
+        const root = this._elRef.nativeElement as HTMLElement;
+        const rows = Array.from(root.querySelectorAll<HTMLElement>('.sc-table-column'));
+        this.tableColumnDragOverIndex = -1;
+        for (let i = 0; i < rows.length; i++) {
+            if (i === this.tableColumnDragIndex) { continue; }
+            const rect = rows[i].getBoundingClientRect();
+            if (clientY >= rect.top && clientY <= rect.bottom) {
+                this.tableColumnDragOverIndex = i;
+                return;
+            }
+        }
+    }
+
+    public applyTableColumnDrag(): void {
+        if (!this.isTableColumnDragActive) { return; }
+        const from = this.tableColumnDragIndex;
+        const to = this.tableColumnDragOverIndex;
+        if (from === -1 || to === -1 || from === to) { return; }
+        this.moveTableColumn(from, to - from);
+    }
+
+    public clearTableColumnDrag(): void {
+        if (this._tableColumnMouseMove) {
+            document.removeEventListener('mousemove', this._tableColumnMouseMove);
+            this._tableColumnMouseMove = null;
+        }
+        if (this._tableColumnMouseUp) {
+            document.removeEventListener('mouseup', this._tableColumnMouseUp);
+            this._tableColumnMouseUp = null;
+        }
+        document.body.style.userSelect = '';
+        document.body.style.cursor = '';
+        this.tableColumnDragIndex = -1;
+        this.tableColumnDragOverIndex = -1;
+        this.isTableColumnDragActive = false;
+    }
+
+    public toggleTableColumnKeyLock(index: number): void {
+        const columns = this.selectedField?.tableColumns;
+        if (!Array.isArray(columns) || index < 0 || index >= columns.length) { return; }
+        const column = columns[index];
+        if (this.isTableColumnKeyUnlocked(column)) {
+            this.tableColumnKeyUnlocked.delete(column);
+            column.key = SchemasConfigurationComponent.toColumnKey(column.name);
+        } else {
+            this.tableColumnKeyUnlocked.add(column);
+        }
+        this.markDirty();
+    }
+
+    private static toColumnKey(name: string): string {
+        return (name || '')
+            .trim()
+            .toLowerCase()
+            .replace(/\s+/g, '_')
+            .replace(/[^a-z0-9_]/g, '');
     }
 
     public get selectedFieldCanBeArray(): boolean {
@@ -2222,7 +2547,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         f.unitSystem = ft.unitSystem || '';
         delete f.fields;
         delete f.enum;
+        delete f.tableColumns;
         if (ft.key === 'enum') { f.enum = []; }
+        if (ft.key === 'table') { f.tableColumns = [{ name: '', key: '' }]; }
         if (SchemasConfigurationComponent.NON_UPDATABLE_TYPES.has(ft.key)) { f.isUpdatable = false; }
         f.default = null;
         f.suggest = null;
@@ -2250,6 +2577,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     private resetArrayDependencyEditor(): void {
+        this.editingArrayDependency = null;
         this.newArrayDependencyField = null;
         this.newArrayDependencyOn = null;
         this.newArrayDependencyTitle = null;
@@ -2424,9 +2752,14 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return this.arrayDependencies.length;
     }
 
-    private createsArrayDependencyCycle(field: string, on: string): boolean {
+    private createsArrayDependencyCycle(
+        field: string,
+        on: string,
+        ignore: ISchemaArrayDependency | null,
+    ): boolean {
         const graph = new Map<string, string[]>();
         for (const dependency of this.arrayDependencies) {
+            if (dependency === ignore) { continue; }
             const source = dependency.on.join('.');
             const targets = graph.get(source) ?? [];
             targets.push(dependency.field.join('.'));
@@ -2445,24 +2778,56 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return false;
     }
 
-    public canAddArrayDependency(): boolean {
+    public canApplyArrayDependency(): boolean {
         const field = this.newArrayDependencyField;
         const on = this.newArrayDependencyOn;
+        const ignore = this.editingArrayDependency;
         if (!field || !on || field === on) { return false; }
         const availablePaths = new Set(
             this.arrayDependencyFieldGroups.flatMap(group => group.items.map(item => item.pathStr))
         );
         if (!availablePaths.has(field) || !availablePaths.has(on)) { return false; }
-        if (this.arrayDependencies.some(item => item.field.join('.') === field)) { return false; }
-        if (this.arrayDependencies.some(item => item.on.join('.') === field)) { return false; }
-        return !this.createsArrayDependencyCycle(field, on);
+        const others = this.arrayDependencies.filter(item => item !== ignore);
+        if (others.some(item => item.field.join('.') === field)) { return false; }
+        if (!ignore && others.some(item => item.on.join('.') === field)) { return false; }
+        return !this.createsArrayDependencyCycle(field, on, ignore);
     }
 
-    public addArrayDependency(): void {
+    public isEditingArrayDependency(dependency: ISchemaArrayDependency): boolean {
+        return this.editingArrayDependency === dependency;
+    }
+
+    public startEditArrayDependency(dependency: ISchemaArrayDependency): void {
+        this.editingArrayDependency = dependency;
+        this.newArrayDependencyOn = dependency.on.join('.');
+        this.newArrayDependencyField = dependency.field.join('.');
+        this.newArrayDependencyTitle = dependency.title?.length
+            ? dependency.title.join('.')
+            : null;
+        this.newArrayDependencyMappingSource = null;
+        this.newArrayDependencyMappingTarget = null;
+        this.newArrayDependencyValueMappings = (dependency.valueMappings ?? [])
+            .map(item => ({ source: [...item.source], target: [...item.target] }));
+        this.scrollArrayDependencyEditorIntoView();
+    }
+
+    public cancelEditArrayDependency(): void {
+        this.resetArrayDependencyEditor();
+    }
+
+    private scrollArrayDependencyEditorIntoView(): void {
+        setTimeout(() => {
+            this.arrayDependencyEditor?.nativeElement
+                ?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+    }
+
+    public applyArrayDependency(): void {
         const schema = this.selectedSchema;
         const field = this.newArrayDependencyField;
         const on = this.newArrayDependencyOn;
-        if (!schema || !field || !on || !this.canAddArrayDependency()) { return; }
+        const editing = this.editingArrayDependency;
+        if (!schema || !field || !on || !this.canApplyArrayDependency()) { return; }
         const dependency: ISchemaArrayDependency = {
             field: field.split('.'),
             on: on.split('.'),
@@ -2475,7 +2840,15 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             dependency.valueMappings = this.newArrayDependencyValueMappings
                 .map(item => ({ source: [...item.source], target: [...item.target] }));
         }
-        schema.arrayDependencies = [...(schema.arrayDependencies ?? []), dependency];
+        const current = schema.arrayDependencies ?? [];
+        const index = editing ? current.indexOf(editing) : -1;
+        if (editing && index < 0) {
+            this.resetArrayDependencyEditor();
+            return;
+        }
+        schema.arrayDependencies = index < 0
+            ? [...current, dependency]
+            : current.map((item, position) => position === index ? dependency : item);
         this.resetArrayDependencyEditor();
         this.markDirty();
     }
@@ -2483,6 +2856,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public removeArrayDependency(dependency: ISchemaArrayDependency): void {
         const schema = this.selectedSchema;
         if (!schema) { return; }
+        if (this.editingArrayDependency === dependency) {
+            this.resetArrayDependencyEditor();
+        }
         schema.arrayDependencies = (schema.arrayDependencies ?? [])
             .filter(item => item !== dependency);
         this.markDirty();

@@ -1,5 +1,6 @@
 import { of, Subject, throwError } from 'rxjs';
 import { SchemasConfigurationComponent } from './schemas-configuration.component';
+import { FIELD_TYPES_UI } from 'src/app/modules/schema-engine/field-type-ui';
 
 describe('SchemasConfigurationComponent', () => {
 
@@ -16,6 +17,8 @@ describe('SchemasConfigurationComponent', () => {
             conditions: [],
             fields: overrides.fields || [],
             document: overrides.document || { $defs: {} },
+            templateId: overrides.templateId,
+            templateSchemaId: overrides.templateSchemaId,
             update: () => {},
         };
         return schema;
@@ -93,6 +96,160 @@ describe('SchemasConfigurationComponent', () => {
 
         return component;
     }
+
+    describe('Rich Text preset dialog', () => {
+        it('opens the requested preset and routes its value back to the selected field', () => {
+            const component = createComponent();
+            component.selectedField = makeField({ default: '<p>Default</p>' });
+            component.markDirty = jasmine.createSpy('markDirty');
+
+            component.openRichTextPresetDialog('default');
+            component.setRichTextPresetValue('<p>Changed</p>');
+
+            expect(component.richTextPresetTarget).toBe('default');
+            expect(component.getRichTextPresetDialogTitle()).toBe('Default value');
+            expect(component.getRichTextPresetValue()).toBe('<p>Changed</p>');
+            expect(component.selectedField.default).toBe('<p>Changed</p>');
+            expect(component.markDirty).toHaveBeenCalled();
+        });
+
+        it('writes a Rich Text test value through the existing example value flow', () => {
+            const component = createComponent();
+            component.selectedField = makeField();
+            component.markDirty = jasmine.createSpy('markDirty');
+
+            component.openRichTextPresetDialog('test');
+            component.setRichTextPresetValue('<p>Example</p>');
+
+            expect(component.getRichTextPresetDialogTitle()).toBe('Test value');
+            expect(component.selectedField.examples).toEqual(['<p>Example</p>']);
+        });
+
+        it('refuses to close while the editor still has its link dialog open', () => {
+            const component = createComponent();
+            component.selectedField = makeField({ default: '<p>Default</p>' });
+            component.richTextPresetEditor = { showLinkDialog: true, cancelLink: jasmine.createSpy('cancelLink') };
+
+            component.openRichTextPresetDialog('default');
+            component.closeRichTextPresetDialog();
+
+            expect(component.isRichTextPresetLinkOpen()).toBeTrue();
+            expect(component.richTextPresetTarget).toBe('default');
+            expect(component.richTextPresetEditor.cancelLink).not.toHaveBeenCalled();
+        });
+
+        it('clears the editor link state when it does close', () => {
+            const component = createComponent();
+            component.selectedField = makeField({ default: '<p>Default</p>' });
+            component.richTextPresetEditor = { showLinkDialog: false, cancelLink: jasmine.createSpy('cancelLink') };
+
+            component.openRichTextPresetDialog('default');
+            component.closeRichTextPresetDialog();
+
+            expect(component.richTextPresetTarget).toBeNull();
+            expect(component.richTextPresetEditor.cancelLink).toHaveBeenCalled();
+        });
+
+        it('closes when no editor is rendered at all', () => {
+            const component = createComponent();
+            component.selectedField = makeField();
+
+            component.openRichTextPresetDialog('test');
+            component.closeRichTextPresetDialog();
+
+            expect(component.isRichTextPresetLinkOpen()).toBeFalse();
+            expect(component.richTextPresetTarget).toBeNull();
+        });
+
+        it('survives two pencil clicks arriving for the same preset', () => {
+            const component = createComponent();
+            component.selectedField = makeField({ suggest: '<p>Suggested</p>' });
+            component.markDirty = jasmine.createSpy('markDirty');
+
+            component.openRichTextPresetDialog('suggest');
+            component.openRichTextPresetDialog('suggest');
+
+            expect(component.richTextPresetTarget).toBe('suggest');
+            expect(component.getRichTextPresetValue()).toBe('<p>Suggested</p>');
+        });
+    });
+
+    describe('schema template guidelines', () => {
+        it('stores selected schema guidelines in template config and marks it dirty', () => {
+            const schema = makeSchema({ id: 'schema-1', templateSchemaId: 'template-schema-1' });
+            const component = createComponent({
+                url: '/schema-template-configuration',
+                selectedSchema: schema,
+                schemaTemplate: { id: 'template-1', status: 'DRAFT', config: {} },
+            });
+
+            component.setSelectedSchemaGuidelines('Use this schema for project registration.');
+
+            expect(component.schemaTemplate.config.schemas['template-schema-1'].guidelines)
+                .toBe('Use this schema for project registration.');
+            expect(component.selectedSchemaGuidelines).toBe('Use this schema for project registration.');
+            expect(component.hasUnsavedChanges).toBeTrue();
+        });
+
+        it('stores selected field guidelines in template config and marks it dirty', () => {
+            const field = makeField({ name: 'field_1', templateFieldId: 'template-field-1' });
+            const schema = makeSchema({
+                id: 'schema-1',
+                templateSchemaId: 'template-schema-1',
+                fields: [field],
+            });
+            const component = createComponent({
+                url: '/schema-template-configuration',
+                selectedSchema: schema,
+                schemaTemplate: { id: 'template-1', status: 'DRAFT', config: {} },
+            });
+            component.selectedField = field;
+
+            component.setSelectedFieldGuidelines('Use the external registry identifier.');
+
+            expect(component.schemaTemplate.config.schemas['template-schema-1'].fields['template-field-1'].guidelines)
+                .toBe('Use the external registry identifier.');
+            expect(component.selectedFieldGuidelines).toBe('Use the external registry identifier.');
+            expect(component.hasUnsavedChanges).toBeTrue();
+        });
+
+        it('does not change guidelines on a published template', () => {
+            const field = makeField({ name: 'field_1', templateFieldId: 'template-field-1' });
+            const schema = makeSchema({
+                id: 'schema-1',
+                templateSchemaId: 'template-schema-1',
+                fields: [field],
+            });
+            const component = createComponent({
+                type: 'template',
+                selectedSchema: schema,
+                schemaTemplate: {
+                    id: 'template-1',
+                    status: 'PUBLISHED',
+                    config: {
+                        schemas: {
+                            'template-schema-1': {
+                                guidelines: 'Existing schema note',
+                                fields: {
+                                    'template-field-1': {
+                                        guidelines: 'Existing field note',
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+            component.selectedField = field;
+
+            component.setSelectedSchemaGuidelines('Changed schema note');
+            component.setSelectedFieldGuidelines('Changed field note');
+
+            expect(component.selectedSchemaGuidelines).toBe('Existing schema note');
+            expect(component.selectedFieldGuidelines).toBe('Existing field note');
+            expect(component.hasUnsavedChanges).toBeFalse();
+        });
+    });
 
     describe('a drill edit followed by a sidebar search', () => {
 
@@ -869,6 +1026,776 @@ describe('SchemasConfigurationComponent', () => {
                 expect(sentCount(component))
                     .toBeGreaterThan(0, `enabled button sent nothing for state: ${state.name}`);
             });
+        });
+    });
+
+    describe('getFieldValueInputType', () => {
+        const fieldTypes = [
+            { key: 'string', schemaType: 'string' },
+            { key: 'number', schemaType: 'number' },
+            { key: 'boolean', schemaType: 'boolean' },
+            { key: 'date', schemaType: 'string', format: 'date' },
+            { key: 'hederaAccount', schemaType: 'string', pattern: '^\\d+\\.\\d+\\.\\d+$', customType: 'hederaAccount' },
+            { key: 'richText', schemaType: 'string', customType: 'richText' },
+        ];
+
+        function typeOf(field: any): string {
+            const component = createComponent();
+            component.fieldTypes = fieldTypes;
+            return component.getFieldValueInputType(field);
+        }
+
+        it('asks for the rich text editor on a rich text field', () => {
+            expect(typeOf(makeField({ type: 'string', customType: 'richText' }))).toBe('richText');
+        });
+
+        it('keeps a plain string field on a text input', () => {
+            expect(typeOf(makeField({ type: 'string' }))).toBe('text');
+        });
+
+        it('keeps the other scalar types on their own inputs', () => {
+            expect(typeOf(makeField({ type: 'boolean' }))).toBe('boolean');
+            expect(typeOf(makeField({ type: 'number' }))).toBe('number');
+            expect(typeOf(makeField({ type: 'string', format: 'date' }))).toBe('date');
+        });
+
+        it('does not treat another custom type as rich text', () => {
+            const account = makeField({
+                type: 'string',
+                pattern: '^\\d+\\.\\d+\\.\\d+$',
+                customType: 'hederaAccount',
+            });
+            expect(typeOf(account)).not.toBe('richText');
+        });
+
+        it('no longer knows a markdown custom type', () => {
+            expect(typeOf(makeField({ type: 'string', customType: 'markdown' }))).toBe('text');
+        });
+    });
+
+    describe('Rich Text preset preview', () => {
+
+        function componentWithRichTextField(): any {
+            const component = createComponent();
+            component.fieldTypes = [{ key: 'richText', schemaType: 'string', customType: 'richText' }];
+            component.selectedField = makeField({ type: 'string', customType: 'richText' });
+            return component;
+        }
+
+        it('treats a rich text field as the formatted preset field', () => {
+            expect(componentWithRichTextField().isFormattedPresetField()).toBeTrue();
+        });
+
+        it('renders the stored markdown as html', () => {
+            const component = componentWithRichTextField();
+            expect(component.getPresetPreviewHtml('# Title')).toBe('<h1>Title</h1>');
+            expect(component.getPresetPreviewHtml('a **bold** word'))
+                .toBe('<p>a <b>bold</b> word</p>');
+        });
+
+        it('returns an empty string for a value that is not text', () => {
+            const component = componentWithRichTextField();
+            expect(component.getPresetPreviewHtml(null)).toBe('');
+            expect(component.getPresetPreviewHtml(42)).toBe('');
+            expect(component.getPresetPreviewHtml('')).toBe('');
+        });
+
+        it('clears a default and a suggested value from the card', () => {
+            const component = componentWithRichTextField();
+            component.selectedField.default = '# Title';
+            component.selectedField.suggest = '# Other';
+            component.markDirty = jasmine.createSpy('markDirty');
+
+            component.clearFieldValue('default');
+            component.clearFieldValue('suggest');
+
+            expect(component.selectedField.default).toBeNull();
+            expect(component.selectedField.suggest).toBeNull();
+            expect(component.markDirty).toHaveBeenCalledTimes(2);
+        });
+
+        it('clears a test value from the card', () => {
+            const component = componentWithRichTextField();
+            component.selectedField.examples = ['# Title'];
+            component.markDirty = jasmine.createSpy('markDirty');
+
+            component.clearFieldTestValue();
+
+            expect(component.getFieldTestValue()).toBeNull();
+            expect(component.markDirty).toHaveBeenCalled();
+        });
+    });
+
+    describe('table column configuration', () => {
+
+        function tableComponent(fieldOverrides: any = {}): any {
+            const field = makeField({ type: 'string', customType: 'table', ...fieldOverrides });
+            const schema = makeSchema({ id: 'root', iri: '#root', fields: [field] });
+            const component = createComponent({ schemas: [schema], selectedSchema: schema });
+            component.fieldTypes = FIELD_TYPES_UI;
+            component.tableColumnKeyUnlocked = new WeakSet<object>();
+            component.tableColumnDragIndex = -1;
+            component.tableColumnDragOverIndex = -1;
+            component.isTableColumnDragActive = false;
+            component.selectedField = field;
+            return component;
+        }
+
+        function typeUi(key: string): any {
+            return FIELD_TYPES_UI.find(ft => ft.key === key);
+        }
+
+        it('shows the section only for the Table type', () => {
+            const component = tableComponent();
+            expect(component.selectedFieldIsTable).toBeTrue();
+
+            component.selectedField = makeField({ type: 'string', customType: '' });
+            expect(component.selectedFieldIsTable).toBeFalse();
+        });
+
+        it('reads the toggle as off when the field has no declared columns', () => {
+            const component = tableComponent();
+
+            expect(component.selectedFieldTableColumnsEnabled).toBeFalse();
+            expect(component.selectedFieldTableColumns).toEqual([]);
+        });
+
+        it('turning the toggle on creates exactly one empty row', () => {
+            const component = tableComponent();
+
+            component.toggleTableColumns();
+
+            expect(component.selectedFieldTableColumnsEnabled).toBeTrue();
+            expect(component.selectedField.tableColumns).toEqual([{ name: '', key: '' }]);
+        });
+
+        it('turning the toggle off removes the property entirely', () => {
+            const component = tableComponent({ tableColumns: [{ name: 'Year', key: 'year' }] });
+
+            component.toggleTableColumns();
+
+            expect(component.selectedFieldTableColumnsEnabled).toBeFalse();
+            expect('tableColumns' in component.selectedField).toBeFalse();
+        });
+
+        it('adds an empty row at the end', () => {
+            const component = tableComponent({ tableColumns: [{ name: 'Year', key: 'year' }] });
+
+            component.addTableColumn();
+
+            expect(component.selectedField.tableColumns).toEqual([
+                { name: 'Year', key: 'year' },
+                { name: '', key: '' },
+            ]);
+        });
+
+        it('removes a row but refuses to remove the last one', () => {
+            const component = tableComponent({
+                tableColumns: [{ name: 'Year', key: 'year' }, { name: 'CO2', key: 'co2' }],
+            });
+
+            component.removeTableColumn(0);
+            expect(component.selectedField.tableColumns).toEqual([{ name: 'CO2', key: 'co2' }]);
+
+            component.removeTableColumn(0);
+            expect(component.selectedField.tableColumns).toEqual([{ name: 'CO2', key: 'co2' }]);
+        });
+
+        it('reorders rows and refuses to move past either end', () => {
+            const component = tableComponent({
+                tableColumns: [
+                    { name: 'A', key: 'a' },
+                    { name: 'B', key: 'b' },
+                    { name: 'C', key: 'c' },
+                ],
+            });
+
+            component.moveTableColumn(2, -1);
+            expect(component.selectedField.tableColumns.map((c: any) => c.key)).toEqual(['a', 'c', 'b']);
+
+            component.moveTableColumn(0, -1);
+            expect(component.selectedField.tableColumns.map((c: any) => c.key)).toEqual(['a', 'c', 'b']);
+
+            component.moveTableColumn(2, 1);
+            expect(component.selectedField.tableColumns.map((c: any) => c.key)).toEqual(['a', 'c', 'b']);
+        });
+
+        function armDrag(component: any, from: number, over: number): void {
+            component.tableColumnDragIndex = from;
+            component.tableColumnDragOverIndex = over;
+            component.isTableColumnDragActive = true;
+        }
+
+        it('gives a duplicated field its own copy of the columns', () => {
+            const component = tableComponent({
+                tableColumns: [{ name: 'Year', key: 'year' }, { name: 'CO2', key: 'co2' }],
+            });
+            const original = component.selectedField;
+
+            component.duplicateField(original, { stopPropagation: () => {} } as any);
+
+            const fields = component.selectedSchema.fields;
+            const clone = fields[fields.indexOf(original) + 1];
+
+            expect(clone).toBeDefined();
+            expect(clone.tableColumns).toEqual(original.tableColumns);
+            expect(clone.tableColumns).not.toBe(original.tableColumns);
+
+            clone.tableColumns[0].name = 'Changed';
+            expect(original.tableColumns[0].name).toBe('Year');
+        });
+
+        it('refuses to start a drag while there is only one column', () => {
+            const component = tableComponent({ tableColumns: [{ name: 'A', key: 'a' }] });
+            const event: any = { preventDefault: () => {}, clientX: 0, clientY: 0, currentTarget: null };
+
+            expect(component.selectedFieldTableColumnsDraggable).toBeFalse();
+
+            component.onTableColumnMouseDown(event, 0);
+
+            expect(component.tableColumnDragIndex).toBe(-1);
+            expect(component.isTableColumnDragActive).toBeFalse();
+        });
+
+        it('allows a drag once a second column exists', () => {
+            const component = tableComponent({
+                tableColumns: [{ name: 'A', key: 'a' }, { name: 'B', key: 'b' }],
+            });
+
+            expect(component.selectedFieldTableColumnsDraggable).toBeTrue();
+        });
+
+        it('exposes the dragged column for the floating card', () => {
+            const component = tableComponent({
+                tableColumns: [{ name: 'A', key: 'a' }, { name: 'B', key: 'b' }],
+            });
+
+            expect(component.tableColumnDragged).toBeNull();
+
+            component.tableColumnDragIndex = 1;
+
+            expect(component.tableColumnDragged).toEqual({ name: 'B', key: 'b' });
+        });
+
+        it('reorders a row onto the row it was dragged over', () => {
+            const component = tableComponent({
+                tableColumns: [
+                    { name: 'A', key: 'a' },
+                    { name: 'B', key: 'b' },
+                    { name: 'C', key: 'c' },
+                ],
+            });
+
+            armDrag(component, 0, 2);
+            component.applyTableColumnDrag();
+
+            expect(component.selectedField.tableColumns.map((c: any) => c.key)).toEqual(['b', 'c', 'a']);
+        });
+
+        it('reorders upwards as well as downwards', () => {
+            const component = tableComponent({
+                tableColumns: [
+                    { name: 'A', key: 'a' },
+                    { name: 'B', key: 'b' },
+                    { name: 'C', key: 'c' },
+                ],
+            });
+
+            armDrag(component, 2, 0);
+            component.applyTableColumnDrag();
+
+            expect(component.selectedField.tableColumns.map((c: any) => c.key)).toEqual(['c', 'a', 'b']);
+        });
+
+        it('does nothing when the row is dropped on itself', () => {
+            const component = tableComponent({
+                tableColumns: [{ name: 'A', key: 'a' }, { name: 'B', key: 'b' }],
+            });
+
+            armDrag(component, 1, 1);
+            component.applyTableColumnDrag();
+
+            expect(component.selectedField.tableColumns.map((c: any) => c.key)).toEqual(['a', 'b']);
+        });
+
+        it('does nothing when the pointer never passed the drag threshold', () => {
+            const component = tableComponent({
+                tableColumns: [{ name: 'A', key: 'a' }, { name: 'B', key: 'b' }],
+            });
+
+            component.tableColumnDragIndex = 0;
+            component.tableColumnDragOverIndex = 1;
+            component.isTableColumnDragActive = false;
+
+            component.applyTableColumnDrag();
+
+            expect(component.selectedField.tableColumns.map((c: any) => c.key)).toEqual(['a', 'b']);
+        });
+
+        it('does nothing when the drag ended outside every row', () => {
+            const component = tableComponent({
+                tableColumns: [{ name: 'A', key: 'a' }, { name: 'B', key: 'b' }],
+            });
+
+            armDrag(component, 0, -1);
+            component.applyTableColumnDrag();
+
+            expect(component.selectedField.tableColumns.map((c: any) => c.key)).toEqual(['a', 'b']);
+        });
+
+        it('clears the drag state and the document styles when the drag ends', () => {
+            const component = tableComponent({
+                tableColumns: [{ name: 'A', key: 'a' }, { name: 'B', key: 'b' }],
+            });
+            armDrag(component, 0, 1);
+
+            component.clearTableColumnDrag();
+
+            expect(component.tableColumnDragIndex).toBe(-1);
+            expect(component.tableColumnDragOverIndex).toBe(-1);
+            expect(component.isTableColumnDragActive).toBeFalse();
+            expect(document.body.style.userSelect).toBe('');
+            expect(document.body.style.cursor).toBe('');
+        });
+
+        it('writes a typed value into the right row and field', () => {
+            const component = tableComponent({
+                tableColumns: [{ name: '', key: '' }, { name: '', key: '' }],
+            });
+
+            component.setTableColumnValue(1, 'name', 'Site');
+
+            expect(component.selectedField.tableColumns[0]).toEqual({ name: '', key: '' });
+            expect(component.selectedField.tableColumns[1].name).toBe('Site');
+        });
+
+        it('derives the key from the name while the key is locked', () => {
+            const component = tableComponent({ tableColumns: [{ name: '', key: '' }] });
+
+            component.setTableColumnValue(0, 'name', 'CO2 (tonnes)');
+
+            expect(component.selectedField.tableColumns[0])
+                .toEqual({ name: 'CO2 (tonnes)', key: 'co2_tonnes' });
+        });
+
+        it('keeps the derived key in step with later edits to the name', () => {
+            const component = tableComponent({ tableColumns: [{ name: '', key: '' }] });
+
+            component.setTableColumnValue(0, 'name', 'Year');
+            expect(component.selectedField.tableColumns[0].key).toBe('year');
+
+            component.setTableColumnValue(0, 'name', 'Reporting Year');
+            expect(component.selectedField.tableColumns[0].key).toBe('reporting_year');
+        });
+
+        it('leaves the key empty when the name produces no usable slug', () => {
+            const component = tableComponent({ tableColumns: [{ name: '', key: '' }] });
+
+            component.setTableColumnValue(0, 'name', 'Год');
+
+            expect(component.selectedField.tableColumns[0].key).toBe('');
+        });
+
+        it('reports the key as locked while it matches the name', () => {
+            const component = tableComponent({ tableColumns: [{ name: 'Year', key: 'year' }] });
+            const column = component.selectedField.tableColumns[0];
+
+            expect(component.isTableColumnKeyUnlocked(column)).toBeFalse();
+        });
+
+        it('stops deriving the key once it has been unlocked', () => {
+            const component = tableComponent({ tableColumns: [{ name: 'Year', key: 'year' }] });
+            const column = component.selectedField.tableColumns[0];
+
+            component.toggleTableColumnKeyLock(0);
+            expect(component.isTableColumnKeyUnlocked(column)).toBeTrue();
+
+            component.setTableColumnValue(0, 'key', 'yr');
+            component.setTableColumnValue(0, 'name', 'Reporting Year');
+
+            expect(column.key).toBe('yr');
+            expect(column.name).toBe('Reporting Year');
+        });
+
+        it('locking again rebuilds the key from the current name', () => {
+            const component = tableComponent({ tableColumns: [{ name: 'Year', key: 'year' }] });
+            const column = component.selectedField.tableColumns[0];
+
+            component.toggleTableColumnKeyLock(0);
+            component.setTableColumnValue(0, 'key', 'yr');
+            component.setTableColumnValue(0, 'name', 'Reporting Year');
+            expect(column.key).toBe('yr');
+
+            component.toggleTableColumnKeyLock(0);
+
+            expect(component.isTableColumnKeyUnlocked(column)).toBeFalse();
+            expect(column.key).toBe('reporting_year');
+        });
+
+        it('follows the name again after it has been locked back', () => {
+            const component = tableComponent({ tableColumns: [{ name: 'Year', key: 'year' }] });
+            const column = component.selectedField.tableColumns[0];
+
+            component.toggleTableColumnKeyLock(0);
+            component.setTableColumnValue(0, 'key', 'yr');
+            component.toggleTableColumnKeyLock(0);
+
+            component.setTableColumnValue(0, 'name', 'Site Code');
+
+            expect(column.key).toBe('site_code');
+        });
+
+        it('treats a stored key that differs from its name as already unlocked', () => {
+            const component = tableComponent({ tableColumns: [{ name: 'Year', key: 'yr' }] });
+            const column = component.selectedField.tableColumns[0];
+
+            expect(component.isTableColumnKeyUnlocked(column)).toBeTrue();
+
+            component.setTableColumnValue(0, 'name', 'Reporting Year');
+
+            expect(column.key).toBe('yr');
+        });
+
+        it('keeps the unlocked key with its own row after a reorder', () => {
+            const component = tableComponent({
+                tableColumns: [{ name: 'A', key: 'a' }, { name: 'B', key: 'b' }],
+            });
+            component.toggleTableColumnKeyLock(1);
+
+            component.moveTableColumn(1, -1);
+
+            const moved = component.selectedField.tableColumns[0];
+            expect(moved.name).toBe('B');
+            expect(component.isTableColumnKeyUnlocked(moved)).toBeTrue();
+        });
+
+        it('seeds one row when the type becomes Table', () => {
+            const component = tableComponent({ customType: '' });
+
+            component.changeFieldType(typeUi('table'));
+
+            expect(component.selectedField.tableColumns).toEqual([{ name: '', key: '' }]);
+        });
+
+        it('drops the columns when the type stops being Table', () => {
+            const component = tableComponent({ tableColumns: [{ name: 'Year', key: 'year' }] });
+
+            component.changeFieldType(typeUi('string'));
+
+            expect('tableColumns' in component.selectedField).toBeFalse();
+        });
+
+        it('reports nothing while the toggle is off', () => {
+            const component = tableComponent();
+            const field = component.selectedField;
+
+            const errors = component.getFieldErrors(field, [field]);
+
+            expect(errors.some((e: string) => e.toLowerCase().includes('column'))).toBeFalse();
+        });
+
+        it('reports an empty display name', () => {
+            const component = tableComponent({ tableColumns: [{ name: '  ', key: 'year' }] });
+            const field = component.selectedField;
+
+            expect(component.getFieldErrors(field, [field]))
+                .toContain('Every column needs a display name');
+        });
+
+        it('reports an empty key', () => {
+            const component = tableComponent({ tableColumns: [{ name: 'Year', key: '' }] });
+            const field = component.selectedField;
+
+            expect(component.getFieldErrors(field, [field]))
+                .toContain('Every column needs a key');
+        });
+
+        it('reports a key with a space, once the keys are filled', () => {
+            const component = tableComponent({ tableColumns: [{ name: 'Year', key: 'the year' }] });
+            const field = component.selectedField;
+
+            expect(component.getFieldErrors(field, [field]))
+                .toContain('Column key must not contain spaces');
+        });
+
+        it('reports duplicate keys inside the same field', () => {
+            const component = tableComponent({
+                tableColumns: [{ name: 'Year', key: 'year' }, { name: 'Year again', key: 'year' }],
+            });
+            const field = component.selectedField;
+
+            expect(component.getFieldErrors(field, [field]))
+                .toContain('Column keys must be unique within the field');
+        });
+
+        it('reports an empty column list while the toggle is on', () => {
+            const component = tableComponent({ tableColumns: [] });
+            const field = component.selectedField;
+
+            expect(component.getFieldErrors(field, [field]))
+                .toContain('Table must have at least one column');
+        });
+
+        it('accepts a fully filled, unique column list', () => {
+            const component = tableComponent({
+                tableColumns: [{ name: 'Year', key: 'year' }, { name: 'CO2', key: 'co2_tonnes' }],
+            });
+            const field = component.selectedField;
+
+            const errors = component.getFieldErrors(field, [field]);
+
+            expect(errors.some((e: string) => e.toLowerCase().includes('column'))).toBeFalse();
+        });
+    });
+
+    describe('editing a saved repeatable field link', () => {
+
+        function arrayField(name: string, itemFields: string[] = ['a', 'b']): any {
+            return {
+                name,
+                title: name,
+                description: name,
+                type: `#${name}`,
+                isRef: true,
+                isArray: true,
+                readOnly: false,
+                fields: itemFields.map((item) => ({
+                    name: item,
+                    title: item,
+                    description: item,
+                    type: 'string',
+                    isRef: false,
+                    isArray: false,
+                    readOnly: false,
+                })),
+            };
+        }
+
+        function link(on: string, field: string, extra: any = {}): any {
+            return { on: on.split('.'), field: field.split('.'), kind: 'array', ...extra };
+        }
+
+        function createLinkComponent(links: any[], arrays: string[] = ['one', 'two', 'three']): any {
+            const schema = makeSchema({ id: 'a', fields: arrays.map((name) => arrayField(name)) });
+            schema.arrayDependencies = links;
+            const component = createComponent({ schemas: [schema], selectedSchema: schema });
+            component.resolveRefSchema = () => undefined;
+            component.editingArrayDependency = null;
+            component.newArrayDependencyOn = null;
+            component.newArrayDependencyField = null;
+            component.newArrayDependencyTitle = null;
+            component.newArrayDependencyMappingSource = null;
+            component.newArrayDependencyMappingTarget = null;
+            component.newArrayDependencyValueMappings = [];
+            component.dirtyCalls = 0;
+            component.markDirty = () => { component.dirtyCalls++; };
+            return component;
+        }
+
+        it('fills the form from the saved link and copies its pairs by value', () => {
+            const saved = link('one', 'two', {
+                title: ['a'],
+                valueMappings: [{ source: ['a'], target: ['b'] }],
+            });
+            const component = createLinkComponent([saved]);
+
+            component.startEditArrayDependency(saved);
+
+            expect(component.editingArrayDependency).toBe(saved);
+            expect(component.isEditingArrayDependency(saved)).toBeTrue();
+            expect(component.newArrayDependencyOn).toBe('one');
+            expect(component.newArrayDependencyField).toBe('two');
+            expect(component.newArrayDependencyTitle).toBe('a');
+            expect(component.newArrayDependencyMappingSource).toBeNull();
+            expect(component.newArrayDependencyMappingTarget).toBeNull();
+            expect(component.newArrayDependencyValueMappings).toEqual([{ source: ['a'], target: ['b'] }]);
+            expect(component.newArrayDependencyValueMappings[0]).not.toBe(saved.valueMappings[0]);
+            expect(component.newArrayDependencyValueMappings[0].source).not.toBe(saved.valueMappings[0].source);
+        });
+
+        it('leaves the display name empty when the saved link has none', () => {
+            const saved = link('one', 'two');
+            const component = createLinkComponent([saved]);
+
+            component.startEditArrayDependency(saved);
+
+            expect(component.newArrayDependencyTitle).toBeNull();
+            expect(component.newArrayDependencyValueMappings).toEqual([]);
+        });
+
+        it('clears the form and the editing state on cancel, leaving the saved link untouched', () => {
+            const saved = link('one', 'two', { title: ['a'] });
+            const component = createLinkComponent([saved]);
+            const before = component.selectedSchema.arrayDependencies;
+
+            component.startEditArrayDependency(saved);
+            component.cancelEditArrayDependency();
+
+            expect(component.editingArrayDependency).toBeNull();
+            expect(component.newArrayDependencyOn).toBeNull();
+            expect(component.newArrayDependencyField).toBeNull();
+            expect(component.newArrayDependencyTitle).toBeNull();
+            expect(component.selectedSchema.arrayDependencies).toBe(before);
+            expect(before[0]).toBe(saved);
+            expect(saved.title).toEqual(['a']);
+        });
+
+        it('accepts the edited link with its own unchanged values', () => {
+            const saved = link('one', 'two');
+            const component = createLinkComponent([saved]);
+
+            component.startEditArrayDependency(saved);
+
+            expect(component.canApplyArrayDependency()).toBeTrue();
+        });
+
+        it('accepts a changed source array for the edited link', () => {
+            const saved = link('one', 'two');
+            const component = createLinkComponent([saved]);
+
+            component.startEditArrayDependency(saved);
+            component.newArrayDependencyOn = 'three';
+
+            expect(component.canApplyArrayDependency()).toBeTrue();
+        });
+
+        it('rejects a dependent array another link already depends on', () => {
+            const edited = link('one', 'two');
+            const other = link('one', 'three');
+            const component = createLinkComponent([edited, other]);
+
+            component.startEditArrayDependency(edited);
+            component.newArrayDependencyField = 'three';
+
+            expect(component.canApplyArrayDependency()).toBeFalse();
+        });
+
+        it('rejects an edit that closes a cycle', () => {
+            const edited = link('one', 'two');
+            const chain = link('two', 'three');
+            const component = createLinkComponent([edited, chain]);
+
+            component.startEditArrayDependency(edited);
+            component.newArrayDependencyOn = 'three';
+            component.newArrayDependencyField = 'two';
+
+            expect(component.canApplyArrayDependency()).toBeFalse();
+        });
+
+        it('accepts an edit that leaves a longer chain unclosed', () => {
+            const edited = link('one', 'two');
+            const chain = link('two', 'three');
+            const component = createLinkComponent([edited, chain]);
+
+            component.startEditArrayDependency(edited);
+            component.newArrayDependencyOn = 'three';
+            component.newArrayDependencyField = 'one';
+
+            expect(component.canApplyArrayDependency()).toBeTrue();
+        });
+
+        it('accepts re-saving a link whose dependent is itself a source', () => {
+            const edited = link('one', 'two');
+            const chain = link('two', 'three');
+            const component = createLinkComponent([edited, chain]);
+
+            component.startEditArrayDependency(edited);
+
+            expect(component.canApplyArrayDependency()).toBeTrue();
+        });
+
+        it('still refuses to add a link whose dependent is already a source', () => {
+            const chain = link('two', 'three');
+            const component = createLinkComponent([chain]);
+
+            component.newArrayDependencyOn = 'one';
+            component.newArrayDependencyField = 'two';
+
+            expect(component.canApplyArrayDependency()).toBeFalse();
+        });
+
+        it('accepts an edit whose only cycle ran through the edge being replaced', () => {
+            const saved = link('one', 'two');
+            const component = createLinkComponent([saved]);
+
+            component.startEditArrayDependency(saved);
+            component.newArrayDependencyOn = 'two';
+            component.newArrayDependencyField = 'one';
+
+            expect(component.canApplyArrayDependency()).toBeTrue();
+        });
+
+        it('replaces the edited link at its own position and marks the schema dirty', () => {
+            const first = link('one', 'two');
+            const second = link('two', 'three');
+            const component = createLinkComponent([first, second]);
+
+            component.startEditArrayDependency(first);
+            component.newArrayDependencyTitle = 'b';
+            component.applyArrayDependency();
+
+            const links = component.selectedSchema.arrayDependencies;
+            expect(links.length).toBe(2);
+            expect(links[0].on).toEqual(['one']);
+            expect(links[0].field).toEqual(['two']);
+            expect(links[0].title).toEqual(['b']);
+            expect(links[0]).not.toBe(first);
+            expect(links[1]).toBe(second);
+            expect(component.editingArrayDependency).toBeNull();
+            expect(component.dirtyCalls).toBe(1);
+        });
+
+        it('still appends when no link is being edited', () => {
+            const existing = link('one', 'two');
+            const component = createLinkComponent([existing]);
+
+            component.newArrayDependencyOn = 'two';
+            component.newArrayDependencyField = 'three';
+            component.applyArrayDependency();
+
+            const links = component.selectedSchema.arrayDependencies;
+            expect(links.length).toBe(2);
+            expect(links[0]).toBe(existing);
+            expect(links[1].on).toEqual(['two']);
+            expect(links[1].field).toEqual(['three']);
+            expect(component.dirtyCalls).toBe(1);
+        });
+
+        it('touches nothing when the edited link is no longer in the list', () => {
+            const saved = link('one', 'two');
+            const component = createLinkComponent([saved]);
+
+            component.startEditArrayDependency(saved);
+            component.selectedSchema.arrayDependencies = [];
+            component.applyArrayDependency();
+
+            expect(component.selectedSchema.arrayDependencies).toEqual([]);
+            expect(component.editingArrayDependency).toBeNull();
+            expect(component.dirtyCalls).toBe(0);
+        });
+
+        it('clears the editor when the link being edited is removed', () => {
+            const saved = link('one', 'two');
+            const component = createLinkComponent([saved]);
+
+            component.startEditArrayDependency(saved);
+            component.removeArrayDependency(saved);
+
+            expect(component.selectedSchema.arrayDependencies).toEqual([]);
+            expect(component.editingArrayDependency).toBeNull();
+            expect(component.newArrayDependencyOn).toBeNull();
+        });
+
+        it('keeps the editor open when a different link is removed', () => {
+            const edited = link('one', 'two');
+            const other = link('two', 'three');
+            const component = createLinkComponent([edited, other]);
+
+            component.startEditArrayDependency(edited);
+            component.removeArrayDependency(other);
+
+            expect(component.editingArrayDependency).toBe(edited);
+            expect(component.newArrayDependencyOn).toBe('one');
         });
     });
 });

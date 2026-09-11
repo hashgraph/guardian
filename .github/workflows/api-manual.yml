@@ -47,7 +47,7 @@ jobs:
       CYPRESS_CACHE_FOLDER: ${{ github.workspace }}/.cache/Cypress
       MIN_PASSWORD_LENGTH: 4
       PASSWORD_COMPLEXITY: easy
-      NODE_VERSION: "24.18.1"
+      NODE_VERSION: "24.21.0"
       # How many worker-service processes to run; the readiness gate expects exactly
       # this many WORKERS_SERVICE connections on NATS.
       WORKER_COUNT: 5
@@ -86,7 +86,7 @@ jobs:
 
       # DB_HOST=localhost in every service config.
       mongo:
-        image: mongo:7.0.21
+        image: mongo:7.0.41
         ports:
           - 127.0.0.1:27017:27017
         options: >-
@@ -114,7 +114,7 @@ jobs:
 
     steps:
       - name: Harden-Runner
-        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           egress-policy: audit
 
@@ -161,7 +161,7 @@ jobs:
       # `cache:` is deliberately not set. It accepts a single package manager (so npm
       # and yarn cannot both be enabled), and for Yarn Berry it shells out to
       # `yarn config get cacheFolder`, which needs yarn on PATH -- and with
-      # packageManager: yarn@4.16.0 that only happens after `corepack enable`, which has
+      # packageManager: yarn@4.18.0 that only happens after `corepack enable`, which has
       # to run *after* this step. The explicit actions/cache steps below cover both.
       - name: Setup Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0

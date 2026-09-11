@@ -44,20 +44,24 @@
     <div class="table-viewer__preview">
       <div class="table-viewer__preview-title">Preview</div>
       <div class="table-viewer__grid" role="table" aria-label="CSV preview 8x4">
-        <div class="table-viewer__row table-viewer__row--header" role="row">
+        <div
+          class="table-viewer__row table-viewer__row--header"
+          role="row"
+          [style.grid-template-columns]="previewGridTemplate">
           <div class="table-viewer__cell table-viewer__cell--rownum">№</div>
           @for (columnKey of previewHeaderKeysLimited; track columnKey; let columnIndex = $index) {
             <div
               class="table-viewer__cell table-viewer__cell--head"
               role="columnheader">
-              {{ buildColumnHeader(columnIndex) }}
+              {{ previewHeaderNameFor(columnKey, columnIndex) }}
             </div>
           }
         </div>
-        @for (row of previewRowsLimited; track row; let rowIndex = $index) {
+        @for (row of previewRowsLimited; track $index; let rowIndex = $index) {
           <div
             class="table-viewer__row"
-            role="row">
+            role="row"
+            [style.grid-template-columns]="previewGridTemplate">
             <div class="table-viewer__cell table-viewer__cell--rownum">
               {{ rowIndex + 1 }}
             </div>

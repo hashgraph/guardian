@@ -18,11 +18,11 @@ jobs:
           - 6379:6379
     strategy:
       matrix:
-        node-version: [ 24.18.1 ]
-        mongodb-version: [ 7.0.21 ]
+        node-version: [ 24.21.0 ]
+        mongodb-version: [ 7.0.41 ]
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           egress-policy: audit
 
@@ -147,8 +147,6 @@ jobs:
           IPFS_NODE_ADDRESS: http://127.0.0.1:5001
           IPFS_PROVIDER: local
           IPFS_PUBLIC_GATEWAY: https://ipfs.filebase.io/ipfs/{cid}
-          IPFS_STORAGE_KEY: ${{ secrets.E2E_IPFS_STORAGE_KEY }}
-          IPFS_STORAGE_PROOF: ${{ secrets.E2E_IPFS_STORAGE_PROOF }}
           IPFS_STORAGE_API_KEY: ${{ secrets.IPFS_STORAGE_API_KEY }}
           ACCESS_TOKEN_UPDATE_INTERVAL: 600000
 

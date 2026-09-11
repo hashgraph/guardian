@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ClipboardModule } from '@angular/cdk/clipboard';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import { GeojsonTypeComponent } from './geojson-type/geojson-type.component';
@@ -22,7 +22,6 @@ import { GeoImageComponent } from './geo-image/geo-image.component';
 import { SchemaViewDialog } from './schema-view-dialog/schema-view-dialog.component';
 import { ExportSchemaDialog } from './export-schema-dialog/export-schema-dialog.component';
 import { ExportPlantUMLDialog } from './export-plantuml-dialog/export-plantuml-dialog.component';
-import { SchemaFieldConfigurationComponent } from './schema-field-configuration/schema-field-configuration.component';
 import { EnumEditorDialog } from './enum-editor-dialog/enum-editor-dialog.component';
 import { CompareSchemaDialog } from './compare-schema-dialog/compare-schema-dialog.component';
 import { ButtonModule } from 'primeng/button';
@@ -40,6 +39,7 @@ import { CopySchemaDialog } from './copy-schema-dialog/copy-schema-dialog';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { SentinelHubTypeComponent } from './sentinel-hub-type/sentinel-hub-type.component';
 import { TooltipModule } from 'primeng/tooltip';
+import { PopoverModule } from 'primeng/popover';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { AccordionModule } from 'primeng/accordion';
 import { TableModule } from 'primeng/table';
@@ -56,6 +56,8 @@ import { SchemaDeleteDialogComponent } from './schema-delete-dialog/schema-delet
 import { IwaUpgradeDialogComponent } from './iwa-upgrade-dialog/iwa-upgrade-dialog.component';
 import { SchemaFormNavigationComponent } from './schema-form-navigation/schema-form-navigation.component';
 import { SchemaFormViewNavigationComponent } from './schema-form-view-navigation/schema-form-view-navigation.component';
+import { RichTextEditorComponent } from './rich-text-editor/rich-text-editor.component';
+import { RichTextClipDirective } from './rich-text-editor/rich-text-clip.directive';
 
 @NgModule({
     declarations: [
@@ -71,7 +73,6 @@ import { SchemaFormViewNavigationComponent } from './schema-form-view-navigation
         SchemaViewDialog,
         ExportSchemaDialog,
         ExportPlantUMLDialog,
-        SchemaFieldConfigurationComponent,
         EnumEditorDialog,
         CompareSchemaDialog,
         SchemaDeleteWarningDialogComponent,
@@ -88,11 +89,14 @@ import { SchemaFormViewNavigationComponent } from './schema-form-view-navigation
         TableFieldComponent,
         TableViewerComponent,
         SchemaFormNavigationComponent,
-        SchemaFormViewNavigationComponent
+        SchemaFormViewNavigationComponent,
+        RichTextEditorComponent,
+        RichTextClipDirective
     ],
     imports: [
         CommonModule,
         FormsModule,
+        ReactiveFormsModule,
         CommonComponentsModule,
         MaterialModule,
         ClipboardModule,
@@ -106,6 +110,7 @@ import { SchemaFormViewNavigationComponent } from './schema-form-view-navigation
         SelectModule,
         DatePickerModule,
         TooltipModule,
+        PopoverModule,
         RadioButtonModule,
         SelectButtonModule,
         AccordionModule,
@@ -124,11 +129,12 @@ import { SchemaFormViewNavigationComponent } from './schema-form-view-navigation
         VCFullscreenDialog,
         GeoImageComponent,
         ExportSchemaDialog,
-        SchemaFieldConfigurationComponent,
         SchemaFormDialog,
         SchemaFormRootComponent,
         SchemaFormNavigationComponent,
-        SchemaFormViewNavigationComponent
+        SchemaFormViewNavigationComponent,
+        RichTextEditorComponent,
+        RichTextClipDirective
     ],
     providers: [
         { provide: DialogService, useClass: GuardianDialogService }

@@ -140,19 +140,13 @@ export class Worker extends NatsService {
     private readonly analyticsService: string;
 
     constructor(
-        private w3cKey: string,
-        private w3cProof: string,
         private filebaseKey: string,
         private readonly workerID: string,
         private readonly logger: PinoLogger
     ) {
         super();
         //this.workerID = this._workerID;
-        this.ipfsClient = new IpfsClientClass(
-            this.w3cKey,
-            this.w3cProof,
-            this.filebaseKey
-        );
+        this.ipfsClient = new IpfsClientClass(this.filebaseKey);
 
         this.analyticsService = process.env.ANALYTICS_SERVICE;
         this.minPriority = parseInt(process.env.MIN_PRIORITY, 10);
@@ -183,72 +177,106 @@ export class Worker extends NatsService {
         });
 
         const runTask = async (task, completeEvent: WorkerEvents = WorkerEvents.TASK_COMPLETE) => {
-            this.isInUse = true;
+            // isInUse already claimed in claimIfFree (beforeDecode), before decode.
             this.currentTaskId = task.id;
             const userId = task.data?.payload?.userId;
 
-            this.logger.info(`Task started: ${task.id}, ${task.type}`, [this.workerID, 'WORKER'], userId);
-
-            const result = await this.processTaskWithTimeout(task);
-
+            // isInUse used to be cleared only by the last statement of the happy path,
+            // so a throw anywhere left the worker marked busy for the process lifetime
             try {
-                // await this.publish([task.reply, WorkerEvents.TASK_COMPLETE].join('-'), result);
-                if (result?.error) {
-                    this.logger.error(`Task error: ${this.currentTaskId}, ${result?.error}`, [this.workerID, 'WORKER'], userId);
-                } else {
-                    this.logger.info(`Task completed: ${this.currentTaskId}`, [this.workerID, 'WORKER'], userId);
+                this.logger.info(`Task started: ${task.id}, ${task.type}`, [this.workerID, 'WORKER'], userId);
+
+                const result = await this.processTaskWithTimeout(task);
+
+                try {
+                    // await this.publish([task.reply, WorkerEvents.TASK_COMPLETE].join('-'), result);
+                    if (result?.error) {
+                        this.logger.error(`Task error: ${this.currentTaskId}, ${result?.error}`, [this.workerID, 'WORKER'], userId);
+                    } else {
+                        this.logger.info(`Task completed: ${this.currentTaskId}`, [this.workerID, 'WORKER'], userId);
+                    }
+                } catch (error) {
+                    // this used to call clearState(), releasing isInUse mid-task
+                    this.logger.error(error.message, [this.workerID, 'WORKER'], userId);
+                }
+
+                try {
+                    if (completeEvent === WorkerEvents.TASK_COMPLETE) {
+                        await this.publish(completeEvent, result);
+                    } else {
+                        await this.publish(completeEvent, {
+                            id: task.id,
+                            data: result?.data,
+                            error: result?.error,
+                            isTimeoutError: result?.isTimeoutError
+                        });
+                    }
+                } catch (error) {
+                    // undeliverable result, typically an oversized payload: tell the
+                    // requester so it fails fast instead of waiting out its own timeout
+                    this.logger.error(
+                        `Task result publish failed: ${task.id}, ${error?.message}`,
+                        [this.workerID, 'WORKER'], userId
+                    );
+                    try {
+                        await this.publish(completeEvent, {
+                            id: task.id,
+                            error: `Task result could not be delivered: ${error?.message}`
+                        });
+                    } catch (reportError) {
+                        this.logger.error(reportError.message, [this.workerID, 'WORKER'], userId);
+                    }
                 }
             } catch (error) {
-                this.logger.error(error.message, [this.workerID, 'WORKER'], userId);
-                this.clearState();
-
-            }
-
-            if (completeEvent === WorkerEvents.TASK_COMPLETE) {
-                const completeTask = async (data: any) => {
-                    await this.publish(completeEvent, data);
+                this.logger.error(
+                    `Task failed: ${task.id}, ${error?.message}`,
+                    [this.workerID, 'WORKER'], userId
+                );
+            } finally {
+                // re-announce before releasing: a worker that recovered its flag but
+                // never re-published WORKER_READY would still sit out of the pool
+                try {
+                    await this.publish(WorkerEvents.WORKER_READY);
+                } catch (error) {
+                    this.logger.error(error?.message, [this.workerID, 'WORKER'], userId);
+                } finally {
+                    this.clearState();
                 }
-                await completeTask(result);
-            } else {
-                const payload = {
-                    id: task.id,
-                    data: result?.data,
-                    error: result?.error,
-                    isTimeoutError: result?.isTimeoutError
-                };
-
-                await this.publish(completeEvent, payload);
             }
-
-            await this.publish(WorkerEvents.WORKER_READY);
-            this.isInUse = false;
         }
 
-        this.getMessages([this.replySubject, WorkerEvents.SEND_TASK_TO_WORKER].join('.'), async (task) => {
-            if (!this.isInUse) {
-                runTask(task);
-
-                return new MessageResponse({
-                    result: true
-                })
+        // Claim isInUse before decode (not after), so a second task can't win the race while
+        // this one's directLink payload is still downloading.
+        const claimIfFree = (): MessageResponse<{ result: boolean }> | undefined => {
+            if (this.isInUse) {
+                return new MessageResponse({ result: false });
             }
+            this.isInUse = true;
+            return undefined;
+        };
+
+        // Releases isInUse if decode/cb throws before runTask can.
+        const releaseClaimOnError = (error: unknown, claimed: boolean) => {
+            if (claimed) {
+                this.isInUse = false;
+            }
+        };
+
+        this.getMessages([this.replySubject, WorkerEvents.SEND_TASK_TO_WORKER].join('.'), async (task) => {
+            runTask(task).catch((error) => this.logTaskFailure(error, task));
+
             return new MessageResponse({
-                result: false
+                result: true
             })
-        })
+        }, false, claimIfFree, releaseClaimOnError)
 
         this.getMessages([this.replySubject, WorkerEvents.SEND_TASK_TO_WORKER_DIRECT].join('.'), async (task) => {
-            if (!this.isInUse) {
-                runTask(task, WorkerEvents.TASK_COMPLETE_DIRECT);
+            runTask(task, WorkerEvents.TASK_COMPLETE_DIRECT).catch((error) => this.logTaskFailure(error, task));
 
-                return new MessageResponse({
-                    result: true
-                })
-            }
             return new MessageResponse({
-                result: false
+                result: true
             })
-        })
+        }, false, claimIfFree, releaseClaimOnError)
 
         this.subscribe(WorkerEvents.UPDATE_SETTINGS, async (msg: any) => {
             try {
@@ -256,22 +284,9 @@ export class Worker extends NatsService {
                 if (!ipfsStorageApiKey) {
                     throw new Error('Ipfs storage api key setting is empty');
                 }
-                // `filebase` stores the whole value as a single bucket token, while
-                // `web3storage` stores it as `key;proof` (see the worker startup validator).
-                const isFilebase = process.env.IPFS_PROVIDER === 'filebase';
-                const [w3cKey, w3cProof] = isFilebase
-                    ? [null, null]
-                    : ipfsStorageApiKey.split(';');
-                const filebaseKey = isFilebase ? ipfsStorageApiKey : this.filebaseKey;
-                const ipfsClient = new IpfsClientClass(
-                    w3cKey,
-                    w3cProof,
-                    filebaseKey
-                );
+                const ipfsClient = new IpfsClientClass(ipfsStorageApiKey);
                 await ipfsClient.createClient();
-                this.w3cKey = w3cKey;
-                this.w3cProof = w3cProof;
-                this.filebaseKey = filebaseKey;
+                this.filebaseKey = ipfsStorageApiKey;
                 this.ipfsClient = ipfsClient;
                 const secretManager = SecretManager.New();
                 await secretManager.setSecrets('apikey/ipfs', { IPFS_STORAGE_API_KEY: ipfsStorageApiKey });
@@ -293,6 +308,19 @@ export class Worker extends NatsService {
                 throw new Error(`Worker (${['api-gateway', 'update-user-balance'].join('.')}) send: ` + error);
             }
         })
+    }
+
+    /**
+     * Last-resort handler for a runTask rejection. The task is already released by the
+     * time this runs; this only keeps the rejection from reaching the process.
+     * @private
+     */
+    private logTaskFailure(error: any, task: any): void {
+        try {
+            console.error(`Task ${task?.id} failed after release: ${error?.message ?? error}`);
+        } catch {
+            // nothing left to report with
+        }
     }
 
     /**

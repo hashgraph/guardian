@@ -10,6 +10,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { VCFullscreenDialog } from 'src/app/modules/schema-engine/vc-fullscreen-dialog/vc-fullscreen-dialog.component';
 import { Subject } from 'rxjs';
 import { CommentsService } from 'src/app/services/comments.service';
+import { richTextToText, withNewTabLinks } from 'src/app/modules/schema-engine/rich-text-editor/rich-text-sanitizer';
+import { markdownToHtml } from 'src/app/modules/schema-engine/rich-text-editor/markdown';
 
 /**
  * Component for display block of 'interfaceDocumentsSource' types.
@@ -77,6 +79,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
     }
 
     ngOnDestroy(): void {
+        this.clearRichTextHideTimer();
         if (this.socket) {
             this.socket.unsubscribe();
         }
@@ -155,6 +158,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
             }
             this.documents = data.data || [];
             this.sortHistory(this.documents);
+            this.buildRichTextCellText(fields);
             this.isActive = true;
             const sortingField = _fields.find(item => item.name === data.orderField);
             this.sortOptions.active = sortingField && sortingField.index || '';
@@ -322,6 +326,63 @@ export class DocumentsSourceBlockComponent implements OnInit {
                         (error) => console.error('[documents-source] comment count failed', error)
                     );
             });
+        }
+    }
+
+    public richTextValue = '';
+
+    private richTextHideTimer: any = null;
+
+    public getRichTextCellText(row: any, field: any): string {
+        return row && row._richTextCellText ? (row._richTextCellText[field.index] || '') : '';
+    }
+
+    private buildRichTextCellText(fields: any[]): void {
+        const richTextFields = fields.filter((item) => item.type === 'richText');
+        if (!richTextFields.length || !Array.isArray(this.documents)) {
+            return;
+        }
+        for (const row of this.documents) {
+            const cells: any = {};
+            for (const item of richTextFields) {
+                cells[item.index] = richTextToText(this.toRichTextHtml(row, item));
+            }
+            row._richTextCellText = cells;
+        }
+    }
+
+    private toRichTextHtml(row: any, field: any): string {
+        const value = this.getText(row, field);
+        return markdownToHtml(typeof value === 'string' ? value : '');
+    }
+
+    public onRichTextEnter(event: Event, row: any, field: any, popover: any): void {
+        if (!this.getRichTextCellText(row, field)) {
+            return;
+        }
+        this.clearRichTextHideTimer();
+        this.richTextValue = withNewTabLinks(this.toRichTextHtml(row, field));
+        if (this.richTextValue) {
+            popover.show(event);
+        }
+    }
+
+    public onRichTextLeave(popover: any): void {
+        this.clearRichTextHideTimer();
+        this.richTextHideTimer = setTimeout(() => {
+            this.richTextHideTimer = null;
+            popover.hide();
+        }, 250);
+    }
+
+    public onRichTextPopoverEnter(): void {
+        this.clearRichTextHideTimer();
+    }
+
+    private clearRichTextHideTimer(): void {
+        if (this.richTextHideTimer) {
+            clearTimeout(this.richTextHideTimer);
+            this.richTextHideTimer = null;
         }
     }
 
@@ -580,7 +641,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
     }
 
     getClass(type: string): string {
-        if (type === 'text') {
+        if (type === 'text' || type === 'richText') {
             return 'text-container';
         }
         if (type === 'button') {

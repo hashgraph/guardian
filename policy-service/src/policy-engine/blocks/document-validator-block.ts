@@ -416,7 +416,14 @@ export class DocumentValidatorBlock {
                         : filter.value;
                     const [displayActual, displayExpected] = PolicyUtils.firstFailingPair(actual, filter.type, expected);
                     const label = String(filter.field).split('.').filter((p: string) => p !== 'document' && !/^\d+$/.test(p)).pop() || filter.field;
-                    return { message: `Field "${label}": ${this.describeCrossConditionFailure(filter.type, displayActual, displayExpected)}` };
+                    const hint = this.describeCrossConditionFailure(filter.type, displayActual, displayExpected);
+                    const summary = `Field "${label}" failed validation`;
+                    const data: IDocumentValidatorBlockError = {
+                        type: BlockErrorType.DOCUMENT_VALIDATOR_BLOCK_ERROR,
+                        summary,
+                        conditions: [{ label, hint, matched: 0, total: 1 }]
+                    };
+                    return { message: `Field "${label}": ${hint}`, data };
                 }
             }
         }

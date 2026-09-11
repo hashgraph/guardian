@@ -1,10 +1,6 @@
 import { axiosGetWithRetry } from './helpers/utils.js';
 import { create } from 'kubo-rpc-client'
 import { FilebaseClient } from '@filebase/client';
-import { StoreMemory } from '@storacha/client/stores/memory';
-import * as Proof from '@storacha/client/proof';
-import { Signer } from '@storacha/client/principal/ed25519';
-import * as Client from '@storacha/client';
 import CID from 'cids';
 
 /**
@@ -12,7 +8,6 @@ import CID from 'cids';
  */
 enum IpfsProvider {
     FILEBASE = 'filebase',
-    WEB3STORAGE = 'web3storage',
     LOCAL = 'local',
 }
 
@@ -46,17 +41,9 @@ export class IpfsClientClass {
     private readonly options: { [key: string]: any } = {};
 
     constructor(
-        w3sKey?: string,
-        w3sProof?: string,
         filebaseKey?: string
     ) {
         this.options.nodeAddress = process.env.IPFS_NODE_ADDRESS;
-        if (w3sKey && w3sProof) {
-            this.options.w3s = {
-                key: w3sKey,
-                proof: w3sProof
-            }
-        }
         if (filebaseKey) {
             this.options.filebase = filebaseKey
         }
@@ -80,21 +67,6 @@ export class IpfsClientClass {
         let client: any;
 
         switch (this.IPFS_PROVIDER) {
-            case IpfsProvider.WEB3STORAGE: {
-                if (!this.options.w3s) {
-                    throw new Error('Web3Storage key and proof are not set');
-                }
-                const principal = Signer.parse(this.options.w3s.key);
-                client = await Client.create({
-                    principal,
-                    store: new StoreMemory()
-                });
-                const proof = await Proof.parse(this.options.w3s.proof.replace(/[\r\n]+/g, ''));
-                const space = await client.addSpace(proof);
-                await client.setCurrentSpace(space.did());
-                break;
-            }
-
             case IpfsProvider.FILEBASE: {
                 if (!this.options.filebase) {
                     throw new Error('Filebase Bucket token is not set')
@@ -128,13 +100,6 @@ export class IpfsClientClass {
         this.assertClientReady();
         let cid: string;
         switch (this.IPFS_PROVIDER) {
-            case IpfsProvider.WEB3STORAGE: {
-                const result = await this.client.uploadFile(new Blob([new Uint8Array(file)]));
-
-                cid = result.toString()
-                break;
-            }
-
             case IpfsProvider.FILEBASE: {
                 cid = await this.client.storeBlob(new Blob([new Uint8Array(file)]))
                 break;
@@ -170,11 +135,6 @@ export class IpfsClientClass {
                     return true;
                 }
 
-                return true;
-            }
-
-            case IpfsProvider.WEB3STORAGE: {
-                await this.client.remove(cid, { shards: true });
                 return true;
             }
 

@@ -77,4 +77,47 @@ describe('SchemaFormViewComponent', () => {
             expect(ipfs.getImageFromDryRunStorage).toHaveBeenCalledTimes(1);
         });
     });
+
+    describe('getRichTextValue', () => {
+        it('renders the stored markdown and opens its link in a new tab', () => {
+            expect(component.getRichTextValue('[Example](https://example.com)'))
+                .toBe('<p><a href="https://example.com" target="_blank" rel="noopener noreferrer">Example</a></p>');
+        });
+
+        it('does not let markup inside the value become markup', () => {
+            expect(component.getRichTextValue('<img src="x">')).toBe('<p>&lt;img src="x"&gt;</p>');
+        });
+
+        it('returns an empty string for a non-string value', () => {
+            expect(component.getRichTextValue(null)).toBe('');
+        });
+    });
+
+    describe('onRichTextLinkClick', () => {
+        it('opens a safe link in a new tab', () => {
+            const link = document.createElement('a');
+            link.setAttribute('href', 'https://example.com');
+            const event = new MouseEvent('click', { cancelable: true });
+            Object.defineProperty(event, 'target', { value: link });
+            const openSpy = spyOn(window, 'open');
+
+            component.onRichTextLinkClick(event);
+
+            expect(event.defaultPrevented).toBeTrue();
+            expect(openSpy).toHaveBeenCalledWith('https://example.com', '_blank', 'noopener,noreferrer');
+        });
+
+        it('does not open an unsafe link', () => {
+            const link = document.createElement('a');
+            link.setAttribute('href', 'javascript:alert(1)');
+            const event = new MouseEvent('click', { cancelable: true });
+            Object.defineProperty(event, 'target', { value: link });
+            const openSpy = spyOn(window, 'open');
+
+            component.onRichTextLinkClick(event);
+
+            expect(event.defaultPrevented).toBeFalse();
+            expect(openSpy).not.toHaveBeenCalled();
+        });
+    });
 });

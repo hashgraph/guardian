@@ -7,7 +7,6 @@ export const environment = {
     githubRef: 'develop',
     accessTokenUpdateInterval: 29 * 1000,
     displayDemoAccounts: true,
-    isMeecoConfigured: true,
     isAISearchConfigured: false,
     requireAuthorizationPopup: true,
     explorerSettings: {

@@ -2515,7 +2515,7 @@ export class Guardians extends NatsService {
      * @param owner
      * @returns applied schema template state
      */
-    public async getAppliedSchemaTemplateByPolicyTopic(topicId: string, owner: IOwner): Promise<ISchemaTemplate> {
+    public async getAppliedSchemaTemplateByPolicyTopic(topicId: string, owner: IOwner): Promise<ISchemaTemplate[]> {
         return await this.sendMessage(MessageAPI.GET_APPLIED_SCHEMA_TEMPLATE, { topicId, owner });
     }
 
@@ -2674,9 +2674,10 @@ export class Guardians extends NatsService {
     public async previewSchemaTemplateUpdate(
         templateId: string,
         policyId: string,
-        owner: IOwner
+        owner: IOwner,
+        targetTemplateId?: string
     ): Promise<ISchemaTemplateUpdatePreview> {
-        return await this.sendMessage(MessageAPI.PREVIEW_SCHEMA_TEMPLATE_UPDATE, { templateId, policyId, owner });
+        return await this.sendMessage(MessageAPI.PREVIEW_SCHEMA_TEMPLATE_UPDATE, { templateId, policyId, owner, targetTemplateId });
     }
 
     /**
@@ -2697,6 +2698,20 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Preview what a detach would delete and what it would have to keep
+     * @param policyId
+     * @param templateId
+     * @param owner
+     */
+    public async previewSchemaTemplateDetach(
+        policyId: string,
+        templateId: string,
+        owner: IOwner
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.PREVIEW_SCHEMA_TEMPLATE_DETACH, { policyId, templateId, owner });
+    }
+
+    /**
      * Detach schema template from policy
      * @param policyId
      * @param owner
@@ -2704,9 +2719,11 @@ export class Guardians extends NatsService {
      */
     public async detachSchemaTemplate(
         policyId: string,
-        owner: IOwner
+        templateId: string,
+        owner: IOwner,
+        deleteSchemas?: boolean
     ): Promise<any> {
-        return await this.sendMessage(MessageAPI.DETACH_SCHEMA_TEMPLATE, { policyId, owner });
+        return await this.sendMessage(MessageAPI.DETACH_SCHEMA_TEMPLATE, { policyId, templateId, owner, deleteSchemas });
     }
 
     /**
@@ -3213,6 +3230,14 @@ export class Guardians extends NatsService {
      */
     public async startRecording(policyId: string, owner: IOwner, options: any): Promise<any> {
         return await this.sendMessage<any>(MessageAPI.START_RECORDING, { policyId, owner, options });
+    }
+
+    public async pauseRecording(policyId: string, owner: IOwner): Promise<boolean> {
+        return await this.sendMessage<boolean>(MessageAPI.PAUSE_RECORDING, { policyId, owner });
+    }
+
+    public async resumeRecording(policyId: string, owner: IOwner): Promise<boolean> {
+        return await this.sendMessage<boolean>(MessageAPI.RESUME_RECORDING, { policyId, owner });
     }
 
     /**
