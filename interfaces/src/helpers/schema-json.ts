@@ -185,6 +185,10 @@ export class SchemaToJson {
             return 'HederaAccount';
         }
 
+        if (field.customType === 'richText') {
+            return 'Rich Text';
+        }
+
         for (const type of FieldTypesDictionary.FieldTypes) {
             if (FieldTypesDictionary.equal(field, type)) {
                 return type.name;

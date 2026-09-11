@@ -97,6 +97,83 @@ describe('SchemasConfigurationComponent', () => {
         return component;
     }
 
+    describe('Rich Text preset dialog', () => {
+        it('opens the requested preset and routes its value back to the selected field', () => {
+            const component = createComponent();
+            component.selectedField = makeField({ default: '<p>Default</p>' });
+            component.markDirty = jasmine.createSpy('markDirty');
+
+            component.openRichTextPresetDialog('default');
+            component.setRichTextPresetValue('<p>Changed</p>');
+
+            expect(component.richTextPresetTarget).toBe('default');
+            expect(component.getRichTextPresetDialogTitle()).toBe('Default value');
+            expect(component.getRichTextPresetValue()).toBe('<p>Changed</p>');
+            expect(component.selectedField.default).toBe('<p>Changed</p>');
+            expect(component.markDirty).toHaveBeenCalled();
+        });
+
+        it('writes a Rich Text test value through the existing example value flow', () => {
+            const component = createComponent();
+            component.selectedField = makeField();
+            component.markDirty = jasmine.createSpy('markDirty');
+
+            component.openRichTextPresetDialog('test');
+            component.setRichTextPresetValue('<p>Example</p>');
+
+            expect(component.getRichTextPresetDialogTitle()).toBe('Test value');
+            expect(component.selectedField.examples).toEqual(['<p>Example</p>']);
+        });
+
+        it('refuses to close while the editor still has its link dialog open', () => {
+            const component = createComponent();
+            component.selectedField = makeField({ default: '<p>Default</p>' });
+            component.richTextPresetEditor = { showLinkDialog: true, cancelLink: jasmine.createSpy('cancelLink') };
+
+            component.openRichTextPresetDialog('default');
+            component.closeRichTextPresetDialog();
+
+            expect(component.isRichTextPresetLinkOpen()).toBeTrue();
+            expect(component.richTextPresetTarget).toBe('default');
+            expect(component.richTextPresetEditor.cancelLink).not.toHaveBeenCalled();
+        });
+
+        it('clears the editor link state when it does close', () => {
+            const component = createComponent();
+            component.selectedField = makeField({ default: '<p>Default</p>' });
+            component.richTextPresetEditor = { showLinkDialog: false, cancelLink: jasmine.createSpy('cancelLink') };
+
+            component.openRichTextPresetDialog('default');
+            component.closeRichTextPresetDialog();
+
+            expect(component.richTextPresetTarget).toBeNull();
+            expect(component.richTextPresetEditor.cancelLink).toHaveBeenCalled();
+        });
+
+        it('closes when no editor is rendered at all', () => {
+            const component = createComponent();
+            component.selectedField = makeField();
+
+            component.openRichTextPresetDialog('test');
+            component.closeRichTextPresetDialog();
+
+            expect(component.isRichTextPresetLinkOpen()).toBeFalse();
+            expect(component.richTextPresetTarget).toBeNull();
+        });
+
+        it('survives two pencil clicks arriving for the same preset', () => {
+            const component = createComponent();
+            component.selectedField = makeField({ suggest: '<p>Suggested</p>' });
+            component.markDirty = jasmine.createSpy('markDirty');
+
+            component.openRichTextPresetDialog('suggest');
+            component.openRichTextPresetDialog('suggest');
+
+            expect(component.richTextPresetTarget).toBe('suggest');
+            expect(component.getRichTextPresetValue()).toBe('<p>Suggested</p>');
+        });
+    });
+
     describe('schema template guidelines', () => {
         it('stores selected schema guidelines in template config and marks it dirty', () => {
             const schema = makeSchema({ id: 'schema-1', templateSchemaId: 'template-schema-1' });
@@ -952,6 +1029,103 @@ describe('SchemasConfigurationComponent', () => {
         });
     });
 
+    describe('getFieldValueInputType', () => {
+        const fieldTypes = [
+            { key: 'string', schemaType: 'string' },
+            { key: 'number', schemaType: 'number' },
+            { key: 'boolean', schemaType: 'boolean' },
+            { key: 'date', schemaType: 'string', format: 'date' },
+            { key: 'hederaAccount', schemaType: 'string', pattern: '^\\d+\\.\\d+\\.\\d+$', customType: 'hederaAccount' },
+            { key: 'richText', schemaType: 'string', customType: 'richText' },
+        ];
+
+        function typeOf(field: any): string {
+            const component = createComponent();
+            component.fieldTypes = fieldTypes;
+            return component.getFieldValueInputType(field);
+        }
+
+        it('asks for the rich text editor on a rich text field', () => {
+            expect(typeOf(makeField({ type: 'string', customType: 'richText' }))).toBe('richText');
+        });
+
+        it('keeps a plain string field on a text input', () => {
+            expect(typeOf(makeField({ type: 'string' }))).toBe('text');
+        });
+
+        it('keeps the other scalar types on their own inputs', () => {
+            expect(typeOf(makeField({ type: 'boolean' }))).toBe('boolean');
+            expect(typeOf(makeField({ type: 'number' }))).toBe('number');
+            expect(typeOf(makeField({ type: 'string', format: 'date' }))).toBe('date');
+        });
+
+        it('does not treat another custom type as rich text', () => {
+            const account = makeField({
+                type: 'string',
+                pattern: '^\\d+\\.\\d+\\.\\d+$',
+                customType: 'hederaAccount',
+            });
+            expect(typeOf(account)).not.toBe('richText');
+        });
+
+        it('no longer knows a markdown custom type', () => {
+            expect(typeOf(makeField({ type: 'string', customType: 'markdown' }))).toBe('text');
+        });
+    });
+
+    describe('Rich Text preset preview', () => {
+
+        function componentWithRichTextField(): any {
+            const component = createComponent();
+            component.fieldTypes = [{ key: 'richText', schemaType: 'string', customType: 'richText' }];
+            component.selectedField = makeField({ type: 'string', customType: 'richText' });
+            return component;
+        }
+
+        it('treats a rich text field as the formatted preset field', () => {
+            expect(componentWithRichTextField().isFormattedPresetField()).toBeTrue();
+        });
+
+        it('renders the stored markdown as html', () => {
+            const component = componentWithRichTextField();
+            expect(component.getPresetPreviewHtml('# Title')).toBe('<h1>Title</h1>');
+            expect(component.getPresetPreviewHtml('a **bold** word'))
+                .toBe('<p>a <b>bold</b> word</p>');
+        });
+
+        it('returns an empty string for a value that is not text', () => {
+            const component = componentWithRichTextField();
+            expect(component.getPresetPreviewHtml(null)).toBe('');
+            expect(component.getPresetPreviewHtml(42)).toBe('');
+            expect(component.getPresetPreviewHtml('')).toBe('');
+        });
+
+        it('clears a default and a suggested value from the card', () => {
+            const component = componentWithRichTextField();
+            component.selectedField.default = '# Title';
+            component.selectedField.suggest = '# Other';
+            component.markDirty = jasmine.createSpy('markDirty');
+
+            component.clearFieldValue('default');
+            component.clearFieldValue('suggest');
+
+            expect(component.selectedField.default).toBeNull();
+            expect(component.selectedField.suggest).toBeNull();
+            expect(component.markDirty).toHaveBeenCalledTimes(2);
+        });
+
+        it('clears a test value from the card', () => {
+            const component = componentWithRichTextField();
+            component.selectedField.examples = ['# Title'];
+            component.markDirty = jasmine.createSpy('markDirty');
+
+            component.clearFieldTestValue();
+
+            expect(component.getFieldTestValue()).toBeNull();
+            expect(component.markDirty).toHaveBeenCalled();
+        });
+    });
+
     describe('table column configuration', () => {
 
         function tableComponent(fieldOverrides: any = {}): any {
@@ -1371,7 +1545,6 @@ describe('SchemasConfigurationComponent', () => {
             const errors = component.getFieldErrors(field, [field]);
 
             expect(errors.some((e: string) => e.toLowerCase().includes('column'))).toBeFalse();
-
         });
     });
 
