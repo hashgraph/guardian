@@ -67,8 +67,8 @@
         "lint": "tslint --config ../tslint.json --project .",
         "start": "node dist/index.js",
         "test": "mocha tests/**/*.test.mjs --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/guardian-service.xml --timeout 10000 --exit",
-        "test:local": "mocha tests/**/*.test.mjs --exit",
-        "test:stability": "mocha tests/stability.test.mjs --exit"
+        "test:local": "mocha tests/**/*.test.mjs --timeout 10000 --exit",
+        "test:stability": "mocha tests/stability.test.mjs  --exit"
     },
     "type": "module",
     "types": "dist/index.d.ts",

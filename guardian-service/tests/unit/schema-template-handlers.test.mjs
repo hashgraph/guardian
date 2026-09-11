@@ -1149,7 +1149,7 @@ describe('APPLY_SCHEMA_TEMPLATE rollback', () => {
 /*
  * UPDATE rewrites the policy's schemas in place and persists each one before the
  * new snapshot is saved and the binding swapped. A failure part-way used to leave
- * some schemas on the new template version while policy.schemaTemplate still
+ * some schemas on the new template version while policy.schemaTemplates still
  * pointed at the old snapshot and state hash - and the catch removed only the new
  * snapshot, never the schema edits. Preview then diffed against a snapshot that no
  * longer described reality.
@@ -1337,12 +1337,12 @@ describe('UPDATE_APPLIED_SCHEMA_TEMPLATE templateFeatured sync', () => {
                 config: { schemas: { 'tpl-a': { featured: true } } },
             }),
             getPolicyById: async () => policy({
-                schemaTemplate: {
+                schemaTemplates: [{
                     templateId: 'template-1',
                     snapshotId: 'snap-0',
                     appliedAt: '2026-01-01T00:00:00.000Z',
                     schemaMap: { 'tpl-a': 'ps-1' },
-                },
+                }],
             }),
             getSchemaTemplateSnapshotById: async () => ({
                 id: 'snap-0',
