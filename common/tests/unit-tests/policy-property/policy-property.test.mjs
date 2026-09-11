@@ -16,25 +16,26 @@ describe('GetPropertiesFromFile', () => {
         const { file } = await writeTemp('a,1\nb,2\nc,3\n');
         const out = await GetPropertiesFromFile(file);
         assert.deepEqual(out, [
-            { title: 'a', value: '1' },
-            { title: 'b', value: '2' },
-            { title: 'c', value: '3' },
+            { title: 'a', value: '1', description: undefined },
+            { title: 'b', value: '2', description: undefined },
+            { title: 'c', value: '3', description: undefined },
         ]);
     });
 
-    it('skips rows that do not have exactly two columns', async () => {
+    it('skips single-column rows and reads a third column as description', async () => {
         const { file } = await writeTemp('a,1\nbad-row\nb,2,extra\nc,3\n');
         const out = await GetPropertiesFromFile(file);
         assert.deepEqual(out, [
-            { title: 'a', value: '1' },
-            { title: 'c', value: '3' },
+            { title: 'a', value: '1', description: undefined },
+            { title: 'b', value: '2', description: 'extra' },
+            { title: 'c', value: '3', description: undefined },
         ]);
     });
 
     it('skips rows whose first column is empty', async () => {
         const { file } = await writeTemp(',value-without-title\nname,real\n');
         const out = await GetPropertiesFromFile(file);
-        assert.deepEqual(out, [{ title: 'name', value: 'real' }]);
+        assert.deepEqual(out, [{ title: 'name', value: 'real', description: undefined }]);
     });
 
     it('returns [] for an empty file', async () => {
