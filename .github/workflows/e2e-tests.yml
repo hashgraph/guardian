@@ -207,7 +207,7 @@ jobs:
       # `cache:` is deliberately not set. It accepts a single package manager (so npm
       # and yarn cannot both be enabled), and for Yarn Berry it shells out to
       # `yarn config get cacheFolder`, which needs yarn on PATH -- and with
-      # packageManager: yarn@4.16.0 that only happens after `corepack enable`, which has
+      # packageManager: yarn@4.18.0 that only happens after `corepack enable`, which has
       # to run *after* this step. The explicit actions/cache steps below cover both.
       - name: Setup Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
