@@ -25,9 +25,9 @@ import { BaseEntity } from '../models/index.js';
     name: 'defs_index',
 })
 @Index({
-    properties: ['templateFeatured', 'createDate'],
-    name: 'templateFeatured_createDate_index',
-})
+     properties: ['owner', 'category', 'templateFeatured', 'createDate'],
+     name: 'owner_category_templateFeatured_createDate_index',
+ })
 export class Schema extends BaseEntity implements ISchema {
     /**
      * Schema uuid
