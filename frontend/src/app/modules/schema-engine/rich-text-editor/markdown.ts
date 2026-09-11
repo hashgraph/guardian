@@ -4,7 +4,9 @@ export function escapeHtml(value: string): string {
     return value
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
 const ESCAPED_MARKER = /\\([\\*`\[\]#+.-])/g;
@@ -68,6 +70,8 @@ export function markdownToHtml(markdown: string | null | undefined): string {
                 list = { ordered: isOrdered, items: [] };
             }
             list.items.push(inline((bullet || ordered)![1]));
+        } else if (list && list.items.length && /^ {2}\S/.test(line)) {
+            list.items[list.items.length - 1] += '<br>' + inline(line.slice(2));
         } else if (line.trim()) {
             flush();
             blocks.push(`<p>${inline(line)}</p>`);
@@ -118,6 +122,18 @@ function hasBlockChildren(element: Element): boolean {
     return Array.from(element.children).some((child) => BLOCK_TAGS.includes(child.tagName));
 }
 
+function singleLine(text: string): string {
+    return text.replace(/\s*\n\s*/g, ' ').trim();
+}
+
+function continuedLines(text: string): string {
+    return text
+        .split('\n')
+        .map((line, index) => (index ? '  ' + line.trim() : line))
+        .filter((line, index) => index === 0 || line.trim())
+        .join('\n');
+}
+
 function collectBlocks(parent: Node, blocks: string[]): void {
     for (const node of Array.from(parent.childNodes)) {
         if (node.nodeType === Node.TEXT_NODE) {
@@ -132,10 +148,10 @@ function collectBlocks(parent: Node, blocks: string[]): void {
         }
         const tag = node.tagName;
         if (tag === 'H1' || tag === 'H2' || tag === 'H3') {
-            blocks.push('#'.repeat(Number(tag[1])) + ' ' + inlineToMarkdown(node));
+            blocks.push('#'.repeat(Number(tag[1])) + ' ' + singleLine(inlineToMarkdown(node)));
         } else if (tag === 'UL' || tag === 'OL') {
             const items = Array.from(node.children).map((item, index) =>
-                (tag === 'OL' ? `${index + 1}. ` : '- ') + inlineToMarkdown(item)
+                (tag === 'OL' ? `${index + 1}. ` : '- ') + continuedLines(inlineToMarkdown(item))
             );
             if (items.length) {
                 blocks.push(items.join('\n'));

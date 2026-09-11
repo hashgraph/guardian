@@ -60,5 +60,30 @@ describe('markdown-view', () => {
         it('should escape the three characters that can start markup', () => {
             expect(escapeHtml('<a & b>')).toBe('&lt;a &amp; b&gt;');
         });
+
+        it('should escape both kinds of quote', () => {
+            expect(escapeHtml('he said "hi" and it\'s fine'))
+                .toBe('he said &quot;hi&quot; and it&#39;s fine');
+        });
+    });
+
+    describe('a line break inside a list item', () => {
+        it('renders a continuation line as a break inside the same item', () => {
+            expect(markdownToHtml('- one\n  two')).toBe('<ul><li>one<br>two</li></ul>');
+            expect(markdownToHtml('1. one\n  two')).toBe('<ol><li>one<br>two</li></ol>');
+        });
+
+        it('keeps the other items of the list apart', () => {
+            expect(markdownToHtml('- one\n  two\n- three'))
+                .toBe('<ul><li>one<br>two</li><li>three</li></ul>');
+        });
+    });
+
+    describe('link urls', () => {
+        it('should not let a quoted url add an attribute to the anchor', () => {
+            const html = markdownToHtml('[click](https://x"onmouseover="window.__pwned=1)');
+            expect(html).toContain('&quot;');
+            expect(html).not.toContain('onmouseover="');
+        });
     });
 });

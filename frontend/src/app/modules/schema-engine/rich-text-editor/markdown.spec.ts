@@ -168,6 +168,11 @@ describe('markdown converters', () => {
             '\\- not a list',
             '1\\. not a list',
             'three stars \\*\\*\\* and a hash #',
+            'it\'s a "quoted" word',
+            '- one\n  two',
+            '- one\n  two\n- three',
+            '# It\'s a "quoted" heading',
+            '- it\'s a "quoted" item',
         ];
 
         for (const sample of samples) {
@@ -200,6 +205,48 @@ describe('markdown converters', () => {
     describe('escapeHtml', () => {
         it('should escape the three characters that can start markup', () => {
             expect(escapeHtml('<a & b>')).toBe('&lt;a &amp; b&gt;');
+        });
+
+        it('should escape both kinds of quote', () => {
+            expect(escapeHtml('he said "hi" and it\'s fine'))
+                .toBe('he said &quot;hi&quot; and it&#39;s fine');
+        });
+    });
+
+    describe('a line break inside a block', () => {
+        it('keeps a break in a paragraph, as a new paragraph', () => {
+            expect(htmlToMarkdown('<p>one<br>two</p>')).toBe('one\ntwo');
+            expect(markdownToHtml('one\ntwo')).toBe('<p>one</p><p>two</p>');
+        });
+
+        it('flattens a break inside a heading, because a Markdown heading is one line', () => {
+            expect(htmlToMarkdown('<h1>one<br>two</h1>')).toBe('# one two');
+            expect(markdownToHtml('# one two')).toBe('<h1>one two</h1>');
+        });
+
+        it('keeps a break inside a list item, as a continuation line', () => {
+            expect(htmlToMarkdown('<ul><li>one<br>two</li></ul>')).toBe('- one\n  two');
+            expect(markdownToHtml('- one\n  two')).toBe('<ul><li>one<br>two</li></ul>');
+        });
+
+        it('keeps the items of a list apart when one of them has a break', () => {
+            expect(htmlToMarkdown('<ul><li>one<br>two</li><li>three</li></ul>'))
+                .toBe('- one\n  two\n- three');
+            expect(markdownToHtml('- one\n  two\n- three'))
+                .toBe('<ul><li>one<br>two</li><li>three</li></ul>');
+        });
+
+        it('keeps a break in a numbered item too', () => {
+            expect(htmlToMarkdown('<ol><li>one<br>two</li></ol>')).toBe('1. one\n  two');
+            expect(markdownToHtml('1. one\n  two')).toBe('<ol><li>one<br>two</li></ol>');
+        });
+    });
+
+    describe('link urls', () => {
+        it('should not let a quoted url add an attribute to the anchor', () => {
+            const html = markdownToHtml('[click](https://x"onmouseover="window.__pwned=1)');
+            expect(html).toContain('&quot;');
+            expect(html).not.toContain('onmouseover="');
         });
     });
 });

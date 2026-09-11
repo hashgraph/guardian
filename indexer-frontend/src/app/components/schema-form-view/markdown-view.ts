@@ -4,7 +4,9 @@ export function escapeHtml(value: string): string {
     return value
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
 const ESCAPED_MARKER = /\\([\\*`\[\]#+.-])/g;
@@ -53,6 +55,8 @@ export function markdownToHtml(markdown: string | null | undefined): string {
                 list = { ordered: isOrdered, items: [] };
             }
             list.items.push(inline((bullet || ordered)![1]));
+        } else if (list && list.items.length && /^ {2}\S/.test(line)) {
+            list.items[list.items.length - 1] += '<br>' + inline(line.slice(2));
         } else if (line.trim()) {
             flush();
             blocks.push(`<p>${inline(line)}</p>`);

@@ -474,6 +474,12 @@ export class RichTextEditorComponent
 function escapeText(text: string): string {
     const inert = document.implementation.createHTMLDocument('');
     const holder = inert.createElement('div');
-    holder.textContent = text;
-    return holder.innerHTML;
+    return text
+        .replace(/\r\n|\r/g, '\n')
+        .split('\n')
+        .map((line) => {
+            holder.textContent = line;
+            return holder.innerHTML;
+        })
+        .join('<br>');
 }

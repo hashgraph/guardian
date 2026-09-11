@@ -158,6 +158,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
             }
             this.documents = data.data || [];
             this.sortHistory(this.documents);
+            this.buildRichTextCellText(fields);
             this.isActive = true;
             const sortingField = _fields.find(item => item.name === data.orderField);
             this.sortOptions.active = sortingField && sortingField.index || '';
@@ -333,7 +334,21 @@ export class DocumentsSourceBlockComponent implements OnInit {
     private richTextHideTimer: any = null;
 
     public getRichTextCellText(row: any, field: any): string {
-        return richTextToText(this.toRichTextHtml(row, field));
+        return row && row._richTextCellText ? (row._richTextCellText[field.index] || '') : '';
+    }
+
+    private buildRichTextCellText(fields: any[]): void {
+        const richTextFields = fields.filter((item) => item.type === 'richText');
+        if (!richTextFields.length || !Array.isArray(this.documents)) {
+            return;
+        }
+        for (const row of this.documents) {
+            const cells: any = {};
+            for (const item of richTextFields) {
+                cells[item.index] = richTextToText(this.toRichTextHtml(row, item));
+            }
+            row._richTextCellText = cells;
+        }
     }
 
     private toRichTextHtml(row: any, field: any): string {

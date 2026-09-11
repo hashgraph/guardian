@@ -555,6 +555,27 @@ describe('RichTextEditorComponent', () => {
         expect(execSpy).toHaveBeenCalledWith('insertHTML', false, '5 &lt; 6 &amp; 7');
     });
 
+    it('should keep the line breaks of plain text pasted without markup', () => {
+        const execSpy = spyOn(document, 'execCommand');
+        const event = new Event('paste') as any;
+        event.clipboardData = {
+            getData: (type: string) => (type === 'text/html' ? '' : 'one\ntwo\r\nthree\rfour')
+        };
+        component.onPaste(event);
+        expect(execSpy).toHaveBeenCalledWith('insertHTML', false, 'one<br>two<br>three<br>four');
+    });
+
+    it('should still escape each line of a multi-line plain text paste', () => {
+        const execSpy = spyOn(document, 'execCommand');
+        const event = new Event('paste') as any;
+        event.clipboardData = {
+            getData: (type: string) => (type === 'text/html' ? '' : '5 < 6\n<b>not bold</b>')
+        };
+        component.onPaste(event);
+        expect(execSpy)
+            .toHaveBeenCalledWith('insertHTML', false, '5 &lt; 6<br>&lt;b&gt;not bold&lt;/b&gt;');
+    });
+
     it('should not change the value when a paste carries no text', () => {
         const execSpy = spyOn(document, 'execCommand');
         const changes: string[] = [];
@@ -594,6 +615,12 @@ describe('RichTextEditorComponent', () => {
         const execSpy = spyOn(document, 'execCommand');
         component.onDrop(dropEvent('', '5 < 6 & 7'));
         expect(execSpy).toHaveBeenCalledWith('insertHTML', false, '5 &lt; 6 &amp; 7');
+    });
+
+    it('should keep the line breaks of plain text dropped without markup', () => {
+        const execSpy = spyOn(document, 'execCommand');
+        component.onDrop(dropEvent('', 'one\ntwo'));
+        expect(execSpy).toHaveBeenCalledWith('insertHTML', false, 'one<br>two');
     });
 
     it('should ignore a drop when readonly', () => {
