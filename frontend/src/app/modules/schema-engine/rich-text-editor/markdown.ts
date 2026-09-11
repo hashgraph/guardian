@@ -108,10 +108,21 @@ function inlineNode(node: Node): string {
     return text;
 }
 
+function isNestedBlock(node: Node): boolean {
+    return node instanceof Element && (node.tagName === 'DIV' || node.tagName === 'P');
+}
+
 function inlineToMarkdown(node: Node): string {
     let out = '';
     for (const child of Array.from(node.childNodes)) {
-        out += inlineNode(child);
+        const text = inlineNode(child);
+        if (!text) {
+            continue;
+        }
+        if (isNestedBlock(child) && out && !out.endsWith('\n')) {
+            out += '\n';
+        }
+        out += text;
     }
     return out;
 }

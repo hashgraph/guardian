@@ -236,6 +236,29 @@ describe('markdown converters', () => {
                 .toBe('<ul><li>one<br>two</li><li>three</li></ul>');
         });
 
+        it('keeps the lines apart when the browser wraps the pasted tail in a div', () => {
+            const pasted = '<ul><li>one<div>two<br>three</div></li><li>next</li></ul>';
+            expect(htmlToMarkdown(pasted)).toBe('- one\n  two\n  three\n- next');
+            expect(markdownToHtml('- one\n  two\n  three\n- next'))
+                .toBe('<ul><li>one<br>two<br>three</li><li>next</li></ul>');
+        });
+
+        it('adds no empty first line when a block opens the list item', () => {
+            expect(htmlToMarkdown('<ul><li><p>one</p></li></ul>')).toBe('- one');
+            expect(htmlToMarkdown('<ul><li><div>one</div></li></ul>')).toBe('- one');
+            expect(markdownToHtml('- one')).toBe('<ul><li>one</li></ul>');
+        });
+
+        it('keeps a real leading break at the start of a list item', () => {
+            expect(htmlToMarkdown('<ul><li><br>one</li></ul>')).toBe('- \n  one');
+            expect(markdownToHtml('- \n  one')).toBe('<ul><li><br>one</li></ul>');
+        });
+
+        it('keeps two blocks inside one item as two lines of that item', () => {
+            expect(htmlToMarkdown('<ul><li><p>one</p><p>two</p></li></ul>')).toBe('- one\n  two');
+            expect(markdownToHtml('- one\n  two')).toBe('<ul><li>one<br>two</li></ul>');
+        });
+
         it('keeps a break in a numbered item too', () => {
             expect(htmlToMarkdown('<ol><li>one<br>two</li></ol>')).toBe('1. one\n  two');
             expect(markdownToHtml('1. one\n  two')).toBe('<ol><li>one<br>two</li></ol>');
