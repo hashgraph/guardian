@@ -1,7 +1,7 @@
 <p-select
     [(ngModel)]="value"
     [disabled]="disabled"
-    [options]="schemas"
+    [options]="sortedSchemas"
     class="schema-select {{bodyStyleClass}}"
     [panelStyleClass]="panelStyleClass || 'pc-select-panel pc-drawer-panel'"
     placeholder="Select a schema"
@@ -19,6 +19,9 @@
             class="schema-variable drawer-option-label"
             [attr.status]="item.status"
         >
+            @if (item.isFeatured) {
+                <i class="pi pi-star-fill schema-featured-icon" pTooltip="Featured" tooltipPosition="right"></i>
+            }
             {{ item.displayName }}
         </div>
     </ng-template>
