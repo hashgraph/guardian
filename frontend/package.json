@@ -2,7 +2,7 @@
   "author": "Hashgraph <guardian@hashgraph.com>",
   "dependencies": {
     "@angular/cdk": "^21.2.14",
-    "@angular/common": "^21.2.16",
+    "@angular/common": "^21.2.20",
     "@angular/compiler": "^21.2.16",
     "@angular/core": "^21.2.16",
     "@angular/forms": "^21.2.16",
