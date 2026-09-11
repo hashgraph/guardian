@@ -1,8 +1,9 @@
 import { ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { shareReplay } from 'rxjs/operators';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpResponse } from '@angular/common/http';
 import { EMPTY, Observable, Subject, Subscription, forkJoin, of } from 'rxjs';
-import { catchError, debounceTime, distinctUntilChanged, map, shareReplay, switchMap, takeUntil } from 'rxjs/operators';
+import { catchError, debounceTime, distinctUntilChanged, map, switchMap, takeUntil } from 'rxjs/operators';
 import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, relationAncestors, ModuleStatus, ISchemaTemplate, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus, ISchemaArrayDependency, ISchemaArrayDependencyMapping, } from '@guardian/interfaces';
 import { SchemaService } from 'src/app/services/schema.service';
 import { TagsService } from 'src/app/services/tag.service';
