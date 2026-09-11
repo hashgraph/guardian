@@ -702,11 +702,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                             .pipe(takeUntil(this.destroy$))
                             .subscribe({
                                 next: () => this.schemaLoad$.next(id),
-                                error: () => {}
+                                error: (error) => this.reportError('Upgrade to IWA v3', error)
                             });
                     });
                 },
-                error: () => {}
+                error: (error) => this.reportError('Upgrade preview', error)
             });
     }
 
@@ -754,16 +754,16 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 next: (response) => {
                     const results = response.results || [];
                     if (key) { this.suggestionsCacheByContextKey.set(key, { results, available: response.available }); }
-                    if (this.getContextSchemaCacheKey(this.currentContextSchema) !== key) { return; }
                     this.suggestionsLoading = false;
+                    if (this.getContextSchemaCacheKey(this.currentContextSchema) !== key) { return; }
                     this.suggestionsAvailable = response.available;
                     this.suggestionResults = results;
                     this._cdr.markForCheck();
                 },
                 error: () => {
                     if (key) { this.suggestionsCacheByContextKey.set(key, { results: [], available: false }); }
-                    if (this.getContextSchemaCacheKey(this.currentContextSchema) !== key) { return; }
                     this.suggestionsLoading = false;
+                    if (this.getContextSchemaCacheKey(this.currentContextSchema) !== key) { return; }
                     this._cdr.markForCheck();
                 }
             });
@@ -815,6 +815,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (response) => {
+                    if (this.selectedField !== field) { return; }
                     this.rightPanelSuggestLoading = false;
                     this.rightPanelSuggestUnavailable = !response.available;
                     this.rightPanelSuggestion = response.results?.[0] || null;
@@ -822,6 +823,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     this._cdr.markForCheck();
                 },
                 error: () => {
+                    if (this.selectedField !== field) { return; }
                     this.rightPanelSuggestLoading = false;
                     this.rightPanelSuggestUnavailable = true;
                     this._cdr.markForCheck();
