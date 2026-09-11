@@ -582,7 +582,7 @@ execute_backup
 
 #### Ensure prerequisite accounts (Optional: Only for the first time installation)
 
-Make sure you have a Hedera Testnet Account and a Web3.Storage Account readily available for the upgrade process. These accounts will be required during the upgrade process to facilitate compatibility and connectivity with the Hedera network.
+Make sure you have a Hedera Testnet Account and an IPFS storage account (e.g. Filebase) readily available for the upgrade process. These accounts will be required during the upgrade process to facilitate compatibility and connectivity with the Hedera network.
 
 \
 Refer to the Hedera Guardian GitHub [repository](https://github.com/hashgraph/guardian) for more details.
