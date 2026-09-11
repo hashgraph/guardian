@@ -88,7 +88,9 @@ export class PolicyImport {
     private formulasResult: ImportFormulaResult;
     private formulasMapping: Map<string, string>;
     private importRecords = false;
-    private schemaTemplate: SchemaTemplate | null = null;
+    /** Source template id -> the template that binding resolved to on this instance. */
+    public schemaTemplates: Map<string, SchemaTemplate> = new Map();
+    private artifactErrors: ImportPolicyError[] = [];
 
     constructor(mode: ImportMode, notifier: INotificationStep) {
         this.mode = mode;
@@ -572,10 +574,13 @@ export class PolicyImport {
 
         const components = await SchemaTemplateImportExport.parseZipFile(message.document);
         const templatePayload: any = components.template || {};
+        // same list as createSchemaTemplate's sanitizer - this zip is equally forgeable
         delete templatePayload._id;
         delete templatePayload.id;
         delete templatePayload.configFileId;
         delete templatePayload.contentFileId;
+        delete templatePayload._configFileId;
+        delete templatePayload.uuid;
 
         templatePayload.owner = message.owner;
         templatePayload.creator = message.owner;
@@ -594,6 +599,8 @@ export class PolicyImport {
             schema.topicId = template.topicId;
             schema.category = SchemaCategory.TEMPLATE;
             schema.templateId = template.id;
+            schema.templateSchemaId = schema.templateSchemaId || GenerateUUIDv4();
+            SchemaHelper.ensureTemplateFieldIds(schema.document);
             schema.status = SchemaStatus.PUBLISHED;
             schema.owner = message.owner;
             schema.creator = message.owner;
@@ -605,45 +612,162 @@ export class PolicyImport {
         return template;
     }
 
-    private async resolveSchemaTemplate(
+    /**
+     * Resolves each binding independently; an unresolved template is dropped rather
+     * than failing the whole import. Throws if two bindings resolve to the same
+     * local template, since only one templateId per binding is supported downstream.
+     */
+    public async resolveSchemaTemplates(
         metadata: PolicyToolMetadata | null,
         policy: Policy,
         user: IOwner,
         step: INotificationStep,
-        userId: string | null
+        userId: string | null,
+        logger?: PinoLogger
     ): Promise<void> {
         step.start();
-        const binding = policy.schemaTemplate;
-        if (!binding || metadata?.schemaTemplate?.detach) {
-            this.schemaTemplate = null;
-            step.complete();
-            return;
+        this.schemaTemplates = new Map<string, SchemaTemplate>();
+
+        const bindings = policy.schemaTemplates || [];
+        const sourceIdByLocalTemplateId = new Map<string, string>();
+        for (const binding of bindings) {
+            if (!binding?.templateId) {
+                continue;
+            }
+            const sourceTemplateId = String(binding.templateId);
+            const override = metadata?.schemaTemplates?.[sourceTemplateId];
+            if (override?.detach) {
+                continue;
+            }
+            const template = await this.resolveSchemaTemplateBinding(binding, override, user, userId);
+            if (!template) {
+                // Unresolved templates are dropped, not fatal; logged since the UI won't surface the lost locks.
+                await logger?.error?.(
+                    `Policy import: schema template "${binding.templateName || sourceTemplateId}" ` +
+                    `(${sourceTemplateId}) could not be resolved on this instance. ` +
+                    'The binding was dropped and its schemas lost their template restrictions.',
+                    ['GUARDIAN_SERVICE'],
+                    userId
+                );
+                continue;
+            }
+            const localTemplateId = String(template.id);
+            const conflictingSourceId = sourceIdByLocalTemplateId.get(localTemplateId);
+            if (conflictingSourceId && conflictingSourceId !== sourceTemplateId) {
+                throw new Error(
+                    `Schema templates "${conflictingSourceId}" and "${sourceTemplateId}" both resolve to ` +
+                    `the same local template "${localTemplateId}". Resolve the collision in the import ` +
+                    'preview before importing.'
+                );
+            }
+            sourceIdByLocalTemplateId.set(localTemplateId, sourceTemplateId);
+            this.schemaTemplates.set(sourceTemplateId, template);
         }
 
-        if (metadata?.schemaTemplate?.templateId) {
-            const template = await DatabaseServer.getSchemaTemplateById(metadata.schemaTemplate.templateId);
-            if (template && (template.status === ModuleStatus.PUBLISHED || template.owner === user.owner)) {
-                this.schemaTemplate = template;
-                step.complete();
-                return;
+        step.complete();
+    }
+
+    private async resolveSchemaTemplateBinding(
+        binding: any,
+        override: any,
+        user: IOwner,
+        userId: string | null
+    ): Promise<SchemaTemplate | null> {
+        const isAccessible = (template: SchemaTemplate | null) => !!template &&
+            (template.status === ModuleStatus.PUBLISHED || template.owner === user.owner);
+
+        if (override?.templateId) {
+            const template = await DatabaseServer.getSchemaTemplateById(override.templateId);
+            if (isAccessible(template)) {
+                return template;
             }
             throw new Error('Selected schema template is inaccessible');
         }
 
-        const messageId = metadata?.schemaTemplate?.templateMessageId || binding.templateMessageId;
-        if (messageId) {
-            const template = await this.resolveSchemaTemplateByMessage(messageId, user, userId);
-            if (template) {
-                this.schemaTemplate = template;
-                step.complete();
-                return;
-            }
+        // Falls back to the binding's own templateId when no override is given.
+        const local = await DatabaseServer.getSchemaTemplateById(binding.templateId);
+        if (isAccessible(local)) {
+            return local;
         }
 
-        throw new Error('Schema template is inaccessible. Select a template or detach it.');
+        const messageId = override?.templateMessageId || binding.templateMessageId;
+        if (messageId) {
+            return await this.resolveSchemaTemplateByMessage(messageId, user, userId);
+        }
+        return null;
     }
 
-    private clearTemplateMetadataFromSchemas(schemas: Schema[]): void {
+    /** Normalizes the legacy singular `schemaTemplate` key into `schemaTemplates[]`. */
+    public normalizeSchemaTemplateBindings(policy: any): void {
+        if (!policy) {
+            return;
+        }
+        const legacy = policy.schemaTemplate;
+        if (legacy && !policy.schemaTemplates?.length) {
+            policy.schemaTemplates = [legacy];
+        }
+        delete policy.schemaTemplate;
+    }
+
+    /** The snapshot half of the same legacy shape. */
+    public normalizeSchemaTemplateSnapshots(components: any): void {
+        if (!components) {
+            return;
+        }
+        const legacy = components.schemaTemplateSnapshot;
+        if (legacy && !components.schemaTemplateSnapshots?.length) {
+            components.schemaTemplateSnapshots = [legacy];
+        }
+        delete components.schemaTemplateSnapshot;
+    }
+
+    /** Bindings that cannot survive the import: caller-detached, or missing a snapshot (a clone). */
+    public schemaTemplateBindingsToDrop(
+        policy: Policy,
+        snapshots: any[] | null | undefined,
+        metadata: PolicyToolMetadata | null | undefined
+    ): string[] {
+        const bindings = policy?.schemaTemplates || [];
+        const snapshotTemplateIds = new Set(
+            (snapshots || [])
+                .map((snapshot) => snapshot?.templateId)
+                .filter((templateId) => !!templateId)
+                .map((templateId) => String(templateId))
+        );
+
+        const dropped: string[] = [];
+        for (const binding of bindings) {
+            if (!binding?.templateId) {
+                continue;
+            }
+            const templateId = String(binding.templateId);
+            const override = metadata?.schemaTemplates?.[templateId];
+            if (override?.detach || !snapshotTemplateIds.has(templateId)) {
+                dropped.push(templateId);
+            }
+        }
+        return dropped;
+    }
+
+    /** Detaches unresolved bindings and clears the template markers on their schemas. */
+    public dropUnresolvedSchemaTemplates(policy: Policy, schemas: Schema[]): void {
+        const bindings = policy?.schemaTemplates || [];
+        const unresolved = new Set(
+            bindings
+                .map((binding) => binding?.templateId ? String(binding.templateId) : '')
+                .filter((templateId) => !!templateId && !this.schemaTemplates.has(templateId))
+        );
+        if (!unresolved.size) {
+            return;
+        }
+        policy.schemaTemplates = bindings
+            .filter((binding) => !unresolved.has(String(binding?.templateId)));
+        this.clearTemplateMetadataFromSchemas(
+            (schemas || []).filter((schema) => unresolved.has(String(schema?.templateId)))
+        );
+    }
+
+    public clearTemplateMetadataFromSchemas(schemas: Schema[]): void {
         for (const schema of schemas) {
             schema.templateId = '';
             schema.templateSchemaId = '';
@@ -651,9 +775,36 @@ export class PolicyImport {
         }
     }
 
+    /**
+     * Re-points each schema's templateId from the source instance's id to the locally
+     * resolved template, so lock resolution matches. templateSchemaId and per-field
+     * templateFieldId markers are instance-agnostic and left alone.
+     */
+    public remapSchemaTemplateIds(
+        schemas: Schema[],
+        templatesBySourceId: Map<string, SchemaTemplate>
+    ): void {
+        if (!templatesBySourceId?.size) {
+            return;
+        }
+        for (const schema of schemas || []) {
+            if (!schema?.templateId) {
+                continue;
+            }
+            const localTemplateId = templatesBySourceId
+                .get(String(schema.templateId))
+                ?.id
+                ?.toString();
+            if (localTemplateId) {
+                schema.templateId = localTemplateId;
+            }
+        }
+    }
+
     private remapSchemaTemplateSnapshot(
         snapshot: SchemaTemplateSnapshot,
-        policy: Policy
+        policy: Policy,
+        template: SchemaTemplate
     ): SchemaTemplateSnapshot {
         const next: any = { ...snapshot };
         delete next._id;
@@ -677,44 +828,65 @@ export class PolicyImport {
         next.policyId = policy.id?.toString();
         next.policyUUID = policy.uuid;
         next.schemaMap = schemaMap;
-        if (this.schemaTemplate) {
-            next.templateId = this.schemaTemplate.id?.toString();
-            next.templateUUID = this.schemaTemplate.uuid;
-            next.templateName = this.schemaTemplate.name;
-            next.templateVersion = this.schemaTemplate.version;
-            next.templateStatus = this.schemaTemplate.status;
-            next.templateMessageId = this.schemaTemplate.messageId || next.templateMessageId;
-        }
+        next.templateId = template.id?.toString();
+        next.templateUUID = template.uuid;
+        next.templateName = template.name;
+        next.templateVersion = template.version;
+        next.templateStatus = template.status;
+        next.templateMessageId = template.messageId || next.templateMessageId;
 
         return next;
     }
 
-    private async saveSchemaTemplateSnapshot(
+    /**
+     * Save one snapshot per surviving binding, each re-pointed at the template it
+     * resolved to. A binding whose template did not resolve, or whose snapshot did
+     * not travel with the file, is dropped here rather than kept half-bound.
+     */
+    private async saveSchemaTemplateSnapshots(
         policy: Policy,
-        snapshot: SchemaTemplateSnapshot | null | undefined,
+        snapshots: SchemaTemplateSnapshot[] | null | undefined,
         step: INotificationStep
     ): Promise<void> {
         step.start();
-        if (!policy.schemaTemplate || !snapshot || !this.schemaTemplate) {
-            policy.schemaTemplate = null;
-            step.complete();
-            return;
+
+        const snapshotByTemplateId = new Map<string, SchemaTemplateSnapshot>();
+        for (const snapshot of snapshots || []) {
+            if (snapshot?.templateId) {
+                snapshotByTemplateId.set(String(snapshot.templateId), snapshot);
+            }
         }
 
-        const nextSnapshot = this.remapSchemaTemplateSnapshot(snapshot, policy);
-        const savedSnapshot = await DatabaseServer.saveSchemaTemplateSnapshot(nextSnapshot);
-        policy.schemaTemplate = {
-            ...policy.schemaTemplate,
-            templateId: this.schemaTemplate.id?.toString(),
-            templateName: this.schemaTemplate.name,
-            templateVersion: this.schemaTemplate.version,
-            templateStatus: this.schemaTemplate.status,
-            templateMessageId: this.schemaTemplate.messageId || policy.schemaTemplate.templateMessageId,
-            templateStateHash: savedSnapshot.templateStateHash,
-            snapshotId: savedSnapshot.id,
-            schemaMap: savedSnapshot.schemaMap || {},
-            appliedAt: savedSnapshot.appliedAt || new Date().toISOString()
-        };
+        const bindings: any[] = [];
+        for (const binding of policy.schemaTemplates || []) {
+            const sourceTemplateId = binding?.templateId ? String(binding.templateId) : '';
+            const template = sourceTemplateId
+                ? this.schemaTemplates.get(sourceTemplateId)
+                : undefined;
+            const snapshot = sourceTemplateId
+                ? snapshotByTemplateId.get(sourceTemplateId)
+                : undefined;
+            if (!template || !snapshot) {
+                continue;
+            }
+
+            const nextSnapshot = this.remapSchemaTemplateSnapshot(snapshot, policy, template);
+            const savedSnapshot = await DatabaseServer.saveSchemaTemplateSnapshot(nextSnapshot);
+            bindings.push({
+                ...binding,
+                templateId: template.id?.toString(),
+                templateName: template.name,
+                templateVersion: template.version,
+                templateStatus: template.status,
+                templateMessageId: template.messageId || binding.templateMessageId,
+                templateStateHash: savedSnapshot.templateStateHash,
+                snapshotId: savedSnapshot.id,
+                schemaMap: savedSnapshot.schemaMap || {},
+                appliedAt: savedSnapshot.appliedAt || new Date().toISOString()
+            });
+        }
+
+        policy.schemaTemplates = bindings;
         await DatabaseServer.updatePolicy(policy);
         step.complete();
     }
@@ -892,8 +1064,21 @@ export class PolicyImport {
             tools,
             tests,
             formulas,
-            schemaTemplateSnapshot,
+            artifactErrors,
         } = options.policyComponents;
+
+        //parse-time diagnostics, returned beside `errors` rather than in it
+        this.artifactErrors = artifactErrors || [];
+
+        /*
+         * A file written before the plural shape carries one binding under
+         * `policy.schemaTemplate` and one snapshot under `schemaTemplateSnapshot`.
+         * Normalise both before anything else reads them, so the rest of the pipeline
+         * only ever sees the new shape.
+         */
+        this.normalizeSchemaTemplateBindings(policy);
+        this.normalizeSchemaTemplateSnapshots(options.policyComponents);
+        const schemaTemplateSnapshots = options.policyComponents.schemaTemplateSnapshots || [];
 
         const copySchemas = schemas.map((schema) => structuredClone(schema));
 
@@ -902,12 +1087,21 @@ export class PolicyImport {
         const additionalPolicyConfig = options.additionalPolicyConfig;
         const metadata = options.metadata;
         const logger = options.logger;
-        const detachSchemaTemplate = !!metadata?.schemaTemplate?.detach;
-
         this.importRecords = !!options.importRecords;
-        if (detachSchemaTemplate) {
-            policy.schemaTemplate = null;
-            this.clearTemplateMetadataFromSchemas(schemas);
+
+        // Drop the binding and its schemas' template markers together, before the schemas are written.
+        const droppedTemplateIds = this.schemaTemplateBindingsToDrop(
+            policy,
+            schemaTemplateSnapshots,
+            metadata
+        );
+        if (droppedTemplateIds.length) {
+            const dropped = new Set(droppedTemplateIds);
+            policy.schemaTemplates = (policy.schemaTemplates || [])
+                .filter((binding) => !dropped.has(String(binding?.templateId)));
+            this.clearTemplateMetadataFromSchemas(
+                schemas.filter((schema) => dropped.has(String(schema?.templateId)))
+            );
         }
 
         // <-- Steps
@@ -967,13 +1161,17 @@ export class PolicyImport {
             this.notifier.getStep(STEP_IMPORT_TOOLS),
             userId
         );
-        await this.resolveSchemaTemplate(
+        await this.resolveSchemaTemplates(
             metadata,
             policy,
             user,
             this.notifier.getStep(STEP_RESOLVE_SCHEMA_TEMPLATE),
-            userId
+            userId,
+            logger
         );
+        // A binding can still fail to resolve after the snapshot check; drop it and its schemas' markers here.
+        this.dropUnresolvedSchemaTemplates(policy, schemas);
+        this.remapSchemaTemplateIds(schemas, this.schemaTemplates);
         await this.importTokens(
             tokens,
             user,
@@ -1035,7 +1233,7 @@ export class PolicyImport {
         await this.saveArtifacts(row, step.getStep(STEP_SAVE_ARTIFACTS));
         await this.saveTests(row, step.getStep(STEP_SAVE_TESTS));
         await this.saveFormulas(row, step.getStep(STEP_SAVE_FORMULAS));
-        await this.saveSchemaTemplateSnapshot(row, schemaTemplateSnapshot, step.getStep(STEP_SAVE_SCHEMA_TEMPLATE));
+        await this.saveSchemaTemplateSnapshots(row, schemaTemplateSnapshots, step.getStep(STEP_SAVE_SCHEMA_TEMPLATE));
         await this.saveHash(row, logger, step.getStep(STEP_SAVE_HASH), userId);
         await this.setSuggestionsConfig(row, user, step.getStep(STEP_SAVE_SUGGEST));
         step.complete();
@@ -1046,7 +1244,15 @@ export class PolicyImport {
         this.notifier.complete();
 
         const errors = await this.getErrors();
-        return { policy: row, errors };
+        if (this.artifactErrors.length) {
+            //not folded into `errors`: the policy imported, and a dropped attachment
+            //must not make the API report a failure the user cannot act on
+            await logger.warn(
+                `Policy ${row.id} imported with unresolved artifacts: ${this.artifactErrors.map(e => `${e.name}: ${e.error}`).join('; ')}`,
+                ['GUARDIAN_SERVICE'], userId
+            );
+        }
+        return { policy: row, errors, artifactErrors: this.artifactErrors };
     }
 
     private async copyPolicyRecords(policy: Policy, logger: PinoLogger, copySchemas: Schema[]): Promise<void> {

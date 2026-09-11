@@ -58,6 +58,7 @@ export interface PolicyTestAutomationState {
     testCases: PolicyTestCase[];
     name: string;
     description: string;
+    stopStage: 'warning' | 'save' | null;
 }
 
 const createInitialState = (): PolicyTestAutomationState => ({
@@ -65,6 +66,7 @@ const createInitialState = (): PolicyTestAutomationState => ({
     testCases: [],
     name: '',
     description: '',
+    stopStage: null,
 });
 
 @Injectable({ providedIn: 'root' })
@@ -73,6 +75,8 @@ export class PolicyTestAutomationService {
     public readonly state$ = this.stateSubject.asObservable();
     private currentPolicyId: string | null = null;
     private dbPromise: Promise<IDBPDatabase> | null = null;
+    private loadPromise: Promise<void> = Promise.resolve();
+    private loaded = false;
     private _recordSub: Subscription | null = null;
     private readonly _captureSubject$ = new Subject<{ caseId: string; policyId: string; recordActionId: string }>();
     private readonly _wsSignal$ = new Subject<{ policyId: string; status: string }>();
@@ -117,13 +121,31 @@ export class PolicyTestAutomationService {
 
     public loadForPolicy(policyId: string): void {
         this.currentPolicyId = policyId;
+        this.loaded = false;
         this.stateSubject.next(createInitialState());
-        void this.loadFromIdb(policyId);
+        this.loadPromise = this.loadFromIdb(policyId);
+    }
+
+    public ensureLoaded(policyId: string): Promise<void> {
+        if (this.currentPolicyId !== policyId) {
+            if (this.currentPolicyId) {
+                this.stateSubject.next(createInitialState());
+            }
+            this.currentPolicyId = policyId;
+            this.loaded = false;
+            this.loadPromise = this.loadFromIdb(policyId);
+        }
+        return this.loadPromise;
+    }
+
+    public setStopStage(stopStage: 'warning' | 'save' | null): Promise<void> {
+        this.update({ stopStage });
+        return this.persistToIdb();
     }
 
     public setCaptureNextFormSubmit(value: boolean): void {
         this.update({ captureNextFormSubmit: value });
-        this.persistToIdb();
+        void this.persistToIdb();
     }
 
     public captureTestCase(input: Omit<PolicyTestInputAnchor, 'capturedAt'>): void {
@@ -153,13 +175,13 @@ export class PolicyTestAutomationService {
             captureNextFormSubmit: false,
             testCases: [...this.state.testCases, testCase]
         });
-        this.persistToIdb();
+        void this.persistToIdb();
         this._captureSubject$.next({ caseId, policyId: input.policyId, recordActionId });
     }
 
     public discardTestCase(id: string): void {
         this.update({ testCases: this.state.testCases.filter((tc) => tc.id !== id) });
-        this.persistToIdb();
+        void this.persistToIdb();
     }
 
     public toggleInputSelected(caseId: string): void {
@@ -168,7 +190,7 @@ export class PolicyTestAutomationService {
             return { ...tc, input: { ...tc.input, selected: !tc.input.selected } };
         });
         this.update({ testCases });
-        this.persistToIdb();
+        void this.persistToIdb();
     }
 
     public toggleOutputSelected(caseId: string, documentId: string): void {
@@ -183,7 +205,7 @@ export class PolicyTestAutomationService {
             };
         });
         this.update({ testCases });
-        this.persistToIdb();
+        void this.persistToIdb();
     }
 
     public setMetadata(name: string, description: string): void {
@@ -256,7 +278,7 @@ export class PolicyTestAutomationService {
                         return { ...tc, outputs: merged };
                     });
                     this.update({ testCases });
-                    this.persistToIdb();
+                    void this.persistToIdb();
                 });
             },
             error: () => {}
@@ -290,11 +312,17 @@ export class PolicyTestAutomationService {
                     this.stateSubject.next({
                         ...createInitialState(),
                         captureNextFormSubmit: stored.captureNextFormSubmit || false,
-                        testCases: stored.testCases || []
+                        testCases: stored.testCases || [],
+                        stopStage: stored.stopStage || null
                     });
                 });
             }
-        } catch { }
+        } catch {
+        } finally {
+            if (this.currentPolicyId === policyId) {
+                this.loaded = true;
+            }
+        }
     }
 
     private update(patch: Partial<PolicyTestAutomationState>): void {
@@ -304,18 +332,18 @@ export class PolicyTestAutomationService {
         });
     }
 
-    private persistToIdb(): void {
-        if (!this.currentPolicyId) { return; }
+    private persistToIdb(): Promise<void> {
+        if (!this.currentPolicyId || !this.loaded) { return Promise.resolve(); }
         const policyId = this.currentPolicyId;
-        const { captureNextFormSubmit, testCases } = this.state;
+        const { captureNextFormSubmit, testCases, stopStage } = this.state;
         const lightweight = testCases.map((tc) => ({
             ...tc,
             input: { ...tc.input, document: undefined },
             outputs: tc.outputs.map((out) => ({ ...out, document: undefined }))
         }));
-        void this.getDb().then((db) => {
+        return this.getDb().then(async (db) => {
             if (this.currentPolicyId !== policyId) { return; }
-            return db.put(STORES_NAME.POLICY_TEST_STORE, { policyId, captureNextFormSubmit, testCases: lightweight });
+            await db.put(STORES_NAME.POLICY_TEST_STORE, { policyId, captureNextFormSubmit, testCases: lightweight, stopStage });
         }).catch(() => { });
     }
 

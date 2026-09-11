@@ -1,6 +1,6 @@
 import { ClientProxy } from '@nestjs/microservices';
-import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Inject, Post, Version } from '@nestjs/common';
-import { ApiAcceptedResponse, ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
+import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Inject, Post, Query, Version } from '@nestjs/common';
+import { ApiAcceptedResponse, ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import { ProjectDTO, PropertiesDTO, CompareDocumentsDTO, CompareDocumentsV2DTO, FilterDocumentsDTO, InternalServerErrorDTO, UnprocessableEntityErrorDTO, Examples} from '#middlewares';
 import { CACHE } from '#constants';
 import { UseCache, Guardians, InternalException, ProjectService } from '#helpers';
@@ -330,13 +330,22 @@ export class ProjectsAPI {
             }
         }
     })
+    @ApiQuery({
+        name: 'iwaVersion',
+        type: String,
+        description: 'IWA dMRV specification version to list properties for. Omit to list every version.',
+        example: '3.0.0',
+        required: false
+    })
     @ApiExtraModels(PropertiesDTO, InternalServerErrorDTO)
     @UseCache({ ttl: CACHE.LONG_TTL })
     @HttpCode(HttpStatus.ACCEPTED)
-    async getPolicyProperties(): Promise<any> {
+    async getPolicyProperties(
+        @Query('iwaVersion') iwaVersion?: string
+    ): Promise<any> {
         try {
             const projectService = new ProjectService();
-            return await projectService.getPolicyProperties();
+            return await projectService.getPolicyProperties(iwaVersion);
         } catch (error) {
             await InternalException(error, this.logger, null);
         }

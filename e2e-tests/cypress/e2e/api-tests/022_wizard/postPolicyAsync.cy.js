@@ -3,7 +3,7 @@ import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import { randomInt } from '../../../support/random';
 
-context('Create Policy by Wizard', { tags: ['wizard', 'firstPool', 'all'] }, () => {
+context('Create Policy by Wizard', { tags: ['wizard', 'firstPool', 'all', 'all-no-mgs'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     // policyTag is unique in the DB, so a hardcoded one makes every run after the first fail with a

@@ -26,10 +26,70 @@ describe('PolicyUtils.checkDocumentField', () => {
             assert.equal(PolicyUtils.checkDocumentField(null, filter('field', 'equal', 'x')), false);
         });
 
-        it('legacy equal: number field vs string value uses strict comparison (no coercion)', () => {
-            // legacy path (no valueSource) must NOT coerce; amount=10 (number) !== '10' (string)
+        it('legacy equal: number field matches its numeric string value', () => {
+            // Filter values always arrive as strings from the policy config, so the legacy
+            // path coerces before comparing - amount=10 (number) equals '10' (string).
             const d = { document: { credentialSubject: [{ amount: 10 }] } };
-            assert.equal(PolicyUtils.checkDocumentField(d, { field: 'document.credentialSubject.0.amount', type: 'equal', value: '10' }), false);
+            assert.equal(PolicyUtils.checkDocumentField(d, { field: 'document.credentialSubject.0.amount', type: 'equal', value: '10' }), true);
+        });
+
+        it('legacy equal: number field does not match a different numeric string', () => {
+            const d = { document: { credentialSubject: [{ amount: 10 }] } };
+            assert.equal(PolicyUtils.checkDocumentField(d, { field: 'document.credentialSubject.0.amount', type: 'equal', value: '11' }), false);
+        });
+    });
+
+    describe('unresolved operands', () => {
+        // [operator, satisfying pair, violating pair]
+        const CASES = [
+            ['equal',     ['A', 'A'],   ['A', 'B']],
+            ['not_equal', ['A', 'B'],   ['A', 'A']],
+            ['gt',        [10, 5],      [5, 10]],
+            ['gte',       [5, 5],       [4, 5]],
+            ['lt',        [5, 10],      [10, 5]],
+            ['lte',       [5, 5],       [6, 5]],
+            ['in',        ['B', 'A,B,C'], ['D', 'A,B,C']],
+            ['not_in',    ['D', 'A,B,C'], ['B', 'A,B,C']],
+        ];
+
+        it('both sides absent: not applicable, for every operator', () => {
+            for (const [type] of CASES) {
+                assert.equal(PolicyUtils.evaluateFieldCondition(null, type, null), true, type);
+                assert.equal(PolicyUtils.evaluateFieldCondition(undefined, type, undefined), true, type);
+            }
+        });
+
+        it('absent left against a present right still fails closed, for every operator', () => {
+            for (const [type, [, right]] of CASES) {
+                assert.equal(PolicyUtils.evaluateFieldCondition(null, type, right), false, type);
+            }
+            assert.equal(PolicyUtils.evaluateFieldCondition(null, 'equal', 'null'), true);
+        });
+
+        it('both sides present: unchanged, for every operator', () => {
+            for (const [type, ok, bad] of CASES) {
+                assert.equal(PolicyUtils.evaluateFieldCondition(ok[0], type, ok[1]), true, `${type} pass`);
+                assert.equal(PolicyUtils.evaluateFieldCondition(bad[0], type, bad[1]), false, `${type} fail`);
+            }
+        });
+
+        it('a rule against a configured value cannot be bypassed by omitting the field', () => {
+            for (const [type, , bad] of CASES) {
+                const f = { field: 'document.credentialSubject.0.missing', type, valueSource: 'value', value: bad[1] };
+                assert.equal(PolicyUtils.checkDocumentField(doc({}), f), false, type);
+            }
+        });
+
+        it('a condition on a schema branch the document omits does not block it', () => {
+            // if/then/else discriminator: cert_type "A" forbids branch_b entirely
+            const d = doc({ cert_type: 'A', branch_a: { from: '2024-01-01', to: '2024-06-01' } });
+            const cond = (field, value) => ({ field, type: 'gte', valueSource: 'document', value });
+            assert.equal(PolicyUtils.checkDocumentField(d, cond(
+                'document.credentialSubject.0.branch_a.to',
+                'document.credentialSubject.0.branch_a.from')), true);
+            assert.equal(PolicyUtils.checkDocumentField(d, cond(
+                'document.credentialSubject.0.branch_b.to',
+                'document.credentialSubject.0.branch_b.from')), true);
         });
     });
 
@@ -228,6 +288,24 @@ describe('PolicyUtils.evaluateFieldCondition', () => {
 
     it('not_in: scalar is not member of array right-side', () => {
         assert.equal(PolicyUtils.evaluateFieldCondition('D', 'not_in', ['A', 'B', 'C']), true);
+    });
+
+    it('not_in: a scalar is not in the empty set', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition('D', 'not_in', []), true);
+    });
+
+    it('in: a scalar is never in the empty set', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition('D', 'in', []), false);
+    });
+
+    it('in/not_in: an empty left side still fails closed', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition([], 'not_in', ['A']), false);
+        assert.equal(PolicyUtils.evaluateFieldCondition([], 'in', ['A']), false);
+    });
+
+    it('the empty-array guard still applies to the comparison operators', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition('A', 'equal', []), false);
+        assert.equal(PolicyUtils.evaluateFieldCondition('5', 'gte', []), false);
     });
 
     it('in: array left — every element must be in right', () => {

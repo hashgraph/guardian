@@ -22,9 +22,9 @@ context('Policies', { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
             url: API.ApiServer + API.RegUsers,
         }).then((response) => {
             response.body.forEach(element => {
-                if (element.username == DepSRUsername)
+                if (element.username === DepSRUsername)
                     {SRExist = true;}
-                else if (element.username == DepUserUsername)
+                else if (element.username === DepUserUsername)
                     {UserExist = true;}
             })
             if (!SRExist)
@@ -123,7 +123,7 @@ context('Policies', { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                         }
                     }).then((response) => {
                         response.body.forEach(element => {
-                            if (element.username == DepSRUsername)
+                            if (element.username === DepSRUsername)
                                 {SRDid = element.did;}
                         })
                         cy.request({

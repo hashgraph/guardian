@@ -1,9 +1,62 @@
 import { METHOD, STATUS_CODE } from '../api/api-const';
 import API from '../ApiUrls';
+import { exportModuleMessage, importModuleFile, parseBinaryJson, publishModule } from '../api/modules';
 import * as Authorization from '../authorization';
 import { randomInt } from '../random';
 
 const PUBLISH_TIMEOUT = 1800000;
+
+/**
+ * Where the seeding spec (000_accounts_creating/seedHederaArtefacts) records the Hedera message of
+ * every artefact it published. Runtime state, not a checked-in fixture: see e2e-tests/.gitignore.
+ */
+const SEEDED_MESSAGES_FILE = 'cypress/fixtures/seededMessages.json';
+
+const HEDERA_MESSAGE_ID = /^\d+\.\d+$/;
+
+/**
+ * The suite pins a handful of Hedera message IDs in cypress.env.json, all of them published on
+ * testnet. On any other network those messages do not exist, so the artefacts behind them have to
+ * be published by the run itself.
+ */
+export const usesSeededMessages = () => Cypress.env('hederaNet') !== 'testnet';
+
+/** Reads a `*.policy` / `*.tool` / `*.module` archive from the fixtures folder as a Blob. */
+const readFixtureArchive = (fixtureName) =>
+    cy.fixture(fixtureName, 'binary').then((binary) => Cypress.Blob.binaryStringToBlob(binary));
+
+/** Posts an exported archive to one of the `import/file` endpoints. */
+const importArchive = (authorization, url, file) =>
+    cy.request({
+        method: METHOD.POST,
+        url,
+        body: file,
+        headers: {
+            'content-type': 'binary/octet-stream',
+            authorization,
+        },
+        timeout: PUBLISH_TIMEOUT,
+    });
+
+/**
+ * Every publish endpoint answers 200 with `{ isValid, errors }` whether or not it published: a
+ * failed validation leaves the artefact a draft, and only `isValid` says so.
+ */
+const expectPublished = (response, fixtureName) => {
+    expect(response.status, `publish of ${fixtureName}`).to.eq(STATUS_CODE.OK);
+    expect(
+        response.body.isValid,
+        `publish of ${fixtureName} validation: ${JSON.stringify(response.body.errors)}`
+    ).to.be.true;
+};
+
+/** Yields the Hedera message ID carried by an `export/message` response. */
+const yieldExportedMessageId = (response, fixtureName) => {
+    expect(response.status, `export/message of ${fixtureName}`).to.eq(STATUS_CODE.OK);
+    const { messageId } = response.body;
+    expect(messageId, `Hedera message ID of published ${fixtureName}`).to.match(HEDERA_MESSAGE_ID);
+    return cy.wrap(messageId, { log: false });
+};
 
 /**
  * Imports a policy fixture from file and publishes it, which uploads the policy to IPFS and
@@ -17,19 +70,8 @@ const PUBLISH_TIMEOUT = 1800000;
  * Yields the Hedera message ID of the freshly published policy.
  */
 export const publishPolicyFixture = (username, fixtureName, policyVersion = '1.0.0') =>
-    Authorization.getAccessToken(username).then((authorization) => cy
-        .fixture(fixtureName, 'binary')
-        .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
-        .then((file) => cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.PolicisImportFile,
-            body: file,
-            headers: {
-                'content-type': 'binary/octet-stream',
-                authorization,
-            },
-            timeout: PUBLISH_TIMEOUT,
-        }))
+    Authorization.getAccessToken(username).then((authorization) => readFixtureArchive(fixtureName)
+        .then((file) => importArchive(authorization, API.ApiServer + API.PolicisImportFile, file))
         .then((response) => {
             expect(response.status, `import of ${fixtureName}`).to.eq(STATUS_CODE.SUCCESS);
             const policyId = JSON.parse(new TextDecoder().decode(response.body)).at(0).id;
@@ -40,24 +82,90 @@ export const publishPolicyFixture = (username, fixtureName, policyVersion = '1.0
                 headers: { authorization },
                 timeout: PUBLISH_TIMEOUT,
             }).then((publishResponse) => {
-                expect(publishResponse.status, `publish of ${fixtureName}`).to.eq(STATUS_CODE.OK);
-                expect(
-                    publishResponse.body.isValid,
-                    `publish of ${fixtureName} validation: ${JSON.stringify(publishResponse.body.errors)}`
-                ).to.be.true;
+                expectPublished(publishResponse, fixtureName);
                 return cy.request({
                     method: METHOD.GET,
                     url: `${API.ApiServer}${API.Policies}${policyId}/${API.ExportMessage}`,
                     headers: { authorization },
                     timeout: PUBLISH_TIMEOUT,
                 });
-            }).then((exportResponse) => {
-                expect(exportResponse.status).to.eq(STATUS_CODE.OK);
-                const { messageId } = exportResponse.body;
-                expect(messageId, `Hedera message ID of published ${fixtureName}`).to.match(/^\d+\.\d+$/);
-                return cy.wrap(messageId, { log: false });
-            });
+            }).then((exportResponse) => yieldExportedMessageId(exportResponse, fixtureName));
         }));
+
+/**
+ * Imports a module fixture from file and publishes it. Same reasoning as publishPolicyFixture.
+ *
+ * Yields the Hedera message ID of the freshly published module.
+ */
+export const publishModuleFixture = (username, fixtureName) =>
+    Authorization.getAccessToken(username).then((authorization) => readFixtureArchive(fixtureName)
+        .then((file) => importModuleFile(authorization, file, { timeout: PUBLISH_TIMEOUT }))
+        .then((response) => {
+            expect(response.status, `import of ${fixtureName}`).to.eq(STATUS_CODE.SUCCESS);
+            const { uuid } = parseBinaryJson(response.body);
+            return publishModule(authorization, uuid, { timeout: PUBLISH_TIMEOUT })
+                .then((publishResponse) => {
+                    expectPublished(publishResponse, fixtureName);
+                    return exportModuleMessage(authorization, uuid, { timeout: PUBLISH_TIMEOUT });
+                })
+                .then((exportResponse) => yieldExportedMessageId(exportResponse, fixtureName));
+        }));
+
+/**
+ * Imports a tool fixture from file and publishes it. Same reasoning as publishPolicyFixture.
+ *
+ * Yields the Hedera message ID of the freshly published tool.
+ */
+export const publishToolFixture = (username, fixtureName, toolVersion = '1.0.0') =>
+    Authorization.getAccessToken(username).then((authorization) => readFixtureArchive(fixtureName)
+        .then((file) => importArchive(authorization, API.ApiServer + API.ToolsImportFile, file))
+        .then((response) => {
+            expect(response.status, `import of ${fixtureName}`).to.eq(STATUS_CODE.SUCCESS);
+            const toolId = parseBinaryJson(response.body).id;
+            return cy.request({
+                method: METHOD.PUT,
+                url: `${API.ApiServer}${API.Tools}${toolId}/${API.Publish}`,
+                body: { toolVersion },
+                headers: { authorization },
+                timeout: PUBLISH_TIMEOUT,
+            }).then((publishResponse) => {
+                expectPublished(publishResponse, fixtureName);
+                return cy.request({
+                    method: METHOD.GET,
+                    url: `${API.ApiServer}${API.Tools}${toolId}/${API.ExportMessage}`,
+                    headers: { authorization },
+                    timeout: PUBLISH_TIMEOUT,
+                });
+            }).then((exportResponse) => yieldExportedMessageId(exportResponse, fixtureName));
+        }));
+
+/**
+ * Records the Hedera messages the seeding spec published, so the specs that consume them can look
+ * them up through `seededMessageId`.
+ */
+export const writeSeededMessageIds = (messageIdsByEnvKey) =>
+    cy.writeFile(SEEDED_MESSAGES_FILE, messageIdsByEnvKey);
+
+/**
+ * Resolves one of the artefact message IDs the suite imports from, and is the only place that knows
+ * which network the run is against: on testnet it is the ID pinned in cypress.env.json, anywhere
+ * else the one the seeding spec published on that network. Consuming specs stay network-agnostic.
+ *
+ * Yields the Hedera message ID.
+ */
+export const seededMessageId = (envKey) => {
+    if (!usesSeededMessages()) {
+        return cy.wrap(Cypress.env(envKey), { log: false });
+    }
+    return cy.readFile(SEEDED_MESSAGES_FILE).then((seeded) => {
+        const messageId = seeded?.[envKey];
+        expect(
+            messageId,
+            `Hedera message seeded for "${envKey}" (published by 000_accounts_creating/seedHederaArtefacts)`
+        ).to.match(HEDERA_MESSAGE_ID);
+        return cy.wrap(messageId, { log: false });
+    });
+};
 
 /**
  * Creates a minimal schema in an existing topic and publishes it, which uploads the schema to IPFS
@@ -154,7 +262,7 @@ export const publishSchema = (username) =>
             }).then((exportResponse) => {
                 expect(exportResponse.status).to.eq(STATUS_CODE.OK);
                 const { messageId } = exportResponse.body;
-                expect(messageId, 'Hedera message ID of the published schema').to.match(/^\d+\.\d+$/);
+                expect(messageId, 'Hedera message ID of the published schema').to.match(HEDERA_MESSAGE_ID);
                 return cy.wrap({ messageId, topicId }, { log: false });
             });
         });

@@ -48,7 +48,7 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
                 title: 'IPFS Gateway Template',
                 type: PropertyType.Input,
                 visible: 'transformationType === "ipfsGateway"',
-                default: 'https://{cid}.ipfs.w3s.link',
+                default: 'https://ipfs.io/ipfs/{cid}',
                 required: true
             },
         ]

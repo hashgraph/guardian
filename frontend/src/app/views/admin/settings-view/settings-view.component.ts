@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, Validators } from '@angular/forms';
 import { CommonSettings } from '@guardian/interfaces';
 import { SettingsService } from 'src/app/services/settings.service';
 import { Subscription } from 'rxjs'
@@ -30,11 +30,6 @@ export class SettingsViewComponent implements OnInit, OnDestroy{
     });
     isLoading: boolean = true;
 
-    keyAndProof = this.fb.group({
-        key: ['', Validators.required],
-        proof: ['', Validators.required]
-    })
-
     private subscription: Subscription;
 
     constructor(
@@ -53,18 +48,6 @@ export class SettingsViewComponent implements OnInit, OnDestroy{
                     this.isLoading = true
                 })
         );
-
-        this.subscription.add(
-            this.keyAndProof.valueChanges.subscribe(values => {
-                this.dataForm.patchValue({
-                    ipfsStorageApiKey: `${values.key};${values.proof}`
-                })
-            })
-        );
-    }
-
-    getFormControl(formGroup: UntypedFormGroup, name: string): UntypedFormControl {
-        return formGroup.get(name) as UntypedFormControl;
     }
 
     ngOnDestroy() {

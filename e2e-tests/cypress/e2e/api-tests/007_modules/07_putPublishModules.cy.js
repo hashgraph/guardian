@@ -3,7 +3,7 @@ import { STATUS_CODE } from '../../../support/api/api-const';
 import * as Modules from '../../../support/api/modules';
 import * as Authorization from '../../../support/authorization';
 
-context('Publish Module', { tags: ['modules', 'thirdPool', 'all'] }, () => {
+context('Publish Module', { tags: ['modules', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     // A published module stays in the list, so the name must be unique per run

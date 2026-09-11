@@ -139,3 +139,38 @@ describe('TimerBlock runtime — tickCron', () => {
         assert.deepEqual(timer.state, []);
     });
 });
+
+describe('TimerBlock runtime — startCron start date', () => {
+    const runStartCron = (options) => {
+        const block = mk();
+        const { ref, calls } = makeRef({ options });
+        try {
+            withRef(ref, calls, () => basePrototype.startCron.call(block, ref));
+        } finally {
+            if (block.job) {
+                block.job.stop();
+            }
+        }
+        const line = calls.logs.find((l) => l.startsWith('start scheduler:'));
+        return line?.slice('start scheduler: '.length).split(',')[0];
+    };
+
+    // A start date 30 minutes from now can never share a minute with "now",
+    // so the assertion cannot pass by coincidence.
+    const startDate = new Date(Date.now() + 30 * 60 * 1000);
+
+    it('builds an hourly mask from the configured start date', () => {
+        const mask = runStartCron({ period: 'hourly', startDate: startDate.toISOString() });
+        assert.equal(mask, `${startDate.getUTCMinutes()} * * * *`);
+    });
+
+    it('builds a daily mask from the configured start date', () => {
+        const mask = runStartCron({ period: 'daily', startDate: startDate.toISOString() });
+        assert.equal(mask, `${startDate.getUTCMinutes()} ${startDate.getUTCHours()} * * *`);
+    });
+
+    it('falls back to the current time when the start date is unusable', () => {
+        const mask = runStartCron({ period: 'hourly', startDate: new Date('nope') });
+        assert.match(mask, /^\d{1,2} \* \* \* \*$/, 'mask must not contain NaN');
+    });
+});

@@ -30,9 +30,9 @@ describe('GetPropertiesFromFile', () => {
         );
         const out = await GetPropertiesFromFile(file);
         assert.deepEqual(out, [
-            { title: 'title-a', value: 'value-a' },
-            { title: 'title-b', value: 'value-b' },
-            { title: 'title-c', value: 'value-c' },
+            { title: 'title-a', value: 'value-a', description: undefined },
+            { title: 'title-b', value: 'value-b', description: undefined },
+            { title: 'title-c', value: 'value-c', description: undefined },
         ]);
     });
 
@@ -42,16 +42,19 @@ describe('GetPropertiesFromFile', () => {
             ',orphan-value\ntitle-keep,value-keep'
         );
         const out = await GetPropertiesFromFile(file);
-        assert.deepEqual(out, [{ title: 'title-keep', value: 'value-keep' }]);
+        assert.deepEqual(out, [{ title: 'title-keep', value: 'value-keep', description: undefined }]);
     });
 
-    it('skips rows that do not have exactly two columns', async () => {
+    it('skips single-column rows and reads a third column as description', async () => {
         const file = writeCsv(
             'wrong-columns.csv',
             'only-one\nthree,col,row\nvalid,value'
         );
         const out = await GetPropertiesFromFile(file);
-        assert.deepEqual(out, [{ title: 'valid', value: 'value' }]);
+        assert.deepEqual(out, [
+            { title: 'three', value: 'col', description: 'row' },
+            { title: 'valid', value: 'value', description: undefined },
+        ]);
     });
 
     it('returns an empty array for an empty file', async () => {
@@ -63,7 +66,7 @@ describe('GetPropertiesFromFile', () => {
     it('handles a single-row file', async () => {
         const file = writeCsv('one.csv', 'lonely,value');
         const out = await GetPropertiesFromFile(file);
-        assert.deepEqual(out, [{ title: 'lonely', value: 'value' }]);
+        assert.deepEqual(out, [{ title: 'lonely', value: 'value', description: undefined }]);
     });
 
     it('rejects when the file does not exist', async () => {

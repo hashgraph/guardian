@@ -1,11 +1,12 @@
 import { workerData, parentPort } from 'node:worker_threads';
 import { Code, DocumentMap, MathEngine, setDocumentValueByPath } from '../math-model/index.js';
+import { buildTableHelper } from '../table-field-core.js';
 
 /**
  * Execute function
  */
 function execute(): void {
-    const { expression, user, documents, schema, copy } = workerData;
+    const { expression, user, documents, schema, copy, tablesPack } = workerData;
     const group = MathEngine.from(expression);
     if (!group) {
         throw new Error('Invalid block config');
@@ -37,10 +38,13 @@ function execute(): void {
     //Code
     const code = Code.from(expression);
     if (code) {
-        context.document = document;
-        context.result = result;
-        context.user = user;
-        code.setContext(context);
+        code.setContext({
+            ...context,
+            document,
+            result,
+            user,
+            table: buildTableHelper(tablesPack)
+        });
         result = code.run();
     }
 

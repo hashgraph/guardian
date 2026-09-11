@@ -54,6 +54,15 @@ export class ReleaseMigration extends Migration {
      */
     async updateVcIndexDocument() {
         const vcDocumentCollection = this.getCollection('VcDocument');
+        const db = this.driver.getConnection().getDb();
+        const exists = await db
+            .listCollections({ name: vcDocumentCollection.collectionName }, { nameOnly: true })
+            .hasNext();
+        if (!exists) {
+            // Fresh database: no collection, so no legacy index to replace and
+            // listIndexes() would throw NamespaceNotFound.
+            return;
+        }
         const listIndexes = vcDocumentCollection.listIndexes();
         while (await listIndexes.hasNext()) {
             const index = await listIndexes.next();

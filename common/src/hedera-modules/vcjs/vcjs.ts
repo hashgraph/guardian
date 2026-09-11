@@ -298,8 +298,12 @@ export class VCJS {
 
         const vcObject = JSON.parse(JSON.stringify(vc));
 
-        const subjects = vcObject.credentialSubject;
-        const subject = Array.isArray(subjects) ? subjects[0] : subjects;
+        const rawSubjects = vcObject.credentialSubject;
+        const subjects: any[] = Array.isArray(rawSubjects) ? rawSubjects : [rawSubjects];
+        if (!subjects.length || !subjects[0]) {
+            throw new Error('"credentialSubject" property is required.');
+        }
+        const subject = subjects[0];
 
         if (!this.schemaLoader) {
             throw new Error('Schema Loader not found');
@@ -325,7 +329,12 @@ export class VCJS {
 
         const schemaObject = Schema.fromVc(schema);
 
-        ContextHelper.setContext(subject, schemaObject);
+        // Every subject needs its ref-field type/@context restored before validation,
+        // not just the first - otherwise a multi-subject VC only gets subject[0]
+        // checked consistently with the schema.
+        for (const item of subjects) {
+            ContextHelper.setContext(item, schemaObject);
+        }
 
         const validate = await ajv.compileAsync(schema);
         const valid = validate(vcObject);
@@ -381,6 +390,7 @@ export class VCJS {
      */
     private prepareSchema(schema: any) {
         this.stripIfOnly(schema);
+        this.stripTemplateFieldIds(schema);
 
         const defsObj = schema.$defs;
         if (!defsObj) {
@@ -398,10 +408,72 @@ export class VCJS {
             nestedSchema.required = required.filter((field: any) => !nestedSchema.properties[field] || !nestedSchema.properties[field].readOnly);
         }
 
-        if (!Array.isArray(schema.allOf)) {
+        // Strip the root and every $defs entry with its own allOf, deps first,
+        // so a def is fully stripped before it's cloned elsewhere.
+        const prepared = new Set<string>();
+        const inProgress = new Set<string>();
+        const prepareDef = (key: string) => {
+            if (prepared.has(key) || inProgress.has(key) || !defsObj[key]) {
+                return;
+            }
+            inProgress.add(key);
+            for (const ref of this.collectSchemaRefs(defsObj[key])) {
+                if (ref !== key && defsObj[ref]) {
+                    prepareDef(ref);
+                }
+            }
+            this.applyConditionalStrip(defsObj[key], defsObj, key);
+            inProgress.delete(key);
+            prepared.add(key);
+        };
+        for (const key of defsKeys) {
+            prepareDef(key);
+        }
+        this.applyConditionalStrip(schema, defsObj, 'root');
+    }
+
+    /**
+     * Collect every $ref value reachable within a schema node, so callers can tell
+     * which $defs entries a given def depends on before deciding processing order.
+     *
+     * @param node Schema node to scan
+     */
+    private collectSchemaRefs(node: any): Set<string> {
+        const refs = new Set<string>();
+        const seen = new Set<any>();
+        const walk = (current: any) => {
+            if (!current || typeof current !== 'object' || seen.has(current)) {
+                return;
+            }
+            seen.add(current);
+            if (typeof current.$ref === 'string') {
+                refs.add(current.$ref);
+            }
+            for (const value of Object.values(current)) {
+                if (value && typeof value === 'object') {
+                    walk(value);
+                }
+            }
+        };
+        walk(node);
+        return refs;
+    }
+
+    /**
+     * Strip conditionally-inactive required/forbidden fields from one schema
+     * container (the root schema, or one $defs entry) that carries its own allOf.
+     *
+     * @param container Schema object carrying the allOf conditions
+     * @param defsObj Shared $defs object the per-container clones are written into
+     * @param scope Identifier of the container, used to key clones so two different
+     * containers stripping the same $ref'd entry along different paths don't collide
+     */
+    private applyConditionalStrip(container: any, defsObj: any, scope: string) {
+        if (!container || !Array.isArray(container.allOf)) {
             return;
         }
-        const rootProperties = schema.properties || {};
+        const rootProperties = container.properties || {};
+        const scopeKey = String(scope).replace(/[^A-Za-z0-9_-]/g, '');
 
         // Collect fields to strip keyed by container dot-path (not by IRI).
         // Multiple conditions targeting the same container accumulate into one Set.
@@ -437,7 +509,7 @@ export class VCJS {
             }
         };
 
-        for (const condEntry of schema.allOf) {
+        for (const condEntry of container.allOf) {
             if (!condEntry?.if) { continue; }
             for (const branch of [condEntry.then, condEntry.else]) {
                 collectPath(branch, [], rootProperties);
@@ -483,7 +555,7 @@ export class VCJS {
             if (!iri) { continue; }
             const pathArr = pathKey.split('.');
             const fieldsToStrip = stripByPath.get(pathKey);
-            const cloneKey = `${iri}__${pathArr.join('__')}`;
+            const cloneKey = `${iri}__${scopeKey}__${pathArr.join('__')}`;
 
             // Deep-copy original def so the shared entry is never mutated.
             const clone = JSON.parse(JSON.stringify(defsObj[iri]));
@@ -514,6 +586,50 @@ export class VCJS {
                         cloneKey
                     );
                 }
+            }
+        }
+    }
+
+    /**
+     * Remove the schema-editor-only `templateFieldId` annotation from every property.
+     *
+     * @param schema Schema
+     */
+    private stripTemplateFieldIds(schema: any) {
+        const stripProperties = (properties: any) => {
+            if (!properties || typeof properties !== 'object') {
+                return;
+            }
+            for (const property of Object.values<any>(properties)) {
+                if (!property || typeof property !== 'object') {
+                    continue;
+                }
+
+                delete property.templateFieldId;
+
+                if (property.properties) {
+                    stripProperties(property.properties);
+                }
+                if (property.items?.properties) {
+                    stripProperties(property.items.properties);
+                }
+            }
+        };
+
+        const stripNode = (node: any) => {
+            stripProperties(node?.properties);
+            if (Array.isArray(node?.allOf)) {
+                for (const entry of node.allOf) {
+                    stripNode(entry?.then);
+                    stripNode(entry?.else);
+                }
+            }
+        };
+
+        stripNode(schema);
+        if (schema?.$defs) {
+            for (const nestedSchema of Object.values<any>(schema.$defs)) {
+                stripNode(nestedSchema);
             }
         }
     }

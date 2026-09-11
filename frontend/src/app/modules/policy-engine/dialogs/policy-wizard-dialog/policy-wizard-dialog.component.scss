@@ -237,6 +237,19 @@ form {
     overflow-y: auto;
 }
 
+/*
+ * The schema multiselect renders its overlay inline (see the template), so it lives
+ * inside .dialog-body's scroll box. Bounding the list keeps the panel short enough to
+ * open within that box instead of running past its fold.
+ */
+::ng-deep .guardian-multiselect-panel {
+    .p-multiselect-items-wrapper,
+    .p-multiselect-list-container {
+        max-height: min(220px, 30vh);
+        overscroll-behavior: contain;
+    }
+}
+
 ::ng-deep {
     .p-dialog-title {
         font-family: Poppins, sans-serif;
@@ -433,4 +446,18 @@ form {
 
 .guardian-input-container {
     margin-bottom: 24px;
+}
+.wizard-missing-schemas {
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    background: var(--color-accent-red-2, rgba(255, 0, 0, 0.06));
+    color: var(--color-accent-red-1, #c00);
+    font-size: 13px;
+
+    ul {
+        margin: 8px 0;
+        padding-left: 20px;
+        word-break: break-all;
+    }
 }

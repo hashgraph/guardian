@@ -1,7 +1,7 @@
 import { expect, assert } from 'chai';
 import {
     Client,
-    AccountBalanceQuery,
+    MirrorNodeAccountBalanceQuery,
     PrivateKey,
     AccountCreateTransaction,
     Hbar,
@@ -93,9 +93,9 @@ describe('Stability test', function () {
         assert.equal(failed, 0);
     });
 
-    it('AccountBalanceQuery', async function () {
-        const { success, failed } = await run('AccountBalanceQuery', maxTransaction, async function () {
-            const query = new AccountBalanceQuery().setAccountId(OPERATOR_ID);
+    it('MirrorNodeAccountBalanceQuery', async function () {
+        const { success, failed } = await run('MirrorNodeAccountBalanceQuery', maxTransaction, async function () {
+            const query = new MirrorNodeAccountBalanceQuery().setAccountId(OPERATOR_ID);
             const accountBalance = await query.execute(client);
         }, 1000);
         assert.equal(success, maxTransaction);

@@ -8,6 +8,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { PolicyStatus } from '@guardian/interfaces';
 import { IndexedDbRegistryService } from "src/app/services/indexed-db-registry.service";
 import { DB_NAME, STORES_NAME } from 'src/app/constants';
+import { ToastService } from 'src/app/services/toast.service';
 
 /**
  * Component for display block of 'Buttons' type.
@@ -45,7 +46,8 @@ export class ButtonBlockComponent implements OnInit {
         private policyHelper: PolicyHelper,
         private dialogService: DialogService,
         private cdref: ChangeDetectorRef,
-        private indexedDbRegistry: IndexedDbRegistryService
+        private indexedDbRegistry: IndexedDbRegistryService,
+        private toastService: ToastService,
     ) {
     }
 
@@ -231,7 +233,12 @@ export class ButtonBlockComponent implements OnInit {
         return result;
     }
 
-    onSelect(button: any) {
+    /*
+     * `restorePoint` is captured by onSelectDialog before it appends the comment,
+     * so a rejected submit can undo that too. Snapshotting here would keep it.
+     */
+    onSelect(button: any, restorePoint?: string) {
+        const snapshot = restorePoint ?? JSON.stringify(this.data ?? null);
         void this.clearOutgoingHideEventsState()
             .then(() => {
                 return this.writeOutgoingHideEventsState(button);
@@ -248,10 +255,33 @@ export class ButtonBlockComponent implements OnInit {
                 tag: button.tag,
             })
             .subscribe(
-                () => { },
+                () => {
+                    this.toastService.success(
+                        `"${button.name || button.title || button.tag}" has been submitted.`,
+                        'Action submitted'
+                    );
+                },
                 (e) => {
                     console.error(e.error);
+                    /*
+                     * commonVisible is set false optimistically before the request; on a
+                     * rejected submit the row has to come back, otherwise the user is
+                     * left with no controls and no explanation.
+                     */
+                    this.commonVisible = true;
+                    try {
+                        this.data = JSON.parse(snapshot);
+                    } catch (parseError) {
+                        console.error(parseError);
+                    }
+                    // the persisted hide-events value records a decision that never landed
+                    void this.clearOutgoingHideEventsState().catch((err) => console.error(err));
                     this.loading = false;
+                    this.toastService.error(
+                        e?.error?.message || 'The action could not be submitted.',
+                        'Action failed',
+                        { sticky: true }
+                    );
                     this.cdref.detectChanges();
                 }
             );
@@ -267,6 +297,7 @@ export class ButtonBlockComponent implements OnInit {
             },
         })!;
 
+        const restorePoint = JSON.stringify(this.data ?? null);
         dialogRef.onClose.subscribe((result) => {
             if (result) {
                 let comments = this.getObjectValue(
@@ -285,7 +316,7 @@ export class ButtonBlockComponent implements OnInit {
                     button.dialogResultFieldPath || this._commentField,
                     comments
                 );
-                this.onSelect(button);
+                this.onSelect(button, restorePoint);
             }
         });
     }

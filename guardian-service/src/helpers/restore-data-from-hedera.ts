@@ -54,7 +54,8 @@ import {
     TokenType,
     TopicType,
     UserRole,
-    WorkerTaskType
+    WorkerTaskType,
+    resolveIwaVersion
 } from '@guardian/interfaces';
 import { PolicyEngine } from '../policy-engine/policy-engine.js';
 import { importTag, updateToolConfig } from './import-helpers/index.js';
@@ -215,7 +216,8 @@ export class RestoreDataFromHedera {
             system: false,
             active: true,
             category: SchemaCategory.POLICY,
-            codeVersion: s.codeVersion
+            codeVersion: s.codeVersion,
+            iwaVersion: resolveIwaVersion(s)
         };
         const dataBaseServer = new DatabaseServer();
 
@@ -258,7 +260,8 @@ export class RestoreDataFromHedera {
                 system: false,
                 active: true,
                 category: SchemaCategory.POLICY,
-                codeVersion: schema.codeVersion
+                codeVersion: schema.codeVersion,
+                iwaVersion: resolveIwaVersion(schema)
             };
             const result = dataBaseServer.create(SchemaCollection, schemaObj);
             await dataBaseServer.save(SchemaCollection, result);

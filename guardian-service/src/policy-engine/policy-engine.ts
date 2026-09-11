@@ -79,6 +79,7 @@ import { AISuggestionsService } from '../helpers/ai-suggestions.js';
 import { publishFormula } from '../api/helpers/formulas-helpers.js';
 import { FilterObject } from '@mikro-orm/core';
 import { PolicyDataMigrator } from './helpers/policy-data-migrator.js';
+import { removePolicySchemaTemplateSnapshot } from '../api/schema-template.service.js';
 
 /**
  * Result of publishing
@@ -105,27 +106,34 @@ export enum PolicyAccessCode {
 }
 
 export async function validatePolicySchemaTemplateBeforePublish(model: Policy): Promise<void> {
-    const binding = model.schemaTemplate;
-    const hasTemplateBinding = !!(
-        binding?.templateId ||
-        binding?.snapshotId ||
-        Object.keys(binding?.schemaMap || {}).length
-    );
-    if (!hasTemplateBinding) {
-        return;
-    }
-    if (!binding?.templateId) {
-        throw new Error(
-            'Policy cannot be published while it uses a schema template snapshot without a linked template. ' +
-            'Select a published schema template or detach it from the policy.'
+    const bindings = model.schemaTemplates || [];
+    const errors: string[] = [];
+    for (const binding of bindings) {
+        const hasTemplateBinding = !!(
+            binding?.templateId ||
+            binding?.snapshotId ||
+            Object.keys(binding?.schemaMap || {}).length
         );
+        if (!hasTemplateBinding) {
+            continue;
+        }
+        if (!binding?.templateId) {
+            errors.push(
+                'Policy cannot be published while it uses a schema template snapshot without a linked template. ' +
+                'Select a published schema template or detach it from the policy.'
+            );
+            continue;
+        }
+        const template = await DatabaseServer.getSchemaTemplateById(binding.templateId);
+        if (!template || template.status !== ModuleStatus.PUBLISHED) {
+            errors.push(
+                `Policy cannot be published while it uses a draft schema template ("${binding.templateName || binding.templateId}"). ` +
+                'Publish the schema template first or detach it from the policy.'
+            );
+        }
     }
-    const template = await DatabaseServer.getSchemaTemplateById(binding.templateId);
-    if (!template || template.status !== ModuleStatus.PUBLISHED) {
-        throw new Error(
-            'Policy cannot be published while it uses a draft schema template. ' +
-            'Publish the schema template first or detach it from the policy.'
-        );
+    if (errors.length) {
+        throw new Error(errors.join(' '));
     }
 }
 
@@ -235,6 +243,18 @@ export class PolicyEngine extends NatsService {
      * @private
      */
     private readonly policyReadyCallbacks: Map<string, (data: any, error?: any) => void> = new Map();
+
+    /**
+     * Starts currently in flight, keyed by policy id
+     * @private
+     */
+    private readonly inFlightStarts: Map<string, Promise<any>> = new Map();
+
+    /**
+     * Ceiling on one start attempt, after which the entry is released so a later
+     * caller can retry rather than await a promise that will never settle.
+     */
+    private static readonly START_TIMEOUT_MS = 15 * 60 * 1000;
 
     /**
      * Policy initialization errors container
@@ -940,6 +960,8 @@ export class PolicyEngine extends NatsService {
         notifier.completeStep(STEP_DELETE_CREDENTIALS);
 
         notifier.startStep(STEP_DELETE_POLICY);
+        // must run before the policy row goes: snapshotId lives on it
+        await removePolicySchemaTemplateSnapshot(policyToDelete, logger);
         await DatabaseServer.deletePolicy(policyToDelete.id);
         notifier.completeStep(STEP_DELETE_POLICY);
 
@@ -1034,6 +1056,8 @@ export class PolicyEngine extends NatsService {
         notifier.completeStep(STEP_DELETE_CREDENTIALS);
 
         notifier.startStep(STEP_DELETE_POLICY);
+        // must run before the policy row goes: snapshotId lives on it
+        await removePolicySchemaTemplateSnapshot(policyToDelete, logger);
         await DatabaseServer.deletePolicy(policyToDelete.id);
         notifier.completeStep(STEP_DELETE_POLICY);
 
@@ -1146,6 +1170,8 @@ export class PolicyEngine extends NatsService {
         notifier.completeStep(STEP_DELETE_CREDENTIALS);
 
         notifier.startStep(STEP_DELETE_POLICY);
+        // must run before the policy row goes: snapshotId lives on it
+        await removePolicySchemaTemplateSnapshot(policyToDelete, logger);
         await DatabaseServer.deletePolicy(policyToDelete.id);
         notifier.completeStep(STEP_DELETE_POLICY);
 
@@ -2437,8 +2463,19 @@ export class PolicyEngine extends NatsService {
      * @param policyOwnerId
      */
     public async destroyModel(policyId: string, policyOwnerId: string | null): Promise<void> {
+        //a start in flight can no longer complete: the child exits with code 0 and no
+        //ready event follows, so the entry has to go with it
+        this.clearInFlightStart(policyId);
         PolicyServiceChannelsContainer.deletePolicyServiceChannel(policyId);
         new GuardiansService().sendPolicyMessage(PolicyEvents.DELETE_POLICY, policyId, { policyOwnerId });
+    }
+
+    /**
+     * Drop a recorded start attempt, so the next caller starts afresh.
+     * @param policyId
+     */
+    private clearInFlightStart(policyId: string): void {
+        this.inFlightStarts.delete(policyId);
     }
 
     /**
@@ -2446,6 +2483,41 @@ export class PolicyEngine extends NatsService {
      * @param policyId
      */
     public async generateModel(policyId: string, enableMock: boolean): Promise<any> {
+        const inFlight = this.inFlightStarts.get(policyId);
+        if (inFlight) {
+            return inFlight;
+        }
+
+        // Bounded: startModel's confirmed branch waits on POLICY_READY with no timeout,
+        // and that event never arrives if policy-service gives up after
+        // maxRestartAttempts or the policy is destroyed mid-start. An unbounded entry
+        // would make every later caller await a promise that cannot settle, leaving the
+        // policy unstartable for the lifetime of the process.
+        let expiry: any;
+        const bound = new Promise((_resolve, reject) => {
+            expiry = setTimeout(
+                () => reject(new Error(`Policy ${policyId} did not start within ${PolicyEngine.START_TIMEOUT_MS}ms`)),
+                PolicyEngine.START_TIMEOUT_MS
+            );
+        });
+
+        const start = Promise.race([this.startModel(policyId, enableMock), bound])
+            // Released before the caller settles, so a `.then` that starts the policy
+            // again cannot observe a stale entry. `finally` runs too late for that.
+            .then(
+                (result) => { clearTimeout(expiry); this.clearInFlightStart(policyId); return result; },
+                (error) => { clearTimeout(expiry); this.clearInFlightStart(policyId); throw error; }
+            );
+        this.inFlightStarts.set(policyId, start);
+        return start;
+    }
+
+    /**
+     * Start the policy process. Callers go through generateModel, which serialises
+     * concurrent starts of the same policy.
+     * @param policyId
+     */
+    private async startModel(policyId: string, enableMock: boolean): Promise<any> {
         const policy = await DatabaseServer.getPolicyById(policyId);
         if (!policy || (typeof policy !== 'object')) {
             throw new Error('Policy was not exist');
@@ -2486,7 +2558,7 @@ export class PolicyEngine extends NatsService {
             } else {
                 await new Promise(resolve => setTimeout(resolve, 10000));
 
-                return this.generateModel(policyId, enableMock);
+                return this.startModel(policyId, enableMock);
             }
         } else {
             return Promise.resolve();
@@ -2519,6 +2591,7 @@ export class PolicyEngine extends NatsService {
      * @param policyOwnerId
      */
     public async destroyModelForMigration(policyId: string, policyOwnerId: string | null): Promise<void> {
+        this.clearInFlightStart(policyId);
         PolicyServiceChannelsContainer.deletePolicyServiceChannel(policyId);
 
         const guardians = new GuardiansService();

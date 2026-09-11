@@ -1,6 +1,11 @@
+---
+tags:
+  - flagged-for-rewrite
+---
+
 # Policies,Projects and Topics Mapping Architecture
 
-**Note:**&#x20;
+**Note:**
 
 Guardian data migration is supported for published Policy instances which are yet to generate any data, i.e. are 'empty'.
 

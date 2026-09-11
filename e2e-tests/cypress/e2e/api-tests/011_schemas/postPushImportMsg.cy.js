@@ -3,7 +3,7 @@ import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import * as IpfsSeeding from '../../../support/CustomHelpers/ipfsSeeding';
 
-context('Schemas', { tags: ['schema', 'thirdPool', 'all'] }, () => {
+context('Schemas', { tags: ['schema', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     let schemaMessageId;
@@ -22,6 +22,8 @@ context('Schemas', { tags: ['schema', 'thirdPool', 'all'] }, () => {
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.Schemas,
+                // a single entry is enough here, and the full schema listing grows with every run
+                qs: { pageIndex: 0, pageSize: 1 },
                 headers: {
                     authorization,
                 },

@@ -83,6 +83,14 @@ export class PolicyUser {
      */
     public readonly policyOwner: string | null;
     /**
+     * The DID of the Standard Registry this user belongs to, derived the same way
+     * EntityOwner derives `owner` (user.parent for a USER, user.did for an SR).
+     *
+     * Null for a virtual (dry-run) user or one built from a bare DID, where the
+     * parent is unknown - callers must not read that as "no owner".
+     */
+    public readonly parent: string | null;
+    /**
      * Policy status
      */
     public readonly policyStatus: PolicyStatus | null;
@@ -131,6 +139,7 @@ export class PolicyUser {
             this.location = LocationType.LOCAL;
             this._userId = null;
             this._hederaAccountId = null;
+            this.parent = null;
         } else {
             this.did = arg.did;
             this.username = arg.username;
@@ -138,6 +147,7 @@ export class PolicyUser {
             this.location = arg.location || LocationType.LOCAL;
             this._userId = arg.id;
             this._hederaAccountId = arg.hederaAccountId;
+            this.parent = arg.parent || null;
         }
         this.role = null;
         this.group = null;

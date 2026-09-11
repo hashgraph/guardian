@@ -1,273 +1,273 @@
-AccountableImpactOrganization.id,Organization Identifier
-AccountableImpactOrganization.name,Organization Name
-AccountableImpactOrganization.description,Organization Description
-AccountableImpactOrganization.addresses,Organization Addresses
-AccountableImpactOrganization.owners,Organization Owners
-AccountableImpactOrganization.country,Organization Country
-AccountableImpactOrganization.region,Organization Region
-AccountableImpactOrganization.informationLink,Information Link
-AccountableImpactOrganization.mediaLinks,Media Links
-AccountableImpactOrganization.attestations,Attestations
-AccountableImpactOrganization.activityImpactModules,Activity Impact Modules
-ActivityImpactModule.id,Module Identifier
-ActivityImpactModule.aioId,Organization Reference
-ActivityImpactModule.name,Module Name
-ActivityImpactModule.classificationCategory,Classification Category
-ActivityImpactModule.classificationMethod,Classification Method
-ActivityImpactModule.benefitCategory,Benefit Category
-ActivityImpactModule.projectScope,Project Scope
-ActivityImpactModule.projectType,Project Type
-ActivityImpactModule.projectScale,Project Scale
-ActivityImpactModule.arbId,ARB Project Identifier
-ActivityImpactModule.geographicLocation,Geographic Location
-ActivityImpactModule.firstYearIssuance,First Year of Issuance
-ActivityImpactModule.registryProjectId,Registry Project Identifier
-ActivityImpactModule.developers,Project Developers
-ActivityImpactModule.sponsors,Project Sponsors
-ActivityImpactModule.claimSources,Claim Sources
-ActivityImpactModule.impactClaims,Impact Claims
-ActivityImpactModule.mrvExtensions,MRV Extensions
-ActivityImpactModule.validations,Validations
-ActivityImpactModule.attestations,Attestations
-ActivityImpactModule.accountableImpactOrganization,Accountable Organization
-ActivityImpactModule.projectStartDate,Project Start Date
-ActivityImpactModule.projectCreditingPeriod,Project Crediting Period
-ActivityImpactModule.projectMonitoringPeriod,Project Monitoring Period
-Address.addressType,Address Type
-Address.addressLines,Address Lines
-Address.city,City
-Address.state,State/Province
-Address.zip,Postal Code
-Address.country,Country
-Any.typeUrl,Type URL
-Any.value,Value
-Attestation.tag,Attestation Tag
-Attestation.type,Attestation Type
-Attestation.proofType,Proof Type
-Attestation.attestor,Attestor
-Attestation.signature,Signature
-Audits.auditDate,Audit Date
-Audits.auditReports,Audit Reports
-CRU.id,Carbon Removal Unit Identifier
-CRU.quantity,Quantity
-CRU.unit,Unit of Measure
-CRU.ownerId,Owner Identifier
-CRU.listingAgentId,Listing Agent Identifier
-CRU.coreCarbonPrinciples,Core Carbon Principles
-CRU.climateLabels,Climate Labels
-CRU.status,Status
-CRU.referencedCredit,Referenced Credit
-CRU.appliedToId,Applied To Identifier
-CRU.processedClaimId,Processed Claim Identifier
-CRU.issuerId,Issuer Identifier
-CRU.processedClaim,Processed Claim
-CheckpointResult.id,Checkpoint Result Identifier
-CheckpointResult.checkpointId,Checkpoint Identifier
-CheckpointResult.linkToVerificationData,Link to Verification Data
-CheckpointResult.dateRange,Date Range
-CheckpointResult.efBefore,Emissions Factor Before
-CheckpointResult.efAfter,Emissions Factor After
-CheckpointResult.mrvExtensions,MRV Extensions
-ClaimSource.id,Claim Source Identifier
-ClaimSource.aimId,Activity Impact Module Reference
-ClaimSource.name,Claim Source Name
-ClaimSource.description,Claim Source Description
-ClaimSource.location,Claim Source Location
-ClaimSource.sourceType,Source Type
-ClaimSource.unitOfMeasure,Unit of Measure
-ClaimSource.sourceIdentifier,Source Identifier
-ClaimSource.mrvExtensions,MRV Extensions
-ClimateLabel.id,Climate Label Identifier
-ClimateLabel.name,Climate Label Name
-ClimateLabel.description,Climate Label Description
-CoBenefit.unSdg,UN SDG
-CoBenefit.description,Co-Benefit Description
-CoreCarbonPrinciples.assetId,Asset Identifier
-CoreCarbonPrinciples.issuanceDate,Issuance Date
-CoreCarbonPrinciples.vintage,Vintage
-CoreCarbonPrinciples.generationType,Generation Type
-CoreCarbonPrinciples.verificationStandard,Verification Standard
-CoreCarbonPrinciples.mitigationActivity,Mitigation Activity
-CoreCarbonPrinciples.durability,Durability
-CoreCarbonPrinciples.replacement,Replacement
-CoreCarbonPrinciples.parisAgreementCompliance,Paris Agreement Compliance
-CoreCarbonPrinciples.quantifiedSdgImpacts,Quantified SDG Impacts
-CoreCarbonPrinciples.adaptationCoBenefits,Adaptation Co-Benefits
-Credential.context,Context
-Credential.id,Credential Identifier
-Credential.type,Credential Type
-Credential.issuer,Issuer
-Credential.issuanceDate,Issuance Date
-Credential.credentialSubject,Credential Subject
-Credential.proof,Proof
-CredentialSubject.id,Subject Identifier
-CredentialSubject.property,Subject Property
-DataExtension.key,Extension Key
-DataExtension.value,Extension Value
-DataExtension.data,Extension Data
-Date.dateTime,Date Time
-Date.dateString,Date String
-DatePoint.date,Date
-DatePoint.timeStamp,Timestamp
-DateRange.startDate,Start Date
-DateRange.endDate,End Date
-Degradable.percentage,Degradation Percentage
-Degradable.factor,Degradation Factor
-Degradable.degradationType,Degradation Type
-DigitalSignature.type,Signature Type
-DigitalSignature.jws,JWS
-DigitalSignature.vc,Verifiable Credential
-DigitalSignature.signatureCase,Signature Case
-Durability.storageType,Storage Type
-Durability.years,Duration in Years
-Durability.degradable,Degradable Component
-Durability.reversalMitigation,Reversal Mitigation
-GeographicLocation.longitude,Longitude
-GeographicLocation.latitude,Latitude
-GeographicLocation.geoJsonOrKml,GeoJSON/KML
-GeographicLocation.geographicLocationFile,Geographic Location File
-ImpactClaim.id,Impact Claim Identifier
-ImpactClaim.aimId,Activity Impact Module Reference
-ImpactClaim.processedClaimId,Processed Claim Reference
-ImpactClaim.unit,Unit of Measure
-ImpactClaim.quantity,Quantity
-ImpactClaim.coBenefits,Co-Benefits
-ImpactClaim.checkpoints,Checkpoints
-ImpactClaim.mrvExtensions,MRV Extensions
-ImpactClaim.activityImpactModule,Activity Impact Module
-ImpactClaimCheckpoint.id,Checkpoint Identifier
-ImpactClaimCheckpoint.claimId,Claim Identifier
-ImpactClaimCheckpoint.claimSourceIds,Claim Source References
-ImpactClaimCheckpoint.projectDeveloperId,Project Developer Reference
-ImpactClaimCheckpoint.efBefore,Emissions Factor Before
-ImpactClaimCheckpoint.efAfter,Emissions Factor After
-ImpactClaimCheckpoint.checkpointDateRange,Checkpoint Date Range
-ImpactClaimCheckpoint.verifiedLinkToCheckpointData,Verified Link to Data
-ImpactClaimCheckpoint.mrvExtensions,MRV Extensions
-ImpactClaimCheckpoint.spanDataPackage,SPAN Data Package
-MRVRequirements.measurementSpecification,Measurement Specification
-MRVRequirements.specificationLink,Specification Link
-MRVRequirements.precision,Precision Level
-MRVRequirements.claimPeriod,Claim Period
-Manifest.id,Manifest Identifier
-Manifest.version,Manifest Version
-Manifest.aimId,Activity Impact Module Reference
-Manifest.claimId,Claim Identifier
-Manifest.projectDeveloperId,Project Developer Reference
-Manifest.created,Creation Date
-Manifest.mrvExtensions,MRV Extensions
-Manifest.sdpFiles,SDP Files
-MitigationActivity.category,Mitigation Category
-MitigationActivity.method,Mitigation Method
-MrvExtension.mrvExtensionContext,MRV Extension Context
-MrvExtension.typedExtension,Typed Extension
-MrvExtension.untypedExtension,Untyped Extension
-MrvExtension.extensionCase,Extension Case
-PACompliance.ca,Carbon Assurance
-PACompliance.letterOfApproval,Letter of Approval
-PrecisionMix.low,Low Precision
-PrecisionMix.medium,Medium Precision
-PrecisionMix.high,High Precision
-ProcessedClaim.id,Processed Claim Identifier
-ProcessedClaim.vpaId,Verification Process Agreement Reference
-ProcessedClaim.impactClaimId,Impact Claim Reference
-ProcessedClaim.creditId,Credit Identifier
-ProcessedClaim.unit,Unit of Measure
-ProcessedClaim.quantity,Quantity
-ProcessedClaim.coBenefits,Co-Benefits
-ProcessedClaim.mrvExtensions,MRV Extensions
-ProcessedClaim.checkpointResults,Checkpoint Results
-ProcessedClaim.issuanceRequest,Issuance Request
-ProcessedClaim.verificationProcessAgreement,Verification Process Agreement
-ProcessedClaim.impactClaim,Impact Claim
-ProcessedClaim.asset,Carbon Removal Asset
-Proof.type,Proof Type
-Proof.created,Proof Creation Date
-Proof.proofPurpose,Proof Purpose
-Proof.verificationMethod,Verification Method
-Proof.challenge,Challenge
-Proof.domain,Domain
-Proof.jws,JWS
-QualityStandard.name,Quality Standard Name
-QualityStandard.description,Quality Standard Description
-QualityStandard.standard,Standard Reference
-QualityStandard.methodologyAndTools,Methodology and Tools
-QualityStandard.version,Standard Version
-QualityStandard.coBenefits,Co-Benefits
-QualityStandard.standardLink,Standard Link
-REC.id,Renewable Energy Certificate Identifier
-REC.recType,REC Type
-REC.validJurisdiction,Valid Jurisdiction
-REC.quantity,Quantity
-REC.unit,Unit of Measure
-REC.ownerId,Owner Identifier
-REC.listingAgentId,Listing Agent Identifier
-REC.climateLabels,Climate Labels
-REC.status,Status
-REC.referencedRec,Referenced REC
-REC.appliedToId,Applied To Identifier
-REC.processedClaimId,Processed Claim Identifier
-REC.issuerId,Issuer Identifier
-REC.processedClaim,Processed Claim
-ReferencedCredit.id,Referenced Credit Identifier
-ReferencedRec.id,Referenced REC Identifier
-Replacement.replacesId,Replaces Identifier
-Replacement.replacementDate,Replacement Date
-Replacement.notes,Replacement Notes
-ReversalMitigation.reversalRisk,Reversal Risk
-ReversalMitigation.insuranceType,Insurance Type
-ReversalMitigation.insurancePolicyOwner,Insurance Policy Owner
-ReversalMitigation.insurancePolicyLink,Insurance Policy Link
-SdpFile.name,File Name
-SdpFile.type,File Type
-SdpFile.description,File Description
-SdpFile.claimSourceId,Claim Source Reference
-SdpFile.claimSourceAttestation,Claim Source Attestation
-SdpFile.mrvExtensions,MRV Extensions
-Signatory.id,Signatory Identifier
-Signatory.name,Signatory Name
-Signatory.description,Signatory Description
-Signatory.signatoryRole,Signatory Role
-Signatory.signature,Signature
-SpanDataPackage.manifest,SPAN Manifest Reference
-Tag.name,Tag Name
-Tag.context,Tag Context
-Tag.description,Tag Description
-Tag.data,Tag Data
-Timestamp.seconds,Seconds
-Timestamp.nanos,Nanoseconds
-TypedExtension.dataSchema,Data Schema
-TypedExtension.documentation,Documentation
-TypedExtension.data,Extension Data
-UntypedExtension.name,Extension Name
-UntypedExtension.version,Extension Version
-UntypedExtension.description,Extension Description
-UntypedExtension.documentation,Extension Documentation
-UntypedExtension.dataExtensions,Data Extensions
-Validation.validationDate,Validation Date
-Validation.validatingPartyId,Validating Party Identifier
-Validation.validationMethod,Validation Method
-Validation.validationExpirationDate,Validation Expiration Date
-Validation.validationSteps,Validation Steps
-ValidationStep.validationStepName,Validation Step Name
-ValidationStep.validationStepDescription,Validation Step Description
-ValidationStep.validationStepStatus,Validation Step Status
-ValidationStep.validationStepDocumentLink,Validation Step Document
-VerificationProcessAgreement.id,VPA Identifier
-VerificationProcessAgreement.name,VPA Name
-VerificationProcessAgreement.description,VPA Description
-VerificationProcessAgreement.signatories,Signatories
-VerificationProcessAgreement.qualityStandard,Quality Standard
-VerificationProcessAgreement.mrvRequirements,MRV Requirements
-VerificationProcessAgreement.agreementDate,Agreement Date
-VerificationProcessAgreement.estimatedAnnualCredits,Estimated Annual Credits
-VerificationProcessAgreement.aimId,Activity Impact Module Reference
-VerificationProcessAgreement.auditSchedule,Audit Schedule
-VerificationProcessAgreement.audits,Audits
-VerificationProcessAgreement.activityImpactModule,Activity Impact Module
-VerificationProcessAgreement.processedClaims,Processed Claims
-VerifiedLink.id,Verified Link Identifier
-VerifiedLink.uri,Link URI
-VerifiedLink.description,Link Description
-VerifiedLink.hashProof,Hash Proof
-VerifiedLink.hashAlgorithm,Hash Algorithm
+AccountableImpactOrganization.id,Organization Identifier,""
+AccountableImpactOrganization.name,Organization Name,""
+AccountableImpactOrganization.description,Organization Description,""
+AccountableImpactOrganization.addresses,Organization Addresses,""
+AccountableImpactOrganization.owners,Organization Owners,""
+AccountableImpactOrganization.country,Organization Country,""
+AccountableImpactOrganization.region,Organization Region,""
+AccountableImpactOrganization.informationLink,Information Link,""
+AccountableImpactOrganization.mediaLinks,Media Links,""
+AccountableImpactOrganization.attestations,Attestations,""
+AccountableImpactOrganization.activityImpactModules,Activity Impact Modules,""
+ActivityImpactModule.id,Module Identifier,""
+ActivityImpactModule.aioId,Organization Reference,""
+ActivityImpactModule.name,Module Name,""
+ActivityImpactModule.classificationCategory,Classification Category,""
+ActivityImpactModule.classificationMethod,Classification Method,""
+ActivityImpactModule.benefitCategory,Benefit Category,""
+ActivityImpactModule.projectScope,Project Scope,""
+ActivityImpactModule.projectType,Project Type,""
+ActivityImpactModule.projectScale,Project Scale,""
+ActivityImpactModule.arbId,ARB Project Identifier,""
+ActivityImpactModule.geographicLocation,Geographic Location,""
+ActivityImpactModule.firstYearIssuance,First Year of Issuance,""
+ActivityImpactModule.registryProjectId,Registry Project Identifier,""
+ActivityImpactModule.developers,Project Developers,""
+ActivityImpactModule.sponsors,Project Sponsors,""
+ActivityImpactModule.claimSources,Claim Sources,""
+ActivityImpactModule.impactClaims,Impact Claims,""
+ActivityImpactModule.mrvExtensions,MRV Extensions,""
+ActivityImpactModule.validations,Validations,""
+ActivityImpactModule.attestations,Attestations,""
+ActivityImpactModule.accountableImpactOrganization,Accountable Organization,""
+ActivityImpactModule.projectStartDate,Project Start Date,""
+ActivityImpactModule.projectCreditingPeriod,Project Crediting Period,""
+ActivityImpactModule.projectMonitoringPeriod,Project Monitoring Period,""
+Address.addressType,Address Type,""
+Address.addressLines,Address Lines,""
+Address.city,City,""
+Address.state,State/Province,""
+Address.zip,Postal Code,""
+Address.country,Country,""
+Any.typeUrl,Type URL,""
+Any.value,Value,""
+Attestation.tag,Attestation Tag,""
+Attestation.type,Attestation Type,""
+Attestation.proofType,Proof Type,""
+Attestation.attestor,Attestor,""
+Attestation.signature,Signature,""
+Audits.auditDate,Audit Date,""
+Audits.auditReports,Audit Reports,""
+CRU.id,Carbon Removal Unit Identifier,""
+CRU.quantity,Quantity,""
+CRU.unit,Unit of Measure,""
+CRU.ownerId,Owner Identifier,""
+CRU.listingAgentId,Listing Agent Identifier,""
+CRU.coreCarbonPrinciples,Core Carbon Principles,""
+CRU.climateLabels,Climate Labels,""
+CRU.status,Status,""
+CRU.referencedCredit,Referenced Credit,""
+CRU.appliedToId,Applied To Identifier,""
+CRU.processedClaimId,Processed Claim Identifier,""
+CRU.issuerId,Issuer Identifier,""
+CRU.processedClaim,Processed Claim,""
+CheckpointResult.id,Checkpoint Result Identifier,""
+CheckpointResult.checkpointId,Checkpoint Identifier,""
+CheckpointResult.linkToVerificationData,Link to Verification Data,""
+CheckpointResult.dateRange,Date Range,""
+CheckpointResult.efBefore,Emissions Factor Before,""
+CheckpointResult.efAfter,Emissions Factor After,""
+CheckpointResult.mrvExtensions,MRV Extensions,""
+ClaimSource.id,Claim Source Identifier,""
+ClaimSource.aimId,Activity Impact Module Reference,""
+ClaimSource.name,Claim Source Name,""
+ClaimSource.description,Claim Source Description,""
+ClaimSource.location,Claim Source Location,""
+ClaimSource.sourceType,Source Type,""
+ClaimSource.unitOfMeasure,Unit of Measure,""
+ClaimSource.sourceIdentifier,Source Identifier,""
+ClaimSource.mrvExtensions,MRV Extensions,""
+ClimateLabel.id,Climate Label Identifier,""
+ClimateLabel.name,Climate Label Name,""
+ClimateLabel.description,Climate Label Description,""
+CoBenefit.unSdg,UN SDG,""
+CoBenefit.description,Co-Benefit Description,""
+CoreCarbonPrinciples.assetId,Asset Identifier,""
+CoreCarbonPrinciples.issuanceDate,Issuance Date,""
+CoreCarbonPrinciples.vintage,Vintage,""
+CoreCarbonPrinciples.generationType,Generation Type,""
+CoreCarbonPrinciples.verificationStandard,Verification Standard,""
+CoreCarbonPrinciples.mitigationActivity,Mitigation Activity,""
+CoreCarbonPrinciples.durability,Durability,""
+CoreCarbonPrinciples.replacement,Replacement,""
+CoreCarbonPrinciples.parisAgreementCompliance,Paris Agreement Compliance,""
+CoreCarbonPrinciples.quantifiedSdgImpacts,Quantified SDG Impacts,""
+CoreCarbonPrinciples.adaptationCoBenefits,Adaptation Co-Benefits,""
+Credential.context,Context,""
+Credential.id,Credential Identifier,""
+Credential.type,Credential Type,""
+Credential.issuer,Issuer,""
+Credential.issuanceDate,Issuance Date,""
+Credential.credentialSubject,Credential Subject,""
+Credential.proof,Proof,""
+CredentialSubject.id,Subject Identifier,""
+CredentialSubject.property,Subject Property,""
+DataExtension.key,Extension Key,""
+DataExtension.value,Extension Value,""
+DataExtension.data,Extension Data,""
+Date.dateTime,Date Time,""
+Date.dateString,Date String,""
+DatePoint.date,Date,""
+DatePoint.timeStamp,Timestamp,""
+DateRange.startDate,Start Date,""
+DateRange.endDate,End Date,""
+Degradable.percentage,Degradation Percentage,""
+Degradable.factor,Degradation Factor,""
+Degradable.degradationType,Degradation Type,""
+DigitalSignature.type,Signature Type,""
+DigitalSignature.jws,JWS,""
+DigitalSignature.vc,Verifiable Credential,""
+DigitalSignature.signatureCase,Signature Case,""
+Durability.storageType,Storage Type,""
+Durability.years,Duration in Years,""
+Durability.degradable,Degradable Component,""
+Durability.reversalMitigation,Reversal Mitigation,""
+GeographicLocation.longitude,Longitude,""
+GeographicLocation.latitude,Latitude,""
+GeographicLocation.geoJsonOrKml,GeoJSON/KML,""
+GeographicLocation.geographicLocationFile,Geographic Location File,""
+ImpactClaim.id,Impact Claim Identifier,""
+ImpactClaim.aimId,Activity Impact Module Reference,""
+ImpactClaim.processedClaimId,Processed Claim Reference,""
+ImpactClaim.unit,Unit of Measure,""
+ImpactClaim.quantity,Quantity,""
+ImpactClaim.coBenefits,Co-Benefits,""
+ImpactClaim.checkpoints,Checkpoints,""
+ImpactClaim.mrvExtensions,MRV Extensions,""
+ImpactClaim.activityImpactModule,Activity Impact Module,""
+ImpactClaimCheckpoint.id,Checkpoint Identifier,""
+ImpactClaimCheckpoint.claimId,Claim Identifier,""
+ImpactClaimCheckpoint.claimSourceIds,Claim Source References,""
+ImpactClaimCheckpoint.projectDeveloperId,Project Developer Reference,""
+ImpactClaimCheckpoint.efBefore,Emissions Factor Before,""
+ImpactClaimCheckpoint.efAfter,Emissions Factor After,""
+ImpactClaimCheckpoint.checkpointDateRange,Checkpoint Date Range,""
+ImpactClaimCheckpoint.verifiedLinkToCheckpointData,Verified Link to Data,""
+ImpactClaimCheckpoint.mrvExtensions,MRV Extensions,""
+ImpactClaimCheckpoint.spanDataPackage,SPAN Data Package,""
+MRVRequirements.measurementSpecification,Measurement Specification,""
+MRVRequirements.specificationLink,Specification Link,""
+MRVRequirements.precision,Precision Level,""
+MRVRequirements.claimPeriod,Claim Period,""
+Manifest.id,Manifest Identifier,""
+Manifest.version,Manifest Version,""
+Manifest.aimId,Activity Impact Module Reference,""
+Manifest.claimId,Claim Identifier,""
+Manifest.projectDeveloperId,Project Developer Reference,""
+Manifest.created,Creation Date,""
+Manifest.mrvExtensions,MRV Extensions,""
+Manifest.sdpFiles,SDP Files,""
+MitigationActivity.category,Mitigation Category,""
+MitigationActivity.method,Mitigation Method,""
+MrvExtension.mrvExtensionContext,MRV Extension Context,""
+MrvExtension.typedExtension,Typed Extension,""
+MrvExtension.untypedExtension,Untyped Extension,""
+MrvExtension.extensionCase,Extension Case,""
+PACompliance.ca,Carbon Assurance,""
+PACompliance.letterOfApproval,Letter of Approval,""
+PrecisionMix.low,Low Precision,""
+PrecisionMix.medium,Medium Precision,""
+PrecisionMix.high,High Precision,""
+ProcessedClaim.id,Processed Claim Identifier,""
+ProcessedClaim.vpaId,Verification Process Agreement Reference,""
+ProcessedClaim.impactClaimId,Impact Claim Reference,""
+ProcessedClaim.creditId,Credit Identifier,""
+ProcessedClaim.unit,Unit of Measure,""
+ProcessedClaim.quantity,Quantity,""
+ProcessedClaim.coBenefits,Co-Benefits,""
+ProcessedClaim.mrvExtensions,MRV Extensions,""
+ProcessedClaim.checkpointResults,Checkpoint Results,""
+ProcessedClaim.issuanceRequest,Issuance Request,""
+ProcessedClaim.verificationProcessAgreement,Verification Process Agreement,""
+ProcessedClaim.impactClaim,Impact Claim,""
+ProcessedClaim.asset,Carbon Removal Asset,""
+Proof.type,Proof Type,""
+Proof.created,Proof Creation Date,""
+Proof.proofPurpose,Proof Purpose,""
+Proof.verificationMethod,Verification Method,""
+Proof.challenge,Challenge,""
+Proof.domain,Domain,""
+Proof.jws,JWS,""
+QualityStandard.name,Quality Standard Name,""
+QualityStandard.description,Quality Standard Description,""
+QualityStandard.standard,Standard Reference,""
+QualityStandard.methodologyAndTools,Methodology and Tools,""
+QualityStandard.version,Standard Version,""
+QualityStandard.coBenefits,Co-Benefits,""
+QualityStandard.standardLink,Standard Link,""
+REC.id,Renewable Energy Certificate Identifier,""
+REC.recType,REC Type,""
+REC.validJurisdiction,Valid Jurisdiction,""
+REC.quantity,Quantity,""
+REC.unit,Unit of Measure,""
+REC.ownerId,Owner Identifier,""
+REC.listingAgentId,Listing Agent Identifier,""
+REC.climateLabels,Climate Labels,""
+REC.status,Status,""
+REC.referencedRec,Referenced REC,""
+REC.appliedToId,Applied To Identifier,""
+REC.processedClaimId,Processed Claim Identifier,""
+REC.issuerId,Issuer Identifier,""
+REC.processedClaim,Processed Claim,""
+ReferencedCredit.id,Referenced Credit Identifier,""
+ReferencedRec.id,Referenced REC Identifier,""
+Replacement.replacesId,Replaces Identifier,""
+Replacement.replacementDate,Replacement Date,""
+Replacement.notes,Replacement Notes,""
+ReversalMitigation.reversalRisk,Reversal Risk,""
+ReversalMitigation.insuranceType,Insurance Type,""
+ReversalMitigation.insurancePolicyOwner,Insurance Policy Owner,""
+ReversalMitigation.insurancePolicyLink,Insurance Policy Link,""
+SdpFile.name,File Name,""
+SdpFile.type,File Type,""
+SdpFile.description,File Description,""
+SdpFile.claimSourceId,Claim Source Reference,""
+SdpFile.claimSourceAttestation,Claim Source Attestation,""
+SdpFile.mrvExtensions,MRV Extensions,""
+Signatory.id,Signatory Identifier,""
+Signatory.name,Signatory Name,""
+Signatory.description,Signatory Description,""
+Signatory.signatoryRole,Signatory Role,""
+Signatory.signature,Signature,""
+SpanDataPackage.manifest,SPAN Manifest Reference,""
+Tag.name,Tag Name,""
+Tag.context,Tag Context,""
+Tag.description,Tag Description,""
+Tag.data,Tag Data,""
+Timestamp.seconds,Seconds,""
+Timestamp.nanos,Nanoseconds,""
+TypedExtension.dataSchema,Data Schema,""
+TypedExtension.documentation,Documentation,""
+TypedExtension.data,Extension Data,""
+UntypedExtension.name,Extension Name,""
+UntypedExtension.version,Extension Version,""
+UntypedExtension.description,Extension Description,""
+UntypedExtension.documentation,Extension Documentation,""
+UntypedExtension.dataExtensions,Data Extensions,""
+Validation.validationDate,Validation Date,""
+Validation.validatingPartyId,Validating Party Identifier,""
+Validation.validationMethod,Validation Method,""
+Validation.validationExpirationDate,Validation Expiration Date,""
+Validation.validationSteps,Validation Steps,""
+ValidationStep.validationStepName,Validation Step Name,""
+ValidationStep.validationStepDescription,Validation Step Description,""
+ValidationStep.validationStepStatus,Validation Step Status,""
+ValidationStep.validationStepDocumentLink,Validation Step Document,""
+VerificationProcessAgreement.id,VPA Identifier,""
+VerificationProcessAgreement.name,VPA Name,""
+VerificationProcessAgreement.description,VPA Description,""
+VerificationProcessAgreement.signatories,Signatories,""
+VerificationProcessAgreement.qualityStandard,Quality Standard,""
+VerificationProcessAgreement.mrvRequirements,MRV Requirements,""
+VerificationProcessAgreement.agreementDate,Agreement Date,""
+VerificationProcessAgreement.estimatedAnnualCredits,Estimated Annual Credits,""
+VerificationProcessAgreement.aimId,Activity Impact Module Reference,""
+VerificationProcessAgreement.auditSchedule,Audit Schedule,""
+VerificationProcessAgreement.audits,Audits,""
+VerificationProcessAgreement.activityImpactModule,Activity Impact Module,""
+VerificationProcessAgreement.processedClaims,Processed Claims,""
+VerifiedLink.id,Verified Link Identifier,""
+VerifiedLink.uri,Link URI,""
+VerifiedLink.description,Link Description,""
+VerifiedLink.hashProof,Hash Proof,""
+VerifiedLink.hashAlgorithm,Hash Algorithm,""

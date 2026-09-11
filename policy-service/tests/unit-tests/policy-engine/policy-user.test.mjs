@@ -46,6 +46,10 @@ describe('PolicyUser', function () {
             const user = new PolicyUser('did:str', instance);
             assert.isNull(user.hederaAccountId);
         });
+        it('sets parent to null - the owning registry is unknown here', function () {
+            const user = new PolicyUser('did:str', instance);
+            assert.isNull(user.parent);
+        });
         it('sets id equal to did when no group', function () {
             const user = new PolicyUser('did:str', instance);
             assert.equal(user.id, 'did:str');
@@ -63,6 +67,14 @@ describe('PolicyUser', function () {
         it('copies permissions', function () {
             const user = new PolicyUser(makeAuthUser(), instance);
             assert.deepEqual(user.permissions, ['PERM_A']);
+        });
+        it('copies parent - the DID of the registry the user belongs to', function () {
+            const user = new PolicyUser(makeAuthUser({ parent: 'did:sr' }), instance);
+            assert.equal(user.parent, 'did:sr');
+        });
+        it('defaults parent to null when missing', function () {
+            const user = new PolicyUser(makeAuthUser({ parent: undefined }), instance);
+            assert.isNull(user.parent);
         });
         it('defaults permissions to empty array when missing', function () {
             const user = new PolicyUser(makeAuthUser({ permissions: undefined }), instance);

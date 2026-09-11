@@ -108,6 +108,41 @@ export class AuthService {
         return localStorage.getItem('username') as string;
     }
 
+    /**
+     * The user id carried by the access token, or null when there is no usable
+     * session.
+     *
+     * Used only to scope preferences stored in this browser to the account that
+     * chose them - never as an access decision. The token is not verified here,
+     * and a forged one would only let its bearer read their own local settings.
+     */
+    /**
+     * Identifies the signed-in account for per-user client storage.
+     *
+     * `username`, not an id: generateAccessToken signs { username, did, role,
+     * expireAt } and nothing else, so reading any id claim yields null for every
+     * real session.
+     */
+    public getUserKey(): string | null {
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+            return null;
+        }
+        try {
+            const payload = token.split('.')[1];
+            if (!payload) {
+                return null;
+            }
+            // base64url -> base64, then decode as UTF-8: atob alone mangles non-ASCII
+            const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+            const bytes = Uint8Array.from(atob(normalized), (ch) => ch.charCodeAt(0));
+            const decoded = JSON.parse(new TextDecoder().decode(bytes));
+            return decoded?.username ? String(decoded.username) : null;
+        } catch {
+            return null;
+        }
+    }
+
     public getAccessToken() {
         return localStorage.getItem('accessToken');
     }

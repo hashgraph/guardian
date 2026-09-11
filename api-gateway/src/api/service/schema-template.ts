@@ -1,6 +1,6 @@
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
-import { ISchemaTemplate, ISchemaTemplateUpdateOptions, ISchemaTemplateUpdatePreview, Permissions, StatusType, TaskAction } from '@guardian/interfaces';
+import { ISchemaTemplate, ISchemaTemplateDetachOptions, ISchemaTemplateDetachPreview, ISchemaTemplateUpdateOptions, ISchemaTemplateUpdatePreview, Permissions, StatusType, TaskAction } from '@guardian/interfaces';
 import { ApiAcceptedResponse, ApiBody, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AuthUser, Auth } from '#auth';
 import { CacheService, EntityOwner, Guardians, InternalException, ServiceError, TaskManager } from '#helpers';
@@ -197,6 +197,12 @@ export class SchemaTemplatesApi {
         type: String,
         required: false
     })
+    @ApiQuery({
+        name: 'excludeIds',
+        type: String,
+        required: false,
+        description: 'Comma-separated template ids to leave out, so a picker\'s count and pages match what it shows.'
+    })
     @ApiOkResponse({
         description: 'Schema templates page.',
         headers: pageHeader,
@@ -216,14 +222,16 @@ export class SchemaTemplatesApi {
         @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
-        @Query('search') search?: string
+        @Query('search') search?: string,
+        @Query('excludeIds') excludeIds?: string
     ): Promise<ISchemaTemplate[]> {
         try {
             const guardians = new Guardians();
             const { items, count } = await guardians.getSchemaTemplates({
                 pageIndex,
                 pageSize,
-                search
+                search,
+                excludeIds
             }, new EntityOwner(user));
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
@@ -444,8 +452,8 @@ export class SchemaTemplatesApi {
         required: true
     })
     @ApiOkResponse({
-        description: 'Applied schema template state.',
-        schema: { type: 'object' }
+        description: 'Applied schema template state, one entry per applied template.',
+        schema: { type: 'array', items: { type: 'object' } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -456,7 +464,7 @@ export class SchemaTemplatesApi {
     async getAppliedSchemaTemplateByPolicyTopic(
         @AuthUser() user: IAuthUser,
         @Param('topicId') topicId: string
-    ): Promise<ISchemaTemplate | null> {
+    ): Promise<ISchemaTemplate[]> {
         try {
             const guardians = new Guardians();
             return await guardians.getAppliedSchemaTemplateByPolicyTopic(topicId, new EntityOwner(user));
@@ -542,7 +550,9 @@ export class SchemaTemplatesApi {
     ): Promise<ISchemaTemplate> {
         try {
             const guardians = new Guardians();
-            return await guardians.updateSchemaTemplate(templateId, body, new EntityOwner(user));
+            const result = await guardians.updateSchemaTemplate(templateId, body, new EntityOwner(user));
+            await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS);
+            return result;
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -762,6 +772,50 @@ export class SchemaTemplatesApi {
     }
 
     /**
+     * Preview detaching an applied schema template.
+     */
+    @Get('/:templateId/policies/:policyId/detach/preview')
+    @Auth(
+        Permissions.POLICIES_POLICY_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Previews detaching an applied schema template.',
+        description: 'Lists the copied schemas a detach would delete, and the ones it would keep because another schema still references them.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'templateId',
+        type: String,
+        required: true
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        required: true
+    })
+    @ApiOkResponse({
+        description: 'Schema template detach preview.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
+    })
+    @HttpCode(HttpStatus.OK)
+    async previewSchemaTemplateDetach(
+        @AuthUser() user: IAuthUser,
+        @Param('templateId') templateId: string,
+        @Param('policyId') policyId: string
+    ): Promise<ISchemaTemplateDetachPreview> {
+        try {
+            const guardians = new Guardians();
+            return await guardians.previewSchemaTemplateDetach(policyId, templateId, new EntityOwner(user));
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
      * Preview applied schema template update.
      */
     @Get('/:templateId/policies/:policyId/update/preview')
@@ -783,6 +837,12 @@ export class SchemaTemplatesApi {
         type: String,
         required: true
     })
+    @ApiQuery({
+        name: 'targetTemplateId',
+        type: String,
+        required: false,
+        description: 'Preview switching the binding to a different template instead of refreshing the same one.'
+    })
     @ApiOkResponse({
         description: 'Schema template update preview.',
     })
@@ -795,11 +855,12 @@ export class SchemaTemplatesApi {
     async previewSchemaTemplateUpdate(
         @AuthUser() user: IAuthUser,
         @Param('templateId') templateId: string,
-        @Param('policyId') policyId: string
+        @Param('policyId') policyId: string,
+        @Query('targetTemplateId') targetTemplateId?: string
     ): Promise<ISchemaTemplateUpdatePreview> {
         try {
             const guardians = new Guardians();
-            return await guardians.previewSchemaTemplateUpdate(templateId, policyId, new EntityOwner(user));
+            return await guardians.previewSchemaTemplateUpdate(templateId, policyId, new EntityOwner(user), targetTemplateId);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -869,7 +930,7 @@ export class SchemaTemplatesApi {
     /**
      * Detach schema template from policy async.
      */
-    @Post('/policies/:policyId/push/detach')
+    @Post('/:templateId/policies/:policyId/push/detach')
     @Auth(
         Permissions.POLICIES_POLICY_UPDATE,
         // UserRole.STANDARD_REGISTRY,
@@ -877,6 +938,11 @@ export class SchemaTemplatesApi {
     @ApiOperation({
         summary: 'Detaches schema template from policy asynchronously.',
         description: 'Removes template binding metadata from the selected draft policy and turns copied template schemas into regular policy schemas.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'templateId',
+        type: String,
+        required: true
     })
     @ApiParam({
         name: 'policyId',
@@ -895,7 +961,9 @@ export class SchemaTemplatesApi {
     @HttpCode(HttpStatus.ACCEPTED)
     async detachSchemaTemplateAsync(
         @AuthUser() user: IAuthUser,
-        @Param('policyId') policyId: string
+        @Param('templateId') templateId: string,
+        @Param('policyId') policyId: string,
+        @Body() body: ISchemaTemplateDetachOptions
     ): Promise<TaskDTO> {
         try {
             const guardians = new Guardians();
@@ -906,7 +974,7 @@ export class SchemaTemplatesApi {
                 taskManager.addStatus(task.taskId, 'Validate policy template binding', StatusType.PROCESSING);
                 taskManager.addStatus(task.taskId, 'Validate policy template binding', StatusType.COMPLETED);
                 taskManager.addStatus(task.taskId, 'Detach template from policy schemas', StatusType.PROCESSING);
-                const result = await guardians.detachSchemaTemplate(policyId, owner);
+                const result = await guardians.detachSchemaTemplate(policyId, templateId, owner, body?.deleteSchemas);
                 taskManager.addStatus(task.taskId, 'Detach template from policy schemas', StatusType.COMPLETED);
                 taskManager.addStatus(task.taskId, 'Finalize policy binding', StatusType.PROCESSING);
                 await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS);

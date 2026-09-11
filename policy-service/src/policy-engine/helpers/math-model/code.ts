@@ -10,7 +10,7 @@ export class Code {
     }
 
     public run() {
-        const code = `const [user, document, relationships, result, variables, formulas, scope, getField, mathjs, formulajs] = arguments;\r\n const __result = (() => { ${this.text} })();\r\n if(__result) { return __result; } else { return result; }`;
+        const code = `const [user, document, relationships, result, variables, formulas, scope, getField, mathjs, formulajs, table] = arguments;\r\n const __result = (() => { ${this.text} })();\r\n if(__result) { return __result; } else { return result; }`;
         const func = Function(code);
         return func.apply(this.context.document, [
             this.context.user,
@@ -23,12 +23,13 @@ export class Code {
             this.context.getField,
             mathjs,
             formulajs,
+            this.context.table,
         ]);
     }
 
     public validate() {
         try {
-            const code = `const [user, document, relationships, result, variables, formulas, scope, getField, mathjs, formulajs] = arguments;\r\n const __result = (() => { ${this.text} })();\r\n if(__result) { return __result; } else { return result; }`;
+            const code = `const [user, document, relationships, result, variables, formulas, scope, getField, mathjs, formulajs, table] = arguments;\r\n const __result = (() => { ${this.text} })();\r\n if(__result) { return __result; } else { return result; }`;
             Function(code);
             return null;
         } catch (error) {

@@ -175,12 +175,15 @@ function mergeMocks(overrides) {
 /**
  * Load a dist module under esmock with the default @guardian/common +
  * @guardian/interfaces stubs. Returns the loaded namespace object.
+ *
+ * Stubs go in as esmock global definitions: the second argument only rewrites
+ * the target's own imports, so a transitive one (`#utils`) would pull in the
+ * real @guardian/common.
  */
 export async function loadService(distPath, overrides = {}, globals = undefined) {
-    if (globals) {
-        return await esmock(distPath, mergeMocks(overrides), globals);
-    }
-    return await esmock(distPath, mergeMocks(overrides));
+    const mocks = mergeMocks(overrides);
+    const globalMocks = globals ? { ...mocks, ...globals } : mocks;
+    return await esmock(distPath, mocks, globalMocks);
 }
 
 export { mergeMocks };

@@ -79,3 +79,7 @@ What it does:
 ## Demo Video
 
 [Youtube](https://youtu.be/m3waGJ7qgs4?si=0bEJusqaQ2hPEU4t\&t=121)
+
+## Related
+
+* [Table Columns](../table-columns/README.md) — declare a Table field's column names and keys in the schema instead of relying on an uploaded file's header row.

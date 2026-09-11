@@ -33,7 +33,9 @@ import {
     SchemaHelper,
     SchemaNode,
     SchemaStatus,
-    TopicType
+    TopicType,
+    IwaVersion,
+    resolveIwaVersion
 } from '@guardian/interfaces';
 import {
     checkForCircularDependency,
@@ -126,17 +128,19 @@ async function getTemplateSchemaValidationContext(
     }
 
     const policy = await DatabaseServer.getPolicy({ topicId: schema.topicId });
-    if (!policy?.schemaTemplate?.templateId) {
+    // A policy can hold several bindings, so match on the schema's own templateId to find the right one.
+    const binding = policy?.schemaTemplates?.find((item) => item.templateId === schema.templateId);
+    if (!binding?.templateId) {
         return null;
     }
 
     let config: ISchemaTemplateConfig | null | undefined;
-    if (policy.schemaTemplate.snapshotId) {
-        const snapshot = await DatabaseServer.getSchemaTemplateSnapshotById(policy.schemaTemplate.snapshotId);
+    if (binding.snapshotId) {
+        const snapshot = await DatabaseServer.getSchemaTemplateSnapshotById(binding.snapshotId);
         config = snapshot?.config;
     }
     if (!config) {
-        const template = await DatabaseServer.getSchemaTemplateById(policy.schemaTemplate.templateId);
+        const template = await DatabaseServer.getSchemaTemplateById(binding.templateId);
         config = template?.config;
     }
 
@@ -680,6 +684,76 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 );
 
                 return new MessageResponse(parents);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Load a draft schema that is eligible for an IWA v3 upgrade.
+     *
+     * Published schemas are excluded: their document is frozen on IPFS, so the
+     * only way forward there is to create a new version and upgrade that draft.
+     */
+    async function loadUpgradableSchema(
+        schemaId: string,
+        owner: IOwner
+    ): Promise<{ schema?: SchemaCollection, error?: string, code?: number }> {
+        const schema = await DatabaseServer.getSchemaById(schemaId);
+        if (!schema) {
+            return { error: 'Schema is not found', code: 404 };
+        }
+        if (schema.owner !== owner.owner) {
+            return { error: 'Invalid schema owner', code: 403 };
+        }
+        if (schema.status !== SchemaStatus.DRAFT && schema.status !== SchemaStatus.ERROR) {
+            return {
+                error: 'Only a draft schema can be upgraded. Create a new version first.',
+                code: 422
+            };
+        }
+        if (resolveIwaVersion(schema) === IwaVersion.V3) {
+            return { error: 'Schema is already on IWA v3', code: 422 };
+        }
+        return { schema };
+    }
+
+    ApiResponse(MessageAPI.GET_SCHEMA_IWA_UPGRADE_PREVIEW,
+        async (msg: { schemaId: string, owner: IOwner }) => {
+            try {
+                if (!msg?.schemaId || !msg?.owner) {
+                    return new MessageError('Invalid upgrade preview parameters', 400);
+                }
+                const { schema, error, code } = await loadUpgradableSchema(msg.schemaId, msg.owner);
+                if (error) {
+                    return new MessageError(error, code);
+                }
+                const report = SchemaHelper.remapIwaPropertiesToV3(schema.document, false);
+                return new MessageResponse(report);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.UPGRADE_SCHEMA_TO_IWA_V3,
+        async (msg: { schemaId: string, owner: IOwner }) => {
+            try {
+                if (!msg?.schemaId || !msg?.owner) {
+                    return new MessageError('Invalid upgrade parameters', 400);
+                }
+                const { schema, error, code } = await loadUpgradableSchema(msg.schemaId, msg.owner);
+                if (error) {
+                    return new MessageError(error, code);
+                }
+                const document = schema.document;
+                const report = SchemaHelper.remapIwaPropertiesToV3(document, true);
+                schema.document = document;
+                schema.iwaVersion = IwaVersion.V3;
+                await DatabaseServer.updateSchema(schema.id, schema);
+                await updateSchemaDefs(schema.iri);
+                return new MessageResponse({ report, schema });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
@@ -1419,6 +1493,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 }
                 const { options, owner } = msg;
                 const otherOptions: any = getPageOptions(options);
+                otherOptions.orderBy = { templateFeatured: 'DESC', ...otherOptions.orderBy };
                 const filter: any = {
                     readonly: false,
                     system: false
@@ -1922,7 +1997,21 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const stepMap = new Map<string, NotificationStep>();
-                const results = new Map<string, boolean>();
+                const results: { id: string, name: string, deleted: boolean }[] = [];
+                // A schema still referenced by a policy schema is skipped below via
+                // blockedSchemaIds; without this the caller is never told, and the task
+                // reports success for a delete that did not happen. Only schemas that
+                // were delete candidates count: with includeChildren off, a blocked
+                // child was never going to be deleted, so reporting it is noise.
+                const requestedIris = new Set(schemas.map(schema => schema.iri));
+                const errors = blockedChildren
+                    .filter(blocked => includeChildren || requestedIris.has(blocked.schema.iri))
+                    .map(blocked => ({
+                        type: 'schema',
+                        uuid: blocked.schema.iri,
+                        name: blocked.schema.name,
+                        error: 'Still referenced by ' + blocked.blockingSchemas.map(s => s.name).join(', ')
+                    }));
                 const schemasToDelete: SchemaCollection[] = [];
 
                 if (includeChildren) {
@@ -1959,11 +2048,11 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 for (const schema of schemasToDelete) {
 
                     const deleteSchemaStep = stepMap.get(schema.id);
-                    const result = await deleteSchema(schema.id, owner, deleteSchemaStep);
-                    results.set(schema.id, result);
+                    const deleted = await deleteSchema(schema.id, owner, deleteSchemaStep);
+                    results.push({ id: schema.id, name: schema.name, deleted: !!deleted });
                 }
 
-                notifier.result(results);
+                notifier.result({ results, errors });
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 notifier.fail(error);

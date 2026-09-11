@@ -75,7 +75,7 @@ export class NotificationService {
                         }
                     }
                 } catch (error) {
-                    console.error(error);
+                    console.error('[NOTIFICATION_SERVICE] cleanup failed:', error?.message || error);
                 }
             },
             1 * 60 * 1000
@@ -97,17 +97,25 @@ export class NotificationService {
      * @returns Result
      */
     private async sendMessage(subject: NotifyAPI, data: any) {
-        try {
-            const token = await JwtServicesValidator.sign(subject);
-            const head = headers();
-            head.append('serviceToken', token);
-            const record = new NatsRecordBuilder(data).setHeaders(head).build();
-            const response = await this.client.send(subject, record).toPromise();
+        const token = await JwtServicesValidator.sign(subject);
+        const head = headers();
+        head.append('serviceToken', token);
+        const record = new NatsRecordBuilder(data).setHeaders(head).build();
+        const response = await this.client.send(subject, record).toPromise();
 
-            return response.body;
+        return response.body;
+    }
+
+    /**
+     * Send a websocket relay message, swallowing transport failures
+     * @param subject
+     * @param data
+     */
+    private async relay(subject: NotifyAPI, data: any) {
+        try {
+            await this.sendMessage(subject, data);
         } catch (error) {
-            console.log(error, subject);
-            throw error;
+            console.error(`[NOTIFICATION_SERVICE] ${subject} relay failed:`, error?.message || error);
         }
     }
 
@@ -116,11 +124,7 @@ export class NotificationService {
      * @param notification notification
      */
     private async updateNotificationWS(notification: Notification) {
-        try {
-            await this.sendMessage(NotifyAPI.UPDATE_WS, notification);
-        } catch (error) {
-            console.error(error);
-        }
+        await this.relay(NotifyAPI.UPDATE_WS, notification);
     }
 
     /**
@@ -134,14 +138,10 @@ export class NotificationService {
         id: string;
         userId: string;
     }) {
-        try {
-            await this.sendMessage(NotifyAPI.DELETE_WS, {
-                    userId,
-                    notificationId: id,
-                });
-        } catch (error) {
-            console.error(error);
-        }
+        await this.relay(NotifyAPI.DELETE_WS, {
+            userId,
+            notificationId: id,
+        });
     }
 
     /**
@@ -149,19 +149,15 @@ export class NotificationService {
      * @param progress Progress
      */
     private async updateProgressWS(progress: Progress) {
-        try {
-            await this.sendMessage(NotifyAPI.UPDATE_PROGRESS_WS, progress);
-        } catch (error) {
-            console.error(error);
-        }
+        await this.relay(NotifyAPI.UPDATE_PROGRESS_WS, progress);
     }
 
+    /**
+     * Create progress WS
+     * @param progress Progress
+     */
     private async createProgressWS(progress: Progress) {
-        try {
-            await this.sendMessage(NotifyAPI.CREATE_PROGRESS_WS, progress);
-        } catch (error) {
-            console.error(error);
-        }
+        await this.relay(NotifyAPI.CREATE_PROGRESS_WS, progress);
     }
 
     /**
@@ -175,14 +171,10 @@ export class NotificationService {
         id: string;
         userId: string;
     }) {
-        try {
-            await this.sendMessage(NotifyAPI.DELETE_PROGRESS_WS, {
-                    notificationId: id,
-                    userId,
-                });
-        } catch (error) {
-            console.error(error);
-        }
+        await this.relay(NotifyAPI.DELETE_PROGRESS_WS, {
+            notificationId: id,
+            userId,
+        });
     }
 
     /**

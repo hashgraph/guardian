@@ -1,26 +1,17 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import * as Checks from '../../../support/checkingMethods';
+import * as Contracts from '../../../support/api/contracts';
 
-context('Contracts', { tags: ['contracts', 'firstPool', 'all'] }, () => {
+context('Contracts', { tags: ['contracts', 'firstPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const SR2Username = Cypress.env('SR2User');
     const contractNameR = 'FirstAPIContractR';
     const contractNameW = 'FirstAPIContractW';
 
     let idW; let idR; let idW2; let idR2; let hederaIdSR2;
-
-    const getContractId = (token, type, description) => {
-        return cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.ListOfContracts,
-            headers: { authorization: token },
-            qs: { type }
-        }).then((response) => {
-            const contract = response.body.find(c => c.description === description);
-            return contract ? contract.id : null;
-        });
-    };
+    let contractUuidW; let contractUuidR;
 
     const manageRole = (method, baseUrl, contractId, role, targetHederaId, token = null) => {
         return cy.request({
@@ -33,8 +24,14 @@ context('Contracts', { tags: ['contracts', 'firstPool', 'all'] }, () => {
 
     before(() => {
         Authorization.getAccessToken(SRUsername).then((token) => {
-            getContractId(token, 'WIPE', contractNameW).then(id => idW = id);
-            getContractId(token, 'RETIRE', contractNameR).then(id => idR = id);
+            Contracts.getContractByDescription(token, 'WIPE', contractNameW).then((contract) => {
+                idW = contract.id;
+                contractUuidW = contract.contractId;
+            });
+            Contracts.getContractByDescription(token, 'RETIRE', contractNameR).then((contract) => {
+                idR = contract.id;
+                contractUuidR = contract.contractId;
+            });
         });
 
         Authorization.getAccessToken(SR2Username).then((token) => {
@@ -44,8 +41,8 @@ context('Contracts', { tags: ['contracts', 'firstPool', 'all'] }, () => {
                 headers: { authorization: token }
             }).then(res => hederaIdSR2 = res.body.hederaAccountId);
 
-            getContractId(token, 'WIPE', contractNameW).then(id => idW2 = id);
-            getContractId(token, 'RETIRE', contractNameR).then(id => idR2 = id);
+            Contracts.getContractByContractId(token, 'WIPE', contractUuidW).then(c => idW2 = c.id);
+            Contracts.getContractByContractId(token, 'RETIRE', contractUuidR).then(c => idR2 = c.id);
         });
     });
 
@@ -131,29 +128,24 @@ context('Contracts', { tags: ['contracts', 'firstPool', 'all'] }, () => {
     });
 
     it('Verify roles(wipe)', () => {
-        cy.wait(60000);
         Authorization.getAccessToken(SR2Username).then((token) => {
-            cy.request({
+            //The grants above reach the contract through Hedera, so the permissions are polled
+            //until they show up rather than read once after a fixed wait
+            Checks.waitForResponseBody({
                 method: METHOD.GET,
                 url: `${API.ApiServer}${API.ListOfContracts}${idW2}/${API.Permissions}`,
                 headers: { authorization: token },
-            }).then((res) => {
-                expect(res.status).eql(STATUS_CODE.OK);
-                expect(res.body).eql(6);
-            });
+            }, 6);
         });
     });
 
     it('Verify roles(retire)', () => {
         Authorization.getAccessToken(SR2Username).then((token) => {
-            cy.request({
+            Checks.waitForResponseBody({
                 method: METHOD.GET,
                 url: `${API.ApiServer}${API.ListOfContracts}${idR2}/${API.Permissions}`,
                 headers: { authorization: token },
-            }).then((res) => {
-                expect(res.status).eql(STATUS_CODE.OK);
-                expect(res.body).eql(2);
-            });
+            }, 2);
         });
     });
 
@@ -238,25 +230,25 @@ context('Contracts', { tags: ['contracts', 'firstPool', 'all'] }, () => {
         });
     });
 
-    it.skip('Verify roles(wipe)', () => {
-        cy.clearCookies();
-        cy.wait(240000);
+    it('Verify roles removed(wipe)', () => {
         Authorization.getAccessToken(SR2Username).then((token) => {
-            cy.request({
+            //The revocations above travel through Hedera exactly like the grants did, so the
+            //permissions are polled down to zero rather than read once after a fixed wait
+            Checks.waitForResponseBody({
                 method: METHOD.GET,
                 url: `${API.ApiServer}${API.ListOfContracts}${idW2}/${API.Permissions}`,
-                headers: { authorization: token }
-            }).then(res => expect(res.body).eql(0));
+                headers: { authorization: token },
+            }, 0);
         });
     });
 
-    it.skip('Verify roles(retire)', () => {
+    it('Verify roles removed(retire)', () => {
         Authorization.getAccessToken(SR2Username).then((token) => {
-            cy.request({
+            Checks.waitForResponseBody({
                 method: METHOD.GET,
                 url: `${API.ApiServer}${API.ListOfContracts}${idR2}/${API.Permissions}`,
-                headers: { authorization: token }
-            }).then(res => expect(res.body).eql(0));
+                headers: { authorization: token },
+            }, 0);
         });
     });
 

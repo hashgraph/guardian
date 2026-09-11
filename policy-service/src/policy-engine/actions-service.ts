@@ -864,6 +864,14 @@ export class PolicyActionsService {
             if (await DatabaseServer.getAssignedEntity(AssignedEntityType.Policy, this.policyId, policyUser.did)) {
                 return true;
             }
+            /*
+             * An organization assignment grants access only within the policy's own
+             * owner, matching guardian-service's accessPolicyCode. Only a known
+             * mismatch denies: a dry-run or bare-DID user has no parent to compare.
+             */
+            if (policyUser.parent && this.policyOwner && policyUser.parent !== this.policyOwner) {
+                return false;
+            }
             try {
                 return await isPolicyAssignedToUserOrg(policyUser, this.policyId);
             } catch {

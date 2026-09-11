@@ -46,6 +46,33 @@ export class AISuggestionsDB extends NatsService {
         return res;
     }
 
+    public async getPolicyProperties(iwaVersion?: string): Promise<any> {
+        const res = (await this.sendMessage(MessageAPI.GET_POLICY_PROPERTIES, { iwaVersion })) as any;
+
+        if (!res) {
+            throw new Error('Invalid AI response');
+        }
+        if (res.error) {
+            throw new Error(res.error);
+        }
+        return res;
+    }
+
+    /**
+     * Get a full schema by id, so suggestions can always be computed from the
+     * authoritative schema rather than whatever subset the client sends.
+     * @param id Schema id
+     * @returns Raw schema, or null if no schema with that id exists
+     */
+    public async getSchemaById(id: string): Promise<any> {
+        const res = (await this.sendMessage(MessageAPI.GET_SCHEMA, { id })) as any;
+
+        if (res?.error) {
+            throw new Error(res.error);
+        }
+        return res;
+    }
+
     public async getFieldDescriptions(policies: Policy[]): Promise<any> {
 
         const policiesData = policies.map((policy: Policy) => ({

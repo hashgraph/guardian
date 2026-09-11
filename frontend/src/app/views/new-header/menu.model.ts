@@ -145,7 +145,11 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
         user.POLICIES_POLICY_READ ||
         user.POLICIES_POLICY_EXECUTE ||
         user.POLICIES_POLICY_MANAGE ||
-        user.TOOLS_TOOL_READ
+        user.TOOLS_TOOL_READ ||
+        // without this a template-only role opens no Manage section at all, so gating
+        // the item below on TEMPLATES_TEMPLATE_READ would hide it from the very users
+        // who can use it
+        user.TEMPLATES_TEMPLATE_READ
     ) {
         const childItems: any = [];
         const canReadPolicies = user.POLICIES_POLICY_READ ||
@@ -189,10 +193,8 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
                 routerLink: '/schema-rules'
             });
         }
-        if (
-            user.SCHEMAS_SCHEMA_READ ||
-            user.SCHEMAS_SYSTEM_SCHEMA_READ
-        ) {
+        // gated on the permission the ROUTE requires, not on schema-read
+        if (user.TEMPLATES_TEMPLATE_READ) {
             childItems.push({
                 title: 'Schema Templates',
                 routerLink: '/schema-templates'
