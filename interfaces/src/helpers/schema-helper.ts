@@ -324,6 +324,7 @@ export class SchemaHelper {
             isUpdatable,
             dependency,
             enumName,
+            tableColumns,
             conditionRequired,
         } = SchemaHelper.parseFieldComment(field.comment);
         field.suggest = suggest;
@@ -374,6 +375,9 @@ export class SchemaHelper {
         field.order = orderPosition || -1;
         field.isUpdatable = isUpdatable;
         field.enumName = enumName;
+        if (Array.isArray(tableColumns)) {
+            field.tableColumns = tableColumns;
+        }
         return field;
     }
 
@@ -1415,6 +1419,9 @@ export class SchemaHelper {
         }
         if (field.enumName) {
             comment.enumName = field.enumName;
+        }
+        if (Array.isArray(field.tableColumns) && field.tableColumns.length) {
+            comment.tableColumns = field.tableColumns;
         }
         return JSON.stringify(comment);
     }

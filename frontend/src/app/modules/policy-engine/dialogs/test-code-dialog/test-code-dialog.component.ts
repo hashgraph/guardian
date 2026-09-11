@@ -4,6 +4,14 @@ import { PolicyFolder, PolicyItem, SchemaVariables } from '../../structures';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
+import { ArtifactService } from 'src/app/services/artifact.service';
+import { CsvService } from 'src/app/services/csv.service';
+import { GzipService } from 'src/app/services/gzip.service';
+import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
+import {
+    hydrateDocumentTables,
+    TABLE_TEST_MAX_CELLS
+} from '../math-editor-dialog/math-model/table-hydration';
 
 @Component({
     selector: 'test-code-dialog',
@@ -82,6 +90,10 @@ export class TestCodeDialog {
         private fb: UntypedFormBuilder,
         private dialogService: DialogService,
         private policyEngineService: PolicyEngineService,
+        private artifactService: ArtifactService,
+        private gzipService: GzipService,
+        private csvService: CsvService,
+        private idb: IndexedDbRegistryService,
     ) {
         this.initDialog = false;
         this.title = this.config.header || '';
@@ -149,9 +161,34 @@ export class TestCodeDialog {
         }
     }
 
-    public onTest(): void {
+    public async onTest(): Promise<void> {
         this.loading = true;
-        const input = this.getValue();
+        const input = this.cloneValue(this.getValue());
+
+        try {
+            await hydrateDocumentTables(
+                input,
+                {
+                    artifactService: this.artifactService,
+                    gzipService: this.gzipService,
+                    csvService: this.csvService,
+                    idb: this.idb
+                },
+                { maxCells: TABLE_TEST_MAX_CELLS }
+            );
+        } catch (error) {
+            this.loading = false;
+            this.result = {
+                input: '',
+                logs: '',
+                output: '',
+                errors: String(error)
+            };
+            this.step = 'result';
+            this.resultStep = 'errors';
+            return;
+        }
+
         const block = this.block.getJSON();
         const data = {
             type: this.dataType,
@@ -225,6 +262,14 @@ export class TestCodeDialog {
             this.fileBuffer = e.target.result;
             this.fileValue = JSON.parse(this.fileBuffer);
         });
+    }
+
+    private cloneValue(value: any): any {
+        if (value === null || value === undefined || typeof value !== 'object') {
+            return value;
+        }
+
+        return JSON.parse(JSON.stringify(value));
     }
 
     private getValue() {

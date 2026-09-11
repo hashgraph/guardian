@@ -17680,6 +17680,43 @@ paths:
           schema:
             example: true
             type: boolean
+        - name: expandTables
+          required: false
+          in: query
+          description: >-
+            Expand table fields into rows in the response only. The stored
+            document is unchanged. Requires includeDocument.
+          schema:
+            example: true
+            type: boolean
+        - name: tableOffset
+          required: false
+          in: query
+          description: First table row to return when expandTables is set. Defaults to 0.
+          schema:
+            example: 0
+            type: number
+        - name: tableLimit
+          required: false
+          in: query
+          description: >-
+            Table rows to return when expandTables is set. Defaults to 1000 and
+            is capped by the server. Each expanded table carries rowsTotal,
+            rowsOffset and rowsTruncated so the rest can be paged.
+          schema:
+            example: 1000
+            type: number
+        - name: tableColumns
+          required: false
+          in: query
+          description: >-
+            Comma-separated column keys to return when expandTables is set.
+            Defaults to every column. A key that no table carries is simply
+            absent from that table; the returned columnKeys says what was
+            actually included.
+          schema:
+            example: year,co2_tonnes
+            type: string
         - name: pageIndex
           required: false
           in: query

@@ -8,6 +8,7 @@ export interface IContext {
     relationships: any[];
     result: any;
     getField: Function;
+    table: any;
     user: any;
 }
 
