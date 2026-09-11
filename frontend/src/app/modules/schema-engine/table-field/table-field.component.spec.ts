@@ -124,4 +124,43 @@ describe('TableFieldComponent', () => {
         expect(without.previewHeaderKeysLimited).toEqual([]);
         expect(without.previewRowsLimited).toEqual([]);
     });
+
+    it('keeps the uploaded file in the browser when the field is destroyed', () => {
+        const deleted: string[] = [];
+        TestBed.resetTestingModule();
+        TestBed.configureTestingModule({
+            declarations: [TableFieldComponent],
+            providers: [
+                { provide: DialogService, useValue: {} },
+                { provide: CsvService, useValue: {} },
+                { provide: ArtifactService, useValue: {} },
+                {
+                    provide: IndexedDbRegistryService,
+                    useValue: {
+                        registerStores: () => Promise.resolve(),
+                        delete: (_db: string, _store: string, key: string) => {
+                            deleted.push(key);
+                            return Promise.resolve();
+                        }
+                    }
+                },
+                { provide: GzipService, useValue: {} },
+                { provide: IPFSService, useValue: {} },
+            ],
+            schemas: [CUSTOM_ELEMENTS_SCHEMA],
+        });
+
+        const component = TestBed.createComponent(TableFieldComponent).componentInstance;
+        component.item = { name: 'field4', field: {} } as any;
+        spyOn(component as any, 'readTable').and.returnValue({
+            type: 'table',
+            columnKeys: [],
+            rows: [],
+            idbKey: 'policy__block__field4__0'
+        });
+
+        component.ngOnDestroy();
+
+        expect(deleted).toEqual([]);
+    });
 });

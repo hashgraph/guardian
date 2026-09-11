@@ -366,7 +366,6 @@ export class TableFieldComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
-        void this.clearIdbRecordIfAny();
     }
 
     private async loadCsvTextFromIdb(idbKey: string): Promise<string | null> {

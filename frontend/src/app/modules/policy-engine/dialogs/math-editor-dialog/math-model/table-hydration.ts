@@ -6,13 +6,17 @@ import { GzipService } from 'src/app/services/gzip.service';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 
 export const TABLE_TEST_MAX_ROWS = 10000;
-export const TABLE_PREVIEW_MAX_BYTES = 10 * 1024 * 1024;
+export const TABLE_TEST_MAX_CELLS = 50000;
 
 export interface ITableHydrationDeps {
     artifactService: Pick<ArtifactService, 'getFileBlob'>;
     gzipService: Pick<GzipService, 'gunzipToText'>;
     csvService: Pick<CsvService, 'parseCsvToTable'>;
     idb: Pick<IndexedDbRegistryService, 'get'>;
+}
+
+export interface ITableHydrationOptions {
+    maxCells?: number;
 }
 
 function isTableLike(value: any): boolean {
@@ -37,19 +41,7 @@ function trimmed(value: any): string {
 }
 
 function needsRows(table: any): boolean {
-    const hasRows = Array.isArray(table.rows) && table.rows.length > 0;
-    const hasSource = !!trimmed(table.idbKey) || !!trimmed(table.fileId);
-
-    if (!hasSource) {
-        return false;
-    }
-
-    if (!hasRows) {
-        return true;
-    }
-
-    const sizeBytes = typeof table.sizeBytes === 'number' ? table.sizeBytes : 0;
-    return sizeBytes > TABLE_PREVIEW_MAX_BYTES;
+    return !!trimmed(table.idbKey) || !!trimmed(table.fileId);
 }
 
 function isDeclared(table: any): boolean {
@@ -80,7 +72,7 @@ function reKeyLegacyTable(table: any): any {
     return { ...table, columnKeys, rows: dataRows };
 }
 
-async function readCsvText(table: any, deps: ITableHydrationDeps): Promise<string> {
+async function readCsvText(table: any, deps: ITableHydrationDeps, field: string): Promise<string> {
     const idbKey = trimmed(table.idbKey);
 
     if (idbKey) {
@@ -98,8 +90,9 @@ async function readCsvText(table: any, deps: ITableHydrationDeps): Promise<strin
 
     if (!fileId) {
         throw new Error(
-            'The uploaded file is too large to keep in the page, so testing cannot read all of its rows. '
-            + 'Check this expression in a real policy run.'
+            `Field "${field}": the uploaded file is no longer available in this browser`
+            + `${idbKey ? ` (stored under "${idbKey}")` : ' (no stored file is named at all)'},`
+            + ' so testing cannot read its rows. Upload the file again, then run the test.'
         );
     }
 
@@ -107,17 +100,34 @@ async function readCsvText(table: any, deps: ITableHydrationDeps): Promise<strin
     return await deps.gzipService.gunzipToText(blob);
 }
 
-async function loadRows(table: any, deps: ITableHydrationDeps): Promise<any> {
-    const csvText = await readCsvText(table, deps);
-    const declaredKeys = Array.isArray(table.columnKeys) && table.columnKeys.length > 0
-        ? table.columnKeys
-        : undefined;
+async function loadRows(
+    table: any,
+    deps: ITableHydrationDeps,
+    field: string,
+    options?: ITableHydrationOptions
+): Promise<any> {
+    const csvText = await readCsvText(table, deps, field);
+    const declaredKeys = isDeclared(table) ? table.columnKeys : undefined;
     const parsed = deps.csvService.parseCsvToTable(csvText, ',', declaredKeys);
 
     if (parsed.rows.length > TABLE_TEST_MAX_ROWS) {
         throw new Error(
-            `Table has ${parsed.rows.length} rows; testing is limited to ${TABLE_TEST_MAX_ROWS}`
+            `Field "${field}": table has ${parsed.rows.length} rows; `
+            + `testing is limited to ${TABLE_TEST_MAX_ROWS}`
         );
+    }
+
+    const maxCells = options?.maxCells;
+
+    if (maxCells) {
+        const cells = parsed.rows.length * parsed.columnKeys.length;
+
+        if (cells > maxCells) {
+            throw new Error(
+                `Field "${field}": table has ${cells} cells; `
+                + `testing through the server is limited to ${maxCells}`
+            );
+        }
     }
 
     return {
@@ -129,7 +139,8 @@ async function loadRows(table: any, deps: ITableHydrationDeps): Promise<any> {
 
 export async function hydrateDocumentTables(
     document: any,
-    deps: ITableHydrationDeps
+    deps: ITableHydrationDeps,
+    options?: ITableHydrationOptions
 ): Promise<void> {
     if (!document || typeof document !== 'object') {
         return;
@@ -142,7 +153,7 @@ export async function hydrateDocumentTables(
 
         if (Array.isArray(value)) {
             for (const item of value) {
-                await hydrateDocumentTables(item, deps);
+                await hydrateDocumentTables(item, deps, options);
             }
             continue;
         }
@@ -150,13 +161,13 @@ export async function hydrateDocumentTables(
         const table = parseTableValue(value);
 
         if (table) {
-            const loaded = needsRows(table) ? await loadRows(table, deps) : table;
+            const loaded = needsRows(table) ? await loadRows(table, deps, key, options) : table;
             (document as any)[key] = isDeclared(loaded) ? loaded : reKeyLegacyTable(loaded);
             continue;
         }
 
         if (value && typeof value === 'object') {
-            await hydrateDocumentTables(value, deps);
+            await hydrateDocumentTables(value, deps, options);
         }
     }
 }

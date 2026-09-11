@@ -95,25 +95,82 @@ describe('hydrateDocumentTables', () => {
             message = String(error);
         }
 
-        expect(message).toContain('too large to keep in the page');
+        expect(message).toContain('no longer available in this browser');
+        expect(message).toContain('tableData');
         expect(document.tableData).toBe(value);
     });
 
-    it('does not fetch a table that already carries its rows, even with a draft key', async () => {
-        const inline = {
+    it('reads the whole small file from IndexedDB instead of trusting the ten-row preview', async () => {
+        const lines = ['Year,CO2 (tonnes),Region'];
+        for (let year = 2001; year <= 2011; year += 1) {
+            lines.push(`${year},1,Europe`);
+        }
+        const preview = {
             type: 'table',
             columnKeys: ['year', 'co2_tonnes', 'region'],
             columnNames: ['Year', 'CO2 (tonnes)', 'Region'],
+            rows: [{ year: '2001', co2_tonnes: '1', region: 'Europe' }],
             idbKey: 'small-key',
-            sizeBytes: 70,
-            rows: [{ year: '2023', co2_tonnes: '42', region: 'Europe' }]
+            sizeBytes: 180
         };
-        const document: any = { tableData: JSON.stringify(inline) };
+        const document: any = { tableData: JSON.stringify(preview) };
+        const idbDeps = {
+            ...makeDeps(lines.join('\n')),
+            idb: {
+                get: (_db: string, _store: string, key: string) =>
+                    Promise.resolve({ id: key, blob: new Blob([lines.join('\n')]) })
+            }
+        };
 
-        await hydrateDocumentTables(document, deps);
+        await hydrateDocumentTables(document, idbDeps);
 
-        expect(requested).toEqual([]);
-        expect(buildTableHelper().col(document.tableData, 'co2_tonnes')).toEqual(['42']);
+        expect(buildTableHelper().col(document.tableData, 'co2_tonnes').length).toEqual(11);
+    });
+
+    it('re-reads a legacy table held as a preview and keys it by the file header', async () => {
+        const preview = {
+            type: 'table',
+            columnKeys: ['C1', 'C2', 'C3'],
+            rows: [
+                { C1: 'Year', C2: 'CO2 (tonnes)', C3: 'Region' },
+                { C1: '2023', C2: '42', C3: 'Europe' }
+            ],
+            idbKey: 'legacy-key',
+            sizeBytes: 68
+        };
+        const document: any = { tableLegacy: JSON.stringify(preview) };
+        const idbDeps = {
+            ...deps,
+            idb: {
+                get: (_db: string, _store: string, key: string) =>
+                    Promise.resolve({ id: key, blob: new Blob([CSV]) })
+            }
+        };
+
+        await hydrateDocumentTables(document, idbDeps);
+
+        expect(buildTableHelper().col(document.tableLegacy, 'CO2 (tonnes)'))
+            .toEqual(['42', '45', '48']);
+    });
+
+    it('refuses a table with more cells than the server accepts, and changes nothing', async () => {
+        const lines = ['Year,CO2 (tonnes),Region'];
+        for (let index = 0; index < 40; index += 1) {
+            lines.push('2023,1,Europe');
+        }
+        const value = storedTable('file-wide');
+        const document: any = { tableData: value };
+
+        let message = '';
+        try {
+            await hydrateDocumentTables(document, makeDeps(lines.join('\n')), { maxCells: 60 });
+        } catch (error) {
+            message = String(error);
+        }
+
+        expect(message).toContain('limited to 60');
+        expect(message).toContain('tableData');
+        expect(document.tableData).toBe(value);
     });
 
     it('reaches a table inside a sub-schema and inside an array', async () => {
@@ -179,6 +236,7 @@ describe('hydrateDocumentTables', () => {
         }
 
         expect(message).toContain('testing is limited to');
+        expect(message).toContain('tableData');
         expect(document.tableData).toBe(value);
     });
 });

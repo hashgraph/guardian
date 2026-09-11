@@ -1010,10 +1010,18 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         this.inputRelationshipsValue = this.inputRelationshipsValue.filter((e) => e !== item);
     }
 
+    private cloneDocument(value: any): any {
+        if (value === null || value === undefined || typeof value !== 'object') {
+            return value;
+        }
+
+        return JSON.parse(JSON.stringify(value));
+    }
+
     private getValue() {
         const documents = new DocumentMap();
-        documents.addDocument(this.inputDocumentValue);
-        documents.addRelationships(this.inputRelationshipsValue);
+        documents.addDocument(this.cloneDocument(this.inputDocumentValue));
+        documents.addRelationships(this.cloneDocument(this.inputRelationshipsValue));
         return documents;
     }
 
