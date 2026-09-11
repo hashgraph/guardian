@@ -62,5 +62,5 @@
         "test": "mocha tests/**/*.test.mjs --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/analytics-service.xml --timeout 10000 --exit"
     },
     "type": "module",
-    "version": "3.7.0"
+    "version": "3.7.1-rc"
 }
