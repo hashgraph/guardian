@@ -10,7 +10,7 @@ permissions:
 jobs:
   docker:
     name: Publish to Docker
-    runs-on: guardian-linux-medium
+    runs-on: hg-guard-lin-md
     permissions:
       id-token: write
       contents: read
