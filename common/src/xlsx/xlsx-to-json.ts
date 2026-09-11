@@ -647,7 +647,7 @@ export class XlsxToJson {
                     text: `Unknown field type (cell is empty).`,
                     message: `Field Type cell is empty. `
                         + `Supported types: Number, Integer, String, Boolean, Date, Time, DateTime, Duration, `
-                        + `URL, URI, Email, Image, File, Pattern, Help Text, GeoJSON, HederaAccount, `
+                        + `URL, URI, Email, Image, File, Table, Pattern, Help Text, GeoJSON, HederaAccount, `
                         + `Rich Text, Prefix, Postfix, Auto-Calculate, Enum, Sub-Schema, `
                         + `Country, Continent, State/Province.`,
                     worksheet: worksheet.name,
