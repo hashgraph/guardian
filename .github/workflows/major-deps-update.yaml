@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   check-majors:
-    runs-on: guardian-linux-medium
+    runs-on: hg-guard-lin-md
     strategy:
       matrix:
         node-version: [ 20.20.2 ]

@@ -9,7 +9,7 @@ on:
 jobs:
   runService:
     name: Run Service
-    runs-on: guardian-linux-medium
+    runs-on: hg-guard-lin-md
     env:
       YARN_ENABLE_GLOBAL_CACHE: 'false'
     strategy:
