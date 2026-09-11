@@ -28,7 +28,7 @@ Featuring a schema highlights it with a star and pins it to the top of every sch
 
 ### Result
 
-The schema shows a filled star, and sorts before non-featured schemas within the same topic, everywhere its template schemas are listed: the main Schemas grid (`/schemas`), the template editor's own schema sidebar, the template-scoped schema editor, and the policy schema editor for policies with this template applied.
+The schema shows a filled star, and sorts before non-featured schemas within the same topic, everywhere its template schemas are listed: the main Schemas grid (`/schemas`), the template editor's own schema sidebar, the template-scoped schema editor, and the policy schema editor for policies with this template applied. It also shows a filled star and sorts first in every policy configurator schema-picker dropdown (e.g. the Schema field on `Request VC Document`, `Document Validator`, and other blocks that let you select a schema), once the schema has been copied into the policy.
 
 ### Troubleshooting
 

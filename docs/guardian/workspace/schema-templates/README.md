@@ -56,7 +56,7 @@ The configuration controls:
 * **Can add custom fields**: lets policy developers add custom fields to the schema.
   * `customFieldsLocked`: `false` allows custom fields, while `true` prevents them.
 * **Featured**: marks a template schema so it stands out in schema lists.
-  * `featured: true` shows a filled star next to the schema and sorts it first on the main Schemas grid. `false` (the default) does neither.
+  * `featured: true` shows a filled star next to the schema and sorts it first within its topic on the main Schemas grid, and also in policy configurator schema-picker dropdowns. `false` (the default) does neither.
   * Denormalized onto the schema itself as `templateFeatured` when the template is saved, since template configuration is not queryable on its own - this is what powers the grid sort and the star shown outside the template config editor.
 * **Can edit selected field**: whether an individual template field can be edited or removed.
   * `locked: false` allows edits or removal. `true` prevents them.
