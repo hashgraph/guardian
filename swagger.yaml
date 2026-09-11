@@ -30001,6 +30001,145 @@ paths:
       summary: Deletes all schemas by topic id.
       tags:
         - schemas
+  /schemas/{schemaId}/iwa-upgrade/preview:
+    get:
+      description: >-
+        Reports, per field, which IWA property paths would stay the same, which
+        would be renamed, and which v3 removed. Does not modify the schema.
+      operationId: SchemaApi_getSchemaIwaUpgradePreview
+      parameters:
+        - name: schemaId
+          required: true
+          in: path
+          description: Schema Id
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+      responses:
+        '200':
+          description: Per-field remap report.
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '404':
+          description: Schema not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorDTO'
+              example:
+                statusCode: 404
+                message: Schema is not found
+        '422':
+          description: Schema is published, or already on IWA v3.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
+              example:
+                statusCode: 422
+                message: Schema is already on IWA v3
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                code: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Previews remapping a draft schema from IWA v1 to v3.
+      tags:
+        - schemas
+  /schemas/{schemaId}/iwa-upgrade:
+    post:
+      description: >-
+        Rewrites every field property to its IWA v3 equivalent and tags the
+        schema as v3. Properties v3 removed are cleared and reported. Draft
+        schemas only — a published schema must get a new version first.
+      operationId: SchemaApi_upgradeSchemaToIwaV3
+      parameters:
+        - name: schemaId
+          required: true
+          in: path
+          description: Schema Id
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+      responses:
+        '200':
+          description: Remap report and the updated schema.
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '404':
+          description: Schema not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorDTO'
+              example:
+                statusCode: 404
+                message: Schema is not found
+        '422':
+          description: Schema is published, or already on IWA v3.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
+              example:
+                statusCode: 422
+                message: >-
+                  Only a draft schema can be upgraded. Create a new version
+                  first.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                code: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Remaps a draft schema from IWA v1 to v3.
+      tags:
+        - schemas
   /schemas/deletionPreview:
     post:
       description: Returns all child schemas.
@@ -36198,7 +36337,16 @@ paths:
     get:
       description: Get all properties
       operationId: ProjectsAPI_getPolicyProperties
-      parameters: []
+      parameters:
+        - name: iwaVersion
+          required: false
+          in: query
+          description: >-
+            IWA dMRV specification version to list properties for. Omit to list
+            every version.
+          schema:
+            example: 3.0.0
+            type: string
       responses:
         '202':
           description: Successful operation.
@@ -37280,6 +37428,103 @@ paths:
                     statusCode: 500
                     message: Error message
       summary: Rebuild AI vector
+      tags:
+        - ai-suggestions
+  /ai-suggestions/schema-properties/enabled:
+    get:
+      description: >-
+        Lets the client know upfront whether it should show the Glossary AI
+        schema-tagging UI at all.
+      operationId: AISuggestionsAPI_getGlossaryAiEnabled
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+              examples:
+                default:
+                  summary: Glossary AI enabled
+                  value: true
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+      security:
+        - bearer: []
+      summary: Returns whether Glossary AI is enabled
+      tags:
+        - ai-suggestions
+  /ai-suggestions/schema-properties:
+    post:
+      description: Returns ranked IWA property candidates for each schema field
+      operationId: AISuggestionsAPI_getPropertySuggestions
+      parameters: []
+      requestBody:
+        required: true
+        description: Schema fields to tag.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PropertySuggestionRequestDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PropertySuggestionResponseDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              examples:
+                default:
+                  summary: Default example
+                  value:
+                    statusCode: 500
+                    message: Error message
+      security:
+        - bearer: []
+      summary: Suggest schema field properties
       tags:
         - ai-suggestions
   /permissions:
@@ -57634,6 +57879,13 @@ components:
           type: string
           nullable: true
           example: 1.2.0
+        iwaVersion:
+          type: string
+          nullable: true
+          description: >-
+            IWA dMRV specification version the field properties are authored
+            against. Absent means v1.
+          example: 3.0.0
         topicCount:
           type: number
           nullable: true
@@ -60582,6 +60834,15 @@ components:
           type: string
         value:
           type: string
+        iwaVersion:
+          type: string
+          description: IWA dMRV specification version this property belongs to
+          example: 3.0.0
+        description:
+          type: string
+          description: >-
+            What this property means, sourced from the IWA dMRV specification.
+            Empty for IWA v1 properties.
       required:
         - id
         - title
@@ -60716,6 +60977,57 @@ components:
         - info
         - total
         - documents
+    PropertySuggestionRequestDTO:
+      type: object
+      properties:
+        schemaId:
+          type: string
+          description: Id of the schema the field(s) needing a suggestion belong to
+        fieldNames:
+          description: Names of the schema fields to return suggestions for
+          type: array
+          items:
+            type: string
+      required:
+        - schemaId
+        - fieldNames
+    PropertySuggestionCandidateDTO:
+      type: object
+      properties:
+        title:
+          type: string
+        confidence:
+          type: number
+        rationale:
+          type: string
+      required:
+        - title
+        - confidence
+        - rationale
+    PropertySuggestionResultDTO:
+      type: object
+      properties:
+        fieldName:
+          type: string
+        candidates:
+          type: array
+          items:
+            $ref: '#/components/schemas/PropertySuggestionCandidateDTO'
+      required:
+        - fieldName
+        - candidates
+    PropertySuggestionResponseDTO:
+      type: object
+      properties:
+        available:
+          type: boolean
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PropertySuggestionResultDTO'
+      required:
+        - available
+        - results
     RoleDTO:
       type: object
       properties:
