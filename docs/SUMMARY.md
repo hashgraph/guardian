@@ -239,6 +239,8 @@
           * [Existing file \_id to overwrite (optional)](guardian/workspace/schemas/available-schema-types/table-data-input-field/apis-related/existing-file-_id-to-overwrite-optional.md)
           * [Add file to ipfs directly](guardian/workspace/schemas/available-schema-types/table-data-input-field/apis-related/add-file-to-ipfs-directly.md)
           * [Deletes file from GridFS by id](guardian/workspace/schemas/available-schema-types/table-data-input-field/apis-related/deletes-file-from-gridfs-by-id.md)
+      * [Table Columns](guardian/workspace/schemas/available-schema-types/table-columns/README.md)
+        * [Configure Table Columns](guardian/workspace/schemas/available-schema-types/table-columns/configure-table-columns.md)
     * [Property Glossary](guardian/workspace/schemas/property-glossary.md)
     * [Schema Design Best Practices](guardian/workspace/schemas/best-practices-to-implement-schema/README.md)
       * [Excel-First Design](guardian/workspace/schemas/best-practices-to-implement-schema/excel-first-design.md)
