@@ -48,6 +48,63 @@ describe('CsvService', () => {
             expect(parsed.rows).toEqual([{ C1: 'hello' }]);
         });
 
+        it('drops the empty row a terminating newline adds', () => {
+            const parsed = service.parseCsvToTable('Year,CO2\r\n2021,10\r\n', ',', ['year', 'co2']);
+
+            expect(parsed.rows).toEqual([{ year: '2021', co2: '10' }]);
+        });
+
+        it('drops the empty row a terminating CR adds, not only LF and CRLF', () => {
+            const parsed = service.parseCsvToTable('Year,CO2\r2021,10\r', ',', ['year', 'co2']);
+
+            expect(parsed.rows).toEqual([{ year: '2021', co2: '10' }]);
+        });
+
+        it('leaves the last row alone when a CR-separated file does not end in one', () => {
+            const parsed = service.parseCsvToTable('Year,CO2\r2021,10\r,', ',', ['year', 'co2']);
+
+            expect(parsed.rows).toEqual([{ year: '2021', co2: '10' }, { year: '', co2: '' }]);
+        });
+
+        it('keeps a blank row the user left at the end of a one-column table', () => {
+            const parsed = service.parseCsvToTable('Only\nhello\n\n', ',', ['only']);
+
+            expect(parsed.rows).toEqual([{ only: 'hello' }, { only: '' }]);
+        });
+
+        it('leaves the last row alone when the file does not end in a newline', () => {
+            const parsed = service.parseCsvToTable('Only\nhello\n\nlast', ',', ['only']);
+
+            expect(parsed.rows).toEqual([{ only: 'hello' }, { only: '' }, { only: 'last' }]);
+        });
+
+        it('loses a blank last row through a round trip of a one-column table, and that is the trade', () => {
+            const written = service.buildCsvFromTable(['only'], [{ only: 'hello' }, { only: '' }], ',', ['Only']);
+            const parsed = service.parseCsvToTable(written, ',', ['only']);
+
+            expect(parsed.rows).toEqual([{ only: 'hello' }]);
+        });
+
+        it('keeps every blank row that is not the last one through a round trip', () => {
+            const rows = [{ only: '' }, { only: '' }, { only: 'hello' }];
+            const written = service.buildCsvFromTable(['only'], rows, ',', ['Only']);
+            const parsed = service.parseCsvToTable(written, ',', ['only']);
+
+            expect(parsed.rows).toEqual(rows);
+        });
+
+        it('keeps every row of a multi-column table through a round trip, blanks included', () => {
+            const rows = [
+                { year: '2023', co2: '42' },
+                { year: '', co2: '' },
+                { year: '2025', co2: '48' },
+            ];
+            const written = service.buildCsvFromTable(['year', 'co2'], rows, ',', ['Year', 'CO2']);
+            const parsed = service.parseCsvToTable(written, ',', ['year', 'co2']);
+
+            expect(parsed.rows).toEqual(rows);
+        });
+
         it('takes the column count from the stored keys, not from the widest row', () => {
             const parsed = service.parseCsvToTable('a,b,c\n1,2', ',', ['a', 'b', 'c']);
 

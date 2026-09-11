@@ -35,6 +35,13 @@ export class CsvService {
         });
 
         const allRows: string[][] = (parsed.data as unknown as string[][]) ?? [];
+        const lastRow = allRows[allRows.length - 1];
+        const endsWithNewLine = /(\r\n|\n|\r)$/.test(csvText);
+
+        if (endsWithNewLine && allRows.length > 1 && lastRow?.length === 1 && lastRow[0] === '') {
+            allRows.pop();
+        }
+
         const rawRows: string[][] = hasStoredKeys ? allRows.slice(1) : allRows;
 
         const widestRow: number = rawRows.reduce((maxColumns: number, row: string[]) => {

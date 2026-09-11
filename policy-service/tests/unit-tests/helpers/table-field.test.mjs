@@ -350,41 +350,6 @@ describe('table-field helpers', () => {
             assert.equal(root.table.rows, undefined);
         });
 
-        it('does not load a table rejected by the hydration filter', async () => {
-            const original = JSON.stringify({ type: 'table', fileId: 'legacy' });
-            const root = { table: original };
-            let called = false;
-            const dispose = await hydrateTablesInObject(root, async () => {
-                called = true;
-                return 'amount\n42';
-            }, ',', () => false);
-            assert.equal(called, false);
-            assert.equal(root.table, original);
-            dispose();
-            assert.equal(root.table, original);
-        });
-
-        it('hydrates only the declared table when filtered by hasDeclaredTableColumns', async () => {
-            const root = {
-                declared: {
-                    type: 'table',
-                    fileId: 'declared',
-                    columnNames: ['CO2 (tonnes)'],
-                    columnKeys: ['co2_tonnes']
-                },
-                legacy: { type: 'table', fileId: 'legacy' }
-            };
-            const loaded = [];
-            const dispose = await hydrateTablesInObject(root, async (fileId) => {
-                loaded.push(fileId);
-                return 'CO2 (tonnes)\n42';
-            }, ',', hasDeclaredTableColumns);
-            assert.deepEqual(loaded, ['declared']);
-            assert.deepEqual(root.declared.rows, [{ co2_tonnes: '42' }]);
-            assert.equal(root.legacy.rows, undefined);
-            dispose();
-        });
-
         it('does not reload a table already containing columns and rows', async () => {
             const root = {
                 table: { type: 'table', fileId: 'f1', columnKeys: ['x'], rows: [{ x: '9' }] }

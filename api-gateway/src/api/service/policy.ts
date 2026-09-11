@@ -2857,7 +2857,7 @@ export class PolicyApi {
                 pageIndex,
                 pageSize,
                 {
-                    expand: String(expandTables)?.toLowerCase() === 'true',
+                    expand: String(expandTables).toLowerCase() === 'true',
                     offset: tableOffset,
                     limit: tableLimit,
                     columns: tableColumns

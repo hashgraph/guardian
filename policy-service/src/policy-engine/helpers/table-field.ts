@@ -26,10 +26,6 @@ export {
 
 export type TableFileLoader = (fileId: string) => Promise<string>;
 
-export type TableHydrationFilter = (
-    table: ITableField & { fileId: string }
-) => boolean;
-
 /**
  * Loads a text file by its identifier.
  */
@@ -68,8 +64,7 @@ function defineHidden<T extends object, K extends string>(
 export async function hydrateTablesInObject(
     root: unknown,
     loadFileText: TableFileLoader,
-    delimiter: string = ',',
-    shouldHydrate?: TableHydrationFilter
+    delimiter: string = ','
 ): Promise<() => void> {
     if (root === null || root === undefined) {
         return () => {
@@ -113,10 +108,6 @@ export async function hydrateTablesInObject(
 
         if (isTableWithFileId(parsed)) {
             const tableObject = parsed as ITableField & { fileId: string };
-
-            if (shouldHydrate && !shouldHydrate(tableObject)) {
-                return;
-            }
 
             const replaced = currentValue !== tableObject;
 
