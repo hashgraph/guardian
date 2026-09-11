@@ -1,5 +1,5 @@
 ---
-icon: book-open-lines
+icon: book-bookmark
 tags:
   - tag: new
     primary: true

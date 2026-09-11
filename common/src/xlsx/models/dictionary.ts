@@ -242,6 +242,18 @@ export class FieldTypes {
             pars: (value: any) => String(value)
         },
         {
+            name: 'Table',
+            type: 'string',
+            format: undefined,
+            pattern: undefined,
+            isRef: false,
+            unit: undefined,
+            unitSystem: undefined,
+            customType: 'table',
+            hidden: false,
+            pars: (value: any) => value
+        },
+        {
             name: 'Enum',
             type: 'string',
             format: undefined,

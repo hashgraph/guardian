@@ -32,14 +32,8 @@
       </div>
       <div class="form-input-container">
         <label class="p-field-label" for="ipfsKey">* IPFS Storage API Key</label>
-        <input [formControl]="getFormControl(keyAndProof,'key')" class="p-field-input" id="ipfsKey"
-          pInputText placeholder="IPFS Storage API Key"
-          type="text"/>
-      </div>
-      <div class="form-input-container">
-        <label class="p-field-label" for="ipfsKey">* IPFS Storage API proof</label>
-        <input [formControl]="getFormControl(keyAndProof,'proof')" class="p-field-input" id="ipfsProof"
-          pInputText placeholder="IPFS Storage API Key"
+        <input class="p-field-input" formControlName="ipfsStorageApiKey" id="ipfsKey" pInputText
+          placeholder="IPFS Storage API Key"
           type="text"/>
       </div>
     </form>

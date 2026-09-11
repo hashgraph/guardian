@@ -857,7 +857,7 @@
             <div class="input-documents-button">
               <button
                 (click)="onTest()"
-                [disabled]="!inputDocumentValue"
+                [disabled]="!inputDocumentValue || loading"
               class="guardian-button guardian-button-primary left-btn">Test</button>
             </div>
           </div>

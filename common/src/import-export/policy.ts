@@ -30,6 +30,13 @@ export interface IPolicyComponents {
     tools: PolicyTool[];
     tests: IArtifact[];
     schemaTemplateSnapshots?: SchemaTemplateSnapshot[];
+    artifactErrors?: IArtifactError[];
+}
+
+export interface IArtifactError {
+    type: 'artifact';
+    name: string;
+    error: string;
 }
 
 /**
@@ -482,21 +489,71 @@ export class PolicyImportExport {
 
         const metaDataFile = (Object.entries(content.files).find(file => file[0] === 'artifacts/metadata.json'));
         const metaDataString = metaDataFile && await metaDataFile[1].async('string') || '[]';
-        const metaDataBody: any[] = JSON.parse(metaDataString);
+        //Artifact entries this archive could not resolve.
+        const artifactErrors: IArtifactError[] = [];
+        //Unreadable metadata degrades to "no records" and is reported once, instead of
+        //throwing or blaming each entry for a file-level fault.
+        let parsedMetaData: any;
+        let metaDataFault: string | null = null;
+        try {
+            parsedMetaData = JSON.parse(metaDataString);
+            if (!Array.isArray(parsedMetaData)) {
+                metaDataFault = 'is not a list';
+            }
+        } catch (error) {
+            metaDataFault = 'is not valid JSON';
+        }
+        const metaDataUsable = !metaDataFault;
+        const metaDataBody: any[] = metaDataUsable ? parsedMetaData : [];
+        if (metaDataFault) {
+            artifactErrors.push({
+                type: 'artifact',
+                name: 'artifacts/metadata.json',
+                error: `Artifact metadata ${metaDataFault}; no artifact in this archive could be resolved.`
+            });
+        }
 
         let artifacts: any;
         if (includeArtifactsData) {
-            const data = fileEntries.filter(file => /^artifacts\/.+/.test(file[0]) && file[0] !== 'artifacts/metadata.json').map(async file => {
-                const uuid = file[0].split('/')[1];
-                const artifactMetaData = metaDataBody.find(item => item.uuid === uuid);
-                return {
-                    name: artifactMetaData.name,
-                    extention: artifactMetaData.extention,
-                    uuid: artifactMetaData.uuid,
-                    data: await file[1].async('nodebuffer')
+            //a missing record used to dereference `undefined` inside a Promise.all, so
+            //one bad entry aborted the whole import
+            const artifactEntries = fileEntries.filter(
+                file => /^artifacts\/.+/.test(file[0]) && file[0] !== 'artifacts/metadata.json'
+            );
+            const resolved = await Promise.all(artifactEntries.map(async file => {
+                const path = file[0];
+                const uuid = path.split('/')[1];
+                //Nested paths are not an artifact layout this format defines.
+                const isNested = path.split('/').length > 2;
+                const artifactMetaData = isNested
+                    ? undefined
+                    : metaDataBody.find(item => item.uuid === uuid);
+                if (!artifactMetaData) {
+                    return {
+                        error: {
+                            type: 'artifact' as const,
+                            name: path,
+                            error: isNested
+                                ? 'Artifact is nested; artifacts must sit directly under artifacts/.'
+                                : 'No metadata record matches this artifact.'
+                        }
+                    };
                 }
-            })
-            artifacts = await Promise.all(data);
+                return {
+                    artifact: {
+                        name: artifactMetaData.name,
+                        extention: artifactMetaData.extention,
+                        uuid: artifactMetaData.uuid,
+                        data: await file[1].async('nodebuffer')
+                    }
+                };
+            }));
+            for (const item of resolved) {
+                if (item.error && metaDataUsable) {
+                    artifactErrors.push(item.error);
+                }
+            }
+            artifacts = resolved.filter(item => item.artifact).map(item => item.artifact);
         } else {
             artifacts = metaDataBody.map((artifactMetaData) => {
                 return {
@@ -534,7 +591,9 @@ export class PolicyImportExport {
             tools,
             tests,
             formulas,
-            schemaTemplateSnapshots
+            schemaTemplateSnapshots,
+            //excluded from the hash by cleanBeforeHash
+            ...(artifactErrors.length ? { artifactErrors } : {})
         }
 
         const hashSum = PolicyImportExport.getPolicyHash(policyComponents);
@@ -636,6 +695,9 @@ export class PolicyImportExport {
     }
 
     private static cleanBeforeHash(components: IPolicyComponents): IPolicyComponents {
+        //getPolicyHash stringifies the whole object, so a parse diagnostic would change
+        //the hash of a policy whose content is identical
+        delete components.artifactErrors;
         delete components.policy.policyTag;
         delete components.policy.name;
         delete components.policy.uuid;

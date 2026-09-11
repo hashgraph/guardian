@@ -813,6 +813,50 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
             }
         });
 
+    ApiResponse(MessageAPI.PAUSE_RECORDING,
+        async (msg: { policyId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId;
+            try {
+                if (!msg) {
+                    throw new Error('Invalid parameters');
+                }
+                const { policyId, owner } = msg;
+                await checkPolicy(policyId, owner);
+                const guardiansService = new GuardiansService();
+                const result = await guardiansService.sendPolicyMessage(
+                    PolicyEvents.PAUSE_RECORDING,
+                    policyId,
+                    null
+                );
+                return new MessageResponse(result);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.RESUME_RECORDING,
+        async (msg: { policyId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId;
+            try {
+                if (!msg) {
+                    throw new Error('Invalid parameters');
+                }
+                const { policyId, owner } = msg;
+                await checkPolicy(policyId, owner);
+                const guardiansService = new GuardiansService();
+                const result = await guardiansService.sendPolicyMessage(
+                    PolicyEvents.RESUME_RECORDING,
+                    policyId,
+                    null
+                );
+                return new MessageResponse(result);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                return new MessageError(error);
+            }
+        });
+
     /**
      * Stop recording
      *

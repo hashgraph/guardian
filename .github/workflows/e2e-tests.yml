@@ -46,7 +46,7 @@ jobs:
       CYPRESS_CACHE_FOLDER: ${{ github.workspace }}/.cache/Cypress
       MIN_PASSWORD_LENGTH: 4
       PASSWORD_COMPLEXITY: easy
-      NODE_VERSION: "24.18.1"
+      NODE_VERSION: "24.21.0"
       # How many worker-service processes to run; the readiness gate expects exactly
       # this many WORKERS_SERVICE connections on NATS.
       WORKER_COUNT: 5
@@ -85,7 +85,7 @@ jobs:
 
       # DB_HOST=localhost in every service config.
       mongo:
-        image: mongo:7.0.21
+        image: mongo:7.0.41
         ports:
           - 127.0.0.1:27017:27017
         options: >-

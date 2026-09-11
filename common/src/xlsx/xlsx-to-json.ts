@@ -870,6 +870,40 @@ export class XlsxToJson {
         }
     }
 
+    private static parseTableColumns(param: string): { name: string; key: string }[] {
+        let value: unknown;
+        try {
+            value = JSON.parse(param);
+        } catch {
+            throw new Error('Table field Parameter must be a valid JSON array.');
+        }
+        if (!Array.isArray(value) || !value.length) {
+            throw new Error('Table field Parameter must contain at least one column.');
+        }
+
+        const columns: { name: string; key: string }[] = [];
+        const keys = new Set<string>();
+        for (const item of value) {
+            if (!item || typeof item !== 'object' || Array.isArray(item)) {
+                throw new Error('Each Table column must contain a name and key.');
+            }
+            const name = typeof item.name === 'string' ? item.name.trim() : '';
+            const key = typeof item.key === 'string' ? item.key.trim() : '';
+            if (!name || !key) {
+                throw new Error('Each Table column must contain a non-empty name and key.');
+            }
+            if (/\s/.test(key)) {
+                throw new Error(`Table column key "${key}" must not contain whitespace.`);
+            }
+            if (keys.has(key)) {
+                throw new Error(`Table column key "${key}" must be unique.`);
+            }
+            keys.add(key);
+            columns.push({ name, key });
+        }
+        return columns;
+    }
+
     private static readFieldParams(
         worksheet: Worksheet,
         table: Table,
@@ -880,6 +914,9 @@ export class XlsxToJson {
     ): void {
         try {
             const param = worksheet.getValue<string>(table.getCol(Dictionary.PARAMETER), row);
+            if (fieldType.name === 'Table' && param) {
+                field.tableColumns = XlsxToJson.parseTableColumns(param);
+            }
             if (fieldType.name === 'Prefix') {
                 const format = worksheet
                     .getCell(table.getCol(Dictionary.ANSWER), row)

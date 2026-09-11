@@ -679,6 +679,7 @@
                                 <table-field
                                   class="table-field-container"
                                   [item]="$any(listItem)"
+                                  [ownerField]="item.field"
                                   [required]="item.required"
                                   [readonly]="readonly?.[item.fullPath]"
                                   [policyId]="policyId"
