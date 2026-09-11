@@ -4,7 +4,7 @@
     "@angular/cdk": "^21.2.14",
     "@angular/common": "^21.2.16",
     "@angular/compiler": "^21.2.16",
-    "@angular/core": "^21.2.16",
+    "@angular/core": "^21.2.20",
     "@angular/forms": "^21.2.16",
     "@angular/platform-browser": "^21.2.16",
     "@angular/router": "^21.2.16",
