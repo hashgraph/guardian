@@ -66,5 +66,5 @@
         "test": "mocha tests/**/*.test.mjs --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/auth-service.xml --exit"
     },
     "type": "module",
-    "version": "3.7.0"
+    "version": "3.7.1-rc"
 }
