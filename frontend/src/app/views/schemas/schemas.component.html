@@ -324,7 +324,11 @@
                         </td>
                       }
                       <td [pTooltip]="rowData.name" class="row-cell-text col-200">
-                        <span class="text-truncate">{{ rowData.name || '–' }}</span>
+                        <span class="text-truncate">
+                          @if (isSchemaFeatured(rowData)) {
+                              <i class="pi pi-star-fill schema-grid-featured-icon" pTooltip="Featured" tooltipPosition="right"></i>
+                          }
+                          {{ rowData.name || '–' }}</span>
                       </td>
                       <td class="row-cell-text">
                         @if (rowData.topicId === 'draft') {

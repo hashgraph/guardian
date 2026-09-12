@@ -402,6 +402,20 @@ export class ComponentsService {
         return await this._recordingController.start();
     }
 
+    public async pauseRecording(): Promise<boolean> {
+        if (!this._recordingController || this._runningController) {
+            return false;
+        }
+        return await this._recordingController.pause();
+    }
+
+    public async resumeRecording(): Promise<boolean> {
+        if (!this._recordingController || this._runningController) {
+            return false;
+        }
+        return await this._recordingController.resume();
+    }
+
     /**
      * Stop Recording
      */

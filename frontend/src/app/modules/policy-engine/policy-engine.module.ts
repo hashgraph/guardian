@@ -195,6 +195,7 @@ import { MockDialog } from './dialogs/mock-dialog/mock-dialog.component';
 import { DryRunDialog } from './dialogs/dry-run-dialog/dry-run-dialog.component';
 import { PolicyTestAutomationPopupComponent } from './policy-viewer/policy-test-automation/policy-test-automation-popup.component';
 import { ApplySchemaTemplateDialog } from './dialogs/apply-schema-template-dialog/apply-schema-template-dialog.component';
+import { ManageSchemaTemplatesDialog } from './dialogs/manage-schema-templates-dialog/manage-schema-templates-dialog.component';
 
 @NgModule({
     declarations: [
@@ -344,7 +345,8 @@ import { ApplySchemaTemplateDialog } from './dialogs/apply-schema-template-dialo
         MockDialog,
         DryRunDialog,
         PolicyTestAutomationPopupComponent,
-        ApplySchemaTemplateDialog
+        ApplySchemaTemplateDialog,
+        ManageSchemaTemplatesDialog
     ],
     imports: [
         CommonModule,

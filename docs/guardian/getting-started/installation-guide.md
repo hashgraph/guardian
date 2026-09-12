@@ -1,5 +1,7 @@
 ---
 description: Install and run the open-source Guardian.
+tags:
+  - guide
 ---
 
 # Installation Guide
@@ -19,4 +21,9 @@ Find supported versions and the latest release notes in the [Guardian releases](
 
 Visit that section for additional details and advanced topics.
 
+### Ready for your first steps?
+
+After installation, follow the [hello world tutorial here in the docs](hello-world-tutorial.md) or directly within the Guardian to learn about core concepts hands on.
+
 {% include "../../.gitbook/includes/footer-have-questions-or-suggestions.md" %}
+

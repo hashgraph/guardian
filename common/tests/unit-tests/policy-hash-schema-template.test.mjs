@@ -5,8 +5,8 @@ import { PolicyImportExport } from '../../dist/import-export/policy.js';
  * the schema-template binding is environment-specific and must not reach
  * the policy hash.
  *
- * cleanBeforeHash already dropped components.schemaTemplateSnapshot, but
- * policy.schemaTemplate carries a snapshotId, schemaMap ObjectIds and
+ * cleanBeforeHash already dropped components.schemaTemplateSnapshots, but
+ * policy.schemaTemplates carries a snapshotId, schemaMap ObjectIds and
  * appliedAt/updatedAt, and every schema carries templateId. All of them differ
  * between environments, so exporting a template-bound policy and re-importing it
  * produced a different hash every time — hash-based same-policy detection then
@@ -38,14 +38,14 @@ const baseComponents = () => ({
 
 const withBinding = (components, overrides = {}) => {
     const copy = structuredClone(components);
-    copy.policy.schemaTemplate = {
+    copy.policy.schemaTemplates = [{
         templateId: 'tpl-1',
         snapshotId: 'snap-A',
         schemaMap: { '#Alpha': '64b7f1e2d3a4b5c6d7e8f901' },
         appliedAt: '2026-01-01T00:00:00.000Z',
         updatedAt: '2026-01-01T00:00:00.000Z',
         ...overrides,
-    };
+    }];
     copy.schemas[0].templateId = 'tpl-1';
     copy.schemas[0].templateSchemaId = 'tsid-1';
     return copy;

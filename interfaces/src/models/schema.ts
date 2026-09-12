@@ -9,6 +9,7 @@ import { SchemaStatus } from '../type/schema-status.type.js';
 import { GenerateUUIDv4 } from '../helpers/generate-uuid-v4.js';
 import { IFieldNode, SchemaField } from '../interface/schema-field.interface.js';
 import { SchemaCategory } from '../type/schema-category.type.js';
+import { DEFAULT_IWA_VERSION, resolveIwaVersion } from '../type/iwa-version.type.js';
 
 /**
  * Schema class
@@ -136,6 +137,10 @@ export class Schema implements ISchema {
      */
     public templateSchemaId?: string;
     /**
+     * Schema's featured flag in the owning template's config
+     */
+    public templateFeatured?: boolean;
+    /**
      * Parent component
      */
     public component?: string;
@@ -152,6 +157,10 @@ export class Schema implements ISchema {
      * Code version
      */
     public codeVersion?: string;
+    /**
+     * IWA dMRV specification version the field properties are authored against.
+     */
+    public iwaVersion?: string;
     /**
      * Topic count
      */
@@ -183,6 +192,7 @@ export class Schema implements ISchema {
             this.topicId = schema.topicId || '';
             this.templateId = schema.templateId || '';
             this.templateSchemaId = schema.templateSchemaId || '';
+            this.templateFeatured = !!schema.templateFeatured;
             this.messageId = schema.messageId || '';
             this.documentURL = schema.documentURL || '';
             this.contextURL = schema.contextURL || '';
@@ -219,6 +229,9 @@ export class Schema implements ISchema {
             this.component = (schema as any).component || (schema as any).__component;
             this.errors = schema.errors;
             this.codeVersion = schema.codeVersion;
+            // Untagged schemas predate IWA v3 support and must read as v1, never
+            // as the current create-default.
+            this.iwaVersion = resolveIwaVersion(schema);
             this.topicCount = schema.topicCount;
         } else {
             this._id = undefined;
@@ -245,6 +258,7 @@ export class Schema implements ISchema {
             this.iri = '';
             this.errors = [];
             this.codeVersion = '';
+            this.iwaVersion = DEFAULT_IWA_VERSION;
         }
         this.arrayDependencies = [];
         if (this.document) {
@@ -471,6 +485,7 @@ export class Schema implements ISchema {
         clone.arrayDependencies = this.arrayDependencies;
         clone.userDID = this.userDID;
         clone.topicCount = this.topicCount;
+        clone.iwaVersion = this.iwaVersion;
         return clone;
     }
 

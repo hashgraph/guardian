@@ -253,6 +253,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.APPLY_SCHEMA_TEMPLATE:
             case TaskAction.DETACH_SCHEMA_TEMPLATE:
             case TaskAction.UPDATE_APPLIED_SCHEMA_TEMPLATE:
+                this.reportSchemaTemplateDeleteErrors(result);
                 if (this.last) {
                     this.redirect(this.last);
                     return;
@@ -461,7 +462,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.DELETE_SCHEMAS:
             case TaskAction.IMPORT_SCHEMA_FILE:
             case TaskAction.IMPORT_SCHEMA_MESSAGE:
-                this.reportSchemaImportErrors(result);
+                this.reportSchemaErrors(result, this.action === TaskAction.DELETE_SCHEMAS ? 'deleted' : 'imported');
                 if (this.last) {
                     const schemaId = typeof result === 'string' && result ? result : null;
                     const lastWithSchema = schemaId
@@ -607,10 +608,12 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * ImportSchemaResult.errors is {type,uuid,name,error} and nothing downstream renders
-     * it, so flatten it into one sticky toast naming each schema that failed.
+     * Report per-schema failures carried on a task result. Nothing downstream renders
+     * `errors`, so flatten it into one sticky toast naming each schema that failed.
+     * @param result task result
+     * @param verb what did not happen to the schemas, e.g. 'imported' or 'deleted'
      */
-    private reportSchemaImportErrors(result: any): void {
+    private reportSchemaErrors(result: any, verb: string = 'imported'): void {
         const errors = result?.errors;
         if (!Array.isArray(errors) || !errors.length) {
             return;
@@ -619,10 +622,28 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             .map((e: any) => (e?.name ? `${e.name}: ${e.error}` : e?.error))
             .filter((line: any) => !!line)
             .join('\n');
-        const msg = text || 'Some schemas could not be imported.';
+        const msg = text || `Some schemas could not be ${verb}.`;
         this.toastService.warn(
             msg,
-            errors.length === 1 ? '1 schema was not imported' : `${errors.length} schemas were not imported`,
+            errors.length === 1 ? `1 schema was not ${verb}` : `${errors.length} schemas were not ${verb}`,
+            { sticky: true, logMessage: msg }
+        );
+    }
+
+    /**
+     * detachSchemaTemplate's "also delete the schemas" option deletes on a best-effort
+     * basis so detach itself always succeeds; any per-schema failures come back as
+     * result.deleteErrors and would otherwise vanish since nothing else renders them.
+     */
+    private reportSchemaTemplateDeleteErrors(result: any): void {
+        const deleteErrors = result?.deleteErrors;
+        if (!Array.isArray(deleteErrors) || !deleteErrors.length) {
+            return;
+        }
+        const msg = deleteErrors.join('\n');
+        this.toastService.warn(
+            msg,
+            deleteErrors.length === 1 ? '1 schema was not deleted' : `${deleteErrors.length} schemas were not deleted`,
             { sticky: true, logMessage: msg }
         );
     }

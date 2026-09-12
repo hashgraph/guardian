@@ -4,7 +4,9 @@ on:
     branches-ignore:
       - 'dependabot/**'
     paths-ignore:
+      - '.github/**'
       - 'docs/**'
+      - '**/*.md'
 
 jobs:
   buildAndTest:
@@ -14,8 +16,8 @@ jobs:
       YARN_ENABLE_GLOBAL_CACHE: 'false'
       MIN_PASSWORD_LENGTH: 4
       PASSWORD_COMPLEXITY: easy
-      NODE_VERSION: '24.18.1'
-      MONGODB_VERSION: '7.0.21'
+      NODE_VERSION: '24.21.0'
+      MONGODB_VERSION: '7.0.41'
       KUBO_VERSION: '0.43.0'
     services:
       cache:
@@ -24,7 +26,7 @@ jobs:
           - 6379:6379
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           egress-policy: audit
 

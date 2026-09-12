@@ -5,6 +5,7 @@ import { MathItemType } from './math-item.type';
 import { IContext } from './math.interface';
 import { DocumentMap } from './document-map';
 import { ComputeEngine } from '@cortex-js/compute-engine';
+import { buildTableHelper } from '@guardian/interfaces';
 
 type BoxedExpression = ReturnType<ComputeEngine['box']>;
 
@@ -165,6 +166,7 @@ export class MathContext {
     public valid: boolean = false;
 
     private getField: (path: string) => any;
+    private table: any;
     private variables: any = {};
     private formulas: any = {};
     private scope: any = {};
@@ -178,6 +180,7 @@ export class MathContext {
         this.formulas = {};
         this.scope = {};
         this.getField = this.__get.bind({});
+        this.table = buildTableHelper();
     }
 
     public setDocument(documents: DocumentMap): IContext {
@@ -202,6 +205,7 @@ export class MathContext {
             document: this.document,
             relationships: this.relationships,
             getField: this.getField,
+            table: this.table,
             user: null,
             result: null
         }
@@ -215,6 +219,7 @@ export class MathContext {
             document: this.document,
             relationships: this.relationships,
             getField: this.getField,
+            table: this.table,
             user: null,
             result: null
         }

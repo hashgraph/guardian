@@ -1,6 +1,7 @@
 import { GenerateUUIDv4, IOwner, ISchema, ISchemaDocument, SchemaCondition, SchemaField, SchemaFieldPredicate, ISchemaArrayDependency } from '../index.js';
 
 import { SchemaDataTypes } from '../interface/schema-document.interface.js';
+import { IIwaFieldRemap, IIwaUpgradeReport, mapIwaPathV1ToV3 } from '../type/iwa-version.type.js';
 import { Schema } from '../models/schema.js';
 import geoJson from './geojson-schema/geo-json.js';
 import { ModelHelper } from './model-helper.js';
@@ -77,7 +78,11 @@ export class SchemaHelper {
     }
 
     /**
-     * Walk through every JSON schema property, including nested object and array item properties.
+     * Walk through every JSON schema property, including nested object and array item
+     * properties, and fields declared only inside a condition's `then`/`else` branch.
+     * Condition branches reuse the same path as the enclosing document rather than
+     * appending a segment, since they describe alternate states of the same field set,
+     * not a nested sub-structure.
      * @param document
      * @param visitor
      * @param path
@@ -85,21 +90,110 @@ export class SchemaHelper {
     public static walkDocumentProperties(
         document: any,
         visitor: (property: any, path: string[], name: string) => void,
-        path: string[] = []
+        path: string[] = [],
+        insideConditionBranch: boolean = false
     ): void {
         if (!document || typeof document !== 'object') {
             return;
         }
         const properties = document.properties;
-        if (!properties || typeof properties !== 'object') {
-            return;
+        if (properties && typeof properties === 'object') {
+            for (const [name, property] of Object.entries<any>(properties)) {
+                // A condition branch can carry `false` for a field it forbids
+                // (buildForbid); that is a marker, not a field, and has no
+                // slot for a templateFieldId.
+                if (!property || typeof property !== 'object') {
+                    continue;
+                }
+                /*
+                 * A condition branch can also carry a cross-schema constraint
+                 * wrapper (buildCrossRequired/buildCrossForbidden), keyed by
+                 * the name of a real ref field elsewhere in this document -
+                 * e.g. `parentRef: { required: ['childField'] }`. Every real
+                 * field built inside a condition carries `type` or `$ref`;
+                 * the wrapper carries neither, only `properties`/`required`.
+                 * Scoped to condition branches only: outside one, a bare
+                 * `oneOf` with no `type`/`$ref` is a legitimate top-level
+                 * shape (buildDocument's own `@context`/`type` properties),
+                 * which this must not start excluding.
+                 */
+                if (insideConditionBranch && property.type === undefined && property.$ref === undefined) {
+                    continue;
+                }
+                const fieldPath = [...path, name];
+                visitor(property, fieldPath, name);
+                const target = property?.type === SchemaDataTypes.array ? property.items : property;
+                SchemaHelper.walkDocumentProperties(target, visitor, fieldPath, insideConditionBranch);
+            }
         }
-        for (const [name, property] of Object.entries<any>(properties)) {
-            const fieldPath = [...path, name];
-            visitor(property, fieldPath, name);
-            const target = property?.type === SchemaDataTypes.array ? property.items : property;
-            SchemaHelper.walkDocumentProperties(target, visitor, fieldPath);
+        if (Array.isArray(document.allOf)) {
+            for (const entry of document.allOf) {
+                SchemaHelper.walkDocumentProperties(entry?.then, visitor, path, true);
+                SchemaHelper.walkDocumentProperties(entry?.else, visitor, path, true);
+            }
         }
+    }
+
+    /**
+     * Resolve the object that carries a field's $comment.
+     *
+     * Mirrors parseProperty(): a oneOf wrapper is unwrapped first, and for an
+     * array the comment stays on the outer level rather than on items.
+     */
+    private static getCommentTarget(property: any): any {
+        if (property && Array.isArray(property.oneOf) && property.oneOf.length) {
+            return property.oneOf[0];
+        }
+        return property;
+    }
+
+    /**
+     * Remap every IWA property path in a schema document from v1 to v3.
+     *
+     * Walks nested objects and array items, not just top-level properties, so
+     * a property buried inside an array of objects is remapped too.
+     *
+     * With apply=false the document is left untouched and only the report is
+     * produced, which is what the confirmation dialog is built from. With
+     * apply=true the document is mutated in place: renamed properties are
+     * rewritten and properties v3 dropped are cleared.
+     */
+    public static remapIwaPropertiesToV3(
+        document: ISchemaDocument,
+        apply: boolean
+    ): IIwaUpgradeReport {
+        const report: IIwaUpgradeReport = { unchanged: [], renamed: [], unmappable: [] };
+        SchemaHelper.walkDocumentProperties(document, (property, path) => {
+            const target = SchemaHelper.getCommentTarget(property);
+            if (!target || !target.$comment) {
+                return;
+            }
+            const comment = SchemaHelper.parseSchemaComment(target.$comment);
+            const from = comment?.property;
+            if (!from) {
+                return;
+            }
+            const to = mapIwaPathV1ToV3(String(from));
+            const entry: IIwaFieldRemap = { field: path.join('.'), from: String(from), to };
+            if (to === null) {
+                report.unmappable.push(entry);
+                if (apply) {
+                    delete comment.property;
+                    target.$comment = JSON.stringify(comment);
+                }
+                return;
+            }
+            if (to === from) {
+                report.unchanged.push(entry);
+                return;
+            }
+            report.renamed.push(entry);
+            if (apply) {
+                comment.property = to;
+                target.$comment = JSON.stringify(comment);
+            }
+        });
+        return report;
     }
 
     /**
@@ -293,6 +387,7 @@ export class SchemaHelper {
             isUpdatable,
             dependency,
             enumName,
+            tableColumns,
             conditionRequired,
         } = SchemaHelper.parseFieldComment(field.comment);
         field.suggest = suggest;
@@ -343,6 +438,9 @@ export class SchemaHelper {
         field.order = orderPosition || -1;
         field.isUpdatable = isUpdatable;
         field.enumName = enumName;
+        if (Array.isArray(tableColumns)) {
+            field.tableColumns = tableColumns;
+        }
         return field;
     }
 
@@ -1384,6 +1482,9 @@ export class SchemaHelper {
         }
         if (field.enumName) {
             comment.enumName = field.enumName;
+        }
+        if (Array.isArray(field.tableColumns) && field.tableColumns.length) {
+            comment.tableColumns = field.tableColumns;
         }
         return JSON.stringify(comment);
     }

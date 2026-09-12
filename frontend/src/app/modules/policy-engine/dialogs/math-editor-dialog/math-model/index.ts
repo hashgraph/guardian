@@ -6,3 +6,4 @@ export * from './math-formula';
 export * from './math-engine';
 export * from './utils';
 export * from './document-map';
+export * from './table-hydration';

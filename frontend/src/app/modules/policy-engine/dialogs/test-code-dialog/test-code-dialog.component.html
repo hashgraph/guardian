@@ -403,12 +403,12 @@
     </div>
     @if (step === 'code' && blockType === 'customLogicBlock') {
       <div class="dialog-button">
-        <button (click)="onTest()" class="guardian-button guardian-button-primary">Test</button>
+        <button (click)="onTest()" [disabled]="loading" class="guardian-button guardian-button-primary">Test</button>
       </div>
     }
     @if (step === 'data' && blockType !== 'customLogicBlock') {
       <div class="dialog-button">
-        <button (click)="onTest()" class="guardian-button guardian-button-primary">Test</button>
+        <button (click)="onTest()" [disabled]="loading" class="guardian-button guardian-button-primary">Test</button>
       </div>
     }
   </div>
