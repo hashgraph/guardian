@@ -116,6 +116,7 @@ The referenced template is unavailable on this instance. In the import preview, 
 * Task: [Configure Schema Template Guidelines](configure-schema-template-guidelines.md)
 * Task: [Mark a Schema as Featured](mark-a-schema-as-featured.md)
 * Task: [Apply a Schema Template](apply-a-schema-template.md)
+* Task: [Preview a Schema Template](preview-a-schema-template.md)
 * Task: [Update an Applied Schema Template](update-an-applied-schema-template.md)
 * Task: [Detach a Schema Template](detach-a-schema-template.md)
 * Task: [Import a Schema Template](import-a-schema-template.md)
