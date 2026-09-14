@@ -23,7 +23,7 @@
         <div class="sc-spacer"></div>
 
         @if (showTopSaveActions) {
-            @if (!isTemplateConfigMode) {
+            @if (!isTemplateConfigMode && (!isTemplatePreviewMode || selectedSchema)) {
             <div class="sc-nav-tabs">
                 <button class="sc-nav-tab" [class.active]="activeTab === 'builder'" (click)="activeTab = 'builder'">
                     Builder
@@ -35,6 +35,16 @@
             }
 
             <div class="sc-nav-actions">
+                @if (isTemplatePreviewMode) {
+                    <span class="sc-preview-mode-badge">
+                        <i class="pi pi-eye"></i>
+                        Previewing template - changes here are never saved
+                    </span>
+                    <button class="sc-btn" (click)="goToTemplateConfiguration()">
+                        <i class="pi pi-sign-out"></i>
+                        Exit preview
+                    </button>
+                } @else {
                 @if (currentSchemaErrorCount > 0) {
                     <span class="sc-validation-errors">
                         <i class="pi pi-exclamation-triangle"></i>
@@ -95,6 +105,12 @@
                 }
                 @if (isTemplateConfigMode) {
                 <button class="sc-btn"
+                    [disabled]="!schemaTemplate?.id"
+                    (click)="onPreviewTemplate()">
+                    <i class="pi pi-eye"></i>
+                    Preview
+                </button>
+                <button class="sc-btn"
                     [disabled]="!canExportTemplate"
                     (click)="onExportTemplate()">
                     <i class="pi pi-download"></i>
@@ -115,11 +131,21 @@
                     </button>
                 }
                 }
+                }
             </div>
         }
     </header>
 
-    @if (hasAppliedTemplate) {
+    @if (isTemplatePreviewMode) {
+        <div class="st-applied-template-banner st-applied-template-banner--preview">
+            <i class="pi pi-eye"></i>
+            <span>Previewing template:</span>
+            <strong>{{ breadcrumbTemplateLabel }}</strong>
+            @if (schemaTemplate?.version) {
+                <span class="st-applied-template-version">v{{ schemaTemplate?.version }}</span>
+            }
+        </div>
+    } @else if (hasAppliedTemplate) {
         <div class="st-applied-template-banner">
             <i class="pi pi-lock"></i>
             <span>Template applied:</span>
@@ -237,9 +263,11 @@
                                 [ngModel]="schemaSearch"
                                 (ngModelChange)="schemaSearch$.next($event)" />
                         </div>
+                        @if (!isTemplatePreviewMode) {
                         <button class="sc-btn-new-schema" [disabled]="isTemplateReadonly" (click)="onNewSchema()" title="New schema">
                             <i class="pi pi-plus"></i>
                         </button>
+                        }
                     </div>
 
                     <div class="sc-schemas-list" (scroll)="onSidebarScroll($event)">
