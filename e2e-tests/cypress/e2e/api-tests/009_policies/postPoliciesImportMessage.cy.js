@@ -1,10 +1,17 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { seededMessageId } from '../../../support/CustomHelpers/ipfsSeeding';
 
-context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
+context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-    const policyMessageId = Cypress.env('policy_for_compare1');
+    let policyMessageId;
+
+    before(() => {
+        seededMessageId('policy_for_compare1').then((messageId) => {
+            policyMessageId = messageId;
+        });
+    });
 
     it('Imports new policy and all associated artifacts from file', { tags: ['policy_labels', 'formulas', 'trustchains', 'contracts', 'smoke'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {

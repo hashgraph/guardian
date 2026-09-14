@@ -3,7 +3,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
-context('Demo', { tags: ['demo', 'secondPool', 'all'] }, () => {
+context('Demo', { tags: ['demo', 'secondPool', 'all', 'all-no-mgs'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const randomKeyUrl = `${API.ApiServer}${API.RandomKey}`;

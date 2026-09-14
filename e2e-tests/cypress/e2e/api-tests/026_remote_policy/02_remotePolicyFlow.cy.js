@@ -28,7 +28,7 @@ context('Policies', { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 response.body.tenants.forEach(element => {
-                    if (element.tenantName == tenantName) {
+                    if (element.tenantName === tenantName) {
                         tenantId = element.id
                     }
                 })
@@ -51,7 +51,7 @@ context('Policies', { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 response.body.forEach(element => {
-                    if (element.name == 'iRec2ForRemote') {
+                    if (element.name === 'iRec2ForRemote') {
                         policyId = element.id;
                     }
                 })

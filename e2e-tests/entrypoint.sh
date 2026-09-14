@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# The suite runs both inside the cypress-runner container (WORKDIR /e2e) and
+# directly on a CI runner, so anchor everything to this script's own directory
+# instead of hard-coding absolute container paths.
+cd "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 ensure_trailing_slash() {
   local url="${1:-}"
   if [[ -z "$url" ]]; then
@@ -147,12 +152,12 @@ elif contains_tag "$TAGS" "ui"; then
 fi
 
 mkdir -p \
-  /e2e/cypress/reports/html/.jsons \
-  /e2e/cypress/test_results/junit \
-  /e2e/cypress/downloads
+  cypress/reports/html/.jsons \
+  cypress/test_results/junit \
+  cypress/downloads
 
 if [[ "$IS_UI_RUN" == "true" ]]; then
-  mkdir -p /e2e/cypress/screenshots /e2e/cypress/videos
+  mkdir -p cypress/screenshots cypress/videos
 else
   export CYPRESS_screenshotOnRunFailure=false
 fi
@@ -165,6 +170,17 @@ if [[ -z "${CYPRESS_operatorKey:-}" && -n "${OPERATOR_KEY:-}" ]]; then
 fi
 if [[ -z "${CYPRESS_ipfsStorageApiKey:-}" && -n "${IPFS_STORAGE_API_KEY:-}" ]]; then
   export CYPRESS_ipfsStorageApiKey="$IPFS_STORAGE_API_KEY"
+fi
+# Defaults to `testnet` in cypress.env.json. Pointing the suite at a stack started with
+# HEDERA_NET=localnode then needs no extra flag: the Guardian env file is enough.
+# An empty value has to be dropped rather than exported: Cypress would take it as an explicit
+# `hederaNet: ""` and shadow the default.
+if [[ -z "${CYPRESS_hederaNet:-}" ]]; then
+  if [[ -n "${HEDERA_NET:-}" ]]; then
+    export CYPRESS_hederaNet="$HEDERA_NET"
+  else
+    unset CYPRESS_hederaNet
+  fi
 fi
 
 if [[ -n "${CYPRESS_apiServer:-}" ]]; then

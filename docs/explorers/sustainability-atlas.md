@@ -11,7 +11,7 @@ tags:
 
 A standalone application that indexes data published by the Hedera Guardian to the Hedera Network and presents it through a sustainability-focused business lens — Projects, Credits, Methodologies, Organizations. It leverages aspects of the Guardian indexer.&#x20;
 
-**Live:** [https://se.xeptagon.com](https://se.xeptagon.com/)
+**Live:** [https://atlas.xeptagon.com](https://atlas.xeptagon.com/?utm_source=guardian)
 
 ***
 

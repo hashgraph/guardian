@@ -12,11 +12,15 @@ services:
       - CYPRESS_portApi=${CYPRESS_portApi:-3002}
       - CYPRESS_baseUrl=
       - CYPRESS_apiServer=${CYPRESS_apiServer:-http://host.docker.internal:3002/}
+      - CYPRESS_ipfsApi=${CYPRESS_ipfsApi:-http://host.docker.internal:5001}
       - CYPRESS_BROWSER=${CYPRESS_BROWSER:-chromium}
       - CYPRESS_VERIFY_TIMEOUT=${CYPRESS_VERIFY_TIMEOUT:-300000}
       - CYPRESS_grepTags=${CYPRESS_grepTags:-all}
       - CYPRESS_grepFilterSpecs=${CYPRESS_grepFilterSpecs:-true}
       - CYPRESS_SPEC=${CYPRESS_SPEC:-cypress/e2e/api-tests/**/*.cy.js}
+      # Left empty on purpose: entrypoint.sh falls back to HEDERA_NET from the Guardian env file
+      # above, and to the `testnet` default in cypress.env.json when that is unset too.
+      - CYPRESS_hederaNet=${CYPRESS_hederaNet:-}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
@@ -56,6 +60,7 @@ services:
       - CYPRESS_portApi=${CYPRESS_portApi:-3002}
       - CYPRESS_baseUrl=http://ui
       - CYPRESS_apiServer=${CYPRESS_apiServer:-http://host.docker.internal:3002/}
+      - CYPRESS_ipfsApi=${CYPRESS_ipfsApi:-http://host.docker.internal:5001}
       - CYPRESS_BROWSER=${CYPRESS_BROWSER:-chromium}
       - CYPRESS_VERIFY_TIMEOUT=${CYPRESS_VERIFY_TIMEOUT:-300000}
       - CYPRESS_grepTags=${CYPRESS_grepTags:-ui}

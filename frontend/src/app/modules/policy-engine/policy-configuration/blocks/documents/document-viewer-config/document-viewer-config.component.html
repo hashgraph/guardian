@@ -49,7 +49,9 @@
           <span>{{ getFieldName(field, i) }}</span>
         </td>
         <td class="propRowCell not-editable-text">
-          <span>{{ field.name }}</span>
+          <!-- the cell clips the path, so without a tooltip the full value is unreadable -->
+          <span [pTooltip]="field.name" tooltipPosition="top" [tooltipOptions]="{showDelay: 300}"
+            tooltipStyleClass="guardian-tooltip">{{ field.name }}</span>
           <span class="remove-prop" [attr.readonly]="readonly" (click)="$event.stopPropagation(); removeField(i)">
             <i class="pi pi-trash"></i>
           </span>

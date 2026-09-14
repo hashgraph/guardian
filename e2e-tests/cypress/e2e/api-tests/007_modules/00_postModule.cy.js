@@ -4,7 +4,7 @@ import API from '../../../support/ApiUrls';
 import * as Modules from '../../../support/api/modules';
 import * as Authorization from '../../../support/authorization';
 
-context('Create Module', { tags: ['modules', 'thirdPool', 'all'] }, () => {
+context('Create Module', { tags: ['modules', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const moduleName = 'FirstAPIModule';

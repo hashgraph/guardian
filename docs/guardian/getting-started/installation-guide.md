@@ -1,5 +1,7 @@
 ---
 description: Install and run the open-source Guardian.
+tags:
+  - guide
 ---
 
 # Installation Guide
@@ -19,6 +21,9 @@ Find supported versions and the latest release notes in the [Guardian releases](
 
 Visit that section for additional details and advanced topics.
 
-### Have questions or suggestions?
+### Ready for your first steps?
 
-Send questions or suggestions to [guardian-feedback@hashgraph.com](mailto:guardian-feedback@hashgraph.com). You can also review development milestones, open new issues, or pull requests for improvements: see [contributing](../../community-and-contributing/contributing/ "mention").  For community support, [subscribe to the Guardian calendar and attend a future community call](https://luma.com/guardian).&#x20;
+After installation, follow the [hello world tutorial here in the docs](hello-world-tutorial.md) or directly within the Guardian to learn about core concepts hands on.
+
+{% include "../../.gitbook/includes/footer-have-questions-or-suggestions.md" %}
+

@@ -80,10 +80,9 @@ IPFS_GATEWAY="https://ipfs.io/ipfs/${cid}"
 IPFS_PROVIDER=local
 IPFS_NODE_ADDRESS=http://localhost:5001
 
-# For Web3.Storage integration
-IPFS_PROVIDER=web3storage
-IPFS_STORAGE_KEY=<w3s_key>
-IPFS_STORAGE_PROOF=<w3s_proof>
+# For Filebase integration
+IPFS_PROVIDER=filebase
+IPFS_STORAGE_API_KEY=<filebase_bucket_token>
 ```
 
 ## Section 1: Global Search and Discovery

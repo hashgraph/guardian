@@ -33,6 +33,14 @@ describe('@unit RecordUtils (no components)', () => {
         assert.equal(await RecordUtils.StartRecording('p'), false);
     });
 
+    it('PauseRecording returns false', async () => {
+        assert.equal(await RecordUtils.PauseRecording('p'), false);
+    });
+
+    it('ResumeRecording returns false', async () => {
+        assert.equal(await RecordUtils.ResumeRecording('p'), false);
+    });
+
     it('StopRecording returns false', async () => {
         assert.equal(await RecordUtils.StopRecording('p'), false);
     });
@@ -114,6 +122,16 @@ describe('@unit RecordUtils (with components)', () => {
     it('StartRecording delegates to components.startRecording', async () => {
         setComponents({ startRecording: async () => true });
         assert.equal(await RecordUtils.StartRecording('p'), true);
+    });
+
+    it('PauseRecording delegates to components.pauseRecording', async () => {
+        setComponents({ pauseRecording: async () => true });
+        assert.equal(await RecordUtils.PauseRecording('p'), true);
+    });
+
+    it('ResumeRecording delegates to components.resumeRecording', async () => {
+        setComponents({ resumeRecording: async () => true });
+        assert.equal(await RecordUtils.ResumeRecording('p'), true);
     });
 
     it('StopRecording delegates to components.stopRecording', async () => {

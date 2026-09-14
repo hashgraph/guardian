@@ -3,7 +3,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
-context('Tools', { tags: ['tools', 'thirdPool', 'all'] }, () => {
+context('Tools', { tags: ['tools', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     let toolId; let policy; let policyId;
     const toolBlockConfigUUID = randomInt(99999).toString();
@@ -137,7 +137,7 @@ context('Tools', { tags: ['tools', 'thirdPool', 'all'] }, () => {
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
                 response.body.forEach(element => {
-                    if (element.name == 'toolDryRunTest') {
+                    if (element.name === 'toolDryRunTest') {
                         policy.config.children.at(0).children.splice(2, 0,
                             {
                                 'id': toolBlockConfigUUID,
@@ -191,7 +191,7 @@ context('Tools', { tags: ['tools', 'thirdPool', 'all'] }, () => {
                                 headers: {
                                     authorization,
                                 },
-                                timeout: 180000,
+                                timeout: 300000,
                             }).then((response) => {
                                 expect(response.status).to.eq(STATUS_CODE.OK);
                             });

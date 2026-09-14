@@ -4,7 +4,7 @@ import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import { registerUser } from '../../../support/api/accounts';
 
-context('Get accounts', { tags: ['accounts', 'firstPool', 'all'] }, () => {
+context('Get accounts', { tags: ['accounts', 'firstPool', 'all', 'all-no-mgs'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');

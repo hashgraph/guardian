@@ -1,3 +1,8 @@
+---
+tags:
+  - flagged-for-rewrite
+---
+
 # Available Schema Data Types
 
 ## **Embracing GBBC Specifications for Universal Data Comparability**

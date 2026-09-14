@@ -56,6 +56,11 @@ const retireAbi = new ethers.Interface([
     'function setPool(tuple(address, int64)[], bool)',
 ]);
 
+// Not backwards compatible with contracts deployed before the 'Version' -> 'VersionInfo' event
+// rename: their version event carries a different topic, `getContractVersion` below cannot match it
+// and reports 1.0.0, and the wipe events of what is really a 1.0.1 contract are then decoded with
+// the 1.0.0 ABI. The bytecode file ids in `configs/*.guardian.system` have to come from a build of
+// this same generation.
 const versionEventsAbi = new ethers.Interface([
     'event VersionInfo(uint256[3])',
 ]);
@@ -518,6 +523,9 @@ export async function syncWipeContracts(
         }
     });
 
+    //A contract whose events cannot be decoded throws out of this loop and takes the rest of the
+    //pass with it, so one contract left over from an incompatible bytecode generation stops wipe
+    //requests being ingested for every other contract as well.
     for (const [contractId, lastSyncEventTimeStamp] of contractIds) {
         await syncWipeContract(
             dataBaseServer,
@@ -1361,6 +1369,14 @@ async function getContractPermissions(
     return Number(new ethers.AbiCoder().decode(['uint8'], result)[0]);
 }
 
+/**
+ * Reads the version a contract announced when it was created.
+ *
+ * Falling back to '1.0.0' when the version event cannot be decoded makes a contract deployed from
+ * mismatched bytecode look like an old but supported one, and the wipe event ABI picked from it
+ * then fails to decode anything: see
+ * `e2e-tests/pending-issues/contract-bytecode-must-match-the-service-abi.md`.
+ */
 export async function getContractVersion(log: any): Promise<string> {
     if (!log) {
         return '1.0.0';

@@ -1,0 +1,226 @@
+/* Category colours follow compare-schema: absent -> failure (red), partial ->
+   warning (yellow), equal -> success (green). */
+:host {
+    --iwa-removed-bg: var(--guardian-failure-background, #FFEAEA);
+    --iwa-removed-hue: var(--guardian-failure-color, #FF432A);
+    --iwa-removed-ink: color-mix(in srgb, var(--guardian-failure-color, #FF432A) 70%, #000);
+    --iwa-removed-row: color-mix(in srgb, var(--guardian-failure-color, #FF432A) 7%, transparent);
+
+    --iwa-renamed-bg: var(--guardian-warning-background, #FFF6E3);
+    --iwa-renamed-hue: var(--guardian-warning-color, #DA9B22);
+
+    --iwa-unchanged-bg: var(--guardian-success-background, #CAFDD9);
+    --iwa-unchanged-hue: var(--guardian-success-color, #19BE47);
+
+    --iwa-accent-ink: var(--guardian-primary-color, #4169E2);
+}
+
+:host-context(.guardian-theme-dark) {
+    --iwa-removed-ink: var(--guardian-failure-color, #FF432A);
+    --iwa-removed-row: color-mix(in srgb, var(--guardian-failure-color, #FF432A) 12%, transparent);
+    --iwa-accent-ink: color-mix(in srgb, var(--guardian-primary-color, #4169E2) 55%, #fff);
+}
+
+.loading {
+    background: var(--guardian-background, #fff);
+    position: absolute;
+    z-index: 99;
+    border-radius: 16px;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.iwa-body {
+    position: relative;
+    font-family: var(--guardian-font-family, Inter, sans-serif);
+}
+
+.iwa-warning-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 16px;
+    margin-bottom: 16px;
+    border-radius: 8px;
+    // Matches the red key it describes, so the banner and the rows read as one.
+    border: 1px solid color-mix(in srgb, var(--iwa-removed-hue) 40%, transparent);
+    background: var(--iwa-removed-bg);
+    font-size: var(--guardian-primary-font-size, 14px);
+    line-height: 20px;
+    color: var(--guardian-font-color, #23252E);
+
+    i {
+        margin-top: 2px;
+        font-size: 14px;
+        color: var(--iwa-removed-ink);
+    }
+}
+
+.legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 28px;
+    padding: 10px 0 14px 0;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding: 4px 10px 4px 30px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: none;
+    font-family: inherit;
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+        background: var(--guardian-hover, #F0F3FC);
+        border-color: var(--guardian-border-color, #E1E7EF);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--guardian-primary-color, #4169E2);
+        outline-offset: 2px;
+    }
+
+    &.is-off .legend-icon {
+        background: linear-gradient(
+            135deg,
+            var(--guardian-grey-background, #F9FAFC) 48%,
+            var(--guardian-grid-color, #848FA9) 50%,
+            var(--guardian-grey-background, #F9FAFC) 52%
+        );
+        border-color: var(--guardian-grid-color, #848FA9);
+    }
+}
+
+.legend-icon {
+    width: 16px;
+    height: 16px;
+    position: absolute;
+    left: 8px;
+    border-radius: 50%;
+    box-sizing: border-box;
+}
+
+.legend-removed.legend-icon {
+    background: var(--iwa-removed-bg);
+    border: 1px solid var(--iwa-removed-hue);
+}
+
+.legend-renamed.legend-icon {
+    background: var(--iwa-renamed-bg);
+    border: 1px solid var(--iwa-renamed-hue);
+}
+
+.legend-unchanged.legend-icon {
+    background: var(--iwa-unchanged-bg);
+    border: 1px solid var(--iwa-unchanged-hue);
+}
+
+.legend-text {
+    display: flex;
+    align-items: center;
+    font-size: var(--guardian-primary-font-size, 14px);
+    color: var(--guardian-font-color, #23252E);
+}
+
+/* The theme draws the grid outline as an absolutely-positioned ::before inset
+   by -1px on three sides. That overhang is harmless on a page, but inside a
+   scrolling ancestor it counts as scrollable overflow, which showed a permanent
+   1px scrollbar on both axes here. Pull it flush. */
+:host ::ng-deep .guardian-grid-container::before {
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+/* No max-height or overflow of our own: .guardian-dialog .dialog-body already
+   scrolls, and only when the content does not fit. A second scroller here just
+   capped the table short of the space the dialog already had. */
+
+:host ::ng-deep .guardian-grid-row {
+    height: auto;
+}
+
+:host ::ng-deep .guardian-grid-row > td {
+    height: auto;
+    vertical-align: top;
+}
+
+:host ::ng-deep .guardian-grid-row[remap-status='removed'] > td {
+    background: var(--iwa-removed-row);
+}
+
+.iwa-field {
+    display: block;
+    font-weight: 500;
+    color: var(--guardian-font-color, #23252E);
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.iwa-path {
+    display: block;
+    font-family: var(--font-mono, monospace);
+    font-size: 13px;
+    line-height: 18px;
+    color: var(--guardian-font-color, #23252E);
+    overflow-wrap: anywhere;
+    word-break: break-word;
+
+    &__entity {
+        color: var(--guardian-grid-color, #848FA9);
+
+        &.moved {
+            color: var(--iwa-accent-ink);
+            font-weight: 600;
+        }
+    }
+}
+
+.iwa-removed-text {
+    font-size: var(--guardian-primary-font-size, 14px);
+    font-weight: 500;
+    color: var(--iwa-removed-ink);
+}
+
+.iwa-muted {
+    font-size: var(--guardian-small-font-size, 12px);
+    color: var(--guardian-font-color, #23252E);
+}
+
+.iwa-empty {
+    text-align: center;
+    padding: 24px 16px;
+    color: var(--guardian-font-color, #23252E);
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: flex-end;
+
+    & > div {
+        margin-left: 15px;
+        margin-right: 0;
+        min-width: 100px;
+        height: 40px;
+
+        button {
+            width: 100%;
+            height: 100%;
+        }
+    }
+}
+
+:host ::ng-deep .guardian-grid-table table {
+    table-layout: fixed;
+    width: 100%;
+}

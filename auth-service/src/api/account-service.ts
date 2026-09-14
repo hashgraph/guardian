@@ -1,5 +1,5 @@
 import { User } from '../entity/user.js';
-import { DatabaseServer, MessageError, MessageResponse, NatsService, PinoLogger, ProviderAuthUser, Singleton, DataBaseHelper } from '@guardian/common';
+import { DatabaseServer, MessageError, MessageResponse, NatsService, PinoLogger, ProviderAuthUser, Singleton, DataBaseHelper, containsRegex } from '@guardian/common';
 import {
     AuthEvents,
     GenerateUUIDv4,
@@ -532,7 +532,7 @@ export class AccountService extends NatsService {
                             options['permissionsGroup.roleId'] = filters.role;
                         }
                         if (filters.username) {
-                            options.username = { $regex: '.*' + filters.username + '.*' };
+                            options.username = containsRegex(filters.username);
                         }
                         if (filters.did) {
                             options.did = filters.did;

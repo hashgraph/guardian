@@ -139,8 +139,63 @@
             font-size: 14px;
             line-height: 16px;
             letter-spacing: 0%;
-            color: #848FA9;
+            color: var(--guardian-disabled-color);
             padding-top: 4px;
+        }
+
+        // Same shape as the child-schema block in the bulk delete dialog, so the two
+        // "here is what will and will not be deleted" surfaces read as one thing.
+        .option-value-details {
+            margin-top: 8px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--guardian-border-color);
+            background: var(--guardian-grey-background);
+            font-family: Inter, sans-serif;
+            font-style: normal;
+
+            .option-value-details-label {
+                margin-bottom: 4px;
+                font-weight: 500;
+                font-size: 14px;
+                line-height: 24px;
+                letter-spacing: 0%;
+                color: var(--guardian-font-color);
+            }
+
+            .option-value-details-list {
+                margin: 0;
+                padding: 0 24px;
+
+                li {
+                    font-weight: 400;
+                    font-size: 14px;
+                    line-height: 24px;
+                    letter-spacing: 0%;
+                    color: var(--guardian-primary-color);
+                }
+            }
+        }
+
+        // Kept-not-deleted is the half a user is most likely to miss, so it is the
+        // half that gets the warning colour.
+        .option-value-details-warning {
+            border-color: var(--guardian-warning-color);
+            background: var(--guardian-warning-background);
+
+            .option-value-details-label,
+            .option-value-details-list li {
+                color: var(--guardian-warning-color);
+            }
+        }
+    }
+
+    // A radio centred against a long list drifts away from the title it belongs to.
+    .option-value-tall {
+        align-items: flex-start;
+
+        .option-value-select {
+            margin-top: 8px;
         }
     }
 }

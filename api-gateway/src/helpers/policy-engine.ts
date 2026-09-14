@@ -1172,10 +1172,19 @@ export class PolicyEngine extends NatsService {
         includeDocument: boolean = false,
         type?: DocumentType,
         pageIndex?: number | string,
-        pageSize?: number | string
+        pageSize?: number | string,
+        tables?: {
+            expand?: boolean,
+            offset?: number | string,
+            limit?: number | string,
+            columns?: string
+        }
     ): Promise<[any[], number]> {
         return await this.sendMessage(PolicyEngineEvents.GET_POLICY_DOCUMENTS,
-            { owner, policyId, includeDocument, type, pageIndex, pageSize });
+            {
+                owner, policyId, includeDocument, type, pageIndex, pageSize,
+                ...(tables ? { tables } : {})
+            });
     }
 
     /**

@@ -55,6 +55,12 @@ export async function artifactAPI(logger: PinoLogger): Promise<void> {
                 return new MessageError('There is no appropriate policy', 422);
             }
 
+            // answers exactly as for a missing parent: saying the id exists but belongs
+            // to someone else is itself a disclosure
+            if (parent.item?.owner !== owner.owner) {
+                return new MessageError('There is no appropriate policy', 422);
+            }
+
             const category: string = parent.type;
             if (parent.type === 'policy') {
                 if (parent.item.status !== PolicyStatus.DRAFT) {

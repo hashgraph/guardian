@@ -178,7 +178,7 @@ Note: Please use the appropriate Private Key and Public Key as shown in the abov
 
 ## 4. Setup IPFS
 
-Now, we have four options to setup IPFS node : 1. Local node 2. IPFS Web3Storage node. 3. IPFS Filebase Bucket. 4. Custom IPFS
+Now, we have three options to setup IPFS node : 1. Local node 2. IPFS Filebase Bucket. 3. Custom IPFS
 
 ### 4.1 Setting up IPFS Local node:
 
@@ -198,24 +198,7 @@ Note:
 2. Default IPFS\_PUBLIC\_GATEWAY="[http://ipfs-node:8080/ipfs/${cid}](http://ipfs-node:8080/ipfs/$%7Bcid%7D%22)"
 {% endhint %}
 
-### 4.2 Setting up IPFS Web3Storage node:
-
-For setup IPFS web3storage node you need to set variables in file `./configs/.env..guardian.system`:
-
-```
-IPFS_PROVIDER="web3storage"
-```
-
-To configure access to the [w3up](https://github.com/web3-storage/w3up) IPFS upload API from web3.storage for your Guardian instance you need to set correct values to the following variables in the `./configs/.env.<environment>.guardian.system` file.
-
-```
-IPFS_STORAGE_KEY="..."
-IPFS_STORAGE_PROOF="..."
-```
-
-To know complete process of How to setup IPFS Storage variables, please check [How to generate Web3.Storage API values](/broken/pages/Pqn0TWZlIN91xqj8szf8)
-
-### 4.3 Setting up IPFS Filebase Bucket:
+### 4.2 Setting up IPFS Filebase Bucket:
 
 To configure the Filebase IPFS provider, set the following variables in the file `./configs/.env.<environment>.guardian.system`**:**
 
@@ -228,7 +211,7 @@ Create a new "bucket" on Filebase since we utilize the **IPFS Pinning Service AP
 
 For detailed setup instructions, refer to the official [https://docs.filebase.com/api-documentation/ipfs-pinning-service-api](https://docs.filebase.com/api-documentation/ipfs-pinning-service-api).
 
-### **4.4 Implement and test a custom IPFS provider:**
+### **4.3 Implement and test a custom IPFS provider:**
 
 We provide a flexible workflow for integrating additional IPFS providers:
 

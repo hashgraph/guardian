@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
-context('Create Policy by Wizard', { tags: ['wizard', 'firstPool', 'all'] }, () => {
+context('Create Policy by Wizard', { tags: ['wizard', 'firstPool', 'all', 'all-no-mgs'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const policyName = 'wizardPolicyEdited';
@@ -19,11 +19,14 @@ context('Create Policy by Wizard', { tags: ['wizard', 'firstPool', 'all'] }, () 
                 timeout: 180000
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
-                response.body.forEach(element => {
-                    if (element.name == 'wizardPolicy') {
-                        policyId = element.id
-                    }
-                })
+                //The wizard spec names its policy after the run it was created in, so the most
+                //recent of them is the one to configure here
+                const policy = response.body
+                    .filter((element) => String(element.name).startsWith('wizardPolicy_'))
+                    .sort((a, b) => String(b.createDate).localeCompare(String(a.createDate)))
+                    .at(0);
+                expect(policy, 'a policy created by the wizard spec').to.not.be.undefined;
+                policyId = policy.id;
             })
         })
     });

@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EWD-RB Impact Calculation (Issuance Lot)",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "methodology_id": {
+      "type": "string",
+      "const": "EWD-RB"
+    },
+    "methodology_version": {
+      "type": "string",
+      "const": "0.3"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "0.3.0"
+    },
+    "calculation_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "period_start": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "period_end": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "batch_ids": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/identifier"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "delivery_ids": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/identifier"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "kg_ajustados_total": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Auto Calculate"
+    },
+    "nft_threshold_kg": {
+      "type": "number",
+      "const": 1000
+    },
+    "nfts_to_mint": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Auto Calculate"
+    },
+
+    "issuance_lot": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "issuance_lot_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "allocation_strategy": {
+          "type": "string",
+          "enum": [
+            "by_delivery_atomic"
+          ]
+        },
+        "allocated_deliveries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "delivery_id": {
+                "$ref": "#/$defs/identifier"
+              },
+              "kg_ajustados": {
+                "type": "number",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "delivery_id",
+              "kg_ajustados"
+            ]
+          },
+          "minItems": 1
+        },
+        "double_counting_guard": {
+          "type": "object",
+          "properties": {
+            "guard_rule": {
+              "type": "string",
+              "enum": [
+                "delivery_id_must_be_unique_across_all_issuance_records"
+              ]
+            },
+            "checked_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "required": [
+            "guard_rule"
+          ]
+        }
+      },
+      "required": [
+        "issuance_lot_id",
+        "allocation_strategy",
+        "allocated_deliveries",
+        "double_counting_guard"
+      ]
+    },
+    "calculation_status": {
+      "type": "string",
+      "enum": [
+        "Draft",
+        "Calculated",
+        "Under_VVB_Review",
+        "VVB_Approved",
+        "Under_Validation",
+        "Validated",
+        "Ready_To_Mint",
+        "Minting",
+        "Issued",
+        "Superseded",
+        "Invalidated"
+      ]
+    },
+    "calculation_evidence": {
+      "$ref": "#/$defs/evidenceRefs"
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidenceRefs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "methodology_id",
+    "methodology_version",
+    "schema_version",
+    "calculation_id",
+    "period_start",
+    "period_end",
+    "batch_ids",
+    "delivery_ids",
+    "nft_threshold_kg",
+    "issuance_lot",
+    "calculation_status",
+    "calculation_evidence"
+  ]
+}

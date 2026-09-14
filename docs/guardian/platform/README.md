@@ -1,5 +1,7 @@
 ---
 description: Capabilities that support asset creation, governance, and operations.
+tags:
+  - concept
 ---
 
 # Platform

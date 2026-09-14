@@ -14,6 +14,11 @@ import { DocumentMap, IMathDocument } from '../helpers/math-model/index.js';
 import { fileURLToPath } from 'node:url';
 import { Worker } from 'node:worker_threads';
 import path from 'node:path'
+import {
+    collectTablesPack,
+    hydrateTablesInObject,
+    loadFileTextById
+} from '../helpers/table-field.js';
 
 const filename = fileURLToPath(import.meta.url);
 
@@ -82,6 +87,7 @@ export class MathBlock {
         artifacts: any[],
         documents: any,
         schema: Schema,
+        tablesPack: Record<string, { rows: any[]; columnKeys: string[] }>,
         copy: boolean
     }): Promise<IPolicyDocument> {
         return new Promise<IPolicyDocument>(async (resolve, reject) => {
@@ -143,13 +149,23 @@ export class MathBlock {
             artifacts.push(JSON.parse(artifactFile));
         }
 
+        const workerDocuments = documents.toJson();
+        const tableDocuments = structuredClone(workerDocuments);
+        await hydrateTablesInObject(
+            tableDocuments,
+            async (fileId: string) => loadFileTextById(ref, fileId),
+            ','
+        );
+        const tablesPack = collectTablesPack(tableDocuments);
+
         // Run
         const result = await this.createWorker({
             expression: options.expression,
-            documents: documents.toJson(),
+            documents: workerDocuments,
             artifacts,
             user,
             schema,
+            tablesPack,
             copy: !options.outputSchema || options.outputSchema === options.inputSchema
         })
 

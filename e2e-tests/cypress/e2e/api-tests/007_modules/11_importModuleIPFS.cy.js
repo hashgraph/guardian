@@ -2,8 +2,9 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { seededMessageId } from '../../../support/CustomHelpers/ipfsSeeding';
 
-context('Modules', { tags: ['modules', 'thirdPool', 'all'] }, () => {
+context('Modules', { tags: ['modules', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
@@ -11,7 +12,7 @@ context('Modules', { tags: ['modules', 'thirdPool', 'all'] }, () => {
     const profilesUrl = `${API.ApiServer}${API.Profiles}`;
     const importMessageUrl = `${API.ApiServer}${API.ListOfAllModules}${API.ImportMessage}`;
 
-    let did;
+    let did; let moduleMessageId;
 
     const getProfileWithAuth = (authorization, username) =>
         cy.request({
@@ -47,11 +48,14 @@ context('Modules', { tags: ['modules', 'thirdPool', 'all'] }, () => {
                 did = response.body.did;
             });
         });
+        seededMessageId('module_for_import').then((messageId) => {
+            moduleMessageId = messageId;
+        });
     });
 
     it('Imports new module and all associated artifacts from IPFS into the local DB', { tags: ['smoke'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            postImportMessageWithAuth(authorization, { messageId: Cypress.env('module_for_import') }).then((response) => {
+            postImportMessageWithAuth(authorization, { messageId: moduleMessageId }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.SUCCESS);
 
                 expect(response.body).to.have.property('_id');
@@ -89,7 +93,7 @@ context('Modules', { tags: ['modules', 'thirdPool', 'all'] }, () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             postImportMessageWithAuth(
                 authorization,
-                { messageId: Cypress.env('module_for_import') },
+                { messageId: moduleMessageId },
                 { failOnStatusCode: false }
             ).then((response) => {
                 expect(response.status).eql(STATUS_CODE.FORBIDDEN);
@@ -98,14 +102,14 @@ context('Modules', { tags: ['modules', 'thirdPool', 'all'] }, () => {
     });
 
     it('Imports new module and all associated artifacts from IPFS into the local DB without auth token - Negative', () => {
-        postImportMessageWithoutAuth({ messageId: Cypress.env('module_for_import') }).then((response) => {
+        postImportMessageWithoutAuth({ messageId: moduleMessageId }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
     it('Imports new module and all associated artifacts from IPFS into the local DB with invalid auth token - Negative', () => {
         postImportMessageWithoutAuth(
-            { messageId: Cypress.env('module_for_import') },
+            { messageId: moduleMessageId },
             { authorization: 'Bearer wqe' }
         ).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
@@ -114,7 +118,7 @@ context('Modules', { tags: ['modules', 'thirdPool', 'all'] }, () => {
 
     it('Imports new module and all associated artifacts from IPFS into the local DB with empty auth token - Negative', () => {
         postImportMessageWithoutAuth(
-            { messageId: Cypress.env('module_for_import') },
+            { messageId: moduleMessageId },
             { authorization: '' }
         ).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
@@ -122,7 +126,7 @@ context('Modules', { tags: ['modules', 'thirdPool', 'all'] }, () => {
     });
 
     it('Imports new module and all associated artifacts from IPFS into the local DB with invalid message id - Negative', () => {
-        const invalidMessageId = Cypress.env('module_for_import') + '777121';
+        const invalidMessageId = moduleMessageId + '777121';
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             postImportMessageWithAuth(
                 authorization,

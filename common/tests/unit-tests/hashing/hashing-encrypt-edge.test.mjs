@@ -194,7 +194,7 @@ describe('@unit Hashing.base64 edge cases', () => {
 describe('@unit EncryptUtils edge cases', function () {
     this.timeout(60000);
 
-    it('empty-buffer ciphertext cannot be decrypted (cryppo NULL-algorithm; latent bug)', async () => {
+    it('empty-buffer ciphertext cannot be decrypted (latent bug)', async () => {
         const enc = await EncryptUtils.encrypt(Buffer.alloc(0), 'key');
         assert.match(enc.toString('utf8'), /^null\./);
         let err;
@@ -204,7 +204,7 @@ describe('@unit EncryptUtils edge cases', function () {
             err = e;
         }
         assert.isDefined(err);
-        assert.match(err.message, /Unsupported algorithm: NULL/i);
+        assert.match(err.message, /Unsupported cryppo serialization format/i);
     });
 
     it('round-trips unicode/emoji payload with byte fidelity', async () => {

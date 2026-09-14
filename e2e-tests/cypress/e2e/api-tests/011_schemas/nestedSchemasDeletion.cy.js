@@ -4,7 +4,7 @@ import * as Authorization from '../../../support/authorization';
 import { randomInt } from '../../../support/random';
 import { waitForTask } from '../../../support/CustomHelpers/tasks';
 
-context('Schema', { tags: ['schema', 'thirdPool', 'all'] }, () => {
+context('Schema', { tags: ['schema', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     // policyTag is unique in the DB, so a hardcoded one makes every run after the first fail with a
     // duplicate key error

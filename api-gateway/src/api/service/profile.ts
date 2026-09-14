@@ -1,12 +1,13 @@
 import { Permissions, TaskAction } from '@guardian/interfaces';
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Req, Response, Query, Delete } from '@nestjs/common';
-import { ApiAcceptedResponse, ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnauthorizedResponse, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
+import { ApiAcceptedResponse, ApiBody, ApiConflictResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnauthorizedResponse, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import {
     CredentialsDTO,
     DidDocumentDTO,
     DidDocumentStatusDTO,
     DidDocumentWithKeyDTO,
+    ConflictErrorDTO,
     DidKeyStatusDTO,
     DidVerificationMethodEntryDTO,
     Examples,
@@ -364,17 +365,19 @@ export class ProfileApi {
         const username: string = user.username;
 
         const invalidedCacheTags = [`/${PREFIXES.PROFILES}/${username}`];
+
+        taskManager.registerCallback(task, async () => {
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+            await this.invalidateAccountsCache(user.id);
+        });
+
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
             await guardians.restoreUserProfileCommonAsync(user, username, profile, task);
-
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
-            await this.invalidateAccountsCache(user.id);
         }, async (error) => {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
+            //addError runs the registered callback, which invalidates
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
-
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
         });
         return task;
     }
@@ -440,16 +443,18 @@ export class ProfileApi {
         const username: string = user.username;
 
         const invalidedCacheTags = [`/${PREFIXES.PROFILES}/${username}`];
+
+        taskManager.registerCallback(task, async () => {
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+        });
+
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
             await guardians.getAllUserTopicsAsync(user, username, profile, task);
-
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
         }, async (error) => {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
+            //addError runs the registered callback, which invalidates
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
-
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
         });
         return task;
     }
@@ -664,7 +669,8 @@ export class ProfileApi {
         description:
             'Registers a **policy message key** for the authenticated user\'s DID. ' +
             '**Generate:** send only `messageId`—the server creates a private key for that policy. The owner can copy the `messageId` and returned `key` from the response and pass them **out of band** to another person. ' +
-            '**Import:** the recipient calls this endpoint with the same `messageId` plus the DER-encoded private `key` they received, so their account can use the policy like the original owner.'
+            '**Import:** the recipient calls this endpoint with the same `messageId` plus the DER-encoded private `key` they received, so their account can use the policy like the original owner. ' +
+            'Either way the call is refused with **409** when this DID already holds a key for that `messageId`: one vault slot is addressed per `did#messageId`, so a second key would overwrite the first with no way to recover it. Delete the existing key before creating another.'
     })
     @ApiBody({
         description:
@@ -691,6 +697,14 @@ export class ProfileApi {
         description: 'Successful operation.',
         type: PolicyKeyDTO,
         example: ObjectExamples.PROFILE_POST_KEYS_RESPONSE
+    })
+    @ApiConflictResponse({
+        description: 'Conflict.',
+        type: ConflictErrorDTO,
+        example: {
+            statusCode: 409,
+            message: 'A key for this policy already exists. Delete it before creating another.'
+        }
     })
     @ApiUnprocessableEntityResponse({
         description: 'Unprocessable entity.',

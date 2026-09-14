@@ -14,6 +14,7 @@ export * from './log.interface.js';
 export * from './messages/index.js';
 export * from './page-parameters.interface.js';
 export * from './policy.interface.js';
+export * from './property-suggestion.interface.js';
 export * from './retire-pool.interface.js';
 export * from './retire-request.interface.js';
 export * from './retire-token-pool.interface.js';

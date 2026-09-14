@@ -16,16 +16,17 @@ describe('GetPropertiesFromFile (CSV title,value reader)', () => {
         await writeFile(file, 'Cap,100\nUnit,kg\n', 'utf8');
         const props = await GetPropertiesFromFile(file);
         assert.deepEqual(props, [
-            { title: 'Cap', value: '100' },
-            { title: 'Unit', value: 'kg' },
+            { title: 'Cap', value: '100', description: undefined },
+            { title: 'Unit', value: 'kg', description: undefined },
         ]);
     });
 
-    it('skips blank rows and rows with wrong column count', async () => {
+    it('skips blank and single-column rows, reading a third column as description', async () => {
         const file = path.join(tmp, 'b.csv');
         await writeFile(file, 'Cap,100\n\nonecolumn\nthree,col,umns\nUnit,kg', 'utf8');
         const props = await GetPropertiesFromFile(file);
-        assert.deepEqual(props.map(p => p.title), ['Cap', 'Unit']);
+        assert.deepEqual(props.map(p => p.title), ['Cap', 'three', 'Unit']);
+        assert.equal(props[1].description, 'umns');
     });
 
     it('skips rows whose first column is empty', async () => {

@@ -51,6 +51,22 @@ export class RecordUtils {
         return await components.startRecording();
     }
 
+    public static async PauseRecording(policyId: string): Promise<boolean> {
+        const components = PolicyComponentsUtils.GetPolicyComponents(policyId);
+        if (!components) {
+            return false;
+        }
+        return await components.pauseRecording();
+    }
+
+    public static async ResumeRecording(policyId: string): Promise<boolean> {
+        const components = PolicyComponentsUtils.GetPolicyComponents(policyId);
+        if (!components) {
+            return false;
+        }
+        return await components.resumeRecording();
+    }
+
     /**
      * Stop recording
      * @param policyId

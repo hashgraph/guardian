@@ -3,25 +3,10 @@ import { Observable, Subject, Subscription } from 'rxjs';
 import { webSocket, WebSocketSubject, WebSocketSubjectConfig } from 'rxjs/webSocket';
 import { AuthService } from './auth.service';
 import { ToastService } from './toast.service';
-import { ApplicationStates, MessageAPI, NotifyAPI, UserRole } from '@guardian/interfaces';
+import { ApplicationStates, MessageAPI, NotifyAPI } from '@guardian/interfaces';
 import { Router } from '@angular/router';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ServiceUnavailableDialog } from '../modules/schema-engine/service-unavailable-dialog/service-unavailable-dialog.component';
-
-interface MeecoVerifyVPResponse {
-    vc: any;
-    presentation_request_id: string;
-    submission_id: string;
-    cid: string;
-    role: UserRole | null;
-}
-
-interface MeecoApproveSubmissionResponse {
-    username: string;
-    did: string;
-    role: UserRole;
-    accessToken: string;
-}
 
 /**
  *  WebSocket service.
@@ -53,10 +38,6 @@ export class WebSocketService {
     private createProgress: Subject<any>;
     private updateProgress: Subject<any>;
     private deleteProgress: Subject<any>;
-    private meecoPresentVPSubject: Subject<any> = new Subject();
-    private meecoVerifyVPSubject: Subject<any> = new Subject();
-    private meecoVerifyVPFailedSubject: Subject<any> = new Subject();
-    private meecoApproveVCSubject: Subject<any> = new Subject();
     private policyRequestUpdateSubject: Subject<any>;
     private policyRestoreUpdateSubject: Subject<any>;
     private serviesStates: any = [];
@@ -64,10 +45,6 @@ export class WebSocketService {
 
     private requiredServicesWrongStatus: boolean = false;
     private servicesStatusCheckTimeout: any = null;
-
-    public readonly meecoPresentVP$: Observable<any> = this.meecoPresentVPSubject.asObservable();
-    public readonly meecoVerifyVP$: Observable<any> = this.meecoVerifyVPSubject.asObservable();
-    public readonly meecoVerifyVPFailed$: Observable<any> = this.meecoVerifyVPFailedSubject.asObservable();
 
     constructor(private dialogService: DialogService, private auth: AuthService, private toastService: ToastService, private router: Router) {
         this.recordUpdateSubject = new Subject();
@@ -291,7 +268,7 @@ export class WebSocketService {
                 }
                 case MessageAPI.ERROR_EVENT: {
                     if (!data.blockType.includes('401')) {
-                        this.toastService.error(data.message, data.blockType);
+                        this.toastService.error(data.message, data.blockType, { blockErrorData: data.errorData });
                     }
                     break;
                 }
@@ -318,22 +295,6 @@ export class WebSocketService {
                 case NotifyAPI.DELETE_PROGRESS_WS:
                     this.deleteProgress.next(event.data);
                     break;
-                case MessageAPI.MEECO_AUTH_PRESENT_VP: {
-                    this.meecoPresentVPSubject.next(data);
-                    break;
-                }
-                case MessageAPI.MEECO_VERIFY_VP: {
-                    this.meecoVerifyVPSubject.next(data);
-                    break;
-                }
-                case MessageAPI.MEECO_VERIFY_VP_FAILED: {
-                    this.meecoVerifyVPFailedSubject.next(data);
-                    break;
-                }
-                case MessageAPI.MEECO_APPROVE_SUBMISSION_RESPONSE: {
-                    this.meecoApproveVCSubject.next(data);
-                    break;
-                }
                 default:
                     break;
             }
@@ -477,33 +438,6 @@ export class WebSocketService {
         return this.deleteProgress.subscribe(next, error, complete);
     }
 
-    public meecoApproveVCSubscribe(
-        next?: ((event: MeecoApproveSubmissionResponse) => void),
-        error?: ((error: any) => void),
-        complete?: (() => void)
-    ): Subscription {
-        return this.meecoApproveVCSubject.subscribe(next, error, complete);
-    }
-
-    public approveVCSubject(
-        presentation_request_id: string,
-        submission_id: string,
-        role: UserRole
-    ): void {
-        this.send(MessageAPI.MEECO_APPROVE_SUBMISSION, {
-            presentation_request_id,
-            submission_id,
-            role,
-        });
-    }
-
-    public rejectVCSubject(presentation_request_id: string, submission_id: string): void {
-        this.send(MessageAPI.MEECO_REJECT_SUBMISSION, {
-            presentation_request_id,
-            submission_id,
-        });
-    }
-
     public login() {
         this.send(MessageAPI.SET_ACCESS_TOKEN, this.auth.getAccessToken());
     }
@@ -518,10 +452,6 @@ export class WebSocketService {
 
     public sendMessage(type: string, data: any = null) {
         this.send(type, data);
-    }
-
-    public meecoLogin(): void {
-        this.send(MessageAPI.MEECO_AUTH_REQUEST, null);
     }
 
     private updateStatus(serviceStatus: any) {

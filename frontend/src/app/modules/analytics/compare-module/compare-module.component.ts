@@ -109,7 +109,7 @@ export class CompareModuleComponent implements OnInit {
         this.inputEvents = inputEvents?.report;
         this.outputEvents = outputEvents?.report;
         this.variables = variables?.report;
-        this.blocks = blocks?.report;
+        this.blocks = Array.isArray(blocks?.report) ? blocks.report : [];
 
         let max = 0;
         for (let i = 0; i < this.blocks.length; i++) {

@@ -13,6 +13,11 @@ export interface ITableField {
     columnKeys?: string[];
 
     /**
+     * List of column display names, in the same order as columnKeys
+     */
+    columnNames?: string[];
+
+    /**
      * Table rows (string key-value pairs per row)
      */
     rows?: Record<string, string>[];

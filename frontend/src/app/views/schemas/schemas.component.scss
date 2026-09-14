@@ -451,6 +451,11 @@ a {
     margin-left: auto;
 }
 
+/* tooltip anchor around each toolbar p-button - must not change the layout */
+.toolbar-tooltip-anchor {
+    display: inline-flex;
+}
+
 .toolbar-btn[readonly="true"] {
     background: #b5b5b5;
     cursor: not-allowed;
@@ -633,6 +638,11 @@ a {
 
 .topic-search {
     width: 400px;
+}
+
+.schema-grid-featured-icon {
+    font-size: 14px;
+    color: var(--color-accent-yellow-1, #DA9B22);
 }
 
 .schema-filter-checkbox {

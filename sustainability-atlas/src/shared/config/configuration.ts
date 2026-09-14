@@ -201,10 +201,10 @@ export default registerAs('app', () => {
         ipfs: {
             gateways: (
                 process.env.IPFS_GATEWAYS ||
-                'https://gateway.pinata.cloud/ipfs/,https://dweb.link/ipfs/,https://w3s.link/ipfs/'
+                'https://gateway.pinata.cloud/ipfs/,https://dweb.link/ipfs/'
             ).split(',').map((g) => g.trim()),
             // Per-gateway auth tokens. Format: url::token,url2::token2
-            // e.g. IPFS_GATEWAY_TOKENS=https://w3s.link/ipfs/::your-storacha-token
+            // e.g. IPFS_GATEWAY_TOKENS=https://your-name.mypinata.cloud/ipfs/::your-pinata-token
             gatewayTokens: process.env.IPFS_GATEWAY_TOKENS || '',
             fetchTimeout: parseInt(process.env.IPFS_FETCH_TIMEOUT || '180000', 10),
         },

@@ -8,7 +8,17 @@ export interface AppThemeOption {
     icon: string;
 }
 
+/**
+ * Per-user, because a browser is shared. The legacy global key is still read once
+ * as a fallback so an existing preference is not lost on upgrade.
+ */
 const APP_THEME_STORAGE_KEY = 'GUARDIAN_APP_THEME';
+
+const LAST_USER_STORAGE_KEY = 'GUARDIAN_APP_THEME_LAST_USER';
+
+function storageKeyForUser(userId: string | null): string {
+    return userId ? `${APP_THEME_STORAGE_KEY}:${userId}` : APP_THEME_STORAGE_KEY;
+}
 const LIGHT_CLASS = 'guardian-theme-light';
 const DARK_CLASS = 'guardian-theme-dark';
 
@@ -23,6 +33,7 @@ export class AppThemeService implements OnDestroy {
     ];
 
     private currentTheme: AppTheme = 'light';
+    private userId: string | null = null;
     private readonly darkModeQuery: MediaQueryList = window.matchMedia('(prefers-color-scheme: dark)');
     private readonly onSystemChange = (): void => {
         if (this.currentTheme === 'system') {
@@ -32,6 +43,9 @@ export class AppThemeService implements OnDestroy {
 
     constructor() {
         this.darkModeQuery.addEventListener('change', this.onSystemChange);
+        // applyForUser only arrives after an HTTP round-trip, so without seeding the
+        // last signed-in account here a dark-mode user gets a flash of light on refresh
+        this.userId = localStorage.getItem(LAST_USER_STORAGE_KEY);
         this.currentTheme = this.readStoredTheme();
         this.applyResolvedTheme();
     }
@@ -46,11 +60,46 @@ export class AppThemeService implements OnDestroy {
 
     public setTheme(theme: AppTheme): void {
         this.currentTheme = this.findTheme(theme).value;
-        localStorage.setItem(APP_THEME_STORAGE_KEY, this.currentTheme);
+        // with no account the key is the legacy global one, which is also every
+        // not-yet-chosen user's fallback: writing it would overwrite what they read
+        if (this.userId) {
+            localStorage.setItem(storageKeyForUser(this.userId), this.currentTheme);
+        }
+        this.applyResolvedTheme();
+    }
+
+    /**
+     * Adopt the preference belonging to `userId`. Called on sign-in, so the theme
+     * follows the account rather than the machine.
+     */
+    public applyForUser(userId: string | null): void {
+        this.userId = userId;
+        if (userId) {
+            localStorage.setItem(LAST_USER_STORAGE_KEY, userId);
+        }
+        this.currentTheme = this.readStoredTheme();
+        this.applyResolvedTheme();
+    }
+
+    /**
+     * Drop back to the default on sign-out, without touching anyone's stored
+     * preference - the next sign-in reads its own.
+     */
+    public reset(): void {
+        this.userId = null;
+        // drop the seed too, or a refresh after sign-out restores the last account's theme
+        localStorage.removeItem(LAST_USER_STORAGE_KEY);
+        this.currentTheme = this.themes[0].value;
         this.applyResolvedTheme();
     }
 
     private readStoredTheme(): AppTheme {
+        const stored = localStorage.getItem(storageKeyForUser(this.userId));
+        if (stored !== null) {
+            return this.findTheme(stored).value;
+        }
+        // nothing chosen under this account yet: fall back to the pre-upgrade global
+        // key, so an existing preference is not silently lost on upgrade
         return this.findTheme(localStorage.getItem(APP_THEME_STORAGE_KEY)).value;
     }
 

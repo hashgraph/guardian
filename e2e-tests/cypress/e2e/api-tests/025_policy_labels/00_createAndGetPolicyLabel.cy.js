@@ -3,8 +3,9 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
-context('Create policy labels', { tags: ['policy_labels', 'firstPool', 'all'] }, () => {
+context('Create policy labels', { tags: ['policy_labels', 'firstPool', 'all', 'all-no-mgs'] }, () => {
     const UserUsername = Cypress.env('User');
+    const SRUsername = Cypress.env('SRUser');
     const labelName = 'testPolicyLabelAPI';
 
     let policy; let did; let SRDid; let labelId;
@@ -27,31 +28,20 @@ context('Create policy labels', { tags: ['policy_labels', 'firstPool', 'all'] },
         });
 
     before('Get policy ids and did', () => {
+        cy.getOrCreateIRec4Policy(SRUsername).then((createdPolicy) => {
+            policy = createdPolicy;
+        });
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + API.Policies,
+                url: API.ApiServer + API.Profiles + UserUsername,
                 headers: {
                     authorization,
                 },
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                response.body.forEach(element => {
-                    if (element.name == 'iRec_4') {
-                        policy = element;
-                    }
-                })
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.Profiles + UserUsername,
-                    headers: {
-                        authorization,
-                    },
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.OK);
-                    did = response.body.did;
-                    SRDid = response.body.parent;
-                });
+                did = response.body.did;
+                SRDid = response.body.parent;
             });
         });
     })

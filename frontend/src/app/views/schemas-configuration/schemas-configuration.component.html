@@ -74,6 +74,16 @@
                     <i class="pi pi-download"></i>
                     Export
                 </button>
+                @if (canUpgradeToIwaV3) {
+                <button class="sc-btn"
+                    pTooltip="Remap every field property from IWA v1 to IWA v3"
+                    tooltipStyleClass="guardian-tooltip"
+                    tooltipPosition="bottom"
+                    (click)="onUpgradeToIwaV3()">
+                    <i class="pi pi-arrow-up-right"></i>
+                    Upgrade to IWA v3
+                </button>
+                }
                 @if (showPublish) {
                 <button class="sc-btn sc-btn-primary"
                     [disabled]="!canPublish"
@@ -260,7 +270,12 @@
                                         <i class="pi pi-file"></i>
                                     </div>
                                     <div class="sc-schema-info">
-                                        <span class="sc-schema-name">{{ schema.name }}</span>
+                                        <span class="sc-schema-name">
+                                            @if (isSchemaFeatured(schema)) {
+                                                <i class="pi pi-star-fill schema-featured-icon" pTooltip="Featured" tooltipPosition="right"></i>
+                                            }
+                                            {{ schema.name }}
+                                        </span>
                                         <div class="sc-schema-meta-row">
                                             @if (schema.version) {
                                                 <span class="sc-schema-version">v{{ schema.version }}</span>
@@ -333,6 +348,20 @@
 
                         <div class="sc-editor-header">
                             <div class="sc-editor-header-info">
+                                @if (isTemplateConfigMode) {
+                                    <button
+                                        class="sc-schema-featured-btn"
+                                        [class.active]="isSelectedSchemaFeatured"
+                                        [disabled]="isTemplateReadonly"
+                                        [pTooltip]="isSelectedSchemaFeatured ? 'Unmark as featured' : 'Mark as featured'"
+                                        tooltipPosition="top"
+                                        (click)="toggleFeaturedForSelectedSchema()">
+                                        <i class="pi" [class.pi-star-fill]="isSelectedSchemaFeatured" [class.pi-star]="!isSelectedSchemaFeatured"></i>
+                                    </button>
+                                }
+                                @if (isSchemaFeatured(selectedSchema) && !isTemplateConfigMode) {
+                                    <i class="pi pi-star-fill schema-featured-icon" pTooltip="Featured" tooltipPosition="right"></i>
+                                }
                                 <span class="sc-editor-title">{{ selectedSchema.name }}</span>
                                 <span class="sc-schema-status" [class.sc-schema-status--draft]="isDraft(selectedSchema)">
                                     {{ selectedSchema.status }}
@@ -385,11 +414,31 @@
                                     </span>
                                     <span class="st-toggle" [class.active]="canAddCustomFieldsToSelectedSchema"></span>
                                 </button>
+                                <div class="st-guidelines-editor">
+                                    <label class="st-guidelines-label" for="st-schema-guidelines-textarea">Guidelines</label>
+                                    <textarea
+                                        id="st-schema-guidelines-textarea"
+                                        class="st-guidelines-textarea"
+                                        [ngModel]="selectedSchemaGuidelines"
+                                        [readonly]="isTemplateReadonly"
+                                        (ngModelChange)="setSelectedSchemaGuidelines($event)"
+                                        rows="3"
+                                        placeholder="Add guidance for this schema when the template is applied."></textarea>
+                                </div>
                             } @else if (!schemaPropsCollapsed) {
                                 @if (selectedSchemaSettingsLocked) {
                                     <div class="st-lock-note st-lock-note--inline">
                                         <i class="pi pi-lock"></i>
                                         <span>Schema settings are locked by the applied template.</span>
+                                    </div>
+                                }
+                                @if (selectedSchemaGuidelines) {
+                                    <div class="st-guidelines-note">
+                                        <div class="st-guidelines-note-title">
+                                            <i class="pi pi-info-circle"></i>
+                                            <span>Guidelines</span>
+                                        </div>
+                                        <div class="st-guidelines-note-text">{{ selectedSchemaGuidelines }}</div>
                                     </div>
                                 }
                                 <div class="sc-schema-props-row sc-schema-props-row--main">
@@ -452,6 +501,16 @@
                                         <span class="sc-ctp-count">{{ arrayDependencyCount }}</span>
                                     }
                                 </button>
+                                @if (glossaryAiEnabled) {
+                                    <button class="sc-ctp-btn"
+                                        [class.active]="activeCanvasTab === 'propertyAi'"
+                                        (click)="setCanvasTab('propertyAi')">
+                                        <svg-icon class="svg-icon-16" src="/assets/images/icons/auto_awesome.svg"></svg-icon>Glossary AI
+                                        @if (pendingSuggestionCount) {
+                                            <span class="sc-ctp-count">{{ pendingSuggestionCount }}</span>
+                                        }
+                                    </button>
+                                }
                             </div>
                         </div>
                         }
@@ -512,6 +571,9 @@
                         }
                         @if (activeCanvasTab === 'links') {
                             <ng-container *ngTemplateOutlet="arrayDependenciesCanvas"></ng-container>
+                        }
+                        @if (activeCanvasTab === 'propertyAi' && glossaryAiEnabled) {
+                            <ng-container *ngTemplateOutlet="propertyAiCanvas"></ng-container>
                         }
                     </div>
 
@@ -694,6 +756,17 @@
                             </span>
                             <span class="st-toggle" [class.active]="canEditSelectedFieldInTemplate"></span>
                         </button>
+                        <div class="st-guidelines-editor">
+                            <label class="st-guidelines-label" for="st-field-guidelines-textarea">Guidelines</label>
+                            <textarea
+                                id="st-field-guidelines-textarea"
+                                class="st-guidelines-textarea"
+                                [ngModel]="selectedFieldGuidelines"
+                                [readonly]="isTemplateReadonly"
+                                (ngModelChange)="setSelectedFieldGuidelines($event)"
+                                rows="4"
+                                placeholder="Add guidance for this field when the template is applied."></textarea>
+                        </div>
                     </div>
                 </aside>
             }
@@ -710,6 +783,15 @@
                         <div class="st-lock-note">
                             <i class="pi pi-lock"></i>
                             <span>Field editing is locked by the applied template.</span>
+                        </div>
+                    }
+                    @if (selectedFieldGuidelines) {
+                        <div class="st-guidelines-note">
+                            <div class="st-guidelines-note-title">
+                                <i class="pi pi-info-circle"></i>
+                                <span>Guidelines</span>
+                            </div>
+                            <div class="st-guidelines-note-text">{{ selectedFieldGuidelines }}</div>
                         </div>
                     }
 
@@ -972,14 +1054,27 @@
                             </div>
                         }
 
-                        @if (properties.length) {
+                        @if (propertyOptions.length) {
                             <div class="sc-rp-divider"></div>
                             <div class="sc-rp-group">
-                                <label class="sc-rp-label">Property</label>
+                                <div class="sc-rp-label-row">
+                                    <label class="sc-rp-label">Property</label>
+                                    @if (glossaryAiEnabled) {
+                                        <button type="button" class="sc-rp-suggest-btn" title="Suggest with Glossary AI"
+                                            [disabled]="rightPanelSuggestLoading"
+                                            (click)="suggestPropertyForSelectedField()">
+                                            @if (rightPanelSuggestLoading) {
+                                                <i class="pi pi-spin pi-spinner"></i>
+                                            } @else {
+                                                <svg-icon class="svg-icon-16" src="/assets/images/icons/auto_awesome.svg"></svg-icon>
+                                            }
+                                        </button>
+                                    }
+                                </div>
                                 <p-select
                                     class="guardian-dropdown sc-rp-select"
                                     panelStyleClass="guardian-dropdown-panel"
-                                    [options]="properties"
+                                    [options]="propertyOptions"
                                     [showClear]="true"
                                     [filter]="true"
                                     filterBy="title"
@@ -989,7 +1084,49 @@
                                     placeholder="Select a property"
                                     [(ngModel)]="$any(selectedField).property"
                                     (ngModelChange)="markDirty()">
+                                    <ng-template pTemplate="item" let-p>
+                                        <div class="sc-rp-prop-item">
+                                            <span [title]="p.title">{{ p.title }}</span>
+                                            @if (p.description) {
+                                                <span class="sc-rp-prop-desc">{{ p.description }}</span>
+                                            }
+                                        </div>
+                                    </ng-template>
                                 </p-select>
+                                @if (rightPanelSuggestUnavailable) {
+                                    <div class="sc-rp-ai-hint">
+                                        <span class="sc-rp-ai-hint-rationale">Glossary AI is unavailable right now.</span>
+                                    </div>
+                                } @else if (rightPanelSuggestion; as suggestion) {
+                                    @if (suggestion.candidates[0]; as topCandidate) {
+                                        <div class="sc-rp-ai-hint">
+                                            <div class="sc-rp-ai-hint-row">
+                                                <span class="sc-rp-ai-hint-title" [title]="topCandidate.title">{{ topCandidate.title }}</span>
+                                                <button type="button" class="sc-btn sc-btn-primary" (click)="acceptSuggestion(selectedField.name, topCandidate.title)">Apply</button>
+                                            </div>
+                                            @if (topCandidate.description) {
+                                                <div class="sc-rp-ai-hint-description">{{ topCandidate.description }}</div>
+                                            }
+                                            <span class="sc-rp-ai-hint-confidence">{{ (topCandidate.confidence * 100).toFixed(0) }}%</span>
+                                            <div class="sc-rp-ai-hint-rationale">{{ topCandidate.rationale }}</div>
+                                            <div class="sc-rp-ai-hint-actions">
+                                                @if (suggestion.candidates.length > 1) {
+                                                    <button type="button" class="sc-rp-ai-hint-link" (click)="rightPanelSuggestionExpanded = !rightPanelSuggestionExpanded">See more</button>
+                                                }
+                                                <button type="button" class="sc-rp-ai-hint-link" (click)="openInPropertyAiTab(selectedField.name)">Move to Glossary AI</button>
+                                            </div>
+                                            @if (rightPanelSuggestionExpanded) {
+                                                @for (candidate of suggestion.candidates.slice(1); track candidate.title) {
+                                                    <div class="sc-rp-ai-hint-row">
+                                                        <span class="sc-rp-ai-hint-title" [title]="candidate.title">{{ candidate.title }}</span>
+                                                        <span class="sc-rp-ai-hint-confidence">{{ (candidate.confidence * 100).toFixed(0) }}%</span>
+                                                        <button type="button" class="sc-btn" (click)="acceptSuggestion(selectedField.name, candidate.title)">Apply</button>
+                                                    </div>
+                                                }
+                                            }
+                                        </div>
+                                    }
+                                }
                             </div>
                         }
 
@@ -1059,6 +1196,79 @@
                             </div>
                         }
 
+                        @if (selectedFieldIsTable) {
+                            <div class="sc-rp-divider"></div>
+                            <div class="sc-rp-label">Table columns</div>
+                            <div class="sc-check-list">
+                                <div class="sc-check-item" (click)="toggleTableColumns()">
+                                    <p-checkbox class="guardian-checkbox checkbox-24" [binary]="true"
+                                                style="pointer-events:none"
+                                                [ngModel]="selectedFieldTableColumnsEnabled"></p-checkbox>
+                                    <div class="sc-check-desc">
+                                        <strong>Define columns</strong>
+                                        <span>Declare the table structure in the schema</span>
+                                    </div>
+                                </div>
+                            </div>
+                            @if (selectedFieldTableColumnsEnabled) {
+                                <div class="sc-rp-group sc-table-columns">
+                                    @for (column of selectedFieldTableColumns; track column) {
+                                        <div
+                                            class="sc-table-column"
+                                            [class.sc-table-column--dragging]="isTableColumnDragActive
+                                                && tableColumnDragIndex === $index"
+                                            [class.sc-table-column--drag-target]="isTableColumnDragActive
+                                                && tableColumnDragOverIndex === $index">
+                                            <span
+                                                class="sc-drag-handle sc-table-column-handle"
+                                                [class.sc-table-column-handle--off]="!selectedFieldTableColumnsDraggable"
+                                                [title]="selectedFieldTableColumnsDraggable
+                                                    ? 'Drag to reorder'
+                                                    : 'Add a second column to reorder'"
+                                                (mousedown)="onTableColumnMouseDown($event, $index)">
+                                                <i class="pi pi-bars"></i>
+                                            </span>
+                                            <input
+                                                class="sc-rp-input sc-table-column-name"
+                                                type="text"
+                                                placeholder="Column name"
+                                                [ngModel]="column.name"
+                                                (ngModelChange)="setTableColumnValue($index, 'name', $event)" />
+                                            <button
+                                                class="sc-icon-btn sc-icon-btn--danger sc-table-column-remove"
+                                                title="Remove column"
+                                                [disabled]="selectedFieldTableColumns.length <= 1"
+                                                (click)="removeTableColumn($index)">
+                                                <i class="pi pi-trash"></i>
+                                            </button>
+                                            <div class="sc-table-column-key-wrap">
+                                                <input
+                                                    class="sc-rp-input sc-table-column-key"
+                                                    type="text"
+                                                    placeholder="key"
+                                                    [disabled]="!isTableColumnKeyUnlocked(column)"
+                                                    [ngModel]="column.key"
+                                                    (ngModelChange)="setTableColumnValue($index, 'key', $event)" />
+                                                <button
+                                                    class="sc-table-column-key-lock"
+                                                    [class.active]="isTableColumnKeyUnlocked(column)"
+                                                    [title]="isTableColumnKeyUnlocked(column)
+                                                        ? 'Back to a key built from the name'
+                                                        : 'Write the key by hand'"
+                                                    (click)="toggleTableColumnKeyLock($index)">
+                                                    <i class="pi pi-pencil"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    }
+                                    <button class="sc-btn sc-btn--sm sc-table-column-add" (click)="addTableColumn()">
+                                        <i class="pi pi-plus"></i>
+                                        Add column
+                                    </button>
+                                </div>
+                            }
+                        }
+
                         @if (selectedFieldShowValues) {
                             <div class="sc-rp-divider"></div>
                             <div class="sc-rp-label">Values</div>
@@ -1082,7 +1292,9 @@
                                     <div class="sc-fv-item">
                                         <div class="sc-fv-label">
                                             <span class="sc-fv-label-text"><i class="pi pi-map-marker"></i>Default</span>
-                                            <button class="sc-fv-clear" title="Clear" (click)="clearFieldValue('default')">✕</button>
+                                            @if (!isFormattedPresetField()) {
+                                                <button class="sc-fv-clear" title="Clear" (click)="clearFieldValue('default')">✕</button>
+                                            }
                                         </div>
                                         @if (getFieldValueInputType(selectedField!) === 'boolean') {
                                             <div class="sc-fv-yesno">
@@ -1099,6 +1311,18 @@
                                                       [ngModel]="$any(selectedField).default"
                                                       (ngModelChange)="setFieldPresetValue('default', $event)">
                                             </p-select>
+                                        } @else if (isFormattedPresetField()) {
+                                            <div class="sc-rte-preset-card" [class.sc-rte-preset-card--no-clear]="!$any(selectedField).default">
+                                                @if ($any(selectedField).default) {
+                                                    <div class="sc-rte-preset-preview" appRichTextClip [innerHTML]="getPresetPreviewHtml($any(selectedField).default)"></div>
+                                                } @else {
+                                                    <span class="sc-rte-preset-empty">Use the pencil to write default text</span>
+                                                }
+                                                <button type="button" class="sc-rte-preset-edit" title="Edit default value" aria-label="Edit default value" (click)="openRichTextPresetDialog('default')"><i class="pi pi-pencil"></i></button>
+                                                @if ($any(selectedField).default) {
+                                                    <button type="button" class="sc-rte-preset-clear" title="Clear default value" aria-label="Clear default value" (click)="clearFieldValue('default')"><i class="pi pi-times"></i></button>
+                                                }
+                                            </div>
                                         } @else {
                                             <input class="sc-fv-input" [type]="getFieldValueInputType(selectedField!)"
                                                 [ngModel]="$any(selectedField).default"
@@ -1110,7 +1334,9 @@
                                     <div class="sc-fv-item">
                                         <div class="sc-fv-label">
                                             <span class="sc-fv-label-text"><i class="pi pi-lightbulb"></i>Suggested</span>
-                                            <button class="sc-fv-clear" title="Clear" (click)="clearFieldValue('suggest')">✕</button>
+                                            @if (!isFormattedPresetField()) {
+                                                <button class="sc-fv-clear" title="Clear" (click)="clearFieldValue('suggest')">✕</button>
+                                            }
                                         </div>
                                         @if (getFieldValueInputType(selectedField!) === 'boolean') {
                                             <div class="sc-fv-yesno">
@@ -1127,6 +1353,18 @@
                                                       [ngModel]="$any(selectedField).suggest"
                                                       (ngModelChange)="setFieldPresetValue('suggest', $event)">
                                             </p-select>
+                                        } @else if (isFormattedPresetField()) {
+                                            <div class="sc-rte-preset-card" [class.sc-rte-preset-card--no-clear]="!$any(selectedField).suggest">
+                                                @if ($any(selectedField).suggest) {
+                                                    <div class="sc-rte-preset-preview" appRichTextClip [innerHTML]="getPresetPreviewHtml($any(selectedField).suggest)"></div>
+                                                } @else {
+                                                    <span class="sc-rte-preset-empty">Use the pencil to write suggested text</span>
+                                                }
+                                                <button type="button" class="sc-rte-preset-edit" title="Edit suggested value" aria-label="Edit suggested value" (click)="openRichTextPresetDialog('suggest')"><i class="pi pi-pencil"></i></button>
+                                                @if ($any(selectedField).suggest) {
+                                                    <button type="button" class="sc-rte-preset-clear" title="Clear suggested value" aria-label="Clear suggested value" (click)="clearFieldValue('suggest')"><i class="pi pi-times"></i></button>
+                                                }
+                                            </div>
                                         } @else {
                                             <input class="sc-fv-input" [type]="getFieldValueInputType(selectedField!)"
                                                 [ngModel]="$any(selectedField).suggest"
@@ -1138,7 +1376,9 @@
                                     <div class="sc-fv-item">
                                         <div class="sc-fv-label">
                                             <span class="sc-fv-label-text"><i class="pi pi-wrench"></i>Test value</span>
-                                            <button class="sc-fv-clear" title="Clear" (click)="clearFieldTestValue()">✕</button>
+                                            @if (!isFormattedPresetField()) {
+                                                <button class="sc-fv-clear" title="Clear" (click)="clearFieldTestValue()">✕</button>
+                                            }
                                         </div>
                                         @if (getFieldValueInputType(selectedField!) === 'boolean') {
                                             <div class="sc-fv-yesno">
@@ -1155,6 +1395,18 @@
                                                       [ngModel]="getFieldTestValue()"
                                                       (ngModelChange)="setFieldTestValue($event)">
                                             </p-select>
+                                        } @else if (isFormattedPresetField()) {
+                                            <div class="sc-rte-preset-card" [class.sc-rte-preset-card--no-clear]="!getFieldTestValue()">
+                                                @if (getFieldTestValue()) {
+                                                    <div class="sc-rte-preset-preview" appRichTextClip [innerHTML]="getPresetPreviewHtml(getFieldTestValue())"></div>
+                                                } @else {
+                                                    <span class="sc-rte-preset-empty">Use the pencil to write test text</span>
+                                                }
+                                                <button type="button" class="sc-rte-preset-edit" title="Edit test value" aria-label="Edit test value" (click)="openRichTextPresetDialog('test')"><i class="pi pi-pencil"></i></button>
+                                                @if (getFieldTestValue()) {
+                                                    <button type="button" class="sc-rte-preset-clear" title="Clear test value" aria-label="Clear test value" (click)="clearFieldTestValue()"><i class="pi pi-times"></i></button>
+                                                }
+                                            </div>
                                         } @else {
                                             <input class="sc-fv-input" [type]="getFieldValueInputType(selectedField!)"
                                                 [ngModel]="getFieldTestValue()"
@@ -1309,7 +1561,8 @@
             </div>
 
             @for (dependency of arrayDependencies; track dependency) {
-                <div class="sc-array-link-card">
+                <div class="sc-array-link-card"
+                    [class.sc-array-link-card--editing]="isEditingArrayDependency(dependency)">
                     <div class="sc-array-link-paths">
                         <div class="sc-array-link-path">
                             <span class="sc-array-link-label">Source</span>
@@ -1354,6 +1607,10 @@
                             </div>
                         }
                     </div>
+                    <button class="sc-array-link-edit" title="Edit link"
+                        (click)="startEditArrayDependency(dependency)">
+                        <i class="pi pi-pencil"></i>
+                    </button>
                     <button class="sc-array-link-remove" title="Remove link"
                         (click)="removeArrayDependency(dependency)">
                         <i class="pi pi-trash"></i>
@@ -1366,8 +1623,11 @@
                 </div>
             }
 
-            <div class="sc-array-link-editor">
-                <div class="sc-array-link-editor-title">Add repeatable field link</div>
+            <div class="sc-array-link-editor" #arrayLinkEditor
+                [class.sc-array-link-editor--editing]="editingArrayDependency">
+                <div class="sc-array-link-editor-title">
+                    {{ editingArrayDependency ? 'Edit repeatable field link' : 'Add repeatable field link' }}
+                </div>
                 <div class="sc-array-link-editor-grid">
                     <label>
                         <span>Source array</span>
@@ -1539,13 +1799,109 @@
                 </div>
                 <div class="sc-array-link-editor-actions">
                     <span>Build chains top-down: add the parent link before using its child as a source.</span>
-                    <button class="sc-btn sc-btn-primary"
-                        [disabled]="!canAddArrayDependency()"
-                        (click)="addArrayDependency()">
-                        <i class="pi pi-plus"></i>Add link
-                    </button>
+                    <div class="sc-array-link-editor-buttons">
+                        @if (editingArrayDependency) {
+                            <button class="sc-btn"
+                                (click)="cancelEditArrayDependency()">
+                                Cancel
+                            </button>
+                        }
+                        <button class="sc-btn sc-btn-primary"
+                            [disabled]="!canApplyArrayDependency()"
+                            (click)="applyArrayDependency()">
+                            @if (editingArrayDependency) {
+                                <i class="pi pi-check"></i>Save link
+                            } @else {
+                                <i class="pi pi-plus"></i>Add link
+                            }
+                        </button>
+                    </div>
                 </div>
             </div>
+        </div>
+    </ng-template>
+
+    <ng-template #propertyAiCanvas>
+        <div class="sc-array-link-canvas">
+            <div class="sc-suggestions-toolbar">
+                <button type="button" class="sc-btn"
+                    [disabled]="suggestionsLoading || !highConfidenceSuggestionCount"
+                    [title]="highConfidenceSuggestionCount ? '' : 'No suggestions are at or above the 75% confidence threshold yet'"
+                    (click)="applyAllHighConfidence()">
+                    <i class="pi pi-check-circle"></i>Apply all high-confidence ({{ highConfidenceSuggestionCount }})
+                </button>
+                <button type="button" class="sc-btn"
+                    [disabled]="suggestionsLoading"
+                    (click)="loadSuggestions()">
+                    <i class="pi pi-refresh"></i>Refresh
+                </button>
+            </div>
+
+            @if (suggestionsLoading) {
+                <div class="sc-array-link-empty">
+                    <i class="pi pi-spin pi-spinner"></i>
+                    <span>Getting Glossary AI suggestions…</span>
+                </div>
+            } @else if (!(currentContextSchema?.fields ?? []).length) {
+                <div class="sc-array-link-empty">
+                    <i class="pi pi-list"></i>
+                    <span>Add fields to this schema first.</span>
+                </div>
+            } @else if (!suggestionsAvailable) {
+                <div class="sc-array-link-empty">
+                    <i class="pi pi-exclamation-triangle"></i>
+                    <span>Glossary AI is unavailable right now – you can still set properties manually.</span>
+                </div>
+            } @else if (!suggestionResults.length) {
+                <div class="sc-array-link-empty">
+                    <i class="pi pi-sparkles"></i>
+                    <span>Refresh to get Glossary AI suggestions for this schema.</span>
+                </div>
+            } @else if (!pendingSuggestionCount) {
+                <div class="sc-array-link-empty">
+                    <i class="pi pi-check"></i>
+                    <span>No property changes suggested.</span>
+                </div>
+            } @else {
+                <div class="sc-suggestions-list">
+                    @for (result of suggestionResults; track result.fieldName) {
+                        <div class="sc-suggestion-row"
+                            [class.sc-suggestion-row--highlight]="highlightedFieldName === result.fieldName"
+                            [class.sc-suggestion-row--match]="result.candidates[0]?.title === getFieldByName(result.fieldName)?.property">
+                            <div class="sc-suggestion-field">
+                                <span class="sc-suggestion-field-name" [title]="result.fieldName">{{ result.fieldName }}</span>
+                                <span class="sc-suggestion-current" [title]="'Current: ' + (getFieldByName(result.fieldName)?.property || 'None')">Current: {{ getFieldByName(result.fieldName)?.property || 'None' }}</span>
+                            </div>
+                            @if (result.candidates[0]; as topCandidate) {
+                                <div class="sc-suggestion-candidate">
+                                    <span class="sc-suggestion-candidate-title" [title]="topCandidate.title">{{ topCandidate.title }}</span>
+                                    @if (topCandidate.description) {
+                                        <span class="sc-suggestion-candidate-description" [title]="topCandidate.description">{{ topCandidate.description }}</span>
+                                    }
+                                    <span class="sc-suggestion-candidate-confidence">{{ (topCandidate.confidence * 100).toFixed(0) }}%</span>
+                                    <span class="sc-suggestion-candidate-rationale" [title]="topCandidate.rationale">{{ topCandidate.rationale }}</span>
+                                </div>
+                                <div class="sc-suggestion-actions">
+                                    @if (topCandidate.title !== getFieldByName(result.fieldName)?.property) {
+                                        <button type="button" class="sc-btn sc-btn-primary" (click)="acceptSuggestion(result.fieldName, topCandidate.title)">Accept</button>
+                                    } @else {
+                                        <span class="sc-suggestion-match-label">Already matches</span>
+                                    }
+                                    <button type="button" class="sc-btn" (click)="goEditField(result.fieldName)">Change</button>
+                                    <button type="button" class="sc-btn" (click)="dismissSuggestion(result.fieldName)">Dismiss</button>
+                                </div>
+                            } @else {
+                                <div class="sc-suggestion-candidate">
+                                    <span class="sc-suggestion-current">No candidates found.</span>
+                                </div>
+                                <div class="sc-suggestion-actions">
+                                    <button type="button" class="sc-btn" (click)="dismissSuggestion(result.fieldName)">Dismiss</button>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
         </div>
     </ng-template>
 
@@ -1846,7 +2202,46 @@
         </div>
     }
 
+    <!-- ── Floating drag card for a table column ── -->
+    @if (isTableColumnDragActive && tableColumnDragged) {
+        <div class="sc-float-card"
+             [style.left.px]="tableColumnFloatX"
+             [style.top.px]="tableColumnFloatY"
+             [style.width.px]="tableColumnFloatWidth">
+            <span class="sc-drag-handle"><i class="pi pi-bars"></i></span>
+            <div class="sc-field-info">
+                <span class="sc-field-key">{{ tableColumnDragged.name || 'Column' }}</span>
+                <span class="sc-field-desc">{{ tableColumnDragged.key }}</span>
+            </div>
+        </div>
+    }
+
 </div>
+
+<p-dialog
+    [header]="getRichTextPresetDialogTitle()"
+    [visible]="richTextPresetTarget !== null"
+    [modal]="true"
+    [draggable]="false"
+    [resizable]="false"
+    [style]="{ width: 'min(760px, 95vw)' }"
+    [closeOnEscape]="!isRichTextPresetLinkOpen()"
+    [styleClass]="isRichTextPresetLinkOpen() ? 'sc-rte-preset-dialog sc-rte-preset-dialog--locked' : 'sc-rte-preset-dialog'"
+    (onHide)="closeRichTextPresetDialog()">
+    <div class="sc-rte-preset-dialog-body">
+        <app-rich-text-editor
+            #richTextPresetEditor
+            [ngModel]="getRichTextPresetValue()"
+            (ngModelChange)="setRichTextPresetValue($event)"
+            placeholder="Write formatted text…"
+        ></app-rich-text-editor>
+    </div>
+    <ng-template pTemplate="footer">
+        <button class="sc-btn sc-btn-primary" [disabled]="isRichTextPresetLinkOpen()"
+                [title]="isRichTextPresetLinkOpen() ? 'Finish the link first' : ''"
+                (click)="closeRichTextPresetDialog()">Done</button>
+    </ng-template>
+</p-dialog>
 
 <!-- ══════════════════════════════════════════ NEW SCHEMA DIALOG -->
 <p-dialog

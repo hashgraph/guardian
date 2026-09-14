@@ -103,9 +103,7 @@ import { FormulasModule } from './modules/formulas/formulas.module';
 import { GET_SCHEMA_NAME } from './injectors/get-schema-name.injector';
 import { BLOCK_TYPE_TIPS, BLOCK_TYPE_TIPS_VALUE, } from './injectors/block-type-tips.injector';
 import { SuggestionsService } from './services/suggestions.service';
-import { QrCodeDialogComponent } from './components/qr-code-dialog/qr-code-dialog.component';
 import { QRCodeComponent } from 'angularx-qrcode';
-import { MeecoVCSubmitDialogComponent } from './components/meeco-vc-submit-dialog/meeco-vc-submit-dialog.component';
 import { CompareStorage } from './services/compare-storage.service';
 import { ToolsService } from './services/tools.service';
 import { SchemaTemplatesService } from './services/schema-templates.service';
@@ -232,8 +230,6 @@ const GuardianPreset = definePreset(Aura, {
         StandardRegistryCardComponent,
         NotificationComponent,
         NotificationsComponent,
-        QrCodeDialogComponent,
-        MeecoVCSubmitDialogComponent,
         NewHeaderComponent,
         PolicySearchComponent,
         PolicyGuidedSearchComponent,

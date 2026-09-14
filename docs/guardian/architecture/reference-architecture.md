@@ -2,6 +2,8 @@
 description: >-
   This is a Deep Dive Architecture representing Micro Services at Component
   level.
+tags:
+  - flagged-for-rewrite
 ---
 
 # Deep Dive Architecture

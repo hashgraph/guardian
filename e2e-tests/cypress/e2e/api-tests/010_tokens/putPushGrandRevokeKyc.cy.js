@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
-context('Tokens', { tags: ['tokens', 'thirdPool', 'all'] }, () => {
+context('Tokens', { tags: ['tokens', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
 
@@ -17,7 +17,9 @@ context('Tokens', { tags: ['tokens', 'thirdPool', 'all'] }, () => {
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
 
-                const tokenId = response.body[0].tokenId;
+                // Restrict to the fungible tokens this suite creates, not whatever token
+                // another suite (e.g. policy workflows) last created for this account.
+                const tokenId = response.body.filter((t) => t.tokenName === 'test')[0].tokenId;
 
                 cy.request({
                     method: METHOD.PUT,
@@ -50,7 +52,9 @@ context('Tokens', { tags: ['tokens', 'thirdPool', 'all'] }, () => {
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
 
-                const tokenId = response.body[0].tokenId;
+                // Restrict to the fungible tokens this suite creates, not whatever token
+                // another suite (e.g. policy workflows) last created for this account.
+                const tokenId = response.body.filter((t) => t.tokenName === 'test')[0].tokenId;
 
                 cy.request({
                     method: METHOD.PUT,

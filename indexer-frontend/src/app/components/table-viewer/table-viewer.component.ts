@@ -85,9 +85,19 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
         });
     }
 
+    public get previewGridTemplate(): string {
+        const count = this.previewHeaderKeysLimited.length || 8;
+        return `48px repeat(${count}, minmax(80px, 1fr))`;
+    }
+
     public buildColumnHeader(index: number): string {
         let currentIndex = index;
         let label = '';
+
+        const declaredColumns = this.valueDeclaredColumns();
+        if (declaredColumns?.names[index]) {
+            return declaredColumns.names[index];
+        }
 
         for (;;) {
             label = String.fromCharCode((currentIndex % 26) + 65) + label;
@@ -151,12 +161,13 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
             }
 
             let parsed: { columnKeys: string[]; rows: any[] };
-            parsed = this.csv.parseCsvToTable(csvText, ',');
+            const declaredColumns = this.valueDeclaredColumns();
+            parsed = this.csv.parseCsvToTable(csvText, ',', declaredColumns?.keys);
 
             const columnDefs: ColDef[] = parsed.columnKeys.map((key: string, i: number) => ({
                 field: key,
                 colId: key,
-                headerName: this.excelHeader(i),
+                headerName: declaredColumns?.names[i] || this.excelHeader(i),
                 editable: false,
                 minWidth: 100,
                 resizable: true
@@ -299,13 +310,14 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
                 this.canOpenPreview = true;
             }
 
-            const parsed = this.csv.parseCsvToTable(csvText, ',');
+            const declaredColumns = this.valueDeclaredColumns();
+            const parsed = this.csv.parseCsvToTable(csvText, ',', declaredColumns?.keys);
 
             const preview = this.makePreview(parsed.columnKeys, parsed.rows, 8, 4);
 
             this.previewColumnDefs = preview.columns.map((key: string, index: number) => ({
                 field: key,
-                headerName: this.buildColumnHeader(index),
+                headerName: declaredColumns?.names[index] || this.buildColumnHeader(index),
                 editable: false,
                 minWidth: 100,
                 resizable: true
@@ -452,6 +464,50 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
         this.cdr.markForCheck();
     }
 
+    private getTableValue(value: unknown): Record<string, unknown> | null {
+        if (typeof value === 'string') {
+            const normalized = value.trim();
+            if (!(normalized.startsWith('{') || normalized.startsWith('['))) {
+                return null;
+            }
+
+            try {
+                return this.getTableValue(JSON.parse(normalized));
+            } catch {
+                return null;
+            }
+        }
+
+        if (!value || typeof value !== 'object' || Array.isArray(value)) {
+            return null;
+        }
+
+        const tableValue = value as Record<string, unknown>;
+        const type = typeof tableValue['type'] === 'string'
+            ? tableValue['type'].toLowerCase()
+            : '';
+
+        return type === 'table' ? tableValue : null;
+    }
+
+    private valueDeclaredColumns(): { keys: string[]; names: string[] } | null {
+        const tableValue = this.getTableValue(this.value);
+        const keys = tableValue?.['columnKeys'];
+        const names = tableValue?.['columnNames'];
+
+        if (
+            !Array.isArray(keys) || keys.length === 0 ||
+            !Array.isArray(names) || names.length === 0
+        ) {
+            return null;
+        }
+
+        return {
+            keys: keys.map((key) => String(key)),
+            names: names.map((name) => String(name))
+        };
+    }
+
     private getFileIdFromValue(
         value: unknown,
         tableFiles?: Record<string, string>
@@ -460,42 +516,18 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
             return null;
         }
 
-        if (value === null) {
+        const tableValue = this.getTableValue(value);
+        if (!tableValue) {
             return null;
         }
 
-        if (typeof value === 'string') {
-            const s = value.trim();
-            if (s.startsWith('{') || s.startsWith('[')) {
-                try {
-                    return this.getFileIdFromValue(JSON.parse(s), tableFiles);
-                } catch {
-                    return null;
-                }
-            }
-
+        const cidValue = tableValue['cid'];
+        const cid = typeof cidValue === 'string' ? cidValue.trim() : '';
+        if (!cid) {
             return null;
         }
 
-        if (typeof value === 'object') {
-            const obj = value as { type?: unknown; cid?: unknown };
-
-            const type =
-                typeof obj.type === 'string' ? obj.type.toLowerCase() : '';
-            if (type !== 'table') {
-                return null;
-            }
-
-            const cid =
-                typeof obj.cid === 'string' ? obj.cid.trim() : '';
-            if (!cid) {
-                return null;
-            }
-
-            return tableFiles[cid] ?? null;
-        }
-
-        return null;
+        return tableFiles[cid] ?? null;
     }
 
     private excelHeader(index: number): string {

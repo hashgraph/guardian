@@ -1,29 +1,32 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { seededMessageId } from '../../../support/CustomHelpers/ipfsSeeding';
 
-context('Get progresses', { tags: ['notifications', 'firstPool', 'all'] }, () => {
+context('Get progresses', { tags: ['notifications', 'firstPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     before('Import policy for check progresses', () => {
-        Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.PolicisImportMsgPush,
-                body: {
-                    messageId: (Cypress.env('policy_with_artifacts')),
-                    metadata: {
-                        'tools': {}
-                    }
-                },
-                headers: {
-                    authorization,
-                },
-                timeout: 180000,
-            }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.ACCEPTED);
-            });
-        })
+        seededMessageId('policy_with_artifacts').then((messageId) => {
+            Authorization.getAccessToken(SRUsername).then((authorization) => {
+                cy.request({
+                    method: METHOD.POST,
+                    url: API.ApiServer + API.PolicisImportMsgPush,
+                    body: {
+                        messageId,
+                        metadata: {
+                            'tools': {}
+                        }
+                    },
+                    headers: {
+                        authorization,
+                    },
+                    timeout: 180000,
+                }).then((response) => {
+                    expect(response.status).to.eq(STATUS_CODE.ACCEPTED);
+                });
+            })
+        });
     });
 
     it('Get list of progresses', () => {

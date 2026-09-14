@@ -4,7 +4,7 @@ import {
     decryptWithKeyDerivedFromString,
     encryptWithKeyDerivedFromString,
     utf8ToBytes,
-} from '@meeco/cryppo';
+} from './cryppo/index.js';
 
 export class EncryptVcHelper {
     public static async encrypt(document: string, key: string): Promise<string> {

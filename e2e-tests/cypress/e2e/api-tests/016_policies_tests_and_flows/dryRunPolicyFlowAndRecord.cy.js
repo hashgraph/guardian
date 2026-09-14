@@ -1,39 +1,41 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { seededMessageId } from '../../../support/CustomHelpers/ipfsSeeding';
 
-context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
+context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-    const policyMessageId = Cypress.env('policy_for_compare2');
 
     let policyId; let registrantDid; let adminDid; let approverDid; let applicationDocumentId; let deviceDocumentId; let issueDocumentId;
 
     before('Import policy and dry-run it', () => {
-        Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.PolicisImportMsg,
-                body: { messageId: policyMessageId },
-                headers: {
-                    authorization,
-                },
-                timeout: 600000,
-            }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                policyId = response.body.at(0).id;
+        seededMessageId('policy_for_compare2').then((policyMessageId) => {
+            Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
-                    method: METHOD.PUT,
-                    url:
-                        API.ApiServer + API.Policies + policyId + '/' + API.DryRun,
+                    method: METHOD.POST,
+                    url: API.ApiServer + API.PolicisImportMsg,
+                    body: { messageId: policyMessageId },
                     headers: {
                         authorization,
                     },
-                    timeout: 180000,
+                    timeout: 600000,
                 }).then((response) => {
-                    expect(response.status).to.eq(STATUS_CODE.OK);
+                    expect(response.status).to.eq(STATUS_CODE.SUCCESS);
+                    policyId = response.body.at(0).id;
+                    cy.request({
+                        method: METHOD.PUT,
+                        url:
+                            API.ApiServer + API.Policies + policyId + '/' + API.DryRun,
+                        headers: {
+                            authorization,
+                        },
+                        timeout: 180000,
+                    }).then((response) => {
+                        expect(response.status).to.eq(STATUS_CODE.OK);
+                    });
                 });
-            });
-        })
+            })
+        });
     });
 
     it('Start record', () => {

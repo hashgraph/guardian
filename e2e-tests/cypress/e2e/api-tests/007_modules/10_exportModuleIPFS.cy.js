@@ -3,7 +3,7 @@ import { STATUS_CODE } from '../../../support/api/api-const';
 import * as Modules from '../../../support/api/modules';
 import * as Authorization from '../../../support/authorization';
 
-context('Modules', { tags: ['modules', 'thirdPool', 'all'] }, () => {
+context('Modules', { tags: ['modules', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');

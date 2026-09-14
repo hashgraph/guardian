@@ -9,7 +9,7 @@ import {
     decryptWithKeyDerivedFromString,
     encryptWithKeyDerivedFromString,
     utf8ToBytes,
-} from '@meeco/cryppo';
+} from '../../helpers/cryppo/index.js';
 import { IPFS } from '../../helpers/index.js';
 import { PolicyComment } from '../../entity/index.js';
 

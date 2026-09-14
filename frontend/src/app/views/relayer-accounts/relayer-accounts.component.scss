@@ -97,15 +97,31 @@
     min-width: 110px !important;
 }
 
+/*
+ * The icon was placed with a magic `top: 12px` against a wrapper that had no layout of
+ * its own, so it detached from the input whenever the rendered heights differed from the
+ * assumed 40px. Centre it on the input, make the wrapper an explicit flex box so it is
+ * unambiguously the offset parent, and reserve room so the text cannot run underneath.
+ */
 .search-filter {
     width: 400px;
     max-width: 400px;
     position: relative;
+    display: flex;
+    align-items: center;
+
+    .guardian-input {
+        width: 100%;
+        padding-right: 36px;
+    }
 
     .search-icon {
         position: absolute;
         right: 12px;
-        top: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        align-items: center;
         pointer-events: none;
     }
 }

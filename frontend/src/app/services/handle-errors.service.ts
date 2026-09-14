@@ -28,6 +28,18 @@ export class HandleErrorsService implements HttpInterceptor {
     excludeErrorCodes: string[] = ['401'];
     excludeErrorTexts: string[] = ['Block Unavailable'];
 
+    private titleFromCode(message: any): string | null {
+        const match = /^([A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+)\s*:/.exec(String(message ?? '').trim());
+        if (!match) {
+            return null;
+        }
+        return match[1]
+            .toLowerCase()
+            .split('_')
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    }
+
     private messageToText(message: any) {
         if (typeof message === 'object') {
             return JSON.stringify(message, null, 2);
@@ -82,8 +94,11 @@ export class HandleErrorsService implements HttpInterceptor {
                 } else {
                     text = `${this.messageToText(translatedMessage.text)}`;
                 }
+                const codeTitle = this.titleFromCode(errorObject.message);
                 if (errorObject.type) {
                     header = `${errorObject.statusCode} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : errorObject.type}`;
+                } else if (!translatedMessage.wasTranslated && codeTitle) {
+                    header = codeTitle;
                 } else {
                     header = `${errorObject.statusCode} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : 'Other Error'}`;
                 }

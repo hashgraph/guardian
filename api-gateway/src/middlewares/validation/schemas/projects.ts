@@ -32,4 +32,17 @@ export class PropertiesDTO {
 
     @ApiProperty()
     value: string;
+
+    @ApiProperty({
+        description: 'IWA dMRV specification version this property belongs to',
+        example: '3.0.0',
+        required: false
+    })
+    iwaVersion?: string;
+
+    @ApiProperty({
+        description: 'What this property means, sourced from the IWA dMRV specification. Empty for IWA v1 properties.',
+        required: false
+    })
+    description?: string;
 }

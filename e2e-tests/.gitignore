@@ -9,5 +9,6 @@ cypress/fixtures/exportedFormula.formula
 cypress/fixtures/exportedLabel.label
 cypress/fixtures/recordedDryRunFlow.record
 cypress/fixtures/StandardRegistryData.json
+cypress/fixtures/seededMessages.json
 cypress/fixtures/testJsonCid
 cypress/fixtures/testJsonDRCid

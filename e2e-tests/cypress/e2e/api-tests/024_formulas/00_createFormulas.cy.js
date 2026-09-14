@@ -2,30 +2,17 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
-context('Create formulas', { tags: ['formulas', 'firstPool', 'all'] }, () => {
+context('Create formulas', { tags: ['formulas', 'firstPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const formulaName = 'testFormulaAPI';
 
     let policyId; let policyTopicId; let policyInstanceTopicId;
 
     before('Get policy ids', () => {
-        Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies,
-                headers: {
-                    authorization,
-                },
-            }).then((response) => {
-                expect(response.status).eql(STATUS_CODE.OK);
-                response.body.forEach(element => {
-                    if (element.name == 'iRec_4') {
-                        policyId = element.id;
-                        policyTopicId = element.topicId;
-                        policyInstanceTopicId = element.instanceTopicId;
-                    }
-                })
-            });
+        cy.getOrCreateIRec4Policy(SRUsername).then((policy) => {
+            policyId = policy.id;
+            policyTopicId = policy.topicId;
+            policyInstanceTopicId = policy.instanceTopicId;
         });
     })
 

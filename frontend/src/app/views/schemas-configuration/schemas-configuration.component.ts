@@ -1,13 +1,15 @@
-import { ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpResponse } from '@angular/common/http';
 import { EMPTY, Observable, Subject, Subscription, forkJoin, of } from 'rxjs';
-import { catchError, debounceTime, distinctUntilChanged, map, switchMap, takeUntil } from 'rxjs/operators';
-import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, relationAncestors, ModuleStatus, ISchemaTemplate, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus, ISchemaArrayDependency, ISchemaArrayDependencyMapping, } from '@guardian/interfaces';
+import { catchError, debounceTime, distinctUntilChanged, map, shareReplay, switchMap, takeUntil } from 'rxjs/operators';
+import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, relationAncestors, ModuleStatus, ISchemaTemplate, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus, ISchemaArrayDependency, ISchemaArrayDependencyMapping, DEFAULT_IWA_VERSION, IwaVersion, resolveIwaVersion, IPropertySuggestionResult, } from '@guardian/interfaces';
 import { SchemaService } from 'src/app/services/schema.service';
 import { TagsService } from 'src/app/services/tag.service';
 import { ProjectComparisonService } from 'src/app/services/project-comparison.service';
+import { AISearchService } from 'src/app/services/ai-search.service';
 import { DialogService } from 'primeng/dynamicdialog';
+import { IwaUpgradeDialogComponent } from 'src/app/modules/schema-engine/iwa-upgrade-dialog/iwa-upgrade-dialog.component';
 import { SchemaDeleteDialogComponent } from 'src/app/modules/schema-engine/schema-delete-dialog/schema-delete-dialog.component';
 import { ExportSchemaDialog } from 'src/app/modules/schema-engine/export-schema-dialog/export-schema-dialog.component';
 import { SetVersionDialog } from 'src/app/modules/schema-engine/set-version-dialog/set-version-dialog.component';
@@ -16,7 +18,10 @@ import { CodeEditorDialogComponent } from 'src/app/modules/policy-engine/dialogs
 import { ExportPolicyDialog } from 'src/app/modules/policy-engine/dialogs/export-policy-dialog/export-policy-dialog.component';
 import { PublishSchemaTemplateDialog } from 'src/app/modules/policy-engine/dialogs/publish-schema-template-dialog/publish-schema-template-dialog.component';
 import { FieldTypeUI, FIELD_TYPES_UI } from 'src/app/modules/schema-engine/field-type-ui';
+import { RichTextEditorComponent } from 'src/app/modules/schema-engine/rich-text-editor/rich-text-editor.component';
+import { markdownToHtml } from 'src/app/modules/schema-engine/rich-text-editor/markdown';
 import { SchemaTemplatesService } from 'src/app/services/schema-templates.service';
+import { ToastService } from 'src/app/services/toast.service';
 
 export interface DrillEntry {
     fieldLabel: string;
@@ -47,21 +52,38 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public schemaTemplate: ISchemaTemplate | null = null;
     public templateLoading: boolean = false;
     public schemaLoading: boolean = false;
+    /**
+     * Id of the schema whose full document has finished loading.
+     *
+     * switchSchema() sets selectedSchema optimistically from the sidebar item so
+     * the header renders immediately, and that placeholder does not carry the
+     * whole record. Anything that decides whether a mutating action is offered
+     * must wait for the real document, or it flickers on and off during load.
+     */
+    private loadedSchemaId: string | null = null;
 
     public activeTab: 'builder' | 'preview' = 'builder';
     public activeSideTab: 'fields' | 'schemas' = 'fields';
     public activeRpTab: 'settings' | 'logic' = 'settings';
-    public activeCanvasTab: 'fields' | 'conditions' | 'links' = 'fields';
+    public activeCanvasTab: 'fields' | 'conditions' | 'links' | 'propertyAi' = 'fields';
     public activeDrillTab: 'fields' | 'conditions' = 'fields';
 
     private readonly canvasTabStorageKey = 'sc-active-canvas-tab';
 
-    public setCanvasTab(tab: 'fields' | 'conditions' | 'links'): void {
+    public setCanvasTab(tab: 'fields' | 'conditions' | 'links' | 'propertyAi'): void {
         this.activeCanvasTab = tab;
         try {
             sessionStorage.setItem(this.canvasTabStorageKey, tab);
         } catch {
         }
+        this.autoLoadSuggestionsFor(tab);
+    }
+
+    private autoLoadSuggestionsFor(tab: string): void {
+        if (tab !== 'propertyAi' || this.suggestionsLoading) { return; }
+        const key = this.getContextSchemaCacheKey(this.currentContextSchema);
+        if (key && this.suggestionsCacheByContextKey.has(key)) { return; } // already checked this schema/sub-schema
+        this.loadSuggestions();
     }
 
     private forgetCanvasTab(): void {
@@ -78,8 +100,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         } catch {
             return;
         }
-        if (stored === 'fields' || stored === 'conditions' || stored === 'links') {
+        if (stored === 'fields' || stored === 'conditions' || stored === 'links' || stored === 'propertyAi') {
             this.activeCanvasTab = stored;
+            this.autoLoadSuggestionsFor(stored);
         }
     }
 
@@ -89,7 +112,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public readonly schemaSearch$ = new Subject<string>();
     private readonly _cancelLoadSchemas$ = new Subject<void>();
     private loadedTemplateId: string = '';
-    private loadedAppliedTemplateId: string = '';
+    private readonly appliedTemplateListByTopic = new Map<string, Observable<ISchemaTemplate[]>>();
     private pendingTemplateSchemaId: string = '';
     public schemasPage: number = 0;
     public schemasPageSize: number = 50;
@@ -101,6 +124,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public get selectedField(): SchemaField | null { return this._selectedField; }
     public set selectedField(field: SchemaField | null) {
         this._selectedField = field;
+        this.rightPanelSuggestion = null;
+        this.rightPanelSuggestionExpanded = false;
+        this.rightPanelSuggestLoading = false;
+        this.rightPanelSuggestUnavailable = false;
         this._rebuildRefPreset();
     }
 
@@ -111,6 +138,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public previewPill: 'submitter' | 'readonly' = 'submitter';
     public previewPreset: any = null;
     public previewReadonlyFields: any = null;
+    public richTextPresetTarget: 'default' | 'suggest' | 'test' | null = null;
+    @ViewChild('richTextPresetEditor') public richTextPresetEditor?: RichTextEditorComponent;
 
     public drillStack: DrillEntry[] = [];
     public get isDrilling(): boolean { return this.drillStack.length > 0; }
@@ -118,14 +147,20 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public get currentDrilledSchemaIri(): string { return this.drillStack[this.drillStack.length - 1]?.schemaIri || ''; }
 
     private dirtySchemaIds = new Set<string>();
+    // last-saved signature per schema, so a reverted edit can clear the dirty flag
+    private savedSignatures = new Map<string, string>();
     public isSaving: boolean = false;
     private _subSchemasByIri = new Map<string, Schema>();
+    @ViewChild('arrayLinkEditor')
+    public arrayDependencyEditor?: ElementRef<HTMLElement>;
+
     public newArrayDependencyField: string | null = null;
     public newArrayDependencyOn: string | null = null;
     public newArrayDependencyTitle: string | null = null;
     public newArrayDependencyMappingSource: string | null = null;
     public newArrayDependencyMappingTarget: string | null = null;
     public newArrayDependencyValueMappings: ISchemaArrayDependencyMapping[] = [];
+    public editingArrayDependency: ISchemaArrayDependency | null = null;
     public templateConfigSaving: boolean = false;
     private templateConfigDirty: boolean = false;
 
@@ -191,6 +226,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public get canPublishTemplate(): boolean {
         if (!this.isTemplateConfigMode || !this.schemaTemplate?.id) { return false; }
+        if (this.hasUnsavedChanges) { return false; }
         const status = this.schemaTemplate.status;
         return status === ModuleStatus.DRAFT || status === ModuleStatus.PUBLISH_ERROR;
     }
@@ -267,8 +303,20 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return this.getFieldConfigKey(this.selectedField);
     }
 
+    public get selectedSchemaGuidelines(): string {
+        return this.selectedSchemaConfig?.guidelines || '';
+    }
+
+    public get selectedFieldGuidelines(): string {
+        return this.selectedFieldConfig?.guidelines || '';
+    }
+
     public get canAddCustomFieldsToSelectedSchema(): boolean {
         return !this.selectedSchemaConfig?.customFieldsLocked;
+    }
+
+    public get isSelectedSchemaFeatured(): boolean {
+        return !!this.selectedSchemaConfig?.featured;
     }
 
     public get canChangeSelectedSchemaSettings(): boolean {
@@ -346,6 +394,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             return false;
         }
         return this.getSchemaTemplateConfig(schema)?.customFieldsLocked === true;
+    }
+
+    public isSchemaFeatured(schema: Schema): boolean {
+        if (this.isTemplateConfigMode) {
+            return !!this.getSchemaTemplateConfig(schema)?.featured;
+        }
+        return !!(schema as any)?.templateFeatured;
     }
 
     public isTemplateSchemaDeleteLocked(schema: Schema): boolean {
@@ -515,6 +570,68 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     private schemasFetched: boolean = false;
 
     public properties: any[] = [];
+    /** Property lists are per IWA version; cache so switching schemas is cheap. */
+    private propertiesByVersion = new Map<string, any[]>();
+    private propertyOptionsMemo: { source: any[]; current: string; result: any[] } | null = null;
+
+    /** Whether Glossary AI is turned on for this deployment - fetched once in ngOnInit(). */
+    public glossaryAiEnabled: boolean = false;
+    public suggestionsLoading: boolean = false;
+    public suggestionsAvailable: boolean = true;
+    public suggestionResults: IPropertySuggestionResult[] = [];
+    public rightPanelSuggestion: IPropertySuggestionResult | null = null;
+    public rightPanelSuggestionExpanded: boolean = false;
+    public rightPanelSuggestLoading: boolean = false;
+    public rightPanelSuggestUnavailable: boolean = false;
+    public highlightedFieldName: string | null = null;
+
+    /** Glossary AI results per schema/sub-schema, so switching away and back doesn't re-spend AI tokens. */
+    private suggestionsCacheByContextKey = new Map<string, { results: IPropertySuggestionResult[]; available: boolean }>();
+
+    private getContextSchemaCacheKey(schema: Schema | null): string | null {
+        if (!schema) { return null; }
+        const id = schema.id || (schema as any)._id;
+        if (id) { return id; }
+        const uuid = (schema as any).uuid;
+        return uuid ? `new:${uuid}` : null;
+    }
+
+    private persistSuggestionsForContext(previousContext: Schema | null): void {
+        const key = this.getContextSchemaCacheKey(previousContext);
+        if (!key || !this.suggestionsCacheByContextKey.has(key)) { return; }
+        this.suggestionsCacheByContextKey.set(key, { results: this.suggestionResults, available: this.suggestionsAvailable });
+    }
+
+    private restoreOrClearSuggestionsForContext(): void {
+        const key = this.getContextSchemaCacheKey(this.currentContextSchema);
+        const cached = key ? this.suggestionsCacheByContextKey.get(key) : undefined;
+        if (cached) {
+            this.suggestionResults = cached.results;
+            this.suggestionsAvailable = cached.available;
+        } else {
+            this.suggestionResults = [];
+            this.suggestionsAvailable = true;
+        }
+        this.highlightedFieldName = null;
+    }
+
+    public static readonly HIGH_CONFIDENCE_THRESHOLD = 0.75;
+
+    public get pendingSuggestionCount(): number {
+        return this.suggestionResults.filter((result) => {
+            const topCandidate = result.candidates[0];
+            return topCandidate && (this.getFieldByName(result.fieldName) as any)?.property !== topCandidate.title;
+        }).length;
+    }
+
+    public get highConfidenceSuggestionCount(): number {
+        return this.suggestionResults.filter((result) => {
+            const topCandidate = result.candidates[0];
+            return topCandidate
+                && topCandidate.confidence >= SchemasConfigurationComponent.HIGH_CONFIDENCE_THRESHOLD
+                && (this.getFieldByName(result.fieldName) as any)?.property !== topCandidate.title;
+        }).length;
+    }
 
     public readonly requiredModeOptions: { label: string; value: string }[] = [
         { label: 'None',          value: 'none'          },
@@ -530,18 +647,243 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         private tagsService: TagsService,
         private schemaTemplatesService: SchemaTemplatesService,
         private projectComparisonService: ProjectComparisonService,
+        private aiSearchService: AISearchService,
         private dialogService: DialogService,
         private _elRef: ElementRef,
         private _zone: NgZone,
         private _cdr: ChangeDetectorRef,
+        private toastService: ToastService,
     ) {}
+
+    /**
+     * Surface a backend failure. Every error path in this component used to be a silent
+     * no-op, which makes a failed operation indistinguishable from a dead button.
+     */
+    private reportError(action: string, error: any): void {
+        const detail = error?.error?.message || error?.message || 'Unknown error';
+        this.toastService.error(detail, action, { sticky: true });
+    }
+
+    /**
+     * Whether the open schema can be switched to the IWA v3 property namespace.
+     *
+     * Only drafts qualify: a published schema's field properties are frozen on
+     * IPFS, so it must get a new version first.
+     */
+    public get canUpgradeToIwaV3(): boolean {
+        const schema = this.selectedSchema;
+        if (!schema || this.isTemplateMode) { return false; }
+        // Only decide once the full document is loaded - the optimistic
+        // placeholder would otherwise flash the button on and straight off again.
+        if (!this.loadedSchemaId || this.loadedSchemaId !== this.selectedSchemaId) {
+            return false;
+        }
+        if (resolveIwaVersion(schema) === IwaVersion.V3) { return false; }
+        return schema.status === SchemaStatus.DRAFT || schema.status === SchemaStatus.ERROR;
+    }
+
+    /**
+     * Remap every field property on the open draft schema from IWA v1 to v3.
+     *
+     * Shows what would change first — renames are applied, and properties v3
+     * removed are cleared, so the author confirms before anything is written.
+     */
+    public onUpgradeToIwaV3(): void {
+        const schema = this.selectedSchema;
+        const id = schema?.id || (schema as any)?._id;
+        if (!id) { return; }
+
+        this.schemaService.iwaUpgradePreview(id)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (report) => {
+                    const dialogRef = this.dialogService.open(IwaUpgradeDialogComponent, {
+                        showHeader: false,
+                        width: '840px',
+                        styleClass: 'guardian-dialog',
+                        data: {
+                            header: 'Upgrade to IWA v3',
+                            report
+                        },
+                    });
+                    if (!dialogRef) { return; }
+                    dialogRef.onClose.pipe(takeUntil(this.destroy$)).subscribe((result: string) => {
+                        if (result !== 'Upgrade') { return; }
+                        this.schemaService.upgradeToIwaV3(id)
+                            .pipe(takeUntil(this.destroy$))
+                            .subscribe({
+                                next: () => this.schemaLoad$.next(id),
+                                error: (error) => this.reportError('Upgrade to IWA v3', error)
+                            });
+                    });
+                },
+                error: (error) => this.reportError('Upgrade preview', error)
+            });
+    }
+
+    /**
+     * Load the IWA property list for a specific specification version.
+     */
+    private loadProperties(iwaVersion: string): void {
+        const cached = this.propertiesByVersion.get(iwaVersion);
+        if (cached) {
+            this.properties = cached;
+            return;
+        }
+        this.projectComparisonService.getProperties(iwaVersion)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (list) => {
+                    const properties = list || [];
+                    this.propertiesByVersion.set(iwaVersion, properties);
+                    this.properties = properties;
+                    this._cdr.markForCheck();
+                },
+                error: () => {}
+            });
+    }
+
+    /**
+     * Load Glossary AI suggestions for every field on the current schema.
+     */
+    public loadSuggestions(): void {
+        if (!this.glossaryAiEnabled) { return; }
+        const schema = this.currentContextSchema;
+        const fields = schema?.fields ?? [];
+        // Captured now, not read from `this.currentContextSchema` in the callbacks below - the user
+        // may switch schemas again before the response arrives, and the result must not be cached
+        // (or applied) under the wrong schema.
+        const key = this.getContextSchemaCacheKey(schema);
+        this.suggestionsLoading = true;
+        const request = {
+            schemaId: schema?.id || (schema as any)?._id,
+            fieldNames: fields.map((field) => field.name)
+        };
+        this.aiSearchService.suggestSchemaProperties(request)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (response) => {
+                    const results = response.results || [];
+                    if (key) { this.suggestionsCacheByContextKey.set(key, { results, available: response.available }); }
+                    this.suggestionsLoading = false;
+                    if (this.getContextSchemaCacheKey(this.currentContextSchema) !== key) { return; }
+                    this.suggestionsAvailable = response.available;
+                    this.suggestionResults = results;
+                    this._cdr.markForCheck();
+                },
+                error: () => {
+                    if (key) { this.suggestionsCacheByContextKey.set(key, { results: [], available: false }); }
+                    this.suggestionsLoading = false;
+                    if (this.getContextSchemaCacheKey(this.currentContextSchema) !== key) { return; }
+                    this._cdr.markForCheck();
+                }
+            });
+    }
+
+    public getFieldByName(fieldName: string): SchemaField | undefined {
+        return (this.currentContextSchema?.fields ?? []).find((f) => f.name === fieldName);
+    }
+
+    public acceptSuggestion(fieldName: string, title: string): void {
+        const field = this.getFieldByName(fieldName);
+        if (!field) { return; }
+        (field as any).property = title;
+        this.markDirty();
+    }
+
+    public dismissSuggestion(fieldName: string): void {
+        this.suggestionResults = this.suggestionResults.filter((result) => result.fieldName !== fieldName);
+    }
+
+    public applyAllHighConfidence(threshold: number = SchemasConfigurationComponent.HIGH_CONFIDENCE_THRESHOLD): void {
+        for (const result of this.suggestionResults) {
+            const topCandidate = result.candidates[0];
+            if (topCandidate && topCandidate.confidence >= threshold) {
+                this.acceptSuggestion(result.fieldName, topCandidate.title);
+            }
+        }
+    }
+
+    public goEditField(fieldName: string): void {
+        const field = this.getFieldByName(fieldName);
+        if (!field) { return; }
+        this.setCanvasTab('fields');
+        this.selectedField = field;
+    }
+
+    public suggestPropertyForSelectedField(): void {
+        if (!this.glossaryAiEnabled) { return; }
+        const field = this.selectedField;
+        if (!field) { return; }
+        this.rightPanelSuggestLoading = true;
+        this.rightPanelSuggestUnavailable = false;
+        const contextSchema = this.currentContextSchema;
+        const request = {
+            schemaId: contextSchema?.id || (contextSchema as any)?._id,
+            fieldNames: [field.name]
+        };
+        this.aiSearchService.suggestSchemaProperties(request)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (response) => {
+                    if (this.selectedField !== field) { return; }
+                    this.rightPanelSuggestLoading = false;
+                    this.rightPanelSuggestUnavailable = !response.available;
+                    this.rightPanelSuggestion = response.results?.[0] || null;
+                    this.rightPanelSuggestionExpanded = false;
+                    this._cdr.markForCheck();
+                },
+                error: () => {
+                    if (this.selectedField !== field) { return; }
+                    this.rightPanelSuggestLoading = false;
+                    this.rightPanelSuggestUnavailable = true;
+                    this._cdr.markForCheck();
+                }
+            });
+    }
+
+    public openInPropertyAiTab(fieldName: string): void {
+        this.setCanvasTab('propertyAi');
+        this.highlightedFieldName = fieldName;
+        setTimeout(() => {
+            if (this.highlightedFieldName === fieldName) {
+                this.highlightedFieldName = null;
+            }
+        }, 2000);
+    }
+
+    /**
+     * Options for the Property dropdown.
+     *
+     * A field may already carry a property that is not in the current version's
+     * list — e.g. a v1 path on a schema being viewed, or one the spec dropped.
+     * p-select renders an unlisted value as blank, which would silently wipe it
+     * on the next save, so the existing value is appended as its own option.
+     */
+    public get propertyOptions(): any[] {
+        const current = (this.selectedField as any)?.property || '';
+        if (!current || this.properties.some((item) => item?.title === current)) {
+            return this.properties;
+        }
+        const memo = this.propertyOptionsMemo;
+        if (memo && memo.source === this.properties && memo.current === current) {
+            return memo.result;
+        }
+        const result = [...this.properties, { title: current, value: current }];
+        this.propertyOptionsMemo = { source: this.properties, current, result };
+        return result;
+    }
 
     public ngOnInit(): void {
         this.restoreCanvasTab();
 
-        this.projectComparisonService.getProperties()
+        this.aiSearchService.isGlossaryAiEnabled()
             .pipe(takeUntil(this.destroy$))
-            .subscribe({ next: (p) => { this.properties = p || []; }, error: () => {} });
+            .subscribe((enabled) => { this.glossaryAiEnabled = enabled; });
+
+        // A brand-new schema is authored against the current IWA version; an
+        // existing one keeps whatever version it was authored against.
+        this.loadProperties(DEFAULT_IWA_VERSION);
 
         this.schemaLoad$.pipe(
             switchMap(id => {
@@ -601,10 +943,16 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 this.schemaTemplate = appliedTemplate;
             }
             this.selectedSchema = schema;
+            this.loadProperties(resolveIwaVersion(schema));
             this.resetArrayDependencyEditor();
             this.schemaLoading = false;
             const schemaId = schema.id || (schema as any)._id;
-            if (schemaId) { this.dirtySchemaIds.delete(schemaId); }
+            this.loadedSchemaId = schemaId || null;
+            if (schemaId) {
+                this.dirtySchemaIds.delete(schemaId);
+                // freshly loaded from the server, so this is the saved baseline
+                this.snapshotSchema(schema, schemaId);
+            }
             if (!this.topic && schema.topicId) {
                 this.topic = schema.topicId;
             }
@@ -746,6 +1094,23 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             errors.push('Enum must have at least one value');
         }
 
+        if (Array.isArray(field.tableColumns)) {
+            if (!field.tableColumns.length) {
+                errors.push('Table must have at least one column');
+            }
+            const columnKeys = field.tableColumns.map((column) => (column?.key || '').trim());
+            if (field.tableColumns.some((column) => !(column?.name || '').trim())) {
+                errors.push('Every column needs a display name');
+            }
+            if (columnKeys.some((columnKey) => !columnKey)) {
+                errors.push('Every column needs a key');
+            } else if (columnKeys.some((columnKey) => /\s/.test(columnKey))) {
+                errors.push('Column key must not contain spaces');
+            } else if (new Set(columnKeys).size !== columnKeys.length) {
+                errors.push('Column keys must be unique within the field');
+            }
+        }
+
         const geoDependencyError = this.getGeoDependencyError(field, allFields);
         if (geoDependencyError) {
             errors.push(geoDependencyError);
@@ -812,12 +1177,15 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public switchSchema(schema: Schema): void {
+        const previousContext = this.currentContextSchema;
         const id = schema.id || (schema as any)._id;
         if (!id) {
             if (this.newSchemaKeys.has(`new:${(schema as any).uuid}`)) {
                 this.selectedField = null;
                 this.selectedSchema = schema;
                 this.drillStack = [];
+                this.persistSuggestionsForContext(previousContext);
+                this.restoreOrClearSuggestionsForContext();
                 this.setCanvasTab('fields');
                 this.resetArrayDependencyEditor();
                 this.schemaPropsCollapsed = false;
@@ -830,7 +1198,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
         this.selectedField = null;
         this.selectedSchema = schema; // optimistic: show header before fields load
+        this.loadedSchemaId = null;
         this.drillStack = [];
+        this.persistSuggestionsForContext(previousContext);
+        this.restoreOrClearSuggestionsForContext();
         this.setCanvasTab('fields');
         this.resetArrayDependencyEditor();
         this.schemaPropsCollapsed = false;
@@ -924,11 +1295,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (this.isTemplateMode) {
             return;
         }
-        const templateId = this.selectedSchema?.templateId ||
-            this.schemas.find(schema => !!schema.templateId)?.templateId ||
-            '';
+        const templateId = this.selectedSchema?.templateId || '';
         if (!templateId) {
-            this.loadedAppliedTemplateId = '';
             this.schemaTemplate = null;
             return;
         }
@@ -943,27 +1311,39 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         templateId: string,
         topicId: string
     ): Observable<ISchemaTemplate | null> {
-        const cacheKey = `${templateId}:${topicId}`;
-        if (cacheKey === this.loadedAppliedTemplateId && this.schemaTemplate) {
-            return of(this.schemaTemplate);
-        }
         if (!topicId) {
             return of(null);
         }
-        this.loadedAppliedTemplateId = cacheKey;
-        return this.schemaTemplatesService.getAppliedByPolicyTopic(topicId).pipe(
+        // The policy can have several templates applied; the locks that apply to
+        // this schema are the ones from the template the schema itself names.
+        return this.getAppliedTemplatesForTopic(topicId).pipe(
+            map((applied) => (applied || []).find((item) => item.id === templateId) || null),
             map((template) => template
                 ? ({
                     ...template,
                     config: template.config || { schemas: {} }
                 } as ISchemaTemplate)
                 : null
-            ),
-            catchError(() => {
-                this.loadedAppliedTemplateId = '';
-                return of(null);
-            })
+            )
         );
+    }
+
+    // One request per topic, shared and cached across every distinct templateId a
+    // policy's schemas name, so switching the selection between schemas owned by
+    // different applied templates no longer re-fetches the same topic's binding list.
+    private getAppliedTemplatesForTopic(topicId: string): Observable<ISchemaTemplate[]> {
+        let cached = this.appliedTemplateListByTopic.get(topicId);
+        if (!cached) {
+            cached = this.schemaTemplatesService.getAppliedByPolicyTopic(topicId).pipe(
+                shareReplay({ bufferSize: 1, refCount: false }),
+                catchError(() => {
+                    this.appliedTemplateListByTopic.delete(topicId);
+                    return of([]);
+                })
+            );
+            this.appliedTemplateListByTopic.set(topicId, cached);
+        }
+        return cached;
     }
 
     public toggleCanAddCustomFieldsToSelectedSchema(): void {
@@ -975,6 +1355,18 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             return;
         }
         config.customFieldsLocked = !config.customFieldsLocked;
+        this.templateConfigDirty = true;
+    }
+
+    public toggleFeaturedForSelectedSchema(): void {
+        if (this.isTemplateReadonly) {
+            return;
+        }
+        const config = this.ensureSelectedSchemaConfig();
+        if (!config) {
+            return;
+        }
+        config.featured = !config.featured;
         this.templateConfigDirty = true;
     }
 
@@ -999,6 +1391,38 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             return;
         }
         config.locked = this.canEditSelectedFieldInTemplate;
+        this.templateConfigDirty = true;
+    }
+
+    public setSelectedSchemaGuidelines(guidelines: string): void {
+        if (this.isTemplateReadonly) {
+            return;
+        }
+        const config = this.ensureSelectedSchemaConfig();
+        if (!config) {
+            return;
+        }
+        if (guidelines) {
+            config.guidelines = guidelines;
+        } else {
+            delete config.guidelines;
+        }
+        this.templateConfigDirty = true;
+    }
+
+    public setSelectedFieldGuidelines(guidelines: string): void {
+        if (this.isTemplateReadonly) {
+            return;
+        }
+        const config = this.ensureSelectedFieldConfig();
+        if (!config) {
+            return;
+        }
+        if (guidelines) {
+            config.guidelines = guidelines;
+        } else {
+            delete config.guidelines;
+        }
         this.templateConfigDirty = true;
     }
 
@@ -1098,6 +1522,142 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return schemaConfig.fields[fieldKey];
     }
 
+    /*
+     * Counts every object and array level, not just field nesting. A field one level
+     * deeper costs two (its parent's `fields` array, then the field object), so this is
+     * double the ~12 levels of field nesting actually intended. Scalars return before
+     * the check and cost nothing. Too low is not harmless: the throw means "cannot
+     * prove clean", so a legitimately deep schema would latch "Unsaved changes" forever
+     * - the exact failure this fix exists to remove.
+     */
+    private static readonly SIGNATURE_MAX_DEPTH = 24;
+
+    /* Recomputed by the editor rather than edited by the user; everything else is hashed. */
+    private static readonly SIGNATURE_IGNORED_KEYS = new Set([
+        'errors', 'path', 'fullPath', 'parent', 'controlKey', '_id',
+    ]);
+
+    /**
+     * A stable signature of everything the editor can change.
+     *
+     * This walks the schema generically instead of hashing a hand-picked list of
+     * properties. An allow-list fails in the dangerous direction: any editable
+     * property nobody remembered to add is invisible to the check, the dirty flag
+     * clears, `saveAll()` early-returns on `!hasUnsavedChanges`, and the edit is lost
+     * on navigation with no toast and no guard dialog. Ignoring only what is provably
+     * derived inverts that - an unrecognised property makes the schema look dirty,
+     * which merely costs a redundant save.
+     *
+     * It also removes two whole classes of blind spot for free: a condition built with
+     * AND/OR has no `ifCondition.field`, so every predicate edit used to hash to the
+     * same null; and `then`/`else` targets are now reached like anything else.
+     *
+     * Returns null on anything it cannot model (cycle, depth blow-out, throw). Callers
+     * treat null as "cannot prove clean" and leave the schema dirty: a false clean would
+     * hide Save all and silently discard the user's work, which is far worse than the
+     * stale "Unsaved changes" this fixes.
+     */
+    private schemaSignature(schema: Schema | null | undefined): string | null {
+        if (!schema) {
+            return null;
+        }
+        try {
+            /*
+             * Path-local rather than one set for the whole traversal. A global set
+             * rejects any object reached twice, not just cycles - and two ref fields
+             * pointing at the same sub-schema IRI share their field objects, so the
+             * signature would return null and leave that schema permanently dirty.
+             */
+            const ancestors = new Set<object>();
+            const walk = (value: any, depth: number): any => {
+                if (value === undefined || typeof value === 'function') {
+                    return null;
+                }
+                if (value === null || typeof value !== 'object') {
+                    return value;
+                }
+                if (depth > SchemasConfigurationComponent.SIGNATURE_MAX_DEPTH || ancestors.has(value)) {
+                    throw new Error('unbounded');
+                }
+                ancestors.add(value);
+                try {
+                    if (Array.isArray(value)) {
+                        return value.map((item) => walk(item, depth + 1));
+                    }
+                    const out: any = {};
+                    for (const key of Object.keys(value).sort()) {
+                        if (SchemasConfigurationComponent.SIGNATURE_IGNORED_KEYS.has(key)) {
+                            continue;
+                        }
+                        const item = value[key];
+                        /*
+                         * JSON.stringify drops undefined- and function-valued keys, so the
+                         * saved schema cannot tell those from absent ones. Clearing a
+                         * property back to unset has to read as clean, or it leaves a
+                         * dirty flag nothing can ever clear.
+                         */
+                        if (item === undefined || typeof item === 'function') {
+                            continue;
+                        }
+                        out[key] = walk(item, depth + 1);
+                    }
+                    return out;
+                } finally {
+                    ancestors.delete(value);
+                }
+            };
+            /*
+             * The walk is generic, but it can only reach what this root names, so the
+             * root is the one remaining allow-list and needs the same scrutiny.
+             * `arrayDependencies` is user-editable (addArrayDependency /
+             * removeArrayDependency, both of which call markDirty) and is persisted on
+             * the model, so editing only an array dependency used to recompute a
+             * signature identical to the baseline and lose the edit.
+             */
+            return JSON.stringify(walk({
+                name: schema.name ?? null,
+                description: schema.description ?? null,
+                entity: schema.entity ?? null,
+                fields: schema.fields ?? [],
+                conditions: schema.conditions ?? [],
+                arrayDependencies: schema.arrayDependencies ?? [],
+            }, 0));
+        } catch {
+            return null;
+        }
+    }
+
+    private snapshotSchema(schema: Schema | null | undefined, key?: string): void {
+        const id = key || schema?.id || (schema as any)?._id;
+        if (!id) {
+            return;
+        }
+        const signature = this.schemaSignature(schema);
+        if (signature === null) {
+            this.savedSignatures.delete(id);
+        } else {
+            this.savedSignatures.set(id, signature);
+        }
+    }
+
+    /**
+     * Drop the dirty mark when the schema matches what was last saved. An unknown
+     * signature or a missing baseline leaves it dirty.
+     */
+    private reconcileDirty(key: string, schema: Schema | null | undefined): void {
+        const baseline = this.savedSignatures.get(key);
+        if (baseline === undefined) {
+            this.dirtySchemaIds.add(key);
+            return;
+        }
+        const current = this.schemaSignature(schema);
+        if (current !== null && current === baseline) {
+            this.dirtySchemaIds.delete(key);
+        } else {
+            this.dirtySchemaIds.add(key);
+        }
+    }
+
     public markDirty(): void {
         if (this.isTemplateReadonly) {
             return;
@@ -1112,15 +1672,16 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             const subId = subSchema?.id || (subSchema as any)?._id;
             const subUuid = (subSchema as any)?.uuid;
             if (subId) {
-                this.dirtySchemaIds.add(subId);
+                this.reconcileDirty(subId, subSchema);
             } else if (subUuid) {
+                // a schema that has never been saved has no baseline: always dirty
                 this.dirtySchemaIds.add(`new:${subUuid}`);
             }
             return;
         }
         const rootId = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
         if (rootId) {
-            this.dirtySchemaIds.add(rootId);
+            this.reconcileDirty(rootId, this.selectedSchema);
         } else if (this.selectedSchema?.uuid) {
             this.dirtySchemaIds.add(`new:${this.selectedSchema.uuid}`);
         }
@@ -1177,7 +1738,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const createObs = toCreate.map(s =>
             this.schemaService.create(s.category ?? this.getCategory(), s, this.topic).pipe(
                 map((schemas: ISchema[]) => {
-                    const saved = schemas.find(r => r.uuid === s.uuid && r.topicId === this.topic);
+                    const matches = schemas.filter(r => r.uuid === s.uuid);
+                    const saved = matches.find(r => r.topicId === this.topic) ?? matches[0];
                     const savedId = saved?.id || (saved as any)?._id;
                     if (savedId) {
                         s.id = savedId;
@@ -1219,13 +1781,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                                 queryParams: { last: btoa(returnUrl) },
                             });
                         },
-                        error: () => { this.isSaving = false; },
+                        error: (error) => { this.isSaving = false; this.reportError('Save all', error); },
                     });
             };
             if (createObs.length) {
                 forkJoin(createObs).pipe(takeUntil(this.destroy$)).subscribe({
                     next: triggerNewVersion,
-                    error: () => { this.isSaving = false; },
+                    error: (error) => { this.isSaving = false; this.reportError('Save all', error); },
                 });
             } else {
                 triggerNewVersion();
@@ -1246,8 +1808,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     this.isSaving = false;
                     this.dirtySchemaIds.clear();
                     this.newSchemaKeys.clear();
+                    // what was just saved becomes the new baseline
+                    allSchemas.forEach(schema => this.snapshotSchema(schema));
                 },
-                error: () => { this.isSaving = false; }
+                error: (error) => { this.isSaving = false; this.reportError('Save all', error); }
             });
     }
 
@@ -1267,6 +1831,59 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
         this.selectedField = newField;
         this.markDirty();
+    }
+
+    public openRichTextPresetDialog(target: 'default' | 'suggest' | 'test'): void {
+        this.richTextPresetTarget = target;
+    }
+
+    public isFormattedPresetField(): boolean {
+        const type = this.selectedField ? this.getFieldValueInputType(this.selectedField) : '';
+        return type === 'richText';
+    }
+
+    public getPresetPreviewHtml(value: any): string {
+        if (typeof value !== 'string' || !value) {
+            return '';
+        }
+        return markdownToHtml(value);
+    }
+
+    public isRichTextPresetLinkOpen(): boolean {
+        return !!this.richTextPresetEditor?.showLinkDialog;
+    }
+
+    public closeRichTextPresetDialog(): void {
+        if (this.isRichTextPresetLinkOpen()) {
+            return;
+        }
+        this.richTextPresetEditor?.cancelLink();
+        this.richTextPresetTarget = null;
+    }
+
+    public getRichTextPresetDialogTitle(): string {
+        if (this.richTextPresetTarget === 'default') { return 'Default value'; }
+        if (this.richTextPresetTarget === 'suggest') { return 'Suggested value'; }
+        return 'Test value';
+    }
+
+    public getRichTextPresetValue(): string {
+        if (this.richTextPresetTarget === 'default') {
+            return typeof this.selectedField?.default === 'string' ? this.selectedField.default : '';
+        }
+        if (this.richTextPresetTarget === 'suggest') {
+            return typeof this.selectedField?.suggest === 'string' ? this.selectedField.suggest : '';
+        }
+        const value = this.getFieldTestValue();
+        return typeof value === 'string' ? value : '';
+    }
+
+    public setRichTextPresetValue(value: string): void {
+        if (this.richTextPresetTarget === 'default' || this.richTextPresetTarget === 'suggest') {
+            this.setFieldPresetValue(this.richTextPresetTarget, value);
+        } else if (this.richTextPresetTarget === 'test') {
+            this.setFieldTestValue(value);
+        }
     }
 
     private removeGeoDependenciesByField(field: SchemaField, fields: SchemaField[]): void {
@@ -1308,6 +1925,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (Array.isArray(f.enum)) { clone.enum = [...f.enum]; }
         if (Array.isArray(f.fields)) { clone.fields = [...f.fields]; }
         if (Array.isArray(f.availableOptions)) { clone.availableOptions = [...f.availableOptions]; }
+        if (Array.isArray(f.tableColumns)) {
+            clone.tableColumns = f.tableColumns.map((column: any) => ({ ...column }));
+        }
         this.clearTemplateFieldMetadata(clone);
         const srcIdx = targetFields.indexOf(field);
         if (srcIdx !== -1) {
@@ -1390,6 +2010,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (key === 'date') { return 'date'; }
         if (key === 'time') { return 'time'; }
         if (key === 'dateTime') { return 'datetime-local'; }
+        if (key === 'richText') { return 'richText'; }
+
         return 'text';
     }
 
@@ -1527,6 +2149,197 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public get selectedFieldIsGeoJson(): boolean {
         return this.selectedField ? this.getFieldCurrentType(this.selectedField) === 'geo' : false;
+    }
+
+    private readonly tableColumnKeyUnlocked = new WeakSet<object>();
+
+    public get selectedFieldIsTable(): boolean {
+        return this.selectedField ? this.getFieldCurrentType(this.selectedField) === 'table' : false;
+    }
+
+    public get selectedFieldTableColumnsEnabled(): boolean {
+        return Array.isArray(this.selectedField?.tableColumns);
+    }
+
+    public get selectedFieldTableColumns(): { name: string; key: string }[] {
+        return this.selectedField?.tableColumns ?? [];
+    }
+
+    public toggleTableColumns(): void {
+        if (!this.selectedField) { return; }
+        if (Array.isArray(this.selectedField.tableColumns)) {
+            delete this.selectedField.tableColumns;
+        } else {
+            this.selectedField.tableColumns = [{ name: '', key: '' }];
+        }
+        this.markDirty();
+    }
+
+    public addTableColumn(): void {
+        if (!Array.isArray(this.selectedField?.tableColumns)) { return; }
+        this.selectedField.tableColumns.push({ name: '', key: '' });
+        this.markDirty();
+    }
+
+    public removeTableColumn(index: number): void {
+        const columns = this.selectedField?.tableColumns;
+        if (!Array.isArray(columns) || columns.length <= 1) { return; }
+        if (index < 0 || index >= columns.length) { return; }
+        columns.splice(index, 1);
+        this.markDirty();
+    }
+
+    public moveTableColumn(index: number, offset: number): void {
+        const columns = this.selectedField?.tableColumns;
+        if (!Array.isArray(columns)) { return; }
+        const target = index + offset;
+        if (index < 0 || index >= columns.length) { return; }
+        if (target < 0 || target >= columns.length) { return; }
+        const [moved] = columns.splice(index, 1);
+        columns.splice(target, 0, moved);
+        this.markDirty();
+    }
+
+    public setTableColumnValue(index: number, key: 'name' | 'key', value: string): void {
+        const columns = this.selectedField?.tableColumns;
+        if (!Array.isArray(columns) || index < 0 || index >= columns.length) { return; }
+        const column = columns[index];
+        const derivedKey = key === 'name' && !this.isTableColumnKeyUnlocked(column);
+        column[key] = value;
+        if (derivedKey) {
+            column.key = SchemasConfigurationComponent.toColumnKey(value);
+        }
+        this.markDirty();
+    }
+
+    public isTableColumnKeyUnlocked(column: { name: string; key: string }): boolean {
+        if (this.tableColumnKeyUnlocked.has(column)) { return true; }
+        return !!column.key && column.key !== SchemasConfigurationComponent.toColumnKey(column.name);
+    }
+
+    public tableColumnDragIndex = -1;
+    public tableColumnDragOverIndex = -1;
+    public isTableColumnDragActive = false;
+    private _tableColumnMouseMove: ((event: MouseEvent) => void) | null = null;
+    private _tableColumnMouseUp: ((event: MouseEvent) => void) | null = null;
+    private _tableColumnStartX = 0;
+    private _tableColumnStartY = 0;
+    public tableColumnFloatX = 0;
+    public tableColumnFloatY = 0;
+    public tableColumnFloatWidth = 0;
+    private _tableColumnOffsetX = 0;
+    private _tableColumnOffsetY = 0;
+
+    public get tableColumnDragged(): { name: string; key: string } | null {
+        const columns = this.selectedField?.tableColumns;
+        if (!Array.isArray(columns)) { return null; }
+        return columns[this.tableColumnDragIndex] ?? null;
+    }
+
+    public get selectedFieldTableColumnsDraggable(): boolean {
+        return this.selectedFieldTableColumns.length > 1;
+    }
+
+    public onTableColumnMouseDown(event: MouseEvent, index: number): void {
+        if (!this.selectedFieldTableColumnsDraggable) { return; }
+        event.preventDefault();
+        if (this._tableColumnMouseMove) { this.clearTableColumnDrag(); }
+        const row = (event.currentTarget as HTMLElement).closest('.sc-table-column');
+        if (row) {
+            const rect = row.getBoundingClientRect();
+            this.tableColumnFloatWidth = rect.width;
+            this._tableColumnOffsetX = event.clientX - rect.left;
+            this._tableColumnOffsetY = event.clientY - rect.top;
+        }
+        this.tableColumnDragIndex = index;
+        this.tableColumnDragOverIndex = -1;
+        this.isTableColumnDragActive = false;
+        this._tableColumnStartX = event.clientX;
+        this._tableColumnStartY = event.clientY;
+        document.body.style.userSelect = 'none';
+        document.body.style.cursor = 'grabbing';
+        this._tableColumnMouseMove = (e: MouseEvent) => this.onTableColumnMouseMove(e);
+        this._tableColumnMouseUp = () => this._zone.run(() => this.onTableColumnMouseUp());
+        document.addEventListener('mousemove', this._tableColumnMouseMove);
+        document.addEventListener('mouseup', this._tableColumnMouseUp);
+    }
+
+    private onTableColumnMouseMove(event: MouseEvent): void {
+        if (this.tableColumnDragIndex === -1) { return; }
+        const dx = event.clientX - this._tableColumnStartX;
+        const dy = event.clientY - this._tableColumnStartY;
+        if (!this.isTableColumnDragActive && Math.hypot(dx, dy) > 4) {
+            this.isTableColumnDragActive = true;
+        }
+        if (!this.isTableColumnDragActive) { return; }
+        this.tableColumnFloatX = event.clientX - this._tableColumnOffsetX;
+        this.tableColumnFloatY = event.clientY - this._tableColumnOffsetY;
+        this.updateTableColumnDropIndicator(event.clientY);
+        this._cdr.detectChanges();
+    }
+
+    private onTableColumnMouseUp(): void {
+        this.applyTableColumnDrag();
+        this.clearTableColumnDrag();
+    }
+
+    private updateTableColumnDropIndicator(clientY: number): void {
+        const root = this._elRef.nativeElement as HTMLElement;
+        const rows = Array.from(root.querySelectorAll<HTMLElement>('.sc-table-column'));
+        this.tableColumnDragOverIndex = -1;
+        for (let i = 0; i < rows.length; i++) {
+            if (i === this.tableColumnDragIndex) { continue; }
+            const rect = rows[i].getBoundingClientRect();
+            if (clientY >= rect.top && clientY <= rect.bottom) {
+                this.tableColumnDragOverIndex = i;
+                return;
+            }
+        }
+    }
+
+    public applyTableColumnDrag(): void {
+        if (!this.isTableColumnDragActive) { return; }
+        const from = this.tableColumnDragIndex;
+        const to = this.tableColumnDragOverIndex;
+        if (from === -1 || to === -1 || from === to) { return; }
+        this.moveTableColumn(from, to - from);
+    }
+
+    public clearTableColumnDrag(): void {
+        if (this._tableColumnMouseMove) {
+            document.removeEventListener('mousemove', this._tableColumnMouseMove);
+            this._tableColumnMouseMove = null;
+        }
+        if (this._tableColumnMouseUp) {
+            document.removeEventListener('mouseup', this._tableColumnMouseUp);
+            this._tableColumnMouseUp = null;
+        }
+        document.body.style.userSelect = '';
+        document.body.style.cursor = '';
+        this.tableColumnDragIndex = -1;
+        this.tableColumnDragOverIndex = -1;
+        this.isTableColumnDragActive = false;
+    }
+
+    public toggleTableColumnKeyLock(index: number): void {
+        const columns = this.selectedField?.tableColumns;
+        if (!Array.isArray(columns) || index < 0 || index >= columns.length) { return; }
+        const column = columns[index];
+        if (this.isTableColumnKeyUnlocked(column)) {
+            this.tableColumnKeyUnlocked.delete(column);
+            column.key = SchemasConfigurationComponent.toColumnKey(column.name);
+        } else {
+            this.tableColumnKeyUnlocked.add(column);
+        }
+        this.markDirty();
+    }
+
+    private static toColumnKey(name: string): string {
+        return (name || '')
+            .trim()
+            .toLowerCase()
+            .replace(/\s+/g, '_')
+            .replace(/[^a-z0-9_]/g, '');
     }
 
     public get selectedFieldCanBeArray(): boolean {
@@ -1759,7 +2572,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         f.unitSystem = ft.unitSystem || '';
         delete f.fields;
         delete f.enum;
+        delete f.tableColumns;
         if (ft.key === 'enum') { f.enum = []; }
+        if (ft.key === 'table') { f.tableColumns = [{ name: '', key: '' }]; }
         if (SchemasConfigurationComponent.NON_UPDATABLE_TYPES.has(ft.key)) { f.isUpdatable = false; }
         f.default = null;
         f.suggest = null;
@@ -1787,6 +2602,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     private resetArrayDependencyEditor(): void {
+        this.editingArrayDependency = null;
         this.newArrayDependencyField = null;
         this.newArrayDependencyOn = null;
         this.newArrayDependencyTitle = null;
@@ -1961,9 +2777,14 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return this.arrayDependencies.length;
     }
 
-    private createsArrayDependencyCycle(field: string, on: string): boolean {
+    private createsArrayDependencyCycle(
+        field: string,
+        on: string,
+        ignore: ISchemaArrayDependency | null,
+    ): boolean {
         const graph = new Map<string, string[]>();
         for (const dependency of this.arrayDependencies) {
+            if (dependency === ignore) { continue; }
             const source = dependency.on.join('.');
             const targets = graph.get(source) ?? [];
             targets.push(dependency.field.join('.'));
@@ -1982,24 +2803,56 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return false;
     }
 
-    public canAddArrayDependency(): boolean {
+    public canApplyArrayDependency(): boolean {
         const field = this.newArrayDependencyField;
         const on = this.newArrayDependencyOn;
+        const ignore = this.editingArrayDependency;
         if (!field || !on || field === on) { return false; }
         const availablePaths = new Set(
             this.arrayDependencyFieldGroups.flatMap(group => group.items.map(item => item.pathStr))
         );
         if (!availablePaths.has(field) || !availablePaths.has(on)) { return false; }
-        if (this.arrayDependencies.some(item => item.field.join('.') === field)) { return false; }
-        if (this.arrayDependencies.some(item => item.on.join('.') === field)) { return false; }
-        return !this.createsArrayDependencyCycle(field, on);
+        const others = this.arrayDependencies.filter(item => item !== ignore);
+        if (others.some(item => item.field.join('.') === field)) { return false; }
+        if (!ignore && others.some(item => item.on.join('.') === field)) { return false; }
+        return !this.createsArrayDependencyCycle(field, on, ignore);
     }
 
-    public addArrayDependency(): void {
+    public isEditingArrayDependency(dependency: ISchemaArrayDependency): boolean {
+        return this.editingArrayDependency === dependency;
+    }
+
+    public startEditArrayDependency(dependency: ISchemaArrayDependency): void {
+        this.editingArrayDependency = dependency;
+        this.newArrayDependencyOn = dependency.on.join('.');
+        this.newArrayDependencyField = dependency.field.join('.');
+        this.newArrayDependencyTitle = dependency.title?.length
+            ? dependency.title.join('.')
+            : null;
+        this.newArrayDependencyMappingSource = null;
+        this.newArrayDependencyMappingTarget = null;
+        this.newArrayDependencyValueMappings = (dependency.valueMappings ?? [])
+            .map(item => ({ source: [...item.source], target: [...item.target] }));
+        this.scrollArrayDependencyEditorIntoView();
+    }
+
+    public cancelEditArrayDependency(): void {
+        this.resetArrayDependencyEditor();
+    }
+
+    private scrollArrayDependencyEditorIntoView(): void {
+        setTimeout(() => {
+            this.arrayDependencyEditor?.nativeElement
+                ?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+    }
+
+    public applyArrayDependency(): void {
         const schema = this.selectedSchema;
         const field = this.newArrayDependencyField;
         const on = this.newArrayDependencyOn;
-        if (!schema || !field || !on || !this.canAddArrayDependency()) { return; }
+        const editing = this.editingArrayDependency;
+        if (!schema || !field || !on || !this.canApplyArrayDependency()) { return; }
         const dependency: ISchemaArrayDependency = {
             field: field.split('.'),
             on: on.split('.'),
@@ -2012,7 +2865,15 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             dependency.valueMappings = this.newArrayDependencyValueMappings
                 .map(item => ({ source: [...item.source], target: [...item.target] }));
         }
-        schema.arrayDependencies = [...(schema.arrayDependencies ?? []), dependency];
+        const current = schema.arrayDependencies ?? [];
+        const index = editing ? current.indexOf(editing) : -1;
+        if (editing && index < 0) {
+            this.resetArrayDependencyEditor();
+            return;
+        }
+        schema.arrayDependencies = index < 0
+            ? [...current, dependency]
+            : current.map((item, position) => position === index ? dependency : item);
         this.resetArrayDependencyEditor();
         this.markDirty();
     }
@@ -2020,6 +2881,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public removeArrayDependency(dependency: ISchemaArrayDependency): void {
         const schema = this.selectedSchema;
         if (!schema) { return; }
+        if (this.editingArrayDependency === dependency) {
+            this.resetArrayDependencyEditor();
+        }
         schema.arrayDependencies = (schema.arrayDependencies ?? [])
             .filter(item => item !== dependency);
         this.markDirty();
@@ -2085,6 +2949,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public enterSubSchema(field: SchemaField, event: Event): void {
         event.stopPropagation();
         if (!this.canEnterSubSchema(field)) { return; }
+        const previousContext = this.currentContextSchema;
         this.selectedField = null;
         // Use Schema.fields from this.schemas so edits are tracked on the sub-schema entity.
         // Fall back to field.fields (parseFields clone) for built-in refs (GeoJSON, Sentinel).
@@ -2100,6 +2965,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             ...this.drillStack,
             { fieldLabel: field.title || field.name, fields, schemaIri: field.type || '' }
         ];
+        this.persistSuggestionsForContext(previousContext);
+        this.restoreOrClearSuggestionsForContext();
+        this.autoLoadSuggestionsFor(this.activeCanvasTab);
         this.resetArrayDependencyEditor();
         this._parentLoadId = null;
         this.loadParentSchemas();
@@ -2115,7 +2983,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public drillTo(index: number): void {
+        const previousContext = this.currentContextSchema;
         this.drillStack = this.drillStack.slice(0, index + 1);
+        this.persistSuggestionsForContext(previousContext);
+        this.restoreOrClearSuggestionsForContext();
+        this.autoLoadSuggestionsFor(this.activeCanvasTab);
         this.selectedField = null;
         this.resetArrayDependencyEditor();
         this._parentLoadId = null;
@@ -2123,7 +2995,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public drillBack(): void {
+        const previousContext = this.currentContextSchema;
         this.drillStack = this.drillStack.slice(0, -1);
+        this.persistSuggestionsForContext(previousContext);
+        this.restoreOrClearSuggestionsForContext();
+        this.autoLoadSuggestionsFor(this.activeCanvasTab);
         this.selectedField = null;
         this.activeDrillTab = 'fields';
         this.resetArrayDependencyEditor();
@@ -2132,7 +3008,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public drillClose(): void {
+        const previousContext = this.currentContextSchema;
         this.drillStack = [];
+        this.persistSuggestionsForContext(previousContext);
+        this.restoreOrClearSuggestionsForContext();
+        this.autoLoadSuggestionsFor(this.activeCanvasTab);
         this.selectedField = null;
         this.activeDrillTab = 'fields';
         this.resetArrayDependencyEditor();
@@ -3239,8 +4119,21 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
     }
 
+    /**
+     * Drop dirty marks and saved baselines for schemas that have left the list.
+     *
+     * `dirtySchemaIds` and `savedSignatures` are a matched pair - one records that a
+     * schema changed, the other what it looked like when saved - so they are pruned
+     * together. `savedSignatures` used to only ever grow, holding a full serialised
+     * field tree per schema for as long as the page lived.
+     *
+     * Dropping a baseline can only fail safe: `reconcileDirty` treats a missing
+     * baseline as "cannot prove clean" and leaves the schema dirty, and any schema
+     * still reachable is re-snapshotted by the next list load.
+     */
     private pruneDirtySchemaIds(): void {
-        if (!this.dirtySchemaIds.size) { return; }
+        // Both maps gate entry here - a signature can outlive the last dirty mark.
+        if (!this.dirtySchemaIds.size && !this.savedSignatures.size) { return; }
         const liveKeys = new Set<string>();
         for (const schema of this.schemas) {
             const id = schema.id || (schema as any)._id;
@@ -3256,6 +4149,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             if (!liveKeys.has(dirtyId)) {
                 this.dirtySchemaIds.delete(dirtyId);
                 this.newSchemaKeys.delete(dirtyId);
+            }
+        }
+        for (const key of Array.from(this.savedSignatures.keys())) {
+            if (!liveKeys.has(key)) {
+                this.savedSignatures.delete(key);
             }
         }
     }
@@ -3323,6 +4221,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                         this.schemasLoading = false;
                     }
                     this.schemasFetched = true;
+                    // server copies are the saved baseline; a locally edited
+                    // selectedSchema still differs from its signature and stays dirty
+                    items.forEach(schema => this.snapshotSchema(schema));
                     this.loadAppliedSchemaTemplate();
                     if (this.selectedSchema) { this.upsertInSidebar(this.selectedSchema); }
                     this.pruneDirtySchemaIds();
@@ -3459,10 +4360,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                                 void this.router.navigate(['task', result.taskId], {
                                     queryParams: { last: btoa(returnUrl) },
                                 });
-                            });
+                            }, (error) => this.reportError('Delete schema', error));
                     }
                 });
-            });
+            }, (error) => this.reportError('Delete schema', error));
     }
 
     // Build $defs the same way as the old editor (SchemaHelper.findRefs + uniqueRefs),
@@ -3579,7 +4480,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     styleClass: 'custom-dialog',
                     data: { schema },
                 });
-            });
+            }, (error) => this.reportError('Export', error));
     }
 
     public onExportTemplate(): void {
@@ -3597,7 +4498,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                         schemaTemplate
                     },
                 });
-            });
+            }, (error) => this.reportError('Export', error));
     }
 
     public onSidebarScroll(event: Event): void {

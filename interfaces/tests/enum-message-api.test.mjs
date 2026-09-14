@@ -40,6 +40,12 @@ describe('MessageAPI enum', () => {
         assert.equal(MessageAPI.SET_SUGGESTIONS_CONFIG, 'policy-engine-event-set-suggestions-config');
     });
 
+    it('maps reversible recording subjects', () => {
+        assert.equal(MessageAPI.PAUSE_RECORDING, 'PAUSE_RECORDING');
+        assert.equal(MessageAPI.RESUME_RECORDING, 'RESUME_RECORDING');
+        assert.equal(MessageAPI.STOP_RECORDING, 'STOP_RECORDING');
+    });
+
     it('maps credential CRUD subjects', () => {
         assert.equal(MessageAPI.SET_CREDENTIAL, 'SET_CREDENTIAL');
         assert.equal(MessageAPI.GET_CREDENTIALS, 'GET_CREDENTIALS');

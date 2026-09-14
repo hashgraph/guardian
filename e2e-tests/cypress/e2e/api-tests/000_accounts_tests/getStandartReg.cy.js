@@ -3,7 +3,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
-context('Get SRs', { tags: ['accounts', 'firstPool', 'all'] }, () => {
+context('Get SRs', { tags: ['accounts', 'firstPool', 'all', 'all-no-mgs'] }, () => {
   const SRUsername = Cypress.env('SRUser');
   const UserUsername = Cypress.env('User');
   const registriesUrl = `${API.ApiServer}${API.StandartRegistries}`;

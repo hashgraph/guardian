@@ -2,8 +2,9 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { seededMessageId } from '../../../support/CustomHelpers/ipfsSeeding';
 
-context('Analytics', { tags: ['analytics', 'thirdPool', 'all'] }, () => {
+context('Analytics', { tags: ['analytics', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     const URLS = {
@@ -95,10 +96,13 @@ context('Analytics', { tags: ['analytics', 'thirdPool', 'all'] }, () => {
 
     before(() => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            resolveToolId(authorization, Cypress.env('tool_for_compare1'), 1800000).then((id1) => {
-                toolId1 = id1;
-
-                resolveToolId(authorization, Cypress.env('tool_for_compare2')).then((id2) => {
+            seededMessageId('tool_for_compare1').then((messageId1) => {
+                resolveToolId(authorization, messageId1, 1800000).then((id1) => {
+                    toolId1 = id1;
+                });
+            });
+            seededMessageId('tool_for_compare2').then((messageId2) => {
+                resolveToolId(authorization, messageId2).then((id2) => {
                     toolId2 = id2;
                 });
             });

@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
-context('Delete policy test', { tags: ['policies', 'secondPool', 'all'] }, () => {
+context('Delete policy test', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
     let policyId; let testId;
@@ -18,11 +18,11 @@ context('Delete policy test', { tags: ['policies', 'secondPool', 'all'] }, () =>
                 timeout: 180000
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
-                response.body.forEach(element => {
-                    if (element.name == 'iRecDRF') {
-                        policyId = element.id
-                    }
-                })
+                //The same copy the import spec works on: iterating and keeping the last match
+                //picks a different one as soon as the instance holds more than one
+                const policy = response.body.find((element) => element.name === 'iRecDRF');
+                expect(policy, 'the iRecDRF policy').to.not.be.undefined;
+                policyId = policy.id;
                 cy.request({
                     method: METHOD.GET,
                     url: API.ApiServer + API.Policies + policyId,

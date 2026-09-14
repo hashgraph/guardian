@@ -2,6 +2,15 @@ import { Component, OnInit } from '@angular/core';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
+/**
+ * A list rendered under one option, for spelling out what choosing it would do.
+ */
+export interface IConfirmOptionDetailGroup {
+    label?: string;
+    items: string[];
+    warning?: boolean;
+}
+
 @Component({
     selector: 'app-custom-confirm-dialog',
     templateUrl: './custom-confirm-dialog.component.html',
@@ -22,7 +31,8 @@ export class CustomConfirmDialogComponent implements OnInit {
         title: string,
         sub?: string,
         value: any,
-        id: string
+        id: string,
+        details?: IConfirmOptionDetailGroup[]
     }[];
     public option: any;
 

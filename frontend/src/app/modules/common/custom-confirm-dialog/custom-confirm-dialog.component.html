@@ -35,7 +35,7 @@
   @if (options) {
     <div class="options">
       @for (op of options; track op) {
-        <div class="option-value">
+        <div class="option-value" [class.option-value-tall]="op.details?.length">
           <div class="option-value-select">
             <p-radioButton
               class="guardian-radio-button radio-button-24"
@@ -48,6 +48,18 @@
             <div>{{op.title}}</div>
             @if (op.sub) {
               <div class="option-value-name-sub">{{op.sub}}</div>
+            }
+            @for (group of op.details; track group) {
+              <div class="option-value-details" [class.option-value-details-warning]="group.warning">
+                @if (group.label) {
+                  <div class="option-value-details-label">{{group.label}}</div>
+                }
+                <ul class="option-value-details-list">
+                  @for (item of group.items; track item) {
+                    <li>{{item}}</li>
+                  }
+                </ul>
+              </div>
             }
           </label>
         </div>

@@ -3,7 +3,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
-context('Schemas', { tags: ['schema', 'thirdPool', 'all'] }, () => {
+context('Schemas', { tags: ['schema', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
   const SRUsername = Cypress.env('SRUser');
   const schemaUUID = ('0000b23a-b1ea-408f-a573' + randomInt(999999) + 'a2060a');
   let topicUid;
@@ -13,6 +13,8 @@ context('Schemas', { tags: ['schema', 'thirdPool', 'all'] }, () => {
       cy.request({
         method: METHOD.GET,
         url: API.ApiServer + API.Schemas,
+        // a single entry is enough here, and the full schema listing grows with every run
+        qs: { pageIndex: 0, pageSize: 1 },
         headers: {
           authorization,
         },
@@ -66,8 +68,11 @@ context('Schemas', { tags: ['schema', 'thirdPool', 'all'] }, () => {
         },
       }).then((response) => {
         expect(response.status).eql(STATUS_CODE.OK);
-        const schemaId = response.body.at(0).id;
-        const schemaUUId = response.body.at(0).uuid;
+        //The topic is shared with the schemas of earlier runs, so the one created in the before
+        //hook is addressed by its own uuid: updating an arbitrary one rewrites unrelated data
+        const schema = response.body.find((item) => item?.uuid === schemaUUID);
+        expect(schema, `schema ${schemaUUID} in topic ${topicUid}`).to.not.be.undefined;
+        const schemaId = schema.id;
 
         cy.request({
           method: METHOD.PUT,

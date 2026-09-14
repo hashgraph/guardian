@@ -1,1 +1,38 @@
 @import "../search-tool-dialog/search-tool-dialog.component.scss";
+
+.context {
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 52px;
+        height: 24px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-family: Inter;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 16px;
+    }
+
+    .chip-color-grey {
+        color: var(--color-grey-6, #848fa9);
+        background: var(--color-grey-3, #e1e7ef);
+    }
+
+    .chip-color-blue {
+        color: var(--color-primary, #0031ff);
+        background: rgba(6, 129, 238, 0.16);
+    }
+
+    .chip-color-green {
+        color: #19be47;
+        background: #cafdd9;
+    }
+
+    .chip-color-red {
+        color: var(--color-accent-red-1, #ff432a);
+        background: rgba(255, 67, 42, 0.16);
+    }
+}

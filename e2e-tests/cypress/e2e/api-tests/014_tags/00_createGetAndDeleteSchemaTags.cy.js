@@ -1,7 +1,7 @@
 import { STATUS_CODE } from '../../../support/api/api-const';
 import * as Authorization from '../../../support/authorization';
 
-context('Tags', { tags: ['tags', 'thirdPool', 'all'] }, () => {
+context('Tags', { tags: ['tags', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const tagName = 'schemaTag';
 
@@ -46,7 +46,10 @@ context('Tags', { tags: ['tags', 'thirdPool', 'all'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.searchTags(authorization, schemaId, 'Schema').then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
-                expect(response.body[schemaId].tags.at(0).uuid).to.eq(tagId);
+                //Tags of earlier runs are still on the entity, so the one created above is looked up
+                //by its own uuid instead of by position
+                const tag = response.body[schemaId].tags.find((item) => item.uuid === tagId);
+                expect(tag, `tag ${tagId}`).to.exist;
             });
         });
     });

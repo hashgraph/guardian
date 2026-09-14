@@ -16,6 +16,7 @@ export const REQUIRED_PROPS = {
     DESCRIPTION: 'description',
     TEMPLATE_ID: 'templateId',
     TEMPLATE_SCHEMA_ID: 'templateSchemaId',
+    TEMPLATE_FEATURED: 'templateFeatured'
 };
 
 export const UN_REQUIRED_PROPS = {

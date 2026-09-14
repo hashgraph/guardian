@@ -29,6 +29,11 @@ export interface ImportPolicyResult {
      * Errors
      */
     errors: ImportPolicyError[]
+    /**
+     * Artifacts the archive could not resolve. Kept out of `errors`: an artifact is
+     * supplementary, so a dropped one must not report the whole import as failed.
+     */
+    artifactErrors?: ImportPolicyError[]
 }
 
 export interface ImportTestResult {

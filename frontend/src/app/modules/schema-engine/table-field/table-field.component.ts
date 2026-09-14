@@ -3,12 +3,12 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { GuardianDialogService } from '../../../services/guardian-dialog.service';
 import { ColDef } from 'ag-grid-community';
 import {IFieldControl, IFieldIndexControl} from '../schema-form-model/field-form';
-import { CsvService } from '../../../services/csv.service';
+import { CsvService, DeclaredColumn } from '../../../services/csv.service';
 import {TableDialogComponent} from '../../common/table-dialog/table-dialog.component';
 import {ArtifactService} from '../../../services/artifact.service';
 import {IndexedDbRegistryService} from '../../../services/indexed-db-registry.service';
 import { GzipService } from '../../../services/gzip.service';
-import { ITableField } from '@guardian/interfaces';
+import { ITableField, SchemaField } from '@guardian/interfaces';
 
 import {DB_NAME, STORES_NAME} from "../../../constants";
 import { firstValueFrom } from 'rxjs';
@@ -28,6 +28,7 @@ export interface ITableFieldRequired extends ITableField {
 
 export class TableFieldComponent implements OnInit, OnDestroy {
     @Input() item!: IFieldControl<any> | IFieldIndexControl<any>;
+    @Input() ownerField?: SchemaField;
     @Input() required: boolean = false;
     @Input() readonly: boolean = false;
     @Input() policyId?: string = '';
@@ -43,6 +44,9 @@ export class TableFieldComponent implements OnInit, OnDestroy {
 
     private readonly PREVIEW_COLUMNS_LIMIT = 8;
     private readonly PREVIEW_ROWS_LIMIT = 4;
+
+    private blankPreviewRows?: Record<string, string>[];
+    private blankPreviewKeys?: string;
 
     constructor(
         private dialog: DialogService,
@@ -66,12 +70,51 @@ export class TableFieldComponent implements OnInit, OnDestroy {
     get previewHeaderKeysLimited(): string[] {
         const value = this.readTable();
         const keys = value.columnKeys || [];
+
+        if (!keys.length && this.hasDeclaredColumns) {
+            return this.declaredColumns()
+                .map((column) => column.key)
+                .slice(0, this.PREVIEW_COLUMNS_LIMIT);
+        }
+
         return keys.slice(0, this.PREVIEW_COLUMNS_LIMIT);
+    }
+
+    public get hasDeclaredColumns(): boolean {
+        return this.declaredColumns().length > 0;
+    }
+
+    public previewHeaderNameFor(columnKey: string, columnIndex: number): string {
+        return this.columnHeaderFor(columnKey, columnIndex);
+    }
+
+    public get previewGridTemplate(): string {
+        const count = this.previewHeaderKeysLimited.length || this.PREVIEW_COLUMNS_LIMIT;
+        return `48px repeat(${count}, minmax(80px, 1fr))`;
     }
 
     get previewRowsLimited(): Record<string, string>[] {
         const value = this.readTable();
         const rows = value.rows || [];
+
+        if (!rows.length && this.hasDeclaredColumns) {
+            const keys = this.previewHeaderKeysLimited;
+
+            if (!this.blankPreviewRows || this.blankPreviewKeys !== keys.join('\u0000')) {
+                const blank: Record<string, string> = {};
+                for (const key of keys) {
+                    blank[key] = '';
+                }
+                this.blankPreviewKeys = keys.join('\u0000');
+                this.blankPreviewRows = Array.from(
+                    { length: this.PREVIEW_ROWS_LIMIT },
+                    () => ({ ...blank })
+                );
+            }
+
+            return this.blankPreviewRows;
+        }
+
         const limited = rows.slice(0, this.PREVIEW_ROWS_LIMIT);
         const keys = this.previewHeaderKeysLimited;
 
@@ -119,6 +162,53 @@ export class TableFieldComponent implements OnInit, OnDestroy {
         return { type: 'table', columnKeys: [], rows: [] };
     }
 
+    private declaredColumns(): DeclaredColumn[] {
+        const item = this.item;
+        const fromItem = item && 'field' in item
+            ? item.field?.tableColumns ?? item.tableColumns
+            : undefined;
+
+        const columns = fromItem ?? this.ownerField?.tableColumns;
+        return Array.isArray(columns) ? columns : [];
+    }
+
+    private storedColumnKeys(): string[] {
+        const names = this.readTable().columnNames;
+        if (!Array.isArray(names) || !names.length) {
+            return [];
+        }
+
+        const keys = this.readTable().columnKeys;
+        return Array.isArray(keys) ? keys : [];
+    }
+
+    private storedColumnNames(): string[] {
+        const names = this.readTable().columnNames;
+        return Array.isArray(names) ? names : [];
+    }
+
+    private columnHeaderFor(key: string, index: number): string {
+        const declared = this.declaredColumns().find((column) => column.key === key);
+        if (declared && declared.name) {
+            return declared.name;
+        }
+
+        const storedName = this.storedColumnNames()[index];
+        if (storedName) {
+            return storedName;
+        }
+
+        return this.buildColumnHeader(index);
+    }
+
+    private headerRowForFile(columnKeys: string[]): string[] | undefined {
+        if (!this.hasDeclaredColumns && !this.storedColumnNames().length) {
+            return undefined;
+        }
+
+        return columnKeys.map((key, index) => this.columnHeaderFor(key, index));
+    }
+
 
     private readTable(): ITableFieldRequired {
         const targetControl = this.getTargetElementControl();
@@ -159,6 +249,9 @@ export class TableFieldComponent implements OnInit, OnDestroy {
             columnKeys: (Object.prototype.hasOwnProperty.call(next, 'columnKeys'))
                 ? (next.columnKeys as string[])
                 : current.columnKeys,
+            columnNames: (Object.prototype.hasOwnProperty.call(next, 'columnNames'))
+                ? next.columnNames
+                : current.columnNames,
             rows: (Object.prototype.hasOwnProperty.call(next, 'rows'))
                 ? (next.rows as Record<string, string>[])
                 : current.rows,
@@ -198,7 +291,7 @@ export class TableFieldComponent implements OnInit, OnDestroy {
         const table = this.readTable();
         return table.columnKeys.map((key, index) => ({
             field: key,
-            headerName: this.buildColumnHeader(index),
+            headerName: this.columnHeaderFor(key, index),
             editable: !this.readonly,
             minWidth: 100,
             resizable: true,
@@ -255,7 +348,10 @@ export class TableFieldComponent implements OnInit, OnDestroy {
         } else {
             this.writeTable(
                 {
-                    columnKeys: [],
+                    columnKeys: Array.isArray(current.columnNames) && current.columnNames.length
+                        ? (current.columnKeys ?? [])
+                        : [],
+                    columnNames: current.columnNames,
                     rows: [],
                     idbKey: undefined,
                     sizeBytes: undefined
@@ -270,7 +366,6 @@ export class TableFieldComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
-        void this.clearIdbRecordIfAny();
     }
 
     private async loadCsvTextFromIdb(idbKey: string): Promise<string | null> {
@@ -316,6 +411,7 @@ export class TableFieldComponent implements OnInit, OnDestroy {
                 delimiter: this.delimiter,
                 bom: false,
                 mime: 'text/csv;charset=utf-8',
+                headerRow: this.headerRowForFile(table.columnKeys),
             });
             return await file.text();
         }
@@ -352,6 +448,7 @@ export class TableFieldComponent implements OnInit, OnDestroy {
             delimiter: this.delimiter,
             bom: false,
             mime: 'text/csv;charset=utf-8',
+            headerRow: this.headerRowForFile(columnKeys),
         });
     }
 
@@ -364,7 +461,11 @@ export class TableFieldComponent implements OnInit, OnDestroy {
 
             if (csvText) {
                 const delimiter = this.delimiter;
-                const parsed = this.csvService.parseCsvToTable(csvText, delimiter);
+                const parsed = this.csvService.parseCsvToTable(
+                    csvText,
+                    delimiter,
+                    this.storedColumnKeys()
+                );
                 parsedColumnKeys = parsed.columnKeys;
                 parsedRows = parsed.rows;
             } else {
@@ -376,9 +477,13 @@ export class TableFieldComponent implements OnInit, OnDestroy {
             parsedRows = [];
         }
 
+        if (this.hasDeclaredColumns) {
+            parsedColumnKeys = this.declaredColumns().map((column) => column.key);
+        }
+
         const columnDefs: ColDef[] = parsedColumnKeys.map((key, index) => ({
             field: key,
-            headerName: this.buildColumnHeader(index),
+            headerName: this.columnHeaderFor(key, index),
             editable: !this.readonly,
             minWidth: 100,
             resizable: true,
@@ -387,7 +492,7 @@ export class TableFieldComponent implements OnInit, OnDestroy {
         const ref = this.dialog.open(TableDialogComponent, {
             header: 'Edit table',
             width: '90%',
-            data: { columnDefs, rowData: parsedRows },
+            data: { columnDefs, rowData: parsedRows, fixedColumns: this.hasDeclaredColumns },
         })!;
 
         ref.onClose.subscribe(async (result: any) => {
@@ -425,6 +530,7 @@ export class TableFieldComponent implements OnInit, OnDestroy {
 
                 this.writeTable({
                     columnKeys: preview.columnKeys,
+                    columnNames: this.headerRowForFile(preview.columnKeys),
                     rows: preview.rows,
                     sizeBytes,
                     idbKey,
@@ -458,7 +564,22 @@ export class TableFieldComponent implements OnInit, OnDestroy {
             const delimiter = this.delimiter;
             const csvText = await file.text();
 
-            const parsed = this.csvService.parseCsvToTable(csvText, delimiter);
+            const uploaded = this.csvService.parseCsvToTable(csvText, delimiter);
+            const declared = this.declaredColumns();
+
+            if (declared.length && uploaded.columnKeys.length !== declared.length) {
+                const found = uploaded.columnKeys.length;
+                this.importError =
+                    `The file has ${found} ${found === 1 ? 'column' : 'columns'}, ` +
+                    `but the schema declares ${declared.length}. ` +
+                    `Columns must be separated by "${delimiter}". ` +
+                    `Fix the file and upload it again.`;
+                return;
+            }
+
+            const parsed = declared.length
+                ? this.csvService.applyDeclaredColumns(uploaded, declared)
+                : uploaded;
 
             const previewColumnCount = Math.min(10, parsed.columnKeys.length);
             const previewRowCount = Math.min(10, parsed.rows.length);
@@ -474,8 +595,21 @@ export class TableFieldComponent implements OnInit, OnDestroy {
                 return result;
             });
 
+            const columnNames = declared.length
+                ? declared.map((column) => column.name)
+                : undefined;
+
+            const fileToStore = declared.length
+                ? this.csvService.toCsvFile(parsed.columnKeys, parsed.rows, file.name, {
+                    delimiter,
+                    bom: false,
+                    mime: 'text/csv;charset=utf-8',
+                    headerRow: columnNames,
+                })
+                : file;
+
             const gzippedFile =
-                await this.gzip.gzip(file);
+                await this.gzip.gzip(fileToStore);
 
             const currentValue = this.readTable();
             const existingIdbKey = (currentValue.idbKey || '').trim();
@@ -484,8 +618,8 @@ export class TableFieldComponent implements OnInit, OnDestroy {
             await this.idb.put(DB_NAME.TABLES, STORES_NAME.FILES_STORE, {
                 id: idbKey,
                 blob: gzippedFile,
-                originalName: file.name,
-                originalSize: file.size,
+                originalName: fileToStore.name,
+                originalSize: fileToStore.size,
                 gzSize: gzippedFile.size,
                 delimiter,
                 createdAt: Date.now(),
@@ -493,8 +627,9 @@ export class TableFieldComponent implements OnInit, OnDestroy {
 
             this.writeTable({
                 columnKeys: previewColumnKeys,
+                columnNames,
                 rows: previewRows,
-                sizeBytes: file.size,
+                sizeBytes: fileToStore.size,
                 idbKey,
             });
 
@@ -591,7 +726,7 @@ export class TableFieldComponent implements OnInit, OnDestroy {
         const preset = this.item?.preset ? JSON.parse(this.item.preset) : undefined;
         const cid = (tableValue.cid ?? '').trim() || preset?.cid?.trim();
 
-        if (!hasColumns && !hasRows && fileId) {
+        if (!hasRows && fileId) {
             const delimiter = this.delimiter;
 
             this.artifactService
@@ -605,7 +740,8 @@ export class TableFieldComponent implements OnInit, OnDestroy {
                             const parsed =
                                 this.csvService.parseCsvToTable(
                                     csvText,
-                                    delimiter
+                                    delimiter,
+                                    this.storedColumnKeys()
                                 );
 
                             const sizeBytes =
@@ -642,6 +778,10 @@ export class TableFieldComponent implements OnInit, OnDestroy {
         this.hydrated = true;
     }
 
+    private makeDownloadFileName(): string {
+        return `table-${Date.now()}.csv`;
+    }
+
     async downloadCsv(): Promise<void> {
         try {
             const table = this.readTable();
@@ -668,7 +808,12 @@ export class TableFieldComponent implements OnInit, OnDestroy {
                     table.columnKeys || [],
                     table.rows || [],
                     'table.csv',
-                    { delimiter, bom: false, mime: 'text/csv;charset=utf-8' }
+                    {
+                        delimiter,
+                        bom: false,
+                        mime: 'text/csv;charset=utf-8',
+                        headerRow: this.headerRowForFile(table.columnKeys || []),
+                    }
                 );
                 csvText = await file.text();
             }
@@ -677,7 +822,7 @@ export class TableFieldComponent implements OnInit, OnDestroy {
             const objectUrl = URL.createObjectURL(blob);
             const anchor = document.createElement('a');
             anchor.href = objectUrl;
-            anchor.download = 'table.csv';
+            anchor.download = this.makeDownloadFileName();
             document.body.appendChild(anchor);
             anchor.click();
             document.body.removeChild(anchor);
@@ -703,7 +848,8 @@ export class TableFieldComponent implements OnInit, OnDestroy {
 
                         const parsed = this.csvService.parseCsvToTable(
                             csvText,
-                            this.delimiter
+                            this.delimiter,
+                            this.storedColumnKeys()
                         );
 
                         const csvFile = this.buildCsvFile(parsed.columnKeys, parsed.rows);

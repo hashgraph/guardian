@@ -13,6 +13,11 @@ import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-conf
 import { DataInputDialogComponent } from 'src/app/modules/common/data-input-dialog/data-input-dialog.component';
 import { AddDocumentDialog } from '../add-document-dialog/add-document-dialog.component';
 import { MathLiveComponent } from 'src/app/modules/common/mathlive/mathlive.component';
+import { ArtifactService } from 'src/app/services/artifact.service';
+import { CsvService } from 'src/app/services/csv.service';
+import { GzipService } from 'src/app/services/gzip.service';
+import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
+import { hydrateDocumentTables } from './math-model/table-hydration';
 
 class Tooltip {
     public visible: boolean;
@@ -197,6 +202,10 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         private dialogService: DialogService,
         private config: DynamicDialogConfig,
         private el: ElementRef,
+        private artifactService: ArtifactService,
+        private gzipService: GzipService,
+        private csvService: CsvService,
+        private idb: IndexedDbRegistryService,
     ) {
         this.data = this.config.data;
         this.engine = new MathEngine();
@@ -1001,14 +1010,22 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         this.inputRelationshipsValue = this.inputRelationshipsValue.filter((e) => e !== item);
     }
 
+    private cloneDocument(value: any): any {
+        if (value === null || value === undefined || typeof value !== 'object') {
+            return value;
+        }
+
+        return JSON.parse(JSON.stringify(value));
+    }
+
     private getValue() {
         const documents = new DocumentMap();
-        documents.addDocument(this.inputDocumentValue);
-        documents.addRelationships(this.inputRelationshipsValue);
+        documents.addDocument(this.cloneDocument(this.inputDocumentValue));
+        documents.addRelationships(this.cloneDocument(this.inputRelationshipsValue));
         return documents;
     }
 
-    public onTest(): void {
+    public async onTest(): Promise<void> {
         try {
             this.loading = true;
             this.result = null;
@@ -1016,6 +1033,30 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
 
             const inputDocuments = this.getValue();
             const inputDocument = inputDocuments.getCurrent();
+
+            try {
+                await hydrateDocumentTables(inputDocument, {
+                    artifactService: this.artifactService,
+                    gzipService: this.gzipService,
+                    csvService: this.csvService,
+                    idb: this.idb
+                });
+            } catch (error) {
+                this.loading = false;
+                this.error = 'Invalid data';
+                this.result = {
+                    valid: true,
+                    error: String(error),
+                    variables: [],
+                    formulas: [],
+                    outputs: [],
+                    input: '',
+                    output: ''
+                };
+                this.resultStep = 'errors';
+                this.onStep('step_5');
+                return;
+            }
 
             if (!this.engine) {
                 this.loading = false;

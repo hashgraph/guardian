@@ -103,15 +103,6 @@
     font-size: 20px;
 }
 
-.not-exist {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 20px;
-    color: darkgrey;
-}
-
 .ml-8 {
     margin-left: 8px;
 }
@@ -922,6 +913,8 @@
     align-items: center;
     row-gap: 8px;
     justify-content: center;
+    width: 100%;
+    padding: 64px 0;
 }
 
 .info-text {
