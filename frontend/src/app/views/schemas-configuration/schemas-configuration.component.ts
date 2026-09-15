@@ -323,6 +323,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return !this.selectedSchemaConfig?.schemaSettingsLocked;
     }
 
+    public get canChangeSelectedSchemaConditions(): boolean {
+        return !this.selectedSchemaConfig?.conditionsLocked;
+    }
+
     public get canAddFieldToSelectedSchema(): boolean {
         const schema = this.currentContextSchema;
         return !!schema &&
@@ -330,6 +334,15 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             !this.isTemplateConfigMode &&
             !this.isTemplateConfigPendingForSchema(schema) &&
             !this.isTemplateSchemaCustomFieldsLocked(schema);
+    }
+
+    public get canChangeConditionsForSelectedSchema(): boolean {
+        const schema = this.currentContextSchema;
+        return !!schema &&
+            !this.isTemplateReadonly &&
+            !this.isTemplateConfigMode &&
+            !this.isTemplateConfigPendingForSchema(schema) &&
+            !this.isTemplateSchemaConditionsLocked(schema);
     }
 
     public get canEditSelectedFieldInTemplate(): boolean {
@@ -396,6 +409,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return this.getSchemaTemplateConfig(schema)?.customFieldsLocked === true;
     }
 
+    public isTemplateSchemaConditionsLocked(schema: Schema): boolean {
+        if (!this.isTemplateConfigMode && !this.hasAppliedTemplateConfig) {
+            return false;
+        }
+        return this.getSchemaTemplateConfig(schema)?.conditionsLocked === true;
+    }
+
     public isSchemaFeatured(schema: Schema): boolean {
         if (this.isTemplateConfigMode) {
             return !!this.getSchemaTemplateConfig(schema)?.featured;
@@ -440,7 +460,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const config = this.getSchemaTemplateConfig(schema);
         return !!(
             config?.schemaSettingsLocked ||
-            config?.customFieldsLocked
+            config?.customFieldsLocked ||
+            config?.conditionsLocked
         );
     }
 
@@ -454,6 +475,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
         if (config?.customFieldsLocked) {
             return 'Custom fields are locked';
+        }
+        if (config?.conditionsLocked) {
+            return 'Conditions are locked';
         }
         return 'Schema is locked';
     }
@@ -1379,6 +1403,18 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             return;
         }
         config.schemaSettingsLocked = !config.schemaSettingsLocked;
+        this.templateConfigDirty = true;
+    }
+
+    public toggleCanChangeSelectedSchemaConditions(): void {
+        if (this.isTemplateReadonly) {
+            return;
+        }
+        const config = this.ensureSelectedSchemaConfig();
+        if (!config) {
+            return;
+        }
+        config.conditionsLocked = !config.conditionsLocked;
         this.templateConfigDirty = true;
     }
 
