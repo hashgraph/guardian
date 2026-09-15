@@ -7,6 +7,7 @@ import { DataSource } from 'typeorm';
 import { QUEUE_NAMES, envInt, getWorkerNetwork } from '@shared/config/bullmq.config';
 import { ROOT_TOPICS } from '@shared/config/configuration';
 import { GuardianEventLogService } from './guardian-event-log.service';
+import type { PolicyStatusJobData } from '@worker/processors/policy-status.processor';
 
 interface AuditMeta {
     instanceId: string;
@@ -48,10 +49,26 @@ export class GuardianEventRouter {
     private readonly wakeCooldownSec = envInt('GUARDIAN_WAKE_COOLDOWN_S', 60);
     private readonly registrySweepCooldownSec = envInt('GUARDIAN_REGISTRY_SWEEP_COOLDOWN_S', 30);
 
+    /**
+     * A discontinue request is not re-fired the way block events are, but a
+     * retried API call would send it twice — this collapses that to one ladder.
+     */
+    private readonly discontinueCooldownSec = envInt('GUARDIAN_DISCONTINUE_COOLDOWN_S', 60);
+
+    /**
+     * The discontinue event fires when Guardian RECEIVES the request, before it
+     * has submitted the HCS message — so the first poll always finds nothing.
+     * These rungs re-poll the policy topic across the consensus + mirror-node
+     * ingestion window, and then re-resolve the methodology shortly after each.
+     */
+    private readonly discontinueTopicPollDelaysMs = [20_000, 60_000, 180_000];
+    private readonly discontinueResolveDelaysMs = [30_000, 90_000, 240_000];
+
     constructor(
         @InjectQueue(QUEUE_NAMES.IPFS_FETCH) private readonly ipfsQueue: Queue,
         @InjectQueue(QUEUE_NAMES.TOKEN_SYNC) private readonly tokenQueue: Queue,
         @InjectQueue(QUEUE_NAMES.TOPIC_SYNC_PRIORITY) private readonly topicQueue: Queue,
+        @InjectQueue(QUEUE_NAMES.POLICY_STATUS) private readonly policyStatusQueue: Queue,
         private readonly eventLog: GuardianEventLogService,
         private readonly dataSource: DataSource,
         private readonly configService: ConfigService,
@@ -88,6 +105,9 @@ export class GuardianEventRouter {
                 case 'policy-engine-event-publish-policies':
                 case 'policy-event-policy-ready':
                     await this.onPolicyLifecycle(meta, p);
+                    break;
+                case 'policy-engine-event-discontinue-policy':
+                    await this.onPolicyDiscontinue(meta, p);
                     break;
                 default:
                     // token_mint_complete, error_logs, ipfs hooks, mrv-data, … → ignore (not a trigger).
@@ -245,6 +265,95 @@ export class GuardianEventRouter {
         }
     }
 
+    /**
+     * A methodology was discontinued (immediately, or deferred to a date).
+     *
+     * The payload is Guardian's REQUEST — `{ policyId, owner, date }` — sent
+     * before the `Policy` / `discontinue-policy` HCS message exists, and the
+     * request can still be rejected after this fires. So this only ever
+     * triggers: the real message is ingested from the mirror node as usual, and
+     * PolicyStatusProcessor decides from it.
+     *
+     * Two different topics are involved, which is why resolvePolicyTopic() is
+     * NOT used here (it prefers the instance topic):
+     *   - the discontinue message is published to the POLICY topic, so that is
+     *     the topic to poll;
+     *   - METHODOLOGY rows are keyed by the INSTANCE topic, so that is the id
+     *     to resolve.
+     *
+     * No registry-wake fallback when the policy is unknown locally: Standard
+     * Registry topics are not where this message lands. The bulk crawl and the
+     * policy-status sweep still pick it up — this path only makes it faster.
+     */
+    private async onPolicyDiscontinue(meta: AuditMeta, p: Record<string, unknown> | null): Promise<void> {
+        const policyId = p && typeof p['policyId'] === 'string' ? (p['policyId'] as string) : '';
+        if (!policyId) return;
+
+        if (!await this.acquireCooldown(
+            `se:policy-discontinue:${this.network}:${policyId}`, this.discontinueCooldownSec)) {
+            this.logger.debug(`Discontinue for policyId=${policyId} skipped — still within cooldown`);
+            return;
+        }
+
+        const deferred = p?.['date'] != null && p['date'] !== '';
+        const rows: Array<{ policyTopicId: string | null; instanceTopicId: string | null }> =
+            await this.dataSource.query(
+                `SELECT "policyTopicId", "instanceTopicId" FROM policy WHERE "policyId" = $1 LIMIT 1`,
+                [policyId],
+            );
+        const row = rows[0];
+
+        if (!row?.policyTopicId) {
+            this.logger.log(
+                `policy ${deferred ? 'deferred-' : ''}discontinue policyId=${policyId} ` +
+                '— policy not known locally, left to the crawl + policy-status sweep',
+            );
+            await this.audit(meta, 'policy', policyId, 'no topic resolved — left to crawl');
+            return;
+        }
+
+        const { policyTopicId, instanceTopicId } = row;
+        // One tag per event, shared by every rung, so this event's jobs never
+        // collide with an earlier edit of the same discontinuation.
+        const eventTag = Math.floor(Date.now() / 1000);
+
+        await this.enqueueTopicSync(policyTopicId);
+        for (const delayMs of this.discontinueTopicPollDelaysMs) {
+            await this.enqueueDelayedTopicSync(policyTopicId, delayMs, `disc-${eventTag}-${delayMs}`);
+        }
+
+        if (instanceTopicId) {
+            // Event-scoped ids: a bare `policy-status-<topic>` id would be
+            // retained for QUEUE_KEEP_COMPLETED_AGE_S and silently swallow an
+            // EDITED deferral arriving within that window.
+            await this.policyStatusQueue.addBulk(
+                this.discontinueResolveDelaysMs.map(delay => ({
+                    name: 'resolve',
+                    data: { instanceTopicId, reason: 'discontinue' } satisfies PolicyStatusJobData,
+                    opts: {
+                        jobId: `policy-status-${instanceTopicId}-guardian-${eventTag}-${delay}`,
+                        delay,
+                        removeOnComplete: true,
+                    },
+                })),
+            );
+        }
+
+        this.logger.log(
+            `policy ${deferred ? 'deferred-' : ''}discontinue policyId=${policyId} -> policy topic ` +
+            `${policyTopicId} polls enqueued` +
+            (instanceTopicId
+                ? `, methodology ${instanceTopicId} resolves scheduled`
+                : ' (no instance topic decoded yet — resolve left to ingest)'),
+        );
+        await this.audit(
+            meta,
+            'policy',
+            policyId,
+            `topic-sync ${policyTopicId}` + (instanceTopicId ? ` + policy-status ${instanceTopicId}` : ''),
+        );
+    }
+
     /** Indexed lookup: policyId → the instance topic (where VCs live), else policy topic. */
     private async resolvePolicyTopic(policyId: string): Promise<string | null> {
         const rows: Array<{ policyTopicId: string | null; instanceTopicId: string | null }> =
@@ -357,20 +466,39 @@ export class GuardianEventRouter {
             const state = await existing.getState().catch(() => 'unknown');
             if (state === 'delayed') {
                 // Bring the backoff-delayed poll forward instead of duplicating it.
-                await existing.promote().catch(() => {});
+                await existing.promote().catch(() => { });
                 return;
             }
             if (state === 'waiting' || state === 'active' || state === 'prioritized') {
                 return;
             }
             // Finished (completed/failed) — clear it so the id is free to re-add.
-            await existing.remove().catch(() => {});
+            await existing.remove().catch(() => { });
         }
 
         await this.topicQueue.add(
             'sync',
             { topicId, fromSequenceNumber: 0, isOrgTopic: true },
             { jobId, removeOnComplete: true },
+        );
+    }
+
+    /**
+     * A scheduled priority poll, for when the message an event announces cannot
+     * be on the mirror node yet.
+     *
+     * Deliberately bypasses both of enqueueTopicSync()'s guards: the wake
+     * cooldown would drop every rung after the first, and its single stable
+     * `topic-<id>-evt` jobId would treat a waiting rung as "already covered".
+     * Each rung therefore needs its own id. Like every topic sync it resumes
+     * from the persisted watermark, so a rung that finds nothing is one cheap
+     * head-poll.
+     */
+    private async enqueueDelayedTopicSync(topicId: string, delayMs: number, tag: string): Promise<void> {
+        await this.topicQueue.add(
+            'sync',
+            { topicId, fromSequenceNumber: 0, isOrgTopic: true },
+            { jobId: `topic-${topicId}-${tag}`, delay: delayMs, removeOnComplete: true },
         );
     }
 }
