@@ -17,6 +17,7 @@ export interface FilterOption {
     options: { value: string; label: string; icon?: string }[];
     multiSelect?: boolean;
     searchable?: boolean;
+    allOption?: boolean;
     type?: 'select' | 'daterange' | 'yearrange' | 'numrange';
     emptyLabel?: string;
     // Set only by callers whose options come from an async source — an
@@ -179,6 +180,11 @@ function isMultiSelected(key: string, value: string): boolean {
     const current = props.activeFilters[key] || '';
     if (!current || current === 'all') return false;
     return decodeMultiValue(current).includes(value);
+}
+
+function isAllSelected(key: string): boolean {
+    const current = props.activeFilters[key];
+    return !current || current === 'all';
 }
 
 function isMultiSelectLimitReached(key: string): boolean {
@@ -455,6 +461,23 @@ if (import.meta.client) {
                     </div>
                     <div class="p-1 max-h-64 overflow-y-auto overflow-x-hidden">
                         <button
+                            v-if="filter.allOption"
+                            class="flex w-full items-center justify-start text-left gap-2 rounded-sm px-2.5 py-1.5 text-xs transition-colors hover:bg-accent"
+                            :class="isAllSelected(filter.key) ? 'font-medium text-foreground' : 'text-muted-foreground'"
+                            @click.stop="emit('filter', filter.key, 'all')"
+                        >
+                            <span
+                                class="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border transition-colors"
+                                :class="isAllSelected(filter.key) ? 'bg-primary border-primary' : 'border-input'"
+                            >
+                                <svg v-if="isAllSelected(filter.key)" class="h-2.5 w-2.5 text-primary-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </span>
+                            <span class="min-w-0 flex-1 text-left">{{ $t('common.all') }}</span>
+                        </button>
+                        <button
+                            v-else
                             class="flex w-full items-center justify-start text-left rounded-sm px-2.5 py-1.5 text-xs transition-colors hover:bg-accent text-muted-foreground"
                             @click="emit('filter', filter.key, 'all')"
                         >

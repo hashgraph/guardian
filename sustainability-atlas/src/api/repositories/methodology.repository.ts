@@ -3,6 +3,11 @@
 import { IssuanceRow, IssuanceEventRow } from './project.repository';
 export { IssuanceRow, IssuanceEventRow };
 
+export type MethodologyLifecycleStatus = 'published' | 'to_be_discontinued' | 'discontinued';
+
+export const METHODOLOGY_LIFECYCLE_STATUSES: MethodologyLifecycleStatus[] =
+    ['published', 'to_be_discontinued', 'discontinued'];
+
 export interface MethodologyListQuery {
     page: number;
     limit: number;
@@ -11,6 +16,7 @@ export interface MethodologyListQuery {
     id?: string;
     description?: string;
     decodeStatus?: ('success' | 'failed' | 'pending' | 'unknown')[];
+    status?: MethodologyLifecycleStatus[];
     registryDid?: string;
     registryName?: string;
     version?: string;
@@ -58,6 +64,10 @@ export interface MethodologyRow {
     decodeStatus: string | null;
     /** IPFS CID of the policy ZIP (policy.sourceCid). Only populated by findById. */
     policySourceCid?: string | null;
+    /**
+     * When this methodology's discontinuation takes (or took) effect, from the newest valid discontinue message. Null when it was never discontinued.
+     */
+    discontinuedAt: string | null;
 }
 
 export interface MethodologyListResult {
@@ -72,6 +82,7 @@ export interface MethodologyExportFilters {
     id?: string;
     description?: string;
     decodeStatus?: ('success' | 'failed' | 'pending' | 'unknown')[];
+    status?: MethodologyLifecycleStatus[];
     registryDid?: string;
     registryName?: string;
     version?: string;

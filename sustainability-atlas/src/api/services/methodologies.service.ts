@@ -123,6 +123,7 @@ export class MethodologiesService {
                 id: query.id,
                 description: query.description,
                 decodeStatus: query.decodeStatus,
+                status: query.status,
                 registryDid: query.registryDid,
                 registryName: query.registryName,
                 version: query.version,
@@ -155,6 +156,7 @@ export class MethodologiesService {
         return `methodologies:list:${network}:${page}:${limit}` +
             `:${query.search ?? ''}:${query.name ?? ''}:${query.id ?? ''}` +
             `:${query.description ?? ''}:${query.decodeStatus?.join('|') ?? ''}` +
+            `:${query.status?.join('|') ?? ''}` +
             `:${query.registryDid ?? ''}:${query.registryName ?? ''}` +
             `:${query.version ?? ''}:${query.policyTopicId ?? ''}` +
             `:${query.sortBy ?? ''}:${query.sortDir ?? ''}`;
