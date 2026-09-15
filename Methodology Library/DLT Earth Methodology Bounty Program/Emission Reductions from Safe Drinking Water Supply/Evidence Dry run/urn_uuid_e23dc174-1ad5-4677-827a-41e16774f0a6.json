@@ -1,0 +1,182 @@
+{
+  "id": "urn:uuid:e23dc174-1ad5-4677-827a-41e16774f0a6",
+  "type": [
+    "VerifiableCredential"
+  ],
+  "issuer": "did:hedera:testnet:AP6vetPimo2GJg2eHjhcHm1euaEZzN9vxzpnxofR7UVw_0.0.9599267",
+  "issuanceDate": "2026-08-02T17:16:39.241Z",
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "schema:78061cd7-f041-4cac-9b98-5b5c4640aacf"
+  ],
+  "credentialSubject": [
+    {
+      "field0": "TEST-CALIB-2026-001",
+      "field54": 2,
+      "field31": 0.65,
+      "field32": 0,
+      "field30": 1,
+      "field33": 0,
+      "field34": 0,
+      "field35": 1,
+      "field36": 0,
+      "field37": 0,
+      "field38": 0,
+      "field39": 0,
+      "field40": 0,
+      "field41": 0,
+      "field21": 365,
+      "field22": 0,
+      "field23": 0,
+      "field25": 0,
+      "field26": 0,
+      "field27": 0.00029453,
+      "field1": "TEST-PD-CALIB-001",
+      "field2": "TEST-MP-2026-001",
+      "field7": "2026-08-02",
+      "field8": "Test submitter (calibration run - not a live filing)",
+      "field9": "*** TEST / CALIBRATION DOCUMENT - NOT A SUBMISSION FOR ISSUANCE UNDER VERRA OR ANY OTHER PROGRAM ***\n\nPURPOSE: exercise the VMR0015 / AMS-III.AV calculation engine against real-world project magnitudes, at the review team's request. This policy digitizes VERRA VMR0015 v1.0 (a Verra methodology) and is intended for Verra review. The test INPUT NUMBERS below are borrowed from published real-world projects purely to check engine arithmetic against realistic magnitudes - borrowing input numbers implies nothing about which registry reviews this policy.\n\nPROVENANCE - two DISTINCT real projects are referenced; they must not be conflated:\n\n(A) AMS-III.AV METHODOLOGY REFERENCE: CDM PoA 7067, 'Sustainable Deployment of the LifeStraw Family in rural INDONESIA', PoA ID 073P2XBYEUAGZML8S6NVJWFTHQ1KD5. Verified directly on the UNFCCC CDM registry (cdm.unfccc.int/ProgrammeOfActivities/poa_db/073P2XBYEUAGZML8S6NVJWFTHQ1KD5/view): Methodology Used = AMS-III.AV ver. 2; Registration Date = 30 Dec 2012; Sectoral scope 3 (Energy demand); Activity Scale = SMALL; DOE = DNV; Amount of Reductions = 52,674 tCO2e/annum. This is the genuine registered AMS-III.AV reference. NO parameters below are taken from it.\n\n(B) SOURCE OF THE NUMERIC INPUTS: Vestergaard's SEPARATE Kenya 'Carbon for Water' LifeStraw project, certified under GOLD STANDARD's own cook-stove/kitchen-regime methodology - NOT under AMS-III.AV and NOT under Verra. Values used: population served 4,096,000; X_boil 0.71; fNRB 0.65; QPW_pp 4.11 L/person/day; Wi 0.36 kg wood/L; leakage ratio 0.00029453 (from that project's reported LE/BE = 736/2,498,872).\n\nDERIVED (not reported by either project): field15 n_wb = 0.063654 and field16 EF_fuel = 116.7115 tCO2e/TJ. The Kenya PDD states fuel use as mass intensity (kg wood/L); AMS-III.AV Eq.1 requires the energy-based SEC/n_wb term, so n_wb was back-calculated by equating Wi x NCV(wood) to SEC/n_wb. The resulting 6.4% efficiency is consistent with published three-stone-fire values.\n\nRESULT: engine computes BE_y = 1,858,686 tCO2e/yr against the Kenya project's reported 2,498,872 (74%). The residual gap is attributable to the cross-methodology unit conversion described above, not to an engine defect: the ER = BE - PE - LE structure reproduces that project's own reported figures exactly (2,498,872 - 424,808 - 736 = 2,073,328).\n\nEXPLICIT DISCLAIMERS: (i) neither source project is Verra/VCS registered; (ii) no claim is made that either is VMR0015 registered; (iii) no credits are claimed by this document; (iv) for a like-for-like AMS-III.AV comparison, PoA 7067 publishes an ER calculation workbook built on AMS-III.AV meth v3 on its UNFCCC registry page.",
+      "field10": 100,
+      "field11": 100,
+      "field14": 0.71,
+      "field15": 0.063654,
+      "field16": 116.7115,
+      "field18": 1,
+      "field19": true,
+      "field20": "N/A - energy-demand project, no land-use/REDD+ overlap. Host country: Kenya.",
+      "field42": 4096000,
+      "field44": false,
+      "field45": 0,
+      "field46": 0,
+      "field47": 0,
+      "field48": 0,
+      "field49": 0,
+      "field50": 0,
+      "field51": 0,
+      "field52": 0,
+      "field53": 0,
+      "implementationStatus": {
+        "implementationStatus": "1,024,000 LifeStraw Family units distributed across 19 districts, Western Province, Kenya, per real PDD deployment record.",
+        "isGroupedAddition": 0,
+        "newInstancesDescription": "Not applicable - calibration test run."
+      },
+      "methodologyDeviations": {
+        "deviationId": "DEV-001",
+        "deviationDescription": "Physical input parameters sourced from a project certified under Gold Standard's cook-stove/kitchen-regime methodology - a DIFFERENT methodology, not an earlier version of AMS-III.AV. n_wb and EF_fuel therefore required unit conversion from that methodology's mass-based fuel intensity to AMS-III.AV's energy-based SEC/n_wb formulation.",
+        "methodologyClauseRef": "AMS-III.AV Eq.1 / Eq.5 (SEC/n_wb term)",
+        "justification": "Calibration testing only, at the request of the review team for realistic project magnitudes. The source of the parameters used a different certification program and methodology; this is disclosed rather than presented as an AMS-III.AV filing. For a definitive AMS-III.AV parameter set, CDM PoA 7067 (Indonesia) publishes an ER calculation workbook built on AMS-III.AV meth v3 on its UNFCCC registry page.",
+        "dateApplied": "2026-08-02",
+        "vvbAssessment": "Not applicable - calibration test document, not submitted for verification."
+      },
+      "dataParamsMonitored": [
+        {
+          "paramName": "Xboil",
+          "paramUnit": "fraction",
+          "measurementMethod": "Household kitchen survey, 115 households, 23 districts (real PDD Annex 3)",
+          "monitoringFrequency": "Biennial",
+          "qaqcProcedure": "3rd party spot check",
+          "equipmentUsed": "N/A - survey instrument"
+        },
+        {
+          "paramName": "fNRB",
+          "paramUnit": "fraction",
+          "measurementMethod": "FAO Forestry Outlook Study biomass assessment (real PDD Section B.4)",
+          "monitoringFrequency": "Biennial",
+          "qaqcProcedure": "3rd party study and report",
+          "equipmentUsed": "N/A"
+        }
+      ],
+      "exAnteVsAchieved": {
+        "exAnteERtco2e": 2073328,
+        "achievedERtco2e": 1858139,
+        "percentDifference": -10.38,
+        "justification": "Achieved figure computed by this engine using unit-converted real project inputs; ex-ante figure is the PDD's own reported estimate. Difference attributable to the SEC/n_wb energy-basis conversion documented in field9, not a data error."
+      },
+      "esgRiskMonitoring": {
+        "realizedRisks": "No ESG risks materialised - this is a calibration test run, not an operating project period.",
+        "mitigationOutcomes": "Not applicable to a calibration test run.",
+        "grievancesReceived": "None. No operating project exists under this test document.",
+        "newRisksIdentified": "None."
+      },
+      "mrImplementationSummary": {
+        "statusSummary": "TEST/CALIBRATION RUN - not a live project record. Exercises engine arithmetic against real-world magnitudes per the review team's request for realistic project data. See field9 for full provenance.",
+        "commissioningDates": "2011-04 (real project start)",
+        "auditHistory": []
+      },
+      "mrSectoralScope": {
+        "sectoralScope": "03 - Energy demand",
+        "projectType": "Type III - Other project activities",
+        "isGrouped": "Yes - grouped/PoA structure"
+      },
+      "mrProjectProponent": {
+        "orgName": "Vestergaard (test data attribution only - not a submitting entity here)",
+        "contacts": []
+      },
+      "mrStartDate": {
+        "startDate": "2011-04-01"
+      },
+      "mrCreditingPeriod": {
+        "creditingStartDate": "2011-04-01",
+        "creditingEndDate": "2021-04-01"
+      },
+      "mrProjectLocation": {
+        "countryRegion": "TEST DATA - parameters from Western Province, Kenya (Gold Standard project). Methodology reference project is in Lampung province, Indonesia (CDM PoA 7067).",
+        "locations": []
+      },
+      "mrMethodologyRef": {
+        "methodologyTitle": "Policy implements: AMS-III.AV as revised by VMR0015 v1.0 (Verra). Test data note: physical parameters originate from a Gold Standard-certified project, not from an AMS-III.AV registration - see field9. The genuine AMS-III.AV registered reference for this methodology is CDM PoA 7067 (Indonesia).",
+        "toolVersions": "TOOL30 v04.0 (fNRB, adapted); TOOL33 (not used in source project - predates 2022 relocation)"
+      },
+      "mrOtherGhgPrograms": {
+        "doubleIssuanceControls": "Not applicable - this is a synthetic calibration document, not an issuance request. The AMS-III.AV methodology reference (CDM PoA 7067, Indonesia, PoA ID 073P2XBYEUAGZML8S6NVJWFTHQ1KD5) and the source of the physical parameters (Vestergaard Kenya 'Carbon for Water', Gold Standard certified) are two separate real projects, each registered once under its own respective program. No credits are being claimed here under any program.",
+        "programs": []
+      },
+      "mrOtherFormsOfCredit": {
+        "otherEnvironmentalCredit": "None reported",
+        "scope3Controls": "N/A"
+      },
+      "mrSdContributions": {
+        "sdNarrative": "Real project: reduced waterborne disease, reduced firewood collection burden on women/children, per PDD Section A.2",
+        "sdgRows": []
+      },
+      "mrBaselineEmissions": {
+        "beEquation": "BE_y = QPW_y x m x X_boil x (SEC/n_wb) x fNRB x EF_fuel / 1e9",
+        "beInputsApplied": "QPW_y=6,144,614,400 L (pop 4,096,000 x 4.11 L/p/d x 365, below the 5.5 L/p/d cap); X_boil=0.71; n_wb=0.063654 (derived); fNRB=0.65 (TOOL33 default pathway, field30=1); EF_fuel=116.7115 tCO2e/TJ (derived)",
+        "beWorkedCalculation": "BE_y = 1,858,686 tCO2e/yr (PDD reports 2,498,872; ratio 0.744 - see field9)"
+      },
+      "mrProjectEmissions": {
+        "peEquation": "PE_y = PE_FF,y + PE_EC,y",
+        "peInputsApplied": "No fossil fuel or grid electricity used by LifeStraw Family units (real project - passive filtration, no power required)",
+        "peWorkedCalculation": "PE_y = 0"
+      },
+      "mrLeakage": {
+        "leakageEquation": "LE_y = LF x BE_y",
+        "leakageInputsApplied": "LF=0.00029453 - derived from the PDD's own reported LE/BE ratio (736/2,498,872), reflecting real manufacturing/transport emissions for the LifeStraw units",
+        "leakageWorkedCalculation": "0.00029453 x 1,858,686 = 547 tCO2e/yr"
+      },
+      "field58": 4.11,
+      "policyId": "6a6f7948c3b5fdde9c5803f1",
+      "guardianVersion": "3.6.0",
+      "ref": "urn:uuid:6afde40d-8e7e-4e32-97d3-e306bfd1f684",
+      "field3": 1858686.0518302969,
+      "field6": 1858138.6130274513,
+      "field4": 0,
+      "field5": 547.4388028455774,
+      "field12": 6144614400,
+      "field17": 0.65,
+      "field43": 0,
+      "@context": [
+        "schema:78061cd7-f041-4cac-9b98-5b5c4640aacf"
+      ],
+      "id": "urn:uuid:75bb5e69-2ca4-4baf-87b3-1d90512d57db",
+      "type": "78061cd7-f041-4cac-9b98-5b5c4640aacf"
+    }
+  ],
+  "proof": {
+    "type": "Ed25519Signature2018",
+    "created": "2026-08-02T17:16:39Z",
+    "verificationMethod": "did:hedera:testnet:AP6vetPimo2GJg2eHjhcHm1euaEZzN9vxzpnxofR7UVw_0.0.9599267#did-root-key",
+    "proofPurpose": "assertionMethod",
+    "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..gnN-wEIPv5cY62u3V8t4986ZF2wTDf_ytDGPB1RVGMiPY7I9pBSO91TYfb0n9GrBHc-jBWoLeP9pNyyt1MD7BA"
+  }
+}
