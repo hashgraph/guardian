@@ -167,6 +167,18 @@ export async function bootstrapSchema(dataSource: DataSource): Promise<void> {
         WHERE type = 'Token'
     `);
 
+    // Resolves a published methodology by its instance topic. Two hot callers:
+    // PolicyStatusProcessor (once per policy-status job) and
+    // resolveParentPolicyTopicId in message-process.processor.ts (once per VC
+    // whose policy topic has to be walked). Without it both fall back to the
+    // (type, action) index and then heap-filter every publish-policy row —
+    // ~20k of them on testnet — to find one match.
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_message_instance_policy_instance_topic
+        ON message ((options->>'instanceTopicId'))
+        WHERE type = 'Instance-Policy' AND action = 'publish-policy'
+    `);
+
     // Pre-computed MintToken → project attribution table.
     // Eliminates the grouped-project double-counting bug where a topic-scope
     // join would assign every MintToken in a shared instance topic to all

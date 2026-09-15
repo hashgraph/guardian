@@ -19,6 +19,11 @@ export const BASE_QUEUE_NAMES = {
     MV_REFRESH: 'maintenance-refresh-mvs',
     BUSINESS_VIEW_BUILD: 'maintenance-build-business-views',
     PROJECT_REPARSE: 'project-reparse',
+    // Resolves a published methodology's discontinue state from the Policy
+    // messages already ingested for it. Deliberately NOT a `mirror-node-*`
+    // queue: the policy topic is already synced by TOPIC_SYNC, so this reads
+    // the local `message` table and never calls the mirror node.
+    POLICY_STATUS: 'policy-status',
 } as const;
 
 export type BaseQueueName = typeof BASE_QUEUE_NAMES[keyof typeof BASE_QUEUE_NAMES];
@@ -53,6 +58,7 @@ export const QUEUE_NAMES = {
     MV_REFRESH: qname(BASE_QUEUE_NAMES.MV_REFRESH),
     BUSINESS_VIEW_BUILD: qname(BASE_QUEUE_NAMES.BUSINESS_VIEW_BUILD),
     PROJECT_REPARSE: qname(BASE_QUEUE_NAMES.PROJECT_REPARSE),
+    POLICY_STATUS: qname(BASE_QUEUE_NAMES.POLICY_STATUS),
 } as const;
 
 export type QueueName = typeof QUEUE_NAMES[keyof typeof QUEUE_NAMES];
@@ -215,6 +221,16 @@ export function getQueueConfigs(): QueueDefinition[] {
             },
             concurrency: envInt('WORKER_PROJECT_REPARSE_CONCURRENCY', 5),
         },
+        {
+            name: QUEUE_NAMES.POLICY_STATUS,
+            defaultJobOptions: {
+                attempts: 3,
+                backoff: { type: 'exponential', delay: 2000 },
+                removeOnComplete: keepCompleted('POLICY_STATUS_REMOVE_ON_COMPLETE', 500),
+                removeOnFail: keepFailed('POLICY_STATUS_REMOVE_ON_FAIL', 2000),
+            },
+            concurrency: envInt('WORKER_POLICY_STATUS_CONCURRENCY', 3),
+        },
     ];
 }
 
@@ -267,6 +283,8 @@ const LOCK_DURATION_BY_QUEUE: Record<string, number> = {
     [QUEUE_NAMES.MV_REFRESH]: envInt('MV_REFRESH_LOCK_DURATION', 600_000),
     [QUEUE_NAMES.BUSINESS_VIEW_BUILD]: envInt('BUSINESS_VIEW_BUILD_LOCK_DURATION', 300_000),
     [QUEUE_NAMES.PROJECT_REPARSE]: envInt('PROJECT_REPARSE_LOCK_DURATION', 120_000),
+    // A handful of indexed lookups plus one small UPDATE — nothing here is slow.
+    [QUEUE_NAMES.POLICY_STATUS]: envInt('POLICY_STATUS_LOCK_DURATION', 60_000),
 };
 
 export type TopicPollMode = 'chain' | 'dispatcher';

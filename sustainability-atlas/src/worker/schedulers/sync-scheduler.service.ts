@@ -11,6 +11,7 @@ import { ROOT_TOPICS } from '@shared/config/configuration';
 import { PolicyDecodeJobData } from '../processors/policy-decode.processor';
 import { TREASURY_TRANSFERS_JOB } from '../processors/token-sync.processor';
 import { BUSINESS_VIEW_PARTITIONS } from '../processors/business-view-builder.processor';
+import { POLICY_STATUS_SWEEP_JOB } from '../processors/policy-status.processor';
 import { ProjectMapperService } from '../services/project-mapper.service';
 
 /** Shape accepted by Queue.addBulk. */
@@ -65,6 +66,7 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
         @InjectQueue(QUEUE_NAMES.BUSINESS_VIEW_BUILD) private readonly businessViewQueue: Queue,
         @InjectQueue(QUEUE_NAMES.POLICY_DECODE) private readonly policyDecodeQueue: Queue,
         @InjectQueue(QUEUE_NAMES.IPFS_FETCH) private readonly ipfsQueue: Queue,
+        @InjectQueue(QUEUE_NAMES.POLICY_STATUS) private readonly policyStatusQueue: Queue,
     ) {
         this.leaderLock = new LeaderLock(this.redis, this.leaderKey, this.instanceId, 30);
     }
@@ -530,6 +532,7 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
         try {
             await this.scheduleMvRefresh();
             await this.scheduleBusinessViewBuilder();
+            await this.schedulePolicyStatusSweep();
             this.logger.log('All repeating jobs scheduled');
         } catch (error: unknown) {
             const message = error instanceof Error ? error.message : String(error);
@@ -1103,6 +1106,39 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
         );
 
         this.logger.log(`Scheduled MV refresh every ${mvRefreshInterval / 1000}s`);
+    }
+
+    /**
+     * Periodic re-resolution of every methodology's discontinue state.
+     *
+     * The per-message triggers in MessageProcessProcessor already cover the
+     * normal path, so this is purely the backstop: it heals a discontinue that
+     * was ingested before its publish message, a business_view row created after
+     * its job had already run, and anything enqueued while a worker was down.
+     *
+     * One sweep job fans out to one job per methodology inside the processor,
+     * rather than the scheduler enqueuing hundreds of jobs itself — the fan-out
+     * query belongs next to the code that consumes it, and this keeps the whole
+     * operation visible as a single unit on the queue dashboard.
+     */
+    private async schedulePolicyStatusSweep(): Promise<void> {
+        const interval = envInt('POLICY_STATUS_SWEEP_INTERVAL_MS', 10 * 60 * 1000);
+
+        // Immediate one-shot so a restart re-checks everything without waiting
+        // for the first repeat.
+        await this.policyStatusQueue.add(
+            POLICY_STATUS_SWEEP_JOB,
+            {},
+            { jobId: `policy-status-sweep-initial-${Date.now()}`, removeOnComplete: true },
+        );
+
+        await this.policyStatusQueue.upsertJobScheduler(
+            'policy-status-sweep',
+            { every: interval },
+            { name: POLICY_STATUS_SWEEP_JOB },
+        );
+
+        this.logger.log(`Scheduled policy status sweep: initial run + every ${interval / 1000}s`);
     }
 
     private async scheduleBusinessViewBuilder(): Promise<void> {

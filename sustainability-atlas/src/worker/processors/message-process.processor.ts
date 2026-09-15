@@ -15,6 +15,7 @@ import {
     parseMessageJson,
     extractDiscoverableTopics,
     extractTokenIds,
+    DISCONTINUE_ACTIONS,
 } from '@shared/utils/message-parser';
 import { isTopicBlocked } from '@shared/config/topic-blocklist';
 import { isRegistryAllowlistActive, isTopicAllowedFromSeed } from '@shared/config/registry-allowlist';
@@ -49,6 +50,7 @@ export class MessageProcessProcessor extends WorkerHost {
         @InjectQueue(QUEUE_NAMES.TOPIC_SYNC) private readonly topicQueue: Queue,
         @InjectQueue(QUEUE_NAMES.TOPIC_SYNC_PRIORITY) private readonly topicPriorityQueue: Queue,
         @InjectQueue(QUEUE_NAMES.TOKEN_SYNC) private readonly tokenQueue: Queue,
+        @InjectQueue(QUEUE_NAMES.POLICY_STATUS) private readonly policyStatusQueue: Queue,
     ) {
         super();
         const network = this.configService.get<string>('app.hedera.network') || 'testnet';
@@ -220,6 +222,31 @@ export class MessageProcessProcessor extends WorkerHost {
                     jobId: `policy-decode-${cid}`,
                 });
             }
+
+            // Register the newly published methodology with the policy-status
+            // queue, so a discontinuation that was already on-chain before this
+            // publish was ingested resolves immediately instead of waiting for
+            // the sweep.
+            if (instanceTopicId) {
+                await this.enqueuePolicyStatus(instanceTopicId, 'publish', consensusTimestamp);
+            }
+        }
+
+        // A methodology being discontinued (immediately or on a future date).
+        // Guardian sends these as `Policy` messages to the same policy topic as
+        // the publish message, so they arrive through this same path.
+        if (parsed.type === 'Policy' && parsed.action && DISCONTINUE_ACTIONS.has(parsed.action)) {
+            const discontinuedInstanceTopic = parsed.options['instanceTopicId'];
+            if (typeof discontinuedInstanceTopic === 'string' && discontinuedInstanceTopic) {
+                await this.enqueuePolicyStatus(
+                    discontinuedInstanceTopic, 'discontinue', consensusTimestamp,
+                );
+            } else {
+                this.logger.warn(
+                    `${parsed.action} message ${consensusTimestamp} names no instanceTopicId — ` +
+                    `cannot attribute it to a published methodology`,
+                );
+            }
         }
 
         // ── IPFS fetch strategy ────────────────────────────────────────────────
@@ -299,6 +326,28 @@ export class MessageProcessProcessor extends WorkerHost {
 
         this.logger.debug(
             `Processed message ${consensusTimestamp}: type=${parsed.type} action=${parsed.action}`,
+        );
+    }
+
+    /**
+     * Asks the policy-status queue to re-resolve one methodology's discontinue
+     * state.
+     *
+     * The jobId is scoped to the triggering MESSAGE, never to the methodology
+     * alone: finished jobs are retained for QUEUE_KEEP_COMPLETED_AGE_S (an hour
+     * by default) and re-adding a retained jobId is silently dropped — which
+     * would swallow exactly the case that matters, an edited deferral arriving
+     * minutes after the discontinuation it replaces.
+     */
+    private async enqueuePolicyStatus(
+        instanceTopicId: string,
+        reason: 'publish' | 'discontinue',
+        consensusTimestamp: string,
+    ): Promise<void> {
+        await this.policyStatusQueue.add(
+            'resolve',
+            { instanceTopicId, reason },
+            { jobId: `policy-status-${instanceTopicId}-${reason}-${consensusTimestamp}` },
         );
     }
 
