@@ -58,8 +58,7 @@ services:
       - auth-service
     environment:
       SERVICE_CHANNEL: 'worker.1'
-      IPFS_STORAGE_KEY: "..." 
-      IPFS_STORAGE_PROOF: "..."
+      IPFS_STORAGE_API_KEY: "..."
  
   worker-service-2:
     env_file:
@@ -70,8 +69,7 @@ services:
       - auth-service
     environment:
       SERVICE_CHANNEL: 'worker.2'
-      IPFS_STORAGE_KEY: "..." 
-      IPFS_STORAGE_PROOF: "..."
+      IPFS_STORAGE_API_KEY: "..."
  
   auth-service:
     env_file:

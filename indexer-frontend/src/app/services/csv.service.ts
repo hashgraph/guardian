@@ -19,23 +19,33 @@ export class CsvService {
      * @param csvText Raw CSV text
      * @param delimiter Column delimiter, default ','
      */
-    public parseCsvToTable(csvText: string, delimiter: string = ','): TableData {
+    public parseCsvToTable(
+        csvText: string,
+        delimiter: string = ',',
+        storedColumnKeys?: string[]
+    ): TableData {
+        const storedKeys: string[] = Array.isArray(storedColumnKeys) ? storedColumnKeys : [];
+        const hasStoredKeys: boolean = storedKeys.length > 0;
+
         const parsed = Papa.parse<string[]>(csvText, {
             header: false,
             delimiter,
-            skipEmptyLines: true
+            skipEmptyLines: !hasStoredKeys
         });
 
-        const rawRows: string[][] = (parsed.data as unknown as string[][]) ?? [];
+        const allRows: string[][] = (parsed.data as unknown as string[][]) ?? [];
+        const rawRows: string[][] = hasStoredKeys ? allRows.slice(1) : allRows;
 
-        const columnCount: number = rawRows.reduce((maxColumns: number, row: string[]) => {
+        const widestRow: number = rawRows.reduce((maxColumns: number, row: string[]) => {
             const length: number = Array.isArray(row) ? row.length : 0;
             return Math.max(maxColumns, length);
         }, 0);
 
-        const columnKeys: string[] = Array.from({ length: columnCount }, (_: unknown, index: number) => {
-            return `C${index + 1}`;
-        });
+        const columnCount: number = hasStoredKeys ? storedKeys.length : widestRow;
+
+        const columnKeys: string[] = hasStoredKeys
+            ? storedKeys
+            : Array.from({ length: columnCount }, (_: unknown, index: number) => `C${index + 1}`);
 
         const rows: Record<string, string>[] = rawRows.map((rawRow: string[]) => {
             const record: Record<string, string> = {};

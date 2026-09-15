@@ -13,6 +13,7 @@ export * from './geojson.type.js';
 export * from './hedera-response-code.type.js';
 export * from './icon.type.js';
 export * from './import.type.js';
+export * from './iwa-version.type.js';
 export * from './log.type.js';
 export * from './module-status.type.js';
 export * from './notification-action.type.js';

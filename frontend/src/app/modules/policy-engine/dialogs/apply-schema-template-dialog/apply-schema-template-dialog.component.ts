@@ -53,6 +53,15 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
     });
     private readonly destroy$ = new Subject<void>();
 
+    /**
+     * The binding being touched, in update mode - fixed for the life of the dialog.
+     * `selectedTemplateId` is the target and can be changed freely: picking one
+     * other than this compares against, and switches to, a different template
+     * entirely rather than just refreshing this one.
+     */
+    private readonly baseTemplateId: string | null = null;
+    private preselectionApplied = false;
+
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
@@ -60,6 +69,15 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
     ) {
         this.policy = this.config.data?.policy;
         this.mode = this.config.data?.mode === 'update' ? 'update' : 'apply';
+        this.baseTemplateId = this.config.data?.templateId || null;
+    }
+
+    private getAppliedTemplateIds(): Set<string> {
+        return new Set(
+            (this.policy?.schemaTemplates || [])
+                .map((binding: any) => binding?.templateId)
+                .filter((templateId: string | undefined) => !!templateId)
+        );
     }
 
     public ngOnInit(): void {
@@ -85,15 +103,39 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
 
     public loadTemplates(search: string = ''): void {
         this.loading = true;
+        const appliedTemplateIds = this.getAppliedTemplateIds();
         this.templatesService.page(0, 1000, search)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
             next: (response) => {
                 this.list = (response.body || []).filter((template) => {
-                    return template.status === ModuleStatus.DRAFT ||
-                        template.status === ModuleStatus.PUBLISHED;
+                    if (template.status !== ModuleStatus.DRAFT && template.status !== ModuleStatus.PUBLISHED) {
+                        return false;
+                    }
+                    const templateId = this.getTemplateId(template);
+                    const isApplied = !!templateId && appliedTemplateIds.has(templateId);
+                    // Apply can only target a template not yet bound to this policy.
+                    // Update can target the template already bound here (the common
+                    // "refresh to the latest state" case) or any template not bound to
+                    // some *other* binding - picking a different one is a swap, not a
+                    // refresh, and previews/applies as such.
+                    if (this.mode === 'update') {
+                        return templateId === this.baseTemplateId || !isApplied;
+                    }
+                    return !isApplied;
                 });
                 this.loading = false;
+                // Auto-select the bound template once; only latch when it's actually found, in case
+                // it's absent from this page, so a later load can still try again.
+                if (this.baseTemplateId && !this.preselectionApplied && !this.selectedTemplateId) {
+                    const preselected = this.list.find(
+                        (template) => this.getTemplateId(template) === this.baseTemplateId
+                    );
+                    if (preselected) {
+                        this.preselectionApplied = true;
+                        this.selectTemplate(preselected);
+                    }
+                }
             },
             error: () => {
                 this.list = [];
@@ -111,14 +153,17 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
         }
     }
 
-    public loadUpdatePreview(templateId: string): void {
+    /** @param targetTemplateId the template to compare/switch to - the base (this dialog's own binding) stays fixed. */
+    public loadUpdatePreview(targetTemplateId: string): void {
         this.previewLoading = true;
-        this.templatesService.previewUpdate(templateId, this.policy.id)
+        this.templatesService.previewUpdate(this.baseTemplateId!, this.policy.id, targetTemplateId)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (preview) => {
-                    this.updatePreview = preview;
+                    // Clear first: assigning the preview runs the setter, which
+                    // auto-resolves every conflict left with a single option.
                     this.resolutions = {};
+                    this.updatePreview = preview;
                     this.previewLoading = false;
                 },
                 error: () => {
@@ -138,8 +183,9 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
         }
         this.applying = true;
         const request = this.mode === 'update'
-            ? this.templatesService.pushUpdate(this.selectedTemplateId, this.policy.id, {
-                resolutions: Object.entries(this.resolutions).map(([conflictId, action]) => ({ conflictId, action }))
+            ? this.templatesService.pushUpdate(this.baseTemplateId!, this.policy.id, {
+                resolutions: Object.entries(this.resolutions).map(([conflictId, action]) => ({ conflictId, action })),
+                targetTemplateId: this.selectedTemplateId
             })
             : this.templatesService.pushApply(this.selectedTemplateId, this.policy.id);
         request.subscribe({
@@ -169,6 +215,12 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
         return this.visibleConflicts.every((conflict) => !!this.resolutions[conflict.id]);
     }
 
+    public get emptyListHeader(): string {
+        return this.mode === 'update'
+            ? 'There are no schema templates available to update to'
+            : 'There are no schema templates left to apply';
+    }
+
     public get headerText(): string {
         return this.mode === 'update' ? 'Update Schema Template' : 'Apply Schema Template';
     }
@@ -194,8 +246,15 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
             return this.hasDetails(change);
         });
         this.visibleChangesCount = this.visibleChanges.length;
+        // A conflict left with a single option is still worth showing - it is how the
+        // user finds out a schema will be kept rather than removed, and why.
         this.visibleConflicts = (this._updatePreview?.conflicts || [])
-            .filter((conflict) => (conflict.allowedActions || []).length > 1);
+            .filter((conflict) => (conflict.allowedActions || []).length > 0);
+        for (const conflict of this.visibleConflicts) {
+            if (conflict.allowedActions.length === 1 && !this.resolutions[conflict.id]) {
+                this.resolutions[conflict.id] = conflict.allowedActions[0];
+            }
+        }
         this.visibleConflictsCount = this.visibleConflicts.length;
 
         const groups = new Map<string, SchemaTemplateDiffGroup>();

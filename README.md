@@ -67,7 +67,6 @@ To get a local copy up and running quickly, follow the steps below. Please refer
 2. **[Docker](https://www.docker.com/)** – one-command build & run (recommended)
 3. **[MongoDB v6](https://www.mongodb.com/)**, **[Node.js v24.15+](https://nodejs.org/en/download)**, and **[NATS 2.9.25](https://nats.io/)** – auto-provisioned when using Docker Compose
 4. **[IPFS storage](https://docs.ipfs.tech/concepts/what-is-ipfs/)** (choose one):
-   - **[Storacha account](https://storacha.network/)** – IPFS pinning service (formerly Web3.Storage)
    - **[Filebase account](https://filebase.com/)** – S3-compatible IPFS pinning
    - Local IPFS node (e.g., **[Kubo](https://github.com/ipfs/kubo)**) – auto-provisioned when using Docker Compose
 5. **[Valkey](https://valkey.io)** – in-memory cache & message broker (auto-provisioned by the Docker stack)
@@ -276,7 +275,6 @@ Alternatively, you can create a single key pair and, instead of adding the publi
 #### 4. Now, we have these options to setup IPFS storage
 
 - Local IPFS node
-- Storacha
 - Filebase bucket
 
 ##### 4.1 Setting up Local IPFS node
@@ -290,39 +288,7 @@ Alternatively, you can create a single key pair and, instead of adding the publi
    IPFS_PROVIDER="local"
    ```
 
-##### 4.2 Setting up Storacha account
-
-To select this option ensure that `IPFS_PROVIDER="web3storage"` setting exists in your `./configs/.env.<environment>.guardian.system` file.
-
-To configure access to the [Storacha upload service](https://github.com/storacha/upload-service) (a w3up protocol implementation) for your Guardian instance you need to set correct values to the following variables in the `./configs/.env.<environment>.guardian.system` file:
-
-   ```text
-   IPFS_STORAGE_KEY="..."
-   IPFS_STORAGE_PROOF="..."
-   ```
-
-> ***NOTE:***  When Windows OS is used for creating the IPFS values, please use bash shell to prevent issues with base64 encoding.
-
-To obtain the values for these variables please follow the steps below:
-
-- Create an account on <https://storacha.network>, please specify the email you have access to as the account authentication is based on the email validation. Make sure to follow through the registration process to the end, choose an appropriate billing plan for your needs (e.g. 'STARTER') and enter your payment details.
-- Install CLI as described in the [corresponding section](https://docs.storacha.network/cli/) of the Storacha documentation.
-- Create your 'space' as described in the ['Create a Space'](https://docs.storacha.network/how-to/create-space/) section of the documentation.
-- Execute the following to set the Space you intend on delegating access to: `storacha space use <space_did>`.
-- The following command returns what will be your Agent private key and DID: `storacha key create`. The private key (starting with `Mg...`) is the value to be used in the environment variable `IPFS_STORAGE_KEY`.
-- Retrieve the PROOF by executing the following: ```storacha delegation create <did_from_ucan-key_command_above> --base64```. The output of this command is the value to be used in the environment variable `IPFS_STORAGE_PROOF`.
-
-To summarise, the process of configuring a UCAN delegated access to the Space you intend on delegating access to consists of execution the following command sequence:
-
-1. `storacha login`
-2. `storacha space create`
-3. `storacha space use`
-4. `storacha key create`
-5. `storacha delegation`
-
-The complete guide to using the new Storacha client is available at <https://docs.storacha.network/how-to/upload/>.
-
-##### 4.3 Setting up IPFS Filebase Bucket
+##### 4.2 Setting up IPFS Filebase Bucket
 
 To configure the Filebase IPFS provider, set the following variables in the file *`./configs/.env.<environment>.guardian.system`*
 

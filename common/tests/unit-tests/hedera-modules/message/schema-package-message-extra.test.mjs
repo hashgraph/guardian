@@ -7,6 +7,7 @@ import {
     MessageStatus,
     UrlType
 } from '../../../../dist/hedera-modules/message/index.js';
+import { IwaVersion } from '@guardian/interfaces';
 
 describe('SchemaPackageMessage extra', function () {
     const pack = {
@@ -90,7 +91,8 @@ describe('SchemaPackageMessage extra', function () {
             entity: schemaA.entity,
             owner: schemaA.owner,
             version: schemaA.version,
-            codeVersion: schemaA.codeVersion
+            codeVersion: schemaA.codeVersion,
+            iwaVersion: IwaVersion.V1
         });
     });
 

@@ -624,6 +624,16 @@ export class BlockTreeGenerator extends NatsService {
             return new MessageResponse(result);
         });
 
+        this.getPolicyMessages(PolicyEvents.PAUSE_RECORDING, policyId, async (msg: any) => {
+            const result = await RecordUtils.PauseRecording(policyId);
+            return new MessageResponse(result);
+        });
+
+        this.getPolicyMessages(PolicyEvents.RESUME_RECORDING, policyId, async (msg: any) => {
+            const result = await RecordUtils.ResumeRecording(policyId);
+            return new MessageResponse(result);
+        });
+
         this.getPolicyMessages(PolicyEvents.STOP_RECORDING, policyId, async (msg: any) => {
             const result = await RecordUtils.StopRecording(policyId);
             return new MessageResponse(result);

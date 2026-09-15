@@ -3,6 +3,7 @@ import {
     buildFieldChangeDetails,
     buildTemplateSchemasSnapshot,
     createTemplateStateHash,
+    getPolicySchemaByTemplateId,
     mergeCustomFieldsIntoDocument,
     normalizeFieldForDiff,
 } from '../../dist/api/schema-template.service.js';
@@ -358,3 +359,59 @@ describe('mergeCustomFieldsIntoDocument - condition-required fields', () => {
     });
 });
 
+/*
+ * Issue #6711, step 10. templateSchemaId is deliberately stable across template
+ * versions and forks, so two lineage-sharing templates applied to the same policy
+ * can carry policy schemas with the same templateSchemaId. Before this fix,
+ * getPolicySchemaByTemplateId indexed every policy schema in the topic by that id
+ * with no regard for which template it belonged to, so a schema one binding was
+ * about to add could resolve to a sibling template's schema instead and be
+ * overwritten.
+ */
+describe('getPolicySchemaByTemplateId scopes to one binding', () => {
+    const policySchema = (id, templateId, templateSchemaId) => ({
+        id,
+        templateId,
+        templateSchemaId,
+        name: `schema-${id}`,
+    });
+
+    it('does not resolve a sibling template schema sharing the same templateSchemaId', () => {
+        // template-1 has no schema of its own for this id yet - it is what an update
+        // is about to add - so it must not be found via template-2's schema instead.
+        const templateTwoSchema = policySchema('ps-2', 'template-2', 'tsid-shared');
+
+        const result = getPolicySchemaByTemplateId(
+            [templateTwoSchema],
+            {},
+            'template-1'
+        );
+
+        assert.equal(result.has('tsid-shared'), false);
+    });
+
+    it('still resolves the binding\'s own schema for that same shared id', () => {
+        const templateOneSchema = policySchema('ps-1', 'template-1', 'tsid-shared');
+        const templateTwoSchema = policySchema('ps-2', 'template-2', 'tsid-shared');
+
+        const result = getPolicySchemaByTemplateId(
+            [templateOneSchema, templateTwoSchema],
+            {},
+            'template-1'
+        );
+
+        assert.equal(result.get('tsid-shared')?.id, 'ps-1');
+    });
+
+    it('still resolves through schemaMap for schemas already applied by this binding', () => {
+        const templateOneSchema = policySchema('ps-1', 'template-1', 'tsid-old-name');
+
+        const result = getPolicySchemaByTemplateId(
+            [templateOneSchema],
+            { 'tsid-old-name': 'ps-1' },
+            'template-1'
+        );
+
+        assert.equal(result.get('tsid-old-name')?.id, 'ps-1');
+    });
+});

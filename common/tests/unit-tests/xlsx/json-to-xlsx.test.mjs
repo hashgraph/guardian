@@ -9,6 +9,7 @@ const { XlsxEnum }   = await import('../../../dist/xlsx/models/xlsx-enum.js');
 const { Workbook, Hyperlink } = await import('../../../dist/xlsx/models/workbook.js');
 const { XlsxSchema } = await import('../../../dist/xlsx/models/xlsx-schema.js');
 const { Table }      = await import('../../../dist/xlsx/models/table.js');
+const { FieldTypes } = await import('../../../dist/xlsx/models/dictionary.js');
 
 // Private static helpers are accessible via bracket notation in compiled JS.
 const collectInlineRefs = (fields, set) => JsonToXlsx['collectInlineRefs'](fields, set);
@@ -333,6 +334,87 @@ describe('JsonToXlsx.writeField — old vs new sub-schema rendering', function (
 
         const paramValue = ws.getValue(table.getCol('Parameter'), DATA_ROW);
         assert.equal(paramValue, 'MySubSchema');
+    });
+});
+
+describe('Table columns in XLSX Parameter', function () {
+    function buildSheetAndTable() {
+        const wb = new Workbook();
+        const ws = wb.createWorksheet('SchemaSheet');
+        const table = new Table({ r: 1, c: 1 });
+        table.setDefault(false);
+        return { ws, table };
+    }
+
+    const DATA_ROW = 5;
+    const columns = [
+        { name: 'Year', key: 'year' },
+        { name: 'CO2 (tonnes)', key: 'co2_tonnes' },
+    ];
+
+    it('recognizes Table as an XLSX schema field type', function () {
+        const type = FieldTypes.findByName('Table');
+        assert.equal(type.type, 'string');
+        assert.equal(type.customType, 'table');
+    });
+
+    it('writes declared Table columns as JSON and reads them back in order', function () {
+        const { ws, table } = buildSheetAndTable();
+        const field = makeField({ type: 'string', customType: 'table', tableColumns: columns });
+
+        JsonToXlsx.writeField(ws, table, field, new Map(), new Map(), new Map(), DATA_ROW);
+
+        assert.equal(ws.getValue(table.getCol('Parameter'), DATA_ROW), JSON.stringify(columns));
+        const imported = makeField({ type: 'string', customType: 'table' });
+        const result = new XlsxResult();
+        XlsxToJson['readFieldParams'](ws, table, imported, { name: 'Table' }, DATA_ROW, result);
+        assert.deepEqual(imported.tableColumns, columns);
+        assert.deepEqual(result['_errors'], []);
+    });
+
+    it('keeps a blank Table Parameter as the toggle-off state', function () {
+        const { ws, table } = buildSheetAndTable();
+        const field = makeField({ type: 'string', customType: 'table' });
+
+        JsonToXlsx.writeField(ws, table, field, new Map(), new Map(), new Map(), DATA_ROW);
+
+        assert.isNotOk(ws.getValue(table.getCol('Parameter'), DATA_ROW));
+        const imported = makeField({ type: 'string', customType: 'table' });
+        const result = new XlsxResult();
+        XlsxToJson['readFieldParams'](ws, table, imported, { name: 'Table' }, DATA_ROW, result);
+        assert.isUndefined(imported.tableColumns);
+        assert.deepEqual(result['_errors'], []);
+    });
+
+    it('reports malformed JSON instead of silently disabling declared columns', function () {
+        const { ws, table } = buildSheetAndTable();
+        ws.setValue('[{"name":"Year"', table.getCol('Parameter'), DATA_ROW);
+        const field = makeField({ type: 'string', customType: 'table' });
+        const result = new XlsxResult();
+
+        XlsxToJson['readFieldParams'](ws, table, field, { name: 'Table' }, DATA_ROW, result);
+
+        assert.isUndefined(field.tableColumns);
+        assert.isTrue(result['_errors'].some((error) =>
+            error.message.includes('Table field Parameter must be a valid JSON array.')));
+    });
+
+    it('rejects invalid column arrays', function () {
+        const invalidValues = [
+            [],
+            [{ name: '', key: 'year' }],
+            [{ name: 'Year', key: 'year key' }],
+            [{ name: 'Year', key: 'year' }, { name: 'Again', key: 'year' }],
+        ];
+        for (const value of invalidValues) {
+            const { ws, table } = buildSheetAndTable();
+            ws.setValue(JSON.stringify(value), table.getCol('Parameter'), DATA_ROW);
+            const field = makeField({ type: 'string', customType: 'table' });
+            const result = new XlsxResult();
+            XlsxToJson['readFieldParams'](ws, table, field, { name: 'Table' }, DATA_ROW, result);
+            assert.isUndefined(field.tableColumns);
+            assert.isNotEmpty(result['_errors']);
+        }
     });
 });
 

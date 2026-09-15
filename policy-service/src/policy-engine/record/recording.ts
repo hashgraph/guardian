@@ -69,6 +69,8 @@ export class Recording {
      * Recording status
      */
     private _status: RecordStatus;
+    private _pausedAt: number | null;
+    private _pausedIntervals: { start: number, end: number }[];
     /**
      * Recording mode
      */
@@ -98,6 +100,25 @@ export class Recording {
         this._status = this.mode === 'auto'
             ? RecordStatus.Recording
             : RecordStatus.New;
+        this._pausedAt = null;
+        this._pausedIntervals = [];
+    }
+
+    /**
+     * Get paused time accumulated before the given moment
+     * @param time
+     *
+     * @returns offset
+     * @private
+     */
+    private pausedOffsetAt(time: number): number {
+        let offset = 0;
+        for (const interval of this._pausedIntervals) {
+            if (interval.start <= time) {
+                offset += Math.min(time, interval.end) - interval.start;
+            }
+        }
+        return offset;
     }
 
     /**
@@ -105,7 +126,9 @@ export class Recording {
      * @private
      */
     private isActive(): boolean {
-        return this.mode === 'auto' || this._status === RecordStatus.Recording;
+        return this.mode === 'auto' || (
+            this._status === RecordStatus.Recording && this._pausedAt === null
+        );
     }
 
     /**
@@ -126,12 +149,14 @@ export class Recording {
         if (!this.isActive()) {
             return;
         }
+        const time = entry?.actionTimestemp || Date.now();
         const payload: FilterObject<Record> = {
             uuid: this.uuid,
             policyId: this.policyId,
             method: entry.method,
             action: entry.action,
-            time: entry?.actionTimestemp || Date.now(),
+            time,
+            pausedOffset: this.pausedOffsetAt(time),
             user: entry.user ?? null,
             target: entry.target ?? null,
             document: entry.document ?? null,
@@ -182,6 +207,34 @@ export class Recording {
         return true;
     }
 
+    public async pause(): Promise<boolean> {
+        if (this.mode === 'auto') {
+            return false;
+        }
+        if (this._status !== RecordStatus.Recording) {
+            return false;
+        }
+        if (this._pausedAt === null) {
+            this._pausedAt = Date.now();
+        }
+        return true;
+    }
+
+    public async resume(): Promise<boolean> {
+        if (this.mode === 'auto') {
+            return false;
+        }
+        if (
+            this._status !== RecordStatus.Recording ||
+            this._pausedAt === null
+        ) {
+            return false;
+        }
+        this._pausedIntervals.push({ start: this._pausedAt, end: Date.now() });
+        this._pausedAt = null;
+        return true;
+    }
+
     /**
      * Stop recording
      * @public
@@ -193,16 +246,20 @@ export class Recording {
         if (this._status !== RecordStatus.Recording) {
             return false;
         }
+        const time = this._pausedAt ?? Date.now();
         await DatabaseServer.createRecord({
             uuid: this.uuid,
             policyId: this.policyId,
             method: RecordMethod.Stop,
             action: null,
-            time: Date.now(),
+            time,
+            pausedOffset: this.pausedOffsetAt(time),
             user: null,
             target: null,
             document: null
         } as FilterObject<Record>);
+        this._pausedAt = null;
+        this._pausedIntervals = [];
         this._status = RecordStatus.Stopped;
         this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
         return true;
@@ -404,7 +461,8 @@ export class Recording {
             type: this.type,
             policyId: this.policyId,
             uuid: this.uuid,
-            status: this._status
+            status: this._status,
+            pausedAt: this._pausedAt
         }
     }
 

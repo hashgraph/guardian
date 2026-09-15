@@ -27,6 +27,8 @@ describe('PolicyEvents enum', () => {
 
     it('maps recording / running subjects', () => {
         assert.equal(PolicyEvents.START_RECORDING, 'policy-event-start-recording');
+        assert.equal(PolicyEvents.PAUSE_RECORDING, 'policy-event-pause-recording');
+        assert.equal(PolicyEvents.RESUME_RECORDING, 'policy-event-resume-recording');
         assert.equal(PolicyEvents.STOP_RECORDING, 'policy-event-stop-recording');
         assert.equal(PolicyEvents.RUN_RECORD, 'policy-event-run-record');
         assert.equal(PolicyEvents.STOP_RUNNING, 'policy-event-stop-running');

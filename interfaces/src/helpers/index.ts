@@ -13,3 +13,4 @@ export * from './policy-helper.js';
 export * from './schema-json.js';
 export * from './policy-editable-field.js';
 export * from './geo-data/index.js';
+export * from './table-field-core.js';

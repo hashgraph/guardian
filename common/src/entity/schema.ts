@@ -1,4 +1,4 @@
-import { GenerateUUIDv4, ISchema, ISchemaDocument, SchemaCategory, SchemaEntity, SchemaStatus } from '@guardian/interfaces';
+import { DEFAULT_IWA_VERSION, GenerateUUIDv4, ISchema, ISchemaDocument, SchemaCategory, SchemaEntity, SchemaStatus } from '@guardian/interfaces';
 import { AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeUpdate, Entity, Enum, Index, OnLoad, Property } from '@mikro-orm/core';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { DataBaseHelper, SchemaConverterUtils } from '../helpers/index.js';
@@ -24,6 +24,10 @@ import { BaseEntity } from '../models/index.js';
     properties: ['defs'],
     name: 'defs_index',
 })
+@Index({
+     properties: ['owner', 'category', 'templateFeatured', 'createDate'],
+     name: 'owner_category_templateFeatured_createDate_index',
+ })
 export class Schema extends BaseEntity implements ISchema {
     /**
      * Schema uuid
@@ -182,10 +186,23 @@ export class Schema extends BaseEntity implements ISchema {
     templateSchemaId?: string;
 
     /**
+     * Denormalized featured flag from the owning template's config (see schema-template.service.ts)
+     */
+    @Property({ nullable: true })
+    templateFeatured?: boolean;
+
+    /**
      * Schema code version
      */
     @Property({ nullable: true })
     codeVersion?: string;
+
+    /**
+     * IWA dMRV specification version the field properties are authored against.
+     * Absent means IWA v1.
+     */
+    @Property({ nullable: true })
+    iwaVersion?: string;
 
     /**
      * Definitions
@@ -245,6 +262,7 @@ export class Schema extends BaseEntity implements ISchema {
         this.system = this.system || false;
         this.active = this.active || false;
         this.codeVersion = this.codeVersion || SchemaConverterUtils.VERSION;
+        this.iwaVersion = this.iwaVersion || DEFAULT_IWA_VERSION;
         if (!this.category) {
             this.category = this.readonly ? SchemaCategory.SYSTEM : SchemaCategory.POLICY;
         }

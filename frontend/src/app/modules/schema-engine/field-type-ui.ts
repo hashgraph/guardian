@@ -27,6 +27,7 @@ const FIELD_TYPE_ADDONS: Record<string, UIAddon> = {
     'GeoJSON':       { key: 'geo',           icon: 'pi-map-marker',          group: 'Simple Types' },
     'SentinelHUB':   { key: 'sentinel',      icon: 'pi-globe',               group: 'Simple Types' },
     'Table':         { key: 'table',         icon: 'pi-table',               group: 'Simple Types' },
+    'Rich Text':     { key: 'richText',      icon: 'pi-align-left',          group: 'Simple Types' },
     'Country':       { key: 'country',       icon: 'pi-flag',                group: 'Geographic' },
     'Continent':     { key: 'continent',     icon: 'pi-globe',               group: 'Geographic' },
     'State/Province': { key: 'state',         icon: 'pi-map-marker',          group: 'Geographic' },

@@ -5,9 +5,10 @@
 ## Guardian
 
 * [Getting Started](guardian/getting-started/README.md)
-  * [Guardian Glossary](guardian/getting-started/guardian-glossary.md)
   * [Installation Guide](guardian/getting-started/installation-guide.md)
+  * [Guardian Glossary](guardian/getting-started/guardian-glossary.md)
   * [Frameworks/Libraries](guardian/getting-started/built-with.md)
+  * [First steps with Guardian: A hello world tutorial](guardian/getting-started/hello-world-tutorial.md)
 * [Architecture](guardian/architecture/README.md)
   * [High Level Architecture](guardian/architecture/architecture-2.md)
   * [Deep Dive Architecture](guardian/architecture/reference-architecture.md)
@@ -238,6 +239,8 @@
           * [Existing file \_id to overwrite (optional)](guardian/workspace/schemas/available-schema-types/table-data-input-field/apis-related/existing-file-_id-to-overwrite-optional.md)
           * [Add file to ipfs directly](guardian/workspace/schemas/available-schema-types/table-data-input-field/apis-related/add-file-to-ipfs-directly.md)
           * [Deletes file from GridFS by id](guardian/workspace/schemas/available-schema-types/table-data-input-field/apis-related/deletes-file-from-gridfs-by-id.md)
+      * [Table Columns](guardian/workspace/schemas/available-schema-types/table-columns/README.md)
+        * [Configure Table Columns](guardian/workspace/schemas/available-schema-types/table-columns/configure-table-columns.md)
     * [Property Glossary](guardian/workspace/schemas/property-glossary.md)
     * [Schema Design Best Practices](guardian/workspace/schemas/best-practices-to-implement-schema/README.md)
       * [Excel-First Design](guardian/workspace/schemas/best-practices-to-implement-schema/excel-first-design.md)
@@ -256,6 +259,8 @@
       * [Set up Repeatable Field Links](guardian/workspace/schemas/repeatable-field-links/set-up-repeatable-field-links.md)
     * [Geo Fields](guardian/workspace/schemas/geo-fields/README.md)
       * [Configure Geo Fields](guardian/workspace/schemas/geo-fields/configure-geo-fields.md)
+    * [Rich Text Fields](guardian/workspace/schemas/rich-text-fields/README.md)
+      * [Configure Rich Text Fields](guardian/workspace/schemas/rich-text-fields/configure-rich-text-fields.md)
     * [Data Entry Updatability](guardian/workspace/schemas/data-entry-updatability/README.md)
       * [Demo using UI](guardian/workspace/schemas/data-entry-updatability/demo-using-ui.md)
       * [Demo using VM0042](guardian/workspace/schemas/data-entry-updatability/demo-using-vm0042.md)
@@ -276,6 +281,8 @@
   * [Schema Rules](guardian/workspace/defining-schema-rules-using-ui.md)
   * [Schema Templates](guardian/workspace/schema-templates/README.md)
     * [Create a Schema Template](guardian/workspace/schema-templates/create-a-schema-template.md)
+    * [Configure Schema Template Guidelines](guardian/workspace/schema-templates/configure-schema-template-guidelines.md)
+    * [Mark a Schema as Featured](guardian/workspace/schema-templates/mark-a-schema-as-featured.md)
     * [Apply a Schema Template](guardian/workspace/schema-templates/apply-a-schema-template.md)
     * [Update an Applied Schema Template](guardian/workspace/schema-templates/update-an-applied-schema-template.md)
     * [Detach a Schema Template](guardian/workspace/schema-templates/detach-a-schema-template.md)
@@ -367,6 +374,7 @@
     * [Policy Workflow Step 25](guardian/tutorials/creating-a-policy-through-policy-configurator/policy-workflow-step-24-1.md)
     * [Policy Workflow Wrap Up](guardian/tutorials/creating-a-policy-through-policy-configurator/policy-workflow-wrap-up.md)
   * [VM0033 API Walkthrough](guardian/tutorials/vm0033-api-workthrough.md)
+  * [Review & Approval Workflows with VM0033 for Auditors & VVBs](guardian/tutorials/review-and-approval-vm0033.md)
   * [Renewable Energy Credits](guardian/tutorials/renewable-energy-credits/README.md)
     * [Introduction to International Renewable Energy Credit Standard (iREC)](guardian/tutorials/renewable-energy-credits/introduction-to-international-renewable-energy-credit-standard-irec.md)
     * [iREC API Demo Guide](guardian/tutorials/renewable-energy-credits/api-workflow-of-irec-demo.md)
@@ -429,7 +437,6 @@
     * [GHGP Corporate Standard](guardian/tutorials/carbon-emissions/ghgp-corporate-standard.md)
     * [GHGP Corporate Standard V2](guardian/tutorials/carbon-emissions/ghgp-corporate-standard-v2.md)
     * [Climate Action Reserve’s U.S. Landfill Protocol Version 6.0](guardian/tutorials/carbon-emissions/climate-action-reserves-u.s.-landfill-protocol-version-6.0.md)
-  * [Review & Approval Workflows with VM0033 for Auditors & VVBs](guardian/tutorials/review-and-approval-vm0033.md)
 
 ## Explorers
 
@@ -441,7 +448,7 @@
 ## Methodology Digitalization
 
 * [Methodology Digitalization Best Practices](methodology-digitalization/methodology-digitalization-best-practices.md)
-* [📚 Methodology Digitalization Handbook](methodology-digitalization/methodology-digitization-handbook/README.md)
+* [Methodology Digitalization Handbook](methodology-digitalization/methodology-digitization-handbook/README.md)
   * [📋 Table of Contents](methodology-digitalization/methodology-digitization-handbook/table-of-contents.md)
   * [📝 Chapter Outlines](methodology-digitalization/methodology-digitization-handbook/chapter-outlines.md)
   * [🏗️ Part I: Foundation and Preparation](methodology-digitalization/methodology-digitization-handbook/part-1/README.md)
@@ -482,6 +489,7 @@
     * [🔗 VM0033 Integration](methodology-digitalization/methodology-digitization-handbook/_shared/vm0033-integration.md)
     * [⚙️ Guardian Integration](methodology-digitalization/methodology-digitization-handbook/_shared/guardian-integration.md)
     * [🗂️ Artifacts Collection](methodology-digitalization/methodology-digitization-handbook/_shared/artifacts.md)
+* [Methodology Library](methodology-digitalization/methodology-library.md)
 
 ## Security, Identity, and Privacy
 
@@ -741,6 +749,7 @@
   * [AI Search APIs](developer-tools-and-resources/api-reference/ai-search-apis/README.md)
     * [Returns response](developer-tools-and-resources/api-reference/ai-search-apis/returns-response.md)
     * [Rebuilds vector based on policy data](developer-tools-and-resources/api-reference/ai-search-apis/rebuilds-vector-based-on-policy-data.md)
+    * [Suggests schema field properties](developer-tools-and-resources/api-reference/ai-search-apis/suggest-schema-field-properties.md)
   * [User Operations](developer-tools-and-resources/api-reference/user-operations/README.md)
     * [Account APIs](developer-tools-and-resources/api-reference/user-operations/account-apis/README.md)
       * [Authentication Process](developer-tools-and-resources/api-reference/user-operations/account-apis/authentication-process.md)

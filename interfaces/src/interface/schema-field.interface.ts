@@ -115,6 +115,11 @@ export interface SchemaField {
     enum?: string[];
 
     /**
+     * Declared columns of a Table field
+     */
+    tableColumns?: { name: string; key: string }[];
+
+    /**
      * Enum name
      */
     enumName?: string;

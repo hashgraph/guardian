@@ -63,7 +63,7 @@ describe('schema template handlers', () => {
 
     it('GET_APPLIED_SCHEMA_TEMPLATE returns the snapshot config instead of mutable template config', async () => {
         stub(DatabaseServer, 'getPolicy', async () => policy({
-            schemaTemplate: templateBinding,
+            schemaTemplates: [templateBinding],
         }));
         stub(DatabaseServer, 'getSchemaTemplateById', async () => ({
             id: 'template-1',
@@ -107,7 +107,9 @@ describe('schema template handlers', () => {
         );
 
         assert.equal(ok(response), true);
-        assert.deepEqual(response.body.config, {
+        // One entry per applied template; this policy has the one.
+        const [applied] = response.body;
+        assert.deepEqual(applied.config, {
             schemas: {
                 'template-schema-1': {
                     customFieldsLocked: true,
@@ -119,9 +121,9 @@ describe('schema template handlers', () => {
                 },
             },
         });
-        assert.equal(response.body.name, 'Template');
-        assert.equal(response.body.version, '1.0.0');
-        assert.equal(response.body.snapshotId, 'snapshot-1');
+        assert.equal(applied.name, 'Template');
+        assert.equal(applied.version, '1.0.0');
+        assert.equal(applied.snapshotId, 'snapshot-1');
     });
 
     it('DETACH_SCHEMA_TEMPLATE removes snapshot, clears template metadata from bound schemas, and clears policy binding', async () => {
@@ -147,7 +149,7 @@ describe('schema template handlers', () => {
         };
 
         stub(DatabaseServer, 'getPolicyById', async () => policy({
-            schemaTemplate: templateBinding,
+            schemaTemplates: [templateBinding],
         }));
         stub(DatabaseServer, 'getSchemas', async (filter) => {
             assert.deepEqual(filter, {
@@ -187,7 +189,7 @@ describe('schema template handlers', () => {
         const response = await callHandler(
             handlers,
             MessageAPI.DETACH_SCHEMA_TEMPLATE,
-            { policyId: 'policy-1', owner }
+            { policyId: 'policy-1', templateId: 'template-1', owner }
         );
 
         assert.equal(ok(response), true);
@@ -195,6 +197,8 @@ describe('schema template handlers', () => {
             policyId: 'policy-1',
             templateId: 'template-1',
             detachedSchemas: 1,
+            deletedSchemas: 0,
+            deleteErrors: [],
         });
         assert.equal(updatedSchemas.length, 1);
         assert.equal(updatedSchemas[0].id, 'policy-schema-1');
@@ -202,7 +206,7 @@ describe('schema template handlers', () => {
         assert.equal(updatedSchemas[0].schema.templateSchemaId, '');
         assert.equal(updatedSchemas[0].schema.document.properties.templateField.templateFieldId, undefined);
         assert.deepEqual(removedSnapshot, { id: 'snapshot-1' });
-        assert.equal(updatedPolicy.schemaTemplate, null);
+        assert.deepEqual(updatedPolicy.schemaTemplates, []);
     });
 
     it('APPLY_SCHEMA_TEMPLATE rejects a policy that already has an applied template', async () => {
@@ -213,7 +217,7 @@ describe('schema template handlers', () => {
             topicId: '0.0.20',
         }));
         stub(DatabaseServer, 'getPolicyById', async () => policy({
-            schemaTemplate: templateBinding,
+            schemaTemplates: [templateBinding],
         }));
 
         const response = await callHandler(
@@ -359,7 +363,7 @@ describe('schema template CRUD and query handlers', () => {
         assert.equal(response.body.template.version, '1.0.0');
     });
 
-    it('UPDATE_SCHEMA_TEMPLATE persists name, description and config', async () => {
+    it('UPDATE_SCHEMA_TEMPLATE persists name, description and config guidelines', async () => {
         let saved = null;
         stub(DatabaseServer, 'getSchemaTemplateById', async () => ({
             id: 'template-1',
@@ -373,14 +377,123 @@ describe('schema template CRUD and query handlers', () => {
 
         const response = await callHandler(handlers, MessageAPI.UPDATE_SCHEMA_TEMPLATE, {
             id: 'template-1',
-            template: { name: 'New', description: 'New desc', config: { schemas: {} } },
+            template: {
+                name: 'New',
+                description: 'New desc',
+                config: {
+                    schemas: {
+                        'template-schema-1': {
+                            schemaSettingsLocked: true,
+                            guidelines: 'Use the project schema for registration data.',
+                            fields: {
+                                'template-field-1': {
+                                    locked: false,
+                                    guidelines: 'Enter the external registry identifier.'
+                                }
+                            }
+                        }
+                    }
+                }
+            },
             owner
         });
 
         assert.equal(ok(response), true);
         assert.equal(saved.name, 'New');
         assert.equal(saved.description, 'New desc');
-        assert.deepEqual(saved.config, { schemas: {} });
+        assert.equal(saved.config.schemas['template-schema-1'].guidelines, 'Use the project schema for registration data.');
+        assert.equal(saved.config.schemas['template-schema-1'].fields['template-field-1'].guidelines, 'Enter the external registry identifier.');
+    });
+
+    /*
+     * templateFeatured is denormalized here, on template save (SchemaTemplate.config
+     * itself isn't queryable). A schema never saved through the template lacks it.
+     */
+    it('UPDATE_SCHEMA_TEMPLATE syncs templateFeatured onto the template\'s own schemas', async () => {
+        const updatedSchemas = [];
+        const featuredSchema = { id: 'tpl-schema-featured', templateSchemaId: 'tpl-a', templateFeatured: false };
+        const unfeaturedSchema = { id: 'tpl-schema-unfeatured', templateSchemaId: 'tpl-b', templateFeatured: true };
+
+        stub(DatabaseServer, 'getSchemaTemplateById', async () => ({
+            id: 'template-1',
+            owner: owner.owner,
+            status: ModuleStatus.DRAFT,
+            name: 'Old',
+            description: 'Old desc',
+            topicId: '0.0.20',
+            config: {}
+        }));
+        stub(DatabaseServer, 'updateSchemaTemplate', async (item) => item);
+        stub(DatabaseServer, 'getSchemas', async (filter) => {
+            assert.deepEqual(filter, {
+                topicId: '0.0.20',
+                category: SchemaCategory.TEMPLATE,
+                templateId: 'template-1',
+            });
+            return [featuredSchema, unfeaturedSchema];
+        });
+        stub(DatabaseServer, 'updateSchema', async (id, schema) => {
+            updatedSchemas.push({ id, templateFeatured: schema.templateFeatured });
+            return schema;
+        });
+
+        const response = await callHandler(handlers, MessageAPI.UPDATE_SCHEMA_TEMPLATE, {
+            id: 'template-1',
+            template: {
+                name: 'New',
+                description: 'New desc',
+                config: {
+                    schemas: {
+                        'tpl-a': { featured: true },
+                        'tpl-b': { featured: false },
+                    },
+                },
+            },
+            owner
+        });
+
+        assert.equal(ok(response), true);
+        assert.deepEqual(
+            updatedSchemas.sort((a, b) => a.id.localeCompare(b.id)),
+            [
+                { id: 'tpl-schema-featured', templateFeatured: true },
+                { id: 'tpl-schema-unfeatured', templateFeatured: false },
+            ]
+        );
+    });
+
+    it('UPDATE_SCHEMA_TEMPLATE does not rewrite a template schema whose templateFeatured already matches config', async () => {
+        const updatedSchemas = [];
+        const alreadyFeatured = { id: 'tpl-schema-featured', templateSchemaId: 'tpl-a', templateFeatured: true };
+
+        stub(DatabaseServer, 'getSchemaTemplateById', async () => ({
+            id: 'template-1',
+            owner: owner.owner,
+            status: ModuleStatus.DRAFT,
+            name: 'Old',
+            description: 'Old desc',
+            topicId: '0.0.20',
+            config: {}
+        }));
+        stub(DatabaseServer, 'updateSchemaTemplate', async (item) => item);
+        stub(DatabaseServer, 'getSchemas', async () => [alreadyFeatured]);
+        stub(DatabaseServer, 'updateSchema', async (id, schema) => {
+            updatedSchemas.push(id);
+            return schema;
+        });
+
+        const response = await callHandler(handlers, MessageAPI.UPDATE_SCHEMA_TEMPLATE, {
+            id: 'template-1',
+            template: {
+                name: 'New',
+                description: 'New desc',
+                config: { schemas: { 'tpl-a': { featured: true } } },
+            },
+            owner
+        });
+
+        assert.equal(ok(response), true);
+        assert.deepEqual(updatedSchemas, [], 'a schema already matching config must not be rewritten');
     });
 
     it('DELETE_SCHEMA_TEMPLATE removes a draft not bound to any policy', async () => {
@@ -492,7 +605,7 @@ describe('schema template CRUD and query handlers', () => {
             topicId: null
         }));
         stub(DatabaseServer, 'getPolicies', async () => [
-            { id: 'policy-1', name: 'Active Policy', schemaTemplate: { templateId: 'template-1' } }
+            { id: 'policy-1', name: 'Active Policy', schemaTemplates: [{ templateId: 'template-1' }] }
         ]);
 
         const response = await callHandler(handlers, MessageAPI.DELETE_SCHEMA_TEMPLATE, {
@@ -545,7 +658,18 @@ describe('APPLY_SCHEMA_TEMPLATE success path', () => {
                 status: ModuleStatus.DRAFT,
                 topicId: '0.0.20',
                 messageId: 'msg-1',
-                config: { schemas: {} }
+                config: {
+                    schemas: {
+                        'tpl-schema-1': {
+                            guidelines: 'Use this schema for project registration.',
+                            fields: {
+                                'tpl-field-1': {
+                                    guidelines: 'Use the external registry identifier.'
+                                }
+                            }
+                        }
+                    }
+                }
             }),
             getPolicyById: async () => ({
                 id: 'policy-1',
@@ -553,9 +677,13 @@ describe('APPLY_SCHEMA_TEMPLATE success path', () => {
                 owner: owner.owner,
                 topicId: '0.0.10',
                 status: PolicyStatus.DRAFT,
-                schemaTemplate: null
+                schemaTemplates: []
             }),
-            getSchemas: async () => [templateSchema],
+            // The apply reads two different sets: the template's own schemas, and the
+            // schemas already in the policy topic it checks names against.
+            getSchemas: async (filter) => (
+                filter?.category === SchemaCategory.TEMPLATE ? [templateSchema] : []
+            ),
             updateSchema: async () => null,
             saveSchemaTemplateSnapshot: async (s) => { savedSnapshot = s; return { ...s, id: 'snap-1' }; },
             updatePolicy: async (p) => { updatedPolicy = p; return p; },
@@ -590,11 +718,14 @@ describe('APPLY_SCHEMA_TEMPLATE success path', () => {
         assert.ok(savedSnapshot.templateStateHash.length > 0, 'state hash is empty');
         assert.equal(savedSnapshot.templateId, 'template-1');
         assert.deepEqual(savedSnapshot.schemaMap, { 'tpl-schema-1': 'ps-1' });
+        assert.equal(savedSnapshot.config.schemas['tpl-schema-1'].guidelines, 'Use this schema for project registration.');
+        assert.equal(savedSnapshot.config.schemas['tpl-schema-1'].fields['tpl-field-1'].guidelines, 'Use the external registry identifier.');
 
         assert.ok(updatedPolicy, 'policy was not updated');
-        assert.equal(updatedPolicy.schemaTemplate.templateId, 'template-1');
-        assert.equal(updatedPolicy.schemaTemplate.snapshotId, 'snap-1');
-        assert.equal(updatedPolicy.schemaTemplate.templateStateHash, savedSnapshot.templateStateHash);
+        assert.equal(updatedPolicy.schemaTemplates.length, 1);
+        assert.equal(updatedPolicy.schemaTemplates[0].templateId, 'template-1');
+        assert.equal(updatedPolicy.schemaTemplates[0].snapshotId, 'snap-1');
+        assert.equal(updatedPolicy.schemaTemplates[0].templateStateHash, savedSnapshot.templateStateHash);
     });
 });
 
@@ -622,7 +753,7 @@ describe('removePolicySchemaTemplateSnapshot', () => {
 
         await removePolicySchemaTemplateSnapshot({
             id: 'policy-1',
-            schemaTemplate: { templateId: 'template-1', snapshotId: 'snapshot-1' },
+            schemaTemplates: [{ templateId: 'template-1', snapshotId: 'snapshot-1' }],
         });
 
         assert.deepEqual(removed, [snapshot]);
@@ -641,7 +772,7 @@ describe('removePolicySchemaTemplateSnapshot', () => {
         const removed = arrange(null);
 
         await removePolicySchemaTemplateSnapshot({
-            schemaTemplate: { snapshotId: 'snapshot-1' },
+            schemaTemplates: [{ snapshotId: 'snapshot-1' }],
         });
 
         assert.deepEqual(removed, []);
@@ -654,7 +785,7 @@ describe('removePolicySchemaTemplateSnapshot', () => {
         const logged = [];
 
         await assert.doesNotReject(() => removePolicySchemaTemplateSnapshot(
-            { schemaTemplate: { snapshotId: 'snapshot-1' } },
+            { schemaTemplates: [{ snapshotId: 'snapshot-1' }] },
             { error: async (error) => { logged.push(error); } }
         ));
 
@@ -764,7 +895,7 @@ describe('GET_SCHEMA_TEMPLATES usedByPolicyNames', () => {
             topicId: '0.0.20',
         }], 1]);
         stub(DatabaseServer, 'getPolicies', async () => [
-            { id: 'policy-1', name: 'Secret Draft', schemaTemplate: { templateId: 'template-1' } },
+            { id: 'policy-1', name: 'Secret Draft', schemaTemplates: [{ templateId: 'template-1' }] },
         ]);
         stub(DatabaseServer, 'getSchemasCount', async () => 3);
     };
@@ -926,8 +1057,10 @@ describe('APPLY_SCHEMA_TEMPLATE rollback', () => {
                 topicId: '0.0.20',
                 config: { schemas: {} },
             }),
-            getPolicyById: async () => policy({ schemaTemplate: null }),
-            getSchemas: async () => [templateSchema('a'), templateSchema('b')],
+            getPolicyById: async () => policy({ schemaTemplates: [] }),
+            getSchemas: async (filter) => (
+                filter?.category === SchemaCategory.POLICY ? [] : [templateSchema('a'), templateSchema('b')]
+            ),
             updateSchema: async () => null,
             saveSchemaTemplateSnapshot: async (value) => {
                 snapshotSaved = { ...value, id: 'snap-1' };
@@ -1016,7 +1149,7 @@ describe('APPLY_SCHEMA_TEMPLATE rollback', () => {
 /*
  * UPDATE rewrites the policy's schemas in place and persists each one before the
  * new snapshot is saved and the binding swapped. A failure part-way used to leave
- * some schemas on the new template version while policy.schemaTemplate still
+ * some schemas on the new template version while policy.schemaTemplates still
  * pointed at the old snapshot and state hash - and the catch removed only the new
  * snapshot, never the schema edits. Preview then diffed against a snapshot that no
  * longer described reality.
@@ -1069,12 +1202,12 @@ describe('UPDATE_APPLIED_SCHEMA_TEMPLATE rollback', () => {
                 config: { schemas: {} },
             }),
             getPolicyById: async () => policy({
-                schemaTemplate: {
+                schemaTemplates: [{
                     templateId: 'template-1',
                     snapshotId: 'snap-0',
                     appliedAt: '2026-01-01T00:00:00.000Z',
                     schemaMap: { 'tpl-a': 'ps-1' },
-                },
+                }],
             }),
             getSchemaTemplateSnapshotById: async () => ({
                 id: 'snap-0',
@@ -1151,5 +1284,111 @@ describe('UPDATE_APPLIED_SCHEMA_TEMPLATE rollback', () => {
 
         assert.equal(ok(response), true, response.error);
         assert.deepEqual(removedSnapshots, ['snap-0']);
+    });
+});
+
+/*
+ * preparePolicySchemaUpdate sets fields explicitly instead of cloning, so
+ * templateFeatured needs its own line here - easy to regress silently.
+ */
+describe('UPDATE_APPLIED_SCHEMA_TEMPLATE templateFeatured sync', () => {
+    const document = (properties) => ({
+        $id: '#a&1.0.0',
+        title: 'A',
+        type: 'object',
+        properties,
+        required: [],
+    });
+
+    it('writes templateFeatured from the template config onto the in-place-edited policy schema', async () => {
+        const writes = [];
+        const templateSchema = {
+            id: 'ts-a',
+            templateSchemaId: 'tpl-a',
+            iri: '#a&1.0.0',
+            uuid: 'a',
+            version: '1.0.0',
+            name: 'A',
+            topicId: '0.0.20',
+            category: SchemaCategory.TEMPLATE,
+            document: document({}),
+        };
+        const policySchema = {
+            id: 'ps-1',
+            templateId: 'template-1',
+            templateSchemaId: 'tpl-a',
+            iri: '#a&1.0.0',
+            uuid: 'a',
+            version: '1.0.0',
+            name: 'A',
+            topicId: '0.0.10',
+            category: SchemaCategory.POLICY,
+            templateFeatured: false,
+            document: document({}),
+        };
+
+        const fakeDb = {
+            getSchemaTemplateById: async () => ({
+                id: 'template-1',
+                name: 'Template',
+                owner: owner.owner,
+                status: ModuleStatus.PUBLISHED,
+                topicId: '0.0.20',
+                config: { schemas: { 'tpl-a': { featured: true } } },
+            }),
+            getPolicyById: async () => policy({
+                schemaTemplates: [{
+                    templateId: 'template-1',
+                    snapshotId: 'snap-0',
+                    appliedAt: '2026-01-01T00:00:00.000Z',
+                    schemaMap: { 'tpl-a': 'ps-1' },
+                }],
+            }),
+            getSchemaTemplateSnapshotById: async () => ({
+                id: 'snap-0',
+                config: { schemas: {} },
+                schemas: { schemas: { 'tpl-a': { templateSchemaId: 'tpl-a', name: 'A (old)', fields: [], conditions: [] } } },
+            }),
+            getSchemas: async (filter) => (
+                filter?.category === SchemaCategory.TEMPLATE ? [templateSchema] : [policySchema]
+            ),
+            updateSchema: async (id, value) => {
+                writes.push({ id, templateFeatured: value.templateFeatured });
+                return value;
+            },
+            saveSchemaTemplateSnapshot: async (value) => ({ ...value, id: 'snap-1' }),
+            removeSchemaTemplateSnapshot: async () => {},
+            updatePolicy: async (value) => value,
+        };
+
+        const { handlers } = await loadAPI(
+            '../dist/api/schema-template.service.js',
+            'schemaTemplatesAPI',
+            {
+                '@guardian/common': {
+                    DatabaseServer: fakeDb,
+                    NewNotifier: Object.assign(() => {}, { empty: () => ({}) }),
+                },
+                [lockPath]: passThroughLock,
+                [importHelpersPath]: {
+                    createSchemaAndArtifacts: async (_category, copy) => ({ ...copy, id: 'copy-1' }),
+                    deleteSchema: async () => {},
+                    SchemaImportExportHelper: class {},
+                    updateSchemaDefs: async () => {}
+                }
+            }
+        );
+
+        const response = await handlers[MessageAPI.UPDATE_APPLIED_SCHEMA_TEMPLATE]({
+            templateId: 'template-1',
+            policyId: 'policy-1',
+            owner
+        });
+
+        assert.equal(ok(response), true, response.error);
+        const edit = writes.filter((write) => write.id === 'ps-1').at(-1);
+        assert.ok(edit, 'the policy schema should have been edited in place');
+        assert.equal(edit.templateFeatured, true,
+            'the in-place update must carry config.schemas[id].featured onto the policy copy');
     });
 });

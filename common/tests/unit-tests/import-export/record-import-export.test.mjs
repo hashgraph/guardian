@@ -98,6 +98,38 @@ describe('RecordImportExport.generateZipFile', () => {
         assert.deepEqual(JSON.parse(await zip.files['documents/0'].async('string')), { body: 1 });
     });
 
+    it('removes the paused total from the elapsed time in actions.csv', async () => {
+        const zip = await RecordImportExport.generateZipFile({
+            records: [
+                { method: 'START', time: 1000, user: 'u0' },
+                { method: 'ACTION', action: 'Before', time: 1500, user: 'u1', target: 't', userRole: 'R', recordActionId: 'a1' },
+                { method: 'ACTION', action: 'After', time: 6000, pausedOffset: 3000, user: 'u1', target: 't', userRole: 'R', recordActionId: 'a2' },
+                { method: 'STOP', time: 8000, pausedOffset: 3000 }
+            ],
+            results: [],
+            time: 1000,
+            duration: 4000
+        });
+        const csv = await zip.files['actions.csv'].async('string');
+        const times = csv.trim().split('\r\n').map((line) => line.split(',')[1]);
+        assert.deepEqual(times, ['0', '500', '2000', '4000']);
+    });
+
+    it('leaves the elapsed time alone when no row carries a paused total', async () => {
+        const zip = await RecordImportExport.generateZipFile({
+            records: [
+                { method: 'START', time: 1000, user: 'u0' },
+                { method: 'STOP', time: 8000 }
+            ],
+            results: [],
+            time: 1000,
+            duration: 7000
+        });
+        const csv = await zip.files['actions.csv'].async('string');
+        const times = csv.trim().split('\r\n').map((line) => line.split(',')[1]);
+        assert.deepEqual(times, ['0', '7000']);
+    });
+
     it('stores results files by encoded name', async () => {
         const zip = await RecordImportExport.generateZipFile({
             records: [],

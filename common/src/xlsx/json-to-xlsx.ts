@@ -364,6 +364,12 @@ export class JsonToXlsx {
             throw new Error(`Unknown field type (${worksheet.name}: ${field.name}).`);
         }
 
+        if (type?.name === 'Table' && Array.isArray(field.tableColumns) && field.tableColumns.length) {
+            worksheet
+                .getCell(table.getCol(Dictionary.PARAMETER), row)
+                .setValue(JSON.stringify(field.tableColumns))
+                .setStyle(table.paramStyle);
+        }
         if (type && type.pattern === true) {
             worksheet
                 .getCell(table.getCol(Dictionary.PARAMETER), row)

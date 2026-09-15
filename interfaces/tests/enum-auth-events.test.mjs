@@ -25,14 +25,6 @@ describe('AuthEvents enum', () => {
         assert.equal(AuthEvents.SET_DEFAULT_ROLE, 'SET_DEFAULT_ROLE');
     });
 
-    it('maps Meeco subjects', () => {
-        assert.equal(AuthEvents.MEECO_AUTH_START, 'MEECO_AUTH_START');
-        assert.equal(AuthEvents.MEECO_VERIFY_VP, 'MEECO_VERIFY_VP');
-        assert.equal(AuthEvents.MEECO_VERIFY_VP_FAILED, 'MEECO_VERIFY_VP_FAILED');
-        assert.equal(AuthEvents.MEECO_APPROVE_SUBMISSION, 'MEECO_APPROVE_SUBMISSION');
-        assert.equal(AuthEvents.MEECO_REJECT_SUBMISSION, 'MEECO_REJECT_SUBMISSION');
-    });
-
     it('maps relayer subjects', () => {
         assert.equal(AuthEvents.GET_RELAYER_ACCOUNT, 'GET_RELAYER_ACCOUNT');
         assert.equal(AuthEvents.CREATE_RELAYER_ACCOUNT, 'CREATE_RELAYER_ACCOUNT');

@@ -9,16 +9,18 @@ tags:
 ### Prerequisites
 
 * You are signed in as a Standard Registry user.
-* You can manage draft policies and schema templates.
-* The target policy is a draft without an applied template.
+* You can update policies and read schema templates. Without both permissions the **Schema Templates** action does not appear.
+* The target policy is a draft. It may already have other templates applied - a policy can have more than one template at the same time, as long as each is applied once.
 
 ### Steps
 
-1. Open the target draft policy.
-2. Select **Apply Schema Template**.
-3. Select the draft template or published template version.
-4. Review the schemas and restrictions that will be copied.
-5. Confirm the application.
+1. Open the **Policies** grid and find the target draft policy.
+2. Select **Schema Templates** on that policy's row to open the management dialog.
+3. Find the draft template or published template version under **Available templates**. Use the search box to filter by name; each row shows the template's version and status.
+4. Select the apply action on that row.
+5. Confirm when asked whether to apply the template to this policy.
+
+The copy runs as a background task. Its progress screen reports when the schemas have been created.
 
 ### Result
 
@@ -26,9 +28,17 @@ The policy receives copies of the template schemas. The policy stores a template
 
 ### Troubleshooting
 
-**Why is Apply Schema Template unavailable?**
+**Why is the Schema Templates action greyed out?**
 
-The policy already has a template binding. Update the applied template instead. Detach the current template before applying a different template.
+The policy is not a draft. Only draft policies can gain, update or lose a template.
+
+**Why is the template I want missing from Available templates?**
+
+**Available templates** lists only draft and published templates that are not yet applied to this policy. A template that is already applied appears under **Applied templates** instead, where you can update or detach it. If the list is empty, every template you can see is already applied.
+
+**Why was the apply rejected because of schema names?**
+
+Two schemas in one policy cannot share a name, and applying a template copies its schemas in under their template names. The error names every clash and distinguishes the two cases: schemas that belong to another applied template ("Detach that template first") from schemas the policy already owns ("Rename or delete them first"), so it never suggests a detach that would not help.
 
 **Why can't the policy be published?**
 
