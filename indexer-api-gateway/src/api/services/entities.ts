@@ -2117,5 +2117,218 @@ export class EntityApi extends ApiClient {
         );
     }
     //#endregion
+
+    //#region MINT TOKEN SEARCH (Issue #5021)
+    @ApiOperation({
+        summary: 'Get mint token documents',
+        description: 'Returns a list of minting VP documents for searching issued carbon credits. Supports filtering by token, policy, amount range, and date range.',
+    })
+    @ApiPaginatedRequest
+    @ApiPaginatedResponse('Mint token documents', VPGridDTO)
+    @ApiQuery({
+        name: 'analytics.tokenId',
+        description: 'Token identifier to filter by',
+        example: '0.0.1960',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'analytics.policyId',
+        description: 'Policy (methodology) identifier to filter by',
+        example: '1706823227.586179534',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'minAmount',
+        description: 'Minimum token amount',
+        example: '1000',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'maxAmount',
+        description: 'Maximum token amount',
+        example: '100000',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'dateFrom',
+        description: 'Start date filter (consensus timestamp)',
+        example: '1706823227.000000000',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'dateTo',
+        description: 'End date filter (consensus timestamp)',
+        example: '1709501627.000000000',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'keywords',
+        description: 'Keywords to search (JSON array)',
+        examples: {
+            geography: {
+                description: 'Search by geography',
+                value: '["Brazil"]',
+            },
+        },
+        required: false,
+    })
+    @Get('/mint-tokens')
+    @HttpCode(HttpStatus.OK)
+    async getMintTokenDocuments(
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
+        @Query('orderField') orderField?: string,
+        @Query('orderDir') orderDir?: string,
+        @Query('keywords') keywords?: string,
+        @Query('analytics.tokenId') tokenId?: string,
+        @Query('analytics.policyId') policyId?: string,
+        @Query('minAmount') minAmount?: string,
+        @Query('maxAmount') maxAmount?: string,
+        @Query('dateFrom') dateFrom?: string,
+        @Query('dateTo') dateTo?: string,
+    ) {
+        return await this.send(IndexerMessageAPI.GET_MINT_TOKEN_DOCUMENTS, {
+            pageIndex,
+            pageSize,
+            orderField,
+            orderDir,
+            keywords,
+            'analytics.tokenId': tokenId,
+            'analytics.policyId': policyId,
+            minAmount,
+            maxAmount,
+            dateFrom,
+            dateTo,
+        });
+    }
+
+    @ApiOperation({
+        summary: 'Get mint token filters',
+        description: 'Returns available filter options (policies, tokens) for the mint token search',
+    })
+    @ApiOkResponse({
+        description: 'Mint token filter options',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO,
+    })
+    @Get('/mint-tokens/filters')
+    @HttpCode(HttpStatus.OK)
+    async getMintTokenFilters() {
+        return await this.send(IndexerMessageAPI.GET_MINT_TOKEN_FILTERS, {});
+    }
+
+    @ApiOperation({
+        summary: 'Get mint token document details',
+        description: 'Returns details of a specific minting VP document including token and policy information',
+    })
+    @ApiOkResponse({
+        description: 'Mint token document details',
+        type: VPDetailsDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO,
+    })
+    @Get('/mint-tokens/:messageId')
+    @ApiParam({
+        name: 'messageId',
+        description: 'Message identifier (consensus timestamp)',
+        example: '1706823227.586179534',
+    })
+    @HttpCode(HttpStatus.OK)
+    async getMintTokenDocument(@Param('messageId') messageId: string) {
+        return await this.send(IndexerMessageAPI.GET_MINT_TOKEN_DOCUMENT, {
+            messageId,
+        });
+    }
+    //#endregion
+
+    //#region PROJECT PRACTICES SEARCH (Issue #5019)
+    @ApiOperation({
+        summary: 'Search project practices',
+        description: 'Search for VC documents (e.g., Monitoring Reports) under the same policy to compare common project practices across methodologies.',
+    })
+    @ApiPaginatedRequest
+    @ApiPaginatedResponse('Project practice documents', VCGridDTO)
+    @ApiQuery({
+        name: 'analytics.policyId',
+        description: 'Policy (methodology) identifier to filter by',
+        example: '1706823227.586179534',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'analytics.schemaId',
+        description: 'Schema identifier to filter by',
+        example: '1706823227.586179534',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'analytics.schemaName',
+        description: 'Schema name to filter by (e.g., "Monitoring Report")',
+        example: 'Monitoring Report',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'keywords',
+        description: 'Keywords to search within document fields (JSON array). Use to find specific methodological decisions.',
+        examples: {
+            methodology_choice: {
+                description: 'Search for a specific methodology choice',
+                value: '["Use default values"]',
+            },
+        },
+        required: false,
+    })
+    @ApiQuery({
+        name: 'topicId',
+        description: 'Topic identifier',
+        example: '0.0.1960',
+        required: false,
+    })
+    @Get('/project-practices')
+    @HttpCode(HttpStatus.OK)
+    async getProjectPractices(
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
+        @Query('orderField') orderField?: string,
+        @Query('orderDir') orderDir?: string,
+        @Query('keywords') keywords?: string,
+        @Query('analytics.policyId') policyId?: string,
+        @Query('analytics.schemaId') schemaId?: string,
+        @Query('analytics.schemaName') schemaName?: string,
+        @Query('topicId') topicId?: string,
+    ) {
+        return await this.send(IndexerMessageAPI.GET_PROJECT_PRACTICES, {
+            pageIndex,
+            pageSize,
+            orderField,
+            orderDir,
+            keywords,
+            'analytics.policyId': policyId,
+            'analytics.schemaId': schemaId,
+            'analytics.schemaName': schemaName,
+            topicId,
+        });
+    }
+
+    @ApiOperation({
+        summary: 'Get project practices filter options',
+        description: 'Returns available filter options (schema names, policies) for the project practices search',
+    })
+    @ApiOkResponse({
+        description: 'Project practices filter options',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO,
+    })
+    @Get('/project-practices/filters')
+    @HttpCode(HttpStatus.OK)
+    async getProjectPracticesFilters() {
+        return await this.send(IndexerMessageAPI.GET_PROJECT_PRACTICES_FILTERS, {});
+    }
+    //#endregion
     //#endregion
 }

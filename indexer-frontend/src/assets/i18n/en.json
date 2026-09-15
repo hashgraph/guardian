@@ -47,6 +47,8 @@
         "statistics": "Statistics",
         "labels": "Labels",
         "formulas": "Formulas",
+        "mint_tokens": "Mint Tokens",
+        "project_practices": "Project Practices",
         "loading_progress": "Loading data...",
         "left": "left"
     },
@@ -111,6 +113,9 @@
         "entity_id": "Entity Id",
         "entity_type": "Entity Type",
         "version": "Version",
+        "amount": "Amount",
+        "token_name": "Token Name",
+        "token_symbol": "Token Symbol",
         "filter": {
             "policy": "Policy",
             "schema": "Schema",
@@ -122,7 +127,13 @@
             "schema_id": "Schema Id",
             "relationship": "Relationship",
             "target": "Target",
-            "token_id": "Token Id"
+            "token_id": "Token Id",
+            "min_amount": "Min Amount",
+            "max_amount": "Max Amount",
+            "date_from": "Date From",
+            "date_to": "Date To",
+            "schema_name": "Schema Name",
+            "keyword_practices": "Search within document fields (e.g., methodology choices)"
         },
         "paginator": {
             "items_per_page": "Items per page",
@@ -131,7 +142,9 @@
         "empty": {
             "title": "Nothing matches your search",
             "description": "Please change your search criteria and try again"
-        }
+        },
+        "geography": "Geography",
+        "policy_description": "Policy Description"
     },
     "details": {
         "overview": "Overview",
