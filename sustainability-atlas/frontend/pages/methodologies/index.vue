@@ -6,7 +6,14 @@ import type {
   MethodologySortDir,
 } from "~/composables/api/useMethodologiesApi";
 import type { SortDirection } from "~/composables/useFilteredPagination";
-import { formatCredits, formatDate } from "~/lib/format";
+import { formatCredits } from "~/lib/format";
+import {
+  type MethodologyStatus,
+  METHODOLOGY_STATUSES,
+  methodologyStatus,
+  methodologyStatusBadgeClass,
+  methodologyStatusTooltip,
+} from "~/lib/methodology-status";
 import { useRegistriesApi } from "~/composables/api/useRegistriesApi";
 import { downloadCsv, csvDateStamp, buildMethodologyCsvRows } from '~/lib/csv-export';
 import { naturalCompare, encodeMultiValue, decodeMultiValue } from '~/lib/utils';
@@ -51,11 +58,6 @@ if (route.query.registryName && typeof route.query.registryName === "string") {
 if (route.query.decodeStatus && typeof route.query.decodeStatus === "string") {
   initialFilters.decodeStatus = route.query.decodeStatus;
 }
-// Lifecycle buckets the API understands. A methodology is "to be discontinued"
-// while its scheduled discontinuation date is still in the future.
-type MethodologyStatus = 'published' | 'to_be_discontinued' | 'discontinued';
-const METHODOLOGY_STATUSES: MethodologyStatus[] = ['published', 'to_be_discontinued', 'discontinued'];
-
 /** What "hide discontinued" leaves visible when the dropdown is on All. */
 const STILL_LIVE_STATUSES: MethodologyStatus[] = ['published', 'to_be_discontinued'];
 
@@ -168,12 +170,6 @@ const activeFilterRecord = computed<Record<string, string>>(() => {
     return r;
 });
 
-// The API resolves this from the newest discontinue message Guardian published
-// for the version, so the frontend never interprets dates itself.
-const methodologyStatus = (m: any): MethodologyStatus =>
-    (METHODOLOGY_STATUSES as string[]).includes(m.lifecycleStatus)
-        ? m.lifecycleStatus
-        : 'published';
 
 /**
  * What the API is actually asked for.
@@ -424,23 +420,6 @@ const decodeStatusI18nKey = (status: string | null | undefined): string => {
   return "methodologies.decodeStatus.unknown";
 };
 
-const statusBadgeClass = (status: MethodologyStatus): string => {
-  if (status === "discontinued") return "bg-muted text-muted-foreground";
-  // Still live, but with an end date already on the ledger.
-  if (status === "to_be_discontinued") return "bg-stat-amber/10 text-stat-amber";
-  return "bg-stat-green/10 text-stat-green";
-};
-
-/** Tooltip for the status badge: when the discontinuation takes, or took, effect. */
-const statusTooltip = (r: any): string | undefined => {
-  if (!r.discontinuedAt) return undefined;
-  const status = methodologyStatus(r);
-  if (status === "published") return undefined;
-  const key = status === "discontinued"
-    ? "methodologies.statusTooltips.discontinuedOn"
-    : "methodologies.statusTooltips.discontinuesOn";
-  return t(key, { date: formatDate(r.discontinuedAt) });
-};
 
 const skeletonRows = computed(() =>
   Array.from({ length: pageSize.value }, (_, i) => i),
@@ -578,9 +557,9 @@ async function downloadMethodologies() {
               <col style="width: 7%" />
               <col style="width: 9%" />
               <col style="width: 12%" />
-              <col style="width: 11%" />
-              <col style="width: 7%" />
               <col style="width: 8%" />
+              <col style="width: 7%" />
+              <col style="width: 11%" />
               <col style="width: 10%" />
           </colgroup>
           <thead>
@@ -794,10 +773,10 @@ async function downloadMethodologies() {
                 <td class="py-3 px-4">
                   <span
                     :class="[
-                      statusBadgeClass(methodologyStatus(r)),
+                      methodologyStatusBadgeClass(methodologyStatus(r)),
                       'inline-flex items-center text-xs font-medium rounded-full px-2 py-0.5',
                     ]"
-                    :title="statusTooltip(r)"
+                    :title="methodologyStatusTooltip(r, t)"
                   >
                     <span class="h-1.5 w-1.5 rounded-full bg-current mr-1.5 shrink-0" />
                     {{ $t(`methodologies.statusValues.${methodologyStatus(r)}`) }}

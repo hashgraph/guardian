@@ -1018,7 +1018,7 @@
             "discontinued": "Discontinued"
         },
         "statusTooltips": {
-            "discontinuesOn": "Methodology will be discontinued on {date}",
+            "discontinuesOn": "Will be discontinued on {date}",
             "discontinuedOn": "Discontinued on {date}"
         },
         "stats": {

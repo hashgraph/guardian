@@ -1,5 +1,6 @@
 import { isAbortError } from '~/lib/utils';
 import type { NetworkId } from '~/composables/useNetwork';
+import type { MethodologyStatus } from '~/lib/methodology-status';
 
 export type MethodologySortKey =
     | 'name'
@@ -71,7 +72,7 @@ export interface MethodologyDto {
     totalActive?: number;
     decodeStatus?: 'success' | 'failed' | 'pending' | 'unknown';
     policySourceCid?: string | null;
-    lifecycleStatus?: 'published' | 'discontinued';
+    lifecycleStatus?: MethodologyStatus;
     discontinuedAt?: string | null;
 }
 

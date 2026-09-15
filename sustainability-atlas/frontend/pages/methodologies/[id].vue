@@ -40,6 +40,11 @@ import type {
 import type { DecodedMethodologyResponse, MappingAuditEntry, PaginatedMappingAudit } from "~/composables/api/useDecodedMethodologyApi";
 import { mapApiProject } from "~/composables/useProjects";
 import { meetsDashboardThreshold } from "~/lib/methodology-threshold";
+import {
+  methodologyStatus,
+  methodologyStatusBadgeClass,
+  methodologyStatusTooltip,
+} from "~/lib/methodology-status";
 import type { SingleSelectOption } from '~/components/shared/SingleSelect.vue';
 import { naturalCompare } from '~/lib/utils';
 
@@ -108,13 +113,6 @@ const tabs = computed(() => [
   { key: "analytics" as const, label: t('methodologies.detail.tabs.analytics'), icon: BarChart3 },
   { key: "actions" as const, label: t('methodologies.detail.tabs.actions'), icon: Zap },
 ]);
-
-const statusBadgeClass = (status: string | null | undefined) => {
-  const s = (status ?? "").toUpperCase();
-  if (s === "PUBLISHED") return "bg-stat-green/10 text-stat-green";
-  if (s === "DRAFT") return "bg-stat-amber/10 text-stat-amber";
-  return "bg-muted text-muted-foreground";
-};
 
 
 const copiedValue = ref<string | null>(null);
@@ -1283,11 +1281,13 @@ function getResolvedField(fieldKey: string) {
             </div>
             <span
               :class="[
-                statusBadgeClass(methodology.status),
-                'text-xs font-medium rounded-full px-2 py-0.5',
+                methodologyStatusBadgeClass(methodologyStatus(methodology)),
+                'inline-flex items-center text-xs font-medium rounded-full px-2 py-0.5',
               ]"
+              :title="methodologyStatusTooltip(methodology, t)"
             >
-              {{ methodology.status ?? "—" }}
+              <span class="h-1.5 w-1.5 rounded-full bg-current mr-1.5 shrink-0" />
+              {{ $t(`methodologies.statusValues.${methodologyStatus(methodology)}`) }}
             </span>
           </div>
         </div>
@@ -2278,11 +2278,13 @@ function getResolvedField(fieldKey: string) {
                 <td class="py-3 px-4">
                   <span
                     :class="[
-                      statusBadgeClass(v.status),
-                      'text-xs font-medium rounded-full px-2 py-0.5',
+                      methodologyStatusBadgeClass(methodologyStatus(v)),
+                      'inline-flex items-center text-xs font-medium rounded-full px-2 py-0.5',
                     ]"
+                    :title="methodologyStatusTooltip(v, t)"
                   >
-                    {{ v.status ?? "—" }}
+                    <span class="h-1.5 w-1.5 rounded-full bg-current mr-1.5 shrink-0" />
+                    {{ $t(`methodologies.statusValues.${methodologyStatus(v)}`) }}
                   </span>
                 </td>
               </tr>
