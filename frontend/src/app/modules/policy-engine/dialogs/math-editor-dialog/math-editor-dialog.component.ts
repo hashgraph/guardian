@@ -255,6 +255,9 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         for (const item of this.engine.variables.getItems()) {
             this._updateFieldWarning(item);
         }
+        for (const item of this.engine.outputs.getItems()) {
+            this._updateFieldWarning(item, 'output');
+        }
     }
 
     ngAfterContentInit() {
@@ -536,6 +539,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 item.field = result.value;
                 item.schema = schema?.iri || null;
                 item.update();
+                this._updateFieldWarning(item, 'output');
             }
         });
     }
@@ -598,19 +602,11 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         return String(value);
     }
 
-    public deleteLink(item: FieldLink, $event: any) {
-        $event.preventDefault();
-        $event.stopPropagation();
-        item.field = null;
-        item.update();
-        this._updateFieldWarning(item);
-    }
-
-    public onPathChange(item: FieldLink, value: string): void {
+    public onPathChange(item: FieldLink, value: string, type: 'input' | 'output' = 'input'): void {
         item.field = value;
         item.update();
-        this._computePathSuggestions(item);
-        this._updateFieldWarning(item);
+        this._computePathSuggestions(item, type);
+        this._updateFieldWarning(item, type);
     }
 
     public onPathKeyup(event: KeyboardEvent): void {
@@ -629,19 +625,19 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         }, 200);
     }
 
-    public selectPathSuggestion(item: FieldLink, path: string): void {
+    public selectPathSuggestion(item: FieldLink, path: string, type: 'input' | 'output' = 'input'): void {
         item.field = path;
         item.update();
-        this._updateFieldWarning(item);
+        this._updateFieldWarning(item, type);
         this.activePathItem = null;
         this.pathSuggestions = [];
     }
 
-    private _updateFieldWarning(item: FieldLink): void {
-        this.fieldWarnings.set(item.id, !!(item.field && !this.getField('input', item.schema, item.field)));
+    private _updateFieldWarning(item: FieldLink, type: 'input' | 'output' = 'input'): void {
+        this.fieldWarnings.set(item.id, !!(item.field && !this.getField(type, item.schema, item.field)));
     }
 
-    private _computePathSuggestions(item: FieldLink): void {
+    private _computePathSuggestions(item: FieldLink, type: 'input' | 'output' = 'input'): void {
         const prefix = item.field || '';
         if (!prefix) {
             this.pathSuggestions = [];
@@ -650,7 +646,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         }
         const map = item.schema
             ? this.schemaFieldMap.get(item.schema)
-            : this.inputSchemaFieldMap;
+            : (type === 'output' ? this.outputSchemaFieldMap : this.inputSchemaFieldMap);
         if (!map) {
             this.pathSuggestions = [];
             this.activePathItem = null;
