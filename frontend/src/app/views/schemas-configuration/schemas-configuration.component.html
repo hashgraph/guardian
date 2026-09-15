@@ -442,6 +442,13 @@
                                     </span>
                                     <span class="st-toggle" [class.active]="canAddCustomFieldsToSelectedSchema"></span>
                                 </button>
+                                <button class="st-toggle-row st-toggle-row--inline" [disabled]="isTemplateReadonly" (click)="toggleCanChangeSelectedSchemaConditions()">
+                                    <span>
+                                        <strong>Can change conditions</strong>
+                                        <small>Allows adding, editing or removing conditions when applied.</small>
+                                    </span>
+                                    <span class="st-toggle" [class.active]="canChangeSelectedSchemaConditions"></span>
+                                </button>
                                 <div class="st-guidelines-editor">
                                     <label class="st-guidelines-label" for="st-schema-guidelines-textarea">Guidelines</label>
                                     <textarea
