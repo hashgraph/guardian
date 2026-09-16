@@ -12,6 +12,7 @@ import { PolicyDecodeJobData } from '../processors/policy-decode.processor';
 import { TREASURY_TRANSFERS_JOB } from '../processors/token-sync.processor';
 import { BUSINESS_VIEW_PARTITIONS } from '../processors/business-view-builder.processor';
 import { POLICY_STATUS_SWEEP_JOB } from '../processors/policy-status.processor';
+import { DISCONTINUE_ACTIONS } from '@shared/utils/message-parser';
 import { ProjectMapperService } from '../services/project-mapper.service';
 
 /** Shape accepted by Queue.addBulk. */
@@ -44,6 +45,7 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
     private readonly reconcileTopicLimit = envInt('RECONCILE_TOPIC_LIMIT', 2000);
     private readonly reconcileMessageLimit = envInt('RECONCILE_MESSAGE_LIMIT', 1000);
     private readonly stuckMessageAfterMs = envInt('RECONCILE_STUCK_MESSAGE_MS', 3_600_000);
+    private readonly reconcileReparseLimit = envInt('RECONCILE_REPARSE_LIMIT', 200);
 
     /** Topic poll dispatcher — see runDispatcher(). */
     private dispatchInterval: ReturnType<typeof setInterval> | null = null;
@@ -336,9 +338,11 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
         try {
             const topics = await this.rescueDeadTopicChains();
             const messages = await this.rescueStuckMessages();
-            if (topics > 0 || messages > 0) {
+            const reparsed = await this.rescueUnparsedDiscontinueMessages();
+            if (topics > 0 || messages > 0 || reparsed > 0) {
                 this.logger.log(
-                    `Reconciler: restarted ${topics} topic chain(s), re-queued ${messages} stuck message(s)`,
+                    `Reconciler: restarted ${topics} topic chain(s), re-queued ${messages} stuck message(s)` +
+                    (reparsed > 0 ? `, re-parsed ${reparsed} legacy discontinue message(s)` : ''),
                 );
             }
         } catch (error) {
@@ -482,6 +486,66 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
                 },
                 opts: {
                     jobId: `msg-${row.consensusTimestamp}`,
+                    removeOnComplete: true,
+                    removeOnFail: 1000,
+                },
+            })),
+        );
+        return rows.length;
+    }
+
+    /**
+     * Re-parses discontinue messages that were ingested before message-parser
+     * knew those actions.
+     *
+     * Those runs stored the generic `Policy` shape, which drops
+     * `instanceTopicId` — the only key tying a discontinuation to a published
+     * methodology. PolicyStatusProcessor matches candidates on it, so such rows
+     * are invisible both to the per-message trigger and to the sweep, and would
+     * stay that way forever: nothing re-reads a message once it is parsed.
+     *
+     * Nothing is re-downloaded. The raw payload is still in message_cache, so
+     * this re-runs the current parser over local data and lets the ordinary
+     * pipeline take it from there (the parse itself enqueues the policy-status
+     * job). The join to message_cache skips rows whose cache entry is gone,
+     * which would otherwise be re-enqueued on every tick and warn every time.
+     *
+     * Only timestamps that already have a `message` row are enqueued, never the
+     * sibling chunks of a multi-chunk message: every chunk is present by now, so
+     * a job per chunk would have each one reassemble and write its own row,
+     * where re-parsing the existing timestamp reassembles and upserts that same
+     * row. `priority: 1` keeps this ahead of the routine parse backlog, and the
+     * batch bounds the knock-on topic-discovery churn each parse produces.
+     *
+     * Self-terminating: rows leave the result set as they are fixed, leaving one
+     * indexed lookup per tick (the (type, action) index selects these few
+     * hundred rows directly).
+     */
+    private async rescueUnparsedDiscontinueMessages(): Promise<number> {
+        const rows: Array<{ consensusTimestamp: string; topicId: string }> =
+            await this.dataSource.query(
+                `SELECT m."consensusTimestamp", m."topicId"
+                   FROM message m
+                   JOIN message_cache mc ON mc."consensusTimestamp" = m."consensusTimestamp"
+                  WHERE m.type = 'Policy'
+                    AND m.action = ANY($1::text[])
+                    AND NOT (m.options ? 'instanceTopicId')
+                  ORDER BY m."consensusTimestamp"
+                  LIMIT $2`,
+                [[...DISCONTINUE_ACTIONS], this.reconcileReparseLimit],
+            );
+        if (rows.length === 0) return 0;
+
+        await this.messageQueue.addBulk(
+            rows.map(row => ({
+                name: 'process',
+                data: {
+                    consensusTimestamp: row.consensusTimestamp,
+                    topicId: row.topicId,
+                },
+                opts: {
+                    jobId: `msg-${row.consensusTimestamp}`,
+                    priority: 1,
                     removeOnComplete: true,
                     removeOnFail: 1000,
                 },
