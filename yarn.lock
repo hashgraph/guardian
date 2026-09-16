@@ -1597,7 +1597,7 @@ __metadata:
     "@formulajs/formulajs": "npm:4.6.1"
     "@google-cloud/secret-manager": "npm:6.3.0"
     "@guardian/interfaces": "workspace:*"
-    "@hiero-ledger/sdk": "npm:2.87.0"
+    "@hiero-ledger/sdk": "npm:2.88.0"
     "@mattrglobal/jsonld-signatures-bbs": "npm:1.2.0"
     "@mikro-orm/core": "npm:6.6.16"
     "@mikro-orm/migrations-mongodb": "npm:6.6.16"
@@ -1698,9 +1698,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@hiero-ledger/sdk@npm:2.87.0":
-  version: 2.87.0
-  resolution: "@hiero-ledger/sdk@npm:2.87.0"
+"@hiero-ledger/sdk@npm:2.88.0":
+  version: 2.88.0
+  resolution: "@hiero-ledger/sdk@npm:2.88.0"
   dependencies:
     "@grpc/grpc-js": "npm:1.12.7"
     "@hiero-ledger/cryptography": "npm:1.21.0"
@@ -1722,7 +1722,7 @@ __metadata:
     utf8: "npm:3.0.0"
   peerDependencies:
     bn.js: 5.2.3
-  checksum: 10c0/e52e1f39d771a22898987be2c3ea227f5ac674f8f28ef7e8c82794cfc90a117bfc90c2012a5c24bca64b4f791181c48f398c0f4b3696b18ffda31545a8b6be31
+  checksum: 10c0/e374ba95849f7660c8012c9687b9c425d8ac8ba80a5eaa423420ee0f853c71b97bb117570091811b00203c0e8c922440ae7e6d6f2d5bb6598cdbe74506671f78
   languageName: node
   linkType: hard
 
@@ -8809,7 +8809,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "guardian-cli@workspace:guardian-cli"
   dependencies:
-    "@hiero-ledger/sdk": "npm:2.87.0"
+    "@hiero-ledger/sdk": "npm:2.88.0"
     "@types/node": "npm:24.13.4"
     axios: "npm:^1.16.1"
     commander: "npm:^11.1.0"
@@ -15275,7 +15275,7 @@ __metadata:
   dependencies:
     "@guardian/common": "workspace:*"
     "@guardian/interfaces": "workspace:*"
-    "@hiero-ledger/sdk": "npm:2.87.0"
+    "@hiero-ledger/sdk": "npm:2.88.0"
     "@nestjs/common": "npm:^11.1.24"
     "@nestjs/core": "npm:^11.1.24"
     "@nestjs/microservices": "npm:^11.1.24"
@@ -16321,7 +16321,7 @@ __metadata:
     "@filebase/client": "npm:0.0.5"
     "@guardian/common": "workspace:*"
     "@guardian/interfaces": "workspace:*"
-    "@hiero-ledger/sdk": "npm:2.87.0"
+    "@hiero-ledger/sdk": "npm:2.88.0"
     "@nestjs/common": "npm:^11.1.24"
     "@nestjs/core": "npm:^11.1.24"
     "@nestjs/microservices": "npm:^11.1.24"
