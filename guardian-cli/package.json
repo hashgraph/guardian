@@ -25,7 +25,7 @@
         "@hiero-ledger/sdk": "2.87.0",
         "axios": "^1.16.1",
         "commander": "^11.1.0",
-        "solc": "0.8.36",
+        "solc": "0.8.37",
         "ws": "^8.16.0"
     },
     "type": "module"
