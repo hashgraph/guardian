@@ -512,7 +512,6 @@
                         </div>
 
                         <!-- ── Canvas tab bar ── -->
-                        @if (!isTemplateConfigMode) {
                         <div class="sc-canvas-tab-bar">
                             <div class="sc-canvas-tab-pill">
                                 <button class="sc-ctp-btn"
@@ -528,27 +527,28 @@
                                         <span class="sc-ctp-count">{{ schemaConditionCount }}</span>
                                     }
                                 </button>
-                                <button class="sc-ctp-btn"
-                                    [class.active]="activeCanvasTab === 'links'"
-                                    (click)="setCanvasTab('links')">
-                                    <i class="pi pi-link"></i>Repeatable links
-                                    @if (arrayDependencyCount) {
-                                        <span class="sc-ctp-count">{{ arrayDependencyCount }}</span>
-                                    }
-                                </button>
-                                @if (glossaryAiEnabled) {
+                                @if (!isTemplateConfigMode) {
                                     <button class="sc-ctp-btn"
-                                        [class.active]="activeCanvasTab === 'propertyAi'"
-                                        (click)="setCanvasTab('propertyAi')">
-                                        <svg-icon class="svg-icon-16" src="/assets/images/icons/auto_awesome.svg"></svg-icon>Glossary AI
-                                        @if (pendingSuggestionCount) {
-                                            <span class="sc-ctp-count">{{ pendingSuggestionCount }}</span>
+                                        [class.active]="activeCanvasTab === 'links'"
+                                        (click)="setCanvasTab('links')">
+                                        <i class="pi pi-link"></i>Repeatable links
+                                        @if (arrayDependencyCount) {
+                                            <span class="sc-ctp-count">{{ arrayDependencyCount }}</span>
                                         }
                                     </button>
+                                    @if (glossaryAiEnabled) {
+                                        <button class="sc-ctp-btn"
+                                            [class.active]="activeCanvasTab === 'propertyAi'"
+                                            (click)="setCanvasTab('propertyAi')">
+                                            <svg-icon class="svg-icon-16" src="/assets/images/icons/auto_awesome.svg"></svg-icon>Glossary AI
+                                            @if (pendingSuggestionCount) {
+                                                <span class="sc-ctp-count">{{ pendingSuggestionCount }}</span>
+                                            }
+                                        </button>
+                                    }
                                 }
                             </div>
                         </div>
-                        }
 
                         @if (activeCanvasTab === 'fields') {
                         <div class="sc-editor-body"
@@ -601,7 +601,7 @@
                         </div>
                         } <!-- /fields tab -->
 
-                        @if (activeCanvasTab === 'conditions' && !isTemplateConfigMode) {
+                        @if (activeCanvasTab === 'conditions') {
                             <ng-container *ngTemplateOutlet="conditionsCanvas"></ng-container>
                         }
                         @if (activeCanvasTab === 'links') {
@@ -1941,12 +1941,12 @@
     </ng-template>
 
     <ng-template #conditionsCanvas>
-        <div class="sc-cond-canvas" [class.sc-cond-canvas--locked]="!canChangeConditionsForSelectedSchema">
+        <div class="sc-cond-canvas" [class.sc-cond-canvas--locked]="!canChangeConditionsForSelectedSchema && !isTemplateConfigMode">
             <div class="sc-cond-scope-note">
                 <i class="pi pi-info-circle"></i>
                 Conditions control field visibility: IF a field equals a value, THEN show / ELSE show other fields.
             </div>
-            @if (!canChangeConditionsForSelectedSchema) {
+            @if (!canChangeConditionsForSelectedSchema && !isTemplateConfigMode) {
                 <div class="st-lock-note st-lock-note--inline">
                     <i class="pi pi-lock"></i>
                     <span>Conditions are locked by the applied template.</span>
