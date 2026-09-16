@@ -941,7 +941,7 @@ export function findFieldConditionMembership(
 }
 
 export interface IConditionClassification {
-    /** oldConditionIndex -> matching index in sourceConditions, for every condition that still matches. */
+    /** oldConditionIndex, mapped to its matching index in sourceConditions, for every condition that still matches. */
     matchedIndexByOldIndex: Map<number, number>;
     /** Indices whose trigger has no templateFieldId - built from scratch by a policy developer, never template-derived. */
     whollyCustomIndices: Set<number>;
@@ -1022,7 +1022,7 @@ function restoreConditionBranchMembership(
     }
     const newBranchNode = newEntry[branchKey] || (newEntry[branchKey] = {});
     newBranchNode.properties = newBranchNode.properties || {};
-    if (!newBranchNode.properties[fieldName]) {
+    if (newBranchNode.properties[fieldName] === undefined) {
         newBranchNode.properties[fieldName] = cloneJson(property);
     }
 }
@@ -1039,7 +1039,7 @@ function isCrossTargetWrapper(property: any): boolean {
 }
 
 function mergeCrossTargetWrapper(target: any, source: any): void {
-    if (!source || typeof source !== 'object') {
+    if (!target || typeof target !== 'object' || !source || typeof source !== 'object') {
         return;
     }
     if (Array.isArray(source.required)) {
@@ -1091,9 +1091,9 @@ function restoreConditionCrossTargets(
             }
             const newBranchNode = newEntry[branchKey] || (newEntry[branchKey] = {});
             newBranchNode.properties = newBranchNode.properties || {};
-            if (!newBranchNode.properties[key]) {
+            if (newBranchNode.properties[key] === undefined) {
                 newBranchNode.properties[key] = cloneJson(value);
-            } else {
+            } else if (newBranchNode.properties[key] !== false) {
                 mergeCrossTargetWrapper(newBranchNode.properties[key], value);
             }
         }
