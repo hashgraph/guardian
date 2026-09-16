@@ -970,6 +970,45 @@ describe('preparePolicySchemaUpdate — condition-branch membership', () => {
 
         assert.equal(target.document.allOf[0].then.properties.parentRef, undefined);
     });
+
+    it('does not crash and preserves an existing forbid marker when a cross-target wrapper collides with it', () => {
+        // Regression: mergeCrossTargetWrapper used to recurse into an existing `false`
+        // (a real forbid marker, not an absent slot) and crash trying to read
+        // `.properties` off a primitive. The old document's deep wrapper and the new
+        // document's shallow `false` at the same key must not be merged - the
+        // template's explicit forbid wins.
+        const previousDocument = {
+            $id: '#S', title: 'S', description: 'S', type: 'object', additionalProperties: false,
+            properties: { trigger: field('trigger', { templateFieldId: 'tpl-trigger-1' }) },
+            required: [],
+            allOf: [{
+                if: { properties: { trigger: { const: 'yes' } }, required: ['trigger'] },
+                then: { properties: { parentRef: { properties: { child: false } } } },
+            }],
+        };
+        const sourceDocument = {
+            $id: '#S', title: 'S', description: 'S', type: 'object', additionalProperties: false,
+            properties: {
+                trigger: field('trigger', { templateFieldId: 'tpl-trigger-1' }),
+                parentRef: field('parentRef', { templateFieldId: 'tpl-parentref-1' }),
+            },
+            required: [],
+            allOf: [{
+                if: { properties: { trigger: { const: 'yes' } }, required: ['trigger'] },
+                then: { properties: { parentRef: false } },
+                else: { properties: { parentRef: field('parentRef', { templateFieldId: 'tpl-parentref-1' }) } },
+            }],
+        };
+
+        const target = asSchema(previousDocument);
+        const source = asSchema(sourceDocument);
+
+        assert.doesNotThrow(() =>
+            preparePolicySchemaUpdate(target, source, 'template-1', { customFieldsLocked: false, schemaSettingsLocked: false })
+        );
+        assert.equal(target.document.allOf[0].then.properties.parentRef, false,
+            'the template\'s explicit forbid marker must survive, not be overwritten by the old wrapper');
+    });
 });
 
 describe('buildSchemaTemplateUpdatePreviewFromContext — condition removal', () => {
