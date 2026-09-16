@@ -123,7 +123,9 @@ export class PolicyTreeComponent implements OnInit {
             this.collapsedMap.clear();
             this._allCollapse = '2';
             this._visibleMoveActions = '0';
-            this._allCollapse = localStorage.getItem('POLICY_TREE_COLLAPSE') || '2';
+            // '0' relies on collapsedMap, which is not persisted: restore as '2'.
+            const collapse = localStorage.getItem('POLICY_TREE_COLLAPSE') || '2';
+            this._allCollapse = collapse === '0' ? '2' : collapse;
             this._visibleMoveActions = localStorage.getItem('POLICY_TREE_MENU') || '1';
         } catch (error) {
             console.error(error)
