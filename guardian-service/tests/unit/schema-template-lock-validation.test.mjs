@@ -187,4 +187,76 @@ describe('validateTemplateSchemaUpdateByConfig', () => {
             customFieldsLocked: true,
         }));
     });
+
+    it('rejects condition changes when conditions are locked', () => {
+        const withCondition = (trigger) => schema({
+            document: {
+                ...schemaDocument({
+                    field_1: {
+                        title: 'Field 1',
+                        description: 'Field 1',
+                        type: 'string',
+                        templateFieldId: 'template-field-1',
+                    },
+                }),
+                allOf: [{
+                    if: { properties: { field_1: { const: trigger } }, required: ['field_1'] },
+                    then: { properties: { revealed: { title: 'Revealed', description: 'Revealed', type: 'string' } } },
+                }],
+            },
+        });
+
+        assert.throws(
+            () => validateTemplateSchemaUpdateByConfig(withCondition('a'), withCondition('b'), {
+                conditionsLocked: true,
+            }),
+            /Conditions.*locked/
+        );
+    });
+
+    it('allows condition changes when conditions are not locked', () => {
+        const withCondition = (trigger) => schema({
+            document: {
+                ...schemaDocument({
+                    field_1: {
+                        title: 'Field 1',
+                        description: 'Field 1',
+                        type: 'string',
+                        templateFieldId: 'template-field-1',
+                    },
+                }),
+                allOf: [{
+                    if: { properties: { field_1: { const: trigger } }, required: ['field_1'] },
+                    then: { properties: { revealed: { title: 'Revealed', description: 'Revealed', type: 'string' } } },
+                }],
+            },
+        });
+
+        assert.doesNotThrow(() => validateTemplateSchemaUpdateByConfig(withCondition('a'), withCondition('b'), {
+            conditionsLocked: false,
+        }));
+    });
+
+    it('allows an unrelated schema settings edit when conditions are locked but conditions themselves are unchanged', () => {
+        const document = {
+            ...schemaDocument({
+                field_1: {
+                    title: 'Field 1',
+                    description: 'Field 1',
+                    type: 'string',
+                    templateFieldId: 'template-field-1',
+                },
+            }),
+            allOf: [{
+                if: { properties: { field_1: { const: 'a' } }, required: ['field_1'] },
+                then: { properties: { revealed: { title: 'Revealed', description: 'Revealed', type: 'string' } } },
+            }],
+        };
+
+        assert.doesNotThrow(() => validateTemplateSchemaUpdateByConfig(
+            schema({ document }),
+            schema({ document, name: 'Renamed' }),
+            { conditionsLocked: true }
+        ));
+    });
 });
