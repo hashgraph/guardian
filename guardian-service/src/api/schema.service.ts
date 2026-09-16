@@ -70,6 +70,12 @@ function getSchemaFields(schema: ISchema): SchemaField[] {
     return new Schema(schema, true).fields || [];
 }
 
+function getConditionsHash(schema: ISchema): string {
+    return SchemaHelper.stableStringify(
+        SchemaHelper.cloneSchemaRuntimeValue(new Schema(schema, true).conditions || [])
+    );
+}
+
 function flattenFields(fields: SchemaField[], result: SchemaField[] = []): SchemaField[] {
     for (const field of fields || []) {
         result.push(field);
@@ -184,6 +190,10 @@ export function validateTemplateSchemaUpdateByConfig(
 ): void {
     if (schemaConfig.schemaSettingsLocked && getSchemaSettingsHash(previous) !== getSchemaSettingsHash(next)) {
         throw new Error(`Schema settings for "${previous.name}" are locked by schema template and cannot be edited.`);
+    }
+
+    if (schemaConfig.conditionsLocked && getConditionsHash(previous) !== getConditionsHash(next)) {
+        throw new Error(`Conditions for "${previous.name}" are locked by schema template and cannot be edited.`);
     }
 
     const previousFields = flattenFields(getSchemaFields(previous));

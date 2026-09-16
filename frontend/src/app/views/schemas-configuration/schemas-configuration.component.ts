@@ -4158,6 +4158,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (!this.canChangeConditionsForSelectedSchema) { return; }
         const schema = this.currentContextSchema;
         if (!schema) { return; }
+        const condToCheck = schema.conditions?.[index];
+        const hasLockedField = [...(condToCheck?.thenFields ?? []), ...(condToCheck?.elseFields ?? [])]
+            .some((f) => this.isTemplateFieldLocked(f));
+        if (hasLockedField) { return; }
         // H1: rekey index-keyed dropdown state before the conditions array shrinks
         const rekey = (rec: Record<number, string | null>) => {
             const out: Record<number, string | null> = {};
