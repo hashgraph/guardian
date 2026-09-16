@@ -147,7 +147,7 @@ Hedera Mirror Node REST API          IPFS Gateways
 | `ipfs-files` | 3 | Fetch documents from IPFS gateways |
 | `maintenance-refresh-mvs` | 1 | Refresh PostgreSQL materialized views |
 | `maintenance-build-business-views` | 5 | Map raw messages to business entities |
-| `policy-status` | 3 | Resolve each published methodology's discontinuation from its `Policy` messages (newest valid message wins) and write it onto its `business_view` rows. Local SQL only — no Mirror Node calls. Fed by message ingest, a 10-minute sweep, and guardian-sync's `policy-engine-event-discontinue-policy` trigger. Discontinue messages ingested before the parser recognised those actions carry no `instanceTopicId`; the liveness reconciler re-parses them from `message_cache` (`RECONCILE_REPARSE_LIMIT` per tick) until none remain |
+| `policy-status` | 3 | Resolve each published methodology's discontinuation from its `Policy` messages (newest valid message wins) and write it onto its `business_view` rows. Local SQL only — no Mirror Node calls. Fed by message ingest, a 10-minute sweep, and guardian-sync's `policy-engine-event-discontinue-policy` trigger. Discontinue messages ingested before the parser recognised those actions carry no `instanceTopicId`; the liveness reconciler re-parses them from `message_cache` (`RECONCILE_DISCONTINUE_REPARSE_LIMIT` per tick) until none remain |
 
 ## Deduplication
 

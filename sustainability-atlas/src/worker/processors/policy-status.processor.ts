@@ -261,7 +261,7 @@ export class PolicyStatusProcessor extends WorkerHost {
 
     /**
      * Applies every validation a discontinue message must pass, returning its
-     * resolved effective date, or null (with a warning) if it is rejected.
+     * resolved effective date, or null if it is rejected and rejection is logged at debug.
      *
      * The topic and owner checks matter because a `Policy` message naming
      * someone else's instanceTopicId would otherwise be able to mark a
@@ -273,7 +273,7 @@ export class PolicyStatusProcessor extends WorkerHost {
         instanceTopicId: string,
     ): ValidDiscontinuation | null {
         const reject = (why: string): null => {
-            this.logger.warn(
+            this.logger.debug(
                 `instanceTopicId=${instanceTopicId}: ignoring ${candidate.action} ` +
                 `message ${candidate.consensusTimestamp} — ${why}`,
             );

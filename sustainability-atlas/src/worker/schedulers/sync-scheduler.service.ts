@@ -45,7 +45,8 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
     private readonly reconcileTopicLimit = envInt('RECONCILE_TOPIC_LIMIT', 2000);
     private readonly reconcileMessageLimit = envInt('RECONCILE_MESSAGE_LIMIT', 1000);
     private readonly stuckMessageAfterMs = envInt('RECONCILE_STUCK_MESSAGE_MS', 3_600_000);
-    private readonly reconcileReparseLimit = envInt('RECONCILE_REPARSE_LIMIT', 200);
+    
+    private readonly reconcileDiscontinueReparseLimit = envInt('RECONCILE_DISCONTINUE_REPARSE_LIMIT', 200);
 
     /** Topic poll dispatcher — see runDispatcher(). */
     private dispatchInterval: ReturnType<typeof setInterval> | null = null;
@@ -532,7 +533,7 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
                     AND NOT (m.options ? 'instanceTopicId')
                   ORDER BY m."consensusTimestamp"
                   LIMIT $2`,
-                [[...DISCONTINUE_ACTIONS], this.reconcileReparseLimit],
+                [[...DISCONTINUE_ACTIONS], this.reconcileDiscontinueReparseLimit],
             );
         if (rows.length === 0) return 0;
 
