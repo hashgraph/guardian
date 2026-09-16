@@ -4,6 +4,7 @@ import {
     buildTemplateSchemasSnapshot,
     createTemplateStateHash,
     getPolicySchemaByTemplateId,
+    getRuntimeCustomFields,
     mergeCustomFieldsIntoDocument,
     normalizeFieldForDiff,
 } from '../../dist/api/schema-template.service.js';
@@ -413,5 +414,77 @@ describe('getPolicySchemaByTemplateId scopes to one binding', () => {
         );
 
         assert.equal(result.get('tsid-old-name')?.id, 'ps-1');
+    });
+});
+
+/*
+ * Issue #6921. getRuntimeCustomFields parses via InterfaceSchema, whose
+ * linkConditionFields (interfaces/src/models/schema.ts) already folds a branch-only
+ * field into the parsed schema's top-level `fields` list before this function ever
+ * reads it - the field is the same object reference, not a second copy. A tempting
+ * "fix" for the suspected detection gap would have been to also flatten
+ * conditions[].thenFields/elseFields separately, but that would double-count every
+ * such field instead of finding a gap that doesn't exist.
+ */
+describe('getRuntimeCustomFields — fields inside a condition branch', () => {
+    const field = (name, over = {}) => ({
+        name,
+        title: name,
+        description: name,
+        type: 'string',
+        required: false,
+        isArray: false,
+        isRef: false,
+        readOnly: false,
+        ...over,
+    });
+
+    const baseSchema = () => ({ uuid: 'u-1', version: '1.0.0', name: 'N', description: 'D', contextURL: 'ctx:' });
+
+    it('detects a field declared only inside a then branch exactly once, not twice', () => {
+        const trigger = field('trigger');
+        const branchCustom = field('branchCustom');
+        // Build with branchCustom in both places (the real invariant the frontend and
+        // linkConditionFields maintain), then delete its root declaration to simulate
+        // the branch-only edge case linkConditionFields exists to repair - a field that
+        // lives only inside allOf[].then, e.g. because it got renamed while the root and
+        // branch copies were unshared.
+        const document = SchemaHelper.buildDocument(
+            baseSchema(),
+            [trigger, branchCustom],
+            [{ ifCondition: { field: trigger, fieldValue: 'yes' }, thenFields: [branchCustom], elseFields: [] }]
+        );
+        // buildDocument adds the VC-envelope fields (@context/type/id); strip them so
+        // the assertion below is only about the condition-branch field under test.
+        delete document.properties['@context'];
+        delete document.properties.type;
+        delete document.properties.id;
+        document.properties.trigger.templateFieldId = 'tpl-trigger-1';
+        delete document.properties.branchCustom;
+
+        const custom = getRuntimeCustomFields({ document });
+
+        assert.equal(custom.length, 1, 'must be detected exactly once, not zero or twice');
+        assert.equal(custom[0].name, 'branchCustom');
+    });
+
+    it('does not report a template-declared branch-only field as custom', () => {
+        const trigger = field('trigger');
+        const branchField = field('branchField');
+        const document = SchemaHelper.buildDocument(
+            baseSchema(),
+            [trigger, branchField],
+            [{ ifCondition: { field: trigger, fieldValue: 'yes' }, thenFields: [branchField], elseFields: [] }]
+        );
+        delete document.properties['@context'];
+        delete document.properties.type;
+        delete document.properties.id;
+        document.properties.trigger.templateFieldId = 'tpl-trigger-1';
+        document.allOf[0].then.properties.branchField.templateFieldId = 'tpl-branch-1';
+        delete document.properties.branchField;
+
+        const custom = getRuntimeCustomFields({ document });
+
+        assert.equal(custom.length, 0);
     });
 });

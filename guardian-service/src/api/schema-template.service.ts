@@ -872,7 +872,7 @@ function flattenRuntimeFields(fields: any[], result: any[] = []): any[] {
     return result;
 }
 
-function getRuntimeCustomFields(schema: Schema): any[] {
+export function getRuntimeCustomFields(schema: Schema): any[] {
     const parsed = new InterfaceSchema(schema as ISchema, true);
     return flattenRuntimeFields(parsed.fields || []).filter((field) => !field?.templateFieldId);
 }
