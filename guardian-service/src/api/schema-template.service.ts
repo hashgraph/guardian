@@ -1278,6 +1278,33 @@ function buildSchemaChangeDetails(
     ]);
 }
 
+/** Diffs the per-schema template-config lock toggles - the update preview otherwise only shows their downstream effects (a field preserved/removed), never the toggle change itself. */
+function buildSchemaConfigChangeDetails(previous: any, next: any): ISchemaTemplateUpdateChange['details'] {
+    return buildDetails(previous, next, [
+        { key: 'schemaSettingsLocked', label: 'Schema settings locked' },
+        { key: 'customFieldsLocked', label: 'Custom fields locked' },
+        { key: 'conditionsLocked', label: 'Conditions locked' }
+    ]);
+}
+
+/** A field with no config entry, or `locked` not explicitly false, is locked by default - mirrors isTemplateFieldLocked's own rule. */
+function isFieldLockedByConfig(schemaConfig: any, templateFieldId: string): boolean {
+    return schemaConfig?.fields?.[templateFieldId]?.locked !== false;
+}
+
+/** Diffs one field's per-field lock toggle - same blind spot as the schema-level toggles: only the field's own content was ever diffed, never whether it got individually locked/unlocked. */
+function buildFieldLockChangeDetails(
+    previousSchemaConfig: any,
+    nextSchemaConfig: any,
+    templateFieldId: string
+): ISchemaTemplateUpdateChange['details'] {
+    return buildDetails(
+        { locked: isFieldLockedByConfig(previousSchemaConfig, templateFieldId) },
+        { locked: isFieldLockedByConfig(nextSchemaConfig, templateFieldId) },
+        [{ key: 'locked', label: 'Locked' }]
+    );
+}
+
 function hasDetails(details: ISchemaTemplateUpdateChange['details']): boolean {
     return !!details?.length;
 }
@@ -1513,14 +1540,17 @@ export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<Ret
             continue;
         }
         const nextSchemaConfig = getSnapshotSchemaConfig(nextConfig, templateSchemaId);
+        const previousSchemaConfig = getSnapshotSchemaConfig(previousConfig, templateSchemaId);
         const policySnapshot = toPolicySnapshotSchema(policySchema);
         const schemaSettingsBefore = nextSchemaConfig.schemaSettingsLocked
             ? policySnapshot
             : previousSchema;
-        const schemaDetails = buildSchemaChangeDetails(schemaSettingsBefore, nextSchema);
+        const settingsDetails = buildSchemaChangeDetails(schemaSettingsBefore, nextSchema);
+        const configDetails = buildSchemaConfigChangeDetails(previousSchemaConfig, nextSchemaConfig);
+        const schemaDetails = [...settingsDetails, ...configDetails];
         const schemaChanged = snapshotSchemaHash(previousSchema) !== snapshotSchemaHash(nextSchema);
-        const schemaSettingsWillBeOverwritten = nextSchemaConfig.schemaSettingsLocked && hasDetails(schemaDetails);
-        if (schemaChanged || schemaSettingsWillBeOverwritten) {
+        const schemaSettingsWillBeOverwritten = nextSchemaConfig.schemaSettingsLocked && hasDetails(settingsDetails);
+        if (schemaChanged || schemaSettingsWillBeOverwritten || hasDetails(configDetails)) {
             changes.push(createChange(
                 SchemaTemplateUpdateChangeType.SCHEMA_UPDATE,
                 `Schema "${nextSchema.name}" will be updated from the template.`,
@@ -1553,20 +1583,26 @@ export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<Ret
                         after: formatFieldSummary(field)
                     }
                 ));
-            } else if (fieldHash(previousField) !== fieldHash(field)) {
-                changes.push(createChange(
-                    SchemaTemplateUpdateChangeType.FIELD_UPDATE,
-                    `Field "${field.title || field.name}" will be updated in schema "${nextSchema.name}".`,
-                    {
-                        templateSchemaId,
-                        templateFieldId,
-                        schemaName: nextSchema.name,
-                        fieldName: getFieldDisplayName(field),
-                        before: formatFieldSummary(previousField),
-                        after: formatFieldSummary(field),
-                        details: buildFieldChangeDetails(previousField, field)
-                    }
-                ));
+            } else {
+                const fieldDetails = [
+                    ...buildFieldChangeDetails(previousField, field),
+                    ...buildFieldLockChangeDetails(previousSchemaConfig, nextSchemaConfig, templateFieldId)
+                ];
+                if (fieldHash(previousField) !== fieldHash(field) || hasDetails(fieldDetails)) {
+                    changes.push(createChange(
+                        SchemaTemplateUpdateChangeType.FIELD_UPDATE,
+                        `Field "${field.title || field.name}" will be updated in schema "${nextSchema.name}".`,
+                        {
+                            templateSchemaId,
+                            templateFieldId,
+                            schemaName: nextSchema.name,
+                            fieldName: getFieldDisplayName(field),
+                            before: formatFieldSummary(previousField),
+                            after: formatFieldSummary(field),
+                            details: fieldDetails
+                        }
+                    ));
+                }
             }
         }
         for (const [templateFieldId, field] of previousFields.entries()) {
