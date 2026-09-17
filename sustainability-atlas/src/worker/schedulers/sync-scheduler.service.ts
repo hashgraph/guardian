@@ -11,6 +11,7 @@ import { ROOT_TOPICS } from '@shared/config/configuration';
 import { PolicyDecodeJobData } from '../processors/policy-decode.processor';
 import { TREASURY_TRANSFERS_JOB } from '../processors/token-sync.processor';
 import { BUSINESS_VIEW_PARTITIONS } from '../processors/business-view-builder.processor';
+import { DISCONTINUE_ACTIONS } from '@shared/utils/message-parser';
 import { ProjectMapperService } from '../services/project-mapper.service';
 
 /** Shape accepted by Queue.addBulk. */
@@ -43,6 +44,8 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
     private readonly reconcileTopicLimit = envInt('RECONCILE_TOPIC_LIMIT', 2000);
     private readonly reconcileMessageLimit = envInt('RECONCILE_MESSAGE_LIMIT', 1000);
     private readonly stuckMessageAfterMs = envInt('RECONCILE_STUCK_MESSAGE_MS', 3_600_000);
+    private readonly reconcileDiscontinueReparseLimit = envInt('RECONCILE_DISCONTINUE_REPARSE_LIMIT', 200);
+    
 
     /** Topic poll dispatcher — see runDispatcher(). */
     private dispatchInterval: ReturnType<typeof setInterval> | null = null;
@@ -65,6 +68,7 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
         @InjectQueue(QUEUE_NAMES.BUSINESS_VIEW_BUILD) private readonly businessViewQueue: Queue,
         @InjectQueue(QUEUE_NAMES.POLICY_DECODE) private readonly policyDecodeQueue: Queue,
         @InjectQueue(QUEUE_NAMES.IPFS_FETCH) private readonly ipfsQueue: Queue,
+        @InjectQueue(QUEUE_NAMES.POLICY_STATUS) private readonly policyStatusQueue: Queue,
     ) {
         this.leaderLock = new LeaderLock(this.redis, this.leaderKey, this.instanceId, 30);
     }
@@ -334,9 +338,13 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
         try {
             const topics = await this.rescueDeadTopicChains();
             const messages = await this.rescueStuckMessages();
-            if (topics > 0 || messages > 0) {
+            const reparsed = await this.rescueUnparsedDiscontinueMessages();
+            const policyTopics = await this.requeueUnsettledPolicyTopics();
+            if (topics > 0 || messages > 0 || reparsed > 0 || policyTopics > 0) {
                 this.logger.log(
-                    `Reconciler: restarted ${topics} topic chain(s), re-queued ${messages} stuck message(s)`,
+                    `Reconciler: restarted ${topics} topic chain(s), re-queued ${messages} stuck message(s)` +
+                    (reparsed > 0 ? `, re-parsed ${reparsed} legacy discontinue message(s)` : '') +
+                    (policyTopics > 0 ? `, re-checked ${policyTopics} unsettled policy topic(s)` : ''),
                 );
             }
         } catch (error) {
@@ -482,6 +490,126 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
                     jobId: `msg-${row.consensusTimestamp}`,
                     removeOnComplete: true,
                     removeOnFail: 1000,
+                },
+            })),
+        );
+        return rows.length;
+    }
+
+    /**
+     * Re-parses discontinue messages that were ingested before message-parser
+     * knew those actions.
+     *
+     * Those runs stored the generic `Policy` shape, which drops
+     * `instanceTopicId` — the only key tying a discontinuation to a published
+     * version. PolicyStatusProcessor attributes candidates by it, so such rows
+     * are invisible both to the per-message trigger and to the watch list, and
+     * would stay that way forever: nothing re-reads a message once it is parsed.
+     *
+     * Nothing is re-downloaded. The raw payload is still in message_cache, so
+     * this re-runs the current parser over local data and lets the ordinary
+     * pipeline take it from there (the parse itself enqueues the policy-status
+     * job). The join to message_cache skips rows whose cache entry is gone,
+     * which would otherwise be re-enqueued on every tick and warn every time.
+     *
+     * Only timestamps that already have a `message` row are enqueued, never the
+     * sibling chunks of a multi-chunk message: every chunk is present by now, so
+     * a job per chunk would have each one reassemble and write its own row,
+     * where re-parsing the existing timestamp reassembles and upserts that same
+     * row. `priority: 1` keeps this ahead of the routine parse backlog, and the
+     * batch bounds the knock-on topic-discovery churn each parse produces.
+     *
+     * Self-terminating: rows leave the result set as they are fixed, leaving one
+     * indexed lookup per tick.
+     */
+    private async rescueUnparsedDiscontinueMessages(): Promise<number> {
+        const rows: Array<{ consensusTimestamp: string; topicId: string }> =
+            await this.dataSource.query(
+                `SELECT m."consensusTimestamp", m."topicId"
+                   FROM message m
+                   JOIN message_cache mc ON mc."consensusTimestamp" = m."consensusTimestamp"
+                  WHERE m.type = 'Policy'
+                    AND m.action = ANY($1::text[])
+                    AND NOT (m.options ? 'instanceTopicId')
+                  ORDER BY m."consensusTimestamp"
+                  LIMIT $2`,
+                [[...DISCONTINUE_ACTIONS], this.reconcileDiscontinueReparseLimit],
+            );
+        if (rows.length === 0) return 0;
+
+        await this.messageQueue.addBulk(
+            rows.map(row => ({
+                name: 'process',
+                data: {
+                    consensusTimestamp: row.consensusTimestamp,
+                    topicId: row.topicId,
+                },
+                opts: {
+                    jobId: `msg-${row.consensusTimestamp}`,
+                    priority: 1,
+                    removeOnComplete: true,
+                    removeOnFail: 1000,
+                },
+            })),
+        );
+        return rows.length;
+    }
+
+    /**
+     * Re-queues the policy topics whose discontinuation state is not settled yet.
+     *
+     * This is the watch list. A policy topic enters it when a discontinue message
+     * arrives on it, and leaves only once EVERY version that message set names has
+     * an immediate `discontinue-policy` recorded on its business_view row.
+     * Immediate is the only terminal state: a deferred discontinuation can still
+     * be edited to a new date or superseded, so its topic keeps coming back.
+     *
+     * Terminality is judged per version, not per topic. A topic can hold several
+     * published versions, one discontinued immediately and another only deferred —
+     * dropping the topic on the first immediate message would abandon the second.
+     *
+     * The exclusion keys off the STORED result rather than the message, so a topic
+     * also stays here until its status is actually written. That is what covers
+     * the two cases the per-message trigger cannot: a methodology discontinued
+     * before the business-view builder ever created its row (the builder runs
+     * every two minutes), and a job that exhausted its attempts.
+     *
+     * Cheap enough to run unconditionally: an anti-join over the few hundred
+     * topics a discontinuation has ever touched, both sides index-served.
+     */
+    private async requeueUnsettledPolicyTopics(): Promise<number> {
+        const rows: Array<{ policyTopicId: string }> = await this.dataSource.query(
+            `WITH watched AS (
+                 SELECT DISTINCT "topicId" AS policy_topic_id,
+                        COALESCE(options->>'instanceTopicId', '') AS instance_topic_id
+                   FROM message
+                  WHERE type = 'Policy'
+                    AND action = ANY($1::text[])
+             )
+             SELECT DISTINCT w.policy_topic_id AS "policyTopicId"
+               FROM watched w
+              WHERE NOT EXISTS (
+                  SELECT 1
+                    FROM business_view bv
+                   WHERE bv."viewType" = 'METHODOLOGY'
+                     AND bv."relatedTopicId" = w.instance_topic_id
+                     AND bv."businessData"->>'discontinuedAction' = 'discontinue-policy'
+              )`,
+            [[...DISCONTINUE_ACTIONS]],
+        );
+        if (rows.length === 0) return 0;
+
+        // The minute bucket keeps consecutive ticks from colliding with the
+        // retained-jobId dedup window, while still collapsing duplicates within
+        // one tick.
+        const bucket = Math.floor(Date.now() / 60_000);
+        await this.policyStatusQueue.addBulk(
+            rows.map(row => ({
+                name: 'resolve',
+                data: { policyTopicId: row.policyTopicId, reason: 'watch' as const },
+                opts: {
+                    jobId: `policy-status-${row.policyTopicId}-watch-${bucket}`,
+                    removeOnComplete: true,
                 },
             })),
         );

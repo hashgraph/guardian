@@ -167,6 +167,18 @@ export async function bootstrapSchema(dataSource: DataSource): Promise<void> {
         WHERE type = 'Token'
     `);
 
+    // Resolves a published methodology by its instance topic. Two hot callers:
+    // PolicyStatusProcessor (once per policy-status job) and
+    // resolveParentPolicyTopicId in message-process.processor.ts (once per VC
+    // whose policy topic has to be walked). Without it both fall back to the
+    // (type, action) index and then heap-filter every publish-policy row —
+    // ~20k of them on testnet — to find one match.
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_message_instance_policy_instance_topic
+        ON message ((options->>'instanceTopicId'))
+        WHERE type = 'Instance-Policy' AND action = 'publish-policy'
+    `);
+
     // Pre-computed MintToken → project attribution table.
     // Eliminates the grouped-project double-counting bug where a topic-scope
     // join would assign every MintToken in a shared instance topic to all
@@ -301,7 +313,7 @@ export async function bootstrapSchema(dataSource: DataSource): Promise<void> {
     let backfillCursor = '0';
     let backfilled = 0;
     let backfillDone = true;
-    for (;;) {
+    for (; ;) {
         if (Date.now() > backfillDeadline) {
             backfillDone = false;
             break;
@@ -437,7 +449,7 @@ export async function bootstrapSchema(dataSource: DataSource): Promise<void> {
     let ipfsCidBackfilled = 0;
     let ipfsCidBackfillDone = true;
     const ipfsCidBackfillDeadline = Date.now() + IPFS_CID_BACKFILL_BUDGET_MS;
-    for (;;) {
+    for (; ;) {
         if (Date.now() > ipfsCidBackfillDeadline) {
             ipfsCidBackfillDone = false;
             break;
@@ -713,6 +725,16 @@ export async function bootstrapSchema(dataSource: DataSource): Promise<void> {
         CREATE INDEX IF NOT EXISTS idx_business_view_methodology_display_name
         ON business_view ("displayName")
         WHERE "viewType" = 'METHODOLOGY'
+    `);
+
+    // Backs the methodology list's lifecycle-status filter. Only METHODOLOGY rows
+    // that carry a discontinuation date are indexed, so a Discontinued / To be 
+    // Discontinued filter reads those rows instead of scanning the whole table 
+    // for a jsonb value.
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_business_view_methodology_discontinued
+        ON business_view (id)
+        WHERE "viewType" = 'METHODOLOGY' AND ("businessData"->>'discontinuedAt') IS NOT NULL
     `);
 
     // GIN index backing the linkedVcs @> containment lookups used by

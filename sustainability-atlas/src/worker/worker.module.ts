@@ -35,6 +35,7 @@ import { IpfsFetchProcessor } from './processors/ipfs-fetch.processor';
 import { PolicyDecodeProcessor } from './processors/policy-decode.processor';
 import { MvRefreshProcessor } from './processors/mv-refresh.processor';
 import { BusinessViewBuilderProcessor } from './processors/business-view-builder.processor';
+import { PolicyStatusProcessor } from './processors/policy-status.processor';
 import { ProjectReparseProcessor } from './processors/project-reparse.processor';
 
 // Schedulers
@@ -58,6 +59,7 @@ const PROCESSOR_MAP: Record<string, any> = {
     [QUEUE_NAMES.MV_REFRESH]: MvRefreshProcessor,
     [QUEUE_NAMES.BUSINESS_VIEW_BUILD]: BusinessViewBuilderProcessor,
     [QUEUE_NAMES.PROJECT_REPARSE]: ProjectReparseProcessor,
+    [QUEUE_NAMES.POLICY_STATUS]: PolicyStatusProcessor,
 };
 
 /**
@@ -76,7 +78,7 @@ const ENQUEUE_TARGETS: Record<string, string[]> = {
     ],
     [QUEUE_NAMES.MESSAGE_PARSE]: [
         QUEUE_NAMES.IPFS_FETCH, QUEUE_NAMES.POLICY_DECODE, QUEUE_NAMES.TOKEN_SYNC,
-        QUEUE_NAMES.TOPIC_SYNC, QUEUE_NAMES.TOPIC_SYNC_PRIORITY,
+        QUEUE_NAMES.TOPIC_SYNC, QUEUE_NAMES.TOPIC_SYNC_PRIORITY, QUEUE_NAMES.POLICY_STATUS,
     ],
     [QUEUE_NAMES.POLICY_DECODE]: [QUEUE_NAMES.IPFS_FETCH],
     [QUEUE_NAMES.TOKEN_SYNC]: [QUEUE_NAMES.TOKEN_SYNC],
@@ -85,6 +87,7 @@ const ENQUEUE_TARGETS: Record<string, string[]> = {
     [QUEUE_NAMES.MV_REFRESH]: [],
     [QUEUE_NAMES.BUSINESS_VIEW_BUILD]: [],
     [QUEUE_NAMES.PROJECT_REPARSE]: [],
+    [QUEUE_NAMES.POLICY_STATUS]: [],
 };
 
 /** Every queue the scheduler seeds into; it holds a producer for each. */
@@ -92,6 +95,7 @@ const SCHEDULER_QUEUES: string[] = [
     QUEUE_NAMES.TOPIC_SYNC, QUEUE_NAMES.TOPIC_SYNC_PRIORITY, QUEUE_NAMES.MESSAGE_PARSE,
     QUEUE_NAMES.TOKEN_SYNC, QUEUE_NAMES.RETIRE_SYNC, QUEUE_NAMES.MV_REFRESH,
     QUEUE_NAMES.BUSINESS_VIEW_BUILD, QUEUE_NAMES.POLICY_DECODE, QUEUE_NAMES.IPFS_FETCH,
+    QUEUE_NAMES.POLICY_STATUS,
 ];
 
 @Module({})

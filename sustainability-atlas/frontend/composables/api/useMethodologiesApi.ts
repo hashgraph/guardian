@@ -1,5 +1,6 @@
 import { isAbortError } from '~/lib/utils';
 import type { NetworkId } from '~/composables/useNetwork';
+import type { MethodologyStatus } from '~/lib/methodology-status';
 
 export type MethodologySortKey =
     | 'name'
@@ -71,6 +72,8 @@ export interface MethodologyDto {
     totalActive?: number;
     decodeStatus?: 'success' | 'failed' | 'pending' | 'unknown';
     policySourceCid?: string | null;
+    lifecycleStatus?: MethodologyStatus;
+    discontinuedAt?: string | null;
 }
 
 export interface MethodologiesMeta {
@@ -104,7 +107,7 @@ export interface UseMethodologiesApiOptions {
 }
 
 // Filter keys recognised by the backend methodologies endpoint.
-const METHODOLOGY_FILTER_KEYS = ['name', 'id', 'description', 'decodeStatus', 'registryDid', 'registryName', 'version', 'policyTopicId'] as const;
+const METHODOLOGY_FILTER_KEYS = ['name', 'id', 'description', 'decodeStatus', 'status', 'registryDid', 'registryName', 'version', 'policyTopicId'] as const;
 
 const emptyResponse = (limit: number): MethodologiesResponse => ({
     data: [],

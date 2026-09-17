@@ -29,6 +29,7 @@ import { BusinessViewBuilderProcessor } from '../processors/business-view-builde
 import { PolicyDecodeProcessor } from '../processors/policy-decode.processor';
 import { ProjectReparseProcessor } from '../processors/project-reparse.processor';
 import { RetireSyncProcessor } from '../processors/retire-sync.processor';
+import { PolicyStatusProcessor } from '../processors/policy-status.processor';
 
 interface ScalingEntry {
     queue: Queue;
@@ -93,6 +94,7 @@ export class QueueAutoscalerService implements OnApplicationBootstrap, OnModuleD
         @Optional() private readonly pdProcessor: PolicyDecodeProcessor,
         @Optional() private readonly projectReparseProcessor: ProjectReparseProcessor,
         @Optional() private readonly retireProcessor: RetireSyncProcessor,
+        @Optional() private readonly policyStatusProcessor: PolicyStatusProcessor,
     ) {}
 
     /**
@@ -198,6 +200,11 @@ export class QueueAutoscalerService implements OnApplicationBootstrap, OnModuleD
                 baseName: BASE_QUEUE_NAMES.RETIRE_SYNC,
                 queueName: QUEUE_NAMES.RETIRE_SYNC,
                 processor: this.retireProcessor,
+            },
+            {
+                baseName: BASE_QUEUE_NAMES.POLICY_STATUS,
+                queueName: QUEUE_NAMES.POLICY_STATUS,
+                processor: this.policyStatusProcessor,
             },
         ];
 

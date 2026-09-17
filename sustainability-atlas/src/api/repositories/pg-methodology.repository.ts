@@ -11,6 +11,8 @@ import {
     IssuanceEventRow,
     MethodologyExportFilters,
     MethodologyExportRow,
+    MethodologyLifecycleStatus,
+    METHODOLOGY_LIFECYCLE_STATUSES,
 } from './methodology.repository';
 import { QueryBuilder } from './query-builder';
 import { METHODOLOGY_FIELD_SCHEMA } from './schemas/methodology.schema';
@@ -212,7 +214,10 @@ const METHODOLOGY_CANDIDATE_CTE = `
  * path below, since pushing a LIMIT before a filter is applied could drop
  * rows that would otherwise match.
  */
-const methodologyCandidateCteFast = (innerLimitParam: string): string => `
+const methodologyCandidateCteFast = (
+    innerLimitParam: string,
+    lifecycleWhere: string | null = null,
+): string => `
     WITH candidate AS (
         (
             SELECT
@@ -230,6 +235,7 @@ const methodologyCandidateCteFast = (innerLimitParam: string): string => `
                 canon.total_retired
             FROM ${MV_METHODOLOGY_STATS_NAME} canon
             JOIN business_view bv ON bv.id = canon.canonical_id
+            ${lifecycleWhere ? `WHERE ${lifecycleWhere}` : ''}
             ORDER BY canon."createdAt" DESC NULLS LAST
             LIMIT ${innerLimitParam}
         )
@@ -252,6 +258,7 @@ const methodologyCandidateCteFast = (innerLimitParam: string): string => `
             ${REGISTRY_NAME_JOIN}
             ${POLICY_DECODE_STATUS_JOIN}
             WHERE bv."viewType" = 'METHODOLOGY' AND bv."relatedTopicId" IS NULL
+            ${lifecycleWhere ? `AND ${lifecycleWhere}` : ''}
             ORDER BY bv."createdAt" DESC NULLS LAST
             LIMIT ${innerLimitParam}
         )
@@ -260,6 +267,47 @@ const methodologyCandidateCteFast = (innerLimitParam: string): string => `
 
 /** Over the candidate CTE's already-effective-mapped decode_status column — used by findAll/findAllForExport's decodeStatus filter (no need to re-wrap in the success/pending/failed CASE). */
 const CANDIDATE_DECODE_STATUS = `bv."decode_status"`;
+
+/**
+ * Lifecycle predicate over `businessData.discontinuedAt`, which PolicyStatusProcessor
+ * writes from the newest valid discontinue message for that instance topic.
+ *
+ * Compared against now() rather than stored as a status, because Guardian emits
+ * NO message when a deferred discontinuation's date arrives — a stored flag
+ * would stay wrong until something happened to recompute it. Evaluating here
+ * means the flip happens on the date itself, on the very next request.
+ *
+ * Takes an alias so it can be used both inside the fast path's UNION branches
+ * (where the row is still `bv`/`business_view`) and over the candidate CTE.
+ *
+ * The dated buckets repeat idx_business_view_methodology_discontinued's own
+ * predicate (`"viewType" = 'METHODOLOGY' AND discontinuedAt IS NOT NULL`) so the
+ * planner can match that partial index. Every caller only ever sees METHODOLOGY
+ * rows, so the extra `viewType` term never changes a result.
+ */
+const lifecycleStatusPredicate = (
+    statuses: MethodologyLifecycleStatus[] | undefined,
+    alias = 'bv',
+): string | null => {
+    const wanted = new Set<MethodologyLifecycleStatus>(
+        statuses?.length ? statuses : METHODOLOGY_LIFECYCLE_STATUSES,
+    );
+    // Every bucket requested — no predicate at all, which is what keeps an
+    // unfiltered list on the indexed fast path.
+    if (METHODOLOGY_LIFECYCLE_STATUSES.every(s => wanted.has(s))) return null;
+
+    const at = `(${alias}."businessData"->>'discontinuedAt')`;
+    const dateClauses: string[] = [];
+    if (wanted.has('to_be_discontinued')) dateClauses.push(`${at}::timestamptz > now()`);
+    if (wanted.has('discontinued')) dateClauses.push(`${at}::timestamptz <= now()`);
+
+    const dated = dateClauses.length > 0
+        ? `(${alias}."viewType" = 'METHODOLOGY' AND ${at} IS NOT NULL AND (${dateClauses.join(' OR ')}))`
+        : null;
+
+    if (!wanted.has('published')) return dated;
+    return dated ? `(${at} IS NULL OR ${dated})` : `${at} IS NULL`;
+};
 
 /**
  * LATERAL subquery that computes totalIssued/totalRetired for each methodology in the list.
@@ -320,13 +368,15 @@ export class PgMethodologyRepository extends MethodologyRepository {
 
         // No filters, no search, default sort => safe to take the indexed fast
         // path (see methodologyCandidateCteFast's doc comment for why).
+        const lifecycleWhere = lifecycleStatusPredicate(query.status);
+
         const isDefaultView = !search && isDefaultSort
             && !query.name && !query.id && !query.description
             && !query.decodeStatus?.length
             && !query.registryDid && !query.registryName && !query.version && !query.policyTopicId;
 
         if (isDefaultView) {
-            return this.findAllDefaultView(offset, limit);
+            return this.findAllDefaultView(offset, limit, lifecycleWhere, query.status);
         }
 
         const builder = new QueryBuilder(METHODOLOGY_FIELD_SCHEMA);
@@ -362,6 +412,12 @@ export class PgMethodologyRepository extends MethodologyRepository {
             if (clauses.length > 0) {
                 builder.addClause(clauses.length === 1 ? clauses[0] : `(${clauses.join(' OR ')})`);
             }
+        }
+
+        // Same predicate as the fast path, applied over the candidate CTE (whose
+        // rows still carry business_view's own columns under the `bv` alias).
+        if (lifecycleWhere) {
+            builder.addClause(lifecycleWhere);
         }
 
         // Full-text search with ranking: tsvector covers displayName/registryDid/searchText, ILIKE is a fast
@@ -433,21 +489,54 @@ export class PgMethodologyRepository extends MethodologyRepository {
      * count alone gives the canonical total; the fallback-branch count is a
      * single index-backed lookup.
      */
-    private async findAllDefaultView(offset: number, limit: number): Promise<MethodologyListResult> {
+    private async findAllDefaultView(
+        offset: number,
+        limit: number,
+        lifecycleWhere: string | null = null,
+        statuses?: MethodologyLifecycleStatus[],
+    ): Promise<MethodologyListResult> {
         const innerLimit = offset + limit;
 
         const rowsSql = `
-            ${methodologyCandidateCteFast('$1')}
+            ${methodologyCandidateCteFast('$1', lifecycleWhere)}
             SELECT bv.*
             FROM candidate bv
             ORDER BY bv."createdAt" DESC NULLS LAST
             LIMIT $2 OFFSET $3
         `;
 
+        // Unfiltered, the canonical count is the MV's own row count. Filtered, the
+        // dated buckets are counted through idx_business_view_methodology_discontinued
+        // (only the ~hundreds of rows that carry a date). `published` cannot use
+        // that index — an index finds rows that have a value, not rows that lack
+        // one — so a filter that includes it is counted as the MV total minus the
+        // buckets it excludes, which are always dated. Joining business_view for
+        // the flag directly made the planner scan the whole table instead.
+        const canonicalCountSql = (() => {
+            const total = `SELECT COUNT(*) FROM ${MV_METHODOLOGY_STATS_NAME}`;
+            if (!lifecycleWhere) return total;
+            const datedCount = (where: string) =>
+                `SELECT COUNT(*) FROM ${MV_METHODOLOGY_STATS_NAME} canon
+                   JOIN business_view bv ON bv.id = canon.canonical_id
+                  WHERE ${where}`;
+            if (!statuses?.includes('published')) return datedCount(lifecycleWhere);
+            const excluded = METHODOLOGY_LIFECYCLE_STATUSES.filter(s => !statuses.includes(s));
+            const excludedWhere = lifecycleStatusPredicate(excluded);
+            return excludedWhere ? `(${total}) - (${datedCount(excludedWhere)})` : total;
+        })();
+
+        // A METHODOLOGY row with no relatedTopicId has no instance topic, so no
+        // discontinue message can ever name it: it is always `published`, and
+        // contributes nothing to a count that excludes that bucket.
+        const wantsPublished = !statuses?.length || statuses.includes('published');
+        const fallbackCountSql = wantsPublished
+            ? `SELECT COUNT(*) FROM business_view WHERE "viewType" = 'METHODOLOGY' AND "relatedTopicId" IS NULL`
+            : `SELECT 0`;
+
         const countSql = `
             SELECT
-                (SELECT COUNT(*) FROM ${MV_METHODOLOGY_STATS_NAME})::int +
-                (SELECT COUNT(*) FROM business_view WHERE "viewType" = 'METHODOLOGY' AND "relatedTopicId" IS NULL)::int
+                (${canonicalCountSql})::int +
+                (${fallbackCountSql})::int
                 AS total
         `;
 
@@ -659,6 +748,12 @@ export class PgMethodologyRepository extends MethodologyRepository {
             }
         }
 
+        // Keeps an export in step with the list it was requested from.
+        const exportLifecycleWhere = lifecycleStatusPredicate(filters.status);
+        if (exportLifecycleWhere) {
+            builder.addClause(exportLifecycleWhere);
+        }
+
         if (filters.search) {
             const term = filters.search.trim();
             const tsParam = builder.nextParam(term);
@@ -763,7 +858,7 @@ export class PgMethodologyRepository extends MethodologyRepository {
                 const issued = parseFloat(row.total_issued!);
                 const retired = parseInt(row.total_retired ?? '0', 10);
                 return { totalIssued: issued, totalRetired: retired, totalActive: issued - retired };
-              })()
+            })()
             : undefined);
 
         const stats: MethodologyStatsRow = {
@@ -826,6 +921,7 @@ export class PgMethodologyRepository extends MethodologyRepository {
             totalActive: resolvedLifecycle?.totalActive,
             decodeStatus: row.decode_status ?? null,
             policySourceCid: row.policy_source_cid ?? null,
+            discontinuedAt: typeof data.discontinuedAt === 'string' ? data.discontinuedAt : null,
         };
     }
 }

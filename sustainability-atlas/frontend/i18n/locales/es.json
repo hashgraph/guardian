@@ -1008,7 +1008,18 @@
             "id": "ID",
             "description": "Descripción",
             "decoded": "Estado de Decode",
-            "decodedAll": "Todos"
+            "decodedAll": "Todos",
+            "status": "Estado",
+            "hideDiscontinued": "Ocultar metodologías discontinuadas"
+        },
+        "statusValues": {
+            "published": "Publicada",
+            "to_be_discontinued": "Por discontinuar",
+            "discontinued": "Discontinuada"
+        },
+        "statusTooltips": {
+            "discontinuesOn": "Se discontinuará el {date}",
+            "discontinuedOn": "Discontinuada el {date}"
         },
         "stats": {
             "total": "Total de metodologías",
