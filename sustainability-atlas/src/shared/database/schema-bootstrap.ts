@@ -313,7 +313,7 @@ export async function bootstrapSchema(dataSource: DataSource): Promise<void> {
     let backfillCursor = '0';
     let backfilled = 0;
     let backfillDone = true;
-    for (;;) {
+    for (; ;) {
         if (Date.now() > backfillDeadline) {
             backfillDone = false;
             break;
@@ -449,7 +449,7 @@ export async function bootstrapSchema(dataSource: DataSource): Promise<void> {
     let ipfsCidBackfilled = 0;
     let ipfsCidBackfillDone = true;
     const ipfsCidBackfillDeadline = Date.now() + IPFS_CID_BACKFILL_BUDGET_MS;
-    for (;;) {
+    for (; ;) {
         if (Date.now() > ipfsCidBackfillDeadline) {
             ipfsCidBackfillDone = false;
             break;
@@ -725,6 +725,16 @@ export async function bootstrapSchema(dataSource: DataSource): Promise<void> {
         CREATE INDEX IF NOT EXISTS idx_business_view_methodology_display_name
         ON business_view ("displayName")
         WHERE "viewType" = 'METHODOLOGY'
+    `);
+
+    // Backs the methodology list's lifecycle-status filter. Only METHODOLOGY rows
+    // that carry a discontinuation date are indexed, so a Discontinued / To be 
+    // Discontinued filter reads those rows instead of scanning the whole table 
+    // for a jsonb value.
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_business_view_methodology_discontinued
+        ON business_view (id)
+        WHERE "viewType" = 'METHODOLOGY' AND ("businessData"->>'discontinuedAt') IS NOT NULL
     `);
 
     // GIN index backing the linkedVcs @> containment lookups used by

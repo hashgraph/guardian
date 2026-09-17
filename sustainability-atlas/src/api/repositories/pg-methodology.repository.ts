@@ -279,6 +279,11 @@ const CANDIDATE_DECODE_STATUS = `bv."decode_status"`;
  *
  * Takes an alias so it can be used both inside the fast path's UNION branches
  * (where the row is still `bv`/`business_view`) and over the candidate CTE.
+ *
+ * The dated buckets repeat idx_business_view_methodology_discontinued's own
+ * predicate (`"viewType" = 'METHODOLOGY' AND discontinuedAt IS NOT NULL`) so the
+ * planner can match that partial index. Every caller only ever sees METHODOLOGY
+ * rows, so the extra `viewType` term never changes a result.
  */
 const lifecycleStatusPredicate = (
     statuses: MethodologyLifecycleStatus[] | undefined,
@@ -292,11 +297,16 @@ const lifecycleStatusPredicate = (
     if (METHODOLOGY_LIFECYCLE_STATUSES.every(s => wanted.has(s))) return null;
 
     const at = `(${alias}."businessData"->>'discontinuedAt')`;
-    const clauses: string[] = [];
-    if (wanted.has('published')) clauses.push(`${at} IS NULL`);
-    if (wanted.has('to_be_discontinued')) clauses.push(`(${at} IS NOT NULL AND ${at}::timestamptz > now())`);
-    if (wanted.has('discontinued')) clauses.push(`(${at} IS NOT NULL AND ${at}::timestamptz <= now())`);
-    return clauses.length > 0 ? `(${clauses.join(' OR ')})` : null;
+    const dateClauses: string[] = [];
+    if (wanted.has('to_be_discontinued')) dateClauses.push(`${at}::timestamptz > now()`);
+    if (wanted.has('discontinued')) dateClauses.push(`${at}::timestamptz <= now()`);
+
+    const dated = dateClauses.length > 0
+        ? `(${alias}."viewType" = 'METHODOLOGY' AND ${at} IS NOT NULL AND (${dateClauses.join(' OR ')}))`
+        : null;
+
+    if (!wanted.has('published')) return dated;
+    return dated ? `(${at} IS NULL OR ${dated})` : `${at} IS NULL`;
 };
 
 /**
@@ -495,15 +505,25 @@ export class PgMethodologyRepository extends MethodologyRepository {
             LIMIT $2 OFFSET $3
         `;
 
-        // Unfiltered, the canonical count is the MV's own row count. With a
-        // lifecycle filter it has to join business_view for the flag — still a
-        // primary-key lookup per canonical row (~hundreds), not a scan of the
-        // ~100-200x larger raw METHODOLOGY set.
-        const canonicalCountSql = lifecycleWhere
-            ? `SELECT COUNT(*) FROM ${MV_METHODOLOGY_STATS_NAME} canon
-                 JOIN business_view bv ON bv.id = canon.canonical_id
-                WHERE ${lifecycleWhere}`
-            : `SELECT COUNT(*) FROM ${MV_METHODOLOGY_STATS_NAME}`;
+        // Unfiltered, the canonical count is the MV's own row count. Filtered, the
+        // dated buckets are counted through idx_business_view_methodology_discontinued
+        // (only the ~hundreds of rows that carry a date). `published` cannot use
+        // that index — an index finds rows that have a value, not rows that lack
+        // one — so a filter that includes it is counted as the MV total minus the
+        // buckets it excludes, which are always dated. Joining business_view for
+        // the flag directly made the planner scan the whole table instead.
+        const canonicalCountSql = (() => {
+            const total = `SELECT COUNT(*) FROM ${MV_METHODOLOGY_STATS_NAME}`;
+            if (!lifecycleWhere) return total;
+            const datedCount = (where: string) =>
+                `SELECT COUNT(*) FROM ${MV_METHODOLOGY_STATS_NAME} canon
+                   JOIN business_view bv ON bv.id = canon.canonical_id
+                  WHERE ${where}`;
+            if (!statuses?.includes('published')) return datedCount(lifecycleWhere);
+            const excluded = METHODOLOGY_LIFECYCLE_STATUSES.filter(s => !statuses.includes(s));
+            const excludedWhere = lifecycleStatusPredicate(excluded);
+            return excludedWhere ? `(${total}) - (${datedCount(excludedWhere)})` : total;
+        })();
 
         // A METHODOLOGY row with no relatedTopicId has no instance topic, so no
         // discontinue message can ever name it: it is always `published`, and
