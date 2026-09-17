@@ -629,9 +629,27 @@ export class PolicyActionsService {
         return row;
     }
 
+    /**
+     * Atomically claim a row for execution. Returns false when another delivery already
+     * claimed it, so a redelivered message cannot run the action a second time.
+     */
+    private async claimForExecution(row: PolicyAction): Promise<boolean> {
+        const collection = DataBaseHelper.orm.em.getCollection<PolicyAction>('PolicyAction');
+        const result = await collection.updateOne(
+            { _id: row._id, executedAt: { $exists: false } } as any,
+            { $set: { executedAt: new Date() } }
+        );
+        return result?.modifiedCount === 1;
+    }
+
     private async executeAction(row: PolicyAction) {
         try {
             if (!row) {
+                return;
+            }
+            // Redelivery is legitimate - a restart, a lost confirm, a crash between the
+            // handler succeeding and its confirm publishing. Re-running the action is not.
+            if (!await this.claimForExecution(row)) {
                 return;
             }
 
