@@ -246,7 +246,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public get isTemplateMode(): boolean {
-        return this.type === 'template' || this.router.url.startsWith('/schema-template-configuration');
+        return this.type === 'template' || this.isTemplateConfigMode || this.isTemplatePreviewMode;
     }
 
     public get isTemplateConfigMode(): boolean {
