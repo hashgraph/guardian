@@ -3309,6 +3309,16 @@
         background: var(--guardian-hover);
         color: var(--guardian-font-color);
     }
+
+    &:disabled {
+        opacity: 0.4;
+        cursor: default;
+    }
+
+    &:disabled:hover {
+        background: var(--guardian-background);
+        color: var(--color-grey-5);
+    }
 }
 
 .sc-cond-type-note {
@@ -3330,7 +3340,8 @@
     border-radius: 6px;
     transition: color 0.12s, background 0.12s;
 
-    &:hover { color: var(--color-accent-red-1); background: var(--guardian-failure-background); }
+    &:hover:not(:disabled) { color: var(--color-accent-red-1); background: var(--guardian-failure-background); }
+    &:disabled { opacity: 0.3; cursor: default; }
 }
 
 .sc-cond-block-body {
@@ -3394,6 +3405,7 @@
     box-sizing: border-box;
 
     &:focus { border-color: var(--color-primary); }
+    &:disabled { opacity: 0.5; cursor: default; background: var(--guardian-grey-background); }
 }
 
 .sc-cond-val-wrap {
@@ -3438,7 +3450,8 @@
     transition: color 0.12s;
 
     i { font-size: 13px; }
-    &:hover { color: var(--color-primary); }
+    &:hover:not(:disabled) { color: var(--color-primary); }
+    &:disabled { opacity: 0.4; cursor: default; }
 }
 
 // THEN / ELSE 2-column grid
@@ -3584,7 +3597,8 @@
     flex-shrink: 0;
     transition: color 0.12s;
 
-    &:hover { color: var(--color-accent-red-1); }
+    &:hover:not(:disabled) { color: var(--color-accent-red-1); }
+    &:disabled { opacity: 0.3; cursor: default; }
 }
 
 .sc-cond-te-add-row {
@@ -3612,10 +3626,15 @@
 
     i { font-size: 13px; }
 
-    &:hover {
+    &:hover:not(:disabled) {
         border-color: var(--color-primary);
         color: var(--color-primary);
         background: color-mix(in srgb, var(--color-primary) 4%, transparent);
+    }
+
+    &:disabled {
+        opacity: 0.4;
+        cursor: default;
     }
 }
 

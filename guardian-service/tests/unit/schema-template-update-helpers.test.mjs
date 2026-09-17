@@ -1151,4 +1151,70 @@ describe('buildSchemaTemplateUpdatePreviewFromContext — condition removal', ()
         const conflict = preview.conflicts.find((c) => c.type === 'CONDITION_REMOVED_WITH_POLICY_USAGE');
         assert.ok(conflict, 'a cross-schema target has no templateFieldId of its own to filter on - the condition-level check must still catch it');
     });
+
+    it('reports a lock toggle change even when nothing else about the schema changed', () => {
+        const trigger = field('trigger', { templateFieldId: 'tpl-trigger-1' });
+        const policyDocument = SchemaHelper.buildDocument(baseSchema(), [trigger], []);
+        delete policyDocument.properties['@context'];
+        delete policyDocument.properties.type;
+        delete policyDocument.properties.id;
+
+        // Same conditions on both sides (empty here) - only the config toggles differ.
+        const context = buildContext([], [], policyDocument);
+        context.snapshot.config = { schemas: { 'tsid-1': {} } };
+        context.template.config = { schemas: { 'tsid-1': { customFieldsLocked: true, conditionsLocked: true } } };
+
+        const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
+
+        const change = preview.changes.find((c) => c.type === 'SCHEMA_UPDATE');
+        assert.ok(change, 'a toggle-only change must still be reported as a change');
+        const labels = (change.details || []).map((d) => d.label);
+        assert.ok(labels.includes('Custom fields locked'));
+        assert.ok(labels.includes('Conditions locked'));
+        const conditionsDetail = change.details.find((d) => d.label === 'Conditions locked');
+        // formatDiffValue's existing convention: an absent config key formats as '-',
+        // not 'No' - the same rule every other detail row in this diff already follows.
+        assert.equal(conditionsDetail.before, '-');
+        assert.equal(conditionsDetail.after, 'Yes');
+    });
+
+    it('reports a per-field lock toggle change even when the field itself did not change', () => {
+        const snapshotField = { ...field('trigger', { templateFieldId: 'tpl-trigger-1' }) };
+        const policyDocument = SchemaHelper.buildDocument(baseSchema(), [field('trigger', { templateFieldId: 'tpl-trigger-1' })], []);
+        delete policyDocument.properties['@context'];
+        delete policyDocument.properties.type;
+        delete policyDocument.properties.id;
+
+        const policySchema = {
+            document: policyDocument,
+            name: 'N', description: 'D', entity: 'NONE', version: '1.0.0',
+            templateSchemaId: 'tsid-1', id: 'policy-schema-1',
+        };
+        const context = {
+            policy: { id: 'policy-1' },
+            binding: { templateId: 'template-1', templateName: 'T', templateVersion: '1.0.0' },
+            snapshot: {
+                schemas: { schemas: { 'tsid-1': { templateSchemaId: 'tsid-1', name: 'N', description: 'D', entity: 'NONE', version: '1.0.0', fields: [snapshotField], conditions: [] } } },
+                config: { schemas: { 'tsid-1': { fields: { 'tpl-trigger-1': { locked: false } } } } },
+            },
+            nextSchemas: {
+                schemas: { 'tsid-1': { templateSchemaId: 'tsid-1', name: 'N', description: 'D', entity: 'NONE', version: '1.0.1', fields: [snapshotField], conditions: [] } },
+            },
+            template: {
+                id: 'template-1', name: 'T', version: '1.0.1',
+                config: { schemas: { 'tsid-1': { fields: { 'tpl-trigger-1': { locked: true } } } } },
+            },
+            templateSchemas: [],
+            policySchemaByTemplateId: new Map([['tsid-1', policySchema]]),
+        };
+
+        const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
+
+        const change = preview.changes.find((c) => c.type === 'FIELD_UPDATE');
+        assert.ok(change, 'a per-field lock toggle must be reported even when the field content is unchanged');
+        const lockedDetail = (change.details || []).find((d) => d.label === 'Locked');
+        assert.ok(lockedDetail, 'the field-level lock change must appear as a detail row');
+        assert.equal(lockedDetail.before, 'No');
+        assert.equal(lockedDetail.after, 'Yes');
+    });
 });
