@@ -306,6 +306,7 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
             case 'SCHEMA_REMOVE':
             case 'FIELD_REMOVE':
             case 'CUSTOM_FIELD_REMOVE':
+            case 'CONDITION_REMOVE':
                 return 'Removed';
             case 'CUSTOM_FIELD_PRESERVE':
                 return 'Preserved';
@@ -322,6 +323,7 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
             case 'SCHEMA_REMOVE':
             case 'FIELD_REMOVE':
             case 'CUSTOM_FIELD_REMOVE':
+            case 'CONDITION_REMOVE':
                 return 'red';
             case 'CUSTOM_FIELD_PRESERVE':
                 return 'blue';

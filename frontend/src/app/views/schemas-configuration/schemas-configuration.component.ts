@@ -323,6 +323,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return !this.selectedSchemaConfig?.schemaSettingsLocked;
     }
 
+    public get canChangeSelectedSchemaConditions(): boolean {
+        return !this.selectedSchemaConfig?.conditionsLocked;
+    }
+
     public get canAddFieldToSelectedSchema(): boolean {
         const schema = this.currentContextSchema;
         return !!schema &&
@@ -330,6 +334,15 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             !this.isTemplateConfigMode &&
             !this.isTemplateConfigPendingForSchema(schema) &&
             !this.isTemplateSchemaCustomFieldsLocked(schema);
+    }
+
+    public get canChangeConditionsForSelectedSchema(): boolean {
+        const schema = this.currentContextSchema;
+        return !!schema &&
+            !this.isTemplateReadonly &&
+            !this.isTemplateConfigMode &&
+            !this.isTemplateConfigPendingForSchema(schema) &&
+            !this.isTemplateSchemaConditionsLocked(schema);
     }
 
     public get canEditSelectedFieldInTemplate(): boolean {
@@ -396,6 +409,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return this.getSchemaTemplateConfig(schema)?.customFieldsLocked === true;
     }
 
+    public isTemplateSchemaConditionsLocked(schema: Schema): boolean {
+        if (!this.isTemplateConfigMode && !this.hasAppliedTemplateConfig) {
+            return false;
+        }
+        return this.getSchemaTemplateConfig(schema)?.conditionsLocked === true;
+    }
+
     public isSchemaFeatured(schema: Schema): boolean {
         if (this.isTemplateConfigMode) {
             return !!this.getSchemaTemplateConfig(schema)?.featured;
@@ -440,7 +460,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const config = this.getSchemaTemplateConfig(schema);
         return !!(
             config?.schemaSettingsLocked ||
-            config?.customFieldsLocked
+            config?.customFieldsLocked ||
+            config?.conditionsLocked
         );
     }
 
@@ -454,6 +475,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
         if (config?.customFieldsLocked) {
             return 'Custom fields are locked';
+        }
+        if (config?.conditionsLocked) {
+            return 'Conditions are locked';
         }
         return 'Schema is locked';
     }
@@ -1379,6 +1403,18 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             return;
         }
         config.schemaSettingsLocked = !config.schemaSettingsLocked;
+        this.templateConfigDirty = true;
+    }
+
+    public toggleCanChangeSelectedSchemaConditions(): void {
+        if (this.isTemplateReadonly) {
+            return;
+        }
+        const config = this.ensureSelectedSchemaConfig();
+        if (!config) {
+            return;
+        }
+        config.conditionsLocked = !config.conditionsLocked;
         this.templateConfigDirty = true;
     }
 
@@ -3701,6 +3737,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public setConditionOperator(cond: SchemaCondition, op: 'SINGLE' | 'AND' | 'OR'): void {
+        if (!this.canChangeConditionsForSelectedSchema) { return; }
         const rows = this.getIfRows(cond);
         const firstEntry = this._firstConditionEntry;
         // getIfRows returns a placeholder row for a null ifCondition, so an existing row is
@@ -3727,6 +3764,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public getIfRowOptions(row: any): string[] { return row?.field?.enum ?? []; }
 
     public setIfRowField(cond: SchemaCondition, rowIdx: number, pathStr: string): void {
+        if (!this.canChangeConditionsForSelectedSchema) { return; }
         const field = this._resolveConditionField(pathStr);
         if (!field) { return; }
         const fieldPath = pathStr.split('.');
@@ -3743,6 +3781,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public setIfRowValue(cond: SchemaCondition, rowIdx: number, value: any): void {
+        if (!this.canChangeConditionsForSelectedSchema) { return; }
         const ic = cond.ifCondition as any;
         if (!ic) { return; }
         if ('AND' in ic) { ic.AND[rowIdx].fieldValue = value; }
@@ -3752,6 +3791,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public addIfRow(cond: SchemaCondition): void {
+        if (!this.canChangeConditionsForSelectedSchema) { return; }
         const ic = cond.ifCondition as any;
         if (!ic) { return; }
         const firstEntry = this._firstConditionEntry;
@@ -3766,6 +3806,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public removeIfRow(cond: SchemaCondition, rowIdx: number): void {
+        if (!this.canChangeConditionsForSelectedSchema) { return; }
         const ic = cond.ifCondition as any;
         if (!ic) { return; }
         if ('AND' in ic && ic.AND.length > 1) { ic.AND.splice(rowIdx, 1); }
@@ -3776,6 +3817,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     // ── THEN / ELSE fields ───────────────────────────────────────────────────
 
     public addThenField(cond: SchemaCondition): void {
+        if (!this.canChangeConditionsForSelectedSchema || !this.canAddFieldToSelectedSchema) { return; }
         const schema = this.currentContextSchema;
         if (!schema) { return; }
         const newField = this.buildNewField(this.defaultFieldType, schema.fields);
@@ -3785,6 +3827,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public addElseField(cond: SchemaCondition): void {
+        if (!this.canChangeConditionsForSelectedSchema || !this.canAddFieldToSelectedSchema) { return; }
         const schema = this.currentContextSchema;
         if (!schema) { return; }
         const newField = this.buildNewField(this.defaultFieldType, schema.fields);
@@ -3794,6 +3837,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public removeThenField(cond: SchemaCondition, field: SchemaField): void {
+        if (!this.canChangeConditionsForSelectedSchema || this.isTemplateFieldLocked(field)) { return; }
         cond.thenFields = (cond.thenFields || []).filter(f => f !== field);
         const schema = this.currentContextSchema;
         if (schema) {
@@ -3805,6 +3849,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public removeElseField(cond: SchemaCondition, field: SchemaField): void {
+        if (!this.canChangeConditionsForSelectedSchema || this.isTemplateFieldLocked(field)) { return; }
         cond.elseFields = (cond.elseFields || []).filter(f => f !== field);
         const schema = this.currentContextSchema;
         if (schema) {
@@ -4000,17 +4045,20 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public onCondThenRefChange(cond: SchemaCondition, ci: number, pathStr: string): void {
         if (!pathStr) { return; }
+        if (!this.canChangeConditionsForSelectedSchema) { return; }
         this.addThenTarget(cond, pathStr);
         setTimeout(() => { this.condThenRefVal[ci] = null; });
     }
 
     public onCondElseRefChange(cond: SchemaCondition, ci: number, pathStr: string): void {
         if (!pathStr) { return; }
+        if (!this.canChangeConditionsForSelectedSchema) { return; }
         this.addElseTarget(cond, pathStr);
         setTimeout(() => { this.condElseRefVal[ci] = null; });
     }
 
     public addThenTarget(cond: SchemaCondition, pathStr: string): void {
+        if (!this.canChangeConditionsForSelectedSchema) { return; }
         if (!pathStr) { return; }
         const path = pathStr.split('.');
         if (cond.thenTargets?.some(t => t.fieldPath.join('.') === pathStr)) { return; }
@@ -4021,6 +4069,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public addElseTarget(cond: SchemaCondition, pathStr: string): void {
+        if (!this.canChangeConditionsForSelectedSchema) { return; }
         if (!pathStr) { return; }
         const path = pathStr.split('.');
         if (cond.elseTargets?.some(t => t.fieldPath.join('.') === pathStr)) { return; }
@@ -4031,11 +4080,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public removeThenTarget(cond: SchemaCondition, target: SchemaConditionTarget): void {
+        if (!this.canChangeConditionsForSelectedSchema) { return; }
         cond.thenTargets = (cond.thenTargets || []).filter(t => t !== target);
         this.markDirty();
     }
 
     public removeElseTarget(cond: SchemaCondition, target: SchemaConditionTarget): void {
+        if (!this.canChangeConditionsForSelectedSchema) { return; }
         cond.elseTargets = (cond.elseTargets || []).filter(t => t !== target);
         this.markDirty();
     }
@@ -4052,6 +4103,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     // ── Top-level condition management ────────────────────────────────────────
 
     public addNewCondition(): void {
+        if (!this.canChangeConditionsForSelectedSchema) { return; }
         const schema = this.currentContextSchema;
         const firstEntry = this._firstConditionEntry;
         if (!schema || !firstEntry) { return; }
@@ -4069,8 +4121,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public removeConditionAt(index: number): void {
+        if (!this.canChangeConditionsForSelectedSchema) { return; }
         const schema = this.currentContextSchema;
         if (!schema) { return; }
+        const condToCheck = schema.conditions?.[index];
+        const hasLockedField = [...(condToCheck?.thenFields ?? []), ...(condToCheck?.elseFields ?? [])]
+            .some((f) => this.isTemplateFieldLocked(f));
+        if (hasLockedField) { return; }
         // H1: rekey index-keyed dropdown state before the conditions array shrinks
         const rekey = (rec: Record<number, string | null>) => {
             const out: Record<number, string | null> = {};
