@@ -7,7 +7,6 @@ import { DataSource } from 'typeorm';
 import { QUEUE_NAMES, envInt, getWorkerNetwork } from '@shared/config/bullmq.config';
 import { ROOT_TOPICS } from '@shared/config/configuration';
 import { GuardianEventLogService } from './guardian-event-log.service';
-import type { PolicyStatusJobData } from '@worker/processors/policy-status.processor';
 
 interface AuditMeta {
     instanceId: string;
@@ -59,16 +58,14 @@ export class GuardianEventRouter {
      * The discontinue event fires when Guardian RECEIVES the request, before it
      * has submitted the HCS message — so the first poll always finds nothing.
      * These rungs re-poll the policy topic across the consensus + mirror-node
-     * ingestion window, and then re-resolve the methodology shortly after each.
+     * ingestion window. Ingesting the message is what resolves the status.
      */
     private readonly discontinueTopicPollDelaysMs = [20_000, 60_000, 180_000];
-    private readonly discontinueResolveDelaysMs = [30_000, 90_000, 240_000];
 
     constructor(
         @InjectQueue(QUEUE_NAMES.IPFS_FETCH) private readonly ipfsQueue: Queue,
         @InjectQueue(QUEUE_NAMES.TOKEN_SYNC) private readonly tokenQueue: Queue,
         @InjectQueue(QUEUE_NAMES.TOPIC_SYNC_PRIORITY) private readonly topicQueue: Queue,
-        @InjectQueue(QUEUE_NAMES.POLICY_STATUS) private readonly policyStatusQueue: Queue,
         private readonly eventLog: GuardianEventLogService,
         private readonly dataSource: DataSource,
         private readonly configService: ConfigService,
@@ -274,16 +271,13 @@ export class GuardianEventRouter {
      * triggers: the real message is ingested from the mirror node as usual, and
      * PolicyStatusProcessor decides from it.
      *
-     * Two different topics are involved, which is why resolvePolicyTopic() is
-     * NOT used here (it prefers the instance topic):
-     *   - the discontinue message is published to the POLICY topic, so that is
-     *     the topic to poll;
-     *   - METHODOLOGY rows are keyed by the INSTANCE topic, so that is the id
-     *     to resolve.
+     * Once the message lands, MessageProcessProcessor enqueues the policy-status 
+     * job itself — enqueuing one here as well would just duplicate that, and 
+     * would guess at the state before the message it depends on exists.
      *
      * No registry-wake fallback when the policy is unknown locally: Standard
      * Registry topics are not where this message lands. The bulk crawl and the
-     * policy-status sweep still pick it up — this path only makes it faster.
+     * reconciler's watch list still pick it up — this path only makes it faster.
      */
     private async onPolicyDiscontinue(meta: AuditMeta, p: Record<string, unknown> | null): Promise<void> {
         const policyId = p && typeof p['policyId'] === 'string' ? (p['policyId'] as string) : '';
@@ -296,24 +290,23 @@ export class GuardianEventRouter {
         }
 
         const deferred = p?.['date'] != null && p['date'] !== '';
-        const rows: Array<{ policyTopicId: string | null; instanceTopicId: string | null }> =
+        const rows: Array<{ policyTopicId: string | null }> =
             await this.dataSource.query(
-                `SELECT "policyTopicId", "instanceTopicId" FROM policy WHERE "policyId" = $1 LIMIT 1`,
+                `SELECT "policyTopicId" FROM policy WHERE "policyId" = $1 LIMIT 1`,
                 [policyId],
             );
-        const row = rows[0];
+        const policyTopicId = rows[0]?.policyTopicId;
 
-        if (!row?.policyTopicId) {
+        if (!policyTopicId) {
             this.logger.log(
                 `policy ${deferred ? 'deferred-' : ''}discontinue policyId=${policyId} ` +
-                '— policy not known locally, left to the crawl + policy-status sweep',
+                '— policy not known locally, left to the crawl + reconciler watch list',
             );
             await this.audit(meta, 'policy', policyId, 'no topic resolved — left to crawl');
             return;
         }
 
-        const { policyTopicId, instanceTopicId } = row;
-        // One tag per event, shared by every rung, so this event's jobs never
+        // One tag per event, shared by every rung, so this event's polls never
         // collide with an earlier edit of the same discontinuation.
         const eventTag = Math.floor(Date.now() / 1000);
 
@@ -322,36 +315,11 @@ export class GuardianEventRouter {
             await this.enqueueDelayedTopicSync(policyTopicId, delayMs, `disc-${eventTag}-${delayMs}`);
         }
 
-        if (instanceTopicId) {
-            // Event-scoped ids: a bare `policy-status-<topic>` id would be
-            // retained for QUEUE_KEEP_COMPLETED_AGE_S and silently swallow an
-            // EDITED deferral arriving within that window.
-            await this.policyStatusQueue.addBulk(
-                this.discontinueResolveDelaysMs.map(delay => ({
-                    name: 'resolve',
-                    data: { instanceTopicId, reason: 'discontinue' } satisfies PolicyStatusJobData,
-                    opts: {
-                        jobId: `policy-status-${instanceTopicId}-guardian-${eventTag}-${delay}`,
-                        delay,
-                        removeOnComplete: true,
-                    },
-                })),
-            );
-        }
-
         this.logger.log(
             `policy ${deferred ? 'deferred-' : ''}discontinue policyId=${policyId} -> policy topic ` +
-            `${policyTopicId} polls enqueued` +
-            (instanceTopicId
-                ? `, methodology ${instanceTopicId} resolves scheduled`
-                : ' (no instance topic decoded yet — resolve left to ingest)'),
+            `${policyTopicId} polls enqueued`,
         );
-        await this.audit(
-            meta,
-            'policy',
-            policyId,
-            `topic-sync ${policyTopicId}` + (instanceTopicId ? ` + policy-status ${instanceTopicId}` : ''),
-        );
+        await this.audit(meta, 'policy', policyId, `topic-sync ${policyTopicId}`);
     }
 
     /** Indexed lookup: policyId → the instance topic (where VCs live), else policy topic. */

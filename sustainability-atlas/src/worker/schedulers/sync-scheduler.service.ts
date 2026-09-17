@@ -11,7 +11,6 @@ import { ROOT_TOPICS } from '@shared/config/configuration';
 import { PolicyDecodeJobData } from '../processors/policy-decode.processor';
 import { TREASURY_TRANSFERS_JOB } from '../processors/token-sync.processor';
 import { BUSINESS_VIEW_PARTITIONS } from '../processors/business-view-builder.processor';
-import { POLICY_STATUS_SWEEP_JOB } from '../processors/policy-status.processor';
 import { DISCONTINUE_ACTIONS } from '@shared/utils/message-parser';
 import { ProjectMapperService } from '../services/project-mapper.service';
 
@@ -45,8 +44,8 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
     private readonly reconcileTopicLimit = envInt('RECONCILE_TOPIC_LIMIT', 2000);
     private readonly reconcileMessageLimit = envInt('RECONCILE_MESSAGE_LIMIT', 1000);
     private readonly stuckMessageAfterMs = envInt('RECONCILE_STUCK_MESSAGE_MS', 3_600_000);
-    
     private readonly reconcileDiscontinueReparseLimit = envInt('RECONCILE_DISCONTINUE_REPARSE_LIMIT', 200);
+    
 
     /** Topic poll dispatcher — see runDispatcher(). */
     private dispatchInterval: ReturnType<typeof setInterval> | null = null;
@@ -340,10 +339,12 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
             const topics = await this.rescueDeadTopicChains();
             const messages = await this.rescueStuckMessages();
             const reparsed = await this.rescueUnparsedDiscontinueMessages();
-            if (topics > 0 || messages > 0 || reparsed > 0) {
+            const policyTopics = await this.requeueUnsettledPolicyTopics();
+            if (topics > 0 || messages > 0 || reparsed > 0 || policyTopics > 0) {
                 this.logger.log(
                     `Reconciler: restarted ${topics} topic chain(s), re-queued ${messages} stuck message(s)` +
-                    (reparsed > 0 ? `, re-parsed ${reparsed} legacy discontinue message(s)` : ''),
+                    (reparsed > 0 ? `, re-parsed ${reparsed} legacy discontinue message(s)` : '') +
+                    (policyTopics > 0 ? `, re-checked ${policyTopics} unsettled policy topic(s)` : ''),
                 );
             }
         } catch (error) {
@@ -501,9 +502,9 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
      *
      * Those runs stored the generic `Policy` shape, which drops
      * `instanceTopicId` — the only key tying a discontinuation to a published
-     * methodology. PolicyStatusProcessor matches candidates on it, so such rows
-     * are invisible both to the per-message trigger and to the sweep, and would
-     * stay that way forever: nothing re-reads a message once it is parsed.
+     * version. PolicyStatusProcessor attributes candidates by it, so such rows
+     * are invisible both to the per-message trigger and to the watch list, and
+     * would stay that way forever: nothing re-reads a message once it is parsed.
      *
      * Nothing is re-downloaded. The raw payload is still in message_cache, so
      * this re-runs the current parser over local data and lets the ordinary
@@ -519,8 +520,7 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
      * batch bounds the knock-on topic-discovery churn each parse produces.
      *
      * Self-terminating: rows leave the result set as they are fixed, leaving one
-     * indexed lookup per tick (the (type, action) index selects these few
-     * hundred rows directly).
+     * indexed lookup per tick.
      */
     private async rescueUnparsedDiscontinueMessages(): Promise<number> {
         const rows: Array<{ consensusTimestamp: string; topicId: string }> =
@@ -549,6 +549,67 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
                     priority: 1,
                     removeOnComplete: true,
                     removeOnFail: 1000,
+                },
+            })),
+        );
+        return rows.length;
+    }
+
+    /**
+     * Re-queues the policy topics whose discontinuation state is not settled yet.
+     *
+     * This is the watch list. A policy topic enters it when a discontinue message
+     * arrives on it, and leaves only once EVERY version that message set names has
+     * an immediate `discontinue-policy` recorded on its business_view row.
+     * Immediate is the only terminal state: a deferred discontinuation can still
+     * be edited to a new date or superseded, so its topic keeps coming back.
+     *
+     * Terminality is judged per version, not per topic. A topic can hold several
+     * published versions, one discontinued immediately and another only deferred —
+     * dropping the topic on the first immediate message would abandon the second.
+     *
+     * The exclusion keys off the STORED result rather than the message, so a topic
+     * also stays here until its status is actually written. That is what covers
+     * the two cases the per-message trigger cannot: a methodology discontinued
+     * before the business-view builder ever created its row (the builder runs
+     * every two minutes), and a job that exhausted its attempts.
+     *
+     * Cheap enough to run unconditionally: an anti-join over the few hundred
+     * topics a discontinuation has ever touched, both sides index-served.
+     */
+    private async requeueUnsettledPolicyTopics(): Promise<number> {
+        const rows: Array<{ policyTopicId: string }> = await this.dataSource.query(
+            `WITH watched AS (
+                 SELECT DISTINCT "topicId" AS policy_topic_id,
+                        COALESCE(options->>'instanceTopicId', '') AS instance_topic_id
+                   FROM message
+                  WHERE type = 'Policy'
+                    AND action = ANY($1::text[])
+             )
+             SELECT DISTINCT w.policy_topic_id AS "policyTopicId"
+               FROM watched w
+              WHERE NOT EXISTS (
+                  SELECT 1
+                    FROM business_view bv
+                   WHERE bv."viewType" = 'METHODOLOGY'
+                     AND bv."relatedTopicId" = w.instance_topic_id
+                     AND bv."businessData"->>'discontinuedAction' = 'discontinue-policy'
+              )`,
+            [[...DISCONTINUE_ACTIONS]],
+        );
+        if (rows.length === 0) return 0;
+
+        // The minute bucket keeps consecutive ticks from colliding with the
+        // retained-jobId dedup window, while still collapsing duplicates within
+        // one tick.
+        const bucket = Math.floor(Date.now() / 60_000);
+        await this.policyStatusQueue.addBulk(
+            rows.map(row => ({
+                name: 'resolve',
+                data: { policyTopicId: row.policyTopicId, reason: 'watch' as const },
+                opts: {
+                    jobId: `policy-status-${row.policyTopicId}-watch-${bucket}`,
+                    removeOnComplete: true,
                 },
             })),
         );
@@ -597,7 +658,6 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
         try {
             await this.scheduleMvRefresh();
             await this.scheduleBusinessViewBuilder();
-            await this.schedulePolicyStatusSweep();
             this.logger.log('All repeating jobs scheduled');
         } catch (error: unknown) {
             const message = error instanceof Error ? error.message : String(error);
@@ -1171,39 +1231,6 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
         );
 
         this.logger.log(`Scheduled MV refresh every ${mvRefreshInterval / 1000}s`);
-    }
-
-    /**
-     * Periodic re-resolution of every methodology's discontinue state.
-     *
-     * The per-message triggers in MessageProcessProcessor already cover the
-     * normal path, so this is purely the backstop: it heals a discontinue that
-     * was ingested before its publish message, a business_view row created after
-     * its job had already run, and anything enqueued while a worker was down.
-     *
-     * One sweep job fans out to one job per methodology inside the processor,
-     * rather than the scheduler enqueuing hundreds of jobs itself — the fan-out
-     * query belongs next to the code that consumes it, and this keeps the whole
-     * operation visible as a single unit on the queue dashboard.
-     */
-    private async schedulePolicyStatusSweep(): Promise<void> {
-        const interval = envInt('POLICY_STATUS_SWEEP_INTERVAL_MS', 10 * 60 * 1000);
-
-        // Immediate one-shot so a restart re-checks everything without waiting
-        // for the first repeat.
-        await this.policyStatusQueue.add(
-            POLICY_STATUS_SWEEP_JOB,
-            {},
-            { jobId: `policy-status-sweep-initial-${Date.now()}`, removeOnComplete: true },
-        );
-
-        await this.policyStatusQueue.upsertJobScheduler(
-            'policy-status-sweep',
-            { every: interval },
-            { name: POLICY_STATUS_SWEEP_JOB },
-        );
-
-        this.logger.log(`Scheduled policy status sweep: initial run + every ${interval / 1000}s`);
     }
 
     private async scheduleBusinessViewBuilder(): Promise<void> {

@@ -87,9 +87,7 @@ const ENQUEUE_TARGETS: Record<string, string[]> = {
     [QUEUE_NAMES.MV_REFRESH]: [],
     [QUEUE_NAMES.BUSINESS_VIEW_BUILD]: [],
     [QUEUE_NAMES.PROJECT_REPARSE]: [],
-    // Re-enqueues itself once when a methodology's business_view row does not
-    // exist yet (see PolicyStatusProcessor).
-    [QUEUE_NAMES.POLICY_STATUS]: [QUEUE_NAMES.POLICY_STATUS],
+    [QUEUE_NAMES.POLICY_STATUS]: [],
 };
 
 /** Every queue the scheduler seeds into; it holds a producer for each. */

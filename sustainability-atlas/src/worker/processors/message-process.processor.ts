@@ -223,30 +223,23 @@ export class MessageProcessProcessor extends WorkerHost {
                 });
             }
 
-            // Register the newly published methodology with the policy-status
-            // queue, so a discontinuation that was already on-chain before this
-            // publish was ingested resolves immediately instead of waiting for
-            // the sweep.
-            if (instanceTopicId) {
-                await this.enqueuePolicyStatus(instanceTopicId, 'publish', consensusTimestamp);
-            }
+            // Register the policy topic with the policy-status queue, so a
+            // discontinuation that was already on-chain before this publish was
+            // ingested resolves immediately instead of waiting for the reconciler.
+            // Keyed on the topic the message physically landed on, because that is
+            // what PolicyStatusProcessor selects by.
+            await this.enqueuePolicyStatus(topicId, 'publish', consensusTimestamp);
         }
 
         // A methodology being discontinued (immediately or on a future date).
         // Guardian sends these as `Policy` messages to the same policy topic as
         // the publish message, so they arrive through this same path.
+        // The topic is enough to resolve it: PolicyStatusProcessor re-reads every
+        // discontinue message on the topic and attributes each to the version it
+        // names, so a message that names no version is reported there rather than
+        // being filtered out here.
         if (parsed.type === 'Policy' && parsed.action && DISCONTINUE_ACTIONS.has(parsed.action)) {
-            const discontinuedInstanceTopic = parsed.options['instanceTopicId'];
-            if (typeof discontinuedInstanceTopic === 'string' && discontinuedInstanceTopic) {
-                await this.enqueuePolicyStatus(
-                    discontinuedInstanceTopic, 'discontinue', consensusTimestamp,
-                );
-            } else {
-                this.logger.warn(
-                    `${parsed.action} message ${consensusTimestamp} names no instanceTopicId — ` +
-                    `cannot attribute it to a published methodology`,
-                );
-            }
+            await this.enqueuePolicyStatus(topicId, 'discontinue', consensusTimestamp);
         }
 
         // ── IPFS fetch strategy ────────────────────────────────────────────────
@@ -340,14 +333,14 @@ export class MessageProcessProcessor extends WorkerHost {
      * minutes after the discontinuation it replaces.
      */
     private async enqueuePolicyStatus(
-        instanceTopicId: string,
+        policyTopicId: string,
         reason: 'publish' | 'discontinue',
         consensusTimestamp: string,
     ): Promise<void> {
         await this.policyStatusQueue.add(
             'resolve',
-            { instanceTopicId, reason },
-            { jobId: `policy-status-${instanceTopicId}-${reason}-${consensusTimestamp}` },
+            { policyTopicId, reason },
+            { jobId: `policy-status-${policyTopicId}-${reason}-${consensusTimestamp}` },
         );
     }
 

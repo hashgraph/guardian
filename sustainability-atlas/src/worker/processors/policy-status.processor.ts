@@ -1,31 +1,20 @@
-import { Processor, WorkerHost, OnWorkerEvent, InjectQueue } from '@nestjs/bullmq';
+import { Processor, WorkerHost, OnWorkerEvent } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
-import { Job, Queue } from 'bullmq';
+import { Job } from 'bullmq';
 import { DataSource } from 'typeorm';
 import { QUEUE_NAMES, getWorkerOptions } from '@shared/config/bullmq.config';
 import { DISCONTINUE_ACTIONS } from '@shared/utils/message-parser';
 
 export interface PolicyStatusJobData {
-    /** The published methodology version this job resolves (Instance-Policy options.instanceTopicId). */
-    instanceTopicId: string;
-    /** What produced this job — logged, and useful when reading the queue dashboard. */
-    reason: 'publish' | 'discontinue' | 'sweep';
     /**
-     * Set on the one delayed retry a job schedules for itself when the
-     * business_view row does not exist yet (see process()). Prevents a job from
-     * re-enqueuing itself forever.
+     * The policy topic to resolve. This is the topic Guardian posts BOTH the
+     * publish messages and the discontinue messages to, so one job settles every
+     * published version of the policy at once.
      */
-    retried?: boolean;
+    policyTopicId: string;
+    /** What produced this job — logged, and useful when reading the queue dashboard. */
+    reason: 'publish' | 'discontinue' | 'watch';
 }
-
-/**
- * Job name for the periodic sweep. A sweep carries no instanceTopicId: it fans
- * out one resolve job per known methodology (see SyncSchedulerService).
- */
-export const POLICY_STATUS_SWEEP_JOB = 'sweep-policy-status';
-
-/** How long to wait before the single self-retry — longer than one business-view build cycle. */
-const MISSING_ROW_RETRY_DELAY_MS = 3 * 60 * 1000;
 
 /** A discontinue message that passed every validation. */
 interface ValidDiscontinuation {
@@ -34,9 +23,14 @@ interface ValidDiscontinuation {
     effectiveAt: Date;
 }
 
-interface MessageRow {
+interface PublishRow {
     consensusTimestamp: string;
-    topicId: string;
+    owner: string | null;
+    instanceTopicId: string;
+}
+
+interface DiscontinueRow {
+    consensusTimestamp: string;
     owner: string | null;
     action: string | null;
     options: Record<string, unknown> | null;
@@ -61,9 +55,10 @@ function tsToDate(consensusTimestamp: string): Date {
 }
 
 /**
- * Resolves whether a published methodology has been discontinued, and when.
+ * Resolves, for one policy topic, whether each of its published versions has
+ * been discontinued and when.
  *
- * Guardian records a discontinuation as a `Policy` message on the policy topic,
+ * Guardian records a discontinuation as a `Policy` message on the POLICY topic,
  * in one of two flavours: `discontinue-policy` (immediate) and
  * `deferred-discontinue-policy` (a future `effectiveDate`). Nothing is published
  * when a deferred date arrives — Guardian only updates its own database on an
@@ -71,12 +66,19 @@ function tsToDate(consensusTimestamp: string): Date {
  * compares it against now(). A deferred discontinuation therefore takes effect
  * on its own date with no message, no cron and no re-ingest here.
  *
- * A methodology can accumulate SEVERAL discontinue messages: a deferred
+ * The job is keyed on the policy topic rather than on a single published version
+ * because that is the unit the messages actually share: the publish messages for
+ * every version and every discontinue message aimed at any of them all land on
+ * the same topic. Two indexed reads therefore settle the whole policy, and a
+ * discontinuation ingested before the publish it refers to needs no special
+ * case — whichever message arrives second re-runs this with both in hand.
+ *
+ * A version can accumulate SEVERAL discontinue messages: a deferred
  * discontinuation can be edited (to a new or identical date), or superseded by
- * an immediate one. Only the newest valid message may take effect, which is why
- * this resolves from the full candidate set on every run rather than reacting to
- * one message in isolation — that also makes it naturally idempotent and immune
- * to the order in which messages happen to be ingested.
+ * an immediate one. Only the newest valid message for that version may take
+ * effect, which is why this resolves from the full candidate set on every run
+ * rather than reacting to one message in isolation — that also makes it
+ * naturally idempotent and immune to ingest order.
  *
  * Reads the local `message` table rather than the mirror node: the policy topic
  * is already synced by TopicSyncProcessor, so re-fetching would spend the
@@ -86,78 +88,143 @@ function tsToDate(consensusTimestamp: string): Date {
 export class PolicyStatusProcessor extends WorkerHost {
     private readonly logger = new Logger(PolicyStatusProcessor.name);
 
-    constructor(
-        private readonly dataSource: DataSource,
-        @InjectQueue(QUEUE_NAMES.POLICY_STATUS) private readonly policyStatusQueue: Queue,
-    ) {
+    constructor(private readonly dataSource: DataSource) {
         super();
     }
 
     async process(job: Job<PolicyStatusJobData>): Promise<void> {
-        if (job.name === POLICY_STATUS_SWEEP_JOB) {
-            await this.sweep();
-            return;
-        }
+        const { policyTopicId, reason } = job.data;
+        if (!policyTopicId) return;
 
-        const { instanceTopicId, reason, retried = false } = job.data;
-        if (!instanceTopicId) return;
-
-        // 1. The publish message this instance topic belongs to. Every validation
-        //    below is relative to it, so without it there is nothing to validate
-        //    against — the discontinue simply arrived first (message-parse runs
-        //    jobs concurrently). The publish trigger re-runs this when it lands.
-        const [publish]: MessageRow[] = await this.dataSource.query(
-            `SELECT "consensusTimestamp", "topicId", owner, action, options
+        // 1. Every published version on this topic. Each validation below is
+        //    relative to the version's own publish message, so a discontinuation
+        //    naming a version we have not ingested yet has nothing to validate
+        //    against and is left for the run that follows that publish.
+        const publishes: PublishRow[] = await this.dataSource.query(
+            `SELECT "consensusTimestamp", owner, options->>'instanceTopicId' AS "instanceTopicId"
                FROM message
               WHERE type = 'Instance-Policy'
                 AND action = 'publish-policy'
-                AND options->>'instanceTopicId' = $1
-              ORDER BY "consensusTimestamp"::numeric DESC
-              LIMIT 1`,
-            [instanceTopicId],
+                AND "topicId" = $1
+                AND options->>'instanceTopicId' IS NOT NULL`,
+            [policyTopicId],
         );
 
-        if (!publish) {
+        if (publishes.length === 0) {
             this.logger.debug(
-                `instanceTopicId=${instanceTopicId}: no publish-policy message yet — skipping (reason=${reason})`,
+                `policyTopicId=${policyTopicId}: no publish-policy message yet — skipping (reason=${reason})`,
             );
             return;
         }
 
-        // 2. Every discontinue candidate for this version. Rare rows, served by
-        //    the existing (type, action) index.
-        const candidates: MessageRow[] = await this.dataSource.query(
-            `SELECT "consensusTimestamp", "topicId", owner, action, options
-               FROM message
-              WHERE type = 'Policy'
-                AND action = ANY($1::text[])
-                AND options->>'instanceTopicId' = $2`,
-            [[...DISCONTINUE_ACTIONS], instanceTopicId],
-        );
-
-        // 3. Validate each independently, logging why any is rejected.
-        const valid: ValidDiscontinuation[] = [];
-        for (const candidate of candidates) {
-            const resolved = this.validate(candidate, publish, instanceTopicId);
-            if (resolved) valid.push(resolved);
+        // Newest publish per version — a version is normally published once, but
+        // re-publishing the same instance topic must not change which message the
+        // ordering checks compare against.
+        const publishByVersion = new Map<string, PublishRow>();
+        for (const publish of publishes) {
+            const previous = publishByVersion.get(publish.instanceTopicId);
+            if (!previous || tsToNanos(publish.consensusTimestamp) > tsToNanos(previous.consensusTimestamp)) {
+                publishByVersion.set(publish.instanceTopicId, publish);
+            }
         }
 
-        // 4. Newest wins. This is the edited-deferral rule: a later deferral (new
-        //    or identical date) or a later immediate discontinuation supersedes
-        //    whatever came before it.
-        valid.sort((a, b) => (tsToNanos(a.consensusTimestamp) < tsToNanos(b.consensusTimestamp) ? 1 : -1));
-        const winner = valid[0] ?? null;
+        // 2. Every discontinue message on this topic, whichever version it names.
+        const candidates: DiscontinueRow[] = await this.dataSource.query(
+            `SELECT "consensusTimestamp", owner, action, options
+               FROM message
+              WHERE type = 'Policy'
+                AND action = ANY($2::text[])
+                AND "topicId" = $1`,
+            [policyTopicId, [...DISCONTINUE_ACTIONS]],
+        );
 
-        // 5. Write onto every METHODOLOGY row of this instance topic — republish
-        //    churn means several business_view rows can share one relatedTopicId.
-        //    Nulls are written explicitly so a previously-stored value is cleared
-        //    if it ever stops being valid.
+        // 3. Attribute each to the version it names and validate it there.
+        const validByVersion = new Map<string, ValidDiscontinuation[]>();
+        for (const candidate of candidates) {
+            const instanceTopicId = candidate.options?.['instanceTopicId'];
+            if (typeof instanceTopicId !== 'string' || !instanceTopicId) {
+                // Messages ingested before the parser knew the discontinue actions
+                // were stored with the generic `Policy` shape, which drops
+                // instanceTopicId. The reconciler re-parses those from message_cache,
+                // so this can appear briefly right after a deploy. If it keeps
+                // appearing for one message, its cache entry is gone and it cannot
+                // be re-parsed without re-crawling the topic.
+                this.logger.debug(
+                    `policyTopicId=${policyTopicId}: ${candidate.action} message ` +
+                    `${candidate.consensusTimestamp} names no instanceTopicId — cannot attribute it`,
+                );
+                continue;
+            }
+
+            const publish = publishByVersion.get(instanceTopicId);
+            if (!publish) {
+                this.logger.debug(
+                    `policyTopicId=${policyTopicId}: ${candidate.action} message ` +
+                    `${candidate.consensusTimestamp} names ${instanceTopicId}, which has no ` +
+                    `publish-policy message here yet — leaving it for the next run`,
+                );
+                continue;
+            }
+
+            const resolved = this.validate(candidate, publish, instanceTopicId);
+            if (!resolved) continue;
+
+            const existing = validByVersion.get(instanceTopicId);
+            if (existing) existing.push(resolved);
+            else validByVersion.set(instanceTopicId, [resolved]);
+        }
+
+        // 4. Write each version. Versions with no valid discontinuation are written
+        //    too, with explicit nulls, so a previously-stored value is cleared if it
+        //    ever stops being valid.
+        let rowsUpdated = 0;
+        const summary: string[] = [];
+
+        for (const instanceTopicId of publishByVersion.keys()) {
+            // Newest wins. This is the edited-deferral rule: a later deferral (new
+            // or identical date) or a later immediate discontinuation supersedes
+            // whatever came before it.
+            const valid = validByVersion.get(instanceTopicId) ?? [];
+            valid.sort((a, b) => (tsToNanos(a.consensusTimestamp) < tsToNanos(b.consensusTimestamp) ? 1 : -1));
+            const winner = valid[0] ?? null;
+
+            const updated = await this.writeVersion(instanceTopicId, winner, valid.length);
+            if (updated === 0) continue;
+
+            rowsUpdated += updated;
+            summary.push(
+                winner
+                    ? `${instanceTopicId} → ${winner.effectiveAt.toISOString()} via ${winner.action} ` +
+                    `(message ${winner.consensusTimestamp}, superseded ${valid.length - 1}, ${updated} row(s))`
+                    : `${instanceTopicId} → cleared (${updated} row(s))`,
+            );
+        }
+
+        if (rowsUpdated > 0) {
+            this.logger.log(
+                `policyTopicId=${policyTopicId}: ${publishByVersion.size} version(s), ` +
+                `${candidates.length} discontinue candidate(s) — ${summary.join('; ')}`,
+            );
+        }
+    }
+
+    /**
+     * Applies the resolved state to every METHODOLOGY row of one version.
+     *
+     * Republish churn means several business_view rows can share one
+     * relatedTopicId, so this is deliberately not a single-row update.
+     */
+    private async writeVersion(
+        instanceTopicId: string,
+        winner: ValidDiscontinuation | null,
+        validCount: number,
+    ): Promise<number> {
         const payload = winner
             ? {
                 discontinuedAt: winner.effectiveAt.toISOString(),
                 discontinuedAction: winner.action,
                 discontinuedMessageTimestamp: winner.consensusTimestamp,
-                discontinuedSupersededCount: valid.length - 1,
+                discontinuedSupersededCount: validCount - 1,
             }
             : {
                 discontinuedAt: null,
@@ -183,93 +250,21 @@ export class PolicyStatusProcessor extends WorkerHost {
             [instanceTopicId, JSON.stringify(payload), Date.now().toString()],
         );
 
-        if (updated.length > 0) {
-            this.logger.log(
-                `instanceTopicId=${instanceTopicId}: ${candidates.length} candidate(s), ${valid.length} valid, ` +
-                (winner
-                    ? `discontinued at ${payload.discontinuedAt} via ${winner.action} ` +
-                      `(message ${winner.consensusTimestamp}, superseded ${valid.length - 1})`
-                    : 'no valid discontinuation — cleared') +
-                ` → ${updated.length} business_view row(s) updated`,
-            );
-            return;
-        }
-
-        // 6. Nothing updated. Either the state was already correct (the common
-        //    case, e.g. a sweep), or the business_view row does not exist yet —
-        //    the builder only runs every 2 minutes, so a freshly published
-        //    methodology can be discontinued before its row is ever created.
-        //    One delayed retry covers that; the sweep is the longer-term backstop.
-        if (winner && !retried && !(await this.methodologyRowExists(instanceTopicId))) {
-            await this.policyStatusQueue.add(
-                'resolve',
-                { instanceTopicId, reason, retried: true },
-                {
-                    jobId: `policy-status-${instanceTopicId}-retry-${Date.now()}`,
-                    delay: MISSING_ROW_RETRY_DELAY_MS,
-                    removeOnComplete: true,
-                },
-            );
-            this.logger.debug(
-                `instanceTopicId=${instanceTopicId}: no business_view row yet — retrying in ` +
-                `${MISSING_ROW_RETRY_DELAY_MS / 1000}s`,
-            );
-        }
-    }
-
-    /**
-     * Fans out one resolve job per known methodology.
-     *
-     * Driven from the DISTINCT relatedTopicId of METHODOLOGY rows (~hundreds,
-     * not the ~20k raw rows republish churn produces), plus any instance topic
-     * named by a discontinue message that has no business_view row yet — the
-     * latter is how a discontinuation ingested before its own publish message
-     * eventually resolves.
-     *
-     * The time bucket in the jobId keeps consecutive sweeps from colliding with
-     * the retained-jobId dedup window, while still collapsing duplicates within
-     * a single sweep.
-     */
-    private async sweep(): Promise<void> {
-        const rows: Array<{ instance_topic_id: string }> = await this.dataSource.query(
-            `SELECT DISTINCT "relatedTopicId" AS instance_topic_id
-               FROM business_view
-              WHERE "viewType" = 'METHODOLOGY' AND "relatedTopicId" IS NOT NULL
-              UNION
-             SELECT DISTINCT options->>'instanceTopicId' AS instance_topic_id
-               FROM message
-              WHERE type = 'Policy'
-                AND action = ANY($1::text[])
-                AND options->>'instanceTopicId' IS NOT NULL`,
-            [[...DISCONTINUE_ACTIONS]],
-        );
-
-        const bucket = Math.floor(Date.now() / 60_000);
-        await this.policyStatusQueue.addBulk(
-            rows.map(row => ({
-                name: 'resolve',
-                data: { instanceTopicId: row.instance_topic_id, reason: 'sweep' as const },
-                opts: {
-                    jobId: `policy-status-${row.instance_topic_id}-sweep-${bucket}`,
-                    removeOnComplete: true,
-                },
-            })),
-        );
-
-        this.logger.log(`Policy status sweep: ${rows.length} methodology job(s) enqueued`);
+        return updated.length;
     }
 
     /**
      * Applies every validation a discontinue message must pass, returning its
      * resolved effective date, or null if it is rejected and rejection is logged at debug.
      *
-     * The topic and owner checks matter because a `Policy` message naming
-     * someone else's instanceTopicId would otherwise be able to mark a
-     * methodology it has no relationship to as discontinued.
+     * The owner check matters because a `Policy` message naming someone else's
+     * instanceTopicId would otherwise be able to mark a methodology it has no
+     * relationship to as discontinued. The topic is no longer checked here: both
+     * rows are read from the same topic, so they cannot disagree.
      */
     private validate(
-        candidate: MessageRow,
-        publish: MessageRow,
+        candidate: DiscontinueRow,
+        publish: PublishRow,
         instanceTopicId: string,
     ): ValidDiscontinuation | null {
         const reject = (why: string): null => {
@@ -280,9 +275,6 @@ export class PolicyStatusProcessor extends WorkerHost {
             return null;
         };
 
-        if (candidate.topicId !== publish.topicId) {
-            return reject(`posted to topic ${candidate.topicId}, not the policy topic ${publish.topicId}`);
-        }
         if (candidate.owner !== publish.owner) {
             return reject(`owner ${candidate.owner} does not match the publisher ${publish.owner}`);
         }
@@ -319,20 +311,10 @@ export class PolicyStatusProcessor extends WorkerHost {
         };
     }
 
-    private async methodologyRowExists(instanceTopicId: string): Promise<boolean> {
-        const rows: Array<{ ok: number }> = await this.dataSource.query(
-            `SELECT 1 AS ok FROM business_view
-              WHERE "viewType" = 'METHODOLOGY' AND "relatedTopicId" = $1
-              LIMIT 1`,
-            [instanceTopicId],
-        );
-        return rows.length > 0;
-    }
-
     @OnWorkerEvent('failed')
     onFailed(job: Job<PolicyStatusJobData>, error: Error): void {
         this.logger.error(
-            `Policy status job ${job.id} failed for ${job.data?.instanceTopicId}: ${error.message}`,
+            `Policy status job ${job.id} failed for ${job.data?.policyTopicId}: ${error.message}`,
             error.stack,
         );
     }

@@ -147,7 +147,7 @@ Hedera Mirror Node REST API          IPFS Gateways
 | `ipfs-files` | 3 | Fetch documents from IPFS gateways |
 | `maintenance-refresh-mvs` | 1 | Refresh PostgreSQL materialized views |
 | `maintenance-build-business-views` | 5 | Map raw messages to business entities |
-| `policy-status` | 3 | Resolve each published methodology's discontinuation from its `Policy` messages (newest valid message wins) and write it onto its `business_view` rows. Local SQL only — no Mirror Node calls. Fed by message ingest, a 10-minute sweep, and guardian-sync's `policy-engine-event-discontinue-policy` trigger. Discontinue messages ingested before the parser recognised those actions carry no `instanceTopicId`; the liveness reconciler re-parses them from `message_cache` (`RECONCILE_DISCONTINUE_REPARSE_LIMIT` per tick) until none remain |
+| `policy-status` | 3 | Resolve a policy topic's discontinuation state and write it onto its `business_view` rows. One job settles every published version on the topic: publish messages and discontinue messages share it, so two indexed reads attribute each discontinuation to the version it names (newest valid message wins per version). Local SQL only — no Mirror Node calls. Fed by message ingest, plus the liveness reconciler's watch list — the policy topics still holding a discontinuation that has no immediate `discontinue-policy` recorded against it. A topic leaves that list once every such version is terminal; deferred ones stay, because a deferral can still be edited. Discontinue messages ingested before the parser recognised those actions carry no `instanceTopicId`; the reconciler re-parses them from `message_cache` (`RECONCILE_DISCONTINUE_REPARSE_LIMIT` per tick) until none remain |
 
 ## Deduplication
 
