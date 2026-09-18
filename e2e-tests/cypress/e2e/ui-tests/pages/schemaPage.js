@@ -1,5 +1,5 @@
-import * as Checks from "../../../support/checkingMethods";
-import CommonElements from "../../../support/defaultUIElements";
+import * as Checks from '../../../support/checkingMethods';
+import CommonElements from '../../../support/defaultUIElements';
 
 const SchemaPageLocators = {
 
@@ -42,26 +42,21 @@ const SchemaPageLocators = {
     tagDescInput: '[ng-reflect-name="description"]',
 
     //Other elements
-    documentHeader: "div.header-text",
-    documentContent: "div.dialog-body",
+    documentHeader: 'div.header-text',
+    documentContent: 'div.dialog-body',
     filterDropdown: "p-dropdown[placeholder='Policy']",
     filterDropdownComparePolicy: "p-dropdown[placeholder='Select Policy']",
     filterDropdownCompareSchema: "p-dropdown[placeholder='Select Schema']",
     entityList: '[formcontrolname="entity"]',
     entityOption: (entityType) => `li[aria-label=${entityType}]`,
     compareSchemaName: 'div.schema-info-field-value',
-    activeStatus: "Active",
-
-
-
-
+    activeStatus: 'Active',
 
     policyChooseInput: "mat-select[role='combobox']",
     entityChoosing: 'mat-select[formcontrolname="entity"]',
 
-
-    policyComboboxItem: "span.mat-option-text",
-    dialogContainer: "mat-dialog-container",
+    policyComboboxItem: 'span.mat-option-text',
+    dialogContainer: 'mat-dialog-container',
     userEntity: 'mat-option[value="USER"]',
     dialogActions: 'mat-dialog-actions',
 };
@@ -70,9 +65,9 @@ export class SchemaPage {
 
     openSchemasTab() {
         cy.get(CommonElements.navBar).should('exist')
-        cy.get("body").then(($body) => {
+        cy.get('body').then(($body) => {
             if ($body.find(`span:contains(${CommonElements.schemasTab})`).length == 0)
-                cy.get(CommonElements.navBar).contains(CommonElements.mainPoliciesTab).click();
+                {cy.get(CommonElements.navBar).contains(CommonElements.mainPoliciesTab).click();}
         })
         cy.get(CommonElements.navBar).contains(CommonElements.schemasTab).click();
         Checks.waitForLoading();
@@ -80,8 +75,8 @@ export class SchemaPage {
 
     openSchemasSubtab(name) {
         cy.contains(SchemaPageLocators.schemaSubtub(name)).then(($tab) => {
-            if ($tab.get(0).getAttribute('aria-selected') == "false")
-                cy.wrap($tab).click();
+            if ($tab.get(0).getAttribute('aria-selected') == 'false')
+                {cy.wrap($tab).click();}
         })
         Checks.waitForLoading();
     }
@@ -91,7 +86,7 @@ export class SchemaPage {
         cy.get(SchemaPageLocators.schemaNameInput).type(schemaName);
         cy.get(SchemaPageLocators.dialogSaveButton).click();
         Checks.waitForTaskComplete();
-        cy.contains(schemaName).should("exist");
+        cy.contains(schemaName).should('exist');
     }
 
     createSystemSchema(){
@@ -101,7 +96,7 @@ export class SchemaPage {
         cy.get(CommonElements.dropdownOption).first().click();
         cy.get(SchemaPageLocators.dialogSaveButton).click();
         Checks.waitForTaskComplete();
-        cy.contains(schemaName).should("exist");}
+        cy.contains(schemaName).should('exist');}
 
     importPolicySchemaIPFS(schemaMessageId, schemaName) {
         cy.get(SchemaPageLocators.schemaImportButton).click();
@@ -113,7 +108,7 @@ export class SchemaPage {
         cy.get(CommonElements.dropdownOption).eq(1).click();
         cy.get(SchemaPageLocators.oneMoreImportButton).click();
         Checks.waitForTaskComplete();
-        cy.contains(schemaName).should("exist");
+        cy.contains(schemaName).should('exist');
     }
 
     importSchemaFile(schemaFileName, schemaName) {
@@ -125,15 +120,15 @@ export class SchemaPage {
         cy.get(CommonElements.dropdownOption).eq(1).click();
         cy.get(SchemaPageLocators.oneMoreImportButton).click();
         Checks.waitForTaskComplete();
-        cy.contains(schemaName).should("exist");
+        cy.contains(schemaName).should('exist');
     }
 
     publishPolicySchema(name) {
         cy.contains(name).parent().find(SchemaPageLocators.publishButton).first().click();
-        cy.get(SchemaPageLocators.versionInput).type("0.8.4");
+        cy.get(SchemaPageLocators.versionInput).type('0.8.4');
         cy.get(SchemaPageLocators.dialogPublishButton).click();
         Checks.waitForTaskComplete();
-        cy.contains(name).first().parent().contains("Published").should("exist");
+        cy.contains(name).first().parent().contains('Published').should('exist');
     }
 
     deleteSchema(name) {
@@ -141,14 +136,14 @@ export class SchemaPage {
         cy.get(SchemaPageLocators.deleteSchemaButton).click();
         cy.get(SchemaPageLocators.confirmDeleteButton).click();
         Checks.waitForLoading();
-        cy.contains(name).should("not.exist");
+        cy.contains(name).should('not.exist');
     }
 
     documentView(name) {
         cy.contains(name).parent().find(SchemaPageLocators.menuSchemaButton).click();
         cy.get(SchemaPageLocators.documentSchemaButton).click();
-        cy.get(SchemaPageLocators.documentHeader).should("have.text", "Schema");
-        cy.get(SchemaPageLocators.documentContent).should("exist");
+        cy.get(SchemaPageLocators.documentHeader).should('have.text', 'Schema');
+        cy.get(SchemaPageLocators.documentContent).should('exist');
     }
 
     filterByLastPolicy() {
@@ -160,10 +155,10 @@ export class SchemaPage {
     editPolicySchema(name) {
         cy.contains(name).parent().find(SchemaPageLocators.schemaEditBtn).click();
         Checks.waitForLoading();
-        cy.get(SchemaPageLocators.schemaNameInput).clear().type(name + " updated");
+        cy.get(SchemaPageLocators.schemaNameInput).clear().type(name + ' updated');
         cy.get(SchemaPageLocators.dialogSaveButton).click({ force: true });
         Checks.waitForLoading();
-        cy.contains(name + " updated").should('exist');
+        cy.contains(name + ' updated').should('exist');
     }
 
     exportSchemaFile(name) {
@@ -207,87 +202,79 @@ export class SchemaPage {
         cy.get(SchemaPageLocators.tagNameInput).type(tagName);
         cy.get(SchemaPageLocators.tagDescInput).type(tagName);
         cy.get(SchemaPageLocators.createButton).click();
-        cy.contains(tagName).should("exist");
+        cy.contains(tagName).should('exist');
     }
 
     deleteTag(name, tagName) {
         cy.contains(name).siblings().contains(tagName).click();
         cy.get(SchemaPageLocators.deleteTagIcon).click();
         cy.get(SchemaPageLocators.closeWindowButton).click();
-        cy.contains(tagName).should("not.exist");
+        cy.contains(tagName).should('not.exist');
     }
 
     activateSystemSchema(schemaNameForActivate) {
         cy.contains(schemaNameForActivate).parent().find(SchemaPageLocators.activateButton).click();
-        cy.contains(schemaNameForActivate).parent().contains(SchemaPageLocators.activeStatus).should("exist");
+        cy.contains(schemaNameForActivate).parent().contains(SchemaPageLocators.activeStatus).should('exist');
     }
 
     publishTagSchema(name) {
         cy.contains(name).parent().find(SchemaPageLocators.publishButton).first().click();
         Checks.waitForLoading();
-        cy.contains(name).first().parent().contains("Published").should("exist");
+        cy.contains(name).first().parent().contains('Published').should('exist');
     }
-
-
-
-
-
-
-
-
 
     createTagSchema(schemaName) {
         cy.intercept(SchemaPageLocators.getTagSchemasList).as(
-            "waitForSchemaList"
+            'waitForSchemaList'
         );
         cy.contains('mat-label', 'Type').parent().parent().parent().click()
         cy.contains(SchemaPageLocators.tagSchemaTabButton).click();
         cy.get(SchemaPageLocators.schemaCreateButton).click();
         cy.get(SchemaPageLocators.schemaNameInput).click().type(schemaName);
         cy.get(SchemaPageLocators.dialogSaveButton).click();
-        cy.wait("@waitForSchemaList", { timeout: 10000 });
-        cy.contains(schemaName).should("exist");
+        cy.wait('@waitForSchemaList', { timeout: 10000 });
+        cy.contains(schemaName).should('exist');
     }
 
     publishTagSchemaOld(schemaName) {
         cy.intercept(SchemaPageLocators.tagSchemasList).as(
-            "waitForSchemaList"
+            'waitForSchemaList'
         );
         cy.get(SchemaPageLocators.publishButton.trim()).first().click();
         cy.wait(10000)
-        cy.wait("@waitForSchemaList", { timeout: 100000 });
-        cy.contains(schemaName).should("be.visible").first().parent()
-            .contains("Published").should("exist");
+        cy.wait('@waitForSchemaList', { timeout: 100000 });
+        cy.contains(schemaName).should('be.visible').first().parent()
+            .contains('Published').should('exist');
     }
 
     deleteTagSchema(schemaNameForDeletion) {
         cy.contains(schemaNameForDeletion).parent().find(SchemaPageLocators.deleteSchemaButton).click();
         cy.intercept(SchemaPageLocators.tagSchemasList).as(
-            "waitForSchemaList"
+            'waitForSchemaList'
         );
         cy.contains(SchemaPageLocators.bigOkButton).click();
         cy.wait(10000)
-        cy.wait("@waitForSchemaList", { timeout: 100000 });
-        cy.contains(schemaNameForDeletion).should("not.exist");
+        cy.wait('@waitForSchemaList', { timeout: 100000 });
+        cy.contains(schemaNameForDeletion).should('not.exist');
     }
 
     activateOtherSystemSchema(schemaNameForActivate) {
         cy.intercept(SchemaPageLocators.systemSchemasList).as(
-            "waitForSchemaList"
+            'waitForSchemaList'
         );
         cy.contains(SchemaPageLocators.systemSchemaTabButton).click();
-        cy.wait("@waitForSchemaList", { timeout: 10000 });
+        cy.wait('@waitForSchemaList', { timeout: 10000 });
         cy.get(SchemaPageLocators.activateButton).first().click();
-        cy.contains(schemaNameForActivate).parent().contains(SchemaPageLocators.activeStatus).should("not.exist");
+        cy.contains(schemaNameForActivate).parent().contains(SchemaPageLocators.activeStatus).should('not.exist');
     }
 
     deleteSystemSchema(schemaNameForDeletion) {
         cy.contains(schemaNameForDeletion).parent().find(SchemaPageLocators.deleteSchemaButton).click();
         cy.intercept(SchemaPageLocators.systemSchemasList).as(
-            "waitForSchemaList"
+            'waitForSchemaList'
         );
         cy.get(SchemaPageLocators.dialogActions).contains(SchemaPageLocators.bigOkButton).click();
-        cy.wait("@waitForSchemaList", { timeout: 10000 });
-        cy.contains(schemaNameForDeletion).should("not.exist");
+        cy.wait('@waitForSchemaList', { timeout: 10000 });
+        cy.contains(schemaNameForDeletion).should('not.exist');
     }
 }

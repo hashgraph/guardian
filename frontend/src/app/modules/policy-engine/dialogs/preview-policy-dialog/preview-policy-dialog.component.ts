@@ -5,6 +5,24 @@ import { ToolsService } from 'src/app/services/tools.service';
 import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { SearchToolDialog } from '../search-tool-dialog/search-tool-dialog.component';
+import { SchemaTemplatesService } from 'src/app/services/schema-templates.service';
+import { SearchSchemaTemplateDialog } from '../search-schema-template-dialog/search-schema-template-dialog.component';
+import { ModuleStatus } from '@guardian/interfaces';
+
+/** One row per binding on the imported policy - a policy can carry several templates. */
+interface SchemaTemplateRow {
+    binding: any;
+    templateId: string;
+    templateName: string;
+    templateVersion?: string;
+    templateStatus?: string;
+    messageId: string;
+    status: '' | 'load' | 'local' | 'network' | 'invalid';
+    selectedOverride: any;
+    detach: boolean;
+    valid: boolean;
+}
+
 /**
  * Dialog for export/import policy.
  */
@@ -40,12 +58,16 @@ export class PreviewPolicyDialog {
         [messageId: string]: '' | 'load' | 'valid' | 'invalid'
     } = {};
     public validTools: boolean = true;
+    public schemaTemplateRows: SchemaTemplateRow[] = [];
+    public schemaTemplateSnapshots: any[] = [];
+    public validSchemaTemplate: boolean = true;
     public importRecords: boolean = false;
     public canImportRecords: boolean = false;
     private _destroy$ = new Subject<void>();
     private _destroyMap: any = {};
+    private _schemaTemplateDestroyMap: any = {};
     private _map = new Map<string, boolean>();
-    
+
     public isLargeSize: boolean = true;
     @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
 
@@ -59,6 +81,9 @@ export class PreviewPolicyDialog {
         if (!this.validTools) {
             return true;
         }
+        if (!this.validSchemaTemplate) {
+            return true;
+        }
         if (this.mode === 'version') {
             if (!this.versionOfTopicId) {
                 return true;
@@ -70,6 +95,7 @@ export class PreviewPolicyDialog {
     constructor(
         public ref: DynamicDialogRef,
         private toolsService: ToolsService,
+        private schemaTemplatesService: SchemaTemplatesService,
         private dialogService: DialogService,
         public config: DynamicDialogConfig
     ) {
@@ -115,6 +141,12 @@ export class PreviewPolicyDialog {
                 .join(', ');
 
             this.toolConfigs = importFile.tools || [];
+            this.schemaTemplateSnapshots = importFile.schemaTemplateSnapshots || [];
+            const schemaTemplateBindings = this.policy.schemaTemplates || [];
+            this.schemaTemplateRows = schemaTemplateBindings
+                .filter((binding: any) => !!binding?.templateId)
+                .map((binding: any) => this.buildSchemaTemplateRow(binding));
+            this.updateSchemaTemplateStatus();
             this.canImportRecords = !!importFile.withRecords;
             for (const toolConfigs of this.toolConfigs) {
                 this.toolForm.addControl(
@@ -226,6 +258,87 @@ export class PreviewPolicyDialog {
         }
     }
 
+    private buildSchemaTemplateRow(binding: any): SchemaTemplateRow {
+        const row: SchemaTemplateRow = {
+            binding,
+            templateId: binding.templateId,
+            templateName: binding.templateName || 'Schema Template',
+            templateVersion: binding.templateVersion,
+            templateStatus: binding.templateStatus,
+            messageId: binding.templateMessageId || '',
+            status: '',
+            selectedOverride: null,
+            detach: false,
+            valid: false,
+        };
+        // Check even with an empty messageId, or a draft-applied template leaves the row
+        // blocking import with status '' and no visible error.
+        this.checkSchemaTemplateRow(row, row.messageId);
+        return row;
+    }
+
+    public onSchemaTemplateMessageChange(row: SchemaTemplateRow, event: any): void {
+        const value = event.target.value;
+        row.messageId = value;
+        row.selectedOverride = null;
+        this.checkSchemaTemplateRow(row, value);
+    }
+
+    private checkSchemaTemplateRow(row: SchemaTemplateRow, messageId: string): void {
+        if (row.detach) {
+            row.valid = true;
+            this.updateSchemaTemplateStatus();
+            return;
+        }
+        if (typeof messageId !== 'string' || !(/^[0-9]{10}\.[0-9]{9}$/.test(messageId))) {
+            row.status = 'invalid';
+            row.valid = false;
+            this.updateSchemaTemplateStatus();
+            return;
+        }
+        row.status = 'load';
+        row.valid = false;
+        this.updateSchemaTemplateStatus();
+        if (this._schemaTemplateDestroyMap[row.templateId]) {
+            this._schemaTemplateDestroyMap[row.templateId].unsubscribe();
+            this._schemaTemplateDestroyMap[row.templateId] = null;
+        }
+        this._schemaTemplateDestroyMap[row.templateId] = this.schemaTemplatesService
+            .checkMessage(messageId)
+            .pipe(takeUntil(this._destroy$))
+            .subscribe((result) => {
+                row.status = result?.status === 'local'
+                    ? 'local'
+                    : result?.status === 'network'
+                        ? 'network'
+                        : 'invalid';
+                row.valid = row.status === 'local' || row.status === 'network';
+                this.updateSchemaTemplateStatus();
+            }, () => {
+                row.status = 'invalid';
+                row.valid = false;
+                this.updateSchemaTemplateStatus();
+            });
+    }
+
+    public onDetachSchemaTemplateChange(row: SchemaTemplateRow): void {
+        if (row.detach) {
+            row.valid = true;
+            this.updateSchemaTemplateStatus();
+            return;
+        }
+        if (row.selectedOverride) {
+            row.valid = true;
+            this.updateSchemaTemplateStatus();
+            return;
+        }
+        this.checkSchemaTemplateRow(row, row.messageId);
+    }
+
+    private updateSchemaTemplateStatus(): void {
+        this.validSchemaTemplate = this.schemaTemplateRows.every((row) => row.valid);
+    }
+
     ngOnInit() {
         this.loading = false;
     }
@@ -246,6 +359,7 @@ export class PreviewPolicyDialog {
         this.ref.close({
             versionOfTopicId: this.versionOfTopicId,
             tools: this.toolForm?.value,
+            schemaTemplates: this.getSchemaTemplateMetadataMap(),
             demo: this.mode === 'demo',
             importRecords: this.canImportRecords ? this.importRecords : false,
             originalTracking: this.originalTracking
@@ -256,6 +370,7 @@ export class PreviewPolicyDialog {
         this.ref.close({
             messageId,
             tools: this.toolForm?.value,
+            schemaTemplates: this.getSchemaTemplateMetadataMap(),
         });
     }
 
@@ -282,6 +397,70 @@ export class PreviewPolicyDialog {
                 this.checkTool(toolConfig.messageId, result);
             }
         });
+    }
+
+    /**
+     * The binding carries the status as it was on the source instance, so an
+     * unrecognised value is echoed back rather than collapsed into 'Draft'.
+     */
+    public getTemplateStatusLabel(status?: string): string {
+        switch (status) {
+            case ModuleStatus.PUBLISHED:
+                return 'Published';
+            case ModuleStatus.PUBLISH_ERROR:
+                return 'Publish Error';
+            case ModuleStatus.DRY_RUN:
+                return 'Dry Run';
+            case ModuleStatus.DRAFT:
+                return 'Draft';
+            default:
+                return status || '';
+        }
+    }
+
+    public onSchemaTemplateSearch(row: SchemaTemplateRow): void {
+        const dialogRef = this.dialogService.open(SearchSchemaTemplateDialog, {
+            showHeader: false,
+            width: '90%',
+            styleClass: 'guardian-dialog',
+            data: {
+                name: row.templateName || ''
+            },
+        })!;
+        dialogRef.onClose.subscribe((result: any) => {
+            if (result) {
+                row.selectedOverride = result;
+                row.messageId = result.messageId || '';
+                row.status = 'local';
+                row.valid = true;
+                this.updateSchemaTemplateStatus();
+            }
+        });
+    }
+
+    private getSchemaTemplateRowMetadata(row: SchemaTemplateRow): any {
+        if (row.detach) {
+            return { detach: true };
+        }
+        if (row.selectedOverride?.id) {
+            return {
+                templateId: row.selectedOverride.id
+            };
+        }
+        return {
+            templateMessageId: row.messageId
+        };
+    }
+
+    private getSchemaTemplateMetadataMap(): { [templateId: string]: any } | undefined {
+        if (!this.schemaTemplateRows.length) {
+            return undefined;
+        }
+        const map: { [templateId: string]: any } = {};
+        for (const row of this.schemaTemplateRows) {
+            map[row.templateId] = this.getSchemaTemplateRowMetadata(row);
+        }
+        return map;
     }
 
     public enforceMask(messageId: string, event: any): void {

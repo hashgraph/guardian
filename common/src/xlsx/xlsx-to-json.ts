@@ -4,7 +4,7 @@ import { xlsxToBoolean, xlsxToEntity, xlsxToFont, xlsxToPresetArray, xlsxToPrese
 import { Table } from './models/table.js';
 import * as mathjs from 'mathjs';
 import { XlsxSchemaConditions } from './models/schema-condition.js';
-import { SchemaCategory, SchemaEntity, SchemaField } from '@guardian/interfaces';
+import { isAncestorType, isRelationType, relationParent, SchemaCategory, SchemaEntity, SchemaField } from '@guardian/interfaces';
 import { XlsxResult } from './models/xlsx-result.js';
 import { XlsxEnum } from './models/xlsx-enum.js';
 import { EnumTable, SharedEnumTable } from './models/enum-table.js';
@@ -407,6 +407,7 @@ export class XlsxToJson {
             row = table.end.r + 1;
             const fields: SchemaField[] = [];
             const allFields = new Map<string, SchemaField>();
+            const fieldPaths = new Map<string, string[]>();
 
             let parents: SchemaField[] = [];
             for (; row < range.e.r; row++) {
@@ -421,6 +422,7 @@ export class XlsxToJson {
                     allFields.set(field.title, field);
                     parents = parents.slice(0, groupIndex);
                     parents[groupIndex] = field;
+                    fieldPaths.set(field.title, parents.slice(0, groupIndex + 1).map(p => p.name));
                     if (groupIndex === 0) {
                         XlsxToJson.addFieldByName(worksheet, table, row, xlsxResult, fields, field);
                     } else {
@@ -434,6 +436,8 @@ export class XlsxToJson {
                     }
                 }
             }
+
+            XlsxToJson.resolveGeoDependencies(worksheet, table, fields, xlsxResult);
 
             // Create schemas for inline sub-schema fields
             const seenSchemaNames = new Map<string, SchemaField[]>();
@@ -475,6 +479,8 @@ export class XlsxToJson {
                     worksheet,
                     table,
                     fields,
+                    allFields,
+                    fieldPaths,
                     conditionCache,
                     row,
                     xlsxResult
@@ -483,7 +489,6 @@ export class XlsxToJson {
                     conditionCache.push(condition);
                 }
             }
-
             row = table.end.r + 1;
             const expressions: XlsxExpressions = new XlsxExpressions();
             for (; row < range.e.r; row++) {
@@ -642,8 +647,9 @@ export class XlsxToJson {
                     text: `Unknown field type (cell is empty).`,
                     message: `Field Type cell is empty. `
                         + `Supported types: Number, Integer, String, Boolean, Date, Time, DateTime, Duration, `
-                        + `URL, URI, Email, Image, File, Pattern, Help Text, GeoJSON, HederaAccount, `
-                        + `Prefix, Postfix, Auto-Calculate, Enum, Sub-Schema.`,
+                        + `URL, URI, Email, Image, File, Table, Pattern, Help Text, GeoJSON, HederaAccount, `
+                        + `Rich Text, Prefix, Postfix, Auto-Calculate, Enum, Sub-Schema, `
+                        + `Country, Continent, State/Province.`,
                     worksheet: worksheet.name,
                     cell: worksheet.getPath(table.getCol(Dictionary.FIELD_TYPE), row),
                     row,
@@ -664,6 +670,9 @@ export class XlsxToJson {
                     ? xlsxToPresetArray(field, exampleValue)?.map(parseType)
                     : parseType(xlsxToPresetValue(field, exampleValue))
                 field.examples = example ? [example] : null;
+                XlsxToJson.checkGeoPreset(
+                    worksheet, table, field, Dictionary.ANSWER, exampleValue, example, row, xlsxResult
+                );
 
                 if (table.hasCol(Dictionary.DEFAULT)) {
                     const defaultValue = worksheet
@@ -672,6 +681,9 @@ export class XlsxToJson {
                     field.default = field.isArray && !field.isRef
                         ? xlsxToPresetArray(field, defaultValue)?.map(parseType)
                         : parseType(xlsxToPresetValue(field, defaultValue));
+                    XlsxToJson.checkGeoPreset(
+                        worksheet, table, field, Dictionary.DEFAULT, defaultValue, field.default, row, xlsxResult
+                    );
                 }
 
                 if (table.hasCol(Dictionary.SUGGEST)) {
@@ -681,6 +693,9 @@ export class XlsxToJson {
                     field.suggest = field.isArray && !field.isRef
                         ? xlsxToPresetArray(field, suggest)?.map(parseType)
                         : parseType(xlsxToPresetValue(field, suggest));
+                    XlsxToJson.checkGeoPreset(
+                        worksheet, table, field, Dictionary.SUGGEST, suggest, field.suggest, row, xlsxResult
+                    );
                 }
             }
 
@@ -697,6 +712,198 @@ export class XlsxToJson {
         }
     }
 
+    private static checkGeoPreset(
+        worksheet: Worksheet,
+        table: Table,
+        field: SchemaField,
+        column: Dictionary,
+        raw: any,
+        parsed: any,
+        row: number,
+        xlsxResult: XlsxResult
+    ): void {
+        if (!isRelationType('geo', field.customType)) {
+            return;
+        }
+        const text = raw === undefined || raw === null ? '' : String(raw).trim();
+        if (!text || parsed) {
+            return;
+        }
+        xlsxResult.addError({
+            type: 'warning',
+            text: `"${text}" is not a recognized ${field.customType}.`,
+            message: `The "${column}" cell of field "${field.description}" contains "${text}", `
+                + `which does not match any ${field.customType} in the dataset. `
+                + `The field will be imported without that value.`,
+            worksheet: worksheet.name,
+            cell: worksheet.getPath(table.getCol(column), row),
+            row,
+            col: table.getCol(column)
+        }, field);
+    }
+
+    private static findGeoParent(
+        level: SchemaField[],
+        child: SchemaField,
+        reference: string
+    ): SchemaField {
+        const wanted = reference.trim().toLowerCase();
+        for (const candidate of level) {
+            if (candidate === child) {
+                continue;
+            }
+            const key = (candidate.name || '').trim().toLowerCase();
+            const description = (candidate.description || '').trim().toLowerCase();
+            if (key === wanted || description === wanted) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    private static findGeoParentByKey(
+        level: SchemaField[],
+        child: SchemaField
+    ): SchemaField {
+        if (!child.dependency || !child.dependency.on) {
+            return null;
+        }
+        for (const candidate of level) {
+            if (candidate !== child && candidate.name === child.dependency.on) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    private static hasGeoCycle(level: SchemaField[], child: SchemaField): boolean {
+        const seen = new Set<SchemaField>();
+        let current: SchemaField = child;
+        while (current) {
+            if (seen.has(current)) {
+                return true;
+            }
+            seen.add(current);
+            current = XlsxToJson.findGeoParentByKey(level, current);
+            if (current === child) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** @internal Called from unit tests. Renaming breaks them at run time, not at compile time. */
+    private static resolveGeoDependencies(
+        worksheet: Worksheet,
+        table: Table,
+        level: SchemaField[],
+        xlsxResult: XlsxResult
+    ): void {
+        for (const field of level) {
+            if (!field.dependency || !field.dependency.on) {
+                continue;
+            }
+            if (field.dependency.kind !== 'geo') {
+                continue;
+            }
+            if (!isRelationType('geo', field.customType)) {
+                continue;
+            }
+            const reference = field.dependency.on;
+            const parent = XlsxToJson.findGeoParent(level, field, reference);
+            if (!parent) {
+                field.dependency = null;
+                xlsxResult.addError({
+                    type: 'error',
+                    text: `Field "${reference}" not found.`,
+                    message: `Field "${field.description}" declares "${reference}" in the Parameter column, `
+                        + `but no field with that key or description exists at the same level. `
+                        + `Enter the Key of the parent geographic field, or clear the cell.`,
+                    worksheet: worksheet.name,
+                    cell: worksheet.getPath(table.getCol(Dictionary.PARAMETER), field.order),
+                    row: field.order,
+                    col: table.getCol(Dictionary.PARAMETER)
+                }, field);
+                continue;
+            }
+            if (!isAncestorType('geo', parent.customType, field.customType)) {
+                const allowed = relationParent('geo', field.customType);
+                field.dependency = null;
+                xlsxResult.addError({
+                    type: 'error',
+                    text: `"${parent.description}" is not a valid parent for "${field.description}".`,
+                    message: `Field "${field.description}" depends on "${parent.description}", `
+                        + `but a "${field.customType}" field can only depend on `
+                        + `${allowed ? `a "${allowed}" field or its own ancestors` : 'nothing'}.`,
+                    worksheet: worksheet.name,
+                    cell: worksheet.getPath(table.getCol(Dictionary.PARAMETER), field.order),
+                    row: field.order,
+                    col: table.getCol(Dictionary.PARAMETER)
+                }, field);
+                continue;
+            }
+            field.dependency = { on: parent.name, kind: 'geo' };
+        }
+        for (const field of level) {
+            if (
+                field.dependency &&
+                field.dependency.kind === 'geo' &&
+                XlsxToJson.hasGeoCycle(level, field)
+            ) {
+                field.dependency = null;
+                xlsxResult.addError({
+                    type: 'error',
+                    text: `Circular dependency on field "${field.description}".`,
+                    message: `Field "${field.description}" is part of a circular chain of geographic `
+                        + `dependencies. Remove one of the Parameter values in the chain.`,
+                    worksheet: worksheet.name,
+                    cell: worksheet.getPath(table.getCol(Dictionary.PARAMETER), field.order),
+                    row: field.order,
+                    col: table.getCol(Dictionary.PARAMETER)
+                }, field);
+            }
+        }
+        for (const field of level) {
+            if (Array.isArray(field.fields) && field.fields.length) {
+                XlsxToJson.resolveGeoDependencies(worksheet, table, field.fields, xlsxResult);
+            }
+        }
+    }
+
+    private static parseTableColumns(param: string): { name: string; key: string }[] {
+        let value: unknown;
+        try {
+            value = JSON.parse(param);
+        } catch {
+            throw new Error('Table field Parameter must be a valid JSON array.');
+        }
+        if (!Array.isArray(value) || !value.length) {
+            throw new Error('Table field Parameter must contain at least one column.');
+        }
+
+        const columns: { name: string; key: string }[] = [];
+        const keys = new Set<string>();
+        for (const item of value) {
+            if (!item || typeof item !== 'object' || Array.isArray(item)) {
+                throw new Error('Each Table column must contain a name and key.');
+            }
+            const name = typeof item.name === 'string' ? item.name.trim() : '';
+            const key = typeof item.key === 'string' ? item.key.trim() : '';
+            if (!name || !key) {
+                throw new Error('Each Table column must contain a non-empty name and key.');
+            }
+            if (/\s/.test(key)) {
+                throw new Error(`Table column key "${key}" must not contain whitespace.`);
+            }
+            if (keys.has(key)) {
+                throw new Error(`Table column key "${key}" must be unique.`);
+            }
+            keys.add(key);
+            columns.push({ name, key });
+        }
+        return columns;
+    }
+
     private static readFieldParams(
         worksheet: Worksheet,
         table: Table,
@@ -707,6 +914,9 @@ export class XlsxToJson {
     ): void {
         try {
             const param = worksheet.getValue<string>(table.getCol(Dictionary.PARAMETER), row);
+            if (fieldType.name === 'Table' && param) {
+                field.tableColumns = XlsxToJson.parseTableColumns(param);
+            }
             if (fieldType.name === 'Prefix') {
                 const format = worksheet
                     .getCell(table.getCol(Dictionary.ANSWER), row)
@@ -723,6 +933,13 @@ export class XlsxToJson {
                 const subSchemaName = param || field.description;
                 field.type = xlsxResult.addLink(subSchemaName, null);
                 field.property = subSchemaName;
+            }
+            if (isRelationType('geo', fieldType.customType)) {
+                if (param && relationParent('geo', fieldType.customType)) {
+                    field.dependency = { on: param, kind: 'geo' };
+                } else {
+                    field.dependency = null;
+                }
             }
             if (fieldType.name === 'Enum') {
                 if (!param) {
@@ -865,6 +1082,8 @@ export class XlsxToJson {
         worksheet: Worksheet,
         table: Table,
         fields: SchemaField[],
+        allFields: Map<string, SchemaField>,
+        fieldPaths: Map<string, string[]>,
         conditionCache: XlsxSchemaConditions[],
         row: number,
         xlsxResult: XlsxResult
@@ -872,15 +1091,13 @@ export class XlsxToJson {
         if (worksheet.empty(table.start.c, table.end.c, row)) {
             return null;
         }
-        if (worksheet.getRow(row).getOutline()) {
-            return null;
-        }
 
         const key = XlsxToJson.getFieldKey(worksheet, table, row, xlsxResult);
-        const field = fields.find((f) => f.title === key.path);
+        const field = allFields.get(key.path) || fields.find((f) => f.title === key.path);
+        const targetPath = fieldPaths.get(key.path);
+        const isNested = targetPath && targetPath.length > 1;
 
         try {
-            //visibility
             if (worksheet.outColumnRange(table.getCol(Dictionary.VISIBILITY))) {
                 return;
             }
@@ -916,40 +1133,49 @@ export class XlsxToJson {
             }
 
             if (result.type === 'const') {
-                field.hidden = field.hidden || !result.value;
+                if (field) { field.hidden = field.hidden || !result.value; }
                 return;
             }
 
+            const addToCondition = (holder: XlsxSchemaConditions, invert: boolean) => {
+                if (isNested && field) {
+                    holder.addTarget(field, targetPath, invert);
+                } else if (field) {
+                    holder.addField(field, invert);
+                }
+            };
+
             if (result.op && Array.isArray(result.items)) {
                 const resolved = result.items.map(it => {
-                    const target = fields.find(f => f.title === it.fieldPath);
-                    if (!target) {
+                    const trigger = allFields.get(it.fieldPath) || fields.find(f => f.title === it.fieldPath);
+                    if (!trigger) {
                         throw new Error(`Invalid target in ${result.op} condition: ${it.fieldPath}`);
                     }
-                    return { field: target, value: it.compareValue };
+                    return { field: trigger, value: it.compareValue, fieldPath: fieldPaths.get(it.fieldPath) };
                 });
 
                 const conditionKey = { op: result.op, items: resolved };
                 const existed = conditionCache.find(c => (c as any).equal(conditionKey));
                 const holder = existed || new XlsxSchemaConditions(conditionKey as any);
 
-                holder.addField(field, !!result.invert);
+                addToCondition(holder, !!result.invert);
                 if (!existed) {
                     return holder;
                 }
                 return null;
             } else {
-                const target = fields.find((f) => f.title === result.fieldPath);
-                if (!target) {
-                    throw new Error('Invalid target');
+                const trigger = allFields.get(result.fieldPath) || fields.find((f) => f.title === result.fieldPath);
+                if (!trigger) {
+                    throw new Error('Invalid trigger field');
                 }
-                const condition = conditionCache.find(c => c.equal(target, result.compareValue));
+                const triggerPath = fieldPaths.get(result.fieldPath);
+                const condition = conditionCache.find(c => c.equal(trigger, result.compareValue, triggerPath));
                 if (condition) {
-                    condition.addField(field, result.invert);
+                    addToCondition(condition, result.invert);
                     return null;
                 } else {
-                    const newCondition = new XlsxSchemaConditions(target, result.compareValue);
-                    newCondition.addField(field, result.invert);
+                    const newCondition = new XlsxSchemaConditions(trigger, result.compareValue, triggerPath);
+                    addToCondition(newCondition, result.invert);
                     return newCondition;
                 }
             }
@@ -1088,6 +1314,15 @@ export class XlsxToJson {
                         items,
                         invert
                     };
+                }
+            }
+
+            if ((node as any).type === 'AssignmentNode') {
+                const assign = node as any;
+                const obj = assign.object;
+                const val = assign.value;
+                if (obj?.type === 'SymbolNode' && val?.type === 'ConstantNode') {
+                    return { type: 'formulae', fieldPath: obj.name, compareValue: val.value, invert };
                 }
             }
 

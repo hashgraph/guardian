@@ -18,7 +18,23 @@
 
   @if (owner && policyId && results) {
     <div class="content-result">
-      <app-compare-record [value]="results"></app-compare-record>
+      <div class="record-results-header">
+        <div class="header-row">
+          <a
+            class="record-breadcrumb record-breadcrumb-clickable"
+            [routerLink]="['/policy-viewer', policyId]">
+            <span class="breadcrumb-item">Manage Policies</span>
+            <span class="breadcrumb-sep"> / </span>
+            <span class="breadcrumb-item">Recording</span>
+          </a>
+        </div>
+        <div class="header-row header-row-controls">
+          <span class="record-total-info" [attr.total]="results?.total">
+            Documents are <span>{{ results?.total }}%</span> the same.
+          </span>
+        </div>
+      </div>
+      <app-compare-record [value]="results" [showTotal]="false"></app-compare-record>
     </div>
   }
 </div>

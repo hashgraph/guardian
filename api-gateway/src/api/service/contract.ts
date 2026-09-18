@@ -48,6 +48,23 @@ export class ContractsApi {
     constructor(private readonly cacheService: CacheService, private readonly logger: PinoLogger) {
     }
 
+    /**
+     * Drops every cached contract listing of a user.
+     *
+     * `getContracts` is cached and the listing is read both with and without a trailing
+     * slash, so a mutation has to drop the tags of both spellings of the path: dropping
+     * only the one the mutating request happens to carry leaves the other serving
+     * pre-mutation data for the rest of the TTL.
+     *
+     * Call it *after* the mutation has succeeded. Invalidating first leaves a window in
+     * which a concurrent read repopulates the cache from the pre-mutation state.
+     */
+    private async invalidateContractsCache(user: IAuthUser): Promise<void> {
+        await this.cacheService.invalidate(
+            getCacheKey(['/contracts', '/contracts/'], user)
+        );
+    }
+
     //#region Common contract endpoints
 
     /**
@@ -104,9 +121,10 @@ export class ContractsApi {
         example: { statusCode: 500, message: 'Error message' }
     })
     @HttpCode(HttpStatus.OK)
-    @UseCache()
+    @UseCache({ isFastify: true })
     async getContracts(
         @AuthUser() user: IAuthUser,
+        @Req() req,
         @Response() res: any,
         @Query('type') type?: ContractType,
         @Query('pageIndex') pageIndex?: number,
@@ -121,6 +139,7 @@ export class ContractsApi {
                 pageIndex,
                 pageSize
             );
+            req.locals = contracts;
             return res.header('X-Total-Count', count).send(contracts);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
@@ -180,9 +199,11 @@ export class ContractsApi {
             const { description, type } = body;
             const guardians = new Guardians();
 
-            await this.cacheService.invalidate(getCacheKey([req.url], user))
+            const contract = await guardians.createContract(owner, description, type);
 
-            return await guardians.createContract(owner, description, type);
+            await this.invalidateContractsCache(user);
+
+            return contract;
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -242,9 +263,11 @@ export class ContractsApi {
             const { description, type } = body;
             const guardians = new Guardians();
 
-            await this.cacheService.invalidate(getCacheKey([req.url], user))
+            const contract = await guardians.createContractV2(owner, description, type);
 
-            return await guardians.createContractV2(owner, description, type);
+            await this.invalidateContractsCache(user);
+
+            return contract;
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -299,7 +322,12 @@ export class ContractsApi {
             const owner = new EntityOwner(user);
             const { contractId, description } = body;
             const guardians = new Guardians();
-            return await guardians.importContract(owner, contractId, description);
+
+            const contract = await guardians.importContract(owner, contractId, description);
+
+            await this.invalidateContractsCache(user);
+
+            return contract;
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -385,7 +413,12 @@ export class ContractsApi {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.removeContract(owner, contractId);
+
+            const removed = await guardians.removeContract(owner, contractId);
+
+            await this.invalidateContractsCache(user);
+
+            return removed;
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

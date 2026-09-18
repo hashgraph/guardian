@@ -13,7 +13,7 @@
     font-weight: 600;
     line-height: 18px;
     text-align: left;
-    color: #000;
+    color: var(--guardian-font-color, #000);
     margin-bottom: 12px;
   }
 
@@ -23,7 +23,7 @@
     overflow: hidden;
     font-family: Inter, sans-serif;
     font-size: 14px;
-    color: #181818;
+    color: var(--guardian-font-color, #181818);
   }
 
   .field-item {

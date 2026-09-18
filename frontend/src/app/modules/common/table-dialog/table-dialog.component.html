@@ -10,6 +10,7 @@
     [enableCellTextSelection]="true"
     [suppressScrollOnNewData]="true"
     (gridReady)="onGridReady($event)"
+    (gridSizeChanged)="onGridSizeChanged()"
     (cellEditingStopped)="onCellEditStop($event)"
     (bodyScroll)="onBodyScroll($event)">
   </ag-grid-angular>

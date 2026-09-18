@@ -1,0 +1,58 @@
+<div class="dialog-header">
+  <div class="header-container">
+    <div class="header-text">Move to Dry-Run</div>
+  </div>
+  <div class="header-icon" (click)="onCancel()">
+    <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+  </div>
+</div>
+
+<div class="dialog-body">
+  <div class="intro-text">
+    Dry-Run lets you test the policy in an isolated environment. Turn on Mock Data to
+    intercept all external calls (IPFS, Topics, Tokens, API) and return pre-recorded
+    responses instead of hitting the real network.
+  </div>
+
+  <label class="mock-option">
+    <p-checkbox
+      class="guardian-checkbox checkbox-24"
+      [(ngModel)]="enableMock"
+      [binary]="true"></p-checkbox>
+    <div class="mock-option-text">
+      <div class="mock-option-title">Enable Mock Data</div>
+      <div class="mock-option-sub">
+        Pre-records a response for every schema – large policies may take a few extra seconds.
+      </div>
+    </div>
+  </label>
+
+  <div class="mock-hint">
+    <svg-icon src="/assets/images/icons/info.svg" svgClass="icon-color-info"></svg-icon>
+    <span>
+      You can enable or configure Mock Data anytime later from the 'Mock Config' panel in the policy viewer.
+    </span>
+  </div>
+</div>
+
+<div class="dialog-footer">
+  <label class="mute-option">
+    <p-checkbox
+      class="guardian-checkbox checkbox-24"
+      [(ngModel)]="dontAskAgain"
+      [binary]="true"></p-checkbox>
+    <span>Don't ask again for this policy</span>
+  </label>
+  <div class="action-buttons">
+    <div class="dialog-button">
+      <button
+        (click)="onCancel()"
+      class="guardian-button guardian-button-secondary">Cancel</button>
+    </div>
+    <div class="dialog-button dialog-button-wide">
+      <button
+        (click)="onStart()"
+      class="guardian-button guardian-button-primary">Start Dry-Run</button>
+    </div>
+  </div>
+</div>

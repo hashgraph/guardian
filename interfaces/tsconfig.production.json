@@ -1,25 +1,27 @@
 {
     "compilerOptions": {
-        "module": "ESNext",
-        "target": "es2022",
-        "lib": [
-            "es5",
-            "es6"
-        ],
-        "moduleResolution": "node",
-        "sourceMap": false,
-        "skipLibCheck": true,
-        "outDir": "dist/",
+        "declaration": true,
         "emitDecoratorMetadata": true,
-        "experimentalDecorators": true,
         "esModuleInterop": true,
-        "declaration": true
+        "experimentalDecorators": true,
+        "lib": [
+            "ES2023"
+        ],
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "noUnusedLocals": true,
+        "noUnusedParameters": false,
+        "outDir": "dist/",
+        "rootDir": "./src",
+        "skipLibCheck": true,
+        "sourceMap": false,
+        "strict": false,
+        "target": "ES2023"
     },
-    "include": [
-        "src/**/*"
-    ],
     "exclude": [
         "node_modules"
     ],
-    "compileOnSave": true
+    "include": [
+        "src/**/*"
+    ]
 }

@@ -1,4 +1,4 @@
-import { EntityStatus } from '../type';
+import { EntityStatus } from '../type/entity-status.type.js';
 
 export enum FormulaItemType {
     Constant = 'constant',

@@ -1,5 +1,3 @@
-import 'module-alias/register.js';
-
 import { assert } from 'chai';
 
 import { DataSourceBlock} from '../../../../dist/policy-engine/helpers/decorators/data-source-block.js';

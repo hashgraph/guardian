@@ -1,62 +1,63 @@
 @if (properties) {
-  <table class="properties" [attr.readonly]="readonly">
-    <tr class="propHeader">
-      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'tool')" [attr.collapse]="propHidden.tool">
-        <i class="pi pi-caret-down"></i>
+  <table class="properties tool-properties" [attr.readonly]="readonly">
+  <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
+    <tr class="propHeader" (click)="onHide(propHidden, 'tool')">
+      <td class="propRowCol"></td>
+      <td class="propHeaderCell cellName tool-section-header" [attr.collapse]="propHidden.tool">
+        <i class="pi pi-chevron-down chevron-icon"></i>
+        <span>Tool</span>
       </td>
-      <td class="propHeaderCell cellName">Tool</td>
       <td class="propHeaderCell"></td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.tool">
       <td class="propRowCol"></td>
       <td class="propRowCell cellName">Name</td>
       <td class="propRowCell">
-        <span class="readonly-prop">{{ tool.name }}</span>
+        <span class="readonly-prop" [pTooltip]="tool.name" tooltipPosition="top" [showDelay]="300">{{ tool.name }}</span>
       </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.tool">
       <td class="propRowCol"></td>
       <td class="propRowCell cellName">Description</td>
       <td class="propRowCell">
-        <span class="readonly-prop">{{ tool.description }}</span>
+        <span class="readonly-prop" [pTooltip]="tool.description" tooltipPosition="top" [showDelay]="300">{{ tool.description }}</span>
       </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.tool">
       <td class="propRowCol"></td>
       <td class="propRowCell cellName">Owner</td>
       <td class="propRowCell">
-        <span class="readonly-prop">{{ tool.owner }}</span>
+        <span class="readonly-prop" [pTooltip]="tool.owner" tooltipPosition="top" [showDelay]="300">{{ tool.owner }}</span>
       </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.tool">
       <td class="propRowCol"></td>
       <td class="propRowCell cellName">Message ID</td>
       <td class="propRowCell">
-        <span class="readonly-prop">{{ tool.messageId }}</span>
+        <span class="readonly-prop" [pTooltip]="tool.messageId" tooltipPosition="top" [showDelay]="300">{{ tool.messageId }}</span>
       </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.tool">
       <td class="propRowCol"></td>
       <td class="propRowCell cellName">Hash</td>
       <td class="propRowCell">
-        <span class="readonly-prop">{{ tool.hash }}</span>
+        <span class="readonly-prop" [pTooltip]="tool.hash" tooltipPosition="top" [showDelay]="300">{{ tool.hash }}</span>
       </td>
     </tr>
-    <tr class="propHeader">
-      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-        <i class="pi pi-caret-down"></i>
+    <tr class="propHeader" (click)="onHide(propHidden, 'main')">
+      <td class="propRowCol"></td>
+      <td class="propHeaderCell cellName tool-section-header" [attr.collapse]="propHidden.main">
+        <i class="pi pi-chevron-down chevron-icon"></i>
+        <span>Variables</span>
       </td>
-      <td class="propHeaderCell cellName">Variables</td>
       <td class="propHeaderCell"></td>
     </tr>
     @for (item of variables; track item; let i = $index) {
-      <tr class="propRow" [attr.collapse]="propHidden.main">
-        <td class="propRowCol cellCollapse" (click)="onHide(variablesHidden, i)"
-          [attr.collapse]="variablesHidden[i]">
-          <i class="pi pi-caret-down"></i>
-        </td>
-        <td class="propRowCell cellName">
-          {{ item.name }}
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName" [attr.collapse]="variablesHidden[i]" (click)="onHide(variablesHidden, i)">
+          <i class="pi pi-chevron-down chevron-icon"></i>
+          <span>{{ item.name }}</span>
         </td>
         @if (item.type ==='Schema') {
           <td class="propRowCell">
@@ -71,6 +72,7 @@
         @if (item.type ==='Token') {
           <td class="propRowCell">
             <p-select [(ngModel)]="properties[item.key]"
+              panelStyleClass="pc-select-panel"
               [options]="tokens"
               [disabled]="readonly"
               (onChange)="onSave()"
@@ -84,6 +86,7 @@
         @if (item.type ==='Role') {
           <td class="propRowCell">
             <p-select [(ngModel)]="properties[item.key]"
+              panelStyleClass="pc-select-panel"
               [options]="roles"
               [disabled]="readonly"
               (onChange)="onSave()"
@@ -98,6 +101,7 @@
         @if (item.type ==='Group') {
           <td class="propRowCell">
             <p-select [(ngModel)]="properties[item.key]"
+              panelStyleClass="pc-select-panel"
               [options]="groups"
               [disabled]="readonly"
               (onChange)="onSave()"
@@ -111,6 +115,7 @@
         @if (item.type ==='TokenTemplate') {
           <td class="propRowCell">
             <p-select [(ngModel)]="properties[item.key]"
+              panelStyleClass="pc-select-panel"
               [options]="tokenTemplate"
               [disabled]="readonly"
               (onChange)="onSave()"
@@ -124,6 +129,7 @@
         @if (item.type ==='Topic') {
           <td class="propRowCell">
             <p-select [(ngModel)]="properties[item.key]"
+              panelStyleClass="pc-select-panel"
               (onChange)="selectTopic($event.value, item)"
               [disabled]="readonly"
               [appendTo]="'body'"
@@ -170,18 +176,18 @@
           </td>
         }
       </tr>
-      <tr class="propRow subRow" [attr.collapse]="propHidden.main || variablesHidden[i]">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.main || variablesHidden[i]">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Description</td>
         <td class="propRowCell">
-          <span class="readonly-prop">{{ item.description }}</span>
+          <span class="readonly-prop" [pTooltip]="item.description" tooltipPosition="top" [showDelay]="300">{{ item.description }}</span>
         </td>
       </tr>
-      <tr class="propRow subRow" [attr.collapse]="propHidden.main || variablesHidden[i]">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.main || variablesHidden[i]">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Type</td>
         <td class="propRowCell">
-          <span class="readonly-prop">{{ item.type }}</span>
+          <span class="readonly-prop" [pTooltip]="item.type" tooltipPosition="top" [showDelay]="300">{{ item.type }}</span>
         </td>
       </tr>
     }

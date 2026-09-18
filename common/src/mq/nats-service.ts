@@ -5,14 +5,16 @@ import { IMessageResponse } from '../models/index.js';
 import { ForbiddenException } from '@nestjs/common';
 import { JwtServicesValidator } from '../security/index.js';
 
-type CallbackFunction = (body: any, error?: string, code?: number) => void;
+type CallbackFunction = (body: any, error?: string, code?: number, data?: any) => void;
 
 class MessageError extends Error {
     public code: number;
+    public data?: any;
 
-    constructor(message: any, code?: number) {
+    constructor(message: any, code?: number, data?: any) {
         super(message);
         this.code = code;
+        this.data = data;
     }
 }
 
@@ -87,7 +89,20 @@ export abstract class NatsService {
                     const serviceToken = msg.headers?.get('serviceToken');
                     const fn = this.responseCallbacksMap.get(messageId);
                     if (fn) {
-                        const message = (await this.codec.decode(msg.data)) as IMessageResponse<any>;
+                        let message: IMessageResponse<any>;
+                        try {
+                            message = (await this.codec.decode(msg.data)) as IMessageResponse<any>;
+                        } catch (e: any) {
+                            // Decode may fetch a large-payload directLink; a failure here (e.g.
+                            // ECONNREFUSED when the responder died mid-request) must fail this
+                            // request rather than throw out of the async callback and crash the process.
+                            // Log the detail server-side; return a generic message to the caller so
+                            // internal exception text (e.g. the directLink URL) is not leaked.
+                            console.error('Reply decode failed:', e.message);
+                            fn(null, 'Failed to decode reply payload', 500);
+                            this.responseCallbacksMap.delete(messageId);
+                            return;
+                        }
                         if (!message) {
                             fn(null)
                         } else {
@@ -101,7 +116,7 @@ export abstract class NatsService {
                                 } catch (err) {
                                     throw err;
                                 }
-                            fn(message.body, message.error, message.code);
+                            fn(message.body, message.error, message.code, (message as any).data);
                             } catch (e: any) {
                                 console.error('Reply validation failed:', e.message);
                                 fn(null, e.message, 401);
@@ -193,13 +208,13 @@ export abstract class NatsService {
     public sendMessage<T>(subject: string, data?: unknown, isResponseCallback: boolean = true, externalMessageId?: string): Promise<T> {
         const messageId = externalMessageId ?? GenerateUUIDv4();
 
-        return new Promise(async (resolve, reject) => {
+        return new Promise((resolve, reject) => {
             const head = headers();
             head.append('messageId', messageId);
             if (isResponseCallback) {
-                this.responseCallbacksMap.set(messageId, (body: T, error?: string, code?: number) => {
+                this.responseCallbacksMap.set(messageId, (body: T, error?: string, code?: number, errorData?: any) => {
                     if (error) {
-                        reject(new MessageError(error, code));
+                        reject(new MessageError(error, code, errorData));
                     } else {
                         resolve(body);
                     }
@@ -207,13 +222,22 @@ export abstract class NatsService {
             } else {
                 resolve(null);
             }
-            const token = await JwtServicesValidator.sign(subject);
-            head.append('serviceToken', token);
+            // Run the async work outside the Promise executor: a rejection from
+            // sign/encode/publish inside an async executor is neither caught nor
+            // settles this promise (it becomes an unhandledRejection and the
+            // caller hangs). Route it to reject and clean up the callback instead.
+            (async () => {
+                const token = await JwtServicesValidator.sign(subject);
+                head.append('serviceToken', token);
 
-            this.connection.publish(subject, await this.codec.encode(data), {
-                reply: this.replySubject,
-                headers: head
-            })
+                this.connection.publish(subject, await this.codec.encode(data), {
+                    reply: this.replySubject,
+                    headers: head
+                })
+            })().catch((e) => {
+                this.responseCallbacksMap.delete(messageId);
+                reject(e instanceof Error ? e : new Error(String(e)));
+            });
         });
     }
 
@@ -231,11 +255,83 @@ export abstract class NatsService {
         const timeoutPromise = new Promise<T>((_, reject) => {
             setTimeout(() => {
                 this.responseCallbacksMap.delete(messageId);
-                reject(new Error(`Timeout exceed (${subject})`));
+                // Reuse REQUEST_TIMEOUT - same "no ack" code requestOrThrow uses below.
+                const error: any = new Error(`Timeout exceed (${subject})`);
+                error.code = 'REQUEST_TIMEOUT';
+                reject(error);
             }, timeout);
         });
 
         return Promise.race([messagePromise, timeoutPromise]);
+    }
+
+    /**
+     * Core NATS request over a dedicated inbox: a subject with no subscribers
+     * fails fast ("no responders") instead of waiting out the timeout. Throws
+     * Error{code:'NO_RESPONDERS'} (not delivered - safe to retry),
+     * Error{code:'REQUEST_TIMEOUT'} (maybe delivered - do NOT retry) or
+     * MessageError(code); otherwise returns the response body.
+     */
+    public async requestOrThrow<T>(
+        subject: string,
+        data?: unknown,
+        timeout: number = 1000,
+        extraHeaders?: Record<string, string>
+    ): Promise<T> {
+        const head = headers();
+        head.append('messageId', GenerateUUIDv4());
+        if (extraHeaders) {
+            for (const [key, value] of Object.entries(extraHeaders)) {
+                head.append(key, value);
+            }
+        }
+        const token = await JwtServicesValidator.sign(subject);
+        head.append('serviceToken', token);
+
+        let msg;
+        try {
+            msg = await this.connection.request(subject, await this.codec.encode(data), { timeout, headers: head });
+        } catch (error: any) {
+            // nats: NoResponders -> '503', Timeout -> 'TIMEOUT'
+            if (error?.code === '503' || /no responders/i.test(error?.message || '')) {
+                const e = new Error(`No responders for "${subject}"`);
+                (e as any).code = 'NO_RESPONDERS';
+                throw e;
+            }
+            if (error?.code === 'TIMEOUT' || /timeout/i.test(error?.message || '')) {
+                const e = new Error(`Timeout for "${subject}"`);
+                (e as any).code = 'REQUEST_TIMEOUT';
+                throw e;
+            }
+            throw error;
+        }
+
+        // Mirror the replySubject handler in init(): guard the decode so a
+        // failure (e.g. a directLink fetch that ECONNREFUSEs when the responder
+        // died mid-request) fails this request with a generic message instead of
+        // leaking internal exception text (the directLink URL).
+        let message: IMessageResponse<T>;
+        try {
+            message = (await this.codec.decode(msg.data)) as IMessageResponse<T>;
+        } catch (e: any) {
+            console.error('Reply decode failed:', e.message);
+            throw new MessageError('Failed to decode reply payload', 500);
+        }
+
+        // Verify the reply's serviceToken before trusting the body, so with
+        // QM_VERIFICATION enabled the reply-side auth check is not dropped.
+        const serviceToken = msg.headers?.get('serviceToken');
+        try {
+            await JwtServicesValidator.verify(serviceToken);
+        } catch (e: any) {
+            console.error('Reply validation failed:', e.message);
+            throw new MessageError(e.message, 401);
+        }
+
+        if (message && message.error) {
+            throw new MessageError(message.error, message.code, (message as any).data);
+        }
+        return message ? message.body : null;
     }
 
     /**
@@ -245,7 +341,7 @@ export abstract class NatsService {
      */
     public sendRawMessage<T>(subject: string, data?: unknown): Promise<T> {
         const messageId = GenerateUUIDv4();
-        return new Promise(async (resolve, reject) => {
+        return new Promise((resolve, reject) => {
             const head = headers();
             head.append('messageId', messageId);
             // head.append('rawMessage', 'true');
@@ -256,15 +352,23 @@ export abstract class NatsService {
                 } else {
                     resolve(body);
                 }
-            })
+            });
 
-            const token = await JwtServicesValidator.sign(subject);
-            head.append('serviceToken', token);
+            // See sendMessage: keep async work out of the Promise executor so a
+            // sign/encode/publish failure rejects this promise (and clears the
+            // callback) instead of becoming an unhandledRejection.
+            (async () => {
+                const token = await JwtServicesValidator.sign(subject);
+                head.append('serviceToken', token);
 
-            this.connection.publish(subject, await this.codec.encode(data), {
-                reply: this.replySubject,
-                headers: head
-            })
+                this.connection.publish(subject, await this.codec.encode(data), {
+                    reply: this.replySubject,
+                    headers: head
+                })
+            })().catch((e) => {
+                this.responseCallbacksMap.delete(messageId);
+                reject(e instanceof Error ? e : new Error(String(e)));
+            });
         });
     }
 
@@ -273,17 +377,34 @@ export abstract class NatsService {
      * @param subject
      * @param cb
      * @param noRespond
+     * @param beforeDecode Optional synchronous hook run right after auth, before `codec.decode`.
+     * `codec.decode` can HTTP-fetch an out-of-band `directLink` payload, which for a large task
+     * takes far longer than authenticating the message - a caller that needs to claim some piece
+     * of state per-message (e.g. a busy flag) has to do it here, not in `cb`, or a second message
+     * arriving mid-decode observes the stale pre-claim state. Return a value to short-circuit:
+     * skip `cb`/decode entirely and respond with it (or, if `noRespond`, just skip). Return
+     * `undefined` to proceed normally.
+     * @param onError Runs if auth/decode/cb throws before a response was sent, so a stranded
+     * `beforeDecode` claim can be released. `claimed` is true only for this message's own claim.
      */
-    public getMessages<T, A>(subject: string, cb: Function, noRespond = false): Subscription {
+    public getMessages<T, A>(
+        subject: string,
+        cb: Function,
+        noRespond = false,
+        beforeDecode?: () => unknown,
+        onError?: (error: unknown, claimed: boolean) => void
+    ): Subscription {
         this.addAdditionalAvailableEvents([subject]);
         return this.connection.subscribe(subject, {
             queue: this.messageQueueName,
             callback: async (error, msg) => {
+                let head: ReturnType<typeof headers> | undefined;
+                let claimed = false;
                 try {
                     const messageId = msg.headers?.get('messageId');
                     const serviceToken = msg.headers?.get('serviceToken');
                     // const isRaw = msg.headers.get('rawMessage');
-                    const head = headers();
+                    head = headers();
                     if (messageId) {
                         head.append('messageId', messageId);
                     }
@@ -312,6 +433,18 @@ export abstract class NatsService {
                     } catch (err) {
                         throw err;
                     }
+
+                    if (beforeDecode) {
+                        const early = beforeDecode();
+                        if (early !== undefined) {
+                            if (!noRespond) {
+                                msg.respond(await this.codec.encode(early), { headers: head });
+                            }
+                            return;
+                        }
+                        claimed = true;
+                    }
+
                     if (!noRespond) {
                         msg.respond(await this.codec.encode(await cb(await this.codec.decode(msg.data), msg.headers)), { headers: head });
                     } else {
@@ -319,6 +452,29 @@ export abstract class NatsService {
                     }
                 } catch (error) {
                     console.error(error);
+
+                    // Release a stranded beforeDecode claim and reply with an error.
+                    if (onError) {
+                        try {
+                            onError(error, claimed);
+                        } catch (hookError) {
+                            console.error(hookError);
+                        }
+                    }
+
+                    if (!noRespond && head) {
+                        try {
+                            await msg.respond(await this.codec.encode({
+                                body: null,
+                                error: error instanceof Error ? error.message : String(error),
+                                code: 500,
+                                name: 'Error',
+                                message: error instanceof Error ? error.message : String(error)
+                            }), { headers: head });
+                        } catch (respondError) {
+                            console.error(respondError);
+                        }
+                    }
                 }
             }
         });

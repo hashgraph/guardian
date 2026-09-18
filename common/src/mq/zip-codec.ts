@@ -1,7 +1,7 @@
 import { ErrorCode, JSONCodec, NatsError } from 'nats';
 import { LargePayloadContainer } from './large-payload-container.js';
 import axios from 'axios';
-import https from 'https';
+import https from 'node:https';
 
 /**
  * Zip Codec

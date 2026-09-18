@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsObject, IsString, IsNumber, IsArray } from 'class-validator';
+import { IsNotEmpty, IsObject, IsString, IsNumber, IsArray, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 import { Examples } from '../examples.js';
 
@@ -39,6 +39,16 @@ export class RecordStatusDTO {
     @IsString()
     @IsNotEmpty()
     status: string;
+
+    @ApiProperty({
+        type: Number,
+        nullable: true,
+        description: 'Timestamp at which capture was paused, or null when capture is running',
+        example: 1757500000000
+    })
+    @IsNumber()
+    @IsOptional()
+    pausedAt?: number | null;
 }
 
 export class RecordActionDTO {

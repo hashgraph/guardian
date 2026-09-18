@@ -306,6 +306,10 @@ const RequestBlockAddon: IBlockSetting = {
     factory: RequestDocumentBlockAddonComponent,
     property: RequestAddonConfigComponent,
     code: null,
+    allowedChildren: [{
+        type: BlockType.DocumentValidatorBlock,
+        group: BlockGroup.UnGrouped,
+    }],
 }
 
 const Switch: IBlockSetting = {
@@ -680,7 +684,7 @@ const DocumentValidatorBlock: IBlockSetting = {
     group: BlockGroup.Documents,
     header: BlockHeaders.Addons,
     factory: null,
-    property: null,
+    property: DocumentValidatorConfigComponent,
     code: null
 }
 
@@ -956,5 +960,5 @@ export default [
     IntegrationButtonBlock,
     HttpRequestUIAddon,
     TransformationUIAddon,
-    IpfsTransformationUIAddon
+    IpfsTransformationUIAddon,
 ];

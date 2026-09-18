@@ -59,15 +59,16 @@
     font-size: 14px;
 }
 
-::ng-deep .p-overlay {
-    min-width: 375px !important;
-}
-
 // .schema-select ::ng-deep .p-select-label {
 
 // }
 
 .schema-variable {
-    max-width: 500px;
-    text-wrap: auto;
+    max-width: 100%;
+}
+
+.schema-featured-icon {
+    font-size: 12px;
+    color: var(--color-accent-yellow-1, #DA9B22);
+    margin-right: 4px;
 }

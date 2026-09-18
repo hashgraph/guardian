@@ -2,7 +2,7 @@ import { CronJob } from 'cron';
 import { SynchronizationPolicy } from './synchronizers/synchronize-policy.js';
 import { SynchronizationVCs } from './synchronizers/synchronize-vcs.js';
 import { SynchronizationVPs } from './synchronizers/synchronize-vp.js';
-import { IPFS_CID_PATTERN, MessageAction, MessageType, PolicyAnalytics, PriorityStatus, TokenType, VPAnalytics } from '@indexer/interfaces';
+import { MessageAction, MessageType, PolicyAnalytics, PriorityStatus, TokenType, VPAnalytics } from '@indexer/interfaces';
 import { DataBaseHelper, Message, MessageCache, PriorityQueue, TokenCache } from '@indexer/common';
 import { textSearch } from './text-search-options.js';
 import { fastLoadFiles, fastLoadFilesBuffer } from './load-files.js';

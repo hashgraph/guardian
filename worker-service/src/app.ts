@@ -2,7 +2,7 @@ import { ApplicationState, GenerateTLSOptionsNats, JwtServicesValidator, LargePa
 import { Worker } from './api/worker.js';
 import { HederaSDKHelper } from './api/helpers/hedera-sdk-helper.js';
 import { ApplicationStates, GenerateUUIDv4 } from '@guardian/interfaces';
-import * as process from 'process';
+import * as process from 'node:process';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
@@ -66,24 +66,7 @@ Promise.all([
             return false
         }
 
-        let IPFS_STORAGE_KEY: string;
-        let IPFS_STORAGE_PROOF: string;
         let IPFS_STORAGE_API_KEY: string;
-
-        if (process.env.IPFS_PROVIDER === 'web3storage') {
-            IPFS_STORAGE_KEY = process.env.IPFS_STORAGE_KEY;
-            IPFS_STORAGE_PROOF = process.env.IPFS_STORAGE_PROOF;
-
-            if (IPFS_STORAGE_KEY?.length > 4 && IPFS_STORAGE_PROOF?.length > 4) {
-                await secretManager.setSecrets('apikey/ipfs', { IPFS_STORAGE_API_KEY: `${IPFS_STORAGE_KEY};${IPFS_STORAGE_PROOF}` });
-            } else {
-                const keyAndProof = await secretManager.getSecrets('apikey/ipfs');
-
-                const [key, proof] = keyAndProof.IPFS_STORAGE_API_KEY.split(';')
-                IPFS_STORAGE_KEY = key;
-                IPFS_STORAGE_PROOF = proof;
-            }
-        }
 
         if (process.env.IPFS_PROVIDER === 'filebase') {
             IPFS_STORAGE_API_KEY = process.env.IPFS_STORAGE_API_KEY;
@@ -101,7 +84,7 @@ Promise.all([
         });
 
         await state.updateState(ApplicationStates.INITIALIZING);
-        const w = new Worker(IPFS_STORAGE_KEY, IPFS_STORAGE_PROOF, IPFS_STORAGE_API_KEY, channelName, logger);
+        const w = new Worker(IPFS_STORAGE_API_KEY, channelName, logger);
         await w.setConnection(cn).init();
 
         return true;

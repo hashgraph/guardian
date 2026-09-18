@@ -101,10 +101,15 @@ export class TablePersistenceService {
             const fileId = await this.uploadToGridFs(fileFromIndexedDb, idbKey ?? "", existingFileId);
             const cid = await this.uploadToIpfs(fileFromIndexedDb, isDryRun);
             await this.deleteFromIndexedDb(idbKey);
-            return this.buildCompactTableJson(fileId, cid);
+            return this.buildCompactTableJson(fileId, cid, parsed.columnKeys, parsed.columnNames);
         }
 
-        return this.buildCompactTableJson(existingFileId || null, existingCid || null);
+        return this.buildCompactTableJson(
+            existingFileId || null,
+            existingCid || null,
+            parsed.columnKeys,
+            parsed.columnNames
+        );
     }
 
     private tryParseTable(value: unknown): ITableField | null {
@@ -193,7 +198,12 @@ export class TablePersistenceService {
         return null;
     }
 
-    private buildCompactTableJson(fileId?: string | null, cid?: string | null): string {
+    private buildCompactTableJson(
+        fileId?: string | null,
+        cid?: string | null,
+        columnKeys?: string[] | null,
+        columnNames?: string[] | null
+    ): string {
         const compact: any = { type: 'table' };
 
         if (fileId && fileId.trim()) {
@@ -202,6 +212,14 @@ export class TablePersistenceService {
 
         if (cid && cid.trim()) {
             compact.cid = cid.trim();
+        }
+
+        if (Array.isArray(columnNames) && columnNames.length) {
+            compact.columnNames = columnNames;
+
+            if (Array.isArray(columnKeys) && columnKeys.length) {
+                compact.columnKeys = columnKeys;
+            }
         }
 
         return JSON.stringify(compact);

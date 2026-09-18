@@ -99,7 +99,7 @@
 :host ::ng-deep .p-select {
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
-    background: #FFF;
+    background: var(--guardian-background, #FFF);
 }
 
 ::ng-deep p-select {

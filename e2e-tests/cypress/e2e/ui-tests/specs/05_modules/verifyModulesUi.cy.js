@@ -1,14 +1,14 @@
-import { ModulesPage } from "../../pages/modulesPage";
+import { ModulesPage } from '../../pages/modulesPage';
 const modulesPage = new ModulesPage();
 
-import { HomePage } from "../../pages/homePage";
+import { HomePage } from '../../pages/homePage';
 const homePage = new HomePage();
 
-context("Verify Modules UI", { tags: ['@ui'] }, () => {
+context('Verify Modules UI', { tags: ['@ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
-    const moduleName = "UIModule";
-    const moduleNameIPFSImported = "ComparedModuleIPFS";
+    const moduleName = 'UIModule';
+    const moduleNameIPFSImported = 'ComparedModuleIPFS';
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
@@ -17,7 +17,7 @@ context("Verify Modules UI", { tags: ['@ui'] }, () => {
         modulesPage.openModulesTab();
     })
 
-    it("verify ui", () => {
+    it('verify ui', () => {
         modulesPage.verifyButtonsAndHeaders();
         modulesPage.verifyDraftModuleDataAndActions(moduleName);
         modulesPage.verifyPublishedModuleDataAndActions(moduleNameIPFSImported);

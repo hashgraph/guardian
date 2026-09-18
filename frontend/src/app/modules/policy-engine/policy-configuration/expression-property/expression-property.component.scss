@@ -1,0 +1,59 @@
+:host {
+    display: block;
+    width: 100%;
+    // .grid-setting[readonly="true"] disables pointer events for the whole
+    // inspector. The expression is only reachable through this button, so it
+    // has to stay clickable there - the dialog opens read-only anyway.
+    pointer-events: auto;
+}
+
+.expression-button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    height: var(--pc-control-height);
+    box-sizing: border-box;
+    padding: 4px 8px;
+    border: 1px solid var(--pc-control-border-color);
+    border-radius: var(--pc-control-border-radius);
+    background: var(--guardian-background, #fff);
+    color: var(--guardian-font-color, #23252E);
+    font-size: var(--pc-row-font-size);
+    font-family: var(--pc-row-font-family);
+    font-style: var(--pc-row-font-style);
+    font-weight: 400;
+    line-height: 18px;
+    text-align: left;
+    outline: none;
+    cursor: pointer;
+
+    &:hover {
+        border-color: var(--guardian-primary-color);
+    }
+
+    &:focus-visible {
+        border-color: var(--guardian-primary-color);
+    }
+}
+
+.expression-icon {
+    flex: 0 0 auto;
+    width: 14px;
+    height: 14px;
+    color: var(--guardian-success-color, #19BE47);
+}
+
+.expression-label {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.expression-empty,
+.expression-readonly {
+    .expression-icon,
+    .expression-label {
+        color: var(--guardian-disabled-color, #848FA9);
+    }
+}

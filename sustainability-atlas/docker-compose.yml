@@ -64,7 +64,7 @@ x-infra-env: &infra-env
 
 x-worker-env: &worker-env
     <<: *infra-env
-    IPFS_GATEWAYS: http://ipfs:8080/ipfs/,https://${cid}.ipfs.w3s.link
+    IPFS_GATEWAYS: http://ipfs:8080/ipfs/,https://ipfs.io/ipfs/
     POLICY_ZIP_STORAGE_PATH: /app/data/policy-zips
 
 services:

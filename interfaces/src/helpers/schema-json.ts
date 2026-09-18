@@ -36,11 +36,13 @@ export interface IFieldJson {
     isArray: boolean;
     isUpdatable: boolean;
     property: string;
+    dependency?: { on: string; kind: string };
 
     private?: boolean;
 
     enum?: string[] | string;
     enumName?: string;
+    tableColumns?: { name: string; key: string }[];
     availableOptions?: string[] | string;
 
     textSize?: string;
@@ -60,17 +62,25 @@ export interface IFieldJson {
 export interface IIfRuleJson {
     field: string;
     fieldValue: any;
+    fieldPath?: string[];
+}
+
+export interface IConditionTargetJson {
+    fieldPath: string[];
 }
 
 export interface IConditionJson {
     if: {
         field?: string;
         fieldValue?: any;
+        fieldPath?: string[];
         AND?: IIfRuleJson[];
         OR?: IIfRuleJson[];
     },
     then: IFieldJson[],
-    else: IFieldJson[]
+    else: IFieldJson[],
+    thenTargets?: IConditionTargetJson[],
+    elseTargets?: IConditionTargetJson[],
 }
 
 export interface ISchemaJson {
@@ -173,6 +183,10 @@ export class SchemaToJson {
 
         if (field.customType === 'hederaAccount') {
             return 'HederaAccount';
+        }
+
+        if (field.customType === 'richText') {
+            return 'Rich Text';
         }
 
         for (const type of FieldTypesDictionary.FieldTypes) {
@@ -303,6 +317,9 @@ export class SchemaToJson {
         if (privateValue !== null) {
             fieldJson.private = privateValue;
         }
+        if (field.dependency) {
+            fieldJson.dependency = field.dependency;
+        }
 
         const enumValue = SchemaToJson.getEnum(field);
         if (enumValue) {
@@ -310,6 +327,9 @@ export class SchemaToJson {
         }
         if (field.enumName) {
             fieldJson.enumName = field.enumName;
+        }
+        if (Array.isArray(field.tableColumns) && field.tableColumns.length) {
+            fieldJson.tableColumns = field.tableColumns;
         }
 
         const availableOptionsValue = SchemaToJson.getAvailableOptions(field);
@@ -368,17 +388,31 @@ export class SchemaToJson {
             }
         }
 
+        if (condition.thenTargets?.length) {
+            json.thenTargets = condition.thenTargets.map(t => ({ fieldPath: t.fieldPath }));
+        }
+        if (condition.elseTargets?.length) {
+            json.elseTargets = condition.elseTargets.map(t => ({ fieldPath: t.fieldPath }));
+        }
+
         const ic: any = condition.ifCondition;
+
+        const serializePredicate = (p: any): IIfRuleJson => {
+            const r: IIfRuleJson = { field: p.field.name, fieldValue: p.fieldValue };
+            if (p.fieldPath?.length > 1) { r.fieldPath = p.fieldPath; }
+            return r;
+        };
 
         if (ic?.AND && Array.isArray(ic.AND)) {
             if (ic.AND.length === 1) {
                 json.if.field = ic.AND[0]?.field?.name;
                 json.if.fieldValue = ic.AND[0]?.fieldValue;
+                if (ic.AND[0]?.fieldPath?.length > 1) { json.if.fieldPath = ic.AND[0].fieldPath; }
                 return json;
             }
             json.if.AND = ic.AND
                 .filter((p: any) => p?.field?.name !== undefined)
-                .map((p: any) => ({ field: p.field.name, value: p.fieldValue }));
+                .map(serializePredicate);
             return json;
         }
 
@@ -386,31 +420,34 @@ export class SchemaToJson {
             if (ic.OR.length === 1) {
                 json.if.field = ic.OR[0]?.field?.name;
                 json.if.fieldValue = ic.OR[0]?.fieldValue;
+                if (ic.OR[0]?.fieldPath?.length > 1) { json.if.fieldPath = ic.OR[0].fieldPath; }
                 return json;
             }
             json.if.OR = ic.OR
                 .filter((p: any) => p?.field?.name !== undefined)
-                .map((p: any) => ({ field: p.field.name, fieldValue: p.fieldValue }));
+                .map(serializePredicate);
             return json;
         }
 
         if (ic?.field?.name !== undefined) {
             json.if.field = ic.field.name;
             json.if.fieldValue = ic.fieldValue;
+            if (ic.fieldPath?.length > 1) { json.if.fieldPath = ic.fieldPath; }
             return json;
         }
         if (Array.isArray(ic?.predicates) && ic.predicates.length) {
             if (ic.predicates.length === 1) {
                 json.if.field = ic.predicates[0].field?.name;
                 json.if.fieldValue = ic.predicates[0].fieldValue;
+                if (ic.predicates[0]?.fieldPath?.length > 1) { json.if.fieldPath = ic.predicates[0].fieldPath; }
             } else if (ic.op === 'ANY_OF') {
                 json.if.OR = ic.predicates
                     .filter((p: any) => p?.field?.name !== undefined)
-                    .map((p: any) => ({ field: p.field.name, fieldValue: p.fieldValue }));
+                    .map(serializePredicate);
             } else {
                 json.if.AND = ic.predicates
                     .filter((p: any) => p?.field?.name !== undefined)
-                    .map((p: any) => ({ field: p.field.name, fieldValue: p.fieldValue }));
+                    .map(serializePredicate);
             }
             return json;
         }
@@ -909,6 +946,29 @@ export class JsonToSchema {
         }
     }
 
+    private static fromTableColumns(
+        value: IFieldJson,
+        context: ErrorContext
+    ): { name: string; key: string }[] | undefined {
+        context = context.add('tableColumns');
+
+        if (!Array.isArray(value.tableColumns)) {
+            return undefined;
+        }
+
+        const columns: { name: string; key: string }[] = [];
+        for (let i = 0; i < value.tableColumns.length; i++) {
+            const columnContext = context.add(`[${i}]`);
+            const column = value.tableColumns[i];
+            columns.push({
+                name: JsonToSchema.fromRequiredString(column?.name, columnContext.add('name')),
+                key: JsonToSchema.fromRequiredString(column?.key, columnContext.add('key')),
+            });
+        }
+
+        return columns;
+    }
+
     private static fromExpression(
         value: IFieldJson,
         context: ErrorContext
@@ -1044,6 +1104,12 @@ export class JsonToSchema {
             unit: JsonToSchema.fromUnit(value, context.add('unit')) as any,
             unitSystem: JsonToSchema.fromUnitType(value, context.add('unitSystem')) as any,
             customType: JsonToSchema.fromCustomType(value, context.add('customType')) as any,
+            dependency: value.dependency
+                ? {
+                    on: JsonToSchema.fromRequiredString(value.dependency.on, context.add('dependency.on')),
+                    kind: JsonToSchema.fromRequiredString(value.dependency.kind, context.add('dependency.kind'))
+                }
+                : undefined,
             isArray: JsonToSchema.fromBoolean(value.isArray, context.add('isArray')) || false,
             isUpdatable: JsonToSchema.fromBoolean(value.isUpdatable, context.add('isUpdatable')) || false,
             isRef: JsonToSchema.fromIsRef(value, all, context),
@@ -1059,6 +1125,7 @@ export class JsonToSchema {
 
             enum: JsonToSchema.fromEnum(value, context).enum,
             enumName: JsonToSchema.fromString(value.enumName, context.add('enumName')) as any,
+            tableColumns: JsonToSchema.fromTableColumns(value, context),
             availableOptions: JsonToSchema.fromAvailableOptions(value, context).availableOptions,
             remoteLink: JsonToSchema.fromEnum(value, context).link,
 
@@ -1137,12 +1204,51 @@ export class JsonToSchema {
         return target;
     }
 
+    private static resolveFieldByPath(
+        path: string[],
+        fields: SchemaField[],
+        context: ErrorContext
+    ): SchemaField {
+        let current = fields;
+        let field: SchemaField | undefined;
+        for (let i = 0; i < path.length; i++) {
+            field = current.find(f => f.name === path[i]);
+            if (!field) {
+                throw JsonToSchema.createErrorWithValue(
+                    context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.REF),
+                    path[i]
+                );
+            }
+            if (i < path.length - 1) {
+                current = field.fields || [];
+            }
+        }
+        return field!;
+    }
+
     private static fromCondIf(
         value: IConditionJson,
         fields: SchemaField[],
         context: ErrorContext
     ): SchemaCondition['ifCondition'] {
         const ifCtx = context.add('if');
+
+        const resolvePredicateField = (
+            fieldName: string | undefined,
+            fp: string[] | undefined,
+            ctx: ErrorContext
+        ): SchemaField => fp?.length > 1
+            ? JsonToSchema.resolveFieldByPath(fp, fields, ctx)
+            : JsonToSchema.resolveFieldByName(fieldName, fields, ctx);
+
+        const buildPredicate = (p: IIfRuleJson, ctx: ErrorContext): any => {
+            const pred: any = {
+                field: resolvePredicateField(p.field, p.fieldPath, ctx),
+                fieldValue: p.fieldValue,
+            };
+            if (p.fieldPath?.length > 1) { pred.fieldPath = p.fieldPath; }
+            return pred;
+        };
 
         if (Array.isArray(value?.if?.AND)) {
             const andArr = value.if.AND;
@@ -1152,18 +1258,10 @@ export class JsonToSchema {
                 );
             }
             if (andArr.length === 1) {
-                const p = andArr[0];
-                const field = JsonToSchema.resolveFieldByName(p?.field, fields, ifCtx.add('AND').add('[0]').add('field'));
-                return {
-                    field,
-                    fieldValue: p.fieldValue
-                } as any;
+                return buildPredicate(andArr[0], ifCtx.add('AND').add('[0]')) as any;
             }
             return {
-                AND: andArr.map((p, idx) => ({
-                    field: JsonToSchema.resolveFieldByName(p?.field, fields, ifCtx.add('AND').add(`[${idx}]`).add('field')),
-                    fieldValue: p?.fieldValue
-                }))
+                AND: andArr.map((p, idx) => buildPredicate(p, ifCtx.add('AND').add(`[${idx}]`)))
             } as any;
         }
 
@@ -1175,28 +1273,20 @@ export class JsonToSchema {
                 );
             }
             if (orArr.length === 1) {
-                const p = orArr[0];
-                const field = JsonToSchema.resolveFieldByName(p?.field, fields, ifCtx.add('OR').add('[0]').add('field'));
-                return {
-                    field,
-                    fieldValue: p.fieldValue
-                } as any;
+                return buildPredicate(orArr[0], ifCtx.add('OR').add('[0]')) as any;
             }
             return {
-                OR: orArr.map((p, idx) => ({
-                    field: JsonToSchema.resolveFieldByName(p?.field, fields, ifCtx.add('OR').add(`[${idx}]`).add('field')),
-                    fieldValue: p?.fieldValue
-                }))
+                OR: orArr.map((p, idx) => buildPredicate(p, ifCtx.add('OR').add(`[${idx}]`)))
             } as any;
         }
 
-        const fieldName = value?.if?.field;
+        const ifFieldPath = value?.if?.fieldPath;
+        const ifField = value?.if?.field;
         const val = value?.if?.fieldValue;
-        const target = JsonToSchema.resolveFieldByName(fieldName, fields, ifCtx.add('field'));
-        return {
-            field: target,
-            fieldValue: val
-        } as any;
+        const target = resolvePredicateField(ifField, ifFieldPath, ifCtx.add('field'));
+        const single: any = { field: target, fieldValue: val };
+        if (ifFieldPath?.length > 1) { single.fieldPath = ifFieldPath; }
+        return single as any;
     }
 
     private static fromCondFields(
@@ -1239,11 +1329,6 @@ export class JsonToSchema {
         } else {
             elseFields = [];
         }
-        if (thenFields.length === 0 && elseFields.length === 0) {
-            throw JsonToSchema.createError(
-                context.setMessage(JsonError.THEN_ELSE)
-            );
-        }
         return {
             then: thenFields,
             else: elseFields
@@ -1261,10 +1346,32 @@ export class JsonToSchema {
         context = context.add(`[${index}]`);
         const ifCondition = JsonToSchema.fromCondIf(value, fields, context);
         const { then, else: _else } = JsonToSchema.fromCondFields(value, all, entity, new Set<string>(), context);
+
+        const thenTargets = (value.thenTargets || [])
+            .filter(t => Array.isArray(t.fieldPath) && t.fieldPath.length >= 2)
+            .map(t => ({
+                fieldPath: t.fieldPath,
+                field: JsonToSchema.resolveFieldByPath(t.fieldPath, fields, context.add('thenTargets')),
+            }));
+        const elseTargets = (value.elseTargets || [])
+            .filter(t => Array.isArray(t.fieldPath) && t.fieldPath.length >= 2)
+            .map(t => ({
+                fieldPath: t.fieldPath,
+                field: JsonToSchema.resolveFieldByPath(t.fieldPath, fields, context.add('elseTargets')),
+            }));
+
+        if (then.length === 0 && _else.length === 0 && thenTargets.length === 0 && elseTargets.length === 0) {
+            throw JsonToSchema.createError(
+                context.setMessage(JsonError.THEN_ELSE)
+            );
+        }
+
         const condition: SchemaCondition = {
             ifCondition,
             thenFields: then,
-            elseFields: _else
+            elseFields: _else,
+            thenTargets: thenTargets.length ? thenTargets : undefined,
+            elseTargets: elseTargets.length ? elseTargets : undefined,
         } as any;
         return condition;
     }
@@ -1316,6 +1423,49 @@ export class JsonToSchema {
         return conditions;
     }
 
+    /**
+     * Add the fields a condition reveals to the schema's own field list, and share one
+     * object between the two.
+     *
+     * `buildDocument` turns that list into `properties`, so a missing condition field is
+     * never declared — and with `additionalProperties: false` the schema then rejects the
+     * documents it describes. `schemaToJson` also emits the field in `json.fields` as well
+     * as inside `json.conditions`, and each condition parses with its own uniqueness set,
+     * so on a round trip both copies survive: the field is present but not shared, and an
+     * edit or rename in the editor reaches `allOf` while `properties` keeps the old entry.
+     */
+    private static mergeConditionFields(fields: SchemaField[], conditions: SchemaCondition[]): void {
+        const indexByName = new Map<string, number>();
+        for (let index = 0; index < fields.length; index++) {
+            if (!indexByName.has(fields[index].name)) {
+                indexByName.set(fields[index].name, index);
+            }
+        }
+        const merge = (branch?: SchemaField[]) => {
+            if (!Array.isArray(branch)) {
+                return;
+            }
+            for (let i = 0; i < branch.length; i++) {
+                const field = branch[i];
+                const index = indexByName.get(field.name);
+                if (index === undefined) {
+                    indexByName.set(field.name, fields.length);
+                    fields.push(field);
+                    continue;
+                }
+                // Keep the declared entry as the shared object, as `Schema.linkConditionFields`
+                // does; `required` is the one attribute that belongs to the branch.
+                const declared = fields[index];
+                declared.required = field.required;
+                branch[i] = declared;
+            }
+        };
+        for (const condition of (conditions || [])) {
+            merge(condition.thenFields);
+            merge(condition.elseFields);
+        }
+    }
+
     public static fromJson(json: ISchemaJson, all: Schema[]) {
         const context: ErrorContext = new ErrorContext();
         context.setPath(['schema']);
@@ -1325,6 +1475,7 @@ export class JsonToSchema {
         const entity = JsonToSchema.fromEntity(json.entity, context.add('entity'));
         const fields = JsonToSchema.fromFields(json.fields, all, entity, new Set<string>(), context.add('fields'));
         const conditions = JsonToSchema.fromConditions(json.conditions, fields, all, entity, context.add('conditions'));
+        JsonToSchema.mergeConditionFields(fields, conditions);
         JsonToSchema.fromDefaultFields(fields, entity);
         return {
             name,

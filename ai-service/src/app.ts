@@ -3,7 +3,7 @@ import { aiSuggestionsAPI } from './api/service/ai-suggestions-service.js';
 import { AISuggestionsDB } from './helpers/ai-suggestions-db.js';
 import { AIManager } from './ai-manager.js';
 import { ApplicationState, JwtServicesValidator, MessageBrokerChannel, mongoForLoggingInitialization, OldSecretManager, PinoLogger, pinoLoggerInitialization } from '@guardian/common';
-import * as process from 'process';
+import * as process from 'node:process';
 import { ApplicationStates } from '@guardian/interfaces';
 
 Promise.all([

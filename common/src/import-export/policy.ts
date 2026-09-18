@@ -1,10 +1,10 @@
 import JSZip from 'jszip';
-import { Artifact, Formula, Policy, PolicyCategory, PolicyTool, Schema, Tag, Token } from '../entity/index.js';
+import { Artifact, Formula, Policy, PolicyCategory, PolicyTool, Schema, SchemaTemplateSnapshot, Tag, Token } from '../entity/index.js';
 import { DatabaseServer } from '../database-modules/index.js';
 import { ImportExportUtils } from './utils.js';
 import { PolicyCategoryExport, SchemaCategory, SchemaHelper, Schema as InterfaceSchema, SchemaEntity, GenerateUUIDv4 } from '@guardian/interfaces';
 import stringify from 'fast-json-stable-stringify';
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 import { VcHelper } from '../helpers/vc-helper.js';
 import { DataBaseHelper } from '../helpers/index.js';
 import { ObjectId } from 'bson';
@@ -29,6 +29,14 @@ export interface IPolicyComponents {
     tags: Tag[];
     tools: PolicyTool[];
     tests: IArtifact[];
+    schemaTemplateSnapshots?: SchemaTemplateSnapshot[];
+    artifactErrors?: IArtifactError[];
+}
+
+export interface IArtifactError {
+    type: 'artifact';
+    name: string;
+    error: string;
 }
 
 /**
@@ -75,6 +83,96 @@ export class PolicyImportExport {
         return Array.from(result.values());
     }
 
+    private static async loadTopicSchemas(topicId: string): Promise<Schema[]> {
+        const result = new Map<string, Schema>();
+        const schemas = await new DatabaseServer().find(Schema, {
+            topicId,
+            readonly: false
+        });
+        for (const schema of schemas) {
+            result.set(schema.iri, schema);
+        }
+        return Array.from(result.values());
+    }
+
+    private static mergeSchemas(...schemaGroups: Schema[][]): Schema[] {
+        const result = new Map<string, Schema>();
+        for (const schemas of schemaGroups) {
+            for (const schema of schemas) {
+                result.set(schema.iri, schema);
+            }
+        }
+        return Array.from(result.values());
+    }
+
+    private static async loadPolicySchemaTemplateSchemas(
+        policy: Policy,
+        existingSchemas: Schema[]
+    ): Promise<Schema[]> {
+        const schemaIds = (policy.schemaTemplates || [])
+            .flatMap(binding => Object.values(binding.schemaMap || {}))
+            .map(id => id?.toString?.() || String(id || ''))
+            .filter(id => !!id);
+
+        if (!schemaIds.length) {
+            return existingSchemas;
+        }
+
+        const result = new Map<string, Schema>();
+        for (const schema of existingSchemas) {
+            result.set(schema.id?.toString(), schema);
+        }
+
+        const missingIds = schemaIds.filter(id => !result.has(id));
+        if (!missingIds.length) {
+            return Array.from(result.values());
+        }
+
+        const objectIds = missingIds
+            .filter(id => ObjectId.isValid(id))
+            .map(id => new ObjectId(id));
+        if (!objectIds.length) {
+            return Array.from(result.values());
+        }
+
+        const templateSchemas = await DatabaseServer.getSchemas({
+            _id: { $in: objectIds },
+            topicId: policy.topicId,
+            readonly: false
+        });
+
+        for (const schema of templateSchemas) {
+            result.set(schema.id?.toString(), schema);
+        }
+
+        const loadedIris = new Set(Array.from(result.values()).map(schema => schema.iri));
+        const missingRefs = new Set<string>();
+        for (const schema of templateSchemas) {
+            const defs = schema?.document?.$defs;
+            if (defs && Object.prototype.toString.call(defs) === '[object Object]') {
+                for (const iri of Object.keys(defs)) {
+                    if (!loadedIris.has(iri)) {
+                        missingRefs.add(iri);
+                    }
+                }
+            }
+        }
+
+        if (missingRefs.size) {
+            const refSchemas = await DatabaseServer.getSchemas({
+                iri: { $in: Array.from(missingRefs) },
+                topicId: policy.topicId,
+                readonly: false
+            });
+            for (const schema of refSchemas) {
+                result.set(schema.id?.toString(), schema);
+                loadedIris.add(schema.iri);
+            }
+        }
+
+        return Array.from(result.values());
+    }
+
     private static async loadSystemSchemas(topicId: string): Promise<Schema[]> {
         const result = new Map<string, Schema>();
         const schemas = await new DatabaseServer().find(Schema, {
@@ -104,9 +202,20 @@ export class PolicyImportExport {
         const dataBaseServer = new DatabaseServer();
 
         const tokens = await dataBaseServer.find(Token, { tokenId: { $in: tokenIds } });
-        const schemas = await PolicyImportExport.loadSchemas(topicId, schemasIds);
+        const schemas = await PolicyImportExport.loadPolicySchemaTemplateSchemas(
+            policy,
+            PolicyImportExport.mergeSchemas(
+                await PolicyImportExport.loadTopicSchemas(topicId),
+                await PolicyImportExport.loadSchemas(topicId, schemasIds)
+            )
+        );
         const systemSchemas = await PolicyImportExport.loadSystemSchemas(topicId);
         const tools = await dataBaseServer.find(PolicyTool, { messageId: { $in: toolIds } });
+        const schemaTemplateSnapshots: SchemaTemplateSnapshot[] = (await Promise.all(
+            (policy.schemaTemplates || [])
+                .filter((binding) => !!binding?.snapshotId)
+                .map((binding) => DatabaseServer.getSchemaTemplateSnapshotById(binding.snapshotId))
+        )).filter((snapshot): snapshot is SchemaTemplateSnapshot => !!snapshot);
         const artifacts: IArtifact[] = [];
         const artifactRows = await dataBaseServer.find(Artifact, { policyId: policy.id });
         for (const item of artifactRows) {
@@ -155,7 +264,8 @@ export class PolicyImportExport {
             artifacts,
             tags,
             tests,
-            formulas
+            formulas,
+            schemaTemplateSnapshots
         };
     }
 
@@ -240,6 +350,25 @@ export class PolicyImportExport {
             zip.file(`tools/${tool.hash}.json`, JSON.stringify(tool));
         }
 
+        // One folder per template, keyed by templateId, so multiple templates don't overwrite each other.
+        if (preparedComponents.schemaTemplateSnapshots?.length) {
+            zip.folder('schemaTemplate');
+            for (const snapshot of preparedComponents.schemaTemplateSnapshots) {
+                const templateId = snapshot?.templateId;
+                if (!templateId) {
+                    throw new Error(
+                        `Schema template snapshot ${snapshot?.id || '(no id)'} has no templateId ` +
+                        'and cannot be exported. The policy binding it belongs to would be lost on import.'
+                    );
+                }
+                zip.folder(`schemaTemplate/${templateId}`);
+                zip.file(
+                    `schemaTemplate/${templateId}/snapshot.json`,
+                    JSON.stringify(snapshot)
+                );
+            }
+        }
+
         zip.folder('tags');
         for (let index = 0; index < preparedComponents.tags.length; index++) {
             zip.file(`tags/${index}.json`, JSON.stringify(preparedComponents.tags[index]));
@@ -316,6 +445,11 @@ export class PolicyImportExport {
         }
         const policyString = await content.files[PolicyImportExport.policyFileName].async('string');
         const policy = JSON.parse(policyString);
+        // Normalise the legacy singular `schemaTemplate` key so callers only ever see `schemaTemplates`.
+        if (policy.schemaTemplate && !policy.schemaTemplates?.length) {
+            policy.schemaTemplates = [policy.schemaTemplate];
+        }
+        delete policy.schemaTemplate;
 
         const fileEntries = Object.entries(content.files).filter(file => !file[1].dir);
         const [
@@ -325,6 +459,8 @@ export class PolicyImportExport {
             tagsStringArray,
             formulasStringArray,
             systemSchemasStringArray,
+            schemaTemplateSnapshotStringArray,
+            legacySchemaTemplateSnapshotString,
         ] = await Promise.all([
             Promise.all(fileEntries.filter(file => /^tokens\/.+/.test(file[0])).map(file => file[1].async('string'))),
             Promise.all(fileEntries.filter(file => /^schem[a,e]s\/.+/.test(file[0])).map(file => file[1].async('string'))),
@@ -332,6 +468,12 @@ export class PolicyImportExport {
             Promise.all(fileEntries.filter(file => /^tags\/.+/.test(file[0])).map(file => file[1].async('string'))),
             Promise.all(fileEntries.filter(file => /^formulas\/.+/.test(file[0])).map(file => file[1].async('string'))),
             Promise.all(fileEntries.filter(file => /^systemSchem[a,e]s\/.+/.test(file[0])).map(file => file[1].async('string'))),
+            Promise.all(fileEntries
+                .filter(file => /^schemaTemplate\/.+\/snapshot\.json$/.test(file[0]))
+                .map(file => file[1].async('string'))),
+            content.files['schemaTemplate/snapshot.json'] && !content.files['schemaTemplate/snapshot.json'].dir
+                ? content.files['schemaTemplate/snapshot.json'].async('string')
+                : null,
         ]);
         const tokens = tokensStringArray.map(item => JSON.parse(item));
         const schemas = schemasStringArray.map(item => JSON.parse(item));
@@ -339,24 +481,79 @@ export class PolicyImportExport {
         const tags = tagsStringArray.map(item => JSON.parse(item));
         const formulas = formulasStringArray.map(item => JSON.parse(item));
         const systemSchemas = systemSchemasStringArray.map(item => JSON.parse(item));
+        // IPFS content is immutable, so the legacy fixed-path snapshot must still be read into the same array.
+        const schemaTemplateSnapshots = schemaTemplateSnapshotStringArray.map(item => JSON.parse(item));
+        if (!schemaTemplateSnapshots.length && legacySchemaTemplateSnapshotString) {
+            schemaTemplateSnapshots.push(JSON.parse(legacySchemaTemplateSnapshotString));
+        }
 
         const metaDataFile = (Object.entries(content.files).find(file => file[0] === 'artifacts/metadata.json'));
         const metaDataString = metaDataFile && await metaDataFile[1].async('string') || '[]';
-        const metaDataBody: any[] = JSON.parse(metaDataString);
+        //Artifact entries this archive could not resolve.
+        const artifactErrors: IArtifactError[] = [];
+        //Unreadable metadata degrades to "no records" and is reported once, instead of
+        //throwing or blaming each entry for a file-level fault.
+        let parsedMetaData: any;
+        let metaDataFault: string | null = null;
+        try {
+            parsedMetaData = JSON.parse(metaDataString);
+            if (!Array.isArray(parsedMetaData)) {
+                metaDataFault = 'is not a list';
+            }
+        } catch (error) {
+            metaDataFault = 'is not valid JSON';
+        }
+        const metaDataUsable = !metaDataFault;
+        const metaDataBody: any[] = metaDataUsable ? parsedMetaData : [];
+        if (metaDataFault) {
+            artifactErrors.push({
+                type: 'artifact',
+                name: 'artifacts/metadata.json',
+                error: `Artifact metadata ${metaDataFault}; no artifact in this archive could be resolved.`
+            });
+        }
 
         let artifacts: any;
         if (includeArtifactsData) {
-            const data = fileEntries.filter(file => /^artifacts\/.+/.test(file[0]) && file[0] !== 'artifacts/metadata.json').map(async file => {
-                const uuid = file[0].split('/')[1];
-                const artifactMetaData = metaDataBody.find(item => item.uuid === uuid);
-                return {
-                    name: artifactMetaData.name,
-                    extention: artifactMetaData.extention,
-                    uuid: artifactMetaData.uuid,
-                    data: await file[1].async('nodebuffer')
+            //a missing record used to dereference `undefined` inside a Promise.all, so
+            //one bad entry aborted the whole import
+            const artifactEntries = fileEntries.filter(
+                file => /^artifacts\/.+/.test(file[0]) && file[0] !== 'artifacts/metadata.json'
+            );
+            const resolved = await Promise.all(artifactEntries.map(async file => {
+                const path = file[0];
+                const uuid = path.split('/')[1];
+                //Nested paths are not an artifact layout this format defines.
+                const isNested = path.split('/').length > 2;
+                const artifactMetaData = isNested
+                    ? undefined
+                    : metaDataBody.find(item => item.uuid === uuid);
+                if (!artifactMetaData) {
+                    return {
+                        error: {
+                            type: 'artifact' as const,
+                            name: path,
+                            error: isNested
+                                ? 'Artifact is nested; artifacts must sit directly under artifacts/.'
+                                : 'No metadata record matches this artifact.'
+                        }
+                    };
                 }
-            })
-            artifacts = await Promise.all(data);
+                return {
+                    artifact: {
+                        name: artifactMetaData.name,
+                        extention: artifactMetaData.extention,
+                        uuid: artifactMetaData.uuid,
+                        data: await file[1].async('nodebuffer')
+                    }
+                };
+            }));
+            for (const item of resolved) {
+                if (item.error && metaDataUsable) {
+                    artifactErrors.push(item.error);
+                }
+            }
+            artifacts = resolved.filter(item => item.artifact).map(item => item.artifact);
         } else {
             artifacts = metaDataBody.map((artifactMetaData) => {
                 return {
@@ -393,7 +590,10 @@ export class PolicyImportExport {
             tags,
             tools,
             tests,
-            formulas
+            formulas,
+            schemaTemplateSnapshots,
+            //excluded from the hash by cleanBeforeHash
+            ...(artifactErrors.length ? { artifactErrors } : {})
         }
 
         const hashSum = PolicyImportExport.getPolicyHash(policyComponents);
@@ -403,16 +603,7 @@ export class PolicyImportExport {
     }
 
     private static _createFile(json: string | Buffer, fileName: string): Promise<ObjectId> {
-        return new Promise<ObjectId>((resolve, reject) => {
-            try {
-                const fileStream = DataBaseHelper.gridFS.openUploadStream(fileName);
-                const fileId = fileStream.id;
-                fileStream.write(json);
-                fileStream.end(() => resolve(fileId));
-            } catch (error) {
-                reject(error)
-            }
-        });
+        return DataBaseHelper.writeToGridFS(json, fileName, () => DataBaseHelper.gridFS.openUploadStream(fileName));
     }
 
     /**
@@ -504,6 +695,9 @@ export class PolicyImportExport {
     }
 
     private static cleanBeforeHash(components: IPolicyComponents): IPolicyComponents {
+        //getPolicyHash stringifies the whole object, so a parse diagnostic would change
+        //the hash of a policy whose content is identical
+        delete components.artifactErrors;
         delete components.policy.policyTag;
         delete components.policy.name;
         delete components.policy.uuid;
@@ -525,6 +719,14 @@ export class PolicyImportExport {
         PolicyImportExport.removeField(components.policy, 'id');
         PolicyImportExport.removeField(components, 'guardianVersion');
         PolicyImportExport.removeField(components, 'systemSchemas');
+        delete components.schemaTemplateSnapshots;
+        /*
+         * Environment-specific, so it cannot take part in the hash: snapshotId,
+         * schemaMap ObjectIds and the timestamps are assigned per environment, so an
+         * identical policy hashed differently in each one. Same for the per-schema
+         * markers below.
+         */
+        delete (components.policy as any).schemaTemplates;
 
         components.schemas.sort((schemaA, schemaB) => schemaA.name > schemaB.name ? -1 : 1);
 
@@ -539,6 +741,9 @@ export class PolicyImportExport {
             delete schema.creator;
             delete schema.owner;
             delete schema.codeVersion;
+            // see the note on policy.schemaTemplate above
+            delete (schema as any).templateId;
+            delete (schema as any).templateSchemaId;
         });
 
         components.tokens.forEach(token => {
@@ -555,64 +760,8 @@ export class PolicyImportExport {
             delete token._propHash;
         });
 
-        const schemaIds = new Map();
-        const tokenIds = new Map();
-
-        let tokenCounter = 0;
-        let schemaCounter = 0;
-
-        components.schemas.forEach(schema => {
-            schemaIds.set(`schema:${schema.uuid}#${schema.uuid}`, `@${schemaCounter}`);
-            schemaCounter++;
-        });
-
-        schemaCounter = 0;
-        components.schemas.forEach(schema => {
-            schemaIds.set(`schema:${schema.uuid}&${schema.version}`, `@${schemaCounter}`);
-            schemaCounter++;
-        });
-
-        schemaCounter = 0;
-        components.schemas.forEach(schema => {
-            schemaIds.set(`schema:${schema.uuid}#`, `#`);
-            schemaCounter++;
-        });
-
-        schemaCounter = 0;
-        components.schemas.forEach(schema => {
-            schemaIds.set(`schema:${schema.uuid}`, `@${schemaCounter}`);
-            schemaCounter++;
-        });
-
-        schemaCounter = 0;
-        components.schemas.forEach(schema => {
-            schemaIds.set(`#${schema.uuid}&${schema.version}`, `@${schemaCounter}`);
-            schemaCounter++;
-        });
-
-        schemaCounter = 0;
-        components.schemas.forEach(schema => {
-            schemaIds.set(`#${schema.uuid}`, `@${schemaCounter}`);
-            schemaCounter++;
-        });
-
-        schemaCounter = 0;
-        components.schemas.forEach(schema => {
-            schemaIds.set(`${schema.uuid}&${schema.version}`, `@${schemaCounter}`);
-            schemaCounter++;
-        });
-
-        schemaCounter = 0;
-        components.schemas.forEach(schema => {
-            schemaIds.set(schema.uuid, `@${schemaCounter}`);
-            schemaCounter++;
-        });
-
-        schemaCounter = 0;
-        components.tokens.forEach(token => {
-            tokenIds.set(token.tokenId, `@token${tokenCounter}`)
-            tokenCounter++;
-        });
+        // Build ref maps before deleting version (some forms embed it).
+        const { groups, tokenIds } = PolicyImportExport.buildRefGroups(components.schemas, components.tokens);
 
         components.schemas.forEach(schema => {
             delete schema.version;
@@ -621,19 +770,84 @@ export class PolicyImportExport {
 
         let componentsJson = JSON.stringify(components);
         componentsJson = PolicyImportExport.removeIpfsFromJson(componentsJson);
-        schemaIds.forEach((value, key)  => {
-            componentsJson = componentsJson.replaceAll(key, value);
-        });
 
-        tokenIds.forEach((value, key)  => {
-            componentsJson = componentsJson.replaceAll(key, value);
-        });
+        const normalized = PolicyImportExport.applyRefGroups(componentsJson, groups, tokenIds);
 
-        return JSON.parse(componentsJson);
+        return JSON.parse(normalized);
     }
 
     private static removeIpfsFromJson(json: string): string {
         return json.replace(/ipfs:\/\/[^\s"#&]+/g, '');
+    }
+
+    /**
+     * Build one ref map per textual reference form, mapping each schema to a positional tag
+     * (`@<index>`) so equivalent policies hash equally. Ordered most-specific-first, since a
+     * later form can match an earlier form's output (`schema:${uuid}#` -> `#`, then `#${uuid}`).
+     */
+    private static buildRefGroups(
+        schemas: Schema[],
+        tokens: Token[]
+    ): { groups: Map<string, string>[]; tokenIds: Map<string, string> } {
+        const g1 = new Map<string, string>(); // schema:${uuid}#${uuid}
+        const g2 = new Map<string, string>(); // schema:${uuid}&${version}
+        const g3 = new Map<string, string>(); // schema:${uuid}#
+        const g4 = new Map<string, string>(); // schema:${uuid}
+        const g5 = new Map<string, string>(); // #${uuid}&${version}
+        const g6 = new Map<string, string>(); // #${uuid}
+        const g7 = new Map<string, string>(); // ${uuid}&${version}
+        const g8 = new Map<string, string>(); // ${uuid}
+        const tokenIds = new Map<string, string>();
+
+        schemas.forEach((schema, index) => {
+            const tag = `@${index}`;
+            g1.set(`schema:${schema.uuid}#${schema.uuid}`, tag);
+            g2.set(`schema:${schema.uuid}&${schema.version}`, tag);
+            g3.set(`schema:${schema.uuid}#`, `#`);
+            g4.set(`schema:${schema.uuid}`, tag);
+            g5.set(`#${schema.uuid}&${schema.version}`, tag);
+            g6.set(`#${schema.uuid}`, tag);
+            g7.set(`${schema.uuid}&${schema.version}`, tag);
+            g8.set(`${schema.uuid}`, tag);
+        });
+
+        tokens.forEach((token, index) => {
+            tokenIds.set(token.tokenId, `@token${index}`);
+        });
+
+        return { groups: [g1, g2, g3, g4, g5, g6, g7, g8], tokenIds };
+    }
+
+    /**
+     * Apply each ref map in a single pass via one alternation regex of its exact keys, in
+     * insertion order. Reproduces the original per-key `replaceAll` sequence byte-for-byte
+     * (same substrings and prefix precedence) but avoids the O(schemas^2) full-string rescans.
+     */
+    private static applyRefGroups(
+        json: string,
+        groups: Map<string, string>[],
+        tokenIds: Map<string, string>
+    ): string {
+        let result = json;
+        for (const map of groups) {
+            if (map.size === 0) {
+                continue;
+            }
+            const pattern = Array.from(map.keys(), PolicyImportExport.escapeRegExp).join('|');
+            const regex = new RegExp(pattern, 'g');
+            // Every match is verbatim one of this map's keys, so the lookup is always defined.
+            result = result.replace(regex, (match) => map.get(match));
+        }
+
+        tokenIds.forEach((value, key) => {
+            result = result.replaceAll(key, value);
+        });
+
+        return result;
+    }
+
+    private static escapeRegExp(value: string): string {
+        return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
     private static preparePolicyComponents(components: IPolicyComponents): IPolicyComponents {
@@ -721,6 +935,9 @@ export class PolicyImportExport {
             return item;
         });
 
+        const schemaTemplateSnapshots = (components.schemaTemplateSnapshots || [])
+            .map(item => PolicyImportExport.prepareSchemaTemplateSnapshot(item));
+
         return {
             policy: policyObject,
             tokens,
@@ -730,8 +947,22 @@ export class PolicyImportExport {
             tags,
             tools,
             tests,
-            formulas
+            formulas,
+            schemaTemplateSnapshots
         };
+    }
+
+    private static prepareSchemaTemplateSnapshot(snapshot: SchemaTemplateSnapshot): SchemaTemplateSnapshot {
+        const item: any = { ...snapshot };
+        delete item._id;
+        delete item.id;
+        delete item.policyId;
+        delete item.configFileId;
+        delete item.schemasFileId;
+        delete item._configFileId;
+        delete item._schemasFileId;
+
+        return item;
     }
 
     static async saveOriginalZip(zipFile: any, policyName?: string): Promise<ObjectId> {

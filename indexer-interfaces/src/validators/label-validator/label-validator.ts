@@ -6,13 +6,9 @@ import { IValidatorStep } from '../interfaces/validator-step.js';
 import { IValidatorNode } from '../interfaces/validator-node.js';
 import { IValidateStatus } from '../interfaces/validate-status.js';
 import { IValidator } from '../interfaces/validator.js';
-import { IStepDocument, INavImportsConfig, INavItemConfig, IPolicyLabel, IPolicyLabelConfig, NavItemType } from '../interfaces/index.js';
+import { IStepDocument, IPolicyLabel, IPolicyLabelConfig, NavItemType } from '../interfaces/index.js';
 
 export class LabelValidators {
-    // tslint:disable-next-line:no-unused-variable
-    private readonly imports: INavImportsConfig[];
-    // tslint:disable-next-line:no-unused-variable
-    private readonly children: INavItemConfig[];
     private readonly root: LabelItemValidator;
     private readonly steps: IValidatorStep[];
     private readonly tree: IValidatorNode;

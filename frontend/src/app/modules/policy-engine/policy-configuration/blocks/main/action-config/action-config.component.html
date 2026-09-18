@@ -1,11 +1,13 @@
 <!-- UI Prop -->
 @if (properties) {
-  <table class="properties" [attr.readonly]="readonly">
+  <table class="properties action-properties" [attr.readonly]="readonly">
+  <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
     <tr class="propRow">
       <td class="propRowCol"></td>
       <td class="propRowCell cellName">Type</td>
       <td class="propRowCell">
         <p-select
+          panelStyleClass="pc-select-panel"
           [(ngModel)]="properties.type"
           [disabled]="readonly"
           (onChange)="onSave()"
@@ -15,11 +17,12 @@
         </p-select>
       </td>
     </tr>
-    <tr class="propHeader">
-      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-        <i class="pi pi-caret-down"></i>
+    <tr class="propHeader" (click)="onHide(propHidden, 'main')">
+      <td class="propRowCol"></td>
+      <td class="propHeaderCell cellName action-section-header" [attr.collapse]="propHidden.main">
+        <i class="pi pi-chevron-down chevron-icon"></i>
+        <span>UI</span>
       </td>
-      <td class="propHeaderCell cellName">UI</td>
       <td class="propHeaderCell"></td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">
@@ -37,31 +40,37 @@
           <input class="prop-input" [(ngModel)]="properties.field" [readonly]="readonly" (blur)="onSave()">
         </td>
       </tr>
-      <tr class="propRow" [attr.collapse]="propHidden.main">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'optionsGroup')"
-          [attr.collapse]="propHidden.optionsGroup">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.main" (click)="onHide(propHidden, 'optionsGroup')">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName" [attr.collapse]="propHidden.optionsGroup">
           @if (properties.uiMetaData.options.length) {
-            <i class="pi pi-caret-down"></i>
+            <i class="pi pi-chevron-down chevron-icon"></i>
           }
+          <span>Options</span>
         </td>
-        <td class="propRowCell cellName">Options</td>
         <td class="propRowCell">
-          <div class="propAdd" (click)="addOptions()">
+          <div class="propAdd" (click)="$event.stopPropagation(); addOptions()">
             <i class="pi pi-plus"></i>
             <span>Add Options</span>
           </div>
         </td>
       </tr>
       @for (option of properties.uiMetaData.options; track option; let i = $index) {
-        <tr class="propRow subRow" [attr.collapse]="propHidden.main || propHidden.optionsGroup">
-          <td class="propRowCol cellCollapse" (click)="onHide(propHidden.options, i)"
-            [attr.collapse]="propHidden.options[i]">
-            <i class="pi pi-caret-down"></i>
+        <tr class="propRow" lvl="2" [attr.collapse]="propHidden.main || propHidden.optionsGroup"
+          (click)="onHide(propHidden.options, i)">
+          <td class="propRowCol"></td>
+          <td class="propRowCell cellName" [attr.collapse]="propHidden.options[i]">
+            <i class="pi pi-chevron-down chevron-icon"></i>
+            <span>Options {{ i }}</span>
           </td>
-          <td class="propRowCell cellName">Options {{ i }}</td>
-          <td class="propRowCell">{{ option.name }}</td>
+          <td class="propRowCell not-editable-text">
+            <span>{{ option.name }}</span>
+            <span class="remove-prop" [attr.readonly]="readonly" (click)="$event.stopPropagation(); onRemoveOption(i)">
+              <i class="pi pi-trash"></i>
+            </span>
+          </td>
         </tr>
-        <tr class="propRow subRow-2"
+        <tr class="propRow" lvl="2"
           [attr.collapse]="propHidden.main || propHidden.optionsGroup || propHidden.options[i]">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName">Option Tag</td>
@@ -69,7 +78,7 @@
             <input class="prop-input" [(ngModel)]="option.tag" [readonly]="readonly" (blur)="onSave()">
           </td>
         </tr>
-        <tr class="propRow subRow-2"
+        <tr class="propRow" lvl="2"
           [attr.collapse]="propHidden.main || propHidden.optionsGroup || propHidden.options[i]">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName">Name</td>
@@ -77,7 +86,7 @@
             <input class="prop-input" [(ngModel)]="option.name" [readonly]="readonly" (blur)="onSave()">
           </td>
         </tr>
-        <tr class="propRow subRow-2"
+        <tr class="propRow" lvl="2"
           [attr.collapse]="propHidden.main || propHidden.optionsGroup || propHidden.options[i]">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName">Value</td>
@@ -85,12 +94,13 @@
             <input class="prop-input" [(ngModel)]="option.value" [readonly]="readonly" (blur)="onSave()">
           </td>
         </tr>
-        <tr class="propRow subRow-2"
+        <tr class="propRow" lvl="2"
           [attr.collapse]="propHidden.main || propHidden.optionsGroup || propHidden.options[i]">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName">User</td>
           <td class="propRowCell">
             <p-select
+              panelStyleClass="pc-select-panel"
               [(ngModel)]="option.user"
               [disabled]="readonly"
               (onChange)="onSave()"
@@ -101,7 +111,7 @@
             </p-select>
           </td>
         </tr>
-        <tr class="propRow subRow-2"
+        <tr class="propRow" lvl="2"
           [attr.collapse]="propHidden.main || propHidden.optionsGroup || propHidden.options[i]">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName">UI Class</td>
@@ -120,30 +130,30 @@
             (blur)="onSave()">
         </td>
       </tr>
-      <tr class="propRow" [attr.collapse]="propHidden.main">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'dropdownGroup')"
-          [attr.collapse]="propHidden.dropdownGroup">
-          <i class="pi pi-caret-down"></i>
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.main" (click)="onHide(propHidden, 'dropdownGroup')">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName" [attr.collapse]="propHidden.dropdownGroup">
+          <i class="pi pi-chevron-down chevron-icon"></i>
+          <span>Dropdown Options</span>
         </td>
-        <td class="propRowCell cellName">Dropdown Options</td>
         <td class="propRowCell">
         </td>
       </tr>
-      <tr class="propRow subRow" [attr.collapse]="propHidden.main|| propHidden.dropdownGroup">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.main|| propHidden.dropdownGroup">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Option Name</td>
         <td class="propRowCell">
           <input class="prop-input" [(ngModel)]="properties.name" [readonly]="readonly" (blur)="onSave()">
         </td>
       </tr>
-      <tr class="propRow subRow" [attr.collapse]="propHidden.main|| propHidden.dropdownGroup">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.main|| propHidden.dropdownGroup">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Option Value</td>
         <td class="propRowCell">
           <input class="prop-input" [(ngModel)]="properties.value" [readonly]="readonly" (blur)="onSave()">
         </td>
       </tr>
-      <tr class="propRow subRow" [attr.collapse]="propHidden.main|| propHidden.dropdownGroup">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.main|| propHidden.dropdownGroup">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Field</td>
         <td class="propRowCell">
@@ -160,16 +170,16 @@
             (blur)="onSave()">
         </td>
       </tr>
-      <tr class="propRow" [attr.collapse]="propHidden.main">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'fileGroup')"
-          [attr.collapse]="propHidden.fileGroup">
-          <i class="pi pi-caret-down"></i>
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.main" (click)="onHide(propHidden, 'fileGroup')">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName" [attr.collapse]="propHidden.fileGroup">
+          <i class="pi pi-chevron-down chevron-icon"></i>
+          <span>File Options</span>
         </td>
-        <td class="propRowCell cellName">File Options</td>
         <td class="propRowCell">
         </td>
       </tr>
-      <tr class="propRow subRow" [attr.collapse]="propHidden.main|| propHidden.fileGroup">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.main|| propHidden.fileGroup">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Schema</td>
         <td class="propRowCell">
@@ -181,7 +191,7 @@
           ></select-schema>
         </td>
       </tr>
-      <tr class="propRow subRow" [attr.collapse]="propHidden.main|| propHidden.fileGroup">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.main|| propHidden.fileGroup">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Target Url</td>
         <td class="propRowCell">

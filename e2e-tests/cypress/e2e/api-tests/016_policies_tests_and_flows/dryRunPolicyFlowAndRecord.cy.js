@@ -1,46 +1,48 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
+import { seededMessageId } from '../../../support/CustomHelpers/ipfsSeeding';
 
-context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
+context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-    const policyMessageId = Cypress.env('policy_for_compare2');
 
-    let policyId, registrantDid, adminDid, approverDid, applicationDocumentId, deviceDocumentId, issueDocumentId;
+    let policyId; let registrantDid; let adminDid; let approverDid; let applicationDocumentId; let deviceDocumentId; let issueDocumentId;
 
     before('Import policy and dry-run it', () => {
-        Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.PolicisImportMsg,
-                body: { messageId: policyMessageId },
-                headers: {
-                    authorization,
-                },
-                timeout: 600000,
-            }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                policyId = response.body.at(0).id;
+        seededMessageId('policy_for_compare2').then((policyMessageId) => {
+            Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
-                    method: METHOD.PUT,
-                    url:
-                        API.ApiServer + API.Policies + policyId + "/" + API.DryRun,
+                    method: METHOD.POST,
+                    url: API.ApiServer + API.PolicisImportMsg,
+                    body: { messageId: policyMessageId },
                     headers: {
                         authorization,
                     },
-                    timeout: 180000,
+                    timeout: 600000,
                 }).then((response) => {
-                    expect(response.status).to.eq(STATUS_CODE.OK);
+                    expect(response.status).to.eq(STATUS_CODE.SUCCESS);
+                    policyId = response.body.at(0).id;
+                    cy.request({
+                        method: METHOD.PUT,
+                        url:
+                            API.ApiServer + API.Policies + policyId + '/' + API.DryRun,
+                        headers: {
+                            authorization,
+                        },
+                        timeout: 180000,
+                    }).then((response) => {
+                        expect(response.status).to.eq(STATUS_CODE.OK);
+                    });
                 });
-            });
-        })
+            })
+        });
     });
 
     it('Start record', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.Record + policyId + "/" + API.RecordStart,
+                url: API.ApiServer + API.Record + policyId + '/' + API.RecordStart,
                 headers: {
                     authorization
                 },
@@ -56,7 +58,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
             //Add Registrant
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.DryRunUser,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.DryRunUser,
                 headers: {
                     authorization
                 },
@@ -69,7 +71,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                 //Login by Registrant
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.DryRunLogin,
+                    url: API.ApiServer + API.Policies + policyId + '/' + API.DryRunLogin,
                     headers: {
                         authorization
                     },
@@ -80,16 +82,16 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                 }).then(() => {
                     //Block wait
                     cy.wait(5000);
-                    //Choose registrant role 
+                    //Choose registrant role
                     cy.request({
                         method: METHOD.POST,
-                        url: API.ApiServer + API.Policies + policyId + "/" + API.ChooseRegistrantRole,
+                        url: API.ApiServer + API.Policies + policyId + '/' + API.ChooseRegistrantRole,
                         headers: {
                             authorization
                         },
                         body: {
-                            group: "Registrant",
-                            label: "q"
+                            group: 'Registrant',
+                            label: 'q'
                         },
                         timeout: 180000
                     }).then(() => {
@@ -98,7 +100,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                         //Create application
                         cy.request({
                             method: METHOD.POST,
-                            url: API.ApiServer + API.Policies + policyId + "/" + API.CreateApplication,
+                            url: API.ApiServer + API.Policies + policyId + '/' + API.CreateApplication,
                             headers: {
                                 authorization
                             },
@@ -123,7 +125,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
             //Add Approver
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.DryRunUser,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.DryRunUser,
                 headers: {
                     authorization
                 },
@@ -133,7 +135,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                 //Login by Approver
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.DryRunLogin,
+                    url: API.ApiServer + API.Policies + policyId + '/' + API.DryRunLogin,
                     headers: {
                         authorization
                     },
@@ -147,20 +149,20 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                     //Choose approver role
                     cy.request({
                         method: METHOD.POST,
-                        url: API.ApiServer + API.Policies + policyId + "/" + API.ChooseRegistrantRole,
+                        url: API.ApiServer + API.Policies + policyId + '/' + API.ChooseRegistrantRole,
                         headers: {
                             authorization
                         },
                         body: {
-                            group: "Approvers",
-                            label: ""
+                            group: 'Approvers',
+                            label: ''
                         },
                         timeout: 180000
                     }).then(() => {
                         //Get document id for approve
                         cy.request({
                             method: METHOD.GET,
-                            url: API.ApiServer + API.Policies + policyId + "/" + API.GetApplications,
+                            url: API.ApiServer + API.Policies + policyId + '/' + API.GetApplications,
                             headers: {
                                 authorization
                             },
@@ -172,7 +174,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                             //Approve application
                             cy.request({
                                 method: METHOD.POST,
-                                url: API.ApiServer + API.Policies + policyId + "/" + API.ApproveApplication,
+                                url: API.ApiServer + API.Policies + policyId + '/' + API.ApproveApplication,
                                 headers: {
                                     authorization
                                 },
@@ -180,7 +182,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                                     document: {
                                         id: applicationDocumentId
                                     },
-                                    status: "SIGNED"
+                                    status: 'SIGNED'
                                 },
                                 timeout: 180000
                             })
@@ -196,7 +198,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
             //Login by Registrant
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.DryRunLogin,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.DryRunLogin,
                 headers: {
                     authorization
                 },
@@ -210,58 +212,58 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                 //Create device
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.CreateDevice,
+                    url: API.ApiServer + API.Policies + policyId + '/' + API.CreateDevice,
                     headers: {
                         authorization
                     },
                     body: {
                         document: {
-                            field0: "example",
-                            field1: "2000-01-01",
-                            field2: "example",
+                            field0: 'example',
+                            field1: '2000-01-01',
+                            field2: 'example',
                             field3: {
-                                field0: "example",
-                                field1: "example",
-                                field2: "example",
-                                field3: "example",
-                                field4: "example",
-                                field5: "example",
-                                field6: "example",
-                                field7: "example@email.com",
-                                field8: "example",
-                                field9: "example",
-                                field10: "example"
+                                field0: 'example',
+                                field1: 'example',
+                                field2: 'example',
+                                field3: 'example',
+                                field4: 'example',
+                                field5: 'example',
+                                field6: 'example',
+                                field7: 'example@email.com',
+                                field8: 'example',
+                                field9: 'example',
+                                field10: 'example'
                             },
                             field4: {
-                                field0: "example",
-                                field1: "example",
-                                field2: "example",
-                                field3: "example",
-                                field4: "example",
-                                field5: "example",
-                                field6: "example",
+                                field0: 'example',
+                                field1: 'example',
+                                field2: 'example',
+                                field3: 'example',
+                                field4: 'example',
+                                field5: 'example',
+                                field6: 'example',
                                 field7: 1,
                                 field8: 1,
-                                field9: "2000-01-01",
-                                field10: "example",
-                                field11: "example",
-                                field12: "example",
-                                field13: "example"
+                                field9: '2000-01-01',
+                                field10: 'example',
+                                field11: 'example',
+                                field12: 'example',
+                                field13: 'example'
                             },
                             field5: {
-                                field0: "example",
-                                field1: "example",
+                                field0: 'example',
+                                field1: 'example',
                                 field2: true,
-                                field3: "example",
+                                field3: 'example',
                                 field4: true,
-                                field5: "example",
-                                field6: "example",
-                                field7: "example",
-                                field8: "example",
+                                field5: 'example',
+                                field6: 'example',
+                                field7: 'example',
+                                field8: 'example',
                                 field9: true,
-                                field10: "example",
-                                field11: "2000-01-01",
-                                field12: "example"
+                                field10: 'example',
+                                field11: '2000-01-01',
+                                field12: 'example'
                             }
                         }
                     },
@@ -276,7 +278,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
             //Login by Approver
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.DryRunLogin,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.DryRunLogin,
                 headers: {
                     authorization
                 },
@@ -290,7 +292,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                 //Get device document id
                 cy.request({
                     method: METHOD.GET,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.GetDevices,
+                    url: API.ApiServer + API.Policies + policyId + '/' + API.GetDevices,
                     headers: {
                         authorization
                     },
@@ -302,7 +304,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                     //Approve device
                     cy.request({
                         method: METHOD.POST,
-                        url: API.ApiServer + API.Policies + policyId + "/" + API.ApproveDevice,
+                        url: API.ApiServer + API.Policies + policyId + '/' + API.ApproveDevice,
                         headers: {
                             authorization
                         },
@@ -310,7 +312,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                             document: {
                                 id: deviceDocumentId
                             },
-                            status: "SIGNED"
+                            status: 'SIGNED'
                         },
                         timeout: 180000
                     })
@@ -324,7 +326,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
             //Login by Registrant
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.DryRunLogin,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.DryRunLogin,
                 headers: {
                     authorization
                 },
@@ -338,58 +340,58 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                 //Create issue request
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.CreateIssue,
+                    url: API.ApiServer + API.Policies + policyId + '/' + API.CreateIssue,
                     headers: {
                         authorization
                     },
                     body: {
                         document: {
-                            field0: "example",
-                            field1: "example",
+                            field0: 'example',
+                            field1: 'example',
                             field2: {
-                                field0: "example",
-                                field1: "example",
-                                field2: "example",
-                                field3: "example",
-                                field4: "example",
-                                field5: "example",
-                                field6: "example",
-                                field7: "example@email.com",
-                                field8: "example",
-                                field9: "example",
-                                field10: "example"
+                                field0: 'example',
+                                field1: 'example',
+                                field2: 'example',
+                                field3: 'example',
+                                field4: 'example',
+                                field5: 'example',
+                                field6: 'example',
+                                field7: 'example@email.com',
+                                field8: 'example',
+                                field9: 'example',
+                                field10: 'example'
                             },
                             field3: {
-                                field0: "example",
-                                field1: "example",
-                                field2: "example",
-                                field3: "example",
-                                field4: "example",
-                                field5: "example",
-                                field6: "example",
+                                field0: 'example',
+                                field1: 'example',
+                                field2: 'example',
+                                field3: 'example',
+                                field4: 'example',
+                                field5: 'example',
+                                field6: 'example',
                                 field7: 1,
                                 field8: 1,
-                                field9: "2000-01-01",
-                                field10: "example",
-                                field11: "example",
-                                field12: "example",
-                                field13: "example"
+                                field9: '2000-01-01',
+                                field10: 'example',
+                                field11: 'example',
+                                field12: 'example',
+                                field13: 'example'
                             },
-                            field4: "example",
-                            field5: "2000-01-01",
-                            field6: "2000-01-01",
+                            field4: 'example',
+                            field5: '2000-01-01',
+                            field6: '2000-01-01',
                             field7: 1,
-                            field8: "2000-01-01",
+                            field8: '2000-01-01',
                             field9: 1,
-                            field10: "example",
-                            field11: "example",
-                            field12: "example",
-                            field13: "example",
+                            field10: 'example',
+                            field11: 'example',
+                            field12: 'example',
+                            field13: 'example',
                             field14: true,
                             field15: true,
                             field16: true,
-                            field17: "example",
-                            field18: "example"
+                            field17: 'example',
+                            field18: 'example'
                         }
                     },
                     timeout: 180000
@@ -403,7 +405,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
             //Login by Approver
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.DryRunLogin,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.DryRunLogin,
                 headers: {
                     authorization
                 },
@@ -417,7 +419,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                 //Get issue document id
                 cy.request({
                     method: METHOD.GET,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.GetIssues,
+                    url: API.ApiServer + API.Policies + policyId + '/' + API.GetIssues,
                     headers: {
                         authorization
                     },
@@ -429,7 +431,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                     //Approve issue
                     cy.request({
                         method: METHOD.POST,
-                        url: API.ApiServer + API.Policies + policyId + "/" + API.ApproveIssueRequestsBtn,
+                        url: API.ApiServer + API.Policies + policyId + '/' + API.ApproveIssueRequestsBtn,
                         headers: {
                             authorization
                         },
@@ -437,7 +439,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                             document: {
                                 id: issueDocumentId
                             },
-                            status: "SIGNED"
+                            status: 'SIGNED'
                         },
                         timeout: 180000
                     })
@@ -451,7 +453,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
             //Login by Administrator
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.DryRunLogin,
+                url: API.ApiServer + API.Policies + policyId + '/' + API.DryRunLogin,
                 headers: {
                     authorization
                 },
@@ -465,7 +467,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                 //Get token amount
                 cy.request({
                     method: METHOD.GET,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.GetTokenAmountTag + API.Blocks,
+                    url: API.ApiServer + API.Policies + policyId + '/' + API.GetTokenAmountTag + API.Blocks,
                     headers: {
                         authorization
                     },
@@ -481,7 +483,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + API.Record + policyId + "/" + API.RecordActions,
+                url: API.ApiServer + API.Record + policyId + '/' + API.RecordActions,
                 headers: {
                     authorization
                 },
@@ -491,7 +493,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.Record + policyId + "/" + API.RecordStop,
+                url: API.ApiServer + API.Record + policyId + '/' + API.RecordStop,
                 encoding: null,
                 headers: {
                     authorization
@@ -499,11 +501,11 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                 timeout: 180000
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
-                expect(response.body).to.not.be.oneOf([null, ""]);
+                expect(response.body).to.not.be.oneOf([null, '']);
                 cy.writeFile(
-                    "cypress/fixtures/recordedDryRunFlow.record",
+                    'cypress/fixtures/recordedDryRunFlow.record',
                     Cypress.Blob.arrayBufferToBinaryString(response.body),
-                    "binary"
+                    'binary'
                 );
             })
         })

@@ -27,7 +27,7 @@ export class SearchService {
         msg: {
             pageIndex: number,
             pageSize: number,
-            search: string
+            search?: string
         }
     ) {
         try {
@@ -35,7 +35,7 @@ export class SearchService {
                 throw new Error('Invalid page parameters')
             }
             const options = parsePageParams(msg);
-            const { search } = msg;
+            const search = msg.search ?? '';
 
             const em = DataBaseHelper.getEntityManager();
 
@@ -46,39 +46,53 @@ export class SearchService {
                 } as any,
                 options
             )) as any as [SearchItem[], number];
-            const [messages, messagesCount] = (await em.findAndCount(
-                Message,
-                {
-                    $or: [
-                        {
-                            'analytics.textSearch': createRegex(search)
-                        },
-                        {
-                            'topicId': search
-                        },
-                        {
-                            'tokenId': search
-                        },
-                        {
-                            'consensusTimestamp': search
-                        },
-                        {
-                            'owner': search
-                        },
-                        {
-                            'type': search
-                        },
-                        {
-                            'action': search
-                        },
-                    ]
-                } as any,
-                {
-                    ...options,
-                    offset: Math.max(options.offset - tokensCount, 0),
-                    limit: Math.max(options.limit - tokens.length, 0),
-                }
-            )) as any as [SearchItem[], number];
+
+            const messagesFilter = {
+                $or: [
+                    {
+                        'analytics.textSearch': createRegex(search)
+                    },
+                    {
+                        'topicId': search
+                    },
+                    {
+                        'tokenId': search
+                    },
+                    {
+                        'consensusTimestamp': search
+                    },
+                    {
+                        'owner': search
+                    },
+                    {
+                        'type': search
+                    },
+                    {
+                        'action': search
+                    },
+                ]
+            } as any;
+            // When the token match already fills the requested page this subtraction
+            // yields 0, which MongoDB reads as "no limit" rather than "nothing left to
+            // fetch" - a single request would then load the whole Message collection.
+            // Skip the document query and count instead, so total stays correct.
+            const messagesLimit = Math.max(options.limit - tokens.length, 0);
+
+            let messages: SearchItem[] = [];
+            let messagesCount: number;
+            if (messagesLimit > 0) {
+                [messages, messagesCount] = (await em.findAndCount(
+                    Message,
+                    messagesFilter,
+                    {
+                        ...options,
+                        offset: Math.max(options.offset - tokensCount, 0),
+                        limit: messagesLimit,
+                    }
+                )) as any as [SearchItem[], number];
+            } else {
+                messagesCount = await em.count(Message, messagesFilter);
+            }
 
             const result = {
                 items: [...tokens, ...messages],

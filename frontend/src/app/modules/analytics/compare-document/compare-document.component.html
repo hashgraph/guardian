@@ -1,54 +1,29 @@
 <div class="content" [style.min-width.px]="minWidth">
-  @if (headers.length && type==='tree') {
-    <div class="item-headers" [style.grid-template-columns]="_gridStyle">
-      @for (item of headers; track item) {
-        <div [style.grid-column-start]="item.column" class="item-header">
-          <span class="item-header-name">
-            {{ item.name }}
-          </span>
-          <span class="item-header-rate item-header-color-{{item.color}}">
-            {{ item.rate }}
-          </span>
-        </div>
-      }
-    </div>
-  }
-
   @if (resultContext) {
     <div class="list">
+      @if (!disableHeader) {
+        <section class="document-description-section">
+          <div class="document-description-title">Description</div>
+          <div class="document-description-card"
+            [style.grid-template-columns]="'repeat(' + size + ', minmax(0, 1fr))'">
+            @for (context of resultContext; track context) {
+              <div class="document-description-column">
+                <ng-container *ngTemplateOutlet="resultInfo; context: context"></ng-container>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <ng-content select="[policyControls]"></ng-content>
+
       <p-accordion
         class="compare-document-accordion"
         [multiple]="true"
-        [value]="['description', 'documents']"
+        [value]="['documents']"
         expandIcon="pi pi-chevron-down icon-start"
         collapseIcon="pi pi-chevron-up icon-start"
         >
-        @if (!disableHeader) {
-          <p-accordion-panel value="description">
-            <p-accordion-header>Description</p-accordion-header>
-            <p-accordion-content>
-              <div class="info-container" [style.grid-template-columns]="_gridStyle">
-                @for (context of resultContext; track context) {
-                  @if (context.right) {
-                    <div [style.grid-column-start]="2 * context.index"
-                      class="middle-compare-result compare-result"
-                      [attr.open]="true">
-                    </div>
-                  }
-                  <div [style.grid-column-start]="2 * context.index + 1"
-                    [attr.open]="true"
-                             [ngClass]="{
-                             'left-compare-result': context.left,
-                             'right-compare-result': context.right,
-                             'compare-result': true
-                         }">
-                    <ng-container *ngTemplateOutlet="resultInfo; context: context"></ng-container>
-                  </div>
-                }
-              </div>
-            </p-accordion-content>
-          </p-accordion-panel>
-        }
         @if (treeContext) {
           <p-accordion-panel value="documents">
             <p-accordion-header>{{ comparationLabels.documentsLabel }}</p-accordion-header>

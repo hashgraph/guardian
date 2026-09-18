@@ -11,7 +11,7 @@ import { TabViewModule } from 'primeng/tabview';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ButtonModule } from 'primeng/button';
 import { InputTextareaModule } from 'primeng/inputtextarea';
-import { bytesToUtf8, decryptWithKeyDerivedFromString } from '@meeco/cryppo';
+import { bytesToUtf8, decryptWithKeyDerivedFromString } from '@utils/cryppo';
 
 class List {
     public items: any[];

@@ -1,17 +1,20 @@
-import { NgModule } from '@angular/core';
+import { NgModule, provideAppInitializer } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi, withJsonpSupport } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { providePrimeNG } from 'primeng/config';
 import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
-import { ToastrModule } from 'ngx-toastr';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 import { AppRoutingModule, PermissionsGuard } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { SchemaHelper } from '@guardian/interfaces';
 import { CheckboxModule } from 'primeng/checkbox';
+import { CardModule } from 'primeng/card';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { DrawerModule } from 'primeng/drawer';
 import { ClipboardModule } from '@angular/cdk/clipboard';
 //Services
 import { AuthInterceptor, AuthService } from './services/auth.service';
@@ -19,6 +22,7 @@ import { ProfileService } from './services/profile.service';
 import { TokenService } from './services/token.service';
 import { SchemaService } from './services/schema.service';
 import { HandleErrorsService } from './services/handle-errors.service';
+import { refreshAccessTokenOnStartup } from './services/refresh-access-token.initializer';
 import { AuditService } from './services/audit.service';
 import { CredentialsService } from './services/credentials.service';
 import { PolicyEngineService } from './services/policy-engine.service';
@@ -53,6 +57,8 @@ import { HomeComponent } from './views/home/home.component';
 import { HeaderComponent } from './views/header/header.component';
 import { RegisterComponent } from './views/register/register.component';
 import { RootProfileComponent } from './views/root-profile/root-profile.component';
+import { NextGenBannerComponent } from './views/next-gen-banner/next-gen-banner.component';
+import { FirstStepsPanelComponent } from './views/first-steps-panel/first-steps-panel.component';
 import { TokenConfigComponent } from './views/token-config/token-config.component';
 import { AuditComponent } from './views/audit/audit.component';
 import { TrustChainComponent } from './views/trust-chain/trust-chain.component';
@@ -62,6 +68,8 @@ import { SettingsViewComponent } from './views/admin/settings-view/settings-view
 import { DetailsLogDialog } from './views/admin/details-log-dialog/details-log-dialog.component';
 import { ServiceStatusComponent } from './views/admin/service-status/service-status.component';
 import { SchemaConfigComponent } from './views/schemas/schemas.component';
+import { SchemasConfigurationComponent } from './views/schemas-configuration/schemas-configuration.component';
+import { SchemaTemplatesComponent } from './views/schema-templates/schema-templates.component';
 import { NotificationsComponent } from './views/notifications/notifications.component';
 import { RolesViewComponent } from './views/roles/roles-view.component';
 import { UsersManagementComponent } from './views/user-management/user-management.component';
@@ -87,6 +95,7 @@ import { CommonComponentsModule } from './modules/common/common-components.modul
 import { TagEngineModule } from './modules/tag-engine/tag-engine.module';
 import { SchemaEngineModule } from './modules/schema-engine/schema-engine.module'
 import { ThemeService } from './services/theme.service';
+import { AppThemeService } from './services/app-theme.service';
 import { RecordService } from './services/record.service';
 import { StatisticsModule } from './modules/statistics/statistics.module';
 import { FormulasModule } from './modules/formulas/formulas.module';
@@ -94,11 +103,10 @@ import { FormulasModule } from './modules/formulas/formulas.module';
 import { GET_SCHEMA_NAME } from './injectors/get-schema-name.injector';
 import { BLOCK_TYPE_TIPS, BLOCK_TYPE_TIPS_VALUE, } from './injectors/block-type-tips.injector';
 import { SuggestionsService } from './services/suggestions.service';
-import { QrCodeDialogComponent } from './components/qr-code-dialog/qr-code-dialog.component';
 import { QRCodeComponent } from 'angularx-qrcode';
-import { MeecoVCSubmitDialogComponent } from './components/meeco-vc-submit-dialog/meeco-vc-submit-dialog.component';
 import { CompareStorage } from './services/compare-storage.service';
 import { ToolsService } from './services/tools.service';
+import { SchemaTemplatesService } from './services/schema-templates.service';
 import { NewHeaderComponent } from './views/new-header/new-header.component';
 import { SearchResultCardComponent } from './components/search-result-card/search-result-card.component';
 import { PolicyAISearchComponent } from './views/policy-search/policy-ai-search/policy-ai-search.component';
@@ -147,7 +155,9 @@ import { PolicyRepositoryService } from './services/policy-repository.service';
 import { RelayerAccountsService } from './services/relayer-accounts.service';
 import { RelayerAccountsComponent } from './views/relayer-accounts/relayer-accounts.component';
 import { TreeTableModule } from 'primeng/treetable';
+import { MenubarModule } from 'primeng/menubar';
 import { CredentialsPanelComponent } from './components/credentials/credentials-panel/credentials-panel.component';
+import { AppToastComponent } from './components/toast/app-toast.component';
 
 const GuardianPreset = definePreset(Aura, {
     semantic: {
@@ -157,10 +167,36 @@ const GuardianPreset = definePreset(Aura, {
             800: '{blue.800}', 900: '{blue.900}', 950: '{blue.950}'
         },
         colorScheme: {
-            light: { primary: { color: 'var(--primary-color)', contrastColor: '#ffffff',
-                hoverColor: 'var(--button-primary-color-hover)', activeColor: 'var(--button-primary-color-hover)' } },
-            dark:  { primary: { color: 'var(--primary-color)', contrastColor: '#ffffff',
-                hoverColor: 'var(--button-primary-color-hover)', activeColor: 'var(--button-primary-color-hover)' } }
+            light: {
+                primary: { color: 'var(--primary-color)', contrastColor: 'var(--guardian-on-primary-color)',
+                    hoverColor: 'var(--button-primary-color-hover)', activeColor: 'var(--button-primary-color-hover)' },
+                content: { background: 'var(--guardian-background)', hoverBackground: 'var(--guardian-hover)',
+                    borderColor: 'var(--guardian-border-color)', color: 'var(--guardian-font-color)', hoverColor: 'var(--guardian-font-color)' },
+                formField: { background: 'var(--guardian-background)', borderColor: 'var(--guardian-border-color)',
+                    color: 'var(--guardian-font-color)', placeholderColor: 'var(--guardian-grid-color)', iconColor: 'var(--guardian-grid-color)' },
+                text: { color: 'var(--guardian-font-color)', mutedColor: 'var(--guardian-grid-color)' },
+                overlay: {
+                    select: { background: 'var(--guardian-background)', borderColor: 'var(--guardian-border-color)', color: 'var(--guardian-font-color)' },
+                    popover: { background: 'var(--guardian-background)', borderColor: 'var(--guardian-border-color)', color: 'var(--guardian-font-color)' },
+                    modal: { background: 'var(--guardian-background)', borderColor: 'var(--guardian-border-color)', color: 'var(--guardian-font-color)' }
+                },
+                list: { option: { color: 'var(--guardian-font-color)', focusBackground: 'var(--guardian-hover)', focusColor: 'var(--guardian-font-color)' } }
+            },
+            dark: {
+                primary: { color: 'var(--primary-color)', contrastColor: 'var(--guardian-on-primary-color)',
+                    hoverColor: 'var(--button-primary-color-hover)', activeColor: 'var(--button-primary-color-hover)' },
+                content: { background: 'var(--guardian-background)', hoverBackground: 'var(--guardian-hover)',
+                    borderColor: 'var(--guardian-border-color)', color: 'var(--guardian-font-color)', hoverColor: 'var(--guardian-font-color)' },
+                formField: { background: 'var(--guardian-background)', borderColor: 'var(--guardian-border-color)',
+                    color: 'var(--guardian-font-color)', placeholderColor: 'var(--guardian-grid-color)', iconColor: 'var(--guardian-grid-color)' },
+                text: { color: 'var(--guardian-font-color)', mutedColor: 'var(--guardian-grid-color)' },
+                overlay: {
+                    select: { background: 'var(--guardian-background)', borderColor: 'var(--guardian-border-color)', color: 'var(--guardian-font-color)' },
+                    popover: { background: 'var(--guardian-background)', borderColor: 'var(--guardian-border-color)', color: 'var(--guardian-font-color)' },
+                    modal: { background: 'var(--guardian-background)', borderColor: 'var(--guardian-border-color)', color: 'var(--guardian-font-color)' }
+                },
+                list: { option: { color: 'var(--guardian-font-color)', focusBackground: 'var(--guardian-hover)', focusColor: 'var(--guardian-font-color)' } }
+            }
         }
     }
 });
@@ -175,6 +211,8 @@ const GuardianPreset = definePreset(Aura, {
         HeaderComponent,
         RegisterComponent,
         RootProfileComponent,
+        NextGenBannerComponent,
+        FirstStepsPanelComponent,
         TokenConfigComponent,
         AuditComponent,
         TrustChainComponent,
@@ -185,13 +223,13 @@ const GuardianPreset = definePreset(Aura, {
         ServiceStatusComponent,
         InfoComponent,
         SchemaConfigComponent,
+        SchemasConfigurationComponent,
+        SchemaTemplatesComponent,
         BrandingComponent,
         SuggestionsConfigurationComponent,
         StandardRegistryCardComponent,
         NotificationComponent,
         NotificationsComponent,
-        QrCodeDialogComponent,
-        MeecoVCSubmitDialogComponent,
         NewHeaderComponent,
         PolicySearchComponent,
         PolicyGuidedSearchComponent,
@@ -216,7 +254,8 @@ const GuardianPreset = definePreset(Aura, {
         OtpDialogComponent,
         OtpConfigDialogComponent,
         OtpDisableDialogComponent,
-        OtpCodesDialogComponent
+        OtpCodesDialogComponent,
+        AppToastComponent
     ],
     exports: [],
     bootstrap: [AppComponent],
@@ -225,7 +264,6 @@ const GuardianPreset = definePreset(Aura, {
         CommonComponentsModule,
         MaterialModule,
         AppRoutingModule,
-        BrowserAnimationsModule,
         FormsModule,
         SchemaEngineModule,
         PolicyEngineModule,
@@ -233,7 +271,7 @@ const GuardianPreset = definePreset(Aura, {
         FormulasModule,
         TagEngineModule,
         CompareModule,
-        ToastrModule.forRoot(),
+        ToastModule,
         QRCodeComponent,
         ButtonModule,
         InputTextModule,
@@ -260,10 +298,18 @@ const GuardianPreset = definePreset(Aura, {
         ProjectComparisonModule,
         DndModule,
         CheckboxModule,
+        CardModule,
+        ToggleSwitchModule,
+        DrawerModule,
         AngularSvgIconModule.forRoot(),
-        TreeTableModule
+        TreeTableModule,
+        MenubarModule
     ],
     providers: [
+        // Refresh the access token from the stored refresh token before the app
+        // boots, so the initial requests aren't sent with an expired token.
+        provideAppInitializer(refreshAccessTokenOnStartup),
+        MessageService,
         WebSocketService,
         AuthService,
         ProfileService,
@@ -287,6 +333,7 @@ const GuardianPreset = definePreset(Aura, {
         ContractService,
         ModulesService,
         ToolsService,
+        SchemaTemplatesService,
         MapService,
         TagsService,
         ThemeService,
@@ -314,6 +361,10 @@ const GuardianPreset = definePreset(Aura, {
             provide: BLOCK_TYPE_TIPS,
             useValue: BLOCK_TYPE_TIPS_VALUE
         },
+        // Order matters: AuthInterceptor must run inside HandleErrorsService so
+        // it can refresh-and-retry a 401 before the error interceptor sees it.
+        // Reversing these would let HandleErrorsService log the user out before
+        // the refresh gets a chance, disabling refresh-on-401.
         {
             provide: HTTP_INTERCEPTORS,
             useClass: HandleErrorsService,
@@ -331,7 +382,8 @@ const GuardianPreset = definePreset(Aura, {
                     cssLayer: {
                         name: 'primeng',
                         order: 'app-styles, primeng'
-                    }
+                    },
+                    darkModeSelector: '.guardian-theme-dark'
                 }
             }
         }),
@@ -339,4 +391,7 @@ const GuardianPreset = definePreset(Aura, {
     ]
 })
 export class AppModule {
+    constructor(appThemeService: AppThemeService) {
+        appThemeService.getCurrentTheme();
+    }
 }

@@ -1,5 +1,5 @@
 .loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: fixed;
     z-index: 99;
     top: var(--header-height);
@@ -94,7 +94,7 @@
     border: 1px solid var(--color-primary);
     height: 40px;
     padding: 8px 16px 8px 8px;
-    color: var(--color-grey-white, #FFF);
+    color: var(--guardian-on-primary-color, #FFF);
     font-family: Inter, sans-serif;
     font-size: 14px;
     font-style: normal;

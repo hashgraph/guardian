@@ -65,7 +65,7 @@
 .mat-raised-button {
     border: none;
     width: 138px;
-    color: var(--color-grey-white);
+    color: var(--guardian-on-primary-color);
     font-size: 14px;
     font-weight: 600;
 }

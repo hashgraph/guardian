@@ -66,4 +66,8 @@ export class SchemaVariables {
     public get tooltip(): string {
         return SchemaHelper.getSchemaName(this.name, this.version || this.sourceVersion, this.statusLabel);
     }
+
+    public get isFeatured(): boolean {
+        return !!this.data?.templateFeatured;
+    }
 }

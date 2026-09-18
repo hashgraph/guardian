@@ -1,6 +1,0 @@
----
-icon: key
----
-
-# Change Password
-

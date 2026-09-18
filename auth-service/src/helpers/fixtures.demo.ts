@@ -53,7 +53,7 @@ export async function fixtures(): Promise<void> {
             walletToken: ''
         }];
         for (const user of users) {
-            const password = await UserPassword.generatePasswordV2('test');
+            const password = await UserPassword.generatePasswordV2('TestPass1');
             const row = usersRepository.create(User, {
                 ...user,
                 password: password.password,

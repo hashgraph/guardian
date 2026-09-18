@@ -66,17 +66,8 @@ export abstract class BaseEntity {
      * Create File
      */
     protected _createFile(json: string | Buffer, name: string): Promise<ObjectId> {
-        return new Promise<ObjectId>((resolve, reject) => {
-            try {
-                const fileName = `${name}_${this._id?.toString()}_${GenerateUUIDv4()}`;
-                const fileStream = DataBaseHelper.gridFS.openUploadStream(fileName);
-                const fileId = fileStream.id;
-                fileStream.write(json);
-                fileStream.end(() => resolve(fileId));
-            } catch (error) {
-                reject(error)
-            }
-        });
+        const fileName = `${name}_${this._id?.toString()}_${GenerateUUIDv4()}`;
+        return DataBaseHelper.writeToGridFS(json, name, () => DataBaseHelper.gridFS.openUploadStream(fileName));
     }
 
     /**

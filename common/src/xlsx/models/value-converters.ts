@@ -1,5 +1,5 @@
 import { DocumentGenerator, SchemaEntity, SchemaField } from '@guardian/interfaces';
-import { FieldTypes, IFieldTypes } from './dictionary.js';
+import { FieldTypes, geoDisplayValue, IFieldTypes } from './dictionary.js';
 
 export function entityToXlsx(entity: SchemaEntity): string {
     if (entity === SchemaEntity.VC) {
@@ -140,7 +140,7 @@ export function anyToXlsx(value: any): string | number | boolean {
 
 export function examplesToXlsx(field: SchemaField): string | number | boolean {
     if (Array.isArray(field.examples)) {
-        return anyToXlsx(field.examples[0]);
+        return anyToXlsx(geoDisplayValue(field.customType, field.examples[0]));
     } else if (!field.isRef) {
         return DocumentGenerator.generateExample(field) || '';
     } else {

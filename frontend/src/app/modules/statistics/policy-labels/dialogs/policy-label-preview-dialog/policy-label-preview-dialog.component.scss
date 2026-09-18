@@ -230,7 +230,7 @@ form {
             display: flex;
             flex-direction: row;
             justify-content: center;
-            background: #fff;
+            background: var(--guardian-background, #fff);
             align-items: center;
             margin-bottom: 16px;
 
@@ -294,7 +294,7 @@ form {
 
 .fields-container {
     .fields-header {
-        color: #181818;
+        color: var(--guardian-font-color, #181818);
         font-size: 16px;
         font-weight: 600;
         line-height: 20px;
@@ -311,7 +311,7 @@ form {
             font-weight: 500;
             line-height: 14px;
             text-align: left;
-            color: #181818;
+            color: var(--guardian-font-color, #181818);
             padding: 8px 0px;
             margin-bottom: 6px;
         }
@@ -320,13 +320,13 @@ form {
             padding: 12px 16px 12px 16px;
             border-radius: 8px;
             border: 1px solid #E1E7EF;
-            background: #F9FAFC;
+            background: var(--guardian-grey-background, #F9FAFC);
             font-family: Inter;
             font-size: 14px;
             font-weight: 400;
             line-height: 16px;
             text-align: left;
-            color: #23252E;
+            color: var(--guardian-font-color, #23252E);
             width: 100%;
             min-height: 42px;
         }

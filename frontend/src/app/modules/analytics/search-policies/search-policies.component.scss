@@ -9,7 +9,7 @@
 }
 
 .loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: fixed;
     z-index: 99;
     top: var(--header-height);
@@ -263,7 +263,7 @@
     }
 
     *[readonly="true"] {
-        background: #f1f1f1 !important;
+        background: var(--guardian-grey-background, #f1f1f1) !important;
 
         & mat-checkbox {
             filter: grayscale(1) !important;
@@ -288,6 +288,6 @@
     left: 0;
     width: 100%;
     height: 1px;
-    background-color: #ddd;
+    background-color: var(--guardian-grey-background, #ddd);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }

@@ -1,11 +1,11 @@
 
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
+import { seededMessageId } from '../../../support/CustomHelpers/ipfsSeeding';
 
-context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
+context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-    const policyMessageId = Cypress.env('irec_policy');
     const importMsgUrl = `${API.ApiServer}${API.PolicisImportMsg}`;
     const policiesUrl = `${API.ApiServer}${API.Policies}`;
     const dryRunBase = (policyId) => `${policiesUrl}${policyId}/${API.DryRun}`;
@@ -26,7 +26,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
         cy.request({
             method: METHOD.POST,
             url,
-            headers: { authorization, "api-version": 2 },
+            headers: { authorization, 'api-version': 2 },
             ...(body ? { body } : {}),
             ...(opts.timeout ? { timeout: opts.timeout } : {}),
             ...(opts.failOnStatusCode !== undefined ? { failOnStatusCode: opts.failOnStatusCode } : {}),
@@ -51,16 +51,18 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
         });
 
     before(() => {
-        Authorization.getAccessToken(SRUsername).then((authorization) => {
-            postWithAuth(authorization, importMsgUrl, { messageId: policyMessageId }, { timeout: 600000 })
-                .then((response) => {
-                    expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                    policyId = response.body.at(0).id;
-                });
+        seededMessageId('irec_policy').then((policyMessageId) => {
+            Authorization.getAccessToken(SRUsername).then((authorization) => {
+                postWithAuth(authorization, importMsgUrl, { messageId: policyMessageId }, { timeout: 600000 })
+                    .then((response) => {
+                        expect(response.status).to.eq(STATUS_CODE.SUCCESS);
+                        policyId = response.body.at(0).id;
+                    });
+            });
         });
     });
 
-    it("Run policy without making any persistent changes or executing transaction", { tags: ['analytics', 'schema', 'tokens', 'smoke'] }, () => {
+    it('Run policy without making any persistent changes or executing transaction', { tags: ['analytics', 'schema', 'tokens', 'smoke'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             putWithAuth(authorization, dryRunBase(policyId), { timeout: 180000 }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
@@ -68,7 +70,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
         });
     });
 
-    it("Get all virtual users", () => {
+    it('Get all virtual users', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             getWithAuth(authorization, `${dryRunBase(policyId)}${API.Users}`).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
@@ -76,7 +78,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
         });
     });
 
-    it("Get lists of virtual transactions", () => {
+    it('Get lists of virtual transactions', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             getWithAuth(authorization, `${policiesUrl}${policyId}/dry-run/transactions`).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
@@ -84,7 +86,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
         });
     });
 
-    it("Get lists of virtual artifacts", () => {
+    it('Get lists of virtual artifacts', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             getWithAuth(authorization, `${policiesUrl}${policyId}/dry-run/artifacts`).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
@@ -92,7 +94,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
         });
     });
 
-    it("Get lists of virtual ipfs", () => {
+    it('Get lists of virtual ipfs', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             getWithAuth(authorization, `${dryRunBase(policyId)}${API.IPFS}`).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
@@ -100,7 +102,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
         });
     });
 
-    it("Create a new virtual account and login", () => {
+    it('Create a new virtual account and login', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             postWithAuth2(authorization, `${policiesUrl}${policyId}/dry-run/user`).then((response) => {
                 expect(response.status).eql(STATUS_CODE.SUCCESS);
@@ -114,7 +116,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
         });
     });
 
-    it("Get virtual user by DID", () => {
+    it('Get virtual user by DID', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             // First create a user
             postWithAuth2(authorization, `${policiesUrl}${policyId}/dry-run/user`).then((response) => {
@@ -130,7 +132,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
         });
     });
 
-    it("should restarts the execution of the policy and clear data in database", () => {
+    it('should restarts the execution of the policy and clear data in database', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             postWithAuth(authorization, `${policiesUrl}${policyId}/dry-run/restart`).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);

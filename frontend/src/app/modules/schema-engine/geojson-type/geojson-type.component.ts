@@ -16,7 +16,7 @@ import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer.js';
 import Select from 'ol/interaction/Select.js';
 import { GeoForm } from '../schema-form-model/geo-form';
 import { GeoJsonService } from 'src/app/services/geo-json.service';
-import { DOMParser } from 'xmldom';
+import { DOMParser } from '@xmldom/xmldom';
 import { FeatureCollection } from 'geojson';
 import { kml } from '@tmcw/togeojson';
 

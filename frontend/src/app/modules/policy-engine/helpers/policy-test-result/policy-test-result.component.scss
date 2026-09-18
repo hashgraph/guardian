@@ -17,7 +17,7 @@
 
         &.Running-status {
             color: var(--guardian-primary-color);
-            background: var(--guardian-secondary-color);
+            background: var(--guardian-secondary-background);
             border: 1px solid var(--guardian-primary-color);
         }
 
@@ -29,7 +29,7 @@
 
         &.Failure-status {
             color: var(--guardian-failure-color);
-            background: var(--guardian-secondary-color);
+            background: var(--guardian-secondary-background);
             border: 1px solid var(--guardian-failure-color);
         }
 
@@ -82,7 +82,7 @@
         white-space: nowrap;
         text-overflow: ellipsis;
         cursor: pointer;
-        background: #fff;
+        background: var(--guardian-background, #fff);
         color: var(--color-primary);
         border: 1px solid var(--color-primary);
         width: 120px;
@@ -95,7 +95,7 @@
 
         &.primary {
             background: var(--color-primary);
-            color: var(--color-grey-white);
+            color: var(--guardian-on-primary-color);
 
             &:hover {
                 background: var(--color-primary);
@@ -109,7 +109,7 @@
 
         &[disabled="true"] {
             color: #5f5f5f !important;
-            background: #f0f0f0 !important;
+            background: var(--guardian-grey-background, #f0f0f0) !important;
             border: 1px solid #a8a8a8;
             cursor: default;
         }
@@ -122,8 +122,8 @@
 // }
 
 // .white-color {
-//     fill: var(--color-grey-white);
-//     color: var(--color-grey-white);
+//     fill: var(--guardian-on-primary-color);
+//     color: var(--guardian-on-primary-color);
 // }
 
 // .disabled-color {

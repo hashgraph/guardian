@@ -2,7 +2,7 @@ import { User } from '../entity/user.js';
 import { UserRole } from '@guardian/interfaces';
 import { DatabaseServer } from '@guardian/common';
 import { UserPassword } from '#utils';
-import process from 'process';
+import process from 'node:process';
 
 /**
  * Create default users
@@ -19,7 +19,7 @@ export async function fixtures(): Promise<void> {
         }]
 
         for (const user of users) {
-            const password = await UserPassword.generatePasswordV2(process.env.SR_INITIAL_PASSWORD || 'test');
+            const password = await UserPassword.generatePasswordV2(process.env.SR_INITIAL_PASSWORD || 'TestPass1');
             const row = usersRepository.create(User, {
                 ...user,
                 password: password.password,

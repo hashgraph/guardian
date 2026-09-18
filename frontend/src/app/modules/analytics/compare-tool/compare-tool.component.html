@@ -1,55 +1,29 @@
 <div class="content" [style.min-width.px]="minWidth">
-  @if (headers.length && type==='tree') {
-    <div class="item-headers" [style.grid-template-columns]="_gridStyle">
-      @for (item of headers; track item) {
-        <div [style.grid-column-start]="item.column" class="item-header">
-          <span class="item-header-name">
-            {{ item.name }}
-          </span>
-          <span class="item-header-rate item-header-color-{{item.color}}">
-            {{ item.rate }}
-          </span>
-        </div>
-      }
-    </div>
-  }
-
   @if (resultContext) {
     <div class="list">
-    </div>
-  }
-
-  <p-accordion
-    class="compare-tool-accordion"
-    [multiple]="true"
-    [value]="['description', 'blocks']"
-    expandIcon="pi pi-chevron-down icon-start"
-    collapseIcon="pi pi-chevron-up icon-start"
-    >
-    <p-accordion-panel value="description">
-      <p-accordion-header>Description</p-accordion-header>
-      <p-accordion-content>
-        <div class="info-container" [style.grid-template-columns]="_gridStyle">
+      <section class="tool-description-section">
+        <div class="tool-description-title">Description</div>
+        <div class="tool-description-card"
+          [style.grid-template-columns]="'repeat(' + size + ', minmax(0, 1fr))'">
           @for (context of resultContext; track context) {
-            @if (context.right) {
-              <div class="middle-compare-result compare-result"
-                [style.grid-column-start]="2 * context.index"
-                [attr.open]="true">
-              </div>
-            }
-            <div [style.grid-column-start]="2 * context.index + 1"
-              [attr.open]="true"
-                         [ngClass]="{
-                         'left-compare-result': context.left,
-                         'right-compare-result': context.right,
-                         'compare-result': true
-                     }">
+            <div class="tool-description-column">
               <ng-container *ngTemplateOutlet="resultInfo; context: context"></ng-container>
             </div>
           }
         </div>
-      </p-accordion-content>
-    </p-accordion-panel>
+      </section>
+    </div>
+  }
+
+  <ng-content select="[policyControls]"></ng-content>
+
+  <p-accordion
+    class="compare-tool-accordion"
+    [multiple]="true"
+    [value]="['blocks']"
+    expandIcon="pi pi-chevron-down icon-start"
+    collapseIcon="pi pi-chevron-up icon-start"
+    >
 
     @if (inputEvents?.length) {
       <p-accordion-panel value="input-events">

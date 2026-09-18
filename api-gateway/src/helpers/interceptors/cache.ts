@@ -17,6 +17,9 @@ import { CACHE, CACHE_PREFIXES, META_DATA } from '#constants';
 
 @Injectable()
 export class CacheInterceptor implements NestInterceptor {
+    // Response headers re-applied on a cache hit (a hit replays only the body).
+    private static readonly CACHED_HEADERS = ['X-Total-Count', 'Content-Disposition', 'Content-Type'];
+
     constructor(
         private readonly cacheService: CacheService
     ) {
@@ -45,31 +48,42 @@ export class CacheInterceptor implements NestInterceptor {
         const { url: route } = request;
 
         const [cacheKey] = getCacheKey([route], user, CACHE_PREFIXES.CACHE);
-        const [cacheTag] = getCacheKey([route.split('?')[0]], user);
+        const [cacheTag] = getCacheKey([route], user);
 
         return of(null).pipe(
             switchMap(async () => {
                 const cachedResponse: string = await this.cacheService.get(cacheKey);
 
                 if (cachedResponse) {
-                    let result = JSON.parse(cachedResponse);
+                    const envelope = JSON.parse(cachedResponse);
+                    const headers = envelope.headers;
+                    let value;
 
-                    if (result.type === 'StreamableFile') {
-                        const buffer = Buffer.from(result.data, 'base64');
-                        result = new StreamableFile(buffer);
+                    if (envelope.type === 'StreamableFile') {
+                        value = new StreamableFile(Buffer.from(envelope.data, 'base64'));
                     }
-                    else if (result.type === 'buffer') {
-                        result = Buffer.from(result.data, 'base64');
+                    else if (envelope.type === 'buffer') {
+                        value = Buffer.from(envelope.data, 'base64');
                     } else  {
-                        result = result.data;
+                        value = envelope.data;
                     }
 
-                    return result;
+                    return { cached: true, value, headers };
                 }
+
+                return null;
             }),
-            switchMap(resultResponse => {
-                if (resultResponse) {
+            switchMap(cacheHit => {
+                if (cacheHit) {
+                    const resultResponse = cacheHit.value;
                     if (isFastify) {
+                        // A hit never runs the handler, so re-apply the headers it
+                        // set (e.g. X-Total-Count, download filename/MIME).
+                        if (cacheHit.headers && typeof responseContext.header === 'function') {
+                            for (const [name, value] of Object.entries(cacheHit.headers)) {
+                                responseContext.header(name, value);
+                            }
+                        }
                         return of(responseContext.send(resultResponse));
                     }
 
@@ -94,6 +108,19 @@ export class CacheInterceptor implements NestInterceptor {
                             result = { type: 'json', data: result };
                         } else {
                             result = { type: 'string', data: result };
+                        }
+
+                        if (isFastify && typeof responseContext.getHeader === 'function') {
+                            const headers: Record<string, string> = {};
+                            for (const name of CacheInterceptor.CACHED_HEADERS) {
+                                const value = responseContext.getHeader(name);
+                                if (value !== undefined && value !== null) {
+                                    headers[name] = String(value);
+                                }
+                            }
+                            if (Object.keys(headers).length) {
+                                result.headers = headers;
+                            }
                         }
 
                         await this.cacheService.set(cacheKey, JSON.stringify(result), ttl, cacheTag);

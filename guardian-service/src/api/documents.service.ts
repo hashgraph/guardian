@@ -1,7 +1,7 @@
 import { IVCDocument, MessageAPI, PolicyStatus, } from '@guardian/interfaces';
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { DatabaseServer, IAuthUser, MessageError, MessageResponse, Policy, VcDocument, VpDocument } from '@guardian/common';
-import type { FindOptions } from '@mikro-orm/core/drivers/IDatabaseDriver';
+import type { FindOptions } from '@mikro-orm/core';
 
 /**
  * Connect to the message broker methods of working with VC, VP and DID Documents

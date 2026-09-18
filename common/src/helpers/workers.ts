@@ -360,6 +360,9 @@ export class Workers extends NatsService {
 
         const addTaskToQueue = async (): Promise<void> => {
             const result = await this.sendMessage<any>(QueueEvents.ADD_TASK_TO_QUEUE, task);
+            if (result?.ok === false) {
+                throw new Error(result.reason || 'ADD_TASK_TO_QUEUE: task rejected by queue service');
+            }
             if (!result?.ok) {
                 await addTaskToQueue();
             }

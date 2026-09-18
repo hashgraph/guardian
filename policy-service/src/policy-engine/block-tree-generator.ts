@@ -13,6 +13,7 @@ import { PolicyActionsService } from './actions-service.js';
 import { RecordActionStep } from './record-action-step.js';
 import { MintService } from './mint/mint-service.js';
 import { PolicyVcDocumentsUtils } from './policy-vc-documents-utils.js';
+import { GridActionResolver } from './external/grid-action-resolver.js';
 
 /**
  * Block tree generator
@@ -91,7 +92,7 @@ export class BlockTreeGenerator extends NatsService {
                     const head = headers();
                     head.append('messageId', messageId);
                     head.append('serviceToken', token);
-                    msg.respond(await this.codec.encode(new MessageError(error.message)), { headers: head });
+                    msg.respond(await this.codec.encode(new MessageError(error.message, error.code, error.data)), { headers: head });
                 }
             }
         });
@@ -382,6 +383,68 @@ export class BlockTreeGenerator extends NatsService {
             return new MessageResponse(navigation);
         });
 
+        this.getPolicyMessages(PolicyEvents.GET_POLICY_GRIDS, policyId, async (msg: any) => {
+            try {
+                const { user } = msg;
+                const userFull = await this.getUser(policyInstance, user);
+                const grids = await GridActionResolver.getGrids(policyId, userFull);
+                return new MessageResponse(grids);
+            } catch (error) {
+                return new MessageError(error.message, error.code || 500);
+            }
+        });
+
+        this.getPolicyMessages(PolicyEvents.GET_GRID_ACTIONS, policyId, async (msg: any) => {
+            try {
+                const { user, gridId } = msg;
+                const userFull = await this.getUser(policyInstance, user);
+                const actions = await GridActionResolver.getActions(policyId, gridId, userFull);
+                return new MessageResponse(actions);
+            } catch (error) {
+                return new MessageError(error.message, error.code || 500);
+            }
+        });
+
+        this.getPolicyMessages(PolicyEvents.GET_GRID_RECORDS, policyId, async (msg: any) => {
+            try {
+                const { user, gridId, params } = msg;
+                const userFull = await this.getUser(policyInstance, user);
+                const result = await GridActionResolver.getRecords(policyId, gridId, userFull, params || {});
+                return new MessageResponse(result);
+            } catch (error) {
+                return new MessageError(error.message, error.code || 500);
+            }
+        });
+
+        this.getPolicyMessages(PolicyEvents.EXECUTE_GRID_ACTION, policyId, async (msg: any) => {
+            try {
+                const { user, gridId, recordId, actionId, body, syncEvents } = msg;
+                const userFull = await this.getUser(policyInstance, user);
+
+                const resolution = GridActionResolver.resolveAction(policyId, gridId, actionId);
+                if (!resolution) {
+                    return new MessageError('Action not found', 404);
+                }
+
+                const actionstep = new RecordActionStep(
+                    (recordActionId, actionTimestamp) =>
+                        RecordUtils.RecordSetBlockData(
+                            policyId, userFull,
+                            resolution.actionBlock as IPolicyInterfaceBlock,
+                            body, recordActionId, actionTimestamp
+                        ),
+                    0, syncEvents
+                );
+                const result = await GridActionResolver.executeAction(
+                    policyId, gridId, recordId, actionId, body, userFull, actionstep, resolution
+                );
+                actionstep.finish();
+                return new MessageResponse(result);
+            } catch (error) {
+                return new MessageError(error.message, error.code || 500);
+            }
+        });
+
         this.getPolicyMessages(PolicyEvents.CREATE_VIRTUAL_USER, policyId, async (msg: any) => {
             const { did, data } = msg;
             await RecordUtils.RecordCreateUser(policyId, did, data);
@@ -558,6 +621,16 @@ export class BlockTreeGenerator extends NatsService {
     async initRecordEvents(policyId: string): Promise<void> {
         this.getPolicyMessages(PolicyEvents.START_RECORDING, policyId, async (msg: any) => {
             const result = await RecordUtils.StartRecording(policyId);
+            return new MessageResponse(result);
+        });
+
+        this.getPolicyMessages(PolicyEvents.PAUSE_RECORDING, policyId, async (msg: any) => {
+            const result = await RecordUtils.PauseRecording(policyId);
+            return new MessageResponse(result);
+        });
+
+        this.getPolicyMessages(PolicyEvents.RESUME_RECORDING, policyId, async (msg: any) => {
+            const result = await RecordUtils.ResumeRecording(policyId);
             return new MessageResponse(result);
         });
 

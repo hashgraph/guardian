@@ -7,6 +7,7 @@ export const notificationActionMap = new Map<TaskAction, NotificationAction>([
     [TaskAction.CREATE_POLICY, NotificationAction.POLICY_CONFIGURATION],
     [TaskAction.WIZARD_CREATE_POLICY, NotificationAction.POLICY_CONFIGURATION],
     [TaskAction.PUBLISH_POLICY, NotificationAction.POLICY_CONFIGURATION],
+    [TaskAction.DRY_RUN_POLICY, NotificationAction.POLICY_CONFIGURATION],
     [TaskAction.IMPORT_POLICY_FILE, NotificationAction.POLICY_CONFIGURATION],
     [TaskAction.IMPORT_POLICY_MESSAGE, NotificationAction.POLICY_CONFIGURATION],
     [TaskAction.IMPORT_TOOL_FILE, NotificationAction.POLICY_CONFIGURATION],
@@ -35,6 +36,7 @@ export const taskResultTitleMap = new Map<TaskAction, string>([
     [TaskAction.CREATE_TOOL, 'Tool created'],
     [TaskAction.WIZARD_CREATE_POLICY, 'Policy created'],
     [TaskAction.PUBLISH_POLICY, 'Policy published'],
+    [TaskAction.DRY_RUN_POLICY, 'Dry-run started'],
     [TaskAction.IMPORT_POLICY_FILE, 'Policy imported'],
     [TaskAction.IMPORT_POLICY_MESSAGE, 'Policy imported'],
     [TaskAction.IMPORT_TOOL_FILE, 'Tool imported'],
@@ -67,6 +69,8 @@ export function getNotificationResultMessage(action: TaskAction, result: any) {
             return `Policy ${result} created`;
         case TaskAction.PUBLISH_POLICY:
             return `Policy ${result.policyId} published`;
+        case TaskAction.DRY_RUN_POLICY:
+            return `Policy ${result.policyId} started in dry-run mode`;
         case TaskAction.PUBLISH_POLICY_LABEL:
             return `Policy ${result.id} published`;
         case TaskAction.IMPORT_POLICY_FILE:
@@ -101,6 +105,7 @@ export function getNotificationResultMessage(action: TaskAction, result: any) {
 export function getNotificationResultTitle(action: TaskAction, result: any) {
     switch (action) {
         case TaskAction.PUBLISH_POLICY:
+        case TaskAction.DRY_RUN_POLICY:
             if (!result.isValid) {
                 return;
             }
@@ -119,6 +124,7 @@ export function getNotificationResult(action: TaskAction, result: any) {
         case TaskAction.WIZARD_CREATE_POLICY:
             return result.policyId;
         case TaskAction.PUBLISH_POLICY:
+        case TaskAction.DRY_RUN_POLICY:
             return result.policyId;
         case TaskAction.IMPORT_POLICY_FILE:
             return result.policyId;

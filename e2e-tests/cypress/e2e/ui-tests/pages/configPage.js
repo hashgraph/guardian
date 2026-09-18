@@ -1,10 +1,10 @@
-import CommonElements from "../../../support/defaultUIElements";
-import * as Checks from "../../../support/checkingMethods";
+import CommonElements from '../../../support/defaultUIElements';
+import * as Checks from '../../../support/checkingMethods';
 
 const ConfigPageLocators = {
-	generateButton: "Generate",
-	nextButton: "Next",
-	connectButton: "Connect",
+	generateButton: 'Generate',
+	nextButton: 'Next',
+	connectButton: 'Connect',
 	hederaIDInput: '[ng-reflect-name="hederaAccountId"]',
 	hederaKeyInput: '[ng-reflect-name="hederaAccountKey"]',
 	hederaIDUserInput: '[ng-reflect-name="id"]',
@@ -12,10 +12,10 @@ const ConfigPageLocators = {
 	did: 'did:hedera:testnet',
 	confirmButton: '[ng-reflect-label="Confirm"]',
 	userNameInMenu: "span[ng-reflect-content='Open Profile']",
-	organizationNameLabel: " OrganizationName ",
-	websiteLabel: " Website ",
-	tagsLabel: " Tags ",
-	userLabelForReg: " test field ",
+	organizationNameLabel: ' OrganizationName ',
+	websiteLabel: ' Website ',
+	tagsLabel: ' Tags ',
+	userLabelForReg: ' test field ',
 	PasswordChangeButton: "div[class='view-document-button']",
 
 	// usernameInput: '[ng-reflect-name="username"]',
@@ -39,8 +39,8 @@ export class ConfigPage {
 		cy.get(ConfigPageLocators.userNameInMenu).should('have.text', username);
 	}
 
-	hederaSRRegistration(hederaId = "random", hederaKey) {
-		if (hederaId == "random") {
+	hederaSRRegistration(hederaId = 'random', hederaKey) {
+		if (hederaId == 'random') {
 			cy.contains(ConfigPageLocators.generateButton).click();
 			Checks.waitForElement(ConfigPageLocators.hederaIDInput);
 		}
@@ -50,18 +50,18 @@ export class ConfigPage {
 		}
 		cy.contains(ConfigPageLocators.nextButton).click();
 		cy.contains(ConfigPageLocators.nextButton).click();
-		cy.contains(ConfigPageLocators.organizationNameLabel).parent().find(CommonElements.Input).type("A");
-		cy.contains(ConfigPageLocators.tagsLabel).parent().find(CommonElements.Input).type("B");
-		cy.contains(ConfigPageLocators.websiteLabel).parent().find(CommonElements.Input).type("C");
+		cy.contains(ConfigPageLocators.organizationNameLabel).parent().find(CommonElements.Input).type('A');
+		cy.contains(ConfigPageLocators.tagsLabel).parent().find(CommonElements.Input).type('B');
+		cy.contains(ConfigPageLocators.websiteLabel).parent().find(CommonElements.Input).type('C');
 		cy.contains(ConfigPageLocators.connectButton).click();
 		Checks.waitForElement(ConfigPageLocators.PasswordChangeButton, 75, 5000);
 		cy.contains(ConfigPageLocators.did).should('not.be.null');
 	}
 
-	hederaUserRegistration(SRNameToLink, hederaId = "random", hederaKey) {
+	hederaUserRegistration(SRNameToLink, hederaId = 'random', hederaKey) {
 		cy.contains(SRNameToLink).click();
 		cy.contains(ConfigPageLocators.nextButton).click();
-		if (hederaId == "random") {
+		if (hederaId == 'random') {
 			cy.contains(ConfigPageLocators.generateButton).click();
 			Checks.waitForElement(ConfigPageLocators.hederaIDUserInput);
 		}
@@ -81,7 +81,6 @@ export class ConfigPage {
 		// );
 		// cy.wait("@waitFor" + task + "ToComplete", { timeout: 100000 })
 	}
-
 
 	finishsetupSD(Option, ID, KEY) {
 		// if (Option == 'GENERATE') {

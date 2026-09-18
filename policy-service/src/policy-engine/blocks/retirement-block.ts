@@ -1,6 +1,6 @@
 import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
 import { BlockActionError } from '../errors/index.js';
-import { DocumentCategoryType, DocumentSignature, LocationType, SchemaEntity, SchemaHelper, TokenType } from '@guardian/interfaces';
+import { DocumentCategoryType, DocumentSignature, LocationType, SchemaEntity, SchemaHelper, TokenType, OrgRolePermission } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { Token as TokenCollection, VcHelper, VcDocumentDefinition as VcDocument, MessageServer, VCMessage, MessageAction, VPMessage, HederaDidDocument } from '@guardian/common';
@@ -12,6 +12,7 @@ import { PolicyUser, UserCredentials } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { MintService } from '../mint/mint-service.js';
 import { RecordActionStep } from '../record-action-step.js';
+import { checkOrgTokenPermission } from '../helpers/org-utils.js';
 
 /**
  * Retirement block
@@ -409,6 +410,8 @@ export class RetirementBlock {
         if (!targetAccount) {
             throw new BlockActionError('Token recipient is not set', ref.blockType, ref.uuid);
         }
+
+        await checkOrgTokenPermission(ref, event.user, targetAccount, OrgRolePermission.TOKEN_RETIREMENT, event?.user?.userId);
 
         const policyOwner = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, event?.user?.userId);
 

@@ -1,3 +1,5 @@
+@import '../nav-collapse';
+
 .schema-form-root {
     display: flex;
     gap: 8px;
@@ -5,14 +7,26 @@
 }
 
 .schema-form-view-nav {
-    width: 25%; 
-    max-width: 75%; 
+    width: 25%;
+    max-width: 75%;
     align-self: flex-start;
     position: sticky;
     top: 0;
     max-height: calc(100vh - 440px);
-    overflow-y: auto;
     box-sizing: border-box;
+    overflow-y: auto;
+    border: 1px solid var(--guardian-border-color, rgba(0, 0, 0, 0.06));
+    border-radius: 6px;
+    transition: width 0.2s ease;
+
+    // The panel now owns the border and the scroll; the sticky collapse
+    // header stays pinned while the tree scrolls underneath it.
+    ::ng-deep .schema-nav {
+        max-height: none;
+        overflow: visible;
+        border: none;
+        border-radius: 0;
+    }
 }
 
 .schema-form-content {

@@ -1,4 +1,4 @@
-import { Dictionary, FieldTypes } from './models/dictionary.js';
+import { Dictionary, FieldTypes, geoDisplayValue } from './models/dictionary.js';
 import { anyToXlsx, examplesToXlsx, booleanToXlsx, entityToXlsx, fontToXlsx, stringToXlsx, typeToXlsx, unitToXlsx, valueToFormula, visibilityToXlsx } from './models/value-converters.js';
 import { Hyperlink, Range, Workbook, Worksheet } from './models/workbook.js';
 import { Table } from './models/table.js';
@@ -276,7 +276,9 @@ export class JsonToXlsx {
                 schemaCache,
                 enumsCache,
                 row,
-                subSchemaNames
+                subSchemaNames,
+                fieldCache,
+                [field.name]
             );
         }
 
@@ -362,6 +364,12 @@ export class JsonToXlsx {
             throw new Error(`Unknown field type (${worksheet.name}: ${field.name}).`);
         }
 
+        if (type?.name === 'Table' && Array.isArray(field.tableColumns) && field.tableColumns.length) {
+            worksheet
+                .getCell(table.getCol(Dictionary.PARAMETER), row)
+                .setValue(JSON.stringify(field.tableColumns))
+                .setStyle(table.paramStyle);
+        }
         if (type && type.pattern === true) {
             worksheet
                 .getCell(table.getCol(Dictionary.PARAMETER), row)
@@ -379,6 +387,12 @@ export class JsonToXlsx {
             worksheet
                 .getCell(table.getCol(Dictionary.PARAMETER), row)
                 .setValue(stringToXlsx(field.expression))
+                .setStyle(table.paramStyle);
+        }
+        if (field.dependency && field.dependency.on && field.dependency.kind === 'geo') {
+            worksheet
+                .getCell(table.getCol(Dictionary.PARAMETER), row)
+                .setValue(stringToXlsx(field.dependency.on))
                 .setStyle(table.paramStyle);
         }
         if (field.font) {
@@ -418,10 +432,10 @@ export class JsonToXlsx {
             .setValue(examplesToXlsx(field));
         worksheet
             .getCell(table.getCol(Dictionary.DEFAULT), row)
-            .setValue(anyToXlsx(field.default));
+            .setValue(anyToXlsx(geoDisplayValue(field.customType, field.default)));
         worksheet
             .getCell(table.getCol(Dictionary.SUGGEST), row)
-            .setValue(anyToXlsx(field.suggest));
+            .setValue(anyToXlsx(geoDisplayValue(field.customType, field.suggest)));
 
         if (field.hidden) {
             worksheet
@@ -446,32 +460,20 @@ export class JsonToXlsx {
         fieldCache: Map<string, IRowField>,
     ) {
         const baseFormula = JsonToXlsx.buildIfFormula(condition.ifCondition, fieldCache);
-
         const thenFormula = baseFormula;
         const elseFormula = `NOT(${baseFormula})`;
 
-        if (Array.isArray(condition.thenFields)) {
-            for (const field of condition.thenFields) {
-                const thenField = fieldCache.get(field.name);
-                if (!thenField) {
-                    continue;
-                }
-                worksheet
-                    .getCell(table.getCol(Dictionary.VISIBILITY), thenField.row)
-                    .setFormulae(thenFormula);
+        const writeCell = (key: string, formula: string) => {
+            const rowField = fieldCache.get(key);
+            if (rowField) {
+                worksheet.getCell(table.getCol(Dictionary.VISIBILITY), rowField.row).setFormulae(formula);
             }
-        }
-        if (Array.isArray(condition.elseFields)) {
-            for (const field of condition.elseFields) {
-                const elseField = fieldCache.get(field.name);
-                if (!elseField) {
-                    continue;
-                }
-                worksheet
-                    .getCell(table.getCol(Dictionary.VISIBILITY), elseField.row)
-                    .setFormulae(elseFormula);
-            }
-        }
+        };
+
+        for (const field of condition.thenFields || []) { writeCell(field.name, thenFormula); }
+        for (const field of condition.elseFields || []) { writeCell(field.name, elseFormula); }
+        for (const t of condition.thenTargets || []) { writeCell(t.fieldPath.join('.'), thenFormula); }
+        for (const t of condition.elseTargets || []) { writeCell(t.fieldPath.join('.'), elseFormula); }
     }
 
     public static writeSubFields(
@@ -481,7 +483,9 @@ export class JsonToXlsx {
         schemaCache: Map<string, string>,
         enumsCache: Map<string, XlsxEnum>,
         row: number,
-        subSchemaNames: Map<string, string> = new Map()
+        subSchemaNames: Map<string, string> = new Map(),
+        rootFieldCache?: Map<string, IRowField>,
+        pathPrefix?: string[]
     ): number {
         if (!parent || !parent.isRef || !Array.isArray(parent.fields) || parent.fields.length === 0) {
             return row;
@@ -512,6 +516,13 @@ export class JsonToXlsx {
                 subSchemaNames,
                 parent
             );
+            if (rootFieldCache && pathPrefix) {
+                const dotPath = [...pathPrefix, field.name].join('.');
+                const rowField = fieldCache.get(field.name);
+                if (rowField) {
+                    rootFieldCache.set(dotPath, rowField);
+                }
+            }
             worksheet
                 .getRow(row)
                 .setOutline(lvl);
@@ -522,16 +533,29 @@ export class JsonToXlsx {
                 schemaCache,
                 enumsCache,
                 row,
-                subSchemaNames
+                subSchemaNames,
+                rootFieldCache,
+                pathPrefix ? [...pathPrefix, field.name] : undefined
             );
         }
 
+        // Extend local cache with relative dot-paths from rootFieldCache so nested fieldPath refs resolve.
+        let condCache = fieldCache;
+        if (rootFieldCache && pathPrefix) {
+            const prefix = pathPrefix.join('.') + '.';
+            condCache = new Map(fieldCache);
+            for (const [k, v] of rootFieldCache) {
+                if (k.startsWith(prefix)) {
+                    condCache.set(k.slice(prefix.length), v);
+                }
+            }
+        }
         for (const condition of parent.conditions) {
             JsonToXlsx.writeCondition(
                 worksheet,
                 table,
                 condition,
-                fieldCache
+                condCache
             );
         }
 
@@ -620,7 +644,10 @@ export class JsonToXlsx {
         fieldCache: Map<string, IRowField>
     ): string {
         const toExact = (sub: any): string => {
-            const f = fieldCache.get(sub.field.name);
+            const key = (sub.fieldPath?.length > 1)
+                ? (sub.fieldPath as string[]).join('.')
+                : sub.field.name;
+            const f = fieldCache.get(key) ?? fieldCache.get(sub.field.name);
             if (!f) {
                 throw new Error(`Condition refers to unknown field "${sub.field?.name}".`);
             }

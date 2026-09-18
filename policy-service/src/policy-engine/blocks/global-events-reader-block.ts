@@ -532,7 +532,7 @@ class GlobalEventsReaderBlock {
             if (isVcDocument) {
                 const validationError = await this.validateDocuments(user, baseState);
                 if (validationError) {
-                    throw new BlockActionError(validationError, ref.blockType, ref.uuid);
+                    throw new BlockActionError(validationError.message, ref.blockType, ref.uuid, validationError.data);
                 }
 
                 const branchFilters = filterFieldsByBranch[branchEvent] ?? {};
@@ -868,7 +868,7 @@ class GlobalEventsReaderBlock {
         return validators;
     }
 
-    protected async validateDocuments(user: PolicyUser, state: any): Promise<string | null> {
+    protected async validateDocuments(user: PolicyUser, state: any): Promise<{ message: string; data?: any } | null> {
         const validators = this.getValidators();
 
         for (const validator of validators) {

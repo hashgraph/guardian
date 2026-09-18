@@ -45,7 +45,8 @@ export class SearchExternalPolicyDialog {
             }, (e) => {
                 this.loading = false;
                 this.step = 0;
-                this.error = e?.error?.message;
+                // a gateway HTML 502 or a reset carries no JSON message
+                this.error = e?.error?.message || 'Import failed. Please try again.';
             });
     }
 
@@ -67,7 +68,7 @@ export class SearchExternalPolicyDialog {
             }, (e) => {
                 this.loading = false;
                 this.step = 0;
-                this.error = e?.error?.message;
+                this.error = e?.error?.message || 'Search failed. Please try again.';
             });
     }
 

@@ -4,17 +4,13 @@
 
 ## Overview
 
-Guardian is a modular open-source solution that includes best-in-class identity management and decentralized ledger technology (DLT) libraries. At the heart of Guardian solution is a sophisticated Policy Workflow Engine (PWE) that enables applications to offer a digital (or digitized) Measurement, Reporting, and Verification requirements-based tokenization implementation.
+Guardian is an open-source platform for creating, managing, and issuing digital environmental assets — carbon credits, renewable energy certificates, biodiversity credits, emission and financial disclosures, certifications, climate-smart commodities, and more — using the Hedera network as the trust layer. At its core is a Policy Workflow Engine (PWE) that turns methodology requirements into a digitized Measurement, Reporting, and Verification (dMRV) workflow.
 
-[HIP-19](https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-19.md) · [HIP-28](https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-28.md) · [HIP-29](https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-29.md) · [Report a Bug](CONTRIBUTING.md#bug-reports) · [Request a Policy or a Feature](CONTRIBUTING.md#new-policy-or-feature-requests)
+For full documentation — concepts, guides, and platform updates — visit guardian.hedera.com.
 
-## Discovering Digital Environmental Assets assets on Hedera
+[Report a Bug](CONTRIBUTING.md#bug-reports) · [Share a Suggestion, Request a Policy or a Feature](CONTRIBUTING.md#new-policy-or-feature-requests)
 
-As identified in Hedera Improvement Proposal 19 (HIP-19), each entity on the Hedera network may contain a specific identifier in the memo field for discoverability. Guardian demonstrates this when every Hedera Consensus Service transaction is logged to a Hedera Consensus Service (HCS) Topic. Observing the Hedera Consensus Service Topic, you can discover newly minted tokens.
-
-In the memo field of each token mint transaction you will find a unique Hedera message timestamp. This message contains the url of the Verifiable Presentation (VP) associated with the token. The VP can serve as a starting point from which you can traverse the entire sequence of documents produced by Guardian policy workflow, which led to the creation of the token. This includes a digital Methodology (Policy) HCS Topic, an associated Registry HCS Topic for that Policy, and a Project HCS Topic.
-
-Please see p.17 in the FAQ for more information. This is further defined in [Hedera Improvement Proposal 28 (HIP-28)](https://hips.hedera.com/hip/hip-28).
+This README covers what you need to run Guardian locally — quickstart, prerequisites, manual installation, and troubleshooting. For platform concepts, methodology guides, and API references, see the documentation site above.
 
 ## Quickstart
 
@@ -69,14 +65,11 @@ To get a local copy up and running quickly, follow the steps below. Please refer
 
 1. **[Git](https://git-scm.com/downloads)** – source-control tooling
 2. **[Docker](https://www.docker.com/)** – one-command build & run (recommended)
-3. **[MongoDB v6](https://www.mongodb.com/)**, **[Node.js v20.19](https://nodejs.org/en/download)**, and **[NATS 2.9.25](https://nats.io/)** – auto-provisioned when using Docker Compose
+3. **[MongoDB v6](https://www.mongodb.com/)**, **[Node.js v24.15+](https://nodejs.org/en/download)**, and **[NATS 2.9.25](https://nats.io/)** – auto-provisioned when using Docker Compose
 4. **[IPFS storage](https://docs.ipfs.tech/concepts/what-is-ipfs/)** (choose one):
-
-   - **[Storacha account](https://storacha.network/)** – IPFS pinning service (formerly Web3.Storage)
    - **[Filebase account](https://filebase.com/)** – S3-compatible IPFS pinning
    - Local IPFS node (e.g., **[Kubo](https://github.com/ipfs/kubo)**) – auto-provisioned when using Docker Compose
-
-5. **[Redict](https://redict.io/)** – in-memory cache & message broker, independent fork of Redis® (auto-provisioned by the Docker stack)
+5. **[Valkey](https://valkey.io)** – in-memory cache & message broker (auto-provisioned by the Docker stack)
 
 When building the reference implementation, you can [manually build every component](#manual-installation) or run a single command with Docker.
 
@@ -124,7 +117,7 @@ When building the reference implementation, you can [manually build every compon
 
 - [Docker](https://www.docker.com)
 
-If you build with docker [MongoDB V6](https://www.mongodb.com), [Node.js v20.20](https://nodejs.org), [Yarn](https://yarnpkg.com/getting-started/install) and [Nats 2.9.25](https://nats.io/) will be installed and configured automatically.
+If you build with docker [MongoDB V6](https://www.mongodb.com), [Node.js v24.15+](https://nodejs.org/en/download), [Yarn](https://yarnpkg.com/getting-started/install) and [Nats 2.9.25](https://nats.io/) will be installed and configured automatically.
 
 ### Installation
 
@@ -282,7 +275,6 @@ Alternatively, you can create a single key pair and, instead of adding the publi
 #### 4. Now, we have these options to setup IPFS storage
 
 - Local IPFS node
-- Storacha
 - Filebase bucket
 
 ##### 4.1 Setting up Local IPFS node
@@ -296,39 +288,7 @@ Alternatively, you can create a single key pair and, instead of adding the publi
    IPFS_PROVIDER="local"
    ```
 
-##### 4.2 Setting up Storacha account
-
-To select this option ensure that `IPFS_PROVIDER="web3storage"` setting exists in your `./configs/.env.<environment>.guardian.system` file.
-
-To configure access to the [Storacha upload service](https://github.com/storacha/upload-service) (a w3up protocol implementation) for your Guardian instance you need to set correct values to the following variables in the `./configs/.env.<environment>.guardian.system` file:
-
-   ```text
-   IPFS_STORAGE_KEY="..."
-   IPFS_STORAGE_PROOF="..."
-   ```
-
-> ***NOTE:***  When Windows OS is used for creating the IPFS values, please use bash shell to prevent issues with base64 encoding.
-
-To obtain the values for these variables please follow the steps below:
-
-- Create an account on <https://storacha.network>, please specify the email you have access to as the account authentication is based on the email validation. Make sure to follow through the registration process to the end, choose an appropriate billing plan for your needs (e.g. 'STARTER') and enter your payment details.
-- Install CLI as described in the [corresponding section](https://docs.storacha.network/cli/) of the Storacha documentation.
-- Create your 'space' as described in the ['Create a Space'](https://docs.storacha.network/how-to/create-space/) section of the documentation.
-- Execute the following to set the Space you intend on delegating access to: `storacha space use <space_did>`.
-- The following command returns what will be your Agent private key and DID: `storacha key create`. The private key (starting with `Mg...`) is the value to be used in the environment variable `IPFS_STORAGE_KEY`.
-- Retrieve the PROOF by executing the following: ```storacha delegation create <did_from_ucan-key_command_above> --base64```. The output of this command is the value to be used in the environment variable `IPFS_STORAGE_PROOF`.
-
-To summarise, the process of configuring a UCAN delegated access to the Space you intend on delegating access to consists of execution the following command sequence:
-
-1. `storacha login`
-2. `storacha space create`
-3. `storacha space use`
-4. `storacha key create`
-5. `storacha delegation`
-
-The complete guide to using the new Storacha client is available at <https://docs.storacha.network/how-to/upload/>.
-
-##### 4.3 Setting up IPFS Filebase Bucket
+##### 4.2 Setting up IPFS Filebase Bucket
 
 To configure the Filebase IPFS provider, set the following variables in the file *`./configs/.env.<environment>.guardian.system`*
 
@@ -407,10 +367,10 @@ If you want to manually build every component with debug information, then build
 ### Prerequisites for manual installation
 
 - [MongoDB V6](https://www.mongodb.com)
-- [Node.js v20.20](https://nodejs.org)
+- [Node.js v24.15+](https://nodejs.org/en/download)
 - [Yarn](https://yarnpkg.com/getting-started/install)
 - [Nats 2.9.25](https://nats.io/)
-- [Redict](https://redict.io/)
+- [Valkey](https://valkey.io)
 - [Seq 2025.2 - optional for logging](https://datalust.co/seq)
 
 ### Build and start each component
@@ -662,24 +622,31 @@ npm start
 
 ### Configuring a Hedera local network
 
-- Install a Hedera Local Network following the [official documentation](https://github.com/hashgraph/hedera-local-node#docker)
-- Configure Guardian's configuration files `/.env/.env.docker` accordingly:
+- Provision a single-node local network with [Solo](https://solo.hiero.org), which supersedes the
+  deprecated `hashgraph/hedera-local-node`. Guardian needs a consensus node and a mirror node; the
+  explorer, the JSON-RPC relay and the block node are not used.
+- Configure `./configs/.env.localnode.guardian.system` (already provided as an example) accordingly:
 
   ```shell
-  OPERATOR_ID=""
-  OPERATOR_KEY=""
+  HEDERA_NET="localnode"
+  PREUSED_HEDERA_NET="localnode"
   LOCALNODE_ADDRESS="11.11.11.11"
   LOCALNODE_PROTOCOL="http"
-  HEDERA_NET="localnode"
+  OPERATOR_ID=""
+  OPERATOR_KEY=""
+  INITIALIZATION_TOPIC_ID=""
   ```
+
+  and start the stack with `GUARDIAN_ENV=localnode docker compose up`.
 
 Note:
 
-- Set `LOCALNODE_ADDRESS` to the IP address of your local node instance. The value above is given as an example.
-- Set `HEDERA_NET` to `localnode`. If not specified, the default value is `testnet`.
+- Set `LOCALNODE_ADDRESS` to the address of your local node instance, as reachable from the Guardian services. The value above is given as an example; from inside a container it has to be `host.docker.internal`, not `127.0.0.1`.
+- Set `HEDERA_NET` to `localnode`. If not specified, the default value is `testnet`. Any other spelling (`local-node`, for instance) makes the services fail at startup.
 - Configure `OPERATOR_ID` and `OPERATOR_KEY` accordingly with your local node configuration.
-- Remove `INITIALIZATION_TOPIC_ID` as the topic will be created automatically.
+- Leave `INITIALIZATION_TOPIC_ID` empty, as the topic will be created automatically.
 - Set `LOCALNODE_PROTOCOL` to `http` or `https` accordingly with your local node configuration (it uses HTTP by default).
+- The retire/wipe contract File IDs are testnet-specific and have to be regenerated on a local network. See [Running against a local Hiero network](./e2e-tests/README.md#running-against-a-local-hiero-network), which also covers the exact Solo commands and the port forwards Guardian's `localnode` support requires.
 
 ### Configuring Hashicorp Vault
 
@@ -901,4 +868,4 @@ For any questions, please reach out to the Hashgraph team at:
 
 ## License
 
-MIT License. See the [LICENSE](LICENSE) file for details.
+Apache 2.0. See the [LICENSE](LICENSE) file for details.

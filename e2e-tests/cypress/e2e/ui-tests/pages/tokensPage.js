@@ -1,8 +1,8 @@
-import CommonElements from "../../../support/defaultUIElements";
-import * as Checks from "../../../support/checkingMethods";
+import CommonElements from '../../../support/defaultUIElements';
+import * as Checks from '../../../support/checkingMethods';
 
 const TokensPageLocators = {
-	associateTokenButton: "div.associated-btn",
+	associateTokenButton: 'div.associated-btn',
 	grantKYCButton: "button[label='Grant KYC']",
 	balanceIncreaseElement: "td:contains(' 1 ')",
 	createTokenBtn: 'button[label="Create token"]',
@@ -19,54 +19,52 @@ const TokensPageLocators = {
 	adminKeyIsntSet: 'Admin Key is not set',
 	tokenNameInput: '[formcontrolname="tokenName"]',
 	tokenSymbolInput: '[formcontrolname="tokenSymbol"]',
-	saveTokenBtn: "Save",
+	saveTokenBtn: 'Save',
 	createTagButton: ' Create a Tag ',
 	tagNameInput: '[ng-reflect-name="name"]',
-	tagDeleteButton: "div.delete-tag",
+	tagDeleteButton: 'div.delete-tag',
 	tagDescInput: '[ng-reflect-name="description"]',
-	tagsListRequest: "/api/v1/tags/",
+	tagsListRequest: '/api/v1/tags/',
 	closeWindowButton: "[ng-reflect-label='Close']",
 	deleteTagIcon: "svg-icon[svgclass='accent-color-red']",
 	createButton: "[ng-reflect-label='Create']",
 
-
-
-	importBtn: "Tokens",
-	tokensList: "/api/v1/tokens",
-	tokenName: "td.mat-column-tokenName",
-	tokenSymbol: "td.mat-column-tokenSymbol",
-	tokenId: "td > hedera-explorer > a",
+	importBtn: 'Tokens',
+	tokensList: '/api/v1/tokens',
+	tokenName: 'td.mat-column-tokenName',
+	tokenSymbol: 'td.mat-column-tokenSymbol',
+	tokenId: 'td > hedera-explorer > a',
 	tokenType: '[ng-reflect-name="tokenType"]',
-	tagsDeleteRequest: "/api/v1/tags/*",
+	tagsDeleteRequest: '/api/v1/tags/*',
 };
 
 export class TokensPage {
 
 	openTokensTab() {
 		cy.get(CommonElements.navBar).should('exist')
-		cy.get("body").then(($body) => {
+		cy.get('body').then(($body) => {
 			if ($body.find(`span:contains(${CommonElements.manageTokens})`).length == 0)
-				cy.get(CommonElements.navBar).contains(CommonElements.tokensTab).click();
+				{cy.get(CommonElements.navBar).contains(CommonElements.tokensTab).click();}
 		})
 		cy.get(CommonElements.navBar).contains(CommonElements.manageTokens).click();
 	}
 
 	openUserTokensTab() {
 		cy.get(CommonElements.navBar).should('exist')
-		cy.get("body").then(($body) => {
+		cy.get('body').then(($body) => {
 			if ($body.find(`span:contains(${CommonElements.listOfTokensTab})`).length == 0)
-				cy.get(CommonElements.navBar).contains(CommonElements.tokensTab).click();
+				{cy.get(CommonElements.navBar).contains(CommonElements.tokensTab).click();}
 		})
 		cy.get(CommonElements.navBar).contains(CommonElements.listOfTokensTab).click();
 	}
 
 	associatePolicyToken(name) {
-		cy.contains("td", name).siblings().find(TokensPageLocators.associateTokenButton).click();
+		cy.contains('td', name).siblings().find(TokensPageLocators.associateTokenButton).click();
 	}
 
 	openAndRefreshUserTokensData(name, username) {
-		cy.contains("td", name).siblings().eq(4).find(CommonElements.svg).eq(0).click();
-		cy.contains("td", " " + username + " ").siblings().find(CommonElements.svg).click();
+		cy.contains('td', name).siblings().eq(4).find(CommonElements.svg).eq(0).click();
+		cy.contains('td', ' ' + username + ' ').siblings().find(CommonElements.svg).click();
 	}
 
 	grantKYC(name, username) {
@@ -74,7 +72,7 @@ export class TokensPage {
 		cy.get(TokensPageLocators.grantKYCButton).click();
 	}
 
-	verifyBalance(name, username, balance = " 1 ") {
+	verifyBalance(name, username, balance = ' 1 ') {
 		this.openAndRefreshUserTokensData(name, username);
 		Checks.waitForBalanceIncrease(balance, username);
 	}
@@ -83,22 +81,22 @@ export class TokensPage {
 		cy.get(TokensPageLocators.createTokenBtn).click();
 		cy.get(TokensPageLocators.tokenNameInput).click().clear().type(name);
 		if (published)
-			cy.get(TokensPageLocators.publishedBtn).click();
+			{cy.get(TokensPageLocators.publishedBtn).click();}
 		if (nft) {
 			cy.get(TokensPageLocators.tokenTypeChoose).click();
-			cy.contains("Non-Fungible").click();
+			cy.contains('Non-Fungible').click();
 		}
 		if (!adminKey) {
-			cy.get(TokensPageLocators.adminKey).parent().find("switch-button").click();
+			cy.get(TokensPageLocators.adminKey).parent().find('switch-button').click();
 		}
 		if (!wipeKey) {
-			cy.get(TokensPageLocators.wipeKey).parent().find("switch-button").click();
+			cy.get(TokensPageLocators.wipeKey).parent().find('switch-button').click();
 		}
 		if (freeze) {
-			cy.get(TokensPageLocators.freezeKey).parent().find("switch-button").click();
+			cy.get(TokensPageLocators.freezeKey).parent().find('switch-button').click();
 		}
 		if (KYC) {
-			cy.get(TokensPageLocators.kycKey).parent().find("switch-button").click();
+			cy.get(TokensPageLocators.kycKey).parent().find('switch-button').click();
 		}
 		cy.get(TokensPageLocators.createFinalBtn).click();
 		Checks.waitForTaskComplete();
@@ -107,18 +105,18 @@ export class TokensPage {
 	}
 
 	deleteToken(name) {
-		cy.contains(new RegExp("^" + name + "$", "g")).parent().find('[ng-reflect-src="/assets/images/icons/delete.sv"]').click();
+		cy.contains(new RegExp('^' + name + '$', 'g')).parent().find('[ng-reflect-src="/assets/images/icons/delete.sv"]').click();
 		cy.get(TokensPageLocators.tokenDeleteBtn).click();
 		Checks.waitForTaskComplete();
-		cy.contains(new RegExp("^" + name + "$", "g")).should('not.exist');
+		cy.contains(new RegExp('^' + name + '$', 'g')).should('not.exist');
 	}
 
 	deleteTokenDisabled(name) {
-		cy.contains(new RegExp("^" + name + "$", "g")).parent().find('[ng-reflect-src="/assets/images/icons/delete.sv"]').click();
+		cy.contains(new RegExp('^' + name + '$', 'g')).parent().find('[ng-reflect-src="/assets/images/icons/delete.sv"]').click();
 		cy.get(TokensPageLocators.tokenDeleteBtn).click();
 		Checks.waitForTaskComplete();
 		cy.contains(TokensPageLocators.adminKeyIsntSet).should('exist');
-		cy.contains(new RegExp("^" + name + "$", "g")).should('exist');
+		cy.contains(new RegExp('^' + name + '$', 'g')).should('exist');
 	}
 
 	editToken(name, editname, editSymbol) {
@@ -139,22 +137,15 @@ export class TokensPage {
 		cy.get(TokensPageLocators.tagNameInput).type(tagName);
 		cy.get(TokensPageLocators.tagDescInput).type(tagName);
 		cy.get(TokensPageLocators.createButton).click();
-		cy.contains(tagName).should("exist");
+		cy.contains(tagName).should('exist');
 	}
 
 	deleteTag(name, tagName) {
 		cy.contains(name).siblings().contains(tagName).click();
 		cy.get(TokensPageLocators.deleteTagIcon).click();
 		cy.get(TokensPageLocators.closeWindowButton).click();
-		cy.contains(tagName).should("not.exist");
+		cy.contains(tagName).should('not.exist');
 	}
-
-
-
-
-
-
-
 
 	static waitForTokens() {
 		// cy.intercept(TokensPageLocators.tokensList).as(
@@ -203,7 +194,6 @@ export class TokensPage {
 
 	}
 
-
 	createNonFungibleTokenInDraftStatusWithDefaultOptions(name) {
 		// cy.get(TokensPageLocators.createTokenBtn).click();
 		// cy.get(TokensPageLocators.tokenNameInput).clear().type(name);
@@ -214,7 +204,6 @@ export class TokensPage {
 		// cy.contains(TokensPageLocators.tokenName, name).should(ASSERT.exist);
 
 	}
-
 
 	createNonFungibleTokenInPublishedStatusWithDefaultOptions(name) {
 		// cy.get(TokensPageLocators.createTokenBtn).click();

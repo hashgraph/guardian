@@ -8,7 +8,7 @@ import {
 import { Wallet as WalletManager } from '../wallet/index.js'
 import { NatsService } from '../mq/index.js';
 import { Users } from './users.js';
-import { IAuthUser } from '../interfaces';
+import { IAuthUser } from '../interfaces/auth.interface.js';
 
 /**
  * Key Entity

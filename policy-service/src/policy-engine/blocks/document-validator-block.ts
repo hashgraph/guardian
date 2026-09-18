@@ -2,14 +2,15 @@ import { BlockActionError } from '../errors/index.js';
 import { ActionCallback, ValidatorBlock } from '../helpers/decorators/index.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
-import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyValidatorBlock } from '../policy-engine.interface.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { FilterQuery } from '@mikro-orm/core';
 import { VcDocument, VpDocument } from '@guardian/common';
-import { LocationType } from '@guardian/interfaces';
+import { resolveOrgMemberDids } from '../helpers/org-utils.js';
+import { BlockErrorType, IBlockErrorData, IDocumentValidatorBlockError, LocationType } from '@guardian/interfaces';
 
 /**
  * Document Validator
@@ -35,101 +36,258 @@ import { LocationType } from '@guardian/interfaces';
             PolicyOutputEventType.ErrorEvent
         ],
         defaultEvent: true,
-        properties: [{
-            name: 'conditions',
-            label: 'Conditions',
-            title: 'Conditions',
-            type: PropertyType.Array,
-            editable: true,
-            items: {
-                label: 'Condition',
-                value: '',
-                properties: [
-                    {
-                        name: 'type',
-                        label: 'Type',
-                        title: 'Type',
-                        type: PropertyType.Select,
-                        items: [
-                            { label: 'Equal', value: 'equal' },
-                            { label: 'Not Equal', value: 'not_equal' },
-                            { label: 'In', value: 'in' },
-                            { label: 'Not In', value: 'not_in' }
-                        ],
-                        editable: true
-                    },
-                    {
-                        name: 'field',
-                        label: 'Field',
-                        title: 'Field',
-                        type: PropertyType.Input,
-                        editable: true
-                    },
-                    {
-                        name: 'value',
-                        label: 'Value',
-                        title: 'Value',
-                        type: PropertyType.Input,
-                        editable: true
-                    },
-                ]
-            }
-        },
-        {
-            name: 'documentType',
-            label: 'Document Type',
-            title: 'Document Type',
-            type: PropertyType.Select,
-            items: [
-                { label: 'VC Document', value: 'vc-document'},
-                { label: 'VP Document', value: 'vp-document'},
-                { label: 'Related VC Document', value: 'related-vc-document'},
-                { label: 'Related VP Document', value: 'related-vp-document'}
-            ],
-            editable: false
-        },
-        {
-            name: 'schema',
-            label: 'Check Schema',
-            title: 'Check Schema',
-            type: PropertyType.Schemas,
-            editable: true
-        },
-        {
-            name: 'checkOwnerDocument',
-            label: 'Check Owned by User',
-            title: 'Check Owned by User',
-            type: PropertyType.Checkbox,
-            editable: true
-        },
-        {
-            name: 'checkOwnerByGroupDocument',
-            label: 'Check Owned by Group',
-            title: 'Check Owned by Group',
-            type: PropertyType.Checkbox,
-            editable: true
-        },
-        {
-            name: 'checkAssignDocument',
-            label: 'Check Assigned to User',
-            title: 'Check Assigned to User',
-            type: PropertyType.Checkbox,
-            editable: true
-        },
-        {
-            name: 'checkAssignByGroupDocument',
-            label: 'Check Assigned to Group',
-            title: 'Check Assigned to Group',
-            type: PropertyType.Checkbox,
-            editable: true
-        },
-        ]
+        properties: []
     },
     variables: [
         { path: 'options.schema', alias: 'schema', type: 'Schema' }
     ]
 })
 export class DocumentValidatorBlock {
+    private coerceValue(value: any): any {
+        return PolicyUtils.coerceComparable(value);
+    }
+
+    private resolveDocumentValue(path: string, document: IPolicyDocument): any {
+        return PolicyUtils.resolveFieldPath(document, path);
+    }
+
+    private resolveSourceValue(path: string, sourceDocuments: any[], operator: string): any {
+        if (operator === 'in' || operator === 'not_in') {
+            return sourceDocuments.map((doc) => PolicyUtils.resolveFieldPath(doc, path)).flat();
+        }
+        return PolicyUtils.resolveFieldPath(sourceDocuments[0], path);
+    }
+
+    private resolveConditionSide(
+        raw: string,
+        sourceType: 'value' | 'document' | 'source',
+        operator: string,
+        document: IPolicyDocument,
+        sourceDocuments: any[]
+    ): any {
+        switch (sourceType) {
+            case 'document': return this.resolveDocumentValue(raw, document);
+            case 'source':   return this.resolveSourceValue(raw, sourceDocuments, operator);
+            default:         return raw;
+        }
+    }
+
+    private truncateValue(v: any, maxItems = 5): string {
+        if (Array.isArray(v) && v.length > maxItems) {
+            return `[${v.slice(0, maxItems).map((x) => JSON.stringify(x)).join(', ')}, … (${v.length - maxItems} more)]`;
+        }
+        return JSON.stringify(v);
+    }
+
+    private describeCrossConditionFailure(type: string, left: any, right: any): string {
+        const l = this.truncateValue(left);
+        const r = this.truncateValue(right);
+        switch (type) {
+            case 'not_equal': return `Value ${l} must not equal ${r}`;
+            case 'in':        return `Value ${l} is not in ${r}`;
+            case 'not_in':    return `Value ${l} must not be in ${r}`;
+            case 'gt':        return `Value ${l} is not greater than ${r}`;
+            case 'gte':       return `Value ${l} is not greater than or equal to ${r}`;
+            case 'lt':        return `Value ${l} is not less than ${r}`;
+            case 'lte':       return `Value ${l} is not less than or equal to ${r}`;
+            default:          return `got ${l}, expected ${r}`;
+        }
+    }
+
+    private buildSourceFilter(
+        sourceValidation: any,
+        ref: IPolicyValidatorBlock,
+        document: IPolicyDocument,
+        user: any
+    ): Record<string, any> {
+        const filter: Record<string, any> = { policyId: { $eq: ref.policyId } };
+
+        if (sourceValidation.schema) {
+            filter.schema = { $eq: sourceValidation.schema };
+        }
+        if (sourceValidation.onlyOwnDocuments && user?.did) {
+            filter.owner = { $eq: user.did };
+        }
+        // the restriction used to be skipped when the user had no group, leaving the source
+        // unfiltered. `$eq: null` matches group-less documents the way the direct checks do.
+        if (sourceValidation.onlyOwnByGroupDocuments) {
+            filter.group = { $eq: user?.group ?? null };
+        }
+        if (sourceValidation.onlyAssignDocuments && user?.did) {
+            filter.assignedTo = { $eq: user.did };
+        }
+        if (sourceValidation.onlyAssignByGroupDocuments) {
+            filter.assignedToGroup = { $eq: user?.group ?? null };
+        }
+
+        /*
+         * The DB filter has to match the value as STORED, not only as coerced.
+         *
+         * coerceValue turns '100' into the number 100 and '2024-06-01' into epoch
+         * milliseconds, but VC JSON stores those fields as strings and Mongo comparisons
+         * are type-bracketed. So `gte '2024-01-01'` compared a number against strings and
+         * matched nothing - fail-closed, valid sources never found - while $ne against
+         * string-stored values matched nothing to exclude and left the excluded documents
+         * as candidates: fail-open. The in-memory condition phase coerces both sides,
+         * which is what makes the DB phase's one-sided coercion a mismatch.
+         *
+         * Where coercion actually changes the value, both representations are offered.
+         */
+        const alternatives = (rawValue: any, coerced: any): any[] =>
+            (rawValue === coerced || rawValue === undefined || rawValue === null)
+                ? [coerced]
+                : [coerced, rawValue];
+
+        const predicates: any[] = [];
+
+        for (const f of (sourceValidation.filters || [])) {
+            const raw = f.typeValue === 'variable'
+                ? PolicyUtils.getObjectValue(document, f.value)
+                : f.value;
+            const value = this.coerceValue(raw);
+            const both = alternatives(raw, value);
+
+            switch (f.type) {
+                case 'not_equal':
+                    predicates.push({ [f.field]: { $nin: both } });
+                    break;
+                case 'in':
+                case 'not_in': {
+                    const source: any[] = f.typeValue === 'variable'
+                        ? (Array.isArray(raw) ? raw : [raw])
+                        : String(f.value).split(',').map((v: string) => v.trim());
+                    const arr = source.flatMap((e: any) => alternatives(e, this.coerceValue(e)));
+                    predicates.push({ [f.field]: f.type === 'in' ? { $in: arr } : { $nin: arr } });
+                    break;
+                }
+                case 'gt':
+                case 'gte':
+                case 'lt':
+                case 'lte': {
+                    const op = `$${f.type}`;
+                    if (both.length === 1) {
+                        predicates.push({ [f.field]: { [op]: both[0] } });
+                    } else {
+                        // type bracketing means one predicate cannot span both, so the
+                        // document qualifies if it compares true as EITHER type
+                        predicates.push({ $or: both.map((v) => ({ [f.field]: { [op]: v } })) });
+                    }
+                    break;
+                }
+                default:
+                    predicates.push({ [f.field]: { $in: both } });
+                    break;
+            }
+        }
+
+        if (predicates.length) {
+            filter.$and = predicates;
+        }
+
+        return filter;
+    }
+
+    private async runSourceValidation(
+        ref: IPolicyValidatorBlock,
+        sourceValidation: any,
+        document: IPolicyDocument,
+        user: any
+    ): Promise<{ message: string; data?: IDocumentValidatorBlockError } | null> {
+        const filter = this.buildSourceFilter(sourceValidation, ref, document, user);
+
+        const sourceDocuments: any[] = sourceValidation.dbCollection === 'VpDocument'
+            ? await ref.databaseServer.getVpDocuments(filter as any) as any[]
+            : await ref.databaseServer.getVcDocuments(filter as any) as any[];
+
+        if (!sourceDocuments?.length) {
+            const filterSummary = (sourceValidation.filters || [])
+                .map((f: any) => {
+                    const v = f.typeValue === 'variable'
+                        ? this.resolveDocumentValue(f.value, document)
+                        : f.value;
+                    return `${f.field} ${f.type} ${JSON.stringify(v)}`;
+                })
+                .join(', ');
+            const detail = filterSummary
+                ? `No source documents matched filter(s): ${filterSummary}`
+                : 'No matching source documents found';
+            return {
+                message: `Validation failed: ${detail}`,
+                data: {
+                    type: BlockErrorType.DOCUMENT_VALIDATOR_BLOCK_ERROR,
+                    summary: detail,
+                    conditions: []
+                }
+            };
+        }
+
+        const conditions = sourceValidation.conditions || [];
+        if (!conditions.length) {
+            return null;
+        }
+
+        const failureMap = new Map<string, { field: string, type: string, leftValue: any, rightValue: any, count: number }>();
+        for (const sourceDoc of sourceDocuments) {
+            let failed = false;
+            const counted = new Set<string>();
+            for (let ci = 0; ci < conditions.length; ci++) {
+                const condition = conditions[ci];
+                const left  = this.resolveConditionSide(condition.field, condition.fieldSource, condition.type, document, [sourceDoc]);
+                const right = this.resolveConditionSide(condition.value, condition.valueSource, condition.type, document, [sourceDoc]);
+                if (!PolicyUtils.evaluateFieldCondition(left, condition.type, right)) {
+                    const key = `${condition.field}\0${ci}`;
+                    if (!failureMap.has(key)) {
+                        failureMap.set(key, { field: condition.field, type: condition.type, leftValue: left, rightValue: right, count: 0 });
+                    }
+                    if (!counted.has(key)) {
+                        failureMap.get(key).count++;
+                        counted.add(key);
+                    }
+                    failed = true;
+                }
+            }
+            if (!failed) {
+                return null;
+            }
+        }
+
+        const total = sourceDocuments.length;
+        const schema = sourceValidation.schema
+            ? await PolicyUtils.loadSchemaByID(ref, sourceValidation.schema)
+            : null;
+        const schemaName = schema?.name ?? null;
+
+        const N = failureMap.size;
+        const summary = `Checked ${N} condition${N !== 1 ? 's' : ''} across ${total} source${total !== 1 ? 's' : ''}:`;
+        const conditionResults: IDocumentValidatorBlockError['conditions'] = [];
+        for (const { field, type, leftValue, rightValue, count } of Array.from(failureMap.values())) {
+            const rawLabel = field.split('.').filter(p => p !== 'document' && !/^\d+$/.test(p)).pop() || field;
+            const label = schemaName ? `${schemaName} · ${rawLabel}` : rawLabel;
+            let hint: string;
+            if (count < total) {
+                hint = 'Matches some sources, conflicts with other fields';
+            } else {
+                const [dl, dr] = PolicyUtils.firstFailingPair(leftValue, type, rightValue);
+                if (total > 1) {
+                    // each source has its own right-side value - showing one source's
+                    // value as representative would be misleading.
+                    hint = `got ${this.truncateValue(dl)}, no match across ${total} sources`;
+                } else {
+                    hint = this.describeCrossConditionFailure(type, dl, dr);
+                }
+            }
+            conditionResults.push({ label, hint, matched: total - count, total });
+        }
+        return {
+            message: `Validation failed: ${summary}`,
+            data: {
+                type: BlockErrorType.DOCUMENT_VALIDATOR_BLOCK_ERROR,
+                summary,
+                conditions: conditionResults,
+            },
+        };
+    }
+
     /**
      * Before init callback
      */
@@ -154,9 +312,9 @@ export class DocumentValidatorBlock {
         ref: IPolicyValidatorBlock,
         event: IPolicyEvent<IPolicyEventState>,
         document: IPolicyDocument
-    ): Promise<string> {
+    ): Promise<{ message: string; data?: IBlockErrorData } | null> {
         if (!document) {
-            return `Invalid document`;
+            return { message: 'Invalid document' };
         }
 
         const documentRef = PolicyUtils.getDocumentRef(document);
@@ -186,26 +344,26 @@ export class DocumentValidatorBlock {
         }
 
         if (!document) {
-            return `Document does not exist`;
+            return { message: 'Document does not exist' };
         }
 
         const documentType = PolicyUtils.getDocumentType(document);
 
         if (options.documentType === 'vc-document') {
             if (documentType !== 'VerifiableCredential') {
-                return `Invalid document type`;
+                return { message: 'Invalid document type' };
             }
         } else if (options.documentType === 'vp-document') {
             if (documentType !== 'VerifiablePresentation') {
-                return `Invalid document type`;
+                return { message: 'Invalid document type' };
             }
         } else if (options.documentType === 'related-vc-document') {
             if (documentType !== 'VerifiableCredential') {
-                return `Invalid document type`;
+                return { message: 'Invalid document type' };
             }
         } else if (options.documentType === 'related-vp-document') {
             if (documentType !== 'VerifiablePresentation') {
-                return `Invalid document type`;
+                return { message: 'Invalid document type' };
             }
         }
 
@@ -214,36 +372,72 @@ export class DocumentValidatorBlock {
 
         if (options.checkOwnerDocument) {
             if (document.owner !== userDID) {
-                return `Invalid owner`;
+                return { message: 'Invalid owner' };
             }
         }
         if (options.checkOwnerByGroupDocument) {
             if (document.group !== userGroup) {
-                return `Invalid group`;
+                return { message: 'Invalid group' };
             }
         }
         if (options.checkAssignDocument) {
             if (document.assignedTo !== userDID) {
-                return `Invalid assigned user`;
+                return { message: 'Invalid assigned user' };
             }
         }
         if (options.checkAssignByGroupDocument) {
             if (document.assignedToGroup !== userGroup) {
-                return `Invalid assigned group`;
+                return { message: 'Invalid assigned group' };
+            }
+        }
+        if (options.checkOwnerOrgDocument || options.checkAssigneeOrgDocument) {
+            const orgId = event?.user?.organization;
+            const memberDids = new Set(await resolveOrgMemberDids(event?.user));
+            if (options.checkOwnerOrgDocument) {
+                if (!orgId || !memberDids.has(document.owner)) {
+                    return { message: 'Invalid owner organization' };
+                }
+            }
+            if (options.checkAssigneeOrgDocument) {
+                if (!orgId || !memberDids.has(document.assignedTo)) {
+                    return { message: 'Invalid assignee organization' };
+                }
             }
         }
 
         if (options.schema) {
             const schema = await PolicyUtils.loadSchemaByID(ref, options.schema);
             if (!PolicyUtils.checkDocumentSchema(ref, document, schema)) {
-                return `Invalid document schema`;
+                return { message: 'Invalid document schema' };
             }
         }
 
         if (options.conditions) {
             for (const filter of options.conditions) {
                 if (!PolicyUtils.checkDocumentField(document, filter)) {
-                    return `Invalid document`;
+                    const actual = PolicyUtils.resolveFieldPath(document, filter.field);
+                    const expected = filter.valueSource === 'document'
+                        ? PolicyUtils.resolveFieldPath(document, filter.value)
+                        : filter.value;
+                    const [displayActual, displayExpected] = PolicyUtils.firstFailingPair(actual, filter.type, expected);
+                    const label = String(filter.field).split('.').filter((p: string) => p !== 'document' && !/^\d+$/.test(p)).pop() || filter.field;
+                    const hint = this.describeCrossConditionFailure(filter.type, displayActual, displayExpected);
+                    const summary = `Field "${label}" failed validation`;
+                    const data: IDocumentValidatorBlockError = {
+                        type: BlockErrorType.DOCUMENT_VALIDATOR_BLOCK_ERROR,
+                        summary,
+                        conditions: [{ label, hint, matched: 0, total: 1 }]
+                    };
+                    return { message: `Field "${label}": ${hint}`, data };
+                }
+            }
+        }
+
+        if (options.sourceValidations?.length) {
+            for (const sourceValidation of options.sourceValidations) {
+                const error = await this.runSourceValidation(ref, sourceValidation, document, event.user);
+                if (error) {
+                    return error;
                 }
             }
         }
@@ -255,13 +449,13 @@ export class DocumentValidatorBlock {
      * Run block logic
      * @param event
      */
-    public async run(event: IPolicyEvent<IPolicyEventState>): Promise<string> {
+    public async run(event: IPolicyEvent<IPolicyEventState>): Promise<{ message: string; data?: IBlockErrorData } | null> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyValidatorBlock>(this);
 
         const document = event?.data?.data;
 
         if (!document) {
-            return `Invalid document`;
+            return { message: 'Invalid document' };
         }
 
         if (Array.isArray(document)) {
@@ -296,7 +490,7 @@ export class DocumentValidatorBlock {
 
         const error = await ref.run(event);
         if (error) {
-            throw new BlockActionError(error, ref.blockType, ref.uuid);
+            throw new BlockActionError(error.message, ref.blockType, ref.uuid, error.data);
         }
         // event.actionStatus.saveResult(event.data);
 

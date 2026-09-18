@@ -1,4 +1,4 @@
-import { Readable } from 'stream';
+import { Readable } from 'node:stream';
 
 export function streamToBuffer(stream: Readable): Promise<Buffer> {
     return new Promise((resolve, reject) => {

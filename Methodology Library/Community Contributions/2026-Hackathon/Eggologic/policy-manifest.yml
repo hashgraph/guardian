@@ -1,0 +1,44 @@
+id: hackathon-2026-eggologic-ewd-rb
+name: Eggologic Waste Diversion and Regenerative Bioconversion
+version: "0.3.0"
+
+description: >
+  Proof-of-concept Guardian policy for tracing organic waste diversion,
+  regenerative bioconversion, production outputs, environmental impact
+  records, and participant incentives using Hedera Guardian.
+
+policy_type: proof-of-concept
+status: draft
+license: Apache-2.0
+
+category: waste
+
+authors:
+  - name: Eggologic
+    type: organization
+    github: ramonaguileira
+
+tags:
+  - hackathon
+  - community
+  - agriculture
+  - mrv
+
+maintainers:
+  - name: Ramon Aguileira
+    email: info@eggologic.org
+
+resources:
+  - type: other
+    label: Hackathon repository
+    url: https://github.com/ramonaguileira/EggoLogic-Hedera-Hackathon
+
+  - type: other
+    label: Pitch and demo video
+    url: https://youtu.be/hENzHwvPzm4
+
+  - type: other
+    label: Live dashboard
+    url: https://eggologic.vercel.app/
+
+support: https://github.com/ramonaguileira/EggoLogic-Hedera-Hackathon/issues

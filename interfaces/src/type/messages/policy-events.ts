@@ -35,6 +35,8 @@ export enum PolicyEvents {
     TEST_UPDATE_BROADCAST = 'policy-event-test-update-broadcast',
     GET_RECORD_STATUS = 'policy-event-get-record-status',
     START_RECORDING = 'policy-event-start-recording',
+    PAUSE_RECORDING = 'policy-event-pause-recording',
+    RESUME_RECORDING = 'policy-event-resume-recording',
     STOP_RECORDING = 'policy-event-stop-recording',
     GET_RECORDED_ACTIONS = 'policy-event-get-recorded-actions',
     RUN_RECORD = 'policy-event-run-record',
@@ -64,4 +66,9 @@ export enum PolicyEvents {
     GET_MOCK_CONFIG = 'policy-event-get-mock-config',
     SET_MOCK_CONFIG = 'policy-event-set-mock-config',
     RETRY_MINT = 'policy-event-retry-mint',
+
+    GET_POLICY_GRIDS = 'policy-event-get-policy-grids',
+    GET_GRID_ACTIONS = 'policy-event-get-grid-actions',
+    GET_GRID_RECORDS = 'policy-event-get-grid-records',
+    EXECUTE_GRID_ACTION = 'policy-event-execute-grid-action',
 }

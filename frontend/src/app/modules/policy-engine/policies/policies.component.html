@@ -1,7 +1,5 @@
 <div class="guardian-page" [class.policies-min-width]="!user.POLICIES_POLICY_MANAGE">
-  <div class="guardian-user-page-header">
-    {{ user.POLICIES_POLICY_MANAGE ? "Manage Policies" : "List of Policies" }}
-  </div>
+  <guardian-page-header pageTitle="Policies" helpKey="policies"></guardian-page-header>
 
   @if (!isConfirmed) {
     <div class="not-exist">
@@ -246,9 +244,14 @@
                     class="header-cell-text cell-140">Topic
                   </th>
                 }
+                @if (canDisplayColumn('template')) {
+                  <th
+                    class="header-cell-text cell-170">Template
+                  </th>
+                }
                 @if (canDisplayColumn('publicLink')) {
                   <th
-                    class="header-cell-text cell-210">Public Link
+                    class="header-cell-text cell-210">Policy Public ID
                   </th>
                 }
                 @if (canDisplayColumn('version')) {
@@ -549,6 +552,17 @@
                         <hedera-explorer
                           [params]="policy.topicId"
                         type="topics">{{ policy.topicId }}</hedera-explorer>
+                      </span>
+                    </td>
+                  }
+                  @if (canDisplayColumn('template')) {
+                    <td
+                      class="cell-170 text-truncate"
+                      pTooltip="{{ getSchemaTemplateLabel(policy) }}"
+                      tooltipPosition="top"
+                      >
+                      <span class="text-truncate">
+                        {{ getSchemaTemplateLabel(policy) || '–' }}
                       </span>
                     </td>
                   }

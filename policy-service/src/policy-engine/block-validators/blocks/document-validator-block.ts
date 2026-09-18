@@ -35,6 +35,22 @@ export class DocumentValidatorBlock {
             if (ref.options.conditions && !Array.isArray(ref.options.conditions)) {
                 validator.addError(`conditions option must be an array`);
             }
+
+            const allowedCollections = ['VcDocument', 'VpDocument'];
+            if (ref.options.sourceValidations !== undefined && !Array.isArray(ref.options.sourceValidations)) {
+                validator.addError('Option "sourceValidations" must be an array');
+            }
+            for (const item of (ref.options.sourceValidations || [])) {
+                if (!allowedCollections.includes(item.dbCollection)) {
+                    validator.addError(`Option "dbCollection" must be one of ${allowedCollections.join('|')}`);
+                }
+                if (item.filters !== undefined && !Array.isArray(item.filters)) {
+                    validator.addError('Option "filters" must be an array');
+                }
+                if (item.conditions !== undefined && !Array.isArray(item.conditions)) {
+                    validator.addError('Option "conditions" must be an array');
+                }
+            }
         } catch (error) {
             validator.addError(`Unhandled exception ${validator.getErrorMessage(error)}`);
         }

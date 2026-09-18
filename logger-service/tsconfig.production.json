@@ -1,35 +1,37 @@
 {
     "compilerOptions": {
-        "experimentalDecorators": true,
-        "module": "ESNext",
-        "target": "es2022",
-        "lib": [
-            "es6"
-        ],
         "emitDecoratorMetadata": true,
-        "moduleResolution": "node",
-        "sourceMap": false,
-        "outDir": "dist/",
         "esModuleInterop": true,
-        "skipLibCheck": true,
-        "baseUrl": "./src",
+        "experimentalDecorators": true,
+        "lib": [
+            "ES2023"
+        ],
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "noUnusedLocals": true,
+        "noUnusedParameters": false,
+        "outDir": "dist/",
         "paths": {
-            "@entity/*": [
-                "entity/*"
-            ],
             "@api/*": [
-                "api/*"
+                "./src/api/*"
+            ],
+            "@entity/*": [
+                "./src/entity/*"
             ],
             "#constants": [
-                "constants/index.js"
+                "./src/constants/index.js"
             ]
-        }
+        },
+        "rootDir": "./src",
+        "skipLibCheck": true,
+        "sourceMap": false,
+        "strict": false,
+        "target": "ES2023"
     },
-    "include": [
-        "src/**/*"
-    ],
     "exclude": [
         "node_modules"
     ],
-    "compileOnSave": true
+    "include": [
+        "src/**/*"
+    ]
 }

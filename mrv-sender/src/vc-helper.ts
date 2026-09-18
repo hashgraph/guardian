@@ -1,11 +1,12 @@
 import { DocumentLoader } from "./document-loader/document-loader.js";
 import { DocumentLoaderFunction } from "./document-loader/document-loader-function.js";
-import { Ed25519Signature2018, Ed25519VerificationKey2018 } from '@transmute/ed25519-signature-2018';
-import { ld as vcjs } from '@transmute/vc.js';
+import { Ed25519Signature2018 } from '@digitalbazaar/ed25519-signature-2018';
+import { Ed25519VerificationKey2018 } from '@digitalbazaar/ed25519-verification-key-2018';
+import * as vcjs from '@digitalbazaar/vc';
 
 export class VCHelper {
     private documentLoaders: DocumentLoader[];
-    private loader: DocumentLoaderFunction;
+    private loader!: DocumentLoaderFunction;
 
     constructor() {
         this.documentLoaders = [];
@@ -30,7 +31,7 @@ export class VCHelper {
         suite: Ed25519Signature2018,
         documentLoader: DocumentLoaderFunction
     ): Promise<any> {
-        return await vcjs.createVerifiableCredential({
+        return await vcjs.issue({
             credential: vc,
             suite: suite,
             documentLoader: documentLoader,

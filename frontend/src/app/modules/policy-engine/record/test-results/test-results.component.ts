@@ -121,6 +121,16 @@ export class TestResultsComponent implements OnInit {
         }
     }
 
+    public onDocumentOpen(value: string): void {
+        this.selectedDoc = value;
+    }
+
+    public onDocumentClose(value: string): void {
+        if (this.selectedDoc === value) {
+            this.selectedDoc = null;
+        }
+    }
+
     public onBack(): void {
         this.router.navigate(['/policy-viewer'], {
             queryParams: {

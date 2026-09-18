@@ -118,7 +118,7 @@ export class PolicyRequestsComponent implements OnInit {
             },
             {
                 id: 'messageId',
-                title: 'Message',
+                title: 'Policy Public ID',
                 type: 'text',
                 size: '200',
                 tooltip: true

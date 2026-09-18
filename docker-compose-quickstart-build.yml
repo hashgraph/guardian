@@ -50,7 +50,7 @@ services:
       - '5005'
 
   cache:
-    image: registry.redict.io/redict:7.3.6-alpine
+    image: valkey/valkey:8.1-alpine
     restart: always
     expose:
       - '6379'
@@ -79,7 +79,7 @@ services:
       - '5007'
 
   ipfs-node:
-    image: ipfs/kubo:v0.41.0
+    image: ipfs/kubo:v0.43.0
     volumes:
       - ipfs_data:/data/ipfs:rw
       - ipfs_export:/export:rw
@@ -92,7 +92,9 @@ services:
     init: true
 
   logger-service:
-    image: gcr.io/hedera-registry/logger-service:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: ./logger-service/Dockerfile
     depends_on:
       - message-broker
     volumes:
@@ -113,7 +115,7 @@ services:
     init: true
 
   mongo:
-    image: mongo:6.0.26
+    image: mongo:6.0.28
     # command: "--setParameter allowDiskUseByDefault=true"
     command: "--setParameter allowDiskUseByDefault=true --quiet --logpath /dev/null" # use this command to reduce log noise
     restart: always
@@ -122,7 +124,9 @@ services:
     init: true
 
   notification-service:
-    image: gcr.io/hedera-registry/notification-service:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: ./notification-service/Dockerfile
     depends_on:
       - message-broker
     volumes:

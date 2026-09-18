@@ -29,6 +29,8 @@ export class AggregateConfigComponent implements OnInit {
     properties!: any;
     allTimer!: PolicyBlock[];
 
+    private expressionsGroupInitialized = false;
+
     public aggregateTypeOptions = [
         {label: 'Period', value: 'period'},
         {label: 'Cumulative Dimension', value: 'cumulative'}
@@ -49,6 +51,10 @@ export class AggregateConfigComponent implements OnInit {
         this.properties = block.properties;
         this.properties.expressions = this.properties.expressions || [];
         this.properties.uiMetaData = this.properties.uiMetaData || {}
+        if (!this.expressionsGroupInitialized) {
+            this.propHidden.expressionsGroup = this.properties.expressions.length === 0;
+            this.expressionsGroupInitialized = true;
+        }
     }
 
     onHide(item: any, prop: any) {
@@ -60,10 +66,14 @@ export class AggregateConfigComponent implements OnInit {
             name: '',
             value: '',
         })
+        this.propHidden.expressionsGroup = false;
     }
 
     onRemoveExpression(i: number) {
         this.properties.expressions.splice(i, 1);
+        if (this.properties.expressions.length === 0) {
+            this.propHidden.expressionsGroup = true;
+        }
     }
 
     onSave() {

@@ -107,7 +107,7 @@ export class VCViewerDialog {
         this.documentId = row?.id;
         this.schemaId = row?.schema;
         this.messageId = row?.messageId;
-        this.canExport = !(canExport === false);
+        this.canExport = canExport === true;
 
         this.getByUser = getByUser;
         this.id = id;

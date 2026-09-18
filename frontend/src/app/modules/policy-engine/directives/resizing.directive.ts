@@ -81,13 +81,13 @@ export class ResizingDirective {
                 this._prevElement.style.width =
                     computedStylesPrevElementSizes!.width;
                 this._prevElement.style.flexBasis =
-                    this._prevElement.style.height;
+                    this._prevElement.style.width;
             }
             if (this._nextElement) {
                 this._nextElement.style.width =
                     computedStylesNextElementSizes!.width;
                 this._nextElement.style.flexBasis =
-                    this._nextElement.style.height;
+                    this._nextElement.style.width;
             }
         }
         if (this.vertical) {

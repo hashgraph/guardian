@@ -290,6 +290,7 @@ export class Relationships {
                         type: 'relationships',
                     });
                 }
+                break;
             }
             case MessageType.CONTRACT: {
                 tagsCount = await this.em.count(Message, {

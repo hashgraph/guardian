@@ -1,13 +1,13 @@
-import { ModulesPage } from "../../pages/modulesPage";
+import { ModulesPage } from '../../pages/modulesPage';
 const modulesPage = new ModulesPage();
 
-import { HomePage } from "../../pages/homePage";
+import { HomePage } from '../../pages/homePage';
 const homePage = new HomePage();
 
-context("Workflow Modules Publish", { tags: ['ui'] }, () => {
+context('Workflow Modules Publish', { tags: ['ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
-    const moduleName = "ComparedModuleIPFS";
+    const moduleName = 'ComparedModuleIPFS';
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
@@ -16,16 +16,16 @@ context("Workflow Modules Publish", { tags: ['ui'] }, () => {
         modulesPage.openModulesTab();
     })
 
-    it("module publish", () => {
+    it('module publish', () => {
         modulesPage.publishModule(moduleName);
     });
 
-    it("Verify if it possible to Export published module using message identifier", () => {
+    it('Verify if it possible to Export published module using message identifier', () => {
         modulesPage.exportModuleAsMessageId(moduleName);
     });
 
-    it("Verify if it possible to Export published module using file", () => {
-        modulesPage.checkStatus(moduleName, "Published");
+    it('Verify if it possible to Export published module using file', () => {
+        modulesPage.checkStatus(moduleName, 'Published');
         modulesPage.exportModuleAsFile(moduleName);
     });
 });

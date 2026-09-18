@@ -1,50 +1,35 @@
-::ng-deep .p-dialog.pools-dialog {
+:host {
+    display: block;
+    height: 100%;
+}
+
+::ng-deep .guardian-dialog.pools-dialog {
     min-width: 840px !important;
     height: 800px;
 }
 
-::ng-deep .p-dialog.pools-dialog .p-dialog-content {
+::ng-deep .guardian-dialog.pools-dialog:has(.no-pools) {
+    height: auto;
+}
+
+::ng-deep .guardian-dialog.pools-dialog:has(.no-pools) .dialog-body {
+    max-height: none;
+}
+
+::ng-deep .guardian-dialog.pools-dialog .p-dialog-content {
     border-radius: 10px;
     padding: 12px 10px 0
 }
 
-::ng-deep .p-dialog.pools-dialog > .p-dialog-header {
-    display: none;
-}
-
-::ng-deep .g-dialog.pools-dialog .g-dialog-header {
-    margin-top: 20px
-}
-
-::ng-deep .g-dialog.pools-dialog .g-dialog-cancel-btn {
-    width: 18px;
-    height: 18px;
-    overflow: hidden;
-    margin: -10px 0 0 36px;
-    border-radius: 6px;
-    cursor: pointer;
-    color: #969696;
-}
-
-::ng-deep .g-dialog.pools-dialog .g-dialog-header .g-dialog-title {
-    height: 46px;
-    flex: 1;
-    padding: 10px 0;
-    box-sizing: border-box;
-    color: var(--color-grey-black-1);
-    font-weight: 500;
-    font-size: 22px;
-}
-
-::ng-deep .g-dialog.pools-dialog p-multiselect {
+::ng-deep .guardian-dialog.pools-dialog p-multiselect {
     margin-top: 4px;
 }
 
-::ng-deep .g-dialog.pools-dialog .p-multiselect {
+::ng-deep .guardian-dialog.pools-dialog .p-multiselect {
     width: 250px;
 }
 
-::ng-deep .g-dialog.pools-dialog p-multiselect-item {
+::ng-deep .guardian-dialog.pools-dialog p-multiselect-item {
     width: 250px;
 }
 
@@ -166,118 +151,12 @@
     }
 }
 
-.btn--retire {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--color-grey-black-1);
-    font-size: 20px;
-    display: grid;
-    align-self: start;
-    margin-top: 20px;
-}
-
-.no-pools {
-    font-size: 18px;
-    color: #888;
-    text-align: center;
-    padding: 20px;
-}
-
-.retire {
-    display: flex;
-    flex-direction: column;
-}
-
-.retire__back {
-    margin-bottom: 10px;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    color: #3f51b5;
-}
-
-::ng-deep .g-dialog.pools-dialog .table-paginator {
+::ng-deep .guardian-dialog.pools-dialog .table-paginator {
     box-shadow: none !important;
-}
-
-::ng-deep .g-dialog.pools-dialog .g-dialog-header {
-    position: relative;
-    padding-right: 48px;
-    display: flex;
-    align-items: center;
-}
-
-::ng-deep .g-dialog.pools-dialog .g-dialog-title {
-    font-size: 22px;
-    font-weight: 600;
-    margin: 0;
-}
-
-::ng-deep .g-dialog.pools-dialog .g-dialog-cancel {
-    position: absolute;
-    top: 24px;
-    right: 24px;
-}
-
-::ng-deep .g-dialog-cancel-btn {
-    width: 28px;
-    height: 28px;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background .15s;
-
-    .pi {
-        font-size: 18px;
-        color: #6b6b6b;
-    }
-
-    &:hover {
-        background: rgba(0,0,0,.05);
-        border-radius: 50%;
-    }
-}
-
-::ng-deep .g-dialog.pools-dialog .g-dialog-actions {
-    margin-left: auto;
-}
-
-:host ::ng-deep .g-dialog.pools-dialog .g-dialog-body {
-    position: relative;
-    padding-bottom: 92px !important;
-}
-
-:host ::ng-deep .pools-dialog__footer {
-    position: absolute;
-    right: 32px;
-    bottom: 24px;
-    z-index: 3;
-    margin-bottom: 30px;
-    margin-top: 10px;
-}
-
-:host ::ng-deep .pools-dialog__close-btn {
-    min-width: 96px;
-    height: 42px;
-    border-radius: 8px;
-    font-size: 16px;
-    color: var(--guardian-primary-color);
-}
-
-.retire-mode ::ng-deep .g-dialog-actions {
-    display: none !important;
 }
 
 ::ng-deep .retire-serials-ms__panel {
     width: 250px;
-}
-
-::ng-deep .g-dialog.pools-dialog .g-dialog-actions {
-    flex: 1 !important;
 }
 
 .retire__back {
@@ -286,6 +165,10 @@
     width: 30px;
     column-gap: 10px;
     color: var(--color-grey-6);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    margin-bottom: 10px;
 }
 
 .pools-dialog__retire-btn {
@@ -297,4 +180,23 @@
     display: grid;
     align-self: start;
     padding: 5px;
+}
+
+.no-pools {
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+
+    &__icon {
+        font-size: 32px;
+        color: var(--color-grey-5);
+    }
+
+    &__label {
+        font-size: 16px;
+        color: var(--color-grey-5);
+    }
 }

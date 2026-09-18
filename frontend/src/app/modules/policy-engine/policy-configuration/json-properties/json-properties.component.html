@@ -5,11 +5,11 @@
     </div>
   }
   <div class="toolbar">
-    <div class="toolbar-btn toolbar__save-btn" [attr.readonly]="readonly" (click)="onSave()">
+    <div class="toolbar-btn toolbar__save-btn" [attr.readonly]="readonly || !dirty" (click)="onSave()">
       <i class="pi pi-save"></i>
       <span>Save</span>
     </div>
-    <div class="toolbar-btn toolbar__close-btn" [attr.readonly]="readonly" (click)="onClose()">
+    <div class="toolbar-btn toolbar__close-btn" [attr.readonly]="readonly || !dirty" (click)="onClose()">
       <i class="pi pi-times"></i>
       <span>Cancel</span>
     </div>

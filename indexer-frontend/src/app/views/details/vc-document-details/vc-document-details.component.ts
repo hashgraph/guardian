@@ -23,7 +23,7 @@ import { OverviewFormComponent, OverviewFormField } from '@components/overview-f
 import { ButtonModule } from 'primeng/button';
 import { FormulasTree } from '../../../models/formula-tree';
 import { ProjectLocationsComponent } from '@components/project-locations/project-locations.component';
-import { bytesToUtf8, decryptWithKeyDerivedFromString } from '@meeco/cryppo';
+import { bytesToUtf8, decryptWithKeyDerivedFromString } from '@utils/cryppo';
 import { DialogService } from 'primeng/dynamicdialog';
 import { VCFullscreenDialog } from '../../../dialogs/vc-fullscreen-dialog/vc-fullscreen-dialog.component';
 import { InputTextModule } from 'primeng/inputtext';

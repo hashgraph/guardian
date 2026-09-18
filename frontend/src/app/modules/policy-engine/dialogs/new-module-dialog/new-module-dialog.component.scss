@@ -35,7 +35,7 @@ form {
 }
 
 .form-label {
-  color: #181818;
+  color: var(--guardian-font-color, #181818);
   font-family: Inter, sans-serif;
   font-size: 12px;
   font-style: normal;

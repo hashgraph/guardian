@@ -51,6 +51,13 @@ export class Record extends BaseEntity {
     time?: Date;
 
     /**
+     * Paused time accumulated before this row. Subtract from `time` for elapsed
+     * recording time; `time` itself stays wall-clock.
+     */
+    @Property({ nullable: true })
+    pausedOffset?: number;
+
+    /**
      * User
      */
     @Property({ nullable: true })

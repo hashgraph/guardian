@@ -12,7 +12,7 @@ import {
     Workers
 } from '@guardian/common';
 import { TopicType, WorkerTaskType } from '@guardian/interfaces';
-import { AnyBlockType } from '../policy-engine.interface';
+import { AnyBlockType } from '../policy-engine.interface.js';
 
 /**
  * Trust Chain interface
@@ -117,7 +117,7 @@ export class MessagesReport {
         this.messages.set(timestamp, null);
 
         const message = await MessageServer
-            .getMessage({
+            .tryGetMessage({
                 messageId: timestamp,
                 loadIPFS: false,
                 userId,

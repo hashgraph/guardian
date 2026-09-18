@@ -37,9 +37,11 @@
       [attr.policy-status]="policyInfo.status"
       class="policy-header"
       >
-      @if (!isDryRun && !policyInfo.discontinuedDate) {
-        <div>
-          <a (click)="onBack()" class="back-button">List of Policies</a>
+      @if (!policyInfo.discontinuedDate) {
+        <div class="schema-breadcrumb">
+          <a (click)="onBack()" class="breadcrumb-back">Policies</a>
+          <span class="breadcrumb-sep"> / </span>
+          <span class="breadcrumb-current">{{ policyInfo?.name }}</span>
         </div>
       }
       @if (policyInfo) {
@@ -201,17 +203,14 @@
       [attr.policy-status]="policyInfo.status"
       class="policy-header"
       >
-      @if (!isDryRun && !policyInfo.discontinuedDate) {
-        <div>
-          <a
-            (click)="onBack()"
-            class="back-button"
-            >
-            List of Policies
-          </a>
+      @if (!policyInfo.discontinuedDate) {
+        <div class="schema-breadcrumb">
+          <a (click)="onBack()" class="breadcrumb-back">Policies</a>
+          <span class="breadcrumb-sep"> / </span>
+          <span class="breadcrumb-current">{{ policyInfo?.name }}</span>
         </div>
       }
-      @if (isDryRun || !!policyInfo.discontinuedDate) {
+      @if (!!policyInfo.discontinuedDate) {
         <div class="guardian-user-back-button">
           <button
             (click)="onBack()"

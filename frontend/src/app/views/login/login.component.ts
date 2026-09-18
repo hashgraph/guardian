@@ -6,13 +6,8 @@ import { UserCategory, UserRole } from '@guardian/interfaces';
 import { AuthStateService } from 'src/app/services/auth-state.service';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { noWhitespaceValidator } from 'src/app/validators/no-whitespace-validator';
-import { WebSocketService } from 'src/app/services/web-socket.service';
-import { QrCodeDialogComponent } from 'src/app/components/qr-code-dialog/qr-code-dialog.component';
-import { MeecoVCSubmitDialogComponent } from 'src/app/components/meeco-vc-submit-dialog/meeco-vc-submit-dialog.component';
-import { environment } from 'src/environments/environment';
-import { takeUntil } from 'rxjs/operators';
 import { BrandingService } from '../../services/branding.service';
-import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { DialogService } from 'primeng/dynamicdialog';
 import {
     AccountTypeSelectorDialogComponent
 } from './register-dialogs/account-type-selector-dialog/account-type-selector-dialog.component';
@@ -20,8 +15,9 @@ import { ForgotPasswordDialogComponent } from './forgot-password-dialog/forgot-p
 import { RegisterDialogComponent } from './register-dialogs/register-dialog/register-dialog.component';
 import { DemoService } from '../../services/demo.service';
 import { ChangePasswordComponent } from './change-password/change-password.component';
-import { InformService } from 'src/app/services/inform.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { OtpDialogComponent } from './otp-dialog/otp-dialog.component';
+import { getUserInitials } from '../../utils';
 
 /**
  * Login page.
@@ -48,15 +44,11 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
             noWhitespaceValidator(),
         ]),
     });
-    initialMeecoBtnTitle: string = 'Meeco Login';
-    meecoBtnTitle: string = this.initialMeecoBtnTitle;
-    qrCodeDialogRef: DynamicDialogRef | null = null;
-    vcSubmitDialogRef: DynamicDialogRef | null = null;
-    currentMeecoRequestId: string | null = null;
     private _subscriptions: Subscription[] = [];
 
     backgroundImageData: string;
     companyName: string;
+    companyLogoUrl: string;
     brandingLoading: boolean = true;
     error?: string;
 
@@ -71,11 +63,9 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
         public otherService: DemoService,
         private auth: AuthService,
         private router: Router,
-        private wsService: WebSocketService,
-        private dialog: DialogService,
         private brandingService: BrandingService,
         private dialogService: DialogService,
-        private informService: InformService,
+        private toastService: ToastService,
     ) {
     }
 
@@ -95,12 +85,9 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
             this.brandingService.getBrandingData().then((res) => {
                 this.backgroundImageData = res.loginBannerUrl;
                 this.companyName = res.companyName;
+                this.companyLogoUrl = res.companyLogoUrl;
                 this.brandingLoading = false;
             });
-
-            this.handleMeecoPresentVPMessage();
-            this.handleMeecoVPVerification();
-            this.handleMeecoVCApproval();
         });
 
         this.loginForm.valueChanges.subscribe(() => {
@@ -119,8 +106,10 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
         this._subscriptions.forEach((sub) => sub.unsubscribe());
         this.destroy$.next();
         this.destroy$.complete();
-        this.qrCodeDialogRef = null;
-        this.vcSubmitDialogRef = null;
+    }
+
+    public getInitials(username: string | null): string {
+        return getUserInitials(username);
     }
 
     public getPoliciesRolesTooltip(policyRoles: any) {
@@ -177,9 +166,10 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
                 }
 
                 if (result.weakPassword) {
-                    this.informService.shortWarnMessage(
+                    this.toastService.warn(
                         'Your password is considered weak. For your security, please update it to meet our minimum complexity requirements.',
                         'Weak Password',
+                        { sticky: true }
                     );
                 }
 
@@ -223,8 +213,8 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
 
         const part3 = (userRole: UserRole) => {
             this.dialogService.open(RegisterDialogComponent, {
-                header: 'Sign Up Request',
-                width: '80%',
+                header: 'Sign Up',
+                width: '40%',
                 modal: true,
             })!.onClose.subscribe((userData) => {
                 if (userData) {
@@ -236,7 +226,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
         const part2 = () => {
             this.dialogService.open(AccountTypeSelectorDialogComponent, {
                 header: 'Select Account Type',
-                width: '80%',
+                width: '40%',
                 modal: true,
             })!.onClose.subscribe((userRole) => {
                 if (userRole) {
@@ -288,14 +278,6 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
         return this.passFieldType === 'text';
     }
 
-    get shouldDisableMeecoBtn(): boolean {
-        return this.meecoBtnTitle !== this.initialMeecoBtnTitle;
-    }
-
-    get isMeecoLoginAllowed(): boolean {
-        return environment.isMeecoConfigured;
-    }
-
     togglePasswordShow(): void {
         this.passFieldType =
             this.passFieldType === 'password' ? 'text' : 'password';
@@ -326,74 +308,6 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
                 login,
             }
         })!.onClose.subscribe((data) => {
-        });
-    }
-
-    onMeecoLogin(): void {
-        this.meecoBtnTitle = 'Generating QR code...';
-        this.wsService.meecoLogin();
-    }
-
-    private handleMeecoVCApproval(): void {
-        this.wsService.meecoApproveVCSubscribe((event) => {
-            this.vcSubmitDialogRef?.close();
-            this.auth.setAccessToken(event.accessToken);
-            this.auth.setUsername(event.username);
-            this.authState.updateState(true);
-            const home = this.auth.home(event.role);
-            this.router.navigate([home]);
-        });
-    }
-
-    private handleMeecoVPVerification(): void {
-        this.wsService.meecoVerifyVP$.pipe(takeUntil(this.destroy$)).subscribe((event) => {
-            this.qrCodeDialogRef?.close();
-
-            if (
-                event.presentation_request_id !== this.currentMeecoRequestId &&
-                !this.vcSubmitDialogRef
-            ) {
-                this.currentMeecoRequestId = event.presentation_request_id;
-                this.vcSubmitDialogRef = this.dialog.open(
-                    MeecoVCSubmitDialogComponent,
-                    {
-                        width: '640px',
-                        modal: true,
-                        closable: false,
-                        data: {
-                            document: event.vc,
-                            presentationRequestId:
-                                event.presentation_request_id,
-                            submissionId: event.submission_id,
-                            userRole: event.role,
-                        },
-                    }
-                );
-
-                this.vcSubmitDialogRef!.onClose.subscribe(() => {
-                    this.vcSubmitDialogRef = null;
-                });
-            }
-        });
-    }
-
-    private handleMeecoPresentVPMessage(): void {
-        this.wsService.meecoPresentVP$.pipe(takeUntil(this.destroy$)).subscribe((event) => {
-            if (!this.qrCodeDialogRef) {
-                this.qrCodeDialogRef = this.dialog.open(QrCodeDialogComponent, {
-                    styleClass: 'g-dialog',
-                    modal: true,
-                    closable: false,
-                    data: {
-                        qrCodeData: event.redirectUri,
-                    },
-                })!;
-            }
-
-            this.qrCodeDialogRef.onClose.subscribe(() => {
-                this.qrCodeDialogRef = null;
-                this.meecoBtnTitle = this.initialMeecoBtnTitle;
-            });
         });
     }
 }

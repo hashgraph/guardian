@@ -1,12 +1,3 @@
-.demo-menu {
-    background: white  !important;
-    max-height: 345px;
-    height: auto;
-    width: 470px;
-    border-radius: 30px;
-    overflow: scroll;
-}
-
 .desktop-header {
     display: block;
 }
@@ -146,31 +137,93 @@ a[hidden="true"] {
     font-size: 26px;
 }
 
-.current-user-name {
-    font-size: 20px;
-    line-height: 0px;
-    display: inline-block;
-}
-
-.current-user-role {
-    font-size: 16px;
-    line-height: 0px;
-    color: #707070;
-    margin-left: 5px;
-}
-
-.current-user {
-    border-bottom: 1px dashed gray;
-}
-
-.debug-user button {
-    width: 145px;
-    padding: 0 15px;
-    margin: 5px 4px;
-}
-
-.debug-user {
+.demo-panel {
+    width: 360px;
+    max-width: 90vw;
+    display: flex;
+    flex-direction: column;
+    font-family: var(--font-family-inter, Inter, sans-serif);
     white-space: normal;
+}
+
+.demo-panel-label {
+    color: var(--color-grey-5, #848FA9);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.demo-panel-label:not(:first-child) {
+    margin-top: 18px;
+}
+
+.demo-users-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.demo-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 4px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background 0.2s ease-in-out;
+}
+
+.demo-user:not(:last-child) {
+    border-bottom: 1px solid var(--guardian-border-color, #E1E7EF);
+}
+
+.demo-user:hover {
+    background: var(--guardian-hover, #F0F3FC);
+}
+
+.demo-user-avatar {
+    flex: 0 0 auto;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--guardian-primary-background, #e1e7fa);
+    color: var(--color-primary, #4169E2);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.demo-user-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.demo-user-name {
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--color-grey-black-1, #181818);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.demo-user-role {
+    color: var(--color-grey-5, #848FA9);
+    font-size: 12px;
+}
+
+.demo-user-policies {
+    flex: 0 0 auto;
+    color: var(--color-primary, #4169E2);
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
 }
 
 
@@ -188,12 +241,6 @@ a[hidden="true"] {
     justify-self: flex-end;
 }
 
-.current-user-policy-roles {
-    line-height: 0px;
-    margin-bottom: 15px;
-    color: var(--button-primary-color);
-}
-
 ::ng-deep .policy-roles-tooltip {
     white-space: pre-line !important;
     max-width: 350px !important;
@@ -201,17 +248,9 @@ a[hidden="true"] {
     width: 100%;
 }
 
-.current-user-first {
-    margin-top: 20px;
-}
-
-.current-user-last {
-    border: unset;
-}
-
 .user-balance {
     display: inline-block;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     border-radius: 20px;
     padding: 0px 14px;
     box-sizing: border-box;
@@ -284,7 +323,7 @@ a[hidden="true"] {
     bottom: 0px;
     right: 2px;
     height: 2px;
-    background: #fff;
+    background: var(--guardian-background, #fff);
 }
 
 .only-active {
@@ -351,7 +390,7 @@ a[hidden="true"] {
 .mobile-menu-button .bar {
     height: 3px;
     width: 100%;
-    background-color: white;
+    background-color: var(--guardian-background, white);
     border-radius: 10px;
 }
 
@@ -449,7 +488,7 @@ a[hidden="true"] {
         z-index: 1001;
         top: 0;
         left: 0;
-        background-color: white;
+        background-color: var(--guardian-background, white);
         overflow-x: hidden;
         transition: 0.2s;
     }
@@ -587,7 +626,7 @@ a[hidden="true"] {
         padding: 0 8px;
         margin-bottom: 10px;
         margin-left: -8px;
-        background-color: white;
+        background-color: var(--guardian-background, white);
         font-size: 20px;
         transition: 0.8s;
     }

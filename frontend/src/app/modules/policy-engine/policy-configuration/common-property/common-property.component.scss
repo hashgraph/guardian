@@ -1,22 +1,25 @@
 .select-block-name {
-    padding-left: 32px;
+    padding-left: 26px;
     position: relative;
-    height: 42px;
+    height: 22px;
+    line-height: 22px;
+    font-size: 13px;
 }
 
 .select-block-icon {
     position: absolute;
     left: 0px;
     top: 0px;
-    height: 42px;
-    width: 40px;
+    height: 22px;
+    width: 20px;
 }
 
 .select-block-icon i,
 .select-block-icon svg {
     position: absolute;
     left: 1px;
-    top: 9px;
+    top: 3px;
+    font-size: 14px;
 }
 
 .select-custom {
@@ -31,7 +34,7 @@
     width: 8px !important;
     max-width: 8px !important;
     display: inline !important;
-    color: #f00 !important;
+    color: var(--pc-required-color, #FF432A) !important;
 }
 
 .prop-checkbox {

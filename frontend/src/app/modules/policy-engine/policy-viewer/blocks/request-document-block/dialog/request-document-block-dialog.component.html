@@ -2,6 +2,30 @@
   <div class="header-container">
     <div class="header-text">{{dialogTitle}}</div>
   </div>
+  @if (restoreData) {
+    <button
+      class="guardian-button guardian-button-secondary header-action"
+      (click)="onRestoreClick()"
+      title="Restore the latest saved values">
+      <svg-icon class="icon-btn svg-icon"
+        src="/assets/images/icons/16/refresh.svg"
+        svgClass="icon-color-primary">
+      </svg-icon>
+      <span>Restore values</span>
+    </button>
+  }
+  @if (dryRun) {
+    <button
+      class="guardian-button guardian-button-secondary header-action"
+      (click)="onDryRun()"
+      title="Fill this document with test data">
+      <svg-icon class="icon-btn svg-icon"
+        src="/assets/images/icons/16/refresh.svg"
+        svgClass="icon-color-primary">
+      </svg-icon>
+      <span>Fill with test data</span>
+    </button>
+  }
   <div class="header-icon resize" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
     <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
   </div>
@@ -16,46 +40,6 @@
     </div>
   }
   <div class="dialog-body-container">
-    @if (restoreData) {
-      <div class="restore-data">
-        <svg-icon class="svg-icon"
-          src="/assets/images/icons/info.svg"
-          svgClass="icon-color-primary">
-        </svg-icon>
-        <b>There is some data to restore. You can restore latest values:</b>
-        <button
-          (click)="onRestoreClick()"
-          class="guardian-button guardian-button-primary">
-          <div class="guardian-button-icon">
-            <svg-icon class="icon-btn svg-icon"
-              src="/assets/images/icons/16/refresh.svg"
-              svgClass="icon-color-secondary">
-            </svg-icon>
-          </div>
-          <div class="guardian-button-label">Restore Values</div>
-        </button>
-      </div>
-    }
-    @if (dryRun) {
-      <div class="restore-data">
-        <svg-icon class="svg-icon"
-          src="/assets/images/icons/info.svg"
-          svgClass="icon-color-primary">
-        </svg-icon>
-        <b>Dry run mode. You can fill this document with test data:</b>
-        <button
-          (click)="onDryRun()"
-          class="guardian-button guardian-button-primary">
-          <div class="guardian-button-icon">
-            <svg-icon class="icon-btn svg-icon"
-              src="/assets/images/icons/16/refresh.svg"
-              svgClass="icon-color-secondary">
-            </svg-icon>
-          </div>
-          <div class="guardian-button-label">Test</div>
-        </button>
-      </div>
-    }
     @if (relayerAccount || enableAdditionalData) {
       <div class="relayer-account-steps">
         <div class="guardian-step-container">
@@ -251,27 +235,37 @@
 </div>
 <div class="dialog-footer">
   <div class="action-buttons">
-    @for (config of buttons; track config) {
-      <div
-        [attr.visible]="config.visible()"
-        [attr.id]="config.id"
-        class="dialog-button">
-        <button
-          (click)="config.fn()"
-          [disabled]="ifDisabledBtn(config)"
-          class="guardian-button guardian-button-{{config.type}}"
-          >
-          @if (config.iconPath) {
-            <svg-icon src="{{config.iconPath}}" svgClass="save-icon-color"></svg-icon>
-          }
-          {{getButtonName(config)}}
-        </button>
-      </div>
-    }
-    @if (lastSavedAt) {
-      <div class="last-autosave">
-        {{ minutesAgo$ | async }}
-      </div>
-    }
+  @for (config of buttons; track config) {
+    <div
+      [attr.visible]="config.visible()"
+      [attr.id]="config.id"
+      class="dialog-button">
+      <button
+        (click)="config.fn()"
+        [disabled]="ifDisabledBtn(config)"
+        class="guardian-button guardian-button-{{config.type}}"
+      >
+        @if (config.iconPath) {
+          <svg-icon src="{{config.iconPath}}" svgClass="save-icon-color"></svg-icon>
+        }
+        {{getButtonName(config)}}
+      </button>
+    </div>
+  }
+    <div class="action-buttons-spacer"></div>
+  @if (lastSavedAt) {
+    <div class="last-autosave">
+      {{ minutesAgo$ | async }}
+    </div>
+  }
+  @if (!loading) {
+    <request-draft-file-actions
+      [schema]="schema"
+      [policyId]="policyId"
+      [blockId]="id"
+      [dataForm]="dataForm"
+      (draftImported)="onDraftImported($event)">
+    </request-draft-file-actions>
+  }
   </div>
 </div>

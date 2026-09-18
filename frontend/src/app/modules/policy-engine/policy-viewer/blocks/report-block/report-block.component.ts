@@ -264,6 +264,7 @@ export class ReportBlockComponent implements OnInit {
                 document: document || row,
                 title: title,
                 type: 'VC',
+                canExport: true,
             }
         })!;
         dialogRef.onClose.subscribe(async (result) => {
@@ -285,6 +286,7 @@ export class ReportBlockComponent implements OnInit {
                 document: row.document,
                 title: title,
                 type: 'VP',
+                canExport: true,
             }
         })!;
         dialogRef.onClose.subscribe(async (result) => {
@@ -627,6 +629,7 @@ export class ReportBlockComponent implements OnInit {
                 document: item,
                 title: title,
                 type: 'VC',
+                canExport: true,
             }
         })!;
         dialogRef.onClose.subscribe(async (result) => { });

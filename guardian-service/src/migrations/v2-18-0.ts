@@ -1,6 +1,6 @@
 import { Migration } from '@mikro-orm/migrations-mongodb';
-import path from 'path';
-import * as fs from 'fs';
+import path from 'node:path';
+import * as fs from 'node:fs';
 import { PolicyCategoryType } from '@guardian/interfaces';
 
 /**
@@ -26,8 +26,10 @@ export class ReleaseMigration extends Migration {
 
         for (const row of rows) {
             if (row) {
+                // >= 2, not === 2: the CSV later grew an (unquoted-here) description column;
+                // this migration only ever reads title/value, so extra columns are harmless.
                 const columns = row.split(',');
-                if (columns.length === 2 && columns[0]) {
+                if (columns.length >= 2 && columns[0]) {
                     await propertiesCollection.insertOne({
                         title: columns[0],
                         value: columns[1]

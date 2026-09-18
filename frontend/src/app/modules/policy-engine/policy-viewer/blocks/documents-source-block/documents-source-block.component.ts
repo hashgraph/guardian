@@ -2,7 +2,6 @@ import { Component, Input, OnInit } from '@angular/core';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { DialogBlock } from '../../dialog-block/dialog-block.component';
-import { animate, state, style, transition, trigger } from '@angular/animations';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { ViewerDialog } from '../../../dialogs/viewer-dialog/viewer-dialog.component';
@@ -10,6 +9,9 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { HttpErrorResponse } from '@angular/common/http';
 import { VCFullscreenDialog } from 'src/app/modules/schema-engine/vc-fullscreen-dialog/vc-fullscreen-dialog.component';
 import { Subject } from 'rxjs';
+import { CommentsService } from 'src/app/services/comments.service';
+import { richTextToText, withNewTabLinks } from 'src/app/modules/schema-engine/rich-text-editor/rich-text-sanitizer';
+import { markdownToHtml } from 'src/app/modules/schema-engine/rich-text-editor/markdown';
 
 /**
  * Component for display block of 'interfaceDocumentsSource' types.
@@ -18,13 +20,6 @@ import { Subject } from 'rxjs';
     selector: 'documents-source-block',
     templateUrl: './documents-source-block.component.html',
     styleUrls: ['./documents-source-block.component.scss'],
-    animations: [
-        trigger('statusExpand', [
-            state('collapsed', style({ height: '0px', minHeight: '0' })),
-            state('expanded', style({ height: '*' })),
-            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-        ]),
-    ],
     standalone: false
 })
 export class DocumentsSourceBlockComponent implements OnInit {
@@ -66,6 +61,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
         private policyHelper: PolicyHelper,
         private dialog: DialogService,
         private dialogService: DialogService,
+        private commentsService: CommentsService,
     ) {
         this.fields = [];
         this.columns = [];
@@ -83,6 +79,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
     }
 
     ngOnDestroy(): void {
+        this.clearRichTextHideTimer();
         if (this.socket) {
             this.socket.unsubscribe();
         }
@@ -161,6 +158,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
             }
             this.documents = data.data || [];
             this.sortHistory(this.documents);
+            this.buildRichTextCellText(fields);
             this.isActive = true;
             const sortingField = _fields.find(item => item.name === data.orderField);
             this.sortOptions.active = sortingField && sortingField.index || '';
@@ -314,7 +312,77 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 }
             })!;
             dialogRef.onClose.subscribe(async (result) => {
+                if (row.dryRunId) {
+                    // dry-run documents are never persisted as real VC records,
+                    // so the backend cannot resolve a count for this row.
+                    return;
+                }
+                this.commentsService
+                    .getPolicyCommentsCount(this.policyId, row.id)
+                    .subscribe(
+                        (count) => {
+                            row.comments = count?.count ?? row.comments;
+                        },
+                        (error) => console.error('[documents-source] comment count failed', error)
+                    );
             });
+        }
+    }
+
+    public richTextValue = '';
+
+    private richTextHideTimer: any = null;
+
+    public getRichTextCellText(row: any, field: any): string {
+        return row && row._richTextCellText ? (row._richTextCellText[field.index] || '') : '';
+    }
+
+    private buildRichTextCellText(fields: any[]): void {
+        const richTextFields = fields.filter((item) => item.type === 'richText');
+        if (!richTextFields.length || !Array.isArray(this.documents)) {
+            return;
+        }
+        for (const row of this.documents) {
+            const cells: any = {};
+            for (const item of richTextFields) {
+                cells[item.index] = richTextToText(this.toRichTextHtml(row, item));
+            }
+            row._richTextCellText = cells;
+        }
+    }
+
+    private toRichTextHtml(row: any, field: any): string {
+        const value = this.getText(row, field);
+        return markdownToHtml(typeof value === 'string' ? value : '');
+    }
+
+    public onRichTextEnter(event: Event, row: any, field: any, popover: any): void {
+        if (!this.getRichTextCellText(row, field)) {
+            return;
+        }
+        this.clearRichTextHideTimer();
+        this.richTextValue = withNewTabLinks(this.toRichTextHtml(row, field));
+        if (this.richTextValue) {
+            popover.show(event);
+        }
+    }
+
+    public onRichTextLeave(popover: any): void {
+        this.clearRichTextHideTimer();
+        this.richTextHideTimer = setTimeout(() => {
+            this.richTextHideTimer = null;
+            popover.hide();
+        }, 250);
+    }
+
+    public onRichTextPopoverEnter(): void {
+        this.clearRichTextHideTimer();
+    }
+
+    private clearRichTextHideTimer(): void {
+        if (this.richTextHideTimer) {
+            clearTimeout(this.richTextHideTimer);
+            this.richTextHideTimer = null;
         }
     }
 
@@ -465,7 +533,8 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 document: text,
                 title: field.title,
                 type: 'TEXT',
-                viewDocument: false
+                viewDocument: false,
+                canExport: true
             }
         })!;
         dialogRef.onClose.subscribe(async (result) => {
@@ -572,7 +641,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
     }
 
     getClass(type: string): string {
-        if (type === 'text') {
+        if (type === 'text' || type === 'richText') {
             return 'text-container';
         }
         if (type === 'button') {

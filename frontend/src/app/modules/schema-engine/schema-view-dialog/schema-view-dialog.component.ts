@@ -1,5 +1,6 @@
 import {Component, Inject} from '@angular/core';
-import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
+import {DialogService, DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
+import {CustomConfirmDialogComponent} from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 
 /**
  * Dialog for preview schema.
@@ -19,10 +20,14 @@ export class SchemaViewDialog {
     tools: any[];
     errors: any[];
     schemaType: string;
+    errorCount: number = 0;
+    warningCount: number = 0;
+    issuesSummary: string = '';
 
     constructor(
         private dialogRef: DynamicDialogRef,
         private config: DynamicDialogConfig,
+        private dialogService: DialogService,
     ) {
         const data = this.config.data
 
@@ -44,8 +49,31 @@ export class SchemaViewDialog {
                 } else if (error.col) {
                     error.__path = `Col: ${error.col}`;
                 }
+                if (error.type === 'error') {
+                    this.errorCount++;
+                } else if (error.type === 'warning') {
+                    this.warningCount++;
+                }
             }
+            this.issuesSummary = this.buildIssuesSummary();
         }
+    }
+
+    private buildIssuesSummary(): string {
+        const parts: string[] = [];
+        if (this.errorCount > 0) {
+            parts.push(`${this.errorCount} ${this.errorCount === 1 ? 'error' : 'errors'}`);
+        }
+        if (this.warningCount > 0) {
+            parts.push(`${this.warningCount} ${this.warningCount === 1 ? 'warning' : 'warnings'}`);
+        }
+        if (parts.length === 0) {
+            if (this.errors.length === 0) {
+                return '';
+            }
+            return `${this.errors.length} ${this.errors.length === 1 ? 'issue' : 'issues'}`;
+        }
+        return parts.join(', ');
     }
 
     ngOnInit() {
@@ -57,7 +85,35 @@ export class SchemaViewDialog {
     }
 
     onImport() {
+        if (this.errorCount > 0) {
+            this.confirmImportWithErrors();
+            return;
+        }
         this.dialogRef.close({topicId: this.topicId});
+    }
+
+    private confirmImportWithErrors(): void {
+        const confirmRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Import With Errors',
+                text: `This import has ${this.errorCount} ${this.errorCount === 1 ? 'error' : 'errors'}. Import anyway?`,
+                buttons: [{
+                    name: 'Cancel',
+                    class: 'secondary'
+                }, {
+                    name: 'Import',
+                    class: 'primary'
+                }]
+            }
+        });
+        confirmRef?.onClose.subscribe((result: string) => {
+            if (result === 'Import') {
+                this.dialogRef.close({topicId: this.topicId});
+            }
+        });
     }
 
     onNewVersionClick(messageId: string) {

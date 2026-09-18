@@ -1,7 +1,7 @@
 import axios from 'axios';
-import fs from 'fs';
+import fs from 'node:fs';
 import WebSocket from 'ws';
-import Path from 'path';
+import path from 'node:path';
 
 interface Task {
     action: string; options?: any; resolve: Function
@@ -202,16 +202,16 @@ export class PolicyPublisher {
             throw new Error(`Policies directory option is empty`);
         }
         const policyPublisher = new PolicyPublisher(
-            Path.isAbsolute(policiesDirectory)
+            path.isAbsolute(policiesDirectory)
                 ? policiesDirectory
-                : Path.join(process.cwd(), policiesDirectory),
+                : path.join(process.cwd(), policiesDirectory),
             baseURL,
             user,
             password,
             output &&
-                (Path.isAbsolute(output)
+                (path.isAbsolute(output)
                     ? output
-                    : Path.join(process.cwd(), output))
+                    : path.join(process.cwd(), output))
         );
         await policyPublisher.authorize();
         await policyPublisher.parseConfigFile(configFilePath);
@@ -229,7 +229,7 @@ export class PolicyPublisher {
         }
         const stat = fs.lstatSync(dirPath);
         if (stat.isFile()) {
-            const file = Path.basename(dirPath);
+            const file = path.basename(dirPath);
             const version = this._policiesConfig.get(file);
             if (!version) {
                 return;
@@ -253,7 +253,7 @@ export class PolicyPublisher {
         if (stat.isDirectory()) {
             const dirs = fs.readdirSync(dirPath);
             for (const dir of dirs) {
-                await this.read(Path.join(dirPath, dir));
+                await this.read(path.join(dirPath, dir));
             }
         }
     }

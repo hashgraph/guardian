@@ -22,8 +22,9 @@ export class ProjectComparisonService {
         return this.http.post<IMethodology[]>(`${this.url}/policies/methodologies/search`, { categoryIds, text });
     }
 
-    public getProperties(): Observable<any[]> {
-        return this.http.get<any>(`${this.url}/projects/properties`);
+    public getProperties(iwaVersion?: string): Observable<any[]> {
+        const query = iwaVersion ? `?iwaVersion=${encodeURIComponent(iwaVersion)}` : '';
+        return this.http.get<any>(`${this.url}/projects/properties${query}`);
     }
 
     public getFilteredProjects(categoryIds?: string[], policyIds?: string[]): Observable<IMethodology[]> {

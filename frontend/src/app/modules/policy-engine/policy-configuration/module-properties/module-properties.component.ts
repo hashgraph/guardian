@@ -15,6 +15,7 @@ export class ModulePropertiesComponent implements OnInit {
     @Input('readonly') readonly!: boolean;
     @Input('type') type!: string;
     @Input('errors') errors!: any[];
+    @Input('rootType') rootType: 'Policy' | 'Module' | 'Tool' = 'Module';
 
     @ViewChild('body') body?: ElementRef;
 

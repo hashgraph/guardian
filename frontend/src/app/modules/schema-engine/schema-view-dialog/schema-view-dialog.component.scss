@@ -16,6 +16,34 @@ form {
     position: relative;
 }
 
+.issues-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 16px;
+    padding: 12px 16px;
+    border: 1px solid var(--color-accent-yellow-1, #DA9B22);
+    border-radius: 6px;
+    color: var(--color-accent-yellow-1, #DA9B22);
+    font-family: Inter, sans-serif;
+    font-style: normal;
+}
+
+.issues-summary.has-errors {
+    border-color: var(--color-accent-red-1, #FF432A);
+    color: var(--color-accent-red-1, #FF432A);
+}
+
+.issues-summary-counts {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.issues-summary-hint {
+    font-size: 12px;
+    font-weight: 400;
+}
+
 .schema-header {
     font-size: 18px;
     line-height: 32px;
@@ -23,7 +51,7 @@ form {
     padding: 12px;
     box-sizing: border-box;
     text-align: center;
-    color: #000;
+    color: var(--guardian-font-color, #000);
     font-weight: 500;
 }
 
@@ -46,7 +74,7 @@ form {
 }
 
 .field-value {
-    color: #000;
+    color: var(--guardian-font-color, #000);
     font-size: 16px;
 }
 
@@ -93,7 +121,7 @@ form {
 }
 
 .field-name {
-    color: #181818;
+    color: var(--guardian-font-color, #181818);
     font-family: Inter, sans-serif;
     font-size: 12px;
     font-style: normal;
@@ -101,7 +129,7 @@ form {
 }
 
 .field-array {
-    color: #181818;
+    color: var(--guardian-font-color, #181818);
     font-family: Inter, sans-serif;
     font-size: 14px;
     font-style: normal;
@@ -164,6 +192,6 @@ form {
     display: block;
     padding: 12px 12px 12px 0px;
     box-sizing: border-box;
-    color: #181818;
+    color: var(--guardian-font-color, #181818);
     font-weight: 500;
 }

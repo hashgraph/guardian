@@ -22,7 +22,7 @@ import { TaskApi } from './api/service/task.js';
 import { TokensApi } from './api/service/tokens.js';
 import { TrustChainsApi } from './api/service/trust-chains.js';
 import { WizardApi } from './api/service/wizard.js';
-import process from 'process';
+import process from 'node:process';
 import hpp from 'hpp';
 import { ThemesApi } from './api/service/themes.js';
 import { BrandingApi } from './api/service/branding.js';
@@ -51,6 +51,9 @@ import { RelayerAccountsApi } from './api/service/relayer-accounts.js';
 import { FormulasApi } from './api/service/formulas.js';
 import { ExternalPoliciesApi } from './api/service/external-policy.js';
 import { CredentialsApi } from './api/service/credentials.js';
+import { PolicyDataApi } from './api/service/policy-data.js';
+import { OrganizationApi } from './api/service/organization.js';
+import { SchemaTemplatesApi } from './api/service/schema-template.js';
 
 // const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
 // const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
@@ -112,7 +115,10 @@ import { CredentialsApi } from './api/service/credentials.js';
         PolicyRepositoryApi,
         RelayerAccountsApi,
         WorkerTasksController,
-        CredentialsApi
+        CredentialsApi,
+        OrganizationApi,
+        PolicyDataApi,
+        SchemaTemplatesApi
     ],
     providers: [
         LoggerService,

@@ -1,20 +1,32 @@
-.container {
-    height: 38px;
-    overflow: hidden;
-    padding: 2px;
-    display: grid;
-    grid-template-columns: 130px 8px 1fr fit-content(24px);
+:host {
+    display: block;
+    width: 100%;
+}
 
-    .select,
+.container {
+    width: 100%;
+    box-sizing: border-box;
+    height: var(--pc-control-height, 30px);
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) auto;
+    gap: 6px;
+    align-items: center;
+
+    .select {
+        width: 100%;
+        min-width: 0;
+    }
+
     input.input-end {
-        height: 34px !important;
+        width: 100%;
+        min-width: 0;
+        height: var(--pc-control-height, 30px) !important;
     }
 }
 
-.input-end {
-    min-width: 0;
-}
-
 .input-end-tooltip {
-    margin-left: 2px;
+    color: var(--guardian-font-color-secondary, #848FA9);
+    cursor: pointer;
+    font-size: 14px;
 }

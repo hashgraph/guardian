@@ -2,6 +2,7 @@ import { ApiResponse } from './helpers/api-response.js';
 import {
     DatabaseServer,
     MessageError,
+    loadErrorCode,
     MessageResponse,
     PinoLogger,
     RunFunctionAsync,
@@ -72,9 +73,6 @@ async function preparePolicyPreviewMessage(
     });
     const message = await messageServer
         .getMessage<PolicyMessage>({ messageId, loadIPFS: true, userId, interception: userId });
-    if (!message) {
-        throw new Error('Invalid Message');
-    }
     if (message.type !== MessageType.InstancePolicy) {
         throw new Error('Invalid Message Type');
     }
@@ -96,6 +94,36 @@ async function preparePolicyPreviewMessage(
 
     notifier.complete();
     return policyToImport;
+}
+
+/**
+ * Remove a VIEW policy left behind by a failed import.
+ * Best-effort: a rollback failure must not mask the original import error.
+ */
+async function rollbackPartialViewPolicy(
+    policy: any,
+    owner: IOwner,
+    logger: PinoLogger,
+    userId: string | null
+): Promise<void> {
+    if (!policy?.id) {
+        return;
+    }
+    try {
+        const policyEngine = new PolicyEngine(logger);
+        await policyEngine.deleteViewPolicy(policy, owner, NewNotifier.empty(), logger);
+        await logger.info(
+            `Rolled back partially imported view policy ${policy.id}`,
+            ['GUARDIAN_SERVICE'],
+            userId
+        );
+    } catch (error) {
+        await logger.error(
+            `Failed to roll back partially imported view policy ${policy.id}: ${error?.message || error}`,
+            ['GUARDIAN_SERVICE'],
+            userId
+        );
+    }
 }
 
 async function addPolicy(
@@ -148,6 +176,12 @@ async function addPolicy(
         const message = PolicyImportExportHelper.errorsMessage(result.errors);
         notifier.fail(message);
         await logger.warn(message, ['GUARDIAN_SERVICE'], userId);
+
+        // importPolicy persists the policy before it evaluates errors, so a
+        // failed tool/schema closure leaves a VIEW policy that can never
+        // generate ('Can not find schema with IRI'), with no retry path.
+        // Drop the partial row so a re-approve can import cleanly.
+        await rollbackPartialViewPolicy(result.policy, owner, logger, userId);
 
         return result;
     }
@@ -244,7 +278,8 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 return new MessageResponse(externalPolicy);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                return new MessageError(error);
+                // Forward error.code (404/422 for message load errors) instead of a generic 500.
+                return new MessageError(error, loadErrorCode(error));
             }
         });
 
@@ -275,6 +310,14 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 if (!policy) {
                     const result = await addPolicy(messageId, owner, logger, notifier, owner?.id);
                     errors = result.errors;
+                    // Do not approve a policy that did not fully import. Marking
+                    // it APPROVED anyway records a broken policy as a success and
+                    // hides the failure from the user entirely.
+                    if (errors?.length) {
+                        const message = PolicyImportExportHelper.errorsMessage(errors);
+                        notifier.result({ id: messageId, errors });
+                        return new MessageError(`Failed to import policy: ${message}`);
+                    }
                     policy = await DatabaseServer.getPolicy({ messageId });
                 }
 
@@ -295,7 +338,8 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 return new MessageResponse(true);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                return new MessageError(error);
+                // Forward error.code (404/422 for message load errors) instead of a generic 500.
+                return new MessageError(error, loadErrorCode(error));
             }
         });
 
@@ -326,6 +370,13 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                     if (!policy) {
                         const result = await addPolicy(messageId, owner, logger, notifier, owner?.id);
                         errors = result.errors;
+                        // See the sync handler - a partial import must not be
+                        // recorded as an approval.
+                        if (errors?.length) {
+                            const message = PolicyImportExportHelper.errorsMessage(errors);
+                            notifier.result({ id: messageId, errors });
+                            throw new Error(`Failed to import policy: ${message}`);
+                        }
                         policy = await DatabaseServer.getPolicy({ messageId });
                     }
 
@@ -344,7 +395,8 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                     notifier.result({ id: messageId, errors });
                 }, async (error) => {
                     await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
-                    notifier.fail(error);
+                    // Forward error.code (404/422 for message load errors) instead of a generic 500.
+                    notifier.fail(error, loadErrorCode(error));
                 });
 
                 return new MessageResponse(task);
@@ -571,7 +623,8 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 return new MessageResponse(policyToImport);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                return new MessageError(error);
+                // Forward error.code (404/422 for message load errors) instead of a generic 500.
+                return new MessageError(error, loadErrorCode(error));
             }
         });
 }

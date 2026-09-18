@@ -29,7 +29,7 @@
 
 
 .sub-loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: absolute;
     z-index: 99;
     top: 0;
@@ -78,7 +78,7 @@
 }
 
 .dashboard-left {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     padding-right: 10px;
     padding-bottom: 20px;
     margin-right: 10px;
@@ -157,7 +157,7 @@
     display: inline-block;
     width: 165px;
     height: 85px;
-    background: #FFFFFF 0% 0% no-repeat padding-box;
+    background: var(--guardian-background, #FFFFFF) 0% 0% no-repeat padding-box;
     box-shadow: 0px 3px 6px #00000029;
     border-radius: 8px;
     vertical-align: bottom;
@@ -174,7 +174,7 @@
 }
 
 .topic-info[readonly="true"] {
-    background: #eee;
+    background: var(--guardian-grey-background, #eee);
     pointer-events: none;
     cursor: default;
 }
@@ -242,7 +242,7 @@
     display: inline-block;
     width: 187px;
     height: 85px;
-    background: #FFFFFF 0% 0% no-repeat padding-box;
+    background: var(--guardian-background, #FFFFFF) 0% 0% no-repeat padding-box;
     box-shadow: 0px 3px 6px #00000029;
     border-radius: 8px;
     vertical-align: bottom;
@@ -320,7 +320,7 @@
 }
 
 .dashboard-right {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     box-shadow: -4px 0px 4px #00000029;
     border-left: 1px solid #ddd;
     position: absolute;
@@ -372,7 +372,7 @@
 }
 
 .dashboard-right-close:hover {
-    background: #eee;
+    background: var(--guardian-grey-background, #eee);
 }
 
 .dashboard-right-header>span {
@@ -478,7 +478,7 @@
     display: inline-block;
     min-width: 160px;
     height: 42px;
-    background: #FFFFFF 0% 0% no-repeat padding-box;
+    background: var(--guardian-background, #FFFFFF) 0% 0% no-repeat padding-box;
     box-shadow: 0px 3px 6px #00000029;
     border-radius: 8px;
     vertical-align: bottom;
@@ -523,7 +523,7 @@
     font-size: 16px;
     font-weight: 500;
     padding: 6px 6px 6px 2px;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     left: 0;
     top: -17px;
     height: 32px;
@@ -602,7 +602,7 @@
 }
 
 .target-btn {
-    background-color: #fff;
+    background-color: var(--guardian-background, #fff);
     color: var(--button-primary-color);
     border: 1px solid var(--button-primary-color);
     cursor: pointer;

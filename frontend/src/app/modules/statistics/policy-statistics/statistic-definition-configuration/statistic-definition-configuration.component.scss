@@ -70,7 +70,7 @@
         height: 40px;
         min-height: 40px;
         width: 100%;
-        background: #E1E7EF;
+        background: var(--guardian-grey-background, #E1E7EF);
         border-bottom: 1px solid #C4D0E1;
         padding: 0px 12px;
 
@@ -93,7 +93,7 @@
             }
 
             &[action="true"] {
-                background: #fff !important;
+                background: var(--guardian-background, #fff) !important;
 
                 .guardian-step-name {
                     color: var(--guardian-primary-color, #4169E2) !important;
@@ -920,7 +920,7 @@
             font-weight: 600;
             line-height: 14px;
             text-align: left;
-            color: #23252E;
+            color: var(--guardian-font-color, #23252E);
         }
 
         .node-fields {
@@ -935,7 +935,7 @@
             text-overflow: ellipsis;
 
             .node-field {
-                color: #23252E;
+                color: var(--guardian-font-color, #23252E);
                 border-bottom: 1px solid var(--guardian-border-color, #E1E7EF);
                 padding: 8px 8px 8px 16px;
                 overflow: hidden;

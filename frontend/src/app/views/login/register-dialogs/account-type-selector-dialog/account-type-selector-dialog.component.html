@@ -1,7 +1,7 @@
 <div class="dialog-body">
     <div class="radio-item">
         <p>
-            <input (click)="selectUserRole(userRole.USER)" checked id="user" name="user-role" type="radio">
+            <p-radioButton [(ngModel)]="selectedRoleType" [value]="userRole.USER" inputId="user" name="user-role"></p-radioButton>
             <label for="user">Default User</label>
         </p>
         <span>
@@ -11,7 +11,7 @@
     </div>
     <div class="radio-item">
         <p>
-            <input (click)="selectUserRole(userRole.STANDARD_REGISTRY)" id="sr" name="user-role" type="radio">
+            <p-radioButton [(ngModel)]="selectedRoleType" [value]="userRole.STANDARD_REGISTRY" inputId="sr" name="user-role"></p-radioButton>
             <label for="sr">Standard Registry</label>
         </p>
         <span>

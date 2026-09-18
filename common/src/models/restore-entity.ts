@@ -1,6 +1,6 @@
 import { Property } from '@mikro-orm/core';
 import { BaseEntity } from './index.js';
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 
 export abstract class RestoreEntity extends BaseEntity {
     /**

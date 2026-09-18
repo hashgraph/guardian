@@ -12,7 +12,7 @@ import { IconPreviewDialog } from './icon-preview-dialog/icon-preview-dialog.com
 import { TokenConfigurationComponent } from './token-configuration/token-configuration.component';
 import { NgxFileDropModule } from 'ngx-file-drop';
 import { FileExplorer } from './file-explorer/file-explorer.component';
-import { NgxColorsModule } from 'ngx-colors';
+import { ColorPickerModule } from 'primeng/colorpicker';
 import { ConfirmDialog } from './confirm-dialog/confirm-dialog.component';
 import { SelectorDialogComponent } from './selector-dialog/selector-dialog.component';
 import { StepTreeComponent } from './step-tree/step-tree.component';
@@ -34,6 +34,8 @@ import { StatusDropdown } from './status-dropdown/status-dropdown.component';
 import { CustomConfirmDialogComponent } from './custom-confirm-dialog/custom-confirm-dialog.component';
 import { TreeGraphComponent } from './tree-graph/tree-graph.component';
 import { GuardianSwitchButton } from './guardian-switch-button/guardian-switch-button.component';
+import { GuardianTabsSwitch } from './guardian-tabs-switch/guardian-tabs-switch.component';
+import { GuardianPageHeader } from './guardian-page-header/guardian-page-header.component';
 import { ImportEntityDialog } from './import-entity-dialog/import-entity-dialog.component';
 import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
 import { GuardianDialogService } from '../../services/guardian-dialog.service';
@@ -53,6 +55,8 @@ import { PluralizePipe } from './pipes/pluralize.pipe';
 import { PagesControl } from './pages-control/pages-control.component';
 import { GridDialogComponent } from './grid-dialog/grid-dialog.component';
 import { ContentSearchComponent } from './content-search/content-search.component';
+import { CommonDialogComponent, DialogHeaderDirective, DialogFooterDirective } from './common-dialog/common-dialog.component';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 @NgModule({
     declarations: [
@@ -79,6 +83,8 @@ import { ContentSearchComponent } from './content-search/content-search.componen
         CustomConfirmDialogComponent,
         TreeGraphComponent,
         GuardianSwitchButton,
+        GuardianTabsSwitch,
+        GuardianPageHeader,
         ImportEntityDialog,
         MathLiveComponent,
         MenuButton,
@@ -93,13 +99,16 @@ import { ContentSearchComponent } from './content-search/content-search.componen
         PagesControl,
         GridDialogComponent,
         ContentSearchComponent,
+        CommonDialogComponent,
+        DialogHeaderDirective,
+        DialogFooterDirective,
     ],
     imports: [
         CommonModule,
         FormsModule,
         MaterialModule,
         NgxFileDropModule,
-        NgxColorsModule,
+        ColorPickerModule,
         NgxMaskDirective,
         DialogModule,
         InputTextModule,
@@ -112,6 +121,7 @@ import { ContentSearchComponent } from './content-search/content-search.componen
         TooltipModule,
         DynamicDialogModule,
         AgGridModule,
+        ProgressSpinnerModule,
     ],
     providers: [
         provideNgxMask(),
@@ -128,7 +138,7 @@ import { ContentSearchComponent } from './content-search/content-search.componen
         TokenConfigurationComponent,
         FileExplorer,
         ConfirmDialog,
-        NgxColorsModule,
+        ColorPickerModule,
         SelectorDialogComponent,
         SeparateStepperComponent,
         NgxMaskDirective,
@@ -141,6 +151,8 @@ import { ContentSearchComponent } from './content-search/content-search.componen
         CustomConfirmDialogComponent,
         TreeGraphComponent,
         GuardianSwitchButton,
+        GuardianTabsSwitch,
+        GuardianPageHeader,
         ImportEntityDialog,
         MathLiveComponent,
         MenuButton,
@@ -155,6 +167,9 @@ import { ContentSearchComponent } from './content-search/content-search.componen
         PagesControl,
         GridDialogComponent,
         ContentSearchComponent,
+        CommonDialogComponent,
+        DialogHeaderDirective,
+        DialogFooterDirective,
     ]
 })
 export class CommonComponentsModule {

@@ -1,93 +1,74 @@
-# Getting Started
+# Welcome
 
-## **1. Introduction**
+## The official [Hedera Guardian](https://guardian.hedera.com/) documentation
 
-The Guardian is an innovative open-source platform that streamlines the creation, management, and verification of digital environmental assets. It leverages a customizable Policy Workflow Engine and Web3 technology to ensure transparent and fraud-proof operations, making it a key tool for transforming sustainability practices & carbon markets.
+The Hedera Guardian is an open-source platform for creating, managing, and issuing digital environmental assets. Examples include credit issuance for carbon, renewable energy, and biodiversity; emission and financial disclosures; certifications; climate-smart commodities; and more. Through forms, automated workflows, and connected data streams, it links project developers, auditors, corporates, and standards bodies in a shared ecosystem, using the [Hedera network](https://hedera.com/?utm_source=guardian) as the trust layer. It leverages a customizable workflow engine, calculation engine, verifiable-credential based identity management, and web3 technology to ensure transparent and fraud-proof operations, making it a key tool for transforming sustainability practices and environmental markets. &#x20;
 
-Below are the universal software prerequisites, followed by network-specific items.
+### **Methodology Digitalization and Trust**
 
-## 2. Prerequisites
+Environmental markets depend on trust: trust that issued credits represent real and verifiable outcomes, that data hasn't been altered, and that the methodology and calculations behind a claim are sound. In the past, that trust was enforced through manual audits, closed registries, and siloed spreadsheets: developers and standards bodies routinely spent over $500,000–$1M+ to digitalize a single complex, 100+ page environmental methodology.&#x20;
 
-### 2.1 Universal software
+Today, Guardian makes it programmable through **methodology digitalization**. Guardian policies encode methodology rules directly, the Hedera Network provides an immutable audit trail, and verifiable credentials let any participant confirm the chain of custody without needing to trust a central intermediary. This lowers costs, improves speed and efficiency, while accelerating collaboration across domains such as finance, technology, compliance, and ecology.
 
-1. [Git](https://git-scm.com/downloads) – source-control tooling
-2. [Docker](https://www.docker.com/) – one-command build & run
-3. [MongoDB v6](https://www.mongodb.com/), [Node.js v16](https://nodejs.org/en), and [NATS 1.12.2](https://nats.io/) – auto-installed when using Docker-Compose
-4. [Web3.Storage account](https://web3.storage/) – IPFS pinning service
-5. [Filebase account](https://filebase.com/) – S3-compatible IPFS pinning
-6. [Redis 7.3.0](https://redict.io/) – in-memory cache & message broker (auto-provisioned by the Docker stack)
+#### Want to learn more about methodology digitalization?&#x20;
 
-### 2.2 Hedera network
+[View the best practices guide to get started.](methodology-digitalization/methodology-digitalization-best-practices.md)
 
-|              | Testnet (default)                                                     | Mainnet (production)                                                           |
-| ------------ | --------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| **Account**  | Create via [Hedera Developer Portal](https://portal.hedera.com/login) | Create via Hedera-enabled wallet (e.g., [HashPack](https://www.hashpack.app/)) |
-| **Key type** | ED25519                                                               | ED25519                                                                        |
-| **Network**  | `testnet`                                                             | `mainnet`                                                                      |
+### **Platform at a glance**
 
-> **Fees**: Mainnet operations incur HBAR costs—fund your account before running Guardian.
+Guardian is built around a number of core aspects and understanding how they relate is a good foundation to navigate the docs further.
 
-***
+* **Guardian Policies** are the rules of an environmental methodology and can include data collection forms, role-based approval workflows, calculations, and dMRV endpoints all of which are run as executable software rather than static PDF documents. _A policy for Verra VM0047 specifies exactly what a project proponent submits, what a verifier approves, and how credits are calculated and issued._
+* **Schemas** define the structure of every data submission within a policy — fields, types, and validation rules that make data submissions consistent and machine-readable. _A renewable energy certificate schema requires meter ID, generation timestamp, and grid region._
+* **Calculation Engine** runs math blocks and formula-linked definitions within a policy, turning verified data into calculated quantities. _A water-quality policy converts nutrient-load reductions into tradable credits, while a carbon policy applies leakage, uncertainty, and buffer-pool deductions to net GHG results._
+* **Tokens** are the digital environmental assets produced at key points within a policy workflow and represent outcomes recorded on the Hedera network. _A carbon project mints credits from a shared buffer pool._
+* **TrustChain** is the verifiable audit trail that links every token back to the original submissions, approvals, and calculations that produced it. Any participant can inspect the full chain of custody without relying on a central intermediary. _A deforestation-free supply chain claim is traced end-to-end through every custody handoff to verify compliance._
+* **Standard Registry** is the platform role that publishes policies, onboards project participants, and manages credit issuance. It is the organizing entity for everything that happens in Guardian. _A voluntary carbon credit registry manages the authoring, review, and testing workflows for policies that implement the environmental methodologies they have developed._&#x20;
+* **Methodology Library** is the world's largest open source repository of digitalized environmental methodologies. Anyone can download, import, inspect, test, and run these methodologies. The authoring process continues to be improved through global collaborations and feedback helping to bring costs down for all. _A hackathon participant develops a wildfire fuel reduction methodology and publishes it to the Library; a metered energy cookstove methodology is updated from version 1.2 to 2.0 for registry testing and project developer adoption._
 
-## 3. Preparing a Mainnet Account & Keys
+### **Platform adopters and ecosystem**
 
-1. Install a Hedera-enabled wallet (e.g., [HashPack](https://www.hashpack.app/)).
-2. Create a Mainnet account and note the **Account ID** (`0.0.x`).
-3. Export the **ED25519** key pair
-   * _HashPack path_: **Settings → Manage Accounts → Export Private Key** (DER format).
-4.  Update your `.env`
+Adoption of the Guardian has grown from an early concept in 2020 to a platform being used by dozens of innovative companies including the world’s leading carbon standards and auditors; project developers and enterprises. Ecosystem members have shared back 100+ open source contributors via GitHub, successfully issued numerous types of environmental assets, formed commercial partnerships, and developed the worlds largest open source methodology library. As you explore the platform, you'll notice mature capabilities developed in collaboration with a global ecosystem of stakeholders and community members — who we're grateful and proud of.
 
-    ```dotenv
-    HEDERA_NET=mainnet
-    HEDERA_OPERATOR_ID=0.0.123456
-    HEDERA_OPERATOR_KEY=-----BEGIN PRIVATE KEY----- … -----END PRIVATE KEY-----
-    ```
+### **Where to start**
 
-## 4. Preparing a Testnet Account & Keys
+| I want to…                              | Start here                                                                                                   |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Install and run Guardian                | [Getting Started](guardian/getting-started/)                                                                 |
+| Create and publish policies             | [Workspace](guardian/workspace/)                                                                             |
+| Digitalize an environmental methodology | [Methodology Digitalization](methodology-digitalization/methodology-digitalization-best-practices.md)        |
+| Build on the Guardian API               | [API Reference / guardian](https://app.gitbook.com/o/-LuC734MpqlgwA6zyhAO/s/qHzrfhYRf3qLjeOsZTmp/ "mention") |
+| Explore what's published by Guardian    | [Explorers](https://app.gitbook.com/s/bKnJV8vV7zUxRwKIsJKg/explorers "mention")                              |
 
-1. Create a Testnet account via the [Hedera Developer Portal](https://portal.hedera.com/login).
-2. Record your **Account ID** (`0.0.x`).
-3. Download the **ED25519** private key (ignore **ECDSA**)
-   * Select **DER Encoded** — _do not_ choose _HEX Encoded_.
-4.  Update your `.env`
+### **Hedera Network Foundations**
 
-    ```dotenv
-    HEDERA_NET=testnet
-    HEDERA_OPERATOR_ID=0.0.987654
-    HEDERA_OPERATOR_KEY=-----BEGIN PRIVATE KEY----- … -----END PRIVATE KEY-----
-    ```
+Guardian publishes policy workflow data to the Hedera Network to support discovery and traceability.
 
-## 5. Installation
+Guardian records Hedera Consensus Service transactions in topics. A token mint transaction can include a memo identifier that points to a Hedera message timestamp. That message contains the URL of the related Verifiable Presentation (VP).
 
-1.  **Docker-Compose**
+The VP links the Verifiable Credentials produced by the policy workflow. Together, these records provide the starting point for tracing the documents behind a token.
 
-    ```bash
-    docker compose -f ./deploy/docker-compose.yml --profile all up -d
-    ```
+{% hint style="info" %}
+HIP-19 and HIP-28 established foundational Hedera capabilities used by the Guardian on the Hedera Network
+{% endhint %}
 
-    _(Detects Testnet/Mainnet from `.env`)_
-2. **Pre-built containers** — pull `hashgraph/guardian:latest` and supply `.env` as a secret.
-3. **Manual build** — clone repo, install Node deps, compile, start services.
+[HIP-19](https://hips.hedera.com/hip/hip-19) and [HIP-28](https://hips.hedera.com/hip/hip-28) define this foundational approach. Guardian builds on it through the [TrustChain](guardian/platform/trustchain.md).
 
-## **6. Troubleshooting**
+### **Open source community**
 
-* **Server not starting?** Ensure that Docker is running and all containers are up.
-* **Cannot access the admin dashboard?** Check if the correct ports (3000) are open and not blocked by your firewall.
-* **Issues with API calls?** Verify that your Hedera account ID and private key are correctly configured in the `.env` file.
-* For additional help, visit the [Hedera Guardian GitHub Issues](https://github.com/hashgraph/guardian/issues).
+Establishing trust across climate and environmental markets is a hard, shared problem. No single organization can build the infrastructure that markets need on its own. Guardian exists because the problem requires open collaboration — on methodology digitalization, on verification standards, and technical workflows — to accelerate solutions to tough challenges.
 
-## **7. Additional Resources**
+Guardian is open source under the Apache 2.0 License and developed collaboratively by Hashgraph alongside carbon registries, auditors, project developers, governments, and enterprises building on the platform. Policies in the Methodology Library are contributed by organizations worldwide by registries, methodology authors, and independent developers.
 
-* [Hedera Guardian Documentation](https://guardian.hedera.com)
-* [Hedera Developer Portal](https://portal.hedera.com/login)
-* [Roadmap](guardian/readme/roadmap.md)
-* [Youtube Channel](https://www.youtube.com/@envisionblockchain/featured)
+Community calls, hands-on training sessions, and design workshops are regularly hosted. If you are building on the Guardian, digitizing a methodology, or improving the platform itself — contributions and feedback is welcome.
 
-## **8. Feedback and Support**
+* [contributing](community-and-contributing/contributing/ "mention")
+* [community-standards](community-and-contributing/community-standards/ "mention")
+* [Methodology Library](https://github.com/hashgraph/guardian/tree/main/Methodology%20Library)
+* [GitHub Milestones](https://github.com/hashgraph/guardian/milestones?sort=due_date\&direction=asc)
+* [Share feedback or suggestions](mailto:guardian-feedback@hashgraph.com)
 
-* For support, reach out via Hedera Discord Sustainability channel or email us at info@envisionblockchain.com.
-* Submit feedback or feature requests through the [GitHub repository](https://github.com/hashgraph/guardian/issues).
+#### **Related**
 
-## **9. Legal and Licensing**
-
-* Hedera Guardian is open-source and licensed under the Apache 2.0 License. Please review the [LICENSE](../LICENSE/) file for more details.
+* Concepts: [Architecture](guardian/architecture/)
+* Guide: [Methodology Digitalization](methodology-digitalization/methodology-digitalization-best-practices.md)

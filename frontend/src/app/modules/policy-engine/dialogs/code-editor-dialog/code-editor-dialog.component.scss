@@ -34,7 +34,7 @@
     overflow-y: auto;
     padding: 16px;
     font-size: 13px;
-    color: #23252e;
+    color: var(--guardian-font-color, #23252e);
 }
 
 .help-panel-header {
@@ -50,7 +50,7 @@
     cursor: pointer;
     color: #848fa9;
     &:hover {
-        color: #23252e;
+        color: var(--guardian-font-color, #23252e);
     }
 }
 

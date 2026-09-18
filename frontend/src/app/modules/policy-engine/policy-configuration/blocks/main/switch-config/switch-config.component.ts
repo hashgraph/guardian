@@ -28,6 +28,8 @@ export class SwitchConfigComponent implements OnInit {
 
     properties!: any;
 
+    private conditionsGroupInitialized = false;
+
     public executionFlowOptions = [
         {label: 'First True', value: 'firstTrue'},
         {label: 'All True', value: 'allTrue'}
@@ -63,6 +65,10 @@ export class SwitchConfigComponent implements OnInit {
         this.properties = block.properties;
         this.properties.executionFlow = this.properties.executionFlow || 'firstTrue';
         this.properties.conditions = this.properties.conditions || [];
+        if (!this.conditionsGroupInitialized) {
+            this.propHidden.conditionsGroup = this.properties.conditions.length === 0;
+            this.conditionsGroupInitialized = true;
+        }
     }
 
     onHide(item: any, prop: any) {
@@ -76,10 +82,14 @@ export class SwitchConfigComponent implements OnInit {
             value: '',
             actor: '',
         })
+        this.propHidden.conditionsGroup = false;
     }
 
     onRemoveCondition(i: number) {
         this.properties.conditions.splice(i, 1);
+        if (this.properties.conditions.length === 0) {
+            this.propHidden.conditionsGroup = true;
+        }
     }
 
     onSave() {

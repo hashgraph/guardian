@@ -4,6 +4,30 @@ import { PinoLogger } from '@guardian/common';
 import { PolicyOutputEventType } from '../../interfaces/index.js';
 
 /**
+ * Move the enclosing interfaceStepBlock off a failed non-UI child so the user is not left
+ * on "This step isn't available to you right now" with no way forward. No-op unless the
+ * parent is a step block that is actually parked on this block.
+ * @param block
+ * @param user
+ * @param userId
+ */
+async function unparkStep(block: any, user: any, userId: string | null): Promise<void> {
+    const parent = block?.parent;
+    if (parent?.blockType !== 'interfaceStepBlock' || typeof parent.unparkStalledChild !== 'function') {
+        return;
+    }
+    try {
+        await parent.unparkStalledChild(user, block);
+    } catch (error) {
+        await new PinoLogger()?.error(
+            error,
+            ['guardian-service', block?.uuid, block?.blockType, 'unparkStalledChild failed', block?.policyId],
+            userId
+        );
+    }
+}
+
+/**
  * Catch errors decorator
  * @constructor
  */
@@ -23,7 +47,7 @@ export function CatchErrors() {
                         switch (thisArg.options.onErrorAction) {
                             case BlockErrorActions.RETRY: {
                                 await new PinoLogger().error(error, ['guardian-service', thisArg.uuid, thisArg.blockType, 'block-runtime', thisArg.policyId], userId);
-                                PolicyComponentsUtils.BlockErrorFn(thisArg.blockType, error.message, user)
+                                PolicyComponentsUtils.BlockErrorFn(thisArg.blockType, error.message, user, error?.data)
                                     .catch(async (err) => await new PinoLogger()?.error(err, ['guardian-service', thisArg?.uuid, thisArg?.blockType, 'BlockErrorFn failed', thisArg?.policyId], userId));
                                 thisArg.triggerEvents(PolicyOutputEventType.ErrorEvent, user, data);
 
@@ -33,7 +57,7 @@ export function CatchErrors() {
 
                             case BlockErrorActions.GOTO_STEP: {
                                 await new PinoLogger().error(error, ['guardian-service', thisArg.uuid, thisArg.blockType, 'block-runtime', thisArg.policyId], userId);
-                                PolicyComponentsUtils.BlockErrorFn(thisArg.blockType, error.message, user)
+                                PolicyComponentsUtils.BlockErrorFn(thisArg.blockType, error.message, user, error?.data)
                                     .catch(async (err) => await new PinoLogger()?.error(err, ['guardian-service', thisArg?.uuid, thisArg?.blockType, 'BlockErrorFn failed', thisArg?.policyId], userId));
                                 thisArg.triggerEvents(PolicyOutputEventType.ErrorEvent, user, data);
 
@@ -47,7 +71,7 @@ export function CatchErrors() {
 
                             case BlockErrorActions.GOTO_TAG: {
                                 await new PinoLogger().error(error, ['guardian-service', thisArg.uuid, thisArg.blockType, 'block-runtime', thisArg.policyId], userId);
-                                PolicyComponentsUtils.BlockErrorFn(thisArg.blockType, error.message, user)
+                                PolicyComponentsUtils.BlockErrorFn(thisArg.blockType, error.message, user, error?.data)
                                     .catch(async (err) => await new PinoLogger()?.error(err, ['guardian-service', thisArg?.uuid, thisArg?.blockType, 'BlockErrorFn failed', thisArg?.policyId], userId));
                                 thisArg.triggerEvents(PolicyOutputEventType.ErrorEvent, user, data);
 
@@ -66,9 +90,14 @@ export function CatchErrors() {
 
                             default:
                                 await new PinoLogger().error(error, ['guardian-service', thisArg.uuid, thisArg.blockType, 'block-runtime', thisArg.policyId], userId);
-                                PolicyComponentsUtils.BlockErrorFn(thisArg.blockType, error.message, user)
+                                PolicyComponentsUtils.BlockErrorFn(thisArg.blockType, error.message, user, error?.data)
                                     .catch(async (err) => await new PinoLogger()?.error(err, ['guardian-service', thisArg?.uuid, thisArg?.blockType, 'BlockErrorFn failed', thisArg?.policyId], userId));
                                 thisArg.triggerEvents(PolicyOutputEventType.ErrorEvent, user, data);
+                                // 'no-action' means "don't reroute the workflow", not "strand the
+                                // user". A non-UI block that dies mid-chain leaves its enclosing
+                                // step pointing at something with no UI, which the viewer renders
+                                // as "This step isn't available to you right now" forever.
+                                await unparkStep(thisArg, user, userId);
                                 return;
 
                         }

@@ -1,15 +1,17 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Schema", { tags: ['schema', 'thirdPool', 'all'] }, () => {
+context('Schema', { tags: ['schema', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
-    it("Export schema message", () => {
+    it('Export schema message', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.Schemas,
+                // a single entry is enough here, and the full schema listing grows with every run
+                qs: { pageIndex: 0, pageSize: 1 },
                 headers: {
                     authorization,
                 },
@@ -19,13 +21,13 @@ context("Schema", { tags: ['schema', 'thirdPool', 'all'] }, () => {
 
                 cy.request({
                     method: METHOD.GET,
-                    url: API.ApiServer + API.Schemas + schema.id + "/export/message",
+                    url: API.ApiServer + API.Schemas + schema.id + '/export/message',
                     headers: {
                         authorization,
                     },
                 }).then((response) => {
                     expect(response.status).to.eq(STATUS_CODE.OK);
-                    expect(response.messageId).to.not.be.oneOf([null, ""]);
+                    expect(response.messageId).to.not.be.oneOf([null, '']);
                     expect(response.body.description).eql(schema.description);
                     expect(response.body.id).eql(schema.id);
                     expect(response.body.messageId).eql(schema.messageId);

@@ -1,4 +1,4 @@
-import * as process from 'process';
+import * as process from 'node:process';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { ClientsModule, MicroserviceOptions, Transport, } from '@nestjs/microservices';
@@ -72,6 +72,7 @@ async function updateIndexes() {
                 options: {
                     name: channelName,
                     servers: [`nats://${process.env.MQ_ADDRESS}:4222`],
+                    maxReconnectAttempts: -1, // reconnect forever
                 },
             },
         ]),
@@ -112,7 +113,8 @@ Promise.all([
             name: channelName,
             queue: 'INDEXER_SERVICES',
             servers: [`nats://${process.env.MQ_ADDRESS}:4222`],
-            tls: GenerateTLSOptionsNats()
+            tls: GenerateTLSOptionsNats(),
+            maxReconnectAttempts: -1 // reconnect forever
         },
     }),
 ]).then(

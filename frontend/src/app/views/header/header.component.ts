@@ -9,6 +9,7 @@ import {ProfileService} from 'src/app/services/profile.service';
 import {WebSocketService} from 'src/app/services/web-socket.service';
 import {environment} from 'src/environments/environment';
 import {AuthService} from '../../services/auth.service';
+import {getUserInitials} from '../../utils';
 
 /**
  * Header and Navigation
@@ -199,6 +200,10 @@ export class HeaderComponent implements OnInit {
         }).join('\r\n');
     }
 
+    public getInitials(username: string | null): string {
+        return getUserInitials(username);
+    }
+
     public isActiveLink(type: string): boolean {
         switch (type) {
             case 'SR_UP':
@@ -215,6 +220,7 @@ export class HeaderComponent implements OnInit {
                     this.activeLinkRoot === '/artifacts' ||
                     this.activeLinkRoot === '/modules' ||
                     this.activeLinkRoot === '/tools' ||
+                    this.activeLinkRoot === '/schema-templates' ||
                     this.activeLinkRoot === '/suggestions' ||
                     this.activeLinkRoot === '/policy-viewer' ||
                     this.activeLinkRoot === '/policy-configuration' ||
@@ -247,6 +253,8 @@ export class HeaderComponent implements OnInit {
                 return this.activeLinkRoot === '/modules';
             case 'SR_TOOLS':
                 return this.activeLinkRoot === '/tools';
+            case 'SR_SCHEMA_TEMPLATES':
+                return this.activeLinkRoot === '/schema-templates';
             case 'SR_SUGGESTIONS':
                 return this.activeLinkRoot === '/suggestions';
             case 'SR_POLICIES_LIST':
@@ -325,6 +333,9 @@ export class HeaderComponent implements OnInit {
                 return true;
             case 'SR_TOOLS':
                 this.router.navigate(['/tools']);
+                return true;
+            case 'SR_SCHEMA_TEMPLATES':
+                this.router.navigate(['/schema-templates']);
                 return true;
             case 'SR_POLICIES_LIST':
                 this.router.navigate(['/policy-viewer']);

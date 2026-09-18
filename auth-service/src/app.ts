@@ -6,14 +6,14 @@ import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { InitializeVault } from './vaults/index.js';
 import { ImportKeysFromDatabase } from './helpers/import-keys-from-database.js';
-import process from 'process';
+import process from 'node:process';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import { MeecoAuthService } from './api/meeco-service.js';
 import { ApplicationEnvironment } from './environment.js';
 import { RoleService } from './api/role-service.js';
 import { RelayerAccountsService } from './api/relayer-accounts.js';
+import { OrganizationService } from './api/organization-service.js';
 import { DEFAULT_MONGO } from '#constants';
 import { checkValidJwt } from './utils/index.js';
 
@@ -83,12 +83,10 @@ Promise.all([
         await new RelayerAccountsService().setConnection(cn).init();
         new RelayerAccountsService().registerListeners(logger);
 
-        const validator = new ValidateConfiguration();
+        await new OrganizationService().setConnection(cn).init();
+        new OrganizationService().registerListeners(logger);
 
-        if (parseInt(process.env.MEECO_AUTH_PROVIDER_ACTIVE, 10)) {
-            await new MeecoAuthService().setConnection(cn).init();
-            new MeecoAuthService().registerListeners(logger);
-        }
+        const validator = new ValidateConfiguration();
 
         if (process.env.IMPORT_KEYS_FROM_DB) {
             await ImportKeysFromDatabase(vault, logger);

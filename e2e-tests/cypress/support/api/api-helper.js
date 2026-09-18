@@ -1,5 +1,3 @@
-import { METHOD } from "./api-const";
-
 /**
  * Method to send request
  * @param {String} method Request method
@@ -8,12 +6,13 @@ import { METHOD } from "./api-const";
  * @param {Object} [headers] Ane specific headers for the request
  * @return {Object} response
  */
-Cypress.Commands.add("sendRequest", (method, endpoint, headers) => {
+Cypress.Commands.add('sendRequest', (method, endpoint, data, headers) => {
     let requestParams = {
-        method: method,
+        method,
         url: endpoint,
         failOnStatusCode: false,
-        headers: headers,
+        headers,
+        body: data,
     };
 
     return cy.request(requestParams);

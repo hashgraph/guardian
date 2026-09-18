@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EWD-RB Issuance Record",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "methodology_id": {
+      "type": "string",
+      "const": "EWD-RB"
+    },
+    "methodology_version": {
+      "type": "string",
+      "const": "0.3"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "0.3.0"
+    },
+    "issuance_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "calculation_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "issuance_lot_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "asset_type": {
+      "type": "string",
+      "enum": [
+        "Circular_Impact_NFT"
+      ]
+    },
+    "nfts_minted": {
+      "type": "integer",
+      "minimum": 0
+    },
+
+    "mint_reference": {
+      "type": "string",
+      "description": "Referencia/tx id según configuración de red"
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "issuance_status": {
+      "type": "string",
+      "enum": [
+        "Minting",
+        "Issued",
+        "Failed",
+        "Superseded"
+      ]
+    },
+    "issuance_evidence": {
+      "$ref": "#/$defs/evidenceRefs"
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidenceRefs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "methodology_id",
+    "methodology_version",
+    "schema_version",
+    "issuance_id",
+    "calculation_id",
+    "issuance_lot_id",
+    "asset_type",
+    "nfts_minted",
+    "issued_at",
+    "issuance_status",
+    "issuance_evidence"
+  ]
+}

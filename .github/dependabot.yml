@@ -55,3 +55,8 @@ updates:
       micro-orm:
         patterns:
           - "@mikro-orm/*"
+          - "mongodb"
+      langchain:
+        patterns:
+          - "langchain"
+          - "@langchain/*"

@@ -15,7 +15,7 @@
 
     height: 64px !important;
     border-radius: 8px !important;
-    background: #fff;
+    background: var(--guardian-background);
     box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08) !important;
 
     ::ng-deep .p-select .p-select-label {
@@ -30,6 +30,9 @@
         width: 125px;
         height: 40px;
         border-radius: 8px;
+        background: var(--guardian-background);
+        color: var(--guardian-font-color);
+        border: 1px solid var(--guardian-border-color);
     }
 
     ::ng-deep .p-button {

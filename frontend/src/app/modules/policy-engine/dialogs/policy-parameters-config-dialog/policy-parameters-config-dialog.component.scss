@@ -59,7 +59,7 @@ form {
     font-family: Inter;
     font-weight: 400;
     font-size: 14px !important;
-    color: #23252E;
+    color: var(--guardian-font-color, #23252E);
     line-height: 16px;
     padding: 12px 16px;
   }
@@ -102,7 +102,7 @@ form {
 }
 
 .group-container {
-    background-color: #F9FAFC;
+    background-color: var(--guardian-grey-background, #F9FAFC);
     border-radius: 8px;
     border: 1px solid #E1E7EF;
     opacity: 1;
@@ -152,13 +152,13 @@ form {
         font-weight: 400;
         font-size: 14px;
         padding: 12px 16px;
-        color: #23252E;
+        color: var(--guardian-font-color, #23252E);
         line-height: 16px;
     }
 
     .guardian-dropdown .p-select .p-inputtext {
         padding: 12px 16px;
-        color: #23252E;
+        color: var(--guardian-font-color, #23252E);
     }
 
 }

@@ -7,7 +7,7 @@ import { InternalServerErrorDTO, LogFilterDTO, LogItemDTO, LogResultDTO, ObjectE
 import {UseCache, InternalException, UsersService} from '#helpers';
 import axios from 'axios';
 import {IAuthUser, JwtServicesValidator, PinoLogger} from '@guardian/common';
-import process from 'process';
+import process from 'node:process';
 import { headers } from 'nats';
 
 @Injectable()

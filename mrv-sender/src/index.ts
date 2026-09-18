@@ -3,10 +3,10 @@ import axios from 'axios';
 import { VCDocumentLoader } from './document-loader/vc-document-loader.js';
 import { DefaultDocumentLoader } from './document-loader/document-loader-default.js';
 import { VCHelper } from './vc-helper.js';
-import path from 'path';
-import fs from 'fs';
+import path from 'node:path';
+import fs from 'node:fs';
 import { startMetricsServer } from './utils/metrics.js';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);

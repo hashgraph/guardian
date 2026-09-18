@@ -1,6 +1,6 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import process from 'process';
+import process from 'node:process';
 import express from 'express';
 import {
     // _DEV
@@ -27,6 +27,7 @@ const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
                 options: {
                     name: `${process.env.SERVICE_CHANNEL}`,
                     servers: [`nats://${process.env.MQ_ADDRESS}:4222`],
+                    maxReconnectAttempts: -1, // reconnect forever
                 },
             },
         ]),

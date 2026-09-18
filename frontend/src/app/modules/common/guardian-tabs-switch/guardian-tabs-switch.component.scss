@@ -1,0 +1,33 @@
+:host ::ng-deep {
+    .p-tab {
+        padding: 0 !important;
+        color: var(--color-grey-5) !important;
+    }
+
+    .p-tabs,
+    .p-tablist,
+    .p-tablist-content,
+    .p-tablist-tab-list {
+        background: transparent;
+    }
+
+    .p-tabpanels {
+        background: transparent;
+    }
+
+    .p-tabs .p-tab.p-tab-active,
+    .p-tabs .p-tab[data-p-active='true'] {
+        color: var(--color-primary) !important;
+        border-color: var(--color-primary);
+    }
+}
+
+.tabview-label {
+    padding: 10px 25px 10px 25px;
+    background: var(--guardian-grey-background, #f9fafc);
+    text-align: center;
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 600;
+}

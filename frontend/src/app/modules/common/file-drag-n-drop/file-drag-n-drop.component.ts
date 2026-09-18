@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { NgxFileDropEntry } from 'ngx-file-drop';
-import { ToastrService } from 'ngx-toastr';
+import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
     selector: 'app-file-drag-n-drop',
@@ -11,12 +11,12 @@ import { ToastrService } from 'ngx-toastr';
 export class FileDragNDropComponent implements OnInit {
 
     @Output() onFileLoaded: EventEmitter<any> = new EventEmitter();
-    @Input() dropZoneLabel: string = "";
+    @Input() dropZoneLabel: string = '';
     @Input() fileExtension: string = 'zip';
     @Input() multiple: boolean = false;
 
     constructor(
-        private toastr: ToastrService
+        private toastService: ToastService
     ) { }
 
     ngOnInit(): void {
@@ -25,7 +25,7 @@ export class FileDragNDropComponent implements OnInit {
     public async droppedFile(files: NgxFileDropEntry[]) {
         if (files.length > 1) {
             if (!this.multiple) {
-                this.toastr.error("Cannot add more than 1 files", "File import error", { positionClass: 'toast-bottom-right' })
+                this.toastService.error('Cannot add more than 1 files', 'File import error')
                 return;
             }
             const filteredFiles = files.filter(file => this.checkFile(file));
@@ -57,7 +57,7 @@ export class FileDragNDropComponent implements OnInit {
         if (droppedFile.fileEntry.isFile && this.isFileAllowed(droppedFile.fileEntry.name)) {
             return true;
         } else {
-            this.toastr.error(`Only files in '.${this.fileExtension}' format are accepted`, "File import error", { positionClass: 'toast-bottom-right' });
+            this.toastService.error(`Only files in '.${this.fileExtension}' format are accepted`, 'File import error');
             return false;
         }
     }

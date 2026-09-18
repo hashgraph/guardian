@@ -1,6 +1,7 @@
 <!-- UI Prop -->
 @if (properties) {
   <table class="properties" [attr.readonly]="readonly">
+  <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
     <tr class="propRow" [attr.collapse]="propHidden.main">
       <td class="propRowCol"></td>
       <td class="propRowCell cellName">Entity Type</td>
@@ -47,6 +48,7 @@
       >Force User Account</td>
       <td class="propRowCell multi-line">
         <p-select
+          panelStyleClass="pc-select-panel"
           [(ngModel)]="properties.forceRelayerAccount"
           [disabled]="readonly"
           (onChange)="onSave()"

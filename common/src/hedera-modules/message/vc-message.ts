@@ -12,8 +12,7 @@ import {
     decryptWithKeyDerivedFromString,
     encryptWithKeyDerivedFromString,
     utf8ToBytes,
-} from '@meeco/cryppo';
-import { SerializationFormat } from '@meeco/cryppo/dist/src/serialization-versions.js';
+} from '../../helpers/cryppo/index.js';
 import { IPFS } from '../../helpers/index.js';
 
 /**
@@ -263,8 +262,7 @@ export class VCMessage extends Message {
             const encryptedDocument = await encryptWithKeyDerivedFromString({
                 passphrase: key,
                 data: utf8ToBytes(document),
-                strategy: CipherStrategy.AES_GCM,
-                serializationVersion: SerializationFormat.latest_version,
+                strategy: CipherStrategy.AES_GCM
             });
             document = encryptedDocument.serialized;
         }

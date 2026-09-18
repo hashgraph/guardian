@@ -68,7 +68,7 @@
         font-size: 12px;
         font-weight: 600;
         line-height: 16px;
-        color: #23252e;
+        color: var(--guardian-font-color, #23252e);
 
         text-transform: capitalize;
     }
@@ -84,7 +84,7 @@
         text-overflow: ellipsis;
 
         .node-field {
-            color: #23252e;
+            color: var(--guardian-font-color, #23252e);
             border-bottom: 1px solid var(--guardian-border-color, #e1e7ef);
             padding: 8px 8px 8px 16px;
             overflow: hidden;
@@ -125,7 +125,7 @@
     box-sizing: border-box;
     font-family: Inter, sans-serif;
     font-size: 12px;
-    color: #23252e;
+    color: var(--guardian-font-color, #23252e);
 }
 
 .node-details-header {
@@ -162,7 +162,7 @@
     font-size: 11px;
     font-weight: 700;
     margin-bottom: 8px;
-    color: #23252e;
+    color: var(--guardian-font-color, #23252e);
 }
 
 .section-value {
@@ -187,14 +187,14 @@
     border-radius: 6px;
     border: 1px solid transparent;
     padding: 6px 10px;
-    background: #ffffff;
+    background: var(--guardian-background, #ffffff);
     transition: background-color 0.15s ease, border-color 0.15s ease,
     box-shadow 0.15s ease;
 }
 
 .tree-node.status-none {
     border-color: #d0d4dc;
-    background-color: #ffffff;
+    background-color: var(--guardian-background, #ffffff);
 }
 
 .tree-node.status-missing,
@@ -231,7 +231,7 @@
     border-radius: 8px;
 
     background: #edf1f7;
-    color: #23252e;
+    color: var(--guardian-font-color, #23252e);
 
     font-size: 11px;
     font-weight: 600;
@@ -260,7 +260,7 @@
 .technical-title {
     font-size: 11px;
     font-weight: 700;
-    color: #23252e;
+    color: var(--guardian-font-color, #23252e);
 }
 
 .technical-icon {

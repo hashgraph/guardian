@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import {spawnSync} from 'child_process';
-import {Command} from 'commander';
+import { spawnSync } from 'node:child_process';
+import { Command } from 'commander';
 
 import {PolicyPublisher} from './helpers/policy-publisher.helper.js';
 import {ContractPublisher, Network,} from './helpers/contract-publisher.helper.js';
@@ -735,7 +735,7 @@ function main() {
             'http://localhost:3002/'
         )
         .option('-u --user <user>', 'User', 'StandardRegistry')
-        .option('-p --password <password>', 'Password', 'test')
+        .option('-p --password <password>', 'Password', 'TestPass1')
         .option('-o --output <path>', 'Output information file path')
         .action(async (policiesDirectory, options) => {
             try {

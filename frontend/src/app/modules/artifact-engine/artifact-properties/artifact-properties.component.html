@@ -16,10 +16,14 @@
     </div>
   }
 
-  <button pButton (click)="menu.toggle($event)" class="add-artifact-button p-button-rounded p-button-text">
+  <button
+    pButton
+    (click)="menu.toggle($event)"
+    [disabled]="readonly || !policyArtifacts.length"
+    class="add-artifact-button p-button-rounded p-button-text">
     <i class="pi pi-plus toolbar-icons"></i>
   </button>
-  <p-popover #menu>
+  <p-popover #menu styleClass="pc-artifact-panel">
     @for (artifact of policyArtifacts; track artifact) {
       <div class="artifact-row">
         <button

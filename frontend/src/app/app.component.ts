@@ -9,7 +9,7 @@ import './modules/common/models/lang-modes/formula-lang.mode';
 import './modules/common/models/lang-modes/single-line';
 import './modules/schema-engine/schema-lang-modes/schema-json-lang.mode';
 import {globalLoaderActive} from './static/global-loader.function';
-import {ActivatedRoute} from '@angular/router';
+import {Router} from '@angular/router';
 import {DomSanitizer} from '@angular/platform-browser';
 
 @Component({
@@ -31,18 +31,16 @@ export class AppComponent implements OnInit {
 
     @ViewChild('contentContainer') contentContainer: ElementRef;
 
-    public url: string;
-
     constructor(
         public authState: AuthStateService,
         public wsService: WebSocketService,
         private brandingService: BrandingService,
-        private activatedRoute: ActivatedRoute,
+        private router: Router,
         private domSanitizer: DomSanitizer,
-    ) {
-        activatedRoute.url.subscribe(segs => {
-            this.url = segs.pop()!.path;
-        })
+    ) {}
+
+    get isLoginPage(): boolean {
+        return this.router.url.split('?')[0] === '/login';
     }
 
     ngOnInit(): void {
@@ -57,12 +55,21 @@ export class AppComponent implements OnInit {
         document.documentElement.style.setProperty('--vh', `${vh}px`);
     }
 
-    resizeMenu(type: 'COLLAPSE' | 'EXPAND' | 'NO_MARGIN') {
+    resizeMenu(type: 'COLLAPSE' | 'EXPAND' | 'NO_MARGIN' | 'HORIZONTAL') {
         const progressFooter = document.getElementById('block-progress-footer');
         switch (type) {
+            case 'HORIZONTAL': {
+                // Rail width is zeroed by the `layout-horizontal` root class, so the page
+                // only needs its left gutter removed; the top offset comes from --header-height.
+                document.body.style.setProperty('--header-width', '0px');
+                document.getElementById('main-content')!.removeAttribute('main-collapse-menu');
+                if (progressFooter) {
+                    progressFooter.style.paddingLeft = '48px';
+                }
+                break;
+            }
             case 'COLLAPSE': {
                 document.body.style.setProperty('--header-width', 'var(--header-width-collapse)');
-                document.getElementById('main-content')!.style.left = 'var(--header-width-collapse)';
                 document.getElementById('main-content')!.setAttribute('main-collapse-menu', 'true');
                 if (progressFooter) {
                     progressFooter.style.paddingLeft = 'calc(var(--header-width-collapse) + 48px)';
@@ -71,13 +78,12 @@ export class AppComponent implements OnInit {
             }
             case 'NO_MARGIN':
             default: {
-                document.getElementById('main-content')!.style.left = '0';
+                document.body.style.setProperty('--header-width', '0px');
                 document.getElementById('main-content')!.removeAttribute('main-collapse-menu');
                 break;
             }
             case 'EXPAND': {
                 document.body.style.setProperty('--header-width', 'var(--header-width-expand)');
-                document.getElementById('main-content')!.style.left = 'var(--header-width-expand)';
                 document.getElementById('main-content')!.setAttribute('main-collapse-menu', 'false');
                 if (progressFooter) {
                     progressFooter.style.paddingLeft = 'calc(var(--header-width-expand) + 48px)';

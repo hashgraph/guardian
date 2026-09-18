@@ -47,7 +47,7 @@ form {
             display: block;
             width: 100%;
             position: relative;
-            background: #f9fafc;
+            background: var(--guardian-grey-background, #f9fafc);
             border: 1px solid #e1e7ef;
             padding: 16px;
             border-radius: 8px;
@@ -57,7 +57,7 @@ form {
             display: block;
             width: 100%;
             position: relative;
-            background: #f9fafc;
+            background: var(--guardian-grey-background, #f9fafc);
             border: 1px solid #e1e7ef;
             padding: 16px;
             border-radius: 8px;
@@ -78,7 +78,7 @@ form {
             display: block;
             width: 100%;
             position: relative;
-            background: #f9fafc;
+            background: var(--guardian-grey-background, #f9fafc);
             border: 1px solid #e1e7ef;
             padding: 16px;
             border-radius: 8px;
@@ -329,6 +329,22 @@ form {
 .form-field-input {
     height: auto !important;
 }
+
+:host ::ng-deep .guardian-accordion {
+
+    .p-accordionpanel,
+    .p-accordioncontent,
+    .p-motion,
+    .p-accordioncontent-wrapper,
+    .p-accordioncontent-content {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .p-accordioncontent-content {
+        overflow-x: auto;
+    }
+}
 /* form {
     display: flex;
     flex-direction: column;
@@ -366,7 +382,7 @@ form {
 .group-label,
 .array-label {
     color: rgba(0,0,0,.6);
-    background: #fff;
+    background: var(--guardian-background, #fff);
     top: -10px;
     left: 5px;
     padding-left: 5px;
@@ -535,3 +551,25 @@ form {
     display: block;
     position: absolute;
 } */
+
+.rte-view-content {
+    padding: 8px 12px;
+    min-height: 40px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--guardian-font-color);
+    word-break: break-word;
+    border: 1px solid var(--guardian-border-color);
+    border-radius: 4px;
+    background: var(--guardian-disabled-background);
+    width: 100%;
+
+    b, strong { font-weight: 700; }
+    i, em     { font-style: italic; }
+    h1        { font-size: 1.5em; font-weight: 700; margin: 0.4em 0 0.2em; }
+    h2        { font-size: 1.25em; font-weight: 700; margin: 0.4em 0 0.2em; }
+    h3        { font-size: 1.1em; font-weight: 700; margin: 0.4em 0 0.2em; }
+    ul        { list-style-type: disc; margin-left: 1.6em; }
+    ol        { list-style-type: decimal; margin-left: 1.6em; }
+    a         { color: var(--color-primary); text-decoration: underline; }
+}

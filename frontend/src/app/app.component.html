@@ -7,10 +7,17 @@
 <div [class.signed-in]="authState.value | async" [style.opacity]="loader ? '0' : '1'" class="app">
   <!--    <div class="background"></div>-->
   <!--<app-header></app-header>-->
-  @if (url !== 'login') {
+  @if (!isLoginPage) {
     <app-new-header [remoteContainerMethod]="resizeMenu"></app-new-header>
+  }
+  @if (!isLoginPage) {
+    <app-next-gen-banner></app-next-gen-banner>
+  }
+  @if (!isLoginPage) {
+    <app-first-steps-panel></app-first-steps-panel>
   }
   <div class="content" id="main-content">
     <router-outlet></router-outlet>
   </div>
+  <app-toast />
 </div>

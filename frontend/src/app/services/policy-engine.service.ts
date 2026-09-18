@@ -117,6 +117,13 @@ export class PolicyEngineService {
         return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${policyId}/publish`, options);
     }
 
+    public pushDryRun(
+        policyId: string,
+        options: { enableMock: boolean }
+    ): Observable<{ taskId: string, expectation: number }> {
+        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${policyId}/dry-run`, options);
+    }
+
     public pushDelete(policyId: string): Observable<{ taskId: string, expectation: number }> {
         return this.http.delete<{ taskId: string, expectation: number }>(`${this.url}/push/${policyId}`);
     }

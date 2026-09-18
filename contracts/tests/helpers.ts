@@ -248,6 +248,8 @@ export async function getTokenBalance(
     accountId: string,
     tokenId: string
 ): Promise<number> {
+    // Not MirrorNodeAccountBalanceQuery: it returns hbars only, and the mirror
+    // node lags consensus - these assertions straddle a transfer.
     const balance = await new AccountBalanceQuery()
         .setAccountId(accountId)
         .execute(client);

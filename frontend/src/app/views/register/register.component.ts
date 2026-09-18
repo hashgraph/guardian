@@ -32,8 +32,8 @@ export class RegisterComponent implements OnInit {
     loginForm = new UntypedFormGroup({
         login: new UntypedFormControl(Math.random().toString(36).substring(2, 10), [Validators.required, noWhitespaceValidator()]),
         role: new UntypedFormControl('USER', [Validators.required]),
-        password: new UntypedFormControl('test', [Validators.required, noWhitespaceValidator()]),
-        confirmPassword: new UntypedFormControl('test', [Validators.required, noWhitespaceValidator()]),
+        password: new UntypedFormControl('TestPass1', [Validators.required, noWhitespaceValidator()]),
+        confirmPassword: new UntypedFormControl('TestPass1', [Validators.required, noWhitespaceValidator()]),
     }, { validators: checkPasswords });
 
     private _isRoleSelected$ = new ReplaySubject<boolean>(1);

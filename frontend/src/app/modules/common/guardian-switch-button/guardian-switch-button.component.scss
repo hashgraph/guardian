@@ -98,7 +98,7 @@
         width: 20px;
         height: 20px;
         border-radius: 10px;
-        background: #fff;
+        background: var(--guardian-background, #fff);
         position: absolute;
         left: 2px;
         top: 2px;

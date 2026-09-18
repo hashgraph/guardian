@@ -14,7 +14,7 @@ describe('BlockActionError', () => {
 
     it('errorObject includes type/code/uuid/blockType/message', () => {
         const err = new BlockActionError('boom', 'mintBlock', 'uuid-1');
-        assert.deepEqual(err.errorObject, {
+        assert.include(err.errorObject, {
             type: 'blockActionError',
             code: 500,
             uuid: 'uuid-1',

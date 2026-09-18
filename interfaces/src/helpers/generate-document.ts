@@ -262,6 +262,10 @@ export class DocumentGenerator {
                 return true;
             case 'string': {
                 switch (field.customType) {
+                    case 'country':
+                    case 'continent':
+                    case 'state':
+                        return undefined;
                     case 'enum':
                         if (field.enum) {
                             return field.enum[0];
@@ -270,6 +274,8 @@ export class DocumentGenerator {
                         }
                     case 'hederaAccount':
                         return '0.0.1';
+                    case 'richText':
+                        return '# Example\n\nExample **rich text**.';
                     case 'table':
                         return '{"type":"table", "cid":"bafkreiaeu4w7oayfsp6oq3tuomb5tk2rkvb2bibhnxxwo4er6mls2jagay"}';
                     default:

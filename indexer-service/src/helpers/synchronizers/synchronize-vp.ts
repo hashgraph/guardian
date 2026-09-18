@@ -1,5 +1,5 @@
 import { DataBaseHelper, Message } from '@indexer/common';
-import { MessageType, MessageAction, IPFS_CID_PATTERN, VPAnalytics } from '@indexer/interfaces';
+import { MessageType, MessageAction, VPAnalytics } from '@indexer/interfaces';
 import { textSearch } from '../text-search-options.js';
 import { SynchronizationTask } from '../synchronization-task.js';
 import { loadFiles } from '../load-files.js';

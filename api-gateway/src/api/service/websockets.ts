@@ -1,9 +1,9 @@
 import WebSocket, { WebSocketServer } from 'ws'
-import { IncomingMessage, Server } from 'http';
-import { ExternalProviders, GenerateUUIDv4, MessageAPI, NotifyAPI, UserRole } from '@guardian/interfaces';
-import { generateNumberFromString, IAuthUser, MeecoApprovedSubmission, MessageResponse, NatsService, NotificationHelper, PinoLogger, Singleton } from '@guardian/common';
+import { IncomingMessage, Server } from 'node:http';
+import { GenerateUUIDv4, MessageAPI, NotifyAPI } from '@guardian/interfaces';
+import { IAuthUser, MessageResponse, NatsService, NotificationHelper, PinoLogger, Singleton } from '@guardian/common';
 import { NatsConnection } from 'nats';
-import { MeecoAuth, Users } from '#helpers';
+import { Users } from '#helpers';
 import { Mutex } from 'async-mutex';
 
 /**
@@ -57,6 +57,13 @@ export class WebSocketsService {
      */
     private wss: WebSocketServer;
 
+    // Silence allowed before a service is reported down. Kept above 2x the
+    // frontend heartbeat (30s) so a busy service answering late is not flagged.
+    private static readonly SERVICE_LIVENESS_TTL = 70 * 1000;
+    // Pause for the current poll's replies to land before broadcasting.
+    private static readonly STATUS_POLL_WAIT = 500;
+    // Last status reply per service instance (keyed by service channel, or name).
+    private readonly serviceLiveness = new Map<string, { name: string; state: string; lastSeen: number }>();
     /**
      * Get statuses mutex
      * @private
@@ -209,9 +216,7 @@ export class WebSocketsService {
     private async getStatusesHandler(
         type: MessageAPI.UPDATE_STATUS | MessageAPI.GET_STATUS
     ) {
-        const channel = new WebSocketsServiceChannel();
-
-        const statuses = {
+        const statuses: Record<string, string[]> = {
             // LOGGER_SERVICE: [],
             GUARDIAN_SERVICE: [],
             AUTH_SERVICE: [],
@@ -220,30 +225,22 @@ export class WebSocketsService {
             NOTIFICATION_SERVICE: [],
         };
 
-        const getStatuses = (): Promise<void> => {
-            channel.publish(MessageAPI.GET_STATUS);
-            return new Promise((resolve) => {
-                const sub = channel.subscribe(
-                    MessageAPI.SEND_STATUS,
-                    // tslint:disable-next-line:no-shadowed-variable
-                    (msg) => {
-                        const { name, state } = msg;
+        // Prompt replies; the persistent SEND_STATUS listener records them,
+        // including any that arrive after this wait (they count next time).
+        this.channel.publish(MessageAPI.GET_STATUS);
+        await new Promise((resolve) => setTimeout(resolve, WebSocketsService.STATUS_POLL_WAIT));
 
-                        if (!statuses[name]) {
-                            statuses[name] = [];
-                        }
-                        statuses[name].push(state);
-                    }
-                );
-
-                setTimeout(() => {
-                    sub.unsubscribe();
-                    resolve();
-                }, 300);
-            });
-        };
-
-        await getStatuses();
+        const now = Date.now();
+        this.serviceLiveness.forEach((info, key) => {
+            if (now - info.lastSeen > WebSocketsService.SERVICE_LIVENESS_TTL) {
+                this.serviceLiveness.delete(key);
+                return;
+            }
+            if (!statuses[info.name]) {
+                statuses[info.name] = [];
+            }
+            statuses[info.name].push(info.state);
+        });
 
         this.getStatusesClients.forEach((client: any) => {
             this.send(client, {
@@ -336,6 +333,7 @@ export class WebSocketsService {
                         data: {
                             blockType: msg.blockType,
                             message: msg.message,
+                            errorData: msg.data,
                         },
                     });
                 }
@@ -370,6 +368,18 @@ export class WebSocketsService {
             });
 
             return new MessageResponse({});
+        });
+
+        this.channel.subscribe(MessageAPI.SEND_STATUS, (msg) => {
+            const { name, state, serviceName } = msg || {};
+            if (!name) {
+                return;
+            }
+            this.serviceLiveness.set(serviceName || name, {
+                name,
+                state,
+                lastSeen: Date.now(),
+            });
         });
 
         this.channel.subscribe(MessageAPI.UPDATE_STATUS, async (msg) => {
@@ -452,43 +462,6 @@ export class WebSocketsService {
                         () => this.notificationReadingMap.delete(data),
                         1000
                     );
-                    break;
-                case 'MEECO_AUTH_REQUEST':
-                    const meecoAuthRequestResp = await new MeecoAuth().createMeecoAuthRequest(ws);
-                    ws.send(JSON.stringify({
-                        type: 'MEECO_AUTH_PRESENT_VP',
-                        data: meecoAuthRequestResp
-                    }));
-                    break;
-                case 'MEECO_APPROVE_SUBMISSION':
-                    const meecoSubmissionApproveResp = await new MeecoAuth().approveSubmission(
-                        ws,
-                        data.presentation_request_id, data.submission_id) as MeecoApprovedSubmission;
-
-                    const meecoUser = MeecoAuth.extractUserFromApprovedMeecoToken(meecoSubmissionApproveResp)
-                    // The username structure is necessary to avoid collisions - meeco doest not provide unique username
-                    const userProvider = {
-                        role: data.role || UserRole.STANDARD_REGISTRY as UserRole,
-                        username: `${meecoUser.firstName}${meecoUser.familyName}${generateNumberFromString(meecoUser.id)
-                            }`.toLowerCase().replace(/\s+/g, ''),
-                        providerId: meecoUser.id,
-                        provider: ExternalProviders.MEECO,
-                    };
-                    const guardianData = await new Users().generateNewUserTokenBasedOnExternalUserProvider(
-                        userProvider
-                    );
-
-                    ws.send(JSON.stringify({
-                        type: 'MEECO_APPROVE_SUBMISSION_RESPONSE',
-                        data: guardianData
-                    }));
-                    break;
-                case 'MEECO_REJECT_SUBMISSION':
-                    const meecoSubmissionRejectResp = await new MeecoAuth().rejectSubmission(ws, data.presentation_request_id, data.submission_id);
-                    ws.send(JSON.stringify({
-                        type: 'MEECO_REJECT_SUBMISSION_RESPONSE',
-                        data: meecoSubmissionRejectResp
-                    }));
                     break;
                 case 'SET_ACCESS_TOKEN':
                 case 'UPDATE_PROFILE':

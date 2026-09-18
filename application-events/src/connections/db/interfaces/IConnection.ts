@@ -1,4 +1,4 @@
-import { EntityClass } from '@mikro-orm/core/typings';
+import { EntityClass } from '@mikro-orm/core';
 
 export default interface IConnection {
   getAll <T> (entityClass: EntityClass<T>): Promise<any[]>;

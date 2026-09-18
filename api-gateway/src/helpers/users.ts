@@ -464,6 +464,153 @@ export class Users extends NatsService {
     public async otpDeactivate(userId: string) {
         return await this.sendMessage(AuthEvents.OTP_DEACTIVATE, { userId });
     }
+
+    // ============================================================
+    // Organization CRUD (record-layer; on-ledger publish goes through Guardians)
+    // ============================================================
+
+    /**
+     * Create a DRAFT organization (record-layer only)
+     */
+    public async createOrganization(
+        organization: { name: string, description?: string },
+        owner: IOwner
+    ): Promise<any> {
+        return await this.sendMessage(AuthEvents.CREATE_ORGANIZATION, { organization, owner, userId: owner.id });
+    }
+
+    /**
+     * List organizations owned by the caller
+     */
+    public async getOrganizations(
+        owner: IOwner,
+        filters: { name?: string },
+        pageIndex?: number | string,
+        pageSize?: number | string
+    ): Promise<ResponseAndCount<any>> {
+        return await this.sendMessage(AuthEvents.GET_ORGANIZATIONS, { owner, filters, pageIndex, pageSize, userId: owner.id });
+    }
+
+    /**
+     * Get one organization by id (owner-scoped)
+     */
+    public async getOrganization(id: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(AuthEvents.GET_ORGANIZATION, { id, owner, userId: owner.id });
+    }
+
+    /**
+     * Update organization (record-layer fields only — on-ledger fields hydrated by publish flow)
+     */
+    public async updateOrganization(
+        id: string,
+        organization: { name?: string, description?: string },
+        owner: IOwner
+    ): Promise<any> {
+        // Forward only the record-layer fields. The UPDATE_ORGANIZATION handler also accepts
+        // the on-ledger fields (status, did, topicId, hederaAccountId, …) for the publish
+        // flow — a verbatim body forward would let a REST caller set them directly.
+        const fields = {
+            name: organization?.name,
+            description: organization?.description
+        };
+        return await this.sendMessage(AuthEvents.UPDATE_ORGANIZATION, { id, organization: fields, owner, userId: owner.id });
+    }
+
+    /**
+     * Delete organization (cascades roles, members, and policy assignments at the record layer)
+     */
+    public async deleteOrganization(id: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(AuthEvents.DELETE_ORGANIZATION, { id, owner, userId: owner.id });
+    }
+
+    // ============================================================
+    // OrgRole CRUD
+    // ============================================================
+
+    public async createOrgRole(
+        organizationId: string,
+        role: { name: string, description?: string, permissions?: string[] },
+        owner: IOwner
+    ): Promise<any> {
+        return await this.sendMessage(AuthEvents.CREATE_ORG_ROLE, { organizationId, role, owner, userId: owner.id });
+    }
+
+    public async getOrgRoles(organizationId: string, owner: IOwner): Promise<any[]> {
+        return await this.sendMessage(AuthEvents.GET_ORG_ROLES, { organizationId, owner, userId: owner.id });
+    }
+
+    public async getOrgRole(id: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(AuthEvents.GET_ORG_ROLE, { id, owner, userId: owner.id });
+    }
+
+    public async updateOrgRole(
+        id: string,
+        role: { name?: string, description?: string, permissions?: string[] },
+        owner: IOwner
+    ): Promise<any> {
+        return await this.sendMessage(AuthEvents.UPDATE_ORG_ROLE, { id, role, owner, userId: owner.id });
+    }
+
+    public async deleteOrgRole(id: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(AuthEvents.DELETE_ORG_ROLE, { id, owner, userId: owner.id });
+    }
+
+    // ============================================================
+    // Organization membership
+    // Note: enrollment WRITE path goes through Guardians.enrollOrganizationMember (publishes on
+    // the org topic, then persists). The raw AuthEvents.ENROLL_ORG_MEMBER is record-layer only
+    // and is NOT exposed at REST.
+    // ============================================================
+
+    public async getOrgMembers(
+        organizationId: string,
+        owner: IOwner,
+        filters: { active?: boolean, orgRoleId?: string, did?: string },
+        pageIndex?: number | string,
+        pageSize?: number | string
+    ): Promise<ResponseAndCount<any>> {
+        return await this.sendMessage(AuthEvents.GET_ORG_MEMBERS, { organizationId, owner, filters, pageIndex, pageSize, userId: owner.id });
+    }
+
+    public async getOrgMember(id: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(AuthEvents.GET_ORG_MEMBER, { id, owner, userId: owner.id });
+    }
+
+    public async updateOrgMemberRole(id: string, orgRoleId: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(AuthEvents.UPDATE_ORG_MEMBER_ROLE, { id, orgRoleId, owner, userId: owner.id });
+    }
+
+    public async removeOrgMember(id: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(AuthEvents.REMOVE_ORG_MEMBER, { id, owner, userId: owner.id });
+    }
+
+    // ============================================================
+    // Policy assignment
+    // ============================================================
+
+    public async assignPolicyToOrg(
+        organizationId: string,
+        policyId: string,
+        owner: IOwner
+    ): Promise<any> {
+        return await this.sendMessage(AuthEvents.ASSIGN_POLICY_TO_ORG, { organizationId, policyId, owner, userId: owner.id });
+    }
+
+    public async revokePolicyFromOrg(
+        organizationId: string,
+        policyId: string,
+        owner: IOwner
+    ): Promise<any> {
+        return await this.sendMessage(AuthEvents.REVOKE_POLICY_FROM_ORG, { organizationId, policyId, owner, userId: owner.id });
+    }
+
+    public async getOrgPolicies(
+        organizationId: string,
+        owner: IOwner,
+        includeRevoked?: boolean
+    ): Promise<any[]> {
+        return await this.sendMessage(AuthEvents.GET_ORG_POLICIES, { organizationId, owner, includeRevoked, userId: owner.id });
+    }
 }
 
 @Injectable()

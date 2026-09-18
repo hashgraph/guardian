@@ -3,7 +3,7 @@ import {
     ClientProxy,
     EventPattern,
 } from '@nestjs/microservices';
-import process from 'process';
+import process from 'node:process';
 import {
     IndexerMessageAPI,
     Utils,

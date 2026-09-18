@@ -1,16 +1,19 @@
 
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Checks from "../../../support/checkingMethods";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Checks from '../../../support/checkingMethods';
+import * as Authorization from '../../../support/authorization';
+import * as Contracts from '../../../support/api/contracts';
 
-context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contracts', 'firstPool', 'all'] }, () => {
+context('Contracts', { tags: ['policy_labels', 'formulas', 'trustchains', 'contracts', 'firstPool', 'all', 'all-no-mgs'] }, () => {
 	const SRUsername = Cypress.env('SRUser');
 	const UserUsername = Cypress.env('User');
+	const contractNameR = 'FirstAPIContractR';
+	const contractNameW = 'FirstAPIContractW';
 
-	const optionKey = "option";
-	let contractIdW, contractIdR, tokenId, policyId, hederaId, contractUuidR, contractUuidW, poolId, wipeRequestId;
-	let waitForApproveApplicationBlockId, deviceGridBlockId, issueRequestGridBlockId;
+	const optionKey = 'option';
+	let contractIdW; let contractIdR; let tokenId; let policyId; let hederaId; let contractUuidR; let contractUuidW; let poolId; let wipeRequestId;
+	let waitForApproveApplicationBlockId; let deviceGridBlockId; let issueRequestGridBlockId;
 
 	const toggleWipeRequests = ({
 		authorization,
@@ -39,18 +42,6 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 		failOnStatusCode,
 	});
 
-	const getWipeRequests = ({
-		authorization,
-		contractId,
-		failOnStatusCode = true,
-	}) => cy.request({
-		method: METHOD.GET,
-		url: `${API.ApiServer}${API.WipeRequests}`,
-		headers: authorization ? { authorization } : {},
-		qs: contractId ? { contractId } : {},
-		failOnStatusCode,
-	});
-
 	const deleteRetirePool = ({
 		authorization,
 		retirePoolId,
@@ -73,52 +64,23 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 		failOnStatusCode,
 	});
 
-	before("Get contracts, policy and register new user", () => {
+	before('Get contracts, policy and register new user', () => {
 		//Create retire contract and save id
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
-			cy.request({
-				method: METHOD.GET,
-				url: API.ApiServer + API.ListOfContracts,
-				headers: {
-					authorization,
-				},
-				qs: {
-					"type": "RETIRE",
-				},
-				timeout: 180000
-			}).then((response) => {
-				contractIdR = response.body.at(0).id;
-				contractUuidR = response.body.at(0).contractId;
-				cy.request({
-					method: METHOD.GET,
-					url: API.ApiServer + API.ListOfContracts,
-					headers: {
-						authorization,
-					},
-					qs: {
-						"type": "WIPE",
-					},
-				}).then((response) => {
-					contractIdW = response.body.at(0).id;
-					contractUuidW = response.body.at(0).contractId;
-				})
+			Contracts.getContractByDescription(authorization, 'RETIRE', contractNameR).then((contract) => {
+				contractIdR = contract.id;
+				contractUuidR = contract.contractId;
+			})
+			Contracts.getContractByDescription(authorization, 'WIPE', contractNameW).then((contract) => {
+				contractIdW = contract.id;
+				contractUuidW = contract.contractId;
 			})
 
-			cy.request({
-				method: METHOD.GET,
-				url: API.ApiServer + API.Policies,
-				headers: {
-					authorization,
-				},
-				timeout: 180000
-			}).then((response) => {
-				expect(response.status).to.eq(STATUS_CODE.OK);
-				response.body.forEach(element => {
-					if (element.name == "iRec_4") {
-						policyId = element.id
-						cy.task('log', element)
-					}
-				})
+			//The policy this spec works on is seeded on demand, so the folder does not depend on
+			//another suite having imported it. It is taken as a draft: the wipe contract is put on
+			//its token below, and publishing it afterwards is what raises the wipe request
+			cy.getOrCreateIRec4Policy(SRUsername, { publish: false }).then((policy) => {
+				policyId = policy.id
 				//Get token(Irec token) draft id to update it
 				cy.request({
 					method: METHOD.GET,
@@ -129,7 +91,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 				}).then((response) => {
 					expect(response.status).eql(STATUS_CODE.OK);
 					response.body.forEach(element => {
-						if (element.policyIds.at(0) == policyId) {
+						if (element.policyIds.at(0) === policyId) {
 							tokenId = element.tokenId
 						}
 					});
@@ -142,7 +104,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 							authorization,
 						},
 						body: {
-							tokenId: tokenId,
+							tokenId,
 							wipeContractId: contractUuidW,
 							draftToken: true
 						}
@@ -150,9 +112,9 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 						//Publish policy
 						cy.request({
 							method: METHOD.PUT,
-							url: API.ApiServer + API.Policies + policyId + "/" + API.Publish,
+							url: API.ApiServer + API.Policies + policyId + '/' + API.Publish,
 							body: {
-								policyVersion: "1.2.5"
+								policyVersion: '1.2.5'
 							},
 							headers: {
 								authorization
@@ -160,13 +122,13 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 							timeout: 600000,
 							failOnStatusCode: false,
 						}).then((response) => {
-							if (response.status == STATUS_CODE.ERROR && response.body.message != "Policy already published")
-								throw new Error("Issue with policy publish")
+							if (response.status === STATUS_CODE.ERROR && response.body.message !== 'Policy already published')
+								{throw new Error('Issue with policy publish')}
 						})
 					})
 					cy.request({
 						method: METHOD.POST,
-						url: API.ApiServer + API.Permissions + API.Users + UserUsername + "/" + API.Policies + API.Assign,
+						url: API.ApiServer + API.Permissions + API.Users + UserUsername + '/' + API.Policies + API.Assign,
 						body: {
 							policyIds: [
 								policyId
@@ -194,11 +156,11 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 		})
 	})
 
-	before("Get blocks for waiting(approve app, device grid, issue grid) and token id", () => {
+	before('Get blocks for waiting(approve app, device grid, issue grid) and token id', () => {
 		Authorization.getAccessToken(UserUsername).then((authorization) => {
 			cy.request({
 				method: METHOD.GET,
-				url: API.ApiServer + API.Policies + policyId + "/" + API.WaitForApproveApplication,
+				url: API.ApiServer + API.Policies + policyId + '/' + API.WaitForApproveApplication,
 				headers: {
 					authorization
 				}
@@ -207,7 +169,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 			})
 			cy.request({
 				method: METHOD.GET,
-				url: API.ApiServer + API.Policies + policyId + "/" + API.DeviceGrid,
+				url: API.ApiServer + API.Policies + policyId + '/' + API.DeviceGrid,
 				headers: {
 					authorization
 				}
@@ -216,7 +178,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 			})
 			cy.request({
 				method: METHOD.GET,
-				url: API.ApiServer + API.Policies + policyId + "/" + API.IssueRequestGrid,
+				url: API.ApiServer + API.Policies + policyId + '/' + API.IssueRequestGrid,
 				headers: {
 					authorization
 				}
@@ -234,7 +196,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 			}).then((response) => {
 				expect(response.status).eql(STATUS_CODE.OK);
 				response.body.forEach(element => {
-					if (element.policyIds.at(0) == policyId) {
+					if (element.policyIds.at(0) === policyId) {
 						tokenId = element.tokenId
 					}
 				});
@@ -242,26 +204,39 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 		})
 	})
 
-	before("Mint token", () => {
+	before('Mint token', () => {
 		//Choose role
 		Authorization.getAccessToken(UserUsername).then((authorization) => {
 			cy.request({
 				method: METHOD.POST,
-				url: API.ApiServer + API.Policies + policyId + "/" + API.ChooseRegistrantRole,
+				url: API.ApiServer + API.Policies + policyId + '/' + API.ChooseRegistrantRole,
 				headers: {
 					authorization
 				},
 				body: {
-					role: "Registrant"
+					role: 'Registrant'
 				}
 			})
 
-			cy.wait(10000)
+			//The role is applied by the policy asynchronously, and the application form is gated on
+			//it: the form block is polled until it answers, instead of waiting a fixed span and
+			//hoping. Note it has to be this block and not the one the next step waits on - that one
+			//only opens once the application has been submitted, which is what happens below.
+			Contracts.pollUntil({
+				request: {
+					method: METHOD.GET,
+					url: API.ApiServer + API.Policies + policyId + '/' + API.CreateApplication,
+					headers: { authorization },
+				},
+				predicate: (response) => response.status === STATUS_CODE.OK,
+				description: 'the Registrant role to be applied to the policy',
+				timeout: 120000,
+			})
 
 			//Create app and wait while it in progress
 			cy.request({
 				method: METHOD.POST,
-				url: API.ApiServer + API.Policies + policyId + "/" + API.CreateApplication,
+				url: API.ApiServer + API.Policies + policyId + '/' + API.CreateApplication,
 				headers: {
 					authorization
 				},
@@ -277,38 +252,38 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 
 			let requestForApplicationCreationProgress = {
 				method: METHOD.GET,
-				url: API.ApiServer + API.Policies + policyId + "/" + API.Blocks + waitForApproveApplicationBlockId,
+				url: API.ApiServer + API.Policies + policyId + '/' + API.Blocks + waitForApproveApplicationBlockId,
 				headers: {
 					authorization
 				},
 				failOnStatusCode: false
 			}
 
-			Checks.whileApplicationCreating("Submitted for Approval", requestForApplicationCreationProgress, 0)
+			Checks.whileApplicationCreating('Submitted for Approval', requestForApplicationCreationProgress, 0)
 		})
 		//Get applications data and prepare body for approve
 		let applicationData
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
 			cy.request({
 				method: METHOD.GET,
-				url: API.ApiServer + API.Policies + policyId + "/" + API.GetApplications,
+				url: API.ApiServer + API.Policies + policyId + '/' + API.GetApplications,
 				headers: {
 					authorization
 				}
 			}).then((response) => {
 				applicationData = response.body.data[0];
-				applicationData.option.status = "Approved"
+				applicationData.option.status = 'Approved'
 				let appDataBody = JSON.stringify({
 					document: applicationData,
-					tag: "Button_0"
+					tag: 'Button_0'
 				})
 				//Approve app
 				cy.request({
 					method: METHOD.POST,
-					url: API.ApiServer + API.Policies + policyId + "/" + API.ApproveApplication,
+					url: API.ApiServer + API.Policies + policyId + '/' + API.ApproveApplication,
 					headers: {
 						authorization,
-						"content-type": "application/json"
+						'content-type': 'application/json'
 					},
 					body: appDataBody
 				})
@@ -318,19 +293,19 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 		Authorization.getAccessToken(UserUsername).then((authorization) => {
 			let requestForApplicationApproveProgress = {
 				method: METHOD.GET,
-				url: API.ApiServer + API.Policies + policyId + "/" + API.Blocks + deviceGridBlockId,
+				url: API.ApiServer + API.Policies + policyId + '/' + API.Blocks + deviceGridBlockId,
 				headers: {
 					authorization
 				},
 				failOnStatusCode: false
 			}
 
-			Checks.whileApplicationApproving("Device Name", requestForApplicationApproveProgress, 0)
+			Checks.whileApplicationApproving('Device Name', requestForApplicationApproveProgress, 0)
 
 			//Create device and wait while it in progress
 			cy.request({
 				method: METHOD.POST,
-				url: API.ApiServer + API.Policies + policyId + "/" + API.CreateDevice,
+				url: API.ApiServer + API.Policies + policyId + '/' + API.CreateDevice,
 				headers: {
 					authorization
 				},
@@ -346,13 +321,13 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 
 			let requestForDeviceCreationProgress = {
 				method: METHOD.GET,
-				url: API.ApiServer + API.Policies + policyId + "/" + API.Blocks + deviceGridBlockId,
+				url: API.ApiServer + API.Policies + policyId + '/' + API.Blocks + deviceGridBlockId,
 				headers: {
 					authorization
 				},
 				failOnStatusCode: false
 			}
-			Checks.whileDeviceCreating("Waiting for approval", requestForDeviceCreationProgress, 0)
+			Checks.whileDeviceCreating('Waiting for approval', requestForDeviceCreationProgress, 0)
 		})
 
 		//Get devices data and prepare body for approve
@@ -360,25 +335,25 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
 			cy.request({
 				method: METHOD.GET,
-				url: API.ApiServer + API.Policies + policyId + "/" + API.GetDevices,
+				url: API.ApiServer + API.Policies + policyId + '/' + API.GetDevices,
 				headers: {
 					authorization
 				}
 			}).then((response) => {
 				deviceBody = response.body;
 				let data = deviceBody.data[deviceBody.data.length - 1]
-				data[optionKey].status = "Approved"
+				data[optionKey].status = 'Approved'
 				let appDataBody = JSON.stringify({
 					document: data,
-					tag: "Button_0"
+					tag: 'Button_0'
 				})
 				//Approve device
 				cy.request({
 					method: METHOD.POST,
-					url: API.ApiServer + API.Policies + policyId + "/" + API.ApproveDevice,
+					url: API.ApiServer + API.Policies + policyId + '/' + API.ApproveDevice,
 					headers: {
 						authorization,
-						"content-type": "application/json"
+						'content-type': 'application/json'
 					},
 					body: appDataBody
 				})
@@ -390,19 +365,19 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 
 			let requestForDeviceApproveProgress = {
 				method: METHOD.GET,
-				url: API.ApiServer + API.Policies + policyId + "/" + API.Blocks + deviceGridBlockId,
+				url: API.ApiServer + API.Policies + policyId + '/' + API.Blocks + deviceGridBlockId,
 				headers: {
 					authorization
 				},
 				failOnStatusCode: false
 			}
 
-			Checks.whileDeviceApproving("Approved", requestForDeviceApproveProgress, 0)
+			Checks.whileDeviceApproving('Approved', requestForDeviceApproveProgress, 0)
 
 			//Get issue data and prepare body for create
 			cy.request({
 				method: METHOD.GET,
-				url: API.ApiServer + API.Policies + policyId + "/" + API.GetDeviceIssue,
+				url: API.ApiServer + API.Policies + policyId + '/' + API.GetDeviceIssue,
 				headers: {
 					authorization
 				}
@@ -413,18 +388,18 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 				//Create issue and wait while it in progress
 				cy.request({
 					method: METHOD.POST,
-					url: API.ApiServer + API.Policies + policyId + "/" + API.CreateIssue,
+					url: API.ApiServer + API.Policies + policyId + '/' + API.CreateIssue,
 					headers: {
 						authorization,
-						"content-type": "application/json"
+						'content-type': 'application/json'
 					},
 					body: {
 						document: {
 							field2: {},
 							field3: {},
-							field6: "2024-03-01",
+							field6: '2024-03-01',
 							field7: 10,
-							field8: "2024-03-02",
+							field8: '2024-03-02',
 							field17: UserUsername,
 							field18: hederaId
 						},
@@ -434,14 +409,14 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 
 				let requestForIssueCreationProgress = {
 					method: METHOD.GET,
-					url: API.ApiServer + API.Policies + policyId + "/" + API.Blocks + issueRequestGridBlockId,
+					url: API.ApiServer + API.Policies + policyId + '/' + API.Blocks + issueRequestGridBlockId,
 					headers: {
 						authorization
 					},
 					failOnStatusCode: false
 				}
 
-				Checks.whileIssueRequestCreating("Waiting for approval", requestForIssueCreationProgress, 0)
+				Checks.whileIssueRequestCreating('Waiting for approval', requestForIssueCreationProgress, 0)
 			})
 		})
 
@@ -450,25 +425,25 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
 			cy.request({
 				method: METHOD.GET,
-				url: API.ApiServer + API.Policies + policyId + "/" + API.GetIssues,
+				url: API.ApiServer + API.Policies + policyId + '/' + API.GetIssues,
 				headers: {
 					authorization
 				}
 			}).then((response) => {
 				issueRow = response.body.data
 				issueRow = issueRow[issueRow.length - 1]
-				issueRow[optionKey].status = "Approved"
+				issueRow[optionKey].status = 'Approved'
 				issueRow = JSON.stringify({
 					document: issueRow,
-					tag: "Button_0"
+					tag: 'Button_0'
 				})
 				//Approve issue
 				cy.request({
 					method: METHOD.POST,
-					url: API.ApiServer + API.Policies + policyId + "/" + API.ApproveIssueRequestsBtn,
+					url: API.ApiServer + API.Policies + policyId + '/' + API.ApproveIssueRequestsBtn,
 					headers: {
 						authorization,
-						"content-type": "application/json"
+						'content-type': 'application/json'
 					},
 					body: issueRow
 				})
@@ -479,32 +454,22 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 		Authorization.getAccessToken(UserUsername).then((authorization) => {
 			let requestForIssueApproveProgress = {
 				method: METHOD.GET,
-				url: API.ApiServer + API.Policies + policyId + "/" + API.Blocks + issueRequestGridBlockId,
+				url: API.ApiServer + API.Policies + policyId + '/' + API.Blocks + issueRequestGridBlockId,
 				headers: {
 					authorization
 				},
 				failOnStatusCode: false
 			}
 
-			Checks.whileIssueRequestApproving("Approved", requestForIssueApproveProgress, 0)
+			Checks.whileIssueRequestApproving('Approved', requestForIssueApproveProgress, 0)
 
-
-			let requestForBalance = {
-				method: METHOD.GET,
-				url: API.ApiServer + API.ListOfTokens,
-				headers: {
-					authorization
-				}
-			}
-
-			Checks.whileBalanceVerifying("10", requestForBalance, 91, tokenId)
-			Checks.whileBalanceVerifying("10", requestForBalance, 91, tokenId)
+			//The mint lands on Hedera and the balance is read back from the mirror node, so it is
+			//polled until the ten minted tokens show up and fails loudly if they never do
+			Contracts.waitForTokenBalance(authorization, { tokenId, expected: '10' })
 		})
 	})
 
-
-
-	it("Disable wipe contract requests", () => {
+	it('Disable wipe contract requests', () => {
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
 			// POST /wipe-contract/{id}/requests/disable
 			toggleWipeRequests({
@@ -535,21 +500,14 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 				expect(response.status).eql(STATUS_CODE.OK);
 			})
 
-			cy.wait(120000)
-
-			// GET /wipe-requests?contractId={contractIdW}
-			getWipeRequests({
-				authorization,
-				contractId: contractIdW,
-				failOnStatusCode: true,
-			}).then((response) => {
-				expect(response.status).eql(STATUS_CODE.OK);
-				expect(response.body).eql([]);
-			})
+			//With requests disabled the pool above must raise nothing: the listing is watched for
+			//longer than one synchronization cycle, so the assertion covers the window in which a
+			//request would have surfaced rather than a single read at an arbitrary moment
+			Contracts.expectNoWipeRequest(authorization, contractUuidW, { token: tokenId })
 		})
 	})
 
-	it("Disable wipe contract requests without auth token - Negative", () => {
+	it('Disable wipe contract requests without auth token - Negative', () => {
 		toggleWipeRequests({
 			authorization: undefined,
 			contractId: contractIdW,
@@ -560,9 +518,9 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 		});
 	});
 
-	it("Disable wipe contract requests with invalid auth token - Negative", () => {
+	it('Disable wipe contract requests with invalid auth token - Negative', () => {
 		toggleWipeRequests({
-			authorization: "Bearer wqe",
+			authorization: 'Bearer wqe',
 			contractId: contractIdW,
 			action: API.Disable,
 			failOnStatusCode: false,
@@ -571,9 +529,9 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 		});
 	});
 
-	it("Disable wipe contract requests with empty auth token - Negative", () => {
+	it('Disable wipe contract requests with empty auth token - Negative', () => {
 		toggleWipeRequests({
-			authorization: "",
+			authorization: '',
 			contractId: contractIdW,
 			action: API.Disable,
 			failOnStatusCode: false,
@@ -582,7 +540,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 		});
 	});
 
-	it("Unset retire contract pool without auth token - Negative", () => {
+	it('Unset retire contract pool without auth token - Negative', () => {
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
 			cy.request({
 				method: METHOD.GET,
@@ -608,9 +566,9 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 		})
 	});
 
-	it("Unset retire contract pool with invalid auth token - Negative", () => {
+	it('Unset retire contract pool with invalid auth token - Negative', () => {
 		deleteRetirePool({
-			authorization: "Bearer wqe",
+			authorization: 'Bearer wqe',
 			retirePoolId: poolId,
 			failOnStatusCode: false,
 		}).then((response) => {
@@ -618,9 +576,9 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 		});
 	});
 
-	it("Unset retire contract pool with empty auth token - Negative", () => {
+	it('Unset retire contract pool with empty auth token - Negative', () => {
 		deleteRetirePool({
-			authorization: "",
+			authorization: '',
 			retirePoolId: poolId,
 			failOnStatusCode: false,
 		}).then((response) => {
@@ -628,7 +586,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 		});
 	});
 
-	it("Unset retire contract pool", () => {
+	it('Unset retire contract pool', () => {
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
 			deleteRetirePool({
 				authorization,
@@ -640,7 +598,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 		})
 	})
 
-	it("Enable wipe contract requests", () => {
+	it('Enable wipe contract requests', () => {
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
 			toggleWipeRequests({
 				authorization,
@@ -668,11 +626,12 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 				expect(response.status).eql(STATUS_CODE.OK);
 			})
 
-			Checks.whileRetireRequestCreating(contractUuidW, authorization, 0)
+			Contracts.waitForWipeRequest(authorization, contractUuidW, { token: tokenId })
+				.then((request) => wipeRequestId = request.id)
 		})
 	})
 
-	it("Enable wipe contract requests without auth token - Negative", () => {
+	it('Enable wipe contract requests without auth token - Negative', () => {
 		toggleWipeRequests({
 			authorization: undefined,
 			contractId: contractIdW,
@@ -683,9 +642,9 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 		});
 	});
 
-	it("Enable wipe contract requests with invalid auth token - Negative", () => {
+	it('Enable wipe contract requests with invalid auth token - Negative', () => {
 		toggleWipeRequests({
-			authorization: "Bearer wqe",
+			authorization: 'Bearer wqe',
 			contractId: contractIdW,
 			action: API.Enable,
 			failOnStatusCode: false,
@@ -694,9 +653,9 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 		});
 	});
 
-	it("Enable wipe contract requests with empty auth token - Negative", () => {
+	it('Enable wipe contract requests with empty auth token - Negative', () => {
 		toggleWipeRequests({
-			authorization: "",
+			authorization: '',
 			contractId: contractIdW,
 			action: API.Enable,
 			failOnStatusCode: false,
@@ -705,7 +664,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 		});
 	});
 
-	it("Approve wipe contract requests without auth token - Negative", () => {
+	it('Approve wipe contract requests without auth token - Negative', () => {
 		approveWipeRequest({
 			authorization: undefined,
 			requestId: wipeRequestId,
@@ -715,9 +674,9 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 		});
 	});
 
-	it("Approve wipe contract requests with invalid auth token - Negative", () => {
+	it('Approve wipe contract requests with invalid auth token - Negative', () => {
 		approveWipeRequest({
-			authorization: "Bearer wqe",
+			authorization: 'Bearer wqe',
 			requestId: wipeRequestId,
 			failOnStatusCode: false,
 		}).then((response) => {
@@ -725,9 +684,9 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 		});
 	});
 
-	it("Approve wipe contract requests with empty auth token - Negative", () => {
+	it('Approve wipe contract requests with empty auth token - Negative', () => {
 		approveWipeRequest({
-			authorization: "",
+			authorization: '',
 			requestId: wipeRequestId,
 			failOnStatusCode: false,
 		}).then((response) => {
@@ -735,36 +694,21 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 		});
 	});
 
-	it("Approve wipe contract requests", () => {
+	it('Approve wipe contract requests', () => {
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
-			getWipeRequests({
+			approveWipeRequest({
 				authorization,
-				contractId: contractUuidW,
+				requestId: wipeRequestId,
 				failOnStatusCode: true,
 			}).then((response) => {
 				expect(response.status).eql(STATUS_CODE.OK);
-				wipeRequestId = response.body.at(0).id;
-
-				approveWipeRequest({
-					authorization,
-					requestId: wipeRequestId,
-					failOnStatusCode: true,
-				}).then((response) => {
-					expect(response.status).eql(STATUS_CODE.OK);
-				});
 			});
 		})
-		cy.wait(60000)
+		//Approving grants the retire contract the wiper role on the token, and only then is the
+		//pool listed to a plain user - the grant travels through Hedera, so it is polled for
 		Authorization.getAccessToken(UserUsername).then((authorization) => {
-			cy.request({
-				method: METHOD.GET,
-				url: API.ApiServer + API.RetirePools,
-				headers: {
-					authorization
-				}
-			}).then((response) => {
-				expect(response.status).eql(STATUS_CODE.OK);
-				expect(response.body.at(0)).to.have.property("id");
+			Contracts.waitForRetirePool(authorization, { tokenId }).then((pool) => {
+				expect(pool).to.have.property('id');
 			})
 		})
 	})

@@ -142,6 +142,30 @@ export class FieldTypesDictionary {
             isRef: false,
             customType: 'table'
         },
+        {
+            name: 'Country',
+            type: 'string',
+            format: undefined,
+            pattern: undefined,
+            isRef: false,
+            customType: 'country'
+        },
+        {
+            name: 'Continent',
+            type: 'string',
+            format: undefined,
+            pattern: undefined,
+            isRef: false,
+            customType: 'continent'
+        },
+        {
+            name: 'State/Province',
+            type: 'string',
+            format: undefined,
+            pattern: undefined,
+            isRef: false,
+            customType: 'state'
+        },
     ];
 
     public static readonly CustomFieldTypes = [
@@ -170,6 +194,14 @@ export class FieldTypesDictionary {
             pattern: '^\\d+\\.\\d+\\.\\d+$',
             isRef: false,
             customType: 'hederaAccount'
+        },
+        {
+            name: 'Rich Text',
+            type: 'string',
+            format: undefined,
+            pattern: undefined,
+            isRef: false,
+            customType: 'richText'
         }
     ];
 

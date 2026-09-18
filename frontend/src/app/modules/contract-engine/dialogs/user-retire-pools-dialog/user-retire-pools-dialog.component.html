@@ -1,37 +1,35 @@
-<app-dialog-wrapper
-  (cancel)="onNoClick()"
-  [confirmVisible]="retireMod"
-  [syncVisible]="false"
+<app-common-dialog
   [loading]="loading"
-  [confirmDisabled]="!retireForm.valid"
   [title]="retireMod ? 'Retire' : 'Pools'"
-  [paginatorVisible]="!retireMod"
-  [length]="length"
-  [pageSize]="pageSize"
-  (page)="onPage($event)"
+  [confirmVisible]="retireMod"
+  [cancelVisible]="!retireMod"
+  [confirmDisabled]="!retireForm.valid"
+  confirmLabel="Retire"
+  cancelLabel="Close"
   (confirm)="confirm()"
-  >
+  (cancel)="onNoClick()"
+  (close)="onNoClick()">
   @if (!retireMod) {
-    <div class="action-buttons">
-      <label for="tokens" class="action-field__label">Token</label>
-      <p-multiSelect
-        id="tokens"
-        [(ngModel)]="selectedTokens"
-        [options]="getTokenOptions()"
-        optionLabel="label"
-        optionValue="value"
-        [showHeader]="false"
-        defaultLabel="Not selected"
-        [filter]="true"
-        [appendTo]="'body'"
-        (onChange)="loadPools()"
-        >
-        <ng-template let-item pTemplate="item">
-          {{ item.label }}
-        </ng-template>
-      </p-multiSelect>
-    </div>
     @if (pools.length) {
+      <div class="action-buttons">
+        <label for="tokens" class="action-field__label">Token</label>
+        <p-multiSelect
+          id="tokens"
+          [(ngModel)]="selectedTokens"
+          [options]="getTokenOptions()"
+          optionLabel="label"
+          optionValue="value"
+          [showHeader]="false"
+          defaultLabel="Not selected"
+          [filter]="true"
+          [appendTo]="'body'"
+          (onChange)="loadPools()"
+          >
+          <ng-template let-item pTemplate="item">
+            {{ item.label }}
+          </ng-template>
+        </p-multiSelect>
+      </div>
       <div class="pools-head">
         <div class="ph ph--tokens"></div>
         <div class="ph wipe-permission">WIPE PERMISSION</div>
@@ -78,7 +76,10 @@
         }
       </div>
     } @else {
-      <div class="no-pools">There are no pools</div>
+      <div class="no-pools">
+        <i class="pi pi-list no-pools__icon"></i>
+        <span class="no-pools__label">There are no pools</span>
+      </div>
     }
   } @else {
     <div class="retire">
@@ -126,18 +127,12 @@
       </div>
     </div>
   }
-</app-dialog-wrapper>
 
-
-
-@if (!retireMod) {
-  <div class="pools-dialog__footer">
-    <button
-      type="button"
-      pButton
-      label="Close"
-      class="p-button-outlined pools-dialog__close-btn"
-      (click)="onNoClick()">
-    </button>
-  </div>
-}
+   @if (!retireMod && length) {
+     <app-paginator
+       [length]="length"
+       [pageSize]="pageSize"
+       (page)="onPage($event)">
+     </app-paginator>
+   }
+</app-common-dialog>

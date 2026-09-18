@@ -60,6 +60,7 @@ export class CompareComponent implements OnInit {
     public items: any[] = [];
     public parent: any;
     public error: any;
+    public policyColorBlindMode: boolean = false;
 
     public get isEventsLvl(): boolean {
         return this.type === ItemType.Policy;
@@ -105,6 +106,56 @@ export class CompareComponent implements OnInit {
         return this.type === ItemType.Tool;
     }
 
+    public get isToolPair(): boolean {
+        return this.type === ItemType.Tool && this.items.length < 3;
+    }
+
+    public get isDocumentPair(): boolean {
+        return this.type === ItemType.Document && this.items.length < 3;
+    }
+
+    public get compareNoun(): string {
+        if (this.isPolicies || this.isMultiPolicies) {
+            return 'Policies';
+        }
+        if (this.isSchemas) {
+            return 'Schemas';
+        }
+        if (this.isModules) {
+            return 'Modules';
+        }
+        if (this.isDocuments) {
+            return 'Documents';
+        }
+        if (this.isTools) {
+            return 'Tools';
+        }
+        return 'Items';
+    }
+
+    public get compareBreadcrumb(): string {
+        if (this.isPolicies || this.isMultiPolicies) {
+            return 'Manage Policies';
+        }
+        if (this.isSchemas) {
+            return 'Manage Schemas';
+        }
+        if (this.isModules) {
+            return 'Manage Modules';
+        }
+        if (this.isDocuments) {
+            return 'Manage Documents';
+        }
+        if (this.isTools) {
+            return 'Manage Tools';
+        }
+        return 'Compare';
+    }
+
+    public get showSummaryLine(): boolean {
+        return this.isPolicies || this.isSchemas || this.isModules || this.isToolPair || this.isDocumentPair;
+    }
+
     constructor(
         private route: ActivatedRoute,
         private router: Router,
@@ -114,6 +165,8 @@ export class CompareComponent implements OnInit {
     }
 
     ngOnInit() {
+        const saved = localStorage.getItem('compare-policy-colorblind');
+        this.policyColorBlindMode = saved === 'true';
         this.route.queryParams.subscribe(queryParams => {
             this.loadData();
         });
@@ -188,6 +241,23 @@ export class CompareComponent implements OnInit {
         return results;
     }
 
+    /**
+     * Every load error used to be swallowed into console.error, leaving a stopped
+     * spinner over a blank page: the template's `@if (error)` banner was only ever
+     * reachable from the local "Invalid params" pre-check.
+     */
+    private onLoadFailed(message?: string): void {
+        this.loading = false;
+        this.error = message || 'The comparison could not be loaded. Please try again.';
+        console.error(message);
+    }
+
+    private onExportFailed(message?: string): void {
+        this.loading = false;
+        this.error = message || 'The report could not be exported. Please try again.';
+        console.error(message);
+    }
+
     private loadDocument() {
         this.error = null;
         const options = {
@@ -209,8 +279,7 @@ export class CompareComponent implements OnInit {
                 this.loading = false;
             }, 500);
         }, ({ message }) => {
-            this.loading = false;
-            console.error(message);
+            this.onLoadFailed(message);
         });
     }
 
@@ -234,8 +303,7 @@ export class CompareComponent implements OnInit {
             }
             this.loading = false;
         }, ({ message }) => {
-            this.loading = false;
-            console.error(message);
+            this.onExportFailed(message);
         });
     }
     private loadOriginalPolicy(policyId: string) {
@@ -254,8 +322,7 @@ export class CompareComponent implements OnInit {
                 this.loading = false;
             }, 500);
         }, ({ message }) => {
-            this.loading = false;
-            console.error(message);
+            this.onLoadFailed(message);
         });
     }
 
@@ -280,8 +347,7 @@ export class CompareComponent implements OnInit {
                 this.loading = false;
             }, 500);
         }, ({ message }) => {
-            this.loading = false;
-            console.error(message);
+            this.onLoadFailed(message);
         });
     }
 
@@ -305,8 +371,7 @@ export class CompareComponent implements OnInit {
             }
             this.loading = false;
         }, ({ message }) => {
-            this.loading = false;
-            console.error(message);
+            this.onExportFailed(message);
         });
     }
 
@@ -329,8 +394,7 @@ export class CompareComponent implements OnInit {
                 this.loading = false;
             }, 500);
         }, ({ message }) => {
-            this.loading = false;
-            console.error(message);
+            this.onLoadFailed(message);
         });
     }
 
@@ -352,8 +416,7 @@ export class CompareComponent implements OnInit {
             }
             this.loading = false;
         }, ({ message }) => {
-            this.loading = false;
-            console.error(message);
+            this.onExportFailed(message);
         });
     }
 
@@ -380,8 +443,7 @@ export class CompareComponent implements OnInit {
                 this.loading = false;
             }, 500);
         }, ({ message }) => {
-            this.loading = false;
-            console.error(message);
+            this.onLoadFailed(message);
         });
     }
 
@@ -407,8 +469,7 @@ export class CompareComponent implements OnInit {
             }
             this.loading = false;
         }, ({ message }) => {
-            this.loading = false;
-            console.error(message);
+            this.onExportFailed(message);
         });
     }
 
@@ -433,8 +494,7 @@ export class CompareComponent implements OnInit {
                 this.loading = false;
             }, 500);
         }, ({ message }) => {
-            this.loading = false;
-            console.error(message);
+            this.onLoadFailed(message);
         });
     }
 
@@ -458,8 +518,7 @@ export class CompareComponent implements OnInit {
             }
             this.loading = false;
         }, ({ message }) => {
-            this.loading = false;
-            console.error(message);
+            this.onExportFailed(message);
         });
     }
 
@@ -542,6 +601,11 @@ export class CompareComponent implements OnInit {
 
     onFilterChange() {
         this.needApplyFilters = true;
+    }
+
+    togglePolicyColorBlindMode() {
+        this.policyColorBlindMode = !this.policyColorBlindMode;
+        localStorage.setItem('compare-policy-colorblind', String(this.policyColorBlindMode));
     }
 
 }

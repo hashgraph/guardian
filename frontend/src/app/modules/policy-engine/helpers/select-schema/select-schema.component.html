@@ -1,22 +1,27 @@
 <p-select
     [(ngModel)]="value"
     [disabled]="disabled"
-    [options]="schemas"
+    [options]="sortedSchemas"
     class="schema-select {{bodyStyleClass}}"
-    [panelStyleClass]="panelStyleClass"
+    [panelStyleClass]="panelStyleClass || 'pc-select-panel pc-drawer-panel'"
     placeholder="Select a schema"
     optionLabel="displayName"
     optionValue="value"
+    [filter]="true"
+    filterBy="displayName"
+    filterPlaceholder="Search schema"
+    [resetFilterOnHide]="true"
     appendTo="body"
     (ngModelChange)="onChange()"
 >
     <ng-template let-item pTemplate="item">
         <div
-            pTooltip="{{ item.tooltip }}"
-            tooltipPosition="top"
-            class="schema-variable"
+            class="schema-variable drawer-option-label"
             [attr.status]="item.status"
         >
+            @if (item.isFeatured) {
+                <i class="pi pi-star-fill schema-featured-icon" pTooltip="Featured" tooltipPosition="right"></i>
+            }
             {{ item.displayName }}
         </div>
     </ng-template>

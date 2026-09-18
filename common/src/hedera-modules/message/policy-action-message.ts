@@ -12,8 +12,7 @@ import {
     decryptWithKeyDerivedFromString,
     encryptWithKeyDerivedFromString,
     utf8ToBytes,
-} from '@meeco/cryppo';
-import { SerializationFormat } from '@meeco/cryppo/dist/src/serialization-versions.js';
+} from '../../helpers/cryppo/index.js';
 
 /**
  * Policy action message
@@ -110,8 +109,7 @@ export class PolicyActionMessage extends Message {
         const encryptedDocument = await encryptWithKeyDerivedFromString({
             passphrase: key,
             data: utf8ToBytes(json),
-            strategy: CipherStrategy.AES_GCM,
-            serializationVersion: SerializationFormat.latest_version,
+            strategy: CipherStrategy.AES_GCM
         });
         const data = encryptedDocument.serialized;
         const buffer = Buffer.from(data);

@@ -1,4 +1,11 @@
 {
+    "/api-docs": {
+        "target": "http://localhost:3002/",
+        "secure": false,
+        "logLevel": "debug",
+        "changeOrigin": true,
+        "ws": false
+    },
     "/api/v1/": {
         "target": "http://localhost:3002/",
         "secure": false,

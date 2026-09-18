@@ -8,3 +8,18 @@ export const PREFIXES = {
   CACHE: 'cache',
   TAG: 'tag'
 }
+
+/**
+ * Prefixes of the cache tags a mutation invalidates in bulk.
+ *
+ * A tag is `<TAG prefix><request path without query>:<user hash>`, so a prefix
+ * has to carry the `tag` part to match anything at all.
+ */
+export const TAG_PREFIXES = {
+  // Schemas are served by two controllers: `/schemas/...` and the single
+  // schema route of `@Controller('schema')`.
+  SCHEMAS: [`${PREFIXES.TAG}/schemas`, `${PREFIXES.TAG}/schema/`],
+  // Every cached route of `@Controller('accounts')`: the listing, the session,
+  // the standard registries and the balance.
+  ACCOUNTS: [`${PREFIXES.TAG}/accounts`],
+}

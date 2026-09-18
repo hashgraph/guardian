@@ -1,5 +1,5 @@
 import { AISuggestionService } from './suggestions.js';
-import { ApplicationState, MessageResponse } from '@guardian/common';
+import { MessageResponse } from '@guardian/common';
 
 /**
  * API response
@@ -8,7 +8,6 @@ import { ApplicationState, MessageResponse } from '@guardian/common';
  * @constructor
  */
 export function ApiResponse<T>(event: any, handleFunc: (msg) => Promise<MessageResponse<T>>): void {
-    const state = new ApplicationState();
     new AISuggestionService().registerListener(event, async (msg) => {
         return await handleFunc(msg);
     })

@@ -5,55 +5,29 @@
     </div>
   }
 
-  @if (headers.length && type==='tree') {
-    <div class="item-headers" [style.grid-template-columns]="_gridStyle">
-      @for (item of headers; track item) {
-        <div [style.grid-column-start]="item.column" class="item-header">
-          <span class="item-header-name">
-            {{ item.name }}
-          </span>
-          <span class="item-header-rate item-header-color-{{item.color}}">
-            {{ item.rate }}
-          </span>
-        </div>
-      }
-    </div>
-  }
-
   @if (resultContext) {
     <div class="list">
+      <section class="record-description-section">
+        <div class="record-description-title">Description</div>
+        <div class="record-description-card"
+          [style.grid-template-columns]="'repeat(' + size + ', minmax(0, 1fr))'">
+          @for (context of resultContext; track context) {
+            <div class="record-description-column">
+              <ng-container *ngTemplateOutlet="resultInfo; context: context"></ng-container>
+            </div>
+          }
+        </div>
+      </section>
+
+      <ng-content select="[recordControls]"></ng-content>
+
       <p-accordion
         class="compare-record-accordion"
         [multiple]="true"
-        [value]="['description', 'documents']"
+        [value]="['documents']"
         expandIcon="pi pi-chevron-down icon-start"
         collapseIcon="pi pi-chevron-up icon-start"
         >
-        <p-accordion-panel value="description">
-          <p-accordion-header>Description</p-accordion-header>
-          <p-accordion-content>
-            <div class="info-container" [style.grid-template-columns]="_gridStyle">
-              @for (context of resultContext; track context) {
-                @if (context.right) {
-                  <div class="middle-compare-result compare-result"
-                    [style.grid-column-start]="2 * context.index"
-                    [attr.open]="true">
-                  </div>
-                }
-                <div
-                  [style.grid-column-start]="2 * context.index + 1"
-                  [attr.open]="true"
-                            [ngClass]="{
-                                'left-compare-result': context.left,
-                                'right-compare-result': context.right,
-                                'compare-result': true
-                            }">
-                  <ng-container *ngTemplateOutlet="resultInfo; context: context"></ng-container>
-                </div>
-              }
-            </div>
-          </p-accordion-content>
-        </p-accordion-panel>
         <p-accordion-panel value="documents">
           <p-accordion-header>Policy Documents</p-accordion-header>
           <p-accordion-content>
@@ -123,7 +97,7 @@
                                         'hidden-item': true,
                                         'fantom-tree': treeItemContext.fantom
                                     }">
-                          <div class="block-tree" (click)="row.open = !row.open">
+                          <div class="block-tree" (click)="onRowOpen(row)">
                             <div class="block-index">
                               {{ treeItemContext.data.docIndex }}
                             </div>
@@ -136,7 +110,7 @@
                         @if (treeItemContext.right) {
                           <div class="middle-tree"
                             [style.grid-column-start]="2 * treeItemContext.index">
-                            <div class="compare-btn" (click)="row.open = !row.open">
+                            <div class="compare-btn" (click)="onRowOpen(row)">
                               @if (!row.open) {
                                 <i
                                 class="pi pi-arrow-up-right-and-arrow-down-left-from-center"></i>
@@ -276,7 +250,7 @@
 <div class="prop-delimiter"></div>
 <div class="prop-table" [attr.system]="_systemProp">
   <div class="prop-table-header">
-    Documents:
+    Fields:
     <div class="prop-table-system-btn" (click)="_systemProp = !_systemProp">
       @if (!_systemProp) {
         <i class="pi pi-arrow-up-right-and-arrow-down-left-from-center"></i>

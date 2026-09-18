@@ -1,0 +1,34 @@
+<button
+    (click)="onExportDraft()"
+    class="guardian-button guardian-button-secondary"
+    type="button"
+>
+    <div class="guardian-button-icon">
+        <svg-icon
+            class="icon-btn svg-icon"
+            src="/assets/images/icons/export-file.svg"
+            svgClass="icon-color-primary"
+        ></svg-icon>
+    </div>
+    <div class="guardian-button-label">Save Draft To File</div>
+</button>
+<button
+    (click)="triggerImportDraft()"
+    class="guardian-button guardian-button-secondary"
+    type="button"
+>
+    <div class="guardian-button-icon">
+        <svg-icon
+            class="icon-btn svg-icon"
+            src="/assets/images/icons/import-file.svg"
+            svgClass="icon-color-primary"
+        ></svg-icon>
+    </div>
+    <div class="guardian-button-label">Restore From Draft File</div>
+</button>
+<input
+    #draftFileInput
+    type="file"
+    accept="application/json,.json"
+    hidden
+    (change)="onImportDraft($event)">

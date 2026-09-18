@@ -1,61 +1,27 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Checks from "../../../support/checkingMethods";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
+import * as Contracts from '../../../support/api/contracts';
 
-context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contracts', 'firstPool', 'all'] }, () => {
+context('Contracts', { tags: ['policy_labels', 'formulas', 'trustchains', 'contracts', 'firstPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
+    const contractNameR = 'FirstAPIContractR';
 
-    let contractIdR, contractUuidR, tokenId, policyId, hederaId, poolId, retireRequestId;
+    let contractIdR; let contractUuidR; let tokenId; let hederaId; let poolId; let retireRequestId;
 
-    before("Create contracts, policy and register new user", () => {
-        //Create retire contract and save id
+    before('Read the retire contract and the token its pool holds', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.ListOfContracts,
-                headers: {
-                    authorization,
-                },
-                qs: {
-                    "type": "RETIRE",
-                },
-                timeout: 180000
-            }).then((response) => {
-                contractIdR = response.body.at(0).id;
-                contractUuidR = response.body.at(0).contractId;
-            })
+            Contracts.getContractByDescription(authorization, 'RETIRE', contractNameR).then((contract) => {
+                contractIdR = contract.id;
+                contractUuidR = contract.contractId;
 
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies,
-                headers: {
-                    authorization,
-                },
-                timeout: 180000
-            }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.OK);
-                response.body.forEach(element => {
-                    if (element.name == "iRec_4") {
-                        policyId = element.id
-                    }
-                })
-                //Get token(Irec token) draft id to update it
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.ListOfTokens,
-                    headers: {
-                        authorization,
-                    },
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.OK);
-                    response.body.forEach(element => {
-                        if (element.policyIds.at(0) == policyId) {
-                            tokenId = element.tokenId
-                        }
-                    });
-                })
+                //The token comes from the pool rather than from a policy lookup. It has to be the
+                //one the previous spec had the wiper role approved for and minted to the user, and
+                //nothing in the policy listing identifies which of several published copies of the
+                //policy that was - while the pool names the token directly.
+                Contracts.waitForRetirePool(authorization, { contractId: contractUuidR })
+                    .then((pool) => tokenId = pool.tokenIds.at(0));
             })
             Authorization.getAccessToken(UserUsername).then((authorization) => {
                 cy.request({
@@ -72,24 +38,20 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
         })
     })
 
-    describe("Create and cancel retire request", () => {
+    describe('Create and cancel retire request', () => {
 
-        it("Create retire request", () => {
+        it('Create retire request', () => {
             Authorization.getAccessToken(UserUsername).then((authorization) => {
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.RetirePools,
-                    headers: {
-                        authorization
-                    }
-                }).then((response) => {
-                    poolId = response.body.at(0).id;
+                //The pool that holds the policy token, not whatever sits first in the listing:
+                //the earlier specs leave pools of their own probe tokens behind
+                Contracts.waitForRetirePool(authorization, { tokenId }).then((pool) => {
+                    poolId = pool.id;
                     cy.request({
                         method: METHOD.POST,
-                        url: API.ApiServer + API.RetirePools + poolId + "/" + API.Retire,
+                        url: API.ApiServer + API.RetirePools + poolId + '/' + API.Retire,
                         headers: {
                             authorization,
-                            "Content-Type": "application/json"
+                            'Content-Type': 'application/json'
                         },
                         body: [{
                             token: tokenId,
@@ -104,7 +66,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 
             Authorization.getAccessToken(SRUsername).then((authorization) => {
 
-                Checks.whileRetireRRequestCreating(contractUuidR, authorization, 0)
+                Contracts.waitForRetireRequest(authorization, contractUuidR)
 
                 cy.request({
                     method: METHOD.GET,
@@ -126,7 +88,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             })
         });
 
-        it("Cancel retire request without auth token - Negative", () => {
+        it('Cancel retire request without auth token - Negative', () => {
             cy.request({
                 method: METHOD.DELETE,
                 url: API.ApiServer + API.RetireRequests + retireRequestId,
@@ -136,12 +98,12 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             });
         })
 
-        it("Cancel retire request with invalid auth token - Negative", () => {
+        it('Cancel retire request with invalid auth token - Negative', () => {
             cy.request({
                 method: METHOD.DELETE,
                 url: API.ApiServer + API.RetireRequests + retireRequestId,
                 headers: {
-                    authorization: "Bearer wqe",
+                    authorization: 'Bearer wqe',
                 },
                 failOnStatusCode: false,
             }).then((response) => {
@@ -149,12 +111,12 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             });
         });
 
-        it("Cancel retire request with empty auth token - Negative", () => {
+        it('Cancel retire request with empty auth token - Negative', () => {
             cy.request({
                 method: METHOD.DELETE,
                 url: API.ApiServer + API.RetireRequests + retireRequestId,
                 headers: {
-                    authorization: "",
+                    authorization: '',
                 },
                 failOnStatusCode: false,
             }).then((response) => {
@@ -162,11 +124,11 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             });
         });
 
-        it("Cancel retire request", () => {
+        it('Cancel retire request', () => {
             Authorization.getAccessToken(UserUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.DELETE,
-                    url: API.ApiServer + API.RetireRequests + retireRequestId + "/" + API.Cancel,
+                    url: API.ApiServer + API.RetireRequests + retireRequestId + '/' + API.Cancel,
                     headers: {
                         authorization
                     },
@@ -177,25 +139,21 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
         })
     })
 
-    describe("Create and unset retire request", () => {
+    describe('Create and unset retire request', () => {
 
-        it("Create retire request", () => {
+        it('Create retire request', () => {
 
             Authorization.getAccessToken(UserUsername).then((authorization) => {
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.RetirePools,
-                    headers: {
-                        authorization
-                    }
-                }).then((response) => {
-                    poolId = response.body.at(0).id;
+                //The pool that holds the policy token, not whatever sits first in the listing:
+                //the earlier specs leave pools of their own probe tokens behind
+                Contracts.waitForRetirePool(authorization, { tokenId }).then((pool) => {
+                    poolId = pool.id;
                     cy.request({
                         method: METHOD.POST,
-                        url: API.ApiServer + API.RetirePools + poolId + "/" + API.Retire,
+                        url: API.ApiServer + API.RetirePools + poolId + '/' + API.Retire,
                         headers: {
                             authorization,
-                            "Content-Type": "application/json"
+                            'Content-Type': 'application/json'
                         },
                         body: [{
                             token: tokenId,
@@ -210,7 +168,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 
             Authorization.getAccessToken(SRUsername).then((authorization) => {
 
-                Checks.whileRetireRRequestCreating(contractUuidR, authorization, 0)
+                Contracts.waitForRetireRequest(authorization, contractUuidR)
 
                 cy.request({
                     method: METHOD.GET,
@@ -232,7 +190,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             })
         });
 
-        it("Unset retire request without auth token - Negative", () => {
+        it('Unset retire request without auth token - Negative', () => {
             cy.request({
                 method: METHOD.DELETE,
                 url: API.ApiServer + API.RetireRequests + retireRequestId,
@@ -242,12 +200,12 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             });
         });
 
-        it("Unset retire request with invalid auth token - Negative", () => {
+        it('Unset retire request with invalid auth token - Negative', () => {
             cy.request({
                 method: METHOD.DELETE,
                 url: API.ApiServer + API.RetireRequests + retireRequestId,
                 headers: {
-                    authorization: "Bearer wqe",
+                    authorization: 'Bearer wqe',
                 },
                 failOnStatusCode: false,
             }).then((response) => {
@@ -255,12 +213,12 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             });
         });
 
-        it("Unset retire request with empty auth token - Negative", () => {
+        it('Unset retire request with empty auth token - Negative', () => {
             cy.request({
                 method: METHOD.DELETE,
                 url: API.ApiServer + API.RetireRequests + retireRequestId,
                 headers: {
-                    authorization: "",
+                    authorization: '',
                 },
                 failOnStatusCode: false,
             }).then((response) => {
@@ -268,7 +226,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             });
         });
 
-        it("Unset retire request", () => {
+        it('Unset retire request', () => {
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.DELETE,
@@ -283,24 +241,20 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
         })
     })
 
-    describe("Get retire request", () => {
+    describe('Get retire request', () => {
 
-        it("Create retire request", () => {
+        it('Create retire request', () => {
             Authorization.getAccessToken(UserUsername).then((authorization) => {
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.RetirePools,
-                    headers: {
-                        authorization
-                    }
-                }).then((response) => {
-                    poolId = response.body.at(0).id;
+                //The pool that holds the policy token, not whatever sits first in the listing:
+                //the earlier specs leave pools of their own probe tokens behind
+                Contracts.waitForRetirePool(authorization, { tokenId }).then((pool) => {
+                    poolId = pool.id;
                     cy.request({
                         method: METHOD.POST,
-                        url: API.ApiServer + API.RetirePools + poolId + "/" + API.Retire,
+                        url: API.ApiServer + API.RetirePools + poolId + '/' + API.Retire,
                         headers: {
                             authorization,
-                            "Content-Type": "application/json"
+                            'Content-Type': 'application/json'
                         },
                         body: [{
                             token: tokenId,
@@ -315,7 +269,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 
             Authorization.getAccessToken(SRUsername).then((authorization) => {
 
-                Checks.whileRetireRRequestCreating(contractUuidR, authorization, 0)
+                Contracts.waitForRetireRequest(authorization, contractUuidR)
 
                 cy.request({
                     method: METHOD.GET,
@@ -337,7 +291,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             })
         });
 
-        it("Get retire request", () => {
+        it('Get retire request', () => {
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.GET,
@@ -358,7 +312,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             })
         });
 
-        it("Get all retire contracts requests", () => {
+        it('Get all retire contracts requests', () => {
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.GET,
@@ -372,7 +326,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             })
         });
 
-        it("Get all retire contracts requests without auth token - Negative", () => {
+        it('Get all retire contracts requests without auth token - Negative', () => {
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.RetireRequests,
@@ -382,12 +336,12 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             });
         });
 
-        it("Get all retire contracts requests with invalid auth token - Negative", () => {
+        it('Get all retire contracts requests with invalid auth token - Negative', () => {
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.RetireRequests,
                 headers: {
-                    authorization: "Bearer wqe",
+                    authorization: 'Bearer wqe',
                 },
                 failOnStatusCode: false,
             }).then((response) => {
@@ -395,12 +349,12 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             });
         });
 
-        it("Get all retire contracts requests with empty auth token - Negative", () => {
+        it('Get all retire contracts requests with empty auth token - Negative', () => {
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.RetireRequests,
                 headers: {
-                    authorization: "",
+                    authorization: '',
                 },
                 failOnStatusCode: false,
             }).then((response) => {
@@ -408,7 +362,7 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             });
         });
 
-        it("Get retire request without auth token - Negative", () => {
+        it('Get retire request without auth token - Negative', () => {
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.RetireRequests,
@@ -421,12 +375,12 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             });
         });
 
-        it("Get retire request with invalid auth token - Negative", () => {
+        it('Get retire request with invalid auth token - Negative', () => {
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.RetireRequests,
                 headers: {
-                    authorization: "Bearer wqe",
+                    authorization: 'Bearer wqe',
                 },
                 qs: {
                     contractId: contractIdR
@@ -437,12 +391,12 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             });
         });
 
-        it("Get retire request with empty auth token - Negative", () => {
+        it('Get retire request with empty auth token - Negative', () => {
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.RetireRequests,
                 headers: {
-                    authorization: "",
+                    authorization: '',
                 },
                 qs: {
                     contractId: contractIdR
@@ -454,9 +408,9 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
         });
     })
 
-    describe("Approve retire request", () => {
+    describe('Approve retire request', () => {
 
-        it("Approve retire request without auth token - Negative", () => {
+        it('Approve retire request without auth token - Negative', () => {
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.GET,
@@ -474,19 +428,19 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             })
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.RetireRequests + retireRequestId + "/" + API.Approve,
+                url: API.ApiServer + API.RetireRequests + retireRequestId + '/' + API.Approve,
                 failOnStatusCode: false,
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
             });
         });
 
-        it("Approve retire request with invalid auth token - Negative", () => {
+        it('Approve retire request with invalid auth token - Negative', () => {
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.RetireRequests + retireRequestId + "/" + API.Approve,
+                url: API.ApiServer + API.RetireRequests + retireRequestId + '/' + API.Approve,
                 headers: {
-                    authorization: "Bearer wqe",
+                    authorization: 'Bearer wqe',
                 },
                 failOnStatusCode: false,
             }).then((response) => {
@@ -494,12 +448,12 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             });
         });
 
-        it("Approve retire request with empty auth token - Negative", () => {
+        it('Approve retire request with empty auth token - Negative', () => {
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.RetireRequests + retireRequestId + "/" + API.Approve,
+                url: API.ApiServer + API.RetireRequests + retireRequestId + '/' + API.Approve,
                 headers: {
-                    authorization: "",
+                    authorization: '',
                 },
                 failOnStatusCode: false,
             }).then((response) => {
@@ -507,11 +461,11 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             });
         });
 
-        it("Approve retire request", () => {
+        it('Approve retire request', () => {
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.RetireRequests + retireRequestId + "/" + API.Approve,
+                    url: API.ApiServer + API.RetireRequests + retireRequestId + '/' + API.Approve,
                     headers: {
                         authorization,
                     },
@@ -522,14 +476,14 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
         });
     })
 
-    describe("Create and approve retire request without approve", () => {
+    describe('Create and approve retire request without approve', () => {
 
-        before("Set pool", () => {
+        before('Set pool', () => {
             //Set pool to retire contract and wait while it in progress
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.RetireContract + contractIdR + "/" + API.PoolContract,
+                    url: API.ApiServer + API.RetireContract + contractIdR + '/' + API.PoolContract,
                     headers: {
                         authorization,
                     },
@@ -548,22 +502,18 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             })
         });
 
-        it("Create retire request", () => {
+        it('Create retire request', () => {
             Authorization.getAccessToken(UserUsername).then((authorization) => {
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.RetirePools,
-                    headers: {
-                        authorization
-                    }
-                }).then((response) => {
-                    poolId = response.body.at(0).id;
+                //The pool that holds the policy token, not whatever sits first in the listing:
+                //the earlier specs leave pools of their own probe tokens behind
+                Contracts.waitForRetirePool(authorization, { tokenId }).then((pool) => {
+                    poolId = pool.id;
                     cy.request({
                         method: METHOD.POST,
-                        url: API.ApiServer + API.RetirePools + poolId + "/" + API.Retire,
+                        url: API.ApiServer + API.RetirePools + poolId + '/' + API.Retire,
                         headers: {
                             authorization,
-                            "Content-Type": "application/json"
+                            'Content-Type': 'application/json'
                         },
                         body: [{
                             token: tokenId,
@@ -577,22 +527,22 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             })
         });
 
-        it("Create retire request without auth token - Negative", () => {
+        it('Create retire request without auth token - Negative', () => {
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.RetirePools + poolId + "/" + API.Retire,
+                url: API.ApiServer + API.RetirePools + poolId + '/' + API.Retire,
                 failOnStatusCode: false,
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
             });
         });
 
-        it("Create retire request with invalid auth token - Negative", () => {
+        it('Create retire request with invalid auth token - Negative', () => {
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.RetirePools + poolId + "/" + API.Retire,
+                url: API.ApiServer + API.RetirePools + poolId + '/' + API.Retire,
                 headers: {
-                    authorization: "Bearer wqe",
+                    authorization: 'Bearer wqe',
                 },
                 failOnStatusCode: false,
             }).then((response) => {
@@ -600,12 +550,12 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             });
         });
 
-        it("Create retire request with empty auth token - Negative", () => {
+        it('Create retire request with empty auth token - Negative', () => {
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.RetirePools + poolId + "/" + API.Retire,
+                url: API.ApiServer + API.RetirePools + poolId + '/' + API.Retire,
                 headers: {
-                    authorization: "",
+                    authorization: '',
                 },
                 failOnStatusCode: false,
             }).then((response) => {
@@ -613,17 +563,21 @@ context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
             });
         });
 
-        it("Verify balance decreased", () => {
+        it('Verify balance decreased', () => {
             Authorization.getAccessToken(SRUsername).then((authorization) => {
-                cy.request({
-                    method: METHOD.GET,
-                    url: `${API.ApiServer}${API.ListOfTokens}${tokenId}/${API.RelayerAccounts}${hederaId}/${API.Info}`,
-                    headers: {
-                        authorization
-                    }
-                }).then((response) => {
-                    expect(response.status).to.eq(STATUS_CODE.OK);
-                    expect(response.body.balance).to.eq("7");
+                //Ten were minted; one went in the approved retire above and two more in the
+                //immediate one. The immediate retire burns them on Hedera and the balance is read
+                //back from the mirror node, so it is polled down rather than read the instant the
+                //request returns - which catches the old value and reports 9.
+                Contracts.pollUntil({
+                    request: {
+                        method: METHOD.GET,
+                        url: `${API.ApiServer}${API.ListOfTokens}${tokenId}/${API.RelayerAccounts}${hederaId}/${API.Info}`,
+                        headers: { authorization },
+                    },
+                    predicate: (response) => response.status === STATUS_CODE.OK &&
+                        response.body.balance === '7',
+                    description: `the registrant's balance of token ${tokenId} to fall to 7`,
                 });
             })
         });

@@ -1,14 +1,14 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Create a lot of discussion comments", { tags: ['comments', 'firstPool', 'all'] }, () => {
+context('Create a lot of discussion comments', { tags: ['comments', 'firstPool', 'all', 'all-no-mgs'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
-    const discussionCommentText = "TestDiscCommentText";
+    const discussionCommentText = 'TestDiscCommentText';
 
-    let policyId, documentId, discussionId;
+    let policyId; let documentId; let discussionId;
 
     const createDiscussionComment = ({ authorization, policyId, documentId, discussionCommentText, discussionId, failOnStatusCode = false }) => {
         return cy.request({
@@ -28,8 +28,8 @@ context("Create a lot of discussion comments", { tags: ['comments', 'firstPool',
             method: METHOD.POST,
             url: API.Discussions(policyId, documentId),
             body: {
-                name: "ManyCommentsCheck",
-                privacy: "public",
+                name: 'ManyCommentsCheck',
+                privacy: 'public',
             },
             headers: { authorization },
             failOnStatusCode,
@@ -42,7 +42,7 @@ context("Create a lot of discussion comments", { tags: ['comments', 'firstPool',
             method: METHOD.POST,
             url: API.DiscussionsCommentsSearch(policyId, documentId, discussionId),
             body: {
-                search: "",
+                search: '',
                 lt: lastItem
             },
             headers: { authorization },
@@ -61,7 +61,7 @@ context("Create a lot of discussion comments", { tags: ['comments', 'firstPool',
         })
     };
 
-    before("Get policy, document id", () => {
+    before('Get policy, document id', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
@@ -72,17 +72,24 @@ context("Create a lot of discussion comments", { tags: ['comments', 'firstPool',
                 timeout: 180000
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
-                response.body.forEach(element => {
-                    if (element.name == "iRec_3") policyId = element.id
-                })
-                cy.getBlockByTag(authorization, policyId, "approve_devices_grid").then((response) => {
+                //The iRec 3 flow imports its policy from a fixture, and the import suffixes the
+                //name of every copy after the first, so the published copies are matched on the
+                //common prefix and the most recent one is taken
+                const policy = response.body
+                    .filter((element) => String(element.name).startsWith('iRec_3')
+                        && element.status === 'PUBLISH')
+                    .sort((a, b) => String(b.createDate).localeCompare(String(a.createDate)))
+                    .at(0);
+                expect(policy, 'a published iRec_3 policy').to.not.be.undefined;
+                policyId = policy.id;
+                cy.getBlockByTag(authorization, policyId, 'approve_devices_grid').then((response) => {
                     documentId = response.body.data.at(0).id;
                 })
             })
         })
     })
 
-    it("Create discussion and many comments by SR", () => {
+    it('Create discussion and many comments by SR', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             createDiscussion({ authorization, policyId, documentId }).then((response) => {
                 expect(response.status).eq(STATUS_CODE.OK);
@@ -96,7 +103,7 @@ context("Create a lot of discussion comments", { tags: ['comments', 'firstPool',
         })
     })
 
-    it("Get discussion comments by User", () => {
+    it('Get discussion comments by User', () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             checkDecOfComments({ authorization, policyId, documentId, discussionId, dec: 5 }).then((lastItem) => {
                 checkDecOfComments({ authorization, policyId, documentId, discussionId, lastItem, dec: 4 }).then((lastItem) => {

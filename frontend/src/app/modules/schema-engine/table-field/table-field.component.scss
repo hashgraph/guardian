@@ -1,3 +1,9 @@
+:host {
+    display: block;
+    width: 100%;
+    min-width: 0;
+}
+
 .table-field {
     display: flex;
     flex-direction: column;
@@ -126,7 +132,7 @@
     border: 1px solid rgba(0, 0, 0, 0.12);
     border-radius: 8px;
     overflow: hidden;
-    background: #ffffff;
+    background: var(--guardian-background, #ffffff);
     max-height: calc(4 * var(--row-height) + var(--header-height));
 }
 

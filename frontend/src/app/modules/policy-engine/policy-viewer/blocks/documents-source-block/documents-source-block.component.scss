@@ -1,7 +1,7 @@
 .content {
     position: relative;
     display: block;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     width: 100%;
 }
 
@@ -28,9 +28,10 @@
 .grid-filters {
     display: flex;
     gap: 16px;
-    background-color: #f9fafc;
+    background-color: var(--guardian-background, #ffffff);
     flex-wrap: wrap;
     height: 40px;
+    margin: var(--guardian-page-header-gap) 0;
 }
 
 // .table-container {
@@ -93,7 +94,7 @@
 .btn-approve {
     background: #4caf50;
     border-radius: 6px;
-    color: #fff;
+    color: var(--guardian-secondary-color, #FFFFFF);
     display: inline-block;
     padding: 2px 8px;
     margin: 0px 5px;
@@ -101,10 +102,14 @@
     font-weight: 500;
 }
 
+:host-context(.guardian-theme-dark) .btn-approve {
+    background: var(--guardian-success-background, #12351F);
+}
+
 .btn-reject {
     background: #f44336;
     border-radius: 6px;
-    color: #fff;
+    color: var(--guardian-secondary-color, #FFFFFF);
     display: inline-block;
     padding: 2px 8px;
     margin: 0px 5px;
@@ -283,7 +288,7 @@ tr.detailed-row {
     border-radius: 10px;
     content: "";
     border: 2px solid rgba(0, 0, 0, 0.3);
-    background: white;
+    background: var(--guardian-background, white);
 }
 
 .timeline-item:last-child {
@@ -421,4 +426,31 @@ tr.revoked td:not(.mat-column-history) {
 *[disconnected="true"] {
     background: #EFF3F7;
     color: #848FA9;
+}
+
+.rich-text-cell {
+    cursor: help;
+}
+
+::ng-deep .rich-text-popover .rich-text-popover-content {
+    width: min(420px, 60vw);
+    max-height: 220px;
+    overflow: auto;
+    font-size: 13px;
+    line-height: 1.5;
+    text-align: left;
+    word-break: break-word;
+
+    h1 { font-size: 1.15rem; font-weight: 700; margin: 0.4em 0 0.2em; }
+    h2 { font-size: 1.05rem; font-weight: 700; margin: 0.4em 0 0.2em; }
+    h3 { font-size: 1rem; font-weight: 700; margin: 0.35em 0 0.15em; }
+    h1:first-child, h2:first-child, h3:first-child { margin-top: 0; }
+    b, strong { font-weight: 700; }
+    i, em { font-style: italic; }
+    ul, ol { margin: 0.35em 0 0.25em 1.2em; padding-left: 0.65em; }
+    ul { list-style-type: disc; }
+    ol { list-style-type: decimal; }
+    li > p { margin: 0; }
+    li + li { margin-top: 0.1em; }
+    a { color: var(--color-primary); text-decoration: underline; }
 }

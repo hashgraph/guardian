@@ -1,4 +1,4 @@
-import { randomBytes, pbkdf2, createHash } from 'crypto';
+import { randomBytes, pbkdf2, createHash } from 'node:crypto';
 import { User } from '../entity/user.js';
 import { PasswordComplexityEnum, minPasswordLength, passwordComplexity } from '#constants';
 

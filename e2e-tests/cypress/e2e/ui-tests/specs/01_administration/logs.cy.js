@@ -1,10 +1,10 @@
-import { HomePage } from "../../pages/homePage";
+import { HomePage } from '../../pages/homePage';
 const homepage = new HomePage();
 
-import { LogsPage } from "../../pages/logs";
+import { LogsPage } from '../../pages/logs';
 const logs = new LogsPage();
 
-context("Check logs page", { tags: ['ui'] }, () => {
+context('Check logs page', { tags: ['ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
 
@@ -15,46 +15,46 @@ context("Check logs page", { tags: ['ui'] }, () => {
         logs.openLogsTab();
     })
 
-    it("Verify if it possible to see log details on logs page", () => {
+    it('Verify if it possible to see log details on logs page', () => {
         logs.openDetailsModal();
         logs.verifyLogModalIsDisplayed();
     });
 
-    it("Verify if it possible to filter by message", () => {
-        logs.fillMessageField("Task completed");
+    it('Verify if it possible to filter by message', () => {
+        logs.fillMessageField('Task completed');
         logs.clickOnApplyButton();
-        logs.verifyIfMessageColumnContains("Task completed");
+        logs.verifyIfMessageColumnContains('Task completed');
     });
 
-    it("Verify if it possible to filter by message type", () => {
-        logs.selectMessageType("Error");
+    it('Verify if it possible to filter by message type', () => {
+        logs.selectMessageType('Error');
         logs.clickOnApplyButton();
-        logs.verifyIfTypeColumnContains("ERROR");
-        logs.selectMessageType("Info");
+        logs.verifyIfTypeColumnContains('ERROR');
+        logs.selectMessageType('Info');
         logs.clickOnApplyButton();
-        logs.verifyIfTypeColumnContains("INFO");
-        logs.selectMessageType("Warn");
+        logs.verifyIfTypeColumnContains('INFO');
+        logs.selectMessageType('Warn');
         logs.clickOnApplyButton();
-        logs.verifyIfTypeColumnContains("WARN");
+        logs.verifyIfTypeColumnContains('WARN');
     });
 
-    it("Verify if it possible to filter by data attributes", () => {
+    it('Verify if it possible to filter by data attributes', () => {
         logs.selectFirstOptionInAttributes();
         logs.clickOnApplyButton();
         logs.verifyThatLogsTableIsNotEmpty();
     });
 
-    it("Verify if it possible to save logs", () => {
-        logs.clickOnButton("Save logs");
+    it('Verify if it possible to save logs', () => {
+        logs.clickOnButton('Save logs');
         cy.wait(2000);
-        cy.checkIfFileExistByPartialName("logs");
+        cy.checkIfFileExistByPartialName('logs');
     });
 
-    it("Verify if it possible to clear filter", () => {
-        logs.fillMessageField("Task completed");
-        logs.selectMessageType("Error");
+    it('Verify if it possible to clear filter', () => {
+        logs.fillMessageField('Task completed');
+        logs.selectMessageType('Error');
         logs.selectFirstOptionInAttributes();
-        logs.clickOnButton("Clear filters");
+        logs.clickOnButton('Clear filters');
         logs.verifyIfMessageFieldIsEmpty();
         logs.verifyIfTypeFieldHasDefaultValue();
         logs.verifyIfAttributeFieldIsEmpty();

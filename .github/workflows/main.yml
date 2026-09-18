@@ -2,8 +2,10 @@ name: Guardian CI
 on:
   workflow_dispatch:
   push:
-    branches-ignore:
-      - 'dependabot/**'
+    paths-ignore:
+      - '.github/**'
+      - 'docs/**'
+      - '**/*.md'
 jobs:
   buildAndTest:
     name: Build and Test (Manual - Main)
@@ -12,18 +14,18 @@ jobs:
       YARN_ENABLE_GLOBAL_CACHE: 'false'
     strategy:
       matrix:
-        node-version: [ 20.20.2 ]
+        node-version: [ 24.21.0 ]
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           egress-policy: audit
 
       - name: Checkout Code
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ matrix.node-version }}
 
@@ -31,7 +33,7 @@ jobs:
         run: corepack enable
 
       - name: Cache yarn
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .yarn/cache
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
@@ -46,6 +48,12 @@ jobs:
           yarn run build
           popd
           pushd common
+          yarn run build
+          popd
+          pushd ai-service
+          yarn run build
+          popd
+          pushd analytics-service
           yarn run build
           popd
           pushd logger-service
@@ -133,13 +141,43 @@ jobs:
 
       - name: Test
         run: |
+          pushd interfaces
+          npm run test
+          popd
           pushd common
+          npm run test
+          popd
+          pushd ai-service
+          npm run test
+          popd
+          pushd analytics-service
+          npm run test
+          popd
+          pushd api-gateway
+          npm run test
+          popd
+          pushd auth-service
+          npm run test
+          popd
+          pushd guardian-service
+          npm run test
+          popd
+          pushd logger-service
+          npm run test
+          popd
+          pushd notification-service
           npm run test
           popd
           pushd policy-service
           npm run test
           popd
-          pushd guardian-service
+          pushd queue-service
+          npm run test
+          popd
+          pushd topic-listener-service
+          npm run test
+          popd
+          pushd worker-service
           npm run test
           popd
         env:

@@ -1,5 +1,5 @@
 import * as dotenv from 'dotenv';
-import * as path from 'path';
+import * as path from 'node:path';
 import { SecretManager } from './secret-manager.js';
 import { SecretManagerBase } from './secret-manager-base.js';
 

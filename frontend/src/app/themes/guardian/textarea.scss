@@ -20,7 +20,7 @@
         font-family: Inter;
         font-size: 14px;
         font-weight: 400;
-        color: #000;
+        color: var(--guardian-font-color, #000);
         padding: 8px 16px;
 
         &:enabled:hover {

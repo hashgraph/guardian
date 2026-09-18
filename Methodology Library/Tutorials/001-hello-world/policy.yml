@@ -1,0 +1,22 @@
+id: tutorial-001
+name: Hello World Policy
+version: "1.0.0"
+description: >
+  This hello world Guardian Policy helps new users get started and learn about key
+  concepts including policies, schemas, publishing, data submission, and verifiable
+  credential documents.
+policy_type: other
+policy_type_note: tutorial
+status: active
+license: Apache-2.0
+category: other
+category_note: tutorial
+authors:
+  - name: Hashgraph Association
+tags:
+  - tutorial
+
+support: "https://github.com/hashgraph/guardian/issues"
+maintainers:
+  - name: Daniel Swid
+    url: https://github.com/swidnikk

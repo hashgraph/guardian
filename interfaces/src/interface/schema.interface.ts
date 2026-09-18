@@ -104,6 +104,18 @@ export interface ISchema {
      */
     category?: SchemaCategory;
     /**
+     * Template id
+     */
+    templateId?: string;
+    /**
+     * Stable schema id inside a schema template
+     */
+    templateSchemaId?: string;
+    /**
+     * Denormalized copy of the schema's featured flag in the owning template's config
+     */
+    templateFeatured?: boolean;
+    /**
      * Is system schema
      */
     system?: boolean;
@@ -115,6 +127,11 @@ export interface ISchema {
      * Code version
      */
     codeVersion?: string;
+    /**
+     * IWA dMRV specification version the field properties are authored against.
+     * Absent means IWA v1.
+     */
+    iwaVersion?: string;
     /**
      * Errors
      */

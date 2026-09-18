@@ -437,11 +437,12 @@ export class TagsApi {
                 s.readonly = s.readonly || s.owner !== owner.creator;
             });
 
-            req.locals = SchemaUtils.toOld(items)
+            const result = SchemaUtils.toOld(items)
+            req.locals = result
 
             return res
                 .header('X-Total-Count', count)
-                .send(SchemaUtils.toOld(items));
+                .send(result);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -526,11 +527,12 @@ export class TagsApi {
             const { items, count } = await guardians.getTagSchemasV2(owner, fields, pageIndex, pageSize);
             items.forEach((s) => { s.readonly = s.readonly || s.owner !== owner.creator });
 
-            req.locals = SchemaUtils.toOld(items)
+            const result = SchemaUtils.toOld(items)
+            req.locals = result
 
             return res
                 .header('X-Total-Count', count)
-                .send(SchemaUtils.toOld(items));
+                .send(result);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

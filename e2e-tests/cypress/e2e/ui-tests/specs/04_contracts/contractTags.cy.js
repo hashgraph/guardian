@@ -1,15 +1,15 @@
-import { ContractsPage } from "../../pages/contractsPage";
+import { ContractsPage } from '../../pages/contractsPage';
 const contractsPage = new ContractsPage();
 
-import { HomePage } from "../../pages/homePage";
+import { HomePage } from '../../pages/homePage';
 const homePage = new HomePage();
 
-context("Workflow Contract Tags", { tags: ['ui'] }, () => {
+context('Workflow Contract Tags', { tags: ['ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
-    const wipeContract = "wUIContract";
-    const retireContract = "rUIContract";
-    const tagName = "tagTestName";
+    const wipeContract = 'wUIContract';
+    const retireContract = 'rUIContract';
+    const tagName = 'tagTestName';
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
@@ -18,17 +18,17 @@ context("Workflow Contract Tags", { tags: ['ui'] }, () => {
         contractsPage.openContractsTab();
     })
 
-    it("add contract tag", () => {
-        contractsPage.openContractTypeTab("wipe");
+    it('add contract tag', () => {
+        contractsPage.openContractTypeTab('wipe');
         contractsPage.addTag(wipeContract, tagName);
-        contractsPage.openContractTypeTab("retire");
+        contractsPage.openContractTypeTab('retire');
         contractsPage.addTag(retireContract, tagName);
     });
 
-    it("delete contract tag", () => {
-        contractsPage.openContractTypeTab("wipe");
+    it('delete contract tag', () => {
+        contractsPage.openContractTypeTab('wipe');
         contractsPage.deleteTag(wipeContract, tagName);
-        contractsPage.openContractTypeTab("retire");
+        contractsPage.openContractTypeTab('retire');
         contractsPage.deleteTag(retireContract, tagName);
     });
 });

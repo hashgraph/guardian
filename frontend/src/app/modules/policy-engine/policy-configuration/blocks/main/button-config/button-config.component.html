@@ -1,47 +1,52 @@
 <!-- UI Prop -->
 @if (properties) {
-  <table class="properties" [attr.readonly]="readonly">
+  <table class="properties button-properties" [attr.readonly]="readonly">
+  <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
     <tr class="propRow">
       <td class="propRowCol"></td>
       <td class="propRowCell cellName" pTooltip="Enable Individual Filters" tooltipPosition="top" [tooltipOptions]="{showDelay: 300}">Enable Individual Filters</td>
       <td class="propRowCell">
-        <input class="prop-input" type="checkbox" [(ngModel)]="properties.uiMetaData.enableIndividualFilters"
-          [readonly]="readonly" (blur)="onSave()">
+        <p-toggleswitch
+          [(ngModel)]="properties.uiMetaData.enableIndividualFilters"
+          [disabled]="readonly"
+          (onChange)="onSave()">
+        </p-toggleswitch>
       </td>
     </tr>
-    <tr class="propHeader" [attr.collapse]="propHidden.metaData">
-      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'buttonsGroup')">
-        @if (properties.uiMetaData.buttons.length) {
-          <i class="pi pi-caret-down"></i>
-        }
+    <tr class="propHeader" (click)="onHide(propHidden, 'buttonsGroup')">
+      <td class="propRowCol"></td>
+      <td class="propHeaderCell cellName button-section-header" [attr.collapse]="propHidden.buttonsGroup">
+        <i class="pi pi-chevron-down chevron-icon"></i>
+        <span>Buttons</span>
       </td>
-      <td class="propHeaderCell cellName">Buttons</td>
       <td class="propHeaderCell">
-        <div class="propAdd" (click)="addButton()">
+        <div class="propAdd" (click)="$event.stopPropagation(); addButton()">
           <i class="pi pi-plus"></i>
           <span>Add Button</span>
         </div>
       </td>
     </tr>
     @for (button of properties.uiMetaData.buttons; track button; let i = $index) {
-      <tr class="propRow subRow" [attr.collapse]="propHidden.buttonsGroup">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden.buttons[i], 'collapse')"
-          [attr.collapse]="propHidden.buttons[i].collapse">
-          <i class="pi pi-caret-down"></i>
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.buttonsGroup"
+        (click)="onHide(propHidden.buttons[i], 'collapse')">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName" [attr.collapse]="propHidden.buttons[i].collapse">
+          <i class="pi pi-chevron-down chevron-icon"></i>
+          <span>Button {{ i }}</span>
         </td>
-        <td class="propRowCell cellName">Button {{ i }}</td>
         <td class="propRowCell not-editable-text">
           <span>{{ button.name }}</span>
-          <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveButton(i)">
+          <span class="remove-prop" [attr.readonly]="readonly" (click)="$event.stopPropagation(); onRemoveButton(i)">
             <i class="pi pi-trash"></i>
           </span>
         </td>
       </tr>
-      <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Type</td>
         <td class="propRowCell">
           <p-select [(ngModel)]="button.type"
+            panelStyleClass="pc-select-panel"
             [options]="buttonTypeOptions"
             [disabled]="readonly"
             (onChange)="onSave()"
@@ -53,7 +58,7 @@
           </p-select>
         </td>
       </tr>
-      <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Button Tag</td>
         <td class="propRowCell">
@@ -61,21 +66,21 @@
         </td>
       </tr>
       @if (button.type === 'selector-dialog') {
-        <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
+        <tr class="propRow" lvl="1" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName">Dialog Title</td>
           <td class="propRowCell">
             <input class="prop-input" [(ngModel)]="button.title" [readonly]="readonly" (blur)="onSave()">
           </td>
         </tr>
-        <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
+        <tr class="propRow" lvl="1" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName" pTooltip="Dialog Description" tooltipPosition="top" [tooltipOptions]="{showDelay: 300}">Dialog Description</td>
           <td class="propRowCell">
             <input class="prop-input" [(ngModel)]="button.description" [readonly]="readonly" (blur)="onSave()">
           </td>
         </tr>
-        <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
+        <tr class="propRow" lvl="1" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName" pTooltip="Dialog Result Field Path" tooltipPosition="top" [tooltipOptions]="{showDelay: 300}">Dialog Result Field Path</td>
           <td class="propRowCell">
@@ -84,14 +89,14 @@
           </td>
         </tr>
       }
-      <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Button Name</td>
         <td class="propRowCell">
           <input class="prop-input" [(ngModel)]="button.name" [readonly]="readonly" (blur)="onSave()">
         </td>
       </tr>
-      <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Field</td>
         <td class="propRowCell">
@@ -99,51 +104,48 @@
           (change)="onSave()"></document-path>
         </td>
       </tr>
-      <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Value</td>
         <td class="propRowCell">
           <input class="prop-input" [(ngModel)]="button.value" [readonly]="readonly" (blur)="onSave()">
         </td>
       </tr>
-      <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">UI Class</td>
         <td class="propRowCell">
           <input class="prop-input" [(ngModel)]="button.uiClass" [readonly]="readonly" (blur)="onSave()">
         </td>
       </tr>
-      <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName" title="Hide when discontinued">Hide when discontinued</td>
         <td class="propRowCell">
-          <p-checkbox
+          <p-toggleswitch
             [(ngModel)]="button.hideWhenDiscontinued"
-            [binary]="true"
-            [readonly]="readonly"
-            (blur)="onSave()"
-            [style]="{marginLeft: '8px'}"
-          ></p-checkbox>
+            [disabled]="readonly"
+            (onChange)="onSave()">
+          </p-toggleswitch>
         </td>
       </tr>
-      <tr class="propRow subRow-2"
-        [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
-        <td class="propRowCol cellCollapse"
-          (click)="onHide(propHidden.buttons[i], 'hideEventsGroup')"
-          [attr.collapse]="propHidden.buttons[i].hideEventsGroup">
-          <i class="pi pi-caret-down"></i>
-        </td>
+      <tr class="propRow" lvl="2"
+        [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse"
+        (click)="onHide(propHidden.buttons[i], 'hideEventsGroup')">
+        <td class="propRowCol"></td>
         <td class="propRowCell cellName"
+          [attr.collapse]="propHidden.buttons[i].hideEventsGroup"
           pTooltip="Configure read/write hide-events state in localStorage"
           tooltipPosition="top"
           [tooltipOptions]="{showDelay: 300}">
-          Hide events
+          <i class="pi pi-chevron-down chevron-icon"></i>
+          <span>Hide events</span>
         </td>
         <td class="propRowCell not-editable-text">
           <span></span>
         </td>
       </tr>
-      <tr class="propRow subRow-3"
+      <tr class="propRow" lvl="2"
         [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse || propHidden.buttons[i].hideEventsGroup">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName"
@@ -153,16 +155,14 @@
           Incoming hide events
         </td>
         <td class="propRowCell">
-          <p-checkbox
+          <p-toggleswitch
             [(ngModel)]="button.incomingHideEventsEnabled"
-            [binary]="true"
-            [readonly]="readonly"
-            (onChange)="onSave()"
-            [style]="{marginLeft: '8px'}"
-          ></p-checkbox>
+            [disabled]="readonly"
+            (onChange)="onSave()">
+          </p-toggleswitch>
         </td>
       </tr>
-      <tr class="propRow subRow-3"
+      <tr class="propRow" lvl="2"
         [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse || propHidden.buttons[i].hideEventsGroup">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName"
@@ -172,17 +172,15 @@
           Outgoing hide events
         </td>
         <td class="propRowCell">
-          <p-checkbox
+          <p-toggleswitch
             [(ngModel)]="button.outgoingHideEventsEnabled"
-            [binary]="true"
-            [readonly]="readonly"
-            (onChange)="onSave()"
-            [style]="{marginLeft: '8px'}"
-          ></p-checkbox>
+            [disabled]="readonly"
+            (onChange)="onSave()">
+          </p-toggleswitch>
         </td>
       </tr>
       @if (button.outgoingHideEventsEnabled === true) {
-        <tr class="propRow subRow-3"
+        <tr class="propRow" lvl="2"
           [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse || propHidden.buttons[i].hideEventsGroup">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName"
@@ -202,44 +200,47 @@
           </td>
         </tr>
       }
-      <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden.buttons[i], 'filtersGroup')"
-          [attr.collapse]="propHidden.buttons[i].filtersGroup">
-          <i class="pi pi-caret-down"></i>
+      <tr class="propRow" lvl="2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse"
+        (click)="onHide(propHidden.buttons[i], 'filtersGroup')">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName" [attr.collapse]="propHidden.buttons[i].filtersGroup">
+          <i class="pi pi-chevron-down chevron-icon"></i>
+          <span>Filters Option {{ i }}</span>
         </td>
-        <td class="propRowCell cellName">Filters Option {{ i }}</td>
         <td class="propRowCell">
-          <div class="propAdd" (click)="addFilter(button)">
+          <div class="propAdd" (click)="$event.stopPropagation(); addFilter(button)">
             <i class="pi pi-plus"></i>
             <span>Add Filter</span>
           </div>
         </td>
       </tr>
       @for (filter of button.filters; track filter; let j = $index) {
-        <tr class="propRow subRow-3"
-          [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse || propHidden.buttons[i].filtersGroup">
-          <td class="propRowCol cellCollapse" (click)="onHide(propHidden.buttons[i], j)"
-            [attr.collapse]="propHidden.buttons[i][j]">
-            <i class="pi pi-caret-down"></i>
+        <tr class="propRow" lvl="3"
+          [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse || propHidden.buttons[i].filtersGroup"
+          (click)="onHide(propHidden.buttons[i], j)">
+          <td class="propRowCol"></td>
+          <td class="propRowCell cellName" [attr.collapse]="propHidden.buttons[i][j]">
+            <i class="pi pi-chevron-down chevron-icon"></i>
+            <span>Filter {{ j }}</span>
           </td>
-          <td class="propRowCell cellName">Filter {{ j }}</td>
           <td class="propRowCell">
             @if (filter.field&&filter.type&&filter.value) {
               <span class="not-editable-text">
                 {{ filter.field }} {{ filter.type }} {{ filter.value }}
               </span>
             }
-            <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveFilter(button, j)">
+            <span class="remove-prop" [attr.readonly]="readonly" (click)="$event.stopPropagation(); onRemoveFilter(button, j)">
               <i class="pi pi-trash"></i>
             </span>
           </td>
         </tr>
-        <tr class="propRow subRow-4"
+        <tr class="propRow" lvl="3"
           [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse || propHidden.buttons[i].filtersGroup || propHidden.buttons[i][j]">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName">Type</td>
           <td class="propRowCell">
             <p-select [(ngModel)]="filter.type"
+              panelStyleClass="pc-select-panel"
               [options]="filterTypeOptions"
               [disabled]="readonly"
               (onChange)="onSave()"
@@ -251,7 +252,7 @@
             </p-select>
           </td>
         </tr>
-        <tr class="propRow subRow-4"
+        <tr class="propRow" lvl="3"
           [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse || propHidden.buttons[i].filtersGroup || propHidden.buttons[i][j]">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName">Field</td>
@@ -259,7 +260,7 @@
             <document-path [(value)]="filter.field" [readonly]="readonly" (change)="onSave()"></document-path>
           </td>
         </tr>
-        <tr class="propRow subRow-4"
+        <tr class="propRow" lvl="3"
           [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse || propHidden.buttons[i].filtersGroup || propHidden.buttons[i][j]">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName">Value</td>

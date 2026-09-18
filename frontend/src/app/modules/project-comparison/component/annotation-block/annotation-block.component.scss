@@ -70,7 +70,7 @@ h6 {
             width: 1px;
             height: 44px;
             opacity: 0.7;
-            background: #FFF;
+            background: var(--guardian-background, #FFF);
         }
 
         .item {

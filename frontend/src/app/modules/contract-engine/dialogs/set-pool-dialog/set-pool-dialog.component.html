@@ -1,11 +1,11 @@
-<div class="sp-dialog">
-  <header class="sp-dialog__header">
-    <h3 class="sp-dialog__title">Set Pool</h3>
-    <button type="button" class="sp-dialog__close" (click)="onNoClick()" aria-label="Close">
-      <i class="pi pi-times"></i>
-    </button>
-  </header>
-
+<app-common-dialog
+  title="Set Pool"
+  confirmLabel="Set"
+  cancelLabel="Cancel"
+  [confirmDisabled]="loading || !form.valid"
+  (confirm)="onCreate()"
+  (cancel)="onNoClick()"
+  (close)="onNoClick()">
   <form class="set-pool" [formGroup]="form">
     <div class="set-pool__header">
       <p-checkbox
@@ -28,6 +28,7 @@
               optionLabel="tokenSymbol"
               placeholder="Token"
               [required]="true"
+              [appendTo]="'body'"
               [style]="{ width: '100%' }"
               >
               <ng-template let-option pTemplate="selectedItem">
@@ -73,25 +74,4 @@
       }
     </div>
   </form>
-
-  <footer class="sp-dialog__footer set-pool__footer">
-    <button
-      type="button"
-      pButton
-      icon="pi pi-plus"
-      class="p-button-outlined button-cancel"
-      label="Cancel"
-      (click)="onNoClick()"
-    ></button>
-
-    <button
-      type="button"
-      pButton
-      icon="pi pi-check"
-      label="Set"
-      class="button-setl"
-      [disabled]="loading || !form.valid"
-      (click)="onCreate()"
-    ></button>
-  </footer>
-</div>
+</app-common-dialog>

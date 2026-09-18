@@ -1,5 +1,5 @@
-import CommonElements from "../../../support/defaultUIElements";
-import * as Checks from "../../../support/checkingMethods";
+import CommonElements from '../../../support/defaultUIElements';
+import * as Checks from '../../../support/checkingMethods';
 
 const d = new Date(2022, 3, 3);
 
@@ -7,19 +7,19 @@ const UserPoliciesPageLocators = {
     roleSelect: '[formcontrolname="roleOrGroup"]',
     role: (roleName) => `li[aria-label="${roleName}"]`,
     nextButton: "button[label='Next']",
-    requestDocumentBlock: "request-document-block",
+    requestDocumentBlock: 'request-document-block',
     nextButtonInApplicationRegister: "button:contains('Next ')",
     submitButton: "button:contains('Submit ')",
-    divTitle: "div.title",
+    divTitle: 'div.title',
     waitingForApprovalTitle: "span[title='Waiting for approval']",
-    signedStatus: "div.status-SIGNED",
-    deviceTab: "Devices",
-    issueRequestsTab: "Issue Requests",
-    createDeviceButton: " Create New Device ",
-    createIssueRequestButton: " Create Issue Request ",
+    signedStatus: 'div.status-SIGNED',
+    deviceTab: 'Devices',
+    issueRequestsTab: 'Issue Requests',
+    createDeviceButton: ' Create New Device ',
+    createIssueRequestButton: ' Create Issue Request ',
     createButton: 'button:contains("Create")',
-    requiredFillDateLabel: "Please make sure the field contain a valid date value",
-    requiredFillNumberLabel: "Please make sure the field contain a valid number value",
+    requiredFillDateLabel: 'Please make sure the field contain a valid date value',
+    requiredFillNumberLabel: 'Please make sure the field contain a valid number value',
     signButton: 'div.btn-SIGN',
     vvbName: 'div:contains(" VVB Name ")',
     ppName: 'h1:contains("New PP")',
@@ -33,7 +33,7 @@ const UserPoliciesPageLocators = {
     enterPosInput: '[id="coordinatesInput"]',
     waitingForAdded: "span[title='Waiting to be Added']",
     ddAssignName: "p-dropdown[optionlabel='name']",
-    projectTab: "Projects",
+    projectTab: 'Projects',
     validated: "span[title='Validated']",
     verified: "span[title='Verified']",
     approveButton: 'div.btn-approve',
@@ -42,33 +42,33 @@ const UserPoliciesPageLocators = {
     revokeButton: "button-block div:contains(' Revoke ')",
     waitingForValidation: "span[title = 'Waiting for Validation']",
     waitingForVerification: "span[title = 'Waiting for Verification']",
-    IPFSInput: "div.ipfs-url input",
-    IPFSErrorLabel: " Invalid IPFS CID/URL ",
-    addLocButton: "button.add-btn",
-    addGeoButton: "Add Geometry",
+    IPFSInput: 'div.ipfs-url input',
+    IPFSErrorLabel: ' Invalid IPFS CID/URL ',
+    addLocButton: 'button.add-btn',
+    addGeoButton: 'Add Geometry',
     geoJSONTypeDropdown: "p-dropdown[id='typeDropdown']",
     geoJSONTypeDropdownList: "p-dropdown[id='typeDropdown'] li",
-    geoJSONErrorLabel: "A GeoJSON object is required",
-    switchButtonGeoJSONInput: "switch-button",
-    includeAllButton: "Include all",
-    clearButton: "Clear",
-    locationPanel: "div.location-control",
-    largeFileLabelHeader: "This file is too large to view.",
-    largeFileLabelHeaderJSON: "File was imported successfully, but it’s too large to view.",
-    largeFileLabel: "largeGeoJSON.kml (32 MB) exceeds in-browser preview limits.",
+    geoJSONErrorLabel: 'A GeoJSON object is required',
+    switchButtonGeoJSONInput: 'switch-button',
+    includeAllButton: 'Include all',
+    clearButton: 'Clear',
+    locationPanel: 'div.location-control',
+    largeFileLabelHeader: 'This file is too large to view.',
+    largeFileLabelHeaderJSON: 'File was imported successfully, but it’s too large to view.',
+    largeFileLabel: 'largeGeoJSON.kml (32 MB) exceeds in-browser preview limits.',
 
-    policiesList: "/api/v1/policies?pageIndex=0&pageSize=10",
+    policiesList: '/api/v1/policies?pageIndex=0&pageSize=10',
     passInput: '[formcontrolname="password"]',
     submitBtn: '[type="submit"]',
     applicationRegBtns: 'div.page-btns',
-    appRegistrantDetails: "/api/v1/profiles/Registranttt",
-    tokensWaiter: "/api/v1/tokens",
+    appRegistrantDetails: '/api/v1/profiles/Registranttt',
+    tokensWaiter: '/api/v1/tokens',
     inputGroupLabel: '[formcontrolname="groupLabel"]',
-    profileTab: "Profile",
-    tokensBtn: "TOKENS",
-    createIsssueRequestBtn: "Create Issue Request",
-    hederaId: "HEDERA ID",
-    profileValue: "div.account-item-value",
+    profileTab: 'Profile',
+    tokensBtn: 'TOKENS',
+    createIsssueRequestBtn: 'Create Issue Request',
+    hederaId: 'HEDERA ID',
+    profileValue: 'div.account-item-value',
     profilePage: '/api/v1/schemas/system/entity/USER',
     balance: '/api/v1/profiles/Registrant/balance',
     approvalLabel: 'app-information-block',
@@ -76,53 +76,52 @@ const UserPoliciesPageLocators = {
     tokenIdByHistory: 'td.cdk-column-1',
 };
 
-
 export class UserPoliciesPage {
 
     openPoliciesTab() {
         cy.get(CommonElements.navBar).should('exist')
-        cy.get("body").then(($body) => {
+        cy.get('body').then(($body) => {
             if ($body.find(`span:contains(${CommonElements.userPoliciesTab})`).length == 0)
-                cy.get(CommonElements.navBar).contains(CommonElements.mainPoliciesTab).click();
+                {cy.get(CommonElements.navBar).contains(CommonElements.mainPoliciesTab).click();}
         })
         cy.get(CommonElements.navBar).contains(CommonElements.userPoliciesTab).click();
     }
 
-    registerInPolicy(role = "Registrant") {
+    registerInPolicy(role = 'Registrant') {
         cy.get(UserPoliciesPageLocators.roleSelect).should('be.visible').click();
         cy.get(UserPoliciesPageLocators.role(role)).click();
         cy.get(UserPoliciesPageLocators.nextButton).click();
-        if (role == "Registrant") {
+        if (role == 'Registrant') {
             Checks.waitForElement(UserPoliciesPageLocators.requestDocumentBlock);
             cy.get(UserPoliciesPageLocators.nextButtonInApplicationRegister).click();
             cy.get(UserPoliciesPageLocators.nextButtonInApplicationRegister).click();
             cy.get(UserPoliciesPageLocators.submitButton).click();
             Checks.waitForElement(UserPoliciesPageLocators.divTitle);
         }
-        if (role == "Project_Proponent") {
+        if (role == 'Project_Proponent') {
             Checks.waitForElement(UserPoliciesPageLocators.requestDocumentBlock);
             cy.get(UserPoliciesPageLocators.newVerraProjectButton).click();
             cy.get(UserPoliciesPageLocators.enterTextInput).then((els) => {
                 [...els].forEach((el) =>
-                    cy.wrap(el).type("Test text", { force: true })
+                    cy.wrap(el).type('Test text', { force: true })
                 );
             });
             cy.get(UserPoliciesPageLocators.enterNumInput).then((els) => {
-                [...els].forEach((el) => cy.wrap(el).type("123", { force: true }));
+                [...els].forEach((el) => cy.wrap(el).type('123', { force: true }));
             });
             cy.get('input[aria-haspopup="dialog"]').then((els) => {
                 [...els].forEach((el) =>
-                    cy.wrap(el).type(d.toLocaleDateString("en-GB"))
+                    cy.wrap(el).type(d.toLocaleDateString('en-GB'))
                 );
             });
             cy.get('input[aria-haspopup="dialog"]').then((els) => {
                 [...els].forEach((el) =>
-                    cy.wrap(el).type(d.toLocaleDateString("ipfs://ba"))
+                    cy.wrap(el).type(d.toLocaleDateString('ipfs://ba'))
                 );
             });
             cy.get(UserPoliciesPageLocators.enterEmailInput).then((els) => {
                 [...els].forEach((el) =>
-                    cy.wrap(el).type("asd@dsa.dsa")
+                    cy.wrap(el).type('asd@dsa.dsa')
                 );
             });
             cy.get(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
@@ -133,31 +132,31 @@ export class UserPoliciesPage {
             });
             cy.get(UserPoliciesPageLocators.enterPosInput).then((els) => {
                 [...els].forEach((el) => {
-                    cy.wrap(el).type("[1.23,4.56]")
+                    cy.wrap(el).type('[1.23,4.56]')
                 });
             });
             cy.get(UserPoliciesPageLocators.createButton).click();
             Checks.waitForElement(UserPoliciesPageLocators.waitingForAdded);
         }
-        if (role == "VVB") {
+        if (role == 'VVB') {
             Checks.waitForElement(UserPoliciesPageLocators.vvbName);
-            cy.get("div.form-field-value").find(CommonElements.Input).type("VVBName");
+            cy.get('div.form-field-value').find(CommonElements.Input).type('VVBName');
             cy.get(UserPoliciesPageLocators.submitButton).click();
             Checks.waitForElement(UserPoliciesPageLocators.divTitle);
         }
-        if (role == "Project Participant") {
+        if (role == 'Project Participant') {
             Checks.waitForElement(UserPoliciesPageLocators.ppName);
-            cy.get("div.form-field-value").find(CommonElements.Input).type("PPName");
+            cy.get('div.form-field-value').find(CommonElements.Input).type('PPName');
             cy.get(UserPoliciesPageLocators.submitButton).click();
             Checks.waitForElement(UserPoliciesPageLocators.divTitle);
         }
-        if (role == "Approvers")
-            Checks.waitForElement(UserPoliciesPageLocators.signButton);
+        if (role == 'Approvers')
+            {Checks.waitForElement(UserPoliciesPageLocators.signButton);}
     }
 
     registerInPolicySmall() {
         cy.get(UserPoliciesPageLocators.roleSelect).should('be.visible').click();
-        cy.get(UserPoliciesPageLocators.role("Registrant")).click();
+        cy.get(UserPoliciesPageLocators.role('Registrant')).click();
         cy.get(UserPoliciesPageLocators.nextButton).click();
         Checks.waitForElement(UserPoliciesPageLocators.requestDocumentBlock);
     }
@@ -173,7 +172,7 @@ export class UserPoliciesPage {
         cy.contains(UserPoliciesPageLocators.geoJSONErrorLabel).should('exist');
         cy.get(UserPoliciesPageLocators.geoJSONTypeDropdown).click();
         cy.get(UserPoliciesPageLocators.geoJSONTypeDropdownList).should('have.length', 1);
-        cy.get(UserPoliciesPageLocators.geoJSONTypeDropdownList).first().find('span').should('have.text', "Polygon");
+        cy.get(UserPoliciesPageLocators.geoJSONTypeDropdownList).first().find('span').should('have.text', 'Polygon');
     }
 
     validateGeoJSONFileImport(fileName) {
@@ -200,7 +199,7 @@ export class UserPoliciesPage {
     }
 
     openPolicy(name) {
-        cy.contains("td", name).siblings().eq(0).click();
+        cy.contains('td', name).siblings().eq(0).click();
         Checks.waitForLoading();
     }
 
@@ -225,16 +224,16 @@ export class UserPoliciesPage {
         Checks.waitForElement(UserPoliciesPageLocators.waitingForApprovalTitle);
     }
 
-    approve(waitFor = "default") {
-        if (waitFor == "default") {
+    approve(waitFor = 'default') {
+        if (waitFor == 'default') {
             cy.get(UserPoliciesPageLocators.signButton).click();
             Checks.waitForElement(UserPoliciesPageLocators.signedStatus);
         }
-        if (waitFor == "validationLabel") {
+        if (waitFor == 'validationLabel') {
             cy.get(UserPoliciesPageLocators.approveButton).click();
             Checks.waitForElement(UserPoliciesPageLocators.validated);
         }
-        if (waitFor == "Report") {
+        if (waitFor == 'Report') {
             cy.get(UserPoliciesPageLocators.approveButton).click();
             Checks.waitForElement(UserPoliciesPageLocators.verified);
         }
@@ -269,7 +268,7 @@ export class UserPoliciesPage {
 
     approveProject() {
         cy.contains(UserPoliciesPageLocators.projectTab).click();
-        this.approve("validationLabel");
+        this.approve('validationLabel');
     }
 
     createReport() {
@@ -301,11 +300,11 @@ export class UserPoliciesPage {
         });
         cy.get(UserPoliciesPageLocators.enterTextInput).then((els) => {
             [...els].forEach((el) =>
-                cy.wrap(el).type("Test text", { force: true })
+                cy.wrap(el).type('Test text', { force: true })
             );
         });
         cy.get(UserPoliciesPageLocators.enterNumInput).then((els) => {
-            [...els].forEach((el) => cy.wrap(el).type("123", { force: true }));
+            [...els].forEach((el) => cy.wrap(el).type('123', { force: true }));
         });
         cy.get('input[aria-haspopup="dialog"]').then((els) => {
             [...els].forEach((el) =>
@@ -322,25 +321,25 @@ export class UserPoliciesPage {
         cy.get(UserPoliciesPageLocators.createReportButton).click();
         cy.get(UserPoliciesPageLocators.enterTextInput).then((els) => {
             [...els].forEach((el) =>
-                cy.wrap(el).type("Test text", { force: true })
+                cy.wrap(el).type('Test text', { force: true })
             );
         });
         cy.get(UserPoliciesPageLocators.enterNumInput).then((els) => {
-            [...els].forEach((el) => cy.wrap(el).type("123", { force: true }));
+            [...els].forEach((el) => cy.wrap(el).type('123', { force: true }));
         });
         cy.get('input[aria-haspopup="dialog"]').then((els) => {
             [...els].forEach((el) =>
-                cy.wrap(el).type(d.toLocaleDateString("en-GB"))
+                cy.wrap(el).type(d.toLocaleDateString('en-GB'))
             );
         });
         cy.get('input[aria-haspopup="dialog"]').then((els) => {
             [...els].forEach((el) =>
-                cy.wrap(el).type("ipfs://ba")
+                cy.wrap(el).type('ipfs://ba')
             );
         });
         cy.get(UserPoliciesPageLocators.enterEmailInput).then((els) => {
             [...els].forEach((el) =>
-                cy.wrap(el).type("asd@dsa.dsa")
+                cy.wrap(el).type('asd@dsa.dsa')
             );
         });
         cy.get(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
@@ -351,7 +350,7 @@ export class UserPoliciesPage {
         });
         cy.get(UserPoliciesPageLocators.enterPosInput).then((els) => {
             [...els].forEach((el) => {
-                cy.wrap(el).type("[1.23,4.56]")
+                cy.wrap(el).type('[1.23,4.56]')
             });
         });
         cy.get(UserPoliciesPageLocators.createButton).click();
@@ -371,7 +370,7 @@ export class UserPoliciesPage {
         cy.get(CommonElements.Loading).should('not.exist');
         cy.get('.preloader-image').should('not.exist');
         cy.get(UserPoliciesPageLocators.monitoringReports).click();
-        this.approve("Report");
+        this.approve('Report');
     }
 
     createProject() {
@@ -409,11 +408,11 @@ export class UserPoliciesPage {
         });
         cy.get(UserPoliciesPageLocators.enterTextInput).then((els) => {
             [...els].forEach((el) =>
-                cy.wrap(el).type("Test text", { force: true })
+                cy.wrap(el).type('Test text', { force: true })
             );
         });
         cy.get(UserPoliciesPageLocators.enterNumInput).then((els) => {
-            [...els].forEach((el) => cy.wrap(el).type("1", { force: true }));
+            [...els].forEach((el) => cy.wrap(el).type('1', { force: true }));
         });
         cy.get('input[aria-haspopup="dialog"]').then((els) => {
             [...els].forEach((el) =>
@@ -422,27 +421,17 @@ export class UserPoliciesPage {
         });
         cy.get(UserPoliciesPageLocators.enterEmailInput).then((els) => {
             [...els].forEach((el) =>
-                cy.wrap(el).type("asd@dsa.dsa")
+                cy.wrap(el).type('asd@dsa.dsa')
             );
         });
         cy.get(UserPoliciesPageLocators.enterPosInput).then((els) => {
             [...els].forEach((el) => {
-                cy.wrap(el).type("[1.23,4.56]")
+                cy.wrap(el).type('[1.23,4.56]')
             });
         });
         cy.get(UserPoliciesPageLocators.createButton).click();
         Checks.waitForElement(UserPoliciesPageLocators.waitingForValidation);
     }
-
-
-
-
-
-
-
-
-
-
 
     createGroup(role) {
         // cy.contains("Policies").click({ force: true });
@@ -465,7 +454,6 @@ export class UserPoliciesPage {
         // cy.visit(URL.Root + URL.Profile);
     }
 
-
     openTokensTab() {
         // cy.visit(URL.Root + URL.UserTokens);
     }
@@ -487,7 +475,6 @@ export class UserPoliciesPage {
         // cy.contains("Submitted for Approval").should("exist");
     }
 
-
     static waitForPolicyList() {
         // cy.intercept(RegistrantPageLocators.policiesList).as(
         //     "waitForPoliciesList"
@@ -495,14 +482,12 @@ export class UserPoliciesPage {
         // cy.wait("@waitForPoliciesList", {timeout: 100000})
     }
 
-
     static waitForBalance() {
         // cy.intercept(RegistrantPageLocators.balance).as(
         //     "waitForBalance"
         // );
         // cy.wait(['@waitForBalance', '@waitForBalance'], {timeout: 100000})
     }
-
 
     static waitForRegistrant() {
         // cy.intercept(RegistrantPageLocators.profilePage).as(
@@ -538,7 +523,6 @@ export class UserPoliciesPage {
         // cy.wait(60000);
         // cy.contains("Waiting for approval").should("exist");
     }
-
 
     createIssueRequest() {
         // RegistrantPage.waitForRegistrant();

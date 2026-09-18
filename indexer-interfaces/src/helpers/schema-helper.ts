@@ -221,7 +221,7 @@ export class SchemaHelper {
         const allOf = Object.keys(document.allOf);
         for (const oneOf of allOf) {
             const condition = document.allOf[oneOf];
-            if (!condition.if) {
+            if (!condition.if?.properties) {
                 continue;
             }
 

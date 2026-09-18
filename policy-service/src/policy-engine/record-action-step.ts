@@ -1,5 +1,5 @@
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { PolicyLink } from './interfaces';
+import { PolicyLink } from './interfaces/index.js';
 
 type Callback = (id: string, timestamp: number, errors: { message: string; stack?: string }[]) => void;
 

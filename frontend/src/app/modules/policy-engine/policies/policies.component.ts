@@ -21,7 +21,7 @@ import { ExportPolicyDialog } from '../dialogs/export-policy-dialog/export-polic
 import { NewPolicyDialog } from '../dialogs/new-policy-dialog/new-policy-dialog.component';
 import { PreviewPolicyDialog } from '../dialogs/preview-policy-dialog/preview-policy-dialog.component';
 import { ReplaceSchemasDialogComponent } from '../dialogs/replace-schemas-dialog/replace-schemas-dialog.component';
-import { InformService } from 'src/app/services/inform.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { MultiPolicyDialogComponent } from '../dialogs/multi-policy-dialog/multi-policy-dialog.component';
 import { ComparePolicyDialog } from '../dialogs/compare-policy-dialog/compare-policy-dialog.component';
 import { TagsService } from 'src/app/services/tag.service';
@@ -52,10 +52,12 @@ import { Popover as OverlayPanel } from 'primeng/popover';
 import { takeUntil } from 'rxjs/operators';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { DB_NAME, STORES_NAME } from 'src/app/constants';
-import { ToastrService } from 'ngx-toastr';
 import { UserPolicyDialog } from '../dialogs/user-policy-dialog/user-policy-dialog.component';
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { confirmDryRun } from '../dialogs/dry-run-dialog/dry-run-dialog.component';
 import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
+import { ManageSchemaTemplatesDialog } from '../dialogs/manage-schema-templates-dialog/manage-schema-templates-dialog.component';
+import { formatSchemaTemplateBindingLabel } from 'src/app/utils';
 
 class MenuButton {
     public readonly visible: boolean;
@@ -111,6 +113,16 @@ const columns = [{
     }
 }, {
     id: 'topic',
+    permissions: (user: UserPermissions, type: 'local' | 'remote' | 'disconnected') => {
+        return (
+            user.POLICIES_POLICY_CREATE ||
+            user.POLICIES_POLICY_UPDATE ||
+            user.POLICIES_POLICY_REVIEW ||
+            user.POLICIES_POLICY_DELETE
+        )
+    }
+}, {
+    id: 'template',
     permissions: (user: UserPermissions, type: 'local' | 'remote' | 'disconnected') => {
         return (
             user.POLICIES_POLICY_CREATE ||
@@ -275,6 +287,12 @@ export class PoliciesComponent implements OnInit {
         },
     ];
     private publishErrorMenuOption = [
+        {
+            id: 'Draft',
+            title: 'To Draft',
+            description: 'Return to editing.',
+            color: '#9c27b0',
+        },
         {
             id: 'Publish',
             title: 'Publish',
@@ -577,6 +595,21 @@ export class PoliciesComponent implements OnInit {
                     })
                 ]
             }, {
+                tooltip: 'Schema Templates',
+                group: false,
+                visible: true,
+                color: 'primary-color',
+                buttons: [
+                    new MenuButton({
+                        visible: this.user.POLICIES_POLICY_UPDATE && this.user.TEMPLATES_TEMPLATE_READ,
+                        disabled: policy.status !== PolicyStatus.DRAFT,
+                        tooltip: 'Schema Templates',
+                        icon: 'link',
+                        color: 'primary-color',
+                        click: () => this.openManageSchemaTemplatesDialog(policy)
+                    })
+                ]
+            }, {
                 tooltip: 'Migrate data',
                 group: true,
                 visible: true,
@@ -718,11 +751,10 @@ export class PoliciesComponent implements OnInit {
         private router: Router,
         private route: ActivatedRoute,
         private dialogService: DialogService,
-        private informService: InformService,
+        private toastService: ToastService,
         private schemaService: SchemaService,
         private wizardService: WizardService,
         private tokenService: TokenService,
-        private toastr: ToastrService,
         private contractSerivce: ContractService,
         private wsService: WebSocketService,
         @Inject(CONFIGURATION_ERRORS)
@@ -940,73 +972,33 @@ export class PoliciesComponent implements OnInit {
     }
 
     private dryRun(element: any) {
-        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
-            showHeader: false,
-            width: '640px',
-            styleClass: 'guardian-dialog',
-            data: {
-                header: 'Enable Mock',
-                texts: [
-                    `Mock Data intercepts all external service calls (IPFS, Topics, Tokens, and API requests) and returns pre-configured test responses instead of making real network calls. This lets you run and test your policy in a fully self-contained offline environment.`,
-                    `You can change this setting and configure individual blocks at any time from the 'Mock Config' panel.`,
-                    `Note: enabling Mock pre-records responses for every schema in the policy, so moving to Dry-Run may take several minutes.`
-                ],
-                buttons: [{
-                    name: 'Disable',
-                    class: 'secondary'
-                }, {
-                    name: 'Enable',
-                    class: 'primary'
-                }]
-            },
-        });
+        confirmDryRun(this.dialogService, element.id)
+            .pipe(takeUntil(this._destroy$))
+            .subscribe((choice) => {
+                if (choice) {
+                    this.executeDryRun(element, choice.enableMock);
+                }
+            });
+    }
 
-        dialogRef?.onClose.pipe(takeUntil(this._destroy$)).subscribe((result: string) => {
-            this.loading = true;
-            this.policyEngineService
-                .dryRun(element.id, {
-                    enableMock: result === 'Enable'
-                })
-                .pipe(takeUntil(this._destroy$))
-                .subscribe(
-                    (data: any) => {
-                        const { policies, isValid, errors } = data;
-                        if (!isValid) {
-                            let text = [];
-                            const blocks = errors.blocks;
-                            const invalidBlocks = blocks.filter(
-                                (block: any) => !block.isValid
-                            );
-                            for (let i = 0; i < invalidBlocks.length; i++) {
-                                const block = invalidBlocks[i];
-                                for (let j = 0; j < block.errors.length; j++) {
-                                    const error = block.errors[j];
-                                    if (block.id) {
-                                        text.push(`<div>${block.id}: ${error}</div>`);
-                                    } else {
-                                        text.push(`<div>${error}</div>`);
-                                    }
-                                }
-                            }
-                            this.informService.errorMessage(
-                                text.join(''),
-                                'The policy is invalid'
-                            );
-                            this._configurationErrors.set(element.id, errors);
-                            this.router.navigate(['policy-configuration'], {
-                                queryParams: {
-                                    policyId: element.id,
-                                },
-                                replaceUrl: true,
-                            });
-                        }
-                        this.loadAllPolicy();
-                    },
-                    (e) => {
-                        this.loading = false;
-                    }
-                );
-        });
+    private executeDryRun(element: any, enableMock: boolean) {
+        this.loading = true;
+        this.policyEngineService
+            .pushDryRun(element.id, { enableMock })
+            .pipe(takeUntil(this._destroy$))
+            .subscribe(
+                (result) => {
+                    const { taskId } = result;
+                    this.router.navigate(['task', taskId], {
+                        queryParams: {
+                            last: btoa(location.href),
+                        },
+                    });
+                },
+                (e) => {
+                    this.loading = false;
+                }
+            );
     }
 
     private draft(element: any) {
@@ -1047,7 +1039,7 @@ export class PoliciesComponent implements OnInit {
             policy.uuid === element.uuid && policy.version !== ''
         ) || [];
         const lastVersion = relatedPolicies
-            .sort((a, b) => ModelHelper.versionCompare(a.toString(), b.toString()))
+            .sort((a, b) => ModelHelper.versionCompare(a.version, b.version))
             .pop();
         selectedPolicy.previousVersion = lastVersion?.version || '';
         const dialogRef = this.dialogService.open(PublishPolicyDialog, {
@@ -1193,12 +1185,7 @@ export class PoliciesComponent implements OnInit {
             this.schemaService.deleteSchemasByTopicId(policy?.topicId).pipe(takeUntil(this._destroy$)).subscribe(
                 async (result) => {
                     this.loading = false;
-                    this.toastr.success(`All schemas of topic ${policy.topicId} was successfully deleted`, '', {
-                        timeOut: 3000,
-                        closeButton: true,
-                        positionClass: 'toast-bottom-right',
-                        enableHtml: true,
-                    });
+                    this.toastService.success(`All schemas of topic ${policy.topicId} was successfully deleted`);
                 },
                 (e) => {
                     this.loading = false;
@@ -1341,13 +1328,14 @@ export class PoliciesComponent implements OnInit {
                 const versionOfTopicId = result.versionOfTopicId || null;
                 const demo = result.demo || false;
                 const tools = result.tools;
+                const schemaTemplates = result.schemaTemplates;
                 const importRecords = !!result.importRecords;
                 const originalTracking = !!result.originalTracking;
 
                 this.loading = true;
                 if (type == 'message') {
                     this.policyEngineService
-                        .pushImportByMessage(data, versionOfTopicId, { tools, importRecords }, demo, originalTracking)
+                        .pushImportByMessage(data, versionOfTopicId, { tools, schemaTemplates, importRecords }, demo, originalTracking)
                         .pipe(takeUntil(this._destroy$))
                         .subscribe((result) => {
                             const { taskId, expectation } = result;
@@ -1362,7 +1350,7 @@ export class PoliciesComponent implements OnInit {
                         });
                 } else if (type == 'file') {
                     this.policyEngineService
-                        .pushImportByFile(data, versionOfTopicId, { tools }, demo, originalTracking)
+                        .pushImportByFile(data, versionOfTopicId, { tools, schemaTemplates }, demo, originalTracking)
                         .pipe(takeUntil(this._destroy$)).subscribe((result) => {
                             const { taskId, expectation } = result;
                             this.router.navigate(['task', taskId], {
@@ -1569,10 +1557,9 @@ export class PoliciesComponent implements OnInit {
     private onPublishErrorAction(event: any, element: any) {
         if (event.value.id === 'Publish') {
             this.setVersion(element);
+        } else if (event.value.id === 'Draft') {
+            this.draft(element);
         }
-        // else if (event.id === 'Draft') {
-        //     this.draft(element);
-        // }
         setTimeout(() => this.publishMenuSelector = null, 0);
     }
 
@@ -1887,6 +1874,42 @@ export class PoliciesComponent implements OnInit {
             .onClose.pipe(takeUntil(this._destroy$)).subscribe();
     }
 
+    public getSchemaTemplateLabel(policy: any): string {
+        const names: string[] = (policy?.schemaTemplates || [])
+            .map((binding: any) => formatSchemaTemplateBindingLabel(binding))
+            .filter((name: string) => !!name);
+        if (!names.length) {
+            return '';
+        }
+        return names.length > 1 ? `${names.length} templates: ${names.join(', ')}` : names[0];
+    }
+
+    public openManageSchemaTemplatesDialog(policy: any): void {
+        this.policyMenu?.hide();
+        const dialogRef = this.dialogService.open(ManageSchemaTemplatesDialog, {
+            showHeader: false,
+            width: '900px',
+            styleClass: 'guardian-dialog',
+            data: {
+                policy
+            }
+        })!;
+        this.redirectToTaskOnClose(dialogRef);
+    }
+
+    private redirectToTaskOnClose(dialogRef: any): void {
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((task: any) => {
+            if (!task?.taskId) {
+                return;
+            }
+            void this.router.navigate(['task', task.taskId], {
+                queryParams: {
+                    last: btoa(location.href)
+                }
+            });
+        });
+    }
+
     public onChangeStatus(event: any, policy: any): void {
         switch (policy.status) {
             case PolicyStatus.DRAFT:
@@ -2138,12 +2161,14 @@ export class PoliciesComponent implements OnInit {
                                     //
                                 })
 
-                                return this.indexedDb.clearByKeyPrefixAcrossStores(
+                                await this.indexedDb.clearByKeyPrefixAcrossStores(
                                     DB_NAME.HIDE_EVENTS_UI_STATE,
                                     [STORES_NAME.POLICY_HIDE_EVENTS_STORE],
                                     `${policyId}`
                                 );
                             }
+
+                            this.onClearSelection();
 
                             const { taskId, expectation } = result;
                             this.router.navigate(['task', taskId], {

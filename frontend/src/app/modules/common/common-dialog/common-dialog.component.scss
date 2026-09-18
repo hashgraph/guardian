@@ -1,0 +1,32 @@
+:host {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+.guardian-common-dialog {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+
+    .dialog-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        margin-top: 16px;
+    }
+
+    .dialog-footer {
+        flex-shrink: 0;
+    }
+}
+
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-content: center;
+    min-height: 120px;
+    background: var(--guardian-background, #fff);
+}

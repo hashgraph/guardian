@@ -1,0 +1,47 @@
+<div class="guardian-common-dialog" [style.width]="width" [style.height]="height">
+  @if (showHeader) {
+    <div class="dialog-header">
+      <div class="header-container">
+        <ng-content select="[appDialogHeader]"></ng-content>
+        @if (!hasCustomHeader && title) {
+          <div class="header-text">{{ title }}</div>
+        }
+      </div>
+      <div class="header-icon" (click)="close.emit()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+      </div>
+    </div>
+  }
+
+  <div class="dialog-body" [style.max-height]="bodyMaxHeight">
+    @if (!loading) {
+      <ng-content></ng-content>
+    } @else {
+      <div class="loading">
+        <p-progressSpinner></p-progressSpinner>
+      </div>
+    }
+  </div>
+
+  @if (showFooter) {
+    <div class="dialog-footer">
+      <ng-content select="[appDialogFooter]"></ng-content>
+      @if (!hasCustomFooter) {
+        <div class="action-buttons">
+          @if (cancelVisible) {
+            <div class="dialog-button">
+              <button (click)="cancel.emit()"
+                class="guardian-button guardian-button-secondary">{{ cancelLabel }}</button>
+            </div>
+          }
+          @if (confirmVisible) {
+            <div class="dialog-button">
+              <button [disabled]="confirmDisabled" (click)="confirm.emit()"
+                class="guardian-button guardian-button-primary">{{ confirmLabel }}</button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

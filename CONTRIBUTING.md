@@ -38,15 +38,13 @@ Please ensure that your bug report contains the following:
   * If you are able to create one, include a [Minimal Working Example][mwe] that reproduces the issue.
 * [Markdown][markdown] formatting as appropriate to make the report easier to read; for example use code blocks when pasting a code snippet or exception stack-trace.
 
-## New Policy or Feature Requests
+## New Policies, Feature Requests, and Suggestions
 
-New policy and feature requests are also submitted through the [Issues][issues] page.
+For new new policy, feature requests, and suggestion please send an email to guardian-feedback@hashgraph.com or open an [Issue][issues] page.
 
-As with Bug Reports, please do a search of the open requests first before submitting a new one to avoid duplicates. If you do find a new policy and feature requests that represents your suggestion, please give it a +1.
+As with Bug Reports, please do a search of the open issues before submitting a new one to avoid duplicates. If you do find a new policy and feature requests that represents your suggestion, please give it a +1.
 
 __NOTE:__ If you intend to implement this feature, please submit the feature request *before* working on any code changes. This will allow members on the Guardian team to assess the idea, discuss the design with you and ensure that it makes sense to include such a feature in the Guardian.
-
-New policy and feature requests are labeled as [enhancements][label-enhancement].
 
 ### Submitting a New Policy or Feature Requests
 
@@ -56,6 +54,7 @@ Open an [issue][issues] with the following:
 * A detailed description of the the proposed feature. Explain why you believe it should be added to the Guardian. Illustrative example code or documentation (i.e policy documentation) may also be provided to help explain how the policy or feature should work.
 * [Markdown][markdown] formatting as appropriate to make the request easier to read.
 * If you plan to implement this feature yourself, please let us know that you'd like to the issue to be assigned to you.
+* We suggest you visit a future community call to present and answer questions with the community. Susbcribe to the calendar and future events at https://lu.ma/guardian
 
 ## Code Contributions
 
@@ -86,17 +85,15 @@ To contribute, please fork the GitHub repository and submit a pull request to th
 
 ### Getting Your Pull Request Merged
 
-All Pull Requests must be approved by at least one member of the Guardian team before it can be merged in. The members only have limited bandwidth to review Pull Requests so it's not unusual for a Pull Request to go unreviewed for a few days, especially if it's a large or complex one. After a couple of weeks, if you haven't received any feedback regarding your Pull Request from the Guardian team, feel free to contact us on [Discord](https://hedera.com/discord) to ask for a review.
+All Pull Requests must be approved by at least one member of the Guardian team before it can be merged in. The members only have limited bandwidth to review Pull Requests so it's not unusual for a Pull Request to go unreviewed for a few days, especially if it's a large or complex one. After a couple of weeks, if you haven't received any feedback regarding your Pull Request from the Guardian team, feel free to contact us at guardian@hashgraph.com to ask for a review.
 
 ## Getting in Contact
 
-* Join us in our [Discord](https://hedera.com/discord) channel; there you can engage with the Hedera team and other developers and enthusiasts.
-
+[email]: guardian@hashgraph.com
+[calendar]: https://lu.ma/guardian
+[issues]: https://github.com/hashgraph/guardian/issues
+[pull-requests]: https://github.com/hashgraph/guardian/pulls
 [license]: https://github.com/hashgraph/guardian/blob/main/LICENSE
 [mwe]: https://en.wikipedia.org/wiki/Minimal_Working_Example
 [markdown]: https://guides.github.com/features/mastering-markdown/
-[issues]: https://github.com/hashgraph/guardian/issues
-[pull-requests]: https://github.com/hashgraph/guardian/pulls
-[label-bug]: https://github.com/hashgraph/guardian/labels/bug
-[label-enhancement]: https://github.com/hashgraph/guardian/labels/enhancement
 [discord]: https://hedera.com/discord

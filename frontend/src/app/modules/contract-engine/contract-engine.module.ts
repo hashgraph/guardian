@@ -13,7 +13,6 @@ import { RefreshBtnComponent } from './components/refresh-btn/refresh-btn.compon
 // Configs
 import { ContractConfigComponent } from './configs/contract-config/contract-config.component';
 // Dialogs
-import { DialogWrapperComponent } from './dialogs/dialog-wrapper/dialog-wrapper.component';
 import { SetPoolDialogComponent } from './dialogs/set-pool-dialog/set-pool-dialog.component';
 import { RetirePoolsDialogComponent } from './dialogs/retire-pools-dialog/retire-pools-dialog.component';
 import { RetireRequestsDialogComponent } from './dialogs/retire-requests-dialog/retire-requests-dialog.component';
@@ -28,7 +27,6 @@ import { UserContractConfigComponent } from './configs/user-contract-config/user
     declarations: [
         ContractConfigComponent,
         SetPoolDialogComponent,
-        DialogWrapperComponent,
         RetirePoolsDialogComponent,
         RetireRequestsDialogComponent,
         WipeRequestsDialogComponent,

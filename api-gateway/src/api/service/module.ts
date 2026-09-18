@@ -1,7 +1,7 @@
 import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, Version } from '@nestjs/common';
 import { Permissions, SchemaCategory, SchemaHelper } from '@guardian/interfaces';
-import { ApiBody, ApiConsumes, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiProduces, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiProduces, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import { AuthUser, Auth } from '#auth';
 import {
     ExportMessageDTO,
@@ -15,6 +15,7 @@ import {
     Examples,
     pageHeader,
     InternalServerErrorDTO,
+    NotFoundErrorDTO,
     ObjectExamples,
     UnprocessableEntityErrorDTO
 } from '#middlewares';
@@ -284,11 +285,12 @@ export class ModulesApi {
                 s.readonly = s.readonly || s.owner !== owner.owner
             });
 
-            req.locals = SchemaUtils.toOld(items)
+            const result = SchemaUtils.toOld(items)
+            req.locals = result
 
             return res
                 .header('X-Total-Count', count)
-                .send(SchemaUtils.toOld(items));
+                .send(result);
         } catch (error) {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -734,8 +736,16 @@ export class ModulesApi {
         type: ModuleDTO,
         example: ObjectExamples.MODULE_IMPORT_MESSAGE_RESPONSE
     })
+    @ApiNotFoundResponse({
+        description: 'Message could not be retrieved from Hedera.',
+        type: NotFoundErrorDTO,
+        example: {
+            statusCode: 404,
+            message: 'MESSAGE_NOT_FOUND: Message 1774441459.171929000 could not be retrieved. Check the message id and that it belongs to the current Hedera network.'
+        }
+    })
     @ApiUnprocessableEntityResponse({
-        description: 'Message ID in body is empty.',
+        description: 'Message ID in body is empty, or the message documents could not be loaded from IPFS.',
         type: UnprocessableEntityErrorDTO,
         example: {
             statusCode: 422,
@@ -850,8 +860,16 @@ export class ModulesApi {
         type: ModulePreviewDTO,
         example: ObjectExamples.MODULE_IMPORT_MESSAGE_PREVIEW_RESPONSE
     })
+    @ApiNotFoundResponse({
+        description: 'Message could not be retrieved from Hedera.',
+        type: NotFoundErrorDTO,
+        example: {
+            statusCode: 404,
+            message: 'MESSAGE_NOT_FOUND: Message 1774441459.171929000 could not be retrieved. Check the message id and that it belongs to the current Hedera network.'
+        }
+    })
     @ApiUnprocessableEntityResponse({
-        description: 'Message ID in body is empty.',
+        description: 'Message ID in body is empty, or the message documents could not be loaded from IPFS.',
         type: UnprocessableEntityErrorDTO,
         example: {
             statusCode: 422,

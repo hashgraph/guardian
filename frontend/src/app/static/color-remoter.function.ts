@@ -26,6 +26,15 @@ export function colorToGradientWithA(hex: string, a: number) {
     return `linear-gradient(174deg, ${rgb} 4.61%, ${rgba} 128.14%), #FFF`;
 }
 
+export function isLightColor(hex: string) {
+    const rgbData = hexToRgb(hex);
+    if (!rgbData) {
+        return false;
+    }
+    // YIQ perceived brightness; >= 150 reads as a light surface needing dark text
+    return (rgbData.r * 299 + rgbData.g * 587 + rgbData.b * 114) / 1000 >= 150;
+}
+
 export function colorToGradient(hex: string, hex1: string) {
     const rgbData = hexToRgb(hex);
     const rgbData1 = hexToRgb(hex1);

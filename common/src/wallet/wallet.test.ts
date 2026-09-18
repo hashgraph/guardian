@@ -1,6 +1,6 @@
 import { Wallet } from './wallet.js';
 import * as dotenv from 'dotenv';
-import * as path from 'path';
+import * as path from 'node:path';
 
 const guardianEnvPath = path.join(process.cwd(), '../guardian-service/.env')
 

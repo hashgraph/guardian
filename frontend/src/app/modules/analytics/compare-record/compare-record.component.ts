@@ -62,6 +62,8 @@ export class CompareRecordComponent implements OnInit {
     @Input() fieldNameFilter: string = '';
 
     @Output() change = new EventEmitter<any>();
+    @Output() documentOpen = new EventEmitter<string>();
+    @Output() documentClose = new EventEmitter<string>();
 
     public minWidth: number;
     public headers: any[];
@@ -98,7 +100,7 @@ export class CompareRecordComponent implements OnInit {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (this.value) {
+        if (changes['value'] && this.value) {
             this.onInit();
         }
         if (changes['scrollToDoc'] && changes['scrollToDoc'].currentValue) {
@@ -133,6 +135,15 @@ export class CompareRecordComponent implements OnInit {
         this.displayedColumns = this.columns
             .filter(c => c.label)
             .map(c => c.name);
+    }
+
+    public onRowOpen(row: ITreeContext<IDocumentContext, IDocumentDetailsContext>): void {
+        row.open = !row.open;
+        if (row.open) {
+            this.documentOpen.emit(String(row.index));
+        } else {
+            this.documentClose.emit(String(row.index));
+        }
     }
 
     private createHeaders(data: any): void {

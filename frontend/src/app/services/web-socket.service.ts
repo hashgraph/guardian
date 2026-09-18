@@ -2,41 +2,29 @@ import { Injectable } from '@angular/core';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { webSocket, WebSocketSubject, WebSocketSubjectConfig } from 'rxjs/webSocket';
 import { AuthService } from './auth.service';
-import { ToastrService } from 'ngx-toastr';
-import { ApplicationStates, MessageAPI, NotifyAPI, UserRole } from '@guardian/interfaces';
+import { ToastService } from './toast.service';
+import { ApplicationStates, MessageAPI, NotifyAPI } from '@guardian/interfaces';
 import { Router } from '@angular/router';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ServiceUnavailableDialog } from '../modules/schema-engine/service-unavailable-dialog/service-unavailable-dialog.component';
-
-interface MeecoVerifyVPResponse {
-    vc: any;
-    presentation_request_id: string;
-    submission_id: string;
-    cid: string;
-    role: UserRole | null;
-}
-
-interface MeecoApproveSubmissionResponse {
-    username: string;
-    did: string;
-    role: UserRole;
-    accessToken: string;
-}
 
 /**
  *  WebSocket service.
  */
 @Injectable()
 export class WebSocketService {
+    private static readonly RECONNECT_TOAST_KEY = 'ws-reconnect-sticky';
     private static HEARTBEAT_DELAY = 30 * 1000;
     private static RECONNECT_NOTIFY_AFTER_MS = 15 * 1000;
+    private static SERVICES_STATUS_GRACE_MS = 5 * 1000;
+    private static SERVICES_STATUS_POLL_MS = 1000;
     private socket: WebSocketSubject<string> | null;
     private wsSubjectConfig: WebSocketSubjectConfig<string>;
     private socketSubscription: Subscription | null = null;
     private heartbeatTimeout: any = null;
     private reconnectInterval: number = 5000;  /// pause between connections
     private reconnectAttempts: number = 10;  /// number of connection attempts
-    private reconnectingToastId: number | null = null;
+    private reconnectingToastShown: boolean = false;
     private reconnectNotifyTimeout: any = null;
     private servicesReady: Subject<boolean>;
     private profileSubject: Subject<{ type: string, data: any }>;
@@ -50,22 +38,15 @@ export class WebSocketService {
     private createProgress: Subject<any>;
     private updateProgress: Subject<any>;
     private deleteProgress: Subject<any>;
-    private meecoPresentVPSubject: Subject<any> = new Subject();
-    private meecoVerifyVPSubject: Subject<any> = new Subject();
-    private meecoVerifyVPFailedSubject: Subject<any> = new Subject();
-    private meecoApproveVCSubject: Subject<any> = new Subject();
     private policyRequestUpdateSubject: Subject<any>;
     private policyRestoreUpdateSubject: Subject<any>;
     private serviesStates: any = [];
     private sendingEvent: boolean;
 
     private requiredServicesWrongStatus: boolean = false;
+    private servicesStatusCheckTimeout: any = null;
 
-    public readonly meecoPresentVP$: Observable<any> = this.meecoPresentVPSubject.asObservable();
-    public readonly meecoVerifyVP$: Observable<any> = this.meecoVerifyVPSubject.asObservable();
-    public readonly meecoVerifyVPFailed$: Observable<any> = this.meecoVerifyVPFailedSubject.asObservable();
-
-    constructor(private dialogService: DialogService, private auth: AuthService, private toastr: ToastrService, private router: Router) {
+    constructor(private dialogService: DialogService, private auth: AuthService, private toastService: ToastService, private router: Router) {
         this.recordUpdateSubject = new Subject();
         this.testUpdateSubject = new Subject();
         this.blockUpdateSubject = new Subject();
@@ -123,6 +104,10 @@ export class WebSocketService {
         if (this.heartbeatTimeout) {
             clearTimeout(this.heartbeatTimeout);
         }
+        if (this.servicesStatusCheckTimeout) {
+            clearTimeout(this.servicesStatusCheckTimeout);
+            this.servicesStatusCheckTimeout = null;
+        }
 
         this.socketSubscription = null;
         this.heartbeatTimeout = null;
@@ -133,7 +118,7 @@ export class WebSocketService {
     }
 
     private scheduleReconnectingNotice() {
-        if (this.reconnectNotifyTimeout !== null || this.reconnectingToastId !== null) {
+        if (this.reconnectNotifyTimeout !== null || this.reconnectingToastShown) {
             return;
         }
         this.reconnectNotifyTimeout = setTimeout(() => {
@@ -141,17 +126,8 @@ export class WebSocketService {
             if (this.socket) {
                 return;
             }
-            const toast = this.toastr.info(
-                'Trying to reconnect…',
-                'Connection lost',
-                {
-                    disableTimeOut: true,
-                    tapToDismiss: false,
-                    closeButton: false,
-                    positionClass: 'toast-bottom-right',
-                }
-            );
-            this.reconnectingToastId = toast ? toast.toastId : null;
+            this.toastService.sticky('info', 'Trying to reconnect…', 'Connection lost', WebSocketService.RECONNECT_TOAST_KEY);
+            this.reconnectingToastShown = true;
         }, WebSocketService.RECONNECT_NOTIFY_AFTER_MS);
     }
 
@@ -160,20 +136,17 @@ export class WebSocketService {
             clearTimeout(this.reconnectNotifyTimeout);
             this.reconnectNotifyTimeout = null;
         }
-        if (this.reconnectingToastId !== null) {
-            this.toastr.clear(this.reconnectingToastId);
-            this.reconnectingToastId = null;
+        if (this.reconnectingToastShown) {
+            this.toastService.clearKey(WebSocketService.RECONNECT_TOAST_KEY);
+            this.reconnectingToastShown = false;
         }
     }
 
     private openWebSocket() {
-        const wasNotified = this.reconnectingToastId !== null;
+        const wasNotified = this.reconnectingToastShown;
         this.clearReconnectingNotice();
         if (wasNotified) {
-            this.toastr.success('Connection restored', '', {
-                timeOut: 2000,
-                positionClass: 'toast-bottom-right',
-            });
+            this.toastService.success('Connection restored');
         }
         this.reconnectAttempts = 10;
     }
@@ -225,15 +198,7 @@ export class WebSocketService {
 
     private notifyReconnectFailed(): void {
         this.clearReconnectingNotice();
-        this.toastr.error(
-            'Unable to reconnect to the server. Please check your network connection and refresh the page.',
-            'Connection lost',
-            {
-                disableTimeOut: true,
-                closeButton: true,
-                positionClass: 'toast-bottom-right',
-            }
-        );
+        this.toastService.sticky('error', 'Unable to reconnect to the server. Please check your network connection and refresh the page.', 'Connection lost', WebSocketService.RECONNECT_TOAST_KEY);
     }
 
     private _send(data: string): Promise<void> {
@@ -257,12 +222,7 @@ export class WebSocketService {
             }
         } catch (error: any) {
             console.error(error);
-            this.toastr.error(error.message, 'Web Socket', {
-                timeOut: 10000,
-                closeButton: true,
-                positionClass: 'toast-bottom-right',
-                enableHtml: true
-            });
+            this.toastService.error(error.message, 'Web Socket');
         }
     }
 
@@ -284,23 +244,7 @@ export class WebSocketService {
                 case MessageAPI.GET_STATUS:
                 case MessageAPI.UPDATE_STATUS:
                     this.updateStatus(data);
-
-                    const notReadyServices = this.serviesStates.filter((item: any) => !item.states.includes(ApplicationStates.READY));
-                    const allStatesReady = notReadyServices.length === 0;
-
-                    if (!allStatesReady && !this.requiredServicesWrongStatus) {
-                        this.requiredServicesWrongStatus = true;
-                        if (!['/status', '/admin/settings', '/admin/logs', '/login'].includes(location.pathname)) {
-                            const last = location.pathname === '/status' ? null : btoa(location.href);
-                            //this.router.navigate(['/status'], { queryParams: { last } });
-                            this.dialogService.open(ServiceUnavailableDialog, {
-                                closable: true,
-                                header: 'Something went wrong',
-                                width: '500px',
-                            });
-                        }
-                    }
-                    this.servicesReady.next(allStatesReady);
+                    this.evaluateServicesStatus();
                     break;
                 case MessageAPI.UPDATE_RECORD: {
                     this.recordUpdateSubject.next(data);
@@ -323,13 +267,9 @@ export class WebSocketService {
                     break;
                 }
                 case MessageAPI.ERROR_EVENT: {
-                    if (!data.blockType.includes('401'))
-                        this.toastr.error(data.message, data.blockType, {
-                            timeOut: 10000,
-                            closeButton: true,
-                            positionClass: 'toast-bottom-right',
-                            enableHtml: true
-                        });
+                    if (!data.blockType.includes('401')) {
+                        this.toastService.error(data.message, data.blockType, { blockErrorData: data.errorData });
+                    }
                     break;
                 }
                 case MessageAPI.UPDATE_USER_INFO_EVENT: {
@@ -355,33 +295,12 @@ export class WebSocketService {
                 case NotifyAPI.DELETE_PROGRESS_WS:
                     this.deleteProgress.next(event.data);
                     break;
-                case MessageAPI.MEECO_AUTH_PRESENT_VP: {
-                    this.meecoPresentVPSubject.next(data);
-                    break;
-                }
-                case MessageAPI.MEECO_VERIFY_VP: {
-                    this.meecoVerifyVPSubject.next(data);
-                    break;
-                }
-                case MessageAPI.MEECO_VERIFY_VP_FAILED: {
-                    this.meecoVerifyVPFailedSubject.next(data);
-                    break;
-                }
-                case MessageAPI.MEECO_APPROVE_SUBMISSION_RESPONSE: {
-                    this.meecoApproveVCSubject.next(data);
-                    break;
-                }
                 default:
                     break;
             }
         } catch (error: any) {
             console.error(error);
-            this.toastr.error(error.message, 'Web Socket', {
-                timeOut: 10000,
-                closeButton: true,
-                positionClass: 'toast-bottom-right',
-                enableHtml: true
-            });
+            this.toastService.error(error.message, 'Web Socket');
         }
     }
 
@@ -519,33 +438,6 @@ export class WebSocketService {
         return this.deleteProgress.subscribe(next, error, complete);
     }
 
-    public meecoApproveVCSubscribe(
-        next?: ((event: MeecoApproveSubmissionResponse) => void),
-        error?: ((error: any) => void),
-        complete?: (() => void)
-    ): Subscription {
-        return this.meecoApproveVCSubject.subscribe(next, error, complete);
-    }
-
-    public approveVCSubject(
-        presentation_request_id: string,
-        submission_id: string,
-        role: UserRole
-    ): void {
-        this.send(MessageAPI.MEECO_APPROVE_SUBMISSION, {
-            presentation_request_id,
-            submission_id,
-            role,
-        });
-    }
-
-    public rejectVCSubject(presentation_request_id: string, submission_id: string): void {
-        this.send(MessageAPI.MEECO_REJECT_SUBMISSION, {
-            presentation_request_id,
-            submission_id,
-        });
-    }
-
     public login() {
         this.send(MessageAPI.SET_ACCESS_TOKEN, this.auth.getAccessToken());
     }
@@ -560,10 +452,6 @@ export class WebSocketService {
 
     public sendMessage(type: string, data: any = null) {
         this.send(type, data);
-    }
-
-    public meecoLogin(): void {
-        this.send(MessageAPI.MEECO_AUTH_REQUEST, null);
     }
 
     private updateStatus(serviceStatus: any) {
@@ -583,6 +471,52 @@ export class WebSocketService {
             }
             existsService.states = serviceStatus[serviceName]
         }
+    }
+
+    private isAllServicesReady(): boolean {
+        return this.serviesStates.every((item: any) => item.states.includes(ApplicationStates.READY));
+    }
+
+    // Alert on a not-ready service, but re-check across a short grace period
+    // first so a transient blip (e.g. a service restarting) is ignored, and
+    // re-arm on recovery so a later outage is reported again.
+    private evaluateServicesStatus() {
+        const allStatesReady = this.isAllServicesReady();
+
+        if (allStatesReady) {
+            if (this.servicesStatusCheckTimeout) {
+                clearTimeout(this.servicesStatusCheckTimeout);
+                this.servicesStatusCheckTimeout = null;
+            }
+            this.requiredServicesWrongStatus = false;
+        } else if (!this.requiredServicesWrongStatus && !this.servicesStatusCheckTimeout) {
+            this.scheduleServicesStatusCheck(Date.now() + WebSocketService.SERVICES_STATUS_GRACE_MS);
+        }
+
+        this.servicesReady.next(allStatesReady);
+    }
+
+    private scheduleServicesStatusCheck(deadline: number) {
+        this.send(MessageAPI.GET_STATUS, null);
+        this.servicesStatusCheckTimeout = setTimeout(() => {
+            this.servicesStatusCheckTimeout = null;
+            if (this.isAllServicesReady()) {
+                this.requiredServicesWrongStatus = false;
+                return;
+            }
+            if (Date.now() < deadline) {
+                this.scheduleServicesStatusCheck(deadline);
+                return;
+            }
+            this.requiredServicesWrongStatus = true;
+            if (!['/status', '/admin/settings', '/admin/logs', '/login'].includes(location.pathname)) {
+                this.dialogService.open(ServiceUnavailableDialog, {
+                    closable: true,
+                    header: 'Something went wrong',
+                    width: '500px',
+                });
+            }
+        }, WebSocketService.SERVICES_STATUS_POLL_MS);
     }
 
     public IsServicesReady() {

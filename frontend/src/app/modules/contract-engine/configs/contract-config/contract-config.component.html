@@ -12,17 +12,15 @@
 
   @if (isConfirmed && contracts) {
     <div class="guardian-page">
-      <div class="guardian-user-page-header">Retirement</div>
+      <guardian-page-header pageTitle="Contracts" helpKey="contracts"></guardian-page-header>
       <div class="actions actions--top">
         <div class="actions__tabs">
-          <p-selectButton
-            [(ngModel)]="type"
+          <guardian-tabs-switch
+            [value]="type"
+            [options]="contractTypeOptions"
+            (valueChange)="type = $event"
             (onChange)="onChangeType($event)"
-                        [options]="[
-                                    { label: 'Token Wiping Contracts', value: 'WIPE' },
-                                    { label: 'Token Retirement Contracts', value: 'RETIRE' }
-                                  ]"
-          ></p-selectButton>
+          ></guardian-tabs-switch>
         </div>
         <div class="actions__cta button-group">
           <button

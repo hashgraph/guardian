@@ -1,13 +1,15 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Authorization from "../../../support/authorization";
+import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
-context("Schemas", { tags: ['schema', 'thirdPool', 'all'] }, () => {
+context('Schemas', { tags: ['schema', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-    const schemaUUID = "1111b23a-b1ea-408f-a573-6d8bd1a2060a";
-    const username = "StandartRegistry";
+    //A run interrupted before the deletion at the end leaves its schema behind, so the uuid is
+    //drawn per run to keep the creation below free of collisions
+    const schemaUUID = crypto.randomUUID();
+    const username = 'StandartRegistry';
 
-    it("Delete the system schema with the provided schema ID", () => {
+    it('Delete the system schema with the provided schema ID', () => {
         //Create new schema
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
@@ -16,27 +18,25 @@ context("Schemas", { tags: ['schema', 'thirdPool', 'all'] }, () => {
                 headers: { authorization },
                 body: {
                     uuid: schemaUUID,
-                    name: "test",
-                    description: "new",
-                    entity: "USER",
-                    status: "DRAFT",
+                    name: 'test',
+                    description: 'new',
+                    entity: 'USER',
+                    status: 'DRAFT',
                     readonly: false,
-                    name: "test",
-                    entity: "USER",
                     document:
                     {
                         $id: schemaUUID,
-                        $comment: '{\"term\\": \"${schemaUUID}\\", \"@id\\": \"https://localhost/schema#${schemaUUID}\\"}',
-                        title: "test",
-                        description: " test",
-                        type: "object",
+                        $comment: '{"term": "${schemaUUID}", "@id": "https://localhost/schema#${schemaUUID}"}',
+                        title: 'test',
+                        description: ' test',
+                        type: 'object',
                         properties: {
-                            "@context": { "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }], "readOnly": true },
-                            type: { "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }], "readOnly": true },
-                            id: { "type": "string", "readOnly": true },
-                            field0: { "title": "test field", "description": "test field", "readOnly": false, "$comment": '{\\"term\\": \\"field0\\", \\"@id\\": \\"https://www.schema.org/text\\"}', "type": "string" }
+                            '@context': { 'oneOf': [{ 'type': 'string' }, { 'type': 'array', 'items': { 'type': 'string' } }], 'readOnly': true },
+                            type: { 'oneOf': [{ 'type': 'string' }, { 'type': 'array', 'items': { 'type': 'string' } }], 'readOnly': true },
+                            id: { 'type': 'string', 'readOnly': true },
+                            field0: { 'title': 'test field', 'description': 'test field', 'readOnly': false, '$comment': '{\\"term\\": \\"field0\\", \\"@id\\": \\"https://www.schema.org/text\\"}', 'type': 'string' }
                         },
-                        required: ["@context", "type"],
+                        required: ['@context', 'type'],
                         additionalProperties: false
                     },
                 },
@@ -51,11 +51,14 @@ context("Schemas", { tags: ['schema', 'thirdPool', 'all'] }, () => {
                     },
                 }).then((response) => {
                     expect(response.status).eql(STATUS_CODE.OK);
-                    expect(response.body[0]).to.have.property("uuid");
+                    expect(response.body[0]).to.have.property('uuid');
 
-                    let schemaUd = response.body.at(0).uuid;
-                    expect(schemaUd).to.equal(schemaUUID);
-                    let schemaId = response.body.at(0).id;
+                    //The listing also holds the system schemas of earlier runs, so the one created
+                    //above is addressed by its own uuid instead of by position
+                    const schema = response.body.find((item) => item?.uuid === schemaUUID);
+                    expect(schema, `system schema ${schemaUUID} in the listing`).to.not.be.undefined;
+                    let schemaUd = schema.uuid;
+                    let schemaId = schema.id;
 
                     cy.request({
                         method: METHOD.PUT,
@@ -64,26 +67,26 @@ context("Schemas", { tags: ['schema', 'thirdPool', 'all'] }, () => {
                         body: {
                             id: schemaId,
                             uuid: schemaUd,
-                            description: "new",
-                            hash: "",
-                            status: "DRAFT",
+                            description: 'new',
+                            hash: '',
+                            status: 'DRAFT',
                             readonly: false,
-                            name: "test",
-                            entity: "USER",
+                            name: 'test',
+                            entity: 'USER',
                             document:
                             {
                                 $id: schemaUUID,
-                                $comment: '{\"term\\": \"${schemaUUID}\\", \"@id\\": \"https://localhost/schema#${schemaUUID}\\"}',
-                                title: "test",
-                                description: " test",
-                                type: "object",
+                                $comment: '{"term": "${schemaUUID}", "@id": "https://localhost/schema#${schemaUUID}"}',
+                                title: 'test',
+                                description: ' test',
+                                type: 'object',
                                 properties: {
-                                    "@context": { "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }], "readOnly": true },
-                                    type: { "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }], "readOnly": true },
-                                    id: { "type": "string", "readOnly": true },
-                                    field0: { "title": "test field", "description": "test field", "readOnly": false, "$comment": '{\\"term\\": \\"field0\\", \\"@id\\": \\"https://www.schema.org/text\\"}', "type": "string" }
+                                    '@context': { 'oneOf': [{ 'type': 'string' }, { 'type': 'array', 'items': { 'type': 'string' } }], 'readOnly': true },
+                                    type: { 'oneOf': [{ 'type': 'string' }, { 'type': 'array', 'items': { 'type': 'string' } }], 'readOnly': true },
+                                    id: { 'type': 'string', 'readOnly': true },
+                                    field0: { 'title': 'test field', 'description': 'test field', 'readOnly': false, '$comment': '{\\"term\\": \\"field0\\", \\"@id\\": \\"https://www.schema.org/text\\"}', 'type': 'string' }
                                 },
-                                required: ["@context", "type"],
+                                required: ['@context', 'type'],
                                 additionalProperties: false
                             },
                         },

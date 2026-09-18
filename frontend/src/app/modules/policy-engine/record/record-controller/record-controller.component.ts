@@ -47,6 +47,7 @@ export class RecordControllerComponent implements OnInit {
     private _subscription = new Subscription();
     private _resultDialog: any;
     private _overlay: any;
+    private _stopPending: boolean = false;
 
     constructor(
         private wsService: WebSocketService,
@@ -130,12 +131,38 @@ export class RecordControllerComponent implements OnInit {
     }
 
     public stopRecording() {
-        if (this.policyTest.shouldWarnBeforeStop()) {
-            this.openNoOutputWarning();
+        if (this._stopPending) {
             return;
         }
+        this._stopPending = true;
+        this.pauseAndOpenStopFlow();
+    }
 
-        this.openSaveRecordDialog(true);
+    private pauseAndOpenStopFlow(): void {
+        this.recordService.pauseRecording(this.policyId).subscribe({
+            next: (result) => {
+                if (!result) {
+                    this._stopPending = false;
+                    this.loadStatus();
+                    return;
+                }
+                this.recording = false;
+                this.updateActive();
+                this.policyTest.ensureLoaded(this.policyId).then(() => {
+                    if (this.policyTest.shouldWarnBeforeStop()) {
+                        return this.policyTest.setStopStage('warning').then(() => {
+                            this.openNoOutputWarning();
+                        });
+                    }
+                    return this.policyTest.setStopStage('save').then(() => {
+                        this.openSaveRecordDialog();
+                    });
+                });
+            },
+            error: () => {
+                this._stopPending = false;
+            }
+        });
     }
 
     private openNoOutputWarning(): void {
@@ -156,12 +183,17 @@ export class RecordControllerComponent implements OnInit {
 
         dialogRef.onClose.subscribe((confirmed: boolean) => {
             if (confirmed) {
-                this.openSaveRecordDialog(false);
+                this.policyTest.setStopStage('save').then(() => {
+                    this.openSaveRecordDialog();
+                });
+                return;
             }
+            void this.policyTest.setStopStage(null);
+            this.resumeRecording();
         });
     }
 
-    private openSaveRecordDialog(includePolicyTestMetadata: boolean): void {
+    private openSaveRecordDialog(): void {
         const dialogRef = this.dialog.open(SavePolicyTestRecordDialog, {
             showHeader: false,
             width: '560px',
@@ -174,44 +206,87 @@ export class RecordControllerComponent implements OnInit {
 
         dialogRef.onClose.subscribe((result: SavePolicyTestRecordResult | null) => {
             if (!result) {
+                void this.policyTest.setStopStage(null);
+                this.resumeRecording();
                 return;
             }
 
+            void this.policyTest.setStopStage(null);
             this.policyTest.setMetadata(result.name, result.description);
-            this.stopRecordingInternal(result, includePolicyTestMetadata);
+            this.stopRecordingInternal(result);
         });
     }
 
-    private stopRecordingInternal(
-        saveMetadata: SavePolicyTestRecordResult,
-        includePolicyTestMetadata: boolean
-    ): void {
+    private resumeRecording(): void {
+        this.recordService.resumeRecording(this.policyId).subscribe({
+            next: (result) => {
+                this._stopPending = false;
+                if (result) {
+                    this.recording = true;
+                    this.updateActive();
+                    return;
+                }
+                this.loadStatus();
+            },
+            error: () => {
+                this._stopPending = false;
+            }
+        });
+    }
+
+    private restoreStopFlow(): void {
+        if (this._stopPending) {
+            return;
+        }
+        this._stopPending = true;
+        this.recording = false;
+        this.updateActive();
+        this.policyTest.ensureLoaded(this.policyId).then(() => {
+            if (this.policyTest.state.stopStage === 'warning') {
+                this.openNoOutputWarning();
+                return;
+            }
+            return this.policyTest.setStopStage('save').then(() => {
+                this.openSaveRecordDialog();
+            });
+        });
+    }
+
+    private stopRecordingInternal(saveMetadata: SavePolicyTestRecordResult): void {
         this.loading = true;
         this.recordItems = [];
         const filename = this.sanitizeRecordFilename(saveMetadata.name);
-        const policyTest = this.buildPolicyTestMetadata(saveMetadata, includePolicyTestMetadata);
-        this.recordService.stopRecording(this.policyId, { policyTest }).subscribe((fileBuffer) => {
-            this.recording = false;
-            this.running = false;
-            this.updateActive();
-            this.loading = false;
-            this.policyTest.reset();
-            if (saveMetadata.saveToFile !== false) {
-                const downloadLink = document.createElement('a');
-                downloadLink.href = window.URL.createObjectURL(
-                    new Blob([new Uint8Array(fileBuffer)], {
-                        type: 'application/guardian-policy-record'
-                    }));
-                downloadLink.setAttribute('download', filename);
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
+        const policyTest = this.buildPolicyTestMetadata(
+            saveMetadata,
+            !this.policyTest.shouldWarnBeforeStop()
+        );
+        this.recordService.stopRecording(this.policyId, { policyTest }).subscribe({
+            next: (fileBuffer) => {
+                this.recording = false;
+                this.running = false;
+                this.updateActive();
+                this.loading = false;
+                this.policyTest.reset();
+                this._stopPending = false;
+                if (saveMetadata.saveToFile !== false) {
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = window.URL.createObjectURL(
+                        new Blob([new Uint8Array(fileBuffer)], {
+                            type: 'application/guardian-policy-record'
+                        }));
+                    downloadLink.setAttribute('download', filename);
+                    document.body.appendChild(downloadLink);
+                    downloadLink.click();
+                }
+            },
+            error: () => {
+                this.recording = false;
+                this.running = false;
+                this.updateActive();
+                this.loading = false;
+                this.policyTest.reset();
+                this._stopPending = false;
             }
-        }, (e) => {
-            this.recording = false;
-            this.running = false;
-            this.updateActive();
-            this.loading = false;
-            this.policyTest.reset();
         });
     }
 
@@ -381,6 +456,10 @@ export class RecordControllerComponent implements OnInit {
 
         if (this.running) {
             this.updatePolicy();
+        }
+
+        if (this.recording && data?.pausedAt) {
+            this.restoreStopFlow();
         }
 
         this.updateActive();

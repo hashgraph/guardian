@@ -4,8 +4,9 @@ import { HttpStatus, ValidationPipe } from '@nestjs/common';
 import { SwaggerModule } from '@nestjs/swagger';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { SwaggerConfig } from './helpers/swagger-config.js';
+import { setupApiDocs } from './helpers/setup-api-docs.js';
 import { json } from 'express';
-import process from 'process';
+import process from 'node:process';
 import { Utils } from '@indexer/common';
 
 const PORT = process.env.PORT || 3021;
@@ -28,6 +29,7 @@ Promise.all([
                     name: channelName,
                     queue: 'INDEXER_API_SERVICES',
                     servers: [`nats://${process.env.MQ_ADDRESS}:4222`],
+                    maxReconnectAttempts: -1, // reconnect forever
                 },
                 // tls: GenerateTLSOptionsNats()
             });
@@ -42,8 +44,7 @@ Promise.all([
             const document = SwaggerModule.createDocument(app, SwaggerConfig, {
                 extraModels: [],
             });
-            console.log(document.toString())
-            SwaggerModule.setup('api-docs', app, document);
+            setupApiDocs(app, document, 'Guardian Indexer API');
 
             services.listen();
 

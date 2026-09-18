@@ -64,8 +64,9 @@
                     ) {
                     <div
                       class="suggestion"
+                      [class.suggestion-rich]="isRichText(item)"
                       >
-                      @if (!suggestIsObject(item.suggest)) {
+                      @if (!suggestIsObject(item.suggest) && !isRichText(item)) {
                         <div
                           class="suggestion-name"
                           >
@@ -75,6 +76,10 @@
                       }
                       <button
                         (click)="patchSuggestValue(item)"
+                        (mouseenter)="onSuggestEnter($event, item, suggestPopover)"
+                        (mouseleave)="onSuggestLeave(suggestPopover)"
+                        (focus)="onSuggestEnter($event, item, suggestPopover)"
+                        (blur)="onSuggestLeave(suggestPopover)"
                         class="guardian-button guardian-button-secondary"
                         >
                         Fill the field with suggestion
@@ -105,6 +110,42 @@
                                 isEditMode && !item.isUpdatable
                             "
                       ></table-field>
+                    }
+                    @if (isGeoLocation(item)) {
+                      <div
+                        class="form-field-input guardian-input-container form-field-enum"
+                        [attr.readonly-field]="isEditMode && !item.isUpdatable"
+                        >
+                        <p-select
+                          class="guardian-dropdown"
+                          [formControl]="item.control"
+                          [options]="getGeoOptions(item)"
+                          optionLabel="label"
+                          optionValue="value"
+                          [showClear]="!item.required"
+                          [filter]="true"
+                          filterBy="label"
+                          [resetFilterOnHide]="true"
+                          [virtualScroll]="getGeoOptions(item).length > 50"
+                          [virtualScrollItemSize]="40"
+                          scrollHeight="400px"
+                          appendTo="body"
+                          placeholder="Not selected"
+                          panelStyleClass="guardian-dropdown-panel guardian-geo-dropdown-panel"
+                        ></p-select>
+                      </div>
+                    }
+                    @if (isRichText(item)) {
+                      <div
+                        class="form-field-input guardian-input-container"
+                        [attr.readonly-field]="isEditMode && !item.isUpdatable"
+                        >
+                        <app-rich-text-editor
+                          [formControl]="item.control"
+                          [placeholder]="getPlaceholderByFieldType(item)"
+                          [readonly]="!!(isEditMode && !item.isUpdatable)"
+                        ></app-rich-text-editor>
+                      </div>
                     }
                     @if (isInput(item)) {
                       <div
@@ -301,6 +342,9 @@
                     <ng-template pTemplate="header">
                       <tr [attr.accordiontabid]="item.id">
                         <th style="width: 3rem">#</th>
+                        @if (isManagedArray(item)) {
+                          <th class="table-header">{{ entryTitleLabel(item) }}</th>
+                        }
                         @for (col of getTableHeaderFields(item); track col) {
                           <th
                             class="table-header"
@@ -314,7 +358,10 @@
                     <ng-template pTemplate="body" let-rowData>
                       <tr [attr.accordiontabid]="item.id + '-' + rowData.index2">
                         <td>{{ rowData.index2 }}</td>
-                        @for (itemControl of getTableRowFields(rowData); track itemControl) {
+                        @if (isManagedArray(item)) {
+                          <td>{{ entryTitle(item, rowData) }}</td>
+                        }
+                        @for (itemControl of getTableRowFields(rowData, item); track itemControl) {
                           <td>
                             <div class="table-content form-field-value">
                               @if (ifRequiredField(itemControl)) {
@@ -483,7 +530,7 @@
                         }
                         <td>
                           @if (
-                            !item.control.disabled && (!isEditMode || item?.isUpdatable)
+                            !item.control.disabled && !isManagedArray(item) && (!isEditMode || item?.isUpdatable)
                             ) {
                             <div
                               class="guardian-icon-button big"
@@ -507,7 +554,7 @@
                       </tr>
                     </ng-template>
                   </p-table>
-                  @if (!item.control.disabled && (!isEditMode || item?.isUpdatable)) {
+                  @if (!item.control.disabled && !isManagedArray(item) && (!isEditMode || item?.isUpdatable)) {
                     <button
                       (click)="addItem(item)"
                       class="guardian-button guardian-button-secondary add-btn"
@@ -582,8 +629,9 @@
                       ) {
                       <div
                         class="suggestion"
+                        [class.suggestion-rich]="isRichText(item)"
                         >
-                        @if (!suggestIsObject(item.suggest)) {
+                        @if (!suggestIsObject(item.suggest) && !isRichText(item)) {
                           <div
                             class="suggestion-name"
                             >
@@ -593,6 +641,10 @@
                         }
                         <button
                           (click)="patchSuggestValue(item)"
+                          (mouseenter)="onSuggestEnter($event, item, suggestPopover)"
+                          (mouseleave)="onSuggestLeave(suggestPopover)"
+                          (focus)="onSuggestEnter($event, item, suggestPopover)"
+                          (blur)="onSuggestLeave(suggestPopover)"
                           class="guardian-button guardian-button-secondary"
                           >
                           Fill the field with suggestion
@@ -627,6 +679,7 @@
                                 <table-field
                                   class="table-field-container"
                                   [item]="$any(listItem)"
+                                  [ownerField]="item.field"
                                   [required]="item.required"
                                   [readonly]="readonly?.[item.fullPath]"
                                   [policyId]="policyId"
@@ -636,6 +689,20 @@
                                     "
                                 ></table-field>
                               </ng-container>
+                            }
+                            @if (isRichText(item)) {
+                              <div
+                                class="form-field-input guardian-input-container"
+                                [attr.readonly-field]="
+                                    isEditMode && !item.isUpdatable
+                                "
+                                >
+                                <app-rich-text-editor
+                                  [formControl]="listItem.control"
+                                  [placeholder]="getPlaceholderByFieldType(item)"
+                                  [readonly]="!!(isEditMode && !item.isUpdatable)"
+                                ></app-rich-text-editor>
+                              </div>
                             }
                             @if (isInput(item)) {
                               <div
@@ -846,7 +913,7 @@
                                   }
                                 </div>
                                 @if (
-                                  !item.control.disabled && (!isEditMode || item?.isUpdatable)
+                                  !item.control.disabled && !isManagedArray(item) && (!isEditMode || item?.isUpdatable)
                                   ) {
                                   <div
                                     class="fields-remove"
@@ -875,7 +942,7 @@
                             </div>
                           }
                           @if (
-                            !item.control.disabled && (!isEditMode || item?.isUpdatable)
+                            !item.control.disabled && !isManagedArray(item) && (!isEditMode || item?.isUpdatable)
                             ) {
                             <button
                               (click)="addItem(item)"
@@ -905,6 +972,7 @@
                         item.control?.invalid ? 'guardian-accordion-error' : ''
                     }}"
                             [value]="item.open ? 0 : null"
+                            [motionOptions]="{ disabled: true }"
                             (valueChange)="item.open = ($event === 0); onAccordionSelectEvent(item.open, item)"
                             >
                             <p-accordion-panel [value]="0">
@@ -1100,6 +1168,7 @@
                         item.control?.invalid ? 'guardian-accordion-error' : ''
                     }}"
                                 [value]="item.open ? 0 : null"
+                                [motionOptions]="{ disabled: true }"
                                 (valueChange)="item.open = ($event === 0); onAccordionSelectEvent(item.open, item)"
                                 >
                                 <p-accordion-panel [value]="0">
@@ -1199,6 +1268,7 @@
                                             : ''
                                     }}"
                                                 [value]="listItem.open ? 0 : null"
+                                                [motionOptions]="{ disabled: true }"
                                                 (valueChange)="listItem.open = ($event === 0); onAccordionSelectEvent(listItem.open, item, listItem.index2)"
                                                 >
                                                 <p-accordion-panel [value]="0">
@@ -1215,12 +1285,11 @@
                                                         !item.control.dirty
                                                     "
                                                         >
-                                                        {{ item.description }} #{{
-                                                        listItem.index2
-                                                        }}
+                                                        {{ entryTitleNumber(item, listItem) }}
+                                                        {{ entryTitle(item, listItem) }}
                                                       </span>
                                                       @if (
-                                                        !item.control.disabled && (!isEditMode || item?.isUpdatable)
+                                                        !item.control.disabled && !isManagedArray(item) && (!isEditMode || item?.isUpdatable)
                                                         ) {
                                                         <div
                                                           class="guardian-icon-button big"
@@ -1331,7 +1400,7 @@
                                               </p-accordion>
                                             </div>
                                           }
-                                          @if (!item.control.disabled && (!isEditMode || item?.isUpdatable)) {
+                                          @if (!item.control.disabled && !isManagedArray(item) && (!isEditMode || item?.isUpdatable)) {
                                             <button
                                               (click)="addItem(item)"
                                               class="guardian-button guardian-button-secondary add-btn"
@@ -1445,3 +1514,12 @@
                       }
                     </form>
                   }
+
+<p-popover #suggestPopover styleClass="suggestion-popover">
+  <div
+    class="suggestion-popover-content"
+    (mouseenter)="onSuggestPopoverEnter()"
+    (mouseleave)="onSuggestLeave(suggestPopover)"
+    [innerHTML]="suggestPopoverValue"
+  ></div>
+</p-popover>

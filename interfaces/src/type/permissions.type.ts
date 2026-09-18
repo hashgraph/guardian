@@ -21,6 +21,7 @@ export enum PermissionCategories {
     TOKENS = 'TOKENS',
     AUDIT = 'AUDIT',
     TOOLS = 'TOOLS',
+    TEMPLATES = 'TEMPLATES',
     PERMISSIONS = 'PERMISSIONS',
     ACCESS = 'ACCESS',
     DELEGATION = 'DELEGATION',
@@ -28,6 +29,7 @@ export enum PermissionCategories {
     FORMULAS = 'FORMULAS',
     WORKER_TASKS = 'WORKER_TASKS',
     CREDENTIALS = 'CREDENTIALS',
+    ORGANIZATIONS = 'ORGANIZATIONS',
 }
 
 /**
@@ -42,6 +44,7 @@ export enum PermissionEntities {
     RECORD = 'RECORD',
     POLICY = 'POLICY',
     TOOL = 'TOOL',
+    TEMPLATE = 'TEMPLATE',
     DOCUMENT = 'DOCUMENT',
     SCHEMA = 'SCHEMA',
     MODULE = 'MODULE',
@@ -74,6 +77,10 @@ export enum PermissionEntities {
     EXTERNAL_POLICY = 'EXTERNAL_POLICY',
     WORKER_TASK = 'WORKER_TASK',
     CREDENTIAL = 'CREDENTIAL',
+    ORGANIZATION = 'ORGANIZATION',
+    ORG_ROLE = 'ORG_ROLE',
+    ORG_MEMBER = 'ORG_MEMBER',
+    ORG_POLICY = 'ORG_POLICY',
 }
 
 /**
@@ -198,6 +205,12 @@ export enum Permissions {
     TOOLS_TOOL_DELETE = 'TOOLS_TOOL_DELETE',
     TOOLS_TOOL_REVIEW = 'TOOLS_TOOL_REVIEW',
     TOOL_MIGRATION_CREATE = 'TOOL_MIGRATION_CREATE',
+    //TEMPLATES
+    TEMPLATES_TEMPLATE_READ = 'TEMPLATES_TEMPLATE_READ',
+    TEMPLATES_TEMPLATE_CREATE = 'TEMPLATES_TEMPLATE_CREATE',
+    TEMPLATES_TEMPLATE_UPDATE = 'TEMPLATES_TEMPLATE_UPDATE',
+    TEMPLATES_TEMPLATE_DELETE = 'TEMPLATES_TEMPLATE_DELETE',
+    TEMPLATES_TEMPLATE_REVIEW = 'TEMPLATES_TEMPLATE_REVIEW',
     //TOKENS
     TOKENS_TOKEN_READ = 'TOKENS_TOKEN_READ',
     TOKENS_TOKEN_CREATE = 'TOKENS_TOKEN_CREATE',
@@ -259,6 +272,15 @@ export enum Permissions {
     CREDENTIALS_USER_WRITE = 'CREDENTIALS_USER_WRITE',
     CREDENTIALS_SR_READ = 'CREDENTIALS_SR_READ',
     CREDENTIALS_SR_WRITE = 'CREDENTIALS_SR_WRITE',
+    //ORGANIZATIONS
+    ORGANIZATIONS_ORGANIZATION_READ = 'ORGANIZATIONS_ORGANIZATION_READ',
+    ORGANIZATIONS_ORGANIZATION_CREATE = 'ORGANIZATIONS_ORGANIZATION_CREATE',
+    ORGANIZATIONS_ORGANIZATION_UPDATE = 'ORGANIZATIONS_ORGANIZATION_UPDATE',
+    ORGANIZATIONS_ORGANIZATION_DELETE = 'ORGANIZATIONS_ORGANIZATION_DELETE',
+    ORGANIZATIONS_ORG_ROLE_MANAGE = 'ORGANIZATIONS_ORG_ROLE_MANAGE',
+    ORGANIZATIONS_ORG_MEMBER_MANAGE = 'ORGANIZATIONS_ORG_MEMBER_MANAGE',
+    ORGANIZATIONS_ORG_POLICY_ASSIGN = 'ORGANIZATIONS_ORG_POLICY_ASSIGN',
+    ORGANIZATIONS_ORG_MEMBER_SELF_MANAGE = 'ORGANIZATIONS_ORG_MEMBER_SELF_MANAGE',
 }
 
 /**
@@ -1011,6 +1033,56 @@ export const PermissionsArray: {
                 Permissions.TOOLS_TOOL_READ
             ]
         },
+        //TEMPLATES
+        {
+            name: Permissions.TEMPLATES_TEMPLATE_READ,
+            category: PermissionCategories.SCHEMAS,
+            entity: PermissionEntities.TEMPLATE,
+            action: PermissionActions.READ,
+            disabled: false
+        },
+        {
+            name: Permissions.TEMPLATES_TEMPLATE_CREATE,
+            category: PermissionCategories.SCHEMAS,
+            entity: PermissionEntities.TEMPLATE,
+            action: PermissionActions.CREATE,
+            disabled: false,
+            dependOn: [
+                Permissions.TEMPLATES_TEMPLATE_READ
+            ]
+        },
+        {
+            name: Permissions.TEMPLATES_TEMPLATE_UPDATE,
+            category: PermissionCategories.SCHEMAS,
+            entity: PermissionEntities.TEMPLATE,
+            action: PermissionActions.UPDATE,
+            disabled: false,
+            dependOn: [
+                Permissions.TEMPLATES_TEMPLATE_READ,
+                Permissions.SCHEMAS_SCHEMA_READ
+            ]
+        },
+        {
+            name: Permissions.TEMPLATES_TEMPLATE_DELETE,
+            category: PermissionCategories.SCHEMAS,
+            entity: PermissionEntities.TEMPLATE,
+            action: PermissionActions.DELETE,
+            disabled: false,
+            dependOn: [
+                Permissions.TEMPLATES_TEMPLATE_READ
+            ]
+        },
+        {
+            name: Permissions.TEMPLATES_TEMPLATE_REVIEW,
+            category: PermissionCategories.SCHEMAS,
+            entity: PermissionEntities.TEMPLATE,
+            action: PermissionActions.REVIEW,
+            disabled: false,
+            dependOn: [
+                Permissions.TEMPLATES_TEMPLATE_READ,
+                Permissions.SCHEMAS_SCHEMA_READ
+            ]
+        },
         //TOKENS
         {
             name: Permissions.TOKENS_TOKEN_READ,
@@ -1410,6 +1482,81 @@ export const PermissionsArray: {
             entity: PermissionEntities.ROLE,
             action: PermissionActions.MANAGE,
             disabled: false
+        },
+        //ORGANIZATIONS
+        {
+            name: Permissions.ORGANIZATIONS_ORGANIZATION_READ,
+            category: PermissionCategories.ORGANIZATIONS,
+            entity: PermissionEntities.ORGANIZATION,
+            action: PermissionActions.READ,
+            disabled: false
+        },
+        {
+            name: Permissions.ORGANIZATIONS_ORGANIZATION_CREATE,
+            category: PermissionCategories.ORGANIZATIONS,
+            entity: PermissionEntities.ORGANIZATION,
+            action: PermissionActions.CREATE,
+            disabled: false,
+            dependOn: [
+                Permissions.ORGANIZATIONS_ORGANIZATION_READ
+            ]
+        },
+        {
+            name: Permissions.ORGANIZATIONS_ORGANIZATION_UPDATE,
+            category: PermissionCategories.ORGANIZATIONS,
+            entity: PermissionEntities.ORGANIZATION,
+            action: PermissionActions.UPDATE,
+            disabled: false,
+            dependOn: [
+                Permissions.ORGANIZATIONS_ORGANIZATION_READ
+            ]
+        },
+        {
+            name: Permissions.ORGANIZATIONS_ORGANIZATION_DELETE,
+            category: PermissionCategories.ORGANIZATIONS,
+            entity: PermissionEntities.ORGANIZATION,
+            action: PermissionActions.DELETE,
+            disabled: false,
+            dependOn: [
+                Permissions.ORGANIZATIONS_ORGANIZATION_READ
+            ]
+        },
+        {
+            name: Permissions.ORGANIZATIONS_ORG_ROLE_MANAGE,
+            category: PermissionCategories.ORGANIZATIONS,
+            entity: PermissionEntities.ORG_ROLE,
+            action: PermissionActions.MANAGE,
+            disabled: false,
+            dependOn: [
+                Permissions.ORGANIZATIONS_ORGANIZATION_READ
+            ]
+        },
+        {
+            name: Permissions.ORGANIZATIONS_ORG_MEMBER_MANAGE,
+            category: PermissionCategories.ORGANIZATIONS,
+            entity: PermissionEntities.ORG_MEMBER,
+            action: PermissionActions.MANAGE,
+            disabled: false,
+            dependOn: [
+                Permissions.ORGANIZATIONS_ORGANIZATION_READ
+            ]
+        },
+        {
+            name: Permissions.ORGANIZATIONS_ORG_POLICY_ASSIGN,
+            category: PermissionCategories.ORGANIZATIONS,
+            entity: PermissionEntities.ORG_POLICY,
+            action: PermissionActions.MANAGE,
+            disabled: false,
+            dependOn: [
+                Permissions.ORGANIZATIONS_ORGANIZATION_READ
+            ]
+        },
+        {
+            name: Permissions.ORGANIZATIONS_ORG_MEMBER_SELF_MANAGE,
+            category: PermissionCategories.ORGANIZATIONS,
+            entity: PermissionEntities.ORG_MEMBER,
+            action: PermissionActions.MANAGE,
+            disabled: true
         }
     ];
 
@@ -1423,6 +1570,7 @@ export const UserDefaultPermission: Permissions[] = [
     Permissions.PROFILES_BALANCE_READ,
     Permissions.CREDENTIALS_USER_READ,
     Permissions.CREDENTIALS_USER_WRITE,
+    Permissions.ORGANIZATIONS_ORG_MEMBER_SELF_MANAGE,
 ];
 
 export const SRDefaultPermission: Permissions[] = [
@@ -1493,6 +1641,11 @@ export const SRDefaultPermission: Permissions[] = [
     Permissions.TOOLS_TOOL_DELETE,
     Permissions.TOOLS_TOOL_REVIEW,
     Permissions.TOOL_MIGRATION_CREATE,
+    Permissions.TEMPLATES_TEMPLATE_READ,
+    Permissions.TEMPLATES_TEMPLATE_CREATE,
+    Permissions.TEMPLATES_TEMPLATE_UPDATE,
+    Permissions.TEMPLATES_TEMPLATE_DELETE,
+    Permissions.TEMPLATES_TEMPLATE_REVIEW,
     Permissions.TOKENS_TOKEN_READ,
     Permissions.TOKENS_TOKEN_CREATE,
     Permissions.TOKENS_TOKEN_UPDATE,
@@ -1533,6 +1686,13 @@ export const SRDefaultPermission: Permissions[] = [
     // Permissions.LOG_USERS_READ,
     Permissions.CREDENTIALS_SR_READ,
     Permissions.CREDENTIALS_SR_WRITE,
+    Permissions.ORGANIZATIONS_ORGANIZATION_READ,
+    Permissions.ORGANIZATIONS_ORGANIZATION_CREATE,
+    Permissions.ORGANIZATIONS_ORGANIZATION_UPDATE,
+    Permissions.ORGANIZATIONS_ORGANIZATION_DELETE,
+    Permissions.ORGANIZATIONS_ORG_ROLE_MANAGE,
+    Permissions.ORGANIZATIONS_ORG_MEMBER_MANAGE,
+    Permissions.ORGANIZATIONS_ORG_POLICY_ASSIGN,
 ];
 
 export const AuditDefaultPermission: Permissions[] = [

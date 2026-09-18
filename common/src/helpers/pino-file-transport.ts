@@ -1,6 +1,6 @@
 import pino from 'pino';
-import path from 'path';
-import { existsSync, mkdirSync, openSync } from 'fs';
+import path from 'node:path';
+import { existsSync, mkdirSync, openSync } from 'node:fs';
 
 interface PinoFileTransportOptions {
     filePath: string;

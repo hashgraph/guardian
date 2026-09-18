@@ -80,6 +80,7 @@ export class SendToGuardianBlock {
             old = await ref.databaseServer.getVcDocument({
                 id: { $eq: document?.draftId },
                 policyId: { $eq: ref.policyId },
+                owner: { $eq: document?.owner },
                 draft: { $eq: true }
             });
         }

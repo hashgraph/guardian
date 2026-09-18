@@ -1,14 +1,14 @@
-import { ContractsPage } from "../../pages/contractsPage";
+import { ContractsPage } from '../../pages/contractsPage';
 const contractsPage = new ContractsPage();
 
-import { HomePage } from "../../pages/homePage";
+import { HomePage } from '../../pages/homePage';
 const homePage = new HomePage();
 
-context("Workflow Contract Creation", { tags: ['ui'] }, () => {
+context('Workflow Contract Creation', { tags: ['ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
-    const wipeContract = "wUIContract";
-    const retireContract = "rUIContract";
+    const wipeContract = 'wUIContract';
+    const retireContract = 'rUIContract';
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
@@ -18,11 +18,11 @@ context("Workflow Contract Creation", { tags: ['ui'] }, () => {
     })
 
     //TBD:  Full flow with retire tokens
-    it("Create contracts", () => {
-        contractsPage.openContractTypeTab("wipe");
+    it('Create contracts', () => {
+        contractsPage.openContractTypeTab('wipe');
         contractsPage.createContract();
         contractsPage.fillContract(wipeContract);
-        contractsPage.openContractTypeTab("retire");
+        contractsPage.openContractTypeTab('retire');
         contractsPage.createContract();
         contractsPage.fillContract(retireContract);
     });

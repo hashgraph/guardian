@@ -1,40 +1,27 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
-import * as Checks from "../../../support/checkingMethods";
-import * as Authorization from "../../../support/authorization";
+import { STATUS_CODE } from '../../../support/api/api-const';
+import * as Authorization from '../../../support/authorization';
+import * as Contracts from '../../../support/api/contracts';
 
-context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
+context('Contracts', { tags: ['contracts', 'firstPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
+    const contractNameW = 'FirstAPIContractW';
     let contractUuidW;
 
-    const getWipeRequests = (auth, qs = {}) => {
-        return cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.WipeRequests,
-            headers: auth ? { authorization: auth } : {},
-            qs: qs,
-            failOnStatusCode: false
-        });
-    };
+    const getWipeRequests = Contracts.getWipeRequests;
 
-    before("Wait request", () => {
+    before('Wait request', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.ListOfContracts,
-                headers: { authorization },
-                qs: { "type": "WIPE" },
-            }).then((response) => {
-                contractUuidW = response.body.at(0).contractId;
-                Checks.whileRetireRequestCreating(contractUuidW, authorization, 0);
-                getWipeRequests(authorization, { contractId: contractUuidW }).then((res) => {
-                    expect(res.status).eql(STATUS_CODE.OK);
-                });
+            Contracts.getContractByDescription(authorization, 'WIPE', contractNameW).then((contract) => {
+                contractUuidW = contract.contractId;
+                //The pool the previous spec set raised the request on-chain; Guardian picks it up
+                //from the mirror node on a once-a-minute synchronization task, so it is polled for
+                //rather than read once
+                Contracts.waitForWipeRequest(authorization, contractUuidW);
             });
         });
     });
 
-    it("Get wipe request", () => {
+    it('Get wipe request', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             getWipeRequests(authorization, { contractId: contractUuidW }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
@@ -43,7 +30,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
         });
     });
 
-    it("Get all wipe contracts requests", () => {
+    it('Get all wipe contracts requests', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             getWipeRequests(authorization).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
@@ -51,40 +38,40 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
         });
     });
 
-    it("Get all wipe contracts requests without auth token - Negative", () => {
+    it('Get all wipe contracts requests without auth token - Negative', () => {
         getWipeRequests(null).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Get all wipe contracts requests with invalid auth token - Negative", () => {
-        getWipeRequests("Bearer wqe").then((response) => {
+    it('Get all wipe contracts requests with invalid auth token - Negative', () => {
+        getWipeRequests('Bearer wqe').then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Get all wipe contracts requests with empty auth token - Negative", () => {
-        getWipeRequests("").then((response) => {
+    it('Get all wipe contracts requests with empty auth token - Negative', () => {
+        getWipeRequests('').then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Get wipe request without auth token - Negative", () => {
+    it('Get wipe request without auth token - Negative', () => {
         getWipeRequests(null, { contractId: contractUuidW }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Get wipe request with invalid auth token - Negative", () => {
-        getWipeRequests("Bearer wqe", { contractId: contractUuidW }).then((response) => {
+    it('Get wipe request with invalid auth token - Negative', () => {
+        getWipeRequests('Bearer wqe', { contractId: contractUuidW }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Get wipe request with empty auth token - Negative", () => {
-        getWipeRequests("", { contractId: contractUuidW }).then((response) => {
+    it('Get wipe request with empty auth token - Negative', () => {
+        getWipeRequests('', { contractId: contractUuidW }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
-    
+
 });

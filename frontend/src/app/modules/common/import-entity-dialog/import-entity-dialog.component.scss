@@ -24,7 +24,7 @@
     right: 0;
     bottom: 0;
     overflow: auto;
-    background: #fff;
+    background: var(--guardian-background, #fff);
 }
 
 .record-source-selector {

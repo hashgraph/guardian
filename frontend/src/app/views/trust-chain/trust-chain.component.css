@@ -3,7 +3,7 @@
 }
 
 .loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: absolute;
     z-index: 99;
     top: 0;
@@ -55,7 +55,7 @@ a[disabled="true"]{
     border-radius: 6px;
     padding: 4px 30px 4px 4px;
     position: relative;
-    background: #fafafa;
+    background: var(--guardian-grey-background, #fafafa);
     margin: 0 0 8px 8px;
 }
 
@@ -143,7 +143,7 @@ a[disabled="true"]{
 
     width: 493px;
     height: 206px;
-    background: #FFFFFF 0% 0% no-repeat padding-box;
+    background: var(--guardian-background, #FFFFFF) 0% 0% no-repeat padding-box;
     box-shadow: 0px 3px 6px #00000029;
     border-radius: 35px;
     vertical-align: bottom;
@@ -181,7 +181,7 @@ a[disabled="true"]{
     color: #0B73F8;
     font-weight: bold;
     padding: 0px 0px 0px 10px;
-    background: #fff;
+    background: var(--guardian-background, #fff);
 }
 
 .chain-document a {
@@ -211,7 +211,7 @@ a[disabled="true"]{
 .chain-title i,
 .chain-title svg{
     font-size: 30px;
-    color: #000;
+    color: var(--guardian-font-color, #000);
     position: relative;
     top: -3px;
 }
@@ -273,7 +273,7 @@ a.go-back-link svg {
 
 .header {
     font-size: 20px;
-    color: #000;
+    color: var(--guardian-font-color, #000);
     padding: 45px;
 }
 

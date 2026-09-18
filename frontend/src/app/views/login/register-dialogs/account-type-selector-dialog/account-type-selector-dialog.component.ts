@@ -29,8 +29,4 @@ export class AccountTypeSelectorDialogComponent implements OnInit {
     onSubmit() {
         this.dialogRef.close(this.selectedRoleType);
     }
-
-    selectUserRole(userRole: UserRole) {
-        this.selectedRoleType = userRole;
-    }
 }

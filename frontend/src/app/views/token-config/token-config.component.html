@@ -11,9 +11,7 @@
             <a [routerLink]="['/profile']">here</a>
         </div>
 
-        <div class="guardian-user-page-header">
-            <span>List of Tokens</span>
-        </div>
+        <guardian-page-header pageTitle="Tokens" helpKey="tokens"></guardian-page-header>
 
         <div *ngIf="!loading" class="actions-container">
             <div *ngIf="policies" class="dropdown-block">
