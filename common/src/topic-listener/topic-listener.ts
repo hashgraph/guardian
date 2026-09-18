@@ -103,8 +103,16 @@ export class TopicListener {
 
             const index = message.sequenceNumber;
             if (index > this._startNumber) {
-                this._startNumber = index;
-                await this._observable(message);
+                try {
+                    await this._observable(message);
+                    // Advance only on success: a handler that throws or never settles has
+                    // not processed this message, and the counter is what a restart resumes
+                    // from and what the `index > _startNumber` test above compares against.
+                    this._startNumber = index;
+                } catch (error) {
+                    // Confirm below regardless, so one failed message cannot hold the
+                    // sender's single-message window shut.
+                }
             }
 
             await TopicListener.channel.publish(`${ListenerEvents.CONFIRM_LISTENER_MESSAGE}.${this._listenerId}`, index);
@@ -133,7 +141,9 @@ export class TopicListener {
             if (this._name) {
                 options.name = this._name;
             }
-            if (this._startNumber) {
+            // typeof, not truthiness: index 0 is a valid position, and a dropped index
+            // makes the service default to -1 and replay the whole topic.
+            if (typeof this._startNumber === 'number') {
                 options.index = this._startNumber;
             }
             const result = await TopicListener.channel
