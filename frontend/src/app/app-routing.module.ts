@@ -264,6 +264,20 @@ const routes: Routes = [
         }
     },
     {
+        path: 'schema-template-preview',
+        component: SchemasConfigurationComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.TEMPLATES_TEMPLATE_READ
+            ]
+        }
+    },
+    {
         path: 'schemas',
         component: SchemaConfigComponent,
         canActivate: [PermissionsGuard],

@@ -59,6 +59,15 @@
     }
 }
 
+.st-applied-template-banner--preview {
+    background: var(--guardian-info-background, #E9F1FF);
+    color: color-mix(in srgb, var(--color-accent-blue-1, #2D6CDF) 70%, #000);
+
+    strong {
+        color: color-mix(in srgb, var(--color-accent-blue-1, #2D6CDF) 82%, #000);
+    }
+}
+
 .st-applied-template-version {
     padding: 2px 6px;
     border-radius: 6px;
@@ -459,6 +468,21 @@
     border: 1px solid color-mix(in srgb, var(--color-accent-red-1, #FF432A) 40%, var(--guardian-border-color, #E1E7EF));
     border-radius: 6px;
     padding: 4px 10px;
+
+    i { font-size: 13px; }
+}
+
+.sc-preview-mode-badge {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    font-weight: 500;
+    color: color-mix(in srgb, var(--color-accent-blue-1, #2D6CDF) 70%, #000);
+    background: var(--guardian-info-background, #E9F1FF);
+    border: 1px solid color-mix(in srgb, var(--color-accent-blue-1, #2D6CDF) 40%, var(--guardian-border-color, #E1E7EF));
+    border-radius: 6px;
+    padding: 5px 11px;
 
     i { font-size: 13px; }
 }

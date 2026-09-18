@@ -196,7 +196,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public get showTopSaveActions(): boolean {
-        return !!this.selectedSchema || this.isTemplateConfigMode;
+        return !!this.selectedSchema || this.isTemplateConfigMode || this.isTemplatePreviewMode;
     }
 
     public get selectedSchemaId(): string | null {
@@ -236,7 +236,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public get isTemplateReadonly(): boolean {
-        return this.isTemplateMode && this.schemaTemplate?.status === ModuleStatus.PUBLISHED;
+        return this.isTemplateMode && !this.isTemplatePreviewMode && this.schemaTemplate?.status === ModuleStatus.PUBLISHED;
     }
 
     public get canCreateTemplateNewVersion(): boolean {
@@ -246,11 +246,15 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public get isTemplateMode(): boolean {
-        return this.type === 'template' || this.router.url.startsWith('/schema-template-configuration');
+        return this.type === 'template' || this.isTemplateConfigMode || this.isTemplatePreviewMode;
     }
 
     public get isTemplateConfigMode(): boolean {
         return this.router.url.startsWith('/schema-template-configuration');
+    }
+
+    public get isTemplatePreviewMode(): boolean {
+        return this.router.url.startsWith('/schema-template-preview');
     }
 
     public get breadcrumbRootLabel(): string {
@@ -270,7 +274,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     private get configurationRoute(): string {
-        return this.isTemplateConfigMode ? '/schema-template-configuration' : '/schema-configuration';
+        if (this.isTemplateConfigMode) { return '/schema-template-configuration'; }
+        if (this.isTemplatePreviewMode) { return '/schema-template-preview'; }
+        return '/schema-configuration';
     }
 
     private getSchemaConfigKey(schema: Schema | null | undefined): string {
@@ -407,6 +413,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (this.isTemplateReadonly) {
             return true;
         }
+        if (this.isTemplatePreviewMode) {
+            return true;
+        }
         if (!this.isTemplateConfigMode && !this.hasAppliedTemplateConfig) {
             return false;
         }
@@ -459,7 +468,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public get hasAppliedTemplateConfig(): boolean {
-        return !this.isTemplateMode && !!this.schemaTemplate?.config;
+        return (!this.isTemplateMode || this.isTemplatePreviewMode) && !!this.schemaTemplate?.config;
     }
 
     private isTemplateConfigPendingForSchema(schema: Schema | null | undefined): boolean {
@@ -489,7 +498,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (config) {
             return config;
         }
-        if ((this.isTemplateConfigMode && this.schemaTemplate) || (!this.isTemplateMode && schema?.templateId && this.schemaTemplate)) {
+        if (
+            (this.isTemplateConfigMode && this.schemaTemplate) ||
+            (!this.isTemplateMode && schema?.templateId && this.schemaTemplate) ||
+            (this.isTemplatePreviewMode && schema?.templateId && this.schemaTemplate)
+        ) {
             return {};
         }
         return null;
@@ -689,6 +702,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
      * removed are cleared, so the author confirms before anything is written.
      */
     public onUpgradeToIwaV3(): void {
+        if (this.isTemplatePreviewMode) { return; }
         const schema = this.selectedSchema;
         const id = schema?.id || (schema as any)?._id;
         if (!id) { return; }
@@ -1260,6 +1274,20 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         });
     }
 
+    public onPreviewTemplate(): void {
+        if (!this.isTemplateConfigMode || !this.schemaTemplate?.id) {
+            return;
+        }
+        void this.router.navigate(['/schema-template-preview'], {
+            queryParams: {
+                type: 'template',
+                topic: this.topic || undefined,
+                templateId: this.templateId || undefined,
+                schemaId: this.selectedSchemaId || undefined,
+            },
+        });
+    }
+
     private loadSchemaTemplate(): void {
         if (!this.isTemplateMode || !this.templateId || this.templateId === this.loadedTemplateId) {
             return;
@@ -1688,6 +1716,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public saveAll(): void {
+        if (this.isTemplatePreviewMode) {
+            return;
+        }
         if (this.isTemplateReadonly) {
             return;
         }
@@ -3421,6 +3452,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public onNewSchema(): void {
+        if (this.isTemplatePreviewMode) {
+            return;
+        }
         if (this.isTemplateReadonly) {
             return;
         }
@@ -4383,6 +4417,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public onPublish(): void {
+        if (this.isTemplatePreviewMode) { return; }
         if (this.type === 'tag') { this.onPublishTag(); return; }
         const id = this.selectedSchemaId;
         if (!id || !this.canPublish) { return; }
@@ -4417,6 +4452,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public onPublishTemplate(): void {
+        if (this.isTemplatePreviewMode) { return; }
         const id = this.schemaTemplate?.id;
         if (!id || !this.canPublishTemplate) { return; }
         const dialogRef = this.dialogService.open(PublishSchemaTemplateDialog, {
@@ -4442,6 +4478,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public onCreateTemplateNewVersion(): void {
+        if (this.isTemplatePreviewMode) { return; }
         const id = this.schemaTemplate?.id;
         if (!id || !this.canCreateTemplateNewVersion) { return; }
         this.schemaTemplatesService.pushNewVersion(id)
@@ -4469,6 +4506,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public onExport(): void {
+        if (this.isTemplatePreviewMode) { return; }
         const id = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
         if (!id) { return; }
         this.schemaService.exportInMessage(id)
@@ -4484,6 +4522,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public onExportTemplate(): void {
+        if (this.isTemplatePreviewMode) { return; }
         const id = this.schemaTemplate?.id;
         if (!id || !this.canExportTemplate) { return; }
         this.schemaTemplatesService.exportInMessage(id)
