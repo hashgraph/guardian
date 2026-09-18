@@ -13,6 +13,43 @@
   </div>
 </div>
 <div class="dialog-body">
+  <ng-template #pathPicker let-item="item" let-mode="mode">
+    <div class="path-input-wrapper">
+      <input
+        type="text"
+        pInputText
+        class="path-input"
+        [ngModel]="item.field"
+        (ngModelChange)="onPathChange(item, $event, mode)"
+        (keyup)="onPathKeyup($event)"
+        (blur)="onPathBlur(item)"
+        placeholder="Path"
+        [readOnly]="readonly"
+      />
+      @if (!readonly) {
+        <button
+          class="guardian-icon-button path-pick-btn"
+          (click)="mode === 'output' ? onOutputLink(item) : onInputLink(item)"
+          title="Browse schema fields">
+          <svg-icon
+            class="icon-btn svg-icon"
+            src="/assets/images/icons/16/search.svg"
+            svgClass="icon-color-primary">
+          </svg-icon>
+        </button>
+      }
+      @if (activePathItem === item && pathSuggestions.length) {
+        <div class="path-suggestions">
+          @for (s of pathSuggestions; track s) {
+            <div class="path-suggestion-item" (mousedown)="selectPathSuggestion(item, s, mode)">{{s}}</div>
+          }
+        </div>
+      }
+    </div>
+    @if (fieldWarnings.get(item.id)) {
+      <div class="path-unknown-warning">Path not found in schema</div>
+    }
+  </ng-template>
   @if (loading) {
     <div class="guardian-loading">
       <div class="guardian-loading-image"></div>
@@ -143,41 +180,7 @@
                         <div class="formula-body" [attr.error]="!item.validField">
                           <div class="guardian-input-container">
                             <label class="form-label"></label>
-                            <div class="path-input-wrapper">
-                              <input
-                                type="text"
-                                pInputText
-                                class="path-input"
-                                [ngModel]="item.field"
-                                (ngModelChange)="onPathChange(item, $event)"
-                                (keyup)="onPathKeyup($event)"
-                                (blur)="onPathBlur(item)"
-                                placeholder="Path"
-                                [readOnly]="readonly"
-                              />
-                              @if (!readonly) {
-                                <button
-                                  class="guardian-icon-button path-pick-btn"
-                                  (click)="onInputLink(item)"
-                                  title="Browse schema fields">
-                                  <svg-icon
-                                    class="icon-btn svg-icon"
-                                    src="/assets/images/icons/16/search.svg"
-                                    svgClass="icon-color-primary">
-                                  </svg-icon>
-                                </button>
-                              }
-                              @if (activePathItem === item && pathSuggestions.length) {
-                                <div class="path-suggestions">
-                                  @for (s of pathSuggestions; track s) {
-                                    <div class="path-suggestion-item" (mousedown)="selectPathSuggestion(item, s)">{{s}}</div>
-                                  }
-                                </div>
-                              }
-                            </div>
-                            @if (fieldWarnings.get(item.id)) {
-                              <div class="path-unknown-warning">Path not found in schema</div>
-                            }
+                            <ng-container *ngTemplateOutlet="pathPicker; context: {item: item, mode: 'input'}"></ng-container>
                           </div>
                         </div>
                       </div>
@@ -604,21 +607,7 @@
                         <div class="formula-body" [attr.error]="!item.validField">
                           <div class="guardian-input-container">
                             <label class="form-label">Output</label>
-                            <div class="formula-link" (click)="onOutputLink(item)">
-                              @if (item.field) {
-                                <div class="formula-link-value">
-                                  <div class="formula-link-value__entity">{{getEntityName('output', null)}}:</div>
-                                  <div class="formula-link-value__item">{{getFieldName('output', null, item.field)}}</div>
-                                </div>
-                              }
-                              @if (item.field) {
-                                <div class="formula-link-remove">
-                                  <button class="guardian-icon-button" (click)="deleteLink(item, $event)">
-                                    <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
-                                  </button>
-                                </div>
-                              }
-                            </div>
+                            <ng-container *ngTemplateOutlet="pathPicker; context: {item: item, mode: 'output'}"></ng-container>
                           </div>
                         </div>
                         <div class="formula-eq">=</div>
