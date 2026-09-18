@@ -848,13 +848,30 @@ export class SchemaHelper {
         };
 
         const revealMap = SchemaHelper.buildRevealMap(conditions);
+        const evaluated: { reachable: boolean; active: SchemaField[]; inactive: SchemaField[] }[] = [];
+        const activeFieldNames = new Set<string>();
         for (const condition of conditions) {
             const reachable = SchemaHelper.isConditionReachable(condition, revealMap, evaluate);
             const thenFields = condition.thenFields || [];
             const elseFields = condition.elseFields || [];
 
             if (!reachable) {
-                for (const field of [...thenFields, ...elseFields]) {
+                evaluated.push({ reachable, active: [], inactive: [...thenFields, ...elseFields] });
+                continue;
+            }
+
+            const matched = evaluate(condition);
+            const active = matched ? thenFields : elseFields;
+            const inactive = matched ? elseFields : thenFields;
+            for (const field of active) {
+                activeFieldNames.add(field.name);
+            }
+            evaluated.push({ reachable, active, inactive });
+        }
+
+        for (const { reachable, active, inactive } of evaluated) {
+            if (!reachable) {
+                for (const field of inactive) {
                     if (present(data[field.name])) {
                         errors.push(
                             `Field "${field.name}" is not allowed: the condition that reveals it is not applicable.`
@@ -864,10 +881,6 @@ export class SchemaHelper {
                 continue;
             }
 
-            const matched = evaluate(condition);
-            const active = matched ? thenFields : elseFields;
-            const inactive = matched ? elseFields : thenFields;
-
             for (const field of active) {
                 if (field.required && !present(data[field.name])) {
                     errors.push(`Field "${field.name}" is required.`);
@@ -876,17 +889,12 @@ export class SchemaHelper {
 
             // Branch exclusivity. `buildDocument` used to emit `properties: { name: false }` on
             // the opposite branch, but that construct corrupts schemas on Guardian before 3.7.0,
-            // so the rule lives here now. A field listed on both branches is shared rather than
-            // exclusive, so it is never rejected. Likewise, a name revealed by a *different*
-            // condition too is ambiguous - it may be legitimately active there - so this
-            // condition alone cannot judge it forbidden (mirrors the ambiguity fallback in
-            // `isConditionReachable`/`buildRevealMap`).
+            // so the rule lives here instead. A field is forbidden only when no reachable
+            // condition's currently active branch reveals it under that name - this covers both
+            // "listed on both branches of this condition" and "revealed by a different,
+            // currently-active condition" in one check.
             for (const field of inactive) {
-                if (active.some(f => f.name === field.name)) {
-                    continue;
-                }
-                const revealedBy = revealMap.get(field.name);
-                if (revealedBy && revealedBy.length > 1) {
+                if (activeFieldNames.has(field.name)) {
                     continue;
                 }
                 if (present(data[field.name])) {
