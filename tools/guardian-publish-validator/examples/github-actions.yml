@@ -1,0 +1,57 @@
+# Example GitHub Actions workflow that runs guardian-publish-validator on:
+#   - every PR that touches Methodology Library/
+#   - a daily scheduled sweep of the whole library
+#
+# Drop this into .github/workflows/validate-methodology-library.yml at the
+# repo root to wire it up.
+
+name: Methodology Library validation
+on:
+  pull_request:
+    paths:
+      - 'Methodology Library/**'
+  schedule:
+    - cron: '0 6 * * *' # daily 06:00 UTC
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history so PR diff works
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install validator
+        working-directory: tools/guardian-publish-validator
+        run: npm ci
+
+      - name: Determine changed files (PR runs only)
+        if: github.event_name == 'pull_request'
+        run: |
+          git diff --name-only "origin/${{ github.base_ref }}..." > /tmp/changed.txt
+          echo "Changed files:"
+          cat /tmp/changed.txt
+          echo "CHANGED_ARG=--changed-only-from /tmp/changed.txt" >> "$GITHUB_ENV"
+
+      - name: Run validator
+        working-directory: tools/guardian-publish-validator
+        run: |
+          node bin/validator.js \
+            --path "$GITHUB_WORKSPACE/Methodology Library" \
+            --network testnet \
+            --fail-on broken \
+            --json "$GITHUB_WORKSPACE/validator-report.json" \
+            $CHANGED_ARG
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validator-report
+          path: validator-report.json
