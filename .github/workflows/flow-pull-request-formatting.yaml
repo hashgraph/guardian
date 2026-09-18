@@ -28,7 +28,7 @@ permissions:
 jobs:
   title-check:
     name: Title Check
-    runs-on: guardian-linux-medium
+    runs-on: hg-guard-lin-md
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
@@ -42,7 +42,7 @@ jobs:
 
   assignee-check:
     name: Assignee Check
-    runs-on: guardian-linux-medium
+    runs-on: hg-guard-lin-md
 
     steps:
       - name: Harden Runner
