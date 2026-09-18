@@ -3760,6 +3760,46 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public isIfRowEnum(row: any): boolean { return !!(row?.field?.enum?.length); }
     public getIfRowOptions(row: any): string[] { return row?.field?.enum ?? []; }
 
+    public getIfRowComparator(row: any): string {
+        return row?.comparator || 'equals';
+    }
+
+    /**
+     * Array fields never offer '=' for a new selection - it can never match (an array is
+     * never === or coercible-equal to a scalar). The one exception is a row already saved as
+     * 'equals' (or with no comparator at all) on an array field: that predicate predates array
+     * comparators and never matched anything either, but it's preserved as-is rather than
+     * silently reinterpreted - so its current state stays visible and selectable.
+     */
+    public getIfRowComparatorOptions(row: any): { label: string; value: string }[] {
+        const isArrayField = !!(row?.field?.isArray && !row?.field?.isRef);
+        if (!isArrayField) {
+            return [{ label: '=', value: 'equals' }];
+        }
+        const options = [
+            { label: 'contains', value: 'contains' },
+            { label: 'each element =', value: 'every' },
+        ];
+        if (!row?.comparator || row.comparator === 'equals') {
+            options.unshift({ label: '=', value: 'equals' });
+        }
+        return options;
+    }
+
+    public setIfRowComparator(cond: SchemaCondition, rowIdx: number, comparator: string): void {
+        const ic = cond.ifCondition as any;
+        if (!ic) { return; }
+        const apply = (row: any) => {
+            if (!row) { return; }
+            if (comparator === 'equals') { delete row.comparator; }
+            else { row.comparator = comparator; }
+        };
+        if ('AND' in ic) { apply(ic.AND[rowIdx]); }
+        else if ('OR' in ic) { apply(ic.OR[rowIdx]); }
+        else { apply(ic); }
+        this.markDirty();
+    }
+
     public setIfRowField(cond: SchemaCondition, rowIdx: number, pathStr: string): void {
         const field = this._resolveConditionField(pathStr);
         if (!field) { return; }

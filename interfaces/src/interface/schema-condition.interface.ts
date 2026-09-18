@@ -21,8 +21,15 @@ export interface SchemaCondition {
   errors?: any[];
 }
 
+/**
+ * How a predicate's value is compared against the field's actual value.
+ * Absent means 'equals' - existing schemas need no migration.
+ */
+export type SchemaPredicateComparator = 'equals' | 'contains' | 'every';
+
 export interface SchemaFieldPredicate {
   field: SchemaField;
   fieldValue: any;
   fieldPath?: string[];
+  comparator?: SchemaPredicateComparator;
 }
