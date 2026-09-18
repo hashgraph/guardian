@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpResponse } from '@angular/common/http';
 import { EMPTY, Observable, Subject, Subscription, forkJoin, of } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, shareReplay, switchMap, takeUntil } from 'rxjs/operators';
-import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, relationAncestors, ModuleStatus, ISchemaTemplate, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus, ISchemaArrayDependency, ISchemaArrayDependencyMapping, DEFAULT_IWA_VERSION, IwaVersion, resolveIwaVersion, IPropertySuggestionResult, } from '@guardian/interfaces';
+import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, relationAncestors, ModuleStatus, ISchemaTemplate, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus, SchemaPredicateComparator, ISchemaArrayDependency, ISchemaArrayDependencyMapping, DEFAULT_IWA_VERSION, IwaVersion, resolveIwaVersion, IPropertySuggestionResult, } from '@guardian/interfaces';
 import { SchemaService } from 'src/app/services/schema.service';
 import { TagsService } from 'src/app/services/tag.service';
 import { ProjectComparisonService } from 'src/app/services/project-comparison.service';
@@ -3684,6 +3684,14 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return fields.find(f => f.name === parts[parts.length - 1]) ?? null;
     }
 
+    // A freshly created predicate row on an array field must carry an explicit comparator so
+    // getIfRowComparatorOptions can tell "just created" (exclude '=', which can never match an
+    // array) apart from "legacy row predating array comparators" (no comparator at all, where
+    // '=' stays selectable to preserve its current state).
+    private _defaultComparatorFor(field: SchemaField | null | undefined): SchemaPredicateComparator | undefined {
+        return (field?.isArray && !field?.isRef) ? 'contains' : undefined;
+    }
+
     private get _firstConditionEntry(): { field: SchemaField; fieldPath: string[] } | null {
         for (const group of this.getConditionFieldGroups()) {
             for (const opt of group.fields) {
@@ -3740,11 +3748,17 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         // getIfRows returns a placeholder row for a null ifCondition, so an existing row is
         // only usable when it actually carries a field; otherwise fall back to the first entry.
         const existing = rows[0]?.field ? rows[0] : null;
-        const first = existing ?? { field: firstEntry?.field, fieldValue: '', ...(firstEntry && firstEntry.fieldPath.length > 1 ? { fieldPath: firstEntry.fieldPath } : {}) };
+        const first = existing ?? {
+            field: firstEntry?.field,
+            fieldValue: '',
+            ...(firstEntry && firstEntry.fieldPath.length > 1 ? { fieldPath: firstEntry.fieldPath } : {}),
+            ...(this._defaultComparatorFor(firstEntry?.field) ? { comparator: this._defaultComparatorFor(firstEntry?.field) } : {}),
+        };
         const predicate = {
             field: first.field,
             fieldValue: first.fieldValue,
             ...(Array.isArray(first.fieldPath) && first.fieldPath.length > 1 ? { fieldPath: first.fieldPath } : {}),
+            ...(first.comparator ? { comparator: first.comparator } : {}),
         };
         if (op === 'SINGLE') {
             (cond as any).ifCondition = predicate;
@@ -3760,6 +3774,46 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public isIfRowEnum(row: any): boolean { return !!(row?.field?.enum?.length); }
     public getIfRowOptions(row: any): string[] { return row?.field?.enum ?? []; }
 
+    public getIfRowComparator(row: any): string {
+        return row?.comparator || 'equals';
+    }
+
+    /**
+     * Array fields never offer '=' for a new selection - it can never match (an array is
+     * never === or coercible-equal to a scalar). The one exception is a row already saved as
+     * 'equals' (or with no comparator at all) on an array field: that predicate predates array
+     * comparators and never matched anything either, but it's preserved as-is rather than
+     * silently reinterpreted - so its current state stays visible and selectable.
+     */
+    public getIfRowComparatorOptions(row: any): { label: string; value: string }[] {
+        const isArrayField = !!(row?.field?.isArray && !row?.field?.isRef);
+        if (!isArrayField) {
+            return [{ label: '=', value: 'equals' }];
+        }
+        const options = [
+            { label: 'contains', value: 'contains' },
+            { label: 'each element =', value: 'every' },
+        ];
+        if (!row?.comparator || row.comparator === 'equals') {
+            options.unshift({ label: '=', value: 'equals' });
+        }
+        return options;
+    }
+
+    public setIfRowComparator(cond: SchemaCondition, rowIdx: number, comparator: SchemaPredicateComparator): void {
+        const ic = cond.ifCondition as any;
+        if (!ic) { return; }
+        const apply = (row: any) => {
+            if (!row) { return; }
+            if (comparator === 'equals') { delete row.comparator; }
+            else { row.comparator = comparator; }
+        };
+        if ('AND' in ic) { apply(ic.AND[rowIdx]); }
+        else if ('OR' in ic) { apply(ic.OR[rowIdx]); }
+        else { apply(ic); }
+        this.markDirty();
+    }
+
     public setIfRowField(cond: SchemaCondition, rowIdx: number, pathStr: string): void {
         const field = this._resolveConditionField(pathStr);
         if (!field) { return; }
@@ -3768,6 +3822,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             field,
             fieldValue: '',
             ...(fieldPath.length > 1 ? { fieldPath } : {}),
+            ...(this._defaultComparatorFor(field) ? { comparator: this._defaultComparatorFor(field) } : {}),
         };
         const ic = cond.ifCondition as any;
         if (ic && 'AND' in ic) { ic.AND[rowIdx] = predicate; }
@@ -3793,6 +3848,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             field: firstEntry?.field ?? null,
             fieldValue: '',
             ...(firstEntry && firstEntry.fieldPath.length > 1 ? { fieldPath: firstEntry.fieldPath } : {}),
+            ...(this._defaultComparatorFor(firstEntry?.field) ? { comparator: this._defaultComparatorFor(firstEntry?.field) } : {}),
         };
         if ('AND' in ic) { ic.AND.push(newRow); }
         else if ('OR' in ic) { ic.OR.push(newRow); }
@@ -4094,6 +4150,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 field: firstEntry.field,
                 fieldValue: '',
                 ...(firstEntry.fieldPath.length > 1 ? { fieldPath: firstEntry.fieldPath } : {}),
+                ...(this._defaultComparatorFor(firstEntry.field) ? { comparator: this._defaultComparatorFor(firstEntry.field) } : {}),
             } as any,
             thenFields: [],
             elseFields: [],

@@ -1,5 +1,5 @@
 import { UntypedFormGroup, UntypedFormControl, UntypedFormArray, ValidatorFn, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
-import { Schema, SchemaCondition, SchemaConditionTarget, SchemaField, SchemaHelper, SchemaRuleValidateResult, GenerateUUIDv4, isGeoCustomType } from '@guardian/interfaces';
+import { Schema, SchemaCondition, SchemaConditionTarget, SchemaField, SchemaHelper, SchemaPredicateComparator, SchemaRuleValidateResult, GenerateUUIDv4, isGeoCustomType } from '@guardian/interfaces';
 import { fullFormats } from 'ajv-formats/dist/formats';
 import moment from 'moment';
 import { Subject, takeUntil } from 'rxjs';
@@ -56,6 +56,7 @@ interface IConditionPair {
     name: string;
     value: any;
     path?: string;
+    comparator?: SchemaPredicateComparator;
 }
 interface IConditionExpr {
     op: IfOp;
@@ -131,6 +132,7 @@ export class FieldForm {
             name: r?.field?.name || r?.field?.key || r?.field,
             value: r?.fieldValue,
             path: r?.fieldPath?.length > 1 ? (r.fieldPath as string[]).join('.') : undefined,
+            comparator: r?.comparator,
         });
         if (raw?.OR) {
             return { op: 'OR', pairs: (raw.OR || []).map(toPair) };
@@ -291,7 +293,7 @@ export class FieldForm {
                 : p.path;
             const c = path ? this.form.get(path) : this.form.controls[p.name];
             if (!c) return false;
-            return this.equalsLoosely(c.value, p.value);
+            return SchemaHelper.testPredicateValue(p.comparator, c.value, p.value, this.equalsLoosely.bind(this));
         };
 
         if (expr.op === 'SINGLE') return test(expr.pairs[0]);

@@ -1,4 +1,4 @@
-import { GenerateUUIDv4, IOwner, ISchema, ISchemaDocument, SchemaCondition, SchemaField, SchemaFieldPredicate, ISchemaArrayDependency } from '../index.js';
+import { GenerateUUIDv4, IOwner, ISchema, ISchemaDocument, SchemaCondition, SchemaField, SchemaFieldPredicate, SchemaPredicateComparator, ISchemaArrayDependency } from '../index.js';
 
 import { SchemaDataTypes } from '../interface/schema-document.interface.js';
 import { IIwaFieldRemap, IIwaUpgradeReport, mapIwaPathV1ToV3 } from '../type/iwa-version.type.js';
@@ -707,6 +707,87 @@ export class SchemaHelper {
     }
 
     /**
+     * Loose scalar equality shared by server-side condition validation and (via
+     * `testPredicateValue`) array comparators. Numeric strings compare numerically; everything
+     * else falls back to a trimmed string comparison. Deliberately has no date-parsing branch -
+     * the form's `equalsLoosely` has one this does not, and unifying them is a separate decision
+     * (see docs/array-condition-operators-design.md, section 3.6), not something to fold in here.
+     * @param a
+     * @param b
+     */
+    public static valuesEqual(a: any, b: any): boolean {
+        if (a === b) {
+            return true;
+        }
+        if (a === null || a === undefined || b === null || b === undefined) {
+            return false;
+        }
+        // Booleans and blank/whitespace strings are deliberately excluded: `Number('')` and
+        // `Number(false)` are both 0, which would otherwise make `''`/`false` spuriously equal
+        // to a fieldValue of 0.
+        const isNumericLike = (v: any): boolean =>
+            typeof v === 'number' || (typeof v === 'string' && v.trim() !== '');
+        if (isNumericLike(a) && isNumericLike(b)) {
+            const an = Number(a);
+            const bn = Number(b);
+            if (!Number.isNaN(an) && !Number.isNaN(bn)) {
+                return an === bn;
+            }
+        }
+        return String(a).trim() === String(b).trim();
+    }
+
+    /**
+     * Dispatches a predicate's comparator against an actual value. Shared by server-side
+     * validation and the frontend form so `contains`/`every` are implemented exactly once;
+     * callers supply their own scalar-equality function so the form can keep its `moment()`
+     * date handling without forcing it onto the server (or vice versa).
+     * @param comparator absent means 'equals'
+     * @param actual the field's actual (resolved) value
+     * @param expected the predicate's literal value
+     * @param equalsFn scalar comparator used for 'equals' and for each element under
+     * 'contains'/'every'; defaults to `valuesEqual`
+     */
+    public static testPredicateValue(
+        comparator: SchemaPredicateComparator | undefined,
+        actual: any,
+        expected: any,
+        equalsFn: (a: any, b: any) => boolean = SchemaHelper.valuesEqual
+    ): boolean {
+        switch (comparator) {
+            case 'contains':
+                return Array.isArray(actual) && actual.some((el: any) => equalsFn(el, expected));
+            case 'every':
+                return Array.isArray(actual) && actual.length > 0 && actual.every((el: any) => equalsFn(el, expected));
+            default:
+                return equalsFn(actual, expected);
+        }
+    }
+
+    /**
+     * Reads a compiled `if.properties[name]` leaf and reports which comparator it encodes:
+     * a bare `const` ('equals'), `contains.const`, or `items.const` ('every'). Shared by
+     * server-side predicate extraction and (via ajv error/coercion walkers) VCJS, so the three
+     * known leaf shapes are recognized in exactly one place.
+     * @param node
+     */
+    public static readConstLeaf(node: any): { value: any; comparator?: SchemaPredicateComparator } | null {
+        if (!node || typeof node !== 'object') {
+            return null;
+        }
+        if (Object.prototype.hasOwnProperty.call(node, 'const')) {
+            return { value: node.const };
+        }
+        if (node.contains && Object.prototype.hasOwnProperty.call(node.contains, 'const')) {
+            return { value: node.contains.const, comparator: 'contains' };
+        }
+        if (node.items && Object.prototype.hasOwnProperty.call(node.items, 'const')) {
+            return { value: node.items.const, comparator: 'every' };
+        }
+        return null;
+    }
+
+    /**
      * Validate the fields a schema's conditions reveal against a submitted document.
      *
      * `buildDocument` declares the shape of every branch but does not mark branch fields
@@ -715,9 +796,14 @@ export class SchemaHelper {
      * The rules that cannot be expressed there are enforced here instead:
      *
      * - a required field of the active branch must be present;
-     * - no field of a condition whose `if` is unreachable may be present at all.
+     * - no field of a condition whose `if` is unreachable may be present at all;
+     * - no field of the inactive branch may be present, unless both branches list it.
      *
-     * Branch exclusivity for reachable conditions is still enforced by the schema itself.
+     * The last rule used to be carried by `properties: { name: false }` in the compiled branch.
+     * Guardian before 3.7.0 has no guard for a `false` property entry and turns it into a ghost
+     * field with `type: null`, corrupting the schema on re-save, so it is enforced here instead.
+     * Cross-schema targets still use `buildCrossForbidden`, being a develop-only feature that
+     * older versions drop outright.
      * @param conditions
      * @param data submitted document (credentialSubject)
      * @returns human readable errors, empty when the document is consistent
@@ -740,26 +826,12 @@ export class SchemaHelper {
         };
         const present = (value: any): boolean =>
             value !== undefined && value !== null && value !== '';
-        const equals = (a: any, b: any): boolean => {
-            if (a === b) {
-                return true;
-            }
-            if (a === null || a === undefined || b === null || b === undefined) {
-                return false;
-            }
-            const an = Number(a);
-            const bn = Number(b);
-            if (!Number.isNaN(an) && !Number.isNaN(bn)) {
-                return an === bn;
-            }
-            return String(a).trim() === String(b).trim();
-        };
         const test = (p: any): boolean => {
             const path = (p?.fieldPath?.length > 1) ? p.fieldPath : [p?.field?.name];
             if (!path[0]) {
                 return false;
             }
-            return equals(resolve(path), p.fieldValue);
+            return SchemaHelper.testPredicateValue(p?.comparator, resolve(path), p.fieldValue);
         };
         const evaluate = (condition: SchemaCondition): boolean => {
             const ic: any = condition?.ifCondition;
@@ -776,13 +848,30 @@ export class SchemaHelper {
         };
 
         const revealMap = SchemaHelper.buildRevealMap(conditions);
+        const evaluated: { reachable: boolean; active: SchemaField[]; inactive: SchemaField[] }[] = [];
+        const activeFieldNames = new Set<string>();
         for (const condition of conditions) {
             const reachable = SchemaHelper.isConditionReachable(condition, revealMap, evaluate);
             const thenFields = condition.thenFields || [];
             const elseFields = condition.elseFields || [];
 
             if (!reachable) {
-                for (const field of [...thenFields, ...elseFields]) {
+                evaluated.push({ reachable, active: [], inactive: [...thenFields, ...elseFields] });
+                continue;
+            }
+
+            const matched = evaluate(condition);
+            const active = matched ? thenFields : elseFields;
+            const inactive = matched ? elseFields : thenFields;
+            for (const field of active) {
+                activeFieldNames.add(field.name);
+            }
+            evaluated.push({ reachable, active, inactive });
+        }
+
+        for (const { reachable, active, inactive } of evaluated) {
+            if (!reachable) {
+                for (const field of inactive) {
                     if (present(data[field.name])) {
                         errors.push(
                             `Field "${field.name}" is not allowed: the condition that reveals it is not applicable.`
@@ -792,10 +881,26 @@ export class SchemaHelper {
                 continue;
             }
 
-            const active = evaluate(condition) ? thenFields : elseFields;
             for (const field of active) {
                 if (field.required && !present(data[field.name])) {
                     errors.push(`Field "${field.name}" is required.`);
+                }
+            }
+
+            // Branch exclusivity. `buildDocument` used to emit `properties: { name: false }` on
+            // the opposite branch, but that construct corrupts schemas on Guardian before 3.7.0,
+            // so the rule lives here instead. A field is forbidden only when no reachable
+            // condition's currently active branch reveals it under that name - this covers both
+            // "listed on both branches of this condition" and "revealed by a different,
+            // currently-active condition" in one check.
+            for (const field of inactive) {
+                if (activeFieldNames.has(field.name)) {
+                    continue;
+                }
+                if (present(data[field.name])) {
+                    errors.push(
+                        `Field "${field.name}" is not allowed: it belongs to the other branch of this condition.`
+                    );
                 }
             }
         }
@@ -855,14 +960,16 @@ export class SchemaHelper {
             for (const key of Object.keys(props || {})) {
                 const rule = props[key];
                 if (!rule) { continue; }
-                if (Object.prototype.hasOwnProperty.call(rule, 'const')) {
+                const leaf = SchemaHelper.readConstLeaf(rule);
+                if (leaf) {
                     const f = currentFields.find(x => x.name === key);
                     if (f) {
                         const fullPath = [...pathSoFar, key];
                         preds.push({
                             field: f,
-                            fieldValue: rule.const,
+                            fieldValue: leaf.value,
                             fieldPath: fullPath.length > 1 ? fullPath : undefined,
+                            ...(leaf.comparator ? { comparator: leaf.comparator } : {}),
                         });
                     }
                 } else if (rule.properties) {
@@ -1223,7 +1330,16 @@ export class SchemaHelper {
                 const path = ('fieldPath' in p && p.fieldPath && p.fieldPath.length > 1)
                     ? p.fieldPath
                     : [p.field.name];
-                let node: any = { const: p.fieldValue };
+                const comparator: SchemaPredicateComparator | undefined = (p as SchemaFieldPredicate).comparator;
+                let node: any;
+                if (comparator === 'contains') {
+                    node = { contains: { const: p.fieldValue } };
+                } else if (comparator === 'every') {
+                    // minItems: 1 is mandatory - {items: {const}} alone is vacuously true on [].
+                    node = { items: { const: p.fieldValue }, minItems: 1 };
+                } else {
+                    node = { const: p.fieldValue };
+                }
                 for (let i = path.length - 1; i >= 0; i--) {
                     node = { properties: { [path[i]]: node }, required: [path[i]] };
                 }
@@ -1329,13 +1445,6 @@ export class SchemaHelper {
             return Object.keys(root).length ? root : undefined;
         };
 
-        const buildForbid = (sub?: SchemaField[]) => {
-            if (!sub?.length) { return undefined; }
-            const props: any = {};
-            for (const f of sub) { props[f.name] = false; }
-            return { properties: props };
-        };
-
         const serializeCondition = (cond: SchemaCondition) => {
             const ifNode = serializeIf(cond);
             if (!ifNode) {
@@ -1360,19 +1469,20 @@ export class SchemaHelper {
                 return Object.keys(props).length ? { properties: props } : undefined;
             };
 
+            // Root-level branch fields are deliberately not forbidden with `properties: false`
+            // on the opposite branch. Guardian before 3.7.0 has no guard in `parseFields` for a
+            // `false` property entry, so it builds a ghost SchemaField with `type: null` and
+            // corrupts the schema on re-save. Exclusivity is enforced in
+            // `validateConditionFields` instead, where it is invisible to older versions.
+            // `buildCrossForbidden` is left alone: cross-schema targets are a develop-only
+            // feature that older versions drop entirely.
             const thenObj = deepMergeSchemaObj(
-                deepMergeSchemaObj(
-                    deepMergeSchemaObj(buildSub(cond.thenFields), buildCrossRequired(cond.thenTargets)),
-                    buildCrossForbidden(cond.elseTargets)
-                ),
-                buildForbid(cond.elseFields?.filter(f => !cond.thenFields?.some(t => t.name === f.name)))
+                deepMergeSchemaObj(buildSub(cond.thenFields), buildCrossRequired(cond.thenTargets)),
+                buildCrossForbidden(cond.elseTargets)
             );
             const elseObj = deepMergeSchemaObj(
-                deepMergeSchemaObj(
-                    deepMergeSchemaObj(buildSub(cond.elseFields), buildCrossRequired(cond.elseTargets)),
-                    buildCrossForbidden(cond.thenTargets)
-                ),
-                buildForbid(cond.thenFields?.filter(f => !cond.elseFields?.some(t => t.name === f.name)))
+                deepMergeSchemaObj(buildSub(cond.elseFields), buildCrossRequired(cond.elseTargets)),
+                buildCrossForbidden(cond.thenTargets)
             );
 
             if (!thenObj && !elseObj) {

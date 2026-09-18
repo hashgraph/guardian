@@ -191,6 +191,55 @@ describe('VCJS — coerceConditionConsts', function () {
         vcjs.coerceConditionConsts(schema);
         assert.strictEqual(schema.allOf[0].if.properties.tags.const, 5);
     });
+
+    it('coerces a "contains" leaf\'s const using the array\'s item type (issue #6687)', function () {
+        const vcjs = makeVcjs();
+        const schema = {
+            type: 'object',
+            properties: { tags: { type: 'array', items: { type: 'number' } } },
+            allOf: [{ if: { properties: { tags: { contains: { const: '5' } } }, required: ['tags'] }, then: {} }],
+        };
+        vcjs.coerceConditionConsts(schema);
+        assert.strictEqual(schema.allOf[0].if.properties.tags.contains.const, 5);
+    });
+
+    it('coerces an "every" leaf\'s const (items.const) using the array\'s item type (issue #6687)', function () {
+        const vcjs = makeVcjs();
+        const schema = {
+            type: 'object',
+            properties: { tags: { type: 'array', items: { type: 'number' } } },
+            allOf: [{
+                if: { properties: { tags: { items: { const: '5' }, minItems: 1 } }, required: ['tags'] },
+                then: {},
+            }],
+        };
+        vcjs.coerceConditionConsts(schema);
+        assert.strictEqual(schema.allOf[0].if.properties.tags.items.const, 5);
+    });
+
+    it('a "contains" condition with a string const still fires against a real number array end to end', async function () {
+        // Without coercion, ajv's const is type-strict and {contains: {const: '5'}} would never
+        // match [1, 5, 9] - this is the exact silent-breakage case issue #6687's design calls out.
+        const vcjs = makeVcjs();
+        vcjs.schemaLoader = async () => ({
+            type: 'object',
+            properties: {
+                tags: { type: 'array', items: { type: 'number' } },
+                optField: { type: 'string' },
+            },
+            allOf: [{
+                if: { properties: { tags: { contains: { const: '5' } } }, required: ['tags'] },
+                then: { properties: {}, required: [] },
+                else: { properties: { optField: false } },
+            }],
+        });
+
+        const matching = await vcjs.verifySubject({ tags: [1, 5, 9], optField: 'allowed' });
+        assert.isTrue(matching.ok, 'contains should fire once the string const is coerced to a number');
+
+        const nonMatching = await vcjs.verifySubject({ tags: [1, 3, 9], optField: 'should be forbidden' });
+        assert.isFalse(nonMatching.ok, 'contains should not fire when no element matches');
+    });
 });
 
 describe('VCJS — enhanceConditionErrors passthrough', function () {
