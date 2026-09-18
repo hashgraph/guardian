@@ -1,3 +1,4 @@
+import { isAbortError } from '~/lib/utils';
 import type { NetworkId } from '~/composables/useNetwork';
 
 export type RegistrySortKey =
@@ -133,14 +134,22 @@ export const useRegistriesApi = (opts: UseRegistriesApiOptions) => {
 
     const { data, pending, error, refresh } = useAsyncData<RegistriesResponse>(
         key.value,
-        async () => {
+        // `signal` is Nuxt's own dedupe:'cancel' AbortSignal. Forwarding it to
+        // $fetch tears the superseded request down at the network layer instead
+        // of letting it run to completion for a result Nuxt will discard.
+        async (_nuxtApp, { signal }) => {
             try {
                 const res = await $fetch<RegistriesResponse>(url.value, {
                     baseURL,
                     query: buildQuery(),
+                    signal,
                 });
                 return res ?? emptyResponse(opts.limit.value);
             } catch (err) {
+                // An abort means a newer search superseded this one, not a
+                // failure. Returning emptyResponse here would risk flashing an
+                // empty list; rethrowing lets Nuxt's dedupe drop it silently.
+                if (isAbortError(err)) throw err;
                 console.error('[useRegistriesApi] fetch failed:', err);
                 return emptyResponse(opts.limit.value);
             }

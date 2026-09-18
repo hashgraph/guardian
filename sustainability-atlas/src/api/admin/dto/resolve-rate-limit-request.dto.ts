@@ -17,7 +17,7 @@ export class ResolveRateLimitRequestDto {
     @IsIn(['approved', 'adjusted', 'declined'])
     decision: 'approved' | 'adjusted' | 'declined';
 
-    @ApiPropertyOptional({ description: 'Required for "adjusted" — the granted quota (may be lower than requested)', minimum: 1 })
+    @ApiPropertyOptional({ description: 'Required for "adjusted": the granted quota (may be lower than requested)', minimum: 1 })
     @IsOptional()
     @IsInt()
     @Min(1)

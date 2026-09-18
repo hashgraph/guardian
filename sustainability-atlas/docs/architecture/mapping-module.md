@@ -40,6 +40,17 @@ Selected with the `MAP_FIELDS_METHOD` environment variable.
 | `HEURISTIC-FIELD-MAPPER` | `HeuristicFieldMapperService` | Rule-based matching |
 | `LLM-FIELD-MAPPER` | `LlmFieldMapperService` | Model-assisted matching |
 
+### IWA version-aware binding (`CROSS-SCHEMA-FUZZY` only)
+
+When a schema field carries an IWA DMRV `property` in its `$comment`, the default
+strategy binds it to the canonical project field whose `iwaField`
+(`PROJECT_EXTRACT_FIELDS`) matches — score `1.0`, ahead of keyword / Jaro-Winkler
+scoring. The `property` is canonicalised to IWA v3 first, using the schema's
+`iwaVersion` tag (absent ⇒ v1, so e.g. `AccountableImpactOrganization.country`
+maps up to `ActivityImpactModule.country`). Fields with no `property`, or one v3
+dropped, fall through to keyword matching. Logic:
+`src/shared/config/iwa-version.ts`. The other strategies stay version-unaware.
+
 ## Where the output goes
 
 `PolicyMappingPipelineService.run()` returns `{ policyMapping, schemaFields }`. Both are persisted on

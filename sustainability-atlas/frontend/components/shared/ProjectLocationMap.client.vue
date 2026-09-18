@@ -17,6 +17,13 @@ let map: L.Map | null = null;
 let resizeObserver: ResizeObserver | null = null;
 let initializing = false;
 
+// CARTO watermarks unauthenticated raster tile requests as of 2026-08; append
+// the key when configured (see NUXT_PUBLIC_CARTO_API_KEY).
+const cartoApiKey = useRuntimeConfig().public.cartoApiKey;
+const cartoTileUrl = cartoApiKey
+    ? `https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png?key=${cartoApiKey}`
+    : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+
 async function initMap() {
     // Guard against concurrent or duplicate calls during the async rAF gap
     if (initializing || mapReady.value || !mapContainer.value) return;
@@ -46,7 +53,7 @@ async function initMap() {
         preferCanvas: true,
     });
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    L.tileLayer(cartoTileUrl, {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
         maxZoom: 18,
         noWrap: true,

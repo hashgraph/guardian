@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ChevronDown, Database, FileText, Layers, Loader2, Search, X } from 'lucide-vue-next';
+import { ChevronDown, ChevronUp, Database, FileText, Inbox, Layers, Loader2, Search, X } from 'lucide-vue-next';
 import type { LinkedSchema, VcDocData, VcField, VcGroup } from '~/types/models';
 import InfoTooltip from '~/components/shared/InfoTooltip.vue';
 
@@ -79,6 +79,31 @@ function getFilteredDocs(schemaUuid: string): VcDocData[] {
     if (!q) return docs;
     return docs.map(d => filterDoc(d, q)).filter((d): d is VcDocData => d !== null);
 }
+
+// Empty (zero-record) schemas are hidden by default so the panel isn't
+// dominated by sections with nothing to show. "Show all" reveals them.
+const showAllEmpty = ref(false);
+
+const populatedSchemas = computed(() => props.schemas.filter(s => s.vcCount > 0));
+const emptySchemas = computed(() => props.schemas.filter(s => s.vcCount === 0));
+
+function schemaMatchesQuery(schema: LinkedSchema, q: string): boolean {
+    return (schema.schemaName?.toLowerCase().includes(q) ?? false) || schema.schemaUuid.toLowerCase().includes(q);
+}
+
+// Hidden schemas that match the active search surface automatically, even
+// without expanding "Show all" — search should reach schemas the user can't see.
+const searchMatchedEmptySchemas = computed(() => {
+    const q = searchQuery.value.trim().toLowerCase();
+    if (!q) return [];
+    return emptySchemas.value.filter(s => schemaMatchesQuery(s, q));
+});
+
+const visibleEmptySchemas = computed(() => showAllEmpty.value ? emptySchemas.value : searchMatchedEmptySchemas.value);
+const remainingHiddenEmptyCount = computed(() => emptySchemas.value.length - visibleEmptySchemas.value.length);
+const displaySchemas = computed(() => [...populatedSchemas.value, ...visibleEmptySchemas.value]);
+
+watch(() => props.schemas, () => { showAllEmpty.value = false; });
 </script>
 
 <template>
@@ -103,7 +128,7 @@ function getFilteredDocs(schemaUuid: string): VcDocData[] {
 
         <template v-if="schemas.length">
             <div
-                v-for="schema in schemas"
+                v-for="schema in displaySchemas"
                 :key="schema.schemaUuid"
                 class="rounded-xl border overflow-hidden"
                 :class="schema.vcCount === 0 ? 'bg-muted/30 opacity-60' : 'bg-card'"
@@ -307,6 +332,35 @@ function getFilteredDocs(schemaUuid: string): VcDocData[] {
                         </template>
                     </div>
                 </template>
+            </div>
+
+            <!-- Empty-schema summary / expand-collapse control -->
+            <div
+                v-if="remainingHiddenEmptyCount > 0"
+                class="rounded-xl border bg-muted/20 px-5 py-3 flex items-center justify-between gap-3"
+            >
+                <span class="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Inbox class="h-3.5 w-3.5" />
+                    {{ $t('projects.detail.documents.hiddenEmptySchemas', { count: remainingHiddenEmptyCount }) }}
+                </span>
+                <button
+                    class="shrink-0 text-xs font-medium text-primary hover:underline"
+                    @click="showAllEmpty = true"
+                >
+                    {{ $t('projects.detail.documents.showAllEmpty') }}
+                </button>
+            </div>
+            <div
+                v-else-if="showAllEmpty && emptySchemas.length > 0"
+                class="flex justify-end"
+            >
+                <button
+                    class="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                    @click="showAllEmpty = false"
+                >
+                    <ChevronUp class="h-3.5 w-3.5" />
+                    {{ $t('projects.detail.documents.hideEmptySchemas') }}
+                </button>
             </div>
         </template>
         <div v-else class="rounded-xl border bg-card px-6 py-10 text-center text-sm text-muted-foreground">

@@ -24,6 +24,14 @@ export class JobCountsDto {
 
     @ApiProperty({ description: 'Jobs in a queue that has been paused' })
     paused: number;
+
+    @ApiProperty({
+        description:
+            'Jobs waiting in the priority-ordered set. BullMQ keeps these separate ' +
+            'from "waiting", so a queue whose producers all set a job priority ' +
+            'reports waiting=0 regardless of how deep its backlog actually is.',
+    })
+    prioritized: number;
 }
 
 export class QueueConfigDto {

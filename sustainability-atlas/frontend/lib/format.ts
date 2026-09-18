@@ -23,6 +23,26 @@ export function truncateText(text: string | null | undefined, maxLength: number)
 }
 
 /**
+ * Strips HTML markup from a raw text payload
+ */
+export function stripHtml(value: string | null | undefined): string {
+    if (!value) return '';
+    const withBreaks = value
+        .replace(/<\s*(br|\/p|\/div|\/li|\/h[1-6]|\/tr)\s*\/?>/gi, '\n')
+        .replace(/<[^>]*>/g, '');
+    return withBreaks
+        .replace(/&nbsp;/gi, ' ')
+        .replace(/&lt;/gi, '<')
+        .replace(/&gt;/gi, '>')
+        .replace(/&quot;/gi, '"')
+        .replace(/&#0*39;|&apos;/gi, '\'')
+        .replace(/&amp;/gi, '&')
+        .replace(/\n{3,}/g, '\n\n')
+        .replace(/[ \t]{2,}/g, ' ')
+        .trim();
+}
+
+/**
  * Guardian transaction type strings often carry a "&<version>" suffix
  * (e.g. "MintToken&1.0.0"). Strip it for display.
  */

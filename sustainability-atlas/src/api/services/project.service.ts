@@ -1,4 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { RedisService } from '@shared/redis/redis.service';
+import { SingleFlightService } from '@shared/single-flight/single-flight.service';
 import {
     ProjectQueryDto,
     ProjectResponseDto,
@@ -6,20 +8,54 @@ import {
     ProjectIdsDto,
     PaginatedProjectsDto,
     ProjectFilterOptionsDto,
+    MintSerialsResponseDto,
+    MintTransactionsResponseDto,
 } from '../dto/project.dto';
+import { PaginatedResponse } from '../dto/pagination.dto';
 import { NetworkDataSourceRegistry } from '../database/network-datasource.registry';
 import { PgProjectRepository } from '../repositories/pg-project.repository';
-import { ProjectRepository } from '../repositories/project.repository';
+import { ProjectRepository, ProjectListSummary } from '../repositories/project.repository';
 import { MappingReprocessService } from './mapping-reprocess.service';
 import { PolicyWorkflowGraph } from './policy-graph.builder';
 import { AdditionalDetailsSchemaDto } from '../dto/additional-details.dto';
 import { MrvDataQueryDto, MrvDataResponseDto } from '../dto/mrv-data.dto';
 
+// Short TTL — unlike the MV-backed dashboard/portfolio caches, project detail
+// data changes on ingest and on admin re-extract/refresh-ipfs actions, not on
+// a fixed refresh cadence, so this stays short to keep those changes visible quickly.
+const FIND_BY_ID_CACHE_TTL_SECONDS = 30;
+
+// Short TTL, same reasoning as above — count/summary read live business_view
+// rows, not an MV. Only bounds how long a page-flip within one search can
+// reuse the prior total/summary instead of re-running the search predicate.
+const COUNT_SUMMARY_CACHE_TTL_SECONDS = 20;
+
+// Long TTL — filter facet values are distinct-value lists that only change when
+// ingest introduces a genuinely new country/registry/methodology, never per
+// request, and this endpoint is not MV-backed so there is no MV refresh cadence
+// to stay aligned with. A new value surfacing minutes late is harmless.
+const FILTER_OPTIONS_CACHE_TTL_SECONDS = 300;
+
+// Soft TTL: past this the cached value is still served, but a background
+// refresh is kicked off. Recomputing costs seconds (the methodology facet scans
+// the whole METHODOLOGY population), so no request should ever block on it once
+// any value exists.
+const FILTER_OPTIONS_STALE_AFTER_SECONDS = 60;
+
+interface CachedFilterOptions {
+    value: ProjectFilterOptionsDto;
+    computedAt: number;
+}
+
 @Injectable()
 export class ProjectsService {
+    private readonly logger = new Logger(ProjectsService.name);
+
     constructor(
         private readonly dataSources: NetworkDataSourceRegistry,
         private readonly mappingReprocessService: MappingReprocessService,
+        private readonly redis: RedisService,
+        private readonly singleFlight: SingleFlightService,
     ) {}
 
     async findAll(
@@ -29,6 +65,14 @@ export class ProjectsService {
         const repo = this.getRepository(network);
         const page = query.page ?? 1;
         const limit = query.limit ?? 20;
+
+        // count/summary don't depend on page/limit — cache them separately so
+        // flipping pages within the same search reuses page 1's total/summary
+        // instead of re-running the search predicate for count and summary too.
+        const countSummaryCacheKey = this.countSummaryCacheKey(network, query);
+        const cachedCountAndSummary = await this.redis.getJson<{ total: number; summary: ProjectListSummary }>(
+            countSummaryCacheKey,
+        );
 
         const result = await repo.findAll({
             page,
@@ -54,7 +98,16 @@ export class ProjectsService {
             lifecycleStage: query.lifecycleStage,
             expectedIssuanceYearRange: query.expectedIssuanceYearRange,
             isPipeline: query.isPipeline,
+            cachedCountAndSummary: cachedCountAndSummary ?? undefined,
         });
+
+        if (!cachedCountAndSummary) {
+            await this.redis.setJson(
+                countSummaryCacheKey,
+                { total: result.total, summary: result.summary },
+                COUNT_SUMMARY_CACHE_TTL_SECONDS,
+            );
+        }
 
         const data = result.rows.map(row => ProjectResponseDto.fromRow(row, network, false));
         return {
@@ -64,9 +117,67 @@ export class ProjectsService {
         };
     }
 
+    /**
+     * Encodes every findAll filter that affects the search predicate — everything
+     * except page/limit, which don't change count or summary.
+     */
+    private countSummaryCacheKey(network: string, query: ProjectQueryDto): string {
+        return `projects:count-summary:${network}` +
+            `:${query.search ?? ''}:${query.name ?? ''}:${query.country ?? ''}` +
+            `:${query.methodology ?? ''}:${query.registry ?? ''}:${query.registryDid ?? ''}` +
+            `:${query.developer ?? ''}:${query.vintage ?? ''}:${query.status ?? ''}` +
+            `:${query.policyTopicId ?? ''}:${query.instanceTopicId ?? ''}:${query.sdgs ?? ''}` +
+            `:${query.sector ?? ''}:${query.sectoralScope ?? ''}:${query.vintageRange ?? ''}` +
+            `:${query.methodologyId ?? ''}:${query.lifecycleStage ?? ''}` +
+            `:${query.expectedIssuanceYearRange ?? ''}:${query.isPipeline ?? ''}`;
+    }
+
+    /**
+     * Cache-aside + single-flight + stale-while-revalidate. The underlying
+     * facet queries scan the whole METHODOLOGY population and cost seconds cold,
+     * so a plain cache-aside would still make whichever request lands on the TTL
+     * expiry pay that in full; serving the stale value and refreshing behind it
+     * keeps the live query off the request path entirely after the first miss.
+     */
     async getFilterOptions(network: string): Promise<ProjectFilterOptionsDto> {
+        const cacheKey = `project-filter-options:${network}`;
+        const cached = await this.redis.getJson<CachedFilterOptions>(cacheKey);
+
+        if (cached) {
+            if (Date.now() - cached.computedAt > FILTER_OPTIONS_STALE_AFTER_SECONDS * 1000) {
+                void this.singleFlight
+                    .run(cacheKey, () => this.computeAndCacheFilterOptions(network, cacheKey))
+                    .catch(err => {
+                        const msg = err instanceof Error ? err.message : String(err);
+                        this.logger.warn(`Background filter-options refresh failed for ${network}: ${msg}`);
+                    });
+            }
+            return cached.value;
+        }
+
+        // No value to serve — this caller has to wait for the computation.
+        return this.singleFlight.run(cacheKey, async () => {
+            // Re-check: another request may have populated the cache while
+            // this one was waiting to be scheduled onto the event loop.
+            const cachedAgain = await this.redis.getJson<CachedFilterOptions>(cacheKey);
+            if (cachedAgain) return cachedAgain.value;
+
+            return this.computeAndCacheFilterOptions(network, cacheKey);
+        });
+    }
+
+    private async computeAndCacheFilterOptions(
+        network: string,
+        cacheKey: string,
+    ): Promise<ProjectFilterOptionsDto> {
         const repo = this.getRepository(network);
-        return repo.getFilterOptions();
+        const result = await repo.getFilterOptions();
+        await this.redis.setJson(
+            cacheKey,
+            { value: result, computedAt: Date.now() },
+            FILTER_OPTIONS_CACHE_TTL_SECONDS,
+        );
+        return result;
     }
 
     /**
@@ -138,10 +249,71 @@ export class ProjectsService {
     }
 
     async findById(network: string, id: string): Promise<ProjectResponseDto | null> {
+        const cacheKey = `project-detail:${network}:${id}`;
+        const cached = await this.redis.getJson<ProjectResponseDto>(cacheKey);
+        if (cached) return cached;
+
         const repo = this.getRepository(network);
         const row = await repo.findById(id);
         if (!row) return null;
-        return ProjectResponseDto.fromRow(row, network, true);
+
+        const result = ProjectResponseDto.fromRow(row, network, true);
+        await this.redis.setJson(cacheKey, result, FIND_BY_ID_CACHE_TTL_SECONDS);
+        return result;
+    }
+
+    /**
+     * NFT serials attributed to one of this project's mint events, resolved via
+     * Guardian's NFT-metadata → mint-VP linkage. Throws NotFound when the mint
+     * isn't linked to this project, so a project's namespace can't be used to
+     * read another project's serials.
+     */
+    async findMintSerials(
+        network: string,
+        id: string | null,
+        mintConsensusTimestamp: string,
+        page: number,
+        limit: number,
+    ): Promise<MintSerialsResponseDto> {
+        const repo = this.getRepository(network);
+        const result = await repo.findMintSerials(id, mintConsensusTimestamp, page, limit);
+        if (!result) {
+            throw new NotFoundException(
+                id
+                    ? `Mint "${mintConsensusTimestamp}" is not linked to project "${id}" on ${network}`
+                    : `Mint "${mintConsensusTimestamp}" not found on ${network}`,
+            );
+        }
+        const { ranges, totalRanges, ...rest } = result;
+        // Pagination counts ranges, not serials — the two differ by orders of
+        // magnitude, and it is ranges the caller is paging through.
+        return { ...rest, ...new PaginatedResponse(ranges, totalRanges, page, limit) };
+    }
+
+    /** Retirement and transfer transactions for one issuance, or for the whole project when no mint is given. */
+    async findMintTransactions(
+        network: string,
+        id: string,
+        mintConsensusTimestamp: string | null,
+        page: number,
+        limit: number,
+        sortBy?: string,
+        sortDir?: 'asc' | 'desc',
+    ): Promise<MintTransactionsResponseDto> {
+        const repo = this.getRepository(network);
+        const result = await repo.findMintTransactions(id, mintConsensusTimestamp, page, limit, sortBy, sortDir);
+        if (!result) {
+            throw new NotFoundException(
+                mintConsensusTimestamp
+                    ? `Mint "${mintConsensusTimestamp}" is not linked to project "${id}" on ${network}`
+                    : `Project "${id}" has no linked issuances on ${network}`,
+            );
+        }
+        return {
+            mintConsensusTimestamp,
+            transferHistorySynced: result.transferHistorySynced,
+            ...new PaginatedResponse(result.transactions, result.total, page, limit),
+        };
     }
 
     async findActivity(network: string, id: string): Promise<ActivityEventDto[]> {

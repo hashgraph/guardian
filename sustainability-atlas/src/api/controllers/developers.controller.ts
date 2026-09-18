@@ -6,14 +6,14 @@ import {
     PaginatedDevelopersDto,
 } from '../dto/developer.dto';
 
-@ApiTags('developers')
+@ApiTags('Project developers')
 @Controller('api/v1/:network/developers')
 export class DevelopersController {
     constructor(private readonly developersService: DevelopersService) {}
 
     @Get()
     @ApiOperation({
-        summary: 'List Project Developers',
+        summary: 'Search project developers',
         description:
             'Returns a paginated list of project developers aggregated from PROJECT ' +
             'business_view rows. Each entry includes counts of projects and countries, ' +

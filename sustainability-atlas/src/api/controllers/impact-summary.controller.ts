@@ -9,7 +9,7 @@ import { ImpactSummaryReportScope } from '../services/impact-summary/pdf-templat
 import { EXPORT_FORMATS, ExportFormat } from '../dto/export.dto';
 
 /** Impact Summary combined aggregate: total credits, retirements (inferred), active projects/countries, SDG contributions, geographic distribution, sector breakdown, registry breakdown, and methodology count for one network in a single JSON round trip. */
-@ApiTags('impact-summary')
+@ApiTags('Impact summary')
 @ApiCookieAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('api/v1/:network/impact-summary')
@@ -18,10 +18,10 @@ export class ImpactSummaryController {
 
     @Get()
     @ApiOperation({
-        summary: 'Combined Impact Summary aggregate',
+        summary: 'Get the impact summary',
         description:
             'Returns one combined aggregate payload: total credits issued, retirements (inferred from ' +
-            'Mirror-Node-deleted NFT serials — not a ledger), active projects/countries, SDG contributions, ' +
+            'Mirror-Node-deleted NFT serials, not a ledger), active projects/countries, SDG contributions, ' +
             'geographic distribution, sector breakdown (with explicit Unknown/Others buckets), registry ' +
             'breakdown, and methodology count (deduped by relatedTopicId). Backs the Reports page ' +
             '"Impact Summary" tab and the one-click Export Impact Summary generator.',
@@ -36,13 +36,13 @@ export class ImpactSummaryController {
 
     @Get('export')
     @ApiOperation({
-        summary: 'Generate and download the Impact Summary document (CSV/XLSX/PDF)',
+        summary: 'Download the impact summary (CSV, Excel or PDF)',
         description:
             'Streams a freshly generated Impact Summary document. PDF is the curated top-N report; ' +
             'CSV/XLSX carry the FULL underlying ' +
             'breakdown datasets (geographic distribution, sector breakdown, registry breakdown, SDG ' +
             'contributions) rather than a top-N subset. `registryLabel`/`periodLabel` are display-only ' +
-            'scope labels for the report title — the aggregate itself is not filtered by them. ' +
+            'scope labels for the report title. The aggregate itself is not filtered by them. ' +
             'Best-effort audit-logs the generation to `audit_log` (`action=\'export.impact_summary\'`); ' +
             'the file itself is not persisted server-side.',
     })

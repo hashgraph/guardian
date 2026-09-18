@@ -1,0 +1,34 @@
+# =============================================================================
+# Overlay: run TESTNET in role-partitioned mode
+# =============================================================================
+#
+# Compose always starts every service that has no `profiles:` key, whatever
+# profile you activate. That means a plain
+#
+#   docker compose --profile roles-testnet up -d
+#
+# starts the four role workers AND the all-in-one `worker-testnet` alongside
+# them, so both tiers consume the same queues. Stopping the all-in-one first
+# does not help either: the next `up` simply starts it again.
+#
+# This overlay fixes that by giving `worker-testnet` a profile that is never
+# activated, which takes it out of the set Compose brings up.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.roles-testnet.yml \
+#       --profile roles-testnet up -d
+#
+# Optionally scale the ingest tier (the only role worth scaling out):
+#   ... up -d --scale worker-ingest-testnet=3
+#
+# Switching over from an already-running all-in-one worker? Remove it once:
+#   docker compose rm -sf worker-testnet
+# With this overlay in place it stays down; without it, `up` resurrects it.
+#
+# Mainnet is untouched here and keeps running its all-in-one worker. To split
+# mainnet as well, add -f docker-compose.roles-mainnet.yml and its profile.
+# =============================================================================
+
+services:
+    worker-testnet:
+        profiles: ['disabled']

@@ -6,8 +6,10 @@ import {
     resolveMethod,
     loadResolutionMaps,
     extractLatLng,
+    unwrapGeoJsonGeometry,
     resolveCountryName,
     findCountryInText,
+    isKnownCountryName,
 } from '../project-mapper/helpers';
 import {
     extractLatLngStrings,
@@ -62,9 +64,8 @@ export class ProjectMapperService {
             topicId: string;
             policyId: string | null;
             documents: Record<string, unknown>;
-            options: Record<string, unknown> | null;
         }> = await this.dataSource.query(
-            `SELECT "consensusTimestamp", "topicId", "policyId", documents, options
+            `SELECT "consensusTimestamp", "topicId", "policyId", documents
              FROM message
              WHERE "consensusTimestamp" = $1
                AND type = 'VC-Document'
@@ -259,6 +260,13 @@ export class ProjectMapperService {
         const extracted: Record<string, string | null> = {};
         let geoLngLat: [number, number] | null = null;
         let geoPolygon: ParsedGeoPolygon | null = null;
+        let estimatedAmount: number | null = null;
+        // Kept as the raw (possibly array, one element per developer) value —
+        // unwrapValue() below would join a multi-developer array into one
+        // comma-joined string, which normalizeEmail/normalizePhone would then
+        // reject wholesale. See extractContactList.
+        let developerEmailRaw: unknown = null;
+        let developerPhoneRaw: unknown = null;
 
         for (const field of PROJECT_EXTRACT_FIELDS) {
             // `name` is always allowed (it only ever GAP-FILLS via the merge SQL —
@@ -281,6 +289,12 @@ export class ProjectMapperService {
             } else if (field.key === 'creditingPeriodEnd' && raw && typeof raw === 'object' && !Array.isArray(raw) && 'to' in (raw as object)) {
                 const to = (raw as Record<string, unknown>)['to'];
                 if (typeof to === 'string') extracted[field.key] = to;
+            } else if (field.key === 'estimatedAnnualCredits') {
+                estimatedAmount = parseEstimatedAnnualCredits(raw);
+            } else if (field.key === 'developerEmail') {
+                developerEmailRaw = raw;
+            } else if (field.key === 'developerPhone') {
+                developerPhoneRaw = raw;
             } else {
                 const s = unwrapValue(raw);
                 if (s) extracted[field.key] = s;
@@ -392,39 +406,58 @@ export class ProjectMapperService {
         }
         let country = countries[0] ?? null;
 
-        // When the extracted value is a narrative phrase rather than a country
-        // name (e.g. "districts of Jaipur ... in North-West India"), scan it
-        // for any known country name embedded in the text and use that. This
-        // runs before geo fallback because text-based detection is cheaper and
-        // more accurate when the country is explicitly named.
-        const looksLikeNarrative = (s: string | null): boolean =>
-            !!s && (s.length > 60 || /\s/.test(s.trim()));
-        if (rawCountry && looksLikeNarrative(country)) {
+        // The raw value can be "<place>, <country>" — a specific forest/
+        // reserve/district named before its country, common in localized
+        // REDD+/forestry methodologies (e.g. "districts of Jaipur ... in
+        // North-West India", or "Bangui, Central African Republic"). The
+        // comma-split above keeps only the first segment, so a single-word
+        // place name (no internal whitespace) would otherwise slip through
+        // as `country` untouched. Whenever there's more than one segment and
+        // the chosen one isn't itself a recognized country, scan the full
+        // raw value for one instead. Skipped when `country` already IS a
+        // recognized country (e.g. "US, India" → "United States"), so a
+        // correct pick is never overwritten by another country name
+        // mentioned elsewhere in the raw text. Runs before geo fallback
+        // because text-based detection is cheaper and more accurate when the
+        // country is explicitly named.
+        if (rawCountry && countries.length > 1 && !isKnownCountryName(country)) {
             const fromText = findCountryInText(rawCountry);
             if (fromText) country = fromText;
         }
 
-        // Geo fallback: derive country via point-in-polygon when:
-        //   1. No country was extracted, OR
-        //   2. The extracted value is clearly not a country name (a numeric
-        //      string, coordinate notation like "90.3563° E", or a short
-        //      non-word like "TST" / "tes"). These come from mis-mapped fields
-        //      where 'country' was pointed at a longitude or test value.
-        const isValidCountry = (s: string | null): boolean => {
-            if (!s) return false;
-            const trimmed = s.trim();
-            if (trimmed.length < 4 || trimmed.length > 100) return false;
-            // Looks like a number or coordinate (e.g. "32.5825", "90.3563° E", "-63.236047")
-            if (/^-?\d+(\.\d+)?(\s*°\s*[NSEW])?$/.test(trimmed)) return false;
-            // No letters at all → not a country name
-            if (!/[a-zA-Z]/.test(trimmed)) return false;
-            return true;
-        };
-        if (!isValidCountry(country) && geoLngLat) {
+        // Geo fallback: when the extracted country isn't a real, recognized
+        // country name — null/empty, a coordinate string like "90.3563° E" or
+        // `-22° 24' 59.99" S` (a mis-mapped lat/lng field), or free text that
+        // just isn't a country ("Valle de los Tigres Project Area", a site
+        // name mapped to the wrong field) — and this same VC also carries its
+        // own `geo` field, resolve the real country from those coordinates.
+        //
+        // This does NOT touch `country` itself — it's written to the sibling
+        // `geoCountryCode` key instead (an ISO 3166-1 alpha-3 code), so the
+        // original (if wrong) VC-sourced value is never overwritten/lost. See
+        // docs/dashboard-map-country-shading-investigation.md and
+        // PgProjectRepository.applyCountryFilter, which reads this key to pull
+        // a project out of the "Other" bucket and make it selectable by its
+        // recovered country once this is set.
+        //
+        // Only handles the case where the bad country and the good geo arrive
+        // on the SAME VC. When they're split across different VCs for the
+        // same project (arrival order isn't guaranteed), this can't resolve
+        // it — that's what scripts/backfill-geo-country-code.ts is for.
+        let geoCountryCode: string | null = null;
+        if (!isKnownCountryName(country ?? '') && geoLngLat) {
             const [lng, latVal] = geoLngLat;
             const lookup = await this.reverseGeoService.lookupCountry(latVal, lng);
-            if (lookup) country = lookup.name;
+            if (lookup) geoCountryCode = lookup.code;
         }
+
+        // Re-trim regardless of which path set `country` above — notably the
+        // text-scan fallback a few lines up, which can pass through a raw
+        // value with no trim of its own. JS's trim() strips whitespace a
+        // plain SQL TRIM() doesn't (e.g. a non-breaking space), so a stray
+        // char here would silently drop the project into PgProjectRepository
+        // .applyCountryFilter's "Other" bucket despite displaying correctly.
+        if (country) country = country.trim();
 
         // Display name: VC-supplied name when present, else project key (so a row
         // exists even before the registration VC lands).
@@ -476,6 +509,9 @@ export class ProjectMapperService {
             newFields.country = null;
             if (explicitOverrideFields.has('country')) overrideBusinessKeys.add('country');
         }
+        if (geoCountryCode) {
+            newFields.geoCountryCode = geoCountryCode;
+        }
         if (lat !== null && lng !== null) {
             newFields.lat = lat;
             newFields.lng = lng;
@@ -491,6 +527,26 @@ export class ProjectMapperService {
         if (developer) {
             newFields.developer = developer;
             if (explicitOverrideFields.has('developer')) overrideBusinessKeys.add('developer');
+        }
+        // Project-participant contact details. Kept adjacent to `developer`
+        // because they come off the same schema/VC; each candidate is
+        // validated independently (shape guard: normalizeEmail/normalizePhone)
+        // so a mis-mapped narrative field can't land here as a bogus contact,
+        // and so one bad entry among several developers doesn't drop the good
+        // ones (see extractContactList). Only the plural key is written —
+        // rows written before this array support existed have a legacy
+        // singular `developerEmail`/`developerPhone` key instead, which
+        // ProjectDto falls back to reading; that fallback is the only place
+        // the singular key still matters, so it's not written here anymore.
+        const developerEmails = extractContactList(developerEmailRaw, normalizeEmail);
+        if (developerEmails.length > 0) {
+            newFields.developerEmails = developerEmails;
+            if (explicitOverrideFields.has('developerEmail')) overrideBusinessKeys.add('developerEmails');
+        }
+        const developerPhones = extractContactList(developerPhoneRaw, normalizePhone);
+        if (developerPhones.length > 0) {
+            newFields.developerPhones = developerPhones;
+            if (explicitOverrideFields.has('developerPhone')) overrideBusinessKeys.add('developerPhones');
         }
         // vintage/createdAt can also be seeded by the unrelated {from,to} fallback
         // scan above — only tag as an override when the value actually came from
@@ -548,7 +604,10 @@ export class ProjectMapperService {
                 overrideBusinessKeys.add('creditingPeriodEnd');
             }
         }
-        newFields.status = 'Issuing';
+        if (estimatedAmount !== null) {
+            newFields.estimatedAnnualCredits = estimatedAmount;
+            if (explicitOverrideFields.has('estimatedAnnualCredits')) overrideBusinessKeys.add('estimatedAnnualCredits');
+        }
         newFields.decodeMethod = resolvedProject.method;
         // Method-specific resolution anchor (M1: dynamic topic id; M2/M3/M4: root
         // VC timestamp the cs.id key was derived from). Merge-friendly: only
@@ -677,17 +736,16 @@ export class ProjectMapperService {
         //
         // During fresh ingest IPFS fetches arrive in order, so an early
         // project-schema VC (e.g. cs.id=Yn886) gets processed BEFORE the
-        // newer canonical (cs.id=A9oX7) lands, leaving Yn886's row behind
-        // once A9oX7's own row is created. A same-topic sibling is only
-        // deleted when it has no downstream cs.ref activity of its own AND
-        // this VC's own options.relationships explicitly names the
-        // sibling's registration VC — positive proof of the same lineage,
-        // not just "nothing points at it yet" (also true of any brand-new,
-        // legitimately distinct sibling project).
+        // newer canonical (cs.id=A9oX7) lands. At that moment a Yn886 row
+        // gets seeded (the only project-schema VC in the topic so far).
+        // When A9oX7 arrives later, its row is created — but the Yn886
+        // orphan stays behind. Sweep it here, scoped to project-schema VCs
+        // only: delete any sibling PROJECT row in the same topic whose
+        // projectKey is NOT referenced by any VC's cs.ref. Genuinely
+        // distinct chain roots in the same topic (e.g. Regenerating
+        // Rajasthan's 554b459b + c21ef213) both have downstream refs, so
+        // neither is deleted.
         if (isProjectSchemaVc) {
-            const relationships = Array.isArray(vc.options?.['relationships'])
-                ? (vc.options!['relationships'] as unknown[]).map(String)
-                : [];
             await this.dataSource.query(
                 `DELETE FROM business_view bv
                  WHERE bv."viewType" = 'PROJECT'
@@ -697,14 +755,8 @@ export class ProjectMapperService {
                      SELECT 1 FROM message m
                      WHERE m.type = 'VC-Document'
                        AND m.documents->'credentialSubject'->0->>'ref' = bv."projectKey"
-                   )
-                   AND EXISTS (
-                     SELECT 1 FROM message m
-                     WHERE m.type = 'VC-Document'
-                       AND m.documents->'credentialSubject'->0->>'id' = bv."projectKey"
-                       AND m."consensusTimestamp" = ANY($3::text[])
                    )`,
-                [vc.topicId, projectKey, relationships],
+                [vc.topicId, projectKey],
             );
         }
 
@@ -955,17 +1007,18 @@ function collectFromArray(arr: any[], rest: string[]): unknown[] {
 
 /**
  * Coerces a raw VC field value into a [lng, lat] pair if possible.
- * Handles standard GeoJSON, array-of-GeoJSON (VM0047), and lat/lng-string blocks.
+ * Handles standard GeoJSON, array-of-GeoJSON (VM0047), Feature /
+ * FeatureCollection wrappers (Guardian's map widget), and lat/lng-string blocks.
  */
 function parseGeoValue(raw: unknown): [number, number] | null {
+    const geom = unwrapGeoJsonGeometry(raw);
+    if (geom) return extractLatLng(geom);
+
+    // Not GeoJSON-shaped — fall back to a `{latitude, longitude}`-style block.
     let v: unknown = raw;
     if (Array.isArray(v) && v.length > 0) v = v[0];
     if (!v || typeof v !== 'object') return null;
-    const obj = v as Record<string, any>;
-    if ('type' in obj) {
-        return extractLatLng(obj);
-    }
-    return extractLatLngStrings(obj);
+    return extractLatLngStrings(v as Record<string, any>);
 }
 
 interface ParsedGeoPolygon {
@@ -975,7 +1028,8 @@ interface ParsedGeoPolygon {
 
 /**
  * Returns the full-precision `{ type, coordinates }` when the geo field value
- * is strictly a GeoJSON Polygon or MultiPolygon. Every other geometry (Point,
+ * resolves (after unwrapping any Feature / FeatureCollection container — see
+ * unwrapGeoJsonGeometry) to a GeoJSON Polygon or MultiPolygon. Every other geometry (Point,
  * LineString, etc.) — and any non-GeoJSON lat/lng-string block — yields null,
  * since only an actual area has a shape worth persisting alongside the
  * centroid lat/lng. No size cap here: the full geometry is stored as-is in
@@ -983,15 +1037,76 @@ interface ParsedGeoPolygon {
  * frontend — every vertex is kept.
  */
 function parseGeoPolygon(raw: unknown): ParsedGeoPolygon | null {
-    let v: unknown = raw;
-    if (Array.isArray(v) && v.length > 0) v = v[0];
-    if (!v || typeof v !== 'object') return null;
-    const obj = v as Record<string, any>;
-    const type = obj['type'];
+    const geom = unwrapGeoJsonGeometry(raw);
+    if (!geom) return null;
+    const type = geom['type'];
     if (type !== 'Polygon' && type !== 'MultiPolygon') return null;
-    const coords = obj['coordinates'];
+    const coords = geom['coordinates'];
     if (!Array.isArray(coords)) return null;
     return { type, coordinates: coords };
+}
+
+/**
+ * Coerces the mapped "Estimated Annual Credits" field into a flat annual rate
+ * (a bare number/numeric string) — the only shape real VC schemas expose
+ * (see project-fields.ts).
+ */
+function parseEstimatedAnnualCredits(raw: unknown): number | null {
+    if (typeof raw === 'number' && isFinite(raw) && raw > 0) return raw;
+    if (typeof raw === 'string') {
+        const n = parseFloat(raw.replace(/[,\s]/g, ''));
+        return isFinite(n) && n > 0 ? n : null;
+    }
+    return null;
+}
+
+/**
+ * Accepts a mapped contact value only when it actually looks like an email.
+ * The fuzzy mapper's low match threshold can land a narrative field here on
+ * schemas that have no real email field — this is a defensive guard.
+ */
+function normalizeEmail(raw: string | null | undefined): string | null {
+    if (!raw) return null;
+    const s = raw.trim();
+    if (s.length > 254) return null;
+    return /^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]{2,}$/.test(s) ? s : null;
+}
+
+/**
+ * Accepts a mapped contact value only when it plausibly is a phone number:
+ * short, and at least 6 digits after stripping formatting characters.
+ */
+function normalizePhone(raw: string | null | undefined): string | null {
+    if (!raw) return null;
+    const s = raw.trim();
+    if (!s || s.length > 64) return null;
+    const digits = s.replace(/\D/g, '');
+    if (digits.length < 6 || digits.length > 20) return null;
+    return /^[+()\d\s./ext-]+$/i.test(s) ? s : null;
+}
+
+/**
+ * Validates a possibly-array contact value (one raw entry per developer)
+ * element-by-element instead of joining then validating — joining first
+ * (the old behavior) meant a single mis-mapped/narrative developer entry
+ * made normalizeEmail/normalizePhone reject the whole comma-joined string,
+ * silently dropping every developer's contact info whenever a project had
+ * more than one. A scalar `raw` is treated as a single-element list, so the
+ * single-developer path behaves exactly as before.
+ */
+function extractContactList(raw: unknown, normalize: (s: string | null | undefined) => string | null): string[] {
+    const items = Array.isArray(raw) ? raw : [raw];
+    const out: string[] = [];
+    const seen = new Set<string>();
+    for (const item of items) {
+        const normalized = normalize(unwrapValue(item) || null);
+        if (!normalized) continue;
+        const key = normalized.toLowerCase();
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push(normalized);
+    }
+    return out;
 }
 
 /**

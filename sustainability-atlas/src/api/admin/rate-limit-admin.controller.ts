@@ -21,7 +21,7 @@ import { ResolveRateLimitRequestDto } from './dto/resolve-rate-limit-request.dto
  * Admin review of rate-limit requests. Route: /api/v1/admin/rate-limit-requests.
  * Admin-only (JwtAuthGuard + RolesGuard + @Roles('admin')); CsrfGuard on PATCH.
  */
-@ApiTags('admin-rate-limits')
+@ApiTags('Request limit reviews')
 @ApiCookieAuth()
 @Controller('api/v1/admin/rate-limit-requests')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -30,7 +30,12 @@ export class RateLimitAdminController {
     constructor(private readonly service: RateLimitAdminService) {}
 
     @Get()
-    @ApiOperation({ summary: 'List rate-limit requests (optionally filtered by status)' })
+    @ApiOperation({
+        summary: 'List requests for higher limits',
+        description:
+            'Lists users\' rate-limit increase requests with the requester and their current quota. Filter with ' +
+            '`status` = `pending`, `approved`, `adjusted` or `declined`.',
+    })
     @ApiResponse({ status: 200, description: 'Requests with requester + current quota' })
     async list(@Query('status') status?: 'pending' | 'approved' | 'adjusted' | 'declined') {
         return this.service.list(status);
@@ -38,8 +43,18 @@ export class RateLimitAdminController {
 
     @Patch(':id')
     @UseGuards(CsrfGuard)
-    @ApiOperation({ summary: 'Approve, adjust (incl. reduce) or decline a request' })
+    @ApiOperation({
+        summary: 'Approve, adjust or decline a limit request',
+        description:
+            'Resolves a pending request. `approved` grants the requested quota; `adjusted` grants `approvedQuota` ' +
+            'instead, which may be lower than requested or even below the user\'s current quota; `declined` ' +
+            'leaves the quota unchanged. Granted quotas are clamped to the configured maximum, and the optional ' +
+            '`note` is shown to the requester. Administrators cannot resolve their own request.',
+    })
     @ApiResponse({ status: 200, description: 'The resolved request' })
+    @ApiResponse({ status: 400, description: '`approvedQuota` missing for an `adjusted` decision' })
+    @ApiResponse({ status: 403, description: 'Cannot resolve your own request' })
+    @ApiResponse({ status: 404, description: 'Request not found' })
     @ApiResponse({ status: 409, description: 'Request already resolved' })
     async resolve(
         @Param('id') id: string,

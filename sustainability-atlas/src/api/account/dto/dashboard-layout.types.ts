@@ -27,3 +27,10 @@ export interface DashboardPreferences {
     customCharts: CustomChartPayload[];
     watchlistFilters: WatchlistFilters;
 }
+
+// GET /me/dashboard's response shape: DashboardPreferences plus the
+// server-configured watchlist cap (WATCHLIST_MAX_PROJECTS), so the frontend
+// always has a single source of truth for the limit — no separate config.
+export interface DashboardPreferencesResponse extends DashboardPreferences {
+    watchlistLimit: number;
+}

@@ -42,7 +42,7 @@ export class ImpactSummaryLifecycleDto {
 }
 
 export class ImpactSummaryGeoDto {
-    @ApiProperty({ description: "Country label, or 'Unknown' when the project's country is blank/missing" })
+    @ApiProperty({ description: "Country label, or 'Other' when the project's country is blank/missing" })
     country: string;
 
     @ApiProperty({ description: 'Number of PROJECT rows in this country' })
@@ -99,7 +99,7 @@ export class ImpactSummaryMethodologyDto {
     @ApiProperty({ nullable: true, description: 'Methodology display name' })
     name: string | null;
 
-    @ApiProperty({ nullable: true, description: 'business_view.relatedTopicId — the stable methodology/policy-topic identifier' })
+    @ApiProperty({ nullable: true, description: 'business_view.relatedTopicId, the stable methodology/policy-topic identifier' })
     methodologyId: string | null;
 
     @ApiProperty({ nullable: true, description: 'Publishing registry display name' })
@@ -122,7 +122,7 @@ export class ImpactSummaryProjectDto {
     @ApiProperty({ nullable: true, description: 'Project display name' })
     name: string | null;
 
-    @ApiProperty({ description: "Country label, or 'Unknown' when blank/missing" })
+    @ApiProperty({ description: "Country label, or 'Other' when blank/missing" })
     country: string;
 
     @ApiProperty({ nullable: true, description: 'Methodology name (businessData.methodology)' })
@@ -150,12 +150,12 @@ export class ImpactSummaryResponseDto {
 
     @ApiProperty({
         description:
-            'Total credits retired. INFERRED from Mirror-Node-deleted NFT serials (nft_cache.deleted) — there is ' +
+            'Total credits retired. INFERRED from Mirror-Node-deleted NFT serials (nft_cache.deleted), as there is ' +
             'no on-chain retirement/burn transaction record, so this is a derived figure, not a ledger.',
     })
     totalRetiredInferred: number;
 
-    @ApiProperty({ description: 'totalCreditsIssued minus totalRetiredInferred — credits still in circulation' })
+    @ApiProperty({ description: 'totalCreditsIssued minus totalRetiredInferred: credits still in circulation' })
     activeSupplyInferred: number;
 
     @ApiProperty({ description: 'totalRetiredInferred as a percentage of totalCreditsIssued, 0-100. Inferred, see totalRetiredInferred.' })
@@ -171,7 +171,7 @@ export class ImpactSummaryResponseDto {
     @ApiProperty({ description: 'Number of PROJECT rows on this network' })
     activeProjects: number;
 
-    @ApiProperty({ description: "Number of distinct countries across PROJECT rows (excludes the 'Unknown' bucket)" })
+    @ApiProperty({ description: "Number of distinct countries across PROJECT rows (excludes the 'Other' bucket)" })
     activeCountries: number;
 
     @ApiProperty({
@@ -204,13 +204,13 @@ export class ImpactSummaryResponseDto {
 
     @ApiProperty({
         type: [ImpactSummaryMethodologyDto],
-        description: 'Top-10 sample of methodologies by project/issuance activity, for the PDF "Credits by Methodology" table. Not the full methodology list — see /methodologies for that.',
+        description: 'Top-10 sample of methodologies by project/issuance activity, for the PDF "Credits by Methodology" table. Not the full methodology list. See /methodologies for that.',
     })
     methodologyBreakdown: ImpactSummaryMethodologyDto[];
 
     @ApiProperty({
         type: [ImpactSummaryProjectDto],
-        description: 'Top-12 sample of projects by credits issued descending, for the PDF "Credits by Project" table. Not the full project list — see /projects for that.',
+        description: 'Top-12 sample of projects by credits issued descending, for the PDF "Credits by Project" table. Not the full project list. See /projects for that.',
     })
     projectBreakdown: ImpactSummaryProjectDto[];
 
@@ -219,9 +219,16 @@ export class ImpactSummaryResponseDto {
 }
 
 const RETIREMENT_METHODOLOGY_NOTE =
-    'Retirement figures are inferred from Hedera Mirror Node NFT serials marked deleted (nft_cache.deleted), ' +
-    'not from an on-chain retirement/burn transaction record. There is no ledger of retirement events; treat ' +
-    'this figure as an estimate, not an audited total.';
+    'Retirement figures combine documented and inferred evidence, most specific first. Where a policy uses ' +
+    "Guardian's retirement smart contract, the retirement is documented on-chain: the contract event records " +
+    'the retiring account, the token, the amount and, for non-fungible credits, the exact serial numbers, ' +
+    'which are traced back to the individual mint event and vintage they came from. Retired serials that no ' +
+    'mint event accounts for, and credits wiped outside the retirement contract, are still inferred from ' +
+    'Hedera Mirror Node NFT serials marked deleted, and are reported at token level rather than per vintage. ' +
+    'Fungible retirement is documented but can never be attributed to a specific mint event, because fungible ' +
+    'units are interchangeable by definition. Issuance volume is documented throughout: it reports what the ' +
+    'ledger actually minted, not the amount the MintToken credential declared. The two differ whenever a ' +
+    'mint partially failed.';
 
 function pct(part: number, total: number): number {
     if (!total) return 0;

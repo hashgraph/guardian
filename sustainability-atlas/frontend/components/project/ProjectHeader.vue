@@ -4,6 +4,7 @@ import {
 } from 'lucide-vue-next';
 import type { Project } from '~/types/models';
 import { lifecycleStageColor } from '~/lib/lifecycle';
+import { stripHtml, truncateText } from '~/lib/format';
 
 const props = defineProps<{
     project: Project;
@@ -19,6 +20,20 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+
+// Long descriptions are truncated with
+// a show more/less toggle so they don't push the tabs and key facts down.
+// Descriptions can arrive as raw HTML from the source CMS — strip it to
+// plain text before display (rendered via text interpolation, never v-html).
+const DESCRIPTION_TRUNCATE_LENGTH = 320;
+const descriptionExpanded = ref(false);
+
+const cleanDescription = computed(() => stripHtml(props.project.description));
+const isDescriptionTruncatable = computed(() => cleanDescription.value.length > DESCRIPTION_TRUNCATE_LENGTH);
+
+const displayedDescription = computed(() => descriptionExpanded.value
+    ? cleanDescription.value
+    : truncateText(cleanDescription.value, DESCRIPTION_TRUNCATE_LENGTH));
 </script>
 
 <template>
@@ -64,8 +79,15 @@ const { t } = useI18n();
         </div>
 
         <!-- Description (full width, below title and buttons) -->
-        <p v-if="project.description" class="text-sm text-muted-foreground leading-relaxed">
-            {{ project.description }}
-        </p>
+        <div v-if="cleanDescription" class="text-sm text-muted-foreground leading-relaxed">
+            <p class="whitespace-pre-line">{{ displayedDescription }}</p>
+            <button
+                v-if="isDescriptionTruncatable"
+                class="mt-1 text-xs font-medium text-primary hover:underline"
+                @click="descriptionExpanded = !descriptionExpanded"
+            >
+                {{ descriptionExpanded ? $t('common.showLess') : $t('common.showMore') }}
+            </button>
+        </div>
     </div>
 </template>

@@ -8,7 +8,7 @@ import { ActivityService } from '../services/activity.service';
 import { PortfolioStatsRequestDto, PortfolioStatsDto } from '../dto/portfolio.dto';
 import { NetworkActivityRequestDto, NetworkActivityItemDto } from '../dto/activity.dto';
 
-@ApiTags('portfolio')
+@ApiTags('Portfolio')
 @ApiCookieAuth()
 @Controller('api/v1/:network/portfolio')
 @UseGuards(JwtAuthGuard)
@@ -21,10 +21,10 @@ export class PortfolioController {
     @Post('stats')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({
-        summary: 'Aggregated credit stats for a set of watchlisted projects',
+        summary: 'Get credit totals for a set of watched projects',
         description:
             'Returns total minted, per-project totals, a monthly issuance series, and recent ' +
-            'issuances for the given project keys — computed in Postgres instead of shipping raw ' +
+            'issuances for the given project keys, computed in Postgres instead of shipping raw ' +
             'credit rows to the client. Requires authentication; results are cached per-user for 60s.',
     })
     @ApiParam({ name: 'network', enum: ['mainnet', 'testnet', 'previewnet'] })
@@ -41,7 +41,7 @@ export class PortfolioController {
     @Post('network-activity')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({
-        summary: 'Latest 10 network events touching the watchlist, newest first',
+        summary: 'See the latest activity for a set of watched projects',
         description:
             'Same event taxonomy as the Dashboard feed, scoped entirely to the given project ' +
             'keys: Project Registered and Credit Minted match directly; Methodology/Registry ' +

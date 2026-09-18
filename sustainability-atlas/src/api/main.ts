@@ -1,8 +1,10 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { Logger, ValidationPipe, INestApplication } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule, OpenAPIObject } from '@nestjs/swagger';
 import helmet from 'helmet';
+import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import { ApiModule } from './api.module';
 import {
@@ -14,7 +16,14 @@ import { resolveNestLogLevels } from '@shared/config/log-level';
 import { bootstrapSystemDatabase, seedInitialAdmin } from '@shared/database/schema-bootstrap';
 import { ROLES_KEY } from './auth/decorators/roles.decorator';
 import { TokenService } from './auth/token.service';
-import { SWAGGER_LOGO_BASE64_PNG } from './swagger-logo';
+import {
+    TAG_DESCRIPTIONS,
+    buildAdminOverview,
+    buildPublicOverview,
+    details,
+    RateLimitDocsConfig,
+} from './swagger/swagger-docs';
+import { SWAGGER_UI_OPTIONS } from './swagger/swagger-theme';
 
 const HTTP_METHOD_KEYS = ['get', 'post', 'put', 'patch', 'delete', 'options', 'head'] as const;
 
@@ -76,14 +85,17 @@ function collectAdminOperationIds(app: INestApplication): Set<string> {
  */
 function filterDocument(fullDocument: OpenAPIObject, keep: (operationId: string) => boolean): OpenAPIObject {
     const filtered: OpenAPIObject = JSON.parse(JSON.stringify(fullDocument));
+    const usedTags = new Set<string>();
 
     for (const [path, pathItem] of Object.entries(filtered.paths)) {
-        const item = pathItem as Record<string, { operationId?: string } | unknown>;
+        const item = pathItem as Record<string, { operationId?: string; tags?: string[] } | unknown>;
         for (const method of HTTP_METHOD_KEYS) {
-            const operation = item[method] as { operationId?: string } | undefined;
+            const operation = item[method] as { operationId?: string; tags?: string[] } | undefined;
             if (operation?.operationId && !keep(operation.operationId)) {
                 delete item[method];
+                continue;
             }
+            operation?.tags?.forEach((tag) => usedTags.add(tag));
         }
         const hasAnyMethod = HTTP_METHOD_KEYS.some((method) => item[method] !== undefined);
         if (!hasAnyMethod) {
@@ -91,25 +103,54 @@ function filterDocument(fullDocument: OpenAPIObject, keep: (operationId: string)
         }
     }
 
+    // Tag descriptions are declared once for the full scan; without this, admin-only
+    // groups would render as empty sections in the public doc and vice versa.
+    filtered.tags = filtered.tags?.filter((tag) => usedTags.has(tag.name));
+
     return filtered;
 }
 
-/** Base CSS shared by both docs, embedding the frontend's logo in the topbar via a data URI (no static-file serving exists in the API, so this is the lowest-footprint branding option). */
-function swaggerBrandingCss(): string {
-    return `
-        .swagger-ui .topbar { background-color: #0f172a; }
-        .swagger-ui .topbar .download-url-wrapper { display: none; }
-        .swagger-ui .topbar-wrapper::before {
-            content: '';
-            display: inline-block;
-            width: 32px;
-            height: 32px;
-            margin-right: 10px;
-            background-image: url(data:image/png;base64,${SWAGGER_LOGO_BASE64_PNG});
-            background-size: contain;
-            background-repeat: no-repeat;
+const RATE_LIMITED_RESPONSE = {
+    description: 'Hourly rate limit exceeded. Wait `Retry-After` seconds before retrying.',
+    headers: {
+        'Retry-After': { description: 'Seconds until the quota window resets', schema: { type: 'integer' } },
+        'X-RateLimit-Limit': { description: 'Quota for the current window', schema: { type: 'integer' } },
+        'X-RateLimit-Remaining': { description: 'Requests left in the current window', schema: { type: 'integer' } },
+        'X-RateLimit-Reset': { description: 'Seconds until the window resets', schema: { type: 'integer' } },
+    },
+};
+
+/**
+ * Adds responses produced by globally registered guards (DataAccessGuard,
+ * RateLimitGuard), which no controller declares itself. A response an operation
+ * already documents is never overwritten.
+ */
+function addGuardResponses(document: OpenAPIObject, responsesFor: (path: string) => Record<string, unknown>): void {
+    for (const [path, pathItem] of Object.entries(document.paths)) {
+        const additions = responsesFor(path);
+        const item = pathItem as Record<string, { responses?: Record<string, unknown> } | undefined>;
+        for (const method of HTTP_METHOD_KEYS) {
+            const operation = item[method];
+            if (!operation) continue;
+            operation.responses ??= {};
+            for (const [status, response] of Object.entries(additions)) {
+                operation.responses[status] ??= response;
+            }
         }
-    `;
+    }
+}
+
+/** Puts each operation's (often technical) description behind a "More details" toggle so its plain-language summary leads. */
+function collapseDescriptions(document: OpenAPIObject): void {
+    for (const pathItem of Object.values(document.paths)) {
+        const item = pathItem as Record<string, { description?: string } | undefined>;
+        for (const method of HTTP_METHOD_KEYS) {
+            const operation = item[method];
+            if (operation?.description) {
+                operation.description = details('More details', operation.description);
+            }
+        }
+    }
 }
 
 /**
@@ -174,6 +215,22 @@ async function bootstrap() {
         crossOriginResourcePolicy: { policy: 'cross-origin' },
     }));
 
+    // gzip response bodies. Some responses (e.g. the methodology decoded-mapping
+    // endpoint) run into multiple MB of JSON; without this they were shipped
+    // uncompressed and dominated by transfer time rather than server processing.
+    // SSE streams (@Sse routes, e.g. /queues/events, /me/notifications/events) are
+    // excluded: compression buffers writes inside a zlib stream until enough data
+    // accumulates to flush, which would delay live events indefinitely since
+    // Nest's SSE implementation never calls the res.flush() this module exposes —
+    // silently defeating the real-time delivery the nginx proxy_buffering:off
+    // config (see README) exists to guarantee at the proxy layer.
+    app.use(compression({
+        filter: (req, res) => {
+            if (res.getHeader('Content-Type') === 'text/event-stream') return false;
+            return compression.filter(req, res);
+        },
+    }));
+
     // cookie-parser populates req.cookies so JwtAuthGuard and CsrfGuard can read
     // the httpOnly access cookie and csrf double-submit cookie by name rather than
     // parsing the raw Cookie header string. Must be registered after helmet/CORS
@@ -213,12 +270,10 @@ async function bootstrap() {
     const apiPort = parseInt(process.env.API_PORT || '3030', 10);
     const directApiUrl = `http://localhost:${apiPort}`;
     const corsOrigin = (process.env.API_CORS_ORIGINS || '').split(',').map(o => o.trim()).filter(Boolean)[0];
-    const buildSwaggerConfig = (title: string, description: string) => {
+    const buildSwaggerConfig = (title: string) => {
         const builder = new DocumentBuilder()
             .setTitle(title)
-            .setDescription(description)
             .setVersion('1.0')
-            .addTag('registries', 'Standard Registries')
             // Lets you paste an API key (se_...) into Swagger's "Authorize" dialog so the
             // X-API-Key header is sent on "Try it out" — the programmatic access path when
             // DATA_ACCESS_ENFORCE=true. Cookie-authed routes work via the browser session.
@@ -230,14 +285,14 @@ async function bootstrap() {
         if (corsOrigin && corsOrigin !== directApiUrl) {
             builder.addServer(corsOrigin, 'Via frontend proxy');
         }
+        for (const [name, tagDescription] of Object.entries(TAG_DESCRIPTIONS)) {
+            builder.addTag(name, tagDescription);
+        }
         return builder.build();
     };
 
-    const fullDocument = SwaggerModule.createDocument(app, buildSwaggerConfig(
-        'Sustainability Atlas API',
-        'REST API for querying indexed Hedera Guardian sustainability data — registries, ' +
-        'methodologies, projects, credits, and ESG/impact reporting.',
-    ));
+    const fullDocument = SwaggerModule.createDocument(app, buildSwaggerConfig('Sustainability Atlas API'));
+    collapseDescriptions(fullDocument);
 
     const adminOperationIds = collectAdminOperationIds(app);
     const publicDocument = filterDocument(fullDocument, (id) => !adminOperationIds.has(id));
@@ -246,28 +301,28 @@ async function bootstrap() {
     // without it; it's required only for programmatic data access under enforcement.
     // Admin actions are cookie/session-only, so this is public-doc-only.
     publicDocument.security = [{ 'api-key': [] }];
-    publicDocument.info.description += ' For administrative operations, see the admin documentation (requires an admin session).';
+    publicDocument.info.description = buildPublicOverview(
+        networks,
+        app.get(ConfigService).getOrThrow<RateLimitDocsConfig>('app.rateLimit'),
+    );
+    addGuardResponses(publicDocument, (path) => ({
+        ...(path.includes('{network}')
+            ? { 401: { description: 'API key missing or invalid. Programmatic access to data endpoints may require `X-API-Key`.' } }
+            : {}),
+        429: RATE_LIMITED_RESPONSE,
+    }));
 
     const adminDocument = filterDocument(fullDocument, (id) => adminOperationIds.has(id));
     adminDocument.info.title = 'Sustainability Atlas API — Admin';
-    adminDocument.info.description =
-        'Administrative maintenance and management operations (re-decode, re-parse, queue ' +
-        'control, user administration, rate limits) — admin-only actions. Every public ' +
-        'data-fetching endpoint (registries, methodologies, projects, credits, ESG/impact ' +
-        'reporting) is available to admins too via the public documentation; it is not ' +
-        'duplicated here. Requires an authenticated admin session.';
-
-    const swaggerUiOptions = {
-        swaggerOptions: {
-            persistAuthorization: true,
-            tagsSorter: 'alpha',
-            operationsSorter: 'alpha',
-        },
-        customCss: swaggerBrandingCss(),
-    };
+    adminDocument.info.description = buildAdminOverview();
+    addGuardResponses(adminDocument, () => ({
+        401: { description: 'No valid session' },
+        403: { description: 'Administrator role required' },
+        429: RATE_LIMITED_RESPONSE,
+    }));
 
     SwaggerModule.setup('api/docs', app, publicDocument, {
-        ...swaggerUiOptions,
+        ...SWAGGER_UI_OPTIONS,
         customSiteTitle: 'Sustainability Atlas API Docs',
     });
 
@@ -288,9 +343,22 @@ async function bootstrap() {
         '/api/docs/admin-yaml',
     ], adminDocsGate);
     SwaggerModule.setup('api/docs/admin', app, adminDocument, {
-        ...swaggerUiOptions,
+        ...SWAGGER_UI_OPTIONS,
         customSiteTitle: 'Sustainability Atlas API Docs — Admin',
     });
+
+    // Without this the API never runs onModuleDestroy, so QueueRegistry's own
+    // (correct) teardown never fires and its Queue/QueueEvents connections — the
+    // bulk of this process's Redict clients, most of them parked on a blocking
+    // XREAD — are only closed by the socket dying with the process. Redict then
+    // carries them until its own timeout notices.
+    //
+    // This registers Nest's own SIGTERM/SIGINT handling, so do NOT also add
+    // manual signal handlers that call app.close(): both would fire on one
+    // signal, running every onModuleDestroy twice (closing already-closed
+    // queues, disconnecting the shared client twice), and a manual process.exit
+    // would cut Nest's shutdown short — defeating the point of adding it.
+    app.enableShutdownHooks();
 
     const port = parseInt(process.env.API_PORT || '3030', 10);
     await app.listen(port);

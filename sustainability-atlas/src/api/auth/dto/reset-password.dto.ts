@@ -24,7 +24,7 @@ export class ResetPasswordDto {
     token: string;
 
     @ApiProperty({
-        description: `New password — ${PASSWORD_MESSAGE}`,
+        description: `New password. ${PASSWORD_MESSAGE}`,
         minLength: PASSWORD_POLICY.minLength,
         maxLength: 128,
     })

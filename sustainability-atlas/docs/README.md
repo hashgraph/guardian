@@ -21,6 +21,7 @@ page on the site is for. No technical background assumed.
 |---|---|
 | [Architecture overview](architecture/README.md) | Multi-network topology, the ingest pipeline, deduplication, leader election, horizontal scaling, database entities |
 | [Guardian topic hierarchy](architecture/guardian-topic-hierarchy.md) | How Guardian's HCS topic tree is shaped, with a traced mainnet example. Canonical reference for the topic model |
+| [Credit lifecycle tracking](architecture/credit-lifecycle-tracking.md) | How mint, retirement and transfer are proven on-chain; why declared and minted amounts differ; what the Atlas deliberately does not track |
 | [Decode flow](architecture/decode-flow.md) | Message types, the five-queue decode pipeline, reparse endpoints, and fields dropped during normalization |
 | [Decode method design](architecture/decode-method.md) | How field mappings are derived from policy schemas, and how the M1–M4 resolver chain attributes each VC to a project |
 | [Policy decode](architecture/policy-decode.md) | How a policy becomes schema and field mappings; retry, re-decode and storage decisions |

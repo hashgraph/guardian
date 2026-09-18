@@ -2,12 +2,17 @@
 import { ChevronLeft, ChevronRight } from 'lucide-vue-next';
 import type { SingleSelectOption } from './SingleSelect.vue';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
     currentPage: number;
     totalPages: number;
     totalItems: number;
     pageSize: number;
-}>();
+    /** Hides the rows-per-page selector where the page size is fixed by the
+     *  surrounding layout — e.g. a table nested inside an expanded row. */
+    hidePageSize?: boolean;
+}>(), {
+    hidePageSize: false,
+});
 
 const emit = defineEmits<{
     'update:currentPage': [page: number];
@@ -57,7 +62,7 @@ const visiblePages = computed(() => {
             <span class="text-xs text-muted-foreground">
                 {{ $t('common.showingRange', { start: startItem, end: endItem, total: totalItems }) }}
             </span>
-            <label class="flex items-center gap-2 text-xs text-muted-foreground">
+            <label v-if="!hidePageSize" class="flex items-center gap-2 text-xs text-muted-foreground">
                 {{ $t('common.rowsPerPage') }}
                 <SingleSelect
                     :model-value="String(pageSize)"

@@ -52,7 +52,7 @@ export class ExportQueryDto extends PaginationQueryDto {
     @ApiPropertyOptional({
         enum: EXPORT_DATASETS,
         description:
-            'Dataset being exported. Informational — the authoritative value for the live download ' +
+            'Dataset being exported. Informational only. The authoritative value for the live download ' +
             'route is the `:dataset` path segment; this field exists so the same DTO shape can carry ' +
             'the dataset when reused outside that route (e.g. future request-body variants).',
     })
@@ -99,7 +99,7 @@ export class ExportQueryDto extends PaginationQueryDto {
     @IsString()
     name?: string;
 
-    @ApiPropertyOptional({ description: 'Projects: filter by country name (partial match)' })
+    @ApiPropertyOptional({ description: 'Projects: filter by country name (partial match). The sentinel "__other__" instead matches every project whose stored country is non-empty but not a recognized ISO 3166-1 name/alpha-3 code.' })
     @IsOptional()
     @IsString()
     country?: string;

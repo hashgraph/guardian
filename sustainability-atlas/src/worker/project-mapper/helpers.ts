@@ -72,6 +72,19 @@ export function findCountryInText(text: string): string | null {
     return null;
 }
 
+/**
+ * True when `name` is an exact (case-insensitive) match for a known ISO
+ * 3166-1 country name. Used to tell "this token already is a real country"
+ * apart from a sub-national place name left over after a "<place>, <country>"
+ * value gets comma-split (see ProjectMapperService's findCountryInText
+ * fallback).
+ */
+export function isKnownCountryName(name: string): boolean {
+    if (!name) return false;
+    const lower = name.trim().toLowerCase();
+    return knownCountries().some(c => c.toLowerCase() === lower);
+}
+
 // ---------------------------------------------------------------------------
 // Sector normalisation
 // ---------------------------------------------------------------------------
@@ -247,6 +260,67 @@ export function isGeoJsonProperty(fdef: Record<string, any>, geoDefKey?: string 
 // ---------------------------------------------------------------------------
 // Coordinate extraction
 // ---------------------------------------------------------------------------
+
+const BARE_GEOMETRY_TYPES = new Set([
+    'Point', 'MultiPoint', 'LineString', 'MultiLineString', 'Polygon', 'MultiPolygon',
+]);
+
+/** Depth cap for the recursive unwrap — real GeoJSON never nests this far. */
+const GEO_UNWRAP_MAX_DEPTH = 6;
+
+/**
+ * Collects every bare geometry object reachable from `v`, walking through the
+ * GeoJSON container types (Feature / FeatureCollection / GeometryCollection)
+ * and through plain arrays (Guardian schemas declare geo fields as arrays, so
+ * a single boundary arrives as `[{...}]`).
+ */
+function collectGeometries(v: unknown, depth: number): Record<string, any>[] {
+    if (depth > GEO_UNWRAP_MAX_DEPTH || !v) return [];
+    if (Array.isArray(v)) return v.flatMap(item => collectGeometries(item, depth + 1));
+    if (typeof v !== 'object') return [];
+
+    const obj = v as Record<string, any>;
+    const type = obj['type'];
+    if (typeof type !== 'string') return [];
+
+    if (BARE_GEOMETRY_TYPES.has(type)) return Array.isArray(obj['coordinates']) ? [obj] : [];
+    if (type === 'Feature') return collectGeometries(obj['geometry'], depth + 1);
+    if (type === 'FeatureCollection') return collectGeometries(obj['features'], depth + 1);
+    if (type === 'GeometryCollection') return collectGeometries(obj['geometries'], depth + 1);
+    return [];
+}
+
+/**
+ * Reduces any GeoJSON-shaped VC field value to a single bare geometry
+ * (`{ type, coordinates }`), which is the only shape `extractLatLng` and the
+ * `project_geometry` writer understand.
+ *
+ * Guardian's map widget emits a **FeatureCollection** wrapper (and the schema
+ * declares the field as an array), so a drawn boundary lands in the VC as
+ * `[{ type: 'FeatureCollection', features: [{ type: 'Feature', geometry: {…} }] }]`.
+ * Without this unwrap both the polygon and its centroid resolve to null and the
+ * project renders with no shape and no map pin.
+ *
+ * When several polygons are reachable (multi-feature collection, or a
+ * multi-element array field) they are merged into one MultiPolygon so the whole
+ * project area is kept rather than only the first ring. Non-polygon geometries
+ * don't merge — the first one wins.
+ */
+export function unwrapGeoJsonGeometry(raw: unknown): Record<string, any> | null {
+    const geoms = collectGeometries(raw, 0);
+    if (geoms.length === 0) return null;
+    if (geoms.length === 1) return geoms[0];
+
+    const polygons: unknown[] = [];
+    for (const g of geoms) {
+        const coords = g['coordinates'];
+        if (!Array.isArray(coords)) continue;
+        if (g['type'] === 'Polygon') polygons.push(coords);
+        else if (g['type'] === 'MultiPolygon') polygons.push(...coords);
+    }
+    if (polygons.length > 0) return { type: 'MultiPolygon', coordinates: polygons };
+    return geoms[0];
+}
 
 /**
  * GeoJSON standard is [lng, lat], but some Guardian VCs store [lat, lng].

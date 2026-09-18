@@ -19,6 +19,22 @@ export interface ParsedMessage {
 }
 
 /**
+ * Guardian's two "stop this policy" actions, both carried on `Policy` messages
+ * sent to the policy topic.
+ *
+ *   - discontinue-policy          — immediate; `effectiveDate` is the send time.
+ *   - deferred-discontinue-policy — scheduled; `effectiveDate` is in the future.
+ *
+ * Guardian publishes NOTHING when a deferred date arrives (it only flips its own
+ * Mongo row on an hourly cron), so the effective date carried here is the only
+ * on-chain record of when a deferred discontinuation takes effect.
+ */
+export const DISCONTINUE_ACTIONS = new Set([
+    'discontinue-policy',
+    'deferred-discontinue-policy',
+]);
+
+/**
  * Decodes a base64-encoded HCS message into a UTF-8 string.
  * Returns null if decoding fails.
  */
@@ -41,6 +57,20 @@ export function parseMessageJson(decoded: string): ParsedMessage | null {
     } catch {
         return null;
     }
+}
+
+/**
+ * The shape every unrecognised message type falls back to. Extracted so the
+ * `Policy` branch can reuse it verbatim for its non-discontinue actions, which
+ * must keep behaving exactly as they did when `Policy` was unhandled.
+ */
+function defaultOptions(json: Record<string, unknown>): Record<string, unknown> {
+    return {
+        name: json['name'] || null,
+        description: json['description'] || null,
+        topicId: json['topicId'] || null,
+        tokenId: json['tokenId'] || null,
+    };
 }
 
 /**
@@ -97,7 +127,36 @@ export function extractFields(json: Record<string, unknown>): ParsedMessage {
         // Policy is the draft message; Instance-Policy is the published version.
         // They share the same field structure — the indexer treats Instance-Policy
         // as the canonical methodology entity (filtered by action='PublishPolicy').
-        // case 'Policy': // Ignore Policy Type
+        //
+        // `Policy` is still ignored for every action EXCEPT the two discontinue
+        // ones below: those are the only record that a published methodology was
+        // stopped, and they name the exact published version via instanceTopicId.
+        // Every other Policy action keeps the `default` shape it has always had.
+        case 'Policy':
+            if (!action || !DISCONTINUE_ACTIONS.has(action)) {
+                result.options = defaultOptions(json);
+                if (json['tokenId']) {
+                    result.tokens.push(json['tokenId'] as string);
+                }
+                break;
+            }
+            result.options = {
+                uuid: json['uuid'] || null,
+                name: json['name'] || null,
+                description: json['description'] || null,
+                version: json['version'] || null,
+                policyTag: json['policyTag'] || null,
+                owner: json['owner'] || null,
+                topicId: json['topicId'] || null,
+                policyTopicId: json['topicId'] || null,
+                // The published version being discontinued. `uuid` is shared by
+                // every version of a policy, so it can never be the match key.
+                instanceTopicId: json['instanceTopicId'] || null,
+                // When the discontinuation takes (or took) effect. ISO-8601.
+                effectiveDate: json['effectiveDate'] || null,
+            };
+            break;
+
         case 'Instance-Policy':
             result.options = {
                 uuid: json['uuid'] || null,
@@ -224,17 +283,26 @@ export function extractFields(json: Record<string, unknown>): ParsedMessage {
             break;
         }
 
-        case 'Module':
-        case 'Tool':
-        case 'Schema':
+        // Contract messages announce Guardian's per-policy WIPE and RETIRE
+        // smart contracts. contractId/contractType are what make the retirement
+        // ledger reachable, so they are carried through here rather than dropped
+        // into the shared default shape.
         case 'Contract':
-        default:
             result.options = {
                 name: json['name'] || null,
                 description: json['description'] || null,
                 topicId: json['topicId'] || null,
                 tokenId: json['tokenId'] || null,
+                contractId: json['contractId'] || null,
+                contractType: json['contractType'] || null,
             };
+            break;
+
+        case 'Module':
+        case 'Tool':
+        case 'Schema':
+        default:
+            result.options = defaultOptions(json);
             if (json['tokenId']) {
                 result.tokens.push(json['tokenId'] as string);
             }

@@ -9,7 +9,7 @@ import {
 } from '../dto/dashboard.dto';
 import { NetworkActivityItemDto } from '../dto/activity.dto';
 
-@ApiTags('dashboard')
+@ApiTags('Dashboard')
 @Controller('api/v1/:network/dashboard')
 export class DashboardController {
     constructor(
@@ -19,13 +19,13 @@ export class DashboardController {
 
     @Get('network-activity')
     @ApiOperation({
-        summary: 'Latest 10 network events, newest first',
+        summary: 'See the latest activity on the network',
         description:
             'Real Guardian network events sourced from message + business_view: project, ' +
             'methodology and registry registrations, credit issuance and retirement, and ' +
             'other network events (token creation, identity publication, verification, role ' +
-            'grants). Respects the same registry/developer filters as the rest of the dashboard ' +
-            '— when either is set, events are scoped to it (methodology/registry registrations ' +
+            'grants). Respects the same registry/developer filters as the rest of the dashboard. ' +
+            'When either is set, events are scoped to it (methodology/registry registrations ' +
             'and the "other" bucket are dropped entirely under a developer filter, since they ' +
             'have no per-developer attribution). Results are cached for 10 seconds.',
     })
@@ -43,10 +43,10 @@ export class DashboardController {
 
     @Get('mint-stats')
     @ApiOperation({
-        summary: 'Dashboard mint statistics',
+        summary: 'Get credit issuance statistics',
         description:
             'Returns total minted amount, monthly issuance series, and sector/registry breakdowns ' +
-            'sourced from project_mint_link — actual on-chain MintToken amounts connected to projects. ' +
+            'sourced from project_mint_link: actual on-chain MintToken amounts connected to projects. ' +
             'Results are cached for 60 seconds.',
     })
     @ApiParam({ name: 'network', enum: ['mainnet', 'testnet', 'previewnet'] })
@@ -64,7 +64,7 @@ export class DashboardController {
 
     @Get('summary')
     @ApiOperation({
-        summary: 'Dashboard project aggregates',
+        summary: 'Get project statistics',
         description:
             'Returns registry/methodology/project totals plus per-country, per-registry, ' +
             'per-sector and per-vintage project breakdowns and map markers, aggregated in ' +

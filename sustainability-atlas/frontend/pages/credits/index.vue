@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { FileJson, Sparkles, Download, Loader2, Save } from 'lucide-vue-next';
+import { FileJson, Sparkles, Download, Loader2, Save, Flame } from 'lucide-vue-next';
+import { useDebounceFn } from '@vueuse/core';
 import type { FilterOption } from '~/components/shared/FilterBar.vue';
 import { formatCredits } from '~/lib/format';
 import { naturalCompare, decodeMultiValue } from '~/lib/utils';
@@ -19,12 +20,18 @@ const formatDate = (d: string | null) => {
 };
 
 const route = useRoute();
+const router = useRouter();
 const projectKeyFilter = computed(() => route.query.projectKey as string | undefined);
 const methodologyIdFilter = computed(() => route.query.methodologyId as string | undefined);
 const registryDidFilter = computed(() => route.query.registryDid as string | undefined);
+const showRetiredOnly = ref(route.query.retiredOnly === 'true');
 const sdgFilter = computed(() => {
     const raw = route.query.sdg || route.query.sdgs;
     return typeof raw === 'string' ? raw : undefined;
+});
+
+watch(() => route.query.retiredOnly, (val) => {
+    showRetiredOnly.value = val === 'true';
 });
 
 // Project keys matching the active SDG, used to scope the issuance query.
@@ -58,16 +65,59 @@ if (import.meta.client) {
     );
 }
 
-const currentPage = ref(1);
+const currentPage = ref(
+    route.query.page ? parseInt(route.query.page as string) || 1 : 1,
+);
 const pageSize = ref(10);
-const searchQuery = ref('');
-const sortKey = ref<CreditSortKey | null>('mintDate');
-const sortDir = ref<CreditSortDir | null>('desc');
+const searchQuery = ref(typeof route.query.q === 'string' ? route.query.q : '');
+const apiSearch = ref(searchQuery.value);
+const debouncedSetSearch = useDebounceFn((val: string) => {
+    apiSearch.value = val;
+}, 300);
+
+const sortKey = ref<CreditSortKey | null>(
+    (route.query.sort as CreditSortKey) || 'mintDate',
+);
+const sortDir = ref<CreditSortDir | null>(
+    (route.query.dir as CreditSortDir) || 'desc',
+);
 
 const hideUnlinked = ref(route.query.linkedOnly === 'true');
 
+function initialFiltersFromQuery(): Record<string, string> {
+    const reserved = new Set(['q', 'page', 'sort', 'dir', 'network', 'projectKey', 'methodologyId', 'registryDid', 'sdg', 'sdgs', 'linkedOnly', 'retiredOnly']);
+    const initial: Record<string, string> = {};
+    for (const [key, val] of Object.entries(route.query)) {
+        if (!reserved.has(key) && typeof val === 'string' && val) initial[key] = val;
+    }
+    return initial;
+}
+
 // Column filters in API terms. FilterBar emits range types as "from|to".
-const activeFilters = ref<Record<string, string>>({});
+const activeFilters = ref<Record<string, string>>(initialFiltersFromQuery());
+
+function syncToUrl() {
+    const q: Record<string, string> = {};
+    if (searchQuery.value.trim()) q.q = searchQuery.value.trim();
+    if (currentPage.value > 1) q.page = String(currentPage.value);
+    const isDefaultSort = sortKey.value === 'mintDate' && sortDir.value === 'desc';
+    if (sortKey.value && sortDir.value && !isDefaultSort) {
+        q.sort = sortKey.value;
+        q.dir = sortDir.value;
+    }
+    if (hideUnlinked.value) q.linkedOnly = 'true';
+    if (showRetiredOnly.value) q.retiredOnly = 'true';
+    for (const [key, val] of Object.entries(activeFilters.value)) {
+        if (val && val !== 'all') q[key] = val;
+    }
+    if (projectKeyFilter.value) q.projectKey = projectKeyFilter.value;
+    if (methodologyIdFilter.value) q.methodologyId = methodologyIdFilter.value;
+    if (registryDidFilter.value) q.registryDid = registryDidFilter.value;
+    if (sdgFilter.value) q.sdg = sdgFilter.value;
+    const currentNetwork = route.query.network;
+    if (currentNetwork) q.network = currentNetwork as string;
+    router.replace({ query: q });
+}
 
 const apiFilters = computed<Record<string, string | string[]>>(() => {
     const f: Record<string, string | string[]> = {};
@@ -91,6 +141,7 @@ const apiFilters = computed<Record<string, string | string[]>>(() => {
         if (to) f.mintDateTo = to;
     }
     if (hideUnlinked.value) f.linkedOnly = 'true';
+    if (showRetiredOnly.value) f.retiredOnly = 'true';
 
     return f;
 });
@@ -98,7 +149,7 @@ const apiFilters = computed<Record<string, string | string[]>>(() => {
 const { credits, total, totalPages, pending, filters: creditFilters } = useCredits({
     page: currentPage,
     limit: pageSize,
-    search: searchQuery,
+    search: apiSearch,
     sortBy: sortKey,
     sortDir,
     filters: apiFilters,
@@ -108,7 +159,7 @@ const { credits, total, totalPages, pending, filters: creditFilters } = useCredi
     projectKeys: sdgProjectKeys,
 });
 
-const { stats: summaryStats } = useCreditStats(searchQuery, creditFilters);
+const { stats: summaryStats } = useCreditStats(apiSearch, creditFilters);
 
 function toggleSort(key: CreditSortKey) {
     if (sortKey.value === key) {
@@ -118,25 +169,44 @@ function toggleSort(key: CreditSortKey) {
         sortDir.value = 'desc';
     }
     currentPage.value = 1;
+    syncToUrl();
 }
 
 function setFilter(key: string, value: string) {
-    if (value === 'all' || !value) delete activeFilters.value[key];
-    else activeFilters.value = { ...activeFilters.value, [key]: value };
+    const next = { ...activeFilters.value };
+    if (value === 'all' || !value) delete next[key];
+    else next[key] = value;
+    activeFilters.value = next;
     currentPage.value = 1;
+    syncToUrl();
 }
 
 function clearFilters() {
     activeFilters.value = {};
+    searchQuery.value = '';
+    apiSearch.value = '';
     currentPage.value = 1;
+    syncToUrl();
 }
 
 function applyPreset(preset: Record<string, string>) {
     activeFilters.value = { ...preset };
     currentPage.value = 1;
+    syncToUrl();
 }
 
-watch([searchQuery, pageSize, hideUnlinked], () => { currentPage.value = 1; });
+watch(searchQuery, (val) => {
+    debouncedSetSearch(val);
+    currentPage.value = 1;
+    syncToUrl();
+});
+watch(hideUnlinked, () => {
+    currentPage.value = 1;
+    syncToUrl();
+});
+watch(pageSize, () => { currentPage.value = 1; });
+watch(currentPage, () => { syncToUrl(); });
+watch(network, () => { currentPage.value = 1; });
 
 const config = useRuntimeConfig();
 const apiBaseURL = import.meta.server
@@ -169,6 +239,7 @@ const rows = computed(() =>
     credits.value.map(c => ({
         ...c,
         supplyFormatted: formatCredits(c.supply),
+        retiredFormatted: formatCredits(c.retiredTokens ?? 0),
     })),
 );
 
@@ -319,6 +390,20 @@ async function downloadCredits() {
         downloading.value = false;
     }
 }
+/**
+ * Each row is one issuance, so it links to that issuance — the list has carried
+ * `mintConsensusTimestamp` all along and used it only as a Vue key. Rows with no
+ * mint link (a token the Atlas indexed but that has no Guardian mint credential)
+ * fall back to the token page.
+ */
+function rowTarget(c: { tokenId: string; projectId?: string | null; mintConsensusTimestamp?: string | null }): string {
+    if (c.mintConsensusTimestamp) {
+        return `/issuances/${encodeURIComponent(c.mintConsensusTimestamp)}`;
+    }
+    return c.projectId
+        ? `/credits/${encodeURIComponent(c.tokenId)}?projectId=${encodeURIComponent(c.projectId)}`
+        : `/credits/${encodeURIComponent(c.tokenId)}`;
+}
 </script>
 
 <template>
@@ -390,16 +475,36 @@ async function downloadCredits() {
                     </InfoTooltip>
                 </template>
             </FilterBar>
-            <label class="mt-2 inline-flex items-center gap-2 text-xs text-muted-foreground select-none cursor-pointer">
-                <input
-                    type="checkbox"
-                    class="h-3.5 w-3.5 rounded border-border accent-primary cursor-pointer"
-                    :checked="hideUnlinked"
-                    @change="(e) => { hideUnlinked = (e.target as HTMLInputElement).checked; currentPage = 1; }"
-                />
-                {{ $t('credits.filters.hideUnlinked') }}
-                <InfoTooltip :text="$t('credits.tooltips.hideUnlinked')" />
-            </label>
+            <div class="mt-2 flex items-center gap-4 flex-wrap">
+                <label class="inline-flex items-center gap-2 text-xs text-muted-foreground select-none cursor-pointer">
+                    <input
+                        type="checkbox"
+                        class="h-3.5 w-3.5 rounded border-border accent-primary cursor-pointer"
+                        :checked="hideUnlinked"
+                        @change="(e) => { hideUnlinked = (e.target as HTMLInputElement).checked; currentPage = 1; syncToUrl(); }"
+                    />
+                    {{ $t('credits.filters.hideUnlinked') }}
+                    <InfoTooltip :text="$t('credits.tooltips.hideUnlinked')" />
+                </label>
+
+                <label class="inline-flex items-center gap-2 text-xs text-muted-foreground select-none cursor-pointer">
+                    <input
+                        type="checkbox"
+                        class="h-3.5 w-3.5 rounded border-border accent-primary cursor-pointer"
+                        :checked="showRetiredOnly"
+                        @change="(e) => {
+                            showRetiredOnly = (e.target as HTMLInputElement).checked;
+                            if (!showRetiredOnly && sortKey === 'retiredTokens') {
+                                sortKey = 'mintDate';
+                                sortDir = 'desc';
+                            }
+                            currentPage = 1;
+                            syncToUrl();
+                        }"
+                    />
+                    {{ $t('credits.filters.showRetiredOnly') }}
+                </label>
+            </div>
 
             <!-- Preset Templates -->
             <div class="flex items-center gap-2 mt-2.5 flex-wrap">
@@ -453,6 +558,7 @@ async function downloadCredits() {
                             <SortableHeader :label="$t('credits.columns.symbol')" sort-key="symbol" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" class="w-px" />
                             <SortableHeader :label="$t('credits.columns.type')" sort-key="type" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" class="w-px" />
                             <SortableHeader :label="$t('credits.columns.supply')" sort-key="supply" :tooltip="$t('credits.supplyTooltip')" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" class="w-px" />
+                            <SortableHeader :label="$t('credits.columns.retiredTokens')" sort-key="retiredTokens" :tooltip="$t('credits.retiredTokensTooltip')" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" class="w-px" />
                             <SortableHeader :label="$t('credits.columns.mintDate')" sort-key="mintDate" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" class="w-px" />
                             <SortableHeader :label="$t('credits.columns.project')" sort-key="projectDisplay" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('credits.columns.methodology')" sort-key="methodologyDisplay" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
@@ -464,7 +570,7 @@ async function downloadCredits() {
                         <!-- Loading skeleton -->
                         <template v-if="pending && credits.length === 0">
                             <tr v-for="i in skeletonRows" :key="`sk-${i}`">
-                                <td v-for="col in 9" :key="col" class="py-3 px-4">
+                                <td v-for="col in 10" :key="col" class="py-3 px-4">
                                     <Skeleton class="h-4 w-full max-w-[120px]" />
                                 </td>
                             </tr>
@@ -472,7 +578,7 @@ async function downloadCredits() {
 
                         <!-- Data rows -->
                         <template v-else>
-                            <tr v-for="c in rows" :key="`${c.tokenId}|${c.projectId ?? ''}|${c.mintConsensusTimestamp ?? ''}`" class="hover:bg-muted/30 transition-colors cursor-pointer" @click="navigateTo(c.projectId ? `/credits/${encodeURIComponent(c.tokenId)}?projectId=${encodeURIComponent(c.projectId)}` : `/credits/${encodeURIComponent(c.tokenId)}`)">
+                            <tr v-for="c in rows" :key="`${c.tokenId}|${c.projectId ?? ''}|${c.mintConsensusTimestamp ?? ''}`" class="hover:bg-muted/30 transition-colors cursor-pointer" @click="navigateTo(rowTarget(c))">
                                 <td class="py-3 px-4 whitespace-nowrap">
                                     <div class="font-medium text-foreground">{{ c.name ?? '-' }}</div>
                                     <div class="text-[11px] text-muted-foreground/60 font-mono">{{ c.tokenId ?? '-' }}</div>
@@ -480,6 +586,7 @@ async function downloadCredits() {
                                 <td class="py-3 px-4 font-mono text-xs whitespace-nowrap">{{ c.symbol ?? '-' }}</td>
                                 <td class="py-3 px-4 whitespace-nowrap"><span :class="[c.type ? typeColor[c.type] : '', 'text-xs font-medium rounded-full px-2 py-0.5']">{{ c.type ? $t('credits.tokenTypes.' + c.type) : '-' }}</span></td>
                                 <td class="py-3 px-4 text-right tabular-nums font-medium whitespace-nowrap">{{ c.supplyFormatted }}</td>
+                                <td class="py-3 px-4 text-right tabular-nums font-medium whitespace-nowrap text-muted-foreground">{{ c.retiredFormatted }}</td>
                                 <td class="py-3 px-4 text-muted-foreground text-xs tabular-nums whitespace-nowrap">{{ formatDate(c.mintDate) }}</td>
                                 <td class="py-3 px-4 max-w-[200px]">
                                     <AppLink
@@ -525,7 +632,7 @@ async function downloadCredits() {
                                     </button>
                                 </td>
                             </tr>
-                            <tr v-if="rows.length === 0"><td colspan="9" class="py-12 text-center text-sm text-muted-foreground">{{ $t('credits.noMatch') }}</td></tr>
+                            <tr v-if="rows.length === 0"><td colspan="10" class="py-12 text-center text-sm text-muted-foreground">{{ $t('credits.noMatch') }}</td></tr>
                         </template>
                     </tbody>
                 </table>

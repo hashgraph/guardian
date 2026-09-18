@@ -1,100 +1,139 @@
 # 08 — Analytics
 
-This chapter covers the Analytics page. It contains no data you cannot reach elsewhere in the Atlas —
-what it adds is a set of cross-cutting views, each arranged around the questions one kind of reader
-actually asks. If the Dashboard answers "how big is this network", Analytics answers "what does that
-mean for me".
+The Analytics page provides aggregated, cross-cutting views of all sustainability and carbon credit data indexed by the Atlas. While the Dashboard answers *"how big is this network and what is happening right now,"* Analytics answers *"what do these trends mean for my specific role and decision-making."* 
 
-Everything here is scoped to the network selected in the top bar.
+It combines data across projects, credit issuances, methodologies, registries, developers, and SDGs to reveal market-wide trends, supply availability, pipeline velocity, and climate impact.
 
-## The headline strip
-
-Five figures sit above the tabs and stay on screen whichever view you choose. Each one has a short
-explanation underneath.
-
-| Figure | What it tells you |
-|---|---|
-| **Active Supply** | Credits currently in circulation — issued minus retired. |
-| **Retirement Rate** | The share of issued credits that have been retired. A high rate means credits are being used, not just created. |
-| **Pipeline Projects** | Projects that have not issued yet: registered through to verified. Future supply. |
-| **Avg Vintage Year** | The average vintage across issued credits. A lower number means older supply, a higher one fresher. |
-| **Avg Crediting Period** | The mean length of a project's crediting period, in years. |
-
-## The five views
-
-A row of tabs switches between them, and a one-line description of the current view sits underneath
-the row.
-
-### Market Overview
-
-*Lifecycle, vintage, and pipeline pulse.* The general-purpose view — start here if you are not sure
-which of the others you want.
-
-- **Project Lifecycle Funnel** — how projects are distributed across the workflow stages, from
-  registration through to issuance. A funnel that narrows sharply at one stage tells you where
-  projects are getting stuck.
-- **Vintage Distribution** — issued credits grouped by the vintage year of the project behind them.
-- **Top Sectors by Credits Issued** and **Top Host Countries by Credits** — the two simplest
-  concentration questions: what kind of work, and where.
-
-### Buyer View
-
-*Supply, vintage, and SDG availability.* Written for someone who wants to buy credits and needs to
-know what is actually purchasable.
-
-- **Supply Age Profile** — issued credits by how old their vintage is. Most corporate buyers prefer
-  fresher vintages, so the shape of this distribution is a direct read on how much of the market is
-  attractive to them.
-- **Available Supply by Sector** — active credits (issued minus retired) by sector. Note the
-  difference from the Market Overview's chart: that one shows everything ever issued, this one shows
-  what is still in circulation.
-- **Methodology Adoption** — which methodologies account for the most credit volume.
-- **SDG Co-benefit Coverage** — how many projects claim each Sustainable Development Goal, for buyers
-  with co-benefit requirements to satisfy alongside the tonnage.
-
-### Developer View
-
-*Benchmark project scale and sector performance.* For project developers judging their own work
-against the field.
-
-- **Avg Project Size by Sector** — the typical issuance volume per project in each sector, which is
-  the benchmark you need before deciding whether a given project is large or small.
-- **Status Distribution** — how projects across the network are spread across the reported statuses.
-- **Top Developer Leaderboard** — developers ranked by credit volume.
-
-### Registry View
-
-*Throughput, methodology adoption, geographic reach.* For registry staff and anyone comparing
-registries.
-
-- **Registry Throughput** — how much each registry is actually processing.
-- **Pipeline Heatmap by Registry** — project status crossed with registry, so you can see at a glance
-  which registries have a healthy pipeline and which are concentrated at one stage.
-- **Registry Market Share** — each registry's share of total issued volume.
-
-### Climate Impact
-
-*SDG alignment, sector contribution, vintage concentration.* For impact and disclosure work rather
-than trading.
-
-- **SDG Alignment Matrix** — which goals the network's projects claim, and how densely.
-- **Sector Contribution to Total Supply** — what share of all credits each kind of intervention
-  accounts for.
-- **Country Contribution to Supply** — the same question by geography.
-
-## Reading these charts honestly
-
-Two cautions worth carrying through every view.
-
-First, **credits and projects are different units**, and a chart of one can look nothing like the same
-chart of the other. A sector with a handful of very large projects dominates the credit charts and
-barely appears in the project-count charts. Check which one you are looking at before drawing a
-conclusion.
-
-Second, everything here reflects what has been **indexed** from the ledger, up to the timestamp shown
-in the sidebar. It is not a projection and it is not a market price signal — it is a description of
-what has been published on-chain. Chapter 12 explains how to check how current that is.
+Everything on the Analytics page is dynamically scoped to the network selected in the top bar.
 
 ---
 
-Next: [09 — Portfolio](09-portfolio.md) · Back to [index](README.md)
+## The Headline KPI Strip
+
+Five high-level summary cards sit prominently above the stakeholder tabs. These headline metrics remain visible regardless of which tab is selected, providing immediate market context.
+
+| Metric | What it tells you | How it is calculated |
+|---|---|---|
+| **Active Supply** | Volume of credits currently available in circulation. | Total issued credits minus total permanently retired credits (`Total Issued - Total Retired`). |
+| **Retirement Rate** | Share of issued credits that have been retired for offsetting. | Percentage ratio of retired credits to total issued credits (`Retired / Issued * 100`). High rates indicate active credit utilization rather than dormant inventory. |
+| **Pipeline Projects** | Projects progressing through verification stages that have not yet issued credits. | Count of all registered, under validation, and verified projects awaiting their initial credit issuance. Represents future market supply. |
+| **Avg Vintage Year** | The average vintage year across all issued credits. | Weighted average vintage year of issued supply. Lower numbers indicate older supply, while higher numbers indicate newer, fresher vintages. |
+| **Avg Crediting Period** | The mean duration of project crediting lifecycles. | Average length (in years) across projects with verified start and end crediting dates. |
+
+---
+
+## The Five Stakeholder Views
+
+The core of the Analytics page is structured into five specialized stakeholder views accessible via top tab navigation. Underneath the tabs, a one-line description contextualizes the focus of the active view.
+
+---
+
+### 1. Market Overview
+
+*Lifecycle, vintage, and pipeline pulse.* 
+
+The general-purpose dashboard designed for broad market analysis, ecosystem health monitoring, and macro-level trends.
+
+- **Project Lifecycle Funnel** — Displays project distribution across the five core workflow stages: *Registered*, *Under Validation*, *Verified*, *Issued*, and *Completed*. Each stage shows total project count and its relative percentage share of the network. A sharp drop-off between stages highlights potential administrative or verification bottlenecks in the pipeline.
+- **Vintage Distribution** — A bar chart grouping issued credits by their vintage year (the year the emission reduction or removal occurred). Hovering over any vintage bar shows the exact credit volume and number of contributing projects.
+- **Top Sectors by Credits Issued** — Horizontal comparative bars showing credit volume concentration across different sustainability sectors (e.g., Forestry, Renewable Energy, Waste Management).
+- **Top Host Countries by Credits** — Ranked listing of leading project host countries, displaying country rank, project count, and total credit volume generated.
+
+![Market Overview](images/fig-92-analytics-market-overview.png)
+
+---
+
+### 2. Buyer Overview
+
+*Supply availability, vintage freshness, and SDG co-benefit availability.*
+
+Tailored for credit buyers, corporate sustainability officers, and procurement desks seeking high-integrity credits that match specific portfolio criteria and ESG requirements.
+
+- **Supply Age Profile** — Categorizes total issued supply into four freshness tiers:
+  - **Fresh** (≤ 2 years old) — High buyer demand for recent carbon accounting compliance.
+  - **Recent** (3–5 years old) — Stable supply tier.
+  - **Older** (6–10 years old) — Mature vintages.
+  - **Legacy** (> 10 years old) — Historical issuances.
+- **Available Supply by Sector** — Displays active, unretired credits remaining in circulation broken down by sector. Unlike the cumulative issuance view, this chart isolates purchasable inventory.
+- **Methodology Adoption** — Top methodologies ranked by issuance volume and active project count, helping buyers identify widely adopted and standardized project methodologies.
+- **SDG Co-benefit Coverage** — Interactive cards for UN Sustainable Development Goals showing project counts and associated credit volumes, enabling buyers with dual-mandate corporate requirements to target specific socio-environmental co-benefits.
+
+![Buyer Overview](images/fig-93-analytics-buyer-overview.png)
+
+---
+
+### 3. Developer View
+
+*Benchmark project scale, sector performance, and competitor landscape.*
+
+Designed for project developers, carbon project originators, and investors evaluating project sizing, sector benchmarks, and market positioning.
+
+- **Avg Project Size by Sector** — Computes the average credits issued per project within each sector. Serves as a vital benchmark for feasibility studies and capacity sizing.
+- **Status Distribution** — Shows how active projects across the ecosystem are distributed across pipeline stages, providing competitive insight into industry-wide project maturation.
+- **Top Developer Leaderboard** — A detailed ranking table highlighting the most active project developer organizations across the network.
+
+| Column | Description |
+|---|---|
+| **Rank** | Position based on total credit issuance volume (`#1`, `#2`, etc.). |
+| **Developer** | Name of the project developer organization. |
+| **Projects** | Total number of projects managed by the developer. |
+| **Countries** | Number of distinct countries the developer operates in. |
+| **Sectors** | Number of distinct sector categories covered. |
+| **Credits** | Cumulative credits issued across all developer projects. |
+
+![Developer View](images/fig-94-analytics-developer-view.png)
+
+---
+
+### 4. Registry View
+
+*Throughput, methodology governance, and cross-registry pipeline comparison.*
+
+Built for standard registries, auditing bodies, and regulators monitoring issuance throughput, methodology utilization, and pipeline distribution.
+
+- **Registry Throughput** — Evaluates issuance efficiency by displaying the average credit issuance volume processed per project for each registry (`credits / projects`).
+- **Pipeline Heatmap by Registry** — A cross-matrix mapping top standard registries against the five project lifecycle stages (*Registered*, *Validation*, *Verified*, *Issued*, *Completed*). Cells are color-coded by density, highlighting at a glance where each registry's projects are concentrated.
+- **Registry Market Share** — Proportional breakdown of total network credit volume governed under each standard registry.
+
+![Registry View](images/fig-95-analytics-registry-view.png)
+
+---
+
+### 5. Climate Impact
+
+*SDG alignment, sector contribution, geographic reach, and vintage concentration risk.*
+
+Created for sustainability analysts, ESG auditors, and impact investors seeking to measure and report on non-carbon sustainable development impacts and environmental portfolio risks.
+
+- **SDG Alignment Matrix** — Comprehensive breakdown of UN Sustainable Development Goals, displaying the exact number of contributing projects and credit volume mapped to each goal, with color-coded SDG branding.
+- **Sector Contribution to Total Supply** — Percentage share of total network credits delivered by each intervention type (e.g., Nature-Based Solutions, Energy Efficiency, Methane Capture).
+- **Country Contribution to Supply** — Geographic distribution showing each host nation's percentage contribution to overall network supply.
+- **Vintage Concentration Risk** — Color-coded risk assessment distribution based on vintage age bands, alerting impact teams to over-reliance on aging carbon vintages.
+
+![Climate Impact](images/fig-55-analytics-page.png)
+
+---
+
+## Analytical Guidelines & Interpretation
+
+When analyzing metrics and distributions across the Analytics module, keep the following distinctions in mind:
+
+### 1. Credits vs. Projects (Scale Distortion)
+Credits (tonnes of $CO_2e$) and Project Counts represent fundamentally different units of analysis. A sector or country with only two or three large industrial or forestry projects may represent over 60% of total issued credits while accounting for less than 5% of project counts. Always verify whether a chart visualizes credit volume or project frequency.
+
+### 2. Active Supply vs. Total Issued
+Total Issued credits represent the cumulative historical volume minted since inception. Active Supply represents circulating volume (`Issued - Retired`). For market liquidity and available inventory, always reference Active Supply.
+
+### 3. Vintage Year vs. Issuance Year
+The vintage year denotes when the actual environmental reduction or removal occurred. The issuance year is when the credit token was minted on the blockchain ledger. A credit minted in 2024 may carry a 2021 vintage. Analytics charts explicitly categorize by verified vintage year.
+
+### 4. Indexed Ledger Truth
+All figures and distributions are computed directly from on-chain Guardian messages and tokens synchronized up to the timestamp shown in the sidebar. Analytics reflects verified, published ledger data rather than predictive estimates or off-chain speculative listings.
+
+---
+
+### Related & Workflow Progression
+
+* ← **Previous**: [07 — Registries, Developers and SDGs](07-registries-developers-sdgs.md) – Standard registries, project developers, and SDG alignment
+* **Step 8 of 15**: **Analytics** – Market analytics, cross-cutting trend views, and distributions
+* → **Next**: [09 — Portfolio](09-portfolio.md) – Personal watchlist management and custom dashboard widgets

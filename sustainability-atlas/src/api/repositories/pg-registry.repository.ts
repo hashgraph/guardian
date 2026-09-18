@@ -56,13 +56,16 @@ interface RawRow {
     user_count: string | null;
     total_issued: string | null;
     total_retired: string | null;
+    /** Only present on `findAll`'s rows query, which folds the total in via COUNT(*) OVER(). */
+    total_count?: number;
 }
 
-const SEARCH_TSVECTOR = `(
-    setweight(to_tsvector('english', coalesce(bv."displayName", '')), 'A') ||
-    setweight(to_tsvector('english', coalesce(bv."registryDid", '')), 'B') ||
-    setweight(to_tsvector('english', coalesce(bv."searchText", '')), 'C')
-)`;
+// business_view."searchVector" is a STORED generated column with this exact
+// expression (see schema-bootstrap.ts) — referencing it directly, rather than
+// recomputing the expression inline, lets the planner match it back to
+// idx_business_view_search_vector (GIN). An inline recompute is opaque to the
+// planner even though it's byte-identical, so it was never reaching that index.
+const SEARCH_TSVECTOR = `bv."searchVector"`;
 
 /**
  * Selects one canonical row per registry.
@@ -110,6 +113,12 @@ const REGISTRY_CANDIDATE_CTE = `
             s.total_retired
         FROM ${MV_REGISTRY_STATS_NAME} s
         JOIN business_view bv ON bv.id = s.canonical_id
+        -- Logically redundant (canonical_id only ever points at a REGISTRY row),
+        -- but the planner can't infer that: without it, it scans every
+        -- business_view row of all four view types and lets the join discard the
+        -- other three. Stating it gives it a pushdown-able qualifier against
+        -- idx_business_view_view_type_created. Planner hint only — no behaviour change.
+        WHERE bv."viewType" = 'REGISTRY'
 
         UNION ALL
 
@@ -214,16 +223,12 @@ export class PgRegistryRepository extends RegistryRepository {
                 OR bv."displayName" ILIKE ${likeParam}
                 OR bv."registryDid" ILIKE ${likeParam}
                 OR bv."relatedTopicId" ILIKE ${likeParam}
-                OR bv."businessData"->>'geography' ILIKE ${likeParam}
-                OR bv."businessData"->'options'->>'geography' ILIKE ${likeParam}
-                OR bv."businessData"->'options'->'attributes'->>'geography' ILIKE ${likeParam}
-                OR bv."businessData"->'options'->'attributes'->>'Country' ILIKE ${likeParam}
-                OR bv."businessData"->>'law' ILIKE ${likeParam}
-                OR bv."businessData"->'options'->>'law' ILIKE ${likeParam}
-                OR bv."businessData"->'options'->'attributes'->>'law' ILIKE ${likeParam}
-                OR bv."businessData"->>'tags' ILIKE ${likeParam}
-                OR bv."businessData"->'options'->>'tags' ILIKE ${likeParam}
-                OR bv."businessData"->'options'->'attributes'->>'tags' ILIKE ${likeParam}
+                -- Covers the geography/Country, law and tags substring matches that
+                -- were previously nine separate businessData JSONB path lookups:
+                -- business-view-builder concatenates all three into "searchText"
+                -- from the same source fields, and that column carries a trigram
+                -- GIN index the JSONB path expressions could never use.
+                OR bv."searchText" ILIKE ${likeParam}
                 OR similarity(COALESCE(bv."displayName", ''), ${simParam}) > 0.3
             )`);
 
@@ -249,32 +254,27 @@ export class PgRegistryRepository extends RegistryRepository {
         const limitParam = builder.nextParam(limit);
         const offsetParam = builder.nextParam(offset);
 
+        // COUNT(*) OVER() is evaluated over the filtered candidate set the query
+        // already builds for ranking/sorting, before LIMIT is applied — so the
+        // total comes back on the rows themselves instead of costing a second,
+        // independently-planned pass over the same CTE (which planned as a
+        // per-canonical-row nested loop and dominated this endpoint's latency).
         const rowsSql = `
             ${REGISTRY_CANDIDATE_CTE}
-            SELECT bv.*, ${rankExpr} AS search_rank
+            SELECT bv.*, ${rankExpr} AS search_rank, (COUNT(*) OVER())::int AS total_count
             FROM candidate bv
             WHERE ${whereSql}
             ORDER BY ${orderBy}
             LIMIT ${limitParam} OFFSET ${offsetParam}
         `;
 
-        // Count query reuses the same WHERE but no LIMIT/OFFSET, so slice the params back to before the additions.
-        const countParams = params.slice(0, params.length - 2);
-        const countSql = `
-            ${REGISTRY_CANDIDATE_CTE}
-            SELECT COUNT(*)::int AS total
-            FROM candidate bv
-            WHERE ${whereSql}
-        `;
-
-        const [rawRows, countResult]: [RawRow[], Array<{ total: number }>] = await Promise.all([
-            this.dataSource.query(rowsSql, params),
-            this.dataSource.query(countSql, countParams),
-        ]);
+        const rawRows: RawRow[] = await this.dataSource.query(rowsSql, params);
 
         return {
             rows: rawRows.map(PgRegistryRepository.mapRow),
-            total: countResult[0]?.total ?? 0,
+            // Empty page (no matches, or an offset past the end) carries no window
+            // row to read the total off.
+            total: rawRows[0]?.total_count ?? 0,
         };
     }
 
@@ -375,16 +375,12 @@ export class PgRegistryRepository extends RegistryRepository {
                 OR bv."displayName" ILIKE ${likeParam}
                 OR bv."registryDid" ILIKE ${likeParam}
                 OR bv."relatedTopicId" ILIKE ${likeParam}
-                OR bv."businessData"->>'geography' ILIKE ${likeParam}
-                OR bv."businessData"->'options'->>'geography' ILIKE ${likeParam}
-                OR bv."businessData"->'options'->'attributes'->>'geography' ILIKE ${likeParam}
-                OR bv."businessData"->'options'->'attributes'->>'Country' ILIKE ${likeParam}
-                OR bv."businessData"->>'law' ILIKE ${likeParam}
-                OR bv."businessData"->'options'->>'law' ILIKE ${likeParam}
-                OR bv."businessData"->'options'->'attributes'->>'law' ILIKE ${likeParam}
-                OR bv."businessData"->>'tags' ILIKE ${likeParam}
-                OR bv."businessData"->'options'->>'tags' ILIKE ${likeParam}
-                OR bv."businessData"->'options'->'attributes'->>'tags' ILIKE ${likeParam}
+                -- Covers the geography/Country, law and tags substring matches that
+                -- were previously nine separate businessData JSONB path lookups:
+                -- business-view-builder concatenates all three into "searchText"
+                -- from the same source fields, and that column carries a trigram
+                -- GIN index the JSONB path expressions could never use.
+                OR bv."searchText" ILIKE ${likeParam}
                 OR similarity(COALESCE(bv."displayName", ''), ${simParam}) > 0.3
             )`);
         }

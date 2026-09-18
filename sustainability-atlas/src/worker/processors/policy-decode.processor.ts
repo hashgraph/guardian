@@ -1,9 +1,11 @@
 import { Processor, WorkerHost, OnWorkerEvent, InjectQueue } from '@nestjs/bullmq';
 import { Inject, Logger } from '@nestjs/common';
 import { Job, Queue } from 'bullmq';
+import type { Redis } from 'ioredis';
 import { DataSource } from 'typeorm';
 import JSZip from 'jszip';
-import { QUEUE_NAMES, envInt } from '@shared/config/bullmq.config';
+import { QUEUE_NAMES, envInt, getWorkerOptions } from '@shared/config/bullmq.config';
+import { canEnqueueBulk } from '@shared/redis/redis-headroom';
 import { IpfsService } from '../services/ipfs.service';
 import { PolicyMappingPipelineService } from '../mapping/policy-pipeline.service';
 import { POLICY_ZIP_STORAGE, PolicyZipStorage } from '../services/storage/policy-zip-storage.interface';
@@ -18,11 +20,11 @@ export interface PolicyDecodeJobData {
 
 const MAX_ATTEMPTS = 5;
 
-@Processor(QUEUE_NAMES.POLICY_DECODE, {
-    lockDuration: envInt('POLICY_DECODE_LOCK_DURATION', 600000),
-    stalledInterval: envInt('POLICY_DECODE_STALLED_INTERVAL', 60000),
-    maxStalledCount: envInt('POLICY_DECODE_MAX_STALLED_COUNT', 2),
-})
+// Lock/stall values (JSZip + schema parse blocks the event loop well past
+// BullMQ's 30 s default lock) now come from getWorkerOptions, which reads the
+// same POLICY_DECODE_LOCK_DURATION/STALLED_INTERVAL env vars and adds the
+// concurrency this decorator was never passing.
+@Processor(QUEUE_NAMES.POLICY_DECODE, getWorkerOptions(QUEUE_NAMES.POLICY_DECODE))
 export class PolicyDecodeProcessor extends WorkerHost {
     private readonly logger = new Logger(PolicyDecodeProcessor.name);
 
@@ -32,6 +34,7 @@ export class PolicyDecodeProcessor extends WorkerHost {
         private readonly policyMappingPipeline: PolicyMappingPipelineService,
         @Inject(POLICY_ZIP_STORAGE) private readonly zipStorage: PolicyZipStorage,
         @InjectQueue(QUEUE_NAMES.IPFS_FETCH) private readonly ipfsQueue: Queue,
+        @Inject('REDICT_PUB') private readonly redis: Redis,
     ) {
         super();
     }
@@ -150,61 +153,62 @@ export class PolicyDecodeProcessor extends WorkerHost {
         const ipfsTimeoutMs = Number(process.env.IPFS_FETCH_TIMEOUT ?? '180000');
         const staleMs = ipfsTimeoutMs * 10;
 
-        // Atomic UPSERT: returns the row's state after the operation. The CASE
-        // expression decides whether to reset to 'pending' or leave it.
-        const rows: Array<{ decodeStatus: string; attempts: number; lastAttemptAt: Date | null; reserved: boolean }> =
+        // The lease IS the update: the ON CONFLICT branch only fires when this
+        // caller is allowed to run, so a returned row means we hold it and zero
+        // rows means someone else does (or the policy is finished).
+        //
+        // The previous version computed a `reserved` flag in RETURNING, which
+        // reads the row AFTER the update has already set lastAttemptAt = now().
+        // That made the freshness test trivially true (and `AND` bound tighter
+        // than `OR`), so every concurrent caller was told it held the lease and
+        // two workers could decode the same zip at once.
+        //
+        // 'pending' stays the in-flight marker rather than a new 'decoding'
+        // status because the public API maps this column onto its own
+        // success/pending/failed vocabulary.
+        const rows: Array<{ decodeStatus: string; attempts: number }> =
             await this.dataSource.query(
                 `INSERT INTO policy
                      ("sourceCid", "policyTopicId", "policyId", version, "decodeStatus", attempts, "lastAttemptAt")
                  VALUES ($1, $2, NULL, NULL, 'pending', 1, now())
                  ON CONFLICT ("sourceCid") DO UPDATE SET
-                     "decodeStatus" = CASE
-                         WHEN policy."decodeStatus" = 'decoded'                            THEN 'decoded'
-                         WHEN policy."decodeStatus" = 'pending'
-                              AND policy."lastAttemptAt" > now() - ($3 || ' milliseconds')::interval
-                              THEN 'pending'
-                         WHEN policy."decodeStatus" = 'failed' AND policy.attempts >= $4   THEN 'failed'
-                         ELSE 'pending'
-                     END,
-                     attempts = CASE
-                         WHEN policy."decodeStatus" = 'decoded'                            THEN policy.attempts
-                         WHEN policy."decodeStatus" = 'pending'
-                              AND policy."lastAttemptAt" > now() - ($3 || ' milliseconds')::interval
-                              THEN policy.attempts
-                         WHEN policy."decodeStatus" = 'failed' AND policy.attempts >= $4   THEN policy.attempts
-                         ELSE policy.attempts + 1
-                     END,
+                     "decodeStatus"  = 'pending',
+                     attempts        = policy.attempts + 1,
                      "lastAttemptAt" = now(),
                      "updatedAt"     = now()
-                 RETURNING
-                     "decodeStatus",
-                     attempts,
-                     "lastAttemptAt",
-                     -- reserved = true means THIS call won the lease to run.
-                     (xmax = 0 OR "decodeStatus" = 'pending'
-                        AND "lastAttemptAt" >= now() - INTERVAL '1 second') AS reserved`,
+                 WHERE
+                     -- never redo work that already succeeded
+                     policy."decodeStatus" <> 'decoded'
+                     -- stop retrying a policy that has exhausted its attempts
+                     AND NOT (policy."decodeStatus" = 'failed' AND policy.attempts >= $4)
+                     -- another worker holds a lease that has not gone stale yet
+                     AND NOT (policy."decodeStatus" = 'pending'
+                              AND policy."lastAttemptAt" > now() - ($3 || ' milliseconds')::interval)
+                 RETURNING "decodeStatus", attempts`,
                 [cid, policyTopicId, staleMs, MAX_ATTEMPTS],
             );
 
-        const row = rows[0];
-        if (!row) {
-            this.logger.warn(`policy upsert returned no row for cid=${cid}`);
-            return 'skip';
-        }
+        if (rows[0]) return 'proceed';
 
-        if (row.decodeStatus === 'decoded') {
+        // Lease refused — read the row back only to explain why in the log.
+        const [state]: Array<{ decodeStatus: string; attempts: number }> =
+            await this.dataSource.query(
+                `SELECT "decodeStatus", attempts FROM policy WHERE "sourceCid" = $1 LIMIT 1`,
+                [cid],
+            );
+
+        if (!state) {
+            this.logger.warn(`policy upsert returned no row for cid=${cid}`);
+        } else if (state.decodeStatus === 'decoded') {
             this.logger.debug(`policy cid=${cid} already decoded — skipping`);
-            return 'skip';
-        }
-        if (row.decodeStatus === 'failed' && row.attempts >= MAX_ATTEMPTS) {
-            this.logger.warn(`policy cid=${cid} permanently failed (attempts=${row.attempts}) — skipping`);
-            return 'skip';
-        }
-        if (!row.reserved) {
+        } else if (state.decodeStatus === 'failed') {
+            this.logger.warn(
+                `policy cid=${cid} permanently failed (attempts=${state.attempts}) — skipping`,
+            );
+        } else {
             this.logger.debug(`policy cid=${cid} already pending in another worker — skipping`);
-            return 'skip';
         }
-        return 'proceed';
+        return 'skip';
     }
 
     private async markFailed(cid: string, message: string): Promise<void> {
@@ -331,19 +335,25 @@ export class PolicyDecodeProcessor extends WorkerHost {
                  WHERE m.type = 'VC-Document'
                    AND m.documents IS NULL
                    AND m.files IS NOT NULL
-                   AND NOT (m."topicId" = ANY($2::text[]))`,
-                [policyTopicId, blocked],
+                   AND NOT (m."topicId" = ANY($2::text[]))
+                 LIMIT $3`,
+                [policyTopicId, blocked, envInt('BACKFILL_BATCH', 2000)],
             );
+        if (rows.length === 0) return;
 
-        let enqueued = 0;
-        for (const row of rows) {
-            await this.ipfsQueue.add(
-                'fetch',
-                { cid: row.cid, messageTimestamp: row.consensusTimestamp },
-                { jobId: `ipfs-${row.cid}` },
-            );
-            enqueued++;
-        }
+        // A single decode can fan out to every un-fetched VC in an entire topic
+        // subtree, all of it landing in the narrowest lane in the system. Now
+        // bounded by BACKFILL_BATCH, and skipped altogether when Redict is short
+        // on memory or that lane is already deep — the boot backfill re-runs this
+        // same query later, so deferring loses nothing.
+        if (!await canEnqueueBulk(this.redis, this.ipfsQueue, 'deferred VC backfill')) return;
+
+        const enqueued = rows.length;
+        await this.ipfsQueue.addBulk(rows.map(row => ({
+            name: 'fetch',
+            data: { cid: row.cid, messageTimestamp: row.consensusTimestamp },
+            opts: { jobId: `ipfs-${row.cid}` },
+        })));
 
         if (enqueued > 0) {
             this.logger.log(

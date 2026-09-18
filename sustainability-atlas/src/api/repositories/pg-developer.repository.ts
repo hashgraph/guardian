@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm';
-import { MV_PROJECT_STATS_NAME } from '@shared/materialized-views';
+import { MV_PROJECT_STATS_NAME, MV_REGISTRY_STATS_NAME } from '@shared/materialized-views';
 import {
     DeveloperRepository,
     DeveloperListQuery,
@@ -88,14 +88,12 @@ export class PgDeveloperRepository extends DeveloperRepository {
                     bv."businessData"->>'category'        AS category,
                     reg.registry_name                     AS registry_name
                 FROM business_view bv
-                LEFT JOIN (
-                    SELECT DISTINCT ON ("registryDid")
-                           "registryDid",
-                           "displayName" AS registry_name
-                    FROM business_view
-                    WHERE "viewType" = 'REGISTRY'
-                    ORDER BY "registryDid", "createdAt" DESC NULLS LAST
-                ) reg ON reg."registryDid" = bv."registryDid"
+                -- Registry display name comes from mv_registry_stats, which already
+                -- resolves the latest REGISTRY row per registryDid once per MV refresh
+                -- and is keyed by registryDid (unique index). Doing that dedup inline
+                -- instead meant sorting every raw REGISTRY row on every request.
+                LEFT JOIN ${MV_REGISTRY_STATS_NAME} reg
+                    ON reg."registryDid" = bv."registryDid"
                 WHERE bv."viewType" = 'PROJECT'
                   AND bv."businessData"->>'developer' IS NOT NULL
                   AND bv."businessData"->>'developer' <> ''
@@ -113,11 +111,16 @@ export class PgDeveloperRepository extends DeveloperRepository {
                     COUNT(DISTINCT dp.source_ts)::int AS project_count,
                     COUNT(DISTINCT NULLIF(dp.country, ''))::int AS country_count,
                     mode() WITHIN GROUP (ORDER BY NULLIF(dp.country, '')) AS top_country,
-                    ARRAY_AGG(DISTINCT dp.registry_name)
-                        FILTER (WHERE dp.registry_name IS NOT NULL AND dp.registry_name <> '')
+                    -- FILTER-ing out every row leaves ARRAY_AGG NULL rather than {} —
+                    -- COALESCE keeps this an empty array for a developer whose
+                    -- projects all lack that field, like every other caller expects.
+                    COALESCE(ARRAY_AGG(DISTINCT dp.registry_name)
+                        FILTER (WHERE dp.registry_name IS NOT NULL AND dp.registry_name <> ''),
+                        ARRAY[]::text[])
                         AS registries,
-                    ARRAY_AGG(DISTINCT dp.category)
-                        FILTER (WHERE dp.category IS NOT NULL AND dp.category <> '')
+                    COALESCE(ARRAY_AGG(DISTINCT dp.category)
+                        FILTER (WHERE dp.category IS NOT NULL AND dp.category <> ''),
+                        ARRAY[]::text[])
                         AS categories,
                     COALESCE(SUM(ps.issued), 0)::numeric  AS total_issued,
                     COALESCE(SUM(ps.retired), 0)::numeric AS total_retired

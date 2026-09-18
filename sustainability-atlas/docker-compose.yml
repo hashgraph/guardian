@@ -10,11 +10,17 @@
 #   - worker-testnet  : Hedera testnet sync worker (commented out — uncomment to enable)
 #   - api             : REST API serving all configured networks
 #   - frontend        : Nuxt 3 SSR frontend
-#   - bull-board      : BullMQ dashboard (optional, useful for monitoring)
+#   - bull-board      : BullMQ dashboard (opt-in: --profile monitoring, loopback only)
 #
 # Usage:
 #   cp .env.example .env       # configure secrets / overrides
 #   docker compose up -d
+#
+# Companion overlays (see Horizontal Scaling in the README):
+#   docker-compose.roles-testnet.yml   swap testnet to role-partitioned workers
+#   docker-compose.roles-mainnet.yml   same for mainnet
+# Each overlay disables that network's all-in-one worker, which a `--profile`
+# flag on its own cannot do: Compose always starts unprofiled services.
 #
 # All inter-service communication uses Docker DNS (service names). Only the
 # API and frontend ports are exposed to the host. Internal stores (postgres,
@@ -22,12 +28,82 @@
 # if you need direct access from the host for debugging.
 # =============================================================================
 
+# ─── Shared service definitions ──────────────────────────────────────────────
+x-deps-stores: &deps-stores
+    postgres:
+        condition: service_healthy
+    redict:
+        condition: service_healthy
+
+x-backend-base: &backend-base
+    build:
+        context: .
+        dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+        - .env
+    depends_on: *deps-stores
+
+x-worker-base: &worker-base
+    <<: *backend-base
+    command: node dist/src/worker/main.js
+    volumes:
+        - ./data/policy-zips:/app/data/policy-zips
+    depends_on:
+        <<: *deps-stores
+        ipfs:
+            condition: service_started
+        policy-zips-init:
+            condition: service_completed_successfully
+
+x-infra-env: &infra-env
+    DB_HOST: postgres
+    DB_PORT: '5432'
+    REDICT_HOST: redict
+    REDICT_PORT: '6379'
+
+x-worker-env: &worker-env
+    <<: *infra-env
+    IPFS_GATEWAYS: http://ipfs:8080/ipfs/,https://ipfs.io/ipfs/
+    POLICY_ZIP_STORAGE_PATH: /app/data/policy-zips
+
 services:
     # ─── Infrastructure ─────────────────────────────────────────────────────
     postgres:
         image: postgres:16-alpine
         container_name: se-postgres
         restart: unless-stopped
+        # Tuned for an ~18GB working set on an ~18GB host.
+        # left the cache hit ratio at 48% and 1.2TB read off disk for an 18GB
+        # database
+        # work_mem is per sort/hash node, so the worst case scales with
+        # concurrency: keep an eye on it if PG_MAX_CONNECTIONS is raised much
+        # above the ~30 connections the worker tier actually opens.
+        #
+        # autovacuum had never run on any of the large tables (business_view,
+        # message, message_cache, nft_cache) — the default cost limit throttles
+        # it to a crawl on tables this size, hence the raised limit and the
+        # lower scale factors so it triggers on a sane fraction of the table.
+        command: >
+            postgres
+            -c max_connections=${PG_MAX_CONNECTIONS:-200}
+            -c shared_buffers=4GB
+            -c effective_cache_size=10GB
+            -c work_mem=32MB
+            -c maintenance_work_mem=1GB
+            -c random_page_cost=1.1
+            -c effective_io_concurrency=200
+            -c max_wal_size=4GB
+            -c min_wal_size=1GB
+            -c wal_buffers=16MB
+            -c checkpoint_completion_target=0.9
+            -c max_parallel_workers_per_gather=4
+            -c max_parallel_maintenance_workers=4
+            -c autovacuum_vacuum_cost_limit=2000
+            -c autovacuum_vacuum_scale_factor=0.05
+            -c autovacuum_analyze_scale_factor=0.02
+            -c autovacuum_naptime=30s
+        shm_size: 2gb
         environment:
             POSTGRES_DB: postgres
             POSTGRES_USER: ${DB_USER:-explorer}
@@ -103,68 +179,138 @@ services:
 
     # ─── Workers (one per network) ──────────────────────────────────────────
     worker-mainnet:
-        build:
-            context: .
-            dockerfile: Dockerfile
+        <<: *worker-base
         container_name: se-worker-mainnet
-        restart: unless-stopped
-        env_file:
-            - .env
         environment:
+            <<: *worker-env
             HEDERA_NET: mainnet
-            DB_HOST: postgres
-            DB_PORT: '5432'
-            REDICT_HOST: redict
-            REDICT_PORT: '6379'
-            IPFS_GATEWAYS: http://ipfs:8080/ipfs/,https://ipfs.io/ipfs/
-            # Persist decoded policy zips on the host so they survive container
-            # rebuilds and can be packaged into a snapshot.
-            POLICY_ZIP_STORAGE_PATH: /app/data/policy-zips
-        volumes:
-            - ./data/policy-zips:/app/data/policy-zips
-        command: node dist/src/worker/main.js
-        depends_on:
-            postgres:
-                condition: service_healthy
-            redict:
-                condition: service_healthy
-            ipfs:
-                condition: service_started
-            policy-zips-init:
-                condition: service_completed_successfully
-
-    # Uncomment to enable testnet syncing:
 
     worker-testnet:
-        build:
-            context: .
-            dockerfile: Dockerfile
+        <<: *worker-base
         container_name: se-worker-testnet
-        restart: unless-stopped
-        env_file:
-            - .env
         environment:
+            <<: *worker-env
             HEDERA_NET: testnet
-            DB_HOST: postgres
-            DB_PORT: '5432'
-            REDICT_HOST: redict
-            REDICT_PORT: '6379'
-            IPFS_GATEWAYS: http://ipfs:8080/ipfs/,https://ipfs.io/ipfs/
-            POLICY_ZIP_STORAGE_PATH: /app/data/policy-zips
-        volumes:
-            - ./data/policy-zips:/app/data/policy-zips
-        command: node dist/src/worker/main.js
-        depends_on:
-            postgres:
-                condition: service_healthy
-            redict:
-                condition: service_healthy
-            ipfs:
-                condition: service_started
-            policy-zips-init:
-                condition: service_completed_successfully
 
-    # ─── Guardian event-sync (OPT-IN) ────────────────────────────────────────
+
+    # ─── Role-partitioned workers (optional, per network) ───────────────────
+    #
+    # Splits one network's all-in-one worker into four roles, so ingest stops
+    # competing with IPFS sockets and JSZip decoding for a single event loop,
+    # and so the ingest tier can be scaled on its own.
+    #
+    # This REPLACES that network's all-in-one worker, so the matching overlay
+    # file must be included — it is what takes the all-in-one out of the set
+    # Compose starts. A bare `--profile roles-<net> up` would otherwise run
+    # BOTH tiers against the same queues (safe, thanks to leader election and
+    # jobId dedup, but it wastes capacity and doubles the mirror-node rate):
+    #
+    #   docker compose -f docker-compose.yml -f docker-compose.roles-testnet.yml \
+    #       --profile roles-testnet up -d --scale worker-ingest-testnet=3
+    #
+    # Only the ingest role runs the scheduler; it is leader-elected, so replicas
+    # are fine. It also deliberately has no container_name, which allows --scale.
+    #
+    # Budget before enabling: each worker holds its own pool of DB_POOL_MAX, so
+    # (workers x pool) + api + guardian-sync must stay under Postgres
+    # max_connections. Splitting both networks at once is 8 workers.
+
+    # --- testnet: active, behind --profile roles-testnet (alias: roles) ---
+    worker-ingest-testnet:
+        <<: *worker-base
+        profiles: ['roles', 'roles-testnet']
+        environment:
+            <<: *worker-env
+            HEDERA_NET: testnet
+            WORKER_QUEUES: mirror-node-topics,mirror-node-topics-priority,mirror-node-messages
+            SCHEDULER_ENABLED: 'true'
+            # Per-replica ceiling — the fleet total is this x replica count.
+            WORKER_MAX_CONCURRENCY_FACTOR: '2'
+
+    worker-media-testnet:
+        <<: *worker-base
+        container_name: se-worker-media-testnet
+        profiles: ['roles', 'roles-testnet']
+        environment:
+            <<: *worker-env
+            HEDERA_NET: testnet
+            # policy-decode blocks the event loop in JSZip and IPFS holds
+            # multi-minute sockets; isolating them keeps ingestion responsive.
+            WORKER_QUEUES: ipfs-files,policy-decode,project-reparse
+            SCHEDULER_ENABLED: 'false'
+
+    worker-tokens-testnet:
+        <<: *worker-base
+        container_name: se-worker-tokens-testnet
+        profiles: ['roles', 'roles-testnet']
+        environment:
+            <<: *worker-env
+            HEDERA_NET: testnet
+            WORKER_QUEUES: mirror-node-tokens,mirror-node-retirements
+            SCHEDULER_ENABLED: 'false'
+
+    worker-maintenance-testnet:
+        <<: *worker-base
+        container_name: se-worker-maintenance-testnet
+        profiles: ['roles', 'roles-testnet']
+        environment:
+            <<: *worker-env
+            HEDERA_NET: testnet
+            # MV refresh and the business-view rebuild are full-table scans —
+            # keeping them off the ingest workers stops them stealing that CPU.
+            WORKER_QUEUES: maintenance-*
+            SCHEDULER_ENABLED: 'false'
+
+    # --- mainnet: same split, behind --profile roles-mainnet ---
+    #
+    # Defined but inert: a profiled service never starts unless its profile is
+    # named, so these cost nothing until you opt in with the overlay above.
+    worker-ingest-mainnet:
+        <<: *worker-base
+        profiles: ['roles-mainnet']
+        environment:
+            <<: *worker-env
+            HEDERA_NET: mainnet
+            WORKER_QUEUES: mirror-node-topics,mirror-node-topics-priority,mirror-node-messages
+            SCHEDULER_ENABLED: 'true'
+            # Per-replica ceiling — the fleet total is this x replica count.
+            WORKER_MAX_CONCURRENCY_FACTOR: '2'
+
+    worker-media-mainnet:
+        <<: *worker-base
+        container_name: se-worker-media-mainnet
+        profiles: ['roles-mainnet']
+        environment:
+            <<: *worker-env
+            HEDERA_NET: mainnet
+            # policy-decode blocks the event loop in JSZip and IPFS holds
+            # multi-minute sockets; isolating them keeps ingestion responsive.
+            WORKER_QUEUES: ipfs-files,policy-decode,project-reparse
+            SCHEDULER_ENABLED: 'false'
+
+    worker-tokens-mainnet:
+        <<: *worker-base
+        container_name: se-worker-tokens-mainnet
+        profiles: ['roles-mainnet']
+        environment:
+            <<: *worker-env
+            HEDERA_NET: mainnet
+            WORKER_QUEUES: mirror-node-tokens,mirror-node-retirements
+            SCHEDULER_ENABLED: 'false'
+
+    worker-maintenance-mainnet:
+        <<: *worker-base
+        container_name: se-worker-maintenance-mainnet
+        profiles: ['roles-mainnet']
+        environment:
+            <<: *worker-env
+            HEDERA_NET: mainnet
+            # MV refresh and the business-view rebuild are full-table scans —
+            # keeping them off the ingest workers stops them stealing that CPU.
+            WORKER_QUEUES: maintenance-*
+            SCHEDULER_ENABLED: 'false'
+
+    # ─── Guardian event-sync ────────────────────────────────────────────────
     # Consumes Guardian Application Events Module stream(s) and enqueues targeted
     # jobs onto the paired worker's queues, reducing mirror-node polling load.
     # Commented out by default — it does NOT auto-start.
@@ -176,58 +322,34 @@ services:
     # For an ISOLATED dataset instead, set GUARDIAN_<ID>_NETWORK=<unique> and run a
     # dedicated worker (with its own SEED_TOPIC_ID + HEDERA_MIRROR_NODE_URL) at it.
     # guardian-sync-testnet:
-    #     build:
-    #         context: .
-    #         dockerfile: Dockerfile
+    #     <<: *backend-base
     #     container_name: se-guardian-sync-testnet
-    #     restart: unless-stopped
-    #     env_file:
-    #         - .env
+    #     command: node dist/src/guardian-sync/main.js
     #     environment:
+    #         # Infra only — no IPFS gateways, no policy-zip path: this process
+    #         # enqueues jobs and nothing else.
+    #         <<: *infra-env
     #         HEDERA_NET: testnet
-    #         DB_HOST: postgres
-    #         DB_PORT: '5432'
-    #         REDICT_HOST: redict
-    #         REDICT_PORT: '6379'
     #         # Two Guardians, both on Hedera testnet, feeding the shared testnet dataset:
     #         GUARDIAN_INSTANCES: local-testnet,deploy-testnet
     #         GUARDIAN_LOCAL_TESTNET_AEM_URL: http://guardian-aem:3012
     #         GUARDIAN_DEPLOY_TESTNET_AEM_URL: http://34.194.124.200:3012
     #         # GUARDIAN_DEPLOY_TESTNET_AUTH_HEADER: "Bearer ${DEPLOY_AEM_TOKEN}"
-    #     command: node dist/src/guardian-sync/main.js
-    #     depends_on:
-    #         postgres:
-    #             condition: service_healthy
-    #         redict:
-    #             condition: service_healthy
 
     # ─── API ────────────────────────────────────────────────────────────────
     api:
-        build:
-            context: .
-            dockerfile: Dockerfile
+        <<: *backend-base
         container_name: se-api
-        restart: unless-stopped
-        env_file:
-            - .env
+        command: node dist/src/api/main.js
         environment:
+            <<: *infra-env
             # Comma-separated list of networks this API instance exposes.
             # Must include every network that has a running worker.
             HEDERA_NETWORKS: mainnet,testnet
-            DB_HOST: postgres
-            DB_PORT: '5432'
-            REDICT_HOST: redict
-            REDICT_PORT: '6379'
             API_PORT: '3030'
             API_CORS_ORIGINS: ${API_CORS_ORIGINS:-http://localhost:3000}
         ports:
             - '${API_PORT:-3030}:3030'
-        command: node dist/src/api/main.js
-        depends_on:
-            postgres:
-                condition: service_healthy
-            redict:
-                condition: service_healthy
 
     # ─── Frontend ───────────────────────────────────────────────────────────
     frontend:
@@ -250,6 +372,12 @@ services:
             # SSE base URL — must bypass Nitro proxy (Nitro buffers the body,
             # which breaks text/event-stream). Must be publicly reachable.
             NUXT_PUBLIC_SSE_API_BASE_URL: ${NUXT_PUBLIC_SSE_API_BASE_URL:-http://localhost:3030}
+            # CARTO Basemaps API key — required on raster tile requests to
+            # basemaps.cartocdn.com since CARTO started watermarking unauthenticated
+            # requests ("API key required"). Ships in the public bundle by design
+            # (CARTO's Basemaps key is meant for client-side use). Get one at
+            # https://carto.com/basemaps/apikey/. Set NUXT_PUBLIC_CARTO_API_KEY in .env.
+            NUXT_PUBLIC_CARTO_API_KEY: ${NUXT_PUBLIC_CARTO_API_KEY:-}
             # Shared secret marking SSR server-to-server requests as the trusted
             # frontend (sent as X-Frontend-Key so DataAccessGuard exempts them from
             # the API-key gate + rate limits). MUST match the API's
@@ -261,16 +389,32 @@ services:
             api:
                 condition: service_started
 
-    # ─── Monitoring (optional) ──────────────────────────────────────────────
+    # ─── Monitoring (OPT-IN: --profile monitoring) ──────────────────────────
+    #
+    # bull-board has no authentication of its own and offers full queue mutation
+    # — retry, promote, and delete any job — to anyone who can reach the port.
+    # It was previously published to the host on every `docker compose up`, which
+    # put an unauthenticated queue-admin UI on the network alongside an API whose
+    # equivalent actions all sit behind @AdminWrite.
+    #
+    # It is now opt-in and bound to loopback, so reaching it takes deliberate
+    # local access or an SSH tunnel:
+    #
+    #   docker compose --profile monitoring up -d bull-board
+    #   ssh -L 3010:localhost:3010 <host>
+    #
+    # The admin API covers the same day-to-day operations behind real auth:
+    # queue counts, failed-job listing, retry, pause/resume and clean.
     bull-board:
         image: deadly0/bull-board
         container_name: se-bull-board
+        profiles: ['monitoring']
         restart: unless-stopped
         environment:
             REDIS_HOST: redict
             REDIS_PORT: '6379'
         ports:
-            - '${BULL_BOARD_PORT:-3010}:3000'
+            - '127.0.0.1:${BULL_BOARD_PORT:-3010}:3000'
         depends_on:
             redict:
                 condition: service_healthy

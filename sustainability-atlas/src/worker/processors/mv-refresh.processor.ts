@@ -4,10 +4,10 @@ import { Job } from 'bullmq';
 import { DataSource } from 'typeorm';
 import Redis from 'ioredis';
 import { createHash } from 'crypto';
-import { QUEUE_NAMES } from '@shared/config/bullmq.config';
+import { QUEUE_NAMES, getWorkerOptions } from '@shared/config/bullmq.config';
 import { MATERIALIZED_VIEWS, MaterializedViewDefinition } from '@shared/materialized-views';
 
-@Processor(QUEUE_NAMES.MV_REFRESH)
+@Processor(QUEUE_NAMES.MV_REFRESH, getWorkerOptions(QUEUE_NAMES.MV_REFRESH))
 export class MvRefreshProcessor extends WorkerHost implements OnModuleInit {
     private readonly logger = new Logger(MvRefreshProcessor.name);
 
@@ -30,11 +30,40 @@ export class MvRefreshProcessor extends WorkerHost implements OnModuleInit {
      * far cheaper than a schema rebuild. On a fresh deploy (no mv_registry
      * rows, no views) every view takes the create path, same as before.
      *
-     * `createSql`/`indexSql` already use IF NOT EXISTS (see *.mv.ts), so this
-     * is also safe if multiple worker replicas race on deploy: Postgres
-     * serializes the DDL and the loser's statement becomes a no-op.
+     * Replicas are serialized on a Postgres advisory lock. IF NOT EXISTS alone
+     * is not enough here: the recreate path issues DROP ... CASCADE before
+     * CREATE, so two replicas arriving together can each drop a view the other
+     * just built, and every endpoint joining it fails for that window. The lock
+     * is held for the whole pass, so the second replica finds the definitions
+     * already current and takes the cheap REFRESH path instead.
      */
     async onModuleInit(): Promise<void> {
+        const runner = this.dataSource.createQueryRunner();
+        await runner.connect();
+        try {
+            // try_ rather than a blocking acquire: this runs in onModuleInit, so
+            // waiting on the lock blocks worker startup entirely. A holder that
+            // leaks its connection (a killed process, a test suite that does not
+            // tear down) would then wedge every future boot behind a lock nobody
+            // is going to release. Skipping is also the correct semantic — if
+            // another instance is preparing the views, this one has nothing to do.
+            const [lock]: Array<{ locked: boolean }> = await runner.query(
+                `SELECT pg_try_advisory_lock(hashtext('se:mv-init')) AS locked`,
+            );
+            if (!lock?.locked) {
+                this.logger.log('Materialized views are being prepared elsewhere — skipping');
+                return;
+            }
+            await this.prepareViews();
+        } finally {
+            await runner
+                .query(`SELECT pg_advisory_unlock(hashtext('se:mv-init'))`)
+                .catch(() => {});
+            await runner.release();
+        }
+    }
+
+    private async prepareViews(): Promise<void> {
         await this.ensureMvRegistryTable();
 
         for (const mv of MATERIALIZED_VIEWS) {
@@ -109,21 +138,52 @@ export class MvRefreshProcessor extends WorkerHost implements OnModuleInit {
     async process(job: Job): Promise<void> {
         this.logger.log('Refreshing materialized views...');
 
-        const results: Record<string, boolean> = {};
+        const results: Record<string, 'success' | 'failed' | 'skipped'> = {};
 
         for (const mv of MATERIALIZED_VIEWS) {
+            // Per-view advisory lock: the queue's concurrency only serializes
+            // within one process, so a second worker (or an autoscaled
+            // concurrency bump) can start a refresh while the previous tick's
+            // is still running. Overlapping REFRESH CONCURRENTLY transactions
+            // hold back the vacuum horizon and bloat the view — one grew to
+            // 412MB for ~20k rows. Held on a dedicated connection because the
+            // lock belongs to the session that took it; releasing from a
+            // different pooled connection would leak it and wedge the view.
+            const runner = this.dataSource.createQueryRunner();
+            await runner.connect();
+            let locked = false;
             try {
+                const [lock]: Array<{ locked: boolean }> = await runner.query(
+                    `SELECT pg_try_advisory_lock(hashtext('se:mv-refresh:' || $1)) AS locked`,
+                    [mv.name],
+                );
+                locked = lock?.locked ?? false;
+                if (!locked) {
+                    results[mv.name] = 'skipped';
+                    this.logger.log(
+                        `Materialized view ${mv.name} is already being refreshed elsewhere — skipping`,
+                    );
+                    continue;
+                }
+
                 // Use CONCURRENTLY to avoid blocking readers.
                 // Requires a unique index (created in onModuleInit).
-                await this.dataSource.query(
+                await runner.query(
                     `REFRESH MATERIALIZED VIEW CONCURRENTLY ${mv.name}`,
                 );
-                results[mv.name] = true;
+                results[mv.name] = 'success';
                 this.logger.debug(`Refreshed materialized view: ${mv.name}`);
             } catch (error: unknown) {
                 const message = error instanceof Error ? error.message : String(error);
-                results[mv.name] = false;
+                results[mv.name] = 'failed';
                 this.logger.error(`Failed to refresh materialized view ${mv.name}: ${message}`);
+            } finally {
+                if (locked) {
+                    await runner
+                        .query(`SELECT pg_advisory_unlock(hashtext('se:mv-refresh:' || $1))`, [mv.name])
+                        .catch(() => {});
+                }
+                await runner.release();
             }
         }
 
@@ -133,9 +193,11 @@ export class MvRefreshProcessor extends WorkerHost implements OnModuleInit {
             timestamp: new Date().toISOString(),
         }));
 
-        const successCount = Object.values(results).filter(Boolean).length;
+        const outcomes = Object.values(results);
+        const successCount = outcomes.filter((r) => r === 'success').length;
+        const skippedCount = outcomes.filter((r) => r === 'skipped').length;
         this.logger.log(
-            `Materialized views refresh complete: ${successCount}/${MATERIALIZED_VIEWS.length} succeeded`,
+            `Materialized views refresh complete: ${successCount}/${MATERIALIZED_VIEWS.length} succeeded (${skippedCount} skipped)`,
         );
     }
 

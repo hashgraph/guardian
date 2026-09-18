@@ -1,4 +1,4 @@
-# 15 — FAQ and troubleshooting
+# 15 — FAQ and Troubleshooting
 
 This chapter collects the questions people actually ask when something in the Atlas looks wrong.
 Most of the time nothing is broken: the answer is a network selector set differently than you
@@ -48,7 +48,7 @@ pipeline: registered, documented, and working through validation, but not yet at
 credits minted against them. Their project record is complete and their documents are readable —
 there is simply nothing in the issuance history to show.
 
-This is normal and is not a data error. Chapter 04 explains how to tell a pipeline project from an
+This is normal and is not a data error. [04 — Projects](04-projects.md) explains how to tell a pipeline project from an
 issuing one.
 
 ### Why does the projected volume say "No Estimations Available"?
@@ -69,8 +69,64 @@ Credits leave the supply when they are **retired** (permanently cancelled, usual
 has claimed the offset) and they move between holders when they are **transferred**.
 
 A project with a large minted total and a small current supply has had most of its credits retired,
-which is the intended end state for a carbon credit. Chapter 05 covers how to read the issuance and
+which is the intended end state for a carbon credit. [05 — Issuances and Credits](05-issuances-and-credits.md) covers how to read the issuance and
 retirement history.
+
+### An issuance says the declared and minted amounts differ
+
+These are separate facts and the Atlas reports both rather than picking one.
+
+**Declared** is the amount written into the registry's Guardian mint document — a statement of what
+it intended to issue. **Minted on-chain** is what the Hedera ledger actually recorded.
+
+* **Fewer minted than declared** — the mint partially failed or never finished. Retirement is not the
+  cause; retired credits still count as minted.
+* **More minted than declared** — more credits were created on the ledger than the document claimed.
+  Nothing forces the two to agree; they are separate actions by the registry.
+* **"Not matched"** — the on-chain mint has not been linked to the document yet and the declared
+  figure is standing in. This clears as syncing catches up.
+
+Dashboard and stat-card totals use the on-chain figure, so they can read lower than a registry's own
+published numbers. That gap is the point: it is the difference between what was documented and what
+the ledger did.
+
+### Transferred shows a dash instead of a number
+
+A dash means the value cannot be determined — not that nothing was transferred. Guardian issues no
+transfer document, so transfers are read from current ownership on the ledger. That is unavailable
+for fungible credits, whose balances cannot be traced back to the issuance that created them, and
+while serial ownership is still syncing, where a partial count would understate it.
+
+### Transferred shows a number but the transactions table is empty
+
+Both are correct; they answer different questions from different sources.
+
+**Transferred** says where the credits are **now** — how many sit with an account other than the
+token's treasury. That comes from current ownership, which the ledger reports in full as soon as the
+serials are synced.
+
+**Transactions** say **when** the credits moved and between whom. Guardian writes no transfer
+document, so each movement has to be read from the treasury account's own transaction history, and
+those accounts are swept in the background. Until a project's treasury has been swept, the Atlas can
+tell you where the credits are without yet being able to tell you when they got there.
+
+The two cases are labelled differently, so you can tell them apart:
+
+| What the table says | What it means |
+|---|---|
+| **Transaction history not available yet** | The issuing account's history has not been read yet. Transfers may exist. |
+| **No transactions yet** | The history has been read, and these credits genuinely have not moved. |
+
+Nothing is missing or wrong in the meantime, and the transactions appear on their own once that
+treasury is reached. The count is deliberately **not** derived from the transaction log: doing so
+would report zero for any treasury not yet swept, and would also count credits that were transferred
+and later retired as though they were still in circulation.
+
+### A token has serials the Atlas does not show
+
+The Atlas only tracks credits issued through a Guardian mint document it has synced. Serials minted
+outside that flow have no project, methodology or vintage behind them, so they are excluded rather
+than attributed to a project on a guess.
 
 ## Accounts and access
 
@@ -91,7 +147,7 @@ Your account was created for you by an administrator rather than through self si
 this way start with a temporary password and require you to set your own before you can do anything
 else.
 
-Set a new password at the prompt and you will not be asked again. Chapter 11 covers the password
+Set a new password at the prompt and you will not be asked again. [11 — Account and Security](11-account-and-security.md) covers the password
 rules.
 
 ### A button is greyed out, or a tab is missing
@@ -103,7 +159,7 @@ Three possible reasons, in order of likelihood:
    *not* one of these — CSV export works without an account.
 2. **It needs administrator rights.** User Management, and the maintenance actions on projects,
    methodologies and the sync pipeline, are restricted to administrators. If you do not see **User
-   Management** in your account menu, you do not have those rights — see chapter 13.
+   Management** in your account menu, you do not have those rights — see [13 — Administration](13-administration.md).
 3. **The feature is switched off platform-wide.** Some capabilities can be disabled for everyone by
    configuration. In that case nobody sees them, regardless of account level.
 
@@ -115,9 +171,9 @@ what your account is entitled to.
 Your Portfolio is stored against your account, so signing in elsewhere should bring it with you.
 Two things scope it more narrowly than people expect:
 
-- **It is per-network.** A watchlist built on mainnet does not appear while you are viewing testnet.
+* **It is per-network.** A watchlist built on mainnet does not appear while you are viewing testnet.
   Check the network selector.
-- **It is per-account.** If you have more than one login, each keeps its own Portfolio.
+* **It is per-account.** If you have more than one login, each keeps its own Portfolio.
 
 If you are on the right network and the right account and it is still empty, nothing has been added
 to it yet on that combination.
@@ -153,12 +209,16 @@ immediately.
 
 If your question is not answered here:
 
-- Look the term up in [the glossary](14-glossary-and-help.md) — a surprising number of apparent
+* Look the term up in [the glossary](14-glossary-and-help.md) — a surprising number of apparent
   problems are vocabulary differences between registries.
-- Check [Sync Status](12-sync-status.md) if it is a "data is missing or stale" question.
-- Use the feedback button to report it. Say which **network** you were on, which **page**, and what
+* Check [Sync Status](12-sync-status.md) if it is a "data is missing or stale" question.
+* Use the feedback button to report it. Say which **network** you were on, which **page**, and what
   you expected to see instead — those three details resolve most reports without a follow-up.
 
 ---
 
-Back to [index](README.md)
+### Related & Workflow Progression
+
+* ← **Previous**: [14 — Glossary and Help](14-glossary-and-help.md) – Terminology definitions and platform help guide
+* **Step 15 of 15**: **FAQ and Troubleshooting** – Answers to common questions and troubleshooting guide
+* ↺ **Return to Beginning**: [Introduction](README.md) – Platform concept overview and access levels

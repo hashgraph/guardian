@@ -195,34 +195,35 @@ onBeforeUnmount(() => {
             >
                 <div class="pointer-events-auto w-full max-w-3xl max-h-[90vh] flex flex-col rounded-xl border bg-card shadow-2xl" @click.stop>
                     <!-- Header -->
-                    <div class="flex items-center justify-between px-5 py-3.5 border-b shrink-0">
-                        <div class="flex items-center gap-2.5">
-                            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                    <div class="flex items-center justify-between gap-4 px-5 py-3.5 border-b shrink-0">
+                        <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
                                 <FileJson class="h-4 w-4 text-primary" />
                             </div>
-                            <div>
-                                <h3 class="text-sm font-semibold text-foreground">{{ title }}</h3>
-                                <p class="text-[11px] text-muted-foreground">{{ $t('vcViewer.rawDataOnBlockchain') }}</p>
+                            <div class="min-w-0 flex-1">
+                                <h3 class="text-sm font-semibold text-foreground truncate" :title="title">{{ title }}</h3>
+                                <p class="text-[11px] text-muted-foreground truncate">{{ $t('vcViewer.rawDataOnBlockchain') }}</p>
                             </div>
                         </div>
-                        <div class="flex items-center gap-1">
+                        <div class="flex items-center gap-1.5 shrink-0">
                             <button
-                                class="flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                                class="flex h-7 shrink-0 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                                 @click="copyToClipboard"
                             >
                                 <Check v-if="copied" class="h-3.5 w-3.5 text-stat-green" />
                                 <Copy v-else class="h-3.5 w-3.5" />
-                                {{ copied ? $t('common.copied') : $t('common.copy') }}
+                                <span>{{ copied ? $t('common.copied') : $t('common.copy') }}</span>
                             </button>
                             <button
-                                class="flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                                class="flex h-7 shrink-0 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                                 @click="downloadJson"
                             >
                                 <Download class="h-3.5 w-3.5" />
-                                {{ $t('common.download') }}
+                                <span>{{ $t('common.download') }}</span>
                             </button>
                             <button
-                                class="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors ml-1"
+                                class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors ml-1"
+                                :title="$t('common.close')"
                                 @click="emit('close')"
                             >
                                 <X class="h-4 w-4" />

@@ -4,15 +4,14 @@ import {
     Globe, MapPin,
     Network, FileText, ChevronDown,
     FolderKanban, BarChart3, RotateCcw, CloudDownload, Download,
-    ListChecks, TrendingUp, GitBranch, ArrowRight, Radio,
+    ListChecks, GitBranch, ArrowRight, Radio,
 } from 'lucide-vue-next';
 import type { Component } from 'vue';
 import type { Credit, VcDocData } from '~/types/models';
-import { formatCredits } from '~/lib/format';
 import { exportProject, type ExportFormat } from '~/lib/project-export';
 import { getSDG, getLocalizedSDGName } from '~/lib/sdgs';
 import { useDecodedMethodologyApi } from '~/composables/api/useDecodedMethodologyApi';
-import { COUNTRY_ALPHA3 } from '~/composables/useProjects';
+import { resolveCountryCode } from '~/composables/useProjects';
 import { nominatimReverse, nominatimCountryCenter } from '~/composables/useNominatim';
 
 const { t } = useI18n();
@@ -27,7 +26,7 @@ const geocodedCountry = ref<{ code: string; name: string } | null>(null);
 watch(project, async (p) => {
     geocodedCountry.value = null;
     if (!p || p.countryCode !== 'UNK' || !p.lat || !p.lng) return;
-    geocodedCountry.value = await nominatimReverse(p.lat, p.lng, n => COUNTRY_ALPHA3[n] ?? 'UNK');
+    geocodedCountry.value = await nominatimReverse(p.lat, p.lng, n => resolveCountryCode(n));
 }, { immediate: true });
 
 const INVALID_COUNTRY = new Set([
@@ -415,15 +414,15 @@ const emissions = computed(() => {
         />
 
         <div class="rounded-xl border bg-card overflow-hidden">
-            <div class="border-b">
+            <div class="border-b bg-muted/30">
                 <nav class="flex gap-0 -mb-px overflow-x-auto">
                     <button
                         v-for="tab in tabs"
                         :key="tab.key"
                         :class="[
                             activeTab === tab.key
-                                ? 'border-primary text-primary'
-                                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border',
+                                ? 'border-primary text-primary bg-card'
+                                : 'border-transparent text-muted-foreground hover:text-foreground',
                             'flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap',
                         ]"
                         @click="setTab(tab.key)"
@@ -526,30 +525,9 @@ const emissions = computed(() => {
             <div v-else-if="activeTab === 'issuances'" class="p-6 space-y-6">
                 <CreditLifecycle :project="project" />
 
-                <!-- Projected Issuance (pipeline projects only — issued projects show actuals above) -->
-                <div v-if="project.lifecycleStage !== 'Issued'" class="rounded-xl border bg-card overflow-hidden">
-                    <div class="px-5 py-3.5 border-b bg-muted/30">
-                        <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
-                            <TrendingUp class="h-4 w-4 text-primary" />
-                            {{ $t('projects.projectedEstimate.title') }}
-                        </h2>
-                        <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('projects.projectedEstimate.subtitle') }}</p>
-                    </div>
-                    <div class="grid grid-cols-2 gap-px bg-border">
-                        <div class="bg-card px-5 py-4 text-center">
-                            <div class="text-lg font-semibold text-foreground tabular-nums">
-                                {{ project.projectedVolume != null ? formatCredits(project.projectedVolume) : $t('projects.notEstimated') }}
-                            </div>
-                            <div class="text-[11px] text-muted-foreground">{{ $t('projects.columns.projectedVolume') }}</div>
-                        </div>
-                        <div class="bg-card px-5 py-4 text-center">
-                            <div class="text-lg font-semibold text-foreground tabular-nums">
-                                {{ project.expectedIssuanceYear ?? $t('projects.tbd') }}
-                            </div>
-                            <div class="text-[11px] text-muted-foreground">{{ $t('projects.columns.expectedIssuanceYear') }}</div>
-                        </div>
-                    </div>
-                </div>
+                <!-- Projected Information — shown for both pipeline and Issued projects; the
+                     estimate remains a useful reference point after issuance. -->
+                <ProjectedIssuance :data="project.projectedIssuance" />
 
                 <IssuancesTable
                     :project="project"

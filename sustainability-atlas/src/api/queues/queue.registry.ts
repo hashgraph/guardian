@@ -1,7 +1,9 @@
 import { Injectable, Logger, OnModuleInit, OnModuleDestroy, NotFoundException } from '@nestjs/common';
 import { Queue, QueueEvents } from 'bullmq';
+import Redis from 'ioredis';
 import {
     BASE_QUEUE_NAMES,
+    getEventStreamOptions,
     getQueueConfigs,
     QueueDefinition,
 } from '@shared/config/bullmq.config';
@@ -20,6 +22,8 @@ export class QueueRegistry implements OnModuleInit, OnModuleDestroy {
     private readonly logger = new Logger(QueueRegistry.name);
     private readonly queues = new Map<string, Queue>();
     private readonly queueEvents = new Map<string, QueueEvents>();
+    /** One non-blocking client shared by every Queue — see onModuleInit. */
+    private sharedConnection!: Redis;
     private readonly networks: string[];
     private readonly baseNames: string[];
 
@@ -34,6 +38,16 @@ export class QueueRegistry implements OnModuleInit, OnModuleDestroy {
         // Passing keyPrefix would redirect all reads to a non-existent namespace.
         const { keyPrefix: _kp, ...connection } = getRedictConfig();
 
+        // ONE client shared by every Queue instead of one per queue. Queue work
+        // here is ordinary request/response (counts, getJob, add) — none of it
+        // blocking — so a single socket serves all of them, and BullMQ flags a
+        // caller-supplied ioredis instance as `shared` so queue.close() will not
+        // disconnect it out from under its siblings.
+        this.sharedConnection = new Redis(connection);
+        this.sharedConnection.on('error', (error: Error) => {
+            this.logger.warn(`Shared queue connection error: ${error.message}`);
+        });
+
         for (const network of this.networks) {
             for (const base of this.baseNames) {
                 // Build the full queue name directly — same logic as qname() but
@@ -42,11 +56,19 @@ export class QueueRegistry implements OnModuleInit, OnModuleDestroy {
                 const mapKey = this.key(network, base);
 
                 try {
-                    const queue = new Queue(fullName, { connection });
-                    const events = new QueueEvents(fullName, { connection });
+                    // Carry the same default job options the worker uses. Without
+                    // them every job the API enqueues (topic requeue, IPFS
+                    // retry-by-topic, mass reparse) is retained in Redict forever
+                    // and never retries — the admin path was the one producer
+                    // still reintroducing the Redict-OOM growth.
+                    const config = this.getQueueConfig(network, base);
+                    const queue = new Queue(fullName, {
+                        connection: this.sharedConnection,
+                        defaultJobOptions: config?.defaultJobOptions,
+                        streams: getEventStreamOptions(),
+                    });
 
                     this.queues.set(mapKey, queue);
-                    this.queueEvents.set(mapKey, events);
 
                     this.logger.log(`Registered queue "${fullName}" [key=${mapKey}]`);
                 } catch (error: unknown) {
@@ -55,6 +77,8 @@ export class QueueRegistry implements OnModuleInit, OnModuleDestroy {
                 }
             }
         }
+
+        // QueueEvents are deliberately NOT created here — see acquireEventsForNetwork.
     }
 
     async onModuleDestroy(): Promise<void> {
@@ -72,6 +96,74 @@ export class QueueRegistry implements OnModuleInit, OnModuleDestroy {
 
         await closeAll('Queue', this.queues as Map<string, { close(): Promise<void> }>);
         await closeAll('QueueEvents', this.queueEvents as Map<string, { close(): Promise<void> }>);
+
+        // Owned by this class, so it has to be closed explicitly — BullMQ leaves
+        // a shared connection alone.
+        try {
+            this.sharedConnection?.disconnect();
+        } catch {
+            // Already gone — nothing to do.
+        }
+    }
+
+    // ---------------------------------------------------------------------------
+    // QueueEvents (created on demand)
+    // ---------------------------------------------------------------------------
+
+    /**
+     * Opens the QueueEvents streams for one network, creating any that are
+     * missing, and returns them alongside their queues.
+     *
+     * Each QueueEvents holds its own connection parked on a blocking XREAD for
+     * the life of the process. Creating them for every network x queue at boot
+     * meant the API opened dozens of permanently-blocked clients whether or not
+     * a single dashboard was watching — most of a 0.5-CPU Redict's client budget
+     * spent on streams nobody read. They are now opened when a subscriber
+     * actually arrives and closed again when the last one leaves.
+     */
+    acquireEventsForNetwork(
+        network: string,
+    ): Array<{ network: string; baseName: string; queue: Queue; events: QueueEvents }> {
+        const { keyPrefix: _kp, ...connection } = getRedictConfig();
+        const result: Array<{ network: string; baseName: string; queue: Queue; events: QueueEvents }> = [];
+
+        for (const base of this.baseNames) {
+            const mapKey = this.key(network, base);
+            const queue = this.queues.get(mapKey);
+            if (!queue) continue;
+
+            let events = this.queueEvents.get(mapKey);
+            if (!events) {
+                try {
+                    // Options, not the shared instance: a QueueEvents connection
+                    // blocks on XREAD and cannot be shared with anything else.
+                    events = new QueueEvents(`${base}-${network}`, { connection });
+                    this.queueEvents.set(mapKey, events);
+                } catch (error: unknown) {
+                    const msg = error instanceof Error ? error.message : String(error);
+                    this.logger.error(`Failed to open QueueEvents for "${mapKey}": ${msg}`);
+                    continue;
+                }
+            }
+            result.push({ network, baseName: base, queue, events });
+        }
+        return result;
+    }
+
+    /** Closes and forgets every QueueEvents stream for one network. */
+    async releaseEventsForNetwork(network: string): Promise<void> {
+        for (const base of this.baseNames) {
+            const mapKey = this.key(network, base);
+            const events = this.queueEvents.get(mapKey);
+            if (!events) continue;
+            this.queueEvents.delete(mapKey);
+            try {
+                await events.close();
+            } catch (error: unknown) {
+                const msg = error instanceof Error ? error.message : String(error);
+                this.logger.warn(`Error closing QueueEvents "${mapKey}": ${msg}`);
+            }
+        }
     }
 
     // ---------------------------------------------------------------------------
@@ -94,36 +186,10 @@ export class QueueRegistry implements OnModuleInit, OnModuleDestroy {
         return q;
     }
 
-    /**
-     * Returns the QueueEvents instance for the given (network, baseName) pair.
-     * Throws NotFoundException if not found.
-     */
-    getQueueEvents(network: string, baseName: string): QueueEvents {
-        const qe = this.queueEvents.get(this.key(network, baseName));
-        if (!qe) {
-            throw new NotFoundException(
-                `QueueEvents not found: network="${network}", baseName="${baseName}".`,
-            );
-        }
-        return qe;
-    }
 
-    /**
-     * Returns all (network, baseName) pairs as an iterable.
-     * Useful for the QueueEventsBus to wire up listeners.
-     */
-    getAllEntries(): Array<{ network: string; baseName: string; queue: Queue; events: QueueEvents }> {
-        const result: Array<{ network: string; baseName: string; queue: Queue; events: QueueEvents }> = [];
-        for (const network of this.networks) {
-            for (const base of this.baseNames) {
-                const q = this.queues.get(this.key(network, base));
-                const e = this.queueEvents.get(this.key(network, base));
-                if (q && e) {
-                    result.push({ network, baseName: base, queue: q, events: e });
-                }
-            }
-        }
-        return result;
+    /** The shared queue connection, for health and diagnostic reads. */
+    getConnection(): Redis {
+        return this.sharedConnection;
     }
 
     /** Returns all base queue name strings (without network suffix). */

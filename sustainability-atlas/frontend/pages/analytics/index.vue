@@ -7,8 +7,11 @@ import {
 } from 'lucide-vue-next';
 import { formatCredits } from '~/lib/format';
 import { naturalCompare } from '~/lib/utils';
+import { niceAxis } from '~/lib/chart-scale';
 import { allocateDonutColors } from '~/lib/chart-colors';
 import { SDG_LIST, getLocalizedSDGName } from '~/lib/sdgs';
+import { normalizeCountryName, OTHER_COUNTRY } from '~/composables/useProjects';
+import { LIFECYCLE_STAGES as CANONICAL_LIFECYCLE_STAGES } from '~/lib/lifecycle';
 import { SECTOR_I18N_KEYS } from '~/types/enums';
 import type { LabelCount } from '~/types/dashboard';
 
@@ -67,35 +70,38 @@ const avgCreditingPeriodYears = computed(() => summary.value.portfolio.avgCredit
 
 // Headline KPIs
 const headlineKpis = computed(() => [
-    { label: t('analytics.kpis.activeSupply'),       value: formatCredits(totalActive.value),     hint: t('analytics.kpis.activeSupplyHint') },
-    { label: t('analytics.kpis.retirementRate'),     value: `${retirementRate.value}%`,           hint: t('analytics.kpis.retirementRateHint') },
-    { label: t('analytics.kpis.pipelineProjects'),   value: pipelineProjects.value.toLocaleString(), hint: t('analytics.kpis.pipelineProjectsHint') },
-    { label: t('analytics.kpis.avgVintageYear'),    value: avgVintageYear.value?.toString() ?? '—', hint: t('analytics.kpis.avgVintageYearHint') },
-    { label: t('analytics.kpis.avgCreditingPeriod'), value: avgCreditingPeriodYears.value != null ? `${avgCreditingPeriodYears.value} ${t('analytics.kpis.yearsSuffix')}` : '—', hint: t('analytics.kpis.avgCreditingPeriodHint') },
+    { label: t('analytics.kpis.activeSupply'),       value: formatCredits(totalActive.value),     hint: t('analytics.kpis.activeSupplyHint'), tooltip: t('analytics.kpis.activeSupplyTooltip') },
+    { label: t('analytics.kpis.retirementRate'),     value: `${retirementRate.value}%`,           hint: t('analytics.kpis.retirementRateHint'), tooltip: t('analytics.kpis.retirementRateTooltip') },
+    { label: t('analytics.kpis.pipelineProjects'),   value: pipelineProjects.value.toLocaleString(), hint: t('analytics.kpis.pipelineProjectsHint'), tooltip: t('analytics.kpis.pipelineProjectsTooltip') },
+    { label: t('analytics.kpis.avgVintageYear'),    value: avgVintageYear.value?.toString() ?? '—', hint: t('analytics.kpis.avgVintageYearHint'), tooltip: t('analytics.kpis.avgVintageYearTooltip') },
+    { label: t('analytics.kpis.avgCreditingPeriod'), value: avgCreditingPeriodYears.value != null ? `${avgCreditingPeriodYears.value} ${t('analytics.kpis.yearsSuffix')}` : '—', hint: t('analytics.kpis.avgCreditingPeriodHint'), tooltip: t('analytics.kpis.avgCreditingPeriodTooltip') },
 ]);
 
 // ─── Lifecycle funnel (Market Overview) ──────────────────────────────────────
 
-const LIFECYCLE_STAGES = computed<Array<{ key: string; label: string }>>(() => [
-    { key: 'Registered',       label: t('projects.lifecycleStages.Registered') },
-    { key: 'Under Validation', label: t('projects.lifecycleStages.Validation') },
-    { key: 'Verified',         label: t('projects.lifecycleStages.Verified') },
-    { key: 'Issued',          label: t('projects.lifecycleStages.Issued') },
-    { key: 'Completed',        label: t('projects.lifecycleStages.Completed') },
-]);
+const LIFECYCLE_STAGES = computed<Array<{ key: string; label: string }>>(() =>
+    CANONICAL_LIFECYCLE_STAGES.map(key => ({
+        key,
+        label: t(`projects.lifecycleStages.${key}`),
+    }))
+);
 
 const lifecycleFunnel = computed(() => {
     const counts: Record<string, number> = {};
     for (const s of summary.value.lifecycleStages) {
         if (s.label) counts[s.label] = (counts[s.label] ?? 0) + s.projectCount;
     }
-    const max = Math.max(1, ...Object.values(counts));
-    return LIFECYCLE_STAGES.value.map(s => ({
-        ...s,
-        count: counts[s.key] ?? 0,
-        pct: Math.round(((counts[s.key] ?? 0) / Math.max(1, totalProjects.value)) * 100),
-        width: Math.max(8, Math.round(((counts[s.key] ?? 0) / max) * 100)),
-    }));
+    const total = totalProjects.value || 0;
+    return LIFECYCLE_STAGES.value.map(s => {
+        const count = counts[s.key] ?? 0;
+        const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+        return {
+            ...s,
+            count,
+            pct,
+            width: count > 0 ? Math.min(100, Math.max(1, pct)) : 0,
+        };
+    });
 });
 
 // ─── Vintage distribution + retirement age ──────────────────────────────────
@@ -114,6 +120,17 @@ const vintageBuckets = computed(() => {
 });
 
 const maxVintageCredits = computed(() => Math.max(1, ...vintageBuckets.value.map(b => b.credits)));
+
+const vintageAxis = computed(() => {
+    const rawMax = Math.max(0, ...vintageBuckets.value.map(b => b.credits));
+    return niceAxis(rawMax, 4);
+});
+
+function vintageTickAnchorClass(i: number, len: number): string {
+    if (i === 0) return 'bottom-0';
+    if (i === len - 1) return 'top-0 -translate-y-1/2';
+    return 'translate-y-1/2';
+}
 
 // ─── Sector breakdown (used by Buyer + Climate Impact) ───────────────────────
 
@@ -162,9 +179,20 @@ const methodologyTop = computed(() => topBins(methodologyRows.value, 'credits', 
 
 // ─── Country breakdown ─────────────────────────────────────────────────────
 
+// Raw country strings from the API aren't ISO-normalized (a registry might
+// store "MEX", "Mexico", or "mexico" for the same country, or plain garbage
+// like a test string) — resolve to a display name before binning so those
+// merge into one row instead of splitting credits/projects across near-
+// duplicates, and unrecognized values collapse into "Other" rather than
+// each showing up as its own row (see useProjects.ts's normalizeCountryName).
+// normalizeCountryName returns '' for a genuinely empty/null country (as
+// opposed to OTHER_COUNTRY for a non-empty but unrecognized one) — fold that
+// case into OTHER_COUNTRY too so a missing country never falls through to
+// toBins' own "Unknown" fallback; this view only ever shows "Other" or a
+// real country name.
 const countryRows = computed<BinRow[]>(() =>
     toBins(summary.value.countries.map(c => ({
-        label: c.country,
+        label: normalizeCountryName(c.country ?? '') || OTHER_COUNTRY,
         projectCount: c.projects,
         credits: c.credits,
         methodologies: c.methodologies,
@@ -197,6 +225,8 @@ const avgSizeBySector = computed(() => {
         .filter(s => s.projects > 0)
         .map(s => ({
             label: s.label,
+            projects: s.projects,
+            credits: s.credits,
             avg: Math.round(s.credits / s.projects),
         }))
         .sort((a, b) => b.avg - a.avg)
@@ -313,8 +343,14 @@ const supplyAge = computed(() => {
 });
 
 function fmtCompact(n: number): string {
-    if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-    if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
+    if (n >= 1_000_000) {
+        const s = (n / 1_000_000).toFixed(1).replace(/\.0$/, '');
+        return `${s}M`;
+    }
+    if (n >= 1_000) {
+        const s = (n / 1_000).toFixed(1).replace(/\.0$/, '');
+        return `${s}k`;
+    }
     return n.toString();
 }
 </script>
@@ -335,61 +371,73 @@ function fmtCompact(n: number): string {
                 v-for="k in headlineKpis"
                 :key="k.label"
                 class="rounded-xl border bg-card p-4"
-                :title="k.hint"
             >
-                <div class="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{{ k.label }}</div>
+                <div class="flex items-center justify-between gap-1">
+                    <span class="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{{ k.label }}</span>
+                    <InfoTooltip :text="k.tooltip" />
+                </div>
                 <div class="text-xl font-bold text-foreground mt-1.5 tabular-nums">{{ k.value }}</div>
                 <div class="text-[11px] text-muted-foreground mt-1 leading-snug">{{ k.hint }}</div>
             </div>
         </div>
 
-        <!-- Stakeholder tabs -->
-        <div class="border-y bg-muted/20">
-            <nav class="flex gap-0 overflow-x-auto px-6">
-                <button
-                    v-for="t_ in tabs"
-                    :key="t_.key"
-                    :class="[
-                        tab === t_.key
-                            ? 'border-primary text-primary bg-card'
-                            : 'border-transparent text-muted-foreground hover:text-foreground',
-                        'flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap',
-                    ]"
-                    @click="tab = t_.key"
-                >
-                    <component :is="t_.icon" class="h-4 w-4" />
-                    {{ t_.label }}
-                </button>
-            </nav>
-            <div class="px-6 py-2.5 border-t bg-card">
-                <p class="text-xs text-muted-foreground">{{ tabs.find(t_ => t_.key === tab)?.desc }}</p>
+        <!-- Tabbed card -->
+        <div class="px-6 pb-6">
+        <div class="rounded-xl border bg-card overflow-hidden">
+            <!-- Stakeholder tabs -->
+            <div class="border-b bg-muted/30">
+                <nav class="flex gap-0 -mb-px overflow-x-auto">
+                    <button
+                        v-for="t_ in tabs"
+                        :key="t_.key"
+                        :class="[
+                            tab === t_.key
+                                ? 'border-primary text-primary bg-card'
+                                : 'border-transparent text-muted-foreground hover:text-foreground',
+                            'flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap',
+                        ]"
+                        @click="tab = t_.key"
+                    >
+                        <component :is="t_.icon" class="h-4 w-4" />
+                        {{ t_.label }}
+                    </button>
+                </nav>
+                <div class="px-6 py-2.5 border-t bg-card">
+                    <p class="text-xs text-muted-foreground">{{ tabs.find(t_ => t_.key === tab)?.desc }}</p>
+                </div>
             </div>
-        </div>
 
         <!-- ── Market Overview ─────────────────────────────────────────────── -->
         <div v-if="tab === 'overview'" class="p-6 space-y-6">
             <!-- Lifecycle funnel -->
             <div class="rounded-xl border bg-card overflow-hidden">
                 <div class="px-5 py-3.5 border-b bg-muted/30">
-                    <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <h2 class="text-sm font-semibold text-foreground inline-flex items-center gap-2">
                         <Activity class="h-4 w-4 text-primary" />
                         {{ $t('analytics.lifecycle.title') }}
+                        <InfoTooltip :text="$t('analytics.lifecycle.tooltip')" />
                     </h2>
                     <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('analytics.lifecycle.subtitle') }}</p>
                 </div>
                 <div class="px-5 py-5 space-y-2.5">
                     <div v-for="s in lifecycleFunnel" :key="s.key" class="flex items-center gap-3">
                         <span class="text-xs text-foreground w-28 shrink-0 font-medium">{{ s.label }}</span>
-                        <div class="flex-1 h-9 bg-muted/40 rounded-md overflow-hidden relative">
-                            <div
-                                class="h-full bg-primary/80 transition-all duration-500"
-                                :style="{ width: `${s.width}%` }"
-                            />
-                            <div class="absolute inset-0 flex items-center justify-end pr-3 gap-3">
-                                <span class="text-[11px] font-semibold text-foreground tabular-nums">{{ s.count.toLocaleString() }}</span>
-                                <span class="text-[10px] text-muted-foreground tabular-nums w-9 text-right">{{ s.pct }}%</span>
+                        <InfoTooltip
+                            :text="$t('analytics.lifecycle.stageTooltip', { stage: s.label, count: s.count.toLocaleString(), pct: s.pct })"
+                            class="flex-1 flex min-w-0"
+                        >
+                            <div class="w-full h-9 bg-muted/40 rounded-md overflow-hidden relative group cursor-pointer hover:bg-muted/60 transition-colors">
+                                <div
+                                    v-if="s.count > 0"
+                                    class="h-full bg-primary/80 transition-all duration-500 rounded-l-md group-hover:bg-primary"
+                                    :style="{ width: `${s.width}%` }"
+                                />
+                                <div class="absolute inset-0 flex items-center justify-end pr-3 gap-3 pointer-events-none">
+                                    <span class="text-[11px] font-semibold text-foreground tabular-nums">{{ s.count.toLocaleString() }}</span>
+                                    <span class="text-[10px] text-muted-foreground tabular-nums w-9 text-right">{{ s.pct }}%</span>
+                                </div>
                             </div>
-                        </div>
+                        </InfoTooltip>
                     </div>
                 </div>
             </div>
@@ -397,9 +445,10 @@ function fmtCompact(n: number): string {
             <!-- Vintage distribution -->
             <div class="rounded-xl border bg-card overflow-hidden">
                 <div class="px-5 py-3.5 border-b bg-muted/30">
-                    <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <h2 class="text-sm font-semibold text-foreground inline-flex items-center gap-2">
                         <Clock class="h-4 w-4 text-primary" />
                         {{ $t('analytics.vintage.title') }}
+                        <InfoTooltip :text="$t('analytics.vintage.tooltip')" />
                     </h2>
                     <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('analytics.vintage.subtitle') }}</p>
                 </div>
@@ -407,15 +456,80 @@ function fmtCompact(n: number): string {
                     <div v-if="vintageBuckets.length === 0" class="text-xs text-muted-foreground text-center py-8">
                         {{ $t('analytics.vintage.noData') }}
                     </div>
-                    <div v-else class="flex items-end gap-2 h-40">
-                        <div v-for="b in vintageBuckets" :key="b.vintage" class="flex-1 flex flex-col items-center gap-1.5 min-w-0">
-                            <div class="text-[10px] font-medium text-foreground tabular-nums">{{ fmtCompact(b.credits) }}</div>
-                            <div
-                                class="w-full bg-primary/70 hover:bg-primary transition-colors rounded-sm relative group"
-                                :style="{ height: `${(b.credits / maxVintageCredits) * 100}%`, minHeight: b.credits > 0 ? '3px' : '0' }"
-                                :title="`${b.vintage}: ${formatCredits(b.credits)} credits across ${b.projects} project(s)`"
-                            />
-                            <div class="text-[10px] text-muted-foreground truncate w-full text-center">{{ b.vintage }}</div>
+                    <div v-else class="flex flex-col pt-5">
+                        <!-- Chart plot area with Y-axis -->
+                        <div class="flex gap-2">
+                            <!-- Y-axis tick column -->
+                            <div class="relative w-12 shrink-0 h-44">
+                                <span
+                                    v-for="(tick, i) in vintageAxis.ticks"
+                                    :key="i"
+                                    class="absolute right-1 text-[10px] text-muted-foreground tabular-nums"
+                                    :class="vintageTickAnchorClass(i, vintageAxis.ticks.length)"
+                                    :style="i !== 0 && i !== vintageAxis.ticks.length - 1 ? { bottom: `${(tick / vintageAxis.max) * 100}%` } : (i === 0 ? { bottom: '0px' } : { top: '0px' })"
+                                >{{ fmtCompact(tick) }}</span>
+                            </div>
+
+                            <!-- Plot area with gridlines and bars -->
+                            <div class="relative flex-1 min-w-0 h-44">
+                                <!-- Horizontal grid lines -->
+                                <div
+                                    v-for="(tick, i) in vintageAxis.ticks"
+                                    :key="i"
+                                    class="absolute left-0 right-0 h-px"
+                                    :class="i === 0 ? 'bg-border' : 'bg-border/40'"
+                                    :style="{ bottom: `${(tick / vintageAxis.max) * 100}%` }"
+                                />
+
+                                <!-- Bars anchored to baseline -->
+                                <div class="absolute inset-0 flex items-end gap-2 px-1">
+                                    <div
+                                        v-for="b in vintageBuckets"
+                                        :key="b.vintage"
+                                        class="flex-1 min-w-0 h-full flex items-end justify-center"
+                                    >
+                                        <!-- Bar wrapper with exact percentage height -->
+                                        <div
+                                            class="w-full relative flex flex-col justify-end items-center"
+                                            :style="{
+                                                height: b.credits > 0 ? `${(b.credits / vintageAxis.max) * 100}%` : '0px',
+                                                minHeight: b.credits > 0 ? '3px' : '0px',
+                                            }"
+                                        >
+                                            <!-- Top label positioned above the bar -->
+                                            <span
+                                                v-if="b.credits > 0"
+                                                class="absolute bottom-full mb-1 text-[10px] font-medium text-foreground tabular-nums whitespace-nowrap pointer-events-none"
+                                            >{{ fmtCompact(b.credits) }}</span>
+
+                                            <!-- The interactive bar -->
+                                            <InfoTooltip
+                                                :text="$t('analytics.vintage.vintageTooltip', { vintage: b.vintage, credits: formatCredits(b.credits), projects: b.projects })"
+                                                class="w-full h-full flex"
+                                            >
+                                                <div
+                                                    class="w-full h-full bg-primary/80 hover:bg-primary transition-all duration-500 rounded-t-sm cursor-pointer"
+                                                />
+                                            </InfoTooltip>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- X-axis labels (vintage years) aligned with plot area -->
+                        <div class="flex gap-2 mt-2">
+                            <div class="w-12 shrink-0" />
+                            <div class="flex-1 flex gap-2 px-1 min-w-0">
+                                <span
+                                    v-for="b in vintageBuckets"
+                                    :key="b.vintage"
+                                    class="flex-1 min-w-0 text-center text-[10px] text-muted-foreground font-medium truncate"
+                                    :title="b.vintage"
+                                >
+                                    {{ b.vintage }}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -425,17 +539,23 @@ function fmtCompact(n: number): string {
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="rounded-xl border bg-card overflow-hidden">
                     <div class="px-5 py-3.5 border-b bg-muted/30">
-                        <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                        <h2 class="text-sm font-semibold text-foreground inline-flex items-center gap-2">
                             <Layers class="h-4 w-4 text-primary" />
                             {{ $t('analytics.sectors.topCreditsTitle') }}
+                            <InfoTooltip :text="$t('analytics.sectors.topCreditsTooltip')" />
                         </h2>
                     </div>
                     <div class="px-5 py-5 space-y-2.5">
                         <div v-for="(s, i) in sectorTop" :key="s.label" class="flex items-center gap-3">
                             <span class="text-xs text-foreground w-28 shrink-0 truncate font-medium" :title="s.label">{{ s.label }}</span>
-                            <div class="flex-1 h-5 bg-muted/40 rounded overflow-hidden">
-                                <div class="h-full transition-all duration-500" :style="{ width: `${(s.credits / Math.max(1, sectorTop[0]?.credits)) * 100}%`, background: sectorColors[i] }" />
-                            </div>
+                            <InfoTooltip
+                                :text="$t('analytics.sectors.topCreditsItemTooltip', { sector: s.label, credits: formatCredits(s.credits), projects: s.projects, pct: totalIssued ? Math.round((s.credits / totalIssued) * 100) : 0 })"
+                                class="flex-1 flex min-w-0"
+                            >
+                                <div class="w-full h-5 bg-muted/40 rounded overflow-hidden cursor-pointer hover:bg-muted/60 transition-colors">
+                                    <div class="h-full transition-all duration-500 hover:brightness-110" :style="{ width: `${(s.credits / Math.max(1, sectorTop[0]?.credits)) * 100}%`, background: sectorColors[i] }" />
+                                </div>
+                            </InfoTooltip>
                             <span class="text-[11px] tabular-nums text-muted-foreground w-16 text-right">{{ fmtCompact(s.credits) }}</span>
                         </div>
                     </div>
@@ -443,16 +563,22 @@ function fmtCompact(n: number): string {
 
                 <div class="rounded-xl border bg-card overflow-hidden">
                     <div class="px-5 py-3.5 border-b bg-muted/30">
-                        <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                        <h2 class="text-sm font-semibold text-foreground inline-flex items-center gap-2">
                             <MapPin class="h-4 w-4 text-primary" />
                             {{ $t('analytics.countries.topCreditsTitle') }}
+                            <InfoTooltip :text="$t('analytics.countries.topCreditsTooltip')" />
                         </h2>
                     </div>
                     <div class="px-5 py-5 space-y-2.5">
                         <div v-for="(c, i) in countryTop" :key="c.label" class="flex items-center gap-3">
                             <span class="text-xs font-bold text-muted-foreground w-5 tabular-nums">{{ i + 1 }}</span>
-                            <span class="text-xs text-foreground flex-1 truncate font-medium" :title="c.label">{{ c.label }}</span>
-                            <span class="text-[11px] tabular-nums text-muted-foreground">{{ $t('analytics.countries.projectsCount', { count: c.projects }) }}</span>
+                            <InfoTooltip
+                                :text="$t('analytics.countries.topCreditsItemTooltip', { country: c.label, credits: formatCredits(c.credits), projects: c.projects, pct: totalIssued ? Math.round((c.credits / totalIssued) * 100) : 0 })"
+                                class="flex-1 flex min-w-0 items-center justify-between gap-2 cursor-pointer hover:bg-muted/30 rounded px-1.5 py-0.5 -mx-1.5 transition-colors"
+                            >
+                                <span class="text-xs text-foreground truncate font-medium" :title="c.label">{{ c.label }}</span>
+                                <span class="text-[11px] tabular-nums text-muted-foreground">{{ $t('analytics.countries.projectsCount', { count: c.projects }) }}</span>
+                            </InfoTooltip>
                             <span class="text-xs font-semibold text-foreground tabular-nums w-16 text-right">{{ fmtCompact(c.credits) }}</span>
                         </div>
                     </div>
@@ -465,18 +591,24 @@ function fmtCompact(n: number): string {
             <!-- Supply age -->
             <div class="rounded-xl border bg-card overflow-hidden">
                 <div class="px-5 py-3.5 border-b bg-muted/30">
-                    <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <h2 class="text-sm font-semibold text-foreground inline-flex items-center gap-2">
                         <Clock class="h-4 w-4 text-primary" />
                         {{ $t('analytics.supplyAge.title') }}
+                        <InfoTooltip :text="$t('analytics.supplyAge.tooltip')" />
                     </h2>
                     <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('analytics.supplyAge.subtitle') }}</p>
                 </div>
                 <div class="px-5 py-5 space-y-3">
                     <div v-for="s in supplyAge" :key="s.label" class="flex items-center gap-3">
                         <span class="text-xs text-foreground w-44 shrink-0 font-medium">{{ s.label }}</span>
-                        <div class="flex-1 h-7 bg-muted/40 rounded overflow-hidden">
-                            <div :class="s.color" class="h-full transition-all duration-500" :style="{ width: `${s.pct}%` }" />
-                        </div>
+                        <InfoTooltip
+                            :text="$t('analytics.supplyAge.itemTooltip', { age: s.label, credits: formatCredits(s.credits), pct: s.pct })"
+                            class="flex-1 flex min-w-0"
+                        >
+                            <div class="w-full h-7 bg-muted/40 rounded overflow-hidden cursor-pointer hover:bg-muted/60 transition-colors">
+                                <div :class="s.color" class="h-full transition-all duration-500 hover:brightness-110" :style="{ width: `${s.pct}%` }" />
+                            </div>
+                        </InfoTooltip>
                         <span class="text-[11px] tabular-nums text-muted-foreground w-20 text-right">{{ fmtCompact(s.credits) }}</span>
                         <span class="text-xs font-semibold text-foreground tabular-nums w-10 text-right">{{ s.pct }}%</span>
                     </div>
@@ -487,9 +619,10 @@ function fmtCompact(n: number): string {
                 <!-- Available supply by sector -->
                 <div class="rounded-xl border bg-card overflow-hidden">
                     <div class="px-5 py-3.5 border-b bg-muted/30">
-                        <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                        <h2 class="text-sm font-semibold text-foreground inline-flex items-center gap-2">
                             <Leaf class="h-4 w-4 text-primary" />
                             {{ $t('analytics.sectors.availableSupplyTitle') }}
+                            <InfoTooltip :text="$t('analytics.sectors.availableSupplyTooltip')" />
                         </h2>
                         <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('analytics.sectors.availableSupplySub') }}</p>
                     </div>
@@ -500,9 +633,14 @@ function fmtCompact(n: number): string {
                             class="flex items-center gap-3"
                         >
                             <span class="text-xs text-foreground w-28 shrink-0 truncate" :title="s.label">{{ s.label }}</span>
-                            <div class="flex-1 h-5 bg-muted/40 rounded overflow-hidden">
-                                <div class="h-full bg-stat-green transition-all duration-500" :style="{ width: `${(s.credits / Math.max(1, sectorTop[0]?.credits)) * 100}%` }" />
-                            </div>
+                            <InfoTooltip
+                                :text="$t('analytics.sectors.availableItemTooltip', { sector: s.label, credits: formatCredits(s.credits), projects: s.projects })"
+                                class="flex-1 flex min-w-0"
+                            >
+                                <div class="w-full h-5 bg-muted/40 rounded overflow-hidden cursor-pointer hover:bg-muted/60 transition-colors">
+                                    <div class="h-full bg-stat-green transition-all duration-500 hover:brightness-110" :style="{ width: `${(s.credits / Math.max(1, sectorTop[0]?.credits)) * 100}%` }" />
+                                </div>
+                            </InfoTooltip>
                             <span class="text-[11px] tabular-nums text-muted-foreground w-16 text-right">{{ fmtCompact(s.credits) }}</span>
                         </div>
                     </div>
@@ -511,17 +649,23 @@ function fmtCompact(n: number): string {
                 <!-- Methodology popularity -->
                 <div class="rounded-xl border bg-card overflow-hidden">
                     <div class="px-5 py-3.5 border-b bg-muted/30">
-                        <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                        <h2 class="text-sm font-semibold text-foreground inline-flex items-center gap-2">
                             <Award class="h-4 w-4 text-primary" />
                             {{ $t('analytics.methodologies.adoptionTitle') }}
+                            <InfoTooltip :text="$t('analytics.methodologies.adoptionTooltip')" />
                         </h2>
                         <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('analytics.methodologies.adoptionSub') }}</p>
                     </div>
                     <div class="px-5 py-5 space-y-2.5">
                         <div v-for="(m, i) in methodologyTop" :key="m.label" class="flex items-center gap-3">
                             <span class="text-xs font-bold text-muted-foreground w-5 tabular-nums">{{ i + 1 }}</span>
-                            <span class="text-xs text-foreground flex-1 truncate font-medium" :title="m.label">{{ m.label }}</span>
-                            <span class="text-[10px] text-muted-foreground tabular-nums">{{ $t('analytics.methodologies.projectsCount', { count: m.projects }) }}</span>
+                            <InfoTooltip
+                                :text="$t('analytics.methodologies.itemTooltip', { methodology: m.label, credits: formatCredits(m.credits), projects: m.projects })"
+                                class="flex-1 flex min-w-0 items-center justify-between gap-2 cursor-pointer hover:bg-muted/30 rounded px-1.5 py-0.5 -mx-1.5 transition-colors"
+                            >
+                                <span class="text-xs text-foreground truncate font-medium" :title="m.label">{{ m.label }}</span>
+                                <span class="text-[10px] text-muted-foreground tabular-nums">{{ $t('analytics.methodologies.projectsCount', { count: m.projects }) }}</span>
+                            </InfoTooltip>
                             <span class="text-xs font-semibold text-foreground tabular-nums w-16 text-right">{{ fmtCompact(m.credits) }}</span>
                         </div>
                     </div>
@@ -531,35 +675,41 @@ function fmtCompact(n: number): string {
             <!-- SDG coverage -->
             <div class="rounded-xl border bg-card overflow-hidden">
                 <div class="px-5 py-3.5 border-b bg-muted/30">
-                    <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <h2 class="text-sm font-semibold text-foreground inline-flex items-center gap-2">
                         <Globe2 class="h-4 w-4 text-primary" />
                         {{ $t('analytics.sdgs.cobenefitTitle') }}
+                        <InfoTooltip :text="$t('analytics.sdgs.cobenefitTooltip')" />
                     </h2>
                     <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('analytics.sdgs.cobenefitSub') }}</p>
                 </div>
                 <div class="px-5 py-5">
                     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
-                        <div
+                        <InfoTooltip
                             v-for="sdg in sdgCoverage"
                             :key="sdg.id"
-                            class="rounded-lg border bg-card p-3 flex flex-col gap-1.5"
-                            :style="{ borderLeftColor: sdg.color, borderLeftWidth: '3px' }"
+                            :text="$t('analytics.sdgs.itemTooltip', { sdg: sdg.id, name: sdg.name, projects: sdg.projects, credits: formatCredits(sdg.credits) })"
+                            class="flex"
                         >
-                            <div class="flex items-center gap-2">
-                                <img :src="`/sdgs/E-WEB-Goal-${String(sdg.id).padStart(2, '0')}.png`" :alt="`${$t('sdgs.columns.sdg')} ${sdg.id}`" class="h-7 w-7 rounded shrink-0" />
-                                <div class="min-w-0">
-                                    <div class="text-[10px] font-bold text-foreground">{{ $t('sdgs.columns.sdg') }} {{ sdg.id }}</div>
-                                    <div class="text-[10px] text-muted-foreground truncate" :title="sdg.name">{{ sdg.name }}</div>
+                            <div
+                                class="w-full rounded-lg border bg-card p-3 flex flex-col gap-1.5 cursor-pointer hover:bg-muted/20 transition-colors"
+                                :style="{ borderLeftColor: sdg.color, borderLeftWidth: '3px' }"
+                            >
+                                <div class="flex items-center gap-2">
+                                    <img :src="`/sdgs/E-WEB-Goal-${String(sdg.id).padStart(2, '0')}.png`" :alt="`${$t('sdgs.columns.sdg')} ${sdg.id}`" class="h-7 w-7 rounded shrink-0" />
+                                    <div class="min-w-0">
+                                        <div class="text-[10px] font-bold text-foreground">{{ $t('sdgs.columns.sdg') }} {{ sdg.id }}</div>
+                                        <div class="text-[10px] text-muted-foreground truncate" :title="sdg.name">{{ sdg.name }}</div>
+                                    </div>
+                                </div>
+                                <div class="h-1 bg-muted/40 rounded overflow-hidden">
+                                    <div class="h-full transition-all duration-500" :style="{ width: `${(sdg.projects / maxSdgProjects) * 100}%`, background: sdg.color }" />
+                                </div>
+                                <div class="flex items-center justify-between text-[10px]">
+                                    <span class="text-muted-foreground">{{ $t('analytics.sdgs.projectsCount', { count: sdg.projects }) }}</span>
+                                    <span class="text-foreground font-semibold tabular-nums">{{ fmtCompact(sdg.credits) }}</span>
                                 </div>
                             </div>
-                            <div class="h-1 bg-muted/40 rounded overflow-hidden">
-                                <div class="h-full transition-all duration-500" :style="{ width: `${(sdg.projects / maxSdgProjects) * 100}%`, background: sdg.color }" />
-                            </div>
-                            <div class="flex items-center justify-between text-[10px]">
-                                <span class="text-muted-foreground">{{ $t('analytics.sdgs.projectsCount', { count: sdg.projects }) }}</span>
-                                <span class="text-foreground font-semibold tabular-nums">{{ fmtCompact(sdg.credits) }}</span>
-                            </div>
-                        </div>
+                        </InfoTooltip>
                     </div>
                 </div>
             </div>
@@ -571,18 +721,24 @@ function fmtCompact(n: number): string {
                 <!-- Avg project size by sector -->
                 <div class="rounded-xl border bg-card overflow-hidden">
                     <div class="px-5 py-3.5 border-b bg-muted/30">
-                        <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                        <h2 class="text-sm font-semibold text-foreground inline-flex items-center gap-2">
                             <TrendingUp class="h-4 w-4 text-primary" />
                             {{ $t('analytics.sectors.avgSizeTitle') }}
+                            <InfoTooltip :text="$t('analytics.sectors.avgSizeTooltip')" />
                         </h2>
                         <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('analytics.sectors.avgSizeSub') }}</p>
                     </div>
                     <div class="px-5 py-5 space-y-2.5">
                         <div v-for="s in avgSizeBySector" :key="s.label" class="flex items-center gap-3">
                             <span class="text-xs text-foreground w-28 shrink-0 truncate font-medium" :title="s.label">{{ s.label }}</span>
-                            <div class="flex-1 h-5 bg-muted/40 rounded overflow-hidden">
-                                <div class="h-full bg-stat-blue transition-all duration-500" :style="{ width: `${(s.avg / maxAvgSize) * 100}%` }" />
-                            </div>
+                            <InfoTooltip
+                                :text="$t('analytics.sectors.avgSizeItemTooltip', { sector: s.label, avg: formatCredits(s.avg), credits: formatCredits(s.credits), projects: s.projects })"
+                                class="flex-1 flex min-w-0"
+                            >
+                                <div class="w-full h-5 bg-muted/40 rounded overflow-hidden cursor-pointer hover:bg-muted/60 transition-colors">
+                                    <div class="h-full bg-stat-blue transition-all duration-500 hover:brightness-110" :style="{ width: `${(s.avg / maxAvgSize) * 100}%` }" />
+                                </div>
+                            </InfoTooltip>
                             <span class="text-[11px] tabular-nums text-foreground w-16 text-right font-semibold">{{ fmtCompact(s.avg) }}</span>
                         </div>
                     </div>
@@ -591,19 +747,29 @@ function fmtCompact(n: number): string {
                 <!-- Pipeline / lifecycle for developers -->
                 <div class="rounded-xl border bg-card overflow-hidden">
                     <div class="px-5 py-3.5 border-b bg-muted/30">
-                        <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                        <h2 class="text-sm font-semibold text-foreground inline-flex items-center gap-2">
                             <CheckCircle2 class="h-4 w-4 text-primary" />
                             {{ $t('analytics.statusDist.title') }}
+                            <InfoTooltip :text="$t('analytics.statusDist.tooltip')" />
                         </h2>
                         <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('analytics.statusDist.subtitle') }}</p>
                     </div>
                     <div class="px-5 py-5 space-y-2.5">
                         <div v-for="s in lifecycleFunnel" :key="s.key" class="flex items-center gap-3">
                             <span class="text-xs text-foreground w-24 shrink-0 font-medium">{{ s.label }}</span>
-                            <div class="flex-1 h-5 bg-muted/40 rounded overflow-hidden">
-                                <div class="h-full bg-stat-amber transition-all duration-500" :style="{ width: `${s.width}%` }" />
-                            </div>
-                            <span class="text-[11px] tabular-nums text-foreground w-12 text-right">{{ s.count }}</span>
+                            <InfoTooltip
+                                :text="$t('analytics.lifecycle.stageTooltip', { stage: s.label, count: s.count.toLocaleString(), pct: s.pct })"
+                                class="flex-1 flex min-w-0"
+                            >
+                                <div class="w-full h-5 bg-muted/40 rounded overflow-hidden relative group cursor-pointer hover:bg-muted/60 transition-colors">
+                                    <div
+                                        v-if="s.count > 0"
+                                        class="h-full bg-stat-amber transition-all duration-500 rounded-l group-hover:brightness-110"
+                                        :style="{ width: `${s.width}%` }"
+                                    />
+                                </div>
+                            </InfoTooltip>
+                            <span class="text-[11px] tabular-nums text-foreground w-12 text-right">{{ s.count.toLocaleString() }}</span>
                             <span class="text-[10px] text-muted-foreground tabular-nums w-9 text-right">{{ s.pct }}%</span>
                         </div>
                     </div>
@@ -613,9 +779,10 @@ function fmtCompact(n: number): string {
             <!-- Top developers leaderboard -->
             <div class="rounded-xl border bg-card overflow-hidden">
                 <div class="px-5 py-3.5 border-b bg-muted/30">
-                    <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <h2 class="text-sm font-semibold text-foreground inline-flex items-center gap-2">
                         <Award class="h-4 w-4 text-primary" />
                         {{ $t('analytics.developers.title') }}
+                        <InfoTooltip :text="$t('analytics.developers.tooltip')" />
                     </h2>
                     <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('analytics.developers.subtitle') }}</p>
                 </div>
@@ -652,18 +819,24 @@ function fmtCompact(n: number): string {
             <!-- Throughput per project -->
             <div class="rounded-xl border bg-card overflow-hidden">
                 <div class="px-5 py-3.5 border-b bg-muted/30">
-                    <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <h2 class="text-sm font-semibold text-foreground inline-flex items-center gap-2">
                         <TrendingUp class="h-4 w-4 text-primary" />
                         {{ $t('analytics.registries.throughputTitle') }}
+                        <InfoTooltip :text="$t('analytics.registries.throughputTooltip')" />
                     </h2>
                     <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('analytics.registries.throughputSub') }}</p>
                 </div>
                 <div class="px-5 py-5 space-y-2.5">
                     <div v-for="r in registryThroughput" :key="r.label" class="flex items-center gap-3">
                         <span class="text-xs text-foreground w-32 shrink-0 truncate font-medium" :title="r.label">{{ r.label }}</span>
-                        <div class="flex-1 h-6 bg-muted/40 rounded overflow-hidden">
-                            <div class="h-full bg-primary/70 transition-all duration-500" :style="{ width: `${(r.avgPerProject / maxThroughput) * 100}%` }" />
-                        </div>
+                        <InfoTooltip
+                            :text="$t('analytics.registries.throughputItemTooltip', { registry: r.label, avg: formatCredits(r.avgPerProject), credits: formatCredits(r.credits), projects: r.projects })"
+                            class="flex-1 flex min-w-0"
+                        >
+                            <div class="w-full h-6 bg-muted/40 rounded overflow-hidden cursor-pointer hover:bg-muted/60 transition-colors">
+                                <div class="h-full bg-primary/70 transition-all duration-500 hover:brightness-110" :style="{ width: `${(r.avgPerProject / maxThroughput) * 100}%` }" />
+                            </div>
+                        </InfoTooltip>
                         <span class="text-[10px] text-muted-foreground tabular-nums w-12 text-right">{{ $t('analytics.methodologies.projectsCount', { count: r.projects }) }}</span>
                         <span class="text-xs font-semibold text-foreground tabular-nums w-20 text-right">{{ fmtCompact(r.avgPerProject) }} {{ $t('analytics.registries.perProj') }}</span>
                     </div>
@@ -673,9 +846,10 @@ function fmtCompact(n: number): string {
             <!-- Status x Registry heatmap -->
             <div class="rounded-xl border bg-card overflow-hidden">
                 <div class="px-5 py-3.5 border-b bg-muted/30">
-                    <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <h2 class="text-sm font-semibold text-foreground inline-flex items-center gap-2">
                         <BarChart3 class="h-4 w-4 text-primary" />
                         {{ $t('analytics.registries.heatmapTitle') }}
+                        <InfoTooltip :text="$t('analytics.registries.heatmapTooltip')" />
                     </h2>
                     <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('analytics.registries.heatmapSub') }}</p>
                 </div>
@@ -691,9 +865,14 @@ function fmtCompact(n: number): string {
                             <tr v-for="row in statusByRegistry" :key="row.registry" class="border-b last:border-b-0">
                                 <td class="py-2.5 px-5 font-medium text-foreground text-xs whitespace-nowrap">{{ row.registry }}</td>
                                 <td v-for="c in row.cells" :key="c.stage" class="p-1.5 text-center">
-                                    <div :class="heatBg(c.count)" class="rounded text-xs font-semibold py-2 tabular-nums">
-                                        {{ c.count }}
-                                    </div>
+                                    <InfoTooltip
+                                        :text="$t('analytics.registries.heatCellTooltip', { registry: row.registry, stage: c.stage, count: c.count })"
+                                        class="w-full flex"
+                                    >
+                                        <div :class="heatBg(c.count)" class="w-full rounded text-xs font-semibold py-2 tabular-nums cursor-pointer hover:ring-1 hover:ring-primary/40 transition-all">
+                                            {{ c.count }}
+                                        </div>
+                                    </InfoTooltip>
                                 </td>
                             </tr>
                             <tr v-if="statusByRegistry.length === 0">
@@ -707,18 +886,24 @@ function fmtCompact(n: number): string {
             <!-- Registry market share -->
             <div class="rounded-xl border bg-card overflow-hidden">
                 <div class="px-5 py-3.5 border-b bg-muted/30">
-                    <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <h2 class="text-sm font-semibold text-foreground inline-flex items-center gap-2">
                         <Building2 class="h-4 w-4 text-primary" />
                         {{ $t('analytics.registries.marketShareTitle') }}
+                        <InfoTooltip :text="$t('analytics.registries.marketShareTooltip')" />
                     </h2>
                     <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('analytics.registries.marketShareSub') }}</p>
                 </div>
                 <div class="px-5 py-5 space-y-2.5">
                     <div v-for="(r, i) in registryTop" :key="r.label" class="flex items-center gap-3">
                         <span class="text-xs text-foreground w-32 shrink-0 truncate font-medium" :title="r.label">{{ r.label }}</span>
-                        <div class="flex-1 h-5 bg-muted/40 rounded overflow-hidden">
-                            <div class="h-full transition-all duration-500" :style="{ width: `${(r.credits / Math.max(1, registryTop[0]?.credits)) * 100}%`, background: registryColors[i] }" />
-                        </div>
+                        <InfoTooltip
+                            :text="$t('analytics.registries.marketShareItemTooltip', { registry: r.label, credits: formatCredits(r.credits), pct: totalIssued ? Math.round((r.credits / totalIssued) * 100) : 0, projects: r.projects })"
+                            class="flex-1 flex min-w-0"
+                        >
+                            <div class="w-full h-5 bg-muted/40 rounded overflow-hidden cursor-pointer hover:bg-muted/60 transition-colors">
+                                <div class="h-full transition-all duration-500 hover:brightness-110" :style="{ width: `${(r.credits / Math.max(1, registryTop[0]?.credits)) * 100}%`, background: registryColors[i] }" />
+                            </div>
+                        </InfoTooltip>
                         <span class="text-[11px] tabular-nums text-muted-foreground w-10 text-right">{{ $t('analytics.methodologies.projectsCount', { count: r.projects }) }}</span>
                         <span class="text-xs font-semibold text-foreground tabular-nums w-16 text-right">{{ fmtCompact(r.credits) }}</span>
                     </div>
@@ -731,36 +916,42 @@ function fmtCompact(n: number): string {
             <!-- SDG full coverage with credits -->
             <div class="rounded-xl border bg-card overflow-hidden">
                 <div class="px-5 py-3.5 border-b bg-muted/30">
-                    <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <h2 class="text-sm font-semibold text-foreground inline-flex items-center gap-2">
                         <Globe2 class="h-4 w-4 text-primary" />
                         {{ $t('analytics.sdgs.alignmentTitle') }}
+                        <InfoTooltip :text="$t('analytics.sdgs.alignmentTooltip')" />
                     </h2>
                     <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('analytics.sdgs.alignmentSub') }}</p>
                 </div>
                 <div class="px-5 py-5">
                     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
-                        <div
+                        <InfoTooltip
                             v-for="sdg in sdgCoverage"
                             :key="sdg.id"
-                            class="rounded-lg border bg-card p-3"
-                            :style="{ borderLeftColor: sdg.color, borderLeftWidth: '3px' }"
+                            :text="$t('analytics.sdgs.itemTooltip', { sdg: sdg.id, name: sdg.name, projects: sdg.projects, credits: formatCredits(sdg.credits) })"
+                            class="flex"
                         >
-                            <div class="flex items-center gap-2 mb-2">
-                                <img :src="`/sdgs/E-WEB-Goal-${String(sdg.id).padStart(2, '0')}.png`" :alt="`${$t('sdgs.columns.sdg')} ${sdg.id}`" class="h-8 w-8 rounded shrink-0" />
-                                <div class="min-w-0 flex-1">
-                                    <div class="text-[10px] font-bold text-foreground">{{ $t('sdgs.columns.sdg') }} {{ sdg.id }}</div>
-                                    <div class="text-[10px] text-muted-foreground truncate" :title="sdg.name">{{ sdg.name }}</div>
+                            <div
+                                class="w-full rounded-lg border bg-card p-3 cursor-pointer hover:bg-muted/20 transition-colors"
+                                :style="{ borderLeftColor: sdg.color, borderLeftWidth: '3px' }"
+                            >
+                                <div class="flex items-center gap-2 mb-2">
+                                    <img :src="`/sdgs/E-WEB-Goal-${String(sdg.id).padStart(2, '0')}.png`" :alt="`${$t('sdgs.columns.sdg')} ${sdg.id}`" class="h-8 w-8 rounded shrink-0" />
+                                    <div class="min-w-0 flex-1">
+                                        <div class="text-[10px] font-bold text-foreground">{{ $t('sdgs.columns.sdg') }} {{ sdg.id }}</div>
+                                        <div class="text-[10px] text-muted-foreground truncate" :title="sdg.name">{{ sdg.name }}</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
+                                    <span>{{ $t('analytics.sdgs.projectsLabel') }}</span>
+                                    <span class="font-semibold text-foreground tabular-nums">{{ sdg.projects }}</span>
+                                </div>
+                                <div class="flex items-center justify-between text-[10px] text-muted-foreground">
+                                    <span>{{ $t('analytics.sdgs.creditsLabel') }}</span>
+                                    <span class="font-semibold text-foreground tabular-nums">{{ fmtCompact(sdg.credits) }}</span>
                                 </div>
                             </div>
-                            <div class="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
-                                <span>{{ $t('analytics.sdgs.projectsLabel') }}</span>
-                                <span class="font-semibold text-foreground tabular-nums">{{ sdg.projects }}</span>
-                            </div>
-                            <div class="flex items-center justify-between text-[10px] text-muted-foreground">
-                                <span>{{ $t('analytics.sdgs.creditsLabel') }}</span>
-                                <span class="font-semibold text-foreground tabular-nums">{{ fmtCompact(sdg.credits) }}</span>
-                            </div>
-                        </div>
+                        </InfoTooltip>
                     </div>
                 </div>
             </div>
@@ -769,17 +960,23 @@ function fmtCompact(n: number): string {
                 <!-- Sector contribution -->
                 <div class="rounded-xl border bg-card overflow-hidden">
                     <div class="px-5 py-3.5 border-b bg-muted/30">
-                        <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                        <h2 class="text-sm font-semibold text-foreground inline-flex items-center gap-2">
                             <Leaf class="h-4 w-4 text-primary" />
                             {{ $t('analytics.sectors.contributionTitle') }}
+                            <InfoTooltip :text="$t('analytics.sectors.contributionTooltip')" />
                         </h2>
                     </div>
                     <div class="px-5 py-5 space-y-2.5">
                         <div v-for="(s, i) in sectorTop" :key="s.label" class="flex items-center gap-3">
                             <span class="text-xs text-foreground w-28 shrink-0 truncate" :title="s.label">{{ s.label }}</span>
-                            <div class="flex-1 h-5 bg-muted/40 rounded overflow-hidden">
-                                <div class="h-full transition-all duration-500" :style="{ width: `${totalIssued ? (s.credits / totalIssued) * 100 : 0}%`, background: sectorColors[i] }" />
-                            </div>
+                            <InfoTooltip
+                                :text="$t('analytics.sectors.contributionItemTooltip', { sector: s.label, credits: formatCredits(s.credits), pct: totalIssued ? Math.round((s.credits / totalIssued) * 100) : 0, projects: s.projects })"
+                                class="flex-1 flex min-w-0"
+                            >
+                                <div class="w-full h-5 bg-muted/40 rounded overflow-hidden cursor-pointer hover:bg-muted/60 transition-colors">
+                                    <div class="h-full transition-all duration-500 hover:brightness-110" :style="{ width: `${totalIssued ? (s.credits / totalIssued) * 100 : 0}%`, background: sectorColors[i] }" />
+                                </div>
+                            </InfoTooltip>
                             <span class="text-xs font-semibold text-foreground tabular-nums w-12 text-right">{{ totalIssued ? Math.round((s.credits / totalIssued) * 100) : 0 }}%</span>
                         </div>
                     </div>
@@ -788,17 +985,23 @@ function fmtCompact(n: number): string {
                 <!-- Country contribution -->
                 <div class="rounded-xl border bg-card overflow-hidden">
                     <div class="px-5 py-3.5 border-b bg-muted/30">
-                        <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                        <h2 class="text-sm font-semibold text-foreground inline-flex items-center gap-2">
                             <MapPin class="h-4 w-4 text-primary" />
                             {{ $t('analytics.countries.contributionTitle') }}
+                            <InfoTooltip :text="$t('analytics.countries.contributionTooltip')" />
                         </h2>
                     </div>
                     <div class="px-5 py-5 space-y-2.5">
                         <div v-for="c in countryTop" :key="c.label" class="flex items-center gap-3">
                             <span class="text-xs text-foreground w-28 shrink-0 truncate" :title="c.label">{{ c.label }}</span>
-                            <div class="flex-1 h-5 bg-muted/40 rounded overflow-hidden">
-                                <div class="h-full bg-stat-green transition-all duration-500" :style="{ width: `${totalIssued ? (c.credits / totalIssued) * 100 : 0}%` }" />
-                            </div>
+                            <InfoTooltip
+                                :text="$t('analytics.countries.contributionItemTooltip', { country: c.label, credits: formatCredits(c.credits), pct: totalIssued ? Math.round((c.credits / totalIssued) * 100) : 0, projects: c.projects })"
+                                class="flex-1 flex min-w-0"
+                            >
+                                <div class="w-full h-5 bg-muted/40 rounded overflow-hidden cursor-pointer hover:bg-muted/60 transition-colors">
+                                    <div class="h-full bg-stat-green transition-all duration-500 hover:brightness-110" :style="{ width: `${totalIssued ? (c.credits / totalIssued) * 100 : 0}%` }" />
+                                </div>
+                            </InfoTooltip>
                             <span class="text-xs font-semibold text-foreground tabular-nums w-12 text-right">{{ totalIssued ? Math.round((c.credits / totalIssued) * 100) : 0 }}%</span>
                         </div>
                     </div>
@@ -808,22 +1011,30 @@ function fmtCompact(n: number): string {
             <!-- Vintage concentration risk -->
             <div class="rounded-xl border bg-card overflow-hidden">
                 <div class="px-5 py-3.5 border-b bg-muted/30">
-                    <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <h2 class="text-sm font-semibold text-foreground inline-flex items-center gap-2">
                         <AlertCircle class="h-4 w-4 text-stat-amber" />
                         {{ $t('analytics.vintageConcentration.title') }}
+                        <InfoTooltip :text="$t('analytics.vintageConcentration.tooltip')" />
                     </h2>
                     <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('analytics.vintageConcentration.subtitle') }}</p>
                 </div>
                 <div class="px-5 py-5 space-y-3">
                     <div v-for="s in supplyAge" :key="s.label" class="flex items-center gap-3">
                         <span class="text-xs text-foreground w-44 shrink-0 font-medium">{{ s.label }}</span>
-                        <div class="flex-1 h-7 bg-muted/40 rounded overflow-hidden">
-                            <div :class="s.color" class="h-full transition-all duration-500" :style="{ width: `${s.pct}%` }" />
-                        </div>
+                        <InfoTooltip
+                            :text="$t('analytics.vintageConcentration.itemTooltip', { age: s.label, credits: formatCredits(s.credits), pct: s.pct })"
+                            class="flex-1 flex min-w-0"
+                        >
+                            <div class="w-full h-7 bg-muted/40 rounded overflow-hidden cursor-pointer hover:bg-muted/60 transition-colors">
+                                <div :class="s.color" class="h-full transition-all duration-500 hover:brightness-110" :style="{ width: `${s.pct}%` }" />
+                            </div>
+                        </InfoTooltip>
                         <span class="text-xs font-semibold text-foreground tabular-nums w-10 text-right">{{ s.pct }}%</span>
                     </div>
                 </div>
             </div>
+        </div>
+        </div>
         </div>
     </div>
 </template>

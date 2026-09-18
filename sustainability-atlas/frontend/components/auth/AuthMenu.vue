@@ -2,7 +2,7 @@
 import { onClickOutside } from '@vueuse/core';
 import { LogIn, UserCircle, Users, LogOut, ChevronDown } from 'lucide-vue-next';
 
-const { user, isAuthenticated, isAdmin, openSignIn, logout } = useAuth();
+const { user, isAuthenticated, isAdmin, isAuthResolved, hasSessionCookies, openSignIn, logout } = useAuth();
 
 const open = ref(false);
 const menuRef = ref<HTMLElement | null>(null);
@@ -39,9 +39,23 @@ async function onLogout() {
 </script>
 
 <template>
-    <!-- Guest: Sign In button -->
+    <!-- Auth resolving with active session cookies: neutral grey static placeholder.
+         Prevents blank green dot pop-in, contains no animation (zero blink), and
+         uses unique key="auth-resolving" to prevent Vue class-merging artifacts. -->
+    <div
+        key="auth-resolving"
+        v-if="!isAuthResolved && hasSessionCookies"
+        class="inline-flex items-center gap-2 rounded-md px-2 py-1.5"
+    >
+        <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted" />
+        <span class="hidden h-3 w-24 rounded bg-muted/60 sm:block" />
+        <div class="h-3 w-3 shrink-0 opacity-0" />
+    </div>
+
+    <!-- Guest: Sign In button — rendered when auth resolved & visitor is not authenticated -->
     <button
-        v-if="!isAuthenticated"
+        key="auth-guest"
+        v-else-if="isAuthResolved && !isAuthenticated"
         data-tour="auth-menu"
         class="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
         @click="openSignIn()"
@@ -50,18 +64,24 @@ async function onLogout() {
         <span>{{ $t('auth.signIn') }}</span>
     </button>
 
-    <!-- Authenticated: user dropdown -->
-    <div v-else ref="menuRef" data-tour="auth-menu" class="relative flex items-center">
+    <!-- Authenticated: User dropdown button with initials & displayName -->
+    <div
+        key="auth-user"
+        v-else
+        ref="menuRef"
+        data-tour="auth-menu"
+        class="relative flex items-center"
+    >
         <button
             class="inline-flex items-center gap-2 rounded-md px-2 py-1.5 text-xs font-medium transition-colors hover:bg-muted"
             :class="open ? 'bg-muted text-foreground' : 'text-muted-foreground'"
             @click="open = !open"
         >
-            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">
+            <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">
                 {{ initials }}
             </span>
-            <span class="hidden max-w-[140px] truncate sm:block">{{ displayName }}</span>
-            <ChevronDown class="h-3 w-3 opacity-50 transition-transform" :class="open ? 'rotate-180' : ''" />
+            <span class="max-w-[160px] truncate sm:block">{{ displayName }}</span>
+            <ChevronDown class="h-3 w-3 shrink-0 opacity-50 transition-transform" :class="open ? 'rotate-180' : ''" />
         </button>
 
         <Transition

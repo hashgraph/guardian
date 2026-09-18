@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { MV_METHODOLOGY_STATS_NAME, MV_PROJECT_STATS_NAME } from '@shared/materialized-views';
+import { MV_METHODOLOGY_STATS_NAME, MV_PROJECT_STATS_NAME, MV_REGISTRY_STATS_NAME } from '@shared/materialized-views';
 import {
     MethodologyRepository,
     MethodologyListQuery,
@@ -11,6 +11,8 @@ import {
     IssuanceEventRow,
     MethodologyExportFilters,
     MethodologyExportRow,
+    MethodologyLifecycleStatus,
+    METHODOLOGY_LIFECYCLE_STATUSES,
 } from './methodology.repository';
 import { QueryBuilder } from './query-builder';
 import { METHODOLOGY_FIELD_SCHEMA } from './schemas/methodology.schema';
@@ -58,26 +60,18 @@ interface RawRow {
     // pg returns bigint columns as strings
     total_issued: string | null;
     total_retired: string | null;
+    /** Only present on `findAll`'s rows query, which folds the total in via COUNT(*) OVER(). */
+    total_count?: number;
 }
 
 /**
- * Looks up the publishing registry's display name.
- *
- * A non-correlated `DISTINCT ON` derived table (computed once over the small
- * REGISTRY row set) picks the latest row per registryDid, handling the rare
- * case of multiple REGISTRY rows for one DID — cheaper than the per-row
- * correlated LATERAL this replaces, which re-ran the lookup for every
- * METHODOLOGY row. Mirrors PgProjectRepository's REGISTRY_NAME_JOIN.
+ * Looks up the publishing registry's display name from `mv_registry_stats`,
+ * which resolves the latest REGISTRY row per registryDid once per MV refresh
+ * instead of per request. Keyed by registryDid (unique index), so the join is
+ * a cheap lookup. Mirrors PgProjectRepository's REGISTRY_NAME_JOIN.
  */
 const REGISTRY_NAME_JOIN = `
-    LEFT JOIN (
-        SELECT DISTINCT ON ("registryDid")
-               "registryDid",
-               "displayName" AS registry_name
-        FROM business_view
-        WHERE "viewType" = 'REGISTRY'
-        ORDER BY "registryDid", "createdAt" DESC NULLS LAST
-    ) reg ON reg."registryDid" = bv."registryDid"
+    LEFT JOIN ${MV_REGISTRY_STATS_NAME} reg ON reg."registryDid" = bv."registryDid"
 `;
 
 /** Brings in the decode status for the methodology's policy topic (businessData->>'topicId'); collapses via LATERAL — prefer the latest decoded row, fall back to the latest row of any status — since a policyTopicId can have N policy rows. */
@@ -106,11 +100,12 @@ const EFFECTIVE_DECODE_STATUS = effectiveDecodeStatus('canon.decode_status');
 /** Over a live `policy` join — used by findById, which resolves one row exactly. */
 const EFFECTIVE_DECODE_STATUS_LIVE = effectiveDecodeStatus('p."decodeStatus"');
 
-const SEARCH_TSVECTOR = `(
-    setweight(to_tsvector('english', coalesce(bv."displayName", '')), 'A') ||
-    setweight(to_tsvector('english', coalesce(bv."registryDid", '')), 'B') ||
-    setweight(to_tsvector('english', coalesce(bv."searchText", '')), 'C')
-)`;
+// business_view."searchVector" is a STORED generated column with this exact
+// expression (see schema-bootstrap.ts) — referencing it directly, rather than
+// recomputing the expression inline, lets the planner match it back to
+// idx_business_view_search_vector (GIN). An inline recompute is opaque to the
+// planner even though it's byte-identical, so it was never reaching that index.
+const SEARCH_TSVECTOR = `bv."searchVector"`;
 
 /** The `message` row backing this METHODOLOGY's own originating VC (`business_view.sourceTimestamp` = `message.consensusTimestamp`), supplying `source_system_id`/`ipfs_document_ref` for `findAllForExport`. */
 const SOURCE_MESSAGE_JOIN = `
@@ -172,6 +167,12 @@ const METHODOLOGY_CANDIDATE_CTE = `
             canon.total_retired
         FROM ${MV_METHODOLOGY_STATS_NAME} canon
         JOIN business_view bv ON bv.id = canon.canonical_id
+        -- Logically redundant (canonical_id only ever points at a METHODOLOGY row),
+        -- but the planner can't infer that: without it, it scans every
+        -- business_view row of all four view types and lets the join discard the
+        -- other three. Stating it gives it a pushdown-able qualifier against
+        -- idx_business_view_view_type_created. Planner hint only — no behaviour change.
+        WHERE bv."viewType" = 'METHODOLOGY'
 
         UNION ALL
 
@@ -195,8 +196,118 @@ const METHODOLOGY_CANDIDATE_CTE = `
     )
 `;
 
+/**
+ * Fast path for the unfiltered, unsearched, default-sorted list view (page 1+
+ * of `/methodologies` with no query params) — the common case, and the one
+ * measured at 408ms in the SE-177 perf audit. Unlike METHODOLOGY_CANDIDATE_CTE,
+ * this pushes ORDER BY + LIMIT into each UNION branch (mirroring
+ * PgActivityRepository's pattern), so Postgres can walk
+ * idx_mv_methodology_stats_created_at in createdAt order and stop at the inner
+ * limit instead of joining the full ~20k-row candidate set to business_view
+ * and sorting it before LIMIT is applied — that full join+sort (a Seq Scan of
+ * business_view feeding a Hash Join) was the actual measured cost, not the
+ * "no relatedTopicId" fallback branch, which is already index-backed and
+ * empty in practice.
+ *
+ * Only valid with no WHERE clause beyond each branch's own — any filter or
+ * search term must go through METHODOLOGY_CANDIDATE_CTE + findAll's general
+ * path below, since pushing a LIMIT before a filter is applied could drop
+ * rows that would otherwise match.
+ */
+const methodologyCandidateCteFast = (
+    innerLimitParam: string,
+    lifecycleWhere: string | null = null,
+): string => `
+    WITH candidate AS (
+        (
+            SELECT
+                bv.*,
+                canon.project_count,
+                canon.instance_project_count,
+                canon.issuance_count,
+                canon.instance_issuance_count,
+                canon.schema_count,
+                canon.registry_name,
+                (${EFFECTIVE_DECODE_STATUS}) AS decode_status,
+                canon.sectoral_scopes,
+                canon.emission_reduction_approach,
+                canon.total_issued,
+                canon.total_retired
+            FROM ${MV_METHODOLOGY_STATS_NAME} canon
+            JOIN business_view bv ON bv.id = canon.canonical_id
+            ${lifecycleWhere ? `WHERE ${lifecycleWhere}` : ''}
+            ORDER BY canon."createdAt" DESC NULLS LAST
+            LIMIT ${innerLimitParam}
+        )
+        UNION ALL
+        (
+            SELECT
+                bv.*,
+                NULL::bigint AS project_count,
+                NULL::bigint AS instance_project_count,
+                NULL::bigint AS issuance_count,
+                NULL::bigint AS instance_issuance_count,
+                NULL::bigint AS schema_count,
+                reg.registry_name,
+                (${EFFECTIVE_DECODE_STATUS_LIVE}) AS decode_status,
+                p."policyMapping"->'sectoralScopes' AS sectoral_scopes,
+                p."policyMapping"->'emissionReductionApproach' AS emission_reduction_approach,
+                NULL::bigint AS total_issued,
+                NULL::bigint AS total_retired
+            FROM business_view bv
+            ${REGISTRY_NAME_JOIN}
+            ${POLICY_DECODE_STATUS_JOIN}
+            WHERE bv."viewType" = 'METHODOLOGY' AND bv."relatedTopicId" IS NULL
+            ${lifecycleWhere ? `AND ${lifecycleWhere}` : ''}
+            ORDER BY bv."createdAt" DESC NULLS LAST
+            LIMIT ${innerLimitParam}
+        )
+    )
+`;
+
 /** Over the candidate CTE's already-effective-mapped decode_status column — used by findAll/findAllForExport's decodeStatus filter (no need to re-wrap in the success/pending/failed CASE). */
 const CANDIDATE_DECODE_STATUS = `bv."decode_status"`;
+
+/**
+ * Lifecycle predicate over `businessData.discontinuedAt`, which PolicyStatusProcessor
+ * writes from the newest valid discontinue message for that instance topic.
+ *
+ * Compared against now() rather than stored as a status, because Guardian emits
+ * NO message when a deferred discontinuation's date arrives — a stored flag
+ * would stay wrong until something happened to recompute it. Evaluating here
+ * means the flip happens on the date itself, on the very next request.
+ *
+ * Takes an alias so it can be used both inside the fast path's UNION branches
+ * (where the row is still `bv`/`business_view`) and over the candidate CTE.
+ *
+ * The dated buckets repeat idx_business_view_methodology_discontinued's own
+ * predicate (`"viewType" = 'METHODOLOGY' AND discontinuedAt IS NOT NULL`) so the
+ * planner can match that partial index. Every caller only ever sees METHODOLOGY
+ * rows, so the extra `viewType` term never changes a result.
+ */
+const lifecycleStatusPredicate = (
+    statuses: MethodologyLifecycleStatus[] | undefined,
+    alias = 'bv',
+): string | null => {
+    const wanted = new Set<MethodologyLifecycleStatus>(
+        statuses?.length ? statuses : METHODOLOGY_LIFECYCLE_STATUSES,
+    );
+    // Every bucket requested — no predicate at all, which is what keeps an
+    // unfiltered list on the indexed fast path.
+    if (METHODOLOGY_LIFECYCLE_STATUSES.every(s => wanted.has(s))) return null;
+
+    const at = `(${alias}."businessData"->>'discontinuedAt')`;
+    const dateClauses: string[] = [];
+    if (wanted.has('to_be_discontinued')) dateClauses.push(`${at}::timestamptz > now()`);
+    if (wanted.has('discontinued')) dateClauses.push(`${at}::timestamptz <= now()`);
+
+    const dated = dateClauses.length > 0
+        ? `(${alias}."viewType" = 'METHODOLOGY' AND ${at} IS NOT NULL AND (${dateClauses.join(' OR ')}))`
+        : null;
+
+    if (!wanted.has('published')) return dated;
+    return dated ? `(${at} IS NULL OR ${dated})` : `${at} IS NULL`;
+};
 
 /**
  * LATERAL subquery that computes totalIssued/totalRetired for each methodology in the list.
@@ -247,6 +358,27 @@ export class PgMethodologyRepository extends MethodologyRepository {
         const { page, limit, search, sortBy, sortDir } = query;
         const offset = (page - 1) * limit;
 
+        // `createdAt` descending counts as the default sort: it's what the list
+        // view's initial state always sends (so `sortBy` is never actually
+        // absent on a real default page load), and it's the order the fast path
+        // hard-codes anyway. Direction follows buildOrderBy's convention —
+        // anything that isn't case-insensitively 'ASC' is DESC.
+        const isDefaultSort = !sortBy
+            || (sortBy === 'createdAt' && String(sortDir || '').toUpperCase() !== 'ASC');
+
+        // No filters, no search, default sort => safe to take the indexed fast
+        // path (see methodologyCandidateCteFast's doc comment for why).
+        const lifecycleWhere = lifecycleStatusPredicate(query.status);
+
+        const isDefaultView = !search && isDefaultSort
+            && !query.name && !query.id && !query.description
+            && !query.decodeStatus?.length
+            && !query.registryDid && !query.registryName && !query.version && !query.policyTopicId;
+
+        if (isDefaultView) {
+            return this.findAllDefaultView(offset, limit, lifecycleWhere, query.status);
+        }
+
         const builder = new QueryBuilder(METHODOLOGY_FIELD_SCHEMA);
 
         // Generic filters: every filterable field defined in the schema is wired automatically.
@@ -280,6 +412,12 @@ export class PgMethodologyRepository extends MethodologyRepository {
             if (clauses.length > 0) {
                 builder.addClause(clauses.length === 1 ? clauses[0] : `(${clauses.join(' OR ')})`);
             }
+        }
+
+        // Same predicate as the fast path, applied over the candidate CTE (whose
+        // rows still carry business_view's own columns under the `bv` alias).
+        if (lifecycleWhere) {
+            builder.addClause(lifecycleWhere);
         }
 
         // Full-text search with ranking: tsvector covers displayName/registryDid/searchText, ILIKE is a fast
@@ -320,26 +458,91 @@ export class PgMethodologyRepository extends MethodologyRepository {
         const limitParam = builder.nextParam(limit);
         const offsetParam = builder.nextParam(offset);
 
+        // COUNT(*) OVER() is evaluated over the filtered candidate set this query
+        // already builds for ranking/sorting, before LIMIT is applied — so the
+        // total rides back on the rows instead of costing a second,
+        // independently-planned pass over the same CTE.
         const rowsSql = `
             ${METHODOLOGY_CANDIDATE_CTE}
-            SELECT bv.*, ${rankExpr} AS search_rank
+            SELECT bv.*, ${rankExpr} AS search_rank, (COUNT(*) OVER())::int AS total_count
             FROM candidate bv
             WHERE ${whereSql}
             ORDER BY ${orderBy}
             LIMIT ${limitParam} OFFSET ${offsetParam}
         `;
 
-        const countParams = params.slice(0, params.length - 2);
-        const countSql = `
-            ${METHODOLOGY_CANDIDATE_CTE}
-            SELECT COUNT(*)::int AS total
+        const rawRows: RawRow[] = await this.dataSource.query(rowsSql, params);
+
+        return {
+            rows: rawRows.map(row => PgMethodologyRepository.mapRow(row)),
+            // Empty page (no matches, or an offset past the end) carries no window
+            // row to read the total off.
+            total: rawRows[0]?.total_count ?? 0,
+        };
+    }
+
+    /**
+     * Indexed fast path for findAll's default view (see methodologyCandidateCteFast).
+     * The count is likewise computed without touching business_view's full
+     * METHODOLOGY row set: mv_methodology_stats has exactly one row per
+     * canonical methodology (unique index on relatedTopicId), so its row
+     * count alone gives the canonical total; the fallback-branch count is a
+     * single index-backed lookup.
+     */
+    private async findAllDefaultView(
+        offset: number,
+        limit: number,
+        lifecycleWhere: string | null = null,
+        statuses?: MethodologyLifecycleStatus[],
+    ): Promise<MethodologyListResult> {
+        const innerLimit = offset + limit;
+
+        const rowsSql = `
+            ${methodologyCandidateCteFast('$1', lifecycleWhere)}
+            SELECT bv.*
             FROM candidate bv
-            WHERE ${whereSql}
+            ORDER BY bv."createdAt" DESC NULLS LAST
+            LIMIT $2 OFFSET $3
+        `;
+
+        // Unfiltered, the canonical count is the MV's own row count. Filtered, the
+        // dated buckets are counted through idx_business_view_methodology_discontinued
+        // (only the ~hundreds of rows that carry a date). `published` cannot use
+        // that index — an index finds rows that have a value, not rows that lack
+        // one — so a filter that includes it is counted as the MV total minus the
+        // buckets it excludes, which are always dated. Joining business_view for
+        // the flag directly made the planner scan the whole table instead.
+        const canonicalCountSql = (() => {
+            const total = `SELECT COUNT(*) FROM ${MV_METHODOLOGY_STATS_NAME}`;
+            if (!lifecycleWhere) return total;
+            const datedCount = (where: string) =>
+                `SELECT COUNT(*) FROM ${MV_METHODOLOGY_STATS_NAME} canon
+                   JOIN business_view bv ON bv.id = canon.canonical_id
+                  WHERE ${where}`;
+            if (!statuses?.includes('published')) return datedCount(lifecycleWhere);
+            const excluded = METHODOLOGY_LIFECYCLE_STATUSES.filter(s => !statuses.includes(s));
+            const excludedWhere = lifecycleStatusPredicate(excluded);
+            return excludedWhere ? `(${total}) - (${datedCount(excludedWhere)})` : total;
+        })();
+
+        // A METHODOLOGY row with no relatedTopicId has no instance topic, so no
+        // discontinue message can ever name it: it is always `published`, and
+        // contributes nothing to a count that excludes that bucket.
+        const wantsPublished = !statuses?.length || statuses.includes('published');
+        const fallbackCountSql = wantsPublished
+            ? `SELECT COUNT(*) FROM business_view WHERE "viewType" = 'METHODOLOGY' AND "relatedTopicId" IS NULL`
+            : `SELECT 0`;
+
+        const countSql = `
+            SELECT
+                (${canonicalCountSql})::int +
+                (${fallbackCountSql})::int
+                AS total
         `;
 
         const [rawRows, countResult]: [RawRow[], Array<{ total: number }>] = await Promise.all([
-            this.dataSource.query(rowsSql, params),
-            this.dataSource.query(countSql, countParams),
+            this.dataSource.query(rowsSql, [innerLimit, limit, offset]),
+            this.dataSource.query(countSql),
         ]);
 
         return {
@@ -358,6 +561,8 @@ export class PgMethodologyRepository extends MethodologyRepository {
                 s.issuance_count,
                 s.instance_issuance_count,
                 s.schema_count,
+                s.total_issued,
+                s.total_retired,
                 reg.registry_name,
                 (${EFFECTIVE_DECODE_STATUS_LIVE}) AS decode_status,
                 p."sourceCid" AS policy_source_cid,
@@ -395,6 +600,12 @@ export class PgMethodologyRepository extends MethodologyRepository {
                 documents: Record<string, any> | null;
                 mint_ts: string;
                 link_method: string | null;
+                vp_ts: string | null;
+                minted_amount: string | null;
+                serial_count: number | null;
+                serial_retired_count: number | null;
+                serial_transferred_count: number | null;
+                mint_match_status: string | null;
             }> = await this.dataSource.query(
                 `SELECT
                     pml.token_id,
@@ -402,7 +613,13 @@ export class PgMethodologyRepository extends MethodologyRepository {
                     pml.mint_date,
                     m.documents,
                     pml.mint_consensus_timestamp AS mint_ts,
-                    pml.link_method
+                    pml.link_method,
+                    pml.vp_consensus_timestamp   AS vp_ts,
+                    pml.minted_amount,
+                    pml.serial_count,
+                    pml.serial_retired_count,
+                    pml.serial_transferred_count,
+                    pml.mint_match_status
                  FROM project_mint_link pml
                  JOIN business_view proj
                      ON proj."projectKey" = pml.project_key
@@ -467,50 +684,32 @@ export class PgMethodologyRepository extends MethodologyRepository {
                         mintDate: r.mint_date ? r.mint_date.toISOString().split('T')[0] : null,
                         linkMethod: r.link_method ?? null,
                         rawVc: r.documents ?? null,
+                        vpConsensusTimestamp: r.vp_ts ?? null,
+                        mintedAmount: r.minted_amount != null ? Number(r.minted_amount) : null,
+                        serialCount: r.serial_count != null ? Number(r.serial_count) : null,
+                        serialRetiredCount: r.serial_retired_count != null ? Number(r.serial_retired_count) : null,
+                        serialTransferredCount: r.serial_transferred_count != null ? Number(r.serial_transferred_count) : null,
+                        mintMatchStatus: r.mint_match_status ?? null,
                     };
                 });
             }
         }
 
-        // Aggregate lifecycle stats for NFT tokens: total minted (all serials) and total retired (serials marked
-        // deleted by Mirror Node). Fungible tokens don't have per-serial tracking so their supply is used as-is.
-        const nftTokenIds = issuances
-            .filter(i => i.type === 'NON_FUNGIBLE_UNIQUE')
-            .map(i => i.tokenId)
-            .filter((id): id is string => !!id);
-
-        let totalIssued = 0;
-        let totalRetired = 0;
-
-        if (nftTokenIds.length > 0) {
-            const nftStats: Array<{ tokenId: string; total_minted: string; total_retired: string }> =
-                await this.dataSource.query(
-                    `SELECT
-                        "tokenId",
-                        COUNT(*)::text                              AS total_minted,
-                        COUNT(*) FILTER (WHERE deleted = true)::text AS total_retired
-                     FROM nft_cache
-                     WHERE "tokenId" = ANY($1::varchar[])
-                     GROUP BY "tokenId"`,
-                    [nftTokenIds],
-                );
-
-            for (const s of nftStats) {
-                totalIssued += parseInt(s.total_minted, 10);
-                totalRetired += parseInt(s.total_retired, 10);
-            }
-        }
-
-        // Add fungible token supply to totalIssued (retirement not tracked for fungible)
-        for (const i of issuances) {
-            if (i.type !== 'NON_FUNGIBLE_UNIQUE') {
-                totalIssued += i.supply;
-            }
-        }
-
-        const totalActive = totalIssued - totalRetired;
-
-        return PgMethodologyRepository.mapRow(row, issuances, { totalIssued, totalRetired, totalActive }, issuanceEvents);
+        // Lifecycle totals come straight from mv_methodology_stats, which the
+        // row query above already joins. That view sums mv_project_stats over
+        // this methodology's projects, so the detail page and the list agree by
+        // construction instead of by two implementations happening to match —
+        // the divergence project-stats.mv.ts warns about. mapRow resolves them
+        // from the row, and reports nothing when the view has no row for this
+        // methodology (no mints), rather than inventing a zero.
+        //
+        // This used to be recomputed here from nft_cache: every serial a token
+        // ever had, and every serial Mirror Node marks deleted. At the token
+        // level a direct on-chain mint by whoever holds the supply key is
+        // indistinguishable from a Guardian issuance, so that charged the
+        // methodology with credits that never went through a policy — in both
+        // directions, issued and retired.
+        return PgMethodologyRepository.mapRow(row, issuances, undefined, issuanceEvents);
     }
 
     /** Full filtered, `relatedTopicId`-deduped methodologies dataset for the export engine; batches internally via a LIMIT/OFFSET loop ordered by `sourceTimestamp`. */
@@ -547,6 +746,12 @@ export class PgMethodologyRepository extends MethodologyRepository {
             if (clauses.length > 0) {
                 builder.addClause(clauses.length === 1 ? clauses[0] : `(${clauses.join(' OR ')})`);
             }
+        }
+
+        // Keeps an export in step with the list it was requested from.
+        const exportLifecycleWhere = lifecycleStatusPredicate(filters.status);
+        if (exportLifecycleWhere) {
+            builder.addClause(exportLifecycleWhere);
         }
 
         if (filters.search) {
@@ -649,10 +854,11 @@ export class PgMethodologyRepository extends MethodologyRepository {
         // findById passes lifecycle explicitly; findAll supplies it via the LIFECYCLE_JOIN lateral columns on the raw row.
         const resolvedLifecycle = lifecycle ?? (row.total_issued != null
             ? (() => {
-                const issued = parseInt(row.total_issued!, 10);
+                // parseFloat: total_issued is NUMERIC, so fungible fractions survive.
+                const issued = parseFloat(row.total_issued!);
                 const retired = parseInt(row.total_retired ?? '0', 10);
                 return { totalIssued: issued, totalRetired: retired, totalActive: issued - retired };
-              })()
+            })()
             : undefined);
 
         const stats: MethodologyStatsRow = {
@@ -715,6 +921,7 @@ export class PgMethodologyRepository extends MethodologyRepository {
             totalActive: resolvedLifecycle?.totalActive,
             decodeStatus: row.decode_status ?? null,
             policySourceCid: row.policy_source_cid ?? null,
+            discontinuedAt: typeof data.discontinuedAt === 'string' ? data.discontinuedAt : null,
         };
     }
 }

@@ -1,4 +1,4 @@
-# 14 — Glossary and help
+# 14 — Glossary and Help
 
 This chapter covers the places to go when something is unclear: the glossary of terms, the help menu
 and the guided tour, the feedback button, and a short pointer list telling you which chapter of this
@@ -9,6 +9,8 @@ manual answers which kind of question.
 The Glossary page holds plain-language definitions for the carbon-market and Hedera terminology used
 throughout the Atlas. Reach it from the sidebar, or from the **?** button in the top bar via
 **Glossary of Terms**.
+
+![Glossary](images/fig-91-glossary.png)
 
 ### Finding a term
 
@@ -51,7 +53,7 @@ when you want to read around a subject rather than look one word up.
 The **?** button in the top bar is present on every page, for everyone, signed in or not. It offers
 two things: **Take the Product Tour** and **Glossary of Terms**.
 
-The guided tour is described in full in chapter 01. In brief: it is a one-minute walk through the
+The guided tour is described in full in [01 — Getting Started](01-getting-started.md). In brief: it is a one-minute walk through the
 interface, it starts by itself the first time you sign in, and after that it is always a deliberate
 choice. It never restarts itself. If you skipped it and want it back, this button is where it lives —
 that is the entire reason it sits in the top bar rather than buried in settings.
@@ -62,11 +64,11 @@ Signed-in users have a second route: **Account Settings** → **Product tour** �
 
 A **Feedback** button is anchored in the bottom-right corner of every page. It opens a short form:
 
-- The **Page** you were on is filled in automatically, so you do not have to describe where you were.
-- **Description** is the only required field.
-- **Email** is optional. It is used solely to tell you when the thing you reported has been dealt
+* The **Page** you were on is filled in automatically, so you do not have to describe where you were.
+* **Description** is the only required field.
+* **Email** is optional. It is used solely to tell you when the thing you reported has been dealt
   with — if you leave it blank, your report is still read, you just will not hear back.
-- **Capture screen** attaches an image of the current page. It is worth using for anything visual: a
+* **Capture screen** attaches an image of the current page. It is worth using for anything visual: a
   chart that renders oddly, a layout that breaks, a number that looks wrong in context. **Remove
   screenshot** takes it off again if you change your mind.
 
@@ -76,27 +78,31 @@ and **the identifier of the specific record** you were looking at — a project 
 registry name. Without those, a report about a wrong number usually cannot be reproduced.
 
 If something looks stale rather than wrong, check the **Data synced up to** timestamp in the sidebar
-first, and mention it in the report. Chapter 12 explains what it means.
+first, and mention it in the report. [12 — Sync Status](12-sync-status.md) explains what it means.
 
 ## Which chapter answers which question
 
 | If you are wondering… | Read |
 |---|---|
-| How do I get an account, and why is the tour following me around? | [01 — Getting started](01-getting-started.md) |
+| How do I get an account, and why is the tour following me around? | [01 — Getting Started](01-getting-started.md) |
 | Where is everything, and what does the network selector do? | [02 — Navigating the Atlas](02-navigating-the-atlas.md) |
 | What is this chart on the front page telling me? | [03 — Dashboard](03-dashboard.md) |
 | How do I find, filter, compare or export projects? | [04 — Projects](04-projects.md) |
-| Why does total minted not match current supply? | [05 — Issuances and credits](05-issuances-and-credits.md) |
+| Why does total minted not match current supply? | [05 — Issuances and Credits](05-issuances-and-credits.md) |
 | What is a methodology, and what does "decoded" mean? | [06 — Methodologies](06-methodologies.md) |
-| Who are these registries and developers, and what is an SDG count? | [07 — Registries, developers and SDGs](07-registries-developers-sdgs.md) |
+| Who are these registries and developers, and what is an SDG count? | [07 — Registries, Developers and SDGs](07-registries-developers-sdgs.md) |
 | Which view should I use as a buyer / developer / registry? | [08 — Analytics](08-analytics.md) |
 | How do I build my own dashboard? | [09 — Portfolio](09-portfolio.md) |
-| I need a file for a disclosure or an audit. | [10 — Reports and exports](10-reports-and-exports.md) |
-| How do I change my password, or get an API key? | [11 — Account and security](11-account-and-security.md) |
-| How current is this data? | [12 — Sync status](12-sync-status.md) |
+| I need a file for a disclosure or an audit. | [10 — Reports and Exports](10-reports-and-exports.md) |
+| How do I change my password, or get an API key? | [11 — Account and Security](11-account-and-security.md) |
+| How current is this data? | [12 — Sync Status](12-sync-status.md) |
 | How do I manage users or fix a stale record? | [13 — Administration](13-administration.md) |
-| Something is wrong and I do not know why. | [15 — FAQ and troubleshooting](15-faq-and-troubleshooting.md) |
+| Something is wrong and I do not know why. | [15 — FAQ and Troubleshooting](15-faq-and-troubleshooting.md) |
 
 ---
 
-Next: [15 — FAQ and troubleshooting](15-faq-and-troubleshooting.md) · Back to [index](README.md)
+### Related & Workflow Progression
+
+* ← **Previous**: [13 — Administration](13-administration.md) – User management, role quotas, and system maintenance actions
+* **Step 14 of 15**: **Glossary and Help** – Terminology definitions and platform help guide
+* → **Next**: [15 — FAQ and Troubleshooting](15-faq-and-troubleshooting.md) – Answers to common questions and troubleshooting guide

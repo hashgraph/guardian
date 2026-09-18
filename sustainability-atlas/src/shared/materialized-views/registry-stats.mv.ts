@@ -19,10 +19,30 @@ export const MV_REGISTRY_STATS_CREATE_SQL = `
         FROM business_view
         WHERE "viewType" = 'REGISTRY' AND "registryDid" IS NOT NULL
         ORDER BY "registryDid", "sourceTimestamp"::numeric DESC, id DESC
+    ),
+    latest_name AS (
+        -- Single source of truth for a registry's display name, replacing the
+        -- identical derived table/LATERAL that was duplicated across six
+        -- repositories and recomputed on every request.
+        --
+        -- Deliberately NOT merged into the canonical CTE above: that one orders
+        -- by "sourceTimestamp" (blockchain order) for stats attribution, whereas
+        -- name resolution has always used "createdAt" (ingestion order). The two
+        -- can disagree after an out-of-order reparse, so the orderings are kept
+        -- separate to preserve each consumer's existing behaviour exactly.
+        SELECT DISTINCT ON ("registryDid")
+               "registryDid",
+               "displayName" AS registry_name
+        FROM business_view
+        WHERE "viewType" = 'REGISTRY'
+        ORDER BY "registryDid", "createdAt" DESC NULLS LAST
     )
     SELECT
         bv."registryDid",
         MAX(c.id) AS canonical_id,
+        -- One row per registryDid in latest_name, so MAX() only satisfies
+        -- GROUP BY (same reason as canonical_id above).
+        MAX(ln.registry_name) AS registry_name,
         COUNT(*) FILTER (WHERE bv."viewType" = 'METHODOLOGY') AS policy_count,
         COUNT(*) FILTER (WHERE bv."viewType" = 'PROJECT')     AS project_count,
         -- Issuance count = number of mint events per token (matches the
@@ -107,6 +127,7 @@ export const MV_REGISTRY_STATS_CREATE_SQL = `
         LIMIT 1
     ) p ON bv."viewType" = 'METHODOLOGY'
     LEFT JOIN canonical c ON c."registryDid" = bv."registryDid"
+    LEFT JOIN latest_name ln ON ln."registryDid" = bv."registryDid"
     WHERE bv."registryDid" IS NOT NULL
       -- REGISTRY is included so every registryDid gets a row (and therefore a
       -- canonical_id), including registries that have produced nothing yet.

@@ -54,6 +54,16 @@ export default defineNuxtConfig({
         '/api/v1/**': {
             proxy: 'http://localhost:3030/api/v1/**',
         },
+        // Static geo boundary data — cache for a week, revalidate in the background.
+        '/geo/**': {
+            headers: { 'cache-control': 'public, max-age=604800, stale-while-revalidate=86400' },
+        },
+    },
+
+    // Pre-builds .gz/.br companions for public/ assets at build time, served
+    // automatically when the client sends a matching Accept-Encoding.
+    nitro: {
+        compressPublicAssets: true,
     },
 
     runtimeConfig: {
@@ -71,6 +81,9 @@ export default defineNuxtConfig({
             feedbackWebhookUrl: process.env.NUXT_PUBLIC_FEEDBACK_WEBHOOK_URL || '',
             // Optional shared secret sent with feedback; must match SHARED_SECRET in the Apps Script (set via NUXT_PUBLIC_FEEDBACK_TOKEN).
             feedbackToken: process.env.NUXT_PUBLIC_FEEDBACK_TOKEN || '',
+            // CARTO Basemaps API key, required on raster tile requests to basemaps.cartocdn.com
+            // since CARTO started watermarking unauthenticated requests. Set via NUXT_PUBLIC_CARTO_API_KEY.
+            cartoApiKey: process.env.NUXT_PUBLIC_CARTO_API_KEY || '',
         },
     },
 

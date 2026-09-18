@@ -119,6 +119,20 @@ export const useAuth = () => {
     // Shared, SSR-safe cache of the server's password policy (fetched once).
     const passwordPolicy = useState<PasswordPolicy>('auth-password-policy', () => DEFAULT_PASSWORD_POLICY);
     const passwordPolicyLoaded = useState<boolean>('auth-password-policy-loaded', () => false);
+    // Becomes true on the client once fetchMe() completes (success or failure).
+    // UI components read this to avoid showing guest state during the auth check.
+    const isAuthResolved = useState<boolean>('auth-resolved', () => false);
+    // SSR-hydrated flag: true if the incoming HTTP request carried auth cookies.
+    // Transferred from server to client via window.__NUXT__ payload so the sidebar
+    // can optimistically render authenticated tabs on ANY page during hydration,
+    // not just on protected paths. Synced to false on logout / failed fetchMe.
+    const hasSessionCookies = useState<boolean>('auth-has-session-cookies', () => {
+        if (import.meta.server) {
+            const cookie = useRequestHeaders(['cookie']).cookie ?? '';
+            return /(?:^|;\s*)(access|refresh|csrf)=/.test(cookie);
+        }
+        return false;
+    });
     const config = useRuntimeConfig();
     const { apiFetch } = useApiFetch();
 
@@ -177,6 +191,10 @@ export const useAuth = () => {
             });
         } catch {
             user.value = null;
+            hasSessionCookies.value = false;
+        } finally {
+            // Always mark auth as resolved so UI can transition out of loading state.
+            isAuthResolved.value = true;
         }
     }
 
@@ -189,6 +207,7 @@ export const useAuth = () => {
             body: { email, password },
         });
         user.value = profile;
+        hasSessionCookies.value = true;
         modal.value = null;
         return profile;
     }
@@ -216,6 +235,7 @@ export const useAuth = () => {
             // Ignore — we clear local state regardless so the UI reflects sign-out.
         } finally {
             user.value = null;
+            hasSessionCookies.value = false;
         }
     }
 
@@ -310,6 +330,8 @@ export const useAuth = () => {
         isAuthenticated,
         isAdmin,
         isSystemUser,
+        isAuthResolved,
+        hasSessionCookies,
         modal,
         fetchMe,
         login,

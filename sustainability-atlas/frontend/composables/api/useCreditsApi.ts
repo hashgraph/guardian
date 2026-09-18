@@ -1,11 +1,12 @@
 import type { NetworkId } from '~/composables/useNetwork';
-import { encodeMultiValue } from '~/lib/utils';
+import { encodeMultiValue, isAbortError } from '~/lib/utils';
 
 export type CreditSortKey =
     | 'name'
     | 'symbol'
     | 'type'
     | 'supply'
+    | 'retiredTokens'
     | 'registry'
     | 'mintDate'
     | 'projectDisplay'
@@ -19,6 +20,7 @@ export interface CreditDto {
     symbol: string | null;
     type: 'Fungible' | 'Non-Fungible' | null;
     supply: number;
+    retiredTokens?: number;
     projectId: string | null;
     project: string | null;
     methodologyId: string | null;
@@ -64,6 +66,7 @@ const CREDIT_FILTER_KEYS = [
     'projectKey',
     'methodologyId',
     'linkedOnly',
+    'retiredOnly',
     'supplyMin',
     'supplyMax',
     'mintDateFrom',
@@ -124,14 +127,22 @@ export const useCreditsApi = (opts: UseCreditsApiOptions) => {
 
     const { data, pending, error, refresh } = useAsyncData<CreditsResponse>(
         key.value,
-        async () => {
+        // `signal` is Nuxt's own dedupe:'cancel' AbortSignal. Forwarding it to
+        // $fetch tears the superseded request down at the network layer instead
+        // of letting it run to completion for a result Nuxt will discard.
+        async (_nuxtApp, { signal }) => {
             try {
                 const res = await $fetch<CreditsResponse>(url.value, {
                     baseURL,
                     query: buildQuery(),
+                    signal,
                 });
                 return res ?? emptyResponse(opts.limit.value);
             } catch (err) {
+                // An abort means a newer search superseded this one, not a
+                // failure. Returning emptyResponse here would risk flashing an
+                // empty list; rethrowing lets Nuxt's dedupe drop it silently.
+                if (isAbortError(err)) throw err;
                 console.error('[useCreditsApi] fetch failed:', err);
                 return emptyResponse(opts.limit.value);
             }

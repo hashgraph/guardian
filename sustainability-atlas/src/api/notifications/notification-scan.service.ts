@@ -4,6 +4,7 @@ import Redis from 'ioredis';
 import { NetworkDataSourceRegistry } from '@api/database/network-datasource.registry';
 import { SystemDataSource, returningRows } from '@api/database/system-database.module';
 import { RedisService } from '@shared/redis/redis.service';
+import { LeaderLock } from '@shared/redis/leader-lock';
 import { getRedictConfig } from '@shared/config/redict.config';
 import { getConfiguredNetworks } from '@shared/config/database.config';
 import type { NotificationSource, ProjectEnrichment } from './notification-sources/notification-source.interface';
@@ -123,6 +124,7 @@ export class NotificationScanService implements OnModuleInit, OnModuleDestroy {
     private readonly tickTimers = new Map<string, ReturnType<typeof setInterval>>();
     private readonly leaderRenewTimers = new Map<string, ReturnType<typeof setInterval>>();
     private readonly isLeader = new Map<string, boolean>();
+    private readonly leaderLocks = new Map<string, LeaderLock>();
     private readonly running = new Map<string, boolean>();
 
     constructor(
@@ -168,7 +170,7 @@ export class NotificationScanService implements OnModuleInit, OnModuleDestroy {
 
         for (const [network, held] of this.isLeader.entries()) {
             if (held) {
-                this.redisClient.del(this.leaderKey(network)).catch(() => {
+                this.lockFor(network).release().catch(() => {
                     // Best-effort release — TTL will expire it regardless.
                 });
             }
@@ -211,11 +213,11 @@ export class NotificationScanService implements OnModuleInit, OnModuleDestroy {
         const renewTimer = setInterval(() => {
             void (async () => {
                 try {
-                    const leader = await this.tryAcquireLeader(network);
+                    const lock = this.lockFor(network);
+                    const leader = this.isLeader.get(network)
+                        ? await lock.renew()
+                        : await lock.tryAcquire();
                     this.isLeader.set(network, leader);
-                    if (leader) {
-                        await this.redisClient.expire(this.leaderKey(network), LEADER_TTL_S);
-                    }
                 } catch {
                     // Silent — retried next interval.
                 }
@@ -229,22 +231,26 @@ export class NotificationScanService implements OnModuleInit, OnModuleDestroy {
     }
 
     /**
-     * Distributed lock for scan leadership, scoped per network. Exact copy of
-     * SyncSchedulerService.tryAcquireLeader's SET-NX-EX + GET-compare fallback,
-     * with a different key namespace (`se:notif-scan:leader:*`) so it never
-     * collides with the worker's own scheduler lock.
+     * Scan-leadership lock for one network, in its own key namespace
+     * (`se:notif-scan:leader:*`) so it never collides with the worker's
+     * scheduler lock.
+     *
+     * Cached per network because the instanceId has to stay stable for
+     * compare-and-swap renew/release to recognise our own hold.
      */
-    private async tryAcquireLeader(network: string): Promise<boolean> {
-        const result = await this.redisClient.set(
-            this.leaderKey(network),
-            this.instanceId,
-            'EX', LEADER_TTL_S,
-            'NX',
-        );
-        if (result === 'OK') return true;
+    private lockFor(network: string): LeaderLock {
+        let lock = this.leaderLocks.get(network);
+        if (!lock) {
+            lock = new LeaderLock(
+                this.redisClient, this.leaderKey(network), this.instanceId, LEADER_TTL_S,
+            );
+            this.leaderLocks.set(network, lock);
+        }
+        return lock;
+    }
 
-        const current = await this.redisClient.get(this.leaderKey(network));
-        return current === this.instanceId;
+    private async tryAcquireLeader(network: string): Promise<boolean> {
+        return this.lockFor(network).tryAcquire();
     }
 
     // ---------------------------------------------------------------------------

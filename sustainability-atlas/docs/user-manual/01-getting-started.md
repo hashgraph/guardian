@@ -1,114 +1,109 @@
-# 01 — Getting started
+# 01 — Getting Started
 
-This chapter covers your first visit to the Atlas: what you can see without an account, the guided
-tour that introduces the interface, how to create an account and verify your email address, how to
-sign in, and what to do when you have forgotten your password.
+This chapter covers your first visit to the Atlas: what can be seen without an account, the guided tour that introduces the interface, how to create an account and verify your email address, how to sign in, and what to do when you have forgotten your password.
 
 ## Opening the Atlas
 
-Open the Atlas in any modern browser. You land on the Dashboard, and everything on it is already
-loaded — you do not have to sign in to read the data.
+Opening the Atlas in any modern browser lands the user on the Dashboard, and everything on it is already loaded. Signing in is not required to read the data.
 
-A green banner across the top tells you that you are viewing as a guest and offers a **sign in from
-here** link. You can ignore it indefinitely. As a guest you can browse every project, credit,
-methodology, registry, developer and SDG in the catalogue, use every filter, sort every table,
-compare projects side by side, read the analytics views, look terms up in the glossary and check how
-current the data is on the Sync Status page.
+A green banner across the top indicates guest viewing and offers a "sign in from here" link, which can be ignored indefinitely.
 
-Downloading a table as CSV with **Download Data** is open to guests too. What a guest cannot do is
-anything that has to be remembered for *you*: there is no Portfolio, no saved quick filters, no
-Reports page and no notifications. Those all arrive with an account.
+![Guest "Sign In" option](images/fig-02-guest-sign-in-option.png)
+
+As a guest, a user can browse every project, credit, methodology, registry, developer and SDG in the catalogue, use every filter, sort every table, compare projects side by side, read the analytics views, look terms up in the glossary and check how current the data is on the Sync Status page.
 
 ## The guided tour
 
-The first time you sign in, a short guided tour starts by itself. It walks you round the interface in
-about a minute: the sidebar, global search, the language and network selectors, the dashboard
-figures, then over to the Projects page for filters, the table and quick filters, and finally your
-personal features, how to report a problem, and where to find help.
+The first time a user signs in, a short guided tour starts by itself, walking round the interface in about a minute: the sidebar, global search, the language and network selectors, the dashboard figures, then the Projects page for filters, the table and quick filters, and finally personal features, how to report a problem, and where to find help.
+
+![Take the Product Tour Option](images/fig-03-take-the-product-tour-option.png)
 
 While the tour is running:
 
-- **Next** and **Back** move between steps; the row of dots shows how far along you are, and you can
-  click a dot to jump straight to that step.
-- **Skip tour**, the **×** in the corner, and the **Escape** key all end the tour immediately.
-- The arrow keys work too: right arrow or Enter for the next step, left arrow to go back.
-- The page underneath is **paused**. Clicking a highlighted button does nothing while the tour is
-  open. This is deliberate — it stops you navigating away mid-step and losing your place. Finish or
-  skip the tour and the page is live again.
-- The tour moves you between pages on its own. It starts on the Dashboard and takes you to the
-  Projects page partway through. Your network choice is preserved as it goes.
+* **Next** and **Back** move between steps; a row of dots shows progress, and a dot can be clicked to jump to that step.
+* **Skip tour**, the "×" in the corner, and the Escape key all end the tour immediately.
+* The arrow keys work too: right arrow or Enter for the next step, left arrow to go back.
+* The page underneath is paused — clicking a highlighted button does nothing while the tour is open, so the user does not navigate away mid-step.
+* The tour moves between pages on its own, starting on the Dashboard and moving to Projects partway through. The network choice is preserved as it goes.
 
-**Restarting the tour.** You can replay it as often as you like from either of two places:
+![Tour Guide](images/fig-04-tour-guide.png)
 
-- the **?** (help) button in the top bar, on any page, signed in or not — choose **Take the product
-  tour**;
-- **Account Settings** → the **Product tour** card → **Replay the tour**.
+The tour can be replayed at any time from the Help (?) menu or from Account Settings.
 
-Replaying always starts from step one and returns you to the Dashboard first.
+## Create an Account
 
-Two details worth knowing. The tour only launches itself **once**, on your first successful sign-in;
-after that it is always a manual choice. And the "already seen" flag is remembered **in this
-browser**, not on your account — so a different computer, a different browser, or clearing your
-cookies will greet you with it again. If you never sign in, the tour never starts by itself, but the
-help button still offers it.
+Creating an account unlocks the personal features of the Atlas — the Portfolio, saved quick filters, the Reports page, notifications and API keys. Browsing the data itself does not require one.
 
-The tour is slightly shorter for guests: the steps about the Portfolio, notifications and your
-account are replaced by a single step explaining what an account adds.
+### Steps
 
-## Creating an account
+1. Click **Sign In** in the top-right corner, then **Create account**. The sign-up form opens.
+2. Enter your first name, last name, email address, country and a password. Organisation is an optional extra.
+   * As the password is typed, a live checklist appears showing each rule and ticking it off as it is satisfied — typically a minimum length plus a mix of upper case, lower case and digits.
+3. Submit the form. A neutral confirmation message appears.
 
-Click **Sign In** in the top-right corner, then **Create account**.
+![Account Creation](images/fig-05-account-creation.png)
 
-The sign-up form asks for your first name, last name, email address, country and a password, with
-organisation as an optional extra. As you type the password, a live checklist appears underneath
-showing each rule and ticking it off as you satisfy it — typically a minimum length plus a mix of
-upper case, lower case and digits. The exact rules come from the server, so what the checklist shows
-is exactly what will be accepted. The **Confirm password** field tells you as soon as the two match.
+4. Open the verification email sent to the address given and click the link.
+   * The link is single use and expires after 24 hours. Clicking an old link, clicking one twice, or verifying an address that was already confirmed produces a "verification failed" message.
 
-When you submit, you get a neutral confirmation message rather than a "yes, that worked" or "that
-email is already registered". This is intentional: it means nobody can use the sign-up form to
-discover whether a given email address has an account here.
+![Email Verification](images/fig-06-email-verification.png)
 
-Creating an account does **not** sign you in. Verify your email first, then sign in.
+### Result
 
-## Verifying your email
+The screen confirms the email address has been verified. You can now sign in with the email address and password you registered.
 
-Registration sends a verification link to the address you gave. Click it and the Atlas confirms the
-address and tells you it is verified.
+## Sign In
 
-The link is **single use** and **expires after 24 hours**. If you click an old link, click one twice,
-or the address was already confirmed, you will see a verification-failed message explaining exactly
-that — it is not a sign that anything is broken with your account.
+Signing in gives access to personal features such as the Portfolio, saved quick filters, Reports, and API keys.
 
-Until you verify, an amber banner sits under the top bar reminding you, with a **Resend verification**
-button. The button is throttled: after you use it, it counts down for a short period before it can be
-used again. If nothing arrives, check your spam folder before resending — the mail almost always
-arrives, just occasionally not in the inbox.
+### Prerequisites
 
-## Signing in
+* A verified account.
 
-Click **Sign In**, enter your email address and password, and submit. The green guest banner
-disappears, the sidebar gains **Portfolio** and **Reports**, a notification bell appears in the top
-bar, and the **Sign In** button is replaced by your initials and name.
+### Steps
 
-If an administrator created your account for you, you will be asked to set a new password
-immediately. A dialog appears asking for the temporary password you were given and a new one of your
-choosing, using the same live rule checklist as sign-up. This dialog cannot be dismissed — the
-temporary password was known to somebody else, so it has to be replaced before you go any further.
+1. Click **Sign In** in the top-right corner.
+2. Enter your email address and password.
+3. Submit the form.
 
-## Forgotten password
+### Signing in to an account created by an administrator
 
-On the sign-in dialog, click **Forgot password?**, enter your email address and submit. As with
-sign-up, the response is deliberately neutral: it does not confirm whether an account exists for that
-address.
+If an administrator created the account, the administrator fills in the registering user's details and provides a temporary password. On the first login, the user is required to set a new password before continuing.
 
-If there is an account, you get an email with a reset link. Opening it takes you to a **Set a new
-password** page with the same live rule checklist. Once the new password is accepted, the page
-confirms the change and asks you to sign in with it.
+![Creation of User Account by Administrator](images/fig-07-creation-of-user-account-by-administrator.png)
 
-If the link has expired or has already been used, the page will say so. Request a fresh one from
-**Forgot password?** — old links are never reusable.
+![First Login of the Registered User](images/fig-08-first-login-of-the-registered-user-by-the-administ.png)
+
+### Result
+
+You are signed in. The green guest banner disappears, the Portfolio and Reports entries appear in the sidebar, and — on a first sign-in — the guided tour starts automatically.
+
+## Reset a Forgotten Password
+
+Resets the password on an existing account using the email address it was registered with.
+
+### Steps
+
+1. On the sign-in dialog, click **Forgot password?**.
+2. Enter the email address and submit.
+   * The response is deliberately neutral — it does not confirm whether an account exists for that address.
+
+![Reset the Password](images/fig-09-reset-the-password.png)
+
+![Reset link is sent to the registered email](images/fig-10-reset-link-is-sent-to-the-registered-email.png)
+
+3. If an account exists, an email with a reset link follows. Open it to reach the **Set a new password** page.
+4. Enter the new password. The same live rule checklist as on sign-up shows which requirements have been satisfied.
+5. Submit the form.
+
+### Result
+
+The page confirms the change and invites sign-in with the new password.
 
 ---
 
-Next: [02 — Navigating the Atlas](02-navigating-the-atlas.md) · Back to [index](README.md)
+### Related & Workflow Progression
+
+* ← **Previous**: [Introduction](README.md) — Overview of the Sustainability Atlas platform
+* **Step 1 of 14**: **Getting Started** — Account onboarding, sign-in, and product tour
+* → **Next**: [02 — Navigating the Atlas](02-navigating-the-atlas.md) — Sidebar navigation, search, and interface controls

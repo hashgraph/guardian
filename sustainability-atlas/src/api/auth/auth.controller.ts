@@ -130,7 +130,7 @@ function extractRefreshToken(req: MinimalRequest): string {
  * Cookie mutation: uses @Res({ passthrough: true }) so Nest still serializes
  * the return value while AuthService can call res.cookie / res.clearCookie.
  */
-@ApiTags('auth')
+@ApiTags('Sign-in and profile')
 @Controller('api/v1/auth')
 export class AuthController {
     constructor(private readonly authService: AuthService) {}
@@ -139,10 +139,10 @@ export class AuthController {
 
     @Get('password-policy')
     @ApiOperation({
-        summary: 'Get the active password-complexity policy',
+        summary: 'Get the password rules',
         description:
             'Public. Returns the resolved policy (driven by PASSWORD_SECURITY_LEVEL) ' +
-            'so the frontend renders the exact rules the API enforces — one source of truth.',
+            'so the frontend renders the exact rules the API enforces, so there is one source of truth.',
     })
     @ApiResponse({ status: 200, description: 'The active password policy' })
     passwordPolicy(): PasswordPolicy {
@@ -154,7 +154,7 @@ export class AuthController {
     @Post('signup')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({
-        summary: 'Register a new user account',
+        summary: 'Create an account',
         description:
             'Creates a new system_user account and sends a verification email. ' +
             'Always returns the same neutral response to prevent account enumeration. ' +
@@ -174,7 +174,7 @@ export class AuthController {
     @Post('verify-email')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({
-        summary: 'Verify email address',
+        summary: 'Confirm an email address',
         description:
             'Consumes the single-use email-verification token sent at signup. ' +
             'On success, the account is activated and may sign in.',
@@ -195,10 +195,10 @@ export class AuthController {
     @UseGuards(JwtAuthGuard, CsrfGuard)
     @ApiCookieAuth()
     @ApiOperation({
-        summary: 'Resend the email-verification link (throttled)',
+        summary: 'Resend the email confirmation link',
         description:
             'Sends a fresh verification email for the signed-in, unverified user. ' +
-            'Throttled — within the cooldown window it returns sent=false with retryAfterSeconds.',
+            'Throttled: within the cooldown window it returns sent=false with retryAfterSeconds.',
     })
     @ApiResponse({ status: 200, description: 'Sent, or throttled with retryAfterSeconds' })
     async resendVerification(
@@ -219,8 +219,8 @@ export class AuthController {
             'On success, sets httpOnly access + refresh cookies and a non-httpOnly CSRF cookie. ' +
             'Returns the safe user profile. All failure paths return the same generic error.',
     })
-    @ApiResponse({ status: 200, description: 'Authenticated — cookies set' })
-    @ApiResponse({ status: 401, description: 'Invalid credentials (generic — no enumeration)' })
+    @ApiResponse({ status: 200, description: 'Authenticated and cookies set' })
+    @ApiResponse({ status: 401, description: 'Invalid credentials (a generic message, so accounts cannot be enumerated)' })
     async login(
         @Body() dto: LoginDto,
         @Req() req: MinimalRequest,
@@ -236,14 +236,14 @@ export class AuthController {
     @UseGuards(CsrfGuard)
     @ApiCookieAuth()
     @ApiOperation({
-        summary: 'Rotate refresh token',
+        summary: 'Stay signed in (refresh the session)',
         description:
             'Exchanges the httpOnly refresh cookie for a new access + refresh token pair. ' +
             'Requires the X-CSRF-Token header to equal the csrf cookie (double-submit CSRF defense). ' +
             'If a previously-rotated token is presented (reuse attack), the entire session family ' +
             'is revoked and a 401 is returned.',
     })
-    @ApiResponse({ status: 200, description: 'Tokens rotated — cookies updated' })
+    @ApiResponse({ status: 200, description: 'Tokens rotated and cookies updated' })
     @ApiResponse({ status: 401, description: 'Invalid, expired, or reused refresh token' })
     @ApiResponse({ status: 403, description: 'CSRF token missing or mismatch' })
     async refresh(
@@ -260,7 +260,7 @@ export class AuthController {
     @UseGuards(JwtAuthGuard)
     @ApiCookieAuth()
     @ApiOperation({
-        summary: 'Get current user profile',
+        summary: 'Get my profile',
         description:
             'Returns the authenticated user\'s profile. ' +
             'Requires a valid access token in the httpOnly access cookie or Authorization: Bearer header.',
@@ -277,7 +277,7 @@ export class AuthController {
     @UseGuards(JwtAuthGuard, CsrfGuard)
     @ApiCookieAuth()
     @ApiOperation({
-        summary: 'Update the signed-in user\'s own profile',
+        summary: 'Update my profile',
         description:
             'Updates the editable profile fields (name, organisation, job title, ' +
             'country). Email and role are immutable here. Requires a valid access ' +
@@ -301,7 +301,7 @@ export class AuthController {
     @UseGuards(JwtAuthGuard)
     @ApiCookieAuth()
     @ApiOperation({
-        summary: 'List the signed-in user\'s own recent account activity (paginated)',
+        summary: 'See my recent account activity',
         description:
             'Returns the caller\'s OWN audit-log entries only. Supports page / pageSize ' +
             '(max 100) and an optional action filter. Also returns the distinct action ' +
@@ -335,7 +335,7 @@ export class AuthController {
             'Revokes the current session\'s refresh token and clears all auth cookies. ' +
             'Requires a valid access token and the X-CSRF-Token header.',
     })
-    @ApiResponse({ status: 200, description: 'Logged out — cookies cleared' })
+    @ApiResponse({ status: 200, description: 'Logged out and cookies cleared' })
     @ApiResponse({ status: 401, description: 'Not authenticated' })
     @ApiResponse({ status: 403, description: 'CSRF token missing or mismatch' })
     async logout(
@@ -351,10 +351,10 @@ export class AuthController {
     @Post('forgot-password')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({
-        summary: 'Request a password-reset email',
+        summary: 'Send a password reset email',
         description:
             'Sends a single-use password-reset link to the given email address if an account exists. ' +
-            'ALWAYS returns the same neutral 200 — never reveals whether the address is registered.',
+            'ALWAYS returns the same neutral 200 and never reveals whether the address is registered.',
     })
     @ApiResponse({ status: 200, description: 'Neutral confirmation (always the same response)' })
     @ApiResponse({ status: 400, description: 'Validation error (invalid email format)' })
@@ -370,12 +370,12 @@ export class AuthController {
     @Post('reset-password')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({
-        summary: 'Reset password using the emailed token',
+        summary: 'Set a new password from a reset email',
         description:
             'Consumes the single-use password-reset token, sets a new password, ' +
             'bumps tokenVersion to invalidate all existing JWTs, and revokes all refresh sessions.',
     })
-    @ApiResponse({ status: 200, description: 'Password reset — please sign in with the new password' })
+    @ApiResponse({ status: 200, description: 'Password reset. Please sign in with the new password.' })
     @ApiResponse({ status: 400, description: 'Validation error (password too short, etc.)' })
     @ApiResponse({ status: 401, description: 'Invalid or expired reset token' })
     async resetPassword(
@@ -392,7 +392,7 @@ export class AuthController {
     @UseGuards(JwtAuthGuard, CsrfGuard)
     @ApiCookieAuth()
     @ApiOperation({
-        summary: 'Change the signed-in user\'s password',
+        summary: 'Change my password',
         description:
             'Verifies the current password, sets the new one and clears the ' +
             'mustChangePassword flag. Used by the forced first-login change and ' +

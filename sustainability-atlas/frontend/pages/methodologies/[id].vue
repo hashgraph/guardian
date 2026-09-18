@@ -40,6 +40,11 @@ import type {
 import type { DecodedMethodologyResponse, MappingAuditEntry, PaginatedMappingAudit } from "~/composables/api/useDecodedMethodologyApi";
 import { mapApiProject } from "~/composables/useProjects";
 import { meetsDashboardThreshold } from "~/lib/methodology-threshold";
+import {
+  methodologyStatus,
+  methodologyStatusBadgeClass,
+  methodologyStatusTooltip,
+} from "~/lib/methodology-status";
 import type { SingleSelectOption } from '~/components/shared/SingleSelect.vue';
 import { naturalCompare } from '~/lib/utils';
 
@@ -108,13 +113,6 @@ const tabs = computed(() => [
   { key: "analytics" as const, label: t('methodologies.detail.tabs.analytics'), icon: BarChart3 },
   { key: "actions" as const, label: t('methodologies.detail.tabs.actions'), icon: Zap },
 ]);
-
-const statusBadgeClass = (status: string | null | undefined) => {
-  const s = (status ?? "").toUpperCase();
-  if (s === "PUBLISHED") return "bg-stat-green/10 text-stat-green";
-  if (s === "DRAFT") return "bg-stat-amber/10 text-stat-amber";
-  return "bg-muted text-muted-foreground";
-};
 
 
 const copiedValue = ref<string | null>(null);
@@ -302,6 +300,21 @@ const decodedPending = ref(false);
 const decodedError = ref<string | null>(null);
 const decodedLoaded = ref(false);
 const allSchemaFieldsExpanded = ref(false);
+// The default GET omits availableSchemas[*].fields (it can be tens of
+// thousands of entries across a large policy's schemas — see SE-196). True
+// once a fetch with includeAllFields=true has populated it, so enterEditMode
+// only pays for that extra request once per load, not on every open.
+const fullFieldsLoaded = ref(false);
+const editModeLoadingPending = ref(false);
+
+async function fetchDecoded(currentNetwork: string, currentId: string, includeAllFields: boolean) {
+  const config = useRuntimeConfig();
+  const baseURL = config.public.apiBaseUrl as string;
+  return $fetch<DecodedMethodologyResponse>(
+    `/api/v1/${currentNetwork}/methodologies/${currentId}/decoded`,
+    { baseURL, query: includeAllFields ? { includeAllFields: 'true' } : undefined },
+  );
+}
 const mappingAuditEntries = ref<MappingAuditEntry[]>([]);
 const mappingAuditPending = ref(false);
 const mappingAuditPage = ref(1);
@@ -354,9 +367,6 @@ function onMappingAuditPageSizeChange(size: number) {
 }
 
 if (import.meta.client) {
-  const config = useRuntimeConfig();
-  const baseURL = config.public.apiBaseUrl as string;
-
   watch(
     [activeTab, id, () => network.value],
     async ([tab, currentId, currentNetwork], [, oldId, oldNetwork]) => {
@@ -365,11 +375,17 @@ if (import.meta.client) {
       decodedLoaded.value = false;
       decodedPending.value = true;
       decodedError.value = null;
+      fullFieldsLoaded.value = false;
       try {
-        decodedData.value = await $fetch<DecodedMethodologyResponse>(
-          `/api/v1/${currentNetwork}/methodologies/${currentId}/decoded`,
-          { baseURL },
-        );
+        decodedData.value = await fetchDecoded(currentNetwork, currentId, false);
+        // No confirmed project schema: the fallback "Available schemas" browser
+        // (below) reads availableSchemas[*].fields directly and isn't gated
+        // behind an explicit admin action the way "Edit mapping" is, so it
+        // needs the full-fields fetch right away rather than on demand.
+        if (!decodedData.value?.projectSchema && (decodedData.value?.availableSchemas?.length ?? 0) > 0) {
+          decodedData.value = await fetchDecoded(currentNetwork, currentId, true);
+          fullFieldsLoaded.value = true;
+        }
       } catch {
         decodedData.value = null;
         decodedError.value = t('methodologies.detail.decoded.fetchError');
@@ -463,6 +479,8 @@ const EDITABLE_FIELD_KEYS: ResolvedFieldKey[] = [
   'description',
   'country',
   'developer',
+  'developerEmail',
+  'developerPhone',
   'category',
   'scale',
   'sector',
@@ -471,6 +489,7 @@ const EDITABLE_FIELD_KEYS: ResolvedFieldKey[] = [
   'creditingPeriodEnd',
   'sdgOrCobenefits',
   'geo',
+  'estimatedAnnualCredits',
 ];
 
 const FIELD_LABELS: Record<ResolvedFieldKey, string> = {
@@ -478,6 +497,8 @@ const FIELD_LABELS: Record<ResolvedFieldKey, string> = {
   description: 'Description',
   country: 'Country',
   developer: 'Developer',
+  developerEmail: 'Developer Email',
+  developerPhone: 'Developer Phone',
   category: 'Category',
   scale: 'Scale',
   sector: 'Sector',
@@ -486,6 +507,7 @@ const FIELD_LABELS: Record<ResolvedFieldKey, string> = {
   creditingPeriodEnd: 'Crediting Period End',
   sdgOrCobenefits: 'SDG / Co-benefits',
   geo: 'Project Location',
+  estimatedAnnualCredits: 'Estimated Annual Credits',
 };
 
 const editingMapping = ref(false);
@@ -565,8 +587,27 @@ function resolveFieldPathParts(key: ResolvedFieldKey): { base: string; index: st
   return { base: `${rf.schemaIri}.${baseKey}`, index };
 }
 
-function enterEditMode() {
+async function enterEditMode() {
   if (!decodedData.value?.projectSchema) return;
+
+  // The candidate dropdowns (mappingSelectOptions/geoSelectOptions) are built
+  // from availableSchemas[*].fields, which the default GET omits — fetch the
+  // full-fields variant once per load before opening the editor.
+  if (!fullFieldsLoaded.value) {
+    editModeLoadingPending.value = true;
+    try {
+      decodedData.value = await fetchDecoded(network.value, id.value, true);
+      fullFieldsLoaded.value = true;
+    } catch {
+      const { toast } = await import('vue-sonner');
+      toast.error(t('methodologies.detail.decoded.fetchError'));
+      return;
+    } finally {
+      editModeLoadingPending.value = false;
+    }
+    if (!decodedData.value?.projectSchema) return;
+  }
+
   const state = {} as Record<ResolvedFieldKey, string>;
   const indexState = {} as Record<ResolvedFieldKey, string>;
   for (const key of EDITABLE_FIELD_KEYS) {
@@ -635,6 +676,7 @@ const hasChanges = computed(() => Object.keys(pendingChanges.value).length > 0);
 interface SelectOption {
   value: string;    // "schemaId.fieldKey"
   label: string;
+  description?: string;
   groupLabel: string;
 }
 
@@ -654,6 +696,7 @@ const mappingSelectOptions = computed<SelectOption[]>(() => {
       options.push({
         value: `${schema.schemaId}.${field.fieldKey}`,
         label: `${field.title || field.fieldKey} (${field.fieldKey})${arraySuffix}`,
+        description: field.description || undefined,
         groupLabel,
       });
     }
@@ -670,6 +713,7 @@ const mappingSelectOptions = computed<SelectOption[]>(() => {
         options.push({
           value,
           label: `${entry.title || entry.fieldKey} (${entry.fieldKey})`,
+          description: entry.description || undefined,
           groupLabel,
         });
       }
@@ -711,6 +755,7 @@ const geoSelectOptions = computed<SelectOption[]>(() => {
       options.push({
         value,
         label: `${field.title || field.fieldKey} (${field.fieldKey})`,
+        description: field.description || undefined,
         groupLabel,
       });
     }
@@ -759,6 +804,9 @@ async function saveMapping() {
       },
     );
     decodedData.value = updated;
+    // The PATCH response is the same thin shape as the default GET —
+    // availableSchemas[*].fields is empty again until the next edit-mode open.
+    fullFieldsLoaded.value = false;
     cancelEditMode();
     refreshMappingAudit();
     const { toast } = await import('vue-sonner');
@@ -781,7 +829,7 @@ const formatLastAttempt = (ts: string | null | undefined): string => {
   }
 };
 
-type ResolvedFieldKey = 'name' | 'description' | 'country' | 'developer' | 'category' | 'scale' | 'sector' | 'vintageRaw' | 'creditingPeriodStart' | 'creditingPeriodEnd' | 'sdgOrCobenefits' | 'geo';
+type ResolvedFieldKey = 'name' | 'description' | 'country' | 'developer' | 'developerEmail' | 'developerPhone' | 'category' | 'scale' | 'sector' | 'vintageRaw' | 'creditingPeriodStart' | 'creditingPeriodEnd' | 'sdgOrCobenefits' | 'geo' | 'estimatedAnnualCredits';
 
 interface ProjectFieldRow {
   labelKey: string;
@@ -794,12 +842,15 @@ const PROJECT_FIELD_ROWS: ProjectFieldRow[] = [
   { labelKey: 'geo', fieldKey: 'geo' },
   { labelKey: 'country', fieldKey: 'country' },
   { labelKey: 'developer', fieldKey: 'developer' },
+  { labelKey: 'developerEmail', fieldKey: 'developerEmail' },
+  { labelKey: 'developerPhone', fieldKey: 'developerPhone' },
   { labelKey: 'sector', fieldKey: 'sector' },
   { labelKey: 'category', fieldKey: 'category' },
   { labelKey: 'scale', fieldKey: 'scale' },
   { labelKey: 'creditingPeriod', fieldKey: 'creditingPeriod' },
   { labelKey: 'vintageRaw', fieldKey: 'vintageRaw' },
   { labelKey: 'sdgOrCobenefits', fieldKey: 'sdgOrCobenefits' },
+  { labelKey: 'estimatedAnnualCredits', fieldKey: 'estimatedAnnualCredits' },
 ];
 
 // Version comparison
@@ -1122,14 +1173,14 @@ function getResolvedField(fieldKey: string) {
       <!-- Header -->
       <div class="flex items-start justify-between gap-4">
         <div class="min-w-0">
-          <div class="flex items-center gap-3 mb-2">
+          <div class="flex items-center gap-3 mb-2 min-w-0">
             <div
-              class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10"
+              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10"
             >
               <BookOpen class="h-5 w-5 text-primary" />
             </div>
-            <div>
-              <h1 class="text-2xl font-bold text-foreground">
+            <div class="min-w-0">
+              <h1 class="text-2xl font-bold text-foreground break-words">
                 {{ methodology.name }}
               </h1>
               <p class="text-sm text-muted-foreground">
@@ -1230,11 +1281,13 @@ function getResolvedField(fieldKey: string) {
             </div>
             <span
               :class="[
-                statusBadgeClass(methodology.status),
-                'text-xs font-medium rounded-full px-2 py-0.5',
+                methodologyStatusBadgeClass(methodologyStatus(methodology)),
+                'inline-flex items-center text-xs font-medium rounded-full px-2 py-0.5',
               ]"
+              :title="methodologyStatusTooltip(methodology, t)"
             >
-              {{ methodology.status ?? "—" }}
+              <span class="h-1.5 w-1.5 rounded-full bg-current mr-1.5 shrink-0" />
+              {{ $t(`methodologies.statusValues.${methodologyStatus(methodology)}`) }}
             </span>
           </div>
         </div>
@@ -1403,15 +1456,15 @@ function getResolvedField(fieldKey: string) {
       </div>
 
       <!-- Tab Navigation -->
-      <div class="border-b">
+      <div class="border-b bg-muted/30">
         <nav class="flex gap-0 -mb-px overflow-x-auto">
           <button
             v-for="tab in tabs"
             :key="tab.key"
             :class="[
               activeTab === tab.key
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border',
+                ? 'border-primary text-primary bg-card'
+                : 'border-transparent text-muted-foreground hover:text-foreground',
               'flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap',
             ]"
             @click="activeTab = tab.key"
@@ -1673,8 +1726,9 @@ function getResolvedField(fieldKey: string) {
                 "
               >
                 <template v-if="!editingMapping">
-                  <Button variant="outline" size="sm" @click="enterEditMode">
-                    <Pencil class="h-3.5 w-3.5" />
+                  <Button variant="outline" size="sm" :disabled="editModeLoadingPending" @click="enterEditMode">
+                    <RefreshCw v-if="editModeLoadingPending" class="h-3.5 w-3.5 animate-spin" />
+                    <Pencil v-else class="h-3.5 w-3.5" />
                     {{ $t("methodologies.detail.decoded.actions.editMapping") }}
                   </Button>
                 </template>
@@ -1751,7 +1805,10 @@ function getResolvedField(fieldKey: string) {
                   <td class="py-3 px-4">
                     <!-- Geo row: dropdown in edit mode, geoKey display in view mode -->
                     <template v-if="row.fieldKey === 'geo'">
-                      <template v-if="editingMapping">
+                      <template v-if="editModeLoadingPending">
+                        <Skeleton class="h-8 w-full max-w-sm rounded-md" />
+                      </template>
+                      <template v-else-if="editingMapping">
                         <MappingFieldSelect
                           v-model="formState['geo']"
                           :groups="geoOptionGroups"
@@ -1771,7 +1828,13 @@ function getResolvedField(fieldKey: string) {
                     </template>
                     <!-- Crediting Period: combined view, split edit -->
                     <template v-else-if="row.fieldKey === 'creditingPeriod'">
-                      <template v-if="editingMapping">
+                      <template v-if="editModeLoadingPending">
+                        <div class="space-y-2">
+                          <Skeleton class="h-8 w-full max-w-sm rounded-md" />
+                          <Skeleton class="h-8 w-full max-w-sm rounded-md" />
+                        </div>
+                      </template>
+                      <template v-else-if="editingMapping">
                         <div class="space-y-2">
                           <div>
                             <div class="text-[10px] text-muted-foreground mb-0.5">Start</div>
@@ -1815,7 +1878,10 @@ function getResolvedField(fieldKey: string) {
                     </template>
                     <!-- Regular fields — select in edit mode, text in view mode -->
                     <template v-else>
-                      <template v-if="editingMapping">
+                      <template v-if="editModeLoadingPending">
+                        <Skeleton class="h-8 w-full max-w-sm rounded-md" />
+                      </template>
+                      <template v-else-if="editingMapping">
                         <div class="flex items-center gap-2">
                           <MappingFieldSelect
                             v-model="formState[row.fieldKey as ResolvedFieldKey]"
@@ -2212,11 +2278,13 @@ function getResolvedField(fieldKey: string) {
                 <td class="py-3 px-4">
                   <span
                     :class="[
-                      statusBadgeClass(v.status),
-                      'text-xs font-medium rounded-full px-2 py-0.5',
+                      methodologyStatusBadgeClass(methodologyStatus(v)),
+                      'inline-flex items-center text-xs font-medium rounded-full px-2 py-0.5',
                     ]"
+                    :title="methodologyStatusTooltip(v, t)"
                   >
-                    {{ v.status ?? "—" }}
+                    <span class="h-1.5 w-1.5 rounded-full bg-current mr-1.5 shrink-0" />
+                    {{ $t(`methodologies.statusValues.${methodologyStatus(v)}`) }}
                   </span>
                 </td>
               </tr>
