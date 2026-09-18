@@ -668,8 +668,15 @@ export class VCJS {
 
     private describeIfConditionLeaf(node: any, leafKey: string): string {
         if (!node) { return ''; }
-        if (node.const !== undefined) {
-            return `${leafKey} = '${node.const}'`;
+        const leaf = SchemaHelper.readConstLeaf(node);
+        if (leaf) {
+            if (leaf.comparator === 'contains') {
+                return `${leafKey} contains '${leaf.value}'`;
+            }
+            if (leaf.comparator === 'every') {
+                return `every element of ${leafKey} = '${leaf.value}'`;
+            }
+            return `${leafKey} = '${leaf.value}'`;
         }
         if (node.properties) {
             return Object.entries(node.properties as Record<string, any>)

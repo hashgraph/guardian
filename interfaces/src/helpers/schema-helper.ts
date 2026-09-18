@@ -722,10 +722,17 @@ export class SchemaHelper {
         if (a === null || a === undefined || b === null || b === undefined) {
             return false;
         }
-        const an = Number(a);
-        const bn = Number(b);
-        if (!Number.isNaN(an) && !Number.isNaN(bn)) {
-            return an === bn;
+        // Booleans and blank/whitespace strings are deliberately excluded: `Number('')` and
+        // `Number(false)` are both 0, which would otherwise make `''`/`false` spuriously equal
+        // to a fieldValue of 0.
+        const isNumericLike = (v: any): boolean =>
+            typeof v === 'number' || (typeof v === 'string' && v.trim() !== '');
+        if (isNumericLike(a) && isNumericLike(b)) {
+            const an = Number(a);
+            const bn = Number(b);
+            if (!Number.isNaN(an) && !Number.isNaN(bn)) {
+                return an === bn;
+            }
         }
         return String(a).trim() === String(b).trim();
     }
@@ -758,6 +765,29 @@ export class SchemaHelper {
     }
 
     /**
+     * Reads a compiled `if.properties[name]` leaf and reports which comparator it encodes:
+     * a bare `const` ('equals'), `contains.const`, or `items.const` ('every'). Shared by
+     * server-side predicate extraction and (via ajv error/coercion walkers) VCJS, so the three
+     * known leaf shapes are recognized in exactly one place.
+     * @param node
+     */
+    public static readConstLeaf(node: any): { value: any; comparator?: SchemaPredicateComparator } | null {
+        if (!node || typeof node !== 'object') {
+            return null;
+        }
+        if (Object.prototype.hasOwnProperty.call(node, 'const')) {
+            return { value: node.const };
+        }
+        if (node.contains && Object.prototype.hasOwnProperty.call(node.contains, 'const')) {
+            return { value: node.contains.const, comparator: 'contains' };
+        }
+        if (node.items && Object.prototype.hasOwnProperty.call(node.items, 'const')) {
+            return { value: node.items.const, comparator: 'every' };
+        }
+        return null;
+    }
+
+    /**
      * Validate the fields a schema's conditions reveal against a submitted document.
      *
      * `buildDocument` declares the shape of every branch but does not mark branch fields
@@ -766,9 +796,14 @@ export class SchemaHelper {
      * The rules that cannot be expressed there are enforced here instead:
      *
      * - a required field of the active branch must be present;
-     * - no field of a condition whose `if` is unreachable may be present at all.
+     * - no field of a condition whose `if` is unreachable may be present at all;
+     * - no field of the inactive branch may be present, unless both branches list it.
      *
-     * Branch exclusivity for reachable conditions is still enforced by the schema itself.
+     * The last rule used to be carried by `properties: { name: false }` in the compiled branch.
+     * Guardian before 3.7.0 has no guard for a `false` property entry and turns it into a ghost
+     * field with `type: null`, corrupting the schema on re-save, so it is enforced here instead.
+     * Cross-schema targets still use `buildCrossForbidden`, being a develop-only feature that
+     * older versions drop outright.
      * @param conditions
      * @param data submitted document (credentialSubject)
      * @returns human readable errors, empty when the document is consistent
@@ -829,10 +864,35 @@ export class SchemaHelper {
                 continue;
             }
 
-            const active = evaluate(condition) ? thenFields : elseFields;
+            const matched = evaluate(condition);
+            const active = matched ? thenFields : elseFields;
+            const inactive = matched ? elseFields : thenFields;
+
             for (const field of active) {
                 if (field.required && !present(data[field.name])) {
                     errors.push(`Field "${field.name}" is required.`);
+                }
+            }
+
+            // Branch exclusivity. `buildDocument` used to emit `properties: { name: false }` on
+            // the opposite branch, but that construct corrupts schemas on Guardian before 3.7.0,
+            // so the rule lives here now. A field listed on both branches is shared rather than
+            // exclusive, so it is never rejected. Likewise, a name revealed by a *different*
+            // condition too is ambiguous - it may be legitimately active there - so this
+            // condition alone cannot judge it forbidden (mirrors the ambiguity fallback in
+            // `isConditionReachable`/`buildRevealMap`).
+            for (const field of inactive) {
+                if (active.some(f => f.name === field.name)) {
+                    continue;
+                }
+                const revealedBy = revealMap.get(field.name);
+                if (revealedBy && revealedBy.length > 1) {
+                    continue;
+                }
+                if (present(data[field.name])) {
+                    errors.push(
+                        `Field "${field.name}" is not allowed: it belongs to the other branch of this condition.`
+                    );
                 }
             }
         }
@@ -892,36 +952,16 @@ export class SchemaHelper {
             for (const key of Object.keys(props || {})) {
                 const rule = props[key];
                 if (!rule) { continue; }
-                if (Object.prototype.hasOwnProperty.call(rule, 'const')) {
+                const leaf = SchemaHelper.readConstLeaf(rule);
+                if (leaf) {
                     const f = currentFields.find(x => x.name === key);
                     if (f) {
                         const fullPath = [...pathSoFar, key];
                         preds.push({
                             field: f,
-                            fieldValue: rule.const,
+                            fieldValue: leaf.value,
                             fieldPath: fullPath.length > 1 ? fullPath : undefined,
-                        });
-                    }
-                } else if (rule.contains && Object.prototype.hasOwnProperty.call(rule.contains, 'const')) {
-                    const f = currentFields.find(x => x.name === key);
-                    if (f) {
-                        const fullPath = [...pathSoFar, key];
-                        preds.push({
-                            field: f,
-                            fieldValue: rule.contains.const,
-                            fieldPath: fullPath.length > 1 ? fullPath : undefined,
-                            comparator: 'contains',
-                        });
-                    }
-                } else if (rule.items && Object.prototype.hasOwnProperty.call(rule.items, 'const')) {
-                    const f = currentFields.find(x => x.name === key);
-                    if (f) {
-                        const fullPath = [...pathSoFar, key];
-                        preds.push({
-                            field: f,
-                            fieldValue: rule.items.const,
-                            fieldPath: fullPath.length > 1 ? fullPath : undefined,
-                            comparator: 'every',
+                            ...(leaf.comparator ? { comparator: leaf.comparator } : {}),
                         });
                     }
                 } else if (rule.properties) {
@@ -1397,13 +1437,6 @@ export class SchemaHelper {
             return Object.keys(root).length ? root : undefined;
         };
 
-        const buildForbid = (sub?: SchemaField[]) => {
-            if (!sub?.length) { return undefined; }
-            const props: any = {};
-            for (const f of sub) { props[f.name] = false; }
-            return { properties: props };
-        };
-
         const serializeCondition = (cond: SchemaCondition) => {
             const ifNode = serializeIf(cond);
             if (!ifNode) {
@@ -1428,19 +1461,20 @@ export class SchemaHelper {
                 return Object.keys(props).length ? { properties: props } : undefined;
             };
 
+            // Root-level branch fields are deliberately not forbidden with `properties: false`
+            // on the opposite branch. Guardian before 3.7.0 has no guard in `parseFields` for a
+            // `false` property entry, so it builds a ghost SchemaField with `type: null` and
+            // corrupts the schema on re-save. Exclusivity is enforced in
+            // `validateConditionFields` instead, where it is invisible to older versions.
+            // `buildCrossForbidden` is left alone: cross-schema targets are a develop-only
+            // feature that older versions drop entirely.
             const thenObj = deepMergeSchemaObj(
-                deepMergeSchemaObj(
-                    deepMergeSchemaObj(buildSub(cond.thenFields), buildCrossRequired(cond.thenTargets)),
-                    buildCrossForbidden(cond.elseTargets)
-                ),
-                buildForbid(cond.elseFields?.filter(f => !cond.thenFields?.some(t => t.name === f.name)))
+                deepMergeSchemaObj(buildSub(cond.thenFields), buildCrossRequired(cond.thenTargets)),
+                buildCrossForbidden(cond.elseTargets)
             );
             const elseObj = deepMergeSchemaObj(
-                deepMergeSchemaObj(
-                    deepMergeSchemaObj(buildSub(cond.elseFields), buildCrossRequired(cond.elseTargets)),
-                    buildCrossForbidden(cond.thenTargets)
-                ),
-                buildForbid(cond.thenFields?.filter(f => !cond.elseFields?.some(t => t.name === f.name)))
+                deepMergeSchemaObj(buildSub(cond.elseFields), buildCrossRequired(cond.elseTargets)),
+                buildCrossForbidden(cond.thenTargets)
             );
 
             if (!thenObj && !elseObj) {
