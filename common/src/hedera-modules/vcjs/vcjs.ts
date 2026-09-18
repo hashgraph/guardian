@@ -717,6 +717,16 @@ export class VCJS {
                 if (type) { val.const = coerceConst(val.const, type); }
                 return;
             }
+            if (val.contains && 'const' in val.contains) {
+                const type = contextProp?.items?.type;
+                if (type) { val.contains.const = coerceConst(val.contains.const, type); }
+                return;
+            }
+            if (val.items && 'const' in val.items) {
+                const type = contextProp?.items?.type;
+                if (type) { val.items.const = coerceConst(val.items.const, type); }
+                return;
+            }
             if (val.properties) {
                 const ref = this.readRef(contextProp);
                 const subContext = ref ? (context.$defs?.[ref] ?? rootDefs[ref]) : null;
