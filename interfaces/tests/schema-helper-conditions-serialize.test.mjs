@@ -103,7 +103,9 @@ describe('SchemaHelper.buildDocument — condition serialization', () => {
         assert.equal(doc.allOf.length, 1);
         assert.deepEqual(doc.allOf[0].if.properties, { a: { const: 'x' } });
         assert.ok(doc.allOf[0].then.properties.t1);
-        assert.deepEqual(doc.allOf[0].else, { properties: { t1: false } });
+        // The opposite branch is no longer forbidden with `properties: false`, so with no
+        // elseFields there is nothing to emit. See validateConditionFields for the rule.
+        assert.equal('else' in doc.allOf[0], false);
     });
 
     it('serialises a multi-predicate AND into if.allOf', () => {
@@ -148,11 +150,32 @@ describe('SchemaHelper.buildDocument — condition serialization', () => {
 
     it('emits else when only elseFields are present', () => {
         const doc = build([{ ifCondition: { field: { name: 'a' }, fieldValue: 1 }, thenFields: [], elseFields: [field('e1', { required: true })] }]);
-        assert.deepEqual(doc.allOf[0].then, { properties: { e1: false } });
+        // No `then` at all: the opposite branch is no longer forbidden with `properties: false`,
+        // which Guardian before 3.7.0 cannot parse. Exclusivity moved to validateConditionFields.
+        assert.equal('then' in doc.allOf[0], false);
         assert.ok(doc.allOf[0].else.properties.e1);
         // Branch `required` is not emitted; the flag rides in `$comment` instead.
         assert.equal('required' in doc.allOf[0].else, false);
         assert.equal(JSON.parse(doc.allOf[0].else.properties.e1.$comment).conditionRequired, true);
+    });
+
+    // Old-version compatibility guard: a `false` property entry makes pre-3.7.0 parseFields
+    // build a ghost field with `type: null` that corrupts the schema on re-save.
+    it('never emits a false property entry for root-level branch fields', () => {
+        const doc = build([{
+            ifCondition: { field: { name: 'a' }, fieldValue: 1 },
+            thenFields: [field('t1')],
+            elseFields: [field('e1')],
+        }]);
+        // A literal `false` as a property *value* is what breaks old parseFields. Checking the
+        // values directly, since `readOnly: false` legitimately appears inside a field body.
+        const falseValued = (node) => Object.values(node?.properties || {}).some(v => v === false);
+        assert.equal(falseValued(doc.allOf[0].then), false);
+        assert.equal(falseValued(doc.allOf[0].else), false);
+        assert.ok(doc.allOf[0].then.properties.t1);
+        assert.ok(doc.allOf[0].else.properties.e1);
+        assert.equal('e1' in doc.allOf[0].then.properties, false);
+        assert.equal('t1' in doc.allOf[0].else.properties, false);
     });
 
     it('omits allOf entirely when no conditions are given', () => {
