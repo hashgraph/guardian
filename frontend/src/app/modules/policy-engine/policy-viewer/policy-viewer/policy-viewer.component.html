@@ -823,7 +823,7 @@
 
 <p-popover #group>
   <div class="group-header">
-    Select Group
+    Select Group or Role
   </div>
   <div class="group-container">
     @for (item of groups; track item) {
@@ -851,10 +851,10 @@
   </div>
   <div (click)="setGroup(null, group)" class="user-group user-group-default">
     <div class="user-group-header">
-      Default state
+      Change role
     </div>
     <div class="user-group-value">
-      <span>Group: </span><span>Not Set</span>
+      <span>Selection: </span><span>Choose again</span>
     </div>
     <div class="user-group-value">
       <span>Role: </span><span>Not Set</span>
