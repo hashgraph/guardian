@@ -324,10 +324,6 @@ export class ComponentsService {
         user: PolicyUser,
         uuid: string
     ): Promise<boolean> {
-        const templates = this.getGroupTemplates<any>();
-        if (templates.length === 0) {
-            return false;
-        }
         await this.databaseServer.setActiveGroup(
             this.policyId,
             user.did,
