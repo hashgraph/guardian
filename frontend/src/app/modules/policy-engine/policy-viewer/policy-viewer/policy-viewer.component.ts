@@ -319,7 +319,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.editableParameters = value[4];
 
                 this.virtualUsers = [];
-                this.isMultipleGroups = !!(this.policyInfo?.policyGroups && this.groups?.length);
+                this.isMultipleGroups = !!((this.policyInfo?.policyGroups?.length || this.policyInfo?.policyRoles?.length) && this.groups?.length);
 
                 this.userRole = this.policyInfo.userRole;
                 this.userGroup = this.policyInfo.userGroup?.groupLabel || this.policyInfo.userGroup?.uuid;
@@ -660,7 +660,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             this.virtualUsers = value[0];
             this.policy = value[1];
             this.policyInfo = value[2];
-            this.isMultipleGroups = !!(this.policyInfo?.policyGroups && this.groups?.length);
+            this.isMultipleGroups = !!((this.policyInfo?.policyGroups?.length || this.policyInfo?.policyRoles?.length) && this.groups?.length);
             this.userRole = this.policyInfo.userRole;
             this.userGroup = this.policyInfo.userGroup?.groupLabel || this.policyInfo.userGroup?.uuid;
             this.changeDetector.detectChanges();
