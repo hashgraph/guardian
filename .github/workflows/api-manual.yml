@@ -33,8 +33,8 @@ concurrency:
 
 jobs:
   buildAndTest:
-    name: Build and test
-    runs-on: guardian-linux-medium
+    name: Build and Test
+    runs-on: hg-guard-lin-lg
     timeout-minutes: 120
     env:
       # .yarnrc.yml does not set enableGlobalCache and Yarn 4 defaults it to true,
