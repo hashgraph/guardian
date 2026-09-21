@@ -673,7 +673,7 @@ export class VCJS {
             if (leaf.comparator === 'contains') {
                 return `${leafKey} contains '${leaf.value}'`;
             }
-            if (leaf.comparator === 'every') {
+            if (leaf.comparator === 'equals') {
                 return `every element of ${leafKey} = '${leaf.value}'`;
             }
             return `${leafKey} = '${leaf.value}'`;

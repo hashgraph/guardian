@@ -739,14 +739,18 @@ export class SchemaHelper {
 
     /**
      * Dispatches a predicate's comparator against an actual value. Shared by server-side
-     * validation and the frontend form so `contains`/`every` are implemented exactly once;
-     * callers supply their own scalar-equality function so the form can keep its `moment()`
-     * date handling without forcing it onto the server (or vice versa).
+     * validation and the frontend form so `contains`/"each element equals" are implemented
+     * exactly once; callers supply their own scalar-equality function so the form can keep its
+     * `moment()` date handling without forcing it onto the server (or vice versa).
+     *
+     * `equals` (including absent, its default) means "each element equals" whenever the actual
+     * value is an array - there is deliberately no separate "legacy, predates array comparators"
+     * carve-out: `equals` is one universal default for every field, array or scalar alike.
      * @param comparator absent means 'equals'
      * @param actual the field's actual (resolved) value
      * @param expected the predicate's literal value
      * @param equalsFn scalar comparator used for 'equals' and for each element under
-     * 'contains'/'every'; defaults to `valuesEqual`
+     * 'contains'/'equals'-on-array; defaults to `valuesEqual`
      */
     public static testPredicateValue(
         comparator: SchemaPredicateComparator | undefined,
@@ -754,21 +758,21 @@ export class SchemaHelper {
         expected: any,
         equalsFn: (a: any, b: any) => boolean = SchemaHelper.valuesEqual
     ): boolean {
-        switch (comparator) {
-            case 'contains':
-                return Array.isArray(actual) && actual.some((el: any) => equalsFn(el, expected));
-            case 'every':
-                return Array.isArray(actual) && actual.length > 0 && actual.every((el: any) => equalsFn(el, expected));
-            default:
-                return equalsFn(actual, expected);
+        if (comparator === 'contains' && Array.isArray(actual)) {
+            return actual.some((el: any) => equalsFn(el, expected));
         }
+        if (Array.isArray(actual)) {
+            return actual.length > 0 && actual.every((el: any) => equalsFn(el, expected));
+        }
+        return equalsFn(actual, expected);
     }
 
     /**
      * Reads a compiled `if.properties[name]` leaf and reports which comparator it encodes:
-     * a bare `const` ('equals'), `contains.const`, or `items.const` ('every'). Shared by
-     * server-side predicate extraction and (via ajv error/coercion walkers) VCJS, so the three
-     * known leaf shapes are recognized in exactly one place.
+     * a bare `const` (absent comparator), `contains.const` ('contains'), or `items.const`
+     * (explicit 'equals' - "each element equals"). Shared by server-side predicate extraction
+     * and (via ajv error/coercion walkers) VCJS, so the three known leaf shapes are recognized
+     * in exactly one place.
      * @param node
      */
     public static readConstLeaf(node: any): { value: any; comparator?: SchemaPredicateComparator } | null {
@@ -782,7 +786,7 @@ export class SchemaHelper {
             return { value: node.contains.const, comparator: 'contains' };
         }
         if (node.items && Object.prototype.hasOwnProperty.call(node.items, 'const')) {
-            return { value: node.items.const, comparator: 'every' };
+            return { value: node.items.const, comparator: 'equals' };
         }
         return null;
     }
@@ -1331,11 +1335,11 @@ export class SchemaHelper {
                     ? p.fieldPath
                     : [p.field.name];
                 const comparator: SchemaPredicateComparator | undefined = (p as SchemaFieldPredicate).comparator;
+                const isArrayField = !!(p.field?.isArray && !p.field?.isRef);
                 let node: any;
-                if (comparator === 'contains') {
+                if (comparator === 'contains' && isArrayField) {
                     node = { contains: { const: p.fieldValue } };
-                } else if (comparator === 'every') {
-                    // minItems: 1 is mandatory - {items: {const}} alone is vacuously true on [].
+                } else if (isArrayField) {
                     node = { items: { const: p.fieldValue }, minItems: 1 };
                 } else {
                     node = { const: p.fieldValue };

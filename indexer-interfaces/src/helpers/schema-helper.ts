@@ -231,7 +231,7 @@ export class SchemaHelper {
             const ifConditionRule = condition.if.properties[ifConditionFieldName];
 
             let fieldValue: any;
-            let comparator: 'contains' | 'every' | undefined;
+            let comparator: 'contains' | 'equals' | undefined;
             if (Object.prototype.hasOwnProperty.call(ifConditionRule, 'const')) {
                 fieldValue = ifConditionRule.const;
             } else if (ifConditionRule.contains && Object.prototype.hasOwnProperty.call(ifConditionRule.contains, 'const')) {
@@ -239,7 +239,7 @@ export class SchemaHelper {
                 comparator = 'contains';
             } else if (ifConditionRule.items && Object.prototype.hasOwnProperty.call(ifConditionRule.items, 'const')) {
                 fieldValue = ifConditionRule.items.const;
-                comparator = 'every';
+                comparator = 'equals';
             }
 
             const conditionToAdd: SchemaCondition = {

@@ -2006,6 +2006,12 @@
                                         appendTo="body"
                                         [ngModel]="getIfRowComparator(row)"
                                         (onChange)="setIfRowComparator(cond, ri, $event.value)">
+                                        <ng-template pTemplate="item" let-option>
+                                            <span class="sc-cond-opt-row">
+                                                <span class="sc-cond-opt-label"
+                                                      (mouseover)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
+                                            </span>
+                                        </ng-template>
                                     </p-select>
                                 } @else {
                                     <span class="sc-cond-op-eq">=</span>

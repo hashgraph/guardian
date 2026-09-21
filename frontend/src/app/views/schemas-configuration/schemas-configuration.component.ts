@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpResponse } from '@angular/common/http';
 import { EMPTY, Observable, Subject, Subscription, forkJoin, of } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, shareReplay, switchMap, takeUntil } from 'rxjs/operators';
-import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, relationAncestors, ModuleStatus, ISchemaTemplate, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus, SchemaPredicateComparator, ISchemaArrayDependency, ISchemaArrayDependencyMapping, DEFAULT_IWA_VERSION, IwaVersion, resolveIwaVersion, IPropertySuggestionResult, } from '@guardian/interfaces';
+import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, relationAncestors, ModuleStatus, ISchemaTemplate, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus, ISchemaArrayDependency, ISchemaArrayDependencyMapping, DEFAULT_IWA_VERSION, IwaVersion, resolveIwaVersion, IPropertySuggestionResult, } from '@guardian/interfaces';
 import { SchemaService } from 'src/app/services/schema.service';
 import { TagsService } from 'src/app/services/tag.service';
 import { ProjectComparisonService } from 'src/app/services/project-comparison.service';
@@ -1759,6 +1759,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const allSchemas = [...toCreate, ...toSave];
         // Phase 1: rebuild document from fields (system fields appended, then stripped back).
         allSchemas.forEach(s => {
+            this._resetStaleContainsComparators(s.conditions);
             const userFields = Array.isArray(s.fields) ? s.fields : [];
             const defaultFields = DefaultFieldDictionary.getDefaultFields(s.entity as SchemaEntity);
             s.update([...userFields, ...defaultFields], s.conditions);
@@ -3684,14 +3685,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return fields.find(f => f.name === parts[parts.length - 1]) ?? null;
     }
 
-    // A freshly created predicate row on an array field must carry an explicit comparator so
-    // getIfRowComparatorOptions can tell "just created" (exclude '=', which can never match an
-    // array) apart from "legacy row predating array comparators" (no comparator at all, where
-    // '=' stays selectable to preserve its current state).
-    private _defaultComparatorFor(field: SchemaField | null | undefined): SchemaPredicateComparator | undefined {
-        return (field?.isArray && !field?.isRef) ? 'contains' : undefined;
-    }
-
     private get _firstConditionEntry(): { field: SchemaField; fieldPath: string[] } | null {
         for (const group of this.getConditionFieldGroups()) {
             for (const opt of group.fields) {
@@ -3752,7 +3745,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             field: firstEntry?.field,
             fieldValue: '',
             ...(firstEntry && firstEntry.fieldPath.length > 1 ? { fieldPath: firstEntry.fieldPath } : {}),
-            ...(this._defaultComparatorFor(firstEntry?.field) ? { comparator: this._defaultComparatorFor(firstEntry?.field) } : {}),
         };
         const predicate = {
             field: first.field,
@@ -3774,33 +3766,47 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public isIfRowEnum(row: any): boolean { return !!(row?.field?.enum?.length); }
     public getIfRowOptions(row: any): string[] { return row?.field?.enum ?? []; }
 
+    /**
+     * `contains` only means anything against an array; the backend/eval/compile layers already
+     * self-correct a stale `contains` (from a field whose "Allow Multiple Answers" was since
+     * turned off) to plain equals rather than staying permanently unsatisfiable - see
+     * SchemaHelper.testPredicateValue. This does the same cleanup at the data level, on save,
+     * so the stored condition doesn't keep carrying a comparator that no longer matches its
+     * field's current type (and so it doesn't silently reactivate if the field is ever toggled
+     * back to an array with a value nobody re-checked).
+     */
+    private _resetStaleContainsComparators(conditions: SchemaCondition[] | undefined): void {
+        for (const cond of conditions ?? []) {
+            const ic = cond.ifCondition as any;
+            if (!ic) { continue; }
+            const predicates: any[] = 'AND' in ic ? ic.AND : ('OR' in ic ? ic.OR : [ic]);
+            for (const p of predicates ?? []) {
+                if (!p || p.comparator !== 'contains') { continue; }
+                const isArrayField = !!(p.field?.isArray && !p.field?.isRef);
+                if (!isArrayField) { delete p.comparator; }
+            }
+        }
+    }
+
+    // 'equals' (including absent, its default) is one universal comparator for every field -
+    // array or scalar alike. No legacy carve-out: an array-field '=' predicate saved before
+    // this feature existed means exactly the same "each element equals" as one authored today.
     public getIfRowComparator(row: any): string {
         return row?.comparator || 'equals';
     }
 
-    /**
-     * Array fields never offer '=' for a new selection - it can never match (an array is
-     * never === or coercible-equal to a scalar). The one exception is a row already saved as
-     * 'equals' (or with no comparator at all) on an array field: that predicate predates array
-     * comparators and never matched anything either, but it's preserved as-is rather than
-     * silently reinterpreted - so its current state stays visible and selectable.
-     */
     public getIfRowComparatorOptions(row: any): { label: string; value: string }[] {
         const isArrayField = !!(row?.field?.isArray && !row?.field?.isRef);
         if (!isArrayField) {
             return [{ label: '=', value: 'equals' }];
         }
-        const options = [
+        return [
+            { label: '= (each)', value: 'equals' },
             { label: 'contains', value: 'contains' },
-            { label: 'each element =', value: 'every' },
         ];
-        if (!row?.comparator || row.comparator === 'equals') {
-            options.unshift({ label: '=', value: 'equals' });
-        }
-        return options;
     }
 
-    public setIfRowComparator(cond: SchemaCondition, rowIdx: number, comparator: SchemaPredicateComparator): void {
+    public setIfRowComparator(cond: SchemaCondition, rowIdx: number, comparator: string): void {
         const ic = cond.ifCondition as any;
         if (!ic) { return; }
         const apply = (row: any) => {
@@ -3822,7 +3828,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             field,
             fieldValue: '',
             ...(fieldPath.length > 1 ? { fieldPath } : {}),
-            ...(this._defaultComparatorFor(field) ? { comparator: this._defaultComparatorFor(field) } : {}),
         };
         const ic = cond.ifCondition as any;
         if (ic && 'AND' in ic) { ic.AND[rowIdx] = predicate; }
@@ -3848,7 +3853,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             field: firstEntry?.field ?? null,
             fieldValue: '',
             ...(firstEntry && firstEntry.fieldPath.length > 1 ? { fieldPath: firstEntry.fieldPath } : {}),
-            ...(this._defaultComparatorFor(firstEntry?.field) ? { comparator: this._defaultComparatorFor(firstEntry?.field) } : {}),
         };
         if ('AND' in ic) { ic.AND.push(newRow); }
         else if ('OR' in ic) { ic.OR.push(newRow); }
@@ -4150,7 +4154,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 field: firstEntry.field,
                 fieldValue: '',
                 ...(firstEntry.fieldPath.length > 1 ? { fieldPath: firstEntry.fieldPath } : {}),
-                ...(this._defaultComparatorFor(firstEntry.field) ? { comparator: this._defaultComparatorFor(firstEntry.field) } : {}),
             } as any,
             thenFields: [],
             elseFields: [],

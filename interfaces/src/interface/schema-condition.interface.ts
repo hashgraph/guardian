@@ -23,9 +23,14 @@ export interface SchemaCondition {
 
 /**
  * How a predicate's value is compared against the field's actual value.
- * Absent means 'equals' - existing schemas need no migration.
+ * Absent means 'equals' - one universal default for every field, array or scalar alike.
+ *
+ * 'equals' against an array-typed field means "each element equals" (its array analogue).
+ * There is deliberately no absent-vs-explicit carve-out for pre-existing schemas: an
+ * array-field '=' predicate saved before this comparator existed means exactly the same thing
+ * as one authored today.
  */
-export type SchemaPredicateComparator = 'equals' | 'contains' | 'every';
+export type SchemaPredicateComparator = 'equals' | 'contains';
 
 export interface SchemaFieldPredicate {
   field: SchemaField;

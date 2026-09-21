@@ -519,3 +519,90 @@ describe('XlsxToJson — shared "Enums" tab', function () {
         assert.isTrue(errors.some(e => e.type === 'warning' && /Duplicate enum name "Status"/.test(e.text)));
     });
 });
+
+// ---------------------------------------------------------------------------
+describe('JsonToXlsx.buildIfFormula — array comparators (issue #6687)', function () {
+    const buildIfFormula = (condition, fieldCache) => JsonToXlsx['buildIfFormula'](condition, fieldCache);
+    const cache = (name, cell) => new Map([[name, { key: name, name: cell, path: `#s:${name}`, row: 5 }]]);
+
+    it('plain equals (comparator absent) is unaffected: EXACT, regardless of field type', function () {
+        const formula = buildIfFormula(
+            { field: makeField({ name: 'tags' }), fieldValue: 2 },
+            cache('tags', 'G5'),
+        );
+        assert.equal(formula, 'EXACT(G5,2)');
+    });
+
+    it('an array field with comparator absent exports as plain EXACT, does not throw', function () {
+        // "each element equals" (the array analogue of '=') has no equivalent Excel formula,
+        // but nothing between here and JsonToXlsx.generate() catches an exception around
+        // buildIfFormula - throwing would abort the entire multi-schema export batch rather
+        // than just this one condition, so it must fall back to EXACT instead (silently inert
+        // in the exported sheet for this one condition, same as before array comparators
+        // existed, but the export itself still completes).
+        const formula = buildIfFormula(
+            { field: makeField({ name: 'tags', isArray: true }), fieldValue: 2 },
+            cache('tags', 'G5'),
+        );
+        assert.equal(formula, 'EXACT(G5,2)');
+    });
+
+    it('contains exports as a token-padded ISNUMBER(SEARCH(...)) formula', function () {
+        const formula = buildIfFormula(
+            { field: makeField({ name: 'tags', isArray: true }), fieldValue: 2, comparator: 'contains' },
+            cache('tags', 'G5'),
+        );
+        assert.equal(formula, 'ISNUMBER(SEARCH(","&2&",", ","&G5&","))');
+    });
+
+    it('explicit equals on an array field ("each element equals") also exports as plain EXACT, does not throw', function () {
+        const formula = buildIfFormula(
+            { field: makeField({ name: 'tags', isArray: true }), fieldValue: 2, comparator: 'equals' },
+            cache('tags', 'G5'),
+        );
+        assert.equal(formula, 'EXACT(G5,2)');
+    });
+
+    it('explicit equals on a scalar field does not throw - only array fields trigger it', function () {
+        const formula = buildIfFormula(
+            { field: makeField({ name: 'tags', isArray: false }), fieldValue: 2, comparator: 'equals' },
+            cache('tags', 'G5'),
+        );
+        assert.equal(formula, 'EXACT(G5,2)');
+    });
+
+    it('a stale "contains" on a field that is no longer an array exports as plain EXACT, not thrown or ISNUMBER', function () {
+        // Regression: e.g. "Allow Multiple Answers" was turned off after the condition was
+        // authored. Must self-correct like the backend eval/compile paths do, not export a
+        // SEARCH formula against a scalar cell that was never comma-joined.
+        const formula = buildIfFormula(
+            { field: makeField({ name: 'tags', isArray: false }), fieldValue: 2, comparator: 'contains' },
+            cache('tags', 'G5'),
+        );
+        assert.equal(formula, 'EXACT(G5,2)');
+    });
+});
+
+// ---------------------------------------------------------------------------
+describe('XlsxToJson.parseCondition — array comparators (issue #6687)', function () {
+    const parseCondition = (formula) => XlsxToJson['parseCondition'](formula);
+
+    it('recognizes ISNUMBER(SEARCH(...)) as a contains predicate', function () {
+        const parsed = parseCondition('ISNUMBER(SEARCH(","&2&",", ","&G5&","))');
+        assert.equal(parsed.type, 'formulae');
+        assert.equal(parsed.fieldPath, 'G5');
+        assert.equal(parsed.compareValue, 2);
+        assert.equal(parsed.comparator, 'contains');
+    });
+
+    it('inverts correctly under NOT(...)', function () {
+        const parsed = parseCondition('NOT(ISNUMBER(SEARCH(","&2&",", ","&G5&",")))');
+        assert.equal(parsed.comparator, 'contains');
+        assert.equal(parsed.invert, true);
+    });
+
+    it('a plain EXACT formula still parses with no comparator at all', function () {
+        const parsed = parseCondition('EXACT(G5,2)');
+        assert.equal(parsed.comparator, undefined);
+    });
+});
