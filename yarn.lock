@@ -1906,11 +1906,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/classic@npm:1.0.47":
-  version: 1.0.47
-  resolution: "@langchain/classic@npm:1.0.47"
+"@langchain/classic@npm:1.0.48":
+  version: 1.0.48
+  resolution: "@langchain/classic@npm:1.0.48"
   dependencies:
-    "@langchain/openai": "npm:1.5.12"
+    "@langchain/openai": "npm:1.5.13"
     "@langchain/textsplitters": "npm:1.0.1"
     handlebars: "npm:^4.7.9"
     js-yaml: "npm:^5.4.1"
@@ -1920,7 +1920,7 @@ __metadata:
     yaml: "npm:^2.9.0"
     zod: "npm:^3.25.76 || ^4"
   peerDependencies:
-    "@langchain/core": ^1.2.10
+    "@langchain/core": ^1.2.11
     cheerio: "*"
     peggy: ^5.1.0
     typeorm: "*"
@@ -1934,7 +1934,7 @@ __metadata:
       optional: true
     typeorm:
       optional: true
-  checksum: 10c0/7adc4c587eed385aff018cd3ed7d2be8772b37e5d4878fee9724c657a11639bcaebf68d42019a61429a87adcfa774e67211f32a009cc76f49dd4bbbe992a2af9
+  checksum: 10c0/f3ef0a609a6b68a4fc99e928ed681a2eaa0d153e034ec63403f4a23c2b1328399b251b96938bd31e4c0fb8dd9cdc0b05afa64f2715aa35f8a591070b26f90413
   languageName: node
   linkType: hard
 
@@ -2340,9 +2340,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/core@npm:1.2.10":
-  version: 1.2.10
-  resolution: "@langchain/core@npm:1.2.10"
+"@langchain/core@npm:1.2.11":
+  version: 1.2.11
+  resolution: "@langchain/core@npm:1.2.11"
   dependencies:
     "@cfworker/json-schema": "npm:^4.0.2"
     "@standard-schema/spec": "npm:^1.1.0"
@@ -2351,7 +2351,7 @@ __metadata:
     mustache: "npm:^4.2.0"
     p-queue: "npm:^6.6.2"
     zod: "npm:^3.25.76 || ^4"
-  checksum: 10c0/b740e54a0d0a4ea3a3e17bac941d6da59d52b29c1530d08dd8a9dbf6993384a74d132db8931e33f0f69b983298efc7b77865084e636b0987e30c758dac45a107
+  checksum: 10c0/a02af004c58db256fbd48ef948c97adaa5a58153db834fb2fe7db4943814d09a053bdeb038f1b2e79d36f9e79c5dbacfee60714686e0b7f86fb3da7851580585
   languageName: node
   linkType: hard
 
@@ -2413,16 +2413,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/openai@npm:1.5.12":
-  version: 1.5.12
-  resolution: "@langchain/openai@npm:1.5.12"
+"@langchain/openai@npm:1.5.13":
+  version: 1.5.13
+  resolution: "@langchain/openai@npm:1.5.13"
   dependencies:
     js-tiktoken: "npm:^1.0.12"
     openai: "npm:^7.10.0"
     zod: "npm:^3.25.76 || ^4"
   peerDependencies:
-    "@langchain/core": ^1.2.10
-  checksum: 10c0/7835720df353158edb5bb33ebd3fefc7269132eeb60b2ddb22a8de9f889436bcc4679708422e6dcb667af1a5e129a07c54baf494d2d0ac3e624db030cbf29278
+    "@langchain/core": ^1.2.11
+  checksum: 10c0/ce3d4546ce7fb865a76ab7f6ffa3cc96659fdf82af23ab65c4e4e769a2590e8ad1377792157740c8c098e2fb18dba5ec40b4281cce4ab9189cdc8c8b5094c3ec
   languageName: node
   linkType: hard
 
@@ -4827,10 +4827,10 @@ __metadata:
   dependencies:
     "@guardian/common": "workspace:*"
     "@guardian/interfaces": "workspace:*"
-    "@langchain/classic": "npm:1.0.47"
+    "@langchain/classic": "npm:1.0.48"
     "@langchain/community": "npm:1.1.29"
-    "@langchain/core": "npm:1.2.10"
-    "@langchain/openai": "npm:1.5.12"
+    "@langchain/core": "npm:1.2.11"
+    "@langchain/openai": "npm:1.5.13"
     "@langchain/textsplitters": "npm:1.0.1"
     "@mikro-orm/core": "npm:6.6.16"
     "@mikro-orm/mongodb": "npm:6.6.16"
