@@ -6,10 +6,10 @@
     "dependencies": {
         "@guardian/common": "workspace:*",
         "@guardian/interfaces": "workspace:*",
-        "@langchain/classic": "1.0.47",
+        "@langchain/classic": "1.0.48",
         "@langchain/community": "1.1.29",
-        "@langchain/core": "1.2.10",
-        "@langchain/openai": "1.5.12",
+        "@langchain/core": "1.2.11",
+        "@langchain/openai": "1.5.13",
         "@langchain/textsplitters": "1.0.1",
         "@mikro-orm/core": "6.6.16",
         "@mikro-orm/mongodb": "6.6.16",
