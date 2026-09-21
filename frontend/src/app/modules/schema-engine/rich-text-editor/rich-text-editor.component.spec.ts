@@ -998,4 +998,168 @@ describe('RichTextEditorComponent', () => {
             expect(emitted).toBeNull();
         });
     });
+
+    describe('pasted and dropped images', () => {
+        const reference = 'ipfs://bafkreiabcdef123456';
+
+        function imageFile(name = 'screenshot.png', type = 'image/png'): File {
+            return new File([new Uint8Array([1, 2, 3, 4])], name, { type });
+        }
+
+        function fileList(...files: File[]): FileList {
+            const transfer = new DataTransfer();
+            for (const file of files) {
+                transfer.items.add(file);
+            }
+            return transfer.files;
+        }
+
+        function pasteEvent(files: FileList | null, html = '', text = ''): any {
+            return {
+                preventDefault: () => {},
+                clipboardData: {
+                    files,
+                    getData: (type: string) => (type === 'text/html' ? html : text)
+                }
+            };
+        }
+
+        function dropEvent(files: FileList | null, html = '', text = ''): any {
+            return {
+                preventDefault: () => {},
+                clientX: 0,
+                clientY: 0,
+                dataTransfer: {
+                    files,
+                    getData: (type: string) => (type === 'text/html' ? html : text)
+                }
+            };
+        }
+
+        function flush(): Promise<void> {
+            return new Promise<void>(resolve => setTimeout(resolve, 0));
+        }
+
+        function captureInsertedHtml(): void {
+            spyOn(document, 'execCommand').and.callFake((command: string, _ui?: boolean, value?: string) => {
+                if (command === 'insertHTML') {
+                    component.editorRef.nativeElement.innerHTML += value || '';
+                }
+                return true;
+            });
+        }
+
+        function bindWorkingUploader(): jasmine.Spy {
+            const uploader = jasmine.createSpy('uploader').and.resolveTo(reference);
+            component.imageUploader = uploader;
+            spyOn<any>(component, '_prepareImage').and.callFake((file: File) => Promise.resolve(file));
+            spyOn<any>(component, '_readAsDataUrl').and.resolveTo('data:image/webp;base64,AAAA');
+            return uploader;
+        }
+
+        it('should upload and insert a pasted image file', async () => {
+            let emitted = '';
+            component.registerOnChange(value => { emitted = value; });
+            const uploader = bindWorkingUploader();
+            captureInsertedHtml();
+
+            component.onPaste(pasteEvent(fileList(imageFile())));
+            await flush();
+
+            expect(uploader).toHaveBeenCalled();
+            const image = component.editorRef.nativeElement.querySelector('img');
+            expect(image?.getAttribute('data-src')).toBe(reference);
+            expect(emitted).toContain(reference);
+            expect(emitted).not.toContain('base64');
+        });
+
+        it('should use only the image when the clipboard holds both a file and markup', async () => {
+            const uploader = bindWorkingUploader();
+            captureInsertedHtml();
+
+            component.onPaste(pasteEvent(fileList(imageFile()), '<p>Wrapper <b>text</b></p>'));
+            await flush();
+
+            expect(uploader).toHaveBeenCalled();
+            const editor = component.editorRef.nativeElement;
+            expect(editor.querySelectorAll('img').length).toBe(1);
+            expect(editor.textContent).not.toContain('Wrapper');
+        });
+
+        it('should still drop an image referenced by pasted markup', async () => {
+            const uploader = bindWorkingUploader();
+            captureInsertedHtml();
+
+            component.onPaste(pasteEvent(fileList(), '<p>Photo <img src="https://foreign-host/pic.png"></p>'));
+            await flush();
+
+            expect(uploader).not.toHaveBeenCalled();
+            const editor = component.editorRef.nativeElement;
+            expect(editor.querySelector('img')).toBeNull();
+            expect(editor.textContent).toContain('Photo');
+        });
+
+        it('should keep pasting plain text unchanged', async () => {
+            const uploader = bindWorkingUploader();
+            captureInsertedHtml();
+
+            component.onPaste(pasteEvent(fileList(), '', 'just text'));
+            await flush();
+
+            expect(uploader).not.toHaveBeenCalled();
+            expect(component.editorRef.nativeElement.textContent).toContain('just text');
+        });
+
+        it('should upload and insert a dropped image file', async () => {
+            const uploader = bindWorkingUploader();
+            captureInsertedHtml();
+
+            component.onDrop(dropEvent(fileList(imageFile())));
+            await flush();
+
+            expect(uploader).toHaveBeenCalled();
+            expect(component.editorRef.nativeElement.querySelector('img')).toBeTruthy();
+        });
+
+        it('should insert nothing on a dropped image when no uploader is bound', async () => {
+            let emitted: string | null = null;
+            component.registerOnChange(value => { emitted = value; });
+            captureInsertedHtml();
+
+            component.onDrop(dropEvent(fileList(imageFile())));
+            await flush();
+
+            expect(component.editorRef.nativeElement.querySelector('img')).toBeNull();
+            expect(emitted).toBeNull();
+        });
+
+        it('should refuse a pasted image type it cannot handle and insert nothing', async () => {
+            const uploader = bindWorkingUploader();
+            captureInsertedHtml();
+
+            component.onPaste(pasteEvent(fileList(imageFile('animation.gif', 'image/gif')), '<p>Wrapper</p>'));
+            await flush();
+
+            expect(uploader).not.toHaveBeenCalled();
+            expect(component.imageError).toContain('animation.gif');
+            const editor = component.editorRef.nativeElement;
+            expect(editor.querySelector('img')).toBeNull();
+            expect(editor.textContent).not.toContain('Wrapper');
+        });
+
+        it('should report a failed upload of a pasted image and leave the value alone', async () => {
+            let emitted: string | null = null;
+            component.registerOnChange(value => { emitted = value; });
+            component.imageUploader = () => Promise.reject(new Error('gone'));
+            spyOn<any>(component, '_prepareImage').and.callFake((file: File) => Promise.resolve(file));
+            captureInsertedHtml();
+
+            component.onPaste(pasteEvent(fileList(imageFile())));
+            await flush();
+
+            expect(component.imageError).toContain('could not be uploaded');
+            expect(component.imageLoading).toBeFalse();
+            expect(emitted).toBeNull();
+        });
+    });
 });

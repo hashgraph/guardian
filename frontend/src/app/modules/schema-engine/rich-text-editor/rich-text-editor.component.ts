@@ -141,6 +141,12 @@ export class RichTextEditorComponent
         const clipboard = event.clipboardData;
         if (!clipboard) { return; }
         event.preventDefault();
+        const image = this.imageUploader ? this._imageFileFrom(clipboard.files) : null;
+        if (image) {
+            this._savedRange = this._getSelection();
+            this._uploadAndInsertImage(image);
+            return;
+        }
         const html = clipboard.getData('text/html');
         const clean = html
             ? sanitizeRichText(html)
@@ -173,6 +179,14 @@ export class RichTextEditorComponent
         const transfer = event.dataTransfer;
         if (!transfer) { return; }
         event.preventDefault();
+        const image = this.imageUploader ? this._imageFileFrom(transfer.files) : null;
+        if (image) {
+            this.editorRef.nativeElement.focus();
+            this._placeCaretFromPoint(event);
+            this._savedRange = this._getSelection();
+            this._uploadAndInsertImage(image);
+            return;
+        }
         const html = transfer.getData('text/html');
         const clean = html
             ? sanitizeRichText(html)
@@ -336,7 +350,17 @@ export class RichTextEditorComponent
         const input = event.target instanceof HTMLInputElement ? event.target : null;
         const file = input?.files?.[0];
         if (input) { input.value = ''; }
-        if (!file || !this.imageUploader) { return; }
+        if (!file) { return; }
+        await this._uploadAndInsertImage(file);
+    }
+
+    private _imageFileFrom(files: FileList | null | undefined): File | null {
+        const list = files ? Array.from(files) : [];
+        return list.find(file => file.type.startsWith('image/')) || null;
+    }
+
+    private async _uploadAndInsertImage(file: File): Promise<void> {
+        if (!this.imageUploader) { return; }
 
         if (!RichTextEditorComponent.IMAGE_TYPES.includes(file.type)) {
             this.imageError = `${file.name} is not a supported image. Use PNG, JPEG or WebP.`;
