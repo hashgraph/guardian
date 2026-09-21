@@ -184,3 +184,9 @@
     background: var(--color-primary);
     color: #fff;
 }
+
+.rte-image-error {
+    padding: 4px 8px;
+    font-size: 12px;
+    color: var(--color-accent-red-1, #FF432A);
+}

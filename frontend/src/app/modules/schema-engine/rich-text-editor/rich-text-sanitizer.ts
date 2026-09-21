@@ -46,6 +46,9 @@ export function isBlankRichText(html: string | null | undefined): boolean {
     }
     const inert = document.implementation.createHTMLDocument('');
     inert.body.innerHTML = html;
+    if (inert.body.querySelector('img[data-src], img[src]')) {
+        return false;
+    }
     return (inert.body.textContent || '').trim() === '';
 }
 

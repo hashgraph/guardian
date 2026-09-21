@@ -83,6 +83,15 @@ describe('isBlankRichText', () => {
     it('treats markup with real text as not blank', () => {
         expect(isBlankRichText('<p>a</p>')).toBeFalse();
     });
+
+    it('treats an image with no text beside it as not blank', () => {
+        expect(isBlankRichText('<p><img src="" data-src="ipfs://bafkrei123" alt=""></p>')).toBeFalse();
+        expect(isBlankRichText('<p><img src="https://example.com/a.png" alt=""></p>')).toBeFalse();
+    });
+
+    it('still treats an img with neither src nor data-src as blank', () => {
+        expect(isBlankRichText('<p><img alt="a"></p>')).toBeTrue();
+    });
 });
 
 describe('withNewTabLinks', () => {

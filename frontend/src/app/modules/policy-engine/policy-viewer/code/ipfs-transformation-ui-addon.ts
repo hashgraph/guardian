@@ -22,6 +22,7 @@ enum TransformationIpfsLinkType {
 
 export class IpfsTransformationUIAddonCode {
     private readonly ipfsPattern: RegExp = /ipfs:\/\/([a-zA-Z0-9]+)/;
+    private readonly markdownReferencePattern: RegExp = /\]\(\s*(ipfs:\/\/[a-zA-Z0-9]+)\s*\)/g;
     private cache: Map<string, string> = new Map();
 
     private readonly transformationType: string;
@@ -91,14 +92,44 @@ export class IpfsTransformationUIAddonCode {
 
     private shouldProcessString(value: string): boolean {
         const trimmed = value.trim();
-        return trimmed.startsWith('ipfs://') || trimmed.startsWith('{');
+        return trimmed.startsWith('ipfs://')
+            || trimmed.startsWith('{')
+            || value.includes('](ipfs://');
     }
 
     private async processStringValue(value: string): Promise<any> {
         if (value.trim().startsWith('ipfs://')) {
             return await this.processIpfsString(value);
         }
+        if (value.includes('](ipfs://')) {
+            return await this.processMarkdownString(value);
+        }
         return await this.processTableString(value);
+    }
+
+    private async processMarkdownString(value: string): Promise<string> {
+        const references = new Set<string>();
+        for (const match of value.matchAll(this.markdownReferencePattern)) {
+            references.add(match[1]);
+        }
+
+        const replacements = new Map<string, string>();
+        for (const reference of references) {
+            const link = await this.processIpfsString(reference);
+            const target = link && (link.resourceUrl || link.base64String);
+            if (typeof (target) === 'string' && target) {
+                replacements.set(reference, target);
+            }
+        }
+
+        if (!replacements.size) {
+            return value;
+        }
+
+        return value.replace(this.markdownReferencePattern, (match, reference) => {
+            const target = replacements.get(reference);
+            return target ? `](${target})` : match;
+        });
     }
 
     private parseTableValue(value: string): any | null {

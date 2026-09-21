@@ -138,6 +138,40 @@ describe('SchemasConfigurationComponent', () => {
             expect(component.richTextPresetEditor.cancelLink).not.toHaveBeenCalled();
         });
 
+        it('refuses to close while the editor is still uploading an image', () => {
+            const component = createComponent();
+            component.selectedField = makeField({ default: '<p>Default</p>' });
+            component.richTextPresetEditor = {
+                showLinkDialog: false,
+                imageLoading: true,
+                cancelLink: jasmine.createSpy('cancelLink')
+            };
+
+            component.openRichTextPresetDialog('default');
+            component.closeRichTextPresetDialog();
+
+            expect(component.isRichTextPresetBusy()).toBeTrue();
+            expect(component.isRichTextPresetLinkOpen()).toBeFalse();
+            expect(component.richTextPresetTarget).toBe('default');
+            expect(component.richTextPresetEditor.cancelLink).not.toHaveBeenCalled();
+        });
+
+        it('closes once the upload has finished', () => {
+            const component = createComponent();
+            component.selectedField = makeField({ default: '<p>Default</p>' });
+            component.richTextPresetEditor = {
+                showLinkDialog: false,
+                imageLoading: false,
+                cancelLink: jasmine.createSpy('cancelLink')
+            };
+
+            component.openRichTextPresetDialog('default');
+            component.closeRichTextPresetDialog();
+
+            expect(component.isRichTextPresetBusy()).toBeFalse();
+            expect(component.richTextPresetTarget).toBeNull();
+        });
+
         it('clears the editor link state when it does close', () => {
             const component = createComponent();
             component.selectedField = makeField({ default: '<p>Default</p>' });

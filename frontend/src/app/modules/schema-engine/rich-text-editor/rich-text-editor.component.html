@@ -4,7 +4,7 @@
       @for (item of toolbarItems; track $index) {
         @if (item.separator) {
           <span class="rte-separator"></span>
-        } @else {
+        } @else if (!isCommandHidden(item.command)) {
           <button
             type="button"
             class="rte-btn"
@@ -24,6 +24,16 @@
         }
       }
     </div>
+    <input
+      #imageInput
+      type="file"
+      accept="image/png,image/jpeg,image/webp"
+      hidden
+      (change)="onImageSelected($event)"
+    />
+    @if (imageError) {
+      <div class="rte-image-error">{{ imageError }}</div>
+    }
   }
   <div
     #editor

@@ -272,4 +272,63 @@ describe('markdown converters', () => {
             expect(html).not.toContain('onmouseover="');
         });
     });
+
+    describe('images', () => {
+        const reference = 'ipfs://bafkreiabcdef123456';
+
+        it('should turn an ipfs image into an img carrying the reference in data-src', () => {
+            expect(markdownToHtml(`![Site photo](${reference})`))
+                .toBe(`<p><img src="" data-src="${reference}" alt="Site photo"></p>`);
+        });
+
+        it('should keep an empty alt', () => {
+            expect(markdownToHtml(`![](${reference})`))
+                .toBe(`<p><img src="" data-src="${reference}" alt=""></p>`);
+        });
+
+        it('should not read an image as a link', () => {
+            const html = markdownToHtml(`![Site photo](${reference})`);
+            expect(html).not.toContain('<a ');
+            expect(html).not.toContain('!');
+        });
+
+        it('should still read a link as a link', () => {
+            expect(markdownToHtml('[click](https://example.com)'))
+                .toContain('<a href="https://example.com"');
+        });
+
+        it('should save the reference from data-src, not the data url in src', () => {
+            const html = `<p><img src="data:image/webp;base64,AAAA" data-src="${reference}" alt="Site photo"></p>`;
+            const markdown = htmlToMarkdown(html);
+            expect(markdown).toBe(`![Site photo](${reference})`);
+            expect(markdown).not.toContain('base64');
+        });
+
+        it('should fall back to src when there is no data-src', () => {
+            expect(htmlToMarkdown('<p><img src="https://example.com/a.png" alt="a"></p>'))
+                .toBe('![a](https://example.com/a.png)');
+        });
+
+        it('should drop an img with no reference at all', () => {
+            expect(htmlToMarkdown('<p><img alt="a"></p>')).toBe('');
+        });
+
+        it('should round trip an ipfs image', () => {
+            const markdown = `![Site photo](${reference})`;
+            expect(htmlToMarkdown(markdownToHtml(markdown))).toBe(markdown);
+        });
+
+        it('should leave a javascript target as literal text', () => {
+            const html = markdownToHtml('![x](javascript:alert(1))');
+            expect(html).not.toContain('<img');
+            expect(html).toContain('!');
+        });
+
+        it('should keep a closing bracket inside alt from cutting the label short', () => {
+            const html = `<p><img src="" data-src="${reference}" alt="a] b"></p>`;
+            const markdown = htmlToMarkdown(html);
+            expect(markdown).toBe(`![a\\] b](${reference})`);
+            expect(htmlToMarkdown(markdownToHtml(markdown))).toBe(markdown);
+        });
+    });
 });

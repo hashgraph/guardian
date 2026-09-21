@@ -857,4 +857,145 @@ describe('RichTextEditorComponent', () => {
             expect(inserted[0]).toBe('<h2>Title</h2><ul><li><b>One</b> and <i>two</i></li></ul>');
         });
     });
+    describe('images', () => {
+        const reference = 'ipfs://bafkreiabcdef123456';
+
+        function pngFile(name = 'photo.png', type = 'image/png'): File {
+            return new File([new Uint8Array([1, 2, 3, 4])], name, { type });
+        }
+
+        function selectFile(file: File): Promise<void> {
+            const input = document.createElement('input');
+            input.type = 'file';
+            const transfer = new DataTransfer();
+            transfer.items.add(file);
+            input.files = transfer.files;
+            return component.onImageSelected({ target: input } as any);
+        }
+
+        function flush(): Promise<void> {
+            return new Promise<void>(resolve => setTimeout(resolve, 0));
+        }
+
+        function imageButton(): any {
+            return fixture.debugElement
+                .queryAll(By.css('.rte-btn'))
+                .find(button => button.nativeElement.querySelector('.pi-image'));
+        }
+
+        it('should not show the image button without an uploader', () => {
+            fixture.detectChanges();
+            expect(imageButton()).toBeUndefined();
+        });
+
+        it('should show the image button once an uploader is bound', () => {
+            fixture.componentRef.setInput('imageUploader', async () => reference);
+            fixture.detectChanges();
+            expect(imageButton()).toBeTruthy();
+        });
+
+        it('should refuse a file that is not png, jpeg or webp', async () => {
+            const uploader = jasmine.createSpy('uploader').and.resolveTo(reference);
+            component.imageUploader = uploader;
+
+            await selectFile(pngFile('notes.pdf', 'application/pdf'));
+
+            expect(uploader).not.toHaveBeenCalled();
+            expect(component.imageError).toContain('notes.pdf');
+            expect(component.imageError).toContain('PNG, JPEG or WebP');
+        });
+
+        it('should refuse a file still over the limit and report both sizes', async () => {
+            const uploader = jasmine.createSpy('uploader').and.resolveTo(reference);
+            component.imageUploader = uploader;
+            spyOn<any>(component, '_prepareImage').and.resolveTo(
+                new File([new Uint8Array(900 * 1024)], 'photo.png', { type: 'image/png' })
+            );
+
+            await selectFile(pngFile());
+
+            expect(uploader).not.toHaveBeenCalled();
+            expect(component.imageError).toContain('photo.png');
+            expect(component.imageError).toContain('900 KB');
+            expect(component.imageError).toContain('512 KB');
+        });
+
+        it('should clear the message when the image button is pressed again', () => {
+            component.imageUploader = async () => reference;
+            component.imageError = 'something went wrong';
+            fixture.detectChanges();
+
+            component.execCommand('image', new MouseEvent('mousedown'));
+
+            expect(component.imageError).toBe('');
+        });
+
+        it('should insert an img with both attributes and emit a value holding only the reference', async () => {
+            let emitted = '';
+            component.registerOnChange(value => { emitted = value; });
+            component.imageUploader = async () => reference;
+            spyOn<any>(component, '_prepareImage').and.callFake((file: File) => Promise.resolve(file));
+            spyOn<any>(component, '_readAsDataUrl').and.resolveTo('data:image/webp;base64,AAAA');
+            spyOn(document, 'execCommand').and.callFake((command: string, _ui?: boolean, value?: string) => {
+                if (command === 'insertHTML') {
+                    component.editorRef.nativeElement.innerHTML = value || '';
+                }
+                return true;
+            });
+
+            await selectFile(pngFile());
+
+            const image = component.editorRef.nativeElement.querySelector('img');
+            expect(image?.getAttribute('data-src')).toBe(reference);
+            expect(image?.getAttribute('src')).toBe('data:image/webp;base64,AAAA');
+            expect(emitted).toContain(reference);
+            expect(emitted).not.toContain('base64');
+        });
+
+        it('should report a failed upload and leave the value alone', async () => {
+            let emitted: string | null = null;
+            component.registerOnChange(value => { emitted = value; });
+            component.imageUploader = () => Promise.reject(new Error('gone'));
+            spyOn<any>(component, '_prepareImage').and.callFake((file: File) => Promise.resolve(file));
+
+            await selectFile(pngFile());
+
+            expect(component.imageError).toContain('could not be uploaded');
+            expect(emitted).toBeNull();
+        });
+
+        it('should disable the image button while an upload is in flight', () => {
+            component.imageLoading = true;
+            expect(component.isCommandDisabled('image')).toBeTrue();
+            component.imageLoading = false;
+            expect(component.isCommandDisabled('image')).toBeFalse();
+        });
+
+        it('should resolve a stored reference once and fill src', async () => {
+            const resolver = jasmine.createSpy('resolver').and.resolveTo('data:image/webp;base64,BBBB');
+            component.imageResolver = resolver;
+
+            component.writeValue(`![One](${reference})\n\n![Two](${reference})`);
+            await flush();
+
+            expect(resolver).toHaveBeenCalledTimes(1);
+            const images = component.editorRef.nativeElement.querySelectorAll('img');
+            expect(images.length).toBe(2);
+            expect(images[0].getAttribute('src')).toBe('data:image/webp;base64,BBBB');
+            expect(images[1].getAttribute('src')).toBe('data:image/webp;base64,BBBB');
+        });
+
+        it('should leave src empty and emit nothing when resolving fails', async () => {
+            let emitted: string | null = null;
+            component.registerOnChange(value => { emitted = value; });
+            component.imageResolver = () => Promise.reject(new Error('gone'));
+
+            component.writeValue(`![One](${reference})`);
+            await flush();
+
+            const image = component.editorRef.nativeElement.querySelector('img');
+            expect(image?.getAttribute('src')).toBe('');
+            expect(emitted).toBeNull();
+        });
+    });
 });

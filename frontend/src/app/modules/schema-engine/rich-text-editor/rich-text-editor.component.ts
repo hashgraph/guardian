@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { isBlankRichText, isSafeHref, sanitizeRichText } from './rich-text-sanitizer';
-import { htmlToMarkdown, markdownToHtml } from './markdown';
+import { escapeHtml, htmlToMarkdown, markdownToHtml } from './markdown';
 
 @Component({
     selector: 'app-rich-text-editor',
@@ -32,13 +32,18 @@ export class RichTextEditorComponent
 {
     @ViewChild('editor', { static: false }) editorRef!: ElementRef<HTMLDivElement>;
     @ViewChild('linkInput', { static: false }) linkInputRef?: ElementRef<HTMLInputElement>;
+    @ViewChild('imageInput', { static: false }) imageInputRef?: ElementRef<HTMLInputElement>;
 
     @Input() placeholder = 'Enter text here…';
     @Input() readonly = false;
+    @Input() imageUploader?: (file: File) => Promise<string>;
+    @Input() imageResolver?: (reference: string) => Promise<string>;
 
     public showLinkDialog = false;
     public linkUrl = '';
     public isDisabled = false;
+    public imageError = '';
+    public imageLoading = false;
     public linkDialogPosition = { left: 8, top: 48 };
     public headingDisabled = false;
     public activeCommands = new Set<string>();
@@ -49,6 +54,11 @@ export class RichTextEditorComponent
     private _savedRange: Range | null = null;
     private _editingLink: HTMLAnchorElement | null = null;
     private _draggingFromEditor = false;
+    private _resolvedImages = new Map<string, string>();
+
+    private static readonly IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
+    private static readonly MAX_IMAGE_SIDE = 1600;
+    private static readonly MAX_IMAGE_BYTES = 512 * 1024;
     private _onSelectionChange = (): void => this._updateToolbarState();
     private _onDocumentMouseDown = (event: MouseEvent): void => {
         if (!this.showLinkDialog) { return; }
@@ -70,7 +80,12 @@ export class RichTextEditorComponent
         { command: 'h3', icon: null, label: 'H3', title: 'Heading 3' },
         { separator: true },
         { command: 'link', icon: 'pi pi-link', title: 'Insert or edit link' },
+        { command: 'image', icon: 'pi pi-image', title: 'Insert image' },
     ];
+
+    isCommandHidden(command: string | undefined): boolean {
+        return command === 'image' && !this.imageUploader;
+    }
 
     constructor(private cdr: ChangeDetectorRef, private host: ElementRef<HTMLElement>) {}
 
@@ -186,7 +201,8 @@ export class RichTextEditorComponent
     }
 
     isCommandDisabled(command: string | undefined): boolean {
-        return this.headingDisabled && this.isHeadingCommand(command);
+        return (this.headingDisabled && this.isHeadingCommand(command))
+            || (command === 'image' && this.imageLoading);
     }
 
     isCommandActive(command: string | undefined): boolean {
@@ -216,6 +232,11 @@ export class RichTextEditorComponent
             const input = this.linkInputRef?.nativeElement;
             input?.focus();
             input?.select();
+            return;
+        } else if (command === 'image') {
+            this._savedRange = this._getSelection();
+            this.imageError = '';
+            this.imageInputRef?.nativeElement.click();
             return;
         } else {
             document.execCommand(command, false, undefined);
@@ -307,7 +328,124 @@ export class RichTextEditorComponent
         if (el.innerHTML !== value) {
             el.innerHTML = value;
         }
+        this._resolveImages();
         this._updateToolbarState();
+    }
+
+    async onImageSelected(event: Event): Promise<void> {
+        const input = event.target instanceof HTMLInputElement ? event.target : null;
+        const file = input?.files?.[0];
+        if (input) { input.value = ''; }
+        if (!file || !this.imageUploader) { return; }
+
+        if (!RichTextEditorComponent.IMAGE_TYPES.includes(file.type)) {
+            this.imageError = `${file.name} is not a supported image. Use PNG, JPEG or WebP.`;
+            this.cdr.markForCheck();
+            return;
+        }
+
+        this.imageLoading = true;
+        this.cdr.markForCheck();
+        try {
+            const prepared = await this._prepareImage(file);
+            if (prepared.size > RichTextEditorComponent.MAX_IMAGE_BYTES) {
+                const got = this._formatBytes(prepared.size);
+                const limit = this._formatBytes(RichTextEditorComponent.MAX_IMAGE_BYTES);
+                this.imageError = `${file.name} is still ${got} after compression, and the limit is ${limit}. `
+                    + 'Use a smaller image, or crop it.';
+                return;
+            }
+            const reference = await this.imageUploader(prepared);
+            const dataUrl = await this._readAsDataUrl(prepared);
+            this._resolvedImages.set(reference, dataUrl);
+            this._insertImage(reference, dataUrl, file.name);
+        } catch (error) {
+            this.imageError = `${file.name} could not be uploaded. Check the connection and try again.`;
+        } finally {
+            this.imageLoading = false;
+            this.cdr.markForCheck();
+        }
+    }
+
+    private _insertImage(reference: string, dataUrl: string, alt: string): void {
+        this.editorRef.nativeElement.focus();
+        this._restoreRange(this._savedRange);
+        const html = `<img src="${dataUrl}" data-src="${reference}" alt="${escapeHtml(alt)}">`;
+        document.execCommand('insertHTML', false, html);
+        this.onInput();
+        this._updateToolbarState();
+    }
+
+    private async _resolveImages(): Promise<void> {
+        const resolver = this.imageResolver;
+        const el = this.editorRef?.nativeElement;
+        if (!resolver || !el) { return; }
+
+        const pending = Array.from(el.querySelectorAll('img[data-src]'))
+            .filter(image => !!image.getAttribute('data-src') && !image.getAttribute('src'));
+        if (!pending.length) { return; }
+
+        const references = new Set(pending.map(image => image.getAttribute('data-src') || ''));
+        await Promise.all(Array.from(references).map(async (reference) => {
+            if (this._resolvedImages.has(reference)) { return; }
+            try {
+                this._resolvedImages.set(reference, await resolver(reference));
+            } catch (error) {
+                return;
+            }
+        }));
+
+        for (const image of pending) {
+            const resolved = this._resolvedImages.get(image.getAttribute('data-src') || '');
+            if (resolved) {
+                image.setAttribute('src', resolved);
+            }
+        }
+        this.cdr.markForCheck();
+    }
+
+    private _restoreRange(range: Range | null): void {
+        if (!range) { return; }
+        const selection = window.getSelection();
+        if (!selection) { return; }
+        selection.removeAllRanges();
+        selection.addRange(range);
+    }
+
+    private async _prepareImage(file: File): Promise<File> {
+        try {
+            const bitmap = await createImageBitmap(file);
+            const side = RichTextEditorComponent.MAX_IMAGE_SIDE;
+            const scale = Math.min(1, side / Math.max(bitmap.width, bitmap.height));
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.round(bitmap.width * scale);
+            canvas.height = Math.round(bitmap.height * scale);
+            const context = canvas.getContext('2d');
+            if (!context) { return file; }
+            context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+            const blob = await new Promise<Blob | null>(resolve =>
+                canvas.toBlob(resolve, 'image/webp', 0.8)
+            );
+            if (!blob) { return file; }
+            return new File([blob], `${file.name.replace(/\.[^.]+$/, '')}.webp`, { type: blob.type });
+        } catch (error) {
+            return file;
+        }
+    }
+
+    private _formatBytes(bytes: number): string {
+        return bytes >= 1024 * 1024
+            ? `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+            : `${Math.round(bytes / 1024)} KB`;
+    }
+
+    private _readAsDataUrl(file: File): Promise<string> {
+        return new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result || ''));
+            reader.onerror = () => reject(reader.error);
+            reader.readAsDataURL(file);
+        });
     }
 
     private _isDeletionEvent(event?: Event): boolean {

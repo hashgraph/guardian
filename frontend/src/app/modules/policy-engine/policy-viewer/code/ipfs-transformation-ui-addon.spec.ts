@@ -127,6 +127,67 @@ describe('IpfsTransformationUIAddonCode', () => {
         expect(document.field1.type).toBeUndefined();
     });
 
+    it('should rewrite every image reference inside a markdown value and keep it a string', async () => {
+        const addon = createAddon(gatewayConfig());
+        const second = 'QmSecondCidValueForTheAddonSpecQmSecondCidValueFor';
+        const value = `# Report\n\n![One](ipfs://${cid})\n\nText\n\n![Two](ipfs://${second})`;
+        const document: any = { field1: value };
+
+        await addon.run({ document, params: {}, history: [] });
+
+        expect(typeof document.field1).toBe('string');
+        expect(document.field1).toContain('# Report');
+        expect(document.field1).toContain('![One](https://host/api/v1/ipfs/file/');
+        expect(document.field1).toContain('![Two](https://host/api/v1/ipfs/file/');
+        expect(document.field1).not.toContain('ipfs://');
+    });
+
+    it('should rewrite a markdown image to base64 and stay a string', async () => {
+        const addon = createAddon({ transformationType: 'base64' });
+        const document: any = { field1: `text ![One](ipfs://${cid}) more` };
+
+        await addon.run({ document, params: {}, history: [] });
+
+        expect(typeof document.field1).toBe('string');
+        expect(document.field1).toContain('![One](data:application/gzip;base64,');
+    });
+
+    it('should leave an unresolvable reference in place and rewrite the rest', async () => {
+        const second = 'QmSecondCidValueForTheAddonSpecQmSecondCidValueFor';
+        const partialService: any = {
+            getFile: (requested: string) => requested === second
+                ? throwError(() => new Error('gone'))
+                : of(gzipHeader.buffer),
+            getFileFromDryRunStorage: () => of(gzipHeader.buffer)
+        };
+        const addon = createAddon({ transformationType: 'base64' }, partialService);
+        const document: any = { field1: `![One](ipfs://${cid}) and ![Two](ipfs://${second})` };
+
+        await addon.run({ document, params: {}, history: [] });
+
+        expect(document.field1).toContain('![One](data:application/gzip;base64,');
+        expect(document.field1).toContain(`![Two](ipfs://${second})`);
+    });
+
+    it('should leave a markdown value with no reference untouched', async () => {
+        const addon = createAddon(gatewayConfig());
+        const value = '# Report\n\nPlain text that mentions ipfs but links nothing.';
+        const document: any = { field1: value };
+
+        await addon.run({ document, params: {}, history: [] });
+
+        expect(document.field1).toBe(value);
+    });
+
+    it('should rewrite a markdown link target as well as an image target', async () => {
+        const addon = createAddon(gatewayConfig());
+        const document: any = { field1: `see [the file](ipfs://${cid})` };
+
+        await addon.run({ document, params: {}, history: [] });
+
+        expect(document.field1).toContain('[the file](https://host/api/v1/ipfs/file/');
+    });
+
     it('should walk nested objects and arrays', async () => {
         const addon = createAddon(gatewayConfig());
         const document: any = {

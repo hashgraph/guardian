@@ -11,6 +11,12 @@ export function escapeHtml(value: string): string {
 
 const ESCAPED_MARKER = /\\([\\*`\[\]#+.-])/g;
 
+const IPFS_REFERENCE = /^ipfs:\/\/[a-zA-Z0-9]+$/;
+
+function isSafeImageReference(value: string): boolean {
+    return IPFS_REFERENCE.test(value) || isSafeHref(value);
+}
+
 function escapeMarkdown(text: string): string {
     return text.replace(/[\\*`\[\]]/g, '\\$&');
 }
@@ -32,6 +38,11 @@ function inline(text: string): string {
         escaped.push(char);
         return `\u0000${escaped.length - 1}\u0000`;
     });
+    out = out.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, (match, alt, url) =>
+        isSafeImageReference(url)
+            ? `<img src="" data-src="${url}" alt="${alt}">`
+            : match
+    );
     out = out.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (match, label, url) =>
         isSafeHref(url)
             ? `<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`
@@ -101,6 +112,11 @@ function inlineNode(node: Node): string {
     if (tag === 'A') {
         const href = node.getAttribute('href') || '';
         return href ? `[${text}](${href})` : text;
+    }
+    if (tag === 'IMG') {
+        const reference = node.getAttribute('data-src') || node.getAttribute('src') || '';
+        const alt = escapeMarkdown(node.getAttribute('alt') || '');
+        return reference ? `![${alt}](${reference})` : '';
     }
     if (tag === 'BR') {
         return '\n';
