@@ -11,12 +11,39 @@ export function escapeHtml(value: string): string {
 
 const ESCAPED_MARKER = /\\([\\*`\[\]#+.-])/g;
 
-function inline(text: string): string {
+const IPFS_REFERENCE = /^ipfs:\/\/[a-zA-Z0-9]+$/;
+
+const IMAGE_MARKER = /!\[([^\]]*)\]\(([^)\s]+)\)/g;
+
+function isSafeImageReference(value: string): boolean {
+    return IPFS_REFERENCE.test(value) || isSafeHref(value);
+}
+
+export function collectImageReferences(markdown: string | null | undefined): string[] {
+    if (typeof markdown !== 'string' || !markdown) {
+        return [];
+    }
+    const references: string[] = [];
+    for (const match of Array.from(markdown.matchAll(IMAGE_MARKER))) {
+        const reference = match[2];
+        if (IPFS_REFERENCE.test(reference) && !references.includes(reference)) {
+            references.push(reference);
+        }
+    }
+    return references;
+}
+
+function inline(text: string, resolved?: Map<string, string>): string {
     const escaped: string[] = [];
     let out = escapeHtml(text).replace(ESCAPED_MARKER, (match, char) => {
         escaped.push(char);
         return `\u0000${escaped.length - 1}\u0000`;
     });
+    out = out.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, (match, alt, url) =>
+        isSafeImageReference(url)
+            ? `<img src="${resolved?.get(url) || ''}" data-src="${url}" alt="${alt}">`
+            : match
+    );
     out = out.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (match, label, url) =>
         isSafeHref(url)
             ? `<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`
@@ -27,7 +54,7 @@ function inline(text: string): string {
     return out.replace(/\u0000(\d+)\u0000/g, (match, index) => escaped[Number(index)]);
 }
 
-export function markdownToHtml(markdown: string | null | undefined): string {
+export function markdownToHtml(markdown: string | null | undefined, resolved?: Map<string, string>): string {
     if (!markdown) {
         return '';
     }
@@ -47,19 +74,19 @@ export function markdownToHtml(markdown: string | null | undefined): string {
         const ordered = /^\d+\.\s+(.*)$/.exec(line);
         if (heading) {
             flush();
-            blocks.push(`<h${heading[1].length}>${inline(heading[2])}</h${heading[1].length}>`);
+            blocks.push(`<h${heading[1].length}>${inline(heading[2], resolved)}</h${heading[1].length}>`);
         } else if (bullet || ordered) {
             const isOrdered = !!ordered;
             if (!list || list.ordered !== isOrdered) {
                 flush();
                 list = { ordered: isOrdered, items: [] };
             }
-            list.items.push(inline((bullet || ordered)![1]));
+            list.items.push(inline((bullet || ordered)![1], resolved));
         } else if (list && list.items.length && /^ {2}\S/.test(line)) {
-            list.items[list.items.length - 1] += '<br>' + inline(line.slice(2));
+            list.items[list.items.length - 1] += '<br>' + inline(line.slice(2), resolved);
         } else if (line.trim()) {
             flush();
-            blocks.push(`<p>${inline(line)}</p>`);
+            blocks.push(`<p>${inline(line, resolved)}</p>`);
         } else {
             flush();
         }

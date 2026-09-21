@@ -11,10 +11,14 @@ describe('DocumentsSourceBlockComponent', () => {
         };
     }
 
-    function createComponent(values: any = {}): any {
+    function createComponent(values: any = {}, ipfs: any = null): any {
         const component: any = Object.create(DocumentsSourceBlockComponent.prototype);
         component.richTextValue = '';
         component.richTextHideTimer = null;
+        component.richTextImages = new Map();
+        component.richTextTarget = null;
+        component.richTextImagesResolved = Promise.resolve();
+        component.ipfs = ipfs;
         component.getText = (row: any) => values[row.id] ?? '';
         component.documents = Object.keys(values).map((id) => ({ id }));
         component.buildRichTextCellText([field]);
@@ -207,6 +211,81 @@ describe('DocumentsSourceBlockComponent', () => {
         it('no longer knows a markdown column type', () => {
             const component = createComponent();
             expect(component.getClass('markdown')).not.toBe('text-container');
+        });
+    });
+
+    describe('rich text images in the popover', () => {
+        const reference = 'ipfs://bafkreiabcdef123456';
+        const dataUrl = 'data:image/jpg;base64,AAAA';
+
+        function makeIpfs(result: Promise<string>): any {
+            return {
+                getImageByLink: jasmine.createSpy('getImageByLink').and.returnValue(result),
+                getImageFromDryRunStorage: jasmine.createSpy('getImageFromDryRunStorage'),
+            };
+        }
+
+        it('resolves the picture and shows it in the popover', async () => {
+            const ipfs = makeIpfs(Promise.resolve(dataUrl));
+            const component = createComponent({ a: `Photo\n\n![Site](${reference})` }, ipfs);
+            const popover = makePopover();
+
+            component.onRichTextEnter(new Event('mouseenter'), row(component, 'a'), field, popover);
+            await component.richTextImagesResolved;
+
+            expect(ipfs.getImageByLink).toHaveBeenCalledWith(reference);
+            expect(component.richTextValue).toContain(`src="${dataUrl}"`);
+        });
+
+        it('opens the popover for a value that is only a picture', async () => {
+            const ipfs = makeIpfs(Promise.resolve(dataUrl));
+            const component = createComponent({ a: `![Site](${reference})` }, ipfs);
+            const popover = makePopover();
+
+            expect(component.getRichTextCellText(row(component, 'a'), field)).toBe('');
+
+            component.onRichTextEnter(new Event('mouseenter'), row(component, 'a'), field, popover);
+            await component.richTextImagesResolved;
+
+            expect(popover.shown.length).toBe(1);
+            expect(component.richTextValue).toContain(`src="${dataUrl}"`);
+        });
+
+        it('does not overwrite the popover when the pointer already moved to another row', async () => {
+            const ipfs = makeIpfs(Promise.resolve(dataUrl));
+            const component = createComponent({
+                a: `![Site](${reference})`,
+                b: 'Plain text'
+            }, ipfs);
+            const popover = makePopover();
+
+            component.onRichTextEnter(new Event('mouseenter'), row(component, 'a'), field, popover);
+            const pending = component.richTextImagesResolved;
+            component.onRichTextEnter(new Event('mouseenter'), row(component, 'b'), field, popover);
+            await pending;
+
+            expect(component.richTextValue).toContain('Plain text');
+            expect(component.richTextValue).not.toContain('<img');
+        });
+
+        it('keeps the cell text free of any picture and requests nothing for it', () => {
+            const ipfs = makeIpfs(Promise.resolve(dataUrl));
+            const component = createComponent({ a: `Photo\n\n![Site](${reference})` }, ipfs);
+
+            expect(component.getRichTextCellText(row(component, 'a'), field)).toBe('Photo');
+            expect(ipfs.getImageByLink).not.toHaveBeenCalled();
+        });
+
+        it('leaves the popover readable when the picture cannot be fetched', async () => {
+            const ipfs = makeIpfs(Promise.reject(new Error('404')));
+            const component = createComponent({ a: `Photo\n\n![Site](${reference})` }, ipfs);
+            const popover = makePopover();
+
+            component.onRichTextEnter(new Event('mouseenter'), row(component, 'a'), field, popover);
+            await component.richTextImagesResolved;
+
+            expect(component.richTextValue).toContain('Photo');
+            expect(component.richTextValue).toContain('src=""');
         });
     });
 });

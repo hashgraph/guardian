@@ -1,4 +1,4 @@
-import { escapeHtml, markdownToHtml } from './markdown-view';
+import { collectImageReferences, escapeHtml, markdownToHtml } from './markdown-view';
 
 describe('markdown-view', () => {
 
@@ -84,6 +84,46 @@ describe('markdown-view', () => {
             const html = markdownToHtml('[click](https://x"onmouseover="window.__pwned=1)');
             expect(html).toContain('&quot;');
             expect(html).not.toContain('onmouseover="');
+        });
+    });
+
+    describe('images', () => {
+        const reference = 'ipfs://bafkreiabcdef123456';
+        const dataUrl = 'data:image/jpg;base64,AAAA';
+
+        it('should render an ipfs image reference as an img, not as text', () => {
+            const html = markdownToHtml(`![Site photo](${reference})`);
+            expect(html).toContain(`data-src="${reference}"`);
+            expect(html).toContain('alt="Site photo"');
+            expect(html).not.toContain('![');
+        });
+
+        it('should fill src from the resolved map', () => {
+            const html = markdownToHtml(`![Site photo](${reference})`, new Map([[reference, dataUrl]]));
+            expect(html).toContain(`src="${dataUrl}"`);
+        });
+
+        it('should leave src empty when nothing is resolved', () => {
+            expect(markdownToHtml(`![a](${reference})`)).toContain('src=""');
+        });
+
+        it('should still read a link as a link', () => {
+            expect(markdownToHtml('[click](https://example.com)')).toContain('<a href="https://example.com"');
+        });
+
+        it('should leave an unsafe target as literal text', () => {
+            const html = markdownToHtml('![x](javascript:alert(1))');
+            expect(html).not.toContain('<img');
+            expect(html).toContain('!');
+        });
+
+        it('should collect distinct ipfs references only', () => {
+            const other = 'ipfs://bafkreizzzzzz999999';
+            expect(collectImageReferences(`![a](${other})\n\n![b](${reference})\n\n![c](${other})`))
+                .toEqual([other, reference]);
+            expect(collectImageReferences('![a](https://example.com/a.png)')).toEqual([]);
+            expect(collectImageReferences(`[a](${reference})`)).toEqual([]);
+            expect(collectImageReferences(null)).toEqual([]);
         });
     });
 });

@@ -1,4 +1,4 @@
-import { escapeHtml, htmlToMarkdown, markdownToHtml } from './markdown';
+import { collectImageReferences, escapeHtml, htmlToMarkdown, markdownToHtml } from './markdown';
 
 describe('markdown converters', () => {
     describe('markdownToHtml', () => {
@@ -329,6 +329,69 @@ describe('markdown converters', () => {
             const markdown = htmlToMarkdown(html);
             expect(markdown).toBe(`![a\\] b](${reference})`);
             expect(htmlToMarkdown(markdownToHtml(markdown))).toBe(markdown);
+        });
+    });
+
+    describe('resolved images', () => {
+        const reference = 'ipfs://bafkreiabcdef123456';
+        const other = 'ipfs://bafkreizzzzzz999999';
+        const dataUrl = 'data:image/jpg;base64,AAAA';
+
+        it('should leave src empty when no map is passed', () => {
+            const html = markdownToHtml(`![Site photo](${reference})`);
+            expect(html).toContain('src=""');
+            expect(html).toContain(`data-src="${reference}"`);
+        });
+
+        it('should fill src from the map', () => {
+            const html = markdownToHtml(`![Site photo](${reference})`, new Map([[reference, dataUrl]]));
+            expect(html).toContain(`src="${dataUrl}"`);
+            expect(html).toContain(`data-src="${reference}"`);
+        });
+
+        it('should leave src empty when the map does not hold the reference', () => {
+            const html = markdownToHtml(`![Site photo](${reference})`, new Map([[other, dataUrl]]));
+            expect(html).toContain('src=""');
+        });
+
+        it('should fill images inside headings and list items', () => {
+            const resolved = new Map([[reference, dataUrl]]);
+            expect(markdownToHtml(`# ![a](${reference})`, resolved)).toContain(`src="${dataUrl}"`);
+            expect(markdownToHtml(`- ![a](${reference})`, resolved)).toContain(`src="${dataUrl}"`);
+        });
+
+        it('should still prefer the image rule over the link rule on one line', () => {
+            const html = markdownToHtml(
+                `![a](${reference}) and [b](https://example.com)`,
+                new Map([[reference, dataUrl]])
+            );
+            expect(html).toContain(`<img src="${dataUrl}"`);
+            expect(html).toContain('<a href="https://example.com"');
+        });
+    });
+
+    describe('collectImageReferences', () => {
+        const reference = 'ipfs://bafkreiabcdef123456';
+        const other = 'ipfs://bafkreizzzzzz999999';
+
+        it('should return an empty list for empty or non-string input', () => {
+            expect(collectImageReferences('')).toEqual([]);
+            expect(collectImageReferences(null)).toEqual([]);
+            expect(collectImageReferences(undefined)).toEqual([]);
+            expect(collectImageReferences(42 as any)).toEqual([]);
+        });
+
+        it('should return distinct references in order of first appearance', () => {
+            const markdown = `![a](${other})\n\ntext\n\n![b](${reference})\n\n![c](${other})`;
+            expect(collectImageReferences(markdown)).toEqual([other, reference]);
+        });
+
+        it('should ignore a non-ipfs image reference', () => {
+            expect(collectImageReferences('![a](https://example.com/a.png)')).toEqual([]);
+        });
+
+        it('should ignore an ordinary link to an ipfs target', () => {
+            expect(collectImageReferences(`[a](${reference})`)).toEqual([]);
         });
     });
 });
