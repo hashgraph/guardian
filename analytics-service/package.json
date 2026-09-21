@@ -10,6 +10,8 @@
     "dependencies": {
         "@guardian/common": "workspace:*",
         "@guardian/interfaces": "workspace:*",
+        "@mikro-orm/core": "6.6.16",
+        "@mikro-orm/migrations-mongodb": "6.6.16",
         "@nestjs/common": "^11.1.24",
         "@nestjs/core": "^11.1.24",
         "@nestjs/microservices": "^11.1.24",
@@ -25,6 +27,7 @@
         "express-fileupload": "1.5.2",
         "hpp": "0.2.3",
         "jszip": "3.10.2",
+        "moment": "2.31.0",
         "prom-client": "15.1.3",
         "reflect-metadata": "^0.2.2",
         "rxjs": "7.8.2"
@@ -33,8 +36,8 @@
     "devDependencies": {
         "@types/express": "5.0.6",
         "@types/express-fileupload": "1.5.1",
-        "@types/glob": "^8.1.0",
         "@types/node": "24.13.5",
+        "esmock": "^2.6.7",
         "mocha": "10.8.2",
         "mocha-junit-reporter": "2.2.1",
         "nodemon": "3.1.14",

@@ -9,12 +9,12 @@
         "@nestjs/core": "^11.1.24",
         "@nestjs/microservices": "^11.1.24",
         "dotenv": "^16.6.1",
+        "nats": "^2.29.3",
         "reflect-metadata": "0.2.2",
         "rxjs": "7.8.2"
     },
     "description": "",
     "devDependencies": {
-        "@types/glob": "^8.1.0",
         "@types/node": "24.13.5",
         "nodemon": "3.1.14",
         "tslint": "^6.1.3",
