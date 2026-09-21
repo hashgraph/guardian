@@ -31,7 +31,6 @@ export * from './process-error-handlers.js';
 export * from './insert-variables.js';
 export * from './generate-tls-options.js';
 export * from './encrypt-vc-helper.js';
-export * from './generate-config-for-integration-block-helper.js';
 export * from './encrypt-utils.js';
 export * from './table-file-ids.js';
 export * from './table-csv.js';

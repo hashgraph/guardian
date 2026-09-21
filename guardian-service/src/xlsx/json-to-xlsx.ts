@@ -3,12 +3,12 @@ import { anyToXlsx, examplesToXlsx, booleanToXlsx, entityToXlsx, fontToXlsx, str
 import { Hyperlink, Range, Workbook, Worksheet } from './models/workbook.js';
 import { Table } from './models/table.js';
 import { ISchema, Schema, SchemaCondition, SchemaField } from '@guardian/interfaces';
-import { PolicyTool } from '../entity/index.js';
+import { PolicyTool } from '@guardian/common';
 import { IRowField } from './interfaces/row-field.interface.js';
 import { SheetName } from './models/sheet-name.js';
 import { XlsxEnum } from './models/xlsx-enum.js';
 import { SharedEnumTable } from './models/enum-table.js';
-import { IPFS } from '../helpers/index.js';
+import { IPFS } from '@guardian/common';
 
 export class JsonToXlsx {
     public static async generate(
