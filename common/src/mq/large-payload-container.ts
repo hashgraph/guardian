@@ -178,7 +178,14 @@ export class LargePayloadContainer {
         }
         const pathname = new URL(req.url, `${this.PROTOCOL}://${this.DOMAIN}`).pathname;
         const segments = pathname.split('/').filter((segment) => segment.length > 0);
-        return segments.length === 1 ? decodeURIComponent(segments[0]) : null;
+        if (segments.length !== 1) {
+            return null;
+        }
+        try {
+            return decodeURIComponent(segments[0]);
+        } catch {
+            return null;
+        }
     }
 
     /**
