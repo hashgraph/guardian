@@ -6,7 +6,7 @@ on:
 jobs:
   buildAndTest:
     name: Build and Test (Manual)
-    runs-on: guardian-linux-medium
+    runs-on: hg-guard-lin-md
     env:
       YARN_ENABLE_GLOBAL_CACHE: 'false'
       MIN_PASSWORD_LENGTH: 4
