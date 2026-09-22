@@ -453,4 +453,7 @@ tr.revoked td:not(.mat-column-history) {
     li > p { margin: 0; }
     li + li { margin-top: 0.1em; }
     a { color: var(--color-primary); text-decoration: underline; }
+    table { border-collapse: collapse; margin: 0.5em 0; width: auto; max-width: 100%; }
+    th, td { border: 1px solid var(--guardian-border-color); padding: 2px 6px; vertical-align: top; }
+    th { background: var(--guardian-grey-color); font-weight: 600; text-align: left; }
 }

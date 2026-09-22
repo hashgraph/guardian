@@ -42,6 +42,7 @@
     [attr.contenteditable]="(readonly || isDisabled) ? false : true"
     [attr.data-placeholder]="placeholder"
     (beforeinput)="onBeforeInput()"
+    (keydown)="onKeyDown($event)"
     (input)="onInput($event)"
     (paste)="onPaste($event)"
     (dragstart)="onDragStart()"

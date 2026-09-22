@@ -162,4 +162,43 @@ describe('markdown-view', () => {
             expect(markdownToHtml('- one\n- two')).toBe('<ul><li>one</li><li>two</li></ul>');
         });
     });
+
+    describe('tables', () => {
+        const reference = 'ipfs://bafkreiabcdef123456';
+
+        it('should render a pipe table', () => {
+            expect(markdownToHtml('| Name | Size |\n| --- | --- |\n| Apple | Big |'))
+                .toBe('<table><thead><tr><th>Name</th><th>Size</th></tr></thead>'
+                    + '<tbody><tr><td>Apple</td><td>Big</td></tr></tbody></table>');
+        });
+
+        it('should require the divider row', () => {
+            expect(markdownToHtml('| a | b |')).toBe('<p>| a | b |</p>');
+        });
+
+        it('should pad a row shorter than the header', () => {
+            expect(markdownToHtml('| a | b |\n| --- | --- |\n| c |'))
+                .toBe('<table><thead><tr><th>a</th><th>b</th></tr></thead>'
+                    + '<tbody><tr><td>c</td><td></td></tr></tbody></table>');
+        });
+
+        it('should keep markup and an escaped pipe in a cell', () => {
+            const rendered = markdownToHtml('| **Bold** | a \\| b |\n| --- | --- |');
+
+            expect(rendered).toContain('<th><b>Bold</b></th>');
+            expect(rendered).toContain('<th>a | b</th>');
+        });
+
+        it('should keep a paragraph before and after the table', () => {
+            expect(markdownToHtml('Before\n\n| a |\n| --- |\n\nAfter'))
+                .toBe('<p>Before</p><table><thead><tr><th>a</th></tr></thead></table><p>After</p>');
+        });
+
+        it('should resolve a picture inside a cell', () => {
+            const resolved = new Map<string, string>([[reference, 'data:image/webp;base64,AAAA']]);
+
+            expect(markdownToHtml(`| ![pic](${reference}) |\n| --- |`, resolved))
+                .toContain('src="data:image/webp;base64,AAAA"');
+        });
+    });
 });

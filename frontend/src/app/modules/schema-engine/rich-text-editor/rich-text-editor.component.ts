@@ -47,6 +47,7 @@ export class RichTextEditorComponent
     public linkDialogPosition = { left: 8, top: 48 };
     public headingDisabled = false;
     public listLevelDisabled = true;
+    public tableEditDisabled = true;
     public activeCommands = new Set<string>();
 
     private _value = '';
@@ -89,6 +90,19 @@ export class RichTextEditorComponent
         { separator: true },
         { command: 'link', icon: 'pi pi-link', title: 'Insert or edit link' },
         { command: 'image', icon: 'pi pi-image', title: 'Insert image' },
+        { separator: true },
+        { command: 'table', icon: 'pi pi-table', title: 'Insert table' },
+        { command: 'tableRowAdd', icon: 'pi pi-plus-circle', title: 'Add a row below' },
+        { command: 'tableRowRemove', icon: 'pi pi-minus-circle', title: 'Remove this row' },
+        { command: 'tableColumnAdd', icon: 'pi pi-plus', title: 'Add a column to the right' },
+        { command: 'tableColumnRemove', icon: 'pi pi-minus', title: 'Remove this column' },
+    ];
+
+    private static readonly TABLE_HTML = '<table><thead><tr><th>Header 1</th><th>Header 2</th></tr></thead>'
+        + '<tbody><tr><td><br></td><td><br></td></tr></tbody></table><p><br></p>';
+
+    private static readonly TABLE_EDIT_COMMANDS = [
+        'tableRowAdd', 'tableRowRemove', 'tableColumnAdd', 'tableColumnRemove'
     ];
 
     isCommandHidden(command: string | undefined): boolean {
@@ -211,6 +225,26 @@ export class RichTextEditorComponent
         this.onInput();
     }
 
+    onKeyDown(event: KeyboardEvent): void {
+        if (this.readonly || this.isDisabled || event.key !== 'Tab') { return; }
+        const cell = this._currentTableCell();
+        if (!cell) { return; }
+        event.preventDefault();
+        const table = cell.closest('table');
+        const cells = Array.from(table ? table.querySelectorAll('th, td') : []);
+        const step = event.shiftKey ? -1 : 1;
+        const next = cells[cells.indexOf(cell) + step];
+        if (next) {
+            this._placeCaretIn(next);
+            return;
+        }
+        if (step === 1 && this._applyTableEdit('tableRowAdd')) {
+            this.onInput();
+            this._updateToolbarState();
+            this.cdr.markForCheck();
+        }
+    }
+
     onBlur(): void {
         this._onTouched();
     }
@@ -231,9 +265,14 @@ export class RichTextEditorComponent
         return command === 'indent' || command === 'outdent';
     }
 
+    isTableEditCommand(command: string | undefined): boolean {
+        return !!command && RichTextEditorComponent.TABLE_EDIT_COMMANDS.includes(command);
+    }
+
     isCommandDisabled(command: string | undefined): boolean {
         return (this.headingDisabled && this.isHeadingCommand(command))
             || (this.listLevelDisabled && this.isListLevelCommand(command))
+            || (this.tableEditDisabled && this.isTableEditCommand(command))
             || (command === 'image' && this.imageLoading);
     }
 
@@ -247,6 +286,9 @@ export class RichTextEditorComponent
         }
         if (this.isListLevelCommand(command)) {
             return 'List levels are only available inside a list';
+        }
+        if (this.isTableEditCommand(command)) {
+            return 'Table changes are only available inside a table';
         }
         return 'Headings are not available inside a list';
     }
@@ -263,6 +305,10 @@ export class RichTextEditorComponent
             document.execCommand(command, false, undefined);
         } else if (command === 'undo' && this._clearedHtml) {
             this._restoreClearedHtml();
+        } else if (command === 'table') {
+            document.execCommand('insertHTML', false, RichTextEditorComponent.TABLE_HTML);
+        } else if (this.isTableEditCommand(command)) {
+            if (!this._applyTableEdit(command)) { return; }
         } else if (command === 'link') {
             this._savedRange = this._getSelection();
             this._editingLink = this._getLink(this._savedRange);
@@ -530,6 +576,84 @@ export class RichTextEditorComponent
         selection?.addRange(range);
     }
 
+    private _currentTableCell(): HTMLTableCellElement | null {
+        const range = this._getSelection();
+        if (!range) { return null; }
+        const node = range.commonAncestorContainer;
+        const element = node instanceof Element ? node : node.parentElement;
+        const cell = element?.closest('th, td');
+        return cell instanceof HTMLTableCellElement && this.editorRef.nativeElement.contains(cell)
+            ? cell
+            : null;
+    }
+
+    private _emptyCell(tag: string): HTMLElement {
+        const cell = document.createElement(tag);
+        cell.appendChild(document.createElement('br'));
+        return cell;
+    }
+
+    private _applyTableEdit(command: string): boolean {
+        const cell = this._currentTableCell();
+        const row = cell?.parentElement;
+        const table = cell?.closest('table');
+        if (!cell || !row || !table) { return false; }
+        const position = Array.from(row.children).indexOf(cell);
+        const rows = Array.from(table.querySelectorAll('tr'));
+        const isHeaderRow = row.parentElement?.tagName === 'THEAD';
+        if (command === 'tableRowAdd') {
+            const fresh = document.createElement('tr');
+            for (let index = 0; index < row.children.length; index++) {
+                fresh.appendChild(this._emptyCell('td'));
+            }
+            if (isHeaderRow) {
+                const body = table.querySelector('tbody')
+                    || table.appendChild(document.createElement('tbody'));
+                body.insertBefore(fresh, body.firstChild);
+            } else {
+                row.after(fresh);
+            }
+            this._placeCaretIn(fresh.children[0]);
+            return true;
+        }
+        if (command === 'tableRowRemove') {
+            if (isHeaderRow) { return false; }
+            const survivor = row.nextElementSibling || row.previousElementSibling
+                || table.querySelector('thead tr');
+            row.remove();
+            this._placeCaretIn(survivor?.children[Math.min(position, survivor.children.length - 1)]);
+            return true;
+        }
+        if (command === 'tableColumnAdd') {
+            for (const current of rows) {
+                const created = this._emptyCell(current.parentElement?.tagName === 'THEAD' ? 'th' : 'td');
+                const reference = current.children[position];
+                if (reference) {
+                    reference.after(created);
+                } else {
+                    current.appendChild(created);
+                }
+            }
+            this._placeCaretIn(row.children[position + 1]);
+            return true;
+        }
+        if (command === 'tableColumnRemove') {
+            if (row.children.length < 2) { return false; }
+            for (const current of rows) {
+                current.children[position]?.remove();
+            }
+            this._placeCaretIn(row.children[Math.min(position, row.children.length - 1)]);
+            return true;
+        }
+        return false;
+    }
+
+    private _placeCaretIn(target: Element | null | undefined): void {
+        if (target instanceof HTMLElement) {
+            this._collapseCaret(target, true);
+        }
+    }
+
     private _getSelection(): Range | null {
         const sel = window.getSelection();
         if (sel && sel.rangeCount > 0) {
@@ -575,6 +699,11 @@ export class RichTextEditorComponent
         }
         if (disabled === this.listLevelDisabled) {
             this.listLevelDisabled = !disabled;
+            this.cdr.markForCheck();
+        }
+        const inTable = !!this._currentTableCell();
+        if (inTable === this.tableEditDisabled) {
+            this.tableEditDisabled = !inTable;
             this.cdr.markForCheck();
         }
         const next = this._readActiveCommands(range);

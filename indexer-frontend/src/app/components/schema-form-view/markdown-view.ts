@@ -78,6 +78,58 @@ function renderList(list: MarkdownList): string {
     return `<${tag}>${items}</${tag}>`;
 }
 
+const TABLE_ROW = /^\s*\|.*\|\s*$/;
+
+const TABLE_DIVIDER = /^\s*\|(?:\s*:?-+:?\s*\|)+\s*$/;
+
+function splitTableRow(line: string): string[] {
+    const body = line.trim().replace(/^\|/, '').replace(/\|$/, '');
+    const cells: string[] = [];
+    let current = '';
+    for (let index = 0; index < body.length; index++) {
+        const character = body[index];
+        if (character === '\\' && body[index + 1] === '|') {
+            current += '|';
+            index++;
+            continue;
+        }
+        if (character === '|') {
+            cells.push(current.trim());
+            current = '';
+            continue;
+        }
+        current += character;
+    }
+    cells.push(current.trim());
+    return cells;
+}
+
+function tableAt(lines: string[], index: number): { rows: string[][], next: number } | null {
+    if (!TABLE_ROW.test(lines[index]) || !TABLE_DIVIDER.test(lines[index + 1] || '')) {
+        return null;
+    }
+    const rows = [splitTableRow(lines[index])];
+    let next = index + 2;
+    while (next < lines.length && TABLE_ROW.test(lines[next]) && !TABLE_DIVIDER.test(lines[next])) {
+        rows.push(splitTableRow(lines[next]));
+        next++;
+    }
+    return { rows, next };
+}
+
+function renderTable(rows: string[][], resolved?: Map<string, string>): string {
+    const width = Math.max(...rows.map((row) => row.length));
+    const cells = (row: string[], tag: string): string => '<tr>'
+        + Array.from({ length: width }, (unused, index) =>
+            `<${tag}>${inline(row[index] ?? '', resolved)}</${tag}>`).join('')
+        + '</tr>';
+    const head = `<thead>${cells(rows[0], 'th')}</thead>`;
+    const body = rows.length > 1
+        ? `<tbody>${rows.slice(1).map((row) => cells(row, 'td')).join('')}</tbody>`
+        : '';
+    return `<table>${head}${body}</table>`;
+}
+
 export function markdownToHtml(markdown: string | null | undefined, resolved?: Map<string, string>): string {
     if (!markdown) {
         return '';
@@ -101,12 +153,18 @@ export function markdownToHtml(markdown: string | null | undefined, resolved?: M
         const list = stack[stack.length - 1];
         return list && list.items.length ? list.items[list.items.length - 1] : null;
     };
-    for (const line of lines) {
+    for (let index = 0; index < lines.length; index++) {
+        const line = lines[index];
         const heading = /^(#{1,3})\s+(.*)$/.exec(line);
         const listLine = LIST_LINE.exec(line);
+        const table = tableAt(lines, index);
         if (heading) {
             flush();
             blocks.push(`<h${heading[1].length}>${inline(heading[2], resolved)}</h${heading[1].length}>`);
+        } else if (table) {
+            flush();
+            blocks.push(renderTable(table.rows, resolved));
+            index = table.next - 1;
         } else if (listLine) {
             const ordered = ORDERED_LIST_LINE.test(line);
             const content = inline(listLine[2], resolved);

@@ -484,8 +484,11 @@ describe('RichTextEditorComponent', () => {
         const disabled = buttons.filter(item => item.disabled).map(item => item.title);
 
         expect(component.headingDisabled).toBeTrue();
-        expect(disabled.length).toBe(3);
-        expect(disabled.every(title => title === 'Headings are not available inside a list')).toBeTrue();
+        expect(disabled.filter(title => title === 'Headings are not available inside a list').length)
+            .toBe(3);
+        expect(disabled.filter(title => title === 'Table changes are only available inside a table').length)
+            .toBe(4);
+        expect(disabled.length).toBe(7);
     });
 
     it('should enable the heading buttons again outside a list item', () => {
@@ -506,7 +509,11 @@ describe('RichTextEditorComponent', () => {
             .map(item => item.nativeElement.title))
             .toEqual([
                 'List levels are only available inside a list',
-                'List levels are only available inside a list'
+                'List levels are only available inside a list',
+                'Table changes are only available inside a table',
+                'Table changes are only available inside a table',
+                'Table changes are only available inside a table',
+                'Table changes are only available inside a table'
             ]);
     });
 
@@ -702,7 +709,11 @@ describe('RichTextEditorComponent', () => {
         spyOn(event, 'preventDefault');
         component.onDrop(event);
         expect(event.preventDefault).toHaveBeenCalled();
-        expect(execSpy).toHaveBeenCalledWith('insertHTML', false, '<b>Bold</b><p>Red</p>');
+        expect(execSpy).toHaveBeenCalledWith(
+            'insertHTML',
+            false,
+            '<table><tbody><tr><td><b>Bold</b></td></tr></tbody></table><p>Red</p>'
+        );
     });
 
     it('should escape plain text dropped without markup', () => {
@@ -1268,6 +1279,193 @@ describe('RichTextEditorComponent', () => {
             expect(component.imageError).toContain('could not be uploaded');
             expect(component.imageLoading).toBeFalse();
             expect(emitted).toBeNull();
+        });
+    });
+    describe('tables', () => {
+        const TABLE = '<table><thead><tr><th>H1</th><th>H2</th></tr></thead>'
+            + '<tbody><tr><td>a</td><td>b</td></tr><tr><td>c</td><td>d</td></tr></tbody></table>';
+
+        function editor(): HTMLElement {
+            return fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
+        }
+
+        function caretIn(selector: string, index = 0): HTMLElement {
+            const cell = editor().querySelectorAll(selector)[index] as HTMLElement;
+            selectContents(cell);
+            document.dispatchEvent(new Event('selectionchange'));
+            fixture.detectChanges();
+            return cell;
+        }
+
+        function rowTexts(): string[][] {
+            return Array.from(editor().querySelectorAll('tr')).map(row =>
+                Array.from(row.children).map(cell => cell.tagName + ':' + (cell.textContent || '').trim()));
+        }
+
+        it('should offer the five table commands', () => {
+            const commands = component.toolbarItems.map((item: any) => item.command);
+
+            expect(commands).toContain('table');
+            expect(commands).toContain('tableRowAdd');
+            expect(commands).toContain('tableRowRemove');
+            expect(commands).toContain('tableColumnAdd');
+            expect(commands).toContain('tableColumnRemove');
+        });
+
+        it('should insert a starter table with a header, one empty row and a paragraph after it', () => {
+            const execSpy = spyOn(document, 'execCommand');
+
+            component.execCommand('table', new MouseEvent('mousedown'));
+
+            const html = execSpy.calls.mostRecent().args[2] as string;
+            expect(html).toContain('<thead><tr><th>Header 1</th><th>Header 2</th></tr></thead>');
+            expect(html).toContain('<tbody><tr><td><br></td><td><br></td></tr></tbody>');
+            expect(html.endsWith('<p><br></p>')).toBeTrue();
+        });
+
+        it('should enable the edit commands only inside a cell', () => {
+            editor().innerHTML = '<p>outside</p>' + TABLE;
+            caretIn('p');
+            expect(component.tableEditDisabled).toBeTrue();
+            expect(component.isCommandDisabled('tableRowAdd')).toBeTrue();
+            expect(component.commandTitle('tableRowAdd', 'Add a row below'))
+                .toBe('Table changes are only available inside a table');
+
+            caretIn('td');
+            expect(component.tableEditDisabled).toBeFalse();
+            expect(component.isCommandDisabled('tableRowAdd')).toBeFalse();
+        });
+
+        it('should add a row below the current body row', () => {
+            editor().innerHTML = TABLE;
+            caretIn('td', 0);
+
+            component.execCommand('tableRowAdd', new MouseEvent('mousedown'));
+
+            expect(rowTexts()).toEqual([
+                ['TH:H1', 'TH:H2'],
+                ['TD:a', 'TD:b'],
+                ['TD:', 'TD:'],
+                ['TD:c', 'TD:d']
+            ]);
+        });
+
+        it('should add a row from the header to the top of the body', () => {
+            editor().innerHTML = TABLE;
+            caretIn('th', 0);
+
+            component.execCommand('tableRowAdd', new MouseEvent('mousedown'));
+
+            expect(rowTexts()).toEqual([
+                ['TH:H1', 'TH:H2'],
+                ['TD:', 'TD:'],
+                ['TD:a', 'TD:b'],
+                ['TD:c', 'TD:d']
+            ]);
+        });
+
+        it('should never remove the header row but should remove a body row', () => {
+            editor().innerHTML = TABLE;
+            caretIn('th', 0);
+
+            component.execCommand('tableRowRemove', new MouseEvent('mousedown'));
+            expect(editor().querySelectorAll('tr').length).toBe(3);
+
+            caretIn('td', 0);
+            component.execCommand('tableRowRemove', new MouseEvent('mousedown'));
+
+            expect(rowTexts()).toEqual([['TH:H1', 'TH:H2'], ['TD:c', 'TD:d']]);
+        });
+
+        it('should add a column as th in the header and td elsewhere', () => {
+            editor().innerHTML = TABLE;
+            caretIn('td', 0);
+
+            component.execCommand('tableColumnAdd', new MouseEvent('mousedown'));
+
+            expect(rowTexts()).toEqual([
+                ['TH:H1', 'TH:', 'TH:H2'],
+                ['TD:a', 'TD:', 'TD:b'],
+                ['TD:c', 'TD:', 'TD:d']
+            ]);
+        });
+
+        it('should remove the column from every row', () => {
+            editor().innerHTML = TABLE;
+            caretIn('td', 1);
+
+            component.execCommand('tableColumnRemove', new MouseEvent('mousedown'));
+
+            expect(rowTexts()).toEqual([['TH:H1'], ['TD:a'], ['TD:c']]);
+        });
+
+        it('should refuse to remove the last column', () => {
+            editor().innerHTML = '<table><thead><tr><th>H1</th></tr></thead>'
+                + '<tbody><tr><td>a</td></tr></tbody></table>';
+            caretIn('td', 0);
+
+            component.execCommand('tableColumnRemove', new MouseEvent('mousedown'));
+
+            expect(rowTexts()).toEqual([['TH:H1'], ['TD:a']]);
+        });
+
+        it('should report the edited table through onChange as markdown', () => {
+            const emitted: string[] = [];
+            component.registerOnChange((value: string) => { emitted.push(value); });
+            editor().innerHTML = TABLE;
+            caretIn('td', 0);
+
+            component.execCommand('tableRowAdd', new MouseEvent('mousedown'));
+
+            expect(emitted[emitted.length - 1])
+                .toBe('| H1 | H2 |\n| --- | --- |\n| a | b |\n|  |  |\n| c | d |');
+        });
+
+        it('should move the caret between cells with Tab and Shift+Tab', () => {
+            editor().innerHTML = TABLE;
+            caretIn('td', 0);
+
+            component.onKeyDown(new KeyboardEvent('keydown', { key: 'Tab' }));
+            expect(window.getSelection()?.anchorNode).toBe(editor().querySelectorAll('td')[1]);
+
+            component.onKeyDown(new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true }));
+            expect(window.getSelection()?.anchorNode).toBe(editor().querySelectorAll('td')[0]);
+        });
+
+        it('should add a row when Tab is pressed in the last cell', () => {
+            editor().innerHTML = TABLE;
+            caretIn('td', 3);
+
+            component.onKeyDown(new KeyboardEvent('keydown', { key: 'Tab' }));
+
+            expect(rowTexts()).toEqual([
+                ['TH:H1', 'TH:H2'],
+                ['TD:a', 'TD:b'],
+                ['TD:c', 'TD:d'],
+                ['TD:', 'TD:']
+            ]);
+        });
+
+        it('should leave Tab alone outside a table', () => {
+            editor().innerHTML = '<p>outside</p>';
+            caretIn('p');
+            const event = new KeyboardEvent('keydown', { key: 'Tab' });
+            spyOn(event, 'preventDefault');
+
+            component.onKeyDown(event);
+
+            expect(event.preventDefault).not.toHaveBeenCalled();
+        });
+
+        it('should ignore every other key inside a table', () => {
+            editor().innerHTML = TABLE;
+            caretIn('td', 0);
+            const event = new KeyboardEvent('keydown', { key: 'a' });
+            spyOn(event, 'preventDefault');
+
+            component.onKeyDown(event);
+
+            expect(event.preventDefault).not.toHaveBeenCalled();
         });
     });
 });

@@ -93,6 +93,58 @@ function renderList(list: MarkdownList): string {
     return `<${tag}>${items}</${tag}>`;
 }
 
+const TABLE_ROW = /^\s*\|.*\|\s*$/;
+
+const TABLE_DIVIDER = /^\s*\|(?:\s*:?-+:?\s*\|)+\s*$/;
+
+export function splitTableRow(line: string): string[] {
+    const body = line.trim().replace(/^\|/, '').replace(/\|$/, '');
+    const cells: string[] = [];
+    let current = '';
+    for (let index = 0; index < body.length; index++) {
+        const character = body[index];
+        if (character === '\\' && body[index + 1] === '|') {
+            current += '|';
+            index++;
+            continue;
+        }
+        if (character === '|') {
+            cells.push(current.trim());
+            current = '';
+            continue;
+        }
+        current += character;
+    }
+    cells.push(current.trim());
+    return cells;
+}
+
+function tableAt(lines: string[], index: number): { rows: string[][], next: number } | null {
+    if (!TABLE_ROW.test(lines[index]) || !TABLE_DIVIDER.test(lines[index + 1] || '')) {
+        return null;
+    }
+    const rows = [splitTableRow(lines[index])];
+    let next = index + 2;
+    while (next < lines.length && TABLE_ROW.test(lines[next]) && !TABLE_DIVIDER.test(lines[next])) {
+        rows.push(splitTableRow(lines[next]));
+        next++;
+    }
+    return { rows, next };
+}
+
+function renderTable(rows: string[][], resolved?: Map<string, string>): string {
+    const width = Math.max(...rows.map((row) => row.length));
+    const cells = (row: string[], tag: string): string => '<tr>'
+        + Array.from({ length: width }, (unused, index) =>
+            `<${tag}>${inline(row[index] ?? '', resolved)}</${tag}>`).join('')
+        + '</tr>';
+    const head = `<thead>${cells(rows[0], 'th')}</thead>`;
+    const body = rows.length > 1
+        ? `<tbody>${rows.slice(1).map((row) => cells(row, 'td')).join('')}</tbody>`
+        : '';
+    return `<table>${head}${body}</table>`;
+}
+
 export function markdownToHtml(markdown: string | null | undefined, resolved?: Map<string, string>): string {
     if (!markdown) {
         return '';
@@ -116,12 +168,18 @@ export function markdownToHtml(markdown: string | null | undefined, resolved?: M
         const list = stack[stack.length - 1];
         return list && list.items.length ? list.items[list.items.length - 1] : null;
     };
-    for (const line of lines) {
+    for (let index = 0; index < lines.length; index++) {
+        const line = lines[index];
         const heading = /^(#{1,3})\s+(.*)$/.exec(line);
         const listLine = LIST_LINE.exec(line);
+        const table = tableAt(lines, index);
         if (heading) {
             flush();
             blocks.push(`<h${heading[1].length}>${inline(heading[2], resolved)}</h${heading[1].length}>`);
+        } else if (table) {
+            flush();
+            blocks.push(renderTable(table.rows, resolved));
+            index = table.next - 1;
         } else if (listLine) {
             const ordered = ORDERED_LIST_LINE.test(line);
             const content = inline(listLine[2], resolved);
@@ -169,7 +227,7 @@ function inlineNode(node: Node): string {
         return '';
     }
     const tag = node.tagName;
-    if (tag === 'UL' || tag === 'OL') {
+    if (tag === 'UL' || tag === 'OL' || tag === 'TABLE') {
         return '';
     }
     const text = inlineToMarkdown(node);
@@ -213,7 +271,7 @@ function inlineToMarkdown(node: Node): string {
     return out;
 }
 
-const BLOCK_TAGS = ['H1', 'H2', 'H3', 'UL', 'OL', 'P', 'DIV'];
+const BLOCK_TAGS = ['H1', 'H2', 'H3', 'UL', 'OL', 'P', 'DIV', 'TABLE'];
 
 function hasBlockChildren(element: Element): boolean {
     return Array.from(element.children).some((child) => BLOCK_TAGS.includes(child.tagName));
@@ -260,6 +318,40 @@ function listLines(list: Element, depth: number): string[] {
     return lines;
 }
 
+function tableRowElements(table: Element): Element[] {
+    const rows: Element[] = [];
+    for (const child of Array.from(table.children)) {
+        if (child.tagName === 'THEAD' || child.tagName === 'TBODY' || child.tagName === 'TFOOT') {
+            rows.push(...Array.from(child.children).filter((row) => row.tagName === 'TR'));
+        } else if (child.tagName === 'TR') {
+            rows.push(child);
+        }
+    }
+    return rows;
+}
+
+function tableCellText(cell: Element): string {
+    return singleLine(inlineToMarkdown(cell)).replace(/\|/g, '\\|');
+}
+
+function tableLines(table: Element): string[] {
+    const rows = tableRowElements(table).map((row) => Array.from(row.children)
+        .filter((cell) => cell.tagName === 'TH' || cell.tagName === 'TD')
+        .map((cell) => tableCellText(cell))
+    );
+    const width = rows.length ? Math.max(...rows.map((row) => row.length)) : 0;
+    if (!width) {
+        return [];
+    }
+    const line = (row: string[]): string =>
+        '| ' + Array.from({ length: width }, (unused, index) => row[index] ?? '').join(' | ') + ' |';
+    return [
+        line(rows[0]),
+        '| ' + Array.from({ length: width }, () => '---').join(' | ') + ' |',
+        ...rows.slice(1).map(line),
+    ];
+}
+
 function collectBlocks(parent: Node, blocks: string[]): void {
     for (const node of Array.from(parent.childNodes)) {
         if (node.nodeType === Node.TEXT_NODE) {
@@ -279,6 +371,11 @@ function collectBlocks(parent: Node, blocks: string[]): void {
             const items = listLines(node, 0);
             if (items.length) {
                 blocks.push(items.join('\n'));
+            }
+        } else if (tag === 'TABLE') {
+            const rows = tableLines(node);
+            if (rows.length) {
+                blocks.push(rows.join('\n'));
             }
         } else if (hasBlockChildren(node)) {
             collectBlocks(node, blocks);

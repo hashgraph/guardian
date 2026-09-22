@@ -1,4 +1,4 @@
-import { collectImageReferences, escapeHtml, htmlToMarkdown, markdownToHtml } from './markdown';
+import { collectImageReferences, escapeHtml, htmlToMarkdown, markdownToHtml, splitTableRow } from './markdown';
 
 describe('markdown converters', () => {
     describe('markdownToHtml', () => {
@@ -482,6 +482,85 @@ describe('markdown converters', () => {
 
             expect(html).not.toContain('<br>- deep');
             expect(html).toContain('<ul><li>deep</li></ul>');
+        });
+    });
+    describe('tables', () => {
+        const markdown = '| Name | Size |\n| --- | --- |\n| Apple | Big |';
+        const html = '<table><thead><tr><th>Name</th><th>Size</th></tr></thead>'
+            + '<tbody><tr><td>Apple</td><td>Big</td></tr></tbody></table>';
+
+        it('should round trip a two column table', () => {
+            expect(markdownToHtml(markdown)).toBe(html);
+            expect(htmlToMarkdown(html)).toBe(markdown);
+        });
+
+        it('should leave a pipe row with no divider as a paragraph', () => {
+            expect(markdownToHtml('| a | b |'))
+                .toBe('<p>| a | b |</p>');
+        });
+
+        it('should accept an aligned divider and drop the alignment', () => {
+            expect(markdownToHtml('| a | b |\n| :--- | ---: |\n| c | d |'))
+                .toBe('<table><thead><tr><th>a</th><th>b</th></tr></thead>'
+                    + '<tbody><tr><td>c</td><td>d</td></tr></tbody></table>');
+        });
+
+        it('should render a header with no body row', () => {
+            expect(markdownToHtml('| a | b |\n| --- | --- |'))
+                .toBe('<table><thead><tr><th>a</th><th>b</th></tr></thead></table>');
+        });
+
+        it('should pad a row shorter than the header', () => {
+            expect(markdownToHtml('| a | b |\n| --- | --- |\n| c |'))
+                .toBe('<table><thead><tr><th>a</th><th>b</th></tr></thead>'
+                    + '<tbody><tr><td>c</td><td></td></tr></tbody></table>');
+        });
+
+        it('should keep markup and a link inside a cell', () => {
+            const source = '| **Bold** | [site](https://example.com) |\n| --- | --- |';
+            const rendered = markdownToHtml(source);
+
+            expect(rendered).toContain('<th><b>Bold</b></th>');
+            expect(rendered).toContain('href="https://example.com"');
+        });
+
+        it('should escape a pipe inside cell text and read it back', () => {
+            const source = '| a \\| b | c |\n| --- | --- |';
+
+            expect(splitTableRow('| a \\| b | c |')).toEqual(['a | b', 'c']);
+            expect(markdownToHtml(source)).toContain('<th>a | b</th>');
+            expect(htmlToMarkdown('<table><tr><th>a | b</th><th>c</th></tr></table>')).toBe(source);
+        });
+
+        it('should flatten a line break inside a cell', () => {
+            expect(htmlToMarkdown('<table><tr><td>one<br>two</td><td>c</td></tr></table>'))
+                .toBe('| one two | c |\n| --- | --- |');
+        });
+
+        it('should read rows that have no thead or tbody', () => {
+            expect(htmlToMarkdown('<table><tr><th>a</th></tr><tr><td>b</td></tr></table>'))
+                .toBe('| a |\n| --- |\n| b |');
+        });
+
+        it('should keep an empty cell', () => {
+            expect(htmlToMarkdown('<table><tr><th>a</th><th></th></tr></table>'))
+                .toBe('| a |  |\n| --- | --- |');
+        });
+
+        it('should drop a table with no cells', () => {
+            expect(htmlToMarkdown('<table></table>')).toBe('');
+        });
+
+        it('should keep a paragraph before and after the table', () => {
+            expect(markdownToHtml('Before\n\n' + markdown + '\n\nAfter'))
+                .toBe('<p>Before</p>' + html + '<p>After</p>');
+            expect(htmlToMarkdown('<p>Before</p>' + html + '<p>After</p>'))
+                .toBe('Before\n\n' + markdown + '\n\nAfter');
+        });
+
+        it('should not read a table row starting with a dash as a list item', () => {
+            expect(markdownToHtml('| - one | b |\n| --- | --- |'))
+                .toBe('<table><thead><tr><th>- one</th><th>b</th></tr></thead></table>');
         });
     });
 });
