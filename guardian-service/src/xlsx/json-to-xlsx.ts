@@ -1,6 +1,7 @@
 import { Dictionary, FieldTypes, geoDisplayValue } from './models/dictionary.js';
 import { anyToXlsx, examplesToXlsx, booleanToXlsx, entityToXlsx, fontToXlsx, stringToXlsx, typeToXlsx, unitToXlsx, valueToFormula, visibilityToXlsx } from './models/value-converters.js';
 import { Hyperlink, Range, Workbook, Worksheet } from './models/workbook.js';
+import ExcelJS from 'exceljs';
 import { Table } from './models/table.js';
 import { ISchema, Schema, SchemaCondition, SchemaField } from '@guardian/interfaces';
 import { PolicyTool, IPFS } from '@guardian/common';
@@ -9,13 +10,18 @@ import { SheetName } from './models/sheet-name.js';
 import { XlsxEnum } from './models/xlsx-enum.js';
 import { SharedEnumTable } from './models/enum-table.js';
 
+export interface IJsonToXlsxOptions {
+    template?: ExcelJS.Buffer;
+}
+
 export class JsonToXlsx {
     public static async generate(
         schemas: ISchema[],
         tools: PolicyTool[],
-        toolSchemas: ISchema[]
+        toolSchemas: ISchema[],
+        options?: IJsonToXlsxOptions
     ): Promise<ArrayBuffer> {
-        const workbook = new Workbook();
+        const workbook = await JsonToXlsx.createWorkbook(options);
         const names = new SheetName();
 
         const _schemas: any = [];
@@ -108,6 +114,19 @@ export class JsonToXlsx {
             workbook.createWorksheet('blank');
         }
         return await workbook.write();
+    }
+
+    private static async createWorkbook(options?: IJsonToXlsxOptions): Promise<Workbook> {
+        const workbook = new Workbook();
+        if (options?.template) {
+            await workbook.read(options.template);
+            for (const name of workbook.sheetNames) {
+                if (name !== Dictionary.README_SHEET) {
+                    workbook.removeWorksheet(name);
+                }
+            }
+        }
+        return workbook;
     }
 
     private static collectInlineRefs(fields: SchemaField[], set: Set<string>): void {

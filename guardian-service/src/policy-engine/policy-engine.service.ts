@@ -78,6 +78,9 @@ import {
 import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 import { NatsConnection } from 'nats';
 import { createHash } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+import process from 'node:process';
 import { CompareUtils, HashComparator } from '../analytics/index.js';
 import { compareResults, getDetails } from '../api/record.service.js';
 import { Inject } from '../helpers/decorators/inject.js';
@@ -119,6 +122,10 @@ function buildDocumentationUrls(
             dmrvUrl,
         };
     });
+}
+
+async function readSchemaTemplateXlsx(): Promise<Buffer> {
+    return await readFile(path.join(process.cwd(), 'artifacts', 'template.xlsx'));
 }
 
 /**
@@ -1898,7 +1905,8 @@ export class PolicyEngineService {
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, owner, 'read');
                     const { schemas, tools, toolSchemas } = await PolicyImportExport.loadAllSchemas(policy);
-                    const buffer = await JsonToXlsx.generate(schemas, tools, toolSchemas);
+                    const template = await readSchemaTemplateXlsx();
+                    const buffer = await JsonToXlsx.generate(schemas, tools, toolSchemas, { template });
                     return new BinaryMessageResponse(buffer);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);

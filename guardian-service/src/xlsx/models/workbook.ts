@@ -84,6 +84,13 @@ export class Workbook {
         return new Worksheet(sheetName, worksheet);
     }
 
+    public removeWorksheet(sheetName: string): void {
+        const worksheet = this.workbook.getWorksheet(sheetName);
+        if (worksheet) {
+            this.workbook.removeWorksheet(worksheet.id);
+        }
+    }
+
     public async read(buffer: ExcelJS.Buffer): Promise<void> {
         await this.workbook.xlsx.load(buffer);
     }

@@ -80,6 +80,10 @@ function flattenFields(fields: SchemaField[], result: SchemaField[] = []): Schem
     return result;
 }
 
+async function readSchemaTemplateXlsx(): Promise<Buffer> {
+    return await readFile(path.join(process.cwd(), 'artifacts', 'template.xlsx'));
+}
+
 function getFieldConfig(schemaConfig: ISchemaTemplateSchemaConfig, field: SchemaField): any {
     const templateFieldId = field.templateFieldId || '';
     const name = field.name || '';
@@ -2766,7 +2770,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
             try {
                 const { ids } = msg;
                 const schemas = await SchemaImportExportHelper.exportSchemas(ids);
-                const buffer = await JsonToXlsx.generate(schemas, [], []);
+                const template = await readSchemaTemplateXlsx();
+                const buffer = await JsonToXlsx.generate(schemas, [], [], { template });
                 return new BinaryMessageResponse(buffer);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);

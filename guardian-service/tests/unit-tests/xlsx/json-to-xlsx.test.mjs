@@ -10,6 +10,7 @@ const { Workbook, Hyperlink } = await import('../../../dist/xlsx/models/workbook
 const { XlsxSchema } = await import('../../../dist/xlsx/models/xlsx-schema.js');
 const { Table }      = await import('../../../dist/xlsx/models/table.js');
 const { FieldTypes } = await import('../../../dist/xlsx/models/dictionary.js');
+const { Dictionary } = await import('../../../dist/xlsx/models/dictionary.js');
 
 // Private static helpers are accessible via bracket notation in compiled JS.
 const collectInlineRefs = (fields, set) => JsonToXlsx['collectInlineRefs'](fields, set);
@@ -39,6 +40,34 @@ function makeField(overrides = {}) {
 /** Minimal Schema plain-object stub. */
 const makeSchema = (overrides = {}) =>
     ({ name: 'MySchema', iri: '#schema', fields: [], ...overrides });
+
+describe('JsonToXlsx.generate README worksheet', function () {
+    it('keeps the legacy sheet order when no template workbook is supplied', async function () {
+        const buffer = await JsonToXlsx.generate([makeSchema()], [], []);
+        const workbook = new Workbook();
+        await workbook.read(buffer);
+
+        assert.equal(workbook.sheetNames[0], Dictionary.SHARED_ENUM_SHEET);
+        assert.notInclude(workbook.sheetNames, Dictionary.README_SHEET);
+    });
+
+    it('uses the README worksheet from the supplied template workbook', async function () {
+        const template = new Workbook();
+        template.createWorksheet(Dictionary.README_SHEET).setValue('README from template', 1, 1);
+        template.createWorksheet('Schema name').setValue('Template sample schema', 1, 1);
+        const templateBuffer = await template.write();
+
+        const buffer = await JsonToXlsx.generate([makeSchema()], [], [], { template: templateBuffer });
+        const workbook = new Workbook();
+        await workbook.read(buffer);
+
+        assert.equal(workbook.sheetNames[0], Dictionary.README_SHEET);
+        assert.equal(workbook.sheetNames[1], Dictionary.SHARED_ENUM_SHEET);
+        const readme = workbook.getWorksheet(Dictionary.README_SHEET);
+        assert.equal(readme.getValue(1, 1), 'README from template');
+        assert.notInclude(workbook.sheetNames, 'Schema name');
+    });
+});
 
 // ---------------------------------------------------------------------------
 describe('JsonToXlsx.collectInlineRefs', function () {
