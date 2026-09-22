@@ -547,12 +547,12 @@ describe('JsonToXlsx.buildIfFormula — array comparators (issue #6687)', functi
         assert.equal(formula, 'EXACT(G5,2)');
     });
 
-    it('contains exports as a token-padded ISNUMBER(SEARCH(...)) formula', function () {
+    it('contains exports as a token-padded ISNUMBER(FIND(...)) formula (case-sensitive, matching EXACT)', function () {
         const formula = buildIfFormula(
             { field: makeField({ name: 'tags', isArray: true }), fieldValue: 2, comparator: 'contains' },
             cache('tags', 'G5'),
         );
-        assert.equal(formula, 'ISNUMBER(SEARCH(","&2&",", ","&G5&","))');
+        assert.equal(formula, 'ISNUMBER(FIND(","&2&",", ","&G5&","))');
     });
 
     it('explicit equals on an array field ("each element equals") also exports as plain EXACT, does not throw', function () {
@@ -574,7 +574,7 @@ describe('JsonToXlsx.buildIfFormula — array comparators (issue #6687)', functi
     it('a stale "contains" on a field that is no longer an array exports as plain EXACT, not thrown or ISNUMBER', function () {
         // Regression: e.g. "Allow Multiple Answers" was turned off after the condition was
         // authored. Must self-correct like the backend eval/compile paths do, not export a
-        // SEARCH formula against a scalar cell that was never comma-joined.
+        // FIND formula against a scalar cell that was never comma-joined.
         const formula = buildIfFormula(
             { field: makeField({ name: 'tags', isArray: false }), fieldValue: 2, comparator: 'contains' },
             cache('tags', 'G5'),
@@ -587,8 +587,8 @@ describe('JsonToXlsx.buildIfFormula — array comparators (issue #6687)', functi
 describe('XlsxToJson.parseCondition — array comparators (issue #6687)', function () {
     const parseCondition = (formula) => XlsxToJson['parseCondition'](formula);
 
-    it('recognizes ISNUMBER(SEARCH(...)) as a contains predicate', function () {
-        const parsed = parseCondition('ISNUMBER(SEARCH(","&2&",", ","&G5&","))');
+    it('recognizes ISNUMBER(FIND(...)) as a contains predicate', function () {
+        const parsed = parseCondition('ISNUMBER(FIND(","&2&",", ","&G5&","))');
         assert.equal(parsed.type, 'formulae');
         assert.equal(parsed.fieldPath, 'G5');
         assert.equal(parsed.compareValue, 2);
@@ -596,9 +596,13 @@ describe('XlsxToJson.parseCondition — array comparators (issue #6687)', functi
     });
 
     it('inverts correctly under NOT(...)', function () {
-        const parsed = parseCondition('NOT(ISNUMBER(SEARCH(","&2&",", ","&G5&",")))');
+        const parsed = parseCondition('NOT(ISNUMBER(FIND(","&2&",", ","&G5&",")))');
         assert.equal(parsed.comparator, 'contains');
         assert.equal(parsed.invert, true);
+    });
+
+    it('no longer recognizes SEARCH (case-insensitive) - only FIND (case-sensitive) is supported', function () {
+        assert.throws(() => parseCondition('ISNUMBER(SEARCH(","&2&",", ","&G5&","))'));
     });
 
     it('a plain EXACT formula still parses with no comparator at all', function () {

@@ -1121,7 +1121,7 @@ export class XlsxToJson {
                     message: `Row ${row}: Failed to parse Visibility formula "${rawConditionValue}". `
                         + `Supported formats: blank (always visible), "hidden" or "No" (always hidden), `
                         + `EXACT(Gn,"value") or NOT(EXACT(Gn,"value")) for "=", `
-                        + `ISNUMBER(SEARCH(","&"value"&",",","&Gn&",")) for array "contains", `
+                        + `ISNUMBER(FIND(","&"value"&",",","&Gn&",")) for array "contains", `
                         + `where Gn is an "Test Value" cell reference. `
                         + `Error: ${error?.toString()}`,
                     worksheet: worksheet.name,
@@ -1332,7 +1332,7 @@ export class XlsxToJson {
                 if (name === 'ISNUMBER' && fn.args.length === 1) {
                     const inner = fn.args[0];
                     const innerFn = (inner as any)?.type === 'FunctionNode' ? inner as mathjs.FunctionNode : null;
-                    if (innerFn && innerFn.fn.name?.toUpperCase() === 'SEARCH' && innerFn.args.length === 2) {
+                    if (innerFn && innerFn.fn.name?.toUpperCase() === 'FIND' && innerFn.args.length === 2) {
                         const needle = parsePaddedConcat(innerFn.args[0]);
                         const haystack = parsePaddedConcat(innerFn.args[1]);
                         if (needle && haystack) {

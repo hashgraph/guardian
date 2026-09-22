@@ -672,9 +672,7 @@ export class JsonToXlsx {
             const isArrayField = !!(sub.field?.isArray && !sub.field?.isRef);
 
             if (sub.comparator === 'contains' && isArrayField) {
-                // Token-exact match, padded with delimiters so e.g. 2 doesn't match inside 12.
-                // Field cells hold an array joined with ',' (see anyToXlsx).
-                return `ISNUMBER(SEARCH(","&${v}&",", ","&${f.name}&","))`;
+                return `ISNUMBER(FIND(","&${v}&",", ","&${f.name}&","))`;
             }
             return `EXACT(${f.name},${v})`;
         };
