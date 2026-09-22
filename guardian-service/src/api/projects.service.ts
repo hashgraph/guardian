@@ -11,6 +11,8 @@ import {
 import { MessageAPI, Schema, SchemaField } from '@guardian/interfaces';
 import { FilterObject } from '@mikro-orm/core';
 
+// These three paths are unchanged between IWA v1 and v3, so the project index
+// resolves correctly for schemas authored against either version.
 export const CompanyNameField = 'AccountableImpactOrganization.name';
 export const SectoralScopeField = 'ActivityImpactModule.projectScope';
 export const ProjectTitleField = 'ActivityImpactModule.name';
@@ -154,9 +156,9 @@ export async function projectsAPI(logger: PinoLogger): Promise<void> {
         }
     });
 
-    ApiResponse(MessageAPI.GET_POLICY_PROPERTIES, async () => {
+    ApiResponse(MessageAPI.GET_POLICY_PROPERTIES, async (msg: { iwaVersion?: string }) => {
         try {
-            const policyProperties = await DatabaseServer.getPolicyProperties();
+            const policyProperties = await DatabaseServer.getPolicyProperties(msg?.iwaVersion);
             return new MessageResponse(policyProperties);
         } catch (error) {
             console.log(error);

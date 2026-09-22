@@ -78,10 +78,13 @@ function fakeCollection(documents) {
     };
 }
 
-function runMigration(policyDocuments, schemaDocuments = []) {
+function runMigration(policyDocuments, schemaDocuments = [], propertyDocuments = []) {
     const policies = fakeCollection(policyDocuments);
     const schemas = fakeCollection(schemaDocuments);
-    const collections = { Policy: policies, Schema: schemas };
+    // the description backfill reads the shipped CSVs and updates PolicyProperty
+    // rows; these fixtures seed none, so every updateMany is a no-op here
+    const properties = fakeCollection(propertyDocuments);
+    const collections = { Policy: policies, Schema: schemas, policy_property: properties };
     const migration = Object.create(ReleaseMigration.prototype);
     migration.ctx = 'session-1';
     migration.getCollection = (name) => {
@@ -97,7 +100,7 @@ function runMigration(policyDocuments, schemaDocuments = []) {
             }),
         }),
     };
-    return { collection: policies, policies, schemas, run: () => migration.up() };
+    return { collection: policies, policies, schemas, properties, run: () => migration.up() };
 }
 
 describe('v3-7-1 migration - schemaTemplate to schemaTemplates', () => {

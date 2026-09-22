@@ -1,5 +1,5 @@
 import { NatsService } from '@guardian/common';
-import { GenerateUUIDv4, MessageAPI } from '@guardian/interfaces';
+import { GenerateUUIDv4, IPropertySuggestionRequest, IPropertySuggestionResponse, MessageAPI } from '@guardian/interfaces';
 import { Singleton } from './decorators/singleton.js';
 
 /**
@@ -33,6 +33,18 @@ export class AISuggestions extends NatsService {
             throw new Error(res.error);
         }
         return res;
+    }
+
+    public async getPropertySuggestions(request: IPropertySuggestionRequest): Promise<IPropertySuggestionResponse> {
+        try {
+            const res = await this.requestOrThrow<IPropertySuggestionResponse>(MessageAPI.SUGGESTIONS_GET_PROPERTIES, request, 45000);
+            return res || { available: false, results: [] };
+        } catch (error: any) {
+            if (error?.code === 'NO_RESPONDERS' || error?.code === 'REQUEST_TIMEOUT') {
+                return { available: false, results: [] };
+            }
+            throw error;
+        }
     }
 
     public async rebuildAIVector(): Promise<any> {

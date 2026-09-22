@@ -159,6 +159,7 @@ export interface ISchemaTemplateSchemaConfig {
     schemaSettingsLocked?: boolean;
     customFieldsLocked?: boolean;
     guidelines?: string;
+    featured?: boolean;
     fields?: Record<string, ISchemaTemplateFieldConfig>;
 }
 

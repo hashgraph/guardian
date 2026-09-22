@@ -22,7 +22,7 @@
     "description": "",
     "devDependencies": {
         "@types/glob": "^8.1.0",
-        "@types/node": "24.13.3",
+        "@types/node": "24.13.5",
         "chai": "4.5.0",
         "mocha": "10.8.2",
         "mocha-junit-reporter": "2.2.1",
@@ -51,5 +51,5 @@
     },
     "type": "module",
     "types": "dist/index.d.ts",
-    "version": "3.7.0"
+    "version": "3.7.1-rc"
 }

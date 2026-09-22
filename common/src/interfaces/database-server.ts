@@ -353,7 +353,7 @@ export abstract class AbstractDatabaseServer {
      *
      * @virtual
      */
-    public static getPolicyProperties(): Promise<PolicyProperty[]> {
+    public static getPolicyProperties(iwaVersion?: string): Promise<PolicyProperty[]> {
         throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.getPolicyProperties.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 

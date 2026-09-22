@@ -397,6 +397,7 @@ async function importSchemaTemplateByComponents(
     notifier.startStep(STEP_SAVE_CONFIG);
     await normalizeSchemaTemplateConfig(template, true);
     const result = await DatabaseServer.updateSchemaTemplate(template);
+    await syncTemplateSchemasFeatured(result);
     notifier.completeStep(STEP_SAVE_CONFIG);
     notifier.complete();
     return result;
@@ -823,6 +824,28 @@ function getSnapshotSchemaConfig(
     templateSchemaId: string
 ) {
     return config?.schemas?.[templateSchemaId] || {};
+}
+
+/*
+ * Denormalizes config.schemas[id].featured onto the template's Schemas, since
+ * SchemaTemplate.config (GridFS-backed) isn't queryable outside the config editor.
+ */
+async function syncTemplateSchemasFeatured(template: SchemaTemplate): Promise<void> {
+    if (!template?.topicId) {
+        return;
+    }
+    const schemas = await DatabaseServer.getSchemas({
+        topicId: template.topicId,
+        category: SchemaCategory.TEMPLATE,
+        templateId: template.id
+    });
+    for (const schema of schemas as Schema[]) {
+        const featured = !!getSnapshotSchemaConfig(template.config, schema.templateSchemaId).featured;
+        if (!!schema.templateFeatured !== featured) {
+            schema.templateFeatured = featured;
+            await DatabaseServer.updateSchema(schema.id, schema);
+        }
+    }
 }
 
 function fieldsByTemplateId(fields: (ISchemaTemplateSnapshotField | any)[]): Map<string, any> {
@@ -1552,6 +1575,7 @@ function preparePolicySchemaUpdate(
     applySchemaDocumentSettings(target.document, name, description);
     target.templateId = templateId;
     target.templateSchemaId = source.templateSchemaId;
+    target.templateFeatured = !!schemaConfig.featured;
     target.category = SchemaCategory.POLICY;
     target.readonly = false;
     target.system = false;
@@ -2795,6 +2819,7 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
                 item.config = template.config || {};
 
                 const result = await DatabaseServer.updateSchemaTemplate(item);
+                await syncTemplateSchemasFeatured(result);
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);

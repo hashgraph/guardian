@@ -21,6 +21,8 @@ export class SelectSchema {
     @Input('bodyStyleClass') bodyStyleClass: string | undefined;
     @Input('panelStyleClass') panelStyleClass: string | undefined;
 
+    public sortedSchemas: SchemaVariables[] = [];
+
     constructor() {
     }
 
@@ -30,5 +32,15 @@ export class SelectSchema {
     }
 
     ngOnChanges(changes: SimpleChanges) {
+        if (changes.schemas) {
+            if (!this.schemas) {
+                this.sortedSchemas = [];
+                return;
+            }
+            const placeholders = this.schemas.filter((s) => !s.value && !s.data);
+            const real = this.schemas.filter((s) => s.value || s.data);
+            real.sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0));
+            this.sortedSchemas = [...placeholders, ...real];
+        }
     }
 }

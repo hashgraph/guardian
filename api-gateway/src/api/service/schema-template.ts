@@ -550,7 +550,9 @@ export class SchemaTemplatesApi {
     ): Promise<ISchemaTemplate> {
         try {
             const guardians = new Guardians();
-            return await guardians.updateSchemaTemplate(templateId, body, new EntityOwner(user));
+            const result = await guardians.updateSchemaTemplate(templateId, body, new EntityOwner(user));
+            await this.cacheService.invalidateAllTagsByPrefixes(CACHE_TAG_PREFIXES.SCHEMAS);
+            return result;
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

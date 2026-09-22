@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   check-majors:
-    runs-on: guardian-linux-medium
+    runs-on: hg-guard-lin-md
     env:
       NODE_VERSION: "24.21.0"
     steps:
