@@ -46,6 +46,7 @@ Matching is case-sensitive. Check that the entry and the match value match exact
 
 #### Related
 
+* Concept: [Array Element Conditions](./)
 * Task: [Configure Nested and Cross-Schema Conditions](../cross-schema-conditions/configure-nested-and-cross-schema-conditions.md)
 * Task: [Set up Repeatable Field Links](../repeatable-field-links/set-up-repeatable-field-links.md)
 * Reference: [Conditional and Visibility Logic](../best-practices-to-implement-schema/conditional-and-visibility-logic.md)
