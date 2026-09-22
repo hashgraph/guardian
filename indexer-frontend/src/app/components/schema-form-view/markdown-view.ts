@@ -54,36 +54,87 @@ function inline(text: string, resolved?: Map<string, string>): string {
     return out.replace(/\u0000(\d+)\u0000/g, (match, index) => escaped[Number(index)]);
 }
 
+const LIST_LINE = /^( *)(?:[-*]|\d+\.)\s+(.*)$/;
+
+const ORDERED_LIST_LINE = /^ *\d+\./;
+
+const INDENT = '  ';
+
+interface MarkdownListItem {
+    content: string;
+    children: MarkdownList | null;
+}
+
+interface MarkdownList {
+    ordered: boolean;
+    items: MarkdownListItem[];
+}
+
+function renderList(list: MarkdownList): string {
+    const tag = list.ordered ? 'ol' : 'ul';
+    const items = list.items
+        .map((item) => `<li>${item.content}${item.children ? renderList(item.children) : ''}</li>`)
+        .join('');
+    return `<${tag}>${items}</${tag}>`;
+}
+
 export function markdownToHtml(markdown: string | null | undefined, resolved?: Map<string, string>): string {
     if (!markdown) {
         return '';
     }
     const lines = markdown.replace(/\r\n/g, '\n').split('\n');
     const blocks: string[] = [];
-    let list: { ordered: boolean, items: string[] } | null = null;
+    let root: MarkdownList | null = null;
+    let stack: MarkdownList[] = [];
     const flush = (): void => {
-        if (list) {
-            const tag = list.ordered ? 'ol' : 'ul';
-            blocks.push(`<${tag}>` + list.items.map((item) => `<li>${item}</li>`).join('') + `</${tag}>`);
-            list = null;
+        if (root) {
+            blocks.push(renderList(root));
+            root = null;
+            stack = [];
         }
+    };
+    const start = (ordered: boolean, content: string): void => {
+        root = { ordered, items: [{ content, children: null }] };
+        stack = [root];
+    };
+    const openItem = (): MarkdownListItem | null => {
+        const list = stack[stack.length - 1];
+        return list && list.items.length ? list.items[list.items.length - 1] : null;
     };
     for (const line of lines) {
         const heading = /^(#{1,3})\s+(.*)$/.exec(line);
-        const bullet = /^[-*]\s+(.*)$/.exec(line);
-        const ordered = /^\d+\.\s+(.*)$/.exec(line);
+        const listLine = LIST_LINE.exec(line);
         if (heading) {
             flush();
             blocks.push(`<h${heading[1].length}>${inline(heading[2], resolved)}</h${heading[1].length}>`);
-        } else if (bullet || ordered) {
-            const isOrdered = !!ordered;
-            if (!list || list.ordered !== isOrdered) {
-                flush();
-                list = { ordered: isOrdered, items: [] };
+        } else if (listLine) {
+            const ordered = ORDERED_LIST_LINE.test(line);
+            const content = inline(listLine[2], resolved);
+            if (!root) {
+                start(ordered, content);
+                continue;
             }
-            list.items.push(inline((bullet || ordered)![1], resolved));
-        } else if (list && list.items.length && /^ {2}\S/.test(line)) {
-            list.items[list.items.length - 1] += '<br>' + inline(line.slice(2), resolved);
+            const depth = Math.min(Math.floor(listLine[1].length / INDENT.length), stack.length);
+            if (depth === stack.length) {
+                const parent = openItem();
+                if (parent) {
+                    const child: MarkdownList = { ordered, items: [] };
+                    parent.children = child;
+                    stack.push(child);
+                }
+            } else {
+                stack.length = depth + 1;
+            }
+            const target = stack[stack.length - 1];
+            if (target === root && target.ordered !== ordered) {
+                flush();
+                start(ordered, content);
+                continue;
+            }
+            target.items.push({ content, children: null });
+        } else if (openItem() && /^ {2,}\S/.test(line)) {
+            const item = openItem()!;
+            item.content += '<br>' + inline(line.trim(), resolved);
         } else if (line.trim()) {
             flush();
             blocks.push(`<p>${inline(line, resolved)}</p>`);

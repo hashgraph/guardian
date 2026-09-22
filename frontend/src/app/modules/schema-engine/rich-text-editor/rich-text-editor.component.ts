@@ -46,6 +46,7 @@ export class RichTextEditorComponent
     public imageLoading = false;
     public linkDialogPosition = { left: 8, top: 48 };
     public headingDisabled = false;
+    public listLevelDisabled = true;
     public activeCommands = new Set<string>();
 
     private _value = '';
@@ -55,6 +56,8 @@ export class RichTextEditorComponent
     private _editingLink: HTMLAnchorElement | null = null;
     private _draggingFromEditor = false;
     private _resolvedImages = new Map<string, string>();
+    private _htmlBeforeInput = '';
+    private _clearedHtml = '';
 
     private static readonly IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
     private static readonly MAX_IMAGE_SIDE = 1600;
@@ -69,11 +72,16 @@ export class RichTextEditorComponent
     };
 
     public readonly toolbarItems = [
+        { command: 'undo', icon: 'pi pi-undo', title: 'Undo (Ctrl+Z)' },
+        { command: 'redo', icon: 'pi pi-refresh', title: 'Redo (Ctrl+Shift+Z)' },
+        { separator: true },
         { command: 'bold', icon: null, label: 'B', title: 'Bold (Ctrl+B)' },
         { command: 'italic', icon: null, label: 'I', title: 'Italic (Ctrl+I)' },
         { separator: true },
         { command: 'insertUnorderedList', icon: 'pi pi-list', title: 'Bullet list' },
         { command: 'insertOrderedList', icon: 'pi pi-list-check', title: 'Numbered list' },
+        { command: 'outdent', icon: 'pi pi-angle-double-left', title: 'Decrease list level' },
+        { command: 'indent', icon: 'pi pi-angle-double-right', title: 'Increase list level' },
         { separator: true },
         { command: 'h1', icon: null, label: 'H1', title: 'Heading 1' },
         { command: 'h2', icon: null, label: 'H2', title: 'Heading 2' },
@@ -125,7 +133,12 @@ export class RichTextEditorComponent
         this.cdr.markForCheck();
     }
 
+    onBeforeInput(): void {
+        this._htmlBeforeInput = this.editorRef?.nativeElement.innerHTML || '';
+    }
+
     onInput(event?: Event): void {
+        this._clearedHtml = '';
         if (this._isDeletionEvent(event)) {
             this._clearEmptyFormatting();
         }
@@ -214,8 +227,13 @@ export class RichTextEditorComponent
         return !!command && ['h1', 'h2', 'h3'].includes(command);
     }
 
+    isListLevelCommand(command: string | undefined): boolean {
+        return command === 'indent' || command === 'outdent';
+    }
+
     isCommandDisabled(command: string | undefined): boolean {
         return (this.headingDisabled && this.isHeadingCommand(command))
+            || (this.listLevelDisabled && this.isListLevelCommand(command))
             || (command === 'image' && this.imageLoading);
     }
 
@@ -224,9 +242,13 @@ export class RichTextEditorComponent
     }
 
     commandTitle(command: string | undefined, title: string): string {
-        return this.isCommandDisabled(command)
-            ? 'Headings are not available inside a list'
-            : title;
+        if (!this.isCommandDisabled(command)) {
+            return title;
+        }
+        if (this.isListLevelCommand(command)) {
+            return 'List levels are only available inside a list';
+        }
+        return 'Headings are not available inside a list';
     }
 
     execCommand(command: string, event: MouseEvent): void {
@@ -236,6 +258,11 @@ export class RichTextEditorComponent
         if (this.isHeadingCommand(command)) {
             if (this._isInListItem(this._getSelection())) { return; }
             document.execCommand('formatBlock', false, this._nextBlockFormat(command));
+        } else if (this.isListLevelCommand(command)) {
+            if (!this._isInListItem(this._getSelection())) { return; }
+            document.execCommand(command, false, undefined);
+        } else if (command === 'undo' && this._clearedHtml) {
+            this._restoreClearedHtml();
         } else if (command === 'link') {
             this._savedRange = this._getSelection();
             this._editingLink = this._getLink(this._savedRange);
@@ -481,14 +508,26 @@ export class RichTextEditorComponent
     private _clearEmptyFormatting(): void {
         const el = this.editorRef?.nativeElement;
         if (!el || !el.innerHTML || !isBlankRichText(el.innerHTML)) { return; }
+        this._clearedHtml = this._htmlBeforeInput;
         el.innerHTML = '';
+        this._collapseCaret(el, true);
+        this._updateToolbarState();
+    }
+
+    private _restoreClearedHtml(): void {
+        const el = this.editorRef.nativeElement;
+        el.innerHTML = this._clearedHtml;
+        this._clearedHtml = '';
+        this._collapseCaret(el, false);
+    }
+
+    private _collapseCaret(el: HTMLElement, toStart: boolean): void {
         const range = document.createRange();
         range.selectNodeContents(el);
-        range.collapse(true);
+        range.collapse(toStart);
         const selection = window.getSelection();
         selection?.removeAllRanges();
         selection?.addRange(range);
-        this._updateToolbarState();
     }
 
     private _getSelection(): Range | null {
@@ -532,6 +571,10 @@ export class RichTextEditorComponent
         const disabled = this._isInListItem(range);
         if (disabled !== this.headingDisabled) {
             this.headingDisabled = disabled;
+            this.cdr.markForCheck();
+        }
+        if (disabled === this.listLevelDisabled) {
+            this.listLevelDisabled = !disabled;
             this.cdr.markForCheck();
         }
         const next = this._readActiveCommands(range);

@@ -410,4 +410,78 @@ describe('markdown converters', () => {
                 .toContain('src="data:image/webp;base64,AAAA"');
         });
     });
+
+    describe('nested lists', () => {
+        it('should nest an indented bullet list and write it back indented', () => {
+            const markdown = '- one\n  - deep\n- two';
+            const html = '<ul><li>one<ul><li>deep</li></ul></li><li>two</li></ul>';
+
+            expect(markdownToHtml(markdown)).toBe(html);
+            expect(htmlToMarkdown(html)).toBe(markdown);
+        });
+
+        it('should nest an indented numbered list under a bullet item', () => {
+            const markdown = '- one\n  1. first\n  2. second';
+            const html = '<ul><li>one<ol><li>first</li><li>second</li></ol></li></ul>';
+
+            expect(markdownToHtml(markdown)).toBe(html);
+            expect(htmlToMarkdown(html)).toBe(markdown);
+        });
+
+        it('should return to the outer level when the indent drops', () => {
+            const markdown = '- one\n  - deep\n- back';
+
+            expect(markdownToHtml(markdown))
+                .toBe('<ul><li>one<ul><li>deep</li></ul></li><li>back</li></ul>');
+        });
+
+        it('should round trip three levels', () => {
+            const markdown = '- one\n  - two\n    - three\n- back';
+            const html = '<ul><li>one<ul><li>two<ul><li>three</li></ul></li></ul></li>'
+                + '<li>back</li></ul>';
+
+            expect(markdownToHtml(markdown)).toBe(html);
+            expect(htmlToMarkdown(html)).toBe(markdown);
+        });
+
+        it('should number every nested ordered list from one', () => {
+            const html = '<ol><li>one<ol><li>a</li><li>b</li></ol></li><li>two<ol><li>c</li></ol></li></ol>';
+
+            expect(htmlToMarkdown(html)).toBe('1. one\n  1. a\n  2. b\n2. two\n  1. c');
+        });
+
+        it('should indent a continuation line of a nested item one level deeper', () => {
+            const markdown = '- one\n  - deep\n    more';
+
+            expect(markdownToHtml(markdown))
+                .toBe('<ul><li>one<ul><li>deep<br>more</li></ul></li></ul>');
+            expect(htmlToMarkdown('<ul><li>one<ul><li>deep<br>more</li></ul></li></ul>'))
+                .toBe(markdown);
+        });
+
+        it('should read a nested list left beside the item as nesting', () => {
+            expect(htmlToMarkdown('<ul><li>one</li><ul><li>deep</li></ul><li>two</li></ul>'))
+                .toBe('- one\n  - deep\n- two');
+        });
+
+        it('should clamp an over indented item to one level deeper', () => {
+            expect(markdownToHtml('- one\n      - deep'))
+                .toBe('<ul><li>one<ul><li>deep</li></ul></li></ul>');
+        });
+
+        it('should leave a flat list flat in both directions', () => {
+            const markdown = '- one\n- two';
+            const html = '<ul><li>one</li><li>two</li></ul>';
+
+            expect(markdownToHtml(markdown)).toBe(html);
+            expect(htmlToMarkdown(html)).toBe(markdown);
+        });
+
+        it('should no longer print an indented marker inside the item above', () => {
+            const html = markdownToHtml('- one\n  - deep');
+
+            expect(html).not.toContain('<br>- deep');
+            expect(html).toContain('<ul><li>deep</li></ul>');
+        });
+    });
 });

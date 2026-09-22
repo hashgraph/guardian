@@ -502,7 +502,101 @@ describe('RichTextEditorComponent', () => {
 
         expect(component.headingDisabled).toBeFalse();
         expect(fixture.debugElement.queryAll(By.css('.rte-btn'))
-            .filter(item => item.nativeElement.disabled).length).toBe(0);
+            .filter(item => item.nativeElement.disabled)
+            .map(item => item.nativeElement.title))
+            .toEqual([
+                'List levels are only available inside a list',
+                'List levels are only available inside a list'
+            ]);
+    });
+
+    it('should offer undo, redo and the two list level buttons', () => {
+        const commands = component.toolbarItems.map((item: any) => item.command);
+
+        expect(commands).toContain('undo');
+        expect(commands).toContain('redo');
+        expect(commands).toContain('outdent');
+        expect(commands).toContain('indent');
+    });
+
+    it('should pass undo and redo straight to the browser', () => {
+        const execSpy = spyOn(document, 'execCommand');
+
+        component.execCommand('undo', new MouseEvent('mousedown'));
+        component.execCommand('redo', new MouseEvent('mousedown'));
+
+        expect(execSpy).toHaveBeenCalledWith('undo', false, undefined);
+        expect(execSpy).toHaveBeenCalledWith('redo', false, undefined);
+    });
+
+    it('should change the list level while the caret is inside a list item', () => {
+        const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
+        editor.innerHTML = '<ul><li>one</li><li>two</li></ul>';
+        selectContents(editor.querySelectorAll('li')[1]);
+        document.dispatchEvent(new Event('selectionchange'));
+        fixture.detectChanges();
+        const execSpy = spyOn(document, 'execCommand');
+
+        component.execCommand('indent', new MouseEvent('mousedown'));
+        component.execCommand('outdent', new MouseEvent('mousedown'));
+
+        expect(component.listLevelDisabled).toBeFalse();
+        expect(component.isCommandDisabled('indent')).toBeFalse();
+        expect(component.isCommandDisabled('outdent')).toBeFalse();
+        expect(execSpy).toHaveBeenCalledWith('indent', false, undefined);
+        expect(execSpy).toHaveBeenCalledWith('outdent', false, undefined);
+    });
+
+    it('should refuse to change the list level outside a list item', () => {
+        const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
+        editor.innerHTML = '<p>one</p>';
+        selectContents(editor.querySelector('p'));
+        document.dispatchEvent(new Event('selectionchange'));
+        fixture.detectChanges();
+        const execSpy = spyOn(document, 'execCommand');
+
+        component.execCommand('indent', new MouseEvent('mousedown'));
+        component.execCommand('outdent', new MouseEvent('mousedown'));
+
+        expect(component.listLevelDisabled).toBeTrue();
+        expect(execSpy).not.toHaveBeenCalled();
+    });
+
+    it('should restore the text when undo follows a deletion that emptied the field', () => {
+        const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
+        const emitted: string[] = [];
+        component.registerOnChange((value: string) => { emitted.push(value); });
+
+        editor.innerHTML = '<p>one</p>';
+        component.onBeforeInput();
+        editor.innerHTML = '<p><br></p>';
+        component.onInput(new InputEvent('input', { inputType: 'deleteContentBackward' }));
+        expect(editor.innerHTML).toBe('');
+        expect(emitted[emitted.length - 1]).toBe('');
+
+        const execSpy = spyOn(document, 'execCommand');
+        component.execCommand('undo', new MouseEvent('mousedown'));
+
+        expect(editor.innerHTML).toBe('<p>one</p>');
+        expect(emitted[emitted.length - 1]).toBe('one');
+        expect(execSpy).not.toHaveBeenCalled();
+    });
+
+    it('should hand undo back to the browser once a later edit has happened', () => {
+        const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
+
+        editor.innerHTML = '<p>one</p>';
+        component.onBeforeInput();
+        editor.innerHTML = '<p><br></p>';
+        component.onInput(new InputEvent('input', { inputType: 'deleteContentBackward' }));
+
+        editor.innerHTML = '<p>two</p>';
+        component.onInput(new InputEvent('input', { inputType: 'insertText' }));
+
+        const execSpy = spyOn(document, 'execCommand');
+        component.execCommand('undo', new MouseEvent('mousedown'));
+
+        expect(execSpy).toHaveBeenCalledWith('undo', false, undefined);
     });
 
     it('should refuse a link with an unsupported protocol', () => {

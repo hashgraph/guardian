@@ -131,4 +131,35 @@ describe('markdown-view', () => {
             expect(markdownToHtml(`![report\\].png](${reference})`)).toContain(`data-src="${reference}"`);
         });
     });
+
+    describe('nested lists', () => {
+        it('should nest an indented bullet list', () => {
+            expect(markdownToHtml('- one\n  - deep\n- two'))
+                .toBe('<ul><li>one<ul><li>deep</li></ul></li><li>two</li></ul>');
+        });
+
+        it('should nest an indented numbered list under a bullet item', () => {
+            expect(markdownToHtml('- one\n  1. first\n  2. second'))
+                .toBe('<ul><li>one<ol><li>first</li><li>second</li></ol></li></ul>');
+        });
+
+        it('should return to the outer level when the indent drops', () => {
+            expect(markdownToHtml('- one\n  - deep\n- back'))
+                .toBe('<ul><li>one<ul><li>deep</li></ul></li><li>back</li></ul>');
+        });
+
+        it('should render three levels', () => {
+            expect(markdownToHtml('- one\n  - two\n    - three'))
+                .toBe('<ul><li>one<ul><li>two<ul><li>three</li></ul></li></ul></li></ul>');
+        });
+
+        it('should keep a deeper continuation line inside its item', () => {
+            expect(markdownToHtml('- one\n  - deep\n    more'))
+                .toBe('<ul><li>one<ul><li>deep<br>more</li></ul></li></ul>');
+        });
+
+        it('should leave a flat list flat', () => {
+            expect(markdownToHtml('- one\n- two')).toBe('<ul><li>one</li><li>two</li></ul>');
+        });
+    });
 });

@@ -69,36 +69,87 @@ function inline(text: string, resolved?: Map<string, string>): string {
     return out.replace(/\u0000(\d+)\u0000/g, (match, index) => escaped[Number(index)]);
 }
 
+const LIST_LINE = /^( *)(?:[-*]|\d+\.)\s+(.*)$/;
+
+const ORDERED_LIST_LINE = /^ *\d+\./;
+
+const INDENT = '  ';
+
+interface MarkdownListItem {
+    content: string;
+    children: MarkdownList | null;
+}
+
+interface MarkdownList {
+    ordered: boolean;
+    items: MarkdownListItem[];
+}
+
+function renderList(list: MarkdownList): string {
+    const tag = list.ordered ? 'ol' : 'ul';
+    const items = list.items
+        .map((item) => `<li>${item.content}${item.children ? renderList(item.children) : ''}</li>`)
+        .join('');
+    return `<${tag}>${items}</${tag}>`;
+}
+
 export function markdownToHtml(markdown: string | null | undefined, resolved?: Map<string, string>): string {
     if (!markdown) {
         return '';
     }
     const lines = markdown.replace(/\r\n/g, '\n').split('\n');
     const blocks: string[] = [];
-    let list: { ordered: boolean, items: string[] } | null = null;
+    let root: MarkdownList | null = null;
+    let stack: MarkdownList[] = [];
     const flush = (): void => {
-        if (list) {
-            const tag = list.ordered ? 'ol' : 'ul';
-            blocks.push(`<${tag}>` + list.items.map((item) => `<li>${item}</li>`).join('') + `</${tag}>`);
-            list = null;
+        if (root) {
+            blocks.push(renderList(root));
+            root = null;
+            stack = [];
         }
+    };
+    const start = (ordered: boolean, content: string): void => {
+        root = { ordered, items: [{ content, children: null }] };
+        stack = [root];
+    };
+    const openItem = (): MarkdownListItem | null => {
+        const list = stack[stack.length - 1];
+        return list && list.items.length ? list.items[list.items.length - 1] : null;
     };
     for (const line of lines) {
         const heading = /^(#{1,3})\s+(.*)$/.exec(line);
-        const bullet = /^[-*]\s+(.*)$/.exec(line);
-        const ordered = /^\d+\.\s+(.*)$/.exec(line);
+        const listLine = LIST_LINE.exec(line);
         if (heading) {
             flush();
             blocks.push(`<h${heading[1].length}>${inline(heading[2], resolved)}</h${heading[1].length}>`);
-        } else if (bullet || ordered) {
-            const isOrdered = !!ordered;
-            if (!list || list.ordered !== isOrdered) {
-                flush();
-                list = { ordered: isOrdered, items: [] };
+        } else if (listLine) {
+            const ordered = ORDERED_LIST_LINE.test(line);
+            const content = inline(listLine[2], resolved);
+            if (!root) {
+                start(ordered, content);
+                continue;
             }
-            list.items.push(inline((bullet || ordered)![1], resolved));
-        } else if (list && list.items.length && /^ {2}\S/.test(line)) {
-            list.items[list.items.length - 1] += '<br>' + inline(line.slice(2), resolved);
+            const depth = Math.min(Math.floor(listLine[1].length / INDENT.length), stack.length);
+            if (depth === stack.length) {
+                const parent = openItem();
+                if (parent) {
+                    const child: MarkdownList = { ordered, items: [] };
+                    parent.children = child;
+                    stack.push(child);
+                }
+            } else {
+                stack.length = depth + 1;
+            }
+            const target = stack[stack.length - 1];
+            if (target === root && target.ordered !== ordered) {
+                flush();
+                start(ordered, content);
+                continue;
+            }
+            target.items.push({ content, children: null });
+        } else if (openItem() && /^ {2,}\S/.test(line)) {
+            const item = openItem()!;
+            item.content += '<br>' + inline(line.trim(), resolved);
         } else if (line.trim()) {
             flush();
             blocks.push(`<p>${inline(line, resolved)}</p>`);
@@ -118,6 +169,9 @@ function inlineNode(node: Node): string {
         return '';
     }
     const tag = node.tagName;
+    if (tag === 'UL' || tag === 'OL') {
+        return '';
+    }
     const text = inlineToMarkdown(node);
     if (tag === 'B' || tag === 'STRONG') {
         return text ? `**${text}**` : '';
@@ -169,12 +223,41 @@ function singleLine(text: string): string {
     return text.replace(/\s*\n\s*/g, ' ').trim();
 }
 
-function continuedLines(text: string): string {
+function continuedLines(text: string, depth: number): string {
+    const pad = INDENT.repeat(depth + 1);
     return text
         .split('\n')
-        .map((line, index) => (index ? '  ' + line.trim() : line))
+        .map((line, index) => (index ? pad + line.trim() : line))
         .filter((line, index) => index === 0 || line.trim())
         .join('\n');
+}
+
+function isListElement(node: Node): boolean {
+    return node instanceof Element && (node.tagName === 'UL' || node.tagName === 'OL');
+}
+
+function listLines(list: Element, depth: number): string[] {
+    const ordered = list.tagName === 'OL';
+    const lines: string[] = [];
+    let index = 0;
+    for (const child of Array.from(list.children)) {
+        if (isListElement(child)) {
+            lines.push(...listLines(child, depth + 1));
+            continue;
+        }
+        if (child.tagName !== 'LI') {
+            continue;
+        }
+        index++;
+        const marker = ordered ? `${index}. ` : '- ';
+        lines.push(INDENT.repeat(depth) + marker + continuedLines(inlineToMarkdown(child), depth));
+        for (const nested of Array.from(child.children)) {
+            if (isListElement(nested)) {
+                lines.push(...listLines(nested, depth + 1));
+            }
+        }
+    }
+    return lines;
 }
 
 function collectBlocks(parent: Node, blocks: string[]): void {
@@ -193,9 +276,7 @@ function collectBlocks(parent: Node, blocks: string[]): void {
         if (tag === 'H1' || tag === 'H2' || tag === 'H3') {
             blocks.push('#'.repeat(Number(tag[1])) + ' ' + singleLine(inlineToMarkdown(node)));
         } else if (tag === 'UL' || tag === 'OL') {
-            const items = Array.from(node.children).map((item, index) =>
-                (tag === 'OL' ? `${index + 1}. ` : '- ') + continuedLines(inlineToMarkdown(item))
-            );
+            const items = listLines(node, 0);
             if (items.length) {
                 blocks.push(items.join('\n'));
             }
