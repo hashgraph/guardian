@@ -86,12 +86,62 @@ describe('Schema template artifact', () => {
             'Type-dependent: enum name (Enum), unit symbol (Prefix/Postfix), regex (Pattern), math expression (Auto-Calculate), JSON font object (Help Text), JSON column array (Table), parent field key (Country, State/Province). Blank for all other types.'
         );
         assert.equal(
+            readme.getValue(3, 49),
+            'Enum name, e.g. "Enum field 1"'
+        );
+        assert.equal(
             readme.getValue(2, 49),
-            'Dropdown list — values defined in the Enums tab. The field\'s Parameter must exactly match the "Enum Name" column and the schema name (row 1) must match "Schema name" — both case-sensitive.'
+            'Dropdown list — values defined in the Enums tab. The field\'s Parameter must exactly match the "Enum Name" column — case-sensitive.'
         );
         assert.equal(
             readme.getValue(2, 61),
-            'The field\'s Parameter value must exactly match the "Enum Name" column in the Enums tab, and the schema name (row 1) must exactly match the "Schema name" column (both case-sensitive).'
+            'The field\'s Parameter value must exactly match the "Enum Name" column in the Enums tab (case-sensitive).'
         );
+        assert.equal(
+            readme.getValue(2, 62),
+            'In the Enums tab, the three columns are: Enum Name | Loaded to IPFS | Value'
+        );
+        assert.equal(
+            readme.getValue(2, 63),
+            'For the first value of each group: fill in Enum Name and Loaded to IPFS. Leave those two columns blank on subsequent value rows for the same group.'
+        );
+        assert.equal(
+            readme.getValue(2, 89),
+            'Enum matching is case-sensitive: a field\'s Parameter value must match the "Enum Name" column in the Enums tab exactly.'
+        );
+    });
+
+    it('keeps the Enums tab to the three columns the parser reads', () => {
+        const enums = workbook.getWorksheet('Enums');
+        assert.equal(enums.getValue(1, 1), 'Enum Name');
+        assert.equal(enums.getValue(2, 1), 'Loaded to IPFS');
+        assert.equal(enums.getValue(3, 1), 'Value');
+        assert.ok(
+            !enums.getValue(4, 1),
+            'a fourth Enums column is back — the parser reads three headers only'
+        );
+    });
+
+    it('still resolves both example enums after the column was dropped', () => {
+        const options = fields
+            .filter((field) => Array.isArray(field.enum) && field.enum.length)
+            .map((field) => field.enum);
+        assert.equal(options.length, 2, 'the template no longer has two Enum examples');
+        assert.deepEqual(
+            options.map((list) => [...list].sort()).sort((a, b) => a.length - b.length),
+            [
+                ['Option 1', 'Option 2'],
+                ['Option 1', 'Option 2', 'Option 3']
+            ]
+        );
+    });
+
+    it('labels the example fields the way a form would', () => {
+        const descriptions = fields.map((field) => field.description);
+        assert.ok(descriptions.includes('Enter a number'), 'the Number example still repeats its type name');
+        assert.ok(descriptions.includes('Upload an image'), 'the Image example still repeats its type name');
+        assert.equal(findByCustomType(fields, 'continent').description, 'Choose a continent');
+        assert.equal(findByCustomType(fields, 'table').description, 'Upload a table');
+        assert.equal(findByCustomType(fields, 'richText').description, 'Enter formatted text');
     });
 });
