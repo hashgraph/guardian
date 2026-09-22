@@ -91,7 +91,10 @@ import { PolicyDataImportExport } from './helpers/policy-data/policy-data-import
 import { PolicyComponentsUtils } from './policy-components-utils.js';
 import { PolicyAccessCode, PolicyEngine } from './policy-engine.js';
 import { IPolicyUser } from './policy-user.js';
-import { getSchemaCategory, ImportMode, ImportPolicyOptions, importSubTools, PolicyImportExportHelper, previewToolByMessage, SchemaImportExportHelper } from '../helpers/import-helpers/index.js';
+import {
+    getSchemaCategory, ImportMode, ImportPolicyOptions, importSubTools, PolicyImportExportHelper, previewToolByMessage,
+    readSchemaTemplateXlsx, SchemaImportExportHelper
+} from '../helpers/import-helpers/index.js';
 import { PolicyCommentsUtils } from './policy-comments-utils.js';
 import { PersistStepPayload, RecordPersistService } from './helpers/record-persist.service.js';
 
@@ -122,10 +125,6 @@ function buildDocumentationUrls(
             dmrvUrl,
         };
     });
-}
-
-async function readSchemaTemplateXlsx(): Promise<Buffer> {
-    return await readFile(path.join(process.cwd(), 'artifacts', 'template.xlsx'));
 }
 
 /**

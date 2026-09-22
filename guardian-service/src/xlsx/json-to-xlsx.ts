@@ -1,7 +1,6 @@
 import { Dictionary, FieldTypes, geoDisplayValue } from './models/dictionary.js';
 import { anyToXlsx, examplesToXlsx, booleanToXlsx, entityToXlsx, fontToXlsx, stringToXlsx, typeToXlsx, unitToXlsx, valueToFormula, visibilityToXlsx } from './models/value-converters.js';
 import { Hyperlink, Range, Workbook, Worksheet } from './models/workbook.js';
-import ExcelJS from 'exceljs';
 import { Table } from './models/table.js';
 import { ISchema, Schema, SchemaCondition, SchemaField } from '@guardian/interfaces';
 import { PolicyTool, IPFS } from '@guardian/common';
@@ -11,7 +10,7 @@ import { XlsxEnum } from './models/xlsx-enum.js';
 import { SharedEnumTable } from './models/enum-table.js';
 
 export interface IJsonToXlsxOptions {
-    template?: ExcelJS.Buffer;
+    template?: ArrayBuffer;
 }
 
 export class JsonToXlsx {

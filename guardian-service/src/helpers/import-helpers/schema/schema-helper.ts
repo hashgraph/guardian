@@ -4,6 +4,8 @@ import { FilterObject } from '@mikro-orm/core';
 import { importTag } from '../tag/tag-import-helper.js';
 import { checkForCircularDependency, loadAnotherSchemas, loadSchema } from '../common/load-helper.js';
 import { validateSchemaDependencies } from './schema-dependency-validator.js';
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 
 /**
  * Only unique
@@ -637,4 +639,12 @@ export async function prepareSchemaPreview(
 
     notifier.complete();
     return schemas;
+}
+
+/**
+ * Read schema template xlsx
+ */
+export async function readSchemaTemplateXlsx(): Promise<ArrayBuffer> {
+    const file = await readFile(path.join(process.cwd(), 'artifacts', 'template.xlsx'));
+    return file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength);
 }

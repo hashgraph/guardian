@@ -50,7 +50,8 @@ import {
     previewToolByMessage,
     SchemaImportExportHelper,
     updateSchemaDefs,
-    updateToolConfig
+    updateToolConfig,
+    readSchemaTemplateXlsx
 } from '../helpers/import-helpers/index.js'
 import { validateSchemaDependencies } from '../helpers/import-helpers/schema/schema-dependency-validator.js';
 import { getPageOptions } from './helpers/index.js';
@@ -78,10 +79,6 @@ function flattenFields(fields: SchemaField[], result: SchemaField[] = []): Schem
         }
     }
     return result;
-}
-
-async function readSchemaTemplateXlsx(): Promise<Buffer> {
-    return await readFile(path.join(process.cwd(), 'artifacts', 'template.xlsx'));
 }
 
 function getFieldConfig(schemaConfig: ISchemaTemplateSchemaConfig, field: SchemaField): any {
