@@ -1,7 +1,7 @@
 {
     "author": "Hashgraph <guardian@hashgraph.com>",
     "dependencies": {
-        "@aws-sdk/client-secrets-manager": "3.1130.0",
+        "@aws-sdk/client-secrets-manager": "3.1135.0",
         "@azure/identity": "^4.10.0",
         "@azure/keyvault-secrets": "^4.9.0",
         "@digitalbazaar/credentials-context": "3.2.0",
@@ -30,7 +30,7 @@
         "fast-json-stable-stringify": "2.1.0",
         "js-base64": "3.9.3",
         "jsonld-signatures-v7": "npm:jsonld-signatures@7.0.0",
-        "jsonwebtoken": "^8.5.1",
+        "jsonwebtoken": "^9.0.3",
         "jszip": "^3.10.1",
         "lodash.get": "^4.4.2",
         "lodash.set": "^4.3.2",
@@ -46,8 +46,9 @@
     "description": "Common package share cross all services",
     "devDependencies": {
         "@types/express": "5.0.6",
-        "@types/jsonwebtoken": "^8.5.4",
-        "@types/node": "24.13.4",
+        "@types/jsonwebtoken": "9.0.10",
+        "@types/node": "24.13.5",
+        "chai": "^4.3.7",
         "esmock": "^2.6.7",
         "express": "5.2.1",
         "mocha": "10.8.2",
