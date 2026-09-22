@@ -1,4 +1,4 @@
-import { SchemaCondition } from '../interface/schema-condition.interface.js';
+import { SchemaCondition, SchemaPredicateComparator } from '../interface/schema-condition.interface.js';
 import { SchemaField } from '../interface/schema-field.interface.js';
 import { Schema } from '../models/schema.js';
 import { SchemaEntity } from '../type/schema-entity.type.js';
@@ -63,6 +63,7 @@ export interface IIfRuleJson {
     field: string;
     fieldValue: any;
     fieldPath?: string[];
+    comparator?: SchemaPredicateComparator;
 }
 
 export interface IConditionTargetJson {
@@ -74,6 +75,7 @@ export interface IConditionJson {
         field?: string;
         fieldValue?: any;
         fieldPath?: string[];
+        comparator?: SchemaPredicateComparator;
         AND?: IIfRuleJson[];
         OR?: IIfRuleJson[];
     },
@@ -400,6 +402,7 @@ export class SchemaToJson {
         const serializePredicate = (p: any): IIfRuleJson => {
             const r: IIfRuleJson = { field: p.field.name, fieldValue: p.fieldValue };
             if (p.fieldPath?.length > 1) { r.fieldPath = p.fieldPath; }
+            if (p.comparator) { r.comparator = p.comparator; }
             return r;
         };
 
@@ -408,6 +411,7 @@ export class SchemaToJson {
                 json.if.field = ic.AND[0]?.field?.name;
                 json.if.fieldValue = ic.AND[0]?.fieldValue;
                 if (ic.AND[0]?.fieldPath?.length > 1) { json.if.fieldPath = ic.AND[0].fieldPath; }
+                if (ic.AND[0]?.comparator) { json.if.comparator = ic.AND[0].comparator; }
                 return json;
             }
             json.if.AND = ic.AND
@@ -421,6 +425,7 @@ export class SchemaToJson {
                 json.if.field = ic.OR[0]?.field?.name;
                 json.if.fieldValue = ic.OR[0]?.fieldValue;
                 if (ic.OR[0]?.fieldPath?.length > 1) { json.if.fieldPath = ic.OR[0].fieldPath; }
+                if (ic.OR[0]?.comparator) { json.if.comparator = ic.OR[0].comparator; }
                 return json;
             }
             json.if.OR = ic.OR
@@ -433,6 +438,7 @@ export class SchemaToJson {
             json.if.field = ic.field.name;
             json.if.fieldValue = ic.fieldValue;
             if (ic.fieldPath?.length > 1) { json.if.fieldPath = ic.fieldPath; }
+            if (ic.comparator) { json.if.comparator = ic.comparator; }
             return json;
         }
         if (Array.isArray(ic?.predicates) && ic.predicates.length) {
@@ -440,6 +446,7 @@ export class SchemaToJson {
                 json.if.field = ic.predicates[0].field?.name;
                 json.if.fieldValue = ic.predicates[0].fieldValue;
                 if (ic.predicates[0]?.fieldPath?.length > 1) { json.if.fieldPath = ic.predicates[0].fieldPath; }
+                if (ic.predicates[0]?.comparator) { json.if.comparator = ic.predicates[0].comparator; }
             } else if (ic.op === 'ANY_OF') {
                 json.if.OR = ic.predicates
                     .filter((p: any) => p?.field?.name !== undefined)
@@ -1247,6 +1254,7 @@ export class JsonToSchema {
                 fieldValue: p.fieldValue,
             };
             if (p.fieldPath?.length > 1) { pred.fieldPath = p.fieldPath; }
+            if (p.comparator) { pred.comparator = p.comparator; }
             return pred;
         };
 
@@ -1286,6 +1294,7 @@ export class JsonToSchema {
         const target = resolvePredicateField(ifField, ifFieldPath, ifCtx.add('field'));
         const single: any = { field: target, fieldValue: val };
         if (ifFieldPath?.length > 1) { single.fieldPath = ifFieldPath; }
+        if (value?.if?.comparator) { single.comparator = value.if.comparator; }
         return single as any;
     }
 

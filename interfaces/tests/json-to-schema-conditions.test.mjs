@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { JsonToSchema, ErrorContext } from '../dist/helpers/schema-json.js';
+import { JsonToSchema, SchemaToJson, ErrorContext } from '../dist/helpers/schema-json.js';
 import { Schema } from '../dist/models/schema.js';
 
 const ctx = () => new ErrorContext().setPath(['schema', 'conditions']);
@@ -86,6 +86,82 @@ describe('JsonToSchema.fromCondIf', () => {
 
     it('throws when the if node is missing entirely', () => {
         assert.throws(() => JsonToSchema.fromCondIf({}, fields(), ctx()));
+    });
+});
+
+describe('JsonToSchema.fromCondIf — comparator (issue #6687)', () => {
+    it('carries comparator through for a plain single predicate', () => {
+        const result = JsonToSchema.fromCondIf({ if: { field: 'a', fieldValue: 2, comparator: 'contains' } }, fields(), ctx());
+        assert.equal(result.comparator, 'contains');
+    });
+
+    it('leaves comparator undefined when absent (no migration for legacy conditions)', () => {
+        const result = JsonToSchema.fromCondIf({ if: { field: 'a', fieldValue: 2 } }, fields(), ctx());
+        assert.equal(result.comparator, undefined);
+    });
+
+    it('carries comparator through a single-element AND collapse', () => {
+        const result = JsonToSchema.fromCondIf(
+            { if: { AND: [{ field: 'a', fieldValue: 2, comparator: 'contains' }] } },
+            fields(),
+            ctx(),
+        );
+        assert.equal(result.comparator, 'contains');
+    });
+
+    it('carries comparator through a single-element OR collapse', () => {
+        const result = JsonToSchema.fromCondIf(
+            { if: { OR: [{ field: 'a', fieldValue: 2, comparator: 'contains' }] } },
+            fields(),
+            ctx(),
+        );
+        assert.equal(result.comparator, 'contains');
+    });
+
+    it('carries comparator through each entry of a multi-element AND array', () => {
+        const list = fields();
+        const result = JsonToSchema.fromCondIf(
+            { if: { AND: [{ field: 'a', fieldValue: 2, comparator: 'contains' }, { field: 'b', fieldValue: 3 }] } },
+            list,
+            ctx(),
+        );
+        assert.equal(result.AND[0].comparator, 'contains');
+        assert.equal(result.AND[1].comparator, undefined);
+    });
+
+    it('carries comparator through each entry of a multi-element OR array', () => {
+        const list = fields();
+        const result = JsonToSchema.fromCondIf(
+            { if: { OR: [{ field: 'a', fieldValue: 2, comparator: 'contains' }, { field: 'b', fieldValue: 3 }] } },
+            list,
+            ctx(),
+        );
+        assert.equal(result.OR[0].comparator, 'contains');
+        assert.equal(result.OR[1].comparator, undefined);
+    });
+
+    it('round-trips through SchemaToJson.conditionToJson -> JsonToSchema.fromCondIf', () => {
+        const list = fields();
+        const json = SchemaToJson.conditionToJson({
+            ifCondition: { field: list[0], fieldValue: 2, comparator: 'contains' },
+            thenFields: [],
+            elseFields: [],
+        });
+        const result = JsonToSchema.fromCondIf(json, list, ctx());
+        assert.equal(result.field, list[0]);
+        assert.equal(result.fieldValue, 2);
+        assert.equal(result.comparator, 'contains');
+    });
+
+    it('an existing comparator-less document still round-trips to comparator: undefined', () => {
+        const list = fields();
+        const json = SchemaToJson.conditionToJson({
+            ifCondition: { field: list[0], fieldValue: 2 },
+            thenFields: [],
+            elseFields: [],
+        });
+        const result = JsonToSchema.fromCondIf(json, list, ctx());
+        assert.equal(result.comparator, undefined);
     });
 });
 
