@@ -23,6 +23,7 @@ enum TransformationIpfsLinkType {
 export class IpfsTransformationUIAddonCode {
     private readonly ipfsPattern: RegExp = /ipfs:\/\/([a-zA-Z0-9]+)/;
     private readonly markdownReferencePattern: RegExp = /\]\(\s*(ipfs:\/\/[a-zA-Z0-9]+)\s*\)/g;
+    private readonly plainReferencePattern: RegExp = /^ipfs:\/\/[a-zA-Z0-9]+$/;
     private cache: Map<string, string> = new Map();
 
     private readonly transformationType: string;
@@ -98,11 +99,11 @@ export class IpfsTransformationUIAddonCode {
     }
 
     private async processStringValue(value: string): Promise<any> {
-        if (value.trim().startsWith('ipfs://')) {
-            return await this.processIpfsString(value);
-        }
         if (value.includes('](ipfs://')) {
             return await this.processMarkdownString(value);
+        }
+        if (this.plainReferencePattern.test(value.trim())) {
+            return await this.processIpfsString(value);
         }
         return await this.processTableString(value);
     }

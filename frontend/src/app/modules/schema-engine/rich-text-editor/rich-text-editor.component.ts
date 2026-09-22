@@ -142,18 +142,18 @@ export class RichTextEditorComponent
         if (!clipboard) { return; }
         event.preventDefault();
         const image = this.imageUploader ? this._imageFileFrom(clipboard.files) : null;
-        if (image) {
-            this._savedRange = this._getSelection();
-            this._uploadAndInsertImage(image);
-            return;
-        }
         const html = clipboard.getData('text/html');
         const clean = html
             ? sanitizeRichText(html)
             : escapeText(clipboard.getData('text/plain'));
-        if (!clean) { return; }
-        document.execCommand('insertHTML', false, clean);
-        this.onInput();
+        if (clean && !(image && isBlankRichText(clean))) {
+            document.execCommand('insertHTML', false, clean);
+            this.onInput();
+        }
+        if (image) {
+            this._savedRange = this._getSelection();
+            this._uploadAndInsertImage(image);
+        }
     }
 
     onDragStart(): void {

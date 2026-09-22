@@ -13,7 +13,7 @@ const ESCAPED_MARKER = /\\([\\*`\[\]#+.-])/g;
 
 const IPFS_REFERENCE = /^ipfs:\/\/[a-zA-Z0-9]+$/;
 
-const IMAGE_MARKER = /!\[([^\]]*)\]\(([^)\s]+)\)/g;
+const IMAGE_MARKER = /!\[((?:\\.|[^\]\\])*)\]\(([^)\s]+)\)/g;
 
 function isSafeImageReference(value: string): boolean {
     return IPFS_REFERENCE.test(value) || isSafeHref(value);

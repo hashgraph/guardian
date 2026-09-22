@@ -16,6 +16,7 @@ describe('DocumentsSourceBlockComponent', () => {
         component.richTextValue = '';
         component.richTextHideTimer = null;
         component.richTextImages = new Map();
+        component.richTextImageRequests = new Map();
         component.richTextTarget = null;
         component.richTextImagesResolved = Promise.resolve();
         component.ipfs = ipfs;
@@ -286,6 +287,26 @@ describe('DocumentsSourceBlockComponent', () => {
 
             expect(component.richTextValue).toContain('Photo');
             expect(component.richTextValue).toContain('src=""');
+        });
+
+        it('fetches a shared picture once while the first request is still pending', async () => {
+            let settle: (value: string) => void = () => {};
+            const ipfs = makeIpfs(new Promise<string>((resolve) => { settle = resolve; }));
+            const component = createComponent({
+                a: `![Site](${reference})`,
+                b: `Other\n\n![Site](${reference})`
+            }, ipfs);
+            const popover = makePopover();
+
+            component.onRichTextEnter(new Event('mouseenter'), row(component, 'a'), field, popover);
+            const first = component.richTextImagesResolved;
+            component.onRichTextEnter(new Event('mouseenter'), row(component, 'b'), field, popover);
+            const second = component.richTextImagesResolved;
+            settle(dataUrl);
+            await Promise.all([first, second]);
+
+            expect(ipfs.getImageByLink).toHaveBeenCalledTimes(1);
+            expect(component.richTextValue).toContain(`src="${dataUrl}"`);
         });
     });
 });

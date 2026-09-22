@@ -1073,7 +1073,7 @@ describe('RichTextEditorComponent', () => {
             expect(emitted).not.toContain('base64');
         });
 
-        it('should use only the image when the clipboard holds both a file and markup', async () => {
+        it('should keep the pasted text and the image when the clipboard holds both', async () => {
             const uploader = bindWorkingUploader();
             captureInsertedHtml();
 
@@ -1083,7 +1083,21 @@ describe('RichTextEditorComponent', () => {
             expect(uploader).toHaveBeenCalled();
             const editor = component.editorRef.nativeElement;
             expect(editor.querySelectorAll('img').length).toBe(1);
-            expect(editor.textContent).not.toContain('Wrapper');
+            expect(editor.textContent).toContain('Wrapper');
+            expect(editor.querySelector('b')?.textContent).toBe('text');
+        });
+
+        it('should add no empty block when the clipboard markup holds only the image', async () => {
+            const uploader = bindWorkingUploader();
+            captureInsertedHtml();
+
+            component.onPaste(pasteEvent(fileList(imageFile()), '<p><img src="https://foreign-host/pic.png"></p>'));
+            await flush();
+
+            expect(uploader).toHaveBeenCalled();
+            const editor = component.editorRef.nativeElement;
+            expect(editor.querySelectorAll('img').length).toBe(1);
+            expect(editor.querySelectorAll('p').length).toBe(0);
         });
 
         it('should still drop an image referenced by pasted markup', async () => {
@@ -1133,7 +1147,7 @@ describe('RichTextEditorComponent', () => {
             expect(emitted).toBeNull();
         });
 
-        it('should refuse a pasted image type it cannot handle and insert nothing', async () => {
+        it('should refuse a pasted image type it cannot handle and keep the pasted text', async () => {
             const uploader = bindWorkingUploader();
             captureInsertedHtml();
 
@@ -1144,7 +1158,7 @@ describe('RichTextEditorComponent', () => {
             expect(component.imageError).toContain('animation.gif');
             const editor = component.editorRef.nativeElement;
             expect(editor.querySelector('img')).toBeNull();
-            expect(editor.textContent).not.toContain('Wrapper');
+            expect(editor.textContent).toContain('Wrapper');
         });
 
         it('should report a failed upload of a pasted image and leave the value alone', async () => {

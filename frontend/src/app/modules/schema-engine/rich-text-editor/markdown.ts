@@ -32,7 +32,7 @@ function escapeLineStarts(text: string): string {
         .join('\n');
 }
 
-const IMAGE_MARKER = /!\[([^\]]*)\]\(([^)\s]+)\)/g;
+const IMAGE_MARKER = /!\[((?:\\.|[^\]\\])*)\]\(([^)\s]+)\)/g;
 
 export function collectImageReferences(markdown: string | null | undefined): string[] {
     if (typeof markdown !== 'string' || !markdown) {

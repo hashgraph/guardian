@@ -125,5 +125,10 @@ describe('markdown-view', () => {
             expect(collectImageReferences(`[a](${reference})`)).toEqual([]);
             expect(collectImageReferences(null)).toEqual([]);
         });
+
+        it('should collect a reference whose alt text holds an escaped bracket', () => {
+            expect(collectImageReferences(`![report\\].png](${reference})`)).toEqual([reference]);
+            expect(markdownToHtml(`![report\\].png](${reference})`)).toContain(`data-src="${reference}"`);
+        });
     });
 });

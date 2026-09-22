@@ -393,5 +393,21 @@ describe('markdown converters', () => {
         it('should ignore an ordinary link to an ipfs target', () => {
             expect(collectImageReferences(`[a](${reference})`)).toEqual([]);
         });
+
+        it('should collect a reference whose alt text holds an escaped bracket', () => {
+            expect(collectImageReferences(`![report\\].png](${reference})`)).toEqual([reference]);
+        });
+
+        it('should survive the round trip of a filename holding a bracket', () => {
+            const html = `<img src="" data-src="${reference}" alt="report].png">`;
+            const markdown = htmlToMarkdown(html);
+
+            expect(markdown).toBe(`![report\\].png](${reference})`);
+            expect(collectImageReferences(markdown)).toEqual([reference]);
+
+            const resolved = new Map<string, string>([[reference, 'data:image/webp;base64,AAAA']]);
+            expect(markdownToHtml(markdown, resolved))
+                .toContain('src="data:image/webp;base64,AAAA"');
+        });
     });
 });

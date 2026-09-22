@@ -337,6 +337,8 @@ export class DocumentsSourceBlockComponent implements OnInit {
 
     private richTextImages = new Map<string, string | null>();
 
+    private richTextImageRequests = new Map<string, Promise<string | null>>();
+
     private richTextTarget: { row: any, field: any } | null = null;
 
     private richTextImagesResolved: Promise<void> = Promise.resolve();
@@ -398,11 +400,14 @@ export class DocumentsSourceBlockComponent implements OnInit {
         }
         return Promise.all(missing.map(async (reference) => {
             const key = this.richTextImageKey(reference);
-            try {
-                this.richTextImages.set(key, await this.readRichTextImage(reference));
-            } catch (error) {
-                this.richTextImages.set(key, null);
+            let request = this.richTextImageRequests.get(key);
+            if (!request) {
+                request = this.readRichTextImage(reference)
+                    .catch(() => null)
+                    .finally(() => this.richTextImageRequests.delete(key));
+                this.richTextImageRequests.set(key, request);
             }
+            this.richTextImages.set(key, await request);
         })).then(() => {
             if (this.richTextTarget?.row === row && this.richTextTarget?.field === field) {
                 this.richTextValue = withNewTabLinks(this.toRichTextHtml(row, field));

@@ -188,6 +188,29 @@ describe('IpfsTransformationUIAddonCode', () => {
         expect(document.field1).toContain('[the file](https://host/api/v1/ipfs/file/');
     });
 
+    it('should keep markdown that starts with a bare reference a string and rewrite the image', async () => {
+        const addon = createAddon(gatewayConfig());
+        const second = 'QmSecondCidValueForTheAddonSpecQmSecondCidValueFor';
+        const value = `ipfs://${cid}\n\nText\n\n![One](ipfs://${second})`;
+        const document: any = { field1: value };
+
+        await addon.run({ document, params: {}, history: [] });
+
+        expect(typeof document.field1).toBe('string');
+        expect(document.field1).toContain('Text');
+        expect(document.field1).toContain('![One](https://host/api/v1/ipfs/file/');
+    });
+
+    it('should still rewrite a value that is one bare reference', async () => {
+        const addon = createAddon(gatewayConfig());
+        const document: any = { field1: `ipfs://${cid}` };
+
+        await addon.run({ document, params: {}, history: [] });
+
+        expect(typeof document.field1).toBe('object');
+        expect(document.field1.resourceUrl).toContain('/api/v1/ipfs/file/');
+    });
+
     it('should walk nested objects and arrays', async () => {
         const addon = createAddon(gatewayConfig());
         const document: any = {
