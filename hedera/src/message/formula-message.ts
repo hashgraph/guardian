@@ -3,8 +3,7 @@ import { IURL, UrlType } from './url.interface.js';
 import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { FormulaMessageBody } from './message-body.interface.js';
-import { Formula } from '@guardian/common';
-import { IPFS, toBuffer } from '@guardian/common';
+import { Formula, IPFS, toBuffer } from '@guardian/common';
 
 /**
  * Formula message

@@ -1,10 +1,5 @@
 import { GenerateUUIDv4, WorkerTaskType } from '@guardian/interfaces';
-import { DatabaseServer } from '@guardian/common';
-import { PinoLogger, RunFunctionAsync, Workers } from '@guardian/common';
-import { MessageResponse } from '@guardian/common';
-import { Singleton } from '@guardian/common';
-import { NatsService } from '@guardian/common';
-import { SecretManager } from '@guardian/common';
+import { DatabaseServer, PinoLogger, RunFunctionAsync, Workers, MessageResponse, Singleton, NatsService, SecretManager } from '@guardian/common';
 
 /**
  * Transaction log level
