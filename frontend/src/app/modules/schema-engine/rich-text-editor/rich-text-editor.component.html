@@ -47,6 +47,7 @@
     (paste)="onPaste($event)"
     (dragstart)="onDragStart()"
     (dragend)="onDragEnd()"
+    (scroll)="onEditorScroll()"
     (dragover)="onDragOver($event)"
     (drop)="onDrop($event)"
     (click)="onEditorClick($event)"
@@ -54,6 +55,55 @@
     role="textbox"
     aria-multiline="true"
   ></div>
+  @if (showTableSizePicker) {
+    <div
+      class="rte-table-picker"
+      role="dialog"
+      aria-label="Table size"
+      [style.left.px]="tableSizePosition.left"
+      [style.top.px]="tableSizePosition.top"
+      (mouseleave)="highlightTableSize(0, 0)"
+    >
+      <div class="rte-table-picker-grid">
+        @for (row of tableSizeRowOptions; track row) {
+          <div class="rte-table-picker-row">
+            @for (column of tableSizeColumnOptions; track column) {
+              <span
+                class="rte-table-picker-cell"
+                [class.rte-table-picker-cell--on]="isTableSizeSelected(row, column)"
+                (mouseenter)="highlightTableSize(row, column)"
+                (mousedown)="insertTableOfSize(row, column, $event)"
+              ></span>
+            }
+          </div>
+        }
+      </div>
+      <div class="rte-table-picker-label">
+        {{ tableSizeRows ? tableSizeRows + ' × ' + tableSizeColumns : 'Pick a size' }}
+      </div>
+    </div>
+  }
+  @if (showTableToolbar) {
+    <div
+      class="rte-table-toolbar"
+      role="toolbar"
+      aria-label="Table"
+      [style.left.px]="tableToolbarPosition.left"
+      [style.top.px]="tableToolbarPosition.top"
+    >
+      @for (item of tableToolbarItems; track $index) {
+        <button
+          type="button"
+          class="rte-btn"
+          [title]="item.title"
+          (mousedown)="execCommand(item.command, $event)"
+          tabindex="-1"
+        >
+          <i [class]="item.icon"></i>
+        </button>
+      }
+    </div>
+  }
   @if (showLinkDialog) {
     <div class="rte-link-dialog" [style.left.px]="linkDialogPosition.left" [style.top.px]="linkDialogPosition.top" role="dialog" aria-label="Insert or edit hyperlink">
       <div class="rte-link-dialog-content">

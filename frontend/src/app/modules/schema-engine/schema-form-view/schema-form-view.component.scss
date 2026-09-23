@@ -552,7 +552,7 @@ form {
     position: absolute;
 } */
 
-.rte-view-content {
+:host ::ng-deep .rte-view-content {
     padding: 8px 12px;
     min-height: 40px;
     font-size: 14px;
@@ -576,4 +576,5 @@ form {
     table     { border-collapse: collapse; margin: 0.5em 0; width: auto; max-width: 100%; }
     th, td    { border: 1px solid var(--guardian-border-color); padding: 4px 8px; vertical-align: top; }
     th        { background: var(--guardian-grey-color); font-weight: 600; text-align: left; }
+    th:empty::after, td:empty::after { content: '\00a0'; }
 }

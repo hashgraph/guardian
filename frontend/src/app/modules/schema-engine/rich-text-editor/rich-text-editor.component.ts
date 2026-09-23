@@ -45,9 +45,19 @@ export class RichTextEditorComponent
     public imageError = '';
     public imageLoading = false;
     public linkDialogPosition = { left: 8, top: 48 };
+    public showTableToolbar = false;
+    public tableToolbarPosition = { left: 8, top: 8 };
+    public showTableSizePicker = false;
+    public tableSizePosition = { left: 8, top: 48 };
+    public tableSizeRows = 0;
+    public tableSizeColumns = 0;
     public headingDisabled = false;
     public listLevelDisabled = true;
+    public listOutdentDisabled = true;
     public tableEditDisabled = true;
+    public inTableCell = false;
+    public undoDisabled = false;
+    public redoDisabled = false;
     public activeCommands = new Set<string>();
 
     private _value = '';
@@ -57,6 +67,7 @@ export class RichTextEditorComponent
     private _editingLink: HTMLAnchorElement | null = null;
     private _draggingFromEditor = false;
     private _resolvedImages = new Map<string, string>();
+    private _tableSizeOpenedBy: MouseEvent | null = null;
     private _htmlBeforeInput = '';
     private _clearedHtml = '';
 
@@ -65,9 +76,19 @@ export class RichTextEditorComponent
     private static readonly MAX_IMAGE_BYTES = 512 * 1024;
     private _onSelectionChange = (): void => this._updateToolbarState();
     private _onDocumentMouseDown = (event: MouseEvent): void => {
-        if (!this.showLinkDialog) { return; }
         const target = event.target;
-        if (target instanceof Node && this.host.nativeElement.contains(target)) { return; }
+        const inside = target instanceof Node && this.host.nativeElement.contains(target);
+        if (this.imageError && !this._isImageErrorTarget(target)) {
+            this.imageError = '';
+            this.cdr.markForCheck();
+        }
+        if (this.showTableSizePicker
+            && event !== this._tableSizeOpenedBy
+            && !(target instanceof Element && target.closest('.rte-table-picker'))) {
+            this.cancelTableSize();
+        }
+        if (!this.showLinkDialog) { return; }
+        if (inside) { return; }
         this.cancelLink();
         this.cdr.markForCheck();
     };
@@ -92,14 +113,22 @@ export class RichTextEditorComponent
         { command: 'image', icon: 'pi pi-image', title: 'Insert image' },
         { separator: true },
         { command: 'table', icon: 'pi pi-table', title: 'Insert table' },
+    ];
+
+    public readonly tableToolbarItems = [
         { command: 'tableRowAdd', icon: 'pi pi-plus-circle', title: 'Add a row below' },
         { command: 'tableRowRemove', icon: 'pi pi-minus-circle', title: 'Remove this row' },
         { command: 'tableColumnAdd', icon: 'pi pi-plus', title: 'Add a column to the right' },
         { command: 'tableColumnRemove', icon: 'pi pi-minus', title: 'Remove this column' },
     ];
 
-    private static readonly TABLE_HTML = '<table><thead><tr><th>Header 1</th><th>Header 2</th></tr></thead>'
-        + '<tbody><tr><td><br></td><td><br></td></tr></tbody></table><p><br></p>';
+    public readonly tableSizeRowOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    public readonly tableSizeColumnOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+    private static readonly FRESH_TABLE_MARK = 'data-rte-fresh';
+    private static readonly TABLE_PICKER_WIDTH = 200;
+    private static readonly TABLE_TOOLBAR_HEIGHT = 38;
+    private static readonly TABLE_TOOLBAR_WIDTH = 160;
 
     private static readonly TABLE_EDIT_COMMANDS = [
         'tableRowAdd', 'tableRowRemove', 'tableColumnAdd', 'tableColumnRemove'
@@ -160,6 +189,7 @@ export class RichTextEditorComponent
         const value = isBlankRichText(html) ? '' : htmlToMarkdown(html);
         this._value = value;
         this._onChange(value);
+        this._updateHistoryState();
         this.cdr.markForCheck();
     }
 
@@ -226,7 +256,16 @@ export class RichTextEditorComponent
     }
 
     onKeyDown(event: KeyboardEvent): void {
-        if (this.readonly || this.isDisabled || event.key !== 'Tab') { return; }
+        if (this.readonly || this.isDisabled) { return; }
+        if (event.key === 'Backspace') {
+            const table = this._tableBeforeCaret();
+            if (table) {
+                event.preventDefault();
+                this._removeTable(table);
+            }
+            return;
+        }
+        if (event.key !== 'Tab') { return; }
         const cell = this._currentTableCell();
         if (!cell) { return; }
         event.preventDefault();
@@ -249,6 +288,109 @@ export class RichTextEditorComponent
         this._onTouched();
     }
 
+    private _toggleList(command: string): void {
+        const depth = this._listDepth(command === 'insertUnorderedList' ? 'UL' : 'OL');
+        document.execCommand(command, false, undefined);
+        for (let level = 1; level < depth; level++) {
+            document.execCommand(command, false, undefined);
+        }
+    }
+
+    private _listNesting(): number {
+        return this._listDepth('UL') + this._listDepth('OL');
+    }
+
+    private _listDepth(tag: string): number {
+        const range = this._getSelection();
+        const editor = this.editorRef?.nativeElement;
+        if (!range || !editor) { return 0; }
+        const node = range.startContainer;
+        let element: Element | null = node instanceof Element ? node : node.parentElement;
+        if (!element || !editor.contains(element) || !element.closest('li')) { return 0; }
+        let depth = 0;
+        while (element && element !== editor) {
+            if (element.tagName === tag) { depth++; }
+            element = element.parentElement;
+        }
+        return depth;
+    }
+
+    private _collapseTableSelection(): void {
+        const selection = window.getSelection();
+        const range = selection && selection.rangeCount ? selection.getRangeAt(0) : null;
+        if (!range || range.collapsed) { return; }
+        const node = range.commonAncestorContainer;
+        const element = node instanceof Element ? node : node.parentElement;
+        const table = element?.closest('table') || element?.querySelector('table');
+        if (!table) { return; }
+        this._placeCaretIn(table.querySelector('th, td'));
+    }
+
+    private _mergeSiblingLists(): void {
+        const editor = this.editorRef?.nativeElement;
+        if (!editor) { return; }
+        for (const list of Array.from(editor.querySelectorAll('ul, ol'))) {
+            let next = list.nextElementSibling;
+            while (next && next.tagName === list.tagName) {
+                while (next.firstChild) {
+                    list.appendChild(next.firstChild);
+                }
+                const empty = next;
+                next = next.nextElementSibling;
+                empty.remove();
+            }
+        }
+    }
+
+    private _tableBeforeCaret(): HTMLTableElement | null {
+        const range = this._getSelection();
+        const editor = this.editorRef?.nativeElement;
+        if (!range || !editor || !editor.contains(range.commonAncestorContainer)) { return null; }
+        if (!range.collapsed) {
+            const selected = range.commonAncestorContainer;
+            const table = selected instanceof Element
+                ? selected.closest('table')
+                : selected.parentElement?.closest('table');
+            return table && range.toString() === table.textContent ? table as HTMLTableElement : null;
+        }
+        if (this._currentTableCell()) { return null; }
+        if (!this._isAtBlockStart(range)) { return null; }
+        const block = this._caretBlock(range, editor);
+        const previous = block?.previousElementSibling;
+        return previous instanceof HTMLTableElement ? previous : null;
+    }
+
+    private _isAtBlockStart(range: Range): boolean {
+        if (range.startOffset > 0) {
+            return range.startContainer.nodeType === Node.ELEMENT_NODE
+                && !range.startContainer.textContent;
+        }
+        return true;
+    }
+
+    private _caretBlock(range: Range, editor: HTMLElement): Element | null {
+        const node = range.startContainer;
+        const element = node instanceof Element ? node : node.parentElement;
+        if (!element) { return null; }
+        let block: Element | null = element;
+        while (block && block.parentElement && block.parentElement !== editor) {
+            block = block.parentElement;
+        }
+        return block === editor ? null : block;
+    }
+
+    private _removeTable(table: HTMLTableElement): void {
+        const range = document.createRange();
+        range.selectNode(table);
+        const selection = window.getSelection();
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+        document.execCommand('delete');
+        this.onInput();
+        this._updateToolbarState();
+        this.cdr.markForCheck();
+    }
+
     get isEmpty(): boolean {
         return isBlankRichText(this._value);
     }
@@ -265,6 +407,18 @@ export class RichTextEditorComponent
         return command === 'indent' || command === 'outdent';
     }
 
+    isListCommand(command: string | undefined): boolean {
+        return command === 'insertUnorderedList' || command === 'insertOrderedList';
+    }
+
+    isBlockedInTable(command: string | undefined): boolean {
+        return this.isListCommand(command)
+            || this.isListLevelCommand(command)
+            || this.isHeadingCommand(command)
+            || command === 'image'
+            || command === 'table';
+    }
+
     isTableEditCommand(command: string | undefined): boolean {
         return !!command && RichTextEditorComponent.TABLE_EDIT_COMMANDS.includes(command);
     }
@@ -272,6 +426,10 @@ export class RichTextEditorComponent
     isCommandDisabled(command: string | undefined): boolean {
         return (this.headingDisabled && this.isHeadingCommand(command))
             || (this.listLevelDisabled && this.isListLevelCommand(command))
+            || (this.listOutdentDisabled && command === 'outdent')
+            || (this.inTableCell && this.isBlockedInTable(command))
+            || (this.undoDisabled && command === 'undo')
+            || (this.redoDisabled && command === 'redo')
             || (this.tableEditDisabled && this.isTableEditCommand(command))
             || (command === 'image' && this.imageLoading);
     }
@@ -284,8 +442,18 @@ export class RichTextEditorComponent
         if (!this.isCommandDisabled(command)) {
             return title;
         }
+        if (command === 'undo') { return 'Nothing to undo'; }
+        if (command === 'redo') { return 'Nothing to redo'; }
+        if (this.inTableCell && this.isBlockedInTable(command)) {
+            if (command === 'image') { return 'Pictures are not available inside a table'; }
+            if (command === 'table') { return 'A table cannot go inside another table'; }
+            if (this.isHeadingCommand(command)) { return 'Headings are not available inside a table'; }
+            return 'Lists are not available inside a table';
+        }
         if (this.isListLevelCommand(command)) {
-            return 'List levels are only available inside a list';
+            return this.listLevelDisabled
+                ? 'List levels are only available inside a list'
+                : 'This item is already at the top level';
         }
         if (this.isTableEditCommand(command)) {
             return 'Table changes are only available inside a table';
@@ -298,15 +466,29 @@ export class RichTextEditorComponent
         if (this.readonly || this.isDisabled) { return; }
         this.editorRef.nativeElement.focus();
         if (this.isHeadingCommand(command)) {
+            if (this.inTableCell) { return; }
             if (this._isInListItem(this._getSelection())) { return; }
             document.execCommand('formatBlock', false, this._nextBlockFormat(command));
         } else if (this.isListLevelCommand(command)) {
+            if (this.inTableCell) { return; }
             if (!this._isInListItem(this._getSelection())) { return; }
+            if (command === 'outdent' && this._listNesting() < 2) { return; }
             document.execCommand(command, false, undefined);
+        } else if (this.isListCommand(command)) {
+            if (this.inTableCell) { return; }
+            this._toggleList(command);
         } else if (command === 'undo' && this._clearedHtml) {
             this._restoreClearedHtml();
         } else if (command === 'table') {
-            document.execCommand('insertHTML', false, RichTextEditorComponent.TABLE_HTML);
+            if (this.inTableCell) { return; }
+            this._savedRange = this._getSelection();
+            this._setTableSizePosition(event);
+            this.tableSizeRows = 0;
+            this.tableSizeColumns = 0;
+            this._tableSizeOpenedBy = event;
+            this.showTableSizePicker = true;
+            this.cdr.markForCheck();
+            return;
         } else if (this.isTableEditCommand(command)) {
             if (!this._applyTableEdit(command)) { return; }
         } else if (command === 'link') {
@@ -321,13 +503,18 @@ export class RichTextEditorComponent
             input?.select();
             return;
         } else if (command === 'image') {
+            if (this.inTableCell) { return; }
             this._savedRange = this._getSelection();
             this.imageError = '';
             this.imageInputRef?.nativeElement.click();
             return;
         } else {
             document.execCommand(command, false, undefined);
+            if (command === 'undo' || command === 'redo') {
+                this._collapseTableSelection();
+            }
         }
+        this._mergeSiblingLists();
         this.onInput();
         this._updateToolbarState();
         this.cdr.markForCheck();
@@ -387,6 +574,10 @@ export class RichTextEditorComponent
         this.cdr.markForCheck();
     }
 
+    private _isImageErrorTarget(target: EventTarget | null): boolean {
+        return target instanceof Element && !!target.closest('.rte-image-error');
+    }
+
     onEditorClick(event: MouseEvent): void {
         const target = event.target;
         if (!(target instanceof Element)) { return; }
@@ -432,12 +623,21 @@ export class RichTextEditorComponent
         return list.find(file => file.type.startsWith('image/')) || null;
     }
 
+    private _rejectUnsupportedImage(file: File): void {
+        this.imageError = `${file.name} is not a supported image. Use PNG, JPEG or WebP.`;
+        this.cdr.markForCheck();
+    }
+
     private async _uploadAndInsertImage(file: File): Promise<void> {
         if (!this.imageUploader) { return; }
+        if (this.inTableCell) {
+            this.imageError = 'Pictures are not available inside a table';
+            this.cdr.markForCheck();
+            return;
+        }
 
         if (!RichTextEditorComponent.IMAGE_TYPES.includes(file.type)) {
-            this.imageError = `${file.name} is not a supported image. Use PNG, JPEG or WebP.`;
-            this.cdr.markForCheck();
+            this._rejectUnsupportedImage(file);
             return;
         }
 
@@ -445,6 +645,10 @@ export class RichTextEditorComponent
         this.cdr.markForCheck();
         try {
             const prepared = await this._prepareImage(file);
+            if (!prepared) {
+                this._rejectUnsupportedImage(file);
+                return;
+            }
             if (prepared.size > RichTextEditorComponent.MAX_IMAGE_BYTES) {
                 const got = this._formatBytes(prepared.size);
                 const limit = this._formatBytes(RichTextEditorComponent.MAX_IMAGE_BYTES);
@@ -509,25 +713,26 @@ export class RichTextEditorComponent
         selection.addRange(range);
     }
 
-    private async _prepareImage(file: File): Promise<File> {
+    private async _prepareImage(file: File): Promise<File | null> {
+        let bitmap: ImageBitmap;
         try {
-            const bitmap = await createImageBitmap(file);
-            const side = RichTextEditorComponent.MAX_IMAGE_SIDE;
-            const scale = Math.min(1, side / Math.max(bitmap.width, bitmap.height));
-            const canvas = document.createElement('canvas');
-            canvas.width = Math.round(bitmap.width * scale);
-            canvas.height = Math.round(bitmap.height * scale);
-            const context = canvas.getContext('2d');
-            if (!context) { return file; }
-            context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-            const blob = await new Promise<Blob | null>(resolve =>
-                canvas.toBlob(resolve, 'image/webp', 0.8)
-            );
-            if (!blob) { return file; }
-            return new File([blob], `${file.name.replace(/\.[^.]+$/, '')}.webp`, { type: blob.type });
+            bitmap = await createImageBitmap(file);
         } catch (error) {
-            return file;
+            return null;
         }
+        const side = RichTextEditorComponent.MAX_IMAGE_SIDE;
+        const scale = Math.min(1, side / Math.max(bitmap.width, bitmap.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(bitmap.width * scale);
+        canvas.height = Math.round(bitmap.height * scale);
+        const context = canvas.getContext('2d');
+        if (!context) { return file; }
+        context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+        const blob = await new Promise<Blob | null>(resolve =>
+            canvas.toBlob(resolve, 'image/webp', 0.8)
+        );
+        if (!blob) { return file; }
+        return new File([blob], `${file.name.replace(/\.[^.]+$/, '')}.webp`, { type: blob.type });
     }
 
     private _formatBytes(bytes: number): string {
@@ -598,8 +803,25 @@ export class RichTextEditorComponent
         const row = cell?.parentElement;
         const table = cell?.closest('table');
         if (!cell || !row || !table) { return false; }
-        const position = Array.from(row.children).indexOf(cell);
+        const rowIndex = Array.from(table.querySelectorAll('tr')).indexOf(row as HTMLTableRowElement);
+        const columnIndex = Array.from(row.children).indexOf(cell);
+
+        const clone = table.cloneNode(true) as HTMLTableElement;
+        const caret = this._editTableCopy(clone, rowIndex, columnIndex, command);
+        if (!caret) { return false; }
+        this._replaceTable(table, clone, caret);
+        return true;
+    }
+
+    private _editTableCopy(
+        table: HTMLTableElement,
+        rowIndex: number,
+        columnIndex: number,
+        command: string
+    ): { row: number, column: number } | null {
         const rows = Array.from(table.querySelectorAll('tr'));
+        const row = rows[rowIndex];
+        if (!row) { return null; }
         const isHeaderRow = row.parentElement?.tagName === 'THEAD';
         if (command === 'tableRowAdd') {
             const fresh = document.createElement('tr');
@@ -613,39 +835,63 @@ export class RichTextEditorComponent
             } else {
                 row.after(fresh);
             }
-            this._placeCaretIn(fresh.children[0]);
-            return true;
+            return { row: Array.from(table.querySelectorAll('tr')).indexOf(fresh), column: 0 };
         }
         if (command === 'tableRowRemove') {
-            if (isHeaderRow) { return false; }
+            if (isHeaderRow) { return null; }
             const survivor = row.nextElementSibling || row.previousElementSibling
                 || table.querySelector('thead tr');
+            if (!survivor) { return null; }
             row.remove();
-            this._placeCaretIn(survivor?.children[Math.min(position, survivor.children.length - 1)]);
-            return true;
+            return {
+                row: Array.from(table.querySelectorAll('tr')).indexOf(survivor as HTMLTableRowElement),
+                column: Math.min(columnIndex, survivor.children.length - 1),
+            };
         }
         if (command === 'tableColumnAdd') {
             for (const current of rows) {
                 const created = this._emptyCell(current.parentElement?.tagName === 'THEAD' ? 'th' : 'td');
-                const reference = current.children[position];
+                const reference = current.children[columnIndex];
                 if (reference) {
                     reference.after(created);
                 } else {
                     current.appendChild(created);
                 }
             }
-            this._placeCaretIn(row.children[position + 1]);
-            return true;
+            return { row: rowIndex, column: columnIndex + 1 };
         }
         if (command === 'tableColumnRemove') {
-            if (row.children.length < 2) { return false; }
+            if (row.children.length < 2) { return null; }
             for (const current of rows) {
-                current.children[position]?.remove();
+                current.children[columnIndex]?.remove();
             }
-            this._placeCaretIn(row.children[Math.min(position, row.children.length - 1)]);
-            return true;
+            return { row: rowIndex, column: Math.min(columnIndex, row.children.length - 1) };
         }
-        return false;
+        return null;
+    }
+
+    private _replaceTable(
+        table: HTMLTableElement,
+        replacement: HTMLTableElement,
+        caret: { row: number, column: number }
+    ): void {
+        replacement.setAttribute(RichTextEditorComponent.FRESH_TABLE_MARK, '');
+        const range = document.createRange();
+        range.selectNode(table);
+        const selection = window.getSelection();
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+        document.execCommand('insertHTML', false, replacement.outerHTML);
+        const editor = this.editorRef.nativeElement;
+        const fresh = editor.querySelector(`table[${RichTextEditorComponent.FRESH_TABLE_MARK}]`);
+        if (!fresh) { return; }
+        fresh.removeAttribute(RichTextEditorComponent.FRESH_TABLE_MARK);
+        const rows = Array.from(fresh.querySelectorAll('tr'));
+        const target = rows[caret.row]?.children[caret.column];
+        this._placeCaretIn(target);
+        if (target instanceof HTMLElement) {
+            target.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        }
     }
 
     private _placeCaretIn(target: Element | null | undefined): void {
@@ -701,15 +947,55 @@ export class RichTextEditorComponent
             this.listLevelDisabled = !disabled;
             this.cdr.markForCheck();
         }
-        const inTable = !!this._currentTableCell();
+        const outdentDisabled = this._listNesting() < 2;
+        if (outdentDisabled !== this.listOutdentDisabled) {
+            this.listOutdentDisabled = outdentDisabled;
+            this.cdr.markForCheck();
+        }
+        this._updateHistoryState();
+        const cell = this._currentTableCell();
+        const inTable = !!cell;
+        if (inTable !== this.inTableCell) {
+            this.inTableCell = inTable;
+            this.cdr.markForCheck();
+        }
         if (inTable === this.tableEditDisabled) {
             this.tableEditDisabled = !inTable;
             this.cdr.markForCheck();
         }
+        this._updateTableToolbar(cell);
         const next = this._readActiveCommands(range);
         if (!this._sameCommands(next, this.activeCommands)) {
             this.activeCommands = next;
             this.cdr.markForCheck();
+        }
+    }
+
+    private _updateHistoryState(): void {
+        const editor = this.editorRef?.nativeElement;
+        if (!editor || !editor.contains(document.activeElement)) {
+            this._setHistoryState(false, false);
+            return;
+        }
+        this._setHistoryState(
+            !this._clearedHtml && !this._queryEnabled('undo'),
+            !this._queryEnabled('redo')
+        );
+    }
+
+    private _setHistoryState(undoDisabled: boolean, redoDisabled: boolean): void {
+        if (undoDisabled !== this.undoDisabled || redoDisabled !== this.redoDisabled) {
+            this.undoDisabled = undoDisabled;
+            this.redoDisabled = redoDisabled;
+            this.cdr.markForCheck();
+        }
+    }
+
+    private _queryEnabled(command: string): boolean {
+        try {
+            return document.queryCommandEnabled(command);
+        } catch {
+            return true;
         }
     }
 
@@ -775,6 +1061,127 @@ export class RichTextEditorComponent
         link.setAttribute('href', href);
         link.setAttribute('target', '_blank');
         link.setAttribute('rel', 'noopener noreferrer');
+    }
+
+    highlightTableSize(rows: number, columns: number): void {
+        this.tableSizeRows = rows;
+        this.tableSizeColumns = columns;
+        this.cdr.markForCheck();
+    }
+
+    isTableSizeSelected(row: number, column: number): boolean {
+        return row <= this.tableSizeRows && column <= this.tableSizeColumns;
+    }
+
+    cancelTableSize(): void {
+        this._tableSizeOpenedBy = null;
+        this.showTableSizePicker = false;
+        this.tableSizeRows = 0;
+        this.tableSizeColumns = 0;
+        this.cdr.markForCheck();
+    }
+
+    insertTableOfSize(rows: number, columns: number, event: MouseEvent): void {
+        event.preventDefault();
+        this.showTableSizePicker = false;
+        this.tableSizeRows = 0;
+        this.tableSizeColumns = 0;
+        this.editorRef.nativeElement.focus();
+        this._restoreRange(this._savedRange);
+        this._savedRange = null;
+        const html = this._tableHtml(rows, columns);
+        const list = this._caretTopList();
+        if (list) {
+            this._insertAfter(list, html);
+        } else {
+            document.execCommand('insertHTML', false, html);
+        }
+        this.onInput();
+        this._updateToolbarState();
+    }
+
+    private _caretTopList(): Element | null {
+        const range = this._getSelection();
+        const editor = this.editorRef?.nativeElement;
+        if (!range || !editor) { return null; }
+        const block = this._caretBlock(range, editor);
+        return block && (block.tagName === 'UL' || block.tagName === 'OL') ? block : null;
+    }
+
+    private _insertAfter(element: Element, html: string): void {
+        const holder = document.createElement('div');
+        holder.innerHTML = html;
+        const nodes = Array.from(holder.childNodes);
+        let anchor: ChildNode = element;
+        for (const node of nodes) {
+            anchor.after(node);
+            anchor = node as ChildNode;
+        }
+        const last = nodes[nodes.length - 1];
+        if (last instanceof HTMLElement) {
+            this._placeCaretIn(last);
+        }
+    }
+
+    private _tableHtml(rows: number, columns: number): string {
+        const headers = this.tableSizeColumnOptions
+            .slice(0, columns)
+            .map(column => `<th>Header ${column}</th>`)
+            .join('');
+        const bodyRow = `<tr>${'<td><br></td>'.repeat(columns)}</tr>`;
+        return `<table><thead><tr>${headers}</tr></thead>`
+            + `<tbody>${bodyRow.repeat(Math.max(0, rows - 1))}</tbody></table><p><br></p>`;
+    }
+
+    private _setTableSizePosition(event: MouseEvent): void {
+        const wrapper = this.editorRef.nativeElement.parentElement;
+        const button = event.currentTarget;
+        if (!wrapper || !(button instanceof Element)) { return; }
+        const buttonRect = button.getBoundingClientRect();
+        const wrapperRect = wrapper.getBoundingClientRect();
+        this.tableSizePosition = {
+            left: Math.max(8, Math.min(
+                buttonRect.left - wrapperRect.left,
+                wrapperRect.width - RichTextEditorComponent.TABLE_PICKER_WIDTH
+            )),
+            top: buttonRect.bottom - wrapperRect.top + 4,
+        };
+    }
+
+    private _updateTableToolbar(cell: Element | null): void {
+        const table = cell?.closest('table') || null;
+        const visible = !!table && !this.readonly && !this.isDisabled;
+        if (visible) {
+            this._setTableToolbarPosition(table as HTMLElement);
+        }
+        if (visible !== this.showTableToolbar) {
+            this.showTableToolbar = visible;
+        }
+        this.cdr.markForCheck();
+    }
+
+    private _setTableToolbarPosition(table: HTMLElement): void {
+        const wrapper = this.editorRef.nativeElement.parentElement;
+        if (!wrapper) { return; }
+        const tableRect = table.getBoundingClientRect();
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const above = tableRect.top - wrapperRect.top - RichTextEditorComponent.TABLE_TOOLBAR_HEIGHT;
+        const top = above >= 4 ? above : tableRect.bottom - wrapperRect.top + 4;
+        this.tableToolbarPosition = {
+            left: Math.max(8, Math.min(
+                tableRect.left - wrapperRect.left,
+                wrapperRect.width - RichTextEditorComponent.TABLE_TOOLBAR_WIDTH
+            )),
+            top,
+        };
+    }
+
+    onEditorScroll(): void {
+        if (!this.showTableToolbar) { return; }
+        const table = this._currentTableCell()?.closest('table');
+        if (!table) { return; }
+        this._setTableToolbarPosition(table as HTMLElement);
+        this.cdr.markForCheck();
     }
 
     private _setLinkDialogPosition(link: HTMLAnchorElement | null): void {
