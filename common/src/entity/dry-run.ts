@@ -1,7 +1,8 @@
 import { ApproveStatus, DocumentSignature, DocumentStatus, GenerateUUIDv4, GroupAccessType, GroupRelationshipType, SchemaEntity } from '@guardian/interfaces';
 import { AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeUpdate, Entity, Index, OnLoad, Property } from '@mikro-orm/core';
 import { ObjectId } from '@mikro-orm/mongodb';
-import { DataBaseHelper, extractTableFileIds } from '../helpers/index.js';
+import { DataBaseHelper } from '../helpers/db-helper.js';
+import { extractTableFileIds } from '../helpers/table-file-ids.js';
 import { BaseEntity } from '../models/base-entity.js';
 
 /**

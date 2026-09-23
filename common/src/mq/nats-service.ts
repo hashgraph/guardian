@@ -1,9 +1,9 @@
 import { NatsConnection, headers, Subscription } from 'nats';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { ZipCodec } from './zip-codec.js';
-import { IMessageResponse } from '../models/index.js';
+import { IMessageResponse } from '../models/message-response.js';
 import { ForbiddenException } from '@nestjs/common';
-import { JwtServicesValidator } from '../security/index.js';
+import { JwtServicesValidator } from '../security/jwt-services-validator.js';
 
 type CallbackFunction = (body: any, error?: string, code?: number, data?: any) => void;
 
