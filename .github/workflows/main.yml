@@ -6,6 +6,11 @@ on:
       - '.github/**'
       - 'docs/**'
       - '**/*.md'
+
+permissions:
+  contents: read
+  checks: write        # required by publish-unit-test-result-action
+
 jobs:
   buildAndTest:
     name: Build and Test (Manual - Main)
