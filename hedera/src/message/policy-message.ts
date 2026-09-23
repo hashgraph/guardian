@@ -1,10 +1,9 @@
-import { Policy } from '@guardian/common';
+import { Policy, IPFS, toBuffer } from '@guardian/common';
 import { Message } from './message.js';
 import { IURL, UrlType } from './url.interface.js';
 import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { PolicyMessageBody } from './message-body.interface.js';
-import { IPFS, toBuffer } from '@guardian/common';
 
 /**
  * Policy message

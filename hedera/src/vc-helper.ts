@@ -21,6 +21,15 @@ import {
     DraftVcSchemaDocumentLoader,
     DraftSchemaDocumentLoader,
     Environment,
+    Singleton,
+    Schema as SchemaCollection,
+    DidDocument as DidDocumentCollection,
+    KeyType,
+    Users,
+    Wallet,
+    IAuthUser,
+    Hashing,
+    DatabaseServer
 } from '@guardian/common';
 import {
     Schema,
@@ -34,17 +43,8 @@ import {
     Bls12381G2KeyPair,
     deriveProof,
 } from '@mattrglobal/jsonld-signatures-bbs';
-import { Singleton } from '@guardian/common';
-import {
-    Schema as SchemaCollection,
-    DidDocument as DidDocumentCollection
-} from '@guardian/common';
-import { KeyType, Users, Wallet } from '@guardian/common';
-import { IAuthUser } from '@guardian/common';
 import { Ed25519VerificationKey2018 } from '@digitalbazaar/ed25519-verification-key-2018';
 import { bls12_381 } from '@noble/curves/bls12-381';
-import { Hashing } from '@guardian/common';
-import { DatabaseServer } from '@guardian/common';
 
 /**
  * Configured VCHelper

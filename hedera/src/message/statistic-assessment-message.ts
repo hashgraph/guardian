@@ -4,8 +4,7 @@ import { IURL, UrlType } from './url.interface.js';
 import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { StatisticAssessmentMessageBody } from './message-body.interface.js';
-import { IPFS } from '@guardian/common';
-import { PolicyStatistic } from '@guardian/common';
+import { IPFS, PolicyStatistic } from '@guardian/common';
 
 /**
  * VC message

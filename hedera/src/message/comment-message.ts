@@ -10,8 +10,7 @@ import {
     encryptWithKeyDerivedFromString,
     utf8ToBytes,
 } from '@guardian/common/dist/helpers/cryppo/index.js';
-import { IPFS } from '@guardian/common';
-import { PolicyComment } from '@guardian/common';
+import { IPFS, PolicyComment } from '@guardian/common';
 
 /**
  * Discussion message

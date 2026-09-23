@@ -3,9 +3,7 @@ import { IURL, UrlType } from './url.interface.js';
 import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { PolicyActionMessageBody } from './message-body.interface.js';
-import { IPFS } from '@guardian/common';
-import { ITopicMessage } from '@guardian/common';
-import { PolicyAction } from '@guardian/common';
+import { IPFS, ITopicMessage, PolicyAction } from '@guardian/common';
 import {
     bytesToUtf8,
     CipherStrategy,

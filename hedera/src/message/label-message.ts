@@ -3,8 +3,7 @@ import { IURL, UrlType } from './url.interface.js';
 import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { LabelMessageBody } from './message-body.interface.js';
-import { PolicyLabel } from '@guardian/common';
-import { IPFS, toBuffer } from '@guardian/common';
+import { PolicyLabel, IPFS, toBuffer } from '@guardian/common';
 
 /**
  * Schema message
