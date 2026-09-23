@@ -8,12 +8,10 @@ import {
     DryRunFiles,
     EncryptUtils,
     findAllEntities,
-    GenerateBlocks,
     IAuthUser,
     IMessageResponse,
     ImportExportUtils,
     IPFS,
-    JsonToXlsx,
     MessageAction,
     loadErrorCode,
     MessageError,
@@ -44,10 +42,10 @@ import {
     Users,
     VcHelper,
     MintTransaction,
-    XlsxToJson,
     containsRegex,
     expandTablesInDocument
 } from '@guardian/common';
+import { GenerateBlocks, JsonToXlsx, XlsxToJson } from '../xlsx/index.js';
 import {
     DocumentCategoryType,
     DocumentType,
