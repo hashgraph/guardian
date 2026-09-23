@@ -1,7 +1,8 @@
 import { Auth, AuthUser } from '#auth';
 import { PREFIXES } from '#constants';
 import { CacheService, EntityOwner, getCacheKey, InternalException, PolicyEngine } from '#helpers';
-import { IAuthUser, PinoLogger } from '@guardian/common';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
 import { Permissions, POLICY_ALIAS_REGEX } from '@guardian/interfaces';
 import {
     All,

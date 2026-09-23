@@ -96,21 +96,22 @@ describe('api-gateway controllers: policy-repository / trust-chains / wizard', f
             '#auth': authMock,
             '#constants': constantsMock,
             '#middlewares': middlewaresMock,
-            '@guardian/common': commonMock,
+            '@guardian/common/helpers/pino-logger': commonMock,
         }));
         ({ TrustChainsApi } = await esmock(TRUST_CHAINS_DIST, {
             '#helpers': helpersMock,
             '#auth': authMock,
             '#constants': constantsMock,
             '#middlewares': middlewaresMock,
-            '@guardian/common': commonMock,
+            '@guardian/common/helpers/pino-logger': commonMock,
         }));
         ({ WizardApi } = await esmock(WIZARD_DIST, {
             '#helpers': helpersMock,
             '#auth': authMock,
             '#constants': constantsMock,
             '#middlewares': middlewaresMock,
-            '@guardian/common': commonMock,
+            '@guardian/common/helpers/pino-logger': commonMock,
+            '@guardian/common/helpers/run-function-async': commonMock,
         }));
     });
 

@@ -1,5 +1,7 @@
 import { WebSocketsService } from '../api/service/websockets.js';
-import { INotificationInfo, MessageResponse, NatsService } from '@guardian/common';
+import { MessageResponse } from '@guardian/common/models/message-response';
+import { NatsService } from '@guardian/common/mq/nats-service';
+import { INotificationInfo } from '@guardian/common/notification/notification-info.interface';
 import {
     GenerateUUIDv4,
     IStatus,

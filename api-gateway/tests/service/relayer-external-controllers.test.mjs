@@ -40,7 +40,7 @@ describe('RelayerAccountsApi', function () {
                     async getUserRelayerAccounts(...a) { return usersImpl.getUserRelayerAccounts(...a); }
                 },
             },
-            '@guardian/common': { PinoLogger: class {} },
+            '@guardian/common/helpers/pino-logger': { PinoLogger: class {} },
             '#middlewares': middlewaresMock,
         }));
     });
@@ -151,7 +151,7 @@ describe('ExternalApi', function () {
                 },
             },
             '#middlewares': middlewaresMock,
-            '@guardian/common': { PinoLogger: class {} },
+            '@guardian/common/helpers/pino-logger': { PinoLogger: class {} },
         }));
     });
 

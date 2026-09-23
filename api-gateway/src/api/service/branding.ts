@@ -5,7 +5,8 @@ import { Permissions } from '@guardian/interfaces';
 import { BrandingDTO, InternalServerErrorDTO, ObjectExamples } from '#middlewares';
 import { ONLY_SR, Guardians, UseCache, InternalException, CacheService } from '#helpers';
 import { CACHE_PREFIXES } from '#constants';
-import {IAuthUser, PinoLogger} from '@guardian/common';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
 
 /**
  * Branding route

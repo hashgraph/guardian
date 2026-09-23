@@ -24,7 +24,7 @@ describe('PermissionsApi', function () {
 
     before(async () => {
         ({ PermissionsApi } = await esmock(PERM_DIST, {
-            '@guardian/common': { PinoLogger: class {} },
+            '@guardian/common/helpers/pino-logger': { PinoLogger: class {} },
             '@guardian/interfaces': {
                 AssignedEntityType: { Policy: 'Policy' },
                 Permissions: new Proxy({}, { get: () => 'p' }),

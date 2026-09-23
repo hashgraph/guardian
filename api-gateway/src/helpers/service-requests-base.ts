@@ -1,4 +1,5 @@
-import { IMessageResponse, MessageBrokerChannel } from '@guardian/common';
+import { IMessageResponse } from '@guardian/common/models/message-response';
+import { MessageBrokerChannel } from '@guardian/common/mq/message-broker-channel';
 
 /**
  * Service error class

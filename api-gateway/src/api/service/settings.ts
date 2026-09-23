@@ -4,7 +4,8 @@ import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiNoContentRe
 import { ObjectExamples, AboutResponseDTO, SettingsDTO, InternalServerErrorDTO } from '#middlewares';
 import { Auth, AuthUser } from '#auth';
 import { Guardians, InternalException } from '#helpers';
-import { IAuthUser, PinoLogger } from '@guardian/common';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
 import fs from 'node:fs';
 
 @Controller('settings')

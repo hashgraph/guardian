@@ -14,7 +14,7 @@ let pinoMod;
 before(async function () {
     this.timeout(60000);
     mongoMod = await esmock('../../dist/helpers/providers/logger-mongo-provider.js', {
-        '@guardian/common': {
+        '@guardian/common/helpers/mongo-logging-initialization': {
             mongoForLoggingInitialization: (...args) => {
                 mongoInitCalls.push(args);
                 return mongoInitResult;
@@ -22,8 +22,8 @@ before(async function () {
         },
     });
     pinoMod = await esmock('../../dist/helpers/providers/pino-logger-provider.js', {
-        '@guardian/common': {
-            PinoLogger: FAKE_PINO_LOGGER,
+        '@guardian/common/helpers/pino-logger': { PinoLogger: FAKE_PINO_LOGGER },
+        '@guardian/common/helpers/pino-logger-initialization': {
             pinoLoggerInitialization: (...args) => {
                 pinoInitCalls.push(args);
                 return pinoInitResult;
