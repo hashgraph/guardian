@@ -26,6 +26,31 @@
 
 ***
 
-Looking for what's already shipped? See the [Change Log](change-log.md) for history.
+{% hint style="info" %}
+The sections below list roadmap items that have already shipped, organized by the quarter they were completed in.
+{% endhint %}
+
+### Q1 2026
+
+* [v3.6.0, Testing & Stabilization](https://github.com/hashgraph/guardian/milestone/10) — [Platform Update](https://guardian.hedera.com/updates#guardian-3.6.0)
+
+### Q2 2026
+
+* [v3.7.0, Usability & UX](https://github.com/hashgraph/guardian/milestone/38) — [Platform Update](https://guardian.hedera.com/updates#guardian-3.7.0)
+
+### Q3 2026
+
+* [v3.7.1 Schema Templates (SEPT)](https://github.com/hashgraph/guardian/milestone/43)
+* v3.8.0, New Feature Development (TBD)
+
+### Q4 2026
+
+_To be added._
+
+***
+
+## Change Log
+
+Looking for what's shipped in earlier years too? See the [Change Log](change-log.md) for the full release history.
 
 {% include "../.gitbook/includes/footer-have-questions-or-suggestions.md" %}
