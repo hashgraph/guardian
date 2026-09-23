@@ -1,16 +1,5 @@
-import {
-    DatabaseServer,
-    HederaDidDocument,
-    PolicyLabel,
-    VcHelper,
-    TopicConfig,
-    TopicHelper,
-    Users,
-    Schema as SchemaCollection,
-    VcDocument as VcDocumentCollection,
-    VpDocument as VpDocumentCollection,
-    SchemaConverterUtils,
-} from '@guardian/common';
+import { DatabaseServer, PolicyLabel, Users, Schema as SchemaCollection, VcDocument as VcDocumentCollection, VpDocument as VpDocumentCollection, SchemaConverterUtils } from '@guardian/common';
+import { HederaDidDocument, VcHelper, TopicConfig, TopicHelper } from '@guardian/hedera';
 import {
     GenerateUUIDv4,
     INavItemConfig,

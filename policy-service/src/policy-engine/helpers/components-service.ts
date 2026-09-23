@@ -1,15 +1,5 @@
-import {
-    DatabaseServer,
-    HederaDidDocument,
-    IAuthUser,
-    PinoLogger,
-    Policy as PolicyCollection,
-    PolicyTool as PolicyToolCollection,
-    Schema as SchemaCollection,
-    TopicConfig,
-    Users,
-    VcHelper
-} from '@guardian/common';
+import { DatabaseServer, IAuthUser, PinoLogger, Policy as PolicyCollection, PolicyTool as PolicyToolCollection, Schema as SchemaCollection, Users } from '@guardian/common';
+import { HederaDidDocument, TopicConfig, VcHelper } from '@guardian/hedera';
 import { GenerateUUIDv4, PolicyHelper, PolicyStatus, SchemaEntity, SchemaStatus } from '@guardian/interfaces';
 import { PrivateKey } from '@hiero-ledger/sdk';
 import { IPolicyBlock } from '../policy-engine.interface.js';

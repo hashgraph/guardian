@@ -1,26 +1,6 @@
 import '../config.js'
-import {
-    COMMON_CONNECTION_CONFIG,
-    DatabaseServer,
-    Environment,
-    ExternalEventChannel,
-    GenerateTLSOptionsNats,
-    IPFS,
-    JwtServicesValidator,
-    LargePayloadContainer,
-    MessageBrokerChannel,
-    MessageServer,
-    MockService,
-    mongoForLoggingInitialization,
-    NotificationService,
-    OldSecretManager,
-    PinoLogger,
-    pinoLoggerInitialization,
-    TopicListener,
-    Users,
-    Wallet,
-    Workers
-} from '@guardian/common';
+import { COMMON_CONNECTION_CONFIG, DatabaseServer, Environment, ExternalEventChannel, GenerateTLSOptionsNats, IPFS, JwtServicesValidator, LargePayloadContainer, MessageBrokerChannel, mongoForLoggingInitialization, NotificationService, OldSecretManager, PinoLogger, pinoLoggerInitialization, TopicListener, Users, Wallet, Workers } from '@guardian/common';
+import { MessageServer, MockService } from '@guardian/hedera';
 import { entities } from '@guardian/common/dist/entities.js';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';

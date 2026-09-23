@@ -956,13 +956,15 @@ describe('PUBLISH_SCHEMA_TEMPLATE content file', () => {
                     },
                     NewNotifier: Object.assign(() => {}, { empty: () => stepNotifier() }),
                     Users: class { async getHederaAccount() { return {}; } },
+                    SchemaTemplateImportExport: {
+                        generate: async () => ({ generateAsync: async () => new ArrayBuffer(8) }),
+                    },
+                },
+                '@guardian/hedera': {
                     TopicConfig: { fromObject: async () => ({}) },
                     MessageServer: class {
                         setTopicObject() { return this; }
                         async sendMessage() { return { getId: () => 'message-1' }; }
-                    },
-                    SchemaTemplateImportExport: {
-                        generate: async () => ({ generateAsync: async () => new ArrayBuffer(8) }),
                     },
                 },
                 [importHelpersPath]: {

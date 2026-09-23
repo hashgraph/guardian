@@ -1,5 +1,5 @@
 import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
-import { VcHelper } from '@guardian/common';
+import { VcHelper } from '@guardian/hedera';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';

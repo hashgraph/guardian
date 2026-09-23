@@ -1,32 +1,6 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import {
-    Contract,
-    ContractMessage,
-    DatabaseServer,
-    KeyType,
-    MessageAction,
-    MessageError,
-    MessageResponse,
-    MessageServer,
-    NewNotifier,
-    NotificationHelper,
-    PinoLogger,
-    RetirePool,
-    RetireRequest,
-    Schema as SchemaCollection,
-    Topic,
-    TopicConfig,
-    TopicHelper,
-    Users,
-    VcDocument,
-    VcDocument as VcDocumentCollection,
-    VcHelper,
-    VCMessage,
-    Wallet,
-    WiperRequest,
-    Workers,
-    Environment,
-} from '@guardian/common';
+import { Contract, DatabaseServer, KeyType, MessageError, MessageResponse, NewNotifier, NotificationHelper, PinoLogger, RetirePool, RetireRequest, Schema as SchemaCollection, Topic, Users, VcDocument, VcDocument as VcDocumentCollection, Wallet, WiperRequest, Workers, Environment } from '@guardian/common';
+import { ContractMessage, MessageAction, MessageServer, TopicConfig, TopicHelper, VcHelper, VCMessage } from '@guardian/hedera';
 import {
     ContractAPI,
     ContractParamType,
