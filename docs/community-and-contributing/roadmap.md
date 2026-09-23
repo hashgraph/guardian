@@ -2,19 +2,21 @@
 
 {% include "../.gitbook/includes/roadmap-introduction.md" %}
 
-## Now
+## 2026
+
+### Now
 
 * Audit Preparation & Submission
-* Reduce Onboarding Confusion & Support for New Languages & "UnSeize MGS"
+* Reduce Onboarding Confusion, Improved Mental Model & Foundations for i18n, MGS Support
 * Reduce Publish Time Failures & Dependencies (IPFS pinning / health)
 
-## Next
+### Next
 
 * QA and Automated Tests, Post Audit v4.0.0
-* Policy Testing
+* Policy Testing Improvements
 * New Product Surfaces
 
-## Later
+### Later
 
 * CRURD, Policy / VC Document Revocation
 * Carbon Project Finance & AI to support project proponents
@@ -24,4 +26,6 @@
 
 ***
 
-Looking for what's already shipped? See the [Change Log](change-log.md) for the full release history.
+Looking for what's already shipped? See the [Change Log](change-log.md) for history.
+
+{% include "../.gitbook/includes/footer-have-questions-or-suggestions.md" %}
