@@ -138,8 +138,9 @@ export class TopicListener {
             if (this._name) {
                 options.name = this._name;
             }
-            // typeof, not truthiness: index 0 is a valid position, and a dropped index
-            // makes the service default to -1 and replay the whole topic.
+            // typeof, not truthiness, so a start position of 0 is still sent. A listener
+            // with no start position (null) sends none and resumes from the service's
+            // persisted index.
             if (typeof this._startNumber === 'number') {
                 options.index = this._startNumber;
             }
