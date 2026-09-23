@@ -1229,8 +1229,6 @@
   * [Bring your Own DIDs APIs](developer-tools-and-resources/api-reference/apis-5/README.md)
     * [Validate DID Format](developer-tools-and-resources/api-reference/apis-5/validate-did-format.md)
     * [Validate DID Keys](developer-tools-and-resources/api-reference/apis-5/validate-did-keys.md)
-* [Global Indexer](developer-tools-and-resources/global-indexer/README.md)
-  * [Indexer Reference](developer-tools-and-resources/global-indexer/indexer-user-guide.md)
 
 ## Community & Contributing
 
