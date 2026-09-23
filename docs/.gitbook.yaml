@@ -16,8 +16,8 @@
 #    api-reference-indexer) via GitBook Site redirects (.gitbook.yaml cannot
 #    target an external domain)
 #
-# 696 entries below, grouped by source path prefix for scanning;
-# alphabetical within each group. Last updated 2026-09-23 (twelfth batch).
+# 697 entries below, grouped by source path prefix for scanning;
+# alphabetical within each group. Last updated 2026-09-23 (thirteenth batch).
 
 redirects:
   # ---- ai-toolkit/first-ingestion-and-semantic-search (1) ----
@@ -126,7 +126,8 @@ redirects:
   # ---- guardian/decentralized-guardian (2) ----
   guardian/decentralized-guardian: guardian/workspace/decentralized-guardian.md
   guardian/decentralized-guardian/remote-policy-ui: guardian/workspace/decentralized-guardian/remote-policy-ui.md
-  # ---- guardian/demo-guide (52) ----
+  # ---- guardian/demo-guide (53) ----
+  guardian/demo-guide: guardian/tutorials.md
   guardian/demo-guide/carbon-emissions: guardian/tutorials/carbon-emissions.md
   guardian/demo-guide/carbon-emissions/atma-ghg-scope-ii-carbon-emission-policy: guardian/tutorials/carbon-emissions/atma-ghg-scope-ii-carbon-emission-policy.md
   guardian/demo-guide/carbon-emissions/atma-scope-3-ghg-policy: guardian/tutorials/carbon-emissions/atma-scope-3-ghg-policy.md
