@@ -1,8 +1,5 @@
-import { Topic } from '@guardian/common';
+import { Topic, KeyType, Users, Wallet, DatabaseServer, Wallet as WalletManager } from '@guardian/common';
 import { TopicType } from '@guardian/interfaces';
-import { KeyType, Users, Wallet } from '@guardian/common';
-import { DatabaseServer } from '@guardian/common';
-import { Wallet as WalletManager } from '@guardian/common'
 
 /**
  * Topic Config
