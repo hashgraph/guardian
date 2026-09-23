@@ -105,13 +105,10 @@ export class TopicListener {
             if (index > this._startNumber) {
                 try {
                     await this._observable(message);
-                    // Advance only on success: a handler that throws or never settles has
-                    // not processed this message, and the counter is what a restart resumes
-                    // from and what the `index > _startNumber` test above compares against.
                     this._startNumber = index;
                 } catch (error) {
-                    // Confirm below regardless, so one failed message cannot hold the
-                    // sender's single-message window shut.
+                    // The message is confirmed below and dropped by the service: it is not retried.
+                    await this.sendError(error);
                 }
             }
 
