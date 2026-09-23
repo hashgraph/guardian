@@ -61,6 +61,9 @@ jobs:
           pushd common
           yarn run build
           popd
+          pushd hedera
+          yarn run build
+          popd
           pushd notification-service
           yarn run build
           popd
