@@ -292,6 +292,7 @@ jobs:
           yarn workspaces foreach -A --topological-dev --parallel --jobs 4 \
             --include '@guardian/interfaces' \
             --include '@guardian/common' \
+            --include '@guardian/hedera' \
             --include 'notification-service' \
             --include 'logger-service' \
             --include 'auth-service' \

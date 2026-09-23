@@ -55,6 +55,9 @@ jobs:
           pushd common
           yarn run build
           popd
+          pushd hedera
+          yarn run build
+          popd
           pushd ai-service
           yarn run build
           popd
@@ -113,6 +116,9 @@ jobs:
           pushd common
           npm run lint
           popd
+          pushd hedera
+          npm run lint
+          popd
           pushd logger-service
           npm run lint
           popd
@@ -150,6 +156,9 @@ jobs:
           npm run test
           popd
           pushd common
+          npm run test
+          popd
+          pushd hedera
           npm run test
           popd
           pushd ai-service
