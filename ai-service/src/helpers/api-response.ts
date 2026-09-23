@@ -1,5 +1,5 @@
 import { AISuggestionService } from './suggestions.js';
-import { MessageResponse } from '@guardian/common';
+import { MessageResponse } from '@guardian/common/models/message-response';
 
 /**
  * API response

@@ -11,7 +11,8 @@ import {
 } from '@mikro-orm/core';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { ITask, WorkerTaskType } from '@guardian/interfaces';
-import { BaseEntity, DataBaseHelper } from '@guardian/common';
+import { DataBaseHelper } from '@guardian/common/helpers/db-helper';
+import { BaseEntity } from '@guardian/common/models/base-entity';
 
 const TASK_DATA_GRIDFS_LIMIT = (+process.env.TASK_DATA_GRIDFS_LIMIT || 5 * 1024 * 1024);
 

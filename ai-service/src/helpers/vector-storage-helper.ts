@@ -3,7 +3,7 @@ import { FaissStore } from '@langchain/community/vectorstores/faiss';
 import { DirectoryLoader } from '@langchain/classic/document_loaders/fs/directory';
 import { TextLoader } from '@langchain/classic/document_loaders/fs/text';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
-import { PinoLogger } from '@guardian/common';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
 
 export class VectorStorage {
 

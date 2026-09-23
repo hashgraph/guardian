@@ -1,4 +1,6 @@
-import { NatsService, Policy, Singleton } from '@guardian/common';
+import { Singleton } from '@guardian/common/decorators/singleton';
+import { Policy } from '@guardian/common/entity/policy';
+import { NatsService } from '@guardian/common/mq/nats-service';
 import { GenerateUUIDv4, MessageAPI, PolicyEngineEvents } from '@guardian/interfaces';
 
 /**

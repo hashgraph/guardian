@@ -4,7 +4,9 @@ import * as path from 'node:path';
 import { GroupCategories } from './general-helper.js';
 import { PolicyDescription } from '../models/models.js';
 import { PolicyCategoryType } from '@guardian/interfaces';
-import { PinoLogger, Policy, PolicyCategory } from '@guardian/common';
+import { Policy } from '@guardian/common/entity/policy';
+import { PolicyCategory } from '@guardian/common/entity/policy-category';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
 
 const MIN_DESCRIPTION_WORDS = 5;
 
