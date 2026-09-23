@@ -1,8 +1,5 @@
-import {
-    DatabaseServer,
-    HederaDidDocument,
-    Record,
-} from '@guardian/common';
+import { DatabaseServer, Record } from '@guardian/common';
+import { HederaDidDocument } from '@guardian/hedera';
 import { GenerateUUIDv4, ISignOptions, PolicyEvents, RecordMethod, RecordStatus } from '@guardian/interfaces';
 import { BlockTreeGenerator } from '../block-tree-generator.js';
 import { AnyBlockType } from '../policy-engine.interface.js';

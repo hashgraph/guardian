@@ -10,7 +10,7 @@ import {
     TimeoutError,
     WorkerEvents
 } from '@guardian/interfaces';
-import { Environment } from '../hedera-modules/index.js';
+import { Environment } from './environment.js';
 import { NatsService } from '../mq/index.js';
 
 export const NON_RETRYABLE_HEDERA_ERRORS = [

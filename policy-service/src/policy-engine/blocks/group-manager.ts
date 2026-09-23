@@ -5,7 +5,8 @@ import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-abo
 import { PolicyInputEventType } from '../interfaces/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyUser } from '../policy-user.js';
-import { MessageServer, MessageStatus, PolicyRoles } from '@guardian/common';
+import { PolicyRoles } from '@guardian/common';
+import { MessageServer, MessageStatus } from '@guardian/hedera';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';

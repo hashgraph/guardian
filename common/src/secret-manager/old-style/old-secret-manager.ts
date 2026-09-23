@@ -2,7 +2,7 @@ import { SecretManagerBase } from '../secret-manager-base.js';
 import { NatsService } from '../../mq/index.js';
 import { GenerateUUIDv4, IGetKeyResponse, WalletEvents } from '@guardian/interfaces';
 import { Singleton } from '../../decorators/singleton.js';
-import { timeout } from '../../hedera-modules/index.js';
+import { timeout } from '../../decorators/timeout.js';
 
 /**
  * Old secret manager implementation

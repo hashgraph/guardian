@@ -1,6 +1,6 @@
 import { SecretManager, SecretManagerBase, SecretManagerType } from '../secret-manager/index.js';
 import crypto from 'node:crypto';
-import { Hashing } from '../hedera-modules/hashing.js';
+import { Hashing } from '../helpers/hashing.js';
 import { AzureSecretManager } from '../secret-manager/azure/azure-secret-manager.js';
 import { GcpSecretManager } from '../secret-manager/gcp/gcp-secret-manager.js';
 

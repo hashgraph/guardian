@@ -11,7 +11,8 @@ import {
 import { USER_REQUIRED_PROPS, USER_KEYS_PROPS } from '#constants';
 import { User } from '../entity/user.js';
 import { DynamicRole } from '../entity/dynamic-role.js';
-import { checkHederaKey, DatabaseServer, KeyType, Wallet, Workers } from '@guardian/common';
+import { DatabaseServer, KeyType, Wallet, Workers } from '@guardian/common';
+import { checkHederaKey } from '@guardian/hedera';
 
 export enum UserProp {
     RAW = 'RAW',

@@ -1,4 +1,5 @@
-import { DatabaseServer, INotificationStep, IPolicyComponents, MessageAction, MessageServer, MessageType, Tag, TagMessage } from '@guardian/common';
+import { DatabaseServer, INotificationStep, IPolicyComponents, Tag } from '@guardian/common';
+import { MessageAction, MessageServer, MessageType, TagMessage } from '@guardian/hedera';
 import { GenerateUUIDv4, TagType } from '@guardian/interfaces';
 import { ImportSchemaResult } from '../schema/schema-import.interface.js';
 

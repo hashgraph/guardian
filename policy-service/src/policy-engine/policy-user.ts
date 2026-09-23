@@ -1,4 +1,5 @@
-import { DatabaseServer, DidDocument, HederaBBSMethod, HederaDidDocument, HederaEd25519Method, IAuthUser, KeyType, PolicyRoles, Users, Wallet } from '@guardian/common';
+import { DatabaseServer, DidDocument, IAuthUser, KeyType, PolicyRoles, Users, Wallet } from '@guardian/common';
+import { HederaBBSMethod, HederaDidDocument, HederaEd25519Method } from '@guardian/hedera';
 import { ISignOptions, LocationType, OrgRolePermission, Permissions, PolicyRole, PolicyStatus, SignType } from '@guardian/interfaces';
 import { AnyBlockType, IPolicyDocument, IPolicyInstance } from './policy-engine.interface.js';
 

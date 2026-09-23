@@ -1,4 +1,5 @@
-import { DatabaseServer, MessageType, RegistrationMessage } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common';
+import { MessageType, RegistrationMessage } from '@guardian/hedera';
 import { AnalyticsStatus as Status } from '../entity/analytics-status.js';
 import { AnalyticsUser as User } from '../entity/analytics-user.js';
 import { ReportStatus } from '../interfaces/report-status.type.js';

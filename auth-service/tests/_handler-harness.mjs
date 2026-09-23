@@ -1,5 +1,6 @@
 // Shared NATS handler harness — loads a dist service via esmock with
-// @guardian/common + @guardian/interfaces (and common transitive deps)
+// @guardian/common + @guardian/hedera + @guardian/interfaces (and common
+// transitive deps)
 // stubbed so the real ESM imports in dist resolve to lightweight fakes.
 //
 // Module._load (CJS) does not intercept ESM static imports inside the
@@ -110,6 +111,13 @@ const guardianCommonMocks = {
     extractTenantContext: (msg) => ({ tenantId: msg?.tenantId || null, fromTenantId: (id) => ({ tenantId: id }) }),
 };
 
+// `@guardian/hedera` pulls the Hedera SDK and the VC/BBS stack, so stub the one
+// symbol auth-service imports from it rather than loading the real package
+// under the esmock loader.
+const guardianHederaMocks = {
+    checkHederaKey: (privateKey, publicKey) => !!privateKey && !!publicKey,
+};
+
 const guardianInterfacesMocks = {
     GenerateUUIDv4: () => 'uuid-' + Math.random().toString(36).slice(2),
     AuthEvents: proxyEnum(),
@@ -163,18 +171,19 @@ const guardianInterfacesMocks = {
 function mergeMocks(overrides) {
     const merged = {
         '@guardian/common': { ...guardianCommonMocks, ...(overrides?.['@guardian/common'] || {}) },
+        '@guardian/hedera': { ...guardianHederaMocks, ...(overrides?.['@guardian/hedera'] || {}) },
         '@guardian/interfaces': { ...guardianInterfacesMocks, ...(overrides?.['@guardian/interfaces'] || {}) },
     };
     for (const [k, v] of Object.entries(overrides || {})) {
-        if (k === '@guardian/common' || k === '@guardian/interfaces') continue;
+        if (k === '@guardian/common' || k === '@guardian/hedera' || k === '@guardian/interfaces') continue;
         merged[k] = v;
     }
     return merged;
 }
 
 /**
- * Load a dist module under esmock with the default @guardian/common +
- * @guardian/interfaces stubs. Returns the loaded namespace object.
+ * Load a dist module under esmock with the default @guardian/common,
+ * @guardian/hedera and @guardian/interfaces stubs. Returns the loaded namespace object.
  *
  * Stubs go in as esmock global definitions: the second argument only rewrites
  * the target's own imports, so a transitive one (`#utils`) would pull in the

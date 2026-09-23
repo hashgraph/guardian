@@ -1,16 +1,5 @@
-import {
-    DIDMessage,
-    Message,
-    MessageType,
-    ModuleMessage,
-    PolicyMessage,
-    SchemaMessage,
-    TagMessage,
-    TokenMessage,
-    UrlType,
-    DatabaseServer,
-    SchemaPackageMessage,
-} from '@guardian/common';
+import { DatabaseServer } from '@guardian/common';
+import { DIDMessage, Message, MessageType, ModuleMessage, PolicyMessage, SchemaMessage, TagMessage, TokenMessage, UrlType, SchemaPackageMessage } from '@guardian/hedera';
 import { AnalyticsModule as Module } from '../entity/analytics-module.js';
 import { AnalyticsPolicy as Policy } from '../entity/analytics-policy.js';
 import { AnalyticsPolicyInstance as PolicyInstance } from '../entity/analytics-policy-instance.js';

@@ -1,4 +1,5 @@
-import { DatabaseServer, IAuthUser, Policy, PolicyDiscussion, VcDocument, VcHelper, Schema as SchemaCollection, MessageServer, NewNotifier, Users, TopicConfig, TopicHelper, Wallet, KeyType, EncryptVcHelper } from '@guardian/common';
+import { DatabaseServer, IAuthUser, Policy, PolicyDiscussion, VcDocument, Schema as SchemaCollection, NewNotifier, Users, Wallet, KeyType, EncryptVcHelper } from '@guardian/common';
+import { VcHelper, MessageServer, TopicConfig, TopicHelper } from '@guardian/hedera';
 import { EntityOwner, GenerateUUIDv4, LocationType, PolicyStatus, Schema, SchemaEntity, SchemaHelper, TopicType } from '@guardian/interfaces';
 import { publishSystemSchema } from '../helpers/import-helpers/index.js';
 import { PrivateKey } from '@hiero-ledger/sdk';

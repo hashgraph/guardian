@@ -21,6 +21,7 @@
     "workspaces": [
         "interfaces",
         "common",
+        "hedera",
         "ai-service",
         "analytics-service",
         "api-gateway",

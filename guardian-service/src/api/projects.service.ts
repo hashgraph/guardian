@@ -1,13 +1,6 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import {
-    DatabaseServer,
-    MessageError,
-    MessageResponse,
-    Policy,
-    VcDocument,
-    VcDocumentDefinition,
-    PinoLogger,
-} from '@guardian/common';
+import { DatabaseServer, MessageError, MessageResponse, Policy, VcDocument, PinoLogger } from '@guardian/common';
+import { VcDocumentDefinition } from '@guardian/hedera';
 import { MessageAPI, Schema, SchemaField } from '@guardian/interfaces';
 import { FilterObject } from '@mikro-orm/core';
 

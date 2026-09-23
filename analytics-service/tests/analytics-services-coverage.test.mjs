@@ -4,22 +4,8 @@ import { AnalyticsUserService } from '../dist/analytics/user.service.js';
 import { AnalyticsTokenService } from '../dist/analytics/token.service.js';
 import { AnalyticsDocumentService } from '../dist/analytics/document.service.js';
 import { AnalyticsPolicyService } from '../dist/analytics/policy.service.js';
-import {
-    DatabaseServer,
-    RegistrationMessage,
-    TagMessage,
-    VCMessage,
-    VPMessage,
-    RoleMessage,
-    DIDMessage,
-    TopicMessage,
-    PolicyMessage,
-    ModuleMessage,
-    SchemaMessage,
-    SchemaPackageMessage,
-    TokenMessage,
-    UrlType,
-} from '@guardian/common';
+import { DatabaseServer } from '@guardian/common';
+import { RegistrationMessage, TagMessage, VCMessage, VPMessage, RoleMessage, DIDMessage, TopicMessage, PolicyMessage, ModuleMessage, SchemaMessage, SchemaPackageMessage, TokenMessage, UrlType } from '@guardian/hedera';
 
 const db = { create: [], save: [], find: [], findOne: [] };
 let findResults = [];

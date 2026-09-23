@@ -5,7 +5,7 @@ import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-abo
 import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyUser, UserCredentials } from '../policy-user.js';
 import { LocationType, Schema, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
-import { VcDocumentDefinition as VcDocument, VcHelper } from '@guardian/common';
+import { VcDocumentDefinition as VcDocument, VcHelper } from '@guardian/hedera';
 import { BlockActionError } from '../errors/index.js';
 
 /**

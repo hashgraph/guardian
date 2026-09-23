@@ -8,25 +8,8 @@ import {
     TopicType,
     WorkerTaskType,
 } from '@guardian/interfaces';
-import {
-    DatabaseServer,
-    DidDocument as DidDocumentCollection,
-    DIDMessage,
-    INotificationStep,
-    KeyType,
-    MessageAction,
-    MessageServer,
-    OrganizationMessage,
-    PinoLogger,
-    RegistrationMessage,
-    Topic,
-    TopicConfig,
-    TopicHelper,
-    Users,
-    VcHelper,
-    Wallet,
-    Workers,
-} from '@guardian/common';
+import { DatabaseServer, DidDocument as DidDocumentCollection, INotificationStep, KeyType, PinoLogger, Topic, Users, Wallet, Workers } from '@guardian/common';
+import { DIDMessage, MessageAction, MessageServer, OrganizationMessage, RegistrationMessage, TopicConfig, TopicHelper, VcHelper } from '@guardian/hedera';
 import { getGlobalTopic } from './profile-helper.js';
 import { validateHederaAccountKey } from './hedera-key-validator.js';
 

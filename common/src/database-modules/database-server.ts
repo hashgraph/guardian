@@ -1,5 +1,5 @@
 import { AssignedEntityType, GenerateUUIDv4, IVC, IwaVersion, MintTransactionStatus, PolicyTestStatus, PolicyStatus, SchemaEntity, TokenType, TopicType, ExternalPolicyStatus } from '@guardian/interfaces';
-import { TopicId } from '@hiero-ledger/sdk';
+import type { TopicId } from '@hiero-ledger/sdk';
 import { FilterObject, FilterQuery, FindAllOptions, MikroORM, FindOptions } from '@mikro-orm/core';
 import { MongoDriver, ObjectId, PopulatePath } from '@mikro-orm/mongodb';
 import { Binary } from 'bson';
@@ -70,7 +70,7 @@ import {
 import { PolicyProperty } from '../entity/policy-property.js';
 import { Theme } from '../entity/theme.js';
 import { PolicyTool } from '../entity/tool.js';
-import { Message } from '../hedera-modules/index.js';
+import type { IVirtualMessage } from '../interfaces/virtual-message.interface.js';
 import { DataBaseHelper, MAP_TRANSACTION_SERIALS_AGGREGATION_FILTERS, Wallet, KeyType } from '../helpers/index.js';
 import { GetConditionsPoliciesByCategories } from '../helpers/policy-category.js';
 import { AbstractDatabaseServer, IAddDryRunIdItem, IAuthUser, IGetDocumentAggregationFilters } from '../interfaces/index.js';
@@ -4982,7 +4982,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      *
      * @virtual
      */
-    public static async saveVirtualMessage<T>(dryRun: string, message: Message): Promise<void> {
+    public static async saveVirtualMessage<T>(dryRun: string, message: IVirtualMessage): Promise<void> {
         const document = message.toMessage();
         const messageId = message.getId();
         const topicId = message.getTopicId();

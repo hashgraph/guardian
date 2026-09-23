@@ -1,6 +1,6 @@
 import { ISchema } from '@guardian/interfaces';
 import { Schema } from '../entity/index.js';
-import { SchemaLoader } from '../hedera-modules/index.js';
+import { SchemaLoader } from './base/index.js';
 import { DatabaseServer } from '../database-modules/index.js';
 
 /**

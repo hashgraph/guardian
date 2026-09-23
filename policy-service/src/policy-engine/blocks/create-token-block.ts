@@ -17,12 +17,8 @@ import { EventBlock } from '../helpers/decorators/event-block.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyUser } from '../policy-user.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
-import {
-    insertVariables,
-    MessageAction,
-    MessageServer,
-    TokenMessage,
-} from '@guardian/common';
+import { insertVariables } from '@guardian/common';
+import { MessageAction, MessageServer, TokenMessage } from '@guardian/hedera';
 import {
     ExternalEvent,
     ExternalEventType,
