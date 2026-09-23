@@ -1,6 +1,6 @@
 import { MessageAPI, NotificationAction, StatusType, TaskAction, } from '@guardian/interfaces';
 import { INotificationInfo } from './notification-info.interface.js';
-import { NatsService } from '../mq/index.js';
+import { NatsService } from '../mq/nats-service.js';
 import { NotificationHelper } from './notification-helper.js';
 
 export const notificationActionMap = new Map<TaskAction, NotificationAction>([

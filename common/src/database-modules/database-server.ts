@@ -3,78 +3,80 @@ import type { TopicId } from '@hiero-ledger/sdk';
 import { FilterObject, FilterQuery, FindAllOptions, MikroORM, FindOptions } from '@mikro-orm/core';
 import { MongoDriver, ObjectId, PopulatePath } from '@mikro-orm/mongodb';
 import { Binary } from 'bson';
+import { AggregateVC } from '../entity/aggregate-documents.js';
+import { ApprovalDocument as ApprovalDocumentCollection } from '../entity/approval-document.js';
+import { Artifact as ArtifactCollection } from '../entity/artifact.js';
+import { ArtifactChunk as ArtifactChunkCollection } from '../entity/artifact-chunk.js';
+import { AssignEntity } from '../entity/assign-entity.js';
+import { BlockCache } from '../entity/block-cache.js';
+import { BlockState } from '../entity/block-state.js';
+import { BlockStateSavepoint } from '../entity/block-state-savepoint.js';
+import { Contract as ContractCollection } from '../entity/contract.js';
+import { DidDocument as DidDocumentCollection } from '../entity/did-document.js';
+import { DocumentState } from '../entity/document-state.js';
+import { DryRun } from '../entity/dry-run.js';
+import { DryRunSavepoint } from '../entity/dry-run-savepoint.js';
+import { DryRunFiles } from '../entity/dry-run-files.js';
+import { ExternalDocument } from '../entity/external-document.js';
+import { Formula } from '../entity/formula.js';
+import { MintRequest } from '../entity/mint-request.js';
+import { MintTransaction } from '../entity/mint-transaction.js';
+import { MultiDocuments } from '../entity/multi-documents.js';
+import { MultiPolicy } from '../entity/multi-policy.js';
+import { MultiPolicyTransaction } from '../entity/multi-policy-transaction.js';
+import { Policy } from '../entity/policy.js';
+import { PolicyCache } from '../entity/policy-cache.js';
+import { PolicyCacheData } from '../entity/policy-cache-data.js';
+import { PolicyCategory } from '../entity/policy-category.js';
+import { PolicyInvitations } from '../entity/policy-invitations.js';
+import { PolicyLabel } from '../entity/policy-label.js';
+import { PolicyLabelDocument } from '../entity/policy-label-document.js';
+import { PolicyModule } from '../entity/module.js';
+import { PolicyRoles as PolicyRolesCollection } from '../entity/policy-roles.js';
+import { PolicyStatistic } from '../entity/policy-statistic.js';
+import { PolicyStatisticDocument } from '../entity/policy-statistic-document.js';
+import { PolicyTest } from '../entity/policy-test.js';
+import { Record } from '../entity/record.js';
+import { RetirePool } from '../entity/retire-pool.js';
+import { Schema as SchemaCollection } from '../entity/schema.js';
+import { SchemaTemplate } from '../entity/schema-template.js';
+import { SchemaTemplateSnapshot } from '../entity/schema-template-snapshot.js';
+import { SchemaRule } from '../entity/schema-rule.js';
+import { SplitDocuments } from '../entity/split-documents.js';
+import { SuggestionsConfig } from '../entity/suggestions-config.js';
+import { Tag } from '../entity/tag.js';
+import { TagCache } from '../entity/tag-cache.js';
+import { Token as TokenCollection } from '../entity/token.js';
+import { Topic as TopicCollection } from '../entity/topic.js';
+import { VcDocument as VcDocumentCollection } from '../entity/vc-document.js';
 import {
-    AggregateVC,
-    ApprovalDocument as ApprovalDocumentCollection,
-    Artifact as ArtifactCollection,
-    ArtifactChunk as ArtifactChunkCollection,
-    AssignEntity,
-    BlockCache,
-    BlockState,
-    BlockStateSavepoint,
-    Contract as ContractCollection,
-    DidDocument as DidDocumentCollection,
-    DocumentState,
-    DryRun,
-    DryRunSavepoint,
-    DryRunFiles,
-    ExternalDocument,
-    Formula,
-    MintRequest,
-    MintTransaction,
-    MultiDocuments,
-    MultiPolicy,
-    MultiPolicyTransaction,
-    Policy,
-    PolicyCache,
-    PolicyCacheData,
-    PolicyCategory,
-    PolicyInvitations,
-    PolicyLabel,
-    PolicyLabelDocument,
-    PolicyModule,
-    PolicyRoles as PolicyRolesCollection,
-    PolicyStatistic,
-    PolicyStatisticDocument,
-    PolicyTest,
-    Record,
-    RetirePool,
-    Schema as SchemaCollection,
-    SchemaTemplate,
-    SchemaTemplateSnapshot,
-    SchemaRule,
-    SplitDocuments,
-    SuggestionsConfig,
-    Tag,
-    TagCache,
-    Token as TokenCollection,
-    Topic as TopicCollection,
-    VcDocument as VcDocumentCollection,
     VpDocument,
     VpDocument as VpDocumentCollection,
-    ExternalPolicy,
-    PolicyAction,
-    PolicyKey,
-    PolicyComment,
-    PolicyDiscussion,
-    GlobalEventsReaderStream,
-    GlobalEventsWriterStream,
-    PolicyParameters,
-    MigrationMessageMap,
-    MigrationFailedItem,
-    DeleteCache,
-    DocumentDraft,
-    PolicyDiff,
-    CredentialRecord
-} from '../entity/index.js';
+} from '../entity/vp-document.js';
+import { ExternalPolicy } from '../entity/external-policy.js';
+import { PolicyAction } from '../entity/policy-action.js';
+import { PolicyKey } from '../entity/policy-keys.js';
+import { PolicyComment } from '../entity/policy-comment.js';
+import { PolicyDiscussion } from '../entity/policy-discussion.js';
+import { GlobalEventsReaderStream } from '../entity/global-events-reader-stream.js';
+import { GlobalEventsWriterStream } from '../entity/global-events-writer-stream.js';
+import { PolicyParameters } from '../entity/policy-parameters.js';
+import { MigrationMessageMap } from '../entity/migration-message-map.js';
+import { MigrationFailedItem } from '../entity/migration-failed-item.js';
+import { DeleteCache } from '../entity/delete-cache.js';
+import { DocumentDraft } from '../entity/document-draft.js';
+import { PolicyDiff } from '../entity/policy-diff.js';
+import { CredentialRecord } from '../entity/credential-record.js';
 import { PolicyProperty } from '../entity/policy-property.js';
 import { Theme } from '../entity/theme.js';
 import { PolicyTool } from '../entity/tool.js';
 import type { IVirtualMessage } from '../interfaces/virtual-message.interface.js';
-import { DataBaseHelper, MAP_TRANSACTION_SERIALS_AGGREGATION_FILTERS, Wallet, KeyType } from '../helpers/index.js';
+import { DataBaseHelper, MAP_TRANSACTION_SERIALS_AGGREGATION_FILTERS } from '../helpers/db-helper.js';
 import { GetConditionsPoliciesByCategories } from '../helpers/policy-category.js';
-import { AbstractDatabaseServer, IAddDryRunIdItem, IAuthUser, IGetDocumentAggregationFilters } from '../interfaces/index.js';
-import { BaseEntity } from '../models/index.js';
+import { AbstractDatabaseServer, IAddDryRunIdItem } from '../interfaces/database-server.js';
+import { IAuthUser } from '../interfaces/auth.interface.js';
+import { IGetDocumentAggregationFilters } from '../interfaces/db-helper.js';
+import { BaseEntity } from '../models/base-entity.js';
 import { DryRunSavepointSnapshot } from '../entity/dry-run-savepoint-snapshot.js';
 import { MigrationRun } from '../entity/migration-run.js';
 import { DisconnectedPolicy } from '../entity/disconnected-policy.js';
@@ -2299,6 +2301,9 @@ export class DatabaseServer extends AbstractDatabaseServer {
         const credentialDb = new DataBaseHelper(CredentialRecord);
         const records = await credentialDb.find({ policyId });
         if (records.length > 0) {
+            // Loaded on demand: helpers/wallet.js pulls in the secret-manager
+            // subsystem and its cloud SDKs, which nothing else here needs.
+            const { Wallet, KeyType } = await import('../helpers/wallet.js');
             const wallet = new Wallet();
             for (const record of records) {
                 try {

@@ -11,7 +11,7 @@ import {
     WorkerEvents
 } from '@guardian/interfaces';
 import { Environment } from './environment.js';
-import { NatsService } from '../mq/index.js';
+import { NatsService } from '../mq/nats-service.js';
 
 export const NON_RETRYABLE_HEDERA_ERRORS = [
     // Insufficient type errors

@@ -1,5 +1,5 @@
 import { Entity, Property, BeforeCreate, BeforeUpdate, AfterDelete } from '@mikro-orm/core';
-import { RestoreEntity } from '../models/index.js';
+import { RestoreEntity } from '../models/restore-entity.js';
 import { DeleteCache } from './delete-cache.js';
 import { DataBaseHelper } from '../helpers/db-helper.js';
 
