@@ -16,8 +16,8 @@
 #    api-reference-indexer) via GitBook Site redirects (.gitbook.yaml cannot
 #    target an external domain)
 #
-# 689 entries below, grouped by source path prefix for scanning;
-# alphabetical within each group. Last updated 2026-09-23 (tenth batch).
+# 688 entries below, grouped by source path prefix for scanning;
+# alphabetical within each group. Last updated 2026-09-23 (eleventh batch).
 
 redirects:
   # ---- ai-toolkit/first-ingestion-and-semantic-search (1) ----
@@ -30,8 +30,6 @@ redirects:
   ai-toolkit/mapping-and-transformation: developer-tools-and-resources/ai-toolkit/mapping-and-transformation.md
   # ---- ai-toolkit/schema-and-formula-generation (1) ----
   ai-toolkit/schema-and-formula-generation: developer-tools-and-resources/ai-toolkit/schema-and-formula-generation.md
-  # ---- community-and-contributing/roadmap (1) ----
-  community-and-contributing/roadmap: community-and-contributing/2026-roadmap.md
   # ---- cpbae/contact (1) ----
   cpbae/contact: guardian/getting-started.md
   # ---- cpbae/guidedtour (1) ----
@@ -189,7 +187,7 @@ redirects:
   # ---- guardian/getting-started (3) ----
   guardian/getting-started/getting-started/installation: developer-tools-and-resources/dev-environments-and-faqs/installation.md
   guardian/getting-started/getting-started/prerequisites: developer-tools-and-resources/dev-environments-and-faqs/prerequisites.md
-  guardian/getting-started/roadmap: community-and-contributing/2026-roadmap.md
+  guardian/getting-started/roadmap: community-and-contributing/roadmap.md
   # ---- guardian/global-indexer (3) ----
   guardian/global-indexer: explorers/explorers-overview.md
   guardian/global-indexer/indexer-apis: explorers/guardian-indexer.md
@@ -494,7 +492,7 @@ redirects:
   guardian/readme/getting-started/prerequisites: developer-tools-and-resources/dev-environments-and-faqs/prerequisites.md
   guardian/readme/guardian-glossary: guardian/getting-started/guardian-glossary.md
   guardian/readme/guardian-vault: security-identity-and-privacy/guardian-vault.md
-  guardian/readme/roadmap: community-and-contributing/2026-roadmap.md
+  guardian/readme/roadmap: community-and-contributing/roadmap.md
   guardian/readme/security: community-and-contributing/security.md
   guardian/readme/security-1: community-and-contributing/security.md
   guardian/readme/security-1/how-it-works: community-and-contributing/security.md

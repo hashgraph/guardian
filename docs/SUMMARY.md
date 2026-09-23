@@ -1250,8 +1250,7 @@
 * [Change Log](community-and-contributing/change-log.md)
 * [Security](community-and-contributing/security.md)
 * [FAQs](community-and-contributing/faqs.md)
-* [Roadmap](community-and-contributing/2026-roadmap.md)
-  * [2025 Roadmap](community-and-contributing/2025-roadmap.md)
+* [Roadmap](community-and-contributing/roadmap.md)
 
 ## First Steps
 
