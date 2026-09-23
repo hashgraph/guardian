@@ -1,6 +1,6 @@
 import { ApplicationStates, GenerateUUIDv4, ILog, IPageParameters, LogType, MessageAPI } from '@guardian/interfaces';
 import { Singleton } from '../decorators/singleton.js';
-import { NatsService } from '../mq/index.js';
+import { NatsService } from '../mq/nats-service.js';
 
 import { Writable } from 'node:stream';
 import pino from 'pino';

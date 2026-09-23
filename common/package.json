@@ -60,7 +60,7 @@
     "module": "dist/index.js",
     "exports": {
         ".": "./dist/index.js",
-        "./entities": "./dist/entities.js",
+        "./*": "./dist/*.js",
         "./dist/*": "./dist/*",
         "./package.json": "./package.json"
     },

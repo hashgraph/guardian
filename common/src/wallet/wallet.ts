@@ -1,4 +1,6 @@
-import { SecretManager, SecretManagerBase, SecretManagerType } from '../secret-manager/index.js';
+import { SecretManager } from '../secret-manager/secret-manager.js';
+import { SecretManagerBase } from '../secret-manager/secret-manager-base.js';
+import { SecretManagerType } from '../secret-manager/secret-manager-config.js';
 import crypto from 'node:crypto';
 import { Hashing } from '../helpers/hashing.js';
 import { AzureSecretManager } from '../secret-manager/azure/azure-secret-manager.js';

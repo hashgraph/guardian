@@ -1,7 +1,7 @@
-import { RestoreEntity } from '../models/index.js';
+import { RestoreEntity } from '../models/restore-entity.js';
 import { GenerateUUIDv4, IVC } from '@guardian/interfaces';
 import { Entity, Property, BeforeCreate, OnLoad, BeforeUpdate, AfterDelete, AfterUpdate, AfterCreate, Index } from '@mikro-orm/core';
-import { DataBaseHelper } from '../helpers/index.js';
+import { DataBaseHelper } from '../helpers/db-helper.js';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { DeleteCache } from './delete-cache.js';
 

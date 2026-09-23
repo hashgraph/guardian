@@ -1,5 +1,5 @@
 import { ISchema } from '@guardian/interfaces';
-import { Schema } from '../entity/index.js';
+import { Schema } from '../entity/schema.js';
 import { LocalSchemaDocumentLoader } from './local-schema-document-loader.js';
 
 /**

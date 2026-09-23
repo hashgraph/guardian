@@ -1,7 +1,8 @@
-import { DidDocument } from '../entity/index.js';
+import { DidDocument } from '../entity/did-document.js';
 import { DidURL } from './did-url.js';
-import { DocumentLoader, IDocumentFormat } from './base/index.js';
-import { DatabaseServer } from '../database-modules/index.js';
+import { DocumentLoader } from './base/document-loader.js';
+import { IDocumentFormat } from './base/document-format.js';
+import { DatabaseServer } from '../database-modules/database-server.js';
 
 /**
  * DID Documents Loader

@@ -1,7 +1,7 @@
 import { GenerateUUIDv4, IListenerOptions, ListenerEvents } from '@guardian/interfaces';
 import { NatsConnection, Subscription } from 'nats';
 import { Singleton } from '../decorators/singleton.js';
-import { NatsService } from '../mq/index.js';
+import { NatsService } from '../mq/nats-service.js';
 
 export interface ITopicMessage {
     sequenceNumber: number;

@@ -1,5 +1,5 @@
 import { BlockType } from '@guardian/interfaces';
-import { SchemaFields, TokenFields } from '../helpers/index.js';
+import { SchemaFields, TokenFields } from '../helpers/utils.js';
 import JSZip from 'jszip';
 
 interface IBlockConfig {

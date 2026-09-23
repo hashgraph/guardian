@@ -16,9 +16,10 @@ import {
     AfterUpdate,
     AfterCreate,
 } from '@mikro-orm/core';
-import { RestoreEntity } from '../models/index.js';
+import { RestoreEntity } from '../models/restore-entity.js';
 import { ObjectId } from '@mikro-orm/mongodb';
-import { DataBaseHelper, extractTableFileIds } from '../helpers/index.js';
+import { DataBaseHelper } from '../helpers/db-helper.js';
+import { extractTableFileIds } from '../helpers/table-file-ids.js';
 import { DeleteCache } from './delete-cache.js';
 
 /**

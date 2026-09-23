@@ -1,12 +1,20 @@
 import JSZip from 'jszip';
-import { Artifact, Formula, Policy, PolicyCategory, PolicyTool, Schema, SchemaTemplateSnapshot, Tag, Token } from '../entity/index.js';
-import { DatabaseServer } from '../database-modules/index.js';
+import { Artifact } from '../entity/artifact.js';
+import { Formula } from '../entity/formula.js';
+import { Policy } from '../entity/policy.js';
+import { PolicyCategory } from '../entity/policy-category.js';
+import { PolicyTool } from '../entity/tool.js';
+import { Schema } from '../entity/schema.js';
+import { SchemaTemplateSnapshot } from '../entity/schema-template-snapshot.js';
+import { Tag } from '../entity/tag.js';
+import { Token } from '../entity/token.js';
+import { DatabaseServer } from '../database-modules/database-server.js';
 import { ImportExportUtils } from './utils.js';
 import { PolicyCategoryExport, SchemaCategory, SchemaHelper, Schema as InterfaceSchema, SchemaEntity, GenerateUUIDv4 } from '@guardian/interfaces';
 import stringify from 'fast-json-stable-stringify';
 import crypto from 'node:crypto';
 import type { IPolicyProofSigner } from '../interfaces/policy-proof-signer.interface.js';
-import { DataBaseHelper } from '../helpers/index.js';
+import { DataBaseHelper } from '../helpers/db-helper.js';
 import { ObjectId } from 'bson';
 
 interface IArtifact {

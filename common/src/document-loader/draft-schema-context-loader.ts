@@ -1,7 +1,8 @@
-import { DocumentLoader, IDocumentFormat } from './base/index.js';
+import { DocumentLoader } from './base/document-loader.js';
+import { IDocumentFormat } from './base/document-format.js';
 import { ISchema } from '@guardian/interfaces';
-import { Schema } from '../entity/index.js';
-import { DatabaseServer } from '../database-modules/index.js';
+import { Schema } from '../entity/schema.js';
+import { DatabaseServer } from '../database-modules/database-server.js';
 
 /**
  * Schema Documents Loader

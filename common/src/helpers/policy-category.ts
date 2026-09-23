@@ -1,5 +1,5 @@
-import { PolicyCategory } from '../entity/index.js';
-import { DatabaseServer } from '../database-modules/index.js';
+import { PolicyCategory } from '../entity/policy-category.js';
+import { DatabaseServer } from '../database-modules/database-server.js';
 
 export function GetGroupedCategories(categories: PolicyCategory[]) {
     const groupedCategories = categories.reduce((result, item: PolicyCategory) => {

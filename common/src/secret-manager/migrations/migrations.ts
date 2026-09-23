@@ -1,11 +1,12 @@
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
-import { DataBaseHelper, DataBaseNamingStrategy } from '../../helpers/index.js';
+import { DataBaseHelper } from '../../helpers/db-helper.js';
+import { DataBaseNamingStrategy } from '../../helpers/db-naming-strategy.js';
 import { WalletAccount } from './vault-account.js';
 import * as dotenv from 'dotenv';
 import * as path from 'node:path';
 import { SecretManager } from '../secret-manager.js';
-import { Wallet } from '../../wallet/index.js';
+import { Wallet } from '../../wallet/wallet.js';
 import { SecretManagerType } from '../secret-manager-config.js';
 import { exit } from 'node:process';
 import { DatabaseServer } from '../../database-modules/database-server.js';

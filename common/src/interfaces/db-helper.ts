@@ -1,10 +1,10 @@
 import { MongoDriver } from '@mikro-orm/mongodb';
 
 //helpers
-import { DataBaseNamingStrategy } from '../helpers/index.js';
+import { DataBaseNamingStrategy } from '../helpers/db-naming-strategy.js';
 
 //entities
-import { BaseEntity } from '../models/index.js';
+import { BaseEntity } from '../models/base-entity.js';
 
 export interface ICommonConnectionConfig {
     driver: typeof MongoDriver;
