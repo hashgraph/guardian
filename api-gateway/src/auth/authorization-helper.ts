@@ -1,6 +1,7 @@
 import type { NextFunction, Response } from 'express';
 import { Users } from '../helpers/users.js';
-import { AuthenticatedRequest, IAuthUser, PinoLogger } from '@guardian/common';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { AuthenticatedRequest, IAuthUser } from '@guardian/common/interfaces/auth.interface';
 import { createParamDecorator, ExecutionContext, HttpException, HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
 
 export const AuthUser = createParamDecorator((data: string = 'user', ctx: ExecutionContext) => {

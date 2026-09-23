@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from '../helpers/users.js';
-import { IAuthUser } from '@guardian/common';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
 import type { Request } from 'express';
 
 @Injectable()
