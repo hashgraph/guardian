@@ -20,7 +20,33 @@ import {
     IgnoreRule,
     ModuleStatus
 } from '@guardian/interfaces';
-import { Artifact, DatabaseServer, findAllEntities, FormulaImportExport, getArtifactType, INotificationStep, IPFS, IPolicyComponents, MockEntityType, MultiPolicy, NatsService, NewNotifier, NotificationHelper, PinoLogger, Policy, PolicyImportExport, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, Schema as SchemaCollection, SchemaFields, Singleton, Token, Topic, Users } from '@guardian/common';
+import {
+    Artifact,
+    DatabaseServer,
+    findAllEntities,
+    FormulaImportExport,
+    getArtifactType,
+    INotificationStep,
+    IPFS,
+    IPolicyComponents,
+    MockEntityType,
+    MultiPolicy,
+    NatsService,
+    NewNotifier,
+    NotificationHelper,
+    PinoLogger,
+    Policy,
+    PolicyImportExport,
+    replaceAllEntities,
+    replaceAllVariables,
+    replaceArtifactProperties,
+    Schema as SchemaCollection,
+    SchemaFields,
+    Singleton,
+    Token,
+    Topic,
+    Users
+} from '@guardian/common';
 import { MessageAction, MessageServer, MessageType, MockHelper, PolicyMessage, SchemaMessage, SynchronizationMessage, TokenMessage, TopicConfig, TopicHelper, VcHelper } from '@guardian/hedera';
 import {
     deleteDemoSchema,
