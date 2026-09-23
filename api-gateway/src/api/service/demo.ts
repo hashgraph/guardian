@@ -1,4 +1,5 @@
-import { PinoLogger, RunFunctionAsync } from '@guardian/common';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { RunFunctionAsync } from '@guardian/common/helpers/run-function-async';
 import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiAcceptedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Permissions, TaskAction } from '@guardian/interfaces';

@@ -1,5 +1,7 @@
 import { BasePolicyDTO, ExportMessageDTO, MockConfigDTO, MockDataDTO, PoliciesValidationDTO, PolicyCommentCountDTO, PolicyCommentDTO, PolicyCommentRelationshipDTO, PolicyCommentUserDTO, PolicyDiscussionDTO, PolicyDTO, PolicyParametersDTO, PolicyPreviewDTO, PolicyRequestCountDTO, PolicyValidationDTO, PolicyVersionDTO, SchemaDTO } from '#middlewares';
-import { IAuthUser, MockType, NatsService } from '@guardian/common';
+import { MockType } from '@guardian/common/helpers/mock-types';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { NatsService } from '@guardian/common/mq/nats-service';
 import { DocumentType, GenerateUUIDv4, IOwner, MigrationConfig, PolicyEditableFieldDTO, PolicyEngineEvents, PolicyToolMetadata } from '@guardian/interfaces';
 import { Singleton } from '../helpers/decorators/singleton.js';
 import { NewTask } from './task-manager.js';

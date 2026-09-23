@@ -1,6 +1,7 @@
 import { Singleton } from '../helpers/decorators/singleton.js';
 import { ApplicationStates, AuthEvents, GenerateUUIDv4, IOwner, MessageAPI, UserRole } from '@guardian/interfaces';
-import { AuthenticatedRequest, IAuthUser, NatsService, ProviderAuthUser } from '@guardian/common';
+import { AuthenticatedRequest, IAuthUser, ProviderAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { NatsService } from '@guardian/common/mq/nats-service';
 import { Injectable } from '@nestjs/common';
 import { AccountsSessionResponseDTO, RoleDTO } from '#middlewares';
 
