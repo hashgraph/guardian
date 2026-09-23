@@ -1,5 +1,7 @@
 # 2026 Roadmap
 
+{% include "../.gitbook/includes/roadmap-introduction.md" %}
+
 ## Now
 
 * Audit Preparation & Submission
@@ -41,4 +43,4 @@ The sections below list roadmap items that have already shipped, organized by th
 
 ## Q4 2026
 
-_To be announced._
+_To be added._
