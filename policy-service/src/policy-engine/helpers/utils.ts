@@ -1,25 +1,5 @@
-import {
-    HederaDidDocument,
-    IAuthUser,
-    KeyType,
-    NotificationHelper,
-    Schema as SchemaCollection,
-    Token,
-    Topic,
-    TopicConfig,
-    TopicHelper,
-    Users,
-    VcDocument as VcDocumentCollection,
-    VcDocumentDefinition as VcDocument,
-    VcDocumentDefinition as HVcDocument,
-    VcSubject,
-    VpDocumentDefinition as VpDocument,
-    Wallet,
-    Workers,
-    EncryptVcHelper,
-    SchemaConverterUtils,
-    Tag
-} from '@guardian/common';
+import { IAuthUser, KeyType, NotificationHelper, Schema as SchemaCollection, Token, Topic, Users, VcDocument as VcDocumentCollection, Wallet, Workers, EncryptVcHelper, SchemaConverterUtils, Tag } from '@guardian/common';
+import { HederaDidDocument, TopicConfig, TopicHelper, VcDocumentDefinition as VcDocument, VcDocumentDefinition as HVcDocument, VcSubject, VpDocumentDefinition as VpDocument } from '@guardian/hedera';
 import { DidDocumentStatus, DocumentSignature, DocumentStatus, ISchema, Schema, SchemaEntity, SchemaField, SignatureType, TagType, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { TokenId, TopicId } from '@hiero-ledger/sdk';
 import { FilterQuery } from '@mikro-orm/core';

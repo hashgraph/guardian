@@ -3,6 +3,7 @@
     "dependencies": {
         "@formulajs/formulajs": "4.6.1",
         "@guardian/common": "workspace:*",
+        "@guardian/hedera": "workspace:*",
         "@guardian/interfaces": "workspace:*",
         "@hiero-ledger/proto": "2.31.0",
         "@hiero-ledger/sdk": "2.88.0",

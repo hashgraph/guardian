@@ -27,6 +27,11 @@ const commonMock = {
     DatabaseServer: StubDatabaseServer,
     Workers: StubWorkers,
     BaseEntity: class {},
+};
+
+// `@guardian/hedera` pulls the Hedera SDK and the VC/BBS stack, so stub the
+// message classes rather than loading the real package under esmock.
+const hederaMock = {
     MessageType: { StandardRegistry: 'StandardRegistry', Policy: 'Policy', Token: 'Token', Schema: 'Schema' },
     RegistrationMessage: class {
         static fromMessageObject() { return new this(); }
@@ -59,6 +64,7 @@ async function loadUserService(utilsOverride) {
     const mocks = utilsOverride ? { [utilsPath]: utilsOverride } : {};
     const mod = await esmock('../dist/analytics/user.service.js', mocks, {
         '@guardian/common': commonMock,
+        '@guardian/hedera': hederaMock,
         '@guardian/interfaces': interfacesMock,
     });
     return mod.AnalyticsUserService;

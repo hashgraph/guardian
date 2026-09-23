@@ -7,7 +7,8 @@ import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { GLOBAL_DOCUMENT_TYPE_DEFAULT, GLOBAL_DOCUMENT_TYPE_ITEMS, GlobalDocumentType, GlobalEvent, LocationType, TopicType } from '@guardian/interfaces';
-import { GlobalEventsWriterStream, Message, MessageServer, TopicConfig, TopicHelper } from '@guardian/common';
+import { GlobalEventsWriterStream } from '@guardian/common';
+import { Message, MessageServer, TopicConfig, TopicHelper } from '@guardian/hedera';
 import { TopicId } from '@hiero-ledger/sdk';
 import { CacheState } from './../interfaces/index.js'
 

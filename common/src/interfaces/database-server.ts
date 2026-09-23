@@ -1,6 +1,7 @@
 //entities
 import { AssignedEntityType, IVC, MintTransactionStatus, PolicyTestStatus, SchemaEntity, TopicType } from '@guardian/interfaces';
-import { TopicId } from '@hiero-ledger/sdk';
+import type { TopicId } from '@hiero-ledger/sdk';
+import type { IVirtualMessage } from './virtual-message.interface.js';
 import { FilterQuery } from '@mikro-orm/core';
 import {
     AggregateVC,
@@ -14,7 +15,6 @@ import {
     DocumentState,
     DryRun,
     ExternalDocument,
-    Message,
     MintRequest,
     MintTransaction,
     MultiDocuments,
@@ -532,7 +532,7 @@ export abstract class AbstractDatabaseServer {
      *
      * @virtual
      */
-    public static async saveVirtualMessage<T>(dryRun: string, message: Message): Promise<void> {
+    public static async saveVirtualMessage<T>(dryRun: string, message: IVirtualMessage): Promise<void> {
         throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.saveVirtualMessage.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 

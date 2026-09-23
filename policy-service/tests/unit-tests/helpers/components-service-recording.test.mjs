@@ -7,8 +7,10 @@ const { ComponentsService } = await esmock.strict(
         '@guardian/common': {
             DatabaseServer: class {},
             PinoLogger: class {},
-            TopicConfig: class {},
             Users: class {},
+        },
+        '@guardian/hedera': {
+            TopicConfig: class {},
             VcHelper: class {},
         },
         '@guardian/interfaces': {

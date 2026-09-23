@@ -1,4 +1,4 @@
-import { DocumentLoader, IDocumentFormat } from '../hedera-modules/index.js';
+import { DocumentLoader, IDocumentFormat } from './base/index.js';
 import { ISchema } from '@guardian/interfaces';
 import { Schema } from '../entity/index.js';
 import { DatabaseServer } from '../database-modules/index.js';

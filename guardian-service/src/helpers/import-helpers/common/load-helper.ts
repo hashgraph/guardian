@@ -1,4 +1,5 @@
-import { DatabaseServer, MessageAction, MessageLoadError, MessageServer, MessageType, PinoLogger, SchemaMessage, SchemaPackageMessage, UrlType } from '@guardian/common';
+import { DatabaseServer, PinoLogger } from '@guardian/common';
+import { MessageAction, MessageLoadError, MessageServer, MessageType, SchemaMessage, SchemaPackageMessage, UrlType } from '@guardian/hedera';
 import { ISchema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
 
 export class SchemaCache {

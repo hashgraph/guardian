@@ -1,4 +1,5 @@
-import { DatabaseServer, PolicyStatistic, SchemaConverterUtils, TopicConfig, TopicHelper, Users, VcDocument, VcHelper } from '@guardian/common';
+import { DatabaseServer, PolicyStatistic, SchemaConverterUtils, Users, VcDocument } from '@guardian/common';
+import { TopicConfig, TopicHelper, VcHelper } from '@guardian/hedera';
 import { GenerateUUIDv4, IOwner, IStatisticConfig, PolicyStatus, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
 import { generateSchemaContext } from '../../helpers/import-helpers/index.js';
 
