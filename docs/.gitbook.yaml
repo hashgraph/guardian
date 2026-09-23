@@ -1,22 +1,23 @@
 # Broken-link redirects -- high-confidence tier only (exact leaf-slug match,
 # mined prefix-rule, or confirmed git-rename history), INTERNAL moves only,
 # plus a curated batch of former API-reference pages promoted to their
-# conceptual counterpart page where one substantively exists.
+# conceptual counterpart page where one substantively exists, plus reviewed
+# no-signal-fallback entries confirmed as correct global fallbacks.
 #
 # Maintained by the broken-link-redirects skill, which lives independently of
 # this repo at ~/.claude/skills/broken-link-redirects/ (not worktree/branch
 # specific) -- see that skill's scripts/README.md for the full methodology.
 #
 # Excluded from this file (see that skill's scripts/reports/ instead):
-#  - lower-confidence fallback/no-signal entries
+#  - lower-confidence fallback/moved-orphaned entries still pending review
 #  - developer-tools-and-resources/api-reference/* sources that have no substantive
 #    conceptual page (that section is flagged-for-deletion) -- these redirect
 #    externally to https://guardian.hedera.com/api-reference-guardian (or
 #    api-reference-indexer) via GitBook Site redirects (.gitbook.yaml cannot
 #    target an external domain)
 #
-# 594 entries below, grouped by source path prefix for scanning;
-# alphabetical within each group. Last updated 2026-09-23 (second batch).
+# 641 entries below, grouped by source path prefix for scanning;
+# alphabetical within each group. Last updated 2026-09-23 (third batch).
 
 redirects:
   # ---- ai-toolkit/first-ingestion-and-semantic-search (1) ----
@@ -27,16 +28,80 @@ redirects:
   ai-toolkit/mapping-and-transformation: developer-tools-and-resources/ai-toolkit/mapping-and-transformation.md
   # ---- ai-toolkit/schema-and-formula-generation (1) ----
   ai-toolkit/schema-and-formula-generation: developer-tools-and-resources/ai-toolkit/schema-and-formula-generation.md
-  # ---- docs/develop (5) ----
+  # ---- cpbae/contact (1) ----
+  cpbae/contact: guardian/getting-started.md
+  # ---- cpbae/guidedtour (1) ----
+  cpbae/guidedtour: guardian/getting-started.md
+  # ---- cpbae/parking (1) ----
+  cpbae/parking: guardian/getting-started.md
+  # ---- cpbae/qa (1) ----
+  cpbae/qa: guardian/getting-started.md
+  # ---- cpbae/regulations (1) ----
+  cpbae/regulations: guardian/getting-started.md
+  # ---- cpbae/service (1) ----
+  cpbae/service: guardian/getting-started.md
+  # ---- cpbae/sitemap (1) ----
+  cpbae/sitemap: guardian/getting-started.md
+  # ---- cpbae/soon (1) ----
+  cpbae/soon: guardian/getting-started.md
+  # ---- cpbae/traffic (1) ----
+  cpbae/traffic: guardian/getting-started.md
+  # ---- cpbae/training (1) ----
+  cpbae/training: guardian/getting-started.md
+  # ---- docs/3.6.0 (1) ----
+  docs/3.6.0/guardian/users/multi-policy/page-2: guardian/getting-started.md
+  # ---- docs/develop (33) ----
+  docs/develop/accounts-and-profiles: guardian/getting-started.md
   docs/develop/ai-toolkit: developer-tools-and-resources/ai-toolkit.md
+  docs/develop/community-and-contributing/feedback: guardian/getting-started.md
+  docs/develop/community-and-contributing/feedback/feedback-in-pipelines: guardian/getting-started.md
+  docs/develop/feedback: guardian/getting-started.md
+  docs/develop/feedback/feedback-in-pipelines: guardian/getting-started.md
+  docs/develop/guardian-in-production: guardian/getting-started.md
+  docs/develop/guardian-in-production/cloud-infrastructure: guardian/getting-started.md
   docs/develop/guardian-in-production/monitoring-tools: guardian/architecture/external-events/monitoring-tools.md
+  docs/develop/guardian-in-production/performance-improvement: guardian/getting-started.md
   docs/develop/guardian/demo-guide/carbon-offsets/climate-action-reserves-u.s.-landfill-protocol-version-6.0: guardian/tutorials/carbon-emissions/climate-action-reserves-u.s.-landfill-protocol-version-6.0.md
+  docs/develop/guardian/project-account-relayer-account: guardian/getting-started.md
+  docs/develop/guardian/readme-1/api-guideline: guardian/getting-started.md
+  docs/develop/guardian/readme-1/contact: guardian/getting-started.md
+  docs/develop/guardian/readme-1/getting-started/how-to-configure-hedera-local-node: guardian/getting-started.md
+  docs/develop/guardian/readme-1/getting-started/how-to-generate-web3.storage-api-key: guardian/getting-started.md
+  docs/develop/guardian/readme-1/license: guardian/getting-started.md
+  docs/develop/guardian/readme/contact: guardian/getting-started.md
+  docs/develop/guardian/readme/discovering-esg-assets-on-hedera: guardian/getting-started.md
+  docs/develop/guardian/readme/getting-started/how-to-configure-hedera-local-node: guardian/getting-started.md
+  docs/develop/guardian/readme/getting-started/how-to-generate-web3.storage-api-key: guardian/getting-started.md
   docs/develop/guardian/readme/getting-started/installation: developer-tools-and-resources/dev-environments-and-faqs/installation.md
+  docs/develop/guardian/readme/license: guardian/getting-started.md
+  docs/develop/guardian/standard-registry/import-export-in-excel: guardian/getting-started.md
+  docs/develop/guardian/standard-registry/policies/exporting-project-data-in-csv: guardian/getting-started.md
+  docs/develop/guardian/standard-registry/policies/modules/modules-differentiation: guardian/getting-started.md
+  docs/develop/guardian/tokens/dynamic-token-creation-in-policies: guardian/getting-started.md
+  docs/develop/guardian/users/user-profile-setup: guardian/getting-started.md
+  docs/develop/operations: guardian/getting-started.md
   docs/develop/schemas: guardian/workspace/schemas.md
+  docs/develop/security-and-identity/security-1: guardian/getting-started.md
+  docs/develop/security-and-identity/security-1/how-it-works: guardian/getting-started.md
+  docs/develop/tasks-and-external: guardian/getting-started.md
+  # ---- feedback (1) ----
+  feedback: guardian/getting-started.md
+  # ---- feedback/feedback-in-pipelines (1) ----
+  feedback/feedback-in-pipelines: guardian/getting-started.md
   # ---- getting-started/getting-started (1) ----
   getting-started/getting-started/how-to-create-operator-id-and-operator-key: developer-tools-and-resources/dev-environments-and-faqs/how-to-create-operator-id-and-operator-key.md
+  # ---- guardian-in-production (1) ----
+  guardian-in-production: guardian/getting-started.md
+  # ---- guardian-in-production/api-architecture-customization (1) ----
+  guardian-in-production/api-architecture-customization: guardian/getting-started.md
+  # ---- guardian-in-production/cloud-infrastructure (1) ----
+  guardian-in-production/cloud-infrastructure: guardian/getting-started.md
+  # ---- guardian-in-production/independent-packaged-deployment (1) ----
+  guardian-in-production/independent-packaged-deployment: guardian/getting-started.md
   # ---- guardian-in-production/monitoring-tools (1) ----
   guardian-in-production/monitoring-tools: guardian/architecture/external-events/monitoring-tools.md
+  # ---- guardian-in-production/performance-improvement (1) ----
+  guardian-in-production/performance-improvement: guardian/getting-started.md
   # ---- guardian/automation-testing (2) ----
   guardian/automation-testing: developer-tools-and-resources/automation-testing.md
   guardian/automation-testing/how-to-perform-api-automation-testing: developer-tools-and-resources/automation-testing/how-to-perform-api-automation-testing.md
@@ -652,3 +717,5 @@ redirects:
   tokens: guardian/hedera/tokens.md
   # ---- tokens/token-apis (1) ----
   tokens/token-apis: guardian/hedera/tokens/creating-token-using-ui.md
+  # ---- updates/2027 (1) ----
+  updates/2027: guardian/getting-started.md
