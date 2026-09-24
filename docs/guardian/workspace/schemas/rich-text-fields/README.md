@@ -7,7 +7,7 @@ tags:
 
 # Rich Text Fields
 
-A Rich Text field is a schema string field that accepts formatted text instead of one flat paragraph. The author of a schema picks the **Rich Text** type, and the field then offers a small editor - headings, bold, italic, bulleted and numbered lists, and hyperlinks - both to the person filling in a form and to the schema author writing the field's preset values.
+A Rich Text field is a schema string field that accepts formatted text instead of one flat paragraph. The author of a schema picks the **Rich Text** type, and the field then offers a small editor - headings, bold, italic, bulleted and nested lists, numbered lists, hyperlinks, tables and images - both to the person filling in a form and to the schema author writing the field's preset values.
 
 The value is stored as **Markdown** in an ordinary string field, so the formatting travels with the document wherever it goes and the document itself carries readable text rather than markup.
 
@@ -17,13 +17,17 @@ Every other text field in a schema is plain text. Instructions, notes and guidan
 
 ### How it works
 
-Picking **Rich Text** as a field's type gives it a small toolbar and a writing area, in the form and wherever the schema author sets a preset value. The toolbar covers bold and italic, bulleted and numbered lists, three heading levels, and links.
+Picking **Rich Text** as a field's type gives it a small toolbar and a writing area, in the form and wherever the schema author sets a preset value. The toolbar covers undo and redo, bold and italic, bulleted and numbered lists with their indent controls, three heading levels, links, tables and images.
 
 What you type is saved as Markdown: in its raw form a heading looks like `# Heading` and bold text looks like `**bold**`. The editor hides that while you write - Markdown turns into formatting the moment a value is opened, and formatting turns back into Markdown as you type.
 
+Lists can be nested, and a table is stored as a Markdown pipe table. A table always keeps one header row, so the header and the last remaining column cannot be removed; cell alignment, colours, borders and merged cells are not stored.
+
+An image is not embedded in the value: the picture is uploaded to IPFS and the value keeps a reference to it. PNG, JPEG and WebP files are accepted, up to 512 KB after the browser shrinks them.
+
 The field's preset values - **Default**, **Suggested** and **Test value** - open the same editor in its own dialog, reached from a small preview card in the field's settings.
 
-The field's type survives an Excel export and import. The Indexer shows the same formatting as Guardian's document view, though it has no editor of its own. Where the full value would not fit - a suggestion under the field, or a documents-grid column set to **Rich Text** - Guardian shows the text and reveals the formatted version on hover.
+The field's type survives an Excel export and import. The Indexer shows the same formatting as Guardian's document view, tables and images included, though it has no editor of its own. Where the full value would not fit - a suggestion under the field, or a documents-grid column set to **Rich Text** - Guardian shows the text and reveals the formatted version on hover.
 
 ### Key distinctions
 
