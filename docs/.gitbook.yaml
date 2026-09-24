@@ -16,8 +16,8 @@
 #    api-reference-indexer) via GitBook Site redirects (.gitbook.yaml cannot
 #    target an external domain)
 #
-# 702 entries below, grouped by source path prefix for scanning;
-# alphabetical within each group. Last updated 2026-09-23 (sixteenth batch).
+# 705 entries below, grouped by source path prefix for scanning;
+# alphabetical within each group. Last updated 2026-09-23 (seventeenth batch).
 
 redirects:
   # ---- ai-toolkit/first-ingestion-and-semantic-search (1) ----
@@ -513,7 +513,7 @@ redirects:
   # ---- guardian/schema-creation-using-the-guardian-apis (2) ----
   guardian/schema-creation-using-the-guardian-apis/import-schema-from-ipfs: guardian/workspace/schemas.md
   guardian/schema-creation-using-the-guardian-apis/import-schema-from-ipfs-1: guardian/workspace/schemas.md
-  # ---- guardian/standard-registry (222) ----
+  # ---- guardian/standard-registry (224) ----
   guardian/standard-registry: guardian/platform/standard-registry.md
   guardian/standard-registry/artifacts: guardian/workspace/artifacts.md
   guardian/standard-registry/artifacts/how-to-import-delete-artifacts: guardian/workspace/artifacts/how-to-import-delete-artifacts.md
@@ -707,6 +707,7 @@ redirects:
   guardian/standard-registry/schemas/best-practices-to-implement-schema/version-control-and-migration: guardian/workspace/schemas/best-practices-to-implement-schema/version-control-and-migration.md
   guardian/standard-registry/schemas/creating-system-schema-using-ui: guardian/workspace/schemas/creating-system-schema-using-ui.md
   guardian/standard-registry/schemas/deleting-schema: guardian/workspace/schemas/deleting-schema.md
+  guardian/standard-registry/schemas/demo-on-how-to-create-policy-from-a-standard: methodology-digitalization/methodology-digitization-handbook.md
   guardian/standard-registry/schemas/example-data/adding-example-data-using-ui: guardian/workspace/schemas/adding-example-data-using-ui.md
   guardian/standard-registry/schemas/how-to-handle-large-location-files: guardian/workspace/schemas/how-to-handle-large-location-files.md
   guardian/standard-registry/schemas/importing-schema-using-ui: guardian/workspace/schemas/importing-schema-using-ui.md
@@ -724,6 +725,7 @@ redirects:
   guardian/standard-registry/schemas/schema-tree/export-schema-tree-as-plantuml-api: guardian/workspace/schemas/schema-tree/export-schema-tree-as-plantuml-api.md
   guardian/standard-registry/schemas/schema-tree/schema-tree-ui: guardian/workspace/schemas/schema-tree/schema-tree-ui.md
   guardian/standard-registry/schemas/schema-versioning-and-deprecation-policy: guardian/workspace/schemas/schema-versioning-and-deprecation-policy.md
+  guardian/standard-registry/schemas/system-policy-schemas: guardian/workspace/schemas.md
   guardian/standard-registry/schemas/tag-schema: guardian/workspace/schemas/tag-schema.md
   guardian/standard-registry/schemas/tag-schema/creating-tag-schemas-using-ui: guardian/workspace/schemas/tag-schema/creating-tag-schemas-using-ui.md
   guardian/standard-registry/selective-disclosure: security-identity-and-privacy/selective-disclosure.md
@@ -765,6 +767,8 @@ redirects:
   guardian/users/mobile-support-for-data-interface/mobile-operation-for-the-user: guardian/platform/mobile-support-for-data-interface.md
   guardian/users/multi-policy: guardian/workspace/policies/multi-policy.md
   guardian/users/multi-policy/page-1: guardian/workspace/policies/multi-policy/page-1.md
+  # ---- guardian/workspace (1) ----
+  guardian/workspace/policies/multi-policy/page-2: guardian/workspace/policies/multi-policy.md
   # ---- methodology-digitization/methodology-digitalization-handbook (1) ----
   methodology-digitization/methodology-digitalization-handbook/part-4/chapter-17: methodology-digitalization/methodology-digitization-handbook/part-4/chapter-17.md
   # ---- methodology-digitization/methodology-digitization-handbook (4) ----
