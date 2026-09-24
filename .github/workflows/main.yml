@@ -101,6 +101,12 @@ jobs:
           CI: true
           NODE_OPTIONS: --openssl-legacy-provider
 
+      # Fails when a built workspace imports a package that its production
+      # install does not provide. tsc cannot see this, because in CI every
+      # package is hoisted to the root node_modules.
+      - name: Check production dependencies
+        run: node .github/scripts/dep-closure-check.mjs
+
       - name: Detect secrets
         run: |
           yarn run detect-secrets
