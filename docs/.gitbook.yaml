@@ -16,8 +16,8 @@
 #    api-reference-indexer) via GitBook Site redirects (.gitbook.yaml cannot
 #    target an external domain)
 #
-# 701 entries below, grouped by source path prefix for scanning;
-# alphabetical within each group. Last updated 2026-09-23 (fifteenth batch).
+# 702 entries below, grouped by source path prefix for scanning;
+# alphabetical within each group. Last updated 2026-09-23 (sixteenth batch).
 
 redirects:
   # ---- ai-toolkit/first-ingestion-and-semantic-search (1) ----
@@ -196,7 +196,7 @@ redirects:
   guardian/global-indexer: explorers/explorers-overview.md
   guardian/global-indexer/indexer-apis: explorers/guardian-indexer.md
   guardian/global-indexer/indexer-user-guide: explorers/explorers-overview.md
-  # ---- guardian/guardian (227) ----
+  # ---- guardian/guardian (228) ----
   guardian/guardian: guardian/getting-started.md
   guardian/guardian/architecture/mrv-splitting-logic: guardian/architecture/mrv-splitting-logic.md
   guardian/guardian/community-standards/guardian-system-standards-gss: community-and-contributing/community-standards/guardian-system-standards-gss.md
@@ -409,6 +409,7 @@ redirects:
   guardian/guardian/standard-registry/schemas/tag-schema/schema-tags-apis: guardian/workspace/schemas/tag-schema.md
   guardian/guardian/standard-registry/selective-disclosure/user-guide: security-identity-and-privacy/selective-disclosure/user-guide.md
   guardian/guardian/standard-registry/show-list-of-hedera-transactions/showing-list-of-hedera-transactions-using: guardian/hedera/hedera-transactions.md
+  guardian/guardian/standard-registry/standard-registry-operations: guardian/workspace.md
   guardian/guardian/standard-registry/trustchain-apis: guardian/platform/trustchain.md
   guardian/guardian/standard-registry/trustchain-apis/requesting: guardian/platform/trustchain.md
   guardian/guardian/standard-registry/trustchain/trustchain-apis: guardian/platform/trustchain.md
