@@ -1297,10 +1297,22 @@ export class XlsxToJson {
                 return null;
             }
             const value = inner.args[1];
-            if (value.type !== 'SymbolNode' && value.type !== 'ConstantNode') {
-                return null;
+            if (value.type === 'FunctionNode' && value.fn?.name?.toUpperCase() === 'SUBSTITUTE' && value.args?.length === 3) {
+                const [target, oldText, newText] = value.args;
+                if (
+                    target.type === 'SymbolNode' &&
+                    oldText.type === 'ConstantNode' &&
+                    oldText.value === ', ' &&
+                    newText.type === 'ConstantNode' &&
+                    newText.value === ','
+                ) {
+                    return target;
+                }
             }
-            return value;
+            if (value.type === 'SymbolNode' || value.type === 'ConstantNode') {
+                return value;
+            }
+            return null;
         };
 
         const parseFn = (node: mathjs.MathNode, invert: boolean): ICondition => {

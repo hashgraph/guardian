@@ -552,7 +552,7 @@ describe('JsonToXlsx.buildIfFormula — array comparators (issue #6687)', functi
             { field: makeField({ name: 'tags', isArray: true }), fieldValue: 2, comparator: 'contains' },
             cache('tags', 'G5'),
         );
-        assert.equal(formula, 'ISNUMBER(FIND(","&2&",", ","&G5&","))');
+        assert.equal(formula, 'ISNUMBER(FIND(","&2&",", ","&SUBSTITUTE(G5,", ",",")&","))');
     });
 
     it('explicit equals on an array field ("each element equals") also exports as plain EXACT, does not throw', function () {
@@ -589,6 +589,14 @@ describe('XlsxToJson.parseCondition — array comparators (issue #6687)', functi
 
     it('recognizes ISNUMBER(FIND(...)) as a contains predicate', function () {
         const parsed = parseCondition('ISNUMBER(FIND(","&2&",", ","&G5&","))');
+        assert.equal(parsed.type, 'formulae');
+        assert.equal(parsed.fieldPath, 'G5');
+        assert.equal(parsed.compareValue, 2);
+        assert.equal(parsed.comparator, 'contains');
+    });
+
+    it('recognizes exported SUBSTITUTE-normalized contains formulas', function () {
+        const parsed = parseCondition('ISNUMBER(FIND(","&2&",", ","&SUBSTITUTE(G5,", ",",")&","))');
         assert.equal(parsed.type, 'formulae');
         assert.equal(parsed.fieldPath, 'G5');
         assert.equal(parsed.compareValue, 2);

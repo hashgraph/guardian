@@ -44,6 +44,9 @@ The selected IF field does not have **Allow multiple answers** enabled. Comparat
 **The condition doesn't match even though the value looks right in the list.**\
 Matching is case-sensitive. Check that the entry and the match value match exactly, including capitalization.
 
+**The Excel preview behaves differently for an exported array condition.**\
+For array fields, enter **Test Value** entries as comma-separated values without spaces, for example `A,B`. Excel preview compares array fields as the whole cell with `EXACT(...)`, not as "each element equals", so this preview limitation is expected and does not indicate a Guardian runtime error.
+
 #### Related
 
 * Concept: [Array Element Conditions](./)

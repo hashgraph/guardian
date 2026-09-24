@@ -672,7 +672,7 @@ export class JsonToXlsx {
             const isArrayField = !!(sub.field?.isArray && !sub.field?.isRef);
 
             if (sub.comparator === 'contains' && isArrayField) {
-                return `ISNUMBER(FIND(","&${v}&",", ","&${f.name}&","))`;
+                return `ISNUMBER(FIND(","&${v}&",", ","&SUBSTITUTE(${f.name},", ",",")&","))`;
             }
             return `EXACT(${f.name},${v})`;
         };
