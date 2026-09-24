@@ -58,6 +58,7 @@
         * [multiSignBlock](guardian/workspace/policies/policy-creation/introduction/multisignblock.md)
         * [customLogicBlock](guardian/workspace/policies/policy-creation/introduction/customlogicblock.md)
         * [splitBlock](guardian/workspace/policies/policy-creation/introduction/splitblock.md)
+        * [wipeDocumentBlock](guardian/workspace/policies/policy-creation/introduction/wipedocumentblock.md)
         * [Create Token Block](guardian/workspace/policies/policy-creation/introduction/create-token-block.md)
         * [impactAddon](guardian/workspace/policies/policy-creation/introduction/impactaddon.md)
         * [Http Request Block](guardian/workspace/policies/policy-creation/introduction/http-request-block.md)

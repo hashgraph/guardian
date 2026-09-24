@@ -9,15 +9,15 @@
 # specific) -- see that skill's scripts/README.md for the full methodology.
 #
 # Excluded from this file (see that skill's scripts/reports/ instead):
-#  - remaining lower-confidence fallback entries still pending review
 #  - developer-tools-and-resources/api-reference/* sources that have no substantive
 #    conceptual page (that section is flagged-for-deletion) -- these redirect
 #    externally to https://guardian.hedera.com/api-reference-guardian (or
 #    api-reference-indexer) via GitBook Site redirects (.gitbook.yaml cannot
 #    target an external domain)
 #
-# 705 entries below, grouped by source path prefix for scanning;
-# alphabetical within each group. Last updated 2026-09-23 (seventeenth batch).
+# 706 entries below, grouped by source path prefix for scanning;
+# alphabetical within each group. Last updated 2026-09-23 (eighteenth batch --
+# all fallback_suggestions now resolved).
 
 redirects:
   # ---- ai-toolkit/first-ingestion-and-semantic-search (1) ----
@@ -196,7 +196,7 @@ redirects:
   guardian/global-indexer: explorers/explorers-overview.md
   guardian/global-indexer/indexer-apis: explorers/guardian-indexer.md
   guardian/global-indexer/indexer-user-guide: explorers/explorers-overview.md
-  # ---- guardian/guardian (228) ----
+  # ---- guardian/guardian (229) ----
   guardian/guardian: guardian/getting-started.md
   guardian/guardian/architecture/mrv-splitting-logic: guardian/architecture/mrv-splitting-logic.md
   guardian/guardian/community-standards/guardian-system-standards-gss: community-and-contributing/community-standards/guardian-system-standards-gss.md
@@ -363,6 +363,7 @@ redirects:
   guardian/guardian/standard-registry/policies/policy-creation/introduction/interfacedocumentssourceblock: guardian/workspace/policies/policy-creation/introduction/interfacedocumentssourceblock.md
   guardian/guardian/standard-registry/policies/policy-creation/introduction/send-workflow-block: guardian/workspace/policies/policy-creation/introduction/send-workflow-block.md
   guardian/guardian/standard-registry/policies/policy-creation/introduction/splitblock: guardian/workspace/policies/policy-creation/introduction/splitblock.md
+  guardian/guardian/standard-registry/policies/policy-creation/introduction/token-wipe-workflow-block: guardian/workspace/policies/policy-creation/introduction/wipedocumentblock.md
   guardian/guardian/standard-registry/policies/policy-creation/policy-demo: guardian/workspace/policies/policy-creation/policy-demo.md
   guardian/guardian/standard-registry/policies/policy-differentiation: guardian/workspace/policies/policy-differentiation.md
   guardian/guardian/standard-registry/policies/policy-differentiation-apis: guardian/workspace/policies/policy-differentiation.md

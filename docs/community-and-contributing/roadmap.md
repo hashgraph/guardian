@@ -2,21 +2,19 @@
 
 {% include "../.gitbook/includes/roadmap-introduction.md" %}
 
-## 2026
-
-### Now
+## Now
 
 * Audit Preparation & Submission
 * Reduce Onboarding Confusion, Improved Mental Model & Foundations for i18n, MGS Support
 * Reduce Publish Time Failures & Dependencies (IPFS pinning / health)
 
-### Next
+## Next
 
 * QA and Automated Tests, Post Audit v4.0.0
 * Policy Testing Improvements
 * New Product Surfaces
 
-### Later
+## Later
 
 * CRURD, Policy / VC Document Revocation
 * Carbon Project Finance & AI to support project proponents
@@ -27,7 +25,7 @@
 ***
 
 {% hint style="info" %}
-The sections below list roadmap items that have already shipped, organized by the quarter they were completed in.
+The sections below list recent roadmap items organized by the quarter they were completed in.
 {% endhint %}
 
 ### Q1 2026
