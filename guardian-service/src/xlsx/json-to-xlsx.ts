@@ -660,7 +660,7 @@ export class JsonToXlsx {
         condition: SchemaCondition['ifCondition'],
         fieldCache: Map<string, IRowField>
     ): string {
-        const toExact = (sub: any): string => {
+        const toFormula = (sub: any): string => {
             const key = (sub.fieldPath?.length > 1)
                 ? (sub.fieldPath as string[]).join('.')
                 : sub.field.name;
@@ -669,20 +669,25 @@ export class JsonToXlsx {
                 throw new Error(`Condition refers to unknown field "${sub.field?.name}".`);
             }
             const v = valueToFormula(sub.fieldValue);
+            const isArrayField = !!(sub.field?.isArray && !sub.field?.isRef);
+
+            if (sub.comparator === 'contains' && isArrayField) {
+                return `ISNUMBER(FIND(","&${v}&",", ","&SUBSTITUTE(${f.name},", ",",")&","))`;
+            }
             return `EXACT(${f.name},${v})`;
         };
 
         if ((condition as any).field && (condition as any).fieldValue !== undefined) {
-            return toExact(condition as any);
+            return toFormula(condition as any);
         }
 
         if ((condition as any).OR) {
-            const parts = (condition as any).OR.map((x: any) => toExact(x));
+            const parts = (condition as any).OR.map((x: any) => toFormula(x));
             return `OR(${parts.join(',')})`;
         }
 
         if ((condition as any).AND) {
-            const parts = (condition as any).AND.map((x: any) => toExact(x));
+            const parts = (condition as any).AND.map((x: any) => toFormula(x));
             return `AND(${parts.join(',')})`;
         }
 

@@ -1,4 +1,4 @@
-import { GenerateUUIDv4, IOwner, ISchema, ISchemaDocument, SchemaCondition, SchemaField, SchemaFieldPredicate, ISchemaArrayDependency } from '../index.js';
+import { GenerateUUIDv4, IOwner, ISchema, ISchemaDocument, SchemaCondition, SchemaField, SchemaFieldPredicate, SchemaPredicateComparator, ISchemaArrayDependency } from '../index.js';
 
 import { SchemaDataTypes } from '../interface/schema-document.interface.js';
 import { IIwaFieldRemap, IIwaUpgradeReport, mapIwaPathV1ToV3 } from '../type/iwa-version.type.js';
@@ -707,6 +707,89 @@ export class SchemaHelper {
     }
 
     /**
+     * Loose scalar equality shared by server-side condition validation and (via
+     * `testPredicateValue`) array comparators. Numeric strings compare numerically; everything
+     * else falls back to a trimmed string comparison.
+     * @param a
+     * @param b
+     */
+    public static valuesEqual(a: any, b: any): boolean {
+        if (a === b) {
+            return true;
+        }
+        if (a === null || a === undefined || b === null || b === undefined) {
+            return false;
+        }
+        // Booleans and blank/whitespace strings are deliberately excluded: `Number('')` and
+        // `Number(false)` are both 0, which would otherwise make `''`/`false` spuriously equal
+        // to a fieldValue of 0.
+        const isNumericLike = (v: any): boolean =>
+            typeof v === 'number' || (typeof v === 'string' && v.trim() !== '');
+        if (isNumericLike(a) && isNumericLike(b)) {
+            const an = Number(a);
+            const bn = Number(b);
+            if (!Number.isNaN(an) && !Number.isNaN(bn)) {
+                return an === bn;
+            }
+        }
+        return String(a).trim() === String(b).trim();
+    }
+
+    /**
+     * Dispatches a predicate's comparator against an actual value. Shared by server-side
+     * validation and the frontend form so `contains`/"each element equals" are implemented
+     * exactly once; callers supply their own scalar-equality function so the form can keep its
+     * `moment()` date handling without forcing it onto the server (or vice versa).
+     *
+     * `equals` (including absent, its default) means "each element equals" whenever the actual
+     * value is an array - there is deliberately no separate "legacy, predates array comparators"
+     * carve-out: `equals` is one universal default for every field, array or scalar alike.
+     * @param comparator absent means 'equals'
+     * @param actual the field's actual (resolved) value
+     * @param expected the predicate's literal value
+     * @param equalsFn scalar comparator used for 'equals' and for each element under
+     * 'contains'/'equals'-on-array; defaults to `valuesEqual`
+     */
+    public static testPredicateValue(
+        comparator: SchemaPredicateComparator | undefined,
+        actual: any,
+        expected: any,
+        equalsFn: (a: any, b: any) => boolean = SchemaHelper.valuesEqual
+    ): boolean {
+        if (comparator === 'contains' && Array.isArray(actual)) {
+            return actual.some((el: any) => equalsFn(el, expected));
+        }
+        if (Array.isArray(actual)) {
+            return actual.length > 0 && actual.every((el: any) => equalsFn(el, expected));
+        }
+        return equalsFn(actual, expected);
+    }
+
+    /**
+     * Reads a compiled `if.properties[name]` leaf and reports which comparator it encodes:
+     * a bare `const` (absent comparator), `contains.const` ('contains'), or `items.const`
+     * (explicit 'equals' - "each element equals"). Shared by server-side predicate extraction
+     * and (via ajv error/coercion walkers) VCJS, so the three known leaf shapes are recognized
+     * in exactly one place.
+     * @param node
+     */
+    public static readConstLeaf(node: any): { value: any; comparator?: SchemaPredicateComparator } | null {
+        if (!node || typeof node !== 'object') {
+            return null;
+        }
+        if (Object.prototype.hasOwnProperty.call(node, 'const')) {
+            return { value: node.const };
+        }
+        if (node.contains && Object.prototype.hasOwnProperty.call(node.contains, 'const')) {
+            return { value: node.contains.const, comparator: 'contains' };
+        }
+        if (node.items && Object.prototype.hasOwnProperty.call(node.items, 'const')) {
+            return { value: node.items.const, comparator: 'equals' };
+        }
+        return null;
+    }
+
+    /**
      * Validate the fields a schema's conditions reveal against a submitted document.
      *
      * `buildDocument` declares the shape of every branch but does not mark branch fields
@@ -740,26 +823,12 @@ export class SchemaHelper {
         };
         const present = (value: any): boolean =>
             value !== undefined && value !== null && value !== '';
-        const equals = (a: any, b: any): boolean => {
-            if (a === b) {
-                return true;
-            }
-            if (a === null || a === undefined || b === null || b === undefined) {
-                return false;
-            }
-            const an = Number(a);
-            const bn = Number(b);
-            if (!Number.isNaN(an) && !Number.isNaN(bn)) {
-                return an === bn;
-            }
-            return String(a).trim() === String(b).trim();
-        };
         const test = (p: any): boolean => {
             const path = (p?.fieldPath?.length > 1) ? p.fieldPath : [p?.field?.name];
             if (!path[0]) {
                 return false;
             }
-            return equals(resolve(path), p.fieldValue);
+            return SchemaHelper.testPredicateValue(p?.comparator, resolve(path), p.fieldValue);
         };
         const evaluate = (condition: SchemaCondition): boolean => {
             const ic: any = condition?.ifCondition;
@@ -855,14 +924,16 @@ export class SchemaHelper {
             for (const key of Object.keys(props || {})) {
                 const rule = props[key];
                 if (!rule) { continue; }
-                if (Object.prototype.hasOwnProperty.call(rule, 'const')) {
+                const leaf = SchemaHelper.readConstLeaf(rule);
+                if (leaf) {
                     const f = currentFields.find(x => x.name === key);
                     if (f) {
                         const fullPath = [...pathSoFar, key];
                         preds.push({
                             field: f,
-                            fieldValue: rule.const,
+                            fieldValue: leaf.value,
                             fieldPath: fullPath.length > 1 ? fullPath : undefined,
+                            ...(leaf.comparator ? { comparator: leaf.comparator } : {}),
                         });
                     }
                 } else if (rule.properties) {
@@ -1223,7 +1294,16 @@ export class SchemaHelper {
                 const path = ('fieldPath' in p && p.fieldPath && p.fieldPath.length > 1)
                     ? p.fieldPath
                     : [p.field.name];
-                let node: any = { const: p.fieldValue };
+                const comparator: SchemaPredicateComparator | undefined = (p as SchemaFieldPredicate).comparator;
+                const isArrayField = !!(p.field?.isArray && !p.field?.isRef);
+                let node: any;
+                if (comparator === 'contains' && isArrayField) {
+                    node = { contains: { const: p.fieldValue } };
+                } else if (isArrayField) {
+                    node = { items: { const: p.fieldValue }, minItems: 1 };
+                } else {
+                    node = { const: p.fieldValue };
+                }
                 for (let i = path.length - 1; i >= 0; i--) {
                     node = { properties: { [path[i]]: node }, required: [path[i]] };
                 }

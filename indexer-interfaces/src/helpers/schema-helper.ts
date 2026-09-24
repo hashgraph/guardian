@@ -228,14 +228,27 @@ export class SchemaHelper {
             const ifConditionFieldName = Object.keys(
                 condition.if.properties
             )[0];
+            const ifConditionRule = condition.if.properties[ifConditionFieldName];
+
+            let fieldValue: any;
+            let comparator: 'contains' | 'equals' | undefined;
+            if (Object.prototype.hasOwnProperty.call(ifConditionRule, 'const')) {
+                fieldValue = ifConditionRule.const;
+            } else if (ifConditionRule.contains && Object.prototype.hasOwnProperty.call(ifConditionRule.contains, 'const')) {
+                fieldValue = ifConditionRule.contains.const;
+                comparator = 'contains';
+            } else if (ifConditionRule.items && Object.prototype.hasOwnProperty.call(ifConditionRule.items, 'const')) {
+                fieldValue = ifConditionRule.items.const;
+                comparator = 'equals';
+            }
 
             const conditionToAdd: SchemaCondition = {
                 ifCondition: {
                     field: fields.find(
                         (field) => field.name === ifConditionFieldName
                     ),
-                    fieldValue:
-                        condition.if.properties[ifConditionFieldName].const,
+                    fieldValue,
+                    ...(comparator ? { comparator } : {}),
                 },
                 thenFields: SchemaHelper.parseFields(
                     condition.then,

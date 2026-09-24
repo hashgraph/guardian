@@ -1996,7 +1996,26 @@
                                         </span>
                                     </ng-template>
                                 </p-select>
-                                <span class="sc-cond-op-eq">=</span>
+                                @if (getIfRowComparatorOptions(row).length > 1) {
+                                    <p-select
+                                        class="sc-cond-op-sel guardian-dropdown"
+                                        panelStyleClass="guardian-dropdown-panel"
+                                        [options]="getIfRowComparatorOptions(row)"
+                                        optionLabel="label"
+                                        optionValue="value"
+                                        appendTo="body"
+                                        [ngModel]="getIfRowComparator(row)"
+                                        (onChange)="setIfRowComparator(cond, ri, $event.value)">
+                                        <ng-template pTemplate="item" let-option>
+                                            <span class="sc-cond-opt-row">
+                                                <span class="sc-cond-opt-label"
+                                                      (mouseover)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
+                                            </span>
+                                        </ng-template>
+                                    </p-select>
+                                } @else {
+                                    <span class="sc-cond-op-eq">=</span>
+                                }
                                 <div class="sc-cond-val-wrap">
                                     @if (isIfRowEnum(row)) {
                                         <p-select

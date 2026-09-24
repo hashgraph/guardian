@@ -16,6 +16,10 @@ export interface SchemaCondition {
          * field value
          */
         fieldValue: string;
+        /**
+         * comparator
+         */
+        comparator?: 'contains' | 'equals';
     };
     /**
      * 'then' fields

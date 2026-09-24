@@ -19,8 +19,9 @@ interface ICondition {
     fieldPath?: string;
     compareValue?: any;
     op?: 'OR' | 'AND';
-    items?: { fieldPath: string; compareValue: any }[];
+    items?: { fieldPath: string; compareValue: any; comparator?: 'contains' }[];
     invert?: boolean;
+    comparator?: 'contains';
 }
 
 export class XlsxToJson {
@@ -1119,7 +1120,9 @@ export class XlsxToJson {
                     text: `Invalid visibility condition on field "${field?.description || key.path}".`,
                     message: `Row ${row}: Failed to parse Visibility formula "${rawConditionValue}". `
                         + `Supported formats: blank (always visible), "hidden" or "No" (always hidden), `
-                        + `EXACT(Gn,"value") or NOT(EXACT(Gn,"value")) where Gn is an "Test Value" cell reference. `
+                        + `EXACT(Gn,"value") or NOT(EXACT(Gn,"value")) for "=", `
+                        + `ISNUMBER(FIND(","&"value"&",",","&Gn&",")) for array "contains", `
+                        + `where Gn is an "Test Value" cell reference. `
                         + `Error: ${error?.toString()}`,
                     worksheet: worksheet.name,
                     cell: worksheet.getPath(table.getCol(Dictionary.VISIBILITY), row),
@@ -1151,7 +1154,7 @@ export class XlsxToJson {
                     if (!trigger) {
                         throw new Error(`Invalid target in ${result.op} condition: ${it.fieldPath}`);
                     }
-                    return { field: trigger, value: it.compareValue, fieldPath: fieldPaths.get(it.fieldPath) };
+                    return { field: trigger, value: it.compareValue, fieldPath: fieldPaths.get(it.fieldPath), comparator: it.comparator };
                 });
 
                 const conditionKey = { op: result.op, items: resolved };
@@ -1169,12 +1172,12 @@ export class XlsxToJson {
                     throw new Error('Invalid trigger field');
                 }
                 const triggerPath = fieldPaths.get(result.fieldPath);
-                const condition = conditionCache.find(c => c.equal(trigger, result.compareValue, triggerPath));
+                const condition = conditionCache.find(c => c.equal(trigger, result.compareValue, triggerPath, result.comparator));
                 if (condition) {
                     addToCondition(condition, result.invert);
                     return null;
                 } else {
-                    const newCondition = new XlsxSchemaConditions(trigger, result.compareValue, triggerPath);
+                    const newCondition = new XlsxSchemaConditions(trigger, result.compareValue, triggerPath, result.comparator);
                     addToCondition(newCondition, result.invert);
                     return newCondition;
                 }
@@ -1260,6 +1263,58 @@ export class XlsxToJson {
 
         const nodes = mathjs.parse(formulae);
 
+        const toPair = (
+            first: mathjs.SymbolNode | mathjs.ConstantNode,
+            second: mathjs.SymbolNode | mathjs.ConstantNode
+        ) => {
+            if (first.type === 'SymbolNode' && second.type === 'ConstantNode') {
+                return { fieldPath: first.name, compareValue: (second as mathjs.ConstantNode).value };
+            }
+            if (first.type === 'ConstantNode' && second.type === 'SymbolNode') {
+                return { fieldPath: (second as mathjs.SymbolNode).name, compareValue: (first as mathjs.ConstantNode).value };
+            }
+            return null;
+        };
+
+        // Matches `","&X&","` - the delimiter padding `EXACT`'s "contains" export wraps values
+        // and field cells in - and returns X. Anything else (a plain cell/value, unrelated
+        // concatenation) is not this shape and returns null.
+        const parsePaddedConcat = (node: mathjs.MathNode): mathjs.SymbolNode | mathjs.ConstantNode | null => {
+            const outer = node as any;
+            if (outer?.type !== 'OperatorNode' || outer.op !== '&' || outer.args?.length !== 2) {
+                return null;
+            }
+            const trailingComma = outer.args[1];
+            if (!(trailingComma.type === 'ConstantNode' && trailingComma.value === ',')) {
+                return null;
+            }
+            const inner = outer.args[0];
+            if (inner?.type !== 'OperatorNode' || inner.op !== '&' || inner.args?.length !== 2) {
+                return null;
+            }
+            const leadingComma = inner.args[0];
+            if (!(leadingComma.type === 'ConstantNode' && leadingComma.value === ',')) {
+                return null;
+            }
+            const value = inner.args[1];
+            if (value.type === 'FunctionNode' && value.fn?.name?.toUpperCase() === 'SUBSTITUTE' && value.args?.length === 3) {
+                const [target, oldText, newText] = value.args;
+                if (
+                    target.type === 'SymbolNode' &&
+                    oldText.type === 'ConstantNode' &&
+                    oldText.value === ', ' &&
+                    newText.type === 'ConstantNode' &&
+                    newText.value === ','
+                ) {
+                    return target;
+                }
+            }
+            if (value.type === 'SymbolNode' || value.type === 'ConstantNode') {
+                return value;
+            }
+            return null;
+        };
+
         const parseFn = (node: mathjs.MathNode, invert: boolean): ICondition => {
             if (node.type === 'FunctionNode') {
                 const fn = node as mathjs.FunctionNode;
@@ -1272,19 +1327,6 @@ export class XlsxToJson {
                 if (name === 'EXACT' && fn.args.length === 2) {
                     const a = fn.args[0] as mathjs.SymbolNode | mathjs.ConstantNode;
                     const b = fn.args[1] as mathjs.SymbolNode | mathjs.ConstantNode;
-
-                    const toPair = (
-                        first: mathjs.SymbolNode | mathjs.ConstantNode,
-                        second: mathjs.SymbolNode | mathjs.ConstantNode
-                    ) => {
-                        if (first.type === 'SymbolNode' && second.type === 'ConstantNode') {
-                            return { fieldPath: first.name, compareValue: (second as mathjs.ConstantNode).value };
-                        }
-                        if (first.type === 'ConstantNode' && second.type === 'SymbolNode') {
-                            return { fieldPath: (second as mathjs.SymbolNode).name, compareValue: (first as mathjs.ConstantNode).value };
-                        }
-                        return null;
-                    };
 
                     const pair = toPair(a, b);
                     if (!pair) {
@@ -1299,14 +1341,36 @@ export class XlsxToJson {
                     };
                 }
 
+                if (name === 'ISNUMBER' && fn.args.length === 1) {
+                    const inner = fn.args[0];
+                    const innerFn = (inner as any)?.type === 'FunctionNode' ? inner as mathjs.FunctionNode : null;
+                    if (innerFn && innerFn.fn.name?.toUpperCase() === 'FIND' && innerFn.args.length === 2) {
+                        const needle = parsePaddedConcat(innerFn.args[0]);
+                        const haystack = parsePaddedConcat(innerFn.args[1]);
+                        if (needle && haystack) {
+                            const pair = toPair(needle, haystack);
+                            if (!pair) {
+                                throw new Error(`Unsupported "contains" signature in "${formulae}"`);
+                            }
+                            return {
+                                type: 'formulae',
+                                fieldPath: pair.fieldPath,
+                                compareValue: pair.compareValue,
+                                comparator: 'contains',
+                                invert
+                            };
+                        }
+                    }
+                }
+
                 if ((name === 'OR' || name === 'AND') && fn.args.length >= 2) {
-                    const items: { fieldPath: string; compareValue: any }[] = [];
+                    const items: { fieldPath: string; compareValue: any; comparator?: 'contains' }[] = [];
                     for (const arg of fn.args) {
                         const parsed = parseFn(arg, false);
                         if (!(parsed?.type === 'formulae' && parsed.fieldPath && parsed.compareValue !== undefined && !parsed.op)) {
                             throw new Error(`Unsupported argument inside ${name} in "${formulae}"`);
                         }
-                        items.push({ fieldPath: parsed.fieldPath, compareValue: parsed.compareValue });
+                        items.push({ fieldPath: parsed.fieldPath, compareValue: parsed.compareValue, comparator: parsed.comparator });
                     }
                     return {
                         type: 'formulae',

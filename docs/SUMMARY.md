@@ -267,6 +267,8 @@
       * [Demo using VM0042](guardian/workspace/schemas/data-entry-updatability/demo-using-vm0042.md)
     * [Cross-Schema Conditions](guardian/workspace/schemas/cross-schema-conditions/README.md)
       * [Configure Nested and Cross-Schema Conditions](guardian/workspace/schemas/cross-schema-conditions/configure-nested-and-cross-schema-conditions.md)
+    * [Array Element Conditions](guardian/workspace/schemas/array-element-conditions/README.md)
+      * [Configure an Array Element Condition](guardian/workspace/schemas/array-element-conditions/configure-array-element-conditions.md)
     * [Schema Differentiation](guardian/workspace/schemas/schema-differentiation/README.md)
       * [Schema Differentiation using UI](guardian/workspace/schemas/schema-differentiation/schema-differentiation-using-ui.md)
     * [Schema Tree](guardian/workspace/schemas/schema-tree/README.md)

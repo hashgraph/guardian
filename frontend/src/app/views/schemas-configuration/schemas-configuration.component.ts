@@ -1759,6 +1759,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const allSchemas = [...toCreate, ...toSave];
         // Phase 1: rebuild document from fields (system fields appended, then stripped back).
         allSchemas.forEach(s => {
+            this._resetStaleContainsComparators(s.conditions);
             const userFields = Array.isArray(s.fields) ? s.fields : [];
             const defaultFields = DefaultFieldDictionary.getDefaultFields(s.entity as SchemaEntity);
             s.update([...userFields, ...defaultFields], s.conditions);
@@ -3740,11 +3741,16 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         // getIfRows returns a placeholder row for a null ifCondition, so an existing row is
         // only usable when it actually carries a field; otherwise fall back to the first entry.
         const existing = rows[0]?.field ? rows[0] : null;
-        const first = existing ?? { field: firstEntry?.field, fieldValue: '', ...(firstEntry && firstEntry.fieldPath.length > 1 ? { fieldPath: firstEntry.fieldPath } : {}) };
+        const first = existing ?? {
+            field: firstEntry?.field,
+            fieldValue: '',
+            ...(firstEntry && firstEntry.fieldPath.length > 1 ? { fieldPath: firstEntry.fieldPath } : {}),
+        };
         const predicate = {
             field: first.field,
             fieldValue: first.fieldValue,
             ...(Array.isArray(first.fieldPath) && first.fieldPath.length > 1 ? { fieldPath: first.fieldPath } : {}),
+            ...(first.comparator ? { comparator: first.comparator } : {}),
         };
         if (op === 'SINGLE') {
             (cond as any).ifCondition = predicate;
@@ -3759,6 +3765,60 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public getIfRowValue(row: any): any { return row?.fieldValue ?? ''; }
     public isIfRowEnum(row: any): boolean { return !!(row?.field?.enum?.length); }
     public getIfRowOptions(row: any): string[] { return row?.field?.enum ?? []; }
+
+    /**
+     * `contains` only means anything against an array; the backend/eval/compile layers already
+     * self-correct a stale `contains` (from a field whose "Allow Multiple Answers" was since
+     * turned off) to plain equals rather than staying permanently unsatisfiable - see
+     * SchemaHelper.testPredicateValue. This does the same cleanup at the data level, on save,
+     * so the stored condition doesn't keep carrying a comparator that no longer matches its
+     * field's current type (and so it doesn't silently reactivate if the field is ever toggled
+     * back to an array with a value nobody re-checked).
+     */
+    private _resetStaleContainsComparators(conditions: SchemaCondition[] | undefined): void {
+        for (const cond of conditions ?? []) {
+            const ic = cond.ifCondition as any;
+            if (!ic) { continue; }
+            const predicates: any[] = 'AND' in ic ? ic.AND : ('OR' in ic ? ic.OR : [ic]);
+            for (const p of predicates ?? []) {
+                if (!p || p.comparator !== 'contains') { continue; }
+                const isArrayField = !!(p.field?.isArray && !p.field?.isRef);
+                if (!isArrayField) { delete p.comparator; }
+            }
+        }
+    }
+
+    // 'equals' (including absent, its default) is one universal comparator for every field -
+    // array or scalar alike. No legacy carve-out: an array-field '=' predicate saved before
+    // this feature existed means exactly the same "each element equals" as one authored today.
+    public getIfRowComparator(row: any): string {
+        return row?.comparator || 'equals';
+    }
+
+    public getIfRowComparatorOptions(row: any): { label: string; value: string }[] {
+        const isArrayField = !!(row?.field?.isArray && !row?.field?.isRef);
+        if (!isArrayField) {
+            return [{ label: '=', value: 'equals' }];
+        }
+        return [
+            { label: '= (each)', value: 'equals' },
+            { label: 'contains', value: 'contains' },
+        ];
+    }
+
+    public setIfRowComparator(cond: SchemaCondition, rowIdx: number, comparator: string): void {
+        const ic = cond.ifCondition as any;
+        if (!ic) { return; }
+        const apply = (row: any) => {
+            if (!row) { return; }
+            if (comparator === 'equals') { delete row.comparator; }
+            else { row.comparator = comparator; }
+        };
+        if ('AND' in ic) { apply(ic.AND[rowIdx]); }
+        else if ('OR' in ic) { apply(ic.OR[rowIdx]); }
+        else { apply(ic); }
+        this.markDirty();
+    }
 
     public setIfRowField(cond: SchemaCondition, rowIdx: number, pathStr: string): void {
         const field = this._resolveConditionField(pathStr);
