@@ -16,8 +16,8 @@
 #    api-reference-indexer) via GitBook Site redirects (.gitbook.yaml cannot
 #    target an external domain)
 #
-# 698 entries below, grouped by source path prefix for scanning;
-# alphabetical within each group. Last updated 2026-09-23 (fourteenth batch).
+# 701 entries below, grouped by source path prefix for scanning;
+# alphabetical within each group. Last updated 2026-09-23 (fifteenth batch).
 
 redirects:
   # ---- ai-toolkit/first-ingestion-and-semantic-search (1) ----
@@ -474,7 +474,7 @@ redirects:
   guardian/project-comparison: guardian/platform/project-comparison.md
   guardian/project-comparison/project-comparison-apis: guardian/platform/project-comparison.md
   guardian/project-comparison/project-comparison-using-ui: guardian/platform/project-comparison/project-comparison-using-ui.md
-  # ---- guardian/readme (32) ----
+  # ---- guardian/readme (34) ----
   guardian/readme/built-with: guardian/getting-started/built-with.md
   guardian/readme/built-with/guardian-cli: developer-tools-and-resources/guardian-cli.md
   guardian/readme/change-log: community-and-contributing/change-log.md
@@ -482,6 +482,7 @@ redirects:
   guardian/readme/contributing: community-and-contributing/contributing.md
   guardian/readme/contributing/contribute-a-new-policy: community-and-contributing/contributing/contribute-a-new-policy.md
   guardian/readme/discovering-esg-assets-on-hedera: guardian/getting-started.md
+  guardian/readme/environments: developer-tools-and-resources/dev-environments-and-faqs/ecosystem-environments.md
   guardian/readme/environments/dynamic-vault-kms-path-configuration-according-to-the-environment: developer-tools-and-resources/dev-environments-and-faqs/dynamic-vault-kms-path-configuration-according-to-the-environment.md
   guardian/readme/environments/ecosystem-environments: developer-tools-and-resources/dev-environments-and-faqs/ecosystem-environments.md
   guardian/readme/environments/multi-session-consistency-according-to-environment: developer-tools-and-resources/dev-environments-and-faqs/multi-session-consistency-according-to-environment.md
@@ -502,6 +503,7 @@ redirects:
   guardian/readme/getting-started/prerequisites: developer-tools-and-resources/dev-environments-and-faqs/prerequisites.md
   guardian/readme/guardian-glossary: guardian/getting-started/guardian-glossary.md
   guardian/readme/guardian-vault: security-identity-and-privacy/guardian-vault.md
+  guardian/readme/license: README.md
   guardian/readme/roadmap: community-and-contributing/roadmap.md
   guardian/readme/security: community-and-contributing/security.md
   guardian/readme/security-1: community-and-contributing/security.md
@@ -510,7 +512,7 @@ redirects:
   # ---- guardian/schema-creation-using-the-guardian-apis (2) ----
   guardian/schema-creation-using-the-guardian-apis/import-schema-from-ipfs: guardian/workspace/schemas.md
   guardian/schema-creation-using-the-guardian-apis/import-schema-from-ipfs-1: guardian/workspace/schemas.md
-  # ---- guardian/standard-registry (221) ----
+  # ---- guardian/standard-registry (222) ----
   guardian/standard-registry: guardian/platform/standard-registry.md
   guardian/standard-registry/artifacts: guardian/workspace/artifacts.md
   guardian/standard-registry/artifacts/how-to-import-delete-artifacts: guardian/workspace/artifacts/how-to-import-delete-artifacts.md
@@ -676,6 +678,7 @@ redirects:
   guardian/standard-registry/policies/tagging/tagging-using-ui: guardian/platform/tagging/tagging-using-ui.md
   guardian/standard-registry/policies/tamper-resistant-policy/apis-related: guardian/workspace/schemas/available-schema-types/table-data-input-field/apis-related.md
   guardian/standard-registry/policies/tamper-resistant-policy/demo-using-ui: guardian/workspace/policies/tamper-resistant-policy/demo-using-ui.md
+  guardian/standard-registry/policies/testing-debugging-code: guardian/workspace/policies/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui.md
   guardian/standard-registry/policies/testing-debugging-code/apis: guardian/workspace/policies/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui.md
   guardian/standard-registry/policies/testing-debugging-code/apis/returns-the-list-of-saved-mock-up-data-for-the-selected-block: guardian/workspace/policies/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui.md
   guardian/standard-registry/policies/testing-debugging-code/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui: guardian/workspace/policies/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui.md
