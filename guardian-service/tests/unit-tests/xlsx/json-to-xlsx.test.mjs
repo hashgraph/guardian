@@ -38,7 +38,19 @@ function makeField(overrides = {}) {
 
 /** Minimal Schema plain-object stub. */
 const makeSchema = (overrides = {}) =>
-    ({ name: 'MySchema', iri: '#schema', fields: [], ...overrides });
+    ({
+        name: 'MySchema',
+        iri: '#schema',
+        document: {
+            title: 'MySchema',
+            description: 'MySchema description',
+            type: 'object',
+            properties: [],
+            required: []
+        },
+        fields: [],
+        ...overrides
+    });
 
 describe('JsonToXlsx.generate README worksheet', function () {
     it('keeps the legacy sheet order when no template workbook is supplied', async function () {
@@ -46,7 +58,8 @@ describe('JsonToXlsx.generate README worksheet', function () {
         const workbook = new Workbook();
         await workbook.read(buffer);
 
-        assert.equal(workbook.sheetNames[0], Dictionary.SHARED_ENUM_SHEET);
+        assert.equal(workbook.sheetNames[0], 'MySchema');
+        assert.include(workbook.sheetNames, Dictionary.SHARED_ENUM_SHEET);
         assert.notInclude(workbook.sheetNames, Dictionary.README_SHEET);
     });
 
@@ -61,7 +74,8 @@ describe('JsonToXlsx.generate README worksheet', function () {
         await workbook.read(buffer);
 
         assert.equal(workbook.sheetNames[0], Dictionary.README_SHEET);
-        assert.equal(workbook.sheetNames[1], Dictionary.SHARED_ENUM_SHEET);
+        assert.equal(workbook.sheetNames[1], 'MySchema');
+        assert.include(workbook.sheetNames, Dictionary.SHARED_ENUM_SHEET);
         const readme = workbook.getWorksheet(Dictionary.README_SHEET);
         assert.equal(readme.getValue(1, 1), 'README from template');
         assert.notInclude(workbook.sheetNames, 'Schema name');
