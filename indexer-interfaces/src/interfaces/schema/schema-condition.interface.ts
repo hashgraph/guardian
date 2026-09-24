@@ -17,10 +17,7 @@ export interface SchemaCondition {
          */
         fieldValue: string;
         /**
-         * comparator - absent means 'equals'. Explicit 'equals' on an array field means
-         * "each element equals" (the array analogue of '='), distinguished from an absent
-         * comparator (a legacy predicate predating array comparators, which stays dead/
-         * never-matches, unmigrated).
+         * comparator
          */
         comparator?: 'contains' | 'equals';
     };

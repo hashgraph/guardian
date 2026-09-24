@@ -709,9 +709,7 @@ export class SchemaHelper {
     /**
      * Loose scalar equality shared by server-side condition validation and (via
      * `testPredicateValue`) array comparators. Numeric strings compare numerically; everything
-     * else falls back to a trimmed string comparison. Deliberately has no date-parsing branch -
-     * the form's `equalsLoosely` has one this does not, and unifying them is a separate decision
-     * (see docs/array-condition-operators-design.md, section 3.6), not something to fold in here.
+     * else falls back to a trimmed string comparison.
      * @param a
      * @param b
      */
