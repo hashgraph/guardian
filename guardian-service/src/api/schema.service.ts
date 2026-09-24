@@ -50,7 +50,8 @@ import {
     previewToolByMessage,
     SchemaImportExportHelper,
     updateSchemaDefs,
-    updateToolConfig
+    updateToolConfig,
+    readSchemaTemplateXlsx
 } from '../helpers/import-helpers/index.js'
 import { validateSchemaDependencies } from '../helpers/import-helpers/schema/schema-dependency-validator.js';
 import { getPageOptions } from './helpers/index.js';
@@ -2766,7 +2767,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
             try {
                 const { ids } = msg;
                 const schemas = await SchemaImportExportHelper.exportSchemas(ids);
-                const buffer = await JsonToXlsx.generate(schemas, [], []);
+                const template = await readSchemaTemplateXlsx();
+                const buffer = await JsonToXlsx.generate(schemas, [], [], { template });
                 return new BinaryMessageResponse(buffer);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);

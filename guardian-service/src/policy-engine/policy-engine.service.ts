@@ -88,7 +88,10 @@ import { PolicyDataImportExport } from './helpers/policy-data/policy-data-import
 import { PolicyComponentsUtils } from './policy-components-utils.js';
 import { PolicyAccessCode, PolicyEngine } from './policy-engine.js';
 import { IPolicyUser } from './policy-user.js';
-import { getSchemaCategory, ImportMode, ImportPolicyOptions, importSubTools, PolicyImportExportHelper, previewToolByMessage, SchemaImportExportHelper } from '../helpers/import-helpers/index.js';
+import {
+    getSchemaCategory, ImportMode, ImportPolicyOptions, importSubTools, PolicyImportExportHelper, previewToolByMessage,
+    readSchemaTemplateXlsx, SchemaImportExportHelper
+} from '../helpers/import-helpers/index.js';
 import { PolicyCommentsUtils } from './policy-comments-utils.js';
 import { PersistStepPayload, RecordPersistService } from './helpers/record-persist.service.js';
 
@@ -1898,7 +1901,8 @@ export class PolicyEngineService {
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, owner, 'read');
                     const { schemas, tools, toolSchemas } = await PolicyImportExport.loadAllSchemas(policy);
-                    const buffer = await JsonToXlsx.generate(schemas, tools, toolSchemas);
+                    const template = await readSchemaTemplateXlsx();
+                    const buffer = await JsonToXlsx.generate(schemas, tools, toolSchemas, { template });
                     return new BinaryMessageResponse(buffer);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
