@@ -9,8 +9,7 @@ const { XlsxEnum }   = await import('../../../dist/xlsx/models/xlsx-enum.js');
 const { Workbook, Hyperlink } = await import('../../../dist/xlsx/models/workbook.js');
 const { XlsxSchema } = await import('../../../dist/xlsx/models/xlsx-schema.js');
 const { Table }      = await import('../../../dist/xlsx/models/table.js');
-const { FieldTypes } = await import('../../../dist/xlsx/models/dictionary.js');
-const { Dictionary } = await import('../../../dist/xlsx/models/dictionary.js');
+const { FieldTypes, Dictionary } = await import('../../../dist/xlsx/models/dictionary.js');
 
 // Private static helpers are accessible via bracket notation in compiled JS.
 const collectInlineRefs = (fields, set) => JsonToXlsx['collectInlineRefs'](fields, set);
