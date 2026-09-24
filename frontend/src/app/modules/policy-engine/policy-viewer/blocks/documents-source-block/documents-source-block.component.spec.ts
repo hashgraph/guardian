@@ -133,6 +133,24 @@ describe('DocumentsSourceBlockComponent', () => {
         expect(component.getRichTextCellText({ id: 'z' }, field)).toBe('');
     });
 
+    it('marks a cell that has preview text as having content', () => {
+        const component = createComponent({ a: 'Hello' });
+
+        expect(component.hasRichTextContent(row(component, 'a'), field)).toBe(true);
+    });
+
+    it('marks a cell with no text and no picture as having no content', () => {
+        const component = createComponent({ a: '   ' });
+
+        expect(component.hasRichTextContent(row(component, 'a'), field)).toBe(false);
+    });
+
+    it('reads a row with no built content as having none', () => {
+        const component = createComponent();
+
+        expect(component.hasRichTextContent({ id: 'z' }, field)).toBe(false);
+    });
+
     it('covers the grouped field a row selects, not only the first of its group', async () => {
         const component: any = Object.create(DocumentsSourceBlockComponent.prototype);
         component.sortOptions = {};
@@ -250,6 +268,15 @@ describe('DocumentsSourceBlockComponent', () => {
 
             expect(popover.shown.length).toBe(1);
             expect(component.richTextValue).toContain(`src="${dataUrl}"`);
+        });
+
+        it('marks a cell whose value is only a picture as having content', () => {
+            const ipfs = makeIpfs(Promise.resolve(dataUrl));
+            const component = createComponent({ a: `![Site](${reference})` }, ipfs);
+
+            expect(component.getRichTextCellText(row(component, 'a'), field)).toBe('');
+            expect(component.hasRichTextContent(row(component, 'a'), field)).toBe(true);
+            expect(ipfs.getImageByLink).not.toHaveBeenCalled();
         });
 
         it('does not overwrite the popover when the pointer already moved to another row', async () => {

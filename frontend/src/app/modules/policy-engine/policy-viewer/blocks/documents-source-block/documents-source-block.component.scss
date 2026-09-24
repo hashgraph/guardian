@@ -432,6 +432,11 @@ tr.revoked td:not(.mat-column-history) {
     cursor: help;
 }
 
+.rich-text-cell-empty {
+    display: block;
+    height: 100%;
+}
+
 ::ng-deep .rich-text-popover .rich-text-popover-content {
     width: min(420px, 60vw);
     max-height: 220px;

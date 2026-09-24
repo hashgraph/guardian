@@ -347,6 +347,10 @@ export class DocumentsSourceBlockComponent implements OnInit {
         return row && row._richTextCellText ? (row._richTextCellText[field.index] || '') : '';
     }
 
+    public hasRichTextContent(row: any, field: any): boolean {
+        return !!(row && row._richTextCellContent && row._richTextCellContent[field.index]);
+    }
+
     private buildRichTextCellText(fields: any[]): void {
         const richTextFields = fields.filter((item) => item.type === 'richText');
         if (!richTextFields.length || !Array.isArray(this.documents)) {
@@ -354,10 +358,16 @@ export class DocumentsSourceBlockComponent implements OnInit {
         }
         for (const row of this.documents) {
             const cells: any = {};
+            const content: any = {};
             for (const item of richTextFields) {
-                cells[item.index] = richTextToText(this.toRichTextHtml(row, item));
+                const value = this.getText(row, item);
+                const markdown = typeof value === 'string' ? value : '';
+                const text = richTextToText(this.toRichTextHtml(row, item));
+                cells[item.index] = text;
+                content[item.index] = !!text || collectImageReferences(markdown).length > 0;
             }
             row._richTextCellText = cells;
+            row._richTextCellContent = content;
         }
     }
 

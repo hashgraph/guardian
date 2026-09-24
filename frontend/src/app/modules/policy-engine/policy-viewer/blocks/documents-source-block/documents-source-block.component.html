@@ -75,9 +75,11 @@
                         }
                         @if (option.type == 'richText') {
                           @let richTextCellText = getRichTextCellText(element, option);
+                          @let richTextCellFilled = hasRichTextContent(element, option);
                           <span
                             class="text"
-                            [class.rich-text-cell]="!!richTextCellText"
+                            [class.rich-text-cell]="richTextCellFilled"
+                            [class.rich-text-cell-empty]="richTextCellFilled && !richTextCellText"
                             (mouseenter)="onRichTextEnter($event, element, option, richTextPopover)"
                             (mouseleave)="onRichTextLeave(richTextPopover)"
                           >{{ richTextCellText }}</span>
