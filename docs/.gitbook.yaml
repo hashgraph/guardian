@@ -16,8 +16,10 @@
 #    target an external domain)
 #
 # 706 entries below, grouped by source path prefix for scanning;
-# alphabetical within each group. Last updated 2026-09-23 (eighteenth batch --
-# all fallback_suggestions now resolved).
+# alphabetical within each group. Last updated 2026-09-24 -- pre-emptively
+# retargeted 24 entries whose current target is being moved/renamed/deleted
+# by GitBook change request #484 (Schema Section restructuring), so they
+# land correctly once that CR merges instead of going stale.
 
 redirects:
   # ---- ai-toolkit/first-ingestion-and-semantic-search (1) ----
@@ -382,7 +384,7 @@ redirects:
   guardian/guardian/standard-registry/policies/tagging/tagging-using-ui: guardian/platform/tagging/tagging-using-ui.md
   guardian/guardian/standard-registry/policies/themes: guardian/platform/themes.md
   guardian/guardian/standard-registry/policies/themes/themes-apis: guardian/platform/themes.md
-  guardian/guardian/standard-registry/policies/themes/themes-using-ui: guardian/platform/themes/themes-using-ui.md
+  guardian/guardian/standard-registry/policies/themes/themes-using-ui: guardian/platform/themes/themes-reference.md
   guardian/guardian/standard-registry/policies/tools/tools-apis: guardian/workspace/tools.md
   guardian/guardian/standard-registry/policies/versioning-and-deprecation-policy/internal-apis-versioning-and-deprecation-policy: guardian/workspace/policies/versioning-and-deprecation-policy.md
   guardian/guardian/standard-registry/policies/versioning-and-deprecation-policy/policy-versioning-and-deprecation-policy: guardian/workspace/policies/versioning-and-deprecation-policy/policy-versioning-and-deprecation-policy.md
@@ -395,18 +397,18 @@ redirects:
   guardian/guardian/standard-registry/schemas/available-schema-types/custom-logic-block-and-tables: guardian/workspace/schemas/available-schema-types/table-data-input-field/custom-logic-block-and-tables.md
   guardian/guardian/standard-registry/schemas/best-practices-to-implement-schema/version-control-and-migration: guardian/workspace/schemas/best-practices-to-implement-schema/version-control-and-migration.md
   guardian/guardian/standard-registry/schemas/creating-policy-schema-using-ui: guardian/workspace/schemas.md
-  guardian/guardian/standard-registry/schemas/creating-system-schema-using-ui: guardian/workspace/schemas/creating-system-schema-using-ui.md
-  guardian/guardian/standard-registry/schemas/deleting-schema: guardian/workspace/schemas/deleting-schema.md
+  guardian/guardian/standard-registry/schemas/creating-system-schema-using-ui: guardian/workspace/schemas/create-schema.md
+  guardian/guardian/standard-registry/schemas/deleting-schema: guardian/workspace/schemas/delete-schema.md
   guardian/guardian/standard-registry/schemas/demo-on-how-to-create-policy-from-a-standard: guardian/workspace/schemas.md
-  guardian/guardian/standard-registry/schemas/example-data: guardian/workspace/schemas/adding-example-data-using-ui.md
-  guardian/guardian/standard-registry/schemas/example-data/adding-example-data-using-ui: guardian/workspace/schemas/adding-example-data-using-ui.md
+  guardian/guardian/standard-registry/schemas/example-data: guardian/workspace/schemas/example-data.md
+  guardian/guardian/standard-registry/schemas/example-data/adding-example-data-using-ui: guardian/workspace/schemas/example-data.md
   guardian/guardian/standard-registry/schemas/property-glossary: guardian/workspace/schemas/property-glossary.md
-  guardian/guardian/standard-registry/schemas/schema-differentiation: guardian/workspace/schemas/schema-differentiation.md
+  guardian/guardian/standard-registry/schemas/schema-differentiation: guardian/workspace/schemas/schema-differentiation-using-ui.md
   guardian/guardian/standard-registry/schemas/schema-differentiation/schema-differentiation-apis/exports-schema-differentiation-results: guardian/workspace/schemas/schema-differentiation/schema-differentiation-using-ui.md
-  guardian/guardian/standard-registry/schemas/schema-predefined-values-using-ui: guardian/workspace/schemas/schema-predefined-values-using-ui.md
+  guardian/guardian/standard-registry/schemas/schema-predefined-values-using-ui: guardian/workspace/schemas/setting-predefined-values.md
   guardian/guardian/standard-registry/schemas/schema-tree: guardian/workspace/schemas/schema-tree.md
   guardian/guardian/standard-registry/schemas/system-policy-schemas: guardian/workspace/schemas.md
-  guardian/guardian/standard-registry/schemas/system-schema-apis: guardian/workspace/schemas/creating-system-schema-using-ui.md
+  guardian/guardian/standard-registry/schemas/system-schema-apis: guardian/workspace/schemas/create-schema.md
   guardian/guardian/standard-registry/schemas/tag-schema/schema-tags-apis: guardian/workspace/schemas/tag-schema.md
   guardian/guardian/standard-registry/selective-disclosure/user-guide: security-identity-and-privacy/selective-disclosure/user-guide.md
   guardian/guardian/standard-registry/show-list-of-hedera-transactions/showing-list-of-hedera-transactions-using: guardian/hedera/hedera-transactions.md
@@ -466,7 +468,7 @@ redirects:
   guardian/policy-creation-using-the-guardian-apis/prerequesite-: guardian/workspace/policies/policy-creation.md
   # ---- guardian/project-account-relayer-account (7) ----
   guardian/project-account-relayer-account: guardian/hedera/relayer-accounts.md
-  guardian/project-account-relayer-account/apis-related: guardian/workspace/schemas/available-schema-types/table-data-input-field/apis-related.md
+  guardian/project-account-relayer-account/apis-related: guardian/workspace/schemas/schema-fields-reference/table-field/apis-related.md
   guardian/project-account-relayer-account/apis-related/disassociates-the-user-with-the-provided-hedera-token: guardian/hedera/relayer-accounts.md
   guardian/project-account-relayer-account/apis-related/disassociates-the-user-with-the-provided-hedera-token-asynchronously: guardian/hedera/relayer-accounts.md
   guardian/project-account-relayer-account/apis-related/generate-a-new-relayer-account: guardian/hedera/relayer-accounts.md
@@ -522,10 +524,10 @@ redirects:
   guardian/standard-registry/bring-your-own-dids: security-identity-and-privacy/bring-your-own-dids.md
   guardian/standard-registry/bring-your-own-dids/apis/validate-did-keys: security-identity-and-privacy/bring-your-own-dids/bring-your-own-byo-dids-ui.md
   guardian/standard-registry/bring-your-own-dids/bring-your-own-byo-dids-ui: security-identity-and-privacy/bring-your-own-dids/bring-your-own-byo-dids-ui.md
-  guardian/standard-registry/data-entry-updatability: guardian/workspace/schemas/data-entry-updatability.md
-  guardian/standard-registry/data-entry-updatability/apis-related: guardian/workspace/schemas/available-schema-types/table-data-input-field/apis-related.md
-  guardian/standard-registry/data-entry-updatability/apis-related/create-new-version-vc-document: guardian/workspace/schemas/data-entry-updatability.md
-  guardian/standard-registry/data-entry-updatability/apis-related/get-all-version-vc-documents: guardian/workspace/schemas/data-entry-updatability.md
+  guardian/standard-registry/data-entry-updatability: guardian/workspace/schemas/schema-fields-reference/data-entry-updatability.md
+  guardian/standard-registry/data-entry-updatability/apis-related: guardian/workspace/schemas/schema-fields-reference/table-field/apis-related.md
+  guardian/standard-registry/data-entry-updatability/apis-related/create-new-version-vc-document: guardian/workspace/schemas/schema-fields-reference/data-entry-updatability.md
+  guardian/standard-registry/data-entry-updatability/apis-related/get-all-version-vc-documents: guardian/workspace/schemas/schema-fields-reference/data-entry-updatability.md
   guardian/standard-registry/data-entry-updatability/demo-using-ui: guardian/workspace/schemas/data-entry-updatability/demo-using-ui.md
   guardian/standard-registry/data-entry-updatability/demo-using-vm0042: guardian/workspace/schemas/data-entry-updatability/demo-using-vm0042.md
   guardian/standard-registry/demo-experience: guardian/platform/demo-experience.md
@@ -678,7 +680,7 @@ redirects:
   guardian/standard-registry/policies/roles-and-groups/roles-and-groups: guardian/workspace/policies/roles-and-groups.md
   guardian/standard-registry/policies/tagging: guardian/platform/tagging.md
   guardian/standard-registry/policies/tagging/tagging-using-ui: guardian/platform/tagging/tagging-using-ui.md
-  guardian/standard-registry/policies/tamper-resistant-policy/apis-related: guardian/workspace/schemas/available-schema-types/table-data-input-field/apis-related.md
+  guardian/standard-registry/policies/tamper-resistant-policy/apis-related: guardian/workspace/schemas/schema-fields-reference/table-field/apis-related.md
   guardian/standard-registry/policies/tamper-resistant-policy/demo-using-ui: guardian/workspace/policies/tamper-resistant-policy/demo-using-ui.md
   guardian/standard-registry/policies/testing-debugging-code: guardian/workspace/policies/dry-run/policy-integrity-tests.md
   guardian/standard-registry/policies/testing-debugging-code/apis: guardian/workspace/policies/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui.md
@@ -686,7 +688,7 @@ redirects:
   guardian/standard-registry/policies/testing-debugging-code/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui: guardian/workspace/policies/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui.md
   guardian/standard-registry/policies/themes: guardian/platform/themes.md
   guardian/standard-registry/policies/themes/themes-apis: guardian/platform/themes.md
-  guardian/standard-registry/policies/themes/themes-using-ui: guardian/platform/themes/themes-using-ui.md
+  guardian/standard-registry/policies/themes/themes-using-ui: guardian/platform/themes/themes-reference.md
   guardian/standard-registry/policies/tools: guardian/workspace/tools.md
   guardian/standard-registry/policies/tools/tools-apis: guardian/workspace/tools.md
   guardian/standard-registry/policies/tools/tools-using-ui: guardian/workspace/tools/tools-using-ui.md
@@ -706,18 +708,18 @@ redirects:
   guardian/standard-registry/schemas/best-practices-to-implement-schema/excel-first-design: guardian/workspace/schemas/best-practices-to-implement-schema/excel-first-design.md
   guardian/standard-registry/schemas/best-practices-to-implement-schema/testing-and-validation: guardian/workspace/schemas/best-practices-to-implement-schema/testing-and-validation.md
   guardian/standard-registry/schemas/best-practices-to-implement-schema/version-control-and-migration: guardian/workspace/schemas/best-practices-to-implement-schema/version-control-and-migration.md
-  guardian/standard-registry/schemas/creating-system-schema-using-ui: guardian/workspace/schemas/creating-system-schema-using-ui.md
-  guardian/standard-registry/schemas/deleting-schema: guardian/workspace/schemas/deleting-schema.md
+  guardian/standard-registry/schemas/creating-system-schema-using-ui: guardian/workspace/schemas/create-schema.md
+  guardian/standard-registry/schemas/deleting-schema: guardian/workspace/schemas/delete-schema.md
   guardian/standard-registry/schemas/demo-on-how-to-create-policy-from-a-standard: methodology-digitalization/methodology-digitization-handbook.md
-  guardian/standard-registry/schemas/example-data/adding-example-data-using-ui: guardian/workspace/schemas/adding-example-data-using-ui.md
-  guardian/standard-registry/schemas/how-to-handle-large-location-files: guardian/workspace/schemas/how-to-handle-large-location-files.md
-  guardian/standard-registry/schemas/importing-schema-using-ui: guardian/workspace/schemas/importing-schema-using-ui.md
+  guardian/standard-registry/schemas/example-data/adding-example-data-using-ui: guardian/workspace/schemas/example-data.md
+  guardian/standard-registry/schemas/how-to-handle-large-location-files: guardian/workspace/schemas/large-geospatial-files.md
+  guardian/standard-registry/schemas/importing-schema-using-ui: guardian/workspace/schemas/import-schema.md
   guardian/standard-registry/schemas/property-glossary: guardian/workspace/schemas/property-glossary.md
   guardian/standard-registry/schemas/schema-apis-for-asynchronous-execution/deletes-the-schema-with-the-provided-schema-id: guardian/workspace/schemas.md
   guardian/standard-registry/schemas/schema-apis-for-asynchronous-execution/importing-schema-from-ipfs: guardian/workspace/schemas.md
-  guardian/standard-registry/schemas/schema-differentiation: guardian/workspace/schemas/schema-differentiation.md
+  guardian/standard-registry/schemas/schema-differentiation: guardian/workspace/schemas/schema-differentiation-using-ui.md
   guardian/standard-registry/schemas/schema-differentiation/schema-differentiation-apis/exports-schema-differentiation-results: guardian/workspace/schemas/schema-differentiation/schema-differentiation-using-ui.md
-  guardian/standard-registry/schemas/schema-predefined-values-using-ui: guardian/workspace/schemas/schema-predefined-values-using-ui.md
+  guardian/standard-registry/schemas/schema-predefined-values-using-ui: guardian/workspace/schemas/setting-predefined-values.md
   guardian/standard-registry/schemas/schema-rules: guardian/workspace/defining-schema-rules-using-ui.md
   guardian/standard-registry/schemas/schema-rules/apis-related-to-schema-rules: guardian/workspace/defining-schema-rules-using-ui.md
   guardian/standard-registry/schemas/schema-rules/defining-schema-rules-using-ui: guardian/workspace/defining-schema-rules-using-ui.md
@@ -782,7 +784,7 @@ redirects:
   # ---- schemas/schema-related-apis-for-asynchronous-execution (1) ----
   schemas/schema-related-apis-for-asynchronous-execution: guardian/platform/usage-statistics.md
   # ---- schemas/system-schemas-apis (1) ----
-  schemas/system-schemas-apis: guardian/workspace/schemas/creating-system-schema-using-ui.md
+  schemas/system-schemas-apis: guardian/workspace/schemas/create-schema.md
   # ---- tasks-and-external/trustchains-apis (1) ----
   tasks-and-external/trustchains-apis: guardian/platform/trustchain.md
   # ---- tokens (1) ----
