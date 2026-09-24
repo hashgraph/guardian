@@ -678,7 +678,7 @@ redirects:
   guardian/standard-registry/policies/tagging/tagging-using-ui: guardian/platform/tagging/tagging-using-ui.md
   guardian/standard-registry/policies/tamper-resistant-policy/apis-related: guardian/workspace/schemas/available-schema-types/table-data-input-field/apis-related.md
   guardian/standard-registry/policies/tamper-resistant-policy/demo-using-ui: guardian/workspace/policies/tamper-resistant-policy/demo-using-ui.md
-  guardian/standard-registry/policies/testing-debugging-code: guardian/workspace/policies/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui.md
+  guardian/standard-registry/policies/testing-debugging-code: guardian/workspace/policies/dry-run/policy-integrity-tests.md
   guardian/standard-registry/policies/testing-debugging-code/apis: guardian/workspace/policies/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui.md
   guardian/standard-registry/policies/testing-debugging-code/apis/returns-the-list-of-saved-mock-up-data-for-the-selected-block: guardian/workspace/policies/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui.md
   guardian/standard-registry/policies/testing-debugging-code/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui: guardian/workspace/policies/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui.md
