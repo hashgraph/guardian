@@ -1644,58 +1644,10 @@ async function updateAppliedSchemaTemplate(
         }
     };
 
-    // Checked up front, before anything mutates: both SCHEMA_ADD (new name) and a locked-settings
-    // SCHEMA_UPDATE (template-driven rename) can introduce a name collision and must be caught first.
     const schemaConfigByTemplateSchemaId = new Map<string, any>();
-    const schemasToAdd: Schema[] = [];
-    const schemasBeingRenamed: Schema[] = [];
-    // Only a schema actually vacating its current name is excluded from the
-    // collision check - an unchanged sibling from the same template keeps its
-    // name and must still be able to block a rename or add that lands on it.
-    const vacatedSchemaIds = new Set<string>();
-    for (const [templateSchemaId, source] of templateSchemaById.entries()) {
+    for (const [templateSchemaId] of templateSchemaById.entries()) {
         const schemaConfig = getSnapshotSchemaConfig(nextConfig, templateSchemaId);
         schemaConfigByTemplateSchemaId.set(templateSchemaId, schemaConfig);
-        const target = context.policySchemaByTemplateId.get(templateSchemaId);
-        if (!target) {
-            schemasToAdd.push(source);
-            continue;
-        }
-        if (schemaConfig.schemaSettingsLocked &&
-            String(source.name || '').trim() !== String(target.name || '').trim()) {
-            schemasBeingRenamed.push(source);
-            const targetId = String(target.id || (target as any)?._id || '');
-            if (targetId) {
-                vacatedSchemaIds.add(targetId);
-            }
-        }
-    }
-    // A schema going through the SCHEMA_REMOVE/conflict path only frees its name if removal was chosen;
-    // keeping it as a plain custom schema leaves the name occupied.
-    for (const conflict of preview.conflicts) {
-        if (conflict.type !== SchemaTemplateUpdateConflictType.SCHEMA_REMOVED_WITH_POLICY_USAGE) {
-            continue;
-        }
-        if (resolutions.get(conflict.id) !== SchemaTemplateUpdateResolutionAction.REMOVE_FROM_POLICY) {
-            continue;
-        }
-        const removedSchema = conflict.templateSchemaId
-            ? context.policySchemaByTemplateId.get(conflict.templateSchemaId)
-            : undefined;
-        const removedSchemaId = String(removedSchema?.id || (removedSchema as any)?._id || '');
-        if (removedSchemaId) {
-            vacatedSchemaIds.add(removedSchemaId);
-        }
-    }
-    const schemasToValidate = [...schemasToAdd, ...schemasBeingRenamed];
-    if (schemasToValidate.length) {
-        await validateSchemaNameCollisions(
-            context.template,
-            context.policy,
-            schemasToValidate,
-            vacatedSchemaIds,
-            context.policySchemas
-        );
     }
 
     try {
@@ -1911,95 +1863,6 @@ async function updateCopiedSchemaRefs(
     }
 }
 
-/**
- * Rejects the apply/update instead of renaming on a name collision, since a renamed
- * copy would no longer match the name in the template it came from. Shared by apply
- * (all template schemas vs. the whole policy) and update's add/rename paths (just the
- * schemas being added or renamed). `excludeSchemaIds` exempts only schemas actually
- * vacating their name, so an unchanged sibling can still block a collision.
- */
-export async function validateSchemaNameCollisions(
-    template: SchemaTemplate,
-    policy: Policy,
-    templateSchemas: Schema[],
-    excludeSchemaIds?: Set<string>,
-    prefetchedPolicySchemas?: Schema[]
-): Promise<void> {
-    const allExistingSchemas = prefetchedPolicySchemas || await DatabaseServer.getSchemas(
-        {
-            topicId: policy.topicId,
-            category: SchemaCategory.POLICY
-        },
-        { fields: ['name', 'templateId'] } as any
-    );
-    const existingSchemas = excludeSchemaIds?.size
-        ? (allExistingSchemas as Schema[]).filter(
-            (schema) => !excludeSchemaIds.has(String(schema?.id || (schema as any)?._id || ''))
-        )
-        : (allExistingSchemas as Schema[]);
-
-    const templateNameById = new Map<string, string>();
-    for (const binding of policy.schemaTemplates || []) {
-        if (binding?.templateId) {
-            templateNameById.set(
-                String(binding.templateId),
-                binding.templateName || String(binding.templateId)
-            );
-        }
-    }
-
-    const existingByName = new Map<string, Schema>();
-    for (const schema of existingSchemas as Schema[]) {
-        const name = String(schema?.name || '').trim();
-        if (name && !existingByName.has(name)) {
-            existingByName.set(name, schema);
-        }
-    }
-
-    // Different advice per case: a name held by another applied template is freed by detaching it,
-    // but a name held by an ordinary schema is not (detach leaves that schema's name untouched).
-    const ownedByTemplate: string[] = [];
-    const alreadyInPolicy: string[] = [];
-    const reported = new Set<string>();
-    for (const schema of templateSchemas) {
-        const name = String(schema?.name || '').trim();
-        if (!name || reported.has(name)) {
-            continue;
-        }
-        const existing = existingByName.get(name);
-        if (!existing) {
-            continue;
-        }
-        reported.add(name);
-        const ownerName = existing.templateId
-            ? templateNameById.get(String(existing.templateId))
-            : '';
-        if (ownerName) {
-            ownedByTemplate.push(`"${name}" (from template "${ownerName}")`);
-        } else {
-            alreadyInPolicy.push(`"${name}"`);
-        }
-    }
-    if (!ownedByTemplate.length && !alreadyInPolicy.length) {
-        return;
-    }
-
-    const message = [`Schema template "${template.name}" cannot be applied.`];
-    if (ownedByTemplate.length) {
-        message.push(
-            `These schemas belong to an applied schema template: ${ownedByTemplate.join(', ')}. ` +
-            'Detach that template first.'
-        );
-    }
-    if (alreadyInPolicy.length) {
-        message.push(
-            `The policy already has schemas named ${alreadyInPolicy.join(', ')}. ` +
-            'Rename or delete them first.'
-        );
-    }
-    throw new Error(message.join(' '));
-}
-
 async function applySchemaTemplate(
     templateId: string,
     policyId: string,
@@ -2036,8 +1899,6 @@ async function applySchemaTemplate(
     if (!templateSchemas.length) {
         throw new Error('Schema template has no schemas');
     }
-
-    await validateSchemaNameCollisions(template, policy, templateSchemas as Schema[]);
 
     for (const schema of templateSchemas as Schema[]) {
         await ensureTemplateSchemaReferences(schema, true);
