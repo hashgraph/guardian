@@ -124,7 +124,7 @@ function roleCarriesMemberManage(role: OrgRole | null | undefined): boolean {
  * the admin's own role's permissions. The SR owner branch has no ceiling.
  */
 function isPermissionSubset(adminRole: OrgRole, assignedRole: OrgRole | null | undefined): boolean {
-    const adminPermissions = new Set(adminRole?.permissions ?? []);
+    const adminPermissions = new Set(adminRole?.permissions);
     return (assignedRole?.permissions ?? []).every((permission) => adminPermissions.has(permission));
 }
 

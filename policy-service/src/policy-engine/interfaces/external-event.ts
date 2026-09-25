@@ -93,7 +93,7 @@ export const ExternalDocuments = (document: IPolicyDocument | IPolicyDocument[])
             }
         }
         return null;
-    } catch (error) {
+    } catch {
         return null;
     }
 }

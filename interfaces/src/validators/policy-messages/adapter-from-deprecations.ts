@@ -22,11 +22,11 @@ function getByPath(obj: unknown, path: string): unknown {
         return undefined;
     }
 
-    const normalized = path.replace(/\[(\d+)\]/g, '.$1');
+    const normalized = path.replaceAll(/\[(\d+)\]/g, '.$1');
 
     return normalized.split('.').reduce((acc: any, key) => {
         if (acc === null  || acc === undefined) {
-            return undefined;
+            return;
         }
 
         return acc[key as keyof typeof acc];

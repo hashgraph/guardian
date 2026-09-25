@@ -48,14 +48,14 @@ export class UserPermissions {
         if (Array.isArray(permissions)) {
             if (user && user.permissions) {
                 for (const permission of permissions) {
-                    if (user.permissions.indexOf(permission) !== -1) {
+                    if (user.permissions.includes(permission)) {
                         return true;
                     }
                 }
             }
         } else {
             if (user && user.permissions) {
-                if (user.permissions.indexOf(permissions) !== -1) {
+                if (user.permissions.includes(permissions)) {
                     return true;
                 }
             }
@@ -76,7 +76,7 @@ export class UserPermissions {
     }
 
     private check(permission: Permissions): boolean {
-        return this.permissions.indexOf(permission) !== -1;
+        return this.permissions.includes(permission);
     }
 
     //ANALYTIC

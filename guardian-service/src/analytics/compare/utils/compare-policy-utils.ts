@@ -281,12 +281,7 @@ export class ComparePolicyUtils {
         } else {
             result = MergeUtils.notMerge<IWeightTreeModel>(children1, children2);
         }
-        const children: T[] = [];
-        for (const item of result) {
-            children.push(
-                ComparePolicyUtils.compareTree(item.left, item.right, createRate)
-            );
-        }
+        const children: T[] = Array.from(result, item => ComparePolicyUtils.compareTree(item.left, item.right, createRate));
         return children;
     }
 

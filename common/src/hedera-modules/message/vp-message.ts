@@ -77,7 +77,7 @@ export class VPMessage extends Message {
         this.relationships = ids;
         if (this.userMessageId) {
             if (this.relationships) {
-                if (this.relationships.indexOf(this.userMessageId) === -1) {
+                if (!this.relationships.includes(this.userMessageId)) {
                     this.relationships.push(this.userMessageId);
                 }
             } else {
@@ -94,7 +94,7 @@ export class VPMessage extends Message {
         this.userMessageId = messageId;
         if (this.userMessageId) {
             if (this.relationships) {
-                if (this.relationships.indexOf(this.userMessageId) === -1) {
+                if (!this.relationships.includes(this.userMessageId)) {
                     this.relationships.push(this.userMessageId);
                 }
             } else {

@@ -42,7 +42,7 @@ export class DocumentContext {
      * @public
      */
     public add(context: string) {
-        if (this.context.indexOf(context) === -1) {
+        if (!this.context.includes(context)) {
             this.context.push(context);
         }
     }
@@ -64,11 +64,11 @@ export class DocumentContext {
                     if (typeof c === 'string') {
                         result.add(c);
                     } else {
-                        throw new Error('Invalid document context');
+                        throw new TypeError('Invalid document context');
                     }
                 }
             } else {
-                throw new Error('Invalid document context');
+                throw new TypeError('Invalid document context');
             }
         }
         return result

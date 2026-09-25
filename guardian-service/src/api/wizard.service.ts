@@ -18,14 +18,14 @@ async function createExistingPolicySchemas(
     userId: string | null
 ) {
     const schemas = await DatabaseServer.getSchemas({ owner: user.owner });
-    const schemaIris = config.schemas.map((schema: any) => schema.iri);
+    const schemaIris = new Set(config.schemas.map((schema: any) => schema.iri));
     const schemasToCreate = schemas.filter(
         (schema) =>
-            schemaIris.includes(schema.iri) &&
+            schemaIris.has(schema.iri) &&
             schema.topicId !== 'draft' &&
             schema.topicId !== policyTopicId
     );
-    const schemaToCreateIris = schemasToCreate.map((schema) => schema.iri);
+    const schemaToCreateIris = new Set(schemasToCreate.map((schema) => schema.iri));
     const relationships = await SchemaImportExportHelper.exportSchemas(
         schemasToCreate.map((schema) => schema.id)
     );
@@ -41,19 +41,19 @@ async function createExistingPolicySchemas(
     );
     const schemasMap = importResult.schemasMap;
     for (const schema of config.schemas) {
-        if (schemaToCreateIris.includes(schema.iri)) {
+        if (schemaToCreateIris.has(schema.iri)) {
             const schemaMap = schemasMap.find(
                 (item) => item.oldIRI === schema.iri
             );
             schema.iri = schemaMap.newIRI;
         }
-        if (schemaToCreateIris.includes(schema.dependencySchemaIri)) {
+        if (schemaToCreateIris.has(schema.dependencySchemaIri)) {
             const schemaMap = schemasMap.find(
                 (item) => item.oldIRI === schema.dependencySchemaIri
             );
             schema.dependencySchemaIri = schemaMap.newIRI;
         }
-        if (schemaToCreateIris.includes(schema.relationshipsSchemaIri)) {
+        if (schemaToCreateIris.has(schema.relationshipsSchemaIri)) {
             const schemaMap = schemasMap.find(
                 (item) => item.oldIRI === schema.relationshipsSchemaIri
             );
@@ -61,7 +61,7 @@ async function createExistingPolicySchemas(
         }
     }
     for (const trustChainConfig of config.trustChain) {
-        if (schemaToCreateIris.includes(trustChainConfig.mintSchemaIri)) {
+        if (schemaToCreateIris.has(trustChainConfig.mintSchemaIri)) {
             const schemaMap = schemasMap.find(
                 (item) => item.oldIRI === trustChainConfig.mintSchemaIri
             );

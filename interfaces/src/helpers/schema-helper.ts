@@ -535,10 +535,10 @@ export class SchemaHelper {
             }
             if (ref) {
                 const id = ref.split('#');
-                const keys = id[id.length - 1].split('&');
+                const keys = id.at(-1).split('&');
                 return {
                     iri: ref,
-                    type: id[id.length - 1],
+                    type: id.at(-1),
                     uuid: keys[0] || null,
                     version: keys[1] || null
                 };
@@ -549,7 +549,7 @@ export class SchemaHelper {
                 uuid: null,
                 version: null
             };
-        } catch (error) {
+        } catch {
             return {
                 iri: null,
                 type: null,
@@ -1348,7 +1348,7 @@ export class SchemaHelper {
             const result: any = { ...a };
             for (const key of Object.keys(b)) {
                 if (key === 'properties') {
-                    result.properties = { ...(a.properties || {}) };
+                    result.properties = { ...a.properties };
                     for (const pk of Object.keys(b.properties)) {
                         result.properties[pk] = (a.properties?.[pk] !== undefined)
                             ? deepMergeSchemaObj(a.properties[pk], b.properties[pk])
@@ -1383,7 +1383,7 @@ export class SchemaHelper {
                     if (!node.properties[path[i]]) { node.properties[path[i]] = {}; }
                     node = node.properties[path[i]];
                 }
-                const fieldName = path[path.length - 1];
+                const fieldName = path.at(-1);
                 if (!node.required) { node.required = []; }
                 if (!node.required.includes(fieldName)) { node.required.push(fieldName); }
             }
@@ -1402,7 +1402,7 @@ export class SchemaHelper {
                     if (!node.properties[path[i]]) { node.properties[path[i]] = {}; }
                     node = node.properties[path[i]];
                 }
-                const fieldName = path[path.length - 1];
+                const fieldName = path.at(-1);
                 if (!node.properties) { node.properties = {}; }
                 node.properties[fieldName] = false;
             }
@@ -1410,7 +1410,7 @@ export class SchemaHelper {
         };
 
         const buildForbid = (sub?: SchemaField[]) => {
-            if (!sub?.length) { return undefined; }
+            if (!sub?.length) { return; }
             const props: any = {};
             for (const f of sub) { props[f.name] = false; }
             return { properties: props };
@@ -1612,7 +1612,7 @@ export class SchemaHelper {
             const { version } = SchemaHelper.parseRef(document.$id);
             const { previousVersion } = SchemaHelper.parseSchemaComment(document.$comment);
             return { version, previousVersion };
-        } catch (error) {
+        } catch {
             return { version: null, previousVersion: null }
         }
     }
@@ -1755,7 +1755,7 @@ export class SchemaHelper {
             if (!doc.$id) {
                 return false;
             }
-        } catch (error) {
+        } catch {
             return false;
         }
         return true;
@@ -1826,7 +1826,7 @@ export class SchemaHelper {
                 'type': type,
                 '@context': [item.contextURL]
             };
-        } catch (error) {
+        } catch {
             return null;
         }
     }
@@ -1878,7 +1878,7 @@ export class SchemaHelper {
                 schema.iri = ref;
             }
             return schema;
-        } catch (error) {
+        } catch {
             schema.iri = null;
             return schema;
         }
@@ -1979,7 +1979,7 @@ export class SchemaHelper {
         try {
             const item = JSON.parse(comment);
             return item || {};
-        } catch (error) {
+        } catch {
             return {};
         }
     }
@@ -2018,7 +2018,7 @@ export class SchemaHelper {
         try {
             const item = JSON.parse(comment);
             return item || {};
-        } catch (error) {
+        } catch {
             return {};
         }
     }

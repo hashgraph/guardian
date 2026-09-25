@@ -42,7 +42,7 @@ export class Users extends NatsService {
         if (!target) {
             return null;
         }
-        if (!!(target as IAuthUser).username) {
+        if ((target as IAuthUser).username) {
             user = target as IAuthUser;
         } else {
             if (!(target as AuthenticatedRequest).user || !(target as AuthenticatedRequest).user.username) {
@@ -65,7 +65,7 @@ export class Users extends NatsService {
             return false;
         }
         if (Array.isArray(role)) {
-            return role.indexOf(user.role) !== -1;
+            return role.includes(user.role);
         } else {
             return user.role === role;
         }

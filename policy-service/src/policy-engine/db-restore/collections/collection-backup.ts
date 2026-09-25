@@ -129,7 +129,7 @@ export abstract class CollectionBackup<T extends RestoreEntity> {
                 backupActions.push(item);
             }
         }
-        for (const [id, newRow] of list.entries()) {
+        for (const [id, newRow] of list) {
             if (this.needLoadFile(newRow)) {
                 await this.loadFile(newRow);
             } else {
@@ -184,10 +184,7 @@ export abstract class CollectionBackup<T extends RestoreEntity> {
     protected compareData(newVc: T, oldVc?: T): any {
         let diff: any;
         if (oldVc) {
-            const list = new Set<string>();
-            for (const key of Object.keys(newVc)) {
-                list.add(key);
-            }
+            const list = new Set<string>(Object.keys(newVc));
             for (const key of Object.keys(oldVc)) {
                 list.add(key);
             }

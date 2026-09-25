@@ -60,7 +60,7 @@ export class LocalSchemaContextLoader extends DocumentLoader {
 
             return test;
         }
-        catch (error) {
+        catch {
             return null;
         }
     }

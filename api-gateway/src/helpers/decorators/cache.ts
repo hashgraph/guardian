@@ -17,7 +17,7 @@ export function UseCache(
     return applyDecorators(
       SetMetadata(META_DATA.FASTIFY, isFastify),
       SetMetadata(META_DATA.TTL, ttl),
-      UseInterceptors(...[...interceptors, CacheInterceptor]),
+      UseInterceptors(...interceptors, CacheInterceptor),
     );
   }
 

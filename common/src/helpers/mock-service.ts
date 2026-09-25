@@ -621,7 +621,6 @@ export class MockHelper {
                 const transaction = row.transaction;
                 tokenMap.set(transaction.token_id, row.transaction);
             } else if (row.type === MockEntityType.ACCOUNT) {
-                continue;
             } else if (row.type === MockEntityType.API) {
                 const request = row.request;
                 const response = row.response;
@@ -631,12 +630,9 @@ export class MockHelper {
             }
         }
 
-        const ipfs: any[] = [];
-        for (const [cid, content] of ipfsMap.entries()) {
-            ipfs.push({ cid, content });
-        }
+        const ipfs: any[] = Array.from(ipfsMap, ([cid, content]) => ({ cid, content }));
         const topics: any[] = [];
-        for (const [topicId, topic] of topicMap.entries()) {
+        for (const [topicId, topic] of topicMap) {
             let messages: any[] = topic.messages;
             messages = messages.sort((a, b) => a.consensus_timestamp < b.consensus_timestamp ? -1 : 1);
             for (let index = 0; index < messages.length; index++) {

@@ -295,7 +295,7 @@ export class MathEngine {
                 })
             }
             return this;
-        } catch (error) {
+        } catch {
             return null;
         }
     }
@@ -308,7 +308,7 @@ export class MathEngine {
             const group = new MathEngine();
             group.from(json);
             return group;
-        } catch (error) {
+        } catch {
             return null;
         }
     }

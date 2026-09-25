@@ -12,7 +12,7 @@ function execute(): void {
 
     const { execFunc, user, documents, sources } = workerData;
 
-    const func = Function(execFunc);
+    const func = new Function(execFunc);
     func.apply(documents, [done, user, documents, sources, mathjs, formulajs]);
 }
 

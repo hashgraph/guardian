@@ -164,7 +164,7 @@ export class PolicyValidator {
             const reachabilityPerBlock = computeReachability(ctx);
             return reachabilityPerBlock;
         } else {
-            return undefined;
+            return;
         }
     }
 
@@ -291,7 +291,7 @@ export class PolicyValidator {
     public permissionsNotExist(permissions: string[]): string | null {
         if (permissions) {
             for (const permission of permissions) {
-                if (this.permissions.indexOf(permission) === -1) {
+                if (!this.permissions.includes(permission)) {
                     return permission;
                 }
             }
@@ -414,7 +414,7 @@ export class PolicyValidator {
      * @param permission
      */
     public getPermission(permission: string): string {
-        if (this.permissions.indexOf(permission) !== -1) {
+        if (this.permissions.includes(permission)) {
             return permission;
         }
         return null

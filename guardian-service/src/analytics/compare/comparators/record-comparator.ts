@@ -355,7 +355,7 @@ export class RecordComparator {
                 total += child.totalRate;
             }
         }
-        if (rates.length - 1 > 0) {
+        if (rates.length > 1) {
             return Math.floor(total / (rates.length - 1));
         }
         return 100;

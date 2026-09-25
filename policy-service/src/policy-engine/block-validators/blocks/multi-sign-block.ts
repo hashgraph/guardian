@@ -22,11 +22,11 @@ export class MultiSignBlock {
                 validator.addError('Option "threshold" is not set');
             } else {
                 try {
-                    const t = parseFloat(ref.options.threshold);
+                    const t = Number.parseFloat(ref.options.threshold);
                     if (t < 0 || t > 100) {
                         validator.addError('"threshold" value must be between 0 and 100');
                     }
-                } catch (error) {
+                } catch {
                     validator.addError('Option "threshold" must be a number');
                 }
             }

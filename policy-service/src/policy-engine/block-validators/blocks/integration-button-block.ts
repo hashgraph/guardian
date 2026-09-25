@@ -35,7 +35,7 @@ export class IntegrationButtonBlock {
 
             if (ref.options.integrationType && ref.options.requestName) {
                 const requestNameSplited = ref.options.requestName.split('_');
-                const methodName = requestNameSplited[requestNameSplited.length - 1];
+                const methodName = requestNameSplited.at(-1);
 
                 const method = IntegrationServiceFactory.getAvailableMethods(ref.options.integrationType)[methodName];
 

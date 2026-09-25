@@ -551,7 +551,7 @@ export class BlockValidator {
             try {
                 this.parse(_formula);
                 return true;
-            } catch (error) {
+            } catch {
                 return false;
             }
         }).call(mathjs, formula);
@@ -570,7 +570,7 @@ export class BlockValidator {
                 }
             });
             return variables;
-        } catch (error) {
+        } catch {
             return variables;
         }
     }
@@ -677,7 +677,7 @@ export class BlockValidator {
                 }
             }
             return true;
-        } catch (error) {
+        } catch {
             return false;
         }
     }
@@ -694,7 +694,7 @@ export class BlockValidator {
             }
             const schemaCache = new Map<string, any>();
             return SchemaHelper.parseFields(document, null, schemaCache, null, false);
-        } catch (error) {
+        } catch {
             return null;
         }
     }

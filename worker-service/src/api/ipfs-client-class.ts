@@ -172,7 +172,7 @@ export class IpfsClientClass {
     private parseCID(cid: string): string {
         try {
             return new CID(cid).toV1().toString('base32');
-        } catch (error) {
+        } catch {
             return cid;
         }
     }

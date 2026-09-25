@@ -69,7 +69,7 @@ function setNestedField(obj: any, fieldPath: string, value: any): any {
         }
         target = target[key];
     }
-    target[keys[keys.length - 1]] = value;
+    target[keys.at(-1)] = value;
     return clone;
 }
 
@@ -312,7 +312,7 @@ export class GridActionResolver {
                                 actionBlock as IPolicyInterfaceBlock, user, {}
                             );
                             options = dataResult.body?.options || [];
-                        } catch (_e) {
+                        } catch {
                             // best effort — action is still listed even if options can't be resolved
                         }
                         actions.push({
@@ -401,7 +401,7 @@ export class GridActionResolver {
             Math.max(1, parseInt(params?.pageSize, 10) || POLICY_DATA_DEFAULT_PAGE_SIZE)
         );
 
-        const blockParams: any = { ...(params || {}) };
+        const blockParams: any = { ...params };
         blockParams.page = page - 1;
         blockParams.itemsPerPage = pageSize;
         delete blockParams.pageSize;

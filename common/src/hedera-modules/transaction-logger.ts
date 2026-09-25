@@ -186,7 +186,7 @@ export class TransactionLogger extends NatsService {
                         mockId: null
                     });
                     attr.push(balance);
-                } catch (error) {
+                } catch {
                     attr.push(null);
                 }
             }

@@ -510,9 +510,9 @@ export class PolicyWizardHelper {
             );
             if (
                 dependencySchema &&
-                result.findIndex(
+                !result.some(
                     (schema) => schema.iri === dependencySchema.iri
-                ) < 0 &&
+                )  &&
                 srcIri !== dependencySchema.iri
             ) {
                 result.push(dependencySchema);
@@ -524,9 +524,9 @@ export class PolicyWizardHelper {
             );
             if (
                 relationShipSchema &&
-                result.findIndex(
+                !result.some(
                     (schema) => schema.iri === relationShipSchema.iri
-                ) < 0 &&
+                )  &&
                 srcIri !== relationShipSchema.iri
             ) {
                 result.push(relationShipSchema);
@@ -721,7 +721,7 @@ export class PolicyWizardHelper {
             uiMetaData: {
                 fields: [
                     ...fieldsConfig.map((fieldConfig) =>
-                        Object({
+                        new Object({
                             name:
                                 'document.credentialSubject.0.' +
                                 fieldConfig.field,

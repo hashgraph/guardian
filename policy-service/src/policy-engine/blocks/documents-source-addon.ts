@@ -259,10 +259,7 @@ export class DocumentsSourceAddon {
             filters[filter.field] = expr;
         }
 
-        const dynFilters = {};
-        for (const [key, value] of Object.entries(await ref.getFilters(user))) {
-            dynFilters[key] = value;
-        }
+        const dynFilters = Object.fromEntries(Object.entries(await ref.getFilters(user)));
 
         Object.assign(filters, dynFilters);
         if (globalFilters) {

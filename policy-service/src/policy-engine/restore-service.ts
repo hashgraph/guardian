@@ -111,13 +111,13 @@ export class PolicyBackupService {
 
         const root = await (new Users()).getHederaAccount(this.owner, this.policyOwnerId);
         if (!root) {
-            throw Error('Invalid user');
+            throw new Error('Invalid user');
         }
 
         const topicConfig = await DatabaseServer.getTopicById(this.topicId);
         const topic = await TopicConfig.fromObjectV2(topicConfig, this.policyOwnerId);
         if (!topic) {
-            throw Error('Invalid restore topic');
+            throw new Error('Invalid restore topic');
         }
         this.userId = root.id;
 

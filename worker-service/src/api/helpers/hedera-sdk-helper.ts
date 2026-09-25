@@ -941,7 +941,7 @@ export class HederaSDKHelper {
             .setMaxTransactionFee(MAX_FEE);
 
         if (topicMemo) {
-            transaction = transaction.setTopicMemo(topicMemo.substring(0, 100));
+            transaction = transaction.setTopicMemo(topicMemo.slice(0, 100));
         }
 
         if (submitKey) {
@@ -998,7 +998,7 @@ export class HederaSDKHelper {
         }).setMaxTransactionFee(MAX_FEE);
 
         if (transactionMemo) {
-            messageTransaction = messageTransaction.setTransactionMemo(transactionMemo.substring(0, 100));
+            messageTransaction = messageTransaction.setTransactionMemo(transactionMemo.slice(0, 100));
         }
 
         let signType = SignType.INTERNAL;
@@ -1459,7 +1459,7 @@ export class HederaSDKHelper {
                 const errorMessage = typeof error === 'string' ? error : error?.message;
                 if (
                     !errorMessage ||
-                    errorMessage.indexOf(HederaResponseCode.DUPLICATE_TRANSACTION) === -1
+                    !errorMessage.includes(HederaResponseCode.DUPLICATE_TRANSACTION)
                 ) {
                     throw error;
                 }
@@ -1543,9 +1543,7 @@ export class HederaSDKHelper {
                     typeof error === 'string' ? error : error?.message;
                 if (
                     !errorMessage ||
-                    errorMessage.indexOf(
-                        HederaResponseCode.DUPLICATE_TRANSACTION
-                    ) === -1
+                    !errorMessage.includes(HederaResponseCode.DUPLICATE_TRANSACTION)
                 ) {
                     throw error;
                 }
@@ -1591,8 +1589,7 @@ export class HederaSDKHelper {
             if (
                 count < 10 &&
                 errorMessage &&
-                errorMessage.indexOf(HederaResponseCode.DUPLICATE_TRANSACTION) >
-                -1
+                errorMessage.includes(HederaResponseCode.DUPLICATE_TRANSACTION)
             ) {
                 return await this.receiptQuery(client, transactionId, count + 1);
             }
@@ -1628,8 +1625,7 @@ export class HederaSDKHelper {
             if (
                 count < 10 &&
                 errorMessage &&
-                errorMessage.indexOf(HederaResponseCode.DUPLICATE_TRANSACTION) >
-                -1
+                errorMessage.includes(HederaResponseCode.DUPLICATE_TRANSACTION)
             ) {
                 return await this.recordQuery(client, transactionId, count + 1);
             }
@@ -1709,7 +1705,7 @@ export class HederaSDKHelper {
                 (b >= 0x30 && b <= 0x39) ||
                 (b >= 0x41 && b <= 0x46) ||
                 (b >= 0x61 && b <= 0x66) ||
-                b === 0x0a || b === 0x0d
+                b === 0x0A || b === 0x0D
         );
 
         if (isAsciiHex) {
@@ -2241,7 +2237,7 @@ export class HederaSDKHelper {
             try {
                 AccountId.fromString(accountId);
                 return true;
-            } catch (error) {
+            } catch {
                 return false;
             }
         }
@@ -2374,7 +2370,7 @@ export class HederaSDKHelper {
     ): Promise<any> {
         try {
             AccountId.fromString(accountId);
-        } catch (error) {
+        } catch {
             throw new Error(`Invalid account '${accountId}'`);
         }
 
@@ -2418,7 +2414,7 @@ export class HederaSDKHelper {
     }> {
         try {
             AccountId.fromString(accountId);
-        } catch (error) {
+        } catch {
             throw new Error(`Invalid account '${accountId}'`);
         }
 

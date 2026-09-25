@@ -51,10 +51,10 @@ export class DraftSchemaContextLoader extends DocumentLoader {
             if (!iri) {
                 return null;
             }
-            const _iri = '#' + iri.substring(7);
+            const _iri = '#' + iri.slice(7);
             return await this.dataBaseServer.findOne(Schema, { iri: _iri });
         }
-        catch (error) {
+        catch {
             return null;
         }
     }
