@@ -32,6 +32,11 @@ interface IMetadata {
     relationships: any[];
 }
 
+interface IMathWorkerResult {
+    result: IPolicyDocument;
+    warnings: string[];
+}
+
 /**
  * Calculate block
  */
@@ -89,8 +94,8 @@ export class MathBlock {
         schema: Schema,
         tablesPack: Record<string, { rows: any[]; columnKeys: string[] }>,
         copy: boolean
-    }): Promise<IPolicyDocument> {
-        return new Promise<IPolicyDocument>(async (resolve, reject) => {
+    }): Promise<IMathWorkerResult> {
+        return new Promise<IMathWorkerResult>(async (resolve, reject) => {
             const workerFile = path.join(path.dirname(filename), '..', 'helpers', 'workers', 'math-worker.js');
             const worker = new Worker(workerFile, { workerData });
 
@@ -114,7 +119,10 @@ export class MathBlock {
                 try {
                     if (data?.type === 'done') {
                         cleanup();
-                        resolve(data.result)
+                        resolve({
+                            result: data.result,
+                            warnings: Array.isArray(data.warnings) ? data.warnings : []
+                        })
                     }
                 } catch (error) {
                     cleanup();
@@ -159,7 +167,7 @@ export class MathBlock {
         const tablesPack = collectTablesPack(tableDocuments);
 
         // Run
-        const result = await this.createWorker({
+        const workerResult = await this.createWorker({
             expression: options.expression,
             documents: workerDocuments,
             artifacts,
@@ -169,7 +177,11 @@ export class MathBlock {
             copy: !options.outputSchema || options.outputSchema === options.inputSchema
         })
 
-        return result;
+        for (const warning of workerResult.warnings) {
+            ref.warn(warning);
+        }
+
+        return workerResult.result;
     }
 
     private getCredentialSubject(document: IPolicyDocument): IMathDocument {
