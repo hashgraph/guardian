@@ -234,8 +234,8 @@ export class DocumentValidatorBlock {
 
         for (const condition of (conditions || [])) {
             const reachable = this.isSchemaConditionReachable(condition, conditions, data);
-            const matchesThen = (condition.thenFields || []).some((field) => field.name === path[0]);
-            const matchesElse = (condition.elseFields || []).some((field) => field.name === path[0]);
+            const matchesThen = (condition.thenFields || []).some((f) => f.name === path[0]);
+            const matchesElse = (condition.elseFields || []).some((f) => f.name === path[0]);
             const matchesThenTarget = (condition.thenTargets || []).some((target) =>
                 this.matchesSchemaPath(target.fieldPath, path)
             );
