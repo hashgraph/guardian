@@ -3,6 +3,66 @@ import { MathItemType } from './math-item.type';
 import { createComputeEngine, findCommand } from './utils';
 import { IMathFormula } from './math.interface';
 
+const NAME_GROUP_COMMANDS = ['\\operatorname{', '\\mathrm{'];
+
+function nameGroupEnd(text: string, bodyStart: number): number {
+    let index = bodyStart;
+    let depth = 1;
+    while (index < text.length && depth > 0) {
+        if (text[index] === '{') {
+            depth++;
+        } else if (text[index] === '}') {
+            depth--;
+            if (depth === 0) {
+                return index;
+            }
+        }
+        index++;
+    }
+    return -1;
+}
+
+export function splitNameGroups(latex: string): string {
+    let result = latex;
+    let changed = true;
+    while (changed) {
+        changed = false;
+        for (const command of NAME_GROUP_COMMANDS) {
+            let from = 0;
+            while (true) {
+                const start = result.indexOf(command, from);
+                if (start < 0) {
+                    break;
+                }
+                const bodyStart = start + command.length;
+                const end = nameGroupEnd(result, bodyStart);
+                if (end < 0) {
+                    break;
+                }
+                const body = result.slice(bodyStart, end);
+                const inner = NAME_GROUP_COMMANDS.find((item) => body.startsWith(item));
+                if (inner && nameGroupEnd(body, inner.length) >= 0) {
+                    result = result.slice(0, start) + body + result.slice(end + 1);
+                    changed = true;
+                    from = start;
+                    continue;
+                }
+                const name = body.match(/^[A-Za-z][A-Za-z0-9_]*/);
+                const head = name ? name[0] : '';
+                if (head && head.length < body.length) {
+                    const tail = body.slice(head.length);
+                    result = result.slice(0, bodyStart) + head + '}' + tail + result.slice(end + 1);
+                    changed = true;
+                    from = bodyStart + head.length + 1;
+                } else {
+                    from = end + 1;
+                }
+            }
+        }
+    }
+    return result;
+}
+
 export class MathFormula {
     public type: MathItemType.FUNCTION | MathItemType.VARIABLE = MathItemType.VARIABLE;
 
@@ -152,7 +212,18 @@ export class MathFormula {
                 return;
             }
             const ce = createComputeEngine();
-            const p = ce.parse(text, { canonical: false });
+            let body = text;
+            let p = ce.parse(body, { canonical: false });
+            if (!p.isValid) {
+                const repaired = splitNameGroups(text);
+                if (repaired !== text) {
+                    const retry = ce.parse(repaired, { canonical: false });
+                    if (retry.isValid) {
+                        body = repaired;
+                        p = retry;
+                    }
+                }
+            }
             const commands = findCommand(p.json, 'Tuple');
             const indexes: string[] = [];
             for (const command of commands) {
@@ -163,7 +234,8 @@ export class MathFormula {
             this.bodyUnknowns = this.bodyUnknowns.filter((u) => !indexes.includes(u));
             this.validBody = p.isValid;
             if (this.validBody) {
-                this.functionBody = this.functionBodyText;
+                this.functionBodyText = body;
+                this.functionBody = body;
                 this.error = '';
             } else {
                 this.error = 'Invalid function: ' + p.value;

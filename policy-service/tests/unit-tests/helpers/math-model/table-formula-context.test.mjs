@@ -67,6 +67,61 @@ describe('MathContext Table columns', () => {
         assert.equal(JSON.parse(table).rows, undefined);
     });
 
+    it('keeps one replacement warning for each physical Table column', () => {
+        const otherPack = {
+            ...tablePack,
+            'other-file': {
+                columnKeys: ['area.total'],
+                rows: [
+                    { 'area.total': 'n/a' },
+                    { 'area.total': '5' }
+                ]
+            }
+        };
+        const context = new MathContext([
+            link('areaA', 'siteTable.area.total'),
+            link('areaB', 'otherTable.area.total'),
+            formula('totalA', '\\sum{\\operatorname{areaA}}'),
+            formula('totalB', '\\sum{\\operatorname{areaB}}')
+        ]);
+
+        const result = context.setDocument(documentMap({
+            siteTable: JSON.stringify(marker()),
+            otherTable: JSON.stringify(marker({
+                fileId: 'other-file',
+                columnKeys: ['area.total'],
+                columnNames: ['Area']
+            }))
+        }), otherPack);
+        const warnings = context.getWarnings();
+
+        assert.equal(result.scope.totalA, 150);
+        assert.equal(result.scope.totalB, 5);
+        assert.equal(warnings.length, 2);
+        assert.ok(warnings.includes('Table column "Area" replaced 2 nonnumeric cells with 0.'));
+        assert.ok(warnings.includes('Table column "Area" replaced 1 nonnumeric cells with 0.'));
+    });
+
+    it('keeps one warning when two variables read the same Table column', () => {
+        const context = new MathContext([
+            link('areaA', 'siteTable.area.total'),
+            link('areaB', 'siteTable.area.total'),
+            formula('totalA', '\\sum{\\operatorname{areaA}}'),
+            formula('totalB', '\\sum{\\operatorname{areaB}}')
+        ]);
+
+        const result = context.setDocument(
+            documentMap({ siteTable: JSON.stringify(marker()) }),
+            tablePack
+        );
+
+        assert.equal(result.scope.totalA, 150);
+        assert.equal(result.scope.totalB, 150);
+        assert.deepEqual(context.getWarnings(), [
+            'Table column "Area" replaced 2 nonnumeric cells with 0.'
+        ]);
+    });
+
     it('returns numbers and text from Table-only Lookup', () => {
         const context = new MathContext([
             link('area', 'siteTable.area.total'),

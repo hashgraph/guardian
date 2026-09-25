@@ -57,11 +57,12 @@ describe('MathEditorDialogComponent Table column fields', () => {
             getDeepFields: () => [{
                 path: 'siteTable',
                 arrayLvl: 0,
-                type: 'table',
+                type: 'string',
                 field: {
                     name: 'siteTable',
                     description: 'Site table',
-                    type: 'table',
+                    type: 'string',
+                    customType: 'table',
                     isArray: false,
                     tableColumns
                 },
@@ -111,7 +112,41 @@ describe('MathEditorDialogComponent Table column fields', () => {
         dialog._computePathSuggestions(item, 'input');
 
         expect(dialog.pathSuggestions).toEqual(['siteTable.area_ha']);
-        expect(dialog.inputSchemaFieldMap.get('siteTable').type).toBe('table');
+        expect(dialog.inputSchemaFieldMap.get('siteTable').type).toBe('string');
+    });
+
+    it('does not leave the Table marker on a column child', () => {
+        const dialog = makeDialog();
+        const fields = dialog.getSchemaFields(schema([
+            { name: 'Area (ha)', key: 'area_ha' }
+        ]));
+
+        expect(fields[0].field.customType).toBe('table');
+        expect(fields[0].fields[0].field.customType).toBe('');
+    });
+
+    it('keeps Table columns out of an Output path bound to a schema', () => {
+        const dialog = makeDialog();
+        const outputSchema = schema([{ name: 'Area (ha)', key: 'area_ha' }]);
+        dialog.schemaFieldMap = new Map([
+            ['#schema', dialog.createFieldMap(dialog.getSchemaFields(outputSchema), new Map())]
+        ]);
+        dialog.outputSchemaFieldMap = dialog.createFieldMap(outputSchema.getDeepFields(), new Map());
+        dialog.inputSchemaFieldMap = new Map();
+        dialog.fieldWarnings = new Map();
+        dialog.pathSuggestions = [];
+        dialog.activePathItem = null;
+        const item: any = { id: 'out-1', field: '', schema: '#schema', update: () => undefined };
+
+        dialog.onPathChange(item, 'siteTable.area_ha', 'output');
+
+        expect(dialog.pathSuggestions).toEqual([]);
+        expect(dialog.fieldWarnings.get('out-1')).toBeTrue();
+
+        dialog.onPathChange(item, 'siteTable', 'output');
+
+        expect(dialog.pathSuggestions).toEqual(['siteTable']);
+        expect(dialog.fieldWarnings.get('out-1')).toBeFalse();
     });
 
     it('does not add input-only Table columns to the output picker', () => {

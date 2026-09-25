@@ -298,9 +298,10 @@ export class MathContext {
     private scope: any = {};
     private document: any | null = null;
     private relationships: any[] = [];
-    private tableColumns: Map<string, ITableFormulaColumn> = new Map();
-    private numericTableAliases: Map<string, string> = new Map();
-    private tableWarnings: Map<string, string> = new Map();
+    private readonly tableColumns: Map<string, ITableFormulaColumn> = new Map();
+    private readonly tableColumnSources: Map<string, string> = new Map();
+    private readonly numericTableAliases: Map<string, string> = new Map();
+    private readonly tableWarnings: Map<string, string> = new Map();
 
     constructor(list: (MathFormula | FieldLink)[]) {
         this.list = list;
@@ -314,6 +315,7 @@ export class MathContext {
     public setDocument(documents: DocumentMap, tablesPack?: TableFormulaPack): IContext {
         this.valid = true;
         this.tableColumns.clear();
+        this.tableColumnSources.clear();
         try {
             for (const item of this.list) {
                 if (item.type === MathItemType.LINK) {
@@ -329,6 +331,7 @@ export class MathContext {
                                 throw new Error(`Table column "${column.name}" data is unavailable`);
                             }
                             this.tableColumns.set(item.name, column);
+                            this.tableColumnSources.set(item.name, `${item.schema || ''}\u0000${item.path}`);
                             item.value = column.values;
                             break;
                         }
@@ -441,7 +444,7 @@ export class MathContext {
                 this.numericTableAliases.set(name, alias);
                 ce.assign(alias, ce.box(['List', ...converted.values] as any));
                 if (column && converted.replacements > 0) {
-                    const key = `${column.key}\u0000${column.name}`;
+                    const key = this.tableColumnSources.get(name) || `${column.key}\u0000${column.name}`;
                     this.tableWarnings.set(
                         key,
                         `Table column "${column.name}" replaced ${converted.replacements} nonnumeric cells with 0.`

@@ -293,6 +293,51 @@ describe('MathContext Table columns', () => {
         ]);
     });
 
+    it('keeps one replacement warning for each physical Table column', () => {
+        const otherTable = {
+            type: 'table',
+            columnKeys: ['area.total'],
+            columnNames: ['Area'],
+            rows: [
+                { 'area.total': 'n/a' },
+                { 'area.total': 'x' },
+                { 'area.total': '5' }
+            ]
+        };
+        const context = new MathContext([
+            link('areaA', 'siteTable.area.total'),
+            link('areaB', 'otherTable.area.total'),
+            formula('totalA', '\\sum{\\operatorname{areaA}}'),
+            formula('totalB', '\\sum{\\operatorname{areaB}}')
+        ]);
+
+        const result = context.setDocument(documents({ siteTable: table(), otherTable }));
+        const warnings = context.getWarnings();
+
+        expect(result.scope.totalA).toBe(60);
+        expect(result.scope.totalB).toBe(5);
+        expect(warnings.length).toBe(2);
+        expect(warnings).toContain('Table column "Area" replaced 1 nonnumeric cells with 0.');
+        expect(warnings).toContain('Table column "Area" replaced 2 nonnumeric cells with 0.');
+    });
+
+    it('keeps one warning when two variables read the same Table column', () => {
+        const context = new MathContext([
+            link('areaA', 'siteTable.area.total'),
+            link('areaB', 'siteTable.area.total'),
+            formula('totalA', '\\sum{\\operatorname{areaA}}'),
+            formula('totalB', '\\sum{\\operatorname{areaB}}')
+        ]);
+
+        const result = context.setDocument(documents({ siteTable: table() }));
+
+        expect(result.scope.totalA).toBe(60);
+        expect(result.scope.totalB).toBe(60);
+        expect(context.getWarnings()).toEqual([
+            'Table column "Area" replaced 1 nonnumeric cells with 0.'
+        ]);
+    });
+
     it('returns numbers and text from Table-only Lookup', () => {
         const context = new MathContext([
             link('area', 'siteTable.area.total'),

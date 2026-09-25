@@ -403,7 +403,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     private addTableColumnFields(fields: IFieldNode[]): void {
         for (const node of fields) {
             this.addTableColumnFields(node.fields);
-            const columns = node.field.type === 'table' && Array.isArray(node.field.tableColumns)
+            const columns = node.field.customType === 'table' && Array.isArray(node.field.tableColumns)
                 ? node.field.tableColumns
                 : [];
             for (const column of columns) {
@@ -421,6 +421,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                         isArray: true,
                         isRef: false,
                         type: 'string',
+                        customType: '',
                         fields: [],
                         tableColumns: undefined
                     },
@@ -597,14 +598,13 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     }
 
     private getField(type: 'input' | 'output', schema: string | null, link: string) {
+        if (type === 'output') {
+            return this.outputSchemaFieldMap.get(link);
+        }
         if (schema) {
             return this.schemaFieldMap.get(schema)?.get(link);
         }
-        if (type === 'input') {
-            return this.inputSchemaFieldMap.get(link);
-        } else {
-            return this.outputSchemaFieldMap.get(link);
-        }
+        return this.inputSchemaFieldMap.get(link);
     }
 
     public getFieldName(type: 'input' | 'output', schema: string | null, link: string): string {
@@ -680,9 +680,9 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             this.activePathItem = null;
             return;
         }
-        const map = item.schema
-            ? this.schemaFieldMap.get(item.schema)
-            : (type === 'output' ? this.outputSchemaFieldMap : this.inputSchemaFieldMap);
+        const map = type === 'output'
+            ? this.outputSchemaFieldMap
+            : (item.schema ? this.schemaFieldMap.get(item.schema) : this.inputSchemaFieldMap);
         if (!map) {
             this.pathSuggestions = [];
             this.activePathItem = null;
