@@ -15,11 +15,12 @@
 #    api-reference-indexer) via GitBook Site redirects (.gitbook.yaml cannot
 #    target an external domain)
 #
-# 706 entries below, grouped by source path prefix for scanning;
+# 741 entries below, grouped by source path prefix for scanning;
 # alphabetical within each group. Last updated 2026-09-24 -- pre-emptively
 # retargeted 24 entries whose current target is being moved/renamed/deleted
-# by GitBook change request #484 (Schema Section restructuring), so they
-# land correctly once that CR merges instead of going stale.
+# by GitBook change request #484 (Schema Section restructuring), plus added
+# 35 new redirects for pages that CR #484 itself moves/renames/deletes, so
+# both land correctly once that CR merges instead of going stale.
 
 redirects:
   # ---- ai-toolkit/first-ingestion-and-semantic-search (1) ----
@@ -464,6 +465,8 @@ redirects:
   # ---- guardian/notifications (2) ----
   guardian/notifications: guardian/platform/notifications.md
   guardian/notifications/user-guide: guardian/platform/notifications/user-guide.md
+  # ---- guardian/platform (1) ----
+  guardian/platform/themes/themes-using-ui: guardian/platform/themes/themes-reference.md
   # ---- guardian/policy-creation-using-the-guardian-apis (1) ----
   guardian/policy-creation-using-the-guardian-apis/prerequesite-: guardian/workspace/policies/policy-creation.md
   # ---- guardian/project-account-relayer-account (7) ----
@@ -770,8 +773,42 @@ redirects:
   guardian/users/mobile-support-for-data-interface/mobile-operation-for-the-user: guardian/platform/mobile-support-for-data-interface.md
   guardian/users/multi-policy: guardian/workspace/policies/multi-policy.md
   guardian/users/multi-policy/page-1: guardian/workspace/policies/multi-policy/page-1.md
-  # ---- guardian/workspace (1) ----
+  # ---- guardian/workspace (35) ----
   guardian/workspace/policies/multi-policy/page-2: guardian/workspace/policies/multi-policy.md
+  guardian/workspace/schemas/adding-example-data-using-ui: guardian/workspace/schemas/example-data.md
+  guardian/workspace/schemas/array-element-conditions: guardian/workspace/schemas/schema-fields-reference/array-element-conditions.md
+  guardian/workspace/schemas/array-element-conditions/configure-array-element-conditions: guardian/workspace/schemas/schema-fields-reference/array-element-conditions/configure-array-element-conditions.md
+  guardian/workspace/schemas/available-schema-types/table-columns: guardian/workspace/schemas/schema-fields-reference/table-field-columns.md
+  guardian/workspace/schemas/available-schema-types/table-columns/configure-table-columns: guardian/workspace/schemas/schema-fields-reference/table-field-columns/configure-table-columns.md
+  guardian/workspace/schemas/available-schema-types/table-data-input-field: guardian/workspace/schemas/schema-fields-reference/table-field.md
+  guardian/workspace/schemas/available-schema-types/table-data-input-field/apis-related: guardian/workspace/schemas/schema-fields-reference/table-field/apis-related.md
+  guardian/workspace/schemas/available-schema-types/table-data-input-field/apis-related/add-file-to-ipfs-directly: guardian/workspace/schemas/schema-fields-reference/table-field/apis-related/add-file-to-ipfs-directly.md
+  guardian/workspace/schemas/available-schema-types/table-data-input-field/apis-related/deletes-file-from-gridfs-by-id: guardian/workspace/schemas/schema-fields-reference/table-field/apis-related/deletes-file-from-gridfs-by-id.md
+  guardian/workspace/schemas/available-schema-types/table-data-input-field/apis-related/download-file-by-id: guardian/workspace/schemas/schema-fields-reference/table-field/apis-related/download-file-by-id.md
+  guardian/workspace/schemas/available-schema-types/table-data-input-field/apis-related/existing-file-_id-to-overwrite-optional: guardian/workspace/schemas/schema-fields-reference/table-field/apis-related/existing-file-_id-to-overwrite-optional.md
+  guardian/workspace/schemas/available-schema-types/table-data-input-field/custom-logic-block-and-tables: guardian/workspace/schemas/schema-fields-reference/table-field/custom-logic-block-and-tables.md
+  guardian/workspace/schemas/available-schema-types/table-data-input-field/importing-excel-tables-into-the-project-schema-in-vm0033-methodology: guardian/workspace/schemas/schema-fields-reference/table-field/importing-excel-tables-into-the-project-schema-in-vm0033-methodology.md
+  guardian/workspace/schemas/available-schema-types/table-data-input-field/table-data-input-field-with-autocalculate: guardian/workspace/schemas/schema-fields-reference/table-field/table-data-input-field-with-autocalculate.md
+  guardian/workspace/schemas/creating-system-schema-using-ui: guardian/workspace/schemas/create-schema.md
+  guardian/workspace/schemas/cross-schema-conditions: guardian/workspace/schemas/schema-fields-reference/cross-schema-conditions.md
+  guardian/workspace/schemas/cross-schema-conditions/configure-nested-and-cross-schema-conditions: guardian/workspace/schemas/schema-fields-reference/cross-schema-conditions/configure-nested-and-cross-schema-conditions.md
+  guardian/workspace/schemas/data-entry-updatability: guardian/workspace/schemas/schema-fields-reference/data-entry-updatability.md
+  guardian/workspace/schemas/data-entry-updatability/demo-using-ui: guardian/workspace/schemas/schema-fields-reference/data-entry-updatability/demo-using-ui.md
+  guardian/workspace/schemas/data-entry-updatability/demo-using-vm0042: guardian/workspace/schemas/schema-fields-reference/data-entry-updatability/demo-using-vm0042.md
+  guardian/workspace/schemas/deleting-schema: guardian/workspace/schemas/delete-schema.md
+  guardian/workspace/schemas/geo-fields: guardian/workspace/schemas/schema-fields-reference/geo-fields.md
+  guardian/workspace/schemas/geo-fields/configure-geo-fields: guardian/workspace/schemas/schema-fields-reference/geo-fields/configure-geo-fields.md
+  guardian/workspace/schemas/how-to-handle-large-location-files: guardian/workspace/schemas/large-geospatial-files.md
+  guardian/workspace/schemas/importing-schema-using-ui: guardian/workspace/schemas/import-schema.md
+  guardian/workspace/schemas/repeatable-field-links: guardian/workspace/schemas/schema-fields-reference/repeatable-field-links.md
+  guardian/workspace/schemas/repeatable-field-links/set-up-repeatable-field-links: guardian/workspace/schemas/schema-fields-reference/repeatable-field-links/set-up-repeatable-field-links.md
+  guardian/workspace/schemas/rich-text-fields: guardian/workspace/schemas/schema-fields-reference/rich-text-fields.md
+  guardian/workspace/schemas/rich-text-fields/configure-rich-text-fields: guardian/workspace/schemas/schema-fields-reference/rich-text-fields/configure-rich-text-fields.md
+  guardian/workspace/schemas/schema-differentiation: guardian/workspace/schemas/schema-differentiation-using-ui.md
+  guardian/workspace/schemas/schema-predefined-values-using-ui: guardian/workspace/schemas/setting-predefined-values.md
+  guardian/workspace/schemas/schema-tree/export-schema-tree-as-plantuml-api: developer-tools-and-resources/api-reference/schema-creation-using-apis/export-schema-tree-as-plantuml-api.md
+  guardian/workspace/schemas/schema-tree/returning-schema-tree: developer-tools-and-resources/api-reference/schema-creation-using-apis/returning-schema-tree.md
+  guardian/workspace/schemas/schema-versioning-and-deprecation-policy: guardian/workspace/schemas/best-practices-to-implement-schema/schema-versioning-and-deprecation-policy.md
   # ---- methodology-digitization/methodology-digitalization-handbook (1) ----
   methodology-digitization/methodology-digitalization-handbook/part-4/chapter-17: methodology-digitalization/methodology-digitization-handbook/part-4/chapter-17.md
   # ---- methodology-digitization/methodology-digitization-handbook (4) ----
