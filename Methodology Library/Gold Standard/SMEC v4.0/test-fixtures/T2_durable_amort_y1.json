@@ -1,0 +1,55 @@
+{
+ "_provenance": {
+  "description": "Durable stove (7y), embodied leakage amortized, crediting year 1, vintage 2026",
+  "source": "Synthetic fixture; constants IPCC-2006-ballpark. Built for the SMEC v4.0 digitization bounty.",
+  "expected_emission_reduction": {
+   "be_unadj_y": 2895.94656,
+   "be_unc_y": 2895.94656,
+   "be_adj_y": 2606.351904,
+   "bau_y": 2895.94656,
+   "be_y": 2606.351904,
+   "delta_y": 289.59465599999976,
+   "ae_y": 1761.27744,
+   "le_embodied_y": 3.4,
+   "le_market_y": 16.90148928,
+   "le_y": 20.30148928,
+   "he_ind": 0.9,
+   "er_y": 740.2655283200002
+  }
+ },
+ "methodology_method": "smec_v4.0",
+ "monitoring_period": {
+  "from": "2026-01-01",
+  "to": "2026-12-31"
+ },
+ "er_inputs": {
+  "daf": 0.1,
+  "vintageYear": 2026,
+  "newUnits": 1000,
+  "techLifetimeYrs": 7,
+  "creditingYear": 1,
+  "baselinePairs": [
+   {
+    "n_stoves": 1000,
+    "usage": 0.92,
+    "p_fuel": 2.1374999999999997,
+    "ncv": 0.0156,
+    "ef_co2": 112.0,
+    "fnrb": 0.8,
+    "ef_nonco2": 4.8
+   }
+  ],
+  "activityPairs": [
+   {
+    "n_stoves": 1000,
+    "usage": 0.92,
+    "p_fuel": 1.3,
+    "ncv": 0.0156,
+    "ef_co2": 112.0,
+    "fnrb": 0.8,
+    "ef_nonco2": 4.8
+   }
+  ]
+ },
+ "emission_reduction": {}
+}

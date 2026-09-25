@@ -1,0 +1,57 @@
+{
+ "_provenance": {
+  "description": "Option A, cap triggered (P_b,mean=9.0 capped to 1.25*4.0=5.0); threshold QA flags set",
+  "source": "Synthetic fixture; constants IPCC-2006-ballpark. Built for the SMEC v4.0 digitization bounty.",
+  "expected_emission_reduction": {
+   "be_unadj_y": 6774.143999999999,
+   "be_unc_y": 6774.143999999999,
+   "be_adj_y": 6096.7296,
+   "bau_y": 6774.143999999999,
+   "be_y": 6096.7296,
+   "delta_y": 677.4143999999997,
+   "ae_y": 1761.27744,
+   "le_embodied_y": 0.0,
+   "le_market_y": 86.7090432,
+   "le_y": 86.7090432,
+   "he_ind": 0.9,
+   "er_y": 3815.1979008,
+   "threshold_exceeded": true,
+   "threshold_justification_required": true
+  }
+ },
+ "methodology_method": "smec_v4.0",
+ "monitoring_period": {
+  "from": "2026-01-01",
+  "to": "2026-12-31"
+ },
+ "er_inputs": {
+  "daf": 0.1,
+  "vintageYear": 2026,
+  "newUnits": 0,
+  "techLifetimeYrs": 3,
+  "thresholdExceeded": true,
+  "baselinePairs": [
+   {
+    "n_stoves": 1000,
+    "usage": 0.92,
+    "p_fuel": 5.0,
+    "ncv": 0.0156,
+    "ef_co2": 112.0,
+    "fnrb": 0.8,
+    "ef_nonco2": 4.8
+   }
+  ],
+  "activityPairs": [
+   {
+    "n_stoves": 1000,
+    "usage": 0.92,
+    "p_fuel": 1.3,
+    "ncv": 0.0156,
+    "ef_co2": 112.0,
+    "fnrb": 0.8,
+    "ef_nonco2": 4.8
+   }
+  ]
+ },
+ "emission_reduction": {}
+}
