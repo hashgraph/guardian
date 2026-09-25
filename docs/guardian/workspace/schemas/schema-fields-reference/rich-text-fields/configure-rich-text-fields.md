@@ -33,9 +33,24 @@ While a field with a **Suggested value** is empty, a **Fill the field with sugge
 
 #### Format text
 
-The toolbar offers bold and italic, bulleted and numbered lists, three heading levels (H1–H3), and inserting a link.
+The toolbar offers undo and redo, bold and italic, bulleted and numbered lists with decrease- and increase-level buttons, three heading levels (H1–H3), inserting a link, inserting a table, and inserting an image.
 
 Markdown characters typed as plain text (`**test**`, `# heading`) stay as text rather than turning into formatting - formatting only happens through the toolbar.
+
+#### Nest a list item
+
+Put the cursor in the item and click **increase level** to make it a sub-item, or **decrease level** to bring it back out. Both buttons work only inside a list.
+
+#### Insert a table
+
+1. Click the table button, move the pointer across the grid that opens to pick the size, and click to insert.
+2. Type in the cells. **Tab** moves to the next cell, **Shift+Tab** to the previous one, and **Tab** in the last cell adds a row.
+
+While the cursor is in a table, a small panel floats over it with buttons to add and remove rows and columns. The header row and the last remaining column cannot be removed.
+
+#### Insert an image
+
+Click the image button and choose a file, or paste a copied picture, or drag a picture file into the writing area. PNG, JPEG and WebP are accepted, up to 512 KB after the browser shrinks the picture.
 
 #### Add a link
 
@@ -58,7 +73,7 @@ Without this, the column shows raw Markdown instead of formatted text.
 
 ### Result
 
-The field accepts formatted text in the form and stores the value as Markdown. When the document is viewed, the value shows formatted - with headings, lists, emphasis and clickable links - in both Guardian and the Indexer. Other schema fields are unaffected.
+The field accepts formatted text in the form and stores the value as Markdown. When the document is viewed, the value shows formatted - with headings, nested lists, emphasis, clickable links, tables and images - in both Guardian and the Indexer. Other schema fields are unaffected.
 
 ### Related
 
