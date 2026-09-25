@@ -1,4 +1,4 @@
-# Table Data Input Field
+# Table Field
 
 A Table field lets you add CSV-based tables to documents:
 
@@ -82,4 +82,4 @@ What it does:
 
 ## Related
 
-* [Table Columns](../table-columns/README.md) — declare a Table field's column names and keys in the schema instead of relying on an uploaded file's header row.
+* [Table Columns](../table-field-columns/) — declare a Table field's column names and keys in the schema instead of relying on an uploaded file's header row.

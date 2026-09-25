@@ -7,7 +7,7 @@ tags:
 
 ## **Embracing GBBC Specifications for Universal Data Comparability**
 
-In the Guardian, the Property Glossary serves a pivotal role in harmonizing data across the entire ecosystem. Leveraging the standards set forth in the [GBBC dMRV Specification](https://gbbcouncil.org/wp-content/uploads/2023/09/Digital-Measurement-Reporting-Verification-dMRV-Framework.pdf) (and beyond), the glossary establishes a unified framework for interpreting and mapping data, ensuring that information collected through various schema formats remains consistent, comparable, and searchable.
+In the Guardian, the Property Glossary serves a role in harmonizing data across the entire ecosystem. Leveraging the standards set forth in the [GBBC dMRV Specification](https://gbbcouncil.org/wp-content/uploads/2023/09/Digital-Measurement-Reporting-Verification-dMRV-Framework.pdf) (and beyond), the glossary establishes a unified framework for interpreting and mapping data, ensuring that information collected through various schema formats remains consistent, comparable, and searchable.
 
 ## **The Need for Standardized Data Mapping**
 
@@ -71,7 +71,7 @@ Any field can be set to "Auto Calculate" mode. When enabled, the field value is 
 * Real-time validation that catches syntax errors and undefined references
 * Click-to-insert for field names and functions
 
-For details and the `table` helper, see [Table Data Input Field with AutoCalculate](table-data-input-field/table-data-input-field-with-autocalculate.md).
+For details and the `table` helper, see [Table Data Input Field with AutoCalculate](schema-fields-reference/table-field/table-data-input-field-with-autocalculate.md).
 {% endhint %}
 
 {% hint style="info" %}
@@ -99,7 +99,7 @@ Example of URL which has correct format: [https://ipfs.io/ipfs/bafkreihgbx6fsqup
 2. Polygons and lines can be placed by double clicking on map.
 3. Right Click on the map will remove temporary points for polygons and lines
 4. View type can also be changed by pasting the GeoJSON.
-5. We can upload .kml, .json files to add locations. More details on this can be found in this [doc](../how-to-handle-large-location-files.md).
+5. We can upload .kml, .json files to add locations. More details on this can be found in this [doc](large-geospatial-files.md).
 {% endhint %}
 
 {% hint style="info" %}
@@ -117,7 +117,7 @@ For all fields of type string with different formats (e.g., `url`, `uri`, `file`
 * The validation is applied only for published policies. For draft policies, validation is disabled.
 {% endhint %}
 
-<figure><img src="../../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 For geoJSON fields :\\

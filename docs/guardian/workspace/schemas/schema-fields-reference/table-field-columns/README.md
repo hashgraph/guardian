@@ -5,7 +5,7 @@ tags:
     primary: true
 ---
 
-# Table Columns
+# Table Field Columns
 
 Table Columns let a schema author declare the columns of a Table field - a display name and a stable key for each - while building the schema, instead of the keys being inferred later from whatever text sits in the header row of an uploaded file.
 
@@ -45,4 +45,4 @@ Declared columns give the schema a single, stable name for each column, independ
 ### Related
 
 * Task: [Configure Table Columns](configure-table-columns.md)
-* Concept: [Table Data Input Field](../table-data-input-field/README.md) - the Table field itself: importing, editing and viewing table data.
+* Concept: [Table Data Input Field](../table-field/) - the Table field itself: importing, editing and viewing table data.

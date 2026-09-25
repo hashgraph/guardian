@@ -37,4 +37,4 @@ The comparator is evaluated the same way while the form is being filled in and w
 * Task: [Configure an Array Element Condition](configure-array-element-conditions.md)
 * Concept: [Cross-Schema Conditions](../cross-schema-conditions/)
 * Concept: [Repeatable Field Links](../repeatable-field-links/)
-* Reference: [Conditional and Visibility Logic](../best-practices-to-implement-schema/conditional-and-visibility-logic.md)
+* Reference: [Conditional and Visibility Logic](../../best-practices-to-implement-schema/conditional-and-visibility-logic.md)

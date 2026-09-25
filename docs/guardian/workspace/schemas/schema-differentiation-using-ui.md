@@ -1,4 +1,4 @@
-# Schema Differentiation using UI
+# How to compare schemas?
 
 We can compare two schemas by following some steps as follows:
 
@@ -6,15 +6,15 @@ We can compare two schemas by following some steps as follows:
 
 **Step 1:**
 
-We click on **Compare** button (last one) <img src="../../../../.gitbook/assets/image (429).png" alt="" data-size="line">present in Schemas tab as shown below:
+We click on **Compare** button (last one) <img src="../../../.gitbook/assets/image (429).png" alt="" data-size="line">present in Schemas tab as shown below:
 
-<figure><img src="../../../../.gitbook/assets/image (428).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (428).png" alt=""><figcaption></figcaption></figure>
 
 **Step 2:**
 
 Select two schemas for compare
 
-<figure><img src="../../../../.gitbook/assets/image (430).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (430).png" alt=""><figcaption></figcaption></figure>
 
 ## 2. Comparison View
 
@@ -33,9 +33,9 @@ Select two schemas for compare
 
 2\. **Schema Fields** – comparison results of the schema fields.
 
-<figure><img src="../../../../.gitbook/assets/image (1) (8).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (8).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../.gitbook/assets/image (24) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (24) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 **Display settings** _–_ description and show/hide settings for each color/type of difference
 

@@ -52,4 +52,4 @@ For array fields, enter **Test Value** entries as comma-separated values without
 * Concept: [Array Element Conditions](./)
 * Task: [Configure Nested and Cross-Schema Conditions](../cross-schema-conditions/configure-nested-and-cross-schema-conditions.md)
 * Task: [Set up Repeatable Field Links](../repeatable-field-links/set-up-repeatable-field-links.md)
-* Reference: [Conditional and Visibility Logic](../best-practices-to-implement-schema/conditional-and-visibility-logic.md)
+* Reference: [Conditional and Visibility Logic](../../best-practices-to-implement-schema/conditional-and-visibility-logic.md)

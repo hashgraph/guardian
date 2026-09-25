@@ -52,5 +52,5 @@ The sub-schema must be fully loaded in the editor. If a group is missing, check 
 ### Related
 
 * Concept: [Cross-Schema Conditions](./)
-* Task: [Creating Schema using UI](../creating-system-schema-using-ui.md)
-* Reference: [Conditional and Visibility Logic](../best-practices-to-implement-schema/conditional-and-visibility-logic.md)
+* Task: [Creating Schema using UI](../../create-schema.md)
+* Reference: [Conditional and Visibility Logic](../../best-practices-to-implement-schema/conditional-and-visibility-logic.md)

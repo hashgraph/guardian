@@ -1,4 +1,4 @@
-# Themes using UI
+# Themes Reference
 
 ## **Themes**
 
@@ -6,8 +6,8 @@ Themes are used to change visual display of Policy blocks in the Policy Configur
 
 Block’s display style is determined by their matching of the criteria defined in the theme.
 
-1. [Step By Step Process](themes-using-ui.md#id-1.-step-by-step-process)
-2. [Demo video](themes-using-ui.md#id-2.-demo-video)
+1. [Step By Step Process](themes-reference.md#id-1.-step-by-step-process)
+2. [Demo video](themes-reference.md#id-2.-demo-video)
 
 ## 1. Step By Step Process
 

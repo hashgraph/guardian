@@ -1,7 +1,7 @@
-# Schema Predefined Values
+# How to set predefined schema values for defaults, suggestions, or testing?
 
-1. [Step By Step Process](schema-predefined-values-using-ui.md#id-1.-step-by-step-process)
-2. [Demo Video](schema-predefined-values-using-ui.md#id-2.-demo-video)
+1. [Step By Step Process](setting-predefined-values.md#id-1.-step-by-step-process)
+2. [Demo Video](setting-predefined-values.md#id-2.-demo-video)
 
 ## 1. Step By Step Process
 

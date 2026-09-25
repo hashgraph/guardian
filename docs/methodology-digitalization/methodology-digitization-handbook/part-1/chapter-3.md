@@ -127,7 +127,7 @@ Guardian's schema system provides the foundation for structured data management,
 * **Migration Support**: Smooth transitions to updated methodology versions
 * **Compliance**: Maintains validity across methodology evolution
 
-See [schema system](../../../guardian/workspace/schemas/) and [available schema types](../../../guardian/workspace/schemas/available-schema-types/) for detailed specifications.
+See [schema system](../../../guardian/workspace/schemas/) and [available schema types](../../../guardian/workspace/schemas/available-schema-types.md) for detailed specifications.
 
 ## Blockchain Integration and User Management
 
