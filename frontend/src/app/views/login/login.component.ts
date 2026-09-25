@@ -72,7 +72,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
 
     /**
-     * Reasons reported by misconfigured services; login cannot work until they are fixed
+     * Reasons reported by misconfigured services
      */
     public get configurationErrors(): string[] {
         return this.wsService.getServicesStatesArray()

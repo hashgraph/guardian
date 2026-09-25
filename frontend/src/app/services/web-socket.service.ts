@@ -474,6 +474,14 @@ export class WebSocketService {
             existsService.states = serviceStatus[serviceName];
             existsService.messages = messages;
         }
+        // Each payload lists every known service, so one missing from it is no
+        // longer reported (e.g. a gateway key error fixed by a restart). Remove
+        // in place: views hold a reference to this array.
+        for (let i = this.serviesStates.length - 1; i >= 0; i--) {
+            if (!serviceNames.includes(this.serviesStates[i].serviceName)) {
+                this.serviesStates.splice(i, 1);
+            }
+        }
     }
 
     private isAllServicesReady(): boolean {
