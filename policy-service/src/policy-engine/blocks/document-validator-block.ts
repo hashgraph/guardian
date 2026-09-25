@@ -10,7 +10,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
 import { FilterQuery } from '@mikro-orm/core';
 import { VcDocument, VpDocument } from '@guardian/common';
 import { resolveOrgMemberDids } from '../helpers/org-utils.js';
-import { BlockErrorType, IBlockErrorData, IDocumentValidatorBlockError, LocationType } from '@guardian/interfaces';
+import { BlockErrorType, IBlockErrorData, IDocumentValidatorBlockError, LocationType, Schema, SchemaCondition, SchemaField, SchemaHelper } from '@guardian/interfaces';
 
 /**
  * Document Validator
@@ -43,6 +43,16 @@ import { BlockErrorType, IBlockErrorData, IDocumentValidatorBlockError, Location
     ]
 })
 export class DocumentValidatorBlock {
+    private isMissingValue(value: any): boolean {
+        if (value === null || value === undefined) {
+            return true;
+        }
+        if (Array.isArray(value)) {
+            return value.length === 0 || value.every((item) => this.isMissingValue(item));
+        }
+        return false;
+    }
+
     private coerceValue(value: any): any {
         return PolicyUtils.coerceComparable(value);
     }
@@ -92,6 +102,219 @@ export class DocumentValidatorBlock {
             case 'lte':       return `Value ${l} is not less than or equal to ${r}`;
             default:          return `got ${l}, expected ${r}`;
         }
+    }
+
+    private normalizeCredentialSubjectPath(field: string): string[] | null {
+        const parts = String(field || '').split('.').filter(Boolean);
+        if (!parts.length) {
+            return null;
+        }
+        if (parts[0] === 'document' && parts[1] === 'credentialSubject') {
+            const start = parts[2] !== undefined && /^\d+$/.test(parts[2]) ? 3 : 2;
+            return parts.slice(start);
+        }
+        if (parts[0] === 'credentialSubject') {
+            const start = parts[1] !== undefined && /^\d+$/.test(parts[1]) ? 2 : 1;
+            return parts.slice(start);
+        }
+        return parts;
+    }
+
+    private getCredentialSubject(document: IPolicyDocument, field: string): any {
+        const parts = String(field || '').split('.').filter(Boolean);
+        const credentialSubject = document?.document?.credentialSubject;
+        if (Array.isArray(credentialSubject)) {
+            if (parts[0] === 'document' && parts[1] === 'credentialSubject' && parts[2] !== undefined && /^\d+$/.test(parts[2])) {
+                return credentialSubject[Number(parts[2])];
+            }
+            if (parts[0] === 'credentialSubject' && parts[1] !== undefined && /^\d+$/.test(parts[1])) {
+                return credentialSubject[Number(parts[1])];
+            }
+            return credentialSubject[0];
+        }
+        return credentialSubject;
+    }
+
+    private matchesSchemaPath(targetPath: string[] | undefined, path: string[]): boolean {
+        if (!targetPath || targetPath.length !== path.length) {
+            return false;
+        }
+        return targetPath.every((segment, index) => segment === path[index]);
+    }
+
+    private resolveLocalPath(data: any, path: string[]): any {
+        let node = data;
+        for (const segment of path) {
+            if (node === null || node === undefined || typeof node !== 'object') {
+                return undefined;
+            }
+            node = node[segment];
+        }
+        return node;
+    }
+
+    private equalsLoosely(a: any, b: any): boolean {
+        if (a === b) {
+            return true;
+        }
+        if (a === null || a === undefined || b === null || b === undefined) {
+            return false;
+        }
+        const an = Number(a);
+        const bn = Number(b);
+        if (!Number.isNaN(an) && !Number.isNaN(bn)) {
+            return an === bn;
+        }
+        return String(a).trim() === String(b).trim();
+    }
+
+    private evaluateSchemaCondition(condition: SchemaCondition, data: any): boolean {
+        const ifCondition: any = condition?.ifCondition;
+        const test = (predicate: any): boolean => {
+            const path = predicate?.fieldPath?.length > 1
+                ? predicate.fieldPath
+                : [predicate?.field?.name];
+            if (!path[0]) {
+                return false;
+            }
+            return this.equalsLoosely(this.resolveLocalPath(data, path), predicate.fieldValue);
+        };
+
+        if (!ifCondition) {
+            return false;
+        }
+        if (Array.isArray(ifCondition.AND)) {
+            return ifCondition.AND.length > 0 && ifCondition.AND.every(test);
+        }
+        if (Array.isArray(ifCondition.OR)) {
+            return ifCondition.OR.some(test);
+        }
+        return test(ifCondition);
+    }
+
+    private isSchemaConditionReachable(
+        condition: SchemaCondition,
+        conditions: SchemaCondition[] | undefined,
+        data: any
+    ): boolean {
+        const revealMap = SchemaHelper.buildRevealMap(conditions || []);
+        return SchemaHelper.isConditionReachable(
+            condition,
+            revealMap,
+            (owner: SchemaCondition) => this.evaluateSchemaCondition(owner, data)
+        );
+    }
+
+    private getNestedData(data: any, field: SchemaField, parts: string[]): { data: any, path: string[] }[] {
+        if (!parts.length || parts[0] !== field.name) {
+            return [];
+        }
+        const rest = parts.slice(1);
+        const value = data?.[field.name];
+        if (field.isArray) {
+            if (rest[0] !== undefined && /^\d+$/.test(rest[0])) {
+                return [{ data: Array.isArray(value) ? value[Number(rest[0])] : undefined, path: rest.slice(1) }];
+            }
+            if (Array.isArray(value)) {
+                return value.map((entry) => ({ data: entry, path: rest }));
+            }
+        }
+        return [{ data: value, path: rest }];
+    }
+
+    private shouldSkipMissingConditionalField(
+        fields: SchemaField[] | undefined,
+        conditions: SchemaCondition[] | undefined,
+        data: any,
+        path: string[]
+    ): boolean {
+        if (!path.length || data === null || data === undefined || typeof data !== 'object') {
+            return false;
+        }
+
+        for (const condition of (conditions || [])) {
+            const reachable = this.isSchemaConditionReachable(condition, conditions, data);
+            const matchesThen = (condition.thenFields || []).some((f) => f.name === path[0]);
+            const matchesElse = (condition.elseFields || []).some((f) => f.name === path[0]);
+            const matchesThenTarget = (condition.thenTargets || []).some((target) =>
+                this.matchesSchemaPath(target.fieldPath, path)
+            );
+            const matchesElseTarget = (condition.elseTargets || []).some((target) =>
+                this.matchesSchemaPath(target.fieldPath, path)
+            );
+            if (!matchesThen && !matchesElse && !matchesThenTarget && !matchesElseTarget) {
+                continue;
+            }
+            if (!reachable) {
+                return true;
+            }
+            const activeThen = this.evaluateSchemaCondition(condition, data);
+            const activeBranchMatches = activeThen
+                ? matchesThen || matchesThenTarget
+                : matchesElse || matchesElseTarget;
+            return !activeBranchMatches;
+        }
+
+        const field = (fields || []).find((item) => item.name === path[0]);
+        if (!field?.isRef || !field.fields?.length) {
+            return false;
+        }
+        const nested = this.getNestedData(data, field, path);
+        if (!nested.length) {
+            return false;
+        }
+        return nested.every((item) =>
+            this.shouldSkipMissingConditionalField(field.fields, field.conditions, item.data, item.path)
+        );
+    }
+
+    private buildSchemaModel(rawSchema: any): Schema | null {
+        if (!rawSchema) {
+            return null;
+        }
+        if (Array.isArray(rawSchema.fields) || Array.isArray(rawSchema.conditions)) {
+            return rawSchema as Schema;
+        }
+        return new Schema(rawSchema);
+    }
+
+    private shouldSkipMissingConditionalPath(
+        schema: Schema,
+        document: IPolicyDocument,
+        field: string
+    ): boolean {
+        const actual = PolicyUtils.resolveFieldPath(document, field);
+        if (!this.isMissingValue(actual)) {
+            return false;
+        }
+        const subjectPath = this.normalizeCredentialSubjectPath(field);
+        if (!subjectPath?.length) {
+            return false;
+        }
+        const credentialSubject = this.getCredentialSubject(document, field);
+        return this.shouldSkipMissingConditionalField(
+            schema.fields,
+            schema.conditions,
+            credentialSubject,
+            subjectPath
+        );
+    }
+
+    private shouldSkipMissingConditionalConditionSide(
+        sourceType: 'value' | 'document' | 'source',
+        field: string,
+        document: IPolicyDocument,
+        sourceDocument: IPolicyDocument,
+        documentSchema: Schema | null,
+        sourceSchema: Schema | null
+    ): boolean {
+        if (sourceType === 'document' && documentSchema) {
+            return this.shouldSkipMissingConditionalPath(documentSchema, document, field);
+        }
+        if (sourceType === 'source' && sourceSchema) {
+            return this.shouldSkipMissingConditionalPath(sourceSchema, sourceDocument, field);
+        }
+        return false;
     }
 
     private buildSourceFilter(
@@ -191,7 +414,8 @@ export class DocumentValidatorBlock {
         ref: IPolicyValidatorBlock,
         sourceValidation: any,
         document: IPolicyDocument,
-        user: any
+        user: any,
+        documentSchema: Schema | null
     ): Promise<{ message: string; data?: IDocumentValidatorBlockError } | null> {
         const filter = this.buildSourceFilter(sourceValidation, ref, document, user);
 
@@ -200,6 +424,9 @@ export class DocumentValidatorBlock {
             : await ref.databaseServer.getVcDocuments(filter as any) as any[];
 
         if (!sourceDocuments?.length) {
+            if (sourceValidation.allowEmptySource === true) {
+                return null;
+            }
             const filterSummary = (sourceValidation.filters || [])
                 .map((f: any) => {
                     const v = f.typeValue === 'variable'
@@ -226,12 +453,35 @@ export class DocumentValidatorBlock {
             return null;
         }
 
+        const sourceSchemaRaw = sourceValidation.schema
+            ? await PolicyUtils.loadSchemaByID(ref, sourceValidation.schema)
+            : null;
+        const sourceSchema = this.buildSchemaModel(sourceSchemaRaw);
         const failureMap = new Map<string, { field: string, type: string, leftValue: any, rightValue: any, count: number }>();
         for (const sourceDoc of sourceDocuments) {
             let failed = false;
             const counted = new Set<string>();
             for (let ci = 0; ci < conditions.length; ci++) {
                 const condition = conditions[ci];
+                const skipLeft = this.shouldSkipMissingConditionalConditionSide(
+                    condition.fieldSource,
+                    condition.field,
+                    document,
+                    sourceDoc,
+                    documentSchema,
+                    sourceSchema
+                );
+                const skipRight = this.shouldSkipMissingConditionalConditionSide(
+                    condition.valueSource,
+                    condition.value,
+                    document,
+                    sourceDoc,
+                    documentSchema,
+                    sourceSchema
+                );
+                if (skipLeft || skipRight) {
+                    continue;
+                }
                 const left  = this.resolveConditionSide(condition.field, condition.fieldSource, condition.type, document, [sourceDoc]);
                 const right = this.resolveConditionSide(condition.value, condition.valueSource, condition.type, document, [sourceDoc]);
                 if (!PolicyUtils.evaluateFieldCondition(left, condition.type, right)) {
@@ -252,10 +502,7 @@ export class DocumentValidatorBlock {
         }
 
         const total = sourceDocuments.length;
-        const schema = sourceValidation.schema
-            ? await PolicyUtils.loadSchemaByID(ref, sourceValidation.schema)
-            : null;
-        const schemaName = schema?.name ?? null;
+        const schemaName = sourceSchemaRaw?.name ?? null;
 
         const N = failureMap.size;
         const summary = `Checked ${N} condition${N !== 1 ? 's' : ''} across ${total} source${total !== 1 ? 's' : ''}:`;
@@ -405,15 +652,25 @@ export class DocumentValidatorBlock {
             }
         }
 
+        let schema: any = null;
         if (options.schema) {
-            const schema = await PolicyUtils.loadSchemaByID(ref, options.schema);
+            schema = await PolicyUtils.loadSchemaByID(ref, options.schema);
             if (!PolicyUtils.checkDocumentSchema(ref, document, schema)) {
                 return { message: 'Invalid document schema' };
             }
         }
+        const schemaModel = this.buildSchemaModel(schema);
 
         if (options.conditions) {
             for (const filter of options.conditions) {
+                if (schemaModel) {
+                    const skipLeft = this.shouldSkipMissingConditionalPath(schemaModel, document, filter.field);
+                    const skipRight = filter.valueSource === 'document' &&
+                        this.shouldSkipMissingConditionalPath(schemaModel, document, filter.value);
+                    if (skipLeft || skipRight) {
+                        continue;
+                    }
+                }
                 if (!PolicyUtils.checkDocumentField(document, filter)) {
                     const actual = PolicyUtils.resolveFieldPath(document, filter.field);
                     const expected = filter.valueSource === 'document'
@@ -435,7 +692,7 @@ export class DocumentValidatorBlock {
 
         if (options.sourceValidations?.length) {
             for (const sourceValidation of options.sourceValidations) {
-                const error = await this.runSourceValidation(ref, sourceValidation, document, event.user);
+                const error = await this.runSourceValidation(ref, sourceValidation, document, event.user, schemaModel);
                 if (error) {
                     return error;
                 }
