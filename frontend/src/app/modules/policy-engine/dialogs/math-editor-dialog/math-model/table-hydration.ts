@@ -4,6 +4,7 @@ import { ArtifactService } from 'src/app/services/artifact.service';
 import { CsvService } from 'src/app/services/csv.service';
 import { GzipService } from 'src/app/services/gzip.service';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
+import { DocumentMap } from './document-map';
 
 export const TABLE_TEST_MAX_ROWS = 10000;
 export const TABLE_TEST_MAX_CELLS = 50000;
@@ -169,5 +170,16 @@ export async function hydrateDocumentTables(
         if (value && typeof value === 'object') {
             await hydrateDocumentTables(value, deps, options);
         }
+    }
+}
+
+export async function hydrateDocumentMapTables(
+    documents: DocumentMap,
+    deps: ITableHydrationDeps,
+    options?: ITableHydrationOptions
+): Promise<void> {
+    await hydrateDocumentTables(documents.getCurrent(), deps, options);
+    for (const relationship of documents.getRelationships()) {
+        await hydrateDocumentTables(relationship.document, deps, options);
     }
 }

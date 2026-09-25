@@ -19,7 +19,7 @@ function execute(): void {
     //Calculate
     const documentMap = DocumentMap.from(documents)
     const document = documentMap.getCurrent();
-    groupContext.setDocument(documentMap);
+    groupContext.setDocument(documentMap, tablesPack);
     const context = groupContext.getContext();
 
     let result: any;
@@ -48,7 +48,11 @@ function execute(): void {
         result = code.run();
     }
 
-    parentPort.postMessage({ type: 'done', result });
+    parentPort.postMessage({
+        type: 'done',
+        result,
+        warnings: groupContext.getWarnings()
+    });
 }
 
 execute();
