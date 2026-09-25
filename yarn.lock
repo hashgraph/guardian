@@ -19,6 +19,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@arnog/colors@npm:^0.7.0":
+  version: 0.7.1
+  resolution: "@arnog/colors@npm:0.7.1"
+  checksum: 10c0/a1bfa663d8731435365610c3867c5d8ef057ca5df5fe3cc47e7c9730509ace8174d64205a9bca68e6336cd77e3cc3d1c5e198919c9df011a289af2a6f43bb915
+  languageName: node
+  linkType: hard
+
 "@assemblyscript/loader@npm:^0.9.4":
   version: 0.9.4
   resolution: "@assemblyscript/loader@npm:0.9.4"
@@ -1184,13 +1191,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cortex-js/compute-engine@npm:^0.27.0":
-  version: 0.27.0
-  resolution: "@cortex-js/compute-engine@npm:0.27.0"
+"@cortex-js/compute-engine@npm:^0.132.2":
+  version: 0.132.2
+  resolution: "@cortex-js/compute-engine@npm:0.132.2"
   dependencies:
+    "@arnog/colors": "npm:^0.7.0"
     complex-esm: "npm:^2.1.1-esm1"
-    decimal.js: "npm:^10.4.3"
-  checksum: 10c0/7942cd499eda1f389b518c1bbf96a4fe8d817629a3d5b03108fbe906290e9585073eca30b57b09dc7473cd37540237d47d5f42ad9f6dcf096010691e5fa4cecf
+  bin:
+    epsil: dist/esm-min/cli/epsil.js
+  checksum: 10c0/16029fbdbf1ec666002b17d2e514cf79857644fc6f5ca69d1f33f3206c38d321cc6fa9f550c4042a49c19a9e85c7c2111d5c7740626f44eec32f0547ffe2c439
   languageName: node
   linkType: hard
 
@@ -11944,7 +11953,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "policy-service@workspace:policy-service"
   dependencies:
-    "@cortex-js/compute-engine": "npm:^0.27.0"
+    "@cortex-js/compute-engine": "npm:^0.132.2"
     "@formulajs/formulajs": "npm:4.6.1"
     "@guardian/common": "workspace:*"
     "@guardian/interfaces": "workspace:*"
