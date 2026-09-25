@@ -815,6 +815,28 @@ describe('preparePolicySchemaUpdate — condition-branch membership', () => {
         assert.ok(target.document.allOf[0].then.properties.customBranchField);
     });
 
+    it('drops a wholly policy-authored condition when conditionsLocked', () => {
+        const trigger = field('customTrigger');
+        const branchCustom = field('customBranchField');
+        const targetDocument = SchemaHelper.buildDocument(
+            baseSchema(),
+            [trigger, branchCustom],
+            [{ ifCondition: { field: trigger, fieldValue: 'yes' }, thenFields: [branchCustom], elseFields: [] }]
+        );
+        stripEnvelope(targetDocument);
+
+        const sourceDocument = SchemaHelper.buildDocument(baseSchema(), [], []);
+
+        const target = asSchema(targetDocument);
+        const source = asSchema(sourceDocument);
+
+        preparePolicySchemaUpdate(target, source, 'template-1', { customFieldsLocked: false, conditionsLocked: true, schemaSettingsLocked: false });
+
+        assert.equal(target.document.allOf, undefined);
+        assert.equal(target.document.properties.customTrigger, undefined);
+        assert.equal(target.document.properties.customBranchField, undefined);
+    });
+
     it('does not restore branch membership at all when customFieldsLocked', () => {
         const trigger = field('trigger', { templateFieldId: 'tpl-trigger-1' });
         const branchCustom = field('branchCustom');
@@ -840,6 +862,37 @@ describe('preparePolicySchemaUpdate — condition-branch membership', () => {
 
         assert.equal(target.document.properties.branchCustom, undefined);
         assert.equal(target.document.allOf[0].then.properties.branchCustom, undefined);
+    });
+
+    it('removes condition custom fields but keeps root custom fields when conditionsLocked', () => {
+        const trigger = field('trigger', { templateFieldId: 'tpl-trigger-1' });
+        const branchCustom = field('branchCustom');
+        const rootCustom = field('rootCustom');
+        const targetDocument = SchemaHelper.buildDocument(
+            baseSchema(),
+            [trigger, branchCustom, rootCustom],
+            [{ ifCondition: { field: trigger, fieldValue: 'yes' }, thenFields: [branchCustom], elseFields: [] }]
+        );
+        stripEnvelope(targetDocument);
+
+        const sourceTrigger = field('trigger', { templateFieldId: 'tpl-trigger-1' });
+        const sourceThenField = field('sourceOnlyField', { templateFieldId: 'tpl-then-1' });
+        const sourceDocument = SchemaHelper.buildDocument(
+            baseSchema(),
+            [sourceTrigger, sourceThenField],
+            [{ ifCondition: { field: sourceTrigger, fieldValue: 'yes' }, thenFields: [sourceThenField], elseFields: [] }]
+        );
+
+        const target = asSchema(targetDocument);
+        const source = asSchema(sourceDocument);
+
+        preparePolicySchemaUpdate(target, source, 'template-1', { customFieldsLocked: false, conditionsLocked: true, schemaSettingsLocked: false });
+
+        assert.equal(target.document.properties.branchCustom, undefined,
+            'custom fields owned by locked conditions must be removed, not moved to the root');
+        assert.equal(target.document.allOf[0].then.properties.branchCustom, undefined);
+        assert.ok(target.document.properties.rootCustom,
+            'unrelated root custom fields must still be preserved while customFieldsLocked is false');
     });
 
     it('restores a policy-added cross-schema target into its matched condition', () => {
@@ -969,6 +1022,39 @@ describe('preparePolicySchemaUpdate — condition-branch membership', () => {
         preparePolicySchemaUpdate(target, source, 'template-1', { customFieldsLocked: true, schemaSettingsLocked: false });
 
         assert.equal(target.document.allOf[0].then.properties.parentRef, undefined);
+    });
+
+    it('does not restore a policy-added cross-schema target when conditionsLocked', () => {
+        const trigger = field('trigger', { templateFieldId: 'tpl-trigger-1' });
+        const requiredChild = field('childField', { required: true });
+        const targetDocument = SchemaHelper.buildDocument(
+            baseSchema(),
+            [trigger],
+            [{
+                ifCondition: { field: trigger, fieldValue: 'yes' },
+                thenFields: [],
+                elseFields: [],
+                thenTargets: [{ field: requiredChild, fieldPath: ['parentRef', 'childField'] }],
+            }]
+        );
+        stripEnvelope(targetDocument);
+
+        const sourceTrigger = field('trigger', { templateFieldId: 'tpl-trigger-1' });
+        const sourcePlaceholder = field('placeholder', { templateFieldId: 'tpl-placeholder' });
+        const sourceDocument = SchemaHelper.buildDocument(
+            baseSchema(),
+            [sourceTrigger, sourcePlaceholder],
+            [{ ifCondition: { field: sourceTrigger, fieldValue: 'yes' }, thenFields: [sourcePlaceholder], elseFields: [] }]
+        );
+
+        const target = asSchema(targetDocument);
+        const source = asSchema(sourceDocument);
+
+        preparePolicySchemaUpdate(target, source, 'template-1', { customFieldsLocked: false, conditionsLocked: true, schemaSettingsLocked: false });
+
+        assert.equal(target.document.allOf[0].then.properties.parentRef, undefined);
+        assert.equal(target.document.allOf[0].else?.properties?.parentRef, undefined);
+        assert.ok(target.document.allOf[0].then.properties.placeholder);
     });
 
     it('does not crash and preserves an existing forbid marker when a cross-target wrapper collides with it', () => {
@@ -1118,6 +1204,66 @@ describe('buildSchemaTemplateUpdatePreviewFromContext — condition removal', ()
 
         assert.equal(preview.conflicts.length, 0, 'nothing left to resolve when the field is being removed unconditionally anyway');
         assert.ok(preview.changes.some((c) => c.type === 'CUSTOM_FIELD_REMOVE'));
+    });
+
+    it('removes condition custom fields without a keep offer when conditionsLocked', () => {
+        const trigger = field('trigger', { templateFieldId: 'tpl-trigger-1' });
+        const branchCustom = field('branchCustom');
+        const rootCustom = field('rootCustom');
+        const policyDocument = SchemaHelper.buildDocument(
+            baseSchema(),
+            [trigger, branchCustom, rootCustom],
+            [{ ifCondition: { field: trigger, fieldValue: 'yes' }, thenFields: [branchCustom], elseFields: [] }]
+        );
+        delete policyDocument.properties['@context'];
+        delete policyDocument.properties.type;
+        delete policyDocument.properties.id;
+
+        const previousConditions = [{ ifCondition: { field: trigger, fieldValue: 'yes' }, thenFields: [branchCustom], elseFields: [] }];
+        const nextConditions = [{ ifCondition: { field: trigger, fieldValue: 'yes' }, thenFields: [], elseFields: [] }];
+        const context = buildContext(nextConditions, previousConditions, policyDocument);
+        context.template.config = { schemas: { 'tsid-1': { customFieldsLocked: false, conditionsLocked: true } } };
+
+        const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
+
+        assert.equal(preview.canApply, true);
+        assert.equal(preview.conflicts.length, 0,
+            'conditionsLocked means policy condition additions are removed automatically, not kept by resolution');
+        assert.ok(preview.changes.some((c) => c.type === 'CUSTOM_FIELD_REMOVE' && c.fieldName === 'branchCustom'));
+        assert.ok(preview.changes.some((c) => c.type === 'CUSTOM_FIELD_PRESERVE' && c.fieldName === 'rootCustom'));
+    });
+
+    it('lists policy-added cross-schema targets as removals when conditionsLocked', () => {
+        const trigger = field('trigger', { templateFieldId: 'tpl-trigger-1' });
+        const requiredChild = field('childField', { required: true });
+        const policyDocument = SchemaHelper.buildDocument(
+            baseSchema(),
+            [trigger],
+            [{
+                ifCondition: { field: trigger, fieldValue: 'yes' },
+                thenFields: [],
+                elseFields: [],
+                thenTargets: [{ field: requiredChild, fieldPath: ['parentRef', 'childField'] }],
+            }]
+        );
+        delete policyDocument.properties['@context'];
+        delete policyDocument.properties.type;
+        delete policyDocument.properties.id;
+
+        const previousConditions = [{ ifCondition: { field: trigger, fieldValue: 'yes' }, thenFields: [], elseFields: [] }];
+        const nextConditions = [{ ifCondition: { field: trigger, fieldValue: 'yes' }, thenFields: [], elseFields: [] }];
+        const context = buildContext(nextConditions, previousConditions, policyDocument);
+        context.template.config = { schemas: { 'tsid-1': { customFieldsLocked: false, conditionsLocked: true } } };
+
+        const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
+
+        assert.equal(preview.canApply, true);
+        assert.equal(preview.conflicts.length, 0);
+        assert.ok(preview.changes.some((c) =>
+            c.type === 'CONDITION_REMOVE' &&
+            c.fieldName === '(cross-schema target)' &&
+            c.after === 'Removed'
+        ));
     });
 
     it('raises a conflict for an orphaned condition held only by a cross-schema target, no custom field at all', () => {

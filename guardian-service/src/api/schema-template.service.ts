@@ -881,6 +881,38 @@ export function getRuntimeCustomFields(schema: Schema): any[] {
     return customFieldsFromParsedFields(parsed.fields || []);
 }
 
+function conditionPredicates(ifCondition: any): any[] {
+    if (!ifCondition) {
+        return [];
+    }
+    if (Array.isArray(ifCondition.AND)) {
+        return ifCondition.AND;
+    }
+    if (Array.isArray(ifCondition.OR)) {
+        return ifCondition.OR;
+    }
+    return [ifCondition];
+}
+
+function conditionCustomFieldNames(conditions: any[], fields: any[]): Set<string> {
+    const customFieldNames = new Set((fields || []).map((field) => field?.name).filter(Boolean));
+    const result = new Set<string>();
+    for (const condition of conditions || []) {
+        for (const predicate of conditionPredicates(condition?.ifCondition)) {
+            const field = predicate?.field;
+            if (!field?.templateFieldId && customFieldNames.has(field?.name)) {
+                result.add(field.name);
+            }
+        }
+        for (const field of [...(condition?.thenFields || []), ...(condition?.elseFields || [])]) {
+            if (!field?.templateFieldId && customFieldNames.has(field?.name)) {
+                result.add(field.name);
+            }
+        }
+    }
+    return result;
+}
+
 /**
  * A condition's identity across template versions is its trigger field(s)' templateFieldId
  * plus the value(s) it compares against - templateFieldId alone isn't enough, since two
@@ -897,7 +929,7 @@ export function conditionTriggerSignature(condition: any): string[] | null {
     // AND vs OR must be part of the signature too - the same predicates combined either
     // way would otherwise produce the same sorted parts and be treated as one condition.
     const combinator = Array.isArray(ifCondition.AND) ? 'AND' : Array.isArray(ifCondition.OR) ? 'OR' : 'SINGLE';
-    const predicates = combinator === 'AND' ? ifCondition.AND : combinator === 'OR' ? ifCondition.OR : [ifCondition];
+    const predicates = conditionPredicates(ifCondition);
     const parts: string[] = [];
     for (const predicate of predicates) {
         const id = predicate?.field?.templateFieldId;
@@ -1098,6 +1130,33 @@ function restoreConditionCrossTargets(
             }
         }
     }
+}
+
+function conditionHasPolicyAddedCrossTargets(
+    previousDocument: any,
+    conditionIndex: number,
+    previousSnapshotDocument?: any,
+    previousSnapshotConditionIndex: number = -1
+): boolean {
+    const oldEntry = previousDocument?.allOf?.[conditionIndex];
+    if (!oldEntry) {
+        return false;
+    }
+    for (const branchKey of ['then', 'else'] as const) {
+        const oldProps = oldEntry[branchKey]?.properties;
+        if (!oldProps) {
+            continue;
+        }
+        const snapshotProps = previousSnapshotConditionIndex >= 0
+            ? previousSnapshotDocument?.allOf?.[previousSnapshotConditionIndex]?.[branchKey]?.properties
+            : undefined;
+        for (const [key, value] of Object.entries<any>(oldProps)) {
+            if (isCrossTargetWrapper(value) && subtractCrossTargetWrapper(value, snapshotProps?.[key])) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 /** True if any then/else branch of this condition holds a cross-schema target (see isCrossTargetWrapper). */
@@ -1567,6 +1626,11 @@ export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<Ret
         const previousFields = fieldsByTemplateId(previousSchema.fields);
         const nextFields = fieldsByTemplateId(nextSchema.fields);
         const policyCustomFields = customFields(policySnapshot.fields);
+        const previousConditions = policySnapshot.conditions || [];
+        const sourceConditions = nextSchema.conditions || [];
+        const conditionFieldNamesToRemove = nextSchemaConfig.conditionsLocked
+            ? conditionCustomFieldNames(previousConditions, policyCustomFields)
+            : new Set<string>();
 
         for (const [templateFieldId, field] of nextFields.entries()) {
             const previousField = previousFields.get(templateFieldId);
@@ -1623,7 +1687,7 @@ export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<Ret
         }
 
         for (const field of policyCustomFields) {
-            if (nextSchemaConfig.customFieldsLocked) {
+            if (nextSchemaConfig.customFieldsLocked || conditionFieldNamesToRemove.has(field.name)) {
                 changes.push(createChange(
                     SchemaTemplateUpdateChangeType.CUSTOM_FIELD_REMOVE,
                     `Custom field "${field.title || field.name}" will be removed from schema "${nextSchema.name}".`,
@@ -1649,12 +1713,38 @@ export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<Ret
                 ));
             }
         }
+        if (nextSchemaConfig.conditionsLocked) {
+            const previousSnapshotDocument = buildSnapshotSchemaDocument(previousSchema);
+            for (let conditionIndex = 0; conditionIndex < previousConditions.length; conditionIndex++) {
+                const signature = conditionTriggerSignature(previousConditions[conditionIndex]);
+                const previousSnapshotConditionIndex = signature
+                    ? findMatchingConditionIndex(previousSchema.conditions || [], signature)
+                    : -1;
+                if (!conditionHasPolicyAddedCrossTargets(
+                    policySchema.document,
+                    conditionIndex,
+                    previousSnapshotDocument,
+                    previousSnapshotConditionIndex
+                )) {
+                    continue;
+                }
+                changes.push(createChange(
+                    SchemaTemplateUpdateChangeType.CONDITION_REMOVE,
+                    `Policy-added cross-schema target(s) in schema "${nextSchema.name}" will be removed because conditions are locked.`,
+                    {
+                        templateSchemaId,
+                        schemaName: nextSchema.name,
+                        fieldName: '(cross-schema target)',
+                        before: 'Policy-added condition target present',
+                        after: 'Removed'
+                    }
+                ));
+            }
+        }
 
-        // customFieldsLocked already removes every custom field unconditionally above,
-        // condition membership or not - nothing left to resolve here in that case.
-        if (!nextSchemaConfig.customFieldsLocked) {
-            const previousConditions = policySnapshot.conditions || [];
-            const sourceConditions = nextSchema.conditions || [];
+        // customFieldsLocked removes every custom field, and conditionsLocked removes
+        // every policy-authored condition addition, so nothing is left to resolve.
+        if (!nextSchemaConfig.customFieldsLocked && !nextSchemaConfig.conditionsLocked) {
             const placements = analyzeConditionFieldPlacements(previousConditions, sourceConditions, policyCustomFields);
             const orphanedFieldsByConditionIndex = new Map<number, any[]>();
             for (const placement of placements) {
@@ -1913,14 +2003,17 @@ export function preparePolicySchemaUpdate(
     const previousConditions = previousParsed.conditions || [];
     const sourceConditions = sourceParsed.conditions || [];
     const placements = analyzeConditionFieldPlacements(previousConditions, sourceConditions, custom);
+    const conditionFieldNamesToRemove = schemaConfig.conditionsLocked
+        ? conditionCustomFieldNames(previousConditions, custom)
+        : new Set<string>();
 
     // dropFieldNames also excludes the field from the root-properties merge below, so an
     // orphaned condition the user didn't choose to keep is dropped entirely, not left
     // behind as a detached root field.
-    const dropFieldNames = new Set<string>();
+    const dropFieldNames = new Set<string>(conditionFieldNamesToRemove);
     const carryOverConditionIndices = new Set<number>();
     const matchedIndexByOldIndex = new Map<number, number>();
-    if (!schemaConfig.customFieldsLocked) {
+    if (!schemaConfig.customFieldsLocked && !schemaConfig.conditionsLocked) {
         const classification = classifyConditionsAgainstSource(previousConditions, sourceConditions);
         for (const index of classification.whollyCustomIndices) {
             carryOverConditionIndices.add(index);
