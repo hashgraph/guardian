@@ -354,29 +354,37 @@ export class RichTextEditorComponent
             return table && range.toString() === table.textContent ? table as HTMLTableElement : null;
         }
         if (this._currentTableCell()) { return null; }
-        if (!this._isAtBlockStart(range)) { return null; }
-        const block = this._caretBlock(range, editor);
-        const previous = block?.previousElementSibling;
+        const previous = this._elementBeforeCaret(range, editor);
         return previous instanceof HTMLTableElement ? previous : null;
     }
 
-    private _isAtBlockStart(range: Range): boolean {
-        if (range.startOffset > 0) {
-            return range.startContainer.nodeType === Node.ELEMENT_NODE
-                && !range.startContainer.textContent;
+    private _elementBeforeCaret(range: Range, editor: HTMLElement): Element | null {
+        const start = range.startContainer;
+        if (!(start instanceof Element) && range.startOffset > 0) { return null; }
+        let previous: Node | null = start instanceof Element
+            ? start.childNodes[range.startOffset - 1] || null
+            : null;
+        let node: Node | null = start;
+        while (!previous && node && node !== editor) {
+            previous = node.previousSibling;
+            node = node.parentNode;
         }
-        return true;
+        while (previous && !(previous instanceof Element)) {
+            if (previous.textContent) { return null; }
+            previous = previous.previousSibling;
+        }
+        return previous instanceof Element && editor.contains(previous) ? previous : null;
     }
 
     private _caretBlock(range: Range, editor: HTMLElement): Element | null {
         const node = range.startContainer;
         const element = node instanceof Element ? node : node.parentElement;
-        if (!element) { return null; }
-        let block: Element | null = element;
-        while (block && block.parentElement && block.parentElement !== editor) {
+        if (!element || element === editor || !editor.contains(element)) { return null; }
+        let block: Element = element;
+        while (block.parentElement && block.parentElement !== editor) {
             block = block.parentElement;
         }
-        return block === editor ? null : block;
+        return block.parentElement === editor ? block : null;
     }
 
     private _removeTable(table: HTMLTableElement): void {

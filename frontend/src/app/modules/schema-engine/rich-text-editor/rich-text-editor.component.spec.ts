@@ -1933,6 +1933,62 @@ describe('RichTextEditorComponent', () => {
             expect(event.defaultPrevented).toBeFalse();
         });
 
+        function caretAt(node: Node, offset: number): void {
+            const range = document.createRange();
+            range.setStart(node, offset);
+            range.collapse(true);
+            const selection = window.getSelection();
+            selection?.removeAllRanges();
+            selection?.addRange(range);
+        }
+
+        function backspace(): KeyboardEvent {
+            const event = new KeyboardEvent('keydown', { key: 'Backspace', cancelable: true });
+            editor().dispatchEvent(event);
+            return event;
+        }
+
+        it('should delete the table when the caret sits in the editor root after it', () => {
+            editor().innerHTML = TABLE;
+            caretAt(editor(), editor().childNodes.length);
+
+            const event = backspace();
+
+            expect(editor().querySelector('table')).toBeNull();
+            expect(event.defaultPrevented).toBeTrue();
+        });
+
+        it('should delete the table when a wrapper holds both the table and the caret', () => {
+            editor().innerHTML = '<ul><li>one</li></ul><div>' + TABLE + '<p><br></p></div>';
+            caretAt(editor().querySelector('div > p') as HTMLElement, 0);
+
+            const event = backspace();
+
+            expect(editor().querySelector('table')).toBeNull();
+            expect(editor().querySelector('ul')).toBeTruthy();
+            expect(event.defaultPrevented).toBeTrue();
+        });
+
+        it('should leave a backspace after plain text in the editor root to the browser', () => {
+            editor().innerHTML = TABLE + 'after';
+            caretAt(editor(), editor().childNodes.length);
+
+            const event = backspace();
+
+            expect(editor().querySelector('table')).toBeTruthy();
+            expect(event.defaultPrevented).toBeFalse();
+        });
+
+        it('should leave a backspace at the very start of the editor to the browser', () => {
+            editor().innerHTML = TABLE;
+            caretAt(editor(), 0);
+
+            const event = backspace();
+
+            expect(editor().querySelector('table')).toBeTruthy();
+            expect(event.defaultPrevented).toBeFalse();
+        });
+
         it('should enable the edit commands only inside a cell', () => {
             editor().innerHTML = '<p>outside</p>' + TABLE;
             caretIn('p');
