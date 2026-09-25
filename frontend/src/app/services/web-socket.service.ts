@@ -243,7 +243,7 @@ export class WebSocketService {
                     break;
                 case MessageAPI.GET_STATUS:
                 case MessageAPI.UPDATE_STATUS:
-                    this.updateStatus(data);
+                    this.updateStatus(data, event.messages);
                     this.evaluateServicesStatus();
                     break;
                 case MessageAPI.UPDATE_RECORD: {
@@ -454,22 +454,25 @@ export class WebSocketService {
         this.send(type, data);
     }
 
-    private updateStatus(serviceStatus: any) {
+    private updateStatus(serviceStatus: any, serviceMessages?: Record<string, string[]>) {
         if (!serviceStatus || !Object.keys(serviceStatus).length) {
             return;
         }
         const serviceNames = Object.keys(serviceStatus);
         for (let i = 0; i < serviceNames.length; i++) {
             const serviceName = serviceNames[i];
+            const messages = serviceMessages?.[serviceName] || [];
             const existsService = this.serviesStates.find((item: any) => item.serviceName === serviceName);
             if (!existsService) {
                 this.serviesStates.push({
                     serviceName,
-                    states: serviceStatus[serviceName]
+                    states: serviceStatus[serviceName],
+                    messages
                 });
                 continue;
             }
-            existsService.states = serviceStatus[serviceName]
+            existsService.states = serviceStatus[serviceName];
+            existsService.messages = messages;
         }
     }
 

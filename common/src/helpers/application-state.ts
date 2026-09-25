@@ -1,5 +1,6 @@
 import { Singleton } from '../decorators/singleton.js';
 import { NatsService } from '../mq/index.js';
+import { JwtServicesValidator } from '../security/index.js';
 import { ApplicationStates, GenerateUUIDv4, MessageAPI } from '@guardian/interfaces';
 
 /**
@@ -23,6 +24,11 @@ export class ApplicationState extends NatsService {
      */
     private state: ApplicationStates;
     /**
+     * Reason for the current state, shown to users
+     * @private
+     */
+    private message: string;
+    /**
      * Service name
      * @private
      */
@@ -33,10 +39,16 @@ export class ApplicationState extends NatsService {
      */
     public async init(): Promise<void> {
         await super.init();
+        // An unusable service key blocks every message, including this status,
+        // so log the reason here; api-gateway reports it to the UI.
+        for (const error of JwtServicesValidator.checkKeys()) {
+            console.error(`${this.serviceName}: ${error}`);
+        }
         this.subscribe(MessageAPI.GET_STATUS, async () => {
             await this.publish(MessageAPI.SEND_STATUS, {
                 name: this.serviceName,
                 state: this.state,
+                message: this.message,
                 serviceName: process.env.SERVICE_CHANNEL
             })
         });
@@ -62,9 +74,11 @@ export class ApplicationState extends NatsService {
     /**
      * Update current state
      * @param state
+     * @param message Reason for the state, shown to users
      */
-    public async updateState(state: ApplicationStates): Promise<void> {
+    public async updateState(state: ApplicationStates, message?: string): Promise<void> {
         this.state = state;
+        this.message = message;
         if (this.serviceName) {
             const res = {};
             res[this.serviceName] = state;

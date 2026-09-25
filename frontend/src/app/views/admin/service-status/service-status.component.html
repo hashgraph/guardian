@@ -67,6 +67,13 @@
             }
           </div>
         </div>
+        @if (service.messages?.length) {
+          <div class="messages">
+            @for (message of service.messages; track message) {
+              <div class="message">{{ message }}</div>
+            }
+          </div>
+        }
         <div class="actions-container">
           @if (service.serviceName !== 'LOGGER_SERVICE') {
             <button

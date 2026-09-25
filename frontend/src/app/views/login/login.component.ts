@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit, AfterViewChecked, QueryList, ViewChildren
 import { Router } from '@angular/router';
 import { AbstractControl, UntypedFormControl, UntypedFormGroup, ValidationErrors, Validators, } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
-import { UserCategory, UserRole } from '@guardian/interfaces';
+import { ApplicationStates, UserCategory, UserRole } from '@guardian/interfaces';
 import { AuthStateService } from 'src/app/services/auth-state.service';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { noWhitespaceValidator } from 'src/app/validators/no-whitespace-validator';
@@ -18,6 +18,7 @@ import { ChangePasswordComponent } from './change-password/change-password.compo
 import { ToastService } from 'src/app/services/toast.service';
 import { OtpDialogComponent } from './otp-dialog/otp-dialog.component';
 import { getUserInitials } from '../../utils';
+import { WebSocketService } from 'src/app/services/web-socket.service';
 
 /**
  * Login page.
@@ -66,7 +67,19 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
         private brandingService: BrandingService,
         private dialogService: DialogService,
         private toastService: ToastService,
+        private wsService: WebSocketService,
     ) {
+    }
+
+    /**
+     * Reasons reported by misconfigured services; login cannot work until they are fixed
+     */
+    public get configurationErrors(): string[] {
+        return this.wsService.getServicesStatesArray()
+            .filter((service: any) => service.states.includes(ApplicationStates.BAD_CONFIGURATION))
+            .flatMap((service: any) => service.messages?.length
+                ? service.messages.map((message: string) => `${service.serviceName}: ${message}`)
+                : [`${service.serviceName} is not configured correctly`]);
     }
 
     ngOnInit() {

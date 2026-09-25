@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { checkRsaKey, checkRsaKeyPair } from './jwt-key-check.js';
 
 export class JwtServicesValidator {
   private static serviceName: string = '';
@@ -25,6 +26,41 @@ export class JwtServicesValidator {
     }
 
     return process.env.SERVICE_JWT_PUBLIC_KEY_ALL
+  }
+
+  /**
+   * Check the service keys this process signs and verifies with
+   * @returns Human-readable problems; empty when the keys are usable
+   */
+  public static checkKeys(): string[] {
+    if (process.env.QM_VERIFICATION === 'false') {
+      return [];
+    }
+
+    const errors: string[] = [];
+    const secretName = process.env.SERVICE_JWT_SECRET_KEY?.length > 8
+      ? 'SERVICE_JWT_SECRET_KEY'
+      : 'SERVICE_JWT_SECRET_KEY_ALL';
+    const ownPublicName = process.env[`SERVICE_JWT_PUBLIC_KEY_${JwtServicesValidator.serviceName}`]?.length > 8
+      ? `SERVICE_JWT_PUBLIC_KEY_${JwtServicesValidator.serviceName}`
+      : 'SERVICE_JWT_PUBLIC_KEY_ALL';
+    const secretError = process.env[ownPublicName]?.length > 8
+      ? checkRsaKeyPair(process.env[ownPublicName], process.env[secretName], ownPublicName, secretName)
+      : checkRsaKey(process.env[secretName], secretName, 'private');
+    if (secretError) {
+      errors.push(secretError);
+    }
+
+    for (const [name, value] of Object.entries(process.env)) {
+      if (name.startsWith('SERVICE_JWT_PUBLIC_KEY_') && name !== ownPublicName && value?.length > 8) {
+        const publicError = checkRsaKey(value, name, 'public');
+        if (publicError) {
+          errors.push(publicError);
+        }
+      }
+    }
+
+    return errors;
   }
 
   public static async sign(subject = ''): Promise<string> {

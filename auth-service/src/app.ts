@@ -1,6 +1,6 @@
 import { AccountService } from './api/account-service.js';
 import { WalletService } from './api/wallet-service.js';
-import { ApplicationState, COMMON_CONNECTION_CONFIG, DatabaseServer, GenerateTLSOptionsNats, JwtServicesValidator, LargePayloadContainer, MessageBrokerChannel, Migration, mongoForLoggingInitialization, OldSecretManager, PinoLogger, pinoLoggerInitialization, SecretManager, ValidateConfiguration, Wallet, Workers } from '@guardian/common';
+import { ApplicationState, checkRsaKeyPair, COMMON_CONNECTION_CONFIG, DatabaseServer, GenerateTLSOptionsNats, JwtServicesValidator, LargePayloadContainer, MessageBrokerChannel, Migration, mongoForLoggingInitialization, OldSecretManager, PinoLogger, pinoLoggerInitialization, SecretManager, ValidateConfiguration, Wallet, Workers } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -15,7 +15,6 @@ import { RoleService } from './api/role-service.js';
 import { RelayerAccountsService } from './api/relayer-accounts.js';
 import { OrganizationService } from './api/organization-service.js';
 import { DEFAULT_MONGO } from '#constants';
-import { checkValidJwt } from './utils/index.js';
 
 Promise.all([
     Migration({
@@ -92,28 +91,40 @@ Promise.all([
             await ImportKeysFromDatabase(vault, logger);
         }
 
+        let configurationError: string;
+
         validator.setValidator(async () => {
             if (!ApplicationEnvironment.demoMode) {
                 if (!process.env.SR_INITIAL_PASSWORD) {
-                    console.log('Empty SR_INITIAL_PASSWORD setting');
+                    configurationError = 'SR_INITIAL_PASSWORD is not set';
+                    console.log(configurationError);
                     return false;
                 }
                 if (process.env.SR_INITIAL_PASSWORD.length < 6) {
-                    console.log('SR_INITIAL_PASSWORD length is less than 6');
+                    configurationError = 'SR_INITIAL_PASSWORD is shorter than 6 characters';
+                    console.log(configurationError);
                     return false;
                 }
             }
 
-            const isValidEnvTokens = checkValidJwt(process.env.JWT_PUBLIC_KEY, process.env.JWT_PRIVATE_KEY);
+            const envTokensError = checkRsaKeyPair(process.env.JWT_PUBLIC_KEY, process.env.JWT_PRIVATE_KEY, 'JWT_PUBLIC_KEY', 'JWT_PRIVATE_KEY');
 
-            if (isValidEnvTokens) {
+            if (!envTokensError) {
                 await secretManager.setSecrets('secretkey/auth', { JWT_PRIVATE_KEY: process.env.JWT_PRIVATE_KEY, JWT_PUBLIC_KEY: process.env.JWT_PUBLIC_KEY });
             } else {
                 const { JWT_PRIVATE_KEY, JWT_PUBLIC_KEY } = await secretManager.getSecrets('secretkey/auth');
 
-                const isValidSecretManagerTokens = checkValidJwt(JWT_PUBLIC_KEY, JWT_PRIVATE_KEY);
+                const secretManagerTokensError = checkRsaKeyPair(JWT_PUBLIC_KEY, JWT_PRIVATE_KEY, 'JWT_PUBLIC_KEY (secret manager)', 'JWT_PRIVATE_KEY (secret manager)');
 
-                if (!isValidSecretManagerTokens) {
+                if (secretManagerTokensError) {
+                    // Keys set in the environment (not "..." placeholders) are what the
+                    // operator meant to use, so their problem is the one to report.
+                    const hasEnvTokens = [process.env.JWT_PRIVATE_KEY, process.env.JWT_PUBLIC_KEY]
+                        .some((key) => key?.trim().length >= 8);
+                    configurationError = hasEnvTokens
+                        ? envTokensError
+                        : secretManagerTokensError;
+                    console.error(configurationError);
                     return false;
                 }
             }
@@ -135,8 +146,8 @@ Promise.all([
             await logger.info('auth service started', ['AUTH_SERVICE'], null);
         })
         validator.setInvalidAction(async () => {
-            await state.updateState(ApplicationStates.BAD_CONFIGURATION);
-            await logger.error('Auth service not configured', ['AUTH_SERVICE'], null);
+            await state.updateState(ApplicationStates.BAD_CONFIGURATION, configurationError);
+            await logger.error(`Auth service not configured: ${configurationError}`, ['AUTH_SERVICE'], null);
         })
         await validator.validate();
     } catch (error) {
