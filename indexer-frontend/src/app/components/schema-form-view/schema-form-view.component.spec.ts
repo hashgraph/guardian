@@ -126,4 +126,80 @@ describe('SchemaFormViewComponent', () => {
             expect(component.getRichTextValue('<img src="x">')).toBe('<p>&lt;img src="x"&gt;</p>');
         });
     });
+
+    describe('rich text images', () => {
+        const reference = 'ipfs://bafkreiabcdef123456';
+        const dataUrl = 'data:image/jpg;base64,AAAA';
+        const markdown = `Before\n\n![Site photo](${reference})`;
+
+        const flush = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+        function createLoadingComponent(result: Promise<string>): any {
+            const component = createComponent();
+            component.resolvedImages = new Map();
+            component.pendingImages = new Map();
+            component.hide = {};
+            component.changeDetector = { markForCheck: jasmine.createSpy('markForCheck') };
+            component.entitiesService = {
+                getImageByLink: jasmine.createSpy('getImageByLink').and.returnValue(result),
+            };
+            return component;
+        }
+
+        const richTextField = (name: string) => ({
+            name,
+            type: 'string',
+            customType: 'richText',
+            isArray: false,
+            isRef: false,
+        });
+
+        it('should fetch a reference in the value and render it as src', async () => {
+            const component = createLoadingComponent(Promise.resolve(dataUrl));
+            component.values = { field0: markdown };
+
+            component.update([richTextField('field0')]);
+            await flush();
+
+            expect(component.entitiesService.getImageByLink).toHaveBeenCalledWith(reference);
+            const html = component.getRichTextValue(markdown);
+            expect(html).toContain(`src="${dataUrl}"`);
+            expect(html).toContain('Before');
+        });
+
+        it('should fetch one reference once when two fields share it', async () => {
+            const component = createLoadingComponent(Promise.resolve(dataUrl));
+            component.values = { field0: markdown, field1: markdown };
+
+            component.update([richTextField('field0'), richTextField('field1')]);
+            await flush();
+
+            expect(component.entitiesService.getImageByLink).toHaveBeenCalledTimes(1);
+        });
+
+        it('should keep the text and leave src empty when the fetch fails', async () => {
+            const component = createLoadingComponent(Promise.reject(new Error('404')));
+            component.values = { field0: markdown };
+
+            component.update([richTextField('field0')]);
+            await flush();
+            component.update([richTextField('field0')]);
+            await flush();
+
+            expect(component.entitiesService.getImageByLink).toHaveBeenCalledTimes(1);
+            const html = component.getRichTextValue(markdown);
+            expect(html).toContain('Before');
+            expect(html).toContain('src=""');
+        });
+
+        it('should fetch nothing for a value with no image', async () => {
+            const component = createLoadingComponent(Promise.resolve(dataUrl));
+            component.values = { field0: 'Just text' };
+
+            component.update([richTextField('field0')]);
+            await flush();
+
+            expect(component.entitiesService.getImageByLink).not.toHaveBeenCalled();
+        });
+    });
 });

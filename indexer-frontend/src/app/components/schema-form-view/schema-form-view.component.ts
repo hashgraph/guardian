@@ -8,6 +8,7 @@ import {
 } from '@angular/common';
 import {
     ChangeDetectionStrategy,
+    ChangeDetectorRef,
     Component,
     Input,
 } from '@angular/core';
@@ -20,7 +21,8 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { FormulasViewDialog } from '../../dialogs/formulas-view-dialog/formulas-view-dialog.component';
 import {TableViewerComponent} from '../table-viewer/table-viewer.component';
 import { isSafeHref, withNewTabLinks } from './rich-text-view';
-import { markdownToHtml } from './markdown-view';
+import { collectImageReferences, markdownToHtml } from './markdown-view';
+import { EntitiesService } from '@services/entities.service';
 
 /**
  * Form view by schema
@@ -59,8 +61,13 @@ export class SchemaFormViewComponent {
     fields: any[] | undefined = [];
     pageSize: number = 20;
 
+    private resolvedImages = new Map<string, string | null>();
+    private pendingImages = new Map<string, Promise<string | null>>();
+
     constructor(
-        private dialogService: DialogService
+        private dialogService: DialogService,
+        private entitiesService: EntitiesService,
+        private changeDetector: ChangeDetectorRef
     ) { }
 
     isBooleanView(item: boolean | any): string {
@@ -102,6 +109,9 @@ export class SchemaFormViewComponent {
                         this.values[item.name] === undefined
                         ? ''
                         : this.values[item.name];
+                if (this.isRichText(item)) {
+                    this.loadRichTextImages(item.value);
+                }
             }
             if (!field.isArray && field.isRef) {
                 item.fields = field.fields;
@@ -128,6 +138,12 @@ export class SchemaFormViewComponent {
                             },
                         ];
                         item.isInvalidType = true;
+                    }
+                }
+
+                if (this.isRichText(item)) {
+                    for (const listItem of value) {
+                        this.loadRichTextImages(listItem.value);
                     }
                 }
 
@@ -189,7 +205,42 @@ export class SchemaFormViewComponent {
     }
 
     getRichTextValue(value: unknown): string {
-        return withNewTabLinks(markdownToHtml(typeof value === 'string' ? value : ''));
+        const markdown = typeof value === 'string' ? value : '';
+        const resolved = new Map<string, string>();
+        for (const reference of collectImageReferences(markdown)) {
+            const source = this.resolvedImages.get(reference);
+            if (source) {
+                resolved.set(reference, source);
+            }
+        }
+        return withNewTabLinks(markdownToHtml(markdown, resolved));
+    }
+
+    private loadRichTextImages(value: unknown): void {
+        const references = collectImageReferences(typeof value === 'string' ? value : '');
+        if (!references.length) {
+            return;
+        }
+        Promise.all(references.map((reference) => this.loadImage(reference)))
+            .finally(() => this.changeDetector.markForCheck());
+    }
+
+    private async loadImage(reference: string): Promise<string | null> {
+        if (this.resolvedImages.has(reference)) {
+            return this.resolvedImages.get(reference) || null;
+        }
+
+        let request = this.pendingImages.get(reference);
+        if (!request) {
+            request = this.entitiesService.getImageByLink(reference)
+                .catch(() => null)
+                .finally(() => this.pendingImages.delete(reference));
+            this.pendingImages.set(reference, request);
+        }
+
+        const source = await request;
+        this.resolvedImages.set(reference, source);
+        return source;
     }
 
     onRichTextLinkClick(event: MouseEvent): void {

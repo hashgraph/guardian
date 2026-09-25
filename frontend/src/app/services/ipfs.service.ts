@@ -89,6 +89,13 @@ export class IPFSService {
         });
     }
 
+    public getImageWithDryRunFallback(link: string, dryRun: boolean): Promise<string> {
+        if (!dryRun) {
+            return this.getImageByLink(link);
+        }
+        return this.getImageFromDryRunStorage(link).catch(() => this.getImageByLink(link));
+    }
+
     public getJsonFileByLink(link: string): Promise<any> {
         return new Promise((resolve, reject) => {
             let cidMatches = link.match(this.cidPattern);

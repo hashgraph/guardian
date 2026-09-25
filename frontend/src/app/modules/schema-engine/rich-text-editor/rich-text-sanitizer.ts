@@ -3,6 +3,7 @@ const ALLOWED_TAGS = new Set([
     'B', 'STRONG', 'I', 'EM',
     'H1', 'H2', 'H3',
     'UL', 'OL', 'LI',
+    'TABLE', 'THEAD', 'TBODY', 'TFOOT', 'TR', 'TH', 'TD',
     'A'
 ]);
 
@@ -46,10 +47,13 @@ export function isBlankRichText(html: string | null | undefined): boolean {
     }
     const inert = document.implementation.createHTMLDocument('');
     inert.body.innerHTML = html;
+    if (inert.body.querySelector('img[data-src], img[src], table')) {
+        return false;
+    }
     return (inert.body.textContent || '').trim() === '';
 }
 
-const BLOCK_TAGS = ['P', 'DIV', 'H1', 'H2', 'H3', 'UL', 'OL', 'LI', 'BR'];
+const BLOCK_TAGS = ['P', 'DIV', 'H1', 'H2', 'H3', 'UL', 'OL', 'LI', 'BR', 'TABLE', 'TR', 'TH', 'TD'];
 
 export function richTextToText(value: unknown): string {
     if (typeof value !== 'string') {

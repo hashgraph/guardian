@@ -14,7 +14,7 @@ import { IPFSService } from 'src/app/services/ipfs.service';
 import { FormulasViewDialog } from '../../formulas/dialogs/formulas-view-dialog/formulas-view-dialog.component';
 import { DialogService } from 'primeng/dynamicdialog';
 import { isSafeHref, withNewTabLinks } from '../rich-text-editor/rich-text-sanitizer';
-import { markdownToHtml } from '../rich-text-editor/markdown';
+import { collectImageReferences, markdownToHtml } from '../rich-text-editor/markdown';
 
 type SchemaFieldPredicate = { field: any; fieldValue: any } | { field: any; const: any };
 interface IFieldControl extends SchemaField {
@@ -257,6 +257,9 @@ export class SchemaFormViewComponent implements OnInit {
                 if (this.isIPFS(field) && field.customType !== 'file') {
                     this.loadImg(item)
                 }
+                if (this.isRichText(item)) {
+                    this.loadRichTextImages(item.value);
+                }
             }
             if (!field.isArray && field.isRef) {
                 item.fields = field.fields;
@@ -289,6 +292,11 @@ export class SchemaFormViewComponent implements OnInit {
                     if (this.isIPFS(field) && field.customType !== 'file') {
                         this.loadImgs(value);
                     }
+                    if (this.isRichText(item)) {
+                        for (const listItem of value) {
+                            this.loadRichTextImages(listItem.value);
+                        }
+                    }
                 }
 
                 item.list = value;
@@ -316,11 +324,13 @@ export class SchemaFormViewComponent implements OnInit {
         this.fields = fields;
     }
 
-    private async loadImg(item: IFieldControl | IFieldIndexControl) {
-        const key = `${this.dryRun ? 'dry-run' : 'ipfs'}:${item.value}`;
+    private imgKey(reference: string): string {
+        return `${this.dryRun ? 'dry-run' : 'ipfs'}:${reference}`;
+    }
 
-        // update() rebuilds every field on each input change; without this cache a
-        // failing link is re-requested on every re-render.
+    private async loadImg(item: IFieldControl | IFieldIndexControl) {
+        const key = this.imgKey(item.value);
+
         if (this.imgCache.has(key)) {
             item.imgSrc = this.imgCache.get(key) || '';
             item.loading = false;
@@ -328,13 +338,24 @@ export class SchemaFormViewComponent implements OnInit {
         }
 
         item.loading = true;
+        const imgSrc = await this.loadImgReference(item.value, false);
+        item.imgSrc = imgSrc || '';
+        item.loading = false;
+        this.changeDetector.detectChanges();
+    }
+
+    private async loadImgReference(reference: string, dryRunFallback: boolean): Promise<string | null> {
+        const key = this.imgKey(reference);
+
+        // update() rebuilds every field on each input change; without this cache a
+        // failing link is re-requested on every re-render.
+        if (this.imgCache.has(key)) {
+            return this.imgCache.get(key) || null;
+        }
 
         let request = this.imgRequests.get(key);
         if (!request) {
-            request = (this.dryRun
-                ? this.ipfs.getImageFromDryRunStorage(item.value)
-                : this.ipfs.getImageByLink(item.value)
-            )
+            request = this.readImage(reference, dryRunFallback)
                 .catch(() => null)
                 .finally(() => this.imgRequests.delete(key));
             this.imgRequests.set(key, request);
@@ -342,9 +363,23 @@ export class SchemaFormViewComponent implements OnInit {
 
         const imgSrc = await request;
         this.imgCache.set(key, imgSrc);
-        item.imgSrc = imgSrc || '';
-        item.loading = false;
-        this.changeDetector.detectChanges();
+        return imgSrc;
+    }
+
+    private readImage(reference: string, dryRunFallback: boolean): Promise<string> {
+        if (this.dryRun && !dryRunFallback) {
+            return this.ipfs.getImageFromDryRunStorage(reference);
+        }
+        return this.ipfs.getImageWithDryRunFallback(reference, !!this.dryRun);
+    }
+
+    private loadRichTextImages(value: unknown): void {
+        const references = collectImageReferences(typeof value === 'string' ? value : '');
+        if (!references.length) {
+            return;
+        }
+        Promise.all(references.map((reference) => this.loadImgReference(reference, true)))
+            .finally(() => this.changeDetector.detectChanges());
     }
     private loadImgs(items: IFieldIndexControl[]) {
         Promise.all(
@@ -440,7 +475,15 @@ export class SchemaFormViewComponent implements OnInit {
     }
 
     public getRichTextValue(value: unknown): string {
-        return withNewTabLinks(markdownToHtml(typeof value === 'string' ? value : ''));
+        const markdown = typeof value === 'string' ? value : '';
+        const resolved = new Map<string, string>();
+        for (const reference of collectImageReferences(markdown)) {
+            const source = this.imgCache.get(this.imgKey(reference));
+            if (source) {
+                resolved.set(reference, source);
+            }
+        }
+        return withNewTabLinks(markdownToHtml(markdown, resolved));
     }
 
     public onRichTextLinkClick(event: MouseEvent): void {

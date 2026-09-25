@@ -11,7 +11,8 @@ import { VCFullscreenDialog } from 'src/app/modules/schema-engine/vc-fullscreen-
 import { Subject } from 'rxjs';
 import { CommentsService } from 'src/app/services/comments.service';
 import { richTextToText, withNewTabLinks } from 'src/app/modules/schema-engine/rich-text-editor/rich-text-sanitizer';
-import { markdownToHtml } from 'src/app/modules/schema-engine/rich-text-editor/markdown';
+import { collectImageReferences, markdownToHtml } from 'src/app/modules/schema-engine/rich-text-editor/markdown';
+import { IPFSService } from 'src/app/services/ipfs.service';
 
 /**
  * Component for display block of 'interfaceDocumentsSource' types.
@@ -62,6 +63,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
         private dialog: DialogService,
         private dialogService: DialogService,
         private commentsService: CommentsService,
+        private ipfs: IPFSService,
     ) {
         this.fields = [];
         this.columns = [];
@@ -333,8 +335,20 @@ export class DocumentsSourceBlockComponent implements OnInit {
 
     private richTextHideTimer: any = null;
 
+    private richTextImages = new Map<string, string | null>();
+
+    private richTextImageRequests = new Map<string, Promise<string | null>>();
+
+    private richTextTarget: { row: any, field: any } | null = null;
+
+    private richTextImagesResolved: Promise<void> = Promise.resolve();
+
     public getRichTextCellText(row: any, field: any): string {
         return row && row._richTextCellText ? (row._richTextCellText[field.index] || '') : '';
+    }
+
+    public hasRichTextContent(row: any, field: any): boolean {
+        return !!(row && row._richTextCellContent && row._richTextCellContent[field.index]);
     }
 
     private buildRichTextCellText(fields: any[]): void {
@@ -344,33 +358,82 @@ export class DocumentsSourceBlockComponent implements OnInit {
         }
         for (const row of this.documents) {
             const cells: any = {};
+            const content: any = {};
             for (const item of richTextFields) {
-                cells[item.index] = richTextToText(this.toRichTextHtml(row, item));
+                const value = this.getText(row, item);
+                const markdown = typeof value === 'string' ? value : '';
+                const text = richTextToText(this.toRichTextHtml(row, item));
+                cells[item.index] = text;
+                content[item.index] = !!text || collectImageReferences(markdown).length > 0;
             }
             row._richTextCellText = cells;
+            row._richTextCellContent = content;
         }
     }
 
     private toRichTextHtml(row: any, field: any): string {
         const value = this.getText(row, field);
-        return markdownToHtml(typeof value === 'string' ? value : '');
+        const markdown = typeof value === 'string' ? value : '';
+        const resolved = new Map<string, string>();
+        for (const reference of collectImageReferences(markdown)) {
+            const source = this.richTextImages.get(this.richTextImageKey(reference));
+            if (source) {
+                resolved.set(reference, source);
+            }
+        }
+        return markdownToHtml(markdown, resolved);
+    }
+
+    private richTextImageKey(reference: string): string {
+        return `${this.dryRun ? 'dry-run' : 'ipfs'}:${reference}`;
     }
 
     public onRichTextEnter(event: Event, row: any, field: any, popover: any): void {
-        if (!this.getRichTextCellText(row, field)) {
+        const value = this.getText(row, field);
+        const references = collectImageReferences(typeof value === 'string' ? value : '');
+        if (!this.getRichTextCellText(row, field) && !references.length) {
             return;
         }
         this.clearRichTextHideTimer();
+        this.richTextTarget = { row, field };
         this.richTextValue = withNewTabLinks(this.toRichTextHtml(row, field));
         if (this.richTextValue) {
             popover.show(event);
         }
+        this.richTextImagesResolved = this.resolveRichTextImages(references, row, field);
+    }
+
+    private resolveRichTextImages(references: string[], row: any, field: any): Promise<void> {
+        const missing = references.filter((reference) => !this.richTextImages.has(this.richTextImageKey(reference)));
+        if (!missing.length) {
+            return Promise.resolve();
+        }
+        return Promise.all(missing.map(async (reference) => {
+            const key = this.richTextImageKey(reference);
+            let request = this.richTextImageRequests.get(key);
+            if (!request) {
+                request = this.readRichTextImage(reference)
+                    .catch(() => null)
+                    .finally(() => this.richTextImageRequests.delete(key));
+                this.richTextImageRequests.set(key, request);
+            }
+            this.richTextImages.set(key, await request);
+        })).then(() => {
+            if (this.richTextTarget?.row === row && this.richTextTarget?.field === field) {
+                this.richTextValue = withNewTabLinks(this.toRichTextHtml(row, field));
+            }
+        });
+    }
+
+    private readRichTextImage(reference: string): Promise<string> {
+        return this.ipfs.getImageWithDryRunFallback(reference, !!(this.dryRun && this.policyId));
     }
 
     public onRichTextLeave(popover: any): void {
         this.clearRichTextHideTimer();
         this.richTextHideTimer = setTimeout(() => {
             this.richTextHideTimer = null;
+            this.richTextTarget = null;
             popover.hide();
         }, 250);
     }

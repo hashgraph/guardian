@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
 import { ApiUtils } from './utils';
 import {
@@ -56,6 +56,12 @@ export class EntitiesService {
 
     public loadFile(cid: string): Observable<string> {
         return this.http.get(`${this.url}/ipfs/${cid}`, { responseType: 'text' });
+    }
+
+    public getImageByLink(reference: string): Promise<string> {
+        const cid = reference.replace(/^ipfs:\/\//, '');
+        return firstValueFrom(this.loadFile(cid))
+            .then((data) => `data:image/jpg;base64,${data}`);
     }
 
     //#region ACCOUNTS

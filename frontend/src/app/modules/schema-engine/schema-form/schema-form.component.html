@@ -144,6 +144,8 @@
                           [formControl]="item.control"
                           [placeholder]="getPlaceholderByFieldType(item)"
                           [readonly]="!!(isEditMode && !item.isUpdatable)"
+                          [imageUploader]="uploadRichTextImage"
+                          [imageResolver]="resolveRichTextImage"
                         ></app-rich-text-editor>
                       </div>
                     }
@@ -701,6 +703,8 @@
                                   [formControl]="listItem.control"
                                   [placeholder]="getPlaceholderByFieldType(item)"
                                   [readonly]="!!(isEditMode && !item.isUpdatable)"
+                                  [imageUploader]="uploadRichTextImage"
+                                  [imageResolver]="resolveRichTextImage"
                                 ></app-rich-text-editor>
                               </div>
                             }

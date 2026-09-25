@@ -8,7 +8,7 @@ import {
     UnitSystem
 } from '@guardian/interfaces';
 import { DialogService } from 'primeng/dynamicdialog';
-import { Subject, Subscription, takeUntil } from 'rxjs';
+import { Subject, Subscription, firstValueFrom, takeUntil } from 'rxjs';
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from '../../../services/api';
@@ -727,6 +727,17 @@ export class SchemaFormComponent implements OnInit {
         }
         input.click();
     }
+
+    public uploadRichTextImage = async (file: File): Promise<string> => {
+        const request = this.dryRun && this.policyId
+            ? this.ipfs.addFileDryRun(file, this.policyId)
+            : this.ipfs.addFile(file);
+        const cid = await firstValueFrom(request);
+        return `ipfs://${cid}`;
+    };
+
+    public resolveRichTextImage = (reference: string): Promise<string> =>
+        this.ipfs.getImageWithDryRunFallback(reference, !!(this.dryRun && this.policyId));
 
 
     public getInvalidMessageByFieldType(item: IFieldControl<any>, itemFromList?: IFieldIndexControl<any>): string {

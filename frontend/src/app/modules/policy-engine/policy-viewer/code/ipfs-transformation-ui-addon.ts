@@ -22,6 +22,8 @@ enum TransformationIpfsLinkType {
 
 export class IpfsTransformationUIAddonCode {
     private readonly ipfsPattern: RegExp = /ipfs:\/\/([a-zA-Z0-9]+)/;
+    private readonly markdownReferencePattern: RegExp = /\]\(\s*(ipfs:\/\/[a-zA-Z0-9]+)\s*\)/g;
+    private readonly plainReferencePattern: RegExp = /^ipfs:\/\/[a-zA-Z0-9]+$/;
     private cache: Map<string, string> = new Map();
 
     private readonly transformationType: string;
@@ -62,8 +64,8 @@ export class IpfsTransformationUIAddonCode {
             if (Array.isArray(documentObject)) {
                 for (let i = 0; i < documentObject.length; i++) {
                     const documentValue = documentObject[i];
-                    if (typeof (documentValue) === 'string' && documentValue.startsWith('ipfs://')) {
-                        tasks.push(this.processIpfsString(documentValue).then(res => {
+                    if (typeof (documentValue) === 'string' && this.shouldProcessString(documentValue)) {
+                        tasks.push(this.processStringValue(documentValue).then(res => {
                             documentObject[i] = res;
                         }));
                     } else if (documentValue && typeof (documentValue) === 'object') {
@@ -73,8 +75,8 @@ export class IpfsTransformationUIAddonCode {
             } else {
                 for (const key in documentObject) {
                     const value = documentObject[key];
-                    if (typeof (value) === 'string' && value.startsWith('ipfs://')) {
-                        tasks.push(this.processIpfsString(value).then(res => {
+                    if (typeof (value) === 'string' && this.shouldProcessString(value)) {
+                        tasks.push(this.processStringValue(value).then(res => {
                             documentObject[key] = res;
                         }));
                     } else if (value && typeof (value) === 'object') {
@@ -87,6 +89,90 @@ export class IpfsTransformationUIAddonCode {
         if (tasks.length) {
             await Promise.all(tasks);
         }
+    }
+
+    private shouldProcessString(value: string): boolean {
+        const trimmed = value.trim();
+        return trimmed.startsWith('ipfs://')
+            || trimmed.startsWith('{')
+            || value.includes('](ipfs://');
+    }
+
+    private async processStringValue(value: string): Promise<any> {
+        if (value.includes('](ipfs://')) {
+            return await this.processMarkdownString(value);
+        }
+        if (this.plainReferencePattern.test(value.trim())) {
+            return await this.processIpfsString(value);
+        }
+        return await this.processTableString(value);
+    }
+
+    private async processMarkdownString(value: string): Promise<string> {
+        const references = new Set<string>();
+        for (const match of value.matchAll(this.markdownReferencePattern)) {
+            references.add(match[1]);
+        }
+
+        const replacements = new Map<string, string>();
+        await Promise.all(Array.from(references).map(async (reference) => {
+            const link = await this.processIpfsString(reference);
+            const target = link && (link.resourceUrl || link.base64String);
+            if (typeof (target) === 'string' && target) {
+                replacements.set(reference, target);
+            }
+        }));
+
+        if (!replacements.size) {
+            return value;
+        }
+
+        return value.replace(this.markdownReferencePattern, (match, reference) => {
+            const target = replacements.get(reference);
+            return target ? `](${target})` : match;
+        });
+    }
+
+    private parseTableValue(value: string): any | null {
+        try {
+            const parsed = JSON.parse(value.trim());
+            if (parsed && typeof (parsed) === 'object' && parsed.type === 'table') {
+                return parsed;
+            }
+            return null;
+        } catch {
+            return null;
+        }
+    }
+
+    private async processTableString(value: string): Promise<any> {
+        const table = this.parseTableValue(value);
+        if (!table) {
+            return value;
+        }
+
+        const cid = typeof (table.cid) === 'string' ? table.cid.trim() : '';
+        if (!cid) {
+            return value;
+        }
+
+        const link = await this.processIpfsString(`ipfs://${cid}`);
+        const target = link && (link.resourceUrl || link.base64String);
+        if (!target) {
+            return value;
+        }
+
+        const result: any = { type: 'table' };
+
+        if (Array.isArray(table.columnNames) && table.columnNames.length) {
+            result.columnNames = table.columnNames;
+        }
+
+        if (Array.isArray(table.columnKeys) && table.columnKeys.length) {
+            result.columnKeys = table.columnKeys;
+        }
+
+        return Object.assign(result, link);
     }
 
 
