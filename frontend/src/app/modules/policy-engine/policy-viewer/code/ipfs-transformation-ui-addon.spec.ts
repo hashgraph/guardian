@@ -1,4 +1,4 @@
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { IpfsTransformationUIAddonCode } from './ipfs-transformation-ui-addon';
 
 describe('IpfsTransformationUIAddonCode', () => {
@@ -167,6 +167,35 @@ describe('IpfsTransformationUIAddonCode', () => {
 
         expect(document.field1).toContain('![One](data:application/gzip;base64,');
         expect(document.field1).toContain(`![Two](ipfs://${second})`);
+    });
+
+    it('should start every image download of one markdown value before the first one finishes', async () => {
+        const second = 'QmSecondCidValueForTheAddonSpecQmSecondCidValueFor';
+        const downloads = new Map<string, Subject<ArrayBuffer>>();
+        const deferredService: any = {
+            getFile: (requested: string) => {
+                const download = new Subject<ArrayBuffer>();
+                downloads.set(requested, download);
+                return download;
+            },
+            getFileFromDryRunStorage: () => of(gzipHeader.buffer)
+        };
+        const addon = createAddon({ transformationType: 'base64' }, deferredService);
+        const document: any = { field1: `![One](ipfs://${cid}) and ![Two](ipfs://${second})` };
+
+        const running = addon.run({ document, params: {}, history: [] });
+        await new Promise(resolve => setTimeout(resolve));
+
+        expect(downloads.size).toBe(2);
+
+        for (const download of downloads.values()) {
+            download.next(gzipHeader.buffer);
+            download.complete();
+        }
+        await running;
+
+        expect(document.field1).toContain('![One](data:application/gzip;base64,');
+        expect(document.field1).toContain('![Two](data:application/gzip;base64,');
     });
 
     it('should leave a markdown value with no reference untouched', async () => {

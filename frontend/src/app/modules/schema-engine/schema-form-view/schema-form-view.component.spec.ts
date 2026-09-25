@@ -1,4 +1,5 @@
 import { SchemaFormViewComponent } from './schema-form-view.component';
+import { IPFSService } from 'src/app/services/ipfs.service';
 
 describe('SchemaFormViewComponent', () => {
     let component: SchemaFormViewComponent;
@@ -10,6 +11,7 @@ describe('SchemaFormViewComponent', () => {
         ipfs = {
             getImageByLink: jasmine.createSpy('getImageByLink').and.returnValue(Promise.resolve('')),
             getImageFromDryRunStorage: jasmine.createSpy('getImageFromDryRunStorage').and.returnValue(Promise.resolve('')),
+            getImageWithDryRunFallback: IPFSService.prototype.getImageWithDryRunFallback,
         };
         dialogService = {
             open: jasmine.createSpy('open').and.returnValue({ onClose: { subscribe: jasmine.createSpy() } }),

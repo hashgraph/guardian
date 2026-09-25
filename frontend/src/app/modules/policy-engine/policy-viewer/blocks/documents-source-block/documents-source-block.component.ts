@@ -425,15 +425,8 @@ export class DocumentsSourceBlockComponent implements OnInit {
         });
     }
 
-    private async readRichTextImage(reference: string): Promise<string> {
-        if (this.dryRun && this.policyId) {
-            try {
-                return await this.ipfs.getImageFromDryRunStorage(reference);
-            } catch (error) {
-                return await this.ipfs.getImageByLink(reference);
-            }
-        }
-        return await this.ipfs.getImageByLink(reference);
+    private readRichTextImage(reference: string): Promise<string> {
+        return this.ipfs.getImageWithDryRunFallback(reference, !!(this.dryRun && this.policyId));
     }
 
     public onRichTextLeave(popover: any): void {

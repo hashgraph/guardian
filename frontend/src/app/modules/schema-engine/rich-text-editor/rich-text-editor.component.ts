@@ -64,13 +64,19 @@ export class RichTextEditorComponent
     public tableSizeRows = 0;
     public tableSizeColumns = 0;
     public headingDisabled = false;
-    public listLevelDisabled = true;
     public listOutdentDisabled = true;
-    public tableEditDisabled = true;
     public inTableCell = false;
     public undoDisabled = false;
     public redoDisabled = false;
     public activeCommands = new Set<string>();
+
+    public get listLevelDisabled(): boolean {
+        return !this.headingDisabled;
+    }
+
+    public get tableEditDisabled(): boolean {
+        return !this.inTableCell;
+    }
 
     private _value = '';
     private _onChange: (value: string) => void = () => {};
@@ -977,10 +983,6 @@ export class RichTextEditorComponent
             this.headingDisabled = disabled;
             this.cdr.markForCheck();
         }
-        if (disabled === this.listLevelDisabled) {
-            this.listLevelDisabled = !disabled;
-            this.cdr.markForCheck();
-        }
         const outdentDisabled = this._listNesting() < 2;
         if (outdentDisabled !== this.listOutdentDisabled) {
             this.listOutdentDisabled = outdentDisabled;
@@ -991,10 +993,6 @@ export class RichTextEditorComponent
         const inTable = !!cell;
         if (inTable !== this.inTableCell) {
             this.inTableCell = inTable;
-            this.cdr.markForCheck();
-        }
-        if (inTable === this.tableEditDisabled) {
-            this.tableEditDisabled = !inTable;
             this.cdr.markForCheck();
         }
         this._updateTableToolbar(cell);

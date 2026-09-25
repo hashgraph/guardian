@@ -1,4 +1,5 @@
 import { DocumentsSourceBlockComponent } from './documents-source-block.component';
+import { IPFSService } from 'src/app/services/ipfs.service';
 
 describe('DocumentsSourceBlockComponent', () => {
 
@@ -241,6 +242,7 @@ describe('DocumentsSourceBlockComponent', () => {
             return {
                 getImageByLink: jasmine.createSpy('getImageByLink').and.returnValue(result),
                 getImageFromDryRunStorage: jasmine.createSpy('getImageFromDryRunStorage'),
+                getImageWithDryRunFallback: IPFSService.prototype.getImageWithDryRunFallback,
             };
         }
 

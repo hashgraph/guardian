@@ -115,13 +115,13 @@ export class IpfsTransformationUIAddonCode {
         }
 
         const replacements = new Map<string, string>();
-        for (const reference of references) {
+        await Promise.all(Array.from(references).map(async (reference) => {
             const link = await this.processIpfsString(reference);
             const target = link && (link.resourceUrl || link.base64String);
             if (typeof (target) === 'string' && target) {
                 replacements.set(reference, target);
             }
-        }
+        }));
 
         if (!replacements.size) {
             return value;

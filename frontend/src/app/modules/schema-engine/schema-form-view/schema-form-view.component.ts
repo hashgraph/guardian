@@ -366,18 +366,11 @@ export class SchemaFormViewComponent implements OnInit {
         return imgSrc;
     }
 
-    private async readImage(reference: string, dryRunFallback: boolean): Promise<string> {
-        if (this.dryRun) {
-            if (!dryRunFallback) {
-                return await this.ipfs.getImageFromDryRunStorage(reference);
-            }
-            try {
-                return await this.ipfs.getImageFromDryRunStorage(reference);
-            } catch (error) {
-                return await this.ipfs.getImageByLink(reference);
-            }
+    private readImage(reference: string, dryRunFallback: boolean): Promise<string> {
+        if (this.dryRun && !dryRunFallback) {
+            return this.ipfs.getImageFromDryRunStorage(reference);
         }
-        return await this.ipfs.getImageByLink(reference);
+        return this.ipfs.getImageWithDryRunFallback(reference, !!this.dryRun);
     }
 
     private loadRichTextImages(value: unknown): void {

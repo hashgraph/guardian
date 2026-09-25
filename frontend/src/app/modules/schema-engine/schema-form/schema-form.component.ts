@@ -736,16 +736,8 @@ export class SchemaFormComponent implements OnInit {
         return `ipfs://${cid}`;
     };
 
-    public resolveRichTextImage = async (reference: string): Promise<string> => {
-        if (this.dryRun && this.policyId) {
-            try {
-                return await this.ipfs.getImageFromDryRunStorage(reference);
-            } catch (error) {
-                return await this.ipfs.getImageByLink(reference);
-            }
-        }
-        return await this.ipfs.getImageByLink(reference);
-    };
+    public resolveRichTextImage = (reference: string): Promise<string> =>
+        this.ipfs.getImageWithDryRunFallback(reference, !!(this.dryRun && this.policyId));
 
 
     public getInvalidMessageByFieldType(item: IFieldControl<any>, itemFromList?: IFieldIndexControl<any>): string {
