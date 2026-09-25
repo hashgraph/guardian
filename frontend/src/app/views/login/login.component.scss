@@ -396,6 +396,21 @@ form {
     }
 }
 
+.configuration-error {
+    margin-bottom: 16px;
+    word-break: break-word;
+
+    ul {
+        margin: 6px 0;
+        padding-left: 18px;
+    }
+
+    a {
+        color: inherit;
+        text-decoration: underline;
+    }
+}
+
 .error-message {
     border: 1px solid var(--color-accent-red-1, #FF432A);
     border-radius: 8px;

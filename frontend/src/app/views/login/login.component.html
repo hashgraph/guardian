@@ -78,6 +78,17 @@
         </div>
         <h1>Welcome</h1>
         <p class="login-subtitle">Log in to your account</p>
+        @if (configurationErrors.length) {
+          <div class="error-message configuration-error">
+            <div>Some Guardian services are not configured correctly:</div>
+            <ul>
+              @for (error of configurationErrors; track error) {
+                <li>{{ error }}</li>
+              }
+            </ul>
+            <a routerLink="/status">View services status</a>
+          </div>
+        }
         <form [formGroup]="loginForm">
           <div class="form-input-container">
             <label class="p-field-label" for="login">Username</label>
