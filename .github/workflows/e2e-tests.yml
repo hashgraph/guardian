@@ -100,8 +100,9 @@ jobs:
       # jobs.<id>.services.<id>, so ${{ env.KUBO_VERSION }} would silently expand to an
       # empty string.
       ipfs-node:
-        image: ipfs/kubo:v0.43.0
+        image: ipfs/kubo:v0.43.1
         env:
+          GOLOG_LOG_LEVEL: warn
           IPFS_TELEMETRY: "off"
         ports:
           - 127.0.0.1:4001:4001

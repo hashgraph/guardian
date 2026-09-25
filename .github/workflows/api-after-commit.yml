@@ -18,7 +18,7 @@ jobs:
       PASSWORD_COMPLEXITY: easy
       NODE_VERSION: '24.21.0'
       MONGODB_VERSION: '7.0.41'
-      KUBO_VERSION: '0.43.0'
+      KUBO_VERSION: '0.43.1'
     services:
       cache:
         image: valkey/valkey:8.1-alpine
@@ -100,6 +100,7 @@ jobs:
           # Same Kubo node as docker-compose-quickstart.yml: stock image, default (online)
           # profile, telemetry off, RPC/gateway/swarm published on the loopback interface.
           docker run -d --name ipfs-node --init \
+            -e GOLOG_LOG_LEVEL=warn \
             -e IPFS_TELEMETRY=off \
             -p 127.0.0.1:4001:4001 \
             -p 127.0.0.1:5001:5001 \
