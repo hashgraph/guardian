@@ -33,6 +33,44 @@ function vcDoc(overrides = {}) {
     };
 }
 
+const schemaField = (name, overrides = {}) => ({
+    name,
+    title: name,
+    description: name,
+    type: 'string',
+    required: false,
+    isArray: false,
+    isRef: false,
+    readOnly: false,
+    fields: null,
+    conditions: null,
+    ...overrides,
+});
+
+const schemaCondition = (name, value, thenFields, elseFields = []) => ({
+    ifCondition: { field: schemaField(name), fieldValue: value },
+    thenFields,
+    elseFields,
+});
+
+const schema = (overrides = {}) => ({
+    iri: '#X',
+    contextURL: 'ctx:X',
+    fields: [],
+    conditions: [],
+    ...overrides,
+});
+
+const schemaDoc = (subject) => vcDoc({
+    document: {
+        credentialSubject: [{
+            '@context': ['ctx:X'],
+            type: 'X',
+            ...subject,
+        }],
+    },
+});
+
 before(() => {
     PolicyComponentsUtils.ExternalEventFn = (e) => { externalEvents.push(e); };
     PolicyComponentsUtils.BlockUpdateFn = (b, u) => { blockUpdates.push([b, u]); };
@@ -165,6 +203,113 @@ describe('@unit document-validator-block runtime', () => {
     it('multiple conditions short-circuit on first failure', async () => {
         const { block } = makeBlock(DocumentValidatorBlock, { options: { documentType: 'vc-document', conditions: [{ type: 'equal', field: 'owner', value: 'did:owner' }, { type: 'equal', field: 'owner', value: 'x' }] } });
         assert.equal(msg(await block.run(ev(vcDoc()))), 'Field "owner": got "did:owner", expected "x"');
+    });
+
+    it('skips validator conditions for missing inactive schema conditional fields', async () => {
+        const loadedSchema = schema({
+            fields: [schemaField('kind')],
+            conditions: [schemaCondition('kind', 'advanced', [schemaField('advancedValue')])],
+        });
+        const { block } = makeBlock(DocumentValidatorBlock, {
+            options: {
+                documentType: 'vc-document',
+                schema: '#X',
+                conditions: [{ type: 'equal', field: 'document.credentialSubject.0.advancedValue', value: 'ok' }],
+            },
+            componentsOverrides: { loadSchemaByID: async () => loadedSchema },
+        });
+
+        assert.equal(await block.run(ev(schemaDoc({ kind: 'basic' }))), null);
+    });
+
+    it('keeps failing missing active schema conditional fields', async () => {
+        const loadedSchema = schema({
+            fields: [schemaField('kind')],
+            conditions: [schemaCondition('kind', 'advanced', [schemaField('advancedValue')])],
+        });
+        const { block } = makeBlock(DocumentValidatorBlock, {
+            options: {
+                documentType: 'vc-document',
+                schema: '#X',
+                conditions: [{ type: 'equal', field: 'document.credentialSubject.0.advancedValue', value: 'ok' }],
+            },
+            componentsOverrides: { loadSchemaByID: async () => loadedSchema },
+        });
+
+        assert.equal(
+            msg(await block.run(ev(schemaDoc({ kind: 'advanced' })))),
+            'Field "advancedValue": got null, expected "ok"'
+        );
+    });
+
+    it('skips validator conditions for missing inactive nested schema conditional fields', async () => {
+        const child = schemaField('child', {
+            isRef: true,
+            fields: [schemaField('kind')],
+            conditions: [schemaCondition('kind', 'advanced', [schemaField('advancedValue')])],
+        });
+        const loadedSchema = schema({ fields: [child] });
+        const { block } = makeBlock(DocumentValidatorBlock, {
+            options: {
+                documentType: 'vc-document',
+                schema: '#X',
+                conditions: [{ type: 'equal', field: 'document.credentialSubject.0.child.advancedValue', value: 'ok' }],
+            },
+            componentsOverrides: { loadSchemaByID: async () => loadedSchema },
+        });
+
+        assert.equal(await block.run(ev(schemaDoc({ child: { kind: 'basic' } }))), null);
+    });
+
+    it('skips validator conditions when the missing inactive conditional field is the document value side', async () => {
+        const location = schemaField('location', {
+            isRef: true,
+            fields: [schemaField('field_1')],
+            conditions: [schemaCondition('field_1', 'show-field-2', [schemaField('field_2')])],
+        });
+        const loadedSchema = schema({ fields: [schemaField('main'), location] });
+        const { block } = makeBlock(DocumentValidatorBlock, {
+            options: {
+                documentType: 'vc-document',
+                schema: '#X',
+                conditions: [{
+                    type: 'equal',
+                    field: 'document.credentialSubject.0.main',
+                    valueSource: 'document',
+                    value: 'document.credentialSubject.0.location.field_2',
+                }],
+            },
+            componentsOverrides: { loadSchemaByID: async () => loadedSchema },
+        });
+
+        assert.equal(await block.run(ev(schemaDoc({
+            main: false,
+            location: {
+                field_1: '123123',
+            },
+        }))), null);
+    });
+
+    it('does not skip nested conditional fields when the owner ref object is missing', async () => {
+        const child = schemaField('child', {
+            isRef: true,
+            fields: [schemaField('kind')],
+            conditions: [schemaCondition('kind', 'advanced', [schemaField('advancedValue')])],
+        });
+        const loadedSchema = schema({ fields: [child] });
+        const { block } = makeBlock(DocumentValidatorBlock, {
+            options: {
+                documentType: 'vc-document',
+                schema: '#X',
+                conditions: [{ type: 'equal', field: 'document.credentialSubject.0.child.advancedValue', value: 'ok' }],
+            },
+            componentsOverrides: { loadSchemaByID: async () => loadedSchema },
+        });
+
+        assert.equal(
+            msg(await block.run(ev(schemaDoc({})))),
+            'Field "advancedValue": got null, expected "ok"'
+        );
     });
 
     it('run over an array returns null when all pass', async () => {
