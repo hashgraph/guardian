@@ -408,6 +408,21 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return fieldConfig?.locked !== false;
     }
 
+    public conditionHasLockedField(condition?: SchemaCondition): boolean {
+        return [...(condition?.thenFields ?? []), ...(condition?.elseFields ?? [])]
+            .some((field) => this.isTemplateFieldLocked(field));
+    }
+
+    public getRemoveConditionTitle(condition: SchemaCondition): string {
+        if (this.conditionHasLockedField(condition)) {
+            return 'Cannot remove condition with locked template fields';
+        }
+        if (!this.canChangeConditionsForSelectedSchema) {
+            return 'Conditions are locked by the applied template';
+        }
+        return 'Remove condition';
+    }
+
     public isTemplateSchemaCustomFieldsLocked(schema: Schema): boolean {
         if (!this.isTemplateConfigMode && !this.hasAppliedTemplateConfig) {
             return false;
@@ -4159,9 +4174,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const schema = this.currentContextSchema;
         if (!schema) { return; }
         const condToCheck = schema.conditions?.[index];
-        const hasLockedField = [...(condToCheck?.thenFields ?? []), ...(condToCheck?.elseFields ?? [])]
-            .some((f) => this.isTemplateFieldLocked(f));
-        if (hasLockedField) { return; }
+        if (this.conditionHasLockedField(condToCheck)) { return; }
         // H1: rekey index-keyed dropdown state before the conditions array shrinks
         const rekey = (rec: Record<number, string | null>) => {
             const out: Record<number, string | null> = {};

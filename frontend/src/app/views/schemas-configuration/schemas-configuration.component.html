@@ -1977,8 +1977,10 @@
                             @else if (getIfOperator(cond) === 'AND') { — all must match }
                             @else { — any must match }
                         </span>
-                        <button class="sc-cond-block-del" title="Remove condition"
-                            [disabled]="!canChangeConditionsForSelectedSchema"
+                        <button class="sc-cond-block-del"
+                            tooltipPosition="top"
+                            [pTooltip]="getRemoveConditionTitle(cond)"
+                            [disabled]="!canChangeConditionsForSelectedSchema || conditionHasLockedField(cond)"
                             (click)="removeConditionAt(ci)">
                             <i class="pi pi-trash"></i>
                         </button>
