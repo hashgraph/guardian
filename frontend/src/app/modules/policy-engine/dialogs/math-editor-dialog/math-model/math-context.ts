@@ -5,7 +5,13 @@ import { MathItemType } from './math-item.type';
 import { IContext } from './math.interface';
 import { DocumentMap } from './document-map';
 import { ComputeEngine } from '@cortex-js/compute-engine';
-import { buildTableHelper } from '@guardian/interfaces';
+import {
+    buildTableHelper,
+    getTableFormulaNumbers,
+    getTableFormulaScalar,
+    ITableFormulaColumn,
+    resolveTableFormulaColumn
+} from '@guardian/interfaces';
 
 type BoxedExpression = ReturnType<ComputeEngine['box']>;
 
@@ -81,7 +87,73 @@ function lookupExtremum(
     return typeof bestVal.value === 'number' ? ce.number(bestVal.value) : ce.number(0);
 }
 
-export function registerCEFunctions(ce: ComputeEngine): void {
+function boxedScalar(value: unknown, ce: ComputeEngine): BoxedExpression {
+    const scalar = getTableFormulaScalar(value);
+    return typeof scalar === 'number' ? ce.number(scalar) : ce.string(scalar);
+}
+
+function rewriteTableFormula(
+    expression: any,
+    tableColumns: Map<string, ITableFormulaColumn>,
+    getNumericAlias: (name: string) => string
+): { expression: any; changed: boolean } {
+    if (!Array.isArray(expression)) {
+        return { expression, changed: false };
+    }
+    const operator = expression[0];
+    const operands = expression.slice(1).map((operand) =>
+        rewriteTableFormula(operand, tableColumns, getNumericAlias)
+    );
+    if (operator === 'Sum' && expression.length === 2 &&
+        typeof expression[1] === 'string' && tableColumns.has(expression[1])) {
+        return {
+            expression: ['Sum', getNumericAlias(expression[1])],
+            changed: true
+        };
+    }
+    if (operator === 'At' &&
+        typeof expression[1] === 'string' && tableColumns.has(expression[1])) {
+        return {
+            expression: [
+                'At',
+                getNumericAlias(expression[1]),
+                ...operands.slice(1).map((operand) => operand.expression)
+            ],
+            changed: true
+        };
+    }
+    if (operator === 'Lookup' && [expression[1], expression[2]].some((operand) =>
+        typeof operand === 'string' && tableColumns.has(operand)
+    )) {
+        return {
+            expression: [
+                'TableFormulaLookup',
+                ...operands.map((operand) => operand.expression)
+            ],
+            changed: true
+        };
+    }
+    if (operands.some((operand) => operand.changed)) {
+        return {
+            expression: [operator, ...operands.map((operand) => operand.expression)],
+            changed: true
+        };
+    }
+    return { expression, changed: false };
+}
+
+export function registerCEFunctions(
+    ce: ComputeEngine,
+    tableColumns: Map<string, ITableFormulaColumn> = new Map()
+): void {
+    const directTableName = (expression: BoxedExpression): string | null => {
+        const name = expression?.symbol;
+        return typeof name === 'string' && tableColumns.has(name) ? name : null;
+    };
+    const tableList = (name: string): BoxedExpression => {
+        const values = tableColumns.get(name)?.values || [];
+        return ce.box(['List', ...values.map((value) => boxedScalar(value, ce))]);
+    };
     ce.declare('Lookup', {
         signature: '(value: list, keys: list, id: any) -> number',
         evaluate: (ops: ReadonlyArray<any>) => {
@@ -108,6 +180,34 @@ export function registerCEFunctions(ce: ComputeEngine): void {
             return ce.number(0);
         }
     });
+
+    if (tableColumns.size > 0) {
+        ce.declare('TableFormulaLookup', {
+            signature: '(value: any, keys: any, id: any) -> unknown',
+            lazy: true,
+            evaluate: (ops: ReadonlyArray<BoxedExpression>) => {
+                const valueName = directTableName(ops[0]);
+                const keyName = directTableName(ops[1]);
+                const values = valueName ? tableList(valueName) : ops[0].evaluate();
+                const keys = keyName ? tableList(keyName) : ops[1].evaluate();
+                const id = ops[2].evaluate();
+                const valueList = getList(values);
+                const keyList = getList(keys);
+                if (valueList.length !== keyList.length) { return ce.number(0); }
+                const idValue = getString(id);
+                for (let n = 0; n < keyList.length; n++) {
+                    if (getString(keyList[n]) === idValue) {
+                        if (valueName) {
+                            return boxedScalar(tableColumns.get(valueName)?.values[n], ce);
+                        }
+                        const value = valueList[n];
+                        return ce.number(typeof value?.value === 'number' ? value.value : 0);
+                    }
+                }
+                return ce.number(0);
+            }
+        });
+    }
 
     ce.declare('LookupTwo', {
         signature: '(value: list, keys1: list, id1: any, keys2: list, id2: any) -> number',
@@ -172,6 +272,9 @@ export class MathContext {
     private scope: any = {};
     private document: any | null = null;
     private relationships: any[] = [];
+    private tableColumns: Map<string, ITableFormulaColumn> = new Map();
+    private numericTableAliases: Map<string, string> = new Map();
+    private tableWarnings: Map<string, string> = new Map();
 
     constructor(list: (MathFormula | FieldLink)[]) {
         this.list = list;
@@ -185,15 +288,31 @@ export class MathContext {
 
     public setDocument(documents: DocumentMap): IContext {
         this.valid = true;
+        this.tableColumns.clear();
         try {
             for (const item of this.list) {
                 if (item.type === MathItemType.LINK) {
                     const document = documents.getDocument(item.schema);
-                    item.value = getDocumentValueByPath(document, item.path);
+                    const keys = item.path.split('.');
+                    let column: ITableFormulaColumn | null = null;
+                    for (let index = 1; index < keys.length; index++) {
+                        const tableValue = getDocumentValueByPath(document, keys.slice(0, index).join('.'));
+                        const columnKey = keys.slice(index).join('.');
+                        column = resolveTableFormulaColumn(tableValue, columnKey);
+                        if (column) {
+                            this.tableColumns.set(item.name, column);
+                            item.value = column.values;
+                            break;
+                        }
+                    }
+                    if (!column) {
+                        item.value = getDocumentValueByPath(document, item.path);
+                    }
                 }
             }
         } catch (error) {
             this.valid = false;
+            throw error;
         }
         this.document = documents.getCurrent();
         this.relationships = documents.getRelationships();
@@ -223,6 +342,10 @@ export class MathContext {
             user: null,
             result: null
         }
+    }
+
+    public getWarnings(): string[] {
+        return Array.from(this.tableWarnings.values());
     }
 
     public getComponents() {
@@ -277,11 +400,38 @@ export class MathContext {
         this.formulas = {};
         this.scope = {};
         this.getField = this.__get.bind(doc);
+        this.numericTableAliases.clear();
+        this.tableWarnings.clear();
         try {
             const ce = createComputeEngine();
 
-            // Custom functions
-            registerCEFunctions(ce);
+            registerCEFunctions(ce, this.tableColumns);
+            const getNumericAlias = (name: string): string => {
+                const cached = this.numericTableAliases.get(name);
+                if (cached) { return cached; }
+                const alias = `__table_formula_numeric_${this.numericTableAliases.size}`;
+                const column = this.tableColumns.get(name);
+                const converted = getTableFormulaNumbers(column?.values || []);
+                this.numericTableAliases.set(name, alias);
+                ce.assign(alias, ce.box(['List', ...converted.values] as any));
+                if (column && converted.replacements > 0) {
+                    const key = `${column.key}\u0000${column.name}`;
+                    this.tableWarnings.set(
+                        key,
+                        `Table column "${column.name}" replaced ${converted.replacements} nonnumeric cells with 0.`
+                    );
+                }
+                return alias;
+            };
+            const parseFormula = (latex: string): BoxedExpression => {
+                const parsed = ce.parse(latex);
+                const rewritten = rewriteTableFormula(
+                    parsed.json,
+                    this.tableColumns,
+                    getNumericAlias
+                );
+                return rewritten.changed ? ce.box(rewritten.expression as any) : parsed;
+            };
 
             const systemFunctions = MathFormula.createSystemFunctions();
             for (const systemFunction of systemFunctions) {
@@ -329,7 +479,7 @@ export class MathContext {
                 if (item.type === MathItemType.VARIABLE) {
                     const latex = item.getLatex();
                     if (latex) {
-                        const result = ce.parse(latex).evaluate();
+                        const result = parseFormula(latex).evaluate();
                         item.value = parseValue(result);
                         this.variables[item.functionName] = item.value;
                         this.scope[item.functionName] = item.value;
@@ -346,7 +496,7 @@ export class MathContext {
                 if (item.type === MathItemType.FUNCTION) {
                     const latex = item.getLatex();
                     if (latex) {
-                        ce.assign(item.functionName, ce.parse(latex));
+                        ce.assign(item.functionName, parseFormula(latex));
                         this.formulas[item.functionName] = this.__evaluate.bind({
                             ce,
                             name: item.functionName,

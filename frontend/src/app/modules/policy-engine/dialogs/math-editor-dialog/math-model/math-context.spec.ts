@@ -1,5 +1,8 @@
 import { ComputeEngine } from '@cortex-js/compute-engine';
-import { getList, getString, getNumber, registerCEFunctions } from './math-context';
+import { getList, getString, getNumber, MathContext, registerCEFunctions } from './math-context';
+import { DocumentMap } from './document-map';
+import { FieldLink } from './field-link';
+import { MathFormula } from './math-formula';
 
 function makeTestCe(): ComputeEngine {
     const ce = new ComputeEngine();
@@ -239,5 +242,141 @@ describe('EqualString (CE integration)', () => {
     it('returns 0 when one side has no string representation', () => {
         // An empty List has no string/value/symbol → getString returns null
         expect(call(ce, 'EqualString', ce.box(['List']), ce.string('a')).value).toBe(0);
+    });
+});
+
+describe('MathContext Table columns', () => {
+    function link(name: string, path: string): FieldLink {
+        const item = new FieldLink(name, path);
+        item.schema = 'schema';
+        item.update();
+        return item;
+    }
+
+    function formula(name: string, body: string): MathFormula {
+        const item = new MathFormula(name, body);
+        item.update();
+        return item;
+    }
+
+    function documents(document: any): DocumentMap {
+        const result = new DocumentMap();
+        result.addDocument({ schema: 'schema', document });
+        return result;
+    }
+
+    function table(): any {
+        return {
+            type: 'table',
+            columnKeys: ['year', 'area.total', 'factor', 'device'],
+            columnNames: ['Year', 'Area', 'Factor', 'Device'],
+            rows: [
+                { year: '2020', 'area.total': '10', factor: '2', device: 'A' },
+                { year: '2021', 'area.total': 'n/a', factor: '3', device: 'B' },
+                { year: '2024', 'area.total': '50', factor: '2', device: 'C' }
+            ]
+        };
+    }
+
+    it('sums a declared column and reports numeric replacements', () => {
+        const context = new MathContext([
+            link('area', 'siteTable.area.total'),
+            formula('total', '\\sum{\\operatorname{area}}')
+        ]);
+
+        const result = context.setDocument(documents({ siteTable: table() }));
+
+        expect(result.scope.total).toBe(60);
+        expect(result.scope.area).toEqual(['10', 'n/a', '50']);
+        expect(context.getWarnings()).toEqual([
+            'Table column "Area" replaced 1 nonnumeric cells with 0.'
+        ]);
+    });
+
+    it('returns numbers and text from Table-only Lookup', () => {
+        const context = new MathContext([
+            link('area', 'siteTable.area.total'),
+            link('year', 'siteTable.year'),
+            link('device', 'siteTable.device'),
+            formula('combined', '\\mathrm{Lookup}\\left(\\operatorname{area},\\operatorname{year},\\text{2020}\\right) + \\mathrm{Lookup}\\left(\\operatorname{area},\\operatorname{year},\\text{2024}\\right)'),
+            formula('selected', '\\mathrm{Lookup}\\left(\\operatorname{device},\\operatorname{year},\\text{2021}\\right)')
+        ]);
+
+        const result = context.setDocument(documents({ siteTable: table() }));
+
+        expect(result.scope.combined).toBe(60);
+        expect(result.scope.selected).toBe('B');
+        expect(context.getWarnings()).toEqual([]);
+    });
+
+    it('uses numeric Table values through At without losing row alignment', () => {
+        const context = new MathContext([
+            link('area', 'siteTable.area.total'),
+            link('factor', 'siteTable.factor'),
+            formula(
+                'total',
+                '\\sum_{i=1}^{\\operatorname{Length}\\left(\\operatorname{area}\\right)} '
+                + '\\operatorname{At}\\left(\\operatorname{area},i\\right) '
+                + '\\cdot \\operatorname{At}\\left(\\operatorname{factor},i\\right)'
+            )
+        ]);
+
+        const result = context.setDocument(documents({ siteTable: table() }));
+
+        expect(result.scope.total).toBe(120);
+        expect(result.scope.area.length).toBe(3);
+        expect(context.getWarnings()).toEqual([
+            'Table column "Area" replaced 1 nonnumeric cells with 0.'
+        ]);
+    });
+
+    it('uses Table columns inside function formulas', () => {
+        const context = new MathContext([
+            link('area', 'siteTable.area.total'),
+            link('year', 'siteTable.year'),
+            formula('scaled(k)', 'k \\cdot \\sum{\\operatorname{area}}'),
+            formula('pick(y)', '\\mathrm{Lookup}\\left(\\operatorname{area},\\operatorname{year},y\\right)')
+        ]);
+
+        context.setDocument(documents({ siteTable: table() }));
+        const formulas = context.getContext().formulas;
+
+        expect(formulas.scaled(2)).toBe(120);
+        expect(formulas.pick('2024')).toBe(50);
+        expect(context.getWarnings()).toEqual([
+            'Table column "Area" replaced 1 nonnumeric cells with 0.'
+        ]);
+    });
+
+    it('keeps ordinary formula behavior when a Table column is present', () => {
+        const context = new MathContext([
+            link('year', 'siteTable.year'),
+            link('ordinary', 'ordinary'),
+            link('keys', 'keys'),
+            formula('total', '\\sum{\\operatorname{ordinary}}'),
+            formula('matched', '\\mathrm{Lookup}\\left(\\operatorname{ordinary},\\operatorname{keys},\\text{b}\\right)')
+        ]);
+
+        const result = context.setDocument(documents({
+            siteTable: table(),
+            ordinary: [4, 5],
+            keys: ['a', 'b']
+        }));
+
+        expect(result.scope.total).toBe(9);
+        expect(result.scope.matched).toBe(5);
+        expect(context.getWarnings()).toEqual([]);
+    });
+
+    it('rejects a declared column above the shared row limit', () => {
+        const context = new MathContext([link('area', 'siteTable.area.total')]);
+        const value = table();
+        value.rows = Array.from({ length: 10001 }, (_, index) => ({
+            'area.total': String(index)
+        }));
+
+        expect(() => context.setDocument(documents({ siteTable: value }))).toThrowError(
+            /Table column "Area" has 10001 rows; General formulas are limited to 10000/
+        );
     });
 });

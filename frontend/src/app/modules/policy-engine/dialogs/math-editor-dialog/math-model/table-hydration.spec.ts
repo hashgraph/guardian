@@ -1,7 +1,8 @@
 import { of } from 'rxjs';
 import { buildTableHelper } from '@guardian/interfaces';
 import { CsvService } from 'src/app/services/csv.service';
-import { hydrateDocumentTables, TABLE_TEST_MAX_ROWS } from './table-hydration';
+import { DocumentMap } from './document-map';
+import { hydrateDocumentMapTables, hydrateDocumentTables, TABLE_TEST_MAX_ROWS } from './table-hydration';
 
 describe('hydrateDocumentTables', () => {
     const CSV = 'Year,CO2 (tonnes),Region\n2023,42,Europe\n2024,45,Europe\n2025,48,Asia';
@@ -238,5 +239,25 @@ describe('hydrateDocumentTables', () => {
         expect(message).toContain('testing is limited to');
         expect(message).toContain('tableData');
         expect(document.tableData).toBe(value);
+    });
+
+    it('hydrates tables in the current document and every relationship', async () => {
+        const documents = new DocumentMap();
+        documents.addDocument({
+            schema: '#main',
+            document: { tableData: storedTable('file-main') }
+        });
+        documents.addRelationships([{
+            schema: '#related',
+            document: { tableData: storedTable('file-related') }
+        }]);
+
+        await hydrateDocumentMapTables(documents, deps);
+
+        expect(requested).toEqual(['file-main', 'file-related']);
+        expect(buildTableHelper().col(documents.getCurrent().tableData, 'co2_tonnes'))
+            .toEqual(['42', '45', '48']);
+        expect(buildTableHelper().col(documents.getDocument('#related').tableData, 'co2_tonnes'))
+            .toEqual(['42', '45', '48']);
     });
 });

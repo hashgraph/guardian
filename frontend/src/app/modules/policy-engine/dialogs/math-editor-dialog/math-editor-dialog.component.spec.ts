@@ -1,4 +1,5 @@
 import { MathEditorDialogComponent } from './math-editor-dialog.component';
+import { DocumentMap } from './math-model/document-map';
 
 describe('MathEditorDialogComponent input documents', () => {
     function makeDialog(): any {
@@ -43,5 +44,145 @@ describe('MathEditorDialogComponent input documents', () => {
         related.tableData = { type: 'table', rows: [] };
 
         expect(dialog.inputRelationshipsValue[0].document.tableData).toEqual('{"type":"table"}');
+    });
+});
+
+describe('MathEditorDialogComponent Table column fields', () => {
+    function makeDialog(): any {
+        return Object.create(MathEditorDialogComponent.prototype);
+    }
+
+    function schema(tableColumns?: { name: string; key: string }[]): any {
+        return {
+            getDeepFields: () => [{
+                path: 'siteTable',
+                arrayLvl: 0,
+                type: 'table',
+                field: {
+                    name: 'siteTable',
+                    description: 'Site table',
+                    type: 'table',
+                    isArray: false,
+                    tableColumns
+                },
+                fields: []
+            }]
+        };
+    }
+
+    it('adds declared columns to the picker tree and field map', () => {
+        const dialog = makeDialog();
+        const fields = dialog.getSchemaFields(schema([
+            { name: 'Year', key: 'year' },
+            { name: 'Area (ha)', key: 'area_ha' }
+        ]));
+        const map = dialog.createFieldMap(fields, new Map());
+
+        expect(fields[0].fields.map((field: any) => field.path)).toEqual([
+            'siteTable.year',
+            'siteTable.area_ha'
+        ]);
+        expect(fields[0].fields.map((field: any) => field.field.description)).toEqual([
+            'Year',
+            'Area (ha)'
+        ]);
+        expect(map.get('siteTable.area_ha').type).toBe('string[]');
+    });
+
+    it('leaves a Table without declared columns as a leaf', () => {
+        const dialog = makeDialog();
+        const fields = dialog.getSchemaFields(schema(undefined));
+
+        expect(fields[0].fields).toEqual([]);
+    });
+
+    it('includes declared columns in path suggestions without changing the Table path', () => {
+        const dialog = makeDialog();
+        const fields = dialog.getSchemaFields(schema([
+            { name: 'Area (ha)', key: 'area_ha' }
+        ]));
+        dialog.inputSchemaFieldMap = dialog.createFieldMap(fields, new Map());
+        dialog.outputSchemaFieldMap = new Map();
+        dialog.schemaFieldMap = new Map();
+        dialog.pathSuggestions = [];
+        dialog.activePathItem = null;
+        const item: any = { field: 'area', schema: null };
+
+        dialog._computePathSuggestions(item, 'input');
+
+        expect(dialog.pathSuggestions).toEqual(['siteTable.area_ha']);
+        expect(dialog.inputSchemaFieldMap.get('siteTable').type).toBe('table');
+    });
+
+    it('does not add input-only Table columns to the output picker', () => {
+        const dialog = makeDialog();
+        dialog.schemaNames = new Map();
+
+        const view = dialog.createSchemaView(schema([
+            { name: 'Area (ha)', key: 'area_ha' }
+        ]), false);
+
+        expect(view.items[0].children.length).toBe(0);
+    });
+});
+
+describe('MathEditorDialogComponent Table test results', () => {
+    function makeDialog(context: any): any {
+        const dialog: any = Object.create(MathEditorDialogComponent.prototype);
+        const documents = new DocumentMap();
+        documents.addDocument({ schema: '#schema', document: { inputValue: 21 } });
+        dialog.getValue = () => documents;
+        dialog.artifactService = {};
+        dialog.gzipService = {};
+        dialog.csvService = {};
+        dialog.idb = {};
+        dialog.engine = {
+            createContext: () => context,
+            variables: { getItems: () => [], pages: [] },
+            formulas: { getItems: () => [], pages: [] },
+            outputs: { getItems: () => [], pages: [] },
+            getItems: () => []
+        };
+        dialog.inputSchema = { iri: '#schema' };
+        dialog.outputSchema = { iri: '#schema' };
+        dialog.code = {
+            setContext: () => undefined,
+            build: () => () => ({ done: true })
+        };
+        dialog.onStep = () => undefined;
+        return dialog;
+    }
+
+    it('shows Table conversion warnings in the existing Errors result', async () => {
+        const context = {
+            setDocument: () => undefined,
+            getContext: () => ({ scope: {} }),
+            getWarnings: () => ['Table column "Area" replaced 2 nonnumeric cells with 0.']
+        };
+        const dialog = makeDialog(context);
+
+        await dialog.onTest();
+
+        expect(dialog.result.error).toBe(
+            'Table column "Area" replaced 2 nonnumeric cells with 0.'
+        );
+        expect(dialog.result.output).toContain('"done": true');
+    });
+
+    it('shows a shared Table row-limit error instead of hiding it as invalid config', async () => {
+        const context = {
+            setDocument: () => {
+                throw new Error(
+                    'Table column "Area" has 10001 rows; General formulas are limited to 10000'
+                );
+            }
+        };
+        const dialog = makeDialog(context);
+
+        await dialog.onTest();
+
+        expect(dialog.result.error).toContain('10001 rows');
+        expect(dialog.result.error).toContain('limited to 10000');
+        expect(dialog.resultStep).toBe('errors');
     });
 });
