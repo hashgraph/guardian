@@ -1,7 +1,20 @@
+import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 import { RichTextEditorComponent } from './rich-text-editor.component';
+
+@Component({
+    template: `<app-rich-text-editor
+        [formControl]="control"
+        [imageUploader]="imageUploader"
+    ></app-rich-text-editor>`,
+    standalone: false
+})
+class RichTextEditorHostComponent {
+    control = new FormControl('');
+    imageUploader: (file: File) => Promise<string> = async () => '';
+}
 
 describe('RichTextEditorComponent', () => {
     let component: RichTextEditorComponent;
@@ -9,7 +22,7 @@ describe('RichTextEditorComponent', () => {
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            declarations: [RichTextEditorComponent],
+            declarations: [RichTextEditorComponent, RichTextEditorHostComponent],
             imports: [FormsModule, ReactiveFormsModule],
         }).compileComponents();
 
@@ -1293,9 +1306,62 @@ describe('RichTextEditorComponent', () => {
             expect(emitted).not.toContain('base64');
         });
 
+        it('should keep the bound form control invalid until all image uploads finish', async () => {
+            const finishUploads: Array<(value: string) => void> = [];
+            const hostFixture = TestBed.createComponent(RichTextEditorHostComponent);
+            const host = hostFixture.componentInstance;
+            host.imageUploader = () => new Promise(resolve => {
+                finishUploads.push(resolve);
+            });
+            hostFixture.detectChanges();
+            const editor = hostFixture.debugElement
+                .query(By.directive(RichTextEditorComponent))
+                .componentInstance as RichTextEditorComponent;
+            spyOn<any>(editor, '_prepareImage').and.callFake((file: File) => Promise.resolve(file));
+            spyOn<any>(editor, '_readAsDataUrl').and.resolveTo('data:image/webp;base64,AAAA');
+            spyOn(document, 'execCommand').and.callFake((command: string, _ui?: boolean, value?: string) => {
+                if (command === 'insertHTML') {
+                    editor.editorRef.nativeElement.innerHTML = value || '';
+                }
+                return true;
+            });
+            const firstTransfer = new DataTransfer();
+            firstTransfer.items.add(pngFile());
+            const firstInput = document.createElement('input');
+            firstInput.type = 'file';
+            firstInput.files = firstTransfer.files;
+            const secondTransfer = new DataTransfer();
+            secondTransfer.items.add(pngFile());
+            const secondInput = document.createElement('input');
+            secondInput.type = 'file';
+            secondInput.files = secondTransfer.files;
+
+            const firstUpload = editor.onImageSelected({ target: firstInput } as any);
+            const secondUpload = editor.onImageSelected({ target: secondInput } as any);
+
+            expect(host.control.hasError('imageUploading')).toBeTrue();
+            expect(host.control.invalid).toBeTrue();
+
+            await Promise.resolve();
+            finishUploads[0](reference);
+            await firstUpload;
+
+            expect(host.control.hasError('imageUploading')).toBeTrue();
+            expect(host.control.invalid).toBeTrue();
+
+            finishUploads[1](reference);
+            await secondUpload;
+
+            expect(host.control.hasError('imageUploading')).toBeFalse();
+            expect(host.control.valid).toBeTrue();
+            hostFixture.destroy();
+        });
+
         it('should report a failed upload and leave the value alone', async () => {
             let emitted: string | null = null;
+            const validatorChange = jasmine.createSpy('validatorChange');
             component.registerOnChange(value => { emitted = value; });
+            component.registerOnValidatorChange(validatorChange);
             component.imageUploader = () => Promise.reject(new Error('gone'));
             spyOn<any>(component, '_prepareImage').and.callFake((file: File) => Promise.resolve(file));
 
@@ -1303,6 +1369,8 @@ describe('RichTextEditorComponent', () => {
 
             expect(component.imageError).toContain('could not be uploaded');
             expect(emitted).toBeNull();
+            expect(component.validate(new FormControl())).toBeNull();
+            expect(validatorChange).toHaveBeenCalledTimes(2);
         });
 
         it('should disable the image button while an upload is in flight', () => {

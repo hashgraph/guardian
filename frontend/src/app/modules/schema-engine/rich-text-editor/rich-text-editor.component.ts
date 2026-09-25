@@ -9,7 +9,14 @@ import {
     ElementRef,
     ViewChild
 } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import {
+    AbstractControl,
+    ControlValueAccessor,
+    NG_VALIDATORS,
+    NG_VALUE_ACCESSOR,
+    ValidationErrors,
+    Validator
+} from '@angular/forms';
 import { isBlankRichText, isSafeHref, sanitizeRichText } from './rich-text-sanitizer';
 import { escapeHtml, htmlToMarkdown, markdownToHtml } from './markdown';
 
@@ -25,10 +32,15 @@ import { escapeHtml, htmlToMarkdown, markdownToHtml } from './markdown';
             useExisting: forwardRef(() => RichTextEditorComponent),
             multi: true,
         },
+        {
+            provide: NG_VALIDATORS,
+            useExisting: forwardRef(() => RichTextEditorComponent),
+            multi: true,
+        },
     ],
 })
 export class RichTextEditorComponent
-    implements AfterViewInit, OnDestroy, ControlValueAccessor
+    implements AfterViewInit, OnDestroy, ControlValueAccessor, Validator
 {
     @ViewChild('editor', { static: false }) editorRef!: ElementRef<HTMLDivElement>;
     @ViewChild('linkInput', { static: false }) linkInputRef?: ElementRef<HTMLInputElement>;
@@ -63,6 +75,8 @@ export class RichTextEditorComponent
     private _value = '';
     private _onChange: (value: string) => void = () => {};
     private _onTouched: () => void = () => {};
+    private _onValidatorChange: () => void = () => {};
+    private _activeImageUploads = 0;
     private _savedRange: Range | null = null;
     private _editingLink: HTMLAnchorElement | null = null;
     private _draggingFromEditor = false;
@@ -169,6 +183,14 @@ export class RichTextEditorComponent
 
     registerOnTouched(fn: () => void): void {
         this._onTouched = fn;
+    }
+
+    validate(_control: AbstractControl): ValidationErrors | null {
+        return this.imageLoading ? { imageUploading: true } : null;
+    }
+
+    registerOnValidatorChange(fn: () => void): void {
+        this._onValidatorChange = fn;
     }
 
     setDisabledState(isDisabled: boolean): void {
@@ -649,7 +671,9 @@ export class RichTextEditorComponent
             return;
         }
 
+        this._activeImageUploads++;
         this.imageLoading = true;
+        this._onValidatorChange();
         this.cdr.markForCheck();
         try {
             const prepared = await this._prepareImage(file);
@@ -671,7 +695,9 @@ export class RichTextEditorComponent
         } catch (error) {
             this.imageError = `${file.name} could not be uploaded. Check the connection and try again.`;
         } finally {
-            this.imageLoading = false;
+            this._activeImageUploads--;
+            this.imageLoading = this._activeImageUploads > 0;
+            this._onValidatorChange();
             this.cdr.markForCheck();
         }
     }
