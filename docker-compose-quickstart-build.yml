@@ -79,16 +79,19 @@ services:
       - '5007'
 
   ipfs-node:
-    image: ipfs/kubo:v0.43.0
+    image: ipfs/kubo:v0.43.1
     volumes:
       - ipfs_data:/data/ipfs:rw
       - ipfs_export:/export:rw
     environment:
+      GOLOG_LOG_LEVEL: warn
       IPFS_TELEMETRY: off # valid options: 'on' (default), 'off', 'auto' (https://github.com/ipfs/kubo/blob/master/docs/telemetry.md)
+      IPFS_GETEWAY__NOFETCH: false # When `true`, the gateway does not retrieve CIDs that are not already present in the current storage
     ports:
       - '127.0.0.1:4001:4001'
       - '127.0.0.1:5001:5001'
       - '127.0.0.1:8080:8080'
+    command: [ "daemon", "--migrate=true", "--agent-version-suffix=docker" ] # Add "--offline" to avoid connecting to any IPFS peer
     init: true
 
   logger-service:
