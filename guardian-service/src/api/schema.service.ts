@@ -82,7 +82,7 @@ function getConditionPredicates(ifCondition: any): any[] {
 function getParsedConditionTargetPaths(targets: any[]): string[][] {
     return (targets || [])
         .map((target: any) => target.fieldPath || [])
-        .filter((path: string[]) => path.length > 0);
+        .filter((fieldPath: string[]) => fieldPath.length > 0);
 }
 
 function getConditionsHash(schema: ISchema): string {
