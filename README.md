@@ -244,11 +244,11 @@ To let the Multi-environment transition happen in a transparent way the `GUARDIA
 
 ##### 3.2. Setting up JWT keys in /.env file
 
-To start of auth-service it is necessary to fill in `JWT_PRIVATE_KEY` and `JWT_PUBLIC_KEY`, which are RSA key pair. You can generate it in any convenient way, for example, using [this service](https://travistidwell.com/jsencrypt/demo/).
+To start of auth-service it is necessary to fill in `JWT_PRIVATE_KEY` and `JWT_PUBLIC_KEY`, which are (minimum) 2048-bit RSA key pair. You can generate it in any convenient way, for example, using [this service](https://travistidwell.com/jsencrypt/demo/).
 
 ##### 3.3. Setting up JWT keys for each service in the .env file
 
-To start all services, you need to create a 2048-bit RSA key pair for each service. You can generate a key pair in any convenient way—for example, using [the online tool](https://mkjwk.org/) with the following settings:
+To start all services, you need to create a (minimum) 2048-bit RSA key pair for each service. You can generate a key pair in any convenient way—for example, using [the online tool](https://mkjwk.org/) with the following settings:
 
 - key size: 2048
 - key use: signature
