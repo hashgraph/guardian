@@ -16,7 +16,8 @@ import { Permissions } from '@guardian/interfaces';
 import { Auth, AuthUser } from '#auth';
 import { Examples, InternalServerErrorDTO, NotFoundErrorDTO, BadRequestErrorDTO } from '#middlewares';
 import { CacheService, getCacheKey, Guardians, InternalException, UseCache } from '#helpers';
-import { IAuthUser, PinoLogger } from '@guardian/common';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
 import { CACHE, PREFIXES } from '#constants';
 
 @Controller('ipfs')

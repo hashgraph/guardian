@@ -11,7 +11,7 @@ import { assert } from 'chai';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { BLS12381_2020_V1_CONTEXT } from '../../../../dist/hedera-modules/document-loader/contexts/bls12381-2020-v1.js';
+import { BLS12381_2020_V1_CONTEXT } from '../../../../dist/document-loader/base/contexts/bls12381-2020-v1.js';
 
 const fixtures = join(dirname(fileURLToPath(import.meta.url)), '../../../fixtures/credentials');
 const read = (file) => JSON.parse(readFileSync(join(fixtures, file), 'utf8'));

@@ -55,6 +55,9 @@ jobs:
           pushd common
           yarn run build
           popd
+          pushd hedera
+          yarn run build
+          popd
           pushd ai-service
           yarn run build
           popd
@@ -98,6 +101,12 @@ jobs:
           CI: true
           NODE_OPTIONS: --openssl-legacy-provider
 
+      # Fails when a built workspace imports a package that its production
+      # install does not provide. tsc cannot see this, because in CI every
+      # package is hoisted to the root node_modules.
+      - name: Check production dependencies
+        run: node .github/scripts/dep-closure-check.mjs
+
       - name: Detect secrets
         run: |
           yarn run detect-secrets
@@ -111,6 +120,9 @@ jobs:
           npm run lint
           popd
           pushd common
+          npm run lint
+          popd
+          pushd hedera
           npm run lint
           popd
           pushd logger-service
@@ -150,6 +162,9 @@ jobs:
           npm run test
           popd
           pushd common
+          npm run test
+          popd
+          pushd hedera
           npm run test
           popd
           pushd ai-service

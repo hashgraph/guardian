@@ -3,7 +3,8 @@ import { BlockActionError } from '../errors/index.js';
 import { DocumentSignature, SchemaEntity, SchemaHelper, DocumentCategoryType, LocationType, OrgRolePermission } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
-import { HederaDidDocument, MessageAction, MessageMemo, MessageServer, Token as TokenCollection, VcDocumentDefinition as VcDocument, VcHelper, VCMessage, VPMessage, } from '@guardian/common';
+import { Token as TokenCollection } from '@guardian/common';
+import { HederaDidDocument, MessageAction, MessageMemo, MessageServer, VcDocumentDefinition as VcDocument, VcHelper, VCMessage, VPMessage } from '@guardian/hedera';
 
 import { PolicyUtils } from '../helpers/utils.js';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyTokenBlock } from '../policy-engine.interface.js';

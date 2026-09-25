@@ -1,7 +1,7 @@
 import { ISchema } from '@guardian/interfaces';
-import { Schema } from '../entity/index.js';
-import { SchemaLoader } from '../hedera-modules/index.js';
-import { DatabaseServer } from '../database-modules/index.js';
+import { Schema } from '../entity/schema.js';
+import { SchemaLoader } from './base/schema-loader.js';
+import { DatabaseServer } from '../database-modules/database-server.js';
 
 /**
  * Subject schema loader

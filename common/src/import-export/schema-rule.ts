@@ -1,5 +1,5 @@
 import JSZip from 'jszip';
-import { SchemaRule } from '../entity/index.js';
+import { SchemaRule } from '../entity/schema-rule.js';
 import {
     IConditionElseData,
     IConditionEnum,

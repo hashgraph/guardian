@@ -1,16 +1,5 @@
-import {
-    DIDMessage,
-    HederaDid,
-    Message,
-    MessageAction,
-    MessageServer,
-    MessageType,
-    SchemaMessage,
-    TopicMessage,
-    UrlType,
-    VCMessage,
-    Workers
-} from '@guardian/common';
+import { Workers } from '@guardian/common';
+import { DIDMessage, HederaDid, Message, MessageAction, MessageServer, MessageType, SchemaMessage, TopicMessage, UrlType, VCMessage } from '@guardian/hedera';
 import { TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { AnyBlockType } from '../policy-engine.interface.js';
 

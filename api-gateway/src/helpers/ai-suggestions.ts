@@ -1,4 +1,4 @@
-import { NatsService } from '@guardian/common';
+import { NatsService } from '@guardian/common/mq/nats-service';
 import { GenerateUUIDv4, IPropertySuggestionRequest, IPropertySuggestionResponse, MessageAPI } from '@guardian/interfaces';
 import { Singleton } from './decorators/singleton.js';
 

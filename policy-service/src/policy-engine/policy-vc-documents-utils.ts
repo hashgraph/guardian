@@ -9,15 +9,9 @@ import {
     SchemaEntity
 } from '@guardian/interfaces';
 import { PolicyActionsUtils } from './policy-actions/utils.js';
-import { VcDocument } from '@guardian/common/dist/hedera-modules/vcjs/vc-document.js';
-import {
-    VCMessage,
-    MessageAction,
-    Message,
-    MessageMemo,
-    DatabaseServer,
-    TopicConfig,
-} from '@guardian/common';
+import { VcDocument } from '@guardian/hedera/dist/vcjs/vc-document.js';
+import { DatabaseServer } from '@guardian/common';
+import { VCMessage, MessageAction, Message, MessageMemo, TopicConfig } from '@guardian/hedera';
 
 export class PolicyVcDocumentsUtils {
     public static async getAllVersionVcDocuments(

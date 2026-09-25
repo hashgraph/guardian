@@ -11,7 +11,8 @@ import {
     SchemaStatus,
     SentinelHubContext
 } from '@guardian/interfaces';
-import { DatabaseServer, INotificationStep, MessageAction, MessageServer, Schema as SchemaCollection, SchemaMessage, SchemaPackageMessage, schemasToContext, TopicConfig, UrlType } from '@guardian/common';
+import { DatabaseServer, INotificationStep, Schema as SchemaCollection, schemasToContext } from '@guardian/common';
+import { MessageAction, MessageServer, SchemaMessage, SchemaPackageMessage, TopicConfig, UrlType } from '@guardian/hedera';
 import { checkForCircularDependency } from '../common/load-helper.js';
 import { incrementSchemaVersion, updateSchemaDefs, updateSchemaDocument } from './schema-helper.js';
 import { publishSchemaTags } from '../tag/tag-publish-helper.js';

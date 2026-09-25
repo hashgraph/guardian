@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { LocationType, DocumentStatus, DocumentSignature } from '@guardian/interfaces';
-import { MessageServer, VcDocumentDefinition as VcDocumentRef, VcHelper } from '@guardian/common';
+import { MessageServer, VcDocumentDefinition as VcDocumentRef, VcHelper } from '@guardian/hedera';
 import { PolicyUtils } from '../../../dist/policy-engine/helpers/utils.js';
 import { PolicyActionsUtils } from '../../../dist/policy-engine/policy-actions/utils.js';
 import { DocumentType } from '../../../dist/policy-engine/interfaces/document.type.js';

@@ -84,7 +84,7 @@ describe('CredentialsApi', function () {
             '#auth': authMock,
             '#middlewares': middlewaresMock,
             '#constants': constantsMock,
-            '@guardian/common': commonMock,
+            '@guardian/common/helpers/pino-logger': commonMock,
         }));
     });
 
@@ -255,7 +255,7 @@ describe('IpfsApi', function () {
             '#auth': authMock,
             '#middlewares': middlewaresMock,
             '#constants': constantsMock,
-            '@guardian/common': commonMock,
+            '@guardian/common/helpers/pino-logger': commonMock,
         }));
     });
 
@@ -377,7 +377,7 @@ describe('SuggestionsApi', function () {
             '#helpers': helpersMock,
             '#auth': authMock,
             '#middlewares': middlewaresMock,
-            '@guardian/common': commonMock,
+            
         }));
     });
 

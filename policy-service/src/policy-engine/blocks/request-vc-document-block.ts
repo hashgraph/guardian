@@ -6,7 +6,8 @@ import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyGetData, IPoli
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { EventBlock } from '../helpers/decorators/event-block.js';
-import { VcDocument as VcDocumentCollection, VcHelper } from '@guardian/common';
+import { VcDocument as VcDocumentCollection } from '@guardian/common';
+import { VcHelper } from '@guardian/hedera';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';

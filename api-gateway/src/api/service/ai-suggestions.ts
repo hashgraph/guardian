@@ -4,7 +4,8 @@ import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, A
 import { Auth, AuthUser } from '#auth';
 import { AISuggestions, InternalException } from '#helpers';
 import { InternalServerErrorDTO, PropertySuggestionRequestDTO, PropertySuggestionResponseDTO } from '#middlewares';
-import { IAuthUser, PinoLogger } from '@guardian/common';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
 import { IPropertySuggestionResponse, Permissions } from '@guardian/interfaces';
 import process from 'node:process';
 

@@ -75,6 +75,9 @@ jobs:
           pushd common
           yarn run build
           popd
+          pushd hedera
+          yarn run build
+          popd
           pushd indexer-common
           yarn run build
           popd

@@ -12,7 +12,8 @@ import {
     LocationType, Schema, SchemaField, SchemaHelper, SetDataPayloadReader, TopicType, WorkerTaskType
 } from '@guardian/interfaces';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
-import { GlobalEventsReaderStream, IPFS, MessageAction, MessageServer, SchemaMessage, SchemaPackageMessage, TopicHelper, UrlType, Workers } from '@guardian/common';
+import { GlobalEventsReaderStream, IPFS, Workers } from '@guardian/common';
+import { MessageAction, MessageServer, SchemaMessage, SchemaPackageMessage, TopicHelper, UrlType } from '@guardian/hedera';
 import { TopicId } from '@hiero-ledger/sdk';
 
 /**

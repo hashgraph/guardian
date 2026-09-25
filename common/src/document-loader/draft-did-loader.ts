@@ -1,6 +1,9 @@
-import { DidURL, DocumentLoader, IDocumentFormat } from '../hedera-modules/index.js';
-import { DidDocument, DryRun } from '../entity/index.js';
-import { DatabaseServer } from '../database-modules/index.js';
+import { DidURL } from './did-url.js';
+import { DocumentLoader } from './base/document-loader.js';
+import { IDocumentFormat } from './base/document-format.js';
+import { DidDocument } from '../entity/did-document.js';
+import { DryRun } from '../entity/dry-run.js';
+import { DatabaseServer } from '../database-modules/database-server.js';
 
 /**
  * Dry Run loader

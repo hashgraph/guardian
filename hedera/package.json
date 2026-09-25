@@ -1,0 +1,56 @@
+{
+    "author": "Hashgraph <guardian@hashgraph.com>",
+    "dependencies": {
+        "@digitalbazaar/ed25519-signature-2018": "4.2.0",
+        "@digitalbazaar/ed25519-verification-key-2018": "4.0.0",
+        "@digitalbazaar/vc": "7.3.0",
+        "@guardian/common": "workspace:*",
+        "@guardian/interfaces": "workspace:*",
+        "@hiero-ledger/sdk": "2.88.0",
+        "@mattrglobal/jsonld-signatures-bbs": "1.2.0",
+        "@noble/curves": "^1.3.0",
+        "ajv": "^8.17.1",
+        "ajv-formats": "^3.0.1",
+        "axios": "^1.16.1",
+        "jsonld-signatures-v7": "npm:jsonld-signatures@7.0.0",
+        "jszip": "^3.10.1",
+        "lodash.get": "^4.4.2",
+        "moment": "^2.30.1",
+        "reflect-metadata": "0.2.2"
+    },
+    "description": "Hedera message, DID and VC layer shared by the services that talk to the ledger",
+    "devDependencies": {
+        "@types/node": "24.13.5",
+        "chai": "^4.3.7",
+        "mocha": "10.8.2",
+        "mocha-junit-reporter": "2.2.1",
+        "tslint": "^6.1.3",
+        "typescript": "^5.8.3"
+    },
+    "engines": {
+        "node": ">=24.15.0"
+    },
+    "files": [
+        "dist"
+    ],
+    "license": "Apache-2.0",
+    "main": "dist/index.js",
+    "module": "dist/index.js",
+    "exports": {
+        ".": "./dist/index.js",
+        "./dist/*": "./dist/*",
+        "./package.json": "./package.json"
+    },
+    "name": "@guardian/hedera",
+    "scripts": {
+        "build": "tsc",
+        "build:prod": "tsc --project tsconfig.production.json",
+        "dev": "tsc -w",
+        "lint": "tslint --config ../tslint.json --project .",
+        "prepack": "npm run build:prod",
+        "test": "mocha tests/**/*.test.mjs --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/hedera.xml --exit",
+        "test:local": "mocha tests/**/*.test.mjs --exit"
+    },
+    "type": "module",
+    "version": "3.7.1-rc"
+}

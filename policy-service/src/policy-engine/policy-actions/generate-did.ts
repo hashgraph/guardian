@@ -1,4 +1,5 @@
-import { DIDMessage, HederaDidDocument, MessageServer, MessageAction, PolicyAction, TopicConfig } from '@guardian/common';
+import { PolicyAction } from '@guardian/common';
+import { DIDMessage, HederaDidDocument, MessageServer, MessageAction, TopicConfig } from '@guardian/hedera';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyComponentsUtils } from './../policy-components-utils.js';

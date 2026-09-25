@@ -1,4 +1,5 @@
-import { IDocumentOptions, Message, PolicyAction, PolicyComment, PolicyDiscussion, RoleMessage, Token, TopicConfig, VcDocumentDefinition } from '@guardian/common';
+import { PolicyAction, PolicyComment, PolicyDiscussion, Token } from '@guardian/common';
+import { IDocumentOptions, Message, RoleMessage, TopicConfig, VcDocumentDefinition } from '@guardian/hedera';
 import { LocationType, PolicyActionStatus, PolicyAvailability, PolicyStatus, TopicType } from '@guardian/interfaces';
 import { AnyBlockType } from '../policy-engine.interface.js';
 import { PolicyUtils } from '../helpers/utils.js';

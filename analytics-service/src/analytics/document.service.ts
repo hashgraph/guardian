@@ -1,14 +1,5 @@
-import {
-    DIDMessage,
-    Message,
-    MessageType,
-    RoleMessage,
-    TopicMessage,
-    UrlType,
-    VCMessage,
-    VPMessage,
-    DatabaseServer,
-} from '@guardian/common';
+import { DatabaseServer } from '@guardian/common';
+import { DIDMessage, Message, MessageType, RoleMessage, TopicMessage, UrlType, VCMessage, VPMessage } from '@guardian/hedera';
 import { AnalyticsDocument as Document } from '../entity/analytics-document.js';
 import { AnalyticsPolicyInstance as PolicyInstance } from '../entity/analytics-policy-instance.js';
 import { AnalyticsStatus as Status } from '../entity/analytics-status.js';

@@ -1,4 +1,6 @@
-import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { RunFunctionAsync } from '@guardian/common/helpers/run-function-async';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
 import { Permissions, SchemaCategory, SchemaHelper, TagType, TaskAction, UserRole } from '@guardian/interfaces';
 import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, Version } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';

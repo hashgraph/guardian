@@ -1,7 +1,8 @@
 import { IRootConfig, PolicyStatus, WorkerTaskType } from '@guardian/interfaces';
 import { CronJob } from 'cron';
 import { MintService } from '../mint/mint-service.js';
-import { DatabaseServer, MessageAction, MessageServer, MultiPolicyTransaction, NotificationHelper, PinoLogger, Policy, SynchronizationMessage, Token, TopicConfig, Users, Workers } from '@guardian/common';
+import { DatabaseServer, MultiPolicyTransaction, NotificationHelper, PinoLogger, Policy, Token, Users, Workers } from '@guardian/common';
+import { MessageAction, MessageServer, SynchronizationMessage, TopicConfig } from '@guardian/hedera';
 
 /**
  * Synchronization Service

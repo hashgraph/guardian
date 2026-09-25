@@ -1,4 +1,4 @@
-import { NatsService } from '@guardian/common';
+import { NatsService } from '@guardian/common/mq/nats-service';
 import {
     MessageAPI,
     GenerateUUIDv4

@@ -7,7 +7,9 @@ import { AISuggestionsDB } from './helpers/ai-suggestions-db.js';
 import { PropertySuggestionConnect } from './helpers/property-suggestion-helper.js';
 import { PolicyDescription } from './models/models.js';
 import * as dotenv from 'dotenv';
-import { PinoLogger, Policy, PolicyCategory } from '@guardian/common';
+import { Policy } from '@guardian/common/entity/policy';
+import { PolicyCategory } from '@guardian/common/entity/policy-category';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
 import { IPropertySuggestionFieldInput, IPropertySuggestionRequest, IPropertySuggestionResponse, Schema } from '@guardian/interfaces';
 
 dotenv.config();

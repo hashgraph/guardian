@@ -9,8 +9,8 @@ import {
     AfterUpdate,
 } from '@mikro-orm/core';
 import { ObjectId } from '@mikro-orm/mongodb';
-import { BaseEntity } from '../models/index.js';
-import { DataBaseHelper } from '../helpers/index.js';
+import { BaseEntity } from '../models/base-entity.js';
+import { DataBaseHelper } from '../helpers/db-helper.js';
 
 /**
  * Policy cache data

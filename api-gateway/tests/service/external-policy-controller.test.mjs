@@ -28,7 +28,8 @@ describe('ExternalPoliciesApi', function () {
 
     before(async () => {
         ({ ExternalPoliciesApi } = await esmock(EP_DIST, {
-            '@guardian/common': { PinoLogger: class {}, RunFunctionAsync: (fn) => { runRan = true; fn(); } },
+            '@guardian/common/helpers/pino-logger': { PinoLogger: class {} },
+            '@guardian/common/helpers/run-function-async': { RunFunctionAsync: (fn) => { runRan = true; fn(); } },
             '@guardian/interfaces': {
                 LocationType: new Proxy({}, { get: () => 'l' }),
                 Permissions: new Proxy({}, { get: () => 'p' }),

@@ -85,8 +85,10 @@ before(async function () {
     mod = await esmock(helperPath, {
         '@guardian/common': {
             DatabaseServer: DatabaseServerMock,
-            MessageServer: MessageServerMock,
             ToolImportExport: ToolImportExportMock,
+        },
+        '@guardian/hedera': {
+            MessageServer: MessageServerMock,
             MessageType: { Tool: 'tool', Tag: 'tag' },
             MessageAction: { PublishTool: 'publish-tool', PublishTag: 'publish-tag' },
         },

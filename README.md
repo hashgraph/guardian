@@ -362,7 +362,7 @@ On first state the credentials from .env file are copied into the secure storage
 
 ## Manual installation
 
-If you want to manually build every component with debug information, then build and run the services and packages in the following sequence: Interfaces, Logger Helper, Message Broker, Logger Service, Auth Service, IPFS, Guardian Service, UI Service, and lastly, the MRV Sender Service. See below for commands.
+If you want to manually build every component with debug information, then build and run the services and packages in the following sequence: Interfaces, Common, Hedera, Logger Helper, Message Broker, Logger Service, Auth Service, IPFS, Guardian Service, UI Service, and lastly, the MRV Sender Service. See below for commands.
 
 ### Prerequisites for manual installation
 
@@ -456,7 +456,21 @@ Npm:
 npm --workspace=@guardian/common run build
 ```
 
-#### 4. From the **logger-service** folder
+#### 4. From the **hedera** folder
+
+Yarn:
+
+```shell
+yarn workspace @guardian/hedera run build
+```
+
+Npm:
+
+```shell
+npm --workspace=@guardian/hedera run build
+```
+
+#### 5. From the **logger-service** folder
 
 Configure the service as previously described. Do not need special configuration variables.
 
@@ -474,7 +488,7 @@ npm --workspace=logger-service run build
 npm --workspace=logger-service start
 ```
 
-#### 5. From the **auth-service** folder
+#### 6. From the **auth-service** folder
 
 Configure the service as previously described. Do not need special configuration variables.
 
@@ -492,7 +506,7 @@ npm --workspace=auth-service run build
 npm --workspace=auth-service start
 ```
 
-#### 6. From the **policy-service** folder
+#### 7. From the **policy-service** folder
 
 Configure the service as previously described. Do not need special configuration variables.
 
@@ -510,7 +524,7 @@ npm --workspace=policy-service run build
 npm --workspace=policy-service start
 ```
 
-#### 7. Build and start the **worker-service** service
+#### 8. Build and start the **worker-service** service
 
 Configure the service as previously described. Update **IPFS_STORAGE_API_KEY** value in `./worker-service/configs/.env.worker` file.
 
@@ -528,7 +542,7 @@ npm --workspace=worker-service run build
 npm --workspace=worker-service start
 ```
 
-#### 8. Build and start the **notification-service** service
+#### 9. Build and start the **notification-service** service
 
 Configure the service as previously described. Update **OPERATOR_ID** and **OPERATOR_KEY** values in `./notification-service/configs/.env.worker` file as in the example above. The service will start on <http://localhost:3002> by default.
 
@@ -546,7 +560,7 @@ npm --workspace=notification-service run build
 npm --workspace=notification-service start
 ```
 
-#### 9. Build and start the **guardian-service** service
+#### 10. Build and start the **guardian-service** service
 
 Configure the service as previously described. Update **OPERATOR_ID** and **OPERATOR_KEY** values in `./guardian-service/configs/.env.worker` file as in the example above. The service will start on <http://localhost:3002> by default.
 
@@ -564,7 +578,7 @@ npm --workspace=guardian-service run build
 npm --workspace=guardian-service start
 ```
 
-#### 10. From the **api-gateway** folder
+#### 11. From the **api-gateway** folder
 
 Configure the service as previously described. Do not need special configuration variables. The service will start on <http://localhost:3002> by default.
 
@@ -582,7 +596,7 @@ npm --workspace=api-gateway run build
 npm --workspace=api-gateway start
 ```
 
-#### 11. From the **mrv-sender** folder
+#### 12. From the **mrv-sender** folder
 
 Configure the service as previously described. Do not need special configuration variables. The service will start on <http://localhost:3005> by default.
 
@@ -592,7 +606,7 @@ npm run build
 npm start
 ```
 
-#### 12. From the **ai-service** folder
+#### 13. From the **ai-service** folder
 
 Configure the service as previously described. Do not need special configuration variables.
 
@@ -610,7 +624,7 @@ npm --workspace=ai-service run build
 npm --workspace=ai-service start
 ```
 
-#### 13. From the **frontend** folder
+#### 14. From the **frontend** folder
 
 The service will start on <http://localhost:4200> by default.
 

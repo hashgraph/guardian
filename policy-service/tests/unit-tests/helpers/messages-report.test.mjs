@@ -11,6 +11,9 @@ const { MessagesReport } = await esmock.strict(
     '../../../dist/policy-engine/helpers/messages-report.js',
     {
         '@guardian/common': {
+            Workers: class {},
+        },
+        '@guardian/hedera': {
             DIDMessage: class {},
             HederaDid: { parse: () => ({ topicId: 't' }) },
             Message: class {},
@@ -21,7 +24,6 @@ const { MessagesReport } = await esmock.strict(
             TopicMessage: class {},
             UrlType: { url: 'url' },
             VCMessage: class {},
-            Workers: class {},
         },
         '@guardian/interfaces': {
             TopicType: { PolicyTopic: 'PolicyTopic' },

@@ -1,11 +1,11 @@
 import { MikroORM, CreateRequestContext, wrap, FilterObject, FilterQuery, FindAllOptions, EntityData, RequiredEntityData, FindOneOptions, FindOptions } from '@mikro-orm/core';
 import { MongoDriver, MongoEntityManager, MongoEntityRepository, ObjectId } from '@mikro-orm/mongodb';
-import { BaseEntity } from '../models/index.js';
+import { BaseEntity } from '../models/base-entity.js';
 import { DataBaseNamingStrategy } from './db-naming-strategy.js';
 import { Db, GridFSBucket, GridFSBucketWriteStream } from 'mongodb';
 import fixConnectionString from './fix-connection-string.js';
 import { MintTransactionStatus } from '@guardian/interfaces';
-import { AbstractDataBaseHelper, ICommonConnectionConfig, IGetAggregationFilters, IGetDocumentAggregationFilters } from '../interfaces/index.js';
+import { AbstractDataBaseHelper, ICommonConnectionConfig, IGetAggregationFilters, IGetDocumentAggregationFilters } from '../interfaces/db-helper.js';
 
 export const MAP_DOCUMENT_AGGREGATION_FILTERS = {
     BASE: 'base',

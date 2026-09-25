@@ -1,6 +1,6 @@
 import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { VcDocumentDefinition as VcDocument } from '@guardian/common';
+import { VcDocumentDefinition as VcDocument } from '@guardian/hedera';
 import { PolicyUtils } from '../helpers/utils.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';

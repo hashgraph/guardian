@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { DidURL } from '../../../dist/hedera-modules/vcjs/did/components/did-url.js';
+import { DidURL } from '../../../dist/document-loader/did-url.js';
 
 describe('DidURL.getController', () => {
     it('returns the bare DID when there is no fragment/path/query', () => {
