@@ -53,6 +53,19 @@ const schemaCondition = (name, value, thenFields, elseFields = []) => ({
     elseFields,
 });
 
+const schemaTargetCondition = (name, value, thenTargets = [], elseTargets = []) => ({
+    ifCondition: { field: schemaField(name), fieldValue: value },
+    thenFields: [],
+    elseFields: [],
+    thenTargets,
+    elseTargets,
+});
+
+const target = (fieldPath) => ({
+    field: schemaField(fieldPath[fieldPath.length - 1]),
+    fieldPath,
+});
+
 const schema = (overrides = {}) => ({
     iri: '#X',
     contextURL: 'ctx:X',
@@ -290,6 +303,88 @@ describe('@unit document-validator-block runtime', () => {
         }))), null);
     });
 
+    it('skips validator conditions for missing inactive target conditional fields on either side', async () => {
+        const location = schemaField('location', {
+            isRef: true,
+            fields: [schemaField('field_1'), schemaField('field_2')],
+        });
+        const loadedSchema = schema({
+            fields: [schemaField('bool'), schemaField('main'), location],
+            conditions: [schemaTargetCondition('bool', true, [target(['location', 'field_2'])])],
+        });
+        const componentsOverrides = { loadSchemaByID: async () => loadedSchema };
+        const doc = schemaDoc({
+            bool: false,
+            main: false,
+            location: { field_1: '123123' },
+        });
+
+        const left = makeBlock(DocumentValidatorBlock, {
+            options: {
+                documentType: 'vc-document',
+                schema: '#X',
+                conditions: [{ type: 'equal', field: 'document.credentialSubject.0.location.field_2', value: 'ok' }],
+            },
+            componentsOverrides,
+        }).block;
+        assert.equal(await left.run(ev(doc)), null);
+
+        const right = makeBlock(DocumentValidatorBlock, {
+            options: {
+                documentType: 'vc-document',
+                schema: '#X',
+                conditions: [{
+                    type: 'equal',
+                    field: 'document.credentialSubject.0.main',
+                    valueSource: 'document',
+                    value: 'document.credentialSubject.0.location.field_2',
+                }],
+            },
+            componentsOverrides,
+        }).block;
+        assert.equal(await right.run(ev(doc)), null);
+    });
+
+    it('skips validator conditions for missing inactive deeply nested conditional fields on either side', async () => {
+        const grand = schemaField('grand', {
+            isRef: true,
+            fields: [schemaField('switch')],
+            conditions: [schemaCondition('switch', 'show', [schemaField('leaf')])],
+        });
+        const child = schemaField('child', {
+            isRef: true,
+            fields: [grand],
+        });
+        const loadedSchema = schema({ fields: [schemaField('main'), child] });
+        const componentsOverrides = { loadSchemaByID: async () => loadedSchema };
+        const doc = schemaDoc({ main: false, child: { grand: { switch: 'hide' } } });
+
+        const left = makeBlock(DocumentValidatorBlock, {
+            options: {
+                documentType: 'vc-document',
+                schema: '#X',
+                conditions: [{ type: 'equal', field: 'document.credentialSubject.0.child.grand.leaf', value: 'ok' }],
+            },
+            componentsOverrides,
+        }).block;
+        assert.equal(await left.run(ev(doc)), null);
+
+        const right = makeBlock(DocumentValidatorBlock, {
+            options: {
+                documentType: 'vc-document',
+                schema: '#X',
+                conditions: [{
+                    type: 'equal',
+                    field: 'document.credentialSubject.0.main',
+                    valueSource: 'document',
+                    value: 'document.credentialSubject.0.child.grand.leaf',
+                }],
+            },
+            componentsOverrides,
+        }).block;
+        assert.equal(await right.run(ev(doc)), null);
+    });
+
     it('does not skip nested conditional fields when the owner ref object is missing', async () => {
         const child = schemaField('child', {
             isRef: true,
@@ -310,6 +405,205 @@ describe('@unit document-validator-block runtime', () => {
             msg(await block.run(ev(schemaDoc({})))),
             'Field "advancedValue": got null, expected "ok"'
         );
+    });
+
+    it('skips source validation conditions for missing inactive document-side conditional fields', async () => {
+        const loadedSchema = schema({
+            fields: [schemaField('main'), schemaField('kind')],
+            conditions: [schemaCondition('kind', 'advanced', [schemaField('advancedValue')])],
+        });
+        const db = makeDb({ getVcDocuments: async () => [schemaDoc({ main: false })] });
+        const block = makeBlock(DocumentValidatorBlock, {
+            options: {
+                documentType: 'vc-document',
+                schema: '#X',
+                sourceValidations: [{
+                    schema: '#X',
+                    conditions: [{
+                        fieldSource: 'source',
+                        field: 'document.credentialSubject.0.main',
+                        type: 'equal',
+                        valueSource: 'document',
+                        value: 'document.credentialSubject.0.advancedValue',
+                    }],
+                }],
+            },
+            componentsOverrides: {
+                databaseServer: db,
+                loadSchemaByID: async () => loadedSchema,
+            },
+        }).block;
+
+        assert.equal(await block.run(ev(schemaDoc({ kind: 'basic' }))), null);
+    });
+
+    it('skips source validation conditions for missing inactive source-side conditional fields', async () => {
+        const loadedSchema = schema({
+            fields: [schemaField('main'), schemaField('kind')],
+            conditions: [schemaCondition('kind', 'advanced', [schemaField('advancedValue')])],
+        });
+        const db = makeDb({ getVcDocuments: async () => [schemaDoc({ kind: 'basic' })] });
+        const block = makeBlock(DocumentValidatorBlock, {
+            options: {
+                documentType: 'vc-document',
+                schema: '#X',
+                sourceValidations: [{
+                    schema: '#X',
+                    conditions: [{
+                        fieldSource: 'document',
+                        field: 'document.credentialSubject.0.main',
+                        type: 'equal',
+                        valueSource: 'source',
+                        value: 'document.credentialSubject.0.advancedValue',
+                    }],
+                }],
+            },
+            componentsOverrides: {
+                databaseServer: db,
+                loadSchemaByID: async () => loadedSchema,
+            },
+        }).block;
+
+        assert.equal(await block.run(ev(schemaDoc({ main: false }))), null);
+    });
+
+    it('skips source validation conditions for missing inactive deeply nested source-side conditional fields', async () => {
+        const grand = schemaField('grand', {
+            isRef: true,
+            fields: [schemaField('switch')],
+            conditions: [schemaCondition('switch', 'show', [schemaField('leaf')])],
+        });
+        const child = schemaField('child', {
+            isRef: true,
+            fields: [grand],
+        });
+        const loadedSchema = schema({ fields: [schemaField('main'), child] });
+        const db = makeDb({
+            getVcDocuments: async () => [schemaDoc({ child: { grand: { switch: 'hide' } } })],
+        });
+        const block = makeBlock(DocumentValidatorBlock, {
+            options: {
+                documentType: 'vc-document',
+                schema: '#X',
+                sourceValidations: [{
+                    schema: '#X',
+                    conditions: [{
+                        fieldSource: 'document',
+                        field: 'document.credentialSubject.0.main',
+                        type: 'equal',
+                        valueSource: 'source',
+                        value: 'document.credentialSubject.0.child.grand.leaf',
+                    }],
+                }],
+            },
+            componentsOverrides: {
+                databaseServer: db,
+                loadSchemaByID: async () => loadedSchema,
+            },
+        }).block;
+
+        assert.equal(await block.run(ev(schemaDoc({ main: false }))), null);
+    });
+
+    it('skips source validation conditions for missing inactive target conditional fields', async () => {
+        const location = schemaField('location', {
+            isRef: true,
+            fields: [schemaField('field_1'), schemaField('field_2')],
+        });
+        const loadedSchema = schema({
+            fields: [schemaField('bool'), schemaField('main'), location],
+            conditions: [schemaTargetCondition('bool', true, [target(['location', 'field_2'])])],
+        });
+        const db = makeDb({
+            getVcDocuments: async () => [schemaDoc({
+                bool: false,
+                location: { field_1: 'source' },
+            })],
+        });
+        const block = makeBlock(DocumentValidatorBlock, {
+            options: {
+                documentType: 'vc-document',
+                schema: '#X',
+                sourceValidations: [{
+                    schema: '#X',
+                    conditions: [{
+                        fieldSource: 'document',
+                        field: 'document.credentialSubject.0.main',
+                        type: 'equal',
+                        valueSource: 'source',
+                        value: 'document.credentialSubject.0.location.field_2',
+                    }],
+                }],
+            },
+            componentsOverrides: {
+                databaseServer: db,
+                loadSchemaByID: async () => loadedSchema,
+            },
+        }).block;
+
+        assert.equal(await block.run(ev(schemaDoc({
+            bool: false,
+            main: false,
+            location: { field_1: 'document' },
+        }))), null);
+    });
+
+    it('fails source validation when no source documents match by default', async () => {
+        const loadedSchema = schema({ fields: [schemaField('main')] });
+        const db = makeDb({ getVcDocuments: async () => [] });
+        const block = makeBlock(DocumentValidatorBlock, {
+            options: {
+                documentType: 'vc-document',
+                schema: '#X',
+                sourceValidations: [{
+                    schema: '#X',
+                    conditions: [{
+                        fieldSource: 'document',
+                        field: 'document.credentialSubject.0.main',
+                        type: 'equal',
+                        valueSource: 'source',
+                        value: 'document.credentialSubject.0.main',
+                    }],
+                }],
+            },
+            componentsOverrides: {
+                databaseServer: db,
+                loadSchemaByID: async () => loadedSchema,
+            },
+        }).block;
+
+        assert.equal(
+            msg(await block.run(ev(schemaDoc({ main: false })))),
+            'Validation failed: No matching source documents found'
+        );
+    });
+
+    it('allows source validation when no source documents match and allowEmptySource is enabled', async () => {
+        const loadedSchema = schema({ fields: [schemaField('main')] });
+        const db = makeDb({ getVcDocuments: async () => [] });
+        const block = makeBlock(DocumentValidatorBlock, {
+            options: {
+                documentType: 'vc-document',
+                schema: '#X',
+                sourceValidations: [{
+                    schema: '#X',
+                    allowEmptySource: true,
+                    conditions: [{
+                        fieldSource: 'document',
+                        field: 'document.credentialSubject.0.main',
+                        type: 'equal',
+                        valueSource: 'source',
+                        value: 'document.credentialSubject.0.main',
+                    }],
+                }],
+            },
+            componentsOverrides: {
+                databaseServer: db,
+                loadSchemaByID: async () => loadedSchema,
+            },
+        }).block;
+
+        assert.equal(await block.run(ev(schemaDoc({ main: false }))), null);
     });
 
     it('run over an array returns null when all pass', async () => {

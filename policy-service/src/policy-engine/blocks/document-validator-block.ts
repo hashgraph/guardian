@@ -424,6 +424,9 @@ export class DocumentValidatorBlock {
             : await ref.databaseServer.getVcDocuments(filter as any) as any[];
 
         if (!sourceDocuments?.length) {
+            if (sourceValidation.allowEmptySource === true) {
+                return null;
+            }
             const filterSummary = (sourceValidation.filters || [])
                 .map((f: any) => {
                     const v = f.typeValue === 'variable'

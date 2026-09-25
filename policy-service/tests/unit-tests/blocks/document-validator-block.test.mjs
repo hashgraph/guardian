@@ -56,7 +56,7 @@ describe('DocumentValidatorBlock.validate', () => {
         it('accepts a valid sourceValidations array', async () => {
             const v = new FakeValidator();
             await DocumentValidatorBlock.validate(v, refWith({
-                sourceValidations: [{ dbCollection: 'VcDocument', filters: [], conditions: [] }]
+                sourceValidations: [{ dbCollection: 'VcDocument', filters: [], conditions: [], allowEmptySource: true }]
             }));
             assert.deepEqual(v.errors, []);
         });
@@ -97,6 +97,14 @@ describe('DocumentValidatorBlock.validate', () => {
                 sourceValidations: [{ dbCollection: 'VcDocument', conditions: 'bad' }]
             }));
             assert.ok(v.errors.some(e => e.includes('conditions')));
+        });
+
+        it('rejects allowEmptySource that is not a boolean', async () => {
+            const v = new FakeValidator();
+            await DocumentValidatorBlock.validate(v, refWith({
+                sourceValidations: [{ dbCollection: 'VcDocument', allowEmptySource: 'true' }]
+            }));
+            assert.ok(v.errors.some(e => e.includes('allowEmptySource')));
         });
 
         it('accepts undefined filters and conditions', async () => {
