@@ -8,24 +8,24 @@ export class JwtServicesValidator {
     JwtServicesValidator.serviceName = name;
   }
 
+  private static getSecretKeyName() {
+    return process.env.SERVICE_JWT_SECRET_KEY?.length > 8
+      ? 'SERVICE_JWT_SECRET_KEY'
+      : 'SERVICE_JWT_SECRET_KEY_ALL';
+  }
+
+  private static getPublicKeyNameByServiceName(serviceName = 'ALL') {
+    return process.env[`SERVICE_JWT_PUBLIC_KEY_${serviceName}`]?.length > 8
+      ? `SERVICE_JWT_PUBLIC_KEY_${serviceName}`
+      : 'SERVICE_JWT_PUBLIC_KEY_ALL';
+  }
+
   private static getSecretKey() {
-    const secretKey = process.env.SERVICE_JWT_SECRET_KEY;
-
-    if (secretKey?.length > 8) {
-      return secretKey;
-    }
-
-    return process.env.SERVICE_JWT_SECRET_KEY_ALL
+    return process.env[JwtServicesValidator.getSecretKeyName()];
   }
 
   private static getPublicKeyByServiceName(serviceName = 'ALL') {
-    const publicKey = process.env[`SERVICE_JWT_PUBLIC_KEY_${serviceName}`];
-
-    if (publicKey?.length > 8) {
-      return publicKey;
-    }
-
-    return process.env.SERVICE_JWT_PUBLIC_KEY_ALL
+    return process.env[JwtServicesValidator.getPublicKeyNameByServiceName(serviceName)];
   }
 
   /**
@@ -38,14 +38,11 @@ export class JwtServicesValidator {
     }
 
     const errors: string[] = [];
-    const secretName = process.env.SERVICE_JWT_SECRET_KEY?.length > 8
-      ? 'SERVICE_JWT_SECRET_KEY'
-      : 'SERVICE_JWT_SECRET_KEY_ALL';
-    const ownPublicName = process.env[`SERVICE_JWT_PUBLIC_KEY_${JwtServicesValidator.serviceName}`]?.length > 8
-      ? `SERVICE_JWT_PUBLIC_KEY_${JwtServicesValidator.serviceName}`
-      : 'SERVICE_JWT_PUBLIC_KEY_ALL';
-    const secretError = process.env[ownPublicName]?.length > 8
-      ? checkRsaKeyPair(process.env[ownPublicName], process.env[secretName], ownPublicName, secretName)
+    const secretName = JwtServicesValidator.getSecretKeyName();
+    const ownPublicName = JwtServicesValidator.getPublicKeyNameByServiceName(JwtServicesValidator.serviceName);
+    const ownPublicKey = process.env[ownPublicName];
+    const secretError = ownPublicKey?.length > 8
+      ? checkRsaKeyPair(ownPublicKey, process.env[secretName], ownPublicName, secretName)
       : checkRsaKey(process.env[secretName], secretName, 'private');
     if (secretError) {
       errors.push(secretError);
