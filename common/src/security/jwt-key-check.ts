@@ -17,10 +17,10 @@ const looksLikePem = (s: string) =>
  * @returns Human-readable problem, or null when the key is usable
  */
 export function checkRsaKey(pem: string, name: string, type: 'private' | 'public'): string | null {
-    if (!pem || pem.trim().length < 8) {
+    if (!pem || (typeof pem === 'string' && pem.trim().length < 8)) {
         return `${name} is missing or empty`;
     }
-    if (!looksLikePem(pem)) {
+    if (typeof pem !== 'string' || !looksLikePem(pem)) {
         return `${name} is not a valid PEM string`;
     }
     let key: crypto.KeyObject;
