@@ -1045,7 +1045,7 @@ function restoreConditionBranchMembership(
     const branchKey = branch === 'thenFields' ? 'then' : 'else';
     const oldBranchNode = previousDocument?.allOf?.[oldConditionIndex]?.[branchKey];
     const property = oldBranchNode?.properties?.[fieldName];
-    if (!property) {
+    if (!property || isCrossTargetWrapper(property)) {
         return;
     }
     const newEntry = targetDocument?.allOf?.[newConditionIndex];
@@ -1811,7 +1811,7 @@ export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<Ret
                         templateSchemaId,
                         schemaName: nextSchema.name,
                         fieldName: '(cross-schema target)',
-                        before: 'Policy-added condition target present',
+                        before: 'Policy-added condition target',
                         after: 'Removed'
                     }
                 ));

@@ -70,9 +70,35 @@ function getSchemaFields(schema: ISchema): SchemaField[] {
     return new Schema(schema, true).fields || [];
 }
 
+function getConditionFieldId(field: any): string {
+    return field?.templateFieldId || field?.name || '';
+}
+
+function getConditionPredicates(ifCondition: any): any[] {
+    return ifCondition?.AND ?? ifCondition?.OR ?? (ifCondition ? [ifCondition] : []);
+}
+
+function getParsedConditionTargetPaths(targets: any[]): string[][] {
+    return (targets || [])
+        .map((target: any) => target.fieldPath || [])
+        .filter((path: string[]) => path.length > 0);
+}
+
 function getConditionsHash(schema: ISchema): string {
+    const conditions = new Schema(schema, true).conditions || [];
     return SchemaHelper.stableStringify(
-        SchemaHelper.cloneSchemaRuntimeValue(new Schema(schema, true).conditions || [])
+        conditions.map((condition: any) => ({
+            op: condition.ifCondition?.AND ? 'AND' : condition.ifCondition?.OR ? 'OR' : 'SINGLE',
+            if: getConditionPredicates(condition.ifCondition).map((predicate: any) => [
+                getConditionFieldId(predicate.field),
+                predicate.fieldPath || [],
+                SchemaHelper.cloneSchemaRuntimeValue(predicate.fieldValue)
+            ]),
+            then: (condition.thenFields || []).map(getConditionFieldId),
+            else: (condition.elseFields || []).map(getConditionFieldId),
+            thenTargets: getParsedConditionTargetPaths(condition.thenTargets),
+            elseTargets: getParsedConditionTargetPaths(condition.elseTargets)
+        }))
     );
 }
 

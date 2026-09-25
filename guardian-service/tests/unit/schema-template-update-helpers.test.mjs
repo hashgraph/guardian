@@ -935,7 +935,7 @@ describe('preparePolicySchemaUpdate — condition-branch membership', () => {
     });
 
     it('does not restore a cross-schema target that came from the previous template snapshot', () => {
-        const trigger = field('type', { templateFieldId: 'tpl-type' });
+        const trigger = field('status', { templateFieldId: 'tpl-status' });
         const zip = field('zip', { required: true });
         const targetDocument = SchemaHelper.buildDocument(
             baseSchema(),
@@ -949,7 +949,7 @@ describe('preparePolicySchemaUpdate — condition-branch membership', () => {
         );
         stripEnvelope(targetDocument);
 
-        const sourceTrigger = field('type', { templateFieldId: 'tpl-type' });
+        const sourceTrigger = field('status', { templateFieldId: 'tpl-status' });
         const sourcePlaceholder = field('placeholder', { templateFieldId: 'tpl-placeholder' });
         const sourceDocument = SchemaHelper.buildDocument(
             baseSchema(),
@@ -991,7 +991,7 @@ describe('preparePolicySchemaUpdate — condition-branch membership', () => {
     });
 
     it('restores only policy-added cross-schema targets when snapshot also had targets', () => {
-        const trigger = field('type', { templateFieldId: 'tpl-type' });
+        const trigger = field('status', { templateFieldId: 'tpl-status' });
         const zip = field('zip', { required: true });
         const city = field('city', { required: true });
         const targetDocument = SchemaHelper.buildDocument(
@@ -1009,7 +1009,7 @@ describe('preparePolicySchemaUpdate — condition-branch membership', () => {
         );
         stripEnvelope(targetDocument);
 
-        const sourceTrigger = field('type', { templateFieldId: 'tpl-type' });
+        const sourceTrigger = field('status', { templateFieldId: 'tpl-status' });
         const sourcePlaceholder = field('placeholder', { templateFieldId: 'tpl-placeholder' });
         const sourceDocument = SchemaHelper.buildDocument(
             baseSchema(),
