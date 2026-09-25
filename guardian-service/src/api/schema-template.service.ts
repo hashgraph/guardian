@@ -1094,18 +1094,87 @@ function mergeCrossTargetWrapper(target: any, source: any): void {
     }
 }
 
+function hasCrossTargetWrapperContent(wrapper: any): boolean {
+    return !!wrapper &&
+        typeof wrapper === 'object' &&
+        (
+            (Array.isArray(wrapper.required) && wrapper.required.length > 0) ||
+            (wrapper.properties && typeof wrapper.properties === 'object' && Object.keys(wrapper.properties).length > 0)
+        );
+}
+
+function subtractCrossTargetWrapper(source: any, baseline: any): any {
+    if (!isCrossTargetWrapper(source)) {
+        return undefined;
+    }
+    if (!isCrossTargetWrapper(baseline)) {
+        return cloneJson(source);
+    }
+    const result: any = {};
+    if (Array.isArray(source.required)) {
+        const baselineRequired = new Set(Array.isArray(baseline.required) ? baseline.required : []);
+        const required = source.required.filter((name: string) => !baselineRequired.has(name));
+        if (required.length) {
+            result.required = required;
+        }
+    }
+    if (source.properties && typeof source.properties === 'object') {
+        const properties: Record<string, any> = {};
+        for (const [key, value] of Object.entries<any>(source.properties)) {
+            const baselineValue = baseline.properties?.[key];
+            if (value === false) {
+                if (baselineValue !== false) {
+                    properties[key] = false;
+                }
+                continue;
+            }
+            if (isCrossTargetWrapper(value)) {
+                const nested = subtractCrossTargetWrapper(value, baselineValue);
+                if (hasCrossTargetWrapperContent(nested)) {
+                    properties[key] = nested;
+                }
+            } else if (baselineValue === undefined) {
+                properties[key] = cloneJson(value);
+            }
+        }
+        if (Object.keys(properties).length) {
+            result.properties = properties;
+        }
+    }
+    return hasCrossTargetWrapperContent(result) ? result : undefined;
+}
+
+function buildSnapshotSchemaDocument(schema?: ISchemaTemplateSnapshotSchema): any {
+    if (!schema) {
+        return undefined;
+    }
+    return SchemaHelper.buildDocument(
+        {
+            uuid: schema.templateSchemaId,
+            name: schema.name,
+            description: schema.description,
+            version: schema.version,
+            fields: schema.fields || [],
+            conditions: schema.conditions || []
+        } as any,
+        (schema.fields as any[]) || [],
+        (schema.conditions as any[]) || []
+    );
+}
+
 /**
  * Restores cross-schema targets (require/forbid a field in another schema, held as
- * then/else wrapper entries keyed by ref field name) into a matched condition. Unlike
- * a regular field, a target has no independent "is this custom" marker of its own -
- * merging is unconditional and idempotent, safe to call for every matched condition
- * regardless of whether it actually holds any policy-added targets.
+ * then/else wrapper entries keyed by ref field name) into a matched condition.
+ * Snapshot wrappers are subtracted first so targets removed from the template do not
+ * come back on every later update; only policy-added targets are carried forward.
  */
 function restoreConditionCrossTargets(
     targetDocument: any,
     previousDocument: any,
     oldConditionIndex: number,
-    newConditionIndex: number
+    newConditionIndex: number,
+    previousSnapshotDocument?: any,
+    previousSnapshotConditionIndex: number = -1
 ): void {
     const oldEntry = previousDocument?.allOf?.[oldConditionIndex];
     const newEntry = targetDocument?.allOf?.[newConditionIndex];
@@ -1117,16 +1186,23 @@ function restoreConditionCrossTargets(
         if (!oldProps) {
             continue;
         }
+        const snapshotProps = previousSnapshotConditionIndex >= 0
+            ? previousSnapshotDocument?.allOf?.[previousSnapshotConditionIndex]?.[branchKey]?.properties
+            : undefined;
         for (const [key, value] of Object.entries<any>(oldProps)) {
             if (!isCrossTargetWrapper(value)) {
+                continue;
+            }
+            const policyAddedWrapper = subtractCrossTargetWrapper(value, snapshotProps?.[key]);
+            if (!policyAddedWrapper) {
                 continue;
             }
             const newBranchNode = newEntry[branchKey] || (newEntry[branchKey] = {});
             newBranchNode.properties = newBranchNode.properties || {};
             if (newBranchNode.properties[key] === undefined) {
-                newBranchNode.properties[key] = cloneJson(value);
+                newBranchNode.properties[key] = policyAddedWrapper;
             } else if (newBranchNode.properties[key] !== false) {
-                mergeCrossTargetWrapper(newBranchNode.properties[key], value);
+                mergeCrossTargetWrapper(newBranchNode.properties[key], policyAddedWrapper);
             }
         }
     }
@@ -1993,11 +2069,14 @@ export function preparePolicySchemaUpdate(
     templateId: string,
     schemaConfig: any,
     conditionConflicts: ISchemaTemplateUpdateConflict[] = [],
-    conditionResolutions: Map<string, SchemaTemplateUpdateResolutionAction> = new Map()
+    conditionResolutions: Map<string, SchemaTemplateUpdateResolutionAction> = new Map(),
+    previousSnapshotSchema?: ISchemaTemplateSnapshotSchema
 ): void {
     const previousDocument = cloneJson(target.document);
     const previousParsed = new InterfaceSchema(target as ISchema, true);
     const sourceParsed = new InterfaceSchema(source as ISchema, true);
+    const previousSnapshotConditions = previousSnapshotSchema?.conditions || [];
+    const previousSnapshotDocument = buildSnapshotSchemaDocument(previousSnapshotSchema);
     const custom = schemaConfig.customFieldsLocked ? [] : customFieldsFromParsedFields(previousParsed.fields || []);
 
     const previousConditions = previousParsed.conditions || [];
@@ -2088,10 +2167,22 @@ export function preparePolicySchemaUpdate(
             );
         }
     }
-    // Unconditional per matched pair, not per field placement - a condition can hold a
-    // policy-added cross-schema target with no custom field alongside it at all.
+    // Per matched pair, not per field placement - a policy-added cross-schema target
+    // can exist without any custom field alongside it. Snapshot targets are filtered
+    // inside restoreConditionCrossTargets so template-removed targets stay removed.
     for (const [oldIndex, newIndex] of matchedIndexByOldIndex) {
-        restoreConditionCrossTargets(target.document, previousDocument, oldIndex, newIndex);
+        const signature = conditionTriggerSignature(previousConditions[oldIndex]);
+        const previousSnapshotConditionIndex = signature
+            ? findMatchingConditionIndex(previousSnapshotConditions, signature)
+            : -1;
+        restoreConditionCrossTargets(
+            target.document,
+            previousDocument,
+            oldIndex,
+            newIndex,
+            previousSnapshotDocument,
+            previousSnapshotConditionIndex
+        );
     }
     for (const conditionIndex of carryOverConditionIndices) {
         carryOverCustomCondition(target.document, previousDocument, conditionIndex);
@@ -2227,7 +2318,8 @@ async function updateAppliedSchemaTemplate(
                 context.template.id,
                 schemaConfigByTemplateSchemaId.get(templateSchemaId),
                 preview.conflicts,
-                resolutions
+                resolutions,
+                previousSnapshot.schemas?.schemas?.[templateSchemaId]
             );
             await DatabaseServer.updateSchema(target.id, target);
             schemaMap[templateSchemaId] = target.id;

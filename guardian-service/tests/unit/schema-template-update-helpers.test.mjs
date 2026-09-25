@@ -934,6 +934,122 @@ describe('preparePolicySchemaUpdate — condition-branch membership', () => {
             'the template-driven then field must still be present, untouched');
     });
 
+    it('does not restore a cross-schema target that came from the previous template snapshot', () => {
+        const trigger = field('type', { templateFieldId: 'tpl-type' });
+        const zip = field('zip', { required: true });
+        const targetDocument = SchemaHelper.buildDocument(
+            baseSchema(),
+            [trigger],
+            [{
+                ifCondition: { field: trigger, fieldValue: 'solar' },
+                thenFields: [],
+                elseFields: [],
+                thenTargets: [{ field: zip, fieldPath: ['address', 'zip'] }],
+            }]
+        );
+        stripEnvelope(targetDocument);
+
+        const sourceTrigger = field('type', { templateFieldId: 'tpl-type' });
+        const sourcePlaceholder = field('placeholder', { templateFieldId: 'tpl-placeholder' });
+        const sourceDocument = SchemaHelper.buildDocument(
+            baseSchema(),
+            [sourceTrigger, sourcePlaceholder],
+            [{ ifCondition: { field: sourceTrigger, fieldValue: 'solar' }, thenFields: [sourcePlaceholder], elseFields: [] }]
+        );
+
+        const previousSnapshotSchema = {
+            templateSchemaId: 'tsid-1',
+            name: 'N',
+            description: 'D',
+            version: '1.0.0',
+            fields: [trigger],
+            conditions: [{
+                ifCondition: { field: trigger, fieldValue: 'solar' },
+                thenFields: [],
+                elseFields: [],
+                thenTargets: [{ field: zip, fieldPath: ['address', 'zip'] }],
+            }],
+        };
+
+        const target = asSchema(targetDocument);
+        const source = asSchema(sourceDocument);
+
+        preparePolicySchemaUpdate(
+            target,
+            source,
+            'template-1',
+            { customFieldsLocked: false, schemaSettingsLocked: false },
+            [],
+            new Map(),
+            previousSnapshotSchema
+        );
+
+        assert.equal(target.document.allOf[0].then.properties.address, undefined,
+            'a target removed from the template must not be restored from the old policy document');
+        assert.equal(target.document.allOf[0].else?.properties?.address, undefined);
+        assert.ok(target.document.allOf[0].then.properties.placeholder);
+    });
+
+    it('restores only policy-added cross-schema targets when snapshot also had targets', () => {
+        const trigger = field('type', { templateFieldId: 'tpl-type' });
+        const zip = field('zip', { required: true });
+        const city = field('city', { required: true });
+        const targetDocument = SchemaHelper.buildDocument(
+            baseSchema(),
+            [trigger],
+            [{
+                ifCondition: { field: trigger, fieldValue: 'solar' },
+                thenFields: [],
+                elseFields: [],
+                thenTargets: [
+                    { field: zip, fieldPath: ['address', 'zip'] },
+                    { field: city, fieldPath: ['address', 'city'] },
+                ],
+            }]
+        );
+        stripEnvelope(targetDocument);
+
+        const sourceTrigger = field('type', { templateFieldId: 'tpl-type' });
+        const sourcePlaceholder = field('placeholder', { templateFieldId: 'tpl-placeholder' });
+        const sourceDocument = SchemaHelper.buildDocument(
+            baseSchema(),
+            [sourceTrigger, sourcePlaceholder],
+            [{ ifCondition: { field: sourceTrigger, fieldValue: 'solar' }, thenFields: [sourcePlaceholder], elseFields: [] }]
+        );
+
+        const previousSnapshotSchema = {
+            templateSchemaId: 'tsid-1',
+            name: 'N',
+            description: 'D',
+            version: '1.0.0',
+            fields: [trigger],
+            conditions: [{
+                ifCondition: { field: trigger, fieldValue: 'solar' },
+                thenFields: [],
+                elseFields: [],
+                thenTargets: [{ field: zip, fieldPath: ['address', 'zip'] }],
+            }],
+        };
+
+        const target = asSchema(targetDocument);
+        const source = asSchema(sourceDocument);
+
+        preparePolicySchemaUpdate(
+            target,
+            source,
+            'template-1',
+            { customFieldsLocked: false, schemaSettingsLocked: false },
+            [],
+            new Map(),
+            previousSnapshotSchema
+        );
+
+        assert.deepEqual(target.document.allOf[0].then.properties.address, { required: ['city'] },
+            'only the policy-added required target should be restored');
+        assert.deepEqual(target.document.allOf[0].else.properties.address, { properties: { city: false } },
+            'only the policy-added forbidden marker should be restored');
+    });
+
     it('drops a condition held only by a cross-schema target when its condition is removed and not kept', () => {
         const trigger = field('trigger', { templateFieldId: 'tpl-trigger-1' });
         const requiredChild = field('childField', { required: true });
