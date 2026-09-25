@@ -71,6 +71,38 @@ function getSchemaFields(schema: ISchema): SchemaField[] {
     return new Schema(schema, true).fields || [];
 }
 
+function getConditionFieldId(field: any): string {
+    return field?.templateFieldId || field?.name || '';
+}
+
+function getConditionPredicates(ifCondition: any): any[] {
+    return ifCondition?.AND ?? ifCondition?.OR ?? (ifCondition ? [ifCondition] : []);
+}
+
+function getParsedConditionTargetPaths(targets: any[]): string[][] {
+    return (targets || [])
+        .map((target: any) => target.fieldPath || [])
+        .filter((path: string[]) => path.length > 0);
+}
+
+function getConditionsHash(schema: ISchema): string {
+    const conditions = new Schema(schema, true).conditions || [];
+    return SchemaHelper.stableStringify(
+        conditions.map((condition: any) => ({
+            op: condition.ifCondition?.AND ? 'AND' : condition.ifCondition?.OR ? 'OR' : 'SINGLE',
+            if: getConditionPredicates(condition.ifCondition).map((predicate: any) => [
+                getConditionFieldId(predicate.field),
+                predicate.fieldPath || [],
+                SchemaHelper.cloneSchemaRuntimeValue(predicate.fieldValue)
+            ]),
+            then: (condition.thenFields || []).map(getConditionFieldId),
+            else: (condition.elseFields || []).map(getConditionFieldId),
+            thenTargets: getParsedConditionTargetPaths(condition.thenTargets),
+            elseTargets: getParsedConditionTargetPaths(condition.elseTargets)
+        }))
+    );
+}
+
 function flattenFields(fields: SchemaField[], result: SchemaField[] = []): SchemaField[] {
     for (const field of fields || []) {
         result.push(field);
@@ -185,6 +217,10 @@ export function validateTemplateSchemaUpdateByConfig(
 ): void {
     if (schemaConfig.schemaSettingsLocked && getSchemaSettingsHash(previous) !== getSchemaSettingsHash(next)) {
         throw new Error(`Schema settings for "${previous.name}" are locked by schema template and cannot be edited.`);
+    }
+
+    if (schemaConfig.conditionsLocked && getConditionsHash(previous) !== getConditionsHash(next)) {
+        throw new Error(`Conditions for "${previous.name}" are locked by schema template and cannot be edited.`);
     }
 
     const previousFields = flattenFields(getSchemaFields(previous));

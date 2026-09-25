@@ -872,9 +872,395 @@ function flattenRuntimeFields(fields: any[], result: any[] = []): any[] {
     return result;
 }
 
-function getRuntimeCustomFields(schema: Schema): any[] {
+function customFieldsFromParsedFields(fields: any[]): any[] {
+    return flattenRuntimeFields(fields || []).filter((field) => !field?.templateFieldId);
+}
+
+export function getRuntimeCustomFields(schema: Schema): any[] {
     const parsed = new InterfaceSchema(schema as ISchema, true);
-    return flattenRuntimeFields(parsed.fields || []).filter((field) => !field?.templateFieldId);
+    return customFieldsFromParsedFields(parsed.fields || []);
+}
+
+function conditionPredicates(ifCondition: any): any[] {
+    if (!ifCondition) {
+        return [];
+    }
+    if (Array.isArray(ifCondition.AND)) {
+        return ifCondition.AND;
+    }
+    if (Array.isArray(ifCondition.OR)) {
+        return ifCondition.OR;
+    }
+    return [ifCondition];
+}
+
+function conditionCustomFieldNames(conditions: any[], fields: any[]): Set<string> {
+    const customFieldNames = new Set((fields || []).map((field) => field?.name).filter(Boolean));
+    const result = new Set<string>();
+    for (const condition of conditions || []) {
+        for (const predicate of conditionPredicates(condition?.ifCondition)) {
+            const field = predicate?.field;
+            if (!field?.templateFieldId && customFieldNames.has(field?.name)) {
+                result.add(field.name);
+            }
+        }
+        for (const field of [...(condition?.thenFields || []), ...(condition?.elseFields || [])]) {
+            if (!field?.templateFieldId && customFieldNames.has(field?.name)) {
+                result.add(field.name);
+            }
+        }
+    }
+    return result;
+}
+
+/**
+ * A condition's identity across template versions is its trigger field(s)' templateFieldId
+ * plus the value(s) it compares against - templateFieldId alone isn't enough, since two
+ * separate conditions can share the same trigger field with different values (e.g. one
+ * per enum option). Neither allOf array position nor trigger field name is stable enough
+ * to use either. Returns null when any predicate's field lacks a templateFieldId - wholly
+ * policy-authored, or otherwise unmatchable.
+ */
+export function conditionTriggerSignature(condition: any): string[] | null {
+    const ifCondition = condition?.ifCondition;
+    if (!ifCondition) {
+        return null;
+    }
+    // AND vs OR must be part of the signature too - the same predicates combined either
+    // way would otherwise produce the same sorted parts and be treated as one condition.
+    const combinator = Array.isArray(ifCondition.AND) ? 'AND' : Array.isArray(ifCondition.OR) ? 'OR' : 'SINGLE';
+    const predicates = conditionPredicates(ifCondition);
+    const parts: string[] = [];
+    for (const predicate of predicates) {
+        const id = predicate?.field?.templateFieldId;
+        if (!id) {
+            return null;
+        }
+        parts.push(`${id}:${JSON.stringify(predicate.fieldValue)}`);
+    }
+    return [combinator, ...parts.sort()];
+}
+
+export function findMatchingConditionIndex(conditions: any[], signature: string[]): number {
+    return (conditions || []).findIndex((condition) => {
+        const candidate = conditionTriggerSignature(condition);
+        return !!candidate && candidate.length === signature.length && candidate.every((part, i) => part === signature[i]);
+    });
+}
+
+/**
+ * Matches by name, not object identity - the fields/conditions here can come from
+ * independent parses (e.g. a snapshot clone), where the same logical field is a
+ * different object instance in each.
+ */
+export function findFieldConditionMembership(
+    conditions: any[],
+    fieldName: string
+): { conditionIndex: number; branch: 'thenFields' | 'elseFields' } | null {
+    if (!fieldName) {
+        return null;
+    }
+    for (let i = 0; i < (conditions || []).length; i++) {
+        const condition = conditions[i];
+        if ((condition?.thenFields || []).some((f: any) => f?.name === fieldName)) {
+            return { conditionIndex: i, branch: 'thenFields' };
+        }
+        if ((condition?.elseFields || []).some((f: any) => f?.name === fieldName)) {
+            return { conditionIndex: i, branch: 'elseFields' };
+        }
+    }
+    return null;
+}
+
+export interface IConditionClassification {
+    /** oldConditionIndex, mapped to its matching index in sourceConditions, for every condition that still matches. */
+    matchedIndexByOldIndex: Map<number, number>;
+    /** Indices whose trigger has no templateFieldId - built from scratch by a policy developer, never template-derived. */
+    whollyCustomIndices: Set<number>;
+    /** Indices whose trigger has a templateFieldId, but nothing in sourceConditions matches it anymore. */
+    orphanedIndices: Set<number>;
+}
+
+/** Classifies every condition in `previousConditions` against `sourceConditions`, once, for reuse by both field and cross-target restoration. */
+export function classifyConditionsAgainstSource(previousConditions: any[], sourceConditions: any[]): IConditionClassification {
+    const matchedIndexByOldIndex = new Map<number, number>();
+    const whollyCustomIndices = new Set<number>();
+    const orphanedIndices = new Set<number>();
+    for (let i = 0; i < (previousConditions || []).length; i++) {
+        const signature = conditionTriggerSignature(previousConditions[i]);
+        if (signature === null) {
+            whollyCustomIndices.add(i);
+            continue;
+        }
+        const matchedIndex = findMatchingConditionIndex(sourceConditions || [], signature);
+        if (matchedIndex === -1) {
+            orphanedIndices.add(i);
+        } else {
+            matchedIndexByOldIndex.set(i, matchedIndex);
+        }
+    }
+    return { matchedIndexByOldIndex, whollyCustomIndices, orphanedIndices };
+}
+
+export interface IConditionFieldPlacement {
+    field: any;
+    conditionIndex: number;
+    branch: 'thenFields' | 'elseFields';
+    /** null: the owning condition is wholly policy-authored (not matchable to any template condition). */
+    triggerIds: string[] | null;
+    /** Index in `sourceConditions`, or -1 when triggerIds is set but nothing there matches (removed). */
+    matchedIndex: number;
+}
+
+export function analyzeConditionFieldPlacements(
+    previousConditions: any[],
+    sourceConditions: any[],
+    fields: any[]
+): IConditionFieldPlacement[] {
+    const classification = classifyConditionsAgainstSource(previousConditions, sourceConditions);
+    const result: IConditionFieldPlacement[] = [];
+    for (const field of fields || []) {
+        const membership = findFieldConditionMembership(previousConditions, field?.name);
+        if (!membership) {
+            continue;
+        }
+        const triggerIds = classification.whollyCustomIndices.has(membership.conditionIndex)
+            ? null
+            : conditionTriggerSignature(previousConditions[membership.conditionIndex]);
+        const matchedIndex = classification.matchedIndexByOldIndex.get(membership.conditionIndex) ?? -1;
+        result.push({ field, conditionIndex: membership.conditionIndex, branch: membership.branch, triggerIds, matchedIndex });
+    }
+    return result;
+}
+
+/** Restores a field's branch membership alongside, not instead of, mergeCustomFieldsIntoDocument's root-properties restoration. */
+function restoreConditionBranchMembership(
+    targetDocument: any,
+    previousDocument: any,
+    oldConditionIndex: number,
+    newConditionIndex: number,
+    branch: 'thenFields' | 'elseFields',
+    fieldName: string
+): void {
+    const branchKey = branch === 'thenFields' ? 'then' : 'else';
+    const oldBranchNode = previousDocument?.allOf?.[oldConditionIndex]?.[branchKey];
+    const property = oldBranchNode?.properties?.[fieldName];
+    if (!property || isCrossTargetWrapper(property)) {
+        return;
+    }
+    const newEntry = targetDocument?.allOf?.[newConditionIndex];
+    if (!newEntry) {
+        return;
+    }
+    const newBranchNode = newEntry[branchKey] || (newEntry[branchKey] = {});
+    newBranchNode.properties = newBranchNode.properties || {};
+    if (newBranchNode.properties[fieldName] === undefined) {
+        newBranchNode.properties[fieldName] = cloneJson(property);
+    }
+}
+
+/**
+ * A cross-schema condition target (SchemaConditionTarget, wired via addThenTarget/
+ * addElseTarget) serializes to a properties entry with neither `type` nor `$ref` -
+ * every real field carries one or the other. This is how buildDocument's own
+ * buildCrossRequired/buildCrossForbidden wrappers are told apart from real fields
+ * inside the same then/else properties object.
+ */
+function isCrossTargetWrapper(property: any): boolean {
+    return !!property && typeof property === 'object' && property.type === undefined && property.$ref === undefined;
+}
+
+function mergeCrossTargetWrapper(target: any, source: any): void {
+    if (!target || typeof target !== 'object' || !source || typeof source !== 'object') {
+        return;
+    }
+    if (Array.isArray(source.required)) {
+        target.required = Array.isArray(target.required) ? target.required : [];
+        for (const name of source.required) {
+            if (!target.required.includes(name)) {
+                target.required.push(name);
+            }
+        }
+    }
+    if (source.properties && typeof source.properties === 'object') {
+        target.properties = target.properties || {};
+        for (const [key, value] of Object.entries<any>(source.properties)) {
+            if (target.properties[key] === undefined) {
+                target.properties[key] = cloneJson(value);
+            } else if (value !== false) {
+                mergeCrossTargetWrapper(target.properties[key], value);
+            }
+        }
+    }
+}
+
+function hasCrossTargetWrapperContent(wrapper: any): boolean {
+    return !!wrapper &&
+        typeof wrapper === 'object' &&
+        (
+            (Array.isArray(wrapper.required) && wrapper.required.length > 0) ||
+            (wrapper.properties && typeof wrapper.properties === 'object' && Object.keys(wrapper.properties).length > 0)
+        );
+}
+
+function subtractCrossTargetWrapper(source: any, baseline: any): any {
+    if (!isCrossTargetWrapper(source)) {
+        return undefined;
+    }
+    if (!isCrossTargetWrapper(baseline)) {
+        return cloneJson(source);
+    }
+    const result: any = {};
+    if (Array.isArray(source.required)) {
+        const baselineRequired = new Set(Array.isArray(baseline.required) ? baseline.required : []);
+        const required = source.required.filter((name: string) => !baselineRequired.has(name));
+        if (required.length) {
+            result.required = required;
+        }
+    }
+    if (source.properties && typeof source.properties === 'object') {
+        const properties: Record<string, any> = {};
+        for (const [key, value] of Object.entries<any>(source.properties)) {
+            const baselineValue = baseline.properties?.[key];
+            if (value === false) {
+                if (baselineValue !== false) {
+                    properties[key] = false;
+                }
+                continue;
+            }
+            if (isCrossTargetWrapper(value)) {
+                const nested = subtractCrossTargetWrapper(value, baselineValue);
+                if (hasCrossTargetWrapperContent(nested)) {
+                    properties[key] = nested;
+                }
+            } else if (baselineValue === undefined) {
+                properties[key] = cloneJson(value);
+            }
+        }
+        if (Object.keys(properties).length) {
+            result.properties = properties;
+        }
+    }
+    return hasCrossTargetWrapperContent(result) ? result : undefined;
+}
+
+function buildSnapshotSchemaDocument(schema?: ISchemaTemplateSnapshotSchema): any {
+    if (!schema) {
+        return undefined;
+    }
+    return SchemaHelper.buildDocument(
+        {
+            uuid: schema.templateSchemaId,
+            name: schema.name,
+            description: schema.description,
+            version: schema.version,
+            fields: schema.fields || [],
+            conditions: schema.conditions || []
+        } as any,
+        (schema.fields as any[]) || [],
+        (schema.conditions as any[]) || []
+    );
+}
+
+/**
+ * Restores cross-schema targets (require/forbid a field in another schema, held as
+ * then/else wrapper entries keyed by ref field name) into a matched condition.
+ * Snapshot wrappers are subtracted first so targets removed from the template do not
+ * come back on every later update; only policy-added targets are carried forward.
+ */
+function restoreConditionCrossTargets(
+    targetDocument: any,
+    previousDocument: any,
+    oldConditionIndex: number,
+    newConditionIndex: number,
+    previousSnapshotDocument?: any,
+    previousSnapshotConditionIndex: number = -1
+): void {
+    const oldEntry = previousDocument?.allOf?.[oldConditionIndex];
+    const newEntry = targetDocument?.allOf?.[newConditionIndex];
+    if (!oldEntry || !newEntry) {
+        return;
+    }
+    for (const branchKey of ['then', 'else'] as const) {
+        const oldProps = oldEntry[branchKey]?.properties;
+        if (!oldProps) {
+            continue;
+        }
+        const snapshotProps = previousSnapshotConditionIndex >= 0
+            ? previousSnapshotDocument?.allOf?.[previousSnapshotConditionIndex]?.[branchKey]?.properties
+            : undefined;
+        for (const [key, value] of Object.entries<any>(oldProps)) {
+            if (!isCrossTargetWrapper(value)) {
+                continue;
+            }
+            const policyAddedWrapper = subtractCrossTargetWrapper(value, snapshotProps?.[key]);
+            if (!policyAddedWrapper) {
+                continue;
+            }
+            const newBranchNode = newEntry[branchKey] || (newEntry[branchKey] = {});
+            newBranchNode.properties = newBranchNode.properties || {};
+            if (newBranchNode.properties[key] === undefined) {
+                newBranchNode.properties[key] = policyAddedWrapper;
+            } else if (newBranchNode.properties[key] !== false) {
+                mergeCrossTargetWrapper(newBranchNode.properties[key], policyAddedWrapper);
+            }
+        }
+    }
+}
+
+function conditionHasPolicyAddedCrossTargets(
+    previousDocument: any,
+    conditionIndex: number,
+    previousSnapshotDocument?: any,
+    previousSnapshotConditionIndex: number = -1
+): boolean {
+    const oldEntry = previousDocument?.allOf?.[conditionIndex];
+    if (!oldEntry) {
+        return false;
+    }
+    for (const branchKey of ['then', 'else'] as const) {
+        const oldProps = oldEntry[branchKey]?.properties;
+        if (!oldProps) {
+            continue;
+        }
+        const snapshotProps = previousSnapshotConditionIndex >= 0
+            ? previousSnapshotDocument?.allOf?.[previousSnapshotConditionIndex]?.[branchKey]?.properties
+            : undefined;
+        for (const [key, value] of Object.entries<any>(oldProps)) {
+            if (isCrossTargetWrapper(value) && subtractCrossTargetWrapper(value, snapshotProps?.[key])) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+/** True if any then/else branch of this condition holds a cross-schema target (see isCrossTargetWrapper). */
+function conditionHasCrossTargets(document: any, conditionIndex: number): boolean {
+    const entry = document?.allOf?.[conditionIndex];
+    if (!entry) {
+        return false;
+    }
+    for (const branchKey of ['then', 'else'] as const) {
+        const props = entry[branchKey]?.properties;
+        if (!props) {
+            continue;
+        }
+        if (Object.values<any>(props).some(isCrossTargetWrapper)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/** Carries a whole condition (trigger + then + else) over wholesale - no template counterpart to merge into. */
+function carryOverCustomCondition(targetDocument: any, previousDocument: any, oldConditionIndex: number): void {
+    const entry = previousDocument?.allOf?.[oldConditionIndex];
+    if (!entry) {
+        return;
+    }
+    targetDocument.allOf = Array.isArray(targetDocument.allOf) ? targetDocument.allOf : [];
+    targetDocument.allOf.push(cloneJson(entry));
 }
 
 function parseFieldComment(comment: any): any {
@@ -1025,6 +1411,33 @@ function buildSchemaChangeDetails(
         { key: 'description', label: 'Description' },
         { key: 'entity', label: 'Entity type' }
     ]);
+}
+
+/** Diffs the per-schema template-config lock toggles - the update preview otherwise only shows their downstream effects (a field preserved/removed), never the toggle change itself. */
+function buildSchemaConfigChangeDetails(previous: any, next: any): ISchemaTemplateUpdateChange['details'] {
+    return buildDetails(previous, next, [
+        { key: 'schemaSettingsLocked', label: 'Schema settings locked' },
+        { key: 'customFieldsLocked', label: 'Custom fields locked' },
+        { key: 'conditionsLocked', label: 'Conditions locked' }
+    ]);
+}
+
+/** A field with no config entry, or `locked` not explicitly false, is locked by default - mirrors isTemplateFieldLocked's own rule. */
+function isFieldLockedByConfig(schemaConfig: any, templateFieldId: string): boolean {
+    return schemaConfig?.fields?.[templateFieldId]?.locked !== false;
+}
+
+/** Diffs one field's per-field lock toggle - same blind spot as the schema-level toggles: only the field's own content was ever diffed, never whether it got individually locked/unlocked. */
+function buildFieldLockChangeDetails(
+    previousSchemaConfig: any,
+    nextSchemaConfig: any,
+    templateFieldId: string
+): ISchemaTemplateUpdateChange['details'] {
+    return buildDetails(
+        { locked: isFieldLockedByConfig(previousSchemaConfig, templateFieldId) },
+        { locked: isFieldLockedByConfig(nextSchemaConfig, templateFieldId) },
+        [{ key: 'locked', label: 'Locked' }]
+    );
 }
 
 function hasDetails(details: ISchemaTemplateUpdateChange['details']): boolean {
@@ -1237,7 +1650,7 @@ async function loadSchemaTemplateUpdateContext(
     };
 }
 
-function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<ReturnType<typeof loadSchemaTemplateUpdateContext>>): ISchemaTemplateUpdatePreview {
+export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<ReturnType<typeof loadSchemaTemplateUpdateContext>>): ISchemaTemplateUpdatePreview {
     const changes: ISchemaTemplateUpdateChange[] = [];
     const conflicts: ISchemaTemplateUpdateConflict[] = [];
     const previousSchemas = normalizeSnapshotSchemas(context.snapshot.schemas?.schemas || {});
@@ -1262,14 +1675,17 @@ function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<ReturnType
             continue;
         }
         const nextSchemaConfig = getSnapshotSchemaConfig(nextConfig, templateSchemaId);
+        const previousSchemaConfig = getSnapshotSchemaConfig(previousConfig, templateSchemaId);
         const policySnapshot = toPolicySnapshotSchema(policySchema);
         const schemaSettingsBefore = nextSchemaConfig.schemaSettingsLocked
             ? policySnapshot
             : previousSchema;
-        const schemaDetails = buildSchemaChangeDetails(schemaSettingsBefore, nextSchema);
+        const settingsDetails = buildSchemaChangeDetails(schemaSettingsBefore, nextSchema);
+        const configDetails = buildSchemaConfigChangeDetails(previousSchemaConfig, nextSchemaConfig);
+        const schemaDetails = [...settingsDetails, ...configDetails];
         const schemaChanged = snapshotSchemaHash(previousSchema) !== snapshotSchemaHash(nextSchema);
-        const schemaSettingsWillBeOverwritten = nextSchemaConfig.schemaSettingsLocked && hasDetails(schemaDetails);
-        if (schemaChanged || schemaSettingsWillBeOverwritten) {
+        const schemaSettingsWillBeOverwritten = nextSchemaConfig.schemaSettingsLocked && hasDetails(settingsDetails);
+        if (schemaChanged || schemaSettingsWillBeOverwritten || hasDetails(configDetails)) {
             changes.push(createChange(
                 SchemaTemplateUpdateChangeType.SCHEMA_UPDATE,
                 `Schema "${nextSchema.name}" will be updated from the template.`,
@@ -1286,6 +1702,11 @@ function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<ReturnType
         const previousFields = fieldsByTemplateId(previousSchema.fields);
         const nextFields = fieldsByTemplateId(nextSchema.fields);
         const policyCustomFields = customFields(policySnapshot.fields);
+        const previousConditions = policySnapshot.conditions || [];
+        const sourceConditions = nextSchema.conditions || [];
+        const conditionFieldNamesToRemove = nextSchemaConfig.conditionsLocked
+            ? conditionCustomFieldNames(previousConditions, policyCustomFields)
+            : new Set<string>();
 
         for (const [templateFieldId, field] of nextFields.entries()) {
             const previousField = previousFields.get(templateFieldId);
@@ -1302,20 +1723,26 @@ function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<ReturnType
                         after: formatFieldSummary(field)
                     }
                 ));
-            } else if (fieldHash(previousField) !== fieldHash(field)) {
-                changes.push(createChange(
-                    SchemaTemplateUpdateChangeType.FIELD_UPDATE,
-                    `Field "${field.title || field.name}" will be updated in schema "${nextSchema.name}".`,
-                    {
-                        templateSchemaId,
-                        templateFieldId,
-                        schemaName: nextSchema.name,
-                        fieldName: getFieldDisplayName(field),
-                        before: formatFieldSummary(previousField),
-                        after: formatFieldSummary(field),
-                        details: buildFieldChangeDetails(previousField, field)
-                    }
-                ));
+            } else {
+                const fieldDetails = [
+                    ...buildFieldChangeDetails(previousField, field),
+                    ...buildFieldLockChangeDetails(previousSchemaConfig, nextSchemaConfig, templateFieldId)
+                ];
+                if (fieldHash(previousField) !== fieldHash(field) || hasDetails(fieldDetails)) {
+                    changes.push(createChange(
+                        SchemaTemplateUpdateChangeType.FIELD_UPDATE,
+                        `Field "${field.title || field.name}" will be updated in schema "${nextSchema.name}".`,
+                        {
+                            templateSchemaId,
+                            templateFieldId,
+                            schemaName: nextSchema.name,
+                            fieldName: getFieldDisplayName(field),
+                            before: formatFieldSummary(previousField),
+                            after: formatFieldSummary(field),
+                            details: fieldDetails
+                        }
+                    ));
+                }
             }
         }
         for (const [templateFieldId, field] of previousFields.entries()) {
@@ -1336,7 +1763,7 @@ function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<ReturnType
         }
 
         for (const field of policyCustomFields) {
-            if (nextSchemaConfig.customFieldsLocked) {
+            if (nextSchemaConfig.customFieldsLocked || conditionFieldNamesToRemove.has(field.name)) {
                 changes.push(createChange(
                     SchemaTemplateUpdateChangeType.CUSTOM_FIELD_REMOVE,
                     `Custom field "${field.title || field.name}" will be removed from schema "${nextSchema.name}".`,
@@ -1358,6 +1785,87 @@ function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<ReturnType
                         fieldName: getFieldDisplayName(field),
                         before: formatFieldSummary(field),
                         after: formatFieldSummary(field)
+                    }
+                ));
+            }
+        }
+        if (nextSchemaConfig.conditionsLocked) {
+            const previousSnapshotDocument = buildSnapshotSchemaDocument(previousSchema);
+            for (let conditionIndex = 0; conditionIndex < previousConditions.length; conditionIndex++) {
+                const signature = conditionTriggerSignature(previousConditions[conditionIndex]);
+                const previousSnapshotConditionIndex = signature
+                    ? findMatchingConditionIndex(previousSchema.conditions || [], signature)
+                    : -1;
+                if (!conditionHasPolicyAddedCrossTargets(
+                    policySchema.document,
+                    conditionIndex,
+                    previousSnapshotDocument,
+                    previousSnapshotConditionIndex
+                )) {
+                    continue;
+                }
+                changes.push(createChange(
+                    SchemaTemplateUpdateChangeType.CONDITION_REMOVE,
+                    `Policy-added cross-schema target(s) in schema "${nextSchema.name}" will be removed because conditions are locked.`,
+                    {
+                        templateSchemaId,
+                        schemaName: nextSchema.name,
+                        fieldName: '(cross-schema target)',
+                        before: 'Policy-added condition target',
+                        after: 'Removed'
+                    }
+                ));
+            }
+        }
+
+        // customFieldsLocked removes every custom field, and conditionsLocked removes
+        // every policy-authored condition addition, so nothing is left to resolve.
+        if (!nextSchemaConfig.customFieldsLocked && !nextSchemaConfig.conditionsLocked) {
+            const placements = analyzeConditionFieldPlacements(previousConditions, sourceConditions, policyCustomFields);
+            const orphanedFieldsByConditionIndex = new Map<number, any[]>();
+            for (const placement of placements) {
+                if (placement.triggerIds !== null && placement.matchedIndex === -1) {
+                    const list = orphanedFieldsByConditionIndex.get(placement.conditionIndex) || [];
+                    list.push(placement.field);
+                    orphanedFieldsByConditionIndex.set(placement.conditionIndex, list);
+                }
+            }
+            const { orphanedIndices } = classifyConditionsAgainstSource(previousConditions, sourceConditions);
+            for (const conditionIndex of orphanedIndices) {
+                const orphanedFields = orphanedFieldsByConditionIndex.get(conditionIndex) || [];
+                // A cross-schema target has no independent "is this custom" marker of its
+                // own, unlike a field - any target on an orphaned condition is at risk.
+                if (!orphanedFields.length && !conditionHasCrossTargets(policySchema.document, conditionIndex)) {
+                    continue;
+                }
+                const condition = previousConditions[conditionIndex];
+                const triggerIds = conditionTriggerSignature(condition) || [];
+                const fieldNames = orphanedFields.length
+                    ? orphanedFields.map((f) => getFieldDisplayName(f)).join(', ')
+                    : '(cross-schema target only, no custom field)';
+                changes.push(createChange(
+                    SchemaTemplateUpdateChangeType.CONDITION_REMOVE,
+                    `A condition in schema "${nextSchema.name}" was removed from the template.`,
+                    {
+                        templateSchemaId,
+                        schemaName: nextSchema.name,
+                        fieldName: fieldNames,
+                        before: 'Condition present',
+                        after: 'Removed from template'
+                    }
+                ));
+                conflicts.push(createConflict(
+                    SchemaTemplateUpdateConflictType.CONDITION_REMOVED_WITH_POLICY_USAGE,
+                    `A condition in schema "${nextSchema.name}" was removed from the template, but it still reveals custom field(s): ${fieldNames}. Choose whether to keep it as a custom condition or remove it from the policy.`,
+                    {
+                        templateSchemaId,
+                        templateFieldId: triggerIds.join(','),
+                        schemaName: nextSchema.name,
+                        fieldName: fieldNames,
+                        allowedActions: [
+                            SchemaTemplateUpdateResolutionAction.KEEP_AS_CUSTOM_CONDITION,
+                            SchemaTemplateUpdateResolutionAction.REMOVE_FROM_POLICY
+                        ]
                     }
                 ));
             }
@@ -1555,14 +2063,73 @@ function applySchemaDocumentSettings(document: any, name: string, description: s
     document.description = description;
 }
 
-function preparePolicySchemaUpdate(
+export function preparePolicySchemaUpdate(
     target: Schema,
     source: Schema,
     templateId: string,
-    schemaConfig: any
+    schemaConfig: any,
+    conditionConflicts: ISchemaTemplateUpdateConflict[] = [],
+    conditionResolutions: Map<string, SchemaTemplateUpdateResolutionAction> = new Map(),
+    previousSnapshotSchema?: ISchemaTemplateSnapshotSchema
 ): void {
     const previousDocument = cloneJson(target.document);
-    const custom = schemaConfig.customFieldsLocked ? [] : getRuntimeCustomFields(target);
+    const previousParsed = new InterfaceSchema(target as ISchema, true);
+    const sourceParsed = new InterfaceSchema(source as ISchema, true);
+    const previousSnapshotConditions = previousSnapshotSchema?.conditions || [];
+    const previousSnapshotDocument = buildSnapshotSchemaDocument(previousSnapshotSchema);
+    const custom = schemaConfig.customFieldsLocked ? [] : customFieldsFromParsedFields(previousParsed.fields || []);
+
+    const previousConditions = previousParsed.conditions || [];
+    const sourceConditions = sourceParsed.conditions || [];
+    const placements = analyzeConditionFieldPlacements(previousConditions, sourceConditions, custom);
+    const conditionFieldNamesToRemove = schemaConfig.conditionsLocked
+        ? conditionCustomFieldNames(previousConditions, custom)
+        : new Set<string>();
+
+    // dropFieldNames also excludes the field from the root-properties merge below, so an
+    // orphaned condition the user didn't choose to keep is dropped entirely, not left
+    // behind as a detached root field.
+    const dropFieldNames = new Set<string>(conditionFieldNamesToRemove);
+    const carryOverConditionIndices = new Set<number>();
+    const matchedIndexByOldIndex = new Map<number, number>();
+    if (!schemaConfig.customFieldsLocked && !schemaConfig.conditionsLocked) {
+        const classification = classifyConditionsAgainstSource(previousConditions, sourceConditions);
+        for (const index of classification.whollyCustomIndices) {
+            carryOverConditionIndices.add(index);
+        }
+        for (const [oldIndex, newIndex] of classification.matchedIndexByOldIndex) {
+            matchedIndexByOldIndex.set(oldIndex, newIndex);
+        }
+        const fieldsByConditionIndex = new Map<number, any[]>();
+        for (const placement of placements) {
+            const list = fieldsByConditionIndex.get(placement.conditionIndex) || [];
+            list.push(placement.field);
+            fieldsByConditionIndex.set(placement.conditionIndex, list);
+        }
+        for (const conditionIndex of classification.orphanedIndices) {
+            const orphanedFields = fieldsByConditionIndex.get(conditionIndex) || [];
+            // A condition orphaned by the update matters here only if it held something
+            // policy-authored - custom fields, or a cross-schema target (which has no
+            // independent "is this custom" marker of its own, unlike a field).
+            if (!orphanedFields.length && !conditionHasCrossTargets(previousDocument, conditionIndex)) {
+                continue;
+            }
+            const signature = conditionTriggerSignature(previousConditions[conditionIndex]) || [];
+            const conflict = conditionConflicts.find((item) =>
+                item.type === SchemaTemplateUpdateConflictType.CONDITION_REMOVED_WITH_POLICY_USAGE &&
+                item.templateFieldId === signature.join(',')
+            );
+            const action = conflict ? conditionResolutions.get(conflict.id) : undefined;
+            if (action === SchemaTemplateUpdateResolutionAction.KEEP_AS_CUSTOM_CONDITION) {
+                carryOverConditionIndices.add(conditionIndex);
+            } else {
+                for (const field of orphanedFields) {
+                    dropFieldNames.add(field.name);
+                }
+            }
+        }
+    }
+
     const settingsLocked = !!schemaConfig.schemaSettingsLocked;
     const name = settingsLocked ? source.name : target.name;
     const description = settingsLocked ? source.description : target.description;
@@ -1582,7 +2149,45 @@ function preparePolicySchemaUpdate(
     target.status = SchemaStatus.DRAFT;
     target.errors = [];
 
-    mergeCustomFieldsIntoDocument(target.document, previousDocument, custom);
+    const survivingCustom = custom.filter((field) => !dropFieldNames.has(field.name));
+    mergeCustomFieldsIntoDocument(target.document, previousDocument, survivingCustom);
+
+    for (const placement of placements) {
+        if (dropFieldNames.has(placement.field.name) || carryOverConditionIndices.has(placement.conditionIndex)) {
+            continue;
+        }
+        if (placement.matchedIndex !== -1) {
+            restoreConditionBranchMembership(
+                target.document,
+                previousDocument,
+                placement.conditionIndex,
+                placement.matchedIndex,
+                placement.branch,
+                placement.field.name
+            );
+        }
+    }
+    // Per matched pair, not per field placement - a policy-added cross-schema target
+    // can exist without any custom field alongside it. Snapshot targets are filtered
+    // inside restoreConditionCrossTargets so template-removed targets stay removed.
+    for (const [oldIndex, newIndex] of matchedIndexByOldIndex) {
+        const signature = conditionTriggerSignature(previousConditions[oldIndex]);
+        const previousSnapshotConditionIndex = signature
+            ? findMatchingConditionIndex(previousSnapshotConditions, signature)
+            : -1;
+        restoreConditionCrossTargets(
+            target.document,
+            previousDocument,
+            oldIndex,
+            newIndex,
+            previousSnapshotDocument,
+            previousSnapshotConditionIndex
+        );
+    }
+    for (const conditionIndex of carryOverConditionIndices) {
+        carryOverCustomCondition(target.document, previousDocument, conditionIndex);
+    }
+
     SchemaHelper.setVersion(target, target.version, target.version);
     SchemaHelper.updateIRI(target);
 }
@@ -1663,7 +2268,10 @@ async function updateAppliedSchemaTemplate(
                 target,
                 source,
                 context.template.id,
-                schemaConfigByTemplateSchemaId.get(templateSchemaId)
+                schemaConfigByTemplateSchemaId.get(templateSchemaId),
+                preview.conflicts,
+                resolutions,
+                previousSnapshot.schemas?.schemas?.[templateSchemaId]
             );
             await DatabaseServer.updateSchema(target.id, target);
             schemaMap[templateSchemaId] = target.id;

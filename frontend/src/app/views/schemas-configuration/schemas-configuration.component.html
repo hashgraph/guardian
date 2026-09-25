@@ -442,6 +442,13 @@
                                     </span>
                                     <span class="st-toggle" [class.active]="canAddCustomFieldsToSelectedSchema"></span>
                                 </button>
+                                <button class="st-toggle-row st-toggle-row--inline" [disabled]="isTemplateReadonly" (click)="toggleCanChangeSelectedSchemaConditions()">
+                                    <span>
+                                        <strong>Can change conditions</strong>
+                                        <small>Allows adding, editing or removing conditions when applied.</small>
+                                    </span>
+                                    <span class="st-toggle" [class.active]="canChangeSelectedSchemaConditions"></span>
+                                </button>
                                 <div class="st-guidelines-editor">
                                     <label class="st-guidelines-label" for="st-schema-guidelines-textarea">Guidelines</label>
                                     <textarea
@@ -505,7 +512,6 @@
                         </div>
 
                         <!-- ── Canvas tab bar ── -->
-                        @if (!isTemplateConfigMode) {
                         <div class="sc-canvas-tab-bar">
                             <div class="sc-canvas-tab-pill">
                                 <button class="sc-ctp-btn"
@@ -521,27 +527,28 @@
                                         <span class="sc-ctp-count">{{ schemaConditionCount }}</span>
                                     }
                                 </button>
-                                <button class="sc-ctp-btn"
-                                    [class.active]="activeCanvasTab === 'links'"
-                                    (click)="setCanvasTab('links')">
-                                    <i class="pi pi-link"></i>Repeatable links
-                                    @if (arrayDependencyCount) {
-                                        <span class="sc-ctp-count">{{ arrayDependencyCount }}</span>
-                                    }
-                                </button>
-                                @if (glossaryAiEnabled) {
+                                @if (!isTemplateConfigMode) {
                                     <button class="sc-ctp-btn"
-                                        [class.active]="activeCanvasTab === 'propertyAi'"
-                                        (click)="setCanvasTab('propertyAi')">
-                                        <svg-icon class="svg-icon-16" src="/assets/images/icons/auto_awesome.svg"></svg-icon>Glossary AI
-                                        @if (pendingSuggestionCount) {
-                                            <span class="sc-ctp-count">{{ pendingSuggestionCount }}</span>
+                                        [class.active]="activeCanvasTab === 'links'"
+                                        (click)="setCanvasTab('links')">
+                                        <i class="pi pi-link"></i>Repeatable links
+                                        @if (arrayDependencyCount) {
+                                            <span class="sc-ctp-count">{{ arrayDependencyCount }}</span>
                                         }
                                     </button>
+                                    @if (glossaryAiEnabled) {
+                                        <button class="sc-ctp-btn"
+                                            [class.active]="activeCanvasTab === 'propertyAi'"
+                                            (click)="setCanvasTab('propertyAi')">
+                                            <svg-icon class="svg-icon-16" src="/assets/images/icons/auto_awesome.svg"></svg-icon>Glossary AI
+                                            @if (pendingSuggestionCount) {
+                                                <span class="sc-ctp-count">{{ pendingSuggestionCount }}</span>
+                                            }
+                                        </button>
+                                    }
                                 }
                             </div>
                         </div>
-                        }
 
                         @if (activeCanvasTab === 'fields') {
                         <div class="sc-editor-body"
@@ -594,7 +601,7 @@
                         </div>
                         } <!-- /fields tab -->
 
-                        @if (activeCanvasTab === 'conditions' && !isTemplateConfigMode) {
+                        @if (activeCanvasTab === 'conditions') {
                             <ng-container *ngTemplateOutlet="conditionsCanvas"></ng-container>
                         }
                         @if (activeCanvasTab === 'links') {
@@ -1934,11 +1941,17 @@
     </ng-template>
 
     <ng-template #conditionsCanvas>
-        <div class="sc-cond-canvas">
+        <div class="sc-cond-canvas" [class.sc-cond-canvas--locked]="!canChangeConditionsForSelectedSchema && !isTemplateConfigMode">
             <div class="sc-cond-scope-note">
                 <i class="pi pi-info-circle"></i>
                 Conditions control field visibility: IF a field equals a value, THEN show / ELSE show other fields.
             </div>
+            @if (!canChangeConditionsForSelectedSchema && !isTemplateConfigMode) {
+                <div class="st-lock-note st-lock-note--inline">
+                    <i class="pi pi-lock"></i>
+                    <span>Conditions are locked by the applied template.</span>
+                </div>
+            }
 
             @for (cond of (currentContextSchema?.conditions || []); track cond; let ci = $index) {
                 <div class="sc-cond-block">
@@ -1948,12 +1961,15 @@
                         <div class="sc-cond-type-group">
                             <button class="sc-cond-type-btn"
                                 [class.active]="getIfOperator(cond) === 'SINGLE'"
+                                [disabled]="!canChangeConditionsForSelectedSchema"
                                 (click)="setConditionOperator(cond, 'SINGLE')">IF</button>
                             <button class="sc-cond-type-btn"
                                 [class.active]="getIfOperator(cond) === 'AND'"
+                                [disabled]="!canChangeConditionsForSelectedSchema"
                                 (click)="setConditionOperator(cond, 'AND')">IF ALL</button>
                             <button class="sc-cond-type-btn"
                                 [class.active]="getIfOperator(cond) === 'OR'"
+                                [disabled]="!canChangeConditionsForSelectedSchema"
                                 (click)="setConditionOperator(cond, 'OR')">IF ANY</button>
                         </div>
                         <span class="sc-cond-type-note">
@@ -1961,7 +1977,11 @@
                             @else if (getIfOperator(cond) === 'AND') { — all must match }
                             @else { — any must match }
                         </span>
-                        <button class="sc-cond-block-del" title="Remove condition" (click)="removeConditionAt(ci)">
+                        <button class="sc-cond-block-del"
+                            tooltipPosition="top"
+                            [pTooltip]="getRemoveConditionTitle(cond)"
+                            [disabled]="!canChangeConditionsForSelectedSchema || conditionHasLockedField(cond)"
+                            (click)="removeConditionAt(ci)">
                             <i class="pi pi-trash"></i>
                         </button>
                     </div>
@@ -1987,6 +2007,7 @@
                                     [virtualScrollItemSize]="38"
                                     appendTo="body"
                                     placeholder="Select field…"
+                                    [disabled]="!canChangeConditionsForSelectedSchema"
                                     [ngModel]="getIfRowFieldPath(row)"
                                     (onChange)="setIfRowField(cond, ri, $event.value)">
                                     <ng-template pTemplate="item" let-option>
@@ -2024,6 +2045,7 @@
                                             [options]="getIfRowOptions(row)"
                                             appendTo="body"
                                             placeholder="Select value…"
+                                            [disabled]="!canChangeConditionsForSelectedSchema"
                                             [ngModel]="getIfRowValue(row)"
                                             (onChange)="setIfRowValue(cond, ri, $event.value)">
                                             <ng-template pTemplate="item" let-option>
@@ -2032,12 +2054,13 @@
                                         </p-select>
                                     } @else {
                                         <input class="sc-cond-val-inp" type="text" placeholder="value"
+                                            [disabled]="!canChangeConditionsForSelectedSchema"
                                             [value]="getIfRowValue(row)"
                                             (input)="setIfRowValue(cond, ri, $any($event.target).value)" />
                                     }
                                 </div>
                                 <button class="sc-cond-row-del"
-                                    [disabled]="getIfRows(cond).length <= 1"
+                                    [disabled]="getIfRows(cond).length <= 1 || !canChangeConditionsForSelectedSchema"
                                     (click)="removeIfRow(cond, ri)">
                                     <i class="pi pi-times"></i>
                                 </button>
@@ -2045,7 +2068,7 @@
                         }
 
                         @if (getIfOperator(cond) !== 'SINGLE') {
-                            <button class="sc-cond-add-rule" (click)="addIfRow(cond)">
+                            <button class="sc-cond-add-rule" [disabled]="!canChangeConditionsForSelectedSchema" (click)="addIfRow(cond)">
                                 <i class="pi pi-plus"></i> Add condition row
                             </button>
                         }
@@ -2081,9 +2104,11 @@
                                                 </div>
                                             </div>
                                             <div class="sc-field-card-actions">
-                                                <button class="sc-icon-btn sc-icon-btn--danger" title="Remove" (click)="removeThenField(cond, f); $event.stopPropagation()">
-                                                    <i class="pi pi-trash"></i>
-                                                </button>
+                                                @if (!isTemplateFieldLocked(f) && canChangeConditionsForSelectedSchema) {
+                                                    <button class="sc-icon-btn sc-icon-btn--danger" title="Remove" (click)="removeThenField(cond, f); $event.stopPropagation()">
+                                                        <i class="pi pi-trash"></i>
+                                                    </button>
+                                                }
                                             </div>
                                         </div>
                                     }
@@ -2095,13 +2120,13 @@
                                             <span class="sc-cond-te-badge sc-cond-te-badge--show sc-cond-te-badge--nav"
                                                 title="Open schema"
                                                 (click)="openTargetSchema(t)">open</span>
-                                            <button class="sc-cond-te-del" (click)="removeThenTarget(cond, t)">
+                                            <button class="sc-cond-te-del" [disabled]="!canChangeConditionsForSelectedSchema" (click)="removeThenTarget(cond, t)">
                                                 <i class="pi pi-times"></i>
                                             </button>
                                         </div>
                                     }
                                     <div class="sc-cond-te-add-row">
-                                        <button class="sc-cond-te-add-btn" (click)="addThenField(cond)">
+                                        <button class="sc-cond-te-add-btn" [disabled]="!canChangeConditionsForSelectedSchema || !canAddFieldToSelectedSchema" (click)="addThenField(cond)">
                                             <i class="pi pi-plus"></i>New field
                                         </button>
                                         <p-select
@@ -2118,7 +2143,7 @@
                                             [virtualScrollItemSize]="38"
                                             appendTo="body"
                                             [placeholder]="getCrossTargetPSelectGroups().length ? 'Ref field' : '(no sub-schema fields)'"
-                                            [disabled]="!getCrossTargetPSelectGroups().length"
+                                            [disabled]="!getCrossTargetPSelectGroups().length || !canChangeConditionsForSelectedSchema"
                                             [(ngModel)]="condThenRefVal[ci]"
                                             (onChange)="onCondThenRefChange(cond, ci, $event.value)">
                                             <ng-template pTemplate="item" let-option>
@@ -2163,9 +2188,11 @@
                                                 </div>
                                             </div>
                                             <div class="sc-field-card-actions">
-                                                <button class="sc-icon-btn sc-icon-btn--danger" title="Remove" (click)="removeElseField(cond, f); $event.stopPropagation()">
-                                                    <i class="pi pi-trash"></i>
-                                                </button>
+                                                @if (!isTemplateFieldLocked(f) && canChangeConditionsForSelectedSchema) {
+                                                    <button class="sc-icon-btn sc-icon-btn--danger" title="Remove" (click)="removeElseField(cond, f); $event.stopPropagation()">
+                                                        <i class="pi pi-trash"></i>
+                                                    </button>
+                                                }
                                             </div>
                                         </div>
                                     }
@@ -2177,13 +2204,13 @@
                                             <span class="sc-cond-te-badge sc-cond-te-badge--hide sc-cond-te-badge--nav"
                                                 title="Open schema"
                                                 (click)="openTargetSchema(t)">open</span>
-                                            <button class="sc-cond-te-del" (click)="removeElseTarget(cond, t)">
+                                            <button class="sc-cond-te-del" [disabled]="!canChangeConditionsForSelectedSchema" (click)="removeElseTarget(cond, t)">
                                                 <i class="pi pi-times"></i>
                                             </button>
                                         </div>
                                     }
                                     <div class="sc-cond-te-add-row">
-                                        <button class="sc-cond-te-add-btn" (click)="addElseField(cond)">
+                                        <button class="sc-cond-te-add-btn" [disabled]="!canChangeConditionsForSelectedSchema || !canAddFieldToSelectedSchema" (click)="addElseField(cond)">
                                             <i class="pi pi-plus"></i>New field
                                         </button>
                                         <p-select
@@ -2200,7 +2227,7 @@
                                             [virtualScrollItemSize]="38"
                                             appendTo="body"
                                             [placeholder]="getCrossTargetPSelectGroups().length ? 'Ref field' : '(no sub-schema fields)'"
-                                            [disabled]="!getCrossTargetPSelectGroups().length"
+                                            [disabled]="!getCrossTargetPSelectGroups().length || !canChangeConditionsForSelectedSchema"
                                             [(ngModel)]="condElseRefVal[ci]"
                                             (onChange)="onCondElseRefChange(cond, ci, $event.value)">
                                             <ng-template pTemplate="item" let-option>
@@ -2229,7 +2256,7 @@
                 </div>
             }
 
-            <button class="sc-add-cond-btn" [disabled]="!canAddCondition" (click)="addNewCondition()">
+            <button class="sc-add-cond-btn" [disabled]="!canAddCondition || !canChangeConditionsForSelectedSchema" (click)="addNewCondition()">
                 <i class="pi pi-plus"></i> Add condition
             </button>
         </div>

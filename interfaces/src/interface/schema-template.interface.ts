@@ -67,16 +67,19 @@ export enum SchemaTemplateUpdateChangeType {
     FIELD_UPDATE = 'FIELD_UPDATE',
     FIELD_REMOVE = 'FIELD_REMOVE',
     CUSTOM_FIELD_PRESERVE = 'CUSTOM_FIELD_PRESERVE',
-    CUSTOM_FIELD_REMOVE = 'CUSTOM_FIELD_REMOVE'
+    CUSTOM_FIELD_REMOVE = 'CUSTOM_FIELD_REMOVE',
+    CONDITION_REMOVE = 'CONDITION_REMOVE'
 }
 
 export enum SchemaTemplateUpdateConflictType {
-    SCHEMA_REMOVED_WITH_POLICY_USAGE = 'SCHEMA_REMOVED_WITH_POLICY_USAGE'
+    SCHEMA_REMOVED_WITH_POLICY_USAGE = 'SCHEMA_REMOVED_WITH_POLICY_USAGE',
+    CONDITION_REMOVED_WITH_POLICY_USAGE = 'CONDITION_REMOVED_WITH_POLICY_USAGE'
 }
 
 export enum SchemaTemplateUpdateResolutionAction {
     KEEP_AS_CUSTOM_SCHEMA = 'KEEP_AS_CUSTOM_SCHEMA',
-    REMOVE_FROM_POLICY = 'REMOVE_FROM_POLICY'
+    REMOVE_FROM_POLICY = 'REMOVE_FROM_POLICY',
+    KEEP_AS_CUSTOM_CONDITION = 'KEEP_AS_CUSTOM_CONDITION'
 }
 
 export interface ISchemaTemplateUpdateChange {
@@ -158,6 +161,7 @@ export interface ISchemaTemplateFieldConfig {
 export interface ISchemaTemplateSchemaConfig {
     schemaSettingsLocked?: boolean;
     customFieldsLocked?: boolean;
+    conditionsLocked?: boolean;
     guidelines?: string;
     featured?: boolean;
     fields?: Record<string, ISchemaTemplateFieldConfig>;
