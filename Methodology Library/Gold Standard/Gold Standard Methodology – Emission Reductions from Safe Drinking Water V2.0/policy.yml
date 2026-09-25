@@ -1,0 +1,60 @@
+# policy.yml — Policy Manifest (Guardian Methodology Library)
+# Policy: Gold Standard MERSDW v2.0 (EMISSION REDUCTIONS FROM SAFE DRINKING WATER SUPPLY)
+
+id: gold-standard-mersdw-v2
+name: "Gold Standard Methodology for Emission Reductions from Safe Drinking Water Supply (MERSDW) v2.0"
+version: 1.0.0
+description: >
+  Guardian implementation of Gold Standard's Methodology for Emission Reductions from Safe Drinking Water Supply (MERSDW) v2.0. Quantifies emission reductions from safe drinking water supply projects using deemed additionality and default baselines combined with direct field-based performance measurement, aligned to the Paris Agreement.
+policy_type: standard-implementation
+status: draft
+license: Apache-2.0
+category: carbon-credits
+authors:
+  - name: "Xeptagon Pvt Ltd."
+    type: organization
+    github: "sahanxeptagon"
+tags:
+  - gold-standard
+  - mersdw
+  - safe-drinking-water
+  - emission-reductions
+  - water-supply
+
+standard_body: "Gold Standard"
+methodology_id: "429"
+methodology_version: "2.0"
+
+token_type: CVER
+token_standard: HIP-412-NFT
+
+registry_status: none
+# registry_body: "Gold Standard"
+# registry_reference: 
+# registry_accepted_date: 
+
+# hedera_timestamp: "0000000000.000000000"
+
+sdg_alignment: [13]
+sector: energy
+guardian_version_min: 3.7.0
+
+roles:
+  - Admin
+  - Activity Developer
+  - Validation and Verification Body
+ 
+# supersedes: 
+# superseded_by: 
+
+resources:
+  - type: methodology
+    label: "Gold Standard MERSDW v2.0 — official methodology page"
+    url: "https://globalgoals.goldstandard.org/429-ee-sws-emission-reductions-from-safe-drinking-water-supply/"
+  - type: methodology
+    label: "MERSDW v2.0 PDF (429_V2.0_PAA-M400-12-Emission-reductions-from-Safe-Drinking-Water-Supply.pdf)"
+    url: "https://globalgoals.goldstandard.org/standards/429_V2.0_PAA-M400-12-Emission-reductions-from-Safe-Drinking-Water-Supply.pdf"
+
+# thumbnail: 
+homepage: "https://globalgoals.goldstandard.org/429-ee-sws-emission-reductions-from-safe-drinking-water-supply/"
+# support: 
