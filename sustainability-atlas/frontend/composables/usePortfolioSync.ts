@@ -24,6 +24,7 @@ export function usePortfolioSync() {
         widgets: Record<string, boolean>;
         customCharts: { id?: string; title: string; type: string; xAxis: string; yAxis: string }[];
         watchlistFilters: Record<string, string>;
+        watchlistLimit: number;
     } | null> {
         if (!isAuthenticated.value || !import.meta.client) return null;
         try {

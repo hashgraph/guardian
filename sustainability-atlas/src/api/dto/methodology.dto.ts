@@ -2,7 +2,12 @@ import { IsOptional, IsString, IsIn } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationQueryDto } from './pagination.dto';
-import { MethodologyRow, MethodologyStatsRow } from '../repositories/methodology.repository';
+import {
+    MethodologyRow,
+    MethodologyStatsRow,
+    MethodologyLifecycleStatus,
+    METHODOLOGY_LIFECYCLE_STATUSES,
+} from '../repositories/methodology.repository';
 import { IssuanceDto, IssuanceEventDto } from './project.dto';
 
 export class MethodologyQueryDto extends PaginationQueryDto {
@@ -33,6 +38,19 @@ export class MethodologyQueryDto extends PaginationQueryDto {
     @IsIn(['success', 'failed', 'pending', 'unknown'], { each: true })
     decodeStatus?: ('success' | 'failed' | 'pending' | 'unknown')[];
 
+    @ApiPropertyOptional({
+        description:
+            'Filter by lifecycle status. Pipe-separate multiple values ("published|to_be_discontinued"). Omitted returns every status. "to_be_discontinued" is a methodology with a scheduled discontinuation whose effective date has not arrived — still live today; "discontinued" is one whose date has passed.',
+        enum: METHODOLOGY_LIFECYCLE_STATUSES,
+        example: 'published|to_be_discontinued',
+    })
+    @IsOptional()
+    @Transform(({ value }) => String(value).split('|').map(part => {
+        try { return decodeURIComponent(part.trim()); } catch { return part.trim(); }
+    }).filter(Boolean))
+    @IsIn(METHODOLOGY_LIFECYCLE_STATUSES, { each: true })
+    status?: MethodologyLifecycleStatus[];
+
     @ApiPropertyOptional({ description: 'Filter by exact registry DID' })
     @IsOptional()
     @IsString()
@@ -48,7 +66,7 @@ export class MethodologyQueryDto extends PaginationQueryDto {
     @IsString()
     version?: string;
 
-    @ApiPropertyOptional({ description: 'Filter by Policy Topic ID (exact match) — returns all versions of the same policy' })
+    @ApiPropertyOptional({ description: 'Filter by Policy Topic ID (exact match). Returns all versions of the same policy' })
     @IsOptional()
     @IsString()
     policyTopicId?: string;
@@ -93,6 +111,18 @@ export class MethodologyResponseDto {
     @ApiProperty({ nullable: true, description: 'Methodology status (e.g. PUBLISHED, DRAFT)' })
     status: string | null;
 
+    @ApiProperty({
+        enum: METHODOLOGY_LIFECYCLE_STATUSES,
+        description: 'Lifecycle status, derived from the newest discontinue message Guardian published for this version: "to_be_discontinued" while discontinuedAt is still in the future, "discontinued" once it has passed.',
+    })
+    lifecycleStatus: MethodologyLifecycleStatus;
+
+    @ApiProperty({
+        nullable: true,
+        description: 'When this methodology\'s discontinuation takes (or took) effect, or null if it was never discontinued. May be in the future for a deferred discontinuation.',
+    })
+    discontinuedAt: string | null;
+
     @ApiProperty({ nullable: true, description: 'DID of the publishing Standard Registry' })
     registryDid: string | null;
 
@@ -104,7 +134,7 @@ export class MethodologyResponseDto {
 
     @ApiProperty({
         nullable: true,
-        description: 'Policy Topic ID (businessData.topicId) — shared across all versions of the same policy',
+        description: 'Policy Topic ID (businessData.topicId), shared across all versions of the same policy',
     })
     policyTopicId: string | null;
 
@@ -169,10 +199,18 @@ export class MethodologyResponseDto {
         const rawDecodeStatus = row.decodeStatus;
         const decodeStatus: MethodologyResponseDto['decodeStatus'] =
             rawDecodeStatus === 'success' ||
-            rawDecodeStatus === 'failed' ||
-            rawDecodeStatus === 'pending'
+                rawDecodeStatus === 'failed' ||
+                rawDecodeStatus === 'pending'
                 ? rawDecodeStatus
                 : 'unknown';
+        const discontinuedAt = row.discontinuedAt ?? null;
+        const discontinuedDate = discontinuedAt ? new Date(discontinuedAt) : null;
+        const hasSchedule = !!discontinuedDate && !Number.isNaN(discontinuedDate.getTime());
+        const lifecycleStatus: MethodologyLifecycleStatus = !hasSchedule
+            ? 'published'
+            : discontinuedDate!.getTime() <= Date.now()
+                ? 'discontinued'
+                : 'to_be_discontinued';
 
         return {
             id: row.id,
@@ -181,6 +219,8 @@ export class MethodologyResponseDto {
             name: row.displayName,
             description: row.description,
             status: row.statusValue,
+            lifecycleStatus,
+            discontinuedAt,
             registryDid: row.registryDid,
             registryName: row.registryName,
             version,

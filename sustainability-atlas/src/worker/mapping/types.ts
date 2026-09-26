@@ -46,4 +46,6 @@ export interface SchemaInfo {
     description?: string;
     document?: Record<string, unknown>;
     rawSchema: RawSchema;
+    /** Schema's `iwaVersion` tag. Absent ⇒ IWA v1. */
+    iwaVersion?: string;
 }

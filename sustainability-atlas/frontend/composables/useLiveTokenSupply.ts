@@ -1,16 +1,5 @@
 import type { NetworkId } from '~/composables/useNetwork';
-
-/**
- * Public Hedera Mirror Node REST base URLs — the same source HashScan itself
- * reads from. Mirrors `getDefaultMirrorNodeUrl` in
- * `src/shared/config/configuration.ts` (backend), duplicated here because the
- * frontend fetches this directly from the browser rather than through the API.
- */
-const MIRROR_NODE_URLS: Record<string, string> = {
-    mainnet: 'https://mainnet-public.mirrornode.hedera.com',
-    testnet: 'https://testnet.mirrornode.hedera.com',
-    previewnet: 'https://previewnet.mirrornode.hedera.com',
-};
+import { mirrorNodeBaseUrl } from '~/lib/mirror-node';
 
 interface MirrorNodeTokenInfo {
     total_supply?: string | null;
@@ -38,7 +27,7 @@ export function useLiveTokenSupply(
         const id = tokenId.value;
         if (!id || !import.meta.client) return;
 
-        const baseUrl = MIRROR_NODE_URLS[network.value] ?? MIRROR_NODE_URLS.mainnet;
+        const baseUrl = mirrorNodeBaseUrl(network.value);
         pending.value = true;
         try {
             const res = await $fetch<MirrorNodeTokenInfo>(

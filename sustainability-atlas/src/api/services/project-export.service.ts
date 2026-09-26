@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PROJECT_EXTRACT_FIELDS } from '../../worker/project-mapper/project-fields';
 import { findCountryInText } from '../../worker/project-mapper/helpers';
 import { IWA_TO_CADTRUST, IWA_TO_CDOP } from '../../shared/config/standard-field-mappings.generated';
+import { mapIwaPathV1ToV3 } from '../../shared/config/iwa-version';
 import { ProjectResponseDto } from '../dto/project.dto';
 
 export type ExportFormat = 'iwa' | 'cadtrust' | 'cdop';
@@ -13,7 +14,8 @@ interface FlatEntry {
 
 const COMPOSITE_KEYS = new Set(['creditingPeriod']);
 
-const PROJECT_KEY_TO_IWA: Record<string, string> = {};
+/** Exported for unit tests. Project field key → internal IWA path. */
+export const PROJECT_KEY_TO_IWA: Record<string, string> = {};
 for (const f of PROJECT_EXTRACT_FIELDS) {
     if (f.iwaField && !COMPOSITE_KEYS.has(f.key)) {
         PROJECT_KEY_TO_IWA[f.key] = f.iwaField;
@@ -49,11 +51,16 @@ function nestFields(entries: FlatEntry[]): Record<string, unknown> {
     return result;
 }
 
-function resolveIwaPath(iwaPath: string, format: ExportFormat): string | null {
+/**
+ * Resolve an internal IWA path to the target standard. `iwa` always emits v3;
+ * CADTrust/CDOP try the v3 key then the raw key (their dictionaries mix v1/v3).
+ */
+export function resolveIwaPath(iwaPath: string, format: ExportFormat): string | null {
+    const v3 = mapIwaPathV1ToV3(iwaPath) ?? iwaPath;
     switch (format) {
-        case 'iwa': return iwaPath;
-        case 'cadtrust': return IWA_TO_CADTRUST[iwaPath] ?? null;
-        case 'cdop': return IWA_TO_CDOP[iwaPath] ?? null;
+        case 'iwa': return v3;
+        case 'cadtrust': return IWA_TO_CADTRUST[v3] ?? IWA_TO_CADTRUST[iwaPath] ?? null;
+        case 'cdop': return IWA_TO_CDOP[v3] ?? IWA_TO_CDOP[iwaPath] ?? null;
     }
 }
 
@@ -96,6 +103,7 @@ function resolveValue(project: ProjectResponseDto, key: string): unknown {
         case 'country': return project.country;
         case 'developer': return project.developer;
         case 'category': return project.category;
+        case 'scale': return project.scale;
         case 'sector': return project.sector;
         case 'sectoralScope': return project.sectoralScope;
         case 'vintageRaw': return project.vintage;
@@ -105,13 +113,33 @@ function resolveValue(project: ProjectResponseDto, key: string): unknown {
         case 'sdgs':
             return project.sdgs?.length ? project.sdgs.map(n => `UN-SDG-${n}`) : null;
         case 'geo':
+            if (project.polygon) {
+                try {
+                    return typeof project.polygon === 'string'
+                        ? JSON.parse(project.polygon)
+                        : project.polygon;
+                } catch {
+                    // Fall through to coordinates if polygon parsing fails
+                }
+            }
             return project.lat != null && project.lng != null
                 ? { latitude: project.lat, longitude: project.lng }
                 : null;
+        case 'polygon':
+            if (project.polygon) {
+                try {
+                    return typeof project.polygon === 'string'
+                        ? JSON.parse(project.polygon)
+                        : project.polygon;
+                } catch {
+                    return project.polygon;
+                }
+            }
+            return null;
         case 'lat': return project.lat;
         case 'lng': return project.lng;
         case 'registry': return project.registryName;
-        case 'status': return project.status;
+        case 'status': return project.lifecycleStage;
         case 'methodology': return project.methodology;
         case 'credits': return project.credits;
         case 'sourceTimestamp': return project.sourceTimestamp;

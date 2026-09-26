@@ -1,4 +1,5 @@
 import { DataSource } from 'typeorm';
+import { MV_REGISTRY_STATS_NAME } from '@shared/materialized-views';
 
 export type ActivityCategory =
     | 'project_registered'
@@ -28,18 +29,6 @@ export interface ActivityFilters {
     developer?: string;
 }
 
-// Registry display names, resolved once — mirrors PgDashboardRepository's
-// REGISTRY_NAME_SOURCE so "registry" filtering matches the same canonical
-// name the rest of the dashboard filters against.
-const REGISTRY_NAME_SOURCE = `
-    SELECT DISTINCT ON ("registryDid")
-           "registryDid",
-           "displayName" AS registry_name
-    FROM business_view
-    WHERE "viewType" = 'REGISTRY'
-    ORDER BY "registryDid", "createdAt" DESC NULLS LAST
-`;
-
 /**
  * Network Activity feed — the latest N real Guardian events, newest first.
  *
@@ -60,7 +49,9 @@ const REGISTRY_NAME_SOURCE = `
  *    project_retirement_link yet); Methodology/Registry Registered resolve
  *    via the watchlisted projects' own instanceTopicId/registryDid.
  *  - `registry`/`developer` (Dashboard dropdowns): same idea, matched against
- *    the canonical registry name / businessData.developer.
+ *    the canonical registry name / businessData.developer. The name comes from
+ *    `mv_registry_stats` — the same source PgDashboardRepository reads — so
+ *    the feed filters against exactly the name the dropdown offers.
  *  - The "Other" bucket (Token/DID-Document/VP-Document/Role-Document) has no
  *    reliable project/registry/developer attribution, so it is EXCLUDED
  *    entirely whenever any filter is active, rather than guessing.
@@ -100,8 +91,29 @@ export class PgActivityRepository {
         // given, but zeroed out entirely if only `developer` is active.
         const noDeveloperConceptGuard = hasDeveloperFilter ? 'AND FALSE' : '';
 
+        // Resolves the registry filter's display name to its registryDid(s)
+        // ONCE, up front, as a MATERIALIZED CTE — every branch below then
+        // filters on registryDid equality directly instead of joining to
+        // mv_registry_stats and filtering by display name inline. That inline
+        // join+filter pattern defeats Postgres's bind-parameter planning: with
+        // the literal value unknown at plan time, it can't push the filter
+        // down onto `message` and falls back to scanning every matching
+        // message (20k+ rows) and probing mv_registry_stats per row — measured
+        // at 258ms for just the methodology_registered branch alone (EXPLAIN
+        // via PREPARE/EXECUTE, matching what the driver actually sends).
+        // Materializing the resolved DID set first gives the planner a small,
+        // concrete row count to cost branches against, restoring the fast
+        // index-scan plan the partial indexes were built for.
+        const resolvedDidsCte = hasRegistryFilter
+            ? `resolved_dids AS MATERIALIZED (
+                SELECT "registryDid" FROM mv_registry_stats WHERE registry_name = ${registryP}
+            ),`
+            : '';
+        const registryDidFilter = (col: string): string =>
+            hasRegistryFilter ? `AND ${col} = ANY(SELECT "registryDid" FROM resolved_dids)` : '';
+
         const sql = `
-            WITH events AS (
+            WITH ${resolvedDidsCte} events AS (
                 (
                     SELECT
                         'project_registered'::varchar   AS category,
@@ -113,10 +125,10 @@ export class PgActivityRepository {
                         bv."relatedTopicId"              AS "topicId",
                         NULL::varchar                     AS "messageType"
                     FROM business_view bv
-                    LEFT JOIN (${REGISTRY_NAME_SOURCE}) regname ON regname."registryDid" = bv."registryDid"
+                    LEFT JOIN ${MV_REGISTRY_STATS_NAME} regname ON regname."registryDid" = bv."registryDid"
                     WHERE bv."viewType" = 'PROJECT'
                     ${hasProjectFilter ? `AND bv."projectKey" = ANY(${pk}::text[])` : ''}
-                    ${hasRegistryFilter ? `AND regname.registry_name = ${registryP}` : ''}
+                    ${registryDidFilter('bv."registryDid"')}
                     ${hasDeveloperFilter ? `AND bv."businessData"->>'developer' = ${developerP}` : ''}
                     ORDER BY (bv."sourceTimestamp")::numeric DESC
                     LIMIT ${limit}
@@ -128,15 +140,13 @@ export class PgActivityRepository {
                         COALESCE(m.options->>'name', 'Methodology'), NULL,
                         NULL, NULL, m."topicId", NULL
                     FROM message m
-                    LEFT JOIN (${REGISTRY_NAME_SOURCE}) regname
-                        ON regname."registryDid" = COALESCE(m.owner, m.options->>'did')
                     WHERE m.type = 'Instance-Policy' AND m.action = 'publish-policy'
                     ${hasProjectFilter ? `AND m.options->>'instanceTopicId' = ANY(
                         SELECT DISTINCT bv."businessData"->>'instanceTopicId'
                         FROM business_view bv
                         WHERE bv."viewType" = 'PROJECT' AND bv."projectKey" = ANY(${pk}::text[])
                     )` : ''}
-                    ${hasRegistryFilter ? `AND regname.registry_name = ${registryP}` : ''}
+                    ${registryDidFilter(`COALESCE(m.owner, m.options->>'did')`)}
                     ${noDeveloperConceptGuard}
                     ORDER BY m."consensusTimestamp" DESC
                     LIMIT ${limit}
@@ -148,15 +158,13 @@ export class PgActivityRepository {
                         COALESCE(m.options->>'name', 'Registry'), NULL,
                         NULL, NULL, m."topicId", NULL
                     FROM message m
-                    LEFT JOIN (${REGISTRY_NAME_SOURCE}) regname
-                        ON regname."registryDid" = COALESCE(m.owner, m.options->>'did')
                     WHERE m.type = 'Standard Registry'
                     ${hasProjectFilter ? `AND COALESCE(m.owner, m.options->>'did') = ANY(
                         SELECT DISTINCT bv."registryDid"
                         FROM business_view bv
                         WHERE bv."viewType" = 'PROJECT' AND bv."projectKey" = ANY(${pk}::text[])
                     )` : ''}
-                    ${hasRegistryFilter ? `AND regname.registry_name = ${registryP}` : ''}
+                    ${registryDidFilter(`COALESCE(m.owner, m.options->>'did')`)}
                     ${noDeveloperConceptGuard}
                     ORDER BY m."consensusTimestamp" DESC
                     LIMIT ${limit}
@@ -173,12 +181,11 @@ export class PgActivityRepository {
                     LEFT JOIN project_mint_link pml ON pml.mint_consensus_timestamp = m."consensusTimestamp"
                     LEFT JOIN token_cache tc ON tc."tokenId" = m.documents->'credentialSubject'->0->>'tokenId'
                     LEFT JOIN business_view bv ON bv."viewType" = 'PROJECT' AND bv."projectKey" = pml.project_key
-                    LEFT JOIN (${REGISTRY_NAME_SOURCE}) regname ON regname."registryDid" = bv."registryDid"
                     WHERE m.type = 'VC-Document'
                       AND m.documents IS NOT NULL
                       AND (m.documents->'credentialSubject'->0->>'type') LIKE 'MintToken%'
                     ${hasProjectFilter ? `AND pml.project_key = ANY(${pk}::text[])` : ''}
-                    ${hasRegistryFilter ? `AND regname.registry_name = ${registryP}` : ''}
+                    ${registryDidFilter('bv."registryDid"')}
                     ${hasDeveloperFilter ? `AND bv."businessData"->>'developer' = ${developerP}` : ''}
                     ORDER BY m."consensusTimestamp" DESC
                     LIMIT ${limit}
@@ -205,12 +212,11 @@ export class PgActivityRepository {
                         LIMIT 1
                     ) pk3 ON true
                     LEFT JOIN business_view bv ON bv."viewType" = 'PROJECT' AND bv."projectKey" = pk3.project_key
-                    LEFT JOIN (${REGISTRY_NAME_SOURCE}) regname ON regname."registryDid" = bv."registryDid"
                     WHERE m.type = 'VC-Document'
                       AND m.documents IS NOT NULL
                       AND (m.documents->'credentialSubject'->0->>'type') LIKE 'WipeToken%'
                     ${hasProjectFilter ? `AND pk3.project_key = ANY(${pk}::text[])` : ''}
-                    ${hasRegistryFilter ? `AND regname.registry_name = ${registryP}` : ''}
+                    ${registryDidFilter('bv."registryDid"')}
                     ${hasDeveloperFilter ? `AND bv."businessData"->>'developer' = ${developerP}` : ''}
                     ORDER BY m."consensusTimestamp" DESC
                     LIMIT ${limit}

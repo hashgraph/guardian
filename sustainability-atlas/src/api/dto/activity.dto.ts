@@ -38,7 +38,7 @@ export class NetworkActivityItemDto {
     @ApiProperty({ nullable: true })
     topicId: string | null;
 
-    @ApiProperty({ nullable: true, description: "Raw Guardian message type — populated only for category='other'" })
+    @ApiProperty({ nullable: true, description: "Raw Guardian message type, populated only for category='other'" })
     messageType: string | null;
 
     static fromRow(row: ActivityRow): NetworkActivityItemDto {

@@ -34,7 +34,7 @@ export class SignUpDto {
     email: string;
 
     @ApiProperty({
-        description: `Password — ${PASSWORD_MESSAGE}`,
+        description: `Password. ${PASSWORD_MESSAGE}`,
         minLength: PASSWORD_POLICY.minLength,
         maxLength: 128,
     })

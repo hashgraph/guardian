@@ -7,14 +7,14 @@ import {
     PaginatedRegistriesDto,
 } from '../dto/registry.dto';
 
-@ApiTags('registries')
+@ApiTags('Registries')
 @Controller('api/v1/:network/registries')
 export class RegistriesController {
     constructor(private readonly registriesService: RegistriesService) {}
 
     @Get()
     @ApiOperation({
-        summary: 'List Standard Registries',
+        summary: 'Search and filter registries',
         description:
             'Returns a paginated list of Standard Registries for the specified network. ' +
             'Supports full-text search, filtering, sorting, and aggregated stats.',
@@ -35,7 +35,7 @@ export class RegistriesController {
 
     @Get('options')
     @ApiOperation({
-        summary: 'Distinct registry names',
+        summary: 'Get all registry names',
         description:
             'Returns just the distinct registry display names, for filter dropdowns. Avoids ' +
             'paging the full list endpoint (and its jsonb payload) to derive a name list. ' +
@@ -49,7 +49,7 @@ export class RegistriesController {
 
     @Get('id/:id')
     @ApiOperation({
-        summary: 'Get a Standard Registry by ID',
+        summary: 'Get a single registry',
         description: 'Returns a single Standard Registry matching the given UUID on the specified network.',
     })
     @ApiParam({
@@ -73,7 +73,7 @@ export class RegistriesController {
 
     @Get(':did')
     @ApiOperation({
-        summary: 'Get a Standard Registry by DID',
+        summary: 'Get a registry by its DID',
         description: 'Returns a single Standard Registry matching the given DID on the specified network.',
     })
     @ApiParam({

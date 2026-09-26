@@ -260,6 +260,9 @@ export default registerAs('app', () => {
 
         // Mirror node polling
         mirrorNodePollDelay: parseInt(process.env.MIRROR_NODE_POLL_DELAY || '30000', 10),
+        // Ceiling for topic-sync.processor.ts's empty-poll backoff (a topic with no
+        // new messages doubles its re-poll delay each miss, up to this cap).
+        mirrorNodeMaxPollDelay: parseInt(process.env.MIRROR_NODE_MAX_POLL_DELAY || '1800000', 10),
 
         // Logging
         logLevel: process.env.LOG_LEVEL || 'info',
@@ -328,6 +331,15 @@ export default registerAs('app', () => {
             // Max saved searches a single user may hold per network+section
             // (default 10); enforced with a count pre-check at creation.
             maxPerUser: parseInt(process.env.QUICK_FILTERS_MAX_PER_USER || '10', 10),
+        },
+
+        // Portfolio watchlist. Scoped per user+network (same shape as quickFilters above).
+        watchlist: {
+            // Max projects a user may add to their Watchlist (default 50). Clamped to
+            // 200 — BatchProjectsDto.sourceTimestamps' hard @ArrayMaxSize(200) — so this
+            // can never be configured high enough to reintroduce the "batch fetch 400s
+            // past 200 items" bug it exists to prevent.
+            maxProjects: Math.min(parseInt(process.env.WATCHLIST_MAX_PROJECTS || '50', 10), 200),
         },
 
         // Initial admin — break-glass admin seeded on first boot. MUST be set via

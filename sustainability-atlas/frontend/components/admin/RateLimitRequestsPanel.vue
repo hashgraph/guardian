@@ -8,7 +8,11 @@ const emit = defineEmits<{ (e: 'pendingCount', n: number): void }>();
 const rl = useRateLimit();
 const { t } = useI18n();
 
-const { data, pending, refresh } = await useAsyncData('admin-rate-limits', () => rl.adminList());
+const { data, pending, refresh } = await useAsyncData(
+    'admin-rate-limits',
+    () => rl.adminList(),
+    { server: false },
+);
 const rows = computed<AdminRateLimitRequest[]>(() => data.value ?? []);
 
 watchEffect(() => {

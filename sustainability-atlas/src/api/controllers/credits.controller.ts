@@ -3,14 +3,14 @@ import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { CreditsService } from '../services/credits.service';
 import { CreditQueryDto, PaginatedCreditsDto, CreditStatsDto } from '../dto/credit.dto';
 
-@ApiTags('credits')
+@ApiTags('Credits')
 @Controller('api/v1/:network/credits')
 export class CreditsController {
     constructor(private readonly creditsService: CreditsService) {}
 
     @Get()
     @ApiOperation({
-        summary: 'List Credits',
+        summary: 'Search and filter credits',
         description:
             'Returns a paginated list of carbon credit tokens for the specified network. ' +
             'Supports full-text search, filtering by type/registry/tokenId, and sorting.',
@@ -31,7 +31,7 @@ export class CreditsController {
 
     @Get('stats')
     @ApiOperation({
-        summary: 'Aggregate stats for the filtered credits set',
+        summary: 'Get totals for a filtered set of credits',
         description:
             'Total minted supply plus distinct registry and project counts across every row ' +
             'matching the given filters, not just the current page. Accepts the same filter ' +
@@ -48,7 +48,7 @@ export class CreditsController {
 
     @Get(':tokenId/raw')
     @ApiOperation({
-        summary: 'Get raw underlying data for one credit',
+        summary: 'Get the original data behind a credit',
         description:
             'Returns the underlying HCS messages for a credit: the original Token-issue ' +
             'message and any MintToken VC documents minted against the tokenId. ' +

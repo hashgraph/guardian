@@ -186,7 +186,7 @@ async function requeueTopic(topicId: string, fromStart: boolean) {
     }
     requeuePending.value[topicId] = true;
     try {
-        await $fetch(
+        await apiFetch(
             `/api/v1/${network.value}/sync-status/requeue-topic`,
             {
                 method: 'POST',
@@ -203,7 +203,7 @@ async function requeueTopic(topicId: string, fromStart: boolean) {
             requeueFromStart.value = false;
         }
     } catch (err: any) {
-        await showToast(t('status.toasts.failedRequeue', { topicId, error: err?.message ?? t('common.unknownError') }), 'error');
+        await showToast(t('status.toasts.failedRequeue', { topicId, error: errMsg(err) }), 'error');
     } finally {
         requeuePending.value[topicId] = false;
     }
@@ -235,13 +235,21 @@ onMounted(() => {
     pollTimer = setInterval(() => {
         refreshQueues();
     }, 30_000);
-    // Guardian-sync data is admin-only — only admins poll it (others would 401).
-    if (isAdmin.value) {
-        guardianSyncTimer = setInterval(() => {
+
+    // Guardian-sync data is admin-only — only admins poll it (others would 401).    
+    watch(isAdmin, (admin) => {
+        if (admin && !guardianSyncTimer) {
             refreshGuardianSync();
             refreshGuardianSyncEvents();
-        }, 10_000);
-    }
+            guardianSyncTimer = setInterval(() => {
+                refreshGuardianSync();
+                refreshGuardianSyncEvents();
+            }, 10_000);
+        } else if (!admin && guardianSyncTimer) {
+            clearInterval(guardianSyncTimer);
+            guardianSyncTimer = null;
+        }
+    }, { immediate: true });
 });
 
 onUnmounted(() => {
@@ -377,6 +385,10 @@ async function showToast(message: string, type: 'success' | 'error' = 'success')
     }
 }
 
+function errMsg(err: any): string {
+    return err?.data?.message ?? err?.message ?? t('common.unknownError');
+}
+
 // ─── Pause / Resume ───────────────────────────────────────────────────────────
 
 const actionPending = ref<Record<string, boolean>>({});
@@ -384,13 +396,15 @@ const actionPending = ref<Record<string, boolean>>({});
 async function pauseQueue(baseName: string) {
     actionPending.value[baseName] = true;
     try {
-        await $fetch(`/api/v1/${network.value}/queues/${baseName}/pause`, {
+        await apiFetch(`/api/v1/${network.value}/queues/${baseName}/pause`, {
             method: 'POST',
             baseURL: import.meta.client ? (config.public.apiBaseUrl as string) || '' : '',
+            credentials: 'include',
+            headers: csrfHeader(),
         });
         await refreshQueues();
     } catch (err: any) {
-        showToast(t('status.toasts.failedPause', { baseName, error: err?.message ?? t('common.unknownError') }), 'error');
+        showToast(t('status.toasts.failedPause', { baseName, error: errMsg(err) }), 'error');
     } finally {
         actionPending.value[baseName] = false;
     }
@@ -399,13 +413,15 @@ async function pauseQueue(baseName: string) {
 async function resumeQueue(baseName: string) {
     actionPending.value[baseName] = true;
     try {
-        await $fetch(`/api/v1/${network.value}/queues/${baseName}/resume`, {
+        await apiFetch(`/api/v1/${network.value}/queues/${baseName}/resume`, {
             method: 'POST',
             baseURL: import.meta.client ? (config.public.apiBaseUrl as string) || '' : '',
+            credentials: 'include',
+            headers: csrfHeader(),
         });
         await refreshQueues();
     } catch (err: any) {
-        showToast(t('status.toasts.failedResume', { baseName, error: err?.message ?? t('common.unknownError') }), 'error');
+        showToast(t('status.toasts.failedResume', { baseName, error: errMsg(err) }), 'error');
     } finally {
         actionPending.value[baseName] = false;
     }
@@ -461,7 +477,7 @@ async function confirmRetryAll() {
     } catch (err: any) {
         retryAllState.value = null;
         showToast(
-            t('status.toasts.retryAllFailed', { baseName, error: err?.message ?? t('common.unknownError') }),
+            t('status.toasts.retryAllFailed', { baseName, error: errMsg(err) }),
             'error',
         );
     }
@@ -663,6 +679,7 @@ const {
     data: ipfsFailuresData,
     pending: ipfsFailuresPending,
     refresh: refreshIpfsFailures,
+    refreshFresh: refreshIpfsFailuresFresh,
 } = useIpfsCidStatusApi({
     network,
     topicId: ipfsTopicFilter,
@@ -677,6 +694,7 @@ const {
 const ipfsFailures = computed(() => ipfsFailuresData.value?.data ?? []);
 const ipfsFailuresTotal = computed(() => ipfsFailuresData.value?.meta.total ?? 0);
 const ipfsFailuresTotalPages = computed(() => ipfsFailuresData.value?.meta.totalPages ?? 0);
+const ipfsFailuresFailed = computed(() => ipfsFailuresData.value?.failed === true);
 
 watch(ipfsIncludeChildTopics, () => { ipfsFailurePage.value = 1; });
 watch(ipfsMessageTypeFilter, () => { ipfsFailurePage.value = 1; });
@@ -729,9 +747,9 @@ async function retryIpfsFailure(cid: string) {
             headers: csrfHeader(),
         });
         showToast(t('status.toasts.cidQueuedRetry', { cid: cid.slice(0, 20) }));
-        await refreshIpfsFailures();
+        await refreshIpfsFailuresFresh();
     } catch (err: any) {
-        showToast(t('status.toasts.retryFailedWithError', { error: err?.message ?? t('common.unknownError') }), 'error');
+        showToast(t('status.toasts.retryFailedWithError', { error: errMsg(err) }), 'error');
     } finally {
         ipfsRetryPending.value[cid] = false;
     }
@@ -754,9 +772,9 @@ async function retryAllIpfsForTopic() {
             headers: csrfHeader(),
         });
         showToast(t('status.toasts.topicRetryAllQueued', { topicId: ipfsTopicFilter.value }));
-        await refreshIpfsFailures();
+        await refreshIpfsFailuresFresh();
     } catch (err: any) {
-        showToast(t('status.toasts.retryAllFailedWithError', { error: err?.message ?? t('common.unknownError') }), 'error');
+        showToast(t('status.toasts.retryAllFailedWithError', { error: errMsg(err) }), 'error');
     } finally {
         ipfsRetryAllTopicPending.value = false;
     }
@@ -791,7 +809,7 @@ async function triggerRedecodeAll() {
         );
         showToast(t('status.toasts.redecodeEnqueued', { enqueued: result.enqueued, total: result.total, skipped: result.skipped }));
     } catch (err: any) {
-        showToast(t('status.toasts.redecodeFailed', { error: err?.message ?? t('common.unknownError') }), 'error');
+        showToast(t('status.toasts.redecodeFailed', { error: errMsg(err) }), 'error');
     } finally {
         redecodeAllPending.value = false;
     }
@@ -811,7 +829,7 @@ async function triggerReparseAll() {
         );
         showToast(t('status.toasts.reparseEnqueued', { enqueued: result.enqueued, succeeded: result.succeeded }));
     } catch (err: any) {
-        showToast(t('status.toasts.reparseFailed', { error: err?.message ?? t('common.unknownError') }), 'error');
+        showToast(t('status.toasts.reparseFailed', { error: errMsg(err) }), 'error');
     } finally {
         reparseAllPending.value = false;
     }
@@ -1512,7 +1530,7 @@ function formatTs(ts: number): string {
                         {{ ipfsFailuresTotal.toLocaleString() }}
                     </span>
                     <span
-                        v-else-if="!ipfsFailuresPending"
+                        v-else-if="!ipfsFailuresPending && !ipfsFailuresFailed"
                         class="inline-flex items-center justify-center rounded-full bg-muted text-muted-foreground text-xs font-medium px-2 py-0.5 min-w-6"
                     >
                         0
@@ -1597,7 +1615,7 @@ function formatTs(ts: number): string {
                         <button
                             class="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors ml-auto"
                             :disabled="ipfsFailuresPending"
-                            @click="refreshIpfsFailures()"
+                            @click="refreshIpfsFailuresFresh()"
                         >
                             <RefreshCw class="h-3.5 w-3.5" :class="{ 'animate-spin': ipfsFailuresPending }" />
                             {{ $t('common.refresh') }}
@@ -1621,8 +1639,13 @@ function formatTs(ts: number): string {
                                 </tr>
                             </thead>
                             <tbody class="divide-y">
-                                <!-- Loading skeleton -->
-                                <template v-if="ipfsFailuresPending && ipfsFailures.length === 0">
+                                <!-- Loading skeleton — shown on every fetch (initial load, filter/page
+                                     change, manual refresh), not just when there's no data yet. Without
+                                     that, switching filters left the previous filter's stale rows on
+                                     screen with no visible feedback that a new fetch was in flight,
+                                     since Nuxt's useAsyncData keeps the old value until the new one
+                                     resolves. -->
+                                <template v-if="ipfsFailuresPending">
                                     <tr v-for="i in 4" :key="i" class="animate-pulse">
                                         <td class="py-3 px-4"><div class="h-4 bg-muted rounded w-32" /></td>
                                         <td class="py-3 px-3"><div class="h-4 bg-muted rounded w-28" /></td>
@@ -1636,15 +1659,28 @@ function formatTs(ts: number): string {
                                     </tr>
                                 </template>
 
+                                <!-- Error state -->
+                                <tr v-else-if="ipfsFailuresFailed">
+                                    <td colspan="9" class="py-12 text-center text-sm text-destructive">
+                                        {{ $t('status.ipfs.loadFailed') }}
+                                        <button class="underline ml-1" @click="() => refreshIpfsFailures()">{{ $t('common.retry') }}</button>
+                                    </td>
+                                </tr>
+
                                 <!-- Empty state -->
-                                <tr v-else-if="ipfsFailures.length === 0 && !ipfsFailuresPending">
+                                <tr v-else-if="ipfsFailures.length === 0 && !ipfsFailuresPending && !ipfsFailuresFailed">
                                     <td colspan="9" class="py-12 text-center text-sm text-muted-foreground">
                                         {{ $t('status.ipfs.noDocuments') }}
                                     </td>
                                 </tr>
 
-                                <!-- CID rows -->
+                                <!-- CID rows — v-else so this is part of the same chain as the
+                                     skeleton/error/empty branches above, not an independent block.
+                                     Without it, these rendered unconditionally whenever ipfsFailures
+                                     was non-empty, stacking below the skeleton during any refetch
+                                     instead of being replaced by it. -->
                                 <tr
+                                    v-else
                                     v-for="row in ipfsFailures"
                                     :key="row.cid"
                                     class="hover:bg-muted/30 transition-colors"

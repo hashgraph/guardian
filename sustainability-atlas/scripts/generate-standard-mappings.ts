@@ -14,6 +14,7 @@
 
 import { writeFileSync } from 'fs';
 import { join } from 'path';
+import { mapIwaPathV1ToV3 } from '../src/shared/config/iwa-version';
 
 const SHEET_ID = '1VpMcVXP-WOXS2P2MwSUoL8ja7v-pH5A9SKuaF7Qj9F8';
 
@@ -105,6 +106,9 @@ function parseCadtrust(csv: string): StandardMap {
             map[iwaPath] = standardPath;
         }
     }
+    if (!map['ActivityImpactModule.projectScale']) {
+        map['ActivityImpactModule.projectScale'] = 'project.project_scale';
+    }
     return map;
 }
 
@@ -125,12 +129,42 @@ function parseCdop(csv: string): StandardMap {
         const iwaPath = extractIwaPath(iwaRaw);
         if (!iwaPath) continue;
 
+        // Skip invalid validity start date mapping for geographicLocation
+        if (iwaPath === 'ActivityImpactModule.geographicLocation' && fieldName.includes('validity')) {
+            continue;
+        }
+
         const standardPath = `${entity || 'project'}.${fieldName}`;
         if (!map[iwaPath]) {
             map[iwaPath] = standardPath;
         }
     }
+
+    if (!map['ActivityImpactModule.geographicLocation'] || map['ActivityImpactModule.geographicLocation'].includes('validity')) {
+        map['ActivityImpactModule.geographicLocation'] = 'geolocation_file.geolocation_data';
+    }
+    if (!map['ActivityImpactModule.projectScale']) {
+        map['ActivityImpactModule.projectScale'] = 'project.project_scale';
+    }
+    if (map['ActivityImpactModule.firstYearIssuance'] === 'project.crediting_period_length') {
+        map['ActivityImpactModule.firstYearIssuance'] = 'vintage.vintage';
+    }
+
     return map;
+}
+
+/**
+ * Add a v3 alias key for every v1 key, so a caller that has canonicalised an
+ * IWA path to v3 still resolves against a dictionary whose sheet rows were
+ * authored with v1 names. Existing keys are never overwritten.
+ */
+function withV3Aliases(map: StandardMap): StandardMap {
+    const out: StandardMap = { ...map };
+    for (const [k, v] of Object.entries(map)) {
+        const k3 = mapIwaPathV1ToV3(k);
+        if (k3 && !(k3 in out)) out[k3] = v;
+    }
+    return out;
 }
 
 async function fetchSheet(sheetName: string): Promise<string> {
@@ -165,13 +199,13 @@ export const IWA_TO_CDOP: Record<string, string> = ${cdopJson};
 async function main() {
     console.log('Fetching CADTrust V2 mapping sheet...');
     const cadtrustCsv = await fetchSheet('CADTrust V2 - Mapping');
-    const cadtrustMap = parseCadtrust(cadtrustCsv);
-    console.log(`  CADTrust: ${Object.keys(cadtrustMap).length} unique IWA fields mapped`);
+    const cadtrustMap = withV3Aliases(parseCadtrust(cadtrustCsv));
+    console.log(`  CADTrust: ${Object.keys(cadtrustMap).length} IWA fields mapped (incl. v3 aliases)`);
 
     console.log('Fetching CDOP mapping sheet...');
     const cdopCsv = await fetchSheet('CDOP - Mapping');
-    const cdopMap = parseCdop(cdopCsv);
-    console.log(`  CDOP: ${Object.keys(cdopMap).length} unique IWA fields mapped`);
+    const cdopMap = withV3Aliases(parseCdop(cdopCsv));
+    console.log(`  CDOP: ${Object.keys(cdopMap).length} IWA fields mapped (incl. v3 aliases)`);
 
     const content = generateFileContent(cadtrustMap, cdopMap);
 

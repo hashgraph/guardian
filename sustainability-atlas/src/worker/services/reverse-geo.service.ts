@@ -92,7 +92,11 @@ export class ReverseGeoService {
 
     private async load(): Promise<void> {
         try {
-            const response = await fetch(COUNTRIES_GEOJSON_URL);
+            // A hang here (no response, ever) would silently freeze every
+            // caller awaiting lookupCountry() forever — including the
+            // sequential project backfill replay, which processes VCs one at
+            // a time and has no way to notice or skip a stuck call.
+            const response = await fetch(COUNTRIES_GEOJSON_URL, { signal: AbortSignal.timeout(15_000) });
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const geojson = await response.json() as {
                 features?: Array<{

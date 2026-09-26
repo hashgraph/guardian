@@ -1,109 +1,100 @@
 # 09 — Portfolio
 
-**Requires a signed-in account.**
+The Portfolio is a private, personalized workspace that allows users to monitor the projects, methodologies, and credits they are interested in. Unlike the other pages in the Sustainability Atlas, which display data from across the entire network, the Portfolio displays only the items the user has chosen to follow through their Watchlist. It requires a signed-in account.
 
-This chapter covers the Portfolio page — your own private dashboard. Unlike every other page in the
-Atlas, which shows the whole network, the Portfolio shows only the projects you have chosen to
-follow, arranged with the widgets you have chosen to keep.
+Everything on this page is private to the signed-in user. Managing the watchlist, adding or removing widgets, or creating custom charts does not modify any project data or affect what other users see.
 
-Nothing you do here is visible to anyone else, and nothing you do here changes the underlying data.
+## Starting from an empty Portfolio
 
-## Starting from empty
+A new account begins with an empty Portfolio. Until projects are added to the watchlist, the dashboard contains no portfolio data to summarize. Users populate their Portfolio by selecting **Manage Watchlist** and adding one or more projects; once projects have been added, every widget on the page updates automatically.
 
-A new account has an empty Portfolio, and the page says so: *Your portfolio is empty*, with a
-**Manage Watchlist** button. Until you add something, there is nothing for the widgets to summarise.
+![Empty Portfolio](images/fig-56-empty-portfolio.png)
 
-## The watchlist
+## The Watchlist
 
-The watchlist is the list of projects the whole page is driven by. Every figure and chart on the
-Portfolio reflects it — change the watchlist and everything recalculates.
+The watchlist is the foundation of the Portfolio. Every statistic, chart, map and table shown on the page is calculated using only the projects contained in the watchlist. The watchlist bar displays all currently followed projects together with the total number of watched projects.
 
-Click **Manage Watchlist** to open the picker. It shows every project on the current network with
-**Add** and **Remove** controls, and its own filters for **Country**, **Methodology**, **Registry**
-and **SDG** so you can narrow a large catalogue down before choosing. Two extra controls help with
-bulk work:
+### Manage your watchlist
 
-- **Add all projects to watchlist** adds everything currently matching your filters at once, and
-  tells you how many it added.
-- **Show selected only** hides everything you have not picked, which is the quickest way to review
-  your current list.
+Adds or removes the projects that drive every widget on the Portfolio.
 
-Duplicates are prevented, so adding the same project twice is harmless. Press **Update Watchlist** to
-apply your changes, or **Cancel** to discard them. **Clear watchlist** empties it entirely.
+#### Steps
 
-The subtitle at the top of the page always tells you how many items are on the watchlist, as a
-reminder of what the numbers below are scoped to.
+1. On the Portfolio page, select **Manage Watchlist**. The watchlist manager opens.
+2. Locate projects using the filters — Country, Registry, Methodology, and SDG.
+3. Adjust the watchlist as needed. You can:
+   * Add individual projects
+   * Remove projects from the watchlist
+   * Add all filtered projects
+   * Display only selected projects
+   * Clear the entire watchlist
+4. Select **Update Watchlist** to save the changes, or **Cancel** to close the dialog without applying any modifications.
 
-## Widgets
+![Portfolio - Manage Projects](images/fig-57-portfolio-manage-projects.png)
 
-The body of the page is a set of widgets. Which ones appear is up to you.
+#### Result
 
-Click **Widget Library** to open the catalogue. Widgets are grouped so the list stays navigable:
+Every widget on the Portfolio updates automatically to reflect the selected projects. The watchlist bar shows the followed projects and their total count.
 
-| Group | Contains |
-|---|---|
-| **KPI Cards** | Total Minted Credits, Active Supply, Total Credits Retired, Active Projects. |
-| **Trend Charts** | Minted Credits Trend, Retirement Trend, Vintage Distribution. |
-| **Breakdowns** | Projects by Sector, Projects by Registry, SDG Coverage, Project Distribution (a map of your watchlisted projects). |
-| **Tables & Lists** | Watched Projects, Top 10 Host Countries by Credits, Top Registries, Recent Issuances, Top 10 SDG by Project Count, Network Activity. |
-| **System** | Last Sync Timestamp. |
+## Watched Projects
 
-Each entry has a one-line description of what it draws. Toggle the ones you want on or off and press
-**Apply Changes**.
+The Watched Projects widget displays one card for every project currently in the watchlist. Each card includes the project name, registry, current status, country, methodology, crediting period, issued, retired and transferred credits, SDG indicators, and an **Open Project** action that navigates directly to the project details page. The widget is horizontally scrollable when multiple projects are being followed.
 
-You can also remove a widget **from the page itself** — each one carries a small × in its corner. That
-is the fastest way to tidy up: turn things off where you are looking at them rather than hunting for
-them in the library. To bring one back, reopen the Widget Library and toggle it on again. Nothing is
-ever deleted; a removed widget is simply switched off.
+![Portfolio - Watched Projects](images/fig-58-portfolio-watch-projects.png)
 
-The **Watched Projects** widget deserves a mention of its own: it is a horizontally scrollable row of
-cards, one per watchlisted project, each showing issued, retired and transferred credits, the
-methodology, the crediting period and the SDG count, with an **Open** action through to the full
-project record.
+## Portfolio widgets
 
-**Network Activity** shows the same event taxonomy as the Dashboard's version (see the Dashboard
-chapter) — project registrations, methodology and registry registrations, credit issuance and
-retirement, and other network events — refreshing automatically roughly every 25 seconds. Project
-registrations and credit issuance are scoped to your watchlist; methodology/registry registrations,
-credit retirement, and the "other" events bucket remain network-wide, since those aren't really
-events any one project "owns."
+The Portfolio dashboard is built from configurable widgets. Users choose which widgets appear by selecting **Widget Library**; each widget includes a short description there.
 
-## Custom charts
+![Portfolio - Widget Library Icon](images/fig-59-portfolio-widget-library-icon.png)
 
-**Add Custom Chart** lets you build something the library does not offer.
+![Portfolio - Widget Library](images/fig-60-portfolio-widget-library.png)
 
-You choose a **Chart Title**, a **Chart Type** (line, vertical bar, horizontal bar, pie, donut or
-radar), an **X-Axis (Categories)** to group by and a **Y-Axis (Metric)** to measure.
+| Category | Widgets |
+| --- | --- |
+| KPI Cards | Total Minted Credits, Active Supply, Total Credits Retired, Active Projects |
+| Trend Charts | Minted Credits Trend, Retirement Trend, Vintage Distribution |
+| Geographic | Project Distribution Map |
+| Breakdowns | Project Breakdown by Sector, Registry and SDG Coverage |
+| Rankings | Top Host Countries by Credits, Top Registries, Top SDGs by Project Count |
+| Tables & Lists | Watched Projects, Recent Issuances, Network Activity |
+| System | Last Sync Timestamp |
 
-- X-axis options: Time — Month, Vintage Year, Sector, Country, Registry, SDG Goal.
-- Y-axis options: Credits Issued, Project Count, Retirement Volume.
+Users enable or disable widgets and select **Apply Changes** to update the dashboard. Widgets can also be removed directly from the dashboard using the close (×) button — removing a widget hides it from the current layout but does not delete it, and hidden widgets can be restored at any time through the Widget Library.
 
-Custom charts sit alongside the built-in widgets and, like them, reflect your active watchlist rather
-than the whole network. There is a maximum number of custom charts per person; the dialog shows how
-many of your allowance you have used, and the **Add Custom Chart** button tells you when you have
-reached the limit. You cannot create two charts with the same name, and if you build a chart whose
-configuration duplicates an existing one, the Atlas names the chart it would duplicate rather than
-silently creating a second copy. Existing charts can be edited afterwards to change their type, data
-source or title.
+## Create a Custom Chart
 
-## How your layout is saved
+Creates a personal dashboard visualisation on the Portfolio. Custom charts behave like standard widgets and update automatically whenever the watchlist changes.
 
-Everything on this page — your watchlist, which widgets are on, your custom charts and the watchlist
-picker's own filters — is saved to **your account**, automatically, shortly after you change it.
-There is no save button and nothing to remember.
+### Steps
 
-Two consequences are worth knowing.
+1. On the Portfolio page, select **Add Custom Chart**.
 
-**It is stored per network.** Your mainnet Portfolio and your testnet Portfolio are separate. This is
-deliberate: a watchlist of mainnet projects is meaningless on testnet, where those projects do not
-exist. If you switch networks and the page looks empty, you are looking at a different portfolio, not
-a lost one — switch back and yours returns intact.
+![Portfolio - Custom Chart Icon](images/fig-61-portfolio-custom-chart-icon.png)
 
-**It follows you between devices.** Because the layout lives on your account rather than in the
-browser, signing in somewhere else gives you the same watchlist, the same widgets and the same custom
-charts. (This is different from the guided tour's "already seen" flag, which is per-browser — see
-chapter 01.) If a second device shows an empty Portfolio, check the network selector first.
+2. Enter a **Chart Title**.
+   * The system prevents duplicate chart names and duplicate chart configurations.
+3. Choose a **Chart Type**: Line, Vertical Bar, Horizontal Bar, Pie, Donut, or Radar.
+4. Choose an **X-Axis category**: Month, Vintage Year, Sector, Country, Registry, or SDG Goal.
+5. Choose a **Y-Axis metric**: Credits Issued, Project Count, or Retirement Volume.
+6. Save the chart.
+
+![Portfolio - Custom Chart](images/fig-62-portfolio-custom-chart.png)
+
+### Result
+
+The chart appears on the Portfolio dashboard alongside the standard widgets. Existing custom charts can be edited or removed at any time.
+
+## Saving Portfolio preferences
+
+Portfolio settings are saved automatically to the user's account; no manual save action is required. The watchlist, widget selection, widget layout, custom charts, and watchlist filters are all preserved.
+
+Portfolio settings are stored separately for each network. A Mainnet Portfolio and a Testnet Portfolio are maintained independently, ensuring that projects from one network do not appear in another.
 
 ---
 
-Next: [10 — Reports and exports](10-reports-and-exports.md) · Back to [index](README.md)
+### Related & Workflow Progression
+
+* ← **Previous**: [08 — Analytics](08-analytics.md) – Market analytics and trend views
+* **Step 9 of 15**: **Portfolio** – Personal watchlist management and custom dashboard widgets
+* → **Next**: [10 — Reports and Exports](10-reports-and-exports.md) – Custom dataset exports and ESG impact summaries

@@ -1,8 +1,9 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, BadRequestException, HttpException, HttpStatus } from '@nestjs/common';
 import type { DataSource } from 'typeorm';
 import { NetworkDataSourceRegistry } from '../database/network-datasource.registry';
 import { QueueRegistry } from '../queues/queue.registry';
 import { BASE_QUEUE_NAMES } from '@shared/config/bullmq.config';
+import { canEnqueueBulk } from '@shared/redis/redis-headroom';
 import { PolicyDecodeJobData } from '@worker/processors/policy-decode.processor';
 import { ProjectReparseJobData } from '@worker/processors/project-reparse.processor';
 import { PROJECT_EXTRACT_FIELDS } from '@worker/project-mapper/project-fields';
@@ -10,6 +11,8 @@ import { UpdateMappingDto } from '../dto/update-mapping.dto';
 import { DecodedMethodologyResponseDto } from '../dto/decoded-methodology.dto';
 import { MappingAuditEntryDto, MappingAuditQueryDto, PaginatedMappingAuditDto } from '../dto/mapping-audit.dto';
 import { PgPolicySchemaRepository } from '../repositories/pg-policy-schema.repository';
+import { RedisService } from '@shared/redis/redis.service';
+import { decodedCacheKey, decodedFullCacheKey, DECODED_CACHE_TTL_SECONDS } from './methodologies.service';
 import { buildPolicyWorkflowGraph, PolicyWorkflowGraph } from './policy-graph.builder';
 import { bareUuid, buildVcTitleMaps, detectMrvLayout, structureVcData } from '@shared/vc-detail/vc-detail.decoder';
 import type { MrvSchemaLayout, SchemaFieldOrderEntry } from '@shared/vc-detail/vc-detail.decoder';
@@ -66,6 +69,7 @@ export class MappingReprocessService {
         private readonly dataSources: NetworkDataSourceRegistry,
         private readonly queueRegistry: QueueRegistry,
         private readonly systemDataSource: SystemDataSource,
+        private readonly redis: RedisService,
     ) {}
 
     private async audit(
@@ -138,6 +142,17 @@ export class MappingReprocessService {
              WHERE id = $1`,
             [policyId],
         );
+
+        // Decode status flips to 'pending' immediately above, but the actual
+        // re-decode completes later on the worker (which can't proactively
+        // invalidate this API-process cache without new cross-process
+        // plumbing). Clear now so the UI shows "pending" right away instead of
+        // a stale cached "success" for up to the cache's TTL. Both variants —
+        // the re-decode invalidates the schema catalogue too, not just status.
+        await Promise.all([
+            this.redis.del(decodedCacheKey(network, methodologyId)),
+            this.redis.del(decodedFullCacheKey(network, methodologyId)),
+        ]);
 
         // Recover the original message timestamp (and instanceTopicId, straight from
         // the source message rather than the policy row) for the publish-policy
@@ -251,6 +266,19 @@ export class MappingReprocessService {
         );
 
         const queue = this.queueRegistry.getQueue(network, BASE_QUEUE_NAMES.PROJECT_REPARSE);
+
+        // An admin click here can inject one job per VC across a whole
+        // methodology, with no cap. Redict runs `noeviction`, so pushing it past
+        // maxmemory makes add() throw and the injected work is simply lost —
+        // refuse up front instead, and let the operator retry once the queue has
+        // drained.
+        if (!await canEnqueueBulk(this.queueRegistry.getConnection(), queue, 'reparseProjects')) {
+            throw new HttpException(
+                'Redis is under memory pressure or the project-reparse queue is already deep. ' +
+                'Wait for it to drain and retry.',
+                HttpStatus.SERVICE_UNAVAILABLE,
+            );
+        }
 
         const BULK_CHUNK = 500;
         const stamp = Date.now();
@@ -643,7 +671,22 @@ export class MappingReprocessService {
                 `Methodology "${methodologyId}" disappeared after update on ${network}.`,
             );
         }
-        return DecodedMethodologyResponseDto.fromRow(row);
+        const response = DecodedMethodologyResponseDto.fromRow(row);
+
+        // Proactively refresh the GET .../decoded cache with this fresh (thin)
+        // result instead of just deleting it — this save already paid the same
+        // cost the next GET would, so the next viewer gets the ~ms cache-hit
+        // path immediately rather than waiting out the TTL. The full-fields
+        // cache is only invalidated, not refreshed — resolvedFields/fieldMap
+        // changed but the (expensive-to-rebuild) cross-schema field catalogue
+        // didn't, so recomputing it here would slow down every save to fix a
+        // cost that only matters if the editor is reopened.
+        await Promise.all([
+            this.redis.setJson(decodedCacheKey(network, methodologyId), response, DECODED_CACHE_TTL_SECONDS),
+            this.redis.del(decodedFullCacheKey(network, methodologyId)),
+        ]);
+
+        return response;
     }
 
     /**
@@ -842,9 +885,17 @@ export class MappingReprocessService {
         // Clear the ipfs_fetch_failure table for these CIDs so the boot-time
         // safety net doesn't immediately re-park them.
         if (cidsToRefresh.length > 0) {
+            const refreshCids = cidsToRefresh.map(c => c.cid);
             await ds.query(
                 `DELETE FROM ipfs_fetch_failure WHERE cid = ANY($1::text[])`,
-                [cidsToRefresh.map(c => c.cid)],
+                [refreshCids],
+            );
+            // Keep message_ipfs_cid.status in sync (see schema-bootstrap.ts) —
+            // these CIDs are back to pending until the re-queued fetch below
+            // resolves them.
+            await ds.query(
+                `UPDATE message_ipfs_cid SET status = 'pending' WHERE cid = ANY($1::text[]) AND status <> 'fetched'`,
+                [refreshCids],
             );
         }
 

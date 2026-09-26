@@ -7,7 +7,11 @@ const { t } = useI18n();
 // Admins already hold the admin quota and are the approvers — they don't request.
 const { isAdmin } = useAuth();
 
-const { data, pending, refresh } = await useAsyncData('my-rate-limit', () => rl.getMine());
+const { data, pending, refresh } = await useAsyncData(
+    'my-rate-limit',
+    () => rl.getMine(),
+    { server: false },
+);
 const summary = computed(() => data.value);
 
 const showForm = ref(false);

@@ -10,15 +10,16 @@
 
 export interface ProjectExtractField {
     /** Stable key used everywhere (DB, API, frontend). */
-    key: 'name' | 'description' | 'country' | 'developer' | 'category' | 'scale' | 'sector' | 'vintageRaw' | 'creditingPeriod' | 'creditingPeriodStart' | 'creditingPeriodEnd' | 'sdgOrCobenefits' | 'geo';
+    key: 'name' | 'description' | 'country' | 'developer' | 'developerEmail' | 'developerPhone' | 'category' | 'scale' | 'sector' | 'vintageRaw' | 'creditingPeriod' | 'creditingPeriodStart' | 'creditingPeriodEnd' | 'sdgOrCobenefits' | 'geo' | 'estimatedAnnualCredits';
     /** Human-readable label shown in the UI. */
     label: string;
     /** Keywords matched against schema field title + description (lowercase). */
     keywords: string[];
     /** Words that, if present, disqualify a candidate. */
     exclude?: string[];
-    /** Corresponding IWA DMRV spec field path. CADTrust/CDOP paths are derived
-     *  from this via the generated mapping in standard-field-mappings.generated.ts. */
+    /** IWA DMRV v3 spec field path (comma-separated when one project field spans
+     *  two IWA properties). CADTrust/CDOP paths derive from this via
+     *  standard-field-mappings.generated.ts. */
     iwaField?: string;
 }
 
@@ -56,6 +57,23 @@ export const PROJECT_EXTRACT_FIELDS: ProjectExtractField[] = [
         iwaField: 'ActivityImpactModule.developers',
     },
     {
+        key: 'developerEmail',
+        label: 'Developer Email',
+        // Guardian project schemas title this "Project Participant Email" /
+        // "Contact Email" (e.g. field14, format: email). Kept off the
+        // `developer` entry deliberately — that field must stay the org NAME.
+        keywords: ['email', 'mail', 'e-mail', 'contact email', 'participant email', 'email address'],
+        // Registry/VVB/auditor contact blocks live in the same policies and
+        // would otherwise outscore the project participant's own contact info.
+        exclude: ['vvb', 'validator', 'verifier', 'auditor', 'registry', 'standard registry', 'agent', 'phone', 'telephone'],
+    },
+    {
+        key: 'developerPhone',
+        label: 'Developer Phone',
+        keywords: ['telephone', 'phone', 'phone number', 'contact number', 'mobile'],
+        exclude: ['vvb', 'validator', 'verifier', 'auditor', 'registry', 'standard registry', 'agent', 'email', 'e-mail'],
+    },
+    {
         key: 'category',
         label: 'Category',
         keywords: ['category', 'project type'],
@@ -76,7 +94,7 @@ export const PROJECT_EXTRACT_FIELDS: ProjectExtractField[] = [
     {
         key: 'vintageRaw',
         label: 'Vintage / Start Date',
-        keywords: ['start date', 'commencement', 'vintage'],
+        keywords: ['start date', 'commencement', 'vintage', 'vintage year', 'first year issuance', 'baseline year', 'project start year'],
         iwaField: 'ActivityImpactModule.firstYearIssuance',
     },
     {
@@ -88,16 +106,27 @@ export const PROJECT_EXTRACT_FIELDS: ProjectExtractField[] = [
     {
         key: 'creditingPeriodStart',
         label: 'Crediting Period Start',
-        keywords: ['crediting period start', 'start date', 'commencement date'],
+        keywords: ['crediting period start', 'start date', 'commencement date', 'project start', 'crediting term start'],
         exclude: ['end', 'expiry'],
         iwaField: 'ImpactClaim.startDate',
     },
     {
         key: 'creditingPeriodEnd',
         label: 'Crediting Period End',
-        keywords: ['crediting period end', 'end date', 'expiry date'],
+        keywords: ['crediting period end', 'end date', 'expiry date', 'crediting term end'],
         exclude: ['start', 'commencement'],
         iwaField: 'ImpactClaim.endDate',
+    },
+    {
+        key: 'estimatedAnnualCredits',
+        label: 'Estimated Annual Credits',
+        keywords: [
+            'estimated annual credit', 'estimated annual reduction', 'estimated annual issuance',
+            'forecast annual issuance', 'projected annual credit', 'projected annual issuance',
+            'projected annual emission reduction', 'estimated emission reduction', 'ex-ante estimate',
+            'annual estimated credit',
+        ],
+        iwaField: 'OriginationProcessAgreement.estimatedAnnualCredits',
     },
     {
         key: 'sdgOrCobenefits',

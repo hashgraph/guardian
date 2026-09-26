@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Building2, Copy, Check, FileJson, Download, Loader2 } from 'lucide-vue-next';
-import { useDebounceFn } from '@vueuse/core';
 import type { FilterOption } from '~/components/shared/FilterBar.vue';
 import type { RegistrySortKey, RegistrySortDir, RegistryDto } from '~/composables/api/useRegistriesApi';
 import { downloadCsv, csvDateStamp, buildRegistryCsvRows } from '~/lib/csv-export';
@@ -48,7 +47,9 @@ const filters = ref<Record<string, any>>(initialFilters);
 const currentPage = ref(1);
 const pageSize = ref(10);
 
-// Unified search — debounced so each keystroke doesn't fire an API request.
+// Unified search. FilterBar already debounces its own update:modelValue, so
+// localSearch only ever changes at that cadence — debouncing again here would
+// stack a second delay on top of it before the API query even changes.
 // Falls back to old per-field URL params for backward compat.
 const localSearch = ref(
     typeof route.query.search === 'string' ? route.query.search :
@@ -57,9 +58,6 @@ const localSearch = ref(
         .find((v): v is string => typeof v === 'string') ?? ''
 );
 const searchQuery = ref(localSearch.value.trim());
-const debouncedSearch = useDebounceFn((val: string) => {
-    searchQuery.value = val.trim();
-}, 300);
 
 function syncToUrl() {
     const q: Record<string, string> = { ...(route.query as Record<string, string>) };
@@ -77,7 +75,7 @@ function syncToUrl() {
 }
 
 watch(localSearch, (val) => {
-    debouncedSearch(val);
+    searchQuery.value = val.trim();
     syncToUrl();
 });
 

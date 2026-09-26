@@ -35,7 +35,7 @@ export class AdminCreateUserDto {
     @IsEmail({}, { message: 'Please enter a valid email address (e.g. name@example.com).' })
     email: string;
 
-    @ApiProperty({ description: `Initial password — ${PASSWORD_MESSAGE}`, minLength: PASSWORD_POLICY.minLength, maxLength: 128 })
+    @ApiProperty({ description: `Initial password. ${PASSWORD_MESSAGE}`, minLength: PASSWORD_POLICY.minLength, maxLength: 128 })
     @IsString()
     @MaxLength(128)
     @Matches(PASSWORD_PATTERN, { message: PASSWORD_MESSAGE })

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { BookOpen, Copy, Check, Download, Loader2 } from "lucide-vue-next";
-import { useDebounceFn } from '@vueuse/core';
 import type { FilterOption } from '~/components/shared/FilterBar.vue';
 import type {
   MethodologySortKey,
@@ -8,9 +7,16 @@ import type {
 } from "~/composables/api/useMethodologiesApi";
 import type { SortDirection } from "~/composables/useFilteredPagination";
 import { formatCredits } from "~/lib/format";
+import {
+  type MethodologyStatus,
+  METHODOLOGY_STATUSES,
+  methodologyStatus,
+  methodologyStatusBadgeClass,
+  methodologyStatusTooltip,
+} from "~/lib/methodology-status";
 import { useRegistriesApi } from "~/composables/api/useRegistriesApi";
 import { downloadCsv, csvDateStamp, buildMethodologyCsvRows } from '~/lib/csv-export';
-import { naturalCompare } from '~/lib/utils';
+import { naturalCompare, encodeMultiValue, decodeMultiValue } from '~/lib/utils';
 
 const { t } = useI18n();
 
@@ -52,19 +58,36 @@ if (route.query.registryName && typeof route.query.registryName === "string") {
 if (route.query.decodeStatus && typeof route.query.decodeStatus === "string") {
   initialFilters.decodeStatus = route.query.decodeStatus;
 }
+/** What "hide discontinued" leaves visible when the dropdown is on All. */
+const STILL_LIVE_STATUSES: MethodologyStatus[] = ['published', 'to_be_discontinued'];
+
+// Unchecked (the default) lists every methodology; checking it hides the
+// discontinued ones.
+const hideDiscontinued = ref(route.query.hideDiscontinued === "1");
+/** Keeps only recognised statuses, dropping "discontinued" while it is hidden. */
+function allowedStatuses(values: string[], hidden: boolean): MethodologyStatus[] {
+  return values.filter((s): s is MethodologyStatus =>
+    (METHODOLOGY_STATUSES as string[]).includes(s) && !(hidden && s === "discontinued"));
+}
+
+// The dropdown defaults to All, i.e. no key at all. Multi-select, so the URL
+// carries the same pipe-separated form FilterBar and the API both speak.
+if (typeof route.query.status === "string") {
+  const restored = allowedStatuses(decodeMultiValue(route.query.status), hideDiscontinued.value);
+  if (restored.length > 0) initialFilters.status = encodeMultiValue(restored);
+}
 const filters = ref<Record<string, any>>(initialFilters);
 const currentPage = ref(1);
 const pageSize = ref(10);
 
-// Unified search — debounced so each keystroke doesn't fire an API request.
+// Unified search. FilterBar already debounces its own update:modelValue, so
+// localSearch only ever changes at that cadence — debouncing again here would
+// stack a second delay on top of it before the API query even changes.
 const localSearch = ref(
   typeof route.query.search === "string" ? route.query.search :
   typeof route.query.name === "string" ? route.query.name : ""
 );
 const searchQuery = ref(localSearch.value.trim());
-const debouncedSearch = useDebounceFn((val: string) => {
-  searchQuery.value = val.trim();
-}, 300);
 
 function syncToUrl() {
   const q: Record<string, string> = { ...(route.query as Record<string, string>) };
@@ -74,11 +97,13 @@ function syncToUrl() {
   if (filters.value.registryName) q.registryName = String(filters.value.registryName); else delete q.registryName;
   if (filters.value.decodeStatus) q.decodeStatus = String(filters.value.decodeStatus); else delete q.decodeStatus;
   if (filters.value.registryDid) q.registryDid = String(filters.value.registryDid); else delete q.registryDid;
+  if (filters.value.status) q.status = String(filters.value.status); else delete q.status;
+  if (hideDiscontinued.value) q.hideDiscontinued = "1"; else delete q.hideDiscontinued;
   router.replace({ query: q });
 }
 
 watch(localSearch, (val) => {
-  debouncedSearch(val);
+  searchQuery.value = val.trim();
   syncToUrl();
 });
 
@@ -93,6 +118,13 @@ const registryNameOptions = computed(() =>
         .map(n => ({ value: n, label: n })),
 );
 
+
+// Statuses the dropdown may offer. Hiding discontinued rows removes that option
+// rather than leaving a filter that could only return nothing.
+const selectableStatuses = computed<MethodologyStatus[]>(() =>
+    hideDiscontinued.value
+        ? METHODOLOGY_STATUSES.filter(s => s !== 'discontinued')
+        : METHODOLOGY_STATUSES);
 
 const barFilters = computed<FilterOption[]>(() => [
     {
@@ -113,13 +145,48 @@ const barFilters = computed<FilterOption[]>(() => [
             { value: 'unknown', label: t('methodologies.decodeStatus.unknown') },
         ],
     },
+    // Multi-select with an explicit "All" row (the default state — represented
+    // by the key being absent).
+    // "Discontinued" is withdrawn while the checkbox hides those rows: offering
+    // a filter that could only ever return an empty list is worse than not
+    // offering it (see the watch below, which also prunes a stale selection).
+    {
+        key: 'status',
+        label: t('methodologies.filters.status'),
+        multiSelect: true,
+        allOption: true,
+        options: selectableStatuses.value.map(value => ({
+            value,
+            label: t(`methodologies.statusValues.${value}`),
+        })),
+    },
 ]);
 
 const activeFilterRecord = computed<Record<string, string>>(() => {
     const r: Record<string, string> = {};
     if (filters.value.registryName) r.registryName = String(filters.value.registryName);
     if (filters.value.decodeStatus) r.decodeStatus = String(filters.value.decodeStatus);
+    if (filters.value.status) r.status = String(filters.value.status);
     return r;
+});
+
+
+/**
+ * What the API is actually asked for.
+ *
+ * An explicit dropdown choice always wins. "All" (no selection) defers to the
+ * checkbox: unchecked sends nothing at all — which is what keeps the default
+ * page load on the API's indexed fast path — while checked narrows to the
+ * statuses that are still live.
+ *
+ * Kept apart from `filters` so the URL and the FilterBar pill keep showing the
+ * user's own selection rather than the implied default.
+ */
+const apiFilters = computed<Record<string, any>>(() => {
+    const { status, ...rest } = filters.value;
+    if (status) return { ...rest, status };
+    if (!hideDiscontinued.value) return rest;
+    return { ...rest, status: STILL_LIVE_STATUSES.join('|') };
 });
 
 // Separate from the manual `registryName` FilterBar filter above — this
@@ -180,6 +247,18 @@ function clearMethodologyFilters() {
     searchQuery.value = '';
 }
 
+// Hiding discontinued methodologies withdraws that option from the dropdown, so
+// a selection of it would otherwise persist invisibly and filter out rows the
+// user can no longer see selected. Prune it; the rest of the selection survives
+// the toggle, and pruning the last one falls back to All.
+watch(hideDiscontinued, (on) => {
+    if (on && filters.value.status) {
+        const kept = allowedStatuses(decodeMultiValue(String(filters.value.status)), true);
+        setMethodologyFilter('status', kept.length > 0 ? encodeMultiValue(kept) : 'all');
+    }
+    syncToUrl();
+});
+
 const sortKey = ref<ColumnKey | null>("createdAt");
 const sortDir = ref<SortDirection>("desc");
 
@@ -203,7 +282,7 @@ const { data, pending, error, refresh } = useMethodologiesApi({
   network: apiNetwork,
   sortBy: apiSortBy,
   sortDir: apiSortDir,
-  filters,
+  filters: apiFilters,
 });
 
 // Poll only while the tab is visible. The interval matches MV_REFRESH_INTERVAL,
@@ -341,6 +420,7 @@ const decodeStatusI18nKey = (status: string | null | undefined): string => {
   return "methodologies.decodeStatus.unknown";
 };
 
+
 const skeletonRows = computed(() =>
   Array.from({ length: pageSize.value }, (_, i) => i),
 );
@@ -356,9 +436,12 @@ async function downloadMethodologies() {
         const query: Record<string, string | number> = {};
         const search = searchQuery.value?.trim();
         if (search) query.search = search;
-        const FILTER_KEYS = ['name', 'id', 'description', 'decodeStatus', 'registryDid', 'registryName', 'version', 'policyTopicId'] as const;
+        // Reads apiFilters, not filters, so an export carries the same lifecycle
+        // scope as the list it was requested from — including the scope the
+        // checkbox implies when the dropdown is on All.
+        const FILTER_KEYS = ['name', 'id', 'description', 'decodeStatus', 'status', 'registryDid', 'registryName', 'version', 'policyTopicId'] as const;
         for (const key of FILTER_KEYS) {
-            const raw = filters.value[key];
+            const raw = apiFilters.value[key];
             if (raw == null) continue;
             const trimmed = String(raw).trim();
             if (trimmed) query[key] = trimmed;
@@ -440,6 +523,16 @@ async function downloadMethodologies() {
         @filter="setMethodologyFilter"
         @clear="clearMethodologyFilters"
       >
+        <template #before-clear>
+          <label class="inline-flex items-center gap-1.5 py-1.5 text-xs text-muted-foreground cursor-pointer select-none">
+            <input
+              v-model="hideDiscontinued"
+              type="checkbox"
+              class="h-3.5 w-3.5 rounded border-input accent-primary cursor-pointer"
+            />
+            {{ $t('methodologies.filters.hideDiscontinued') }}
+          </label>
+        </template>
         <button
           :disabled="downloading"
           class="inline-flex items-center gap-1.5 rounded-lg border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -457,16 +550,17 @@ async function downloadMethodologies() {
         <div class="overflow-x-auto">
         <table class="w-full text-sm table-fixed">
           <colgroup>
-              <col style="width: 14%" />
-              <col style="width: 11%" />
+              <col style="width: 13%" />
+              <col style="width: 10%" />
               <col style="width: 7%" />
               <col style="width: 6%" />
               <col style="width: 7%" />
-              <col style="width: 10%" />
-              <col style="width: 14%" />
+              <col style="width: 9%" />
               <col style="width: 12%" />
               <col style="width: 8%" />
+              <col style="width: 7%" />
               <col style="width: 11%" />
+              <col style="width: 10%" />
           </colgroup>
           <thead>
             <tr class="border-b bg-muted/30">
@@ -526,6 +620,7 @@ async function downloadMethodologies() {
                 @sort="toggleSort($event)"
               />
               <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{{ $t('methodologies.columns.version') }}</th>
+              <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{{ $t('methodologies.columns.status') }}</th>
               <th class="py-2.5 pl-4 pr-8 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">
                 {{ $t('methodologies.columns.decoded') }}
               </th>
@@ -535,7 +630,7 @@ async function downloadMethodologies() {
             <!-- Loading skeleton -->
             <template v-if="pending && methodologies.length === 0">
               <tr v-for="i in skeletonRows" :key="`sk-${i}`">
-                <td v-for="col in 10" :key="col" class="py-3 px-4">
+                <td v-for="col in 11" :key="col" class="py-3 px-4">
                   <Skeleton class="h-4 w-full max-w-[120px]" />
                 </td>
               </tr>
@@ -544,7 +639,7 @@ async function downloadMethodologies() {
             <!-- Error state -->
             <tr v-else-if="error">
               <td
-                colspan="10"
+                colspan="11"
                 class="py-12 text-center text-sm text-destructive"
               >
                 {{ $t("methodologies.errors.loadFailed") }}
@@ -675,6 +770,18 @@ async function downloadMethodologies() {
                   >
                   <span v-else class="text-xs text-muted-foreground">—</span>
                 </td>
+                <td class="py-3 px-4">
+                  <span
+                    :class="[
+                      methodologyStatusBadgeClass(methodologyStatus(r)),
+                      'inline-flex items-center text-xs font-medium rounded-full px-2 py-0.5',
+                    ]"
+                    :title="methodologyStatusTooltip(r, t)"
+                  >
+                    <span class="h-1.5 w-1.5 rounded-full bg-current mr-1.5 shrink-0" />
+                    {{ $t(`methodologies.statusValues.${methodologyStatus(r)}`) }}
+                  </span>
+                </td>
                 <td class="py-3 pl-4 pr-8">
                   <span
                     :class="[
@@ -689,7 +796,7 @@ async function downloadMethodologies() {
               </tr>
               <tr v-if="methodologies.length === 0">
                 <td
-                  colspan="10"
+                  colspan="11"
                   class="py-12 text-center text-sm text-muted-foreground"
                 >
                   {{ $t("methodologies.noMatch") }}

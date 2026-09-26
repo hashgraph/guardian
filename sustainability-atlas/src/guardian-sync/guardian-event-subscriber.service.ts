@@ -2,6 +2,7 @@ import { Injectable, Inject, Logger, OnModuleInit, OnModuleDestroy } from '@nest
 import Redis from 'ioredis';
 import axios from 'axios';
 import { getWorkerNetwork } from '@shared/config/bullmq.config';
+import { LeaderLock } from '@shared/redis/leader-lock';
 import { getGuardianInstances, GuardianInstanceConfig } from '@shared/config/configuration';
 import { GuardianEventRouter } from './guardian-event-router';
 
@@ -50,6 +51,7 @@ export class GuardianEventSubscriber implements OnModuleInit, OnModuleDestroy {
 
     private leaderInterval: ReturnType<typeof setInterval> | null = null;
     private isLeader = false;
+    private leaderLock!: LeaderLock;
     private streamsStarted = false;
     private shuttingDown = false;
     private readonly streams = new Map<string, StreamState>();
@@ -62,7 +64,9 @@ export class GuardianEventSubscriber implements OnModuleInit, OnModuleDestroy {
     constructor(
         @Inject('REDICT_PUB') private readonly redis: Redis,
         private readonly router: GuardianEventRouter,
-    ) {}
+    ) {
+        this.leaderLock = new LeaderLock(this.redis, this.leaderKey, this.instanceId, 30);
+    }
 
     async onModuleInit(): Promise<void> {
         try {
@@ -78,19 +82,34 @@ export class GuardianEventSubscriber implements OnModuleInit, OnModuleDestroy {
                 return;
             }
 
-            this.isLeader = await this.tryAcquireLeader();
+            this.isLeader = await this.leaderLock.tryAcquire();
             if (this.isLeader) {
                 this.startStreams(instances);
             } else {
                 this.logger.log('Another guardian-sync instance is leader — standby');
             }
 
-            // Renew/acquire leadership; take over (start streams) if the leader died.
+            // Renew/acquire leadership; take over (start streams) if the leader
+            // died, and — critically — stop streaming if we lose it.
             this.leaderInterval = setInterval(async () => {
                 try {
-                    this.isLeader = await this.tryAcquireLeader();
                     if (this.isLeader) {
-                        await this.redis.expire(this.leaderKey, 30);
+                        this.isLeader = await this.leaderLock.renew();
+                        if (!this.isLeader) {
+                            // Leadership can lapse while the process is alive and
+                            // healthy (a stalled event loop, a Redict blip that
+                            // outlasts the TTL). Streams used to keep running
+                            // regardless, so the old leader and the new one both
+                            // consumed the AEM feed and both enqueued for every
+                            // event — duplicate triggers with nothing to stop them
+                            // short of a restart.
+                            this.logger.warn('Lost guardian-sync leadership — closing AEM streams');
+                            this.stopStreams();
+                        }
+                        return;
+                    }
+                    if (await this.leaderLock.tryAcquire()) {
+                        this.isLeader = true;
                         this.startStreams(instances);
                     }
                 } catch {
@@ -121,17 +140,23 @@ export class GuardianEventSubscriber implements OnModuleInit, OnModuleDestroy {
         }
         this.streams.clear();
         if (this.isLeader) {
-            this.redis.del(this.leaderKey).catch(() => {});
+            // Compare-and-swap: never frees a lock a successor already holds.
+            this.leaderLock.release().catch(() => {});
             this.redis.del(this.statusKey).catch(() => {});
         }
     }
 
-    /** Same distributed-lock pattern as SyncSchedulerService (30s TTL, renewed 15s). */
-    private async tryAcquireLeader(): Promise<boolean> {
-        const result = await this.redis.set(this.leaderKey, this.instanceId, 'EX', 30, 'NX');
-        if (result === 'OK') return true;
-        const current = await this.redis.get(this.leaderKey);
-        return current === this.instanceId;
+    /**
+     * Closes every AEM stream and resets the start latch, so a later
+     * re-acquisition of leadership opens them again.
+     */
+    private stopStreams(): void {
+        for (const state of this.streams.values()) {
+            if (state.reconnectTimer) clearTimeout(state.reconnectTimer);
+            state.controller.abort();
+        }
+        this.streams.clear();
+        this.streamsStarted = false;
     }
 
     /** Idempotent — starts one stream consumer per instance exactly once. */

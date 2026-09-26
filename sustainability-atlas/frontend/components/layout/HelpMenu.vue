@@ -10,14 +10,19 @@
  * time, so there is no hydration mismatch.
  */
 import { onClickOutside } from '@vueuse/core';
-import { CircleHelp, Compass, Library } from 'lucide-vue-next';
+import { CircleHelp, Compass, Library, FileDown, SearchCheck, MessageCircleQuestion } from 'lucide-vue-next';
 
 const open = ref(false);
 const menuRef = ref<HTMLElement | null>(null);
 onClickOutside(menuRef, () => { open.value = false; });
 
 const { start } = useProductTour();
+const { isAuthenticated } = useAuth();
 const router = useRouter();
+
+const ipfsOpen = ref(false);
+const hashscanOpen = ref(false);
+const faqOpen = ref(false);
 
 function onStartTour() {
     open.value = false;
@@ -27,6 +32,21 @@ function onStartTour() {
 function onGlossary() {
     open.value = false;
     router.push('/glossary');
+}
+
+function onIpfsFetch() {
+    open.value = false;
+    ipfsOpen.value = true;
+}
+
+function onHashscanVerify() {
+    open.value = false;
+    hashscanOpen.value = true;
+}
+
+function onFaq() {
+    open.value = false;
+    faqOpen.value = true;
 }
 </script>
 
@@ -69,7 +89,34 @@ function onGlossary() {
                     <Library class="h-4 w-4" />
                     <span class="flex-1 text-left">{{ $t('tour.glossaryLink') }}</span>
                 </button>
+                <button
+                    v-if="isAuthenticated"
+                    class="flex w-full items-center gap-2.5 rounded-sm px-2.5 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+                    @click="onIpfsFetch()"
+                >
+                    <FileDown class="h-4 w-4" />
+                    <span class="flex-1 text-left">{{ $t('tour.ipfsFetch') }}</span>
+                </button>
+                <button
+                    v-if="isAuthenticated"
+                    class="flex w-full items-center gap-2.5 rounded-sm px-2.5 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+                    @click="onHashscanVerify()"
+                >
+                    <SearchCheck class="h-4 w-4" />
+                    <span class="flex-1 text-left">{{ $t('tour.hashscanVerify') }}</span>
+                </button>
+                <button
+                    class="flex w-full items-center gap-2.5 rounded-sm px-2.5 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+                    @click="onFaq()"
+                >
+                    <MessageCircleQuestion class="h-4 w-4" />
+                    <span class="flex-1 text-left">{{ $t('tour.faq') }}</span>
+                </button>
             </div>
         </Transition>
+
+        <IpfsFetchModal :open="ipfsOpen" @close="ipfsOpen = false" />
+        <HashscanVerifyModal :open="hashscanOpen" @close="hashscanOpen = false" />
+        <FaqModal :open="faqOpen" @close="faqOpen = false" />
     </div>
 </template>

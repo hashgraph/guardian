@@ -3,14 +3,14 @@ import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PolicySchemasService } from '../services/policy-schemas.service';
 import { PaginatedPolicySchemasDto, PolicySchemaQueryDto } from '../dto/policy-schema.dto';
 
-@ApiTags('policy-schemas')
+@ApiTags('Methodology schemas')
 @Controller('api/v1/:network/methodologies/:id/schemas')
 export class PolicySchemasController {
     constructor(private readonly policySchemasService: PolicySchemasService) {}
 
     @Get()
     @ApiOperation({
-        summary: 'List policy schemas for a methodology',
+        summary: 'List a methodology\'s document templates',
         description:
             'Returns schema files extracted from published policy archives for the specified methodology topic ID.',
     })

@@ -399,11 +399,18 @@ export const useGuardianSyncStatusApi = (opts: { network: Ref<NetworkId | string
     const url = computed(() => `/api/v1/${opts.network.value}/guardian-sync/status`);
     const key = computed(() => `guardian-sync-status:${opts.network.value}`);
 
+    const { apiFetch } = useApiFetch();
+    const ssrCookie = import.meta.server ? (useRequestHeaders(['cookie']).cookie ?? '') : '';
+
     const { data, pending, error, refresh } = useAsyncData<GuardianSyncStatusDto>(
         () => key.value,
         async () => {
             try {
-                const res = await $fetch<GuardianSyncStatusDto>(url.value, { baseURL });
+                const res = await apiFetch<GuardianSyncStatusDto>(url.value, {
+                    baseURL,
+                    credentials: 'include',
+                    headers: ssrCookie ? { cookie: ssrCookie } : undefined,
+                });
                 return res ?? emptyGuardianSync();
             } catch (err: any) {
                 const msg: string = err?.message ?? String(err);
@@ -446,12 +453,17 @@ export const useGuardianSyncEventsApi = (opts: {
         () => `guardian-sync-events:${opts.network.value}:${subject.value}:${page.value}:${pageSize.value}`,
     );
 
+    const { apiFetch } = useApiFetch();
+    const ssrCookie = import.meta.server ? (useRequestHeaders(['cookie']).cookie ?? '') : '';
+
     const { data, pending, error, refresh } = useAsyncData<GuardianSyncEventPageDto>(
         () => key.value,
         async () => {
             try {
-                const res = await $fetch<GuardianSyncEventPageDto>(url.value, {
+                const res = await apiFetch<GuardianSyncEventPageDto>(url.value, {
                     baseURL,
+                    credentials: 'include',
+                    headers: ssrCookie ? { cookie: ssrCookie } : undefined,
                     query: {
                         page: page.value,
                         pageSize: pageSize.value,

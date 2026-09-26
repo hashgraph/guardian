@@ -15,7 +15,7 @@ const pageSize = ref(10);
 const { data, pending } = await useAsyncData(
     'recent-exports-table',
     () => listRecent({ page: page.value, limit: pageSize.value }),
-    { watch: [network, page, pageSize] },
+    { server: false, watch: [network, page, pageSize] },
 );
 
 const items = computed<ExportHistoryItem[]>(() => data.value?.data ?? []);

@@ -6,7 +6,7 @@ import Redis from 'ioredis';
 import configuration from '@shared/config/configuration';
 import { getDatabaseConfig } from '@shared/config/database.config';
 import { getRedictConfig } from '@shared/config/redict.config';
-import { QUEUE_NAMES, getActiveQueues, getQueueConfigs } from '@shared/config/bullmq.config';
+import { QUEUE_NAMES, getActiveQueues, getQueueRegistrations } from '@shared/config/bullmq.config';
 
 // Modules
 import { MappingModule } from './mapping/mapping.module';
@@ -27,12 +27,15 @@ import { LocalPolicyZipStorage } from './services/storage/local-policy-zip-stora
 
 // Processors
 import { TopicSyncProcessor } from './processors/topic-sync.processor';
+import { TopicSyncPriorityProcessor } from './processors/topic-sync-priority.processor';
 import { MessageProcessProcessor } from './processors/message-process.processor';
 import { TokenSyncProcessor } from './processors/token-sync.processor';
+import { RetireSyncProcessor } from './processors/retire-sync.processor';
 import { IpfsFetchProcessor } from './processors/ipfs-fetch.processor';
 import { PolicyDecodeProcessor } from './processors/policy-decode.processor';
 import { MvRefreshProcessor } from './processors/mv-refresh.processor';
 import { BusinessViewBuilderProcessor } from './processors/business-view-builder.processor';
+import { PolicyStatusProcessor } from './processors/policy-status.processor';
 import { ProjectReparseProcessor } from './processors/project-reparse.processor';
 
 // Schedulers
@@ -47,37 +50,83 @@ import { QueueAutoscalerService } from './services/queue-autoscaler.service';
  */
 const PROCESSOR_MAP: Record<string, any> = {
     [QUEUE_NAMES.TOPIC_SYNC]: TopicSyncProcessor,
+    [QUEUE_NAMES.TOPIC_SYNC_PRIORITY]: TopicSyncPriorityProcessor,
     [QUEUE_NAMES.MESSAGE_PARSE]: MessageProcessProcessor,
     [QUEUE_NAMES.TOKEN_SYNC]: TokenSyncProcessor,
+    [QUEUE_NAMES.RETIRE_SYNC]: RetireSyncProcessor,
     [QUEUE_NAMES.IPFS_FETCH]: IpfsFetchProcessor,
     [QUEUE_NAMES.POLICY_DECODE]: PolicyDecodeProcessor,
     [QUEUE_NAMES.MV_REFRESH]: MvRefreshProcessor,
     [QUEUE_NAMES.BUSINESS_VIEW_BUILD]: BusinessViewBuilderProcessor,
     [QUEUE_NAMES.PROJECT_REPARSE]: ProjectReparseProcessor,
+    [QUEUE_NAMES.POLICY_STATUS]: PolicyStatusProcessor,
 };
+
+/**
+ * Queues each processor ENQUEUES into (beyond the one it consumes).
+ *
+ * A role-partitioned worker still has to be able to produce into queues it does
+ * not itself drain — a message-parse worker enqueues IPFS and policy-decode work
+ * for other roles to pick up. Registering only the union of what this instance
+ * consumes and produces keeps a role worker from opening a connection per queue
+ * for the ones it never touches.
+ */
+const ENQUEUE_TARGETS: Record<string, string[]> = {
+    [QUEUE_NAMES.TOPIC_SYNC]: [QUEUE_NAMES.MESSAGE_PARSE, QUEUE_NAMES.TOPIC_SYNC],
+    [QUEUE_NAMES.TOPIC_SYNC_PRIORITY]: [
+        QUEUE_NAMES.MESSAGE_PARSE, QUEUE_NAMES.TOPIC_SYNC_PRIORITY, QUEUE_NAMES.TOPIC_SYNC,
+    ],
+    [QUEUE_NAMES.MESSAGE_PARSE]: [
+        QUEUE_NAMES.IPFS_FETCH, QUEUE_NAMES.POLICY_DECODE, QUEUE_NAMES.TOKEN_SYNC,
+        QUEUE_NAMES.TOPIC_SYNC, QUEUE_NAMES.TOPIC_SYNC_PRIORITY, QUEUE_NAMES.POLICY_STATUS,
+    ],
+    [QUEUE_NAMES.POLICY_DECODE]: [QUEUE_NAMES.IPFS_FETCH],
+    [QUEUE_NAMES.TOKEN_SYNC]: [QUEUE_NAMES.TOKEN_SYNC],
+    [QUEUE_NAMES.RETIRE_SYNC]: [QUEUE_NAMES.RETIRE_SYNC],
+    [QUEUE_NAMES.IPFS_FETCH]: [],
+    [QUEUE_NAMES.MV_REFRESH]: [],
+    [QUEUE_NAMES.BUSINESS_VIEW_BUILD]: [],
+    [QUEUE_NAMES.PROJECT_REPARSE]: [],
+    [QUEUE_NAMES.POLICY_STATUS]: [],
+};
+
+/** Every queue the scheduler seeds into; it holds a producer for each. */
+const SCHEDULER_QUEUES: string[] = [
+    QUEUE_NAMES.TOPIC_SYNC, QUEUE_NAMES.TOPIC_SYNC_PRIORITY, QUEUE_NAMES.MESSAGE_PARSE,
+    QUEUE_NAMES.TOKEN_SYNC, QUEUE_NAMES.RETIRE_SYNC, QUEUE_NAMES.MV_REFRESH,
+    QUEUE_NAMES.BUSINESS_VIEW_BUILD, QUEUE_NAMES.POLICY_DECODE, QUEUE_NAMES.IPFS_FETCH,
+    QUEUE_NAMES.POLICY_STATUS,
+];
 
 @Module({})
 export class WorkerModule {
     static register(): DynamicModule {
         const activeQueues = getActiveQueues();
-        const allQueueNames = Object.values(QUEUE_NAMES);
-
-        // Per-queue retention defaults. Without these, BullMQ keeps EVERY
-        // completed/failed job forever — the continuous topic-sync poll loop then
-        // grows the completed set unbounded until Redict OOMs. Apply only the
-        // retention fields (not attempts/backoff) so existing retry behaviour is
-        // unchanged. Per-job opts can still override (poll jobs use `true`).
-        const retentionByName = new Map(
-            getQueueConfigs().map(q => [q.name, {
-                removeOnComplete: q.defaultJobOptions.removeOnComplete,
-                removeOnFail: q.defaultJobOptions.removeOnFail,
-            }]),
-        );
 
         // Only register processors for queues this instance handles
         const activeProcessors = activeQueues
             .map(q => PROCESSOR_MAP[q])
             .filter(Boolean);
+
+        // The scheduler seeds jobs and owns the repeatables. It is leader-elected,
+        // so extra instances are harmless, but in a role-partitioned deployment
+        // there is no reason for every role to carry it — pin it to one role with
+        // SCHEDULER_ENABLED=false everywhere else. Default true keeps the
+        // single-worker deployment behaving exactly as before.
+        const schedulerEnabled = (process.env.SCHEDULER_ENABLED ?? 'true') !== 'false'
+            && activeQueues.some(q => q.startsWith('mirror-node'));
+
+        // Union of what this instance consumes and what it produces into.
+        const requiredQueues = new Set<string>(activeQueues);
+        for (const queue of activeQueues) {
+            for (const target of ENQUEUE_TARGETS[queue] ?? []) requiredQueues.add(target);
+        }
+        if (schedulerEnabled) {
+            for (const queue of SCHEDULER_QUEUES) requiredQueues.add(queue);
+        }
+
+        const queueRegistrations = getQueueRegistrations()
+            .filter(registration => requiredQueues.has(registration.name));
 
         return {
             module: WorkerModule,
@@ -103,13 +152,13 @@ export class WorkerModule {
                     },
                 }),
 
-                // Register ALL queues (so processors can enqueue to any queue)
-                BullModule.registerQueue(
-                    ...allQueueNames.map(name => ({
-                        name,
-                        defaultJobOptions: retentionByName.get(name),
-                    })),
-                ),
+                // Register the queues this instance consumes or produces into,
+                // carrying the full default job options. Retention keeps the
+                // completed/failed sets from growing until Redict OOMs; attempts
+                // and backoff mean a transient mirror-node/IPFS failure retries
+                // instead of silently dropping that unit of work. Per-job opts
+                // still override (the poll chains pass removeOnComplete: true).
+                BullModule.registerQueue(...queueRegistrations),
 
                 // Mapping pipeline module
                 MappingModule,
@@ -144,10 +193,8 @@ export class WorkerModule {
                 // Only processors for active queues
                 ...activeProcessors,
 
-                // Scheduler (only on instances that process data queues)
-                ...(activeQueues.some(q => q.startsWith('mirror-node'))
-                    ? [SyncSchedulerService]
-                    : []),
+                // Scheduler — see schedulerEnabled above.
+                ...(schedulerEnabled ? [SyncSchedulerService] : []),
 
                 // Autoscaler — always registered; uses @Optional() for processor
                 // injections so it gracefully handles partial processor sets.

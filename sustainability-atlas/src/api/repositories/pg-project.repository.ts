@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { MV_PROJECT_STATS_NAME, MV_PROJECT_LIFECYCLE_NAME } from '@shared/materialized-views';
+import { MV_PROJECT_STATS_NAME, MV_PROJECT_LIFECYCLE_NAME, MV_REGISTRY_STATS_NAME } from '@shared/materialized-views';
 import {
     ProjectRepository,
     ProjectListQuery,
@@ -13,9 +13,14 @@ import {
     ProjectExportFilters,
     ProjectExportRow,
     ProjectFilterOptionsRow,
+    MethodologyFilterOptionRow,
+    SerialRangeRow,
+    MintSerialsResult,
+    MintTransactionsResult,
 } from './project.repository';
-import { QueryBuilder } from './query-builder';
+import { QueryBuilder, MAX_MULTI_VALUE_PARTS } from './query-builder';
 import { PROJECT_FIELD_SCHEMA } from './schemas/project.schema';
+import { OTHER_COUNTRY_FILTER_VALUE, RECOGNIZED_COUNTRY_TOKENS, COUNTRY_TOKEN_TO_CODE, CODE_TO_ALIASES } from './schemas/recognized-countries';
 import { collectExternalDataBlockSchemas } from '../services/policy-graph.builder';
 
 type GeoJsonPolygonType = 'Polygon' | 'MultiPolygon';
@@ -25,6 +30,22 @@ const EXPORT_BATCH_SIZE = 2000;
 
 /** Ceiling on rows a single export may stream; exceeding it throws rather than truncating. */
 const EXPORT_MAX_ROWS = 100_000;
+
+/**
+ * `businessData.country`, trimmed of the whitespace classes JS's String.trim()
+ * strips but a plain SQL TRIM() (and Postgres's regex `\s` class) does not —
+ * notably a non-breaking space (U+00A0), a stray BOM (U+FEFF), and several
+ * other Unicode space separators (e.g. U+202F narrow no-break space, a
+ * common copy/paste artifact from Word/PDF-sourced registry text) that
+ * Postgres's `\s` doesn't cover but ECMAScript's WhiteSpace/LineTerminator
+ * production does. Without this, a country value with one of these trailing
+ * chars (invisible in most editors) passes the frontend's resolveCountryCode
+ * (re-trimmed with JS on every render, so it displays as "Peru" with the
+ * correct flag) but fails every match here, landing the project in the
+ * "Other" bucket instead.
+ */
+const TRIMMED_COUNTRY_SQL =
+    `regexp_replace(bv."businessData"->>'country', '^[\\t\\n\\v\\f\\r \\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000\\uFEFF]+|[\\t\\n\\v\\f\\r \\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000\\uFEFF]+$', '', 'g')`;
 
 /** Raw row shape for `findAllForExport` (see `ProjectExportRow` doc). */
 interface RawExportRow {
@@ -57,8 +78,9 @@ interface RawRow {
     updatedAt: Date;
     registry_name: string | null;
     issuance_count: number | null;
-    // pg returns bigint columns as strings
+    // pg returns bigint/numeric columns as strings
     total_issued: string | null;
+    total_declared?: string | null;
     total_retired: string | null;
     // mv_project_lifecycle-sourced (findAll's rowsSql only — findById never
     // joins it, so these are undefined there).
@@ -66,28 +88,21 @@ interface RawRow {
     expectedIssuanceYear?: string | null;
 }
 
-const SEARCH_TSVECTOR = `(
-    setweight(to_tsvector('english', coalesce(bv."displayName", '')), 'A') ||
-    setweight(to_tsvector('english', coalesce(bv."registryDid", '')), 'B') ||
-    setweight(to_tsvector('english', coalesce(bv."searchText", '')), 'C')
-)`;
+// business_view."searchVector" is a STORED generated column with this exact
+// expression (see schema-bootstrap.ts) — referencing it directly, rather than
+// recomputing the expression inline, lets the planner match it back to
+// idx_business_view_search_vector (GIN). An inline recompute is opaque to the
+// planner even though it's byte-identical, so it was never reaching that index.
+const SEARCH_TSVECTOR = `bv."searchVector"`;
 
 /**
- * Derived table joined into both findAll and findById to look up the
- * publishing registry's display name. A non-correlated `DISTINCT ON`
- * (computed once, over the small REGISTRY row set) picks the latest row per
- * registryDid to handle the (rare) case of multiple REGISTRY rows for one
- * DID — cheaper than a per-row correlated LATERAL subquery.
+ * Joined into both findAll and findById to look up the publishing registry's
+ * display name. Read from `mv_registry_stats`, which resolves the latest
+ * REGISTRY row per registryDid once per MV refresh; keyed by registryDid
+ * (unique index), so this is a cheap lookup rather than a per-request scan.
  */
 const REGISTRY_NAME_JOIN = `
-    LEFT JOIN (
-        SELECT DISTINCT ON ("registryDid")
-               "registryDid",
-               "displayName" AS registry_name
-        FROM business_view
-        WHERE "viewType" = 'REGISTRY'
-        ORDER BY "registryDid", "createdAt" DESC NULLS LAST
-    ) reg ON reg."registryDid" = bv."registryDid"
+    LEFT JOIN ${MV_REGISTRY_STATS_NAME} reg ON reg."registryDid" = bv."registryDid"
 `;
 
 /** Per-project lifecycle aggregates (issuance count, total issued, total retired) are read from the mv_project_stats materialized view instead of being computed live per row; the MV is keyed by projectKey and refreshed by MvRefreshProcessor. */
@@ -148,6 +163,84 @@ export class PgProjectRepository extends ProjectRepository {
         super();
     }
 
+    /**
+     * Builds the `country` filter's WHERE clause. A raw stored country can be
+     * any free-text variant of the same place ("MEX", "Mexico", "mexico"),
+     * so this doesn't do a literal ILIKE per selected value — it resolves
+     * each selected value to a canonical alpha-3 code (via
+     * COUNTRY_TOKEN_TO_CODE, matching frontend/composables/useProjects.ts's
+     * resolveCountryCode) and matches every raw form on record for that code
+     * (CODE_TO_ALIASES), so selecting "Mexico" also catches projects stored
+     * as "MEX". The `__other__` sentinel (see recognized-countries.ts) means
+     * "every project whose country isn't a recognized ISO name/alpha-3 code"
+     * — this includes both a non-empty-but-unrecognized value AND a missing
+     * one (null/empty, shown as "—" in the UI), so the "Other" bucket and
+     * filter agree with each other: every project not claimed by a specific
+     * country lands in exactly one of them. A NOT-IN-list clause, since
+     * ILIKE can't express it. The filter is multi-select, so selections
+     * arrive `|`-joined (same
+     * convention as QueryBuilder's other multi-value filters, e.g.
+     * `__other__|MEX`) and need OR, not AND, semantics — this builds the
+     * full OR'd clause itself (mirroring QueryBuilder's private
+     * decodeMultiValue) and adds it directly, always consuming the value:
+     * returns undefined so the generic per-field ilike filter never also
+     * runs on it.
+     */
+    private applyCountryFilter(builder: QueryBuilder, country: string | undefined): string | undefined {
+        if (!country) return country;
+        const parts = country.split('|').map(p => {
+            try { return decodeURIComponent(p.trim()); } catch { return p.trim(); }
+        }).filter(Boolean);
+        if (parts.length === 0) return country;
+
+        if (parts.length > MAX_MULTI_VALUE_PARTS) {
+            throw new BadRequestException(
+                `Too many multi-value filter parts: received ${parts.length}, maximum allowed is ${MAX_MULTI_VALUE_PARTS}.`,
+            );
+        }
+
+        const clauses: string[] = [];
+        for (const p of parts) {
+            if (p === OTHER_COUNTRY_FILTER_VALUE) {
+                const tokens = builder.nextParam(RECOGNIZED_COUNTRY_TOKENS);
+                // A row whose stored country is unrecognized but has been
+                // reverse-geocoded from its coordinates (businessData.geoCountryCode
+                // — see scripts/backfill-geo-country-code.ts and the write-time
+                // fallback in project-mapper.service.ts) has a known country even
+                // though the raw text doesn't reflect it, so it's excluded from
+                // "Other" here and instead matched by that code below.
+                clauses.push(
+                    `((NULLIF(${TRIMMED_COUNTRY_SQL}, '') IS NULL ` +
+                    `OR LOWER(${TRIMMED_COUNTRY_SQL}) <> ALL(${tokens}::text[])) ` +
+                    `AND bv."businessData"->>'geoCountryCode' IS NULL)`,
+                );
+                continue;
+            }
+
+            const code = COUNTRY_TOKEN_TO_CODE[p.toLowerCase()];
+            if (code) {
+                const aliases = builder.nextParam(CODE_TO_ALIASES[code] ?? [p.toLowerCase()]);
+                // OR-in a match against the reverse-geocoded code so a project whose
+                // stored country text never resolved (garbage/mis-mapped field) but
+                // was recovered from its coordinates is still selectable by that
+                // recovered country, not just by "Other".
+                const geoCode = builder.nextParam(code);
+                clauses.push(
+                    `(LOWER(${TRIMMED_COUNTRY_SQL}) = ANY(${aliases}::text[]) ` +
+                    `OR bv."businessData"->>'geoCountryCode' = ${geoCode})`,
+                );
+            } else {
+                // Not a recognized token — a legacy/arbitrary value (e.g. an
+                // old bookmarked link). Fall back to the previous substring
+                // behavior so it still matches something rather than nothing.
+                const param = builder.nextParam(`%${p}%`);
+                clauses.push(`bv."businessData"->>'country' ILIKE ${param}`);
+            }
+        }
+        builder.addClause(`(${clauses.join(' OR ')})`);
+        return undefined;
+    }
+
     async findAll(query: ProjectListQuery): Promise<ProjectListResult> {
         const { page, limit, search, sortBy, sortDir } = query;
         const offset = (page - 1) * limit;
@@ -158,7 +251,7 @@ export class PgProjectRepository extends ProjectRepository {
         // Generic filters: every filterable field defined in the schema is wired automatically.
         builder.addFilters({
             name: query.name,
-            country: query.country,
+            country: this.applyCountryFilter(builder, query.country),
             methodology: query.methodology,
             registry: query.registry,
             registryDid: query.registryDid,
@@ -189,7 +282,7 @@ export class PgProjectRepository extends ProjectRepository {
         if (query.isPipeline === 'true') {
             builder.addClause(`lc.lifecycle_stage != 'Issued'`);
         } else if (query.isPipeline === 'false') {
-            builder.addClause(`lc.lifecycle_stage = 'Issued'`);
+            builder.addClause(`lc.lifecycle_stage = 'Issued'`); 
         }
 
         // Full-text search with ranking: tsvector covers displayName/registryDid/searchText, ILIKE is a fast
@@ -232,10 +325,22 @@ export class PgProjectRepository extends ProjectRepository {
 
         const rowsSql = `
             SELECT
-                bv.*,
+                bv."id",
+                bv."viewType",
+                bv."sourceTimestamp",
+                bv."registryDid",
+                bv."relatedTopicId",
+                bv."displayName",
+                bv."businessData" - 'metadata' - 'decodeMethod' - 'topicId' - 'vcCount' - 'policyTopicId' - 'instanceTopicId' AS "businessData",
+                bv."searchText",
+                bv."projectKey",
+                bv."lastUpdate",
+                bv."createdAt",
+                bv."updatedAt",
                 reg.registry_name,
                 COALESCE(ps.issuance_count, 0) AS issuance_count,
                 COALESCE(ps.total_issued, 0)   AS total_issued,
+                COALESCE(ps.total_declared, 0) AS total_declared,
                 COALESCE(ps.total_retired, 0)  AS total_retired,
                 lc.lifecycle_stage             AS "lifecycleStage",
                 lc.expected_issuance_year      AS "expectedIssuanceYear",
@@ -273,7 +378,12 @@ export class PgProjectRepository extends ProjectRepository {
         const summarySql = `
             SELECT
                 SUM(COALESCE(ps.issuance_count, 0))::bigint                        AS total_issuances,
-                COUNT(DISTINCT NULLIF(bv."businessData"->>'country', ''))::int     AS unique_countries,
+                -- Prefer the reverse-geocoded code (businessData.geoCountryCode)
+                -- over the raw stored country when present, so a project whose
+                -- country text never resolved but was recovered from its
+                -- coordinates counts once under its real country instead of
+                -- inflating this total as its own distinct "country".
+                COUNT(DISTINCT NULLIF(COALESCE(bv."businessData"->>'geoCountryCode', bv."businessData"->>'country'), ''))::int AS unique_countries,
                 COUNT(DISTINCT reg.registry_name)::int                             AS unique_registries
             FROM business_view bv
             ${REGISTRY_NAME_JOIN}
@@ -282,15 +392,21 @@ export class PgProjectRepository extends ProjectRepository {
             WHERE ${whereSql}
         `;
 
+        // count/summary re-run the same whereSql as rows and are invariant across
+        // pages of one search — when the caller already has a cached value for
+        // this exact filter set, skip re-running both and pay the predicate cost
+        // once (for rows) instead of three times.
         const [rawRows, countResult, summaryResult]: [
             RawRow[],
-            Array<{ total: number }>,
-            Array<{ total_issuances: string | null; unique_countries: number; unique_registries: number }>,
-        ] = await Promise.all([
-            this.dataSource.query(rowsSql, params),
-            this.dataSource.query(countSql, countParams),
-            this.dataSource.query(summarySql, countParams),
-        ]);
+            Array<{ total: number }> | undefined,
+            Array<{ total_issuances: string | null; unique_countries: number; unique_registries: number }> | undefined,
+        ] = query.cachedCountAndSummary
+            ? [await this.dataSource.query(rowsSql, params), undefined, undefined]
+            : await Promise.all([
+                this.dataSource.query(rowsSql, params),
+                this.dataSource.query(countSql, countParams),
+                this.dataSource.query(summarySql, countParams),
+            ]);
 
         // Batch-loads each distinct policy's schema names + policyMapping in one indexed query (names extracted
         // SQL-side, so heavyweight rawSchemaJson bodies never leave Postgres), mirroring findById.
@@ -355,11 +471,11 @@ export class PgProjectRepository extends ProjectRepository {
                 undefined,
                 schemasByTopic.get((row.businessData as Record<string, any> | null)?.['policyTopicId'] ?? ''),
             )),
-            total: countResult[0]?.total ?? 0,
-            summary: {
-                totalIssuances: Number(summaryResult[0]?.total_issuances ?? 0),
-                uniqueCountries: summaryResult[0]?.unique_countries ?? 0,
-                uniqueRegistries: summaryResult[0]?.unique_registries ?? 0,
+            total: query.cachedCountAndSummary?.total ?? countResult?.[0]?.total ?? 0,
+            summary: query.cachedCountAndSummary?.summary ?? {
+                totalIssuances: Number(summaryResult?.[0]?.total_issuances ?? 0),
+                uniqueCountries: summaryResult?.[0]?.unique_countries ?? 0,
+                uniqueRegistries: summaryResult?.[0]?.unique_registries ?? 0,
             },
         };
     }
@@ -386,51 +502,108 @@ export class PgProjectRepository extends ProjectRepository {
         const policyTopicId = (row.businessData as Record<string, any> | null)?.['policyTopicId'] as string | null;
         const instanceTopicId = row.relatedTopicId;
 
-        // Step 1 — per-project mint attribution via project_mint_link: the linker pre-resolves each MintToken to
-        // its specific project by walking options.relationships, so this is correct even for grouped projects
-        // that share one instance topic.
+        // The three branches below share no data dependency on each other — only
+        // on the row already fetched above — so they run concurrently instead of
+        // as a 6-deep sequential chain (each was previously await'ed one after
+        // another purely by code placement, not because it needed a prior
+        // branch's result).
+        const [issuanceData, policySchemas, polygon] = await Promise.all([
+            this.resolveIssuances(row.projectKey, instanceTopicId),
+            this.resolvePolicySchemas(policyTopicId),
+            this.resolveGeometry(row.projectKey),
+        ]);
+
+        const { issuances, issuanceEvents, totalIssued, totalDeclared, totalRetired, totalTransferred, issuanceCount } = issuanceData;
+        const totalActive = totalIssued - totalRetired;
+
+        return PgProjectRepository.mapRow(row, issuances, { totalIssued, totalDeclared, totalRetired, totalActive, totalTransferred }, policySchemas, issuanceEvents, issuanceCount, polygon);
+    }
+
+    /**
+     * Per-project mint attribution via project_mint_link: the linker pre-resolves each MintToken to
+     * its specific project by walking options.relationships, so this is correct even for grouped projects
+     * that share one instance topic.
+     */
+    private async resolveIssuances(
+        projectKey: string | null,
+        instanceTopicId: string | null,
+    ): Promise<{
+        issuances: IssuanceRow[];
+        issuanceEvents: IssuanceEventRow[];
+        totalIssued: number;
+        totalDeclared: number;
+        totalRetired: number;
+        totalTransferred: number | null;
+        issuanceCount: number;
+    }> {
         let issuances: IssuanceRow[] = [];
         let issuanceEvents: IssuanceEventRow[] = [];
         let totalIssued = 0;
+        let totalDeclared = 0;
+        // Null until proven otherwise: transfers are unknowable for fungible
+        // credits and for serials whose ownership hasn't synced yet.
+        let totalTransferred: number | null = null;
         let totalRetired = 0;
 
-        const mintTokenRows: Array<{
-            token_id: string | null;
-            amount: number | null;
-            mint_date: Date | null;
-            documents: Record<string, any> | null;
-            mint_ts: string;
-            link_method: string | null;
-        }> = await this.dataSource.query(
-            `SELECT
-                pml.token_id,
-                pml.amount,
-                pml.mint_date,
-                m.documents,
-                pml.mint_consensus_timestamp AS mint_ts,
-                pml.link_method
-             FROM project_mint_link pml
-             JOIN message m ON m."consensusTimestamp" = pml.mint_consensus_timestamp
-             WHERE pml.project_key = $1
-             ORDER BY pml.mint_date ASC NULLS LAST`,
-            [row.projectKey],
-        );
-
-        const issuanceCountRows: Array<{ count: number }> = await this.dataSource.query(
-            `SELECT COUNT(*) FILTER (WHERE token_id IS NOT NULL)::int AS count
-             FROM project_mint_link
-             WHERE project_key = $1`,
-            [row.projectKey],
-        );
+        const [mintTokenRows, issuanceCountRows]: [
+            Array<{
+                token_id: string | null;
+                amount: number | null;
+                mint_date: Date | null;
+                documents: Record<string, any> | null;
+                mint_ts: string;
+                link_method: string | null;
+                vp_ts: string | null;
+                minted_amount: string | null;
+                serial_count: number | null;
+                serial_retired_count: number | null;
+                serial_transferred_count: number | null;
+                mint_match_status: string | null;
+            }>,
+            Array<{ count: number }>,
+        ] = await Promise.all([
+            this.dataSource.query(
+                `SELECT
+                    pml.token_id,
+                    pml.amount,
+                    pml.mint_date,
+                    m.documents,
+                    pml.mint_consensus_timestamp AS mint_ts,
+                    pml.link_method,
+                    pml.vp_consensus_timestamp   AS vp_ts,
+                    pml.minted_amount,
+                    pml.serial_count,
+                    pml.serial_retired_count,
+                    pml.serial_transferred_count,
+                    pml.mint_match_status
+                 FROM project_mint_link pml
+                 JOIN message m ON m."consensusTimestamp" = pml.mint_consensus_timestamp
+                 WHERE pml.project_key = $1
+                 ORDER BY pml.mint_date ASC NULLS LAST`,
+                [projectKey],
+            ),
+            this.dataSource.query(
+                `SELECT COUNT(*) FILTER (WHERE token_id IS NOT NULL)::int AS count
+                 FROM project_mint_link
+                 WHERE project_key = $1`,
+                [projectKey],
+            ),
+        ]);
         let issuanceCount = issuanceCountRows[0]?.count ?? 0;
 
         if (mintTokenRows.length > 0) {
-            // Aggregate minted amount per token; keep last MintToken VC as raw data
-            const mintsByToken = new Map<string, { total: number; mintDate: Date | null; rawVc: Record<string, any> | null }>();
+            // Aggregate minted amount per token; keep last MintToken VC as raw data.
+            // Prefer what the ledger actually minted, falling back to the VC's
+            // declared amount while a mint is still unreconciled — same rule as
+            // mv_project_stats.total_issued, so detail and list agree.
+            const mintsByToken = new Map<string, { total: number; declared: number; mintDate: Date | null; rawVc: Record<string, any> | null }>();
             for (const r of mintTokenRows) {
                 if (!r.token_id) continue;
-                const existing = mintsByToken.get(r.token_id) ?? { total: 0, mintDate: r.mint_date, rawVc: r.documents };
-                existing.total += r.amount != null ? Number(r.amount) : 0;
+                const declared = r.amount != null ? Number(r.amount) : 0;
+                const minted = r.minted_amount != null ? Number(r.minted_amount) : declared;
+                const existing = mintsByToken.get(r.token_id) ?? { total: 0, declared: 0, mintDate: r.mint_date, rawVc: r.documents };
+                existing.total += minted;
+                existing.declared += declared;
                 existing.rawVc = r.documents;
                 mintsByToken.set(r.token_id, existing);
             }
@@ -478,31 +651,69 @@ export class PgProjectRepository extends ProjectRepository {
                     mintDate: r.mint_date ? r.mint_date.toISOString().split('T')[0] : null,
                     linkMethod: r.link_method ?? null,
                     rawVc: r.documents ?? null,
+                    vpConsensusTimestamp: r.vp_ts ?? null,
+                    mintedAmount: r.minted_amount != null ? Number(r.minted_amount) : null,
+                    serialCount: r.serial_count != null ? Number(r.serial_count) : null,
+                    serialRetiredCount: r.serial_retired_count != null ? Number(r.serial_retired_count) : null,
+                    serialTransferredCount: r.serial_transferred_count != null ? Number(r.serial_transferred_count) : null,
+                    mintMatchStatus: r.mint_match_status ?? null,
                 };
             });
 
-            // totalIssued = sum of MintToken amounts (project-specific)
+            // totalIssued = what the ledger minted; totalDeclared = what the
+            // MintToken VCs claimed. They diverge whenever a mint partially failed.
             totalIssued = [...mintsByToken.values()].reduce((s, v) => s + v.total, 0);
+            totalDeclared = [...mintsByToken.values()].reduce((s, v) => s + v.declared, 0);
 
-            // totalRetired = NFT serials marked deleted for tokens this project minted
-            const nftTokenIds = issuances
-                .filter(i => i.type === 'NON_FUNGIBLE_UNIQUE')
-                .map(i => i.tokenId)
-                .filter((tid): tid is string => !!tid);
+            // Retirement, verified evidence only — same rule as
+            // mv_project_stats.total_retired, so list and detail agree.
+            //
+            // Retired serials this project's own mint events account for are
+            // summed per mint (exact, and per vintage). Orphan serials — deleted
+            // on-chain but matching no mint link — are deliberately excluded:
+            // nothing ties them to a policy, so they are not provably Guardian
+            // issuances. The only residue is documented fungible retirement,
+            // which is token-level by nature.
+            totalRetired = issuanceEvents.reduce((s, e) => s + (e.serialRetiredCount ?? 0), 0);
+            // Transfers are only knowable per serial, so this covers non-fungible
+            // credits attributed to a mint event. Fungible balances can't be
+            // traced back to the mint that created them.
+            //
+            // Stays null unless every non-fungible mint has a known figure: one
+            // mint whose serial ownership is still syncing would otherwise drag
+            // the project total down to a number that looks precise and isn't.
+            const nftEvents = issuanceEvents.filter(e => e.type === 'NON_FUNGIBLE_UNIQUE');
+            totalTransferred = nftEvents.length > 0 && nftEvents.every(e => e.serialTransferredCount !== null)
+                ? nftEvents.reduce((s, e) => s + (e.serialTransferredCount ?? 0), 0)
+                : null;
 
-            if (nftTokenIds.length > 0) {
-                const nftStats: Array<{ tokenId: string; total_retired: string }> =
-                    await this.dataSource.query(
-                        `SELECT "tokenId",
-                                COUNT(*) FILTER (WHERE deleted = true)::text AS total_retired
-                         FROM nft_cache
-                         WHERE "tokenId" = ANY($1::varchar[])
-                         GROUP BY "tokenId"`,
-                        [nftTokenIds],
-                    );
-                for (const s of nftStats) {
-                    totalRetired += parseInt(s.total_retired, 10);
-                }
+            const projectTokenIds = [...new Set(
+                issuanceEvents.map(e => e.tokenId).filter((t): t is string => !!t),
+            )];
+
+            if (projectTokenIds.length > 0) {
+                // Fungible retirement is only charged for tokens this project
+                // alone mints — when several projects share a token there is no
+                // way to say whose credits were retired, and counting it for each
+                // would report one retirement several times.
+                const [residue]: Array<{ retired: string }> = await this.dataSource.query(
+                    `WITH sole AS (
+                        SELECT pml.token_id
+                        FROM project_mint_link pml
+                        WHERE pml.token_id = ANY($1::varchar[])
+                        GROUP BY pml.token_id
+                        HAVING COUNT(DISTINCT pml.project_key) = 1
+                     )
+                     SELECT COALESCE((
+                        SELECT SUM(tre.amount / (10::numeric ^ COALESCE(tc.decimals, 0)))
+                        FROM token_retire_event tre
+                        JOIN token_cache tc
+                          ON tc."tokenId" = tre.token_id AND tc.type = 'FUNGIBLE_COMMON'
+                        WHERE tre.token_id IN (SELECT token_id FROM sole) AND tre.amount IS NOT NULL
+                     ), 0)::text AS retired`,
+                    [projectTokenIds],
+                );
+                totalRetired += parseFloat(residue?.retired ?? '0');
             }
         } else if (instanceTopicId) {
             // Step 2 fallback: look up CREDIT rows linked to this project's own instance topic only (excluding
@@ -534,7 +745,9 @@ export class PgProjectRepository extends ProjectRepository {
                     COALESCE(tc.name,      bv."displayName")              AS name,
                     COALESCE(tc.symbol,    bv."businessData"->>'symbol')  AS symbol,
                     tc.type,
-                    tc."totalSupply"                                      AS supply,
+                    -- Fungible supply is stored in the token's smallest units;
+                    -- scale by decimals so it is comparable with VC amounts.
+                    (tc."totalSupply" / (10::numeric ^ COALESCE(tc.decimals, 0)))::text AS supply,
                     bv."createdAt"                                        AS "mintDate"
                  FROM business_view bv
                  LEFT JOIN token_cache tc
@@ -575,73 +788,102 @@ export class PgProjectRepository extends ProjectRepository {
                         totalRetired += parseInt(s.total_retired, 10);
                     }
                 }
-                for (const i of issuances) {
-                    if (i.type !== 'NON_FUNGIBLE_UNIQUE') totalIssued += i.supply;
+                // Fungible: prefer the summed on-chain mint transactions — token
+                // supply is net of any wipes, so it understates what was minted.
+                const ftTokenIds = issuances
+                    .filter(i => i.type !== 'NON_FUNGIBLE_UNIQUE')
+                    .map(i => i.tokenId)
+                    .filter((tid): tid is string => !!tid);
+                const mintedByToken = new Map<string, number>();
+                if (ftTokenIds.length > 0) {
+                    const ftStats: Array<{ token_id: string; minted: string }> = await this.dataSource.query(
+                        `SELECT t.token_id,
+                                (SUM(t.amount_raw) / (10::numeric ^ COALESCE(tc.decimals, 0)))::text AS minted
+                         FROM token_mint_tx t
+                         JOIN token_cache tc ON tc."tokenId" = t.token_id
+                         WHERE t.token_id = ANY($1::varchar[])
+                         GROUP BY t.token_id, tc.decimals`,
+                        [ftTokenIds],
+                    );
+                    for (const s of ftStats) {
+                        mintedByToken.set(s.token_id, parseFloat(s.minted));
+                    }
                 }
+                for (const i of issuances) {
+                    if (i.type !== 'NON_FUNGIBLE_UNIQUE') {
+                        totalIssued += mintedByToken.get(i.tokenId) ?? i.supply;
+                    }
+                }
+                // No MintToken VCs on this path, so nothing was declared to compare against.
+                totalDeclared = totalIssued;
             } // end else (siblingCount === 1)
         }
 
         if (issuanceCount === 0 && issuances.length > 0) issuanceCount = issuances.length;
 
-        const totalActive = totalIssued - totalRetired;
+        return { issuances, issuanceEvents, totalIssued, totalDeclared, totalRetired, totalTransferred, issuanceCount };
+    }
 
-        // Load schema metadata for this project's policyTopicId so the DTO can render a grouped linked-VCs view without a second round trip.
-        let policySchemas: PolicySchemaRow[] = [];
-        if (policyTopicId) {
-            const policySchemaRows: Array<{
-                policyTopicId: string;
-                sourceCid: string;
-                rawSchemaJson: Record<string, unknown> | null;
-                rawPolicyJson: Record<string, unknown> | null;
-                policyMapping: Record<string, unknown> | null;
-                createdAt: Date;
-                updatedAt: Date;
-            }> = await this.dataSource.query(
-                `SELECT "policyTopicId", "sourceCid", "rawSchemaJson", "rawPolicyJson", "policyMapping", "createdAt", "updatedAt"
-                 FROM policy
-                 WHERE "policyTopicId" = $1
-                   AND "decodeStatus" = 'decoded'
-                 ORDER BY "createdAt" DESC
-                 LIMIT 1`,
-                [policyTopicId],
+    /** Schema metadata for this project's policyTopicId so the DTO can render a grouped linked-VCs view. Independent of resolveIssuances — only needs policyTopicId, already known from the row query. */
+    private async resolvePolicySchemas(policyTopicId: string | null): Promise<PolicySchemaRow[]> {
+        if (!policyTopicId) return [];
+
+        const policySchemaRows: Array<{
+            policyTopicId: string;
+            sourceCid: string;
+            rawSchemaJson: Record<string, unknown> | null;
+            rawPolicyJson: Record<string, unknown> | null;
+            policyMapping: Record<string, unknown> | null;
+            createdAt: Date;
+            updatedAt: Date;
+        }> = await this.dataSource.query(
+            `SELECT "policyTopicId", "sourceCid", "rawSchemaJson", "rawPolicyJson", "policyMapping", "createdAt", "updatedAt"
+             FROM policy
+             WHERE "policyTopicId" = $1
+               AND "decodeStatus" = 'decoded'
+             ORDER BY "createdAt" DESC
+             LIMIT 1`,
+            [policyTopicId],
+        );
+
+        if (policySchemaRows.length === 0) return [];
+
+        const pr = policySchemaRows[0];
+        const rawSchemaJson = (pr.rawSchemaJson ?? {}) as Record<string, unknown>;
+        const schemaNamesByIri = new Map<string, string | null>();
+        for (const [iri, schemaDoc] of Object.entries(rawSchemaJson)) {
+            const doc = (schemaDoc ?? {}) as Record<string, unknown>;
+            schemaNamesByIri.set(iri, typeof doc['name'] === 'string' ? doc['name'] : null);
+        }
+        const mrvSchemaUuids = collectExternalDataBlockSchemas(pr.rawPolicyJson);
+        return PgProjectRepository.buildPolicySchemas(
+            schemaNamesByIri,
+            (pr.policyMapping ?? {}) as Record<string, unknown[]>,
+            mrvSchemaUuids,
+        );
+    }
+
+    /**
+     * Full-precision boundary lives in its own table (see schema-bootstrap.ts
+     * for why) — sent to the frontend as-is, no point dropped. It's kept
+     * out of businessData specifically so this full-detail read never
+     * costs anything on the list/search path; it's a one-row lookup by
+     * primary key on this single project-detail fetch. Independent of
+     * resolveIssuances/resolvePolicySchemas — only needs projectKey, already
+     * known from the row query.
+     */
+    private async resolveGeometry(projectKey: string | null): Promise<string | null> {
+        if (!projectKey) return null;
+
+        const geometryRows: Array<{ geo_type: GeoJsonPolygonType; geojson: { coordinates: unknown } }> =
+            await this.dataSource.query(
+                `SELECT geo_type, geojson FROM project_geometry WHERE project_key = $1 LIMIT 1`,
+                [projectKey],
             );
+        if (geometryRows.length === 0) return null;
 
-            if (policySchemaRows.length > 0) {
-                const pr = policySchemaRows[0];
-                const rawSchemaJson = (pr.rawSchemaJson ?? {}) as Record<string, unknown>;
-                const schemaNamesByIri = new Map<string, string | null>();
-                for (const [iri, schemaDoc] of Object.entries(rawSchemaJson)) {
-                    const doc = (schemaDoc ?? {}) as Record<string, unknown>;
-                    schemaNamesByIri.set(iri, typeof doc['name'] === 'string' ? doc['name'] : null);
-                }
-                const mrvSchemaUuids = collectExternalDataBlockSchemas(pr.rawPolicyJson);
-                policySchemas = PgProjectRepository.buildPolicySchemas(
-                    schemaNamesByIri,
-                    (pr.policyMapping ?? {}) as Record<string, unknown[]>,
-                    mrvSchemaUuids,
-                );
-            }
-        }
-
-        // Full-precision boundary lives in its own table (see schema-bootstrap.ts
-        // for why) — sent to the frontend as-is, no point dropped. It's kept
-        // out of businessData specifically so this full-detail read never
-        // costs anything on the list/search path; it's a one-row lookup by
-        // primary key on this single project-detail fetch.
-        let polygon: string | null = null;
-        if (row.projectKey) {
-            const geometryRows: Array<{ geo_type: GeoJsonPolygonType; geojson: { coordinates: unknown } }> =
-                await this.dataSource.query(
-                    `SELECT geo_type, geojson FROM project_geometry WHERE project_key = $1 LIMIT 1`,
-                    [row.projectKey],
-                );
-            if (geometryRows.length > 0) {
-                const { geo_type, geojson } = geometryRows[0];
-                polygon = JSON.stringify({ type: geo_type, coordinates: geojson.coordinates });
-            }
-        }
-
-        return PgProjectRepository.mapRow(row, issuances, { totalIssued, totalRetired, totalActive }, policySchemas, issuanceEvents, issuanceCount, polygon);
+        const { geo_type, geojson } = geometryRows[0];
+        return JSON.stringify({ type: geo_type, coordinates: geojson.coordinates });
     }
 
     async findActivity(sourceTimestamp: string): Promise<ActivityEventRow[]> {
@@ -747,6 +989,429 @@ export class PgProjectRepository extends ProjectRepository {
         }));
     }
 
+    /**
+     * NFT serials attributed to one mint event of this project.
+     *
+     * The mint must belong to the requested project (project_key match) — this
+     * check prevents reading another project's serials through this project's
+     * namespace, mirroring getLinkedVcDocument's linkedVcs guard.
+     *
+     * Serials are resolved through Guardian's NFT-metadata convention: the mint
+     * VP-Document's consensus timestamp is base64-encoded into every NFT minted
+     * for that VP (decoded into nft_cache."metadataTimestamp" by the worker, and
+     * linked to the mint by serial-mint-linker). mintMatchStatus tells the
+     * caller how far to trust the attribution — only 'verified' means the serial
+     * count exactly matches the MintToken VC's amount.
+     *
+     * Fungible mints resolve a VP but never serials, so they return an empty
+     * list: fungible units are interchangeable and cannot be enumerated.
+     */
+    async findMintSerials(
+        projectId: string | null,
+        mintConsensusTimestamp: string,
+        page: number,
+        limit: number,
+    ): Promise<MintSerialsResult | null> {
+        const link = await this.resolveMintLink(projectId, mintConsensusTimestamp);
+        if (!link) return null;
+
+        const empty = {
+            mintConsensusTimestamp,
+            vpConsensusTimestamp: link.vp_ts ?? null,
+            tokenId: link.token_id ?? null,
+            mintMatchStatus: link.mint_match_status ?? null,
+            totalSerials: 0,
+            activeCount: 0,
+            retiredCount: 0,
+            totalRanges: 0,
+            ranges: [] as SerialRangeRow[],
+        };
+        if (!link.token_id || !link.vp_ts) {
+            return empty;
+        }
+
+        // Gaps-and-islands: consecutive serials sharing a retired state have a
+        // constant (serial − row_number), so grouping on that constant collapses
+        // each run into one row. Partitioned by `deleted` so a retirement splits
+        // the range rather than being lost inside it.
+        //
+        // Grouped in Postgres rather than in the client: an issuance of 42,278
+        // serials is a single range, so this is the difference between a ~1.6 MB
+        // response and a few hundred bytes.
+        // Partitioned by holder as well as retired state, so a range only ever
+        // describes serials that are in the same hands — a change of owner
+        // splits the run rather than being averaged away inside it.
+        const rangesSql = `
+            WITH islands AS (
+                SELECT "serialNumber" AS serial, deleted, "accountId",
+                       "serialNumber" - ROW_NUMBER() OVER (
+                           PARTITION BY deleted, "accountId" ORDER BY "serialNumber"
+                       ) AS grp
+                FROM nft_cache
+                WHERE "tokenId" = $1 AND "metadataTimestamp" = $2
+            ),
+            ranges AS (
+                SELECT MIN(serial)::int AS "from", MAX(serial)::int AS "to",
+                       COUNT(*)::int AS count, deleted, "accountId"
+                FROM islands
+                GROUP BY deleted, "accountId", grp
+            )
+        `;
+
+        const [[totals], rangeRows]: [
+            Array<{ total_serials: string; active_count: string; retired_count: string; total_ranges: string }>,
+            SerialRangeRow[],
+        ] = await Promise.all([
+            this.dataSource.query(
+                `${rangesSql}
+                 SELECT COALESCE(SUM(count), 0)::text                                  AS total_serials,
+                        COALESCE(SUM(count) FILTER (WHERE NOT deleted), 0)::text       AS active_count,
+                        COALESCE(SUM(count) FILTER (WHERE deleted), 0)::text           AS retired_count,
+                        COUNT(*)::text                                                 AS total_ranges
+                 FROM ranges`,
+                [link.token_id, link.vp_ts],
+            ),
+            this.dataSource.query(
+                `${rangesSql}
+                 SELECT "from", "to", count, deleted, "accountId"
+                 FROM ranges
+                 ORDER BY "from" ASC
+                 LIMIT $3 OFFSET $4`,
+                [link.token_id, link.vp_ts, limit, (page - 1) * limit],
+            ),
+        ]);
+
+        return {
+            ...empty,
+            totalSerials: parseInt(totals?.total_serials ?? '0', 10),
+            activeCount: parseInt(totals?.active_count ?? '0', 10),
+            retiredCount: parseInt(totals?.retired_count ?? '0', 10),
+            totalRanges: parseInt(totals?.total_ranges ?? '0', 10),
+            ranges: rangeRows.map(r => ({
+                from: Number(r.from),
+                to: Number(r.to),
+                count: Number(r.count),
+                deleted: r.deleted,
+                accountId: r.accountId ?? null,
+            })),
+        };
+    }
+
+    /**
+     * Resolves a mint event, optionally requiring it to belong to a project.
+     *
+     * `projectId` null is used by the issuance-scoped routes, which address a
+     * mint directly and have no project namespace to guard. Passing a project id
+     * keeps the guard the project-scoped routes rely on: it stops one project's
+     * serials being read through another project's URL.
+     */
+    private async resolveMintLink(
+        projectId: string | null,
+        mintConsensusTimestamp: string,
+    ): Promise<{ token_id: string | null; vp_ts: string | null; mint_match_status: string | null } | null> {
+        const rows = await this.dataSource.query(
+            `SELECT pml.token_id, pml.vp_consensus_timestamp AS vp_ts, pml.mint_match_status
+             FROM project_mint_link pml
+             WHERE pml.mint_consensus_timestamp = $1
+               AND (
+                   $2::varchar IS NULL
+                   OR EXISTS (
+                       SELECT 1 FROM business_view bv
+                       WHERE bv."projectKey" = pml.project_key AND bv."viewType" = 'PROJECT'
+                         AND (bv."sourceTimestamp" = $2 OR bv."projectKey" = $2)
+                   )
+               )
+             LIMIT 1`,
+            [mintConsensusTimestamp, projectId],
+        );
+        if (rows[0]) {
+            return rows[0];
+        }
+
+        // No link row. When the caller named a project, that is a genuine
+        // rejection — the guard did its job. Unscoped, the mint may simply never
+        // have been attributed to a project, which is common; fall back to the
+        // credential so the issuance page can show an empty serial list instead
+        // of a 404.
+        if (projectId !== null) {
+            return null;
+        }
+        const [credential] = await this.dataSource.query(
+            `SELECT m.documents->'credentialSubject'->0->>'tokenId' AS token_id
+             FROM message m
+             WHERE m."consensusTimestamp" = $1
+               AND m.type = 'VC-Document'
+               AND m.documents->'credentialSubject'->0->>'type' LIKE 'MintToken%'
+             LIMIT 1`,
+            [mintConsensusTimestamp],
+        );
+        return credential
+            ? { token_id: credential.token_id ?? null, vp_ts: null, mint_match_status: null }
+            : null;
+    }
+
+    /**
+     * Retirement and transfer transactions affecting one mint event's serials.
+     *
+     * Both sides are grouped back into the transaction that caused them, because
+     * a single retirement or distribution moves many serials at once — listing
+     * one row per serial would turn a 10-serial retirement into ten "events"
+     * that never happened separately.
+     *
+     * Serials are matched through nft_cache."metadataTimestamp", so only credits
+     * this mint actually produced are counted, even when a token spans several
+     * mint events. Same ownership guard as findMintSerials.
+     */
+    /** Sortable columns, whitelisted — the value is interpolated into ORDER BY. */
+    private static readonly TX_SORT: Record<string, string> = {
+        date: 'consensus_timestamp',
+        // The displayed event, not the raw row type — otherwise a wipe-driven
+        // retirement would sort among the transfers while showing "Retirement".
+        event: 'event',
+        credits: 'cardinality(serials)',
+        serials: 'serials[1]',
+    };
+
+    async findMintTransactions(
+        projectId: string | null,
+        mintConsensusTimestamp: string | null,
+        page: number,
+        limit: number,
+        sortBy = 'date',
+        sortDir: 'asc' | 'desc' = 'desc',
+    ): Promise<MintTransactionsResult | null> {
+        // Scope: one mint event, or every mint of the project when no timestamp
+        // is given (the project-level Credit Lifecycle view). Each row is a
+        // (token, mint VP) pair — the key that identifies which serials belong
+        // to which issuance.
+        //
+        // A null projectId addresses the mint directly (issuance-scoped routes);
+        // a value keeps the ownership guard the project-scoped routes rely on.
+        // Both null would scope to every mint on the network — refuse rather
+        // than let a caller accidentally ask for that.
+        if (projectId === null && mintConsensusTimestamp === null) {
+            return null;
+        }
+
+        const scope: Array<{ token_id: string | null; vp_ts: string | null }> =
+            await this.dataSource.query(
+                `SELECT DISTINCT pml.token_id, pml.vp_consensus_timestamp AS vp_ts
+                 FROM project_mint_link pml
+                 WHERE ($2::varchar IS NULL OR pml.mint_consensus_timestamp = $2)
+                   AND (
+                       $1::varchar IS NULL
+                       OR EXISTS (
+                           SELECT 1 FROM business_view bv
+                           WHERE bv."projectKey" = pml.project_key AND bv."viewType" = 'PROJECT'
+                             AND (bv."sourceTimestamp" = $1 OR bv."projectKey" = $1)
+                       )
+                   )`,
+                [projectId, mintConsensusTimestamp],
+            );
+
+        if (scope.length === 0) {
+            // Unscoped and unlinked: the mint may exist as a credential that was
+            // never attributed to a project. Report no transactions rather than
+            // 404-ing an issuance the user can legitimately open.
+            if (projectId === null && mintConsensusTimestamp !== null) {
+                const [credential] = await this.dataSource.query(
+                    `SELECT 1 FROM message m
+                     WHERE m."consensusTimestamp" = $1
+                       AND m.type = 'VC-Document'
+                       AND m.documents->'credentialSubject'->0->>'type' LIKE 'MintToken%'
+                     LIMIT 1`,
+                    [mintConsensusTimestamp],
+                );
+                if (credential) {
+                    // No token linked yet, so no treasury to have swept.
+                    return { total: 0, transactions: [], transferHistorySynced: false };
+                }
+            }
+            return null;
+        }
+
+        const pairs = scope.filter((s): s is { token_id: string; vp_ts: string } => !!s.token_id && !!s.vp_ts);
+        if (pairs.length === 0) {
+            return { total: 0, transactions: [], transferHistorySynced: false };
+        }
+
+        const tokenIds = pairs.map(p => p.token_id);
+        const vpTimestamps = pairs.map(p => p.vp_ts);
+
+        // Transfers are read from each token's treasury account, swept in the
+        // background. Until every treasury behind these credits carries a
+        // watermark, an empty table means "not read yet", not "nothing moved".
+        const [sweep]: Array<{ synced: boolean }> = await this.dataSource.query(
+            `SELECT COALESCE(BOOL_AND("transferTxWatermark" IS NOT NULL), false) AS synced
+             FROM token_cache
+             WHERE "tokenId" = ANY($1::varchar[])`,
+            [tokenIds],
+        );
+        const transferHistorySynced = sweep?.synced ?? false;
+
+        // Retirements name their serials in an array; transfers are one row per
+        // serial and are regrouped by the transaction that moved them, so a
+        // distribution of 10 serials reads as one event rather than ten.
+        const eventsSql = `
+            WITH scope AS (
+                SELECT * FROM unnest($1::varchar[], $2::varchar[]) AS s(token_id, vp_ts)
+            ),
+            scoped_serials AS (
+                SELECT n."tokenId" AS token_id, n."serialNumber" AS serial_number, n.deleted
+                FROM nft_cache n
+                JOIN scope sc ON sc.token_id = n."tokenId" AND sc.vp_ts = n."metadataTimestamp"
+            ),
+            retirements AS (
+                SELECT 'retirement'::text AS type,
+                       tre.consensus_timestamp,
+                       tre.account_id,
+                       NULL::varchar AS sender_account_id,
+                       NULL::varchar AS receiver_account_id,
+                       ARRAY(
+                           SELECT s FROM unnest(tre.serials) AS s
+                           WHERE EXISTS (
+                               SELECT 1 FROM scoped_serials ss
+                               WHERE ss.token_id = tre.token_id AND ss.serial_number = s
+                           )
+                           ORDER BY s
+                       ) AS serials,
+                       -- Column order must match the transfers branch below:
+                       -- UNION ALL pairs columns by position, not by name.
+                       true AS is_latest,
+                       0 AS retired_since
+                FROM token_retire_event tre
+                WHERE tre.token_id = ANY($1::varchar[])
+            ),
+            -- The most recent move of each serial. Only that row can be said to
+            -- describe where a credit ended up; an earlier hop sent it to the
+            -- next holder, not to wherever it eventually came to rest.
+            last_move AS (
+                SELECT token_id, serial_number, MAX(consensus_timestamp) AS last_ts
+                FROM token_transfer_event
+                WHERE token_id = ANY($1::varchar[])
+                GROUP BY token_id, serial_number
+            ),
+            transfers AS (
+                SELECT 'transfer'::text AS type,
+                       tte.consensus_timestamp,
+                       NULL::varchar AS account_id,
+                       tte.sender_account_id,
+                       tte.receiver_account_id,
+                       ARRAY_AGG(tte.serial_number ORDER BY tte.serial_number) AS serials,
+                       -- True only when every serial in this row was last moved
+                       -- here. Most serials move once, but some move four or five
+                       -- times, and without this each hop would read as the
+                       -- credit's final resting place.
+                       BOOL_AND(tte.consensus_timestamp = lm.last_ts) AS is_latest,
+                       -- How many of the moved serials are retired today. Without
+                       -- this, a transfer of credits that were later wiped outside
+                       -- Guardian's retirement contract reads as if nothing ever
+                       -- happened to them: the retirement leaves no transaction of
+                       -- its own, so this is the only place it can surface.
+                       (COUNT(*) FILTER (WHERE ss.deleted))::int AS retired_since
+                FROM token_transfer_event tte
+                JOIN scoped_serials ss
+                  ON ss.token_id = tte.token_id AND ss.serial_number = tte.serial_number
+                JOIN last_move lm
+                  ON lm.token_id = tte.token_id AND lm.serial_number = tte.serial_number
+                GROUP BY tte.consensus_timestamp, tte.sender_account_id, tte.receiver_account_id
+            ),
+            -- Credits either changed hands or left circulation. A transfer whose
+            -- credits were all destroyed, and which was their last movement, is a
+            -- retirement in substance: the credits can never be sold or claimed
+            -- again, whether or not the registry's retirement contract recorded
+            -- it. Classifying here rather than per consumer keeps that judgement
+            -- in one place and lets ORDER BY sort on the value readers are shown.
+            classified AS (
+                SELECT r.*, true AS is_retirement
+                FROM retirements r WHERE cardinality(r.serials) > 0
+                UNION ALL
+                SELECT t.*,
+                       (t.is_latest
+                        AND cardinality(t.serials) > 0
+                        AND t.retired_since >= cardinality(t.serials)) AS is_retirement
+                FROM transfers t
+            ),
+            combined AS (
+                SELECT c.*,
+                       CASE WHEN c.is_retirement THEN 'retirement' ELSE 'transfer' END AS event,
+                       -- How well documented the offset claim is: recorded by the
+                       -- registry's retirement contract, or evidenced only by the
+                       -- credits' destruction on the ledger.
+                       CASE WHEN c.is_retirement
+                            THEN CASE WHEN c.type = 'retirement' THEN 'guardian' ELSE 'ledger' END
+                       END AS retirement_source,
+                       -- Account holding the credits at the moment they left
+                       -- circulation. Where the retirement is only evidenced by
+                       -- destruction, that is the last transfer's recipient — the
+                       -- party that held them — not whoever sent them.
+                       CASE WHEN c.is_retirement
+                            THEN COALESCE(c.account_id, c.receiver_account_id)
+                       END AS holder_account_id
+                FROM classified c
+            )
+        `;
+
+        // Count and page each rebuild the scoped_serials CTE, which for a large
+        // issuance means materialising tens of thousands of rows twice. Running
+        // them together halves the wall time rather than paying for it serially.
+        const [[countRow], rows]: [
+            Array<{ total: string }>,
+            Array<{
+                type: 'retirement' | 'transfer';
+                consensus_timestamp: string;
+                account_id: string | null;
+                sender_account_id: string | null;
+                receiver_account_id: string | null;
+                serials: number[];
+                is_latest: boolean;
+                retired_since: number;
+                event: 'retirement' | 'transfer';
+                retirement_source: 'guardian' | 'ledger' | null;
+                holder_account_id: string | null;
+            }>,
+        ] = await Promise.all([
+            this.dataSource.query(
+                `${eventsSql} SELECT COUNT(*)::text AS total FROM combined`,
+                [tokenIds, vpTimestamps],
+            ),
+            this.dataSource.query(
+                // Whitelisted column, and direction reduced to one of two literals
+                // — neither reaches the query as caller-supplied text. Consensus
+                // timestamp is the tiebreak so paging stays stable when the
+                // primary key ties (a distribution emits many rows per second).
+                `${eventsSql}
+                 SELECT * FROM combined
+                 ORDER BY ${PgProjectRepository.TX_SORT[sortBy] ?? 'consensus_timestamp'} ${
+                    sortDir === 'asc' ? 'ASC' : 'DESC'
+                 }, consensus_timestamp DESC
+                 LIMIT $3 OFFSET $4`,
+                [tokenIds, vpTimestamps, limit, (page - 1) * limit],
+            ),
+        ]);
+
+        return {
+            total: parseInt(countRow?.total ?? '0', 10),
+            transferHistorySynced,
+            transactions: rows.map(r => ({
+                event: r.event,
+                consensusTimestamp: r.consensus_timestamp,
+                retirementSource: r.retirement_source ?? null,
+                // A retirement has no counterparty — the credits left circulation
+                // rather than moving to another account — so it reports only the
+                // holder. A transfer reports the sender/receiver pair instead.
+                holderAccountId: r.holder_account_id ?? null,
+                senderAccountId: r.event === 'retirement' ? null : (r.sender_account_id ?? null),
+                receiverAccountId: r.event === 'retirement' ? null : (r.receiver_account_id ?? null),
+                serials: (r.serials ?? []).map(Number),
+                // Only a transfer can be partly retired — some of the lot claimed
+                // as an offset, the rest still tradable. A retirement covers every
+                // serial it names, so the count adds nothing there.
+                retiredSince: r.event === 'retirement' ? 0 : Number(r.retired_since ?? 0),
+            })),
+        };
+    }
+
     /** Full filtered projects dataset for the export engine; batches internally via a LIMIT/OFFSET loop ordered by `sourceTimestamp`. */
     async findAllForExport(filters: ProjectExportFilters): Promise<ProjectExportRow[]> {
         const builder = new QueryBuilder(PROJECT_FIELD_SCHEMA);
@@ -754,7 +1419,7 @@ export class PgProjectRepository extends ProjectRepository {
 
         builder.addFilters({
             name: filters.name,
-            country: filters.country,
+            country: this.applyCountryFilter(builder, filters.country),
             methodology: filters.methodology,
             registry: filters.registry,
             developer: filters.developer,
@@ -844,13 +1509,17 @@ export class PgProjectRepository extends ProjectRepository {
     async getFilterOptions(): Promise<ProjectFilterOptionsRow> {
         const sql = `
             SELECT
-                ARRAY_AGG(DISTINCT registry_name)   FILTER (WHERE registry_name <> '')   AS registries,
-                ARRAY_AGG(DISTINCT developer)        FILTER (WHERE developer <> '')       AS developers,
-                ARRAY_AGG(DISTINCT status)           FILTER (WHERE status <> '')          AS statuses,
-                ARRAY_AGG(DISTINCT sector)           FILTER (WHERE sector <> '')          AS sectors,
-                ARRAY_AGG(DISTINCT "sectoralScope")  FILTER (WHERE "sectoralScope" <> '') AS "sectoralScopes",
-                ARRAY_AGG(DISTINCT vintage)          FILTER (WHERE vintage <> '')         AS vintages,
-                ARRAY_AGG(DISTINCT country)          FILTER (WHERE country <> '')         AS countries
+                -- ARRAY_AGG ... FILTER returns SQL NULL, not {}, when every row is
+                -- filtered out (e.g. a network where no project has that field set)
+                -- — COALESCE normalizes to the empty array every caller already
+                -- expects instead of null, which crashes a plain .map() downstream.
+                COALESCE(ARRAY_AGG(DISTINCT registry_name)   FILTER (WHERE registry_name <> ''),   ARRAY[]::text[]) AS registries,
+                COALESCE(ARRAY_AGG(DISTINCT developer)        FILTER (WHERE developer <> ''),       ARRAY[]::text[]) AS developers,
+                COALESCE(ARRAY_AGG(DISTINCT status)           FILTER (WHERE status <> ''),          ARRAY[]::text[]) AS statuses,
+                COALESCE(ARRAY_AGG(DISTINCT sector)           FILTER (WHERE sector <> ''),          ARRAY[]::text[]) AS sectors,
+                COALESCE(ARRAY_AGG(DISTINCT "sectoralScope")  FILTER (WHERE "sectoralScope" <> ''), ARRAY[]::text[]) AS "sectoralScopes",
+                COALESCE(ARRAY_AGG(DISTINCT vintage)          FILTER (WHERE vintage <> ''),         ARRAY[]::text[]) AS vintages,
+                COALESCE(ARRAY_AGG(DISTINCT country)          FILTER (WHERE country <> ''),         ARRAY[]::text[]) AS countries
             FROM (
                 SELECT
                     COALESCE(reg.registry_name, '')                    AS registry_name,
@@ -859,17 +1528,42 @@ export class PgProjectRepository extends ProjectRepository {
                     COALESCE(bv."businessData"->>'sector', '')         AS sector,
                     COALESCE(bv."businessData"->>'sectoralScope', '')  AS "sectoralScope",
                     COALESCE(bv."businessData"->>'vintage', '')        AS vintage,
-                    COALESCE(bv."businessData"->>'country', '')        AS country
+                    -- Prefer the reverse-geocoded code over the raw stored value
+                    -- (same rationale as applyCountryFilter/unique_countries above)
+                    -- so a recovered country like "MDG" appears as its own
+                    -- selectable option instead of the unrecognized raw text that
+                    -- would otherwise just collapse into "Other" client-side.
+                    COALESCE(NULLIF(bv."businessData"->>'geoCountryCode', ''), bv."businessData"->>'country', '') AS country
                 FROM business_view bv
                 ${REGISTRY_NAME_JOIN}
                 WHERE bv."viewType" = 'PROJECT'
             ) opts
         `;
 
-        const rows: ProjectFilterOptionsRow[] = await this.dataSource.query(sql);
-        return rows[0] ?? {
+        // METHODOLOGY rows can have multiple historical entries per relatedTopicId
+        // (re-decode events) — DISTINCT ON with this ordering picks the latest one
+        // per methodology, mirroring PgMethodologyRepository.findById's identical
+        // "latest row wins" convention.
+        const methodologiesSql = `
+            SELECT DISTINCT ON (bv."relatedTopicId")
+                bv."relatedTopicId" AS "topicId",
+                bv."displayName"    AS "name",
+                bv."businessData"->'options'->>'version' AS "version"
+            FROM business_view bv
+            WHERE bv."viewType" = 'METHODOLOGY'
+              AND bv."relatedTopicId" IS NOT NULL
+            ORDER BY bv."relatedTopicId", bv."sourceTimestamp"::numeric DESC NULLS LAST, bv.id DESC
+        `;
+
+        const [rows, methodologyRows]: [ProjectFilterOptionsRow[], MethodologyFilterOptionRow[]] = await Promise.all([
+            this.dataSource.query(sql),
+            this.dataSource.query(methodologiesSql),
+        ]);
+
+        const base = rows[0] ?? {
             registries: [], developers: [], statuses: [], sectors: [], sectoralScopes: [], vintages: [], countries: [],
         };
+        return { ...base, methodologies: methodologyRows ?? [] };
     }
 
     private static mapExportRow(row: RawExportRow): ProjectExportRow {
@@ -959,7 +1653,7 @@ export class PgProjectRepository extends ProjectRepository {
     private static mapRow(
         row: RawRow,
         issuances?: IssuanceRow[],
-        lifecycle?: { totalIssued: number; totalRetired: number; totalActive: number },
+        lifecycle?: { totalIssued: number; totalDeclared: number; totalRetired: number; totalActive: number; totalTransferred?: number | null },
         policySchemas?: PolicySchemaRow[],
         issuanceEvents?: IssuanceEventRow[],
         issuanceCount?: number,
@@ -967,11 +1661,22 @@ export class PgProjectRepository extends ProjectRepository {
     ): ProjectRow {
         // When called from findAll(), lifecycle totals come from the lateral subquery columns on the raw row;
         // when called from findById(), they are passed explicitly as the lifecycle argument (which takes priority).
+        // parseFloat, not parseInt: total_issued/total_declared are NUMERIC so a
+        // fungible mint of 250.5 credits must not be truncated to 250.
         const resolvedLifecycle = lifecycle ?? (row.total_issued != null
             ? (() => {
-                const issued = parseInt(row.total_issued!, 10);
+                const issued = parseFloat(row.total_issued!);
                 const retired = parseInt(row.total_retired ?? '0', 10);
-                return { totalIssued: issued, totalRetired: retired, totalActive: issued - retired };
+                return {
+                    totalIssued: issued,
+                    totalDeclared: row.total_declared != null ? parseFloat(row.total_declared) : issued,
+                    totalRetired: retired,
+                    totalActive: issued - retired,
+                    // The list query has no per-serial ownership data, so leave
+                    // transfers undefined here rather than reporting a zero the
+                    // detail page would then contradict.
+                    totalTransferred: undefined as number | undefined,
+                };
             })()
             : undefined);
 
@@ -994,7 +1699,9 @@ export class PgProjectRepository extends ProjectRepository {
             // live and passes it explicitly (which takes priority, mirroring how `lifecycle` is resolved above).
             issuanceCount: issuanceCount ?? row.issuance_count ?? undefined,
             totalIssued: resolvedLifecycle?.totalIssued,
+            totalDeclared: resolvedLifecycle?.totalDeclared,
             totalRetired: resolvedLifecycle?.totalRetired,
+            totalTransferred: resolvedLifecycle?.totalTransferred,
             totalActive: resolvedLifecycle?.totalActive,
             policySchemas,
             polygon: polygon ?? null,

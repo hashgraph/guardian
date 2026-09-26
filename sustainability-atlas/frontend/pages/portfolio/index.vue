@@ -58,19 +58,21 @@ definePageMeta({ middleware: 'auth' });
 
 const { t } = useI18n();
 
-// No retirement data source exists anywhere in the app yet (the main
-// Dashboard page's useDashboard() has the same stub) — these are local
-// no-op placeholders so the KPI/chart keep rendering their current 0/empty
-// state without pulling in useDashboard()'s full project catalog + mint-stats
-// + registry/methodology counts just to compute values that are always empty.
-const totalRetired = ref(0);
-function buildRetirementSeries(_period: TimePeriod): { label: string; value: number }[] {
-    return [];
-}
+// Retirement is summed from the watched projects themselves rather than from
+// the global dashboard summary — this page is scoped to the watchlist, so a
+// portfolio-wide figure would be wrong here. Defined below the watchlist
+// projects it depends on. The trend series is scoped the same way and comes
+// from the portfolio stats endpoint (see buildRetirementSeries below).
 const { watchlistItems, removeItem, count: watchlistCount } = usePortfolioWatchlist();
 const { widgets, widgetVisible, toggleWidget, setWidget, widgetGroups } = usePortfolioWidgets();
 const { isAuthenticated } = useAuth();
 const { hydrateFromApi, pushType } = usePortfolioSync();
+
+// Server-configured cap (WATCHLIST_MAX_PROJECTS), fetched alongside the
+// watchlist itself (GET /me/dashboard) so there's a single source of truth —
+// no separate frontend config to drift out of sync. Placeholder value until
+// the first hydrate resolves (matches the backend's own default).
+const watchlistLimit = ref(50);
 
 // All chart data filtered by the active watchlist (empty watchlist ⇒ empty portfolio)
 const {
@@ -87,6 +89,7 @@ const {
     mapPoints,
     getCountryDetail,
     buildIssuanceSeries,
+    buildRetirementSeries,
     recentIssuances,
     filteredSdgStats,
     recentActivity,
@@ -251,6 +254,14 @@ const activityColors: Record<string, string> = {
 };
 
 // KPI values
+const totalRetired = computed(() =>
+    filteredProjects.value.reduce((s, p) => s + (p.totalRetired ?? 0), 0),
+);
+const retirementRate = computed(() =>
+    totalCreditsIssued.value > 0
+        ? Math.round((totalRetired.value / totalCreditsIssued.value) * 1000) / 10
+        : 0,
+);
 const kpiTotalIssued = computed(() => formatCredits(totalCreditsIssued.value));
 const kpiActiveSupply = computed(() => formatCredits(Math.max(0, totalCreditsIssued.value - totalRetired.value)));
 const kpiTotalRetired = computed(() => formatCredits(totalRetired.value));
@@ -326,6 +337,10 @@ function pendingHasItem(id: string, type: WatchlistItemType): boolean {
 
 function pendingAddItem(item: WatchlistItem): void {
     if (pendingHasItem(item.id, item.type)) return;
+    if (pendingWatchlist.value.length >= watchlistLimit.value) {
+        toast(t('portfolio.modal.watchlist.limitReached', { limit: watchlistLimit.value }));
+        return;
+    }
     pendingWatchlist.value = [...pendingWatchlist.value, item];
 }
 
@@ -368,8 +383,15 @@ async function addAllMatching() {
             .filter(m => !pendingHasItem(m.id, 'project'))
             .map(m => ({ id: m.id, type: 'project' as const, name: m.name, meta: '' }));
     }
+    const headroom = Math.max(0, watchlistLimit.value - pendingWatchlist.value.length);
+    const skipped = Math.max(0, additions.length - headroom);
+    additions = additions.slice(0, headroom);
     pendingWatchlist.value = [...pendingWatchlist.value, ...additions];
-    toast(t('portfolio.modal.watchlist.addAllSuccess', { count: additions.length }));
+    if (skipped > 0) {
+        toast(t('portfolio.modal.watchlist.addAllPartial', { count: additions.length, skipped, limit: watchlistLimit.value }));
+    } else {
+        toast(t('portfolio.modal.watchlist.addAllSuccess', { count: additions.length }));
+    }
 }
 
 function openWatchlist() {
@@ -439,7 +461,12 @@ const yAxisOptions = computed(() => [
 // (Portfolio is a logged-in-only feature — no localStorage layer needed).
 const customCharts = ref<CustomChartConfig[]>([]);
 
-// Maps an xAxis+yAxis combination to { label, value }[] used by line & bar charts
+// Maps an xAxis+yAxis combination to { label, value }[] used by line & bar charts.
+//
+// Every axis resolves all three measures. Reading "Retirements" as credits on
+// any axis but month would put issuance volume under a retirement label — the
+// two differ by orders of magnitude, so the chart would not look wrong, just be
+// wrong.
 function getChartRawData(cfg: CustomChartConfig): { label: string; value: number }[] {
     const { xAxis, yAxis } = cfg;
     if (xAxis === 'month') {
@@ -450,31 +477,31 @@ function getChartRawData(cfg: CustomChartConfig): { label: string; value: number
     if (xAxis === 'vintage') {
         return vintageDistribution.value.map(v => ({
             label: String(v.year),
-            value: yAxis === 'projects' ? v.projects : v.credits,
+            value: yAxis === 'projects' ? v.projects : yAxis === 'retirements' ? v.retired : v.credits,
         }));
     }
     if (xAxis === 'sector') {
         return sectorBreakdown.value.map(s => ({
             label: translateSector(s.label),
-            value: yAxis === 'projects' ? s.projectCount : s.creditCount,
+            value: yAxis === 'projects' ? s.projectCount : yAxis === 'retirements' ? s.retiredCount : s.creditCount,
         }));
     }
     if (xAxis === 'country') {
         return countryRaw.value.map(c => ({
             label: c.name,
-            value: yAxis === 'projects' ? c.projects : c.credits,
+            value: yAxis === 'projects' ? c.projects : yAxis === 'retirements' ? c.retired : c.credits,
         }));
     }
     if (xAxis === 'registry') {
         return registries.value.map(r => ({
             label: r.name,
-            value: yAxis === 'projects' ? r.projects : r.creditsRaw,
+            value: yAxis === 'projects' ? r.projects : yAxis === 'retirements' ? r.retiredRaw : r.creditsRaw,
         }));
     }
     if (xAxis === 'sdg') {
         return filteredSdgStats.value.map(s => ({
             label: `${t('sdgs.columns.sdg')} ${s.id}`,
-            value: yAxis === 'credits' ? s.credits : s.projects,
+            value: yAxis === 'retirements' ? s.retired : yAxis === 'credits' ? s.credits : s.projects,
         }));
     }
     return [];
@@ -768,6 +795,7 @@ async function applyRemote(
         hydrating.value = false;
         return;
     }
+    watchlistLimit.value = remote.watchlistLimit ?? watchlistLimit.value;
     const remoteWatchlist = remote.watchlist ?? [];
     if (remoteWatchlist.length > 0) {
         // Server has saved items — server is the source of truth.
@@ -1002,7 +1030,7 @@ onUnmounted(() => {
                         :label="$t('portfolio.kpi.activeSupply.label')"
                         :value="kpiActiveSupply"
                         :sub="$t('portfolio.kpi.activeSupply.sub')"
-                        :footer="$t('portfolio.kpi.activeSupply.footer')"
+                        :footer="$t('portfolio.kpi.activeSupply.footer', { rate: retirementRate })"
                         :icon="Layers"
                         widget-key="activeSupply"
                         @remove="setWidget('activeSupply', false)"
@@ -1012,7 +1040,9 @@ onUnmounted(() => {
                         :label="$t('portfolio.kpi.totalRetired.label')"
                         :value="kpiTotalRetired"
                         :sub="$t('portfolio.kpi.totalRetired.sub')"
-                        :footer="$t('portfolio.kpi.totalRetired.footer')"
+                        :footer="totalRetired > 0
+                            ? $t('portfolio.kpi.totalRetired.footer', { count: activeProjectsCount })
+                            : $t('portfolio.kpi.totalRetired.footerEmpty')"
                         :icon="Flame"
                         widget-key="totalRetired"
                         @remove="setWidget('totalRetired', false)"
@@ -1814,7 +1844,8 @@ onUnmounted(() => {
                                 <button
                                     v-if="watchlistCandidates.length > 0"
                                     type="button"
-                                    class="inline-flex items-center gap-1 rounded-md py-1.5 text-xs transition-colors text-muted-foreground hover:text-primary"
+                                    :disabled="pendingWatchlist.length >= watchlistLimit"
+                                    class="inline-flex items-center gap-1 rounded-md py-1.5 text-xs transition-colors text-muted-foreground hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-muted-foreground"
                                     @click="addAllMatching()"
                                 >
                                     <ListPlus class="h-3 w-3" />
@@ -1847,7 +1878,8 @@ onUnmounted(() => {
                                 </button>
                                 <button
                                     v-else
-                                    class="flex items-center gap-1 rounded-lg border border-primary/30 px-3 py-1.5 text-xs text-primary hover:bg-primary/5 transition-colors shrink-0"
+                                    :disabled="pendingWatchlist.length >= watchlistLimit"
+                                    class="flex items-center gap-1 rounded-lg border border-primary/30 px-3 py-1.5 text-xs text-primary hover:bg-primary/5 transition-colors shrink-0 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                                     @click="pendingAddItem({ id: item.id, type: item.type, name: item.name, meta: item.meta })"
                                 >
                                     <Plus class="h-3 w-3" />
@@ -1863,7 +1895,7 @@ onUnmounted(() => {
                         </div>
                         <!-- Footer -->
                         <div class="px-6 py-4 border-t flex items-center justify-between shrink-0">
-                            <span class="text-xs text-muted-foreground">{{ $t('portfolio.modal.watchlist.footer', { count: pendingWatchlist.length }) }}</span>
+                            <span class="text-xs text-muted-foreground">{{ $t('portfolio.modal.watchlist.footerWithLimit', { count: pendingWatchlist.length, limit: watchlistLimit }) }}</span>
                             <div class="flex items-center gap-2">
                                 <button
                                     class="rounded-lg px-4 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"

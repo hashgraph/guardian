@@ -6,6 +6,7 @@ const EMPTY: PortfolioStatsDto = {
     byProjectKey: [],
     mintSeries: [],
     recentIssuances: [],
+    retirementSeries: [],
 };
 
 /**

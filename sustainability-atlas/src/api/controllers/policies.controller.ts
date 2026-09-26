@@ -18,7 +18,7 @@ class RedecodeQueryDto {
     forceRedownload?: boolean;
 }
 
-@ApiTags('policies')
+@ApiTags('Policy maintenance')
 @Controller('api/v1/:network/policies')
 export class PoliciesController {
     constructor(private readonly policiesService: PoliciesService) {}
@@ -26,14 +26,14 @@ export class PoliciesController {
     @AdminWrite()
     @Post(':topicId/redecode')
     @ApiOperation({
-        summary: 'Re-decode a policy by topic ID',
+        summary: 'Re-read a policy from its source',
         description:
             'Resets the decode state for the policy (decodeStatus=pending, attempts=0, ' +
             'policyMapping=null, schemaFields=null) and enqueues a fresh policy-decode job ' +
             'for the latest stored sourceCid. ' +
             'Pass ?forceRedownload=true to delete the cached zip from local storage first, ' +
             'forcing the processor to re-download from IPFS. ' +
-            'Manual policyMapping edits are lost — use /reparse-projects to replay VCs ' +
+            'Manual policyMapping edits are lost. Use /reparse-projects to replay VCs ' +
             'against the existing mapping without overwriting it.',
     })
     @ApiParam({
@@ -76,7 +76,7 @@ export class PoliciesController {
     @AdminWrite()
     @Post(':topicId/reparse-projects')
     @ApiOperation({
-        summary: 'Re-parse projects for all VCs linked to a policy topic',
+        summary: 'Rebuild all projects for a policy',
         description:
             'Enqueues one PROJECT_REPARSE job per VC-Document that has been fetched ' +
             '(documents IS NOT NULL) and is linked to any policy version under this ' +

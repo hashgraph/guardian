@@ -19,7 +19,7 @@ import { CreateRateLimitRequestDto } from './dto/create-rate-limit-request.dto';
  * User self-service rate-limit requests. Route: /api/v1/me/rate-limit-requests.
  * Any authenticated user; CsrfGuard on the mutating POST.
  */
-@ApiTags('account')
+@ApiTags('My account')
 @ApiCookieAuth()
 @Controller('api/v1/me/rate-limit-requests')
 @UseGuards(JwtAuthGuard)
@@ -27,7 +27,12 @@ export class RateLimitRequestController {
     constructor(private readonly service: RateLimitRequestService) {}
 
     @Get()
-    @ApiOperation({ summary: 'My rate-limit requests + current/effective quota' })
+    @ApiOperation({
+        summary: 'See my request limit and past requests',
+        description:
+            'Returns the caller\'s rate-limit request history together with their current hourly quota, the ' +
+            'default quota for their role, the maximum that can be requested, and whether a request is pending.',
+    })
     @ApiResponse({ status: 200, description: 'Requests history and quota summary' })
     async listOwn(@CurrentUser() user: AuthenticatedUser) {
         return this.service.listOwn(user);
@@ -36,8 +41,17 @@ export class RateLimitRequestController {
     @Post()
     @UseGuards(CsrfGuard)
     @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: 'Request an API rate-limit increase' })
+    @ApiOperation({
+        summary: 'Ask for a higher request limit',
+        description:
+            'Asks an administrator for a higher hourly API quota, with a justification. The requested quota ' +
+            'cannot exceed the configured maximum, and only one request can be pending at a time. ' +
+            'Administrators already have the admin quota and cannot submit requests. Returns the updated ' +
+            'history and quota summary. Requires the `X-CSRF-Token` header.',
+    })
     @ApiResponse({ status: 201, description: 'Updated requests + quota summary' })
+    @ApiResponse({ status: 400, description: 'Requested quota exceeds the maximum' })
+    @ApiResponse({ status: 403, description: 'Administrators cannot submit requests' })
     @ApiResponse({ status: 409, description: 'A pending request already exists' })
     async submit(
         @Body() dto: CreateRateLimitRequestDto,

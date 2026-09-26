@@ -1,9 +1,11 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { DashboardPreferencesRepository } from './dashboard-preferences.repository';
 import { RedisService } from '@shared/redis/redis.service';
 import type {
     DashboardType,
     DashboardPreferences,
+    DashboardPreferencesResponse,
     WatchlistItem,
     CustomChartPayload,
     WatchlistFilters,
@@ -23,20 +25,31 @@ export class DashboardPreferencesService {
     constructor(
         private readonly repo: DashboardPreferencesRepository,
         private readonly redis: RedisService,
+        private readonly config: ConfigService,
     ) {}
 
     private cacheKey(userId: string, network: string): string {
         return `dashboard:${userId}:${network}`;
     }
 
-    async get(userId: string, network: string): Promise<DashboardPreferences> {
+    private maxWatchlistProjects(): number {
+        return this.config.get<number>('app.watchlist.maxProjects') ?? 50;
+    }
+
+    async get(userId: string, network: string): Promise<DashboardPreferencesResponse> {
         const key = this.cacheKey(userId, network);
         const cached = await this.redis.getJson<DashboardPreferences>(key);
-        if (cached) return cached;
+        const prefs = cached ?? await (async () => {
+            const fresh = await this.buildFromDb(userId, network);
+            await this.redis.setJson(key, fresh, DASHBOARD_CACHE_TTL_SECONDS);
+            return fresh;
+        })();
 
-        const fresh = await this.buildFromDb(userId, network);
-        await this.redis.setJson(key, fresh, DASHBOARD_CACHE_TTL_SECONDS);
-        return fresh;
+        // Capped here (not baked into the cached blob) so the limit always
+        // reflects the live config, and self-heals any account that already
+        // has more than the current cap saved from before it was introduced.
+        const watchlistLimit = this.maxWatchlistProjects();
+        return { ...prefs, watchlist: prefs.watchlist.slice(0, watchlistLimit), watchlistLimit };
     }
 
     async saveType(
@@ -87,11 +100,15 @@ export class DashboardPreferencesService {
         if (type === 'watchlist')
             // Defensive: only 'project' items are writable going forward — drops
             // any stale methodology/registry/token entries from older clients.
+            // Capped at maxWatchlistProjects() so a saved watchlist can never
+            // exceed BatchProjectsDto's sourceTimestamps request-size ceiling.
             return Array.isArray(layout)
-                ? layout.filter(
-                    (i): i is WatchlistItem =>
-                        !!i && typeof i === 'object' && (i as WatchlistItem).type === 'project',
-                )
+                ? layout
+                    .filter(
+                        (i): i is WatchlistItem =>
+                            !!i && typeof i === 'object' && (i as WatchlistItem).type === 'project',
+                    )
+                    .slice(0, this.maxWatchlistProjects())
                 : [];
         if (type === 'widgets')
             return (layout && typeof layout === 'object' && !Array.isArray(layout)) ? layout : {};

@@ -1,0 +1,35 @@
+# =============================================================================
+# Overlay: run MAINNET in role-partitioned mode
+# =============================================================================
+#
+# Compose always starts every service that has no `profiles:` key, whatever
+# profile you activate. That means a plain
+#
+#   docker compose --profile roles-mainnet up -d
+#
+# starts the four role workers AND the all-in-one `worker-mainnet` alongside
+# them, so both tiers consume the same queues. Stopping the all-in-one first
+# does not help either: the next `up` simply starts it again.
+#
+# This overlay fixes that by giving `worker-mainnet` a profile that is never
+# activated, which takes it out of the set Compose brings up.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.roles-mainnet.yml \
+#       --profile roles-mainnet up -d
+#
+# Optionally scale the ingest tier (the only role worth scaling out):
+#   ... up -d --scale worker-ingest-mainnet=3
+#
+# Switching over from an already-running all-in-one worker? Remove it once:
+#   docker compose rm -sf worker-mainnet
+# With this overlay in place it stays down; without it, `up` resurrects it.
+#
+# Check the connection budget before splitting BOTH networks at once: that is
+# 8 workers, each holding its own pool of DB_POOL_MAX against Postgres
+# max_connections. See the Horizontal Scaling section of the README.
+# =============================================================================
+
+services:
+    worker-mainnet:
+        profiles: ['disabled']

@@ -134,7 +134,7 @@ export interface ImpactSummaryLifecycle {
 
 /** Mirrors `ImpactSummaryGeoDto` (impact-summary.dto.ts). */
 export interface ImpactSummaryGeo {
-    /** Country label, or 'Unknown' when the project's country is blank/missing. */
+    /** Country label, or 'Other' when the project's country is blank/missing. */
     country: string;
     /** Number of PROJECT rows in this country. */
     projectCount: number;
@@ -190,7 +190,7 @@ export interface ImpactSummary {
     retirementMethodologyNote: string;
     /** Number of PROJECT rows on this network. */
     activeProjects: number;
-    /** Number of distinct countries across PROJECT rows (excludes the 'Unknown' bucket). */
+    /** Number of distinct countries across PROJECT rows (excludes the 'Other' bucket). */
     activeCountries: number;
     /** Projects per derived lifecycle stage (mv_project_lifecycle), in pipeline order. Counts sum to activeProjects. */
     lifecycleStages: ImpactSummaryLifecycle[];

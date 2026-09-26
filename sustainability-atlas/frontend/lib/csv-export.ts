@@ -78,7 +78,7 @@ export function buildProjectCsvRows(projects: any[], network: string = ''): stri
 
 export function buildCreditCsvRows(credits: any[], network: string = ''): string[][] {
     const header = [
-        'Network', 'Name', 'Symbol', 'Type', 'Mint Amount',
+        'Network', 'Name', 'Symbol', 'Type', 'Mint Amount', 'Retirement Amount',
         'Project', 'Methodology', 'Registry', 'Mint Date',
     ];
     const rows = credits.map(c => [
@@ -87,6 +87,7 @@ export function buildCreditCsvRows(credits: any[], network: string = ''): string
         c.symbol ?? '',
         c.type ?? '',
         c.supply ?? 0,
+        c.retiredTokens ?? 0,
         c.projectDisplay ?? c.project ?? '',
         c.methodologyDisplay ?? c.methodology ?? '',
         c.registry ?? '',

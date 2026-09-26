@@ -1,23 +1,33 @@
 /**
- * Hydrates the current user once at app startup so SSR renders auth-aware markup.
+ * Restores the authenticated user state on the client after hydration.
  *
- * Runs on the server (forwarding the request cookies) and the result is
- * transferred to the client via useState — so the client does NOT re-fetch.
+ * IMPORTANT: SSR fetchMe() is intentionally skipped here.
+ * SSR calls to the API go directly to config.apiBaseUrl (bypassing the Nitro
+ * proxy), which is unreliable across environments — port conflicts on machines
+ * running multiple systems, different internal URLs in deployment, etc.
  *
- * Optimisation: on the server we only call /auth/me when an auth cookie is
- * actually present, so guest page loads incur zero extra API round-trips.
+ * Instead, we let the client always perform the session check via the browser's
+ * own cookies through the Nginx/proxy layer, which is the path that always works.
+ *
+ * On the client:
+ *   - If SSR somehow already populated user (rare, local-dev only): mark resolved immediately.
+ *   - Otherwise: call fetchMe(), which handles silent token refresh on 401 and
+ *     sets isAuthResolved = true in its finally block when done.
  */
 export default defineNuxtPlugin(async () => {
-    const { user, fetchMe } = useAuth();
+    const { user, fetchMe, isAuthResolved } = useAuth();
 
-    // Already hydrated (client after SSR payload transfer) — nothing to do.
-    if (user.value) return;
+    // Skip entirely on the server — client hydration handles everything.
+    if (import.meta.server) return;
 
-    if (import.meta.server) {
-        const cookie = useRequestHeaders(['cookie']).cookie || '';
-        const hasAuthCookie = /(?:^|;\s*)(access|refresh)=/.test(cookie);
-        if (!hasAuthCookie) return; // guest — skip the API call
+    // SSR populated user state (only happens reliably on single-system dev machines).
+    // Mark resolved immediately so UI doesn't show the skeleton unnecessarily.
+    if (user.value) {
+        isAuthResolved.value = true;
+        return;
     }
 
+    // Attempt to restore session from cookies. Handles 401 → silent refresh retry
+    // internally. Sets isAuthResolved = true in its finally block.
     await fetchMe();
 });

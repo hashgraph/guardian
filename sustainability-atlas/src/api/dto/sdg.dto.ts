@@ -27,7 +27,7 @@ const SDG_CATALOGUE: Array<{ id: number; name: string; color: string }> = [
 ];
 
 export class SdgStatsResponseDto {
-    @ApiProperty({ description: 'SDG number (1–17)' })
+    @ApiProperty({ description: 'SDG number (1 to 17)' })
     id: number;
 
     @ApiProperty({ description: 'Hedera network this data belongs to' })

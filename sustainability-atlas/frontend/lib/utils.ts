@@ -55,6 +55,24 @@ export function encodeMultiValue(values: string[]): string {
     return values.map(v => encodeURIComponent(v)).join('|');
 }
 
+/**
+ * True when a rejection came from an aborted request rather than a real failure.
+ *
+ * `ofetch` does not rethrow the browser's `AbortError` DOMException — it wraps
+ * every failure in a `FetchError` (name `"FetchError"`) and hangs the original
+ * on `.cause`, so a bare `err.name === 'AbortError'` check misses real aborts.
+ *
+ * Callers must distinguish the two: an aborted request has no result to show,
+ * but it is also not an error state — falling through to an "empty results"
+ * fallback would flash an empty list for a request that was superseded on
+ * purpose.
+ */
+export function isAbortError(err: unknown): boolean {
+    if (!err || typeof err !== 'object') return false;
+    const e = err as { name?: string; cause?: { name?: string } };
+    return e.name === 'AbortError' || e.cause?.name === 'AbortError';
+}
+
 // The try/catch fallback keeps this backward-compatible with old, never-encoded
 // raw values already in bookmarked URLs / previously-saved searches (decoding
 // a plain string with no `%` sequences is a safe no-op).
