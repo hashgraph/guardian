@@ -153,6 +153,15 @@ export class PolicyAction extends BaseEntity {
     /**
      * User disconnected
      */
+    /**
+     * Set once, when the row is claimed for execution.
+     *
+     * Deliberately not `status`: savePolicyAction rewrites that on every save, so a
+     * redelivered message resets it and the action runs a second time.
+     */
+    @Property({ nullable: true })
+    executedAt?: Date;
+
     @Property({
         nullable: true,
         index: true,
