@@ -15,7 +15,10 @@ export function pinoLoggerInitialization(db: MikroORM<MongoDriver> | null) {
         collectionName: process.env.DB_LOGGER_COLLECTION ?? 'log',
         filePath: process.env.LOG_FILE_PATH ?? './logs/app.log',
         client: db?.em.getDriver().getConnection().getDb(),
-        transports: process.env.TRANSPORTS ?? '',
+        // Fall back to console when TRANSPORTS is not set: with an empty value
+        // pino.multistream([]) silently discards every log, which made debugging
+        // local runs (no docker env file) impossible.
+        transports: process.env.TRANSPORTS || 'CONSOLE',
         mapTransports: MAP_TRANSPORTS ?? [],
         seqUrl: process.env.SEQ_SERVER_URL,
         seqApiKey: process.env.SEQ_API_KEY,

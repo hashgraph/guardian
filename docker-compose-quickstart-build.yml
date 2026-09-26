@@ -14,7 +14,34 @@ x-service-template: &service-template
 
 name: guardian-quickstart
 
+models:
+  llm:
+    model: ai/gemma3-qat:4B-BF16 # small memory footprint model, suitable for tests
+    context_size: 131072 # 128k (131072) is the max context size for gemma3 models
+    runtime_flags:
+      - "--no-prefill-assistant"
+
 services:
+  ai-service:
+    build:
+      context: .
+      dockerfile: ./ai-service/Dockerfile
+    depends_on:
+      - logger-service
+      - message-broker
+      - mongo
+    volumes:
+      - ./ai-service/faiss-vector:/usr/local/app/ai-service/faiss-vector:rw
+      - ./ai-service/data:/usr/local/app/ai-service/data:rw
+    environment:
+      VECTOR_STORAGE_PATH: ./faiss-vector
+      DOCS_STORAGE_PATH: ./data/generated-data
+    <<: *service-template
+    expose:
+      - '3013'
+    models:
+      - llm
+
   api-gateway:
     build:
       context: .

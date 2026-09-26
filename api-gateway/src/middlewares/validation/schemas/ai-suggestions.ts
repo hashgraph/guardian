@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsArray, IsNotEmpty, IsString } from 'class-validator';
 
 export class PropertySuggestionRequestDTO {
@@ -25,6 +25,11 @@ export class PropertySuggestionCandidateDTO {
 
     @ApiProperty()
     rationale: string;
+
+    @ApiPropertyOptional({
+        description: 'What this property means, sourced from the IWA dMRV v3 specification. Omitted for IWA v1 properties.'
+    })
+    description?: string;
 }
 
 export class PropertySuggestionResultDTO {
