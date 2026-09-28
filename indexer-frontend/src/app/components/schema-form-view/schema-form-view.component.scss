@@ -213,7 +213,7 @@ form {
     width: 100%;
 }
 
-.rte-view-content {
+:host ::ng-deep .rte-view-content {
     width: 100%;
     box-sizing: border-box;
     padding: 12px 16px;
@@ -239,6 +239,10 @@ form {
     ul        { list-style-type: disc; margin-left: 1.6em; }
     ol        { list-style-type: decimal; margin-left: 1.6em; }
     a         { color: var(--color-primary, #4169E2); text-decoration: underline; }
+    table     { border-collapse: collapse; margin: 0.5em 0; width: auto; max-width: 100%; }
+    th, td    { border: 1px solid var(--color-grey-3, #E1E7EF); padding: 4px 8px; vertical-align: top; }
+    th        { background: var(--color-grey-1, #F5F7FA); font-weight: 600; text-align: left; }
+    th:empty::after, td:empty::after { content: '\00a0'; }
 }
 
 .boolean-show {

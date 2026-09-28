@@ -83,6 +83,15 @@ describe('isBlankRichText', () => {
     it('treats markup with real text as not blank', () => {
         expect(isBlankRichText('<p>a</p>')).toBeFalse();
     });
+
+    it('treats an image with no text beside it as not blank', () => {
+        expect(isBlankRichText('<p><img src="" data-src="ipfs://bafkrei123" alt=""></p>')).toBeFalse();
+        expect(isBlankRichText('<p><img src="https://example.com/a.png" alt=""></p>')).toBeFalse();
+    });
+
+    it('still treats an img with neither src nor data-src as blank', () => {
+        expect(isBlankRichText('<p><img alt="a"></p>')).toBeTrue();
+    });
 });
 
 describe('withNewTabLinks', () => {
@@ -146,7 +155,36 @@ describe('richTextToText', () => {
 
         it('should still drop what it always dropped', () => {
             expect(sanitizeRichText('<p>a <font size="7">b</font> c</p>')).toBe('<p>a b c</p>');
-            expect(sanitizeRichText('<table><tr><td>cell</td></tr></table>')).toBe('cell');
+            expect(sanitizeRichText('<blockquote>quoted</blockquote>')).toBe('quoted');
+            expect(sanitizeRichText('<table><tr><td>cell</td></tr><caption>Title</caption></table>'))
+                .toBe('<table><tbody><tr><td>cell</td></tr></tbody>Title</table>');
+        });
+    });
+
+    describe('tables', () => {
+        it('should keep a whole table', () => {
+            expect(sanitizeRichText(
+                '<table><thead><tr><th>Head</th></tr></thead><tbody><tr><td>Cell</td></tr></tbody></table>'
+            )).toBe(
+                '<table><thead><tr><th>Head</th></tr></thead><tbody><tr><td>Cell</td></tr></tbody></table>'
+            );
+        });
+
+        it('should strip the layout attributes of a pasted table', () => {
+            expect(sanitizeRichText(
+                '<table border="1" width="500" style="color:red">'
+                + '<tr><td colspan="2" rowspan="3" style="width:100px">Cell</td></tr></table>'
+            )).toBe('<table><tbody><tr><td>Cell</td></tr></tbody></table>');
+        });
+
+        it('should treat a table with only empty cells as content', () => {
+            expect(isBlankRichText('<table><tbody><tr><td><br></td><td><br></td></tr></tbody></table>'))
+                .toBeFalse();
+        });
+
+        it('should keep neighbouring cells apart in the plain text form', () => {
+            expect(richTextToText('<table><tbody><tr><td>one</td><td>two</td></tr></tbody></table>'))
+                .toBe('one two');
         });
     });
 });

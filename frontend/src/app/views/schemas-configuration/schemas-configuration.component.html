@@ -2299,20 +2299,22 @@
     [draggable]="false"
     [resizable]="false"
     [style]="{ width: 'min(760px, 95vw)' }"
-    [closeOnEscape]="!isRichTextPresetLinkOpen()"
-    [styleClass]="isRichTextPresetLinkOpen() ? 'sc-rte-preset-dialog sc-rte-preset-dialog--locked' : 'sc-rte-preset-dialog'"
+    [closeOnEscape]="!isRichTextPresetBusy()"
+    [styleClass]="isRichTextPresetBusy() ? 'sc-rte-preset-dialog sc-rte-preset-dialog--locked' : 'sc-rte-preset-dialog'"
     (onHide)="closeRichTextPresetDialog()">
     <div class="sc-rte-preset-dialog-body">
         <app-rich-text-editor
             #richTextPresetEditor
             [ngModel]="getRichTextPresetValue()"
             (ngModelChange)="setRichTextPresetValue($event)"
+            [imageUploader]="uploadRichTextImage"
+            [imageResolver]="resolveRichTextImage"
             placeholder="Write formatted text…"
         ></app-rich-text-editor>
     </div>
     <ng-template pTemplate="footer">
-        <button class="sc-btn sc-btn-primary" [disabled]="isRichTextPresetLinkOpen()"
-                [title]="isRichTextPresetLinkOpen() ? 'Finish the link first' : ''"
+        <button class="sc-btn sc-btn-primary" [disabled]="isRichTextPresetBusy()"
+                [title]="isRichTextPresetBusy() ? 'Finish the link or wait for the upload' : ''"
                 (click)="closeRichTextPresetDialog()">Done</button>
     </ng-template>
 </p-dialog>

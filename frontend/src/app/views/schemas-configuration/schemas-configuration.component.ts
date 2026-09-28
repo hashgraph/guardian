@@ -1,7 +1,8 @@
 import { ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpResponse } from '@angular/common/http';
-import { EMPTY, Observable, Subject, Subscription, forkJoin, of } from 'rxjs';
+import { EMPTY, Observable, Subject, Subscription, firstValueFrom, forkJoin, of } from 'rxjs';
+import { IPFSService } from 'src/app/services/ipfs.service';
 import { catchError, debounceTime, distinctUntilChanged, map, shareReplay, switchMap, takeUntil } from 'rxjs/operators';
 import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, relationAncestors, ModuleStatus, ISchemaTemplate, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus, ISchemaArrayDependency, ISchemaArrayDependencyMapping, DEFAULT_IWA_VERSION, IwaVersion, resolveIwaVersion, IPropertySuggestionResult, } from '@guardian/interfaces';
 import { SchemaService } from 'src/app/services/schema.service';
@@ -705,7 +706,17 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         private _zone: NgZone,
         private _cdr: ChangeDetectorRef,
         private toastService: ToastService,
+        private ipfs: IPFSService,
     ) {}
+
+    public uploadRichTextImage = async (file: File): Promise<string> => {
+        const cid = await firstValueFrom(this.ipfs.addFile(file));
+        return `ipfs://${cid}`;
+    };
+
+    public resolveRichTextImage = async (reference: string): Promise<string> => {
+        return await this.ipfs.getImageByLink(reference);
+    };
 
     /**
      * Surface a backend failure. Every error path in this component used to be a silent
@@ -1936,8 +1947,12 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return !!this.richTextPresetEditor?.showLinkDialog;
     }
 
+    public isRichTextPresetBusy(): boolean {
+        return this.isRichTextPresetLinkOpen() || !!this.richTextPresetEditor?.imageLoading;
+    }
+
     public closeRichTextPresetDialog(): void {
-        if (this.isRichTextPresetLinkOpen()) {
+        if (this.isRichTextPresetBusy()) {
             return;
         }
         this.richTextPresetEditor?.cancelLink();

@@ -1,4 +1,4 @@
-import { escapeHtml, htmlToMarkdown, markdownToHtml } from './markdown';
+import { collectImageReferences, escapeHtml, htmlToMarkdown, markdownToHtml, splitTableRow } from './markdown';
 
 describe('markdown converters', () => {
     describe('markdownToHtml', () => {
@@ -270,6 +270,297 @@ describe('markdown converters', () => {
             const html = markdownToHtml('[click](https://x"onmouseover="window.__pwned=1)');
             expect(html).toContain('&quot;');
             expect(html).not.toContain('onmouseover="');
+        });
+    });
+
+    describe('images', () => {
+        const reference = 'ipfs://bafkreiabcdef123456';
+
+        it('should turn an ipfs image into an img carrying the reference in data-src', () => {
+            expect(markdownToHtml(`![Site photo](${reference})`))
+                .toBe(`<p><img src="" data-src="${reference}" alt="Site photo"></p>`);
+        });
+
+        it('should keep an empty alt', () => {
+            expect(markdownToHtml(`![](${reference})`))
+                .toBe(`<p><img src="" data-src="${reference}" alt=""></p>`);
+        });
+
+        it('should not read an image as a link', () => {
+            const html = markdownToHtml(`![Site photo](${reference})`);
+            expect(html).not.toContain('<a ');
+            expect(html).not.toContain('!');
+        });
+
+        it('should still read a link as a link', () => {
+            expect(markdownToHtml('[click](https://example.com)'))
+                .toContain('<a href="https://example.com"');
+        });
+
+        it('should save the reference from data-src, not the data url in src', () => {
+            const html = `<p><img src="data:image/webp;base64,AAAA" data-src="${reference}" alt="Site photo"></p>`;
+            const markdown = htmlToMarkdown(html);
+            expect(markdown).toBe(`![Site photo](${reference})`);
+            expect(markdown).not.toContain('base64');
+        });
+
+        it('should fall back to src when there is no data-src', () => {
+            expect(htmlToMarkdown('<p><img src="https://example.com/a.png" alt="a"></p>'))
+                .toBe('![a](https://example.com/a.png)');
+        });
+
+        it('should drop an img with no reference at all', () => {
+            expect(htmlToMarkdown('<p><img alt="a"></p>')).toBe('');
+        });
+
+        it('should round trip an ipfs image', () => {
+            const markdown = `![Site photo](${reference})`;
+            expect(htmlToMarkdown(markdownToHtml(markdown))).toBe(markdown);
+        });
+
+        it('should leave a javascript target as literal text', () => {
+            const html = markdownToHtml('![x](javascript:alert(1))');
+            expect(html).not.toContain('<img');
+            expect(html).toContain('!');
+        });
+
+        it('should keep a closing bracket inside alt from cutting the label short', () => {
+            const html = `<p><img src="" data-src="${reference}" alt="a] b"></p>`;
+            const markdown = htmlToMarkdown(html);
+            expect(markdown).toBe(`![a\\] b](${reference})`);
+            expect(htmlToMarkdown(markdownToHtml(markdown))).toBe(markdown);
+        });
+    });
+
+    describe('resolved images', () => {
+        const reference = 'ipfs://bafkreiabcdef123456';
+        const other = 'ipfs://bafkreizzzzzz999999';
+        const dataUrl = 'data:image/jpg;base64,AAAA';
+
+        it('should leave src empty when no map is passed', () => {
+            const html = markdownToHtml(`![Site photo](${reference})`);
+            expect(html).toContain('src=""');
+            expect(html).toContain(`data-src="${reference}"`);
+        });
+
+        it('should fill src from the map', () => {
+            const html = markdownToHtml(`![Site photo](${reference})`, new Map([[reference, dataUrl]]));
+            expect(html).toContain(`src="${dataUrl}"`);
+            expect(html).toContain(`data-src="${reference}"`);
+        });
+
+        it('should leave src empty when the map does not hold the reference', () => {
+            const html = markdownToHtml(`![Site photo](${reference})`, new Map([[other, dataUrl]]));
+            expect(html).toContain('src=""');
+        });
+
+        it('should fill images inside headings and list items', () => {
+            const resolved = new Map([[reference, dataUrl]]);
+            expect(markdownToHtml(`# ![a](${reference})`, resolved)).toContain(`src="${dataUrl}"`);
+            expect(markdownToHtml(`- ![a](${reference})`, resolved)).toContain(`src="${dataUrl}"`);
+        });
+
+        it('should still prefer the image rule over the link rule on one line', () => {
+            const html = markdownToHtml(
+                `![a](${reference}) and [b](https://example.com)`,
+                new Map([[reference, dataUrl]])
+            );
+            expect(html).toContain(`<img src="${dataUrl}"`);
+            expect(html).toContain('<a href="https://example.com"');
+        });
+    });
+
+    describe('collectImageReferences', () => {
+        const reference = 'ipfs://bafkreiabcdef123456';
+        const other = 'ipfs://bafkreizzzzzz999999';
+
+        it('should return an empty list for empty or non-string input', () => {
+            expect(collectImageReferences('')).toEqual([]);
+            expect(collectImageReferences(null)).toEqual([]);
+            expect(collectImageReferences(undefined)).toEqual([]);
+            expect(collectImageReferences(42 as any)).toEqual([]);
+        });
+
+        it('should return distinct references in order of first appearance', () => {
+            const markdown = `![a](${other})\n\ntext\n\n![b](${reference})\n\n![c](${other})`;
+            expect(collectImageReferences(markdown)).toEqual([other, reference]);
+        });
+
+        it('should ignore a non-ipfs image reference', () => {
+            expect(collectImageReferences('![a](https://example.com/a.png)')).toEqual([]);
+        });
+
+        it('should ignore an ordinary link to an ipfs target', () => {
+            expect(collectImageReferences(`[a](${reference})`)).toEqual([]);
+        });
+
+        it('should collect a reference whose alt text holds an escaped bracket', () => {
+            expect(collectImageReferences(`![report\\].png](${reference})`)).toEqual([reference]);
+        });
+
+        it('should survive the round trip of a filename holding a bracket', () => {
+            const html = `<img src="" data-src="${reference}" alt="report].png">`;
+            const markdown = htmlToMarkdown(html);
+
+            expect(markdown).toBe(`![report\\].png](${reference})`);
+            expect(collectImageReferences(markdown)).toEqual([reference]);
+
+            const resolved = new Map<string, string>([[reference, 'data:image/webp;base64,AAAA']]);
+            expect(markdownToHtml(markdown, resolved))
+                .toContain('src="data:image/webp;base64,AAAA"');
+        });
+    });
+
+    describe('nested lists', () => {
+        it('should nest an indented bullet list and write it back indented', () => {
+            const markdown = '- one\n  - deep\n- two';
+            const html = '<ul><li>one<ul><li>deep</li></ul></li><li>two</li></ul>';
+
+            expect(markdownToHtml(markdown)).toBe(html);
+            expect(htmlToMarkdown(html)).toBe(markdown);
+        });
+
+        it('should nest an indented numbered list under a bullet item', () => {
+            const markdown = '- one\n  1. first\n  2. second';
+            const html = '<ul><li>one<ol><li>first</li><li>second</li></ol></li></ul>';
+
+            expect(markdownToHtml(markdown)).toBe(html);
+            expect(htmlToMarkdown(html)).toBe(markdown);
+        });
+
+        it('should return to the outer level when the indent drops', () => {
+            const markdown = '- one\n  - deep\n- back';
+
+            expect(markdownToHtml(markdown))
+                .toBe('<ul><li>one<ul><li>deep</li></ul></li><li>back</li></ul>');
+        });
+
+        it('should round trip three levels', () => {
+            const markdown = '- one\n  - two\n    - three\n- back';
+            const html = '<ul><li>one<ul><li>two<ul><li>three</li></ul></li></ul></li>'
+                + '<li>back</li></ul>';
+
+            expect(markdownToHtml(markdown)).toBe(html);
+            expect(htmlToMarkdown(html)).toBe(markdown);
+        });
+
+        it('should number every nested ordered list from one', () => {
+            const html = '<ol><li>one<ol><li>a</li><li>b</li></ol></li><li>two<ol><li>c</li></ol></li></ol>';
+
+            expect(htmlToMarkdown(html)).toBe('1. one\n  1. a\n  2. b\n2. two\n  1. c');
+        });
+
+        it('should indent a continuation line of a nested item one level deeper', () => {
+            const markdown = '- one\n  - deep\n    more';
+
+            expect(markdownToHtml(markdown))
+                .toBe('<ul><li>one<ul><li>deep<br>more</li></ul></li></ul>');
+            expect(htmlToMarkdown('<ul><li>one<ul><li>deep<br>more</li></ul></li></ul>'))
+                .toBe(markdown);
+        });
+
+        it('should read a nested list left beside the item as nesting', () => {
+            expect(htmlToMarkdown('<ul><li>one</li><ul><li>deep</li></ul><li>two</li></ul>'))
+                .toBe('- one\n  - deep\n- two');
+        });
+
+        it('should clamp an over indented item to one level deeper', () => {
+            expect(markdownToHtml('- one\n      - deep'))
+                .toBe('<ul><li>one<ul><li>deep</li></ul></li></ul>');
+        });
+
+        it('should leave a flat list flat in both directions', () => {
+            const markdown = '- one\n- two';
+            const html = '<ul><li>one</li><li>two</li></ul>';
+
+            expect(markdownToHtml(markdown)).toBe(html);
+            expect(htmlToMarkdown(html)).toBe(markdown);
+        });
+
+        it('should no longer print an indented marker inside the item above', () => {
+            const html = markdownToHtml('- one\n  - deep');
+
+            expect(html).not.toContain('<br>- deep');
+            expect(html).toContain('<ul><li>deep</li></ul>');
+        });
+    });
+    describe('tables', () => {
+        const markdown = '| Name | Size |\n| --- | --- |\n| Apple | Big |';
+        const html = '<table><thead><tr><th>Name</th><th>Size</th></tr></thead>'
+            + '<tbody><tr><td>Apple</td><td>Big</td></tr></tbody></table>';
+
+        it('should round trip a two column table', () => {
+            expect(markdownToHtml(markdown)).toBe(html);
+            expect(htmlToMarkdown(html)).toBe(markdown);
+        });
+
+        it('should leave a pipe row with no divider as a paragraph', () => {
+            expect(markdownToHtml('| a | b |'))
+                .toBe('<p>| a | b |</p>');
+        });
+
+        it('should accept an aligned divider and drop the alignment', () => {
+            expect(markdownToHtml('| a | b |\n| :--- | ---: |\n| c | d |'))
+                .toBe('<table><thead><tr><th>a</th><th>b</th></tr></thead>'
+                    + '<tbody><tr><td>c</td><td>d</td></tr></tbody></table>');
+        });
+
+        it('should render a header with no body row', () => {
+            expect(markdownToHtml('| a | b |\n| --- | --- |'))
+                .toBe('<table><thead><tr><th>a</th><th>b</th></tr></thead></table>');
+        });
+
+        it('should pad a row shorter than the header', () => {
+            expect(markdownToHtml('| a | b |\n| --- | --- |\n| c |'))
+                .toBe('<table><thead><tr><th>a</th><th>b</th></tr></thead>'
+                    + '<tbody><tr><td>c</td><td></td></tr></tbody></table>');
+        });
+
+        it('should keep markup and a link inside a cell', () => {
+            const source = '| **Bold** | [site](https://example.com) |\n| --- | --- |';
+            const rendered = markdownToHtml(source);
+
+            expect(rendered).toContain('<th><b>Bold</b></th>');
+            expect(rendered).toContain('href="https://example.com"');
+        });
+
+        it('should escape a pipe inside cell text and read it back', () => {
+            const source = '| a \\| b | c |\n| --- | --- |';
+
+            expect(splitTableRow('| a \\| b | c |')).toEqual(['a | b', 'c']);
+            expect(markdownToHtml(source)).toContain('<th>a | b</th>');
+            expect(htmlToMarkdown('<table><tr><th>a | b</th><th>c</th></tr></table>')).toBe(source);
+        });
+
+        it('should flatten a line break inside a cell', () => {
+            expect(htmlToMarkdown('<table><tr><td>one<br>two</td><td>c</td></tr></table>'))
+                .toBe('| one two | c |\n| --- | --- |');
+        });
+
+        it('should read rows that have no thead or tbody', () => {
+            expect(htmlToMarkdown('<table><tr><th>a</th></tr><tr><td>b</td></tr></table>'))
+                .toBe('| a |\n| --- |\n| b |');
+        });
+
+        it('should keep an empty cell', () => {
+            expect(htmlToMarkdown('<table><tr><th>a</th><th></th></tr></table>'))
+                .toBe('| a |  |\n| --- | --- |');
+        });
+
+        it('should drop a table with no cells', () => {
+            expect(htmlToMarkdown('<table></table>')).toBe('');
+        });
+
+        it('should keep a paragraph before and after the table', () => {
+            expect(markdownToHtml('Before\n\n' + markdown + '\n\nAfter'))
+                .toBe('<p>Before</p>' + html + '<p>After</p>');
+            expect(htmlToMarkdown('<p>Before</p>' + html + '<p>After</p>'))
+                .toBe('Before\n\n' + markdown + '\n\nAfter');
+        });
+
+        it('should not read a table row starting with a dash as a list item', () => {
+            expect(markdownToHtml('| - one | b |\n| --- | --- |'))
+                .toBe('<table><thead><tr><th>- one</th><th>b</th></tr></thead></table>');
         });
     });
 });
