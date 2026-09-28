@@ -1,3 +1,8 @@
+---
+tags:
+  - flagged-for-rewrite
+---
+
 # Table Field
 
 A Table field lets you add CSV-based tables to documents:
