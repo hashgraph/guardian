@@ -602,7 +602,7 @@ export class XlsxToJson {
         };
         try {
             const key = XlsxToJson.getFieldKey(worksheet, table, row);
-            XlsxToJson.validateFieldKey(worksheet, table, row, key.rawName, xlsxResult);
+            XlsxToJson.validateFieldKey(worksheet, table, row, key.name, xlsxResult);
             const type = worksheet.getValue<string>(table.getCol(Dictionary.FIELD_TYPE), row);
             const description = worksheet.getValue<string>(table.getCol(Dictionary.QUESTION), row);
             const required = xlsxToBoolean(worksheet.getValue<string>(table.getCol(Dictionary.REQUIRED_FIELD), row));
@@ -1436,11 +1436,7 @@ export class XlsxToJson {
         if (name) {
             name = name.trim();
         }
-        const rawName = name;
-        if (name && name.includes('.')) {
-            name = name.replaceAll('.', '');
-        }
-        return { name, rawName, path, fullPath }
+        return { name, path, fullPath }
     }
 
     private static validateFieldKey(
@@ -1452,9 +1448,9 @@ export class XlsxToJson {
     ): void {
         if (name && name.includes('.')) {
             xlsxResult.addError({
-                type: 'warning',
-                text: `Invalid character.`,
-                message: `Key "${name}" contains a dot ('.'), which is not allowed in field keys. The dot has been removed automatically — rename the key in the Key column to avoid this.`,
+                type: 'error',
+                text: `Invalid field key.`,
+                message: `Key "${name}" contains a dot ('.'), which is reserved as a path separator. Rename the field key in the Key column before importing.`,
                 worksheet: worksheet.name,
                 cell: worksheet.getPath(table.getCol(Dictionary.KEY), row),
                 row,
