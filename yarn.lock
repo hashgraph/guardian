@@ -1580,7 +1580,7 @@ __metadata:
     esmock: "npm:^2.6.7"
     express: "npm:5.2.1"
     fast-json-stable-stringify: "npm:2.1.0"
-    js-base64: "npm:3.9.3"
+    js-base64: "npm:3.9.4"
     jsonld-signatures-v7: "npm:jsonld-signatures@7.0.0"
     jsonwebtoken: "npm:^9.0.3"
     jszip: "npm:^3.10.1"
@@ -9640,10 +9640,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-base64@npm:3.9.3":
-  version: 3.9.3
-  resolution: "js-base64@npm:3.9.3"
-  checksum: 10c0/bb293c11b946139a45624b1daf7ba8a996994ffd1694a2676f2df30047df96335967b9b1a8159ae58dd9dd6978c841e9f7a478bc378609bbe586835a36a9e4e7
+"js-base64@npm:3.9.4":
+  version: 3.9.4
+  resolution: "js-base64@npm:3.9.4"
+  checksum: 10c0/c1a76236bb2531fa321863b87eceabb90f070ef196f3a97028d6f710c941bdfc453eb8c75bc2412453db163fe4ac5c748a40a63547a264420ce0e67b871b228d
   languageName: node
   linkType: hard
 

@@ -28,7 +28,7 @@
         "did-context": "3.1.1",
         "dotenv": "^16.6.1",
         "fast-json-stable-stringify": "2.1.0",
-        "js-base64": "3.9.3",
+        "js-base64": "3.9.4",
         "jsonld-signatures-v7": "npm:jsonld-signatures@7.0.0",
         "jsonwebtoken": "^9.0.3",
         "jszip": "^3.10.1",
