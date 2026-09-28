@@ -108,7 +108,7 @@ All schemas created for importing into Guardian must follow the design of the te
   * EXACT({FieldName},{Value}) – only shown when the condition is true
   * NOT(EXACT({FieldName},{Value})) – only shown when the condition is not true
 * _**Description**_ – Description of the field. This is the text which users would see when filling out the form in Guardian.
-* _**Key**_ – Optional field key used in policy logic, formulas and JSON-LD context terms. Field keys must be unique within a schema and must not contain spaces or reserved JSON-LD characters. In particular, do not use a colon (`:`), because JSON-LD reserves it.
+* _**Key**_ – Optional field key used in policy logic, formulas and JSON-LD context terms. Field keys must be unique within a schema and must not contain spaces or colon `:` (JSON-LD reserves it).
 * _**Allow Multiple Answers**_ – Determines if the data is an array or a single item (Yes/No)
 * _**Test Value**_ – example of the valid data
 
