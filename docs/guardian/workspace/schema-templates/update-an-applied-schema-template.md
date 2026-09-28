@@ -47,9 +47,7 @@ Resolve every conflict before confirming the update.
 
 That template is already applied to this policy through another binding. A policy can hold a given template only once. Detach the other binding first, or pick a different template.
 
-**Why was the update rejected because of schema names?**
 
-The new template version renames a schema, or adds one, under a name another schema in the policy already uses. The error names every clash. Rename the conflicting policy schema, or detach the template that owns it, then run the update again.
 
 ### Related
 
