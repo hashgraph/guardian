@@ -46,5 +46,6 @@ Detailed best practices for Excel-first design in building Hedera Guardian schem
   Mark critical fields as required to enforce data capture. Choose proper data types for automatic Guardian validation (numbers, dates, boolean, urls). Use patterns or formulas as needed for more complex rules.
 * **Field Key Management Post-Import**\
   After importing, rename default field keys in Guardian UI to meaningful, calculation-friendly names. This dramatically improves maintainability of formula/code logic referencing schema fields.
+  Field keys must not contain spaces or reserved JSON-LD characters. Do not use a colon (`:`), because JSON-LD reserves it and Guardian will reject the schema.
 * **Collaborate Closely with Domain Experts**\
   Excel-first enables domain experts (e.g., carbon scientists) to review, comment, and iterate schema designs before committing to implementation.
