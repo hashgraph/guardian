@@ -32,7 +32,7 @@
     "description": "",
     "devDependencies": {
         "@types/express": "5.0.6",
-        "@types/node": "24.13.5",
+        "@types/node": "24.13.6",
         "@types/ws": "8.18.1",
         "esmock": "^2.6.7",
         "mocha": "10.8.2",
