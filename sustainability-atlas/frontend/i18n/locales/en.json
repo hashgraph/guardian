@@ -333,6 +333,8 @@
             "Active": "Active",
             "Inactive": "Inactive"
         },
+        "fields": "Fields",
+        "changed": "Changed",
         "total": "Total"
     },
     "nav": {
@@ -990,7 +992,7 @@
             "schemas": "Schemas",
             "description": "Description",
             "id": "ID",
-            "status": "Status",
+            "status": "Policy Status",
             "type": "Type",
             "version": "Version",
             "decoded": "Decoded"
@@ -1009,8 +1011,8 @@
             "description": "Description",
             "decoded": "Decode Status",
             "decodedAll": "All",
-            "status": "Status",
-            "hideDiscontinued": "Hide Discontinued Methodologies"
+            "status": "Policy Status",
+            "hideDiscontinued": "Hide Discontinued Policies"
         },
         "statusValues": {
             "published": "Published",
@@ -1128,7 +1130,7 @@
                 "registry": "Registry",
                 "version": "Version",
                 "schemas": "Schemas",
-                "status": "Status"
+                "status": "Policy Status"
             },
             "overview": {
                 "description": "Description",
@@ -1146,7 +1148,7 @@
                     "instancePolicyTopic": "Instance Policy Topic",
                     "published": "Published",
                     "schemas": "Schemas",
-                    "status": "Status"
+                    "status": "Policy Status"
                 },
                 "currentBadge": "Current",
                 "noVersions": "No versions found."
@@ -1254,7 +1256,7 @@
                 },
                 "compareRows": {
                     "version": "Version",
-                    "status": "Status",
+                    "status": "Policy Status",
                     "published": "Published",
                     "description": "Description",
                     "sectoralScopes": "Sectoral Scopes",
