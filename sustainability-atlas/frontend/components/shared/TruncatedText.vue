@@ -77,7 +77,7 @@ function onLeave() {
             leave-to-class="opacity-0"
         >
             <div v-if="show" :style="tooltipStyle" class="pointer-events-none">
-                <div class="max-w-xs whitespace-normal rounded-md bg-foreground px-3 py-2 text-[11px] leading-relaxed text-background shadow-lg">
+                <div class="max-w-xs whitespace-normal break-words rounded-md bg-foreground px-3 py-2 text-[11px] leading-relaxed text-background shadow-lg">
                     {{ text }}
                 </div>
                 <div class="mx-auto h-0 w-0 border-x-[5px] border-x-transparent border-t-[5px] border-t-foreground" />

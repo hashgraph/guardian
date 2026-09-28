@@ -11,6 +11,7 @@ export interface CreditListQuery {
     projectKey?: string;
     methodologyId?: string;
     linkedOnly?: boolean;
+    retiredOnly?: boolean;
     supplyMin?: string;
     supplyMax?: string;
     mintDateFrom?: string;
@@ -33,6 +34,7 @@ export interface CreditRow {
     /** Normalised type: 'Fungible' | 'Non-Fungible' | null */
     type: 'Fungible' | 'Non-Fungible' | null;
     supply: number;
+    retiredTokens: number;
     /** credentialSubject.id of the linked project (resolved via project_mint_link). */
     projectId: string | null;
     /** Display name of the linked project, joined from business_view PROJECT. */
@@ -116,6 +118,9 @@ export interface CreditRawDetail {
         document: Record<string, unknown> | null;
         projectKey: string | null;
         type: string | null;
+        /** What the ledger actually minted for this event, so the UI can contrast it with the declared `amount` rather than against live token supply (which is net of retirements). */
+        mintedAmount: string | null;
+        mintMatchStatus: string | null;
     }>;
 }
 

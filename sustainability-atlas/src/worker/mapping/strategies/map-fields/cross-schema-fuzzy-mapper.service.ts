@@ -3,6 +3,13 @@ import { IMapFieldsStrategy } from '../../interfaces/strategies.interface';
 import { FieldDescriptor, FieldMap, SchemaInfo } from '../../types';
 import { PROJECT_EXTRACT_FIELDS, ProjectExtractField } from '../../../project-mapper/project-fields';
 import { findGeoJsonDefKey, isGeoJsonProperty } from '../../../project-mapper/helpers';
+import { parseIwaProperty } from '../../iwa-comment';
+import {
+    IwaVersion,
+    iwaFieldPaths,
+    iwaPathForVersion,
+    resolveIwaVersion,
+} from '@shared/config/iwa-version';
 
 // ---------------------------------------------------------------------------
 // Jaro-Winkler implementation (~35 lines, no external dependency)
@@ -70,6 +77,8 @@ interface Candidate {
     comment: string;
     type: string;
     isGeoJson: boolean;
+    /** Field's IWA `property` path canonicalised to v3. null when absent or v3-dropped. */
+    iwaPropertyV3: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -173,6 +182,8 @@ function stripCodeFences(text: string): string {
  * regardless of which schema it lives in.
  *
  * Scoring (per field candidate):
+ *   - IWA-exact bind               → score 1.0 when the field's v3 IWA property
+ *                                    equals the canonical field's iwaField
  *   - Token overlap with keywords  → 60%
  *   - Jaro-Winkler(label, title)   → 40%
  *   - Exclude penalty              → ×0.2 if any exclude word appears in haystack
@@ -182,6 +193,9 @@ function stripCodeFences(text: string): string {
 @Injectable()
 export class CrossSchemaFuzzyMapperService implements IMapFieldsStrategy {
     private readonly logger = new Logger(CrossSchemaFuzzyMapperService.name);
+
+    /** IWA version per schema id; set in `collectCandidates`, read only during that sync call. */
+    private schemaIwaVersions = new Map<string, IwaVersion>();
 
     async execute(
         schemas: SchemaInfo[],
@@ -231,6 +245,12 @@ export class CrossSchemaFuzzyMapperService implements IMapFieldsStrategy {
 
     private collectCandidates(schemas: SchemaInfo[]): Candidate[] {
         const candidates: Candidate[] = [];
+
+        // Resolve each schema's IWA version so candidates can canonicalise their property to v3.
+        this.schemaIwaVersions = new Map<string, IwaVersion>();
+        for (const s of schemas) {
+            this.schemaIwaVersions.set(s.id, resolveIwaVersion({ iwaVersion: s.iwaVersion }));
+        }
 
         // Registry of all policy schemas keyed by IRI — used to resolve
         // cross-schema `$ref`s. Without resolution, sub-schemas pulled in via
@@ -290,6 +310,7 @@ export class CrossSchemaFuzzyMapperService implements IMapFieldsStrategy {
             const def = propVal as Record<string, unknown>;
             const path = pathPrefix ? `${pathPrefix}.${key}` : key;
 
+            const iwaVersion = this.schemaIwaVersions.get(schemaId) ?? IwaVersion.V1;
             out.push({
                 schemaId,
                 path,
@@ -299,6 +320,7 @@ export class CrossSchemaFuzzyMapperService implements IMapFieldsStrategy {
                 comment: typeof def['$comment'] === 'string' ? def['$comment'] : '',
                 type: typeof def['type'] === 'string' ? def['type'] : '',
                 isGeoJson: isGeoJsonPropertyExtended(def, geoDefKey),
+                iwaPropertyV3: iwaPathForVersion(parseIwaProperty(def), iwaVersion),
             });
 
             // Composition branches on the property itself.
@@ -524,10 +546,27 @@ export class CrossSchemaFuzzyMapperService implements IMapFieldsStrategy {
         const JW_WEIGHT = 0.4;
         const THRESHOLD = 0.3;
         const GEO_STRUCTURAL_SCORE = 0.95;   // strong admission for isGeoJson candidates
+        const IWA_EXACT_SCORE = 1;            // beats every fuzzy / structural score
+
+        // v3 IWA property path(s) this canonical field anchors to.
+        const fieldV3Paths = new Set(iwaFieldPaths(projectField?.iwaField));
 
         const bestPerSchema = new Map<string, { schemaId: string; path: string; score: number }>();
 
         for (const candidate of candidates) {
+            // Exact IWA-property bind — wins over the geo / keyword gates below.
+            // iwaPropertyV3 === null (no property / v3-dropped) skips this branch.
+            if (candidate.iwaPropertyV3 && fieldV3Paths.has(candidate.iwaPropertyV3)) {
+                const existing = bestPerSchema.get(candidate.schemaId);
+                if (!existing || IWA_EXACT_SCORE > existing.score) {
+                    bestPerSchema.set(candidate.schemaId, {
+                        schemaId: candidate.schemaId,
+                        path: candidate.path,
+                        score: IWA_EXACT_SCORE,
+                    });
+                }
+                continue;
+            }
             // Geo: structural detection ONLY. Name-similarity-only matches
             // produce false positives (e.g. "project_emission_electricity"
             // scores > 0.3 vs "Project Location" via Jaro-Winkler). The

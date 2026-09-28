@@ -19,13 +19,19 @@ const pendingCount = ref(0);
 // Fetch all users up-front (client-side search/filter/paginate via the shared
 // table stack). limit:1000 covers realistic user counts; beyond that we'd move to
 // server-side paging.
-const { data, pending, refresh } = await useAsyncData('admin-users', () =>
-    adminUsers.list({ limit: 1000 }),
+const { data, pending, refresh } = await useAsyncData(
+    'admin-users',
+    () => adminUsers.list({ limit: 1000 }),
+    { server: false },
 );
 
 // Whether rate limiting is actually enforced — when off, the quota/requests
 // controls are cosmetic, so they're disabled (faded + tooltip).
-const { data: rlSummary } = await useAsyncData('admin-rl-flag', () => rl.getMine());
+const { data: rlSummary } = await useAsyncData(
+    'admin-rl-flag',
+    () => rl.getMine(),
+    { server: false },
+);
 const rlEnforced = computed(() => rlSummary.value?.rateLimitEnforced ?? false);
 
 const counts = computed(() => data.value?.counts ?? { active: 0, inactive: 0, total: 0 });

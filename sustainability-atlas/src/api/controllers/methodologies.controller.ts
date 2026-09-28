@@ -4,6 +4,7 @@ import {
     ApiOperation,
     ApiResponse,
     ApiParam,
+    ApiQuery,
     ApiBody,
     ApiProduces,
     ApiCookieAuth,
@@ -23,7 +24,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { JwtAuthGuard } from '@api/auth/guards/jwt-auth.guard';
 
-@ApiTags('methodologies')
+@ApiTags('Methodologies')
 @Controller('api/v1/:network/methodologies')
 export class MethodologiesController {
     constructor(
@@ -33,7 +34,7 @@ export class MethodologiesController {
 
     @Get()
     @ApiOperation({
-        summary: 'List Methodologies',
+        summary: 'Search and filter methodologies',
         description:
             'Returns a paginated list of Methodologies (policies) for the specified network. ' +
             'Supports full-text search, filtering, sorting, and aggregated stats.',
@@ -54,7 +55,7 @@ export class MethodologiesController {
 
     @Get('options')
     @ApiOperation({
-        summary: 'Distinct methodology names',
+        summary: 'Get all methodology names',
         description:
             'Returns just the distinct methodology display names, for filter dropdowns. ' +
             'Cached for 60 seconds.',
@@ -67,7 +68,7 @@ export class MethodologiesController {
 
     @Get(':id')
     @ApiOperation({
-        summary: 'Get a Methodology by topic ID',
+        summary: 'Get a single methodology',
         description:
             'Returns a single Methodology matching the given Hedera policy topic ID on the specified network.',
     })
@@ -92,12 +93,15 @@ export class MethodologiesController {
 
     @Get(':id/decoded')
     @ApiOperation({
-        summary: 'Get decode status and schema field mappings for a Methodology',
+        summary: 'See how a methodology\'s data fields are mapped',
         description:
             'Returns the worker decode status for the given methodology and, if a project schema ' +
             'has been confirmed, which schema field key was resolved for each project property ' +
             '(title, country, sector, etc.). The frontend uses this to explain why certain ' +
-            'project properties are missing.',
+            'project properties are missing. ' +
+            'By default `availableSchemas[*].fields` is omitted, as it can be tens of thousands of ' +
+            'entries for large policies and is only needed by the field-mapping editor and the ' +
+            'no-project-schema fallback view. Pass `includeAllFields=true` to get it.',
     })
     @ApiParam({
         name: 'network',
@@ -105,13 +109,20 @@ export class MethodologiesController {
         description: 'Hedera network',
     })
     @ApiParam({ name: 'id', description: 'Hedera policy topic ID of the methodology' })
+    @ApiQuery({
+        name: 'includeAllFields',
+        required: false,
+        type: Boolean,
+        description: 'Include every schema\'s full field list (large payload; not cached). Default false.',
+    })
     @ApiResponse({ status: 200, type: DecodedMethodologyResponseDto })
     @ApiResponse({ status: 404, description: 'Methodology not found' })
     async findDecoded(
         @Param('network') network: string,
         @Param('id') id: string,
+        @Query('includeAllFields') includeAllFields?: string,
     ): Promise<DecodedMethodologyResponseDto> {
-        const result = await this.methodologiesService.findDecoded(network, id);
+        const result = await this.methodologiesService.findDecoded(network, id, includeAllFields === 'true');
         if (!result) {
             throw new NotFoundException(`Methodology with ID "${id}" not found on ${network}`);
         }
@@ -122,7 +133,7 @@ export class MethodologiesController {
     @UseGuards(JwtAuthGuard)
     @Get(':id/policy-package')
     @ApiOperation({
-        summary: 'Download the methodology\'s policy ZIP package',
+        summary: 'Download the methodology package (ZIP)',
         description:
             'Streams the policy ZIP (the methodology definition package), resolved via the ' +
             'policy\'s sourceCid. Served from the local zip cache; on a cache miss it fetches ' +
@@ -165,16 +176,16 @@ export class MethodologiesController {
     @AdminWrite()
     @Post(':id/redecode')
     @ApiOperation({
-        summary: 'Re-run the policy decoder for an existing methodology',
+        summary: 'Re-read a methodology from its source',
         description:
             'Enqueues a fresh POLICY_DECODE job for the methodology\'s policy ZIP so that ' +
             'improvements to CrossSchemaFuzzyMapperService or MappingPipelineService are picked up ' +
             'without waiting for the normal re-sync cycle. Resets decodeStatus to "pending" first ' +
             'so the job actually re-runs instead of being skipped by the processor\'s dedup guard. ' +
             'Manual policyMapping edits made via PATCH /:id/decoded are DISCARDED and replaced by ' +
-            'fresh classification — use POST /:id/reparse-projects to replay VCs against the current ' +
+            'fresh classification. Use POST /:id/reparse-projects to replay VCs against the current ' +
             'mapping without overwriting it. ' +
-            'Returns immediately — check GET /:id/decoded for the updated status after the job completes.',
+            'Returns immediately. Check GET /:id/decoded for the updated status after the job completes.',
     })
     @ApiParam({
         name: 'network',
@@ -204,13 +215,13 @@ export class MethodologiesController {
     @AdminWrite()
     @Post('redecode-all')
     @ApiOperation({
-        summary: 'Re-decode every decoded policy to re-stamp docType from updated classifier',
+        summary: 'Re-read every methodology from its source',
         description:
             'Enqueues a POLICY_DECODE job for every policy with decodeStatus="decoded". ' +
             'Use this after updating the document-type classifier to apply new keyword ' +
             'rules to existing policyMapping entries. Follow with POST reparse-projects ' +
             'to update project records with the corrected docType values. ' +
-            'Returns immediately — jobs are processed asynchronously by the worker.',
+            'Returns immediately, and the worker processes the jobs in the background.',
     })
     @ApiParam({ name: 'network', enum: ['mainnet', 'testnet', 'previewnet'], description: 'Hedera network' })
     @ApiResponse({
@@ -234,7 +245,7 @@ export class MethodologiesController {
     @AdminWrite()
     @Post('reparse-projects')
     @ApiOperation({
-        summary: 'Re-parse projects across every methodology in the network',
+        summary: 'Rebuild projects for every methodology',
         description:
             'Iterates over every methodology in the network and enqueues per-VC ' +
             'PROJECT_REPARSE jobs for those whose decode status is "success". ' +
@@ -268,13 +279,13 @@ export class MethodologiesController {
     @AdminWrite()
     @Post(':id/reparse-projects')
     @ApiOperation({
-        summary: 'Re-parse already-downloaded VCs to populate projects with updated field mapping',
+        summary: 'Rebuild a methodology\'s projects using its current mapping',
         description:
             'Enqueues one PROJECT_REPARSE job per VC-Document that already has its IPFS content ' +
             'cached in the DB (documents IS NOT NULL). Useful after updating the field map via ' +
             'PATCH /:id/decoded or after a re-decode. ' +
             'Silently returns { enqueued: 0 } when the policy decode status is not "success". ' +
-            'Returns immediately — jobs are processed asynchronously by the worker.',
+            'Returns immediately, and the worker processes the jobs in the background.',
     })
     @ApiParam({
         name: 'network',
@@ -303,13 +314,13 @@ export class MethodologiesController {
     @AdminWrite()
     @Patch(':id/decoded')
     @ApiOperation({
-        summary: 'Manually edit and save the field mapping for a methodology',
+        summary: 'Edit a methodology\'s field mapping',
         description:
             'Applies a partial or full update to the cross-schema field map stored on ' +
             'policy."policyMapping". Only the keys present in the request body are ' +
             'overwritten (PATCH semantics). Re-derives projectFieldMap, projectGeoKey, ' +
             'projectGeoSection, and projectSchemaId from the merged map. ' +
-            'Does NOT automatically trigger project re-parsing — call POST /:id/reparse-projects ' +
+            'Does NOT automatically trigger project re-parsing. Call POST /:id/reparse-projects ' +
             'separately when ready. Returns the updated DecodedMethodologyResponseDto.',
     })
     @ApiParam({
@@ -323,7 +334,7 @@ export class MethodologiesController {
     @ApiResponse({
         status: 400,
         description:
-            'Validation failure — unknown field labels, malformed schemaId.path values, ' +
+            'Validation failure: unknown field labels, malformed schemaId.path values, ' +
             'or schemaIds that do not belong to this policy.',
     })
     @ApiResponse({ status: 404, description: 'Methodology or decode status row not found' })
@@ -339,9 +350,9 @@ export class MethodologiesController {
     @AdminRead()
     @Get(':id/mapping-audit')
     @ApiOperation({
-        summary: 'List recent manual field-mapping edits for a methodology',
+        summary: 'See recent changes to a methodology\'s field mapping',
         description:
-            'Returns the most recent admin edits made via PATCH /:id/decoded, newest first — ' +
+            'Returns the most recent admin edits made via PATCH /:id/decoded, newest first, showing ' +
             'who made the change and which field labels were touched.',
     })
     @ApiParam({

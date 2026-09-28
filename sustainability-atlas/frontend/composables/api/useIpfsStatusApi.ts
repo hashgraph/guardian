@@ -19,6 +19,9 @@ export interface IpfsCidStatusDto {
 export interface IpfsCidStatusListResponse {
     data: IpfsCidStatusDto[];
     meta: { page: number; limit: number; total: number; totalPages: number };
+    /** Set by the composable (never by the API) when the request itself failed,
+     * so callers can tell "load failed" apart from "loaded, nothing to show". */
+    failed?: boolean;
 }
 
 // ─── Empty factory ────────────────────────────────────────────────────────────
@@ -27,6 +30,8 @@ const emptyList = (): IpfsCidStatusListResponse => ({
     data: [],
     meta: { page: 1, limit: 20, total: 0, totalPages: 0 },
 });
+
+const failedList = (): IpfsCidStatusListResponse => ({ ...emptyList(), failed: true });
 
 // ─── useIpfsCidStatusApi ──────────────────────────────────────────────────────
 
@@ -55,6 +60,10 @@ export const useIpfsCidStatusApi = (opts: {
             `ipfs-status:${opts.network.value}:${opts.topicId.value}:${includeChildTopics.value}:${messageType.value}:${errorCategory.value}:${status.value}:${opts.page.value}:${opts.limit.value}`,
     );
 
+    // Set by refreshFresh() just before calling refresh() — client-side only,
+    // does not need to survive SSR (unlike the `failed` flag on the payload).
+    const forceFresh = ref(false);
+
     const { data, pending, error, refresh } = useAsyncData<IpfsCidStatusListResponse>(
         () => key.value,
         async () => {
@@ -68,6 +77,10 @@ export const useIpfsCidStatusApi = (opts: {
                 if (messageType.value) query.messageType = messageType.value;
                 if (errorCategory.value) query.errorCategory = errorCategory.value;
                 if (status.value) query.status = status.value;
+                if (forceFresh.value) {
+                    query.fresh = true;
+                    forceFresh.value = false;
+                }
 
                 const res = await $fetch<IpfsCidStatusListResponse>(
                     `/api/v1/${opts.network.value}/ipfs-status`,
@@ -79,7 +92,7 @@ export const useIpfsCidStatusApi = (opts: {
                 if (!msg.includes('ECONNREFUSED') && !msg.includes('no response')) {
                     console.error('[useIpfsCidStatusApi] fetch failed:', msg);
                 }
-                return emptyList();
+                return failedList();
             }
         },
         {
@@ -88,5 +101,13 @@ export const useIpfsCidStatusApi = (opts: {
         },
     );
 
-    return { data, pending, error, refresh };
+    // Same cache slot, forced revalidation — bypasses the backend's short-lived
+    // cache for one request (e.g. the manual "Refresh" button, or right after an
+    // admin retry action so the operator sees the updated status immediately).
+    const refreshFresh = async () => {
+        forceFresh.value = true;
+        await refresh();
+    };
+
+    return { data, pending, error, refresh, refreshFresh };
 };

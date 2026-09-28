@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { MV_REGISTRY_STATS_NAME, MV_METHODOLOGY_STATS_NAME } from '@shared/materialized-views';
+import { MV_REGISTRY_STATS_NAME } from '@shared/materialized-views';
 import {
     CreditRepository,
     CreditListQuery,
@@ -13,7 +13,7 @@ import {
     CreditStats,
 } from './credit.repository';
 import { QueryBuilder } from './query-builder';
-import { CREDIT_FIELD_SCHEMA, SUPPLY_EXPR, MINT_DATE_EXPR } from './schemas/credit.schema';
+import { CREDIT_FIELD_SCHEMA, SUPPLY_EXPR, MINT_DATE_EXPR, RETIRED_EXPR } from './schemas/credit.schema';
 
 /** Batch size for the internally-batched `findAllForExport` LIMIT/OFFSET loop. */
 const EXPORT_BATCH_SIZE = 2000;
@@ -30,6 +30,7 @@ interface RawRow {
     /** Fallback token type from businessData->options->tokenType (findRaw only) */
     options_token_type: string | null;
     total_supply: string | null;
+    retired_tokens: string | null;
     registryDid: string | null;
     registry_name: string | null;
     mint_date: Date | null;
@@ -66,9 +67,18 @@ const TOKEN_ID_EXPR = `(m.documents->'credentialSubject'->0->>'tokenId')`;
 
 /**
  * Base FROM clause: every MintToken VC in the message table, LEFT JOINed with
- * project_mint_link (pre-computed per-project attribution) and token_cache.
+ * project_mint_link (pre-computed per-project attribution), token_cache, and
+ * token_retire_event for fungible token retirements.
  * Rows where pml.* is NULL are unattributed mints — still included so the
  * table is complete regardless of worker attribution state.
+ *
+ * `ft_ret` and `ft_tot` are the two halves of the fungible retirement share (see
+ * RETIRED_EXPR): the token's total documented retirement, and the token's total
+ * supply across every one of its MintToken VCs, which is the denominator the
+ * per-issuance share is apportioned against. Both are gated on the token being
+ * fungible, so neither runs for an NFT row. They live here rather than in an
+ * optional join because RETIRED_EXPR is also used by the `retiredOnly` WHERE
+ * clause, which runs against the lean count query built by buildJoins().
  *
  * Split from the `cred` LATERAL below so the count query can omit that lookup
  * when nothing references it — see buildJoins().
@@ -79,6 +89,25 @@ const MINT_FROM_LEAN = `
            ON pml.mint_consensus_timestamp = m."consensusTimestamp"
     LEFT JOIN token_cache tc
            ON tc."tokenId" = ${TOKEN_ID_EXPR}
+    LEFT JOIN LATERAL (
+        SELECT (SUM(tre.amount) / (10::numeric ^ COALESCE(tc.decimals, 0)))::numeric AS token_retired
+        FROM token_retire_event tre
+        WHERE tre.token_id = ${TOKEN_ID_EXPR}
+          AND tre.amount IS NOT NULL
+    ) ft_ret ON tc.type = 'FUNGIBLE_COMMON'
+    LEFT JOIN LATERAL (
+        SELECT COALESCE(SUM(COALESCE(
+            pml2.amount::numeric,
+            (m2.documents->'credentialSubject'->0->>'amount')::numeric
+        )), 0)::numeric AS token_supply
+        FROM message m2
+        LEFT JOIN project_mint_link pml2
+               ON pml2.mint_consensus_timestamp = m2."consensusTimestamp"
+        WHERE m2.type = 'VC-Document'
+          AND m2.documents IS NOT NULL
+          AND (m2.documents->'credentialSubject'->0->>'type') LIKE 'MintToken%'
+          AND (m2.documents->'credentialSubject'->0->>'tokenId') = ${TOKEN_ID_EXPR}
+    ) ft_tot ON tc.type = 'FUNGIBLE_COMMON'
 `;
 
 /** LATERAL: the token's own registryDid, the fallback for mints not attributed to a project. */
@@ -118,90 +147,50 @@ const PROJECT_JOIN = `
 `;
 
 /**
- * Two LATERALs: resolve methodology from the project's instance topic, with a
+ * LATERAL: resolve methodology from the project's instance topic, with a
  * displayName fallback for cases where relatedTopicId chain is not yet linked.
  * Emits relatedTopicId as methodology_id so links match the methodology detail route.
- * Returns NULL when no project was resolved (unattributed mints). Callers read
- * `COALESCE(meth_primary.x, meth_fallback.x)` for each column.
- *
- * meth_primary reads mv_methodology_stats (unique-indexed on relatedTopicId,
- * emission_reduction_approach precomputed) joined to business_view by primary
- * key — O(1) instead of scanning every raw METHODOLOGY row for the topic and
- * sorting them, which on testnet's ~187x republish-duplicate ratio dominated
- * the Issuances table's search/count latency.
- *
- * meth_fallback is byte-for-byte the original pre-mv_methodology_stats LATERAL
- * (same SELECT list, same OR'd WHERE, same ORDER BY/LIMIT) for the rare case a
- * project's topic-id chain isn't linked yet — with one added NOT EXISTS guard
- * so it only runs when meth_primary found nothing. It's deliberately its own
- * LATERAL correlated only on `proj` columns (not on meth_primary's output):
- * an earlier version gated it via `meth_primary.methodology_id IS NULL`
- * instead, which measured 25s+ locally, because a LATERAL correlated on a
- * sibling LATERAL's result loses Postgres's Memoize optimization entirely
- * (confirmed via EXPLAIN ANALYZE —
- * Memoize's cache hit rate on this fallback collapsed from 1988/2042 to 0
- * hits when parameterized that way). Re-deriving the same "did the primary
- * branch find anything" check as a direct NOT EXISTS against
- * mv_methodology_stats keeps the correlation shape identical to the original
- * query, which Postgres already knew how to memoize effectively.
+ * Returns NULL when no project was resolved (unattributed mints).
  */
 const METHODOLOGY_JOIN = `
     LEFT JOIN LATERAL (
         SELECT
-            meth_mv."relatedTopicId"            AS methodology_id,
-            bv_meth."displayName"               AS methodology_name,
-            meth_mv.emission_reduction_approach AS emission_reduction_approach
-        FROM ${MV_METHODOLOGY_STATS_NAME} meth_mv
-        JOIN business_view bv_meth ON bv_meth.id = meth_mv.canonical_id
-        WHERE meth_mv."relatedTopicId" = proj.proj_topic_id
-    ) meth_primary ON true
-    LEFT JOIN LATERAL (
-        SELECT
-            bv_meth2."relatedTopicId" AS methodology_id,
-            bv_meth2."displayName"    AS methodology_name,
+            bv_meth."relatedTopicId" AS methodology_id,
+            bv_meth."displayName"    AS methodology_name,
             (
                 SELECT p."policyMapping"->'emissionReductionApproach'
                 FROM policy p
-                WHERE p."policyTopicId" = bv_meth2."businessData"->>'topicId'
+                WHERE p."policyTopicId" = bv_meth."businessData"->>'topicId'
                   AND p."decodeStatus" = 'decoded'
                 ORDER BY p."updatedAt" DESC NULLS LAST
                 LIMIT 1
             ) AS emission_reduction_approach
-        FROM business_view bv_meth2
-        WHERE bv_meth2."viewType" = 'METHODOLOGY'
+        FROM business_view bv_meth
+        WHERE bv_meth."viewType" = 'METHODOLOGY'
           AND (
-              bv_meth2."relatedTopicId" = proj.proj_topic_id
-              OR bv_meth2."displayName" = proj.proj_methodology_name
-          )
-          AND NOT EXISTS (
-              SELECT 1 FROM ${MV_METHODOLOGY_STATS_NAME} mm_guard
-              WHERE mm_guard."relatedTopicId" = proj.proj_topic_id
+              bv_meth."relatedTopicId" = proj.proj_topic_id
+              OR bv_meth."displayName" = proj.proj_methodology_name
           )
         ORDER BY
-            (bv_meth2."relatedTopicId" = proj.proj_topic_id) DESC,
-            bv_meth2."sourceTimestamp"::numeric DESC NULLS LAST,
-            bv_meth2."createdAt" DESC NULLS LAST
+            (bv_meth."relatedTopicId" = proj.proj_topic_id) DESC,
+            bv_meth."sourceTimestamp"::numeric DESC NULLS LAST,
+            bv_meth."createdAt" DESC NULLS LAST
         LIMIT 1
-    ) meth_fallback ON true
+    ) meth ON true
 `;
 
 /**
- * LATERAL: resolve registry display name from the project's registryDid,
- * falling back to the token's own registryDid (cred) for mints not yet
- * attributed to a project, so unlinked mints still show their registry.
+ * Registry display name for the project's registryDid, falling back to the
+ * token's own registryDid (cred) for mints not yet attributed to a project,
+ * so unlinked mints still show their registry.
  *
- * Reads mv_registry_stats (unique-indexed on registryDid) joined to
- * business_view by primary key, instead of scanning every raw REGISTRY row
- * for the DID and sorting them — same fix as METHODOLOGY_JOIN above, for the
- * same reason (testnet's ~233x republish-duplicate ratio on REGISTRY rows).
+ * Read from `mv_registry_stats` (uniquely keyed by registryDid), so no LATERAL
+ * is needed: both `proj` and `cred` are joined earlier, making the COALESCE a
+ * plain scalar by the time this join runs.
  */
 const REGISTRY_JOIN = `
-    LEFT JOIN LATERAL (
-        SELECT bv_reg."displayName" AS registry_name
-        FROM ${MV_REGISTRY_STATS_NAME} reg_mv
-        JOIN business_view bv_reg ON bv_reg.id = reg_mv.canonical_id
-        WHERE reg_mv."registryDid" = COALESCE(proj.registry_did, cred.registry_did)
-    ) reg ON true
+    LEFT JOIN ${MV_REGISTRY_STATS_NAME} reg
+        ON reg."registryDid" = COALESCE(proj.registry_did, cred.registry_did)
 `;
 
 /** Which optional joins a given filter set actually requires. */
@@ -225,7 +214,7 @@ interface JoinRequirements {
  *   registry      -> reg.registry_name                          -> REGISTRY_JOIN
  *   search        -> reg.registry_name (plus tc.*, always there) -> REGISTRY_JOIN
  *   registryDid   -> COALESCE(proj.registry_did, cred.registry_did)
- *   methodologyId -> COALESCE(meth_primary.methodology_id, meth_fallback.methodology_id) -> METHODOLOGY_JOIN
+ *   methodologyId -> meth.methodology_id                        -> METHODOLOGY_JOIN
  * REGISTRY_JOIN and METHODOLOGY_JOIN both read `proj.*`, and REGISTRY_JOIN also
  * reads `cred.*`, so those pull in their dependencies.
  * projectKey filters `pml.project_key` and `type` filters `tc.type` — both
@@ -262,13 +251,13 @@ export class PgCreditRepository extends CreditRepository {
         builder.addClause(`${TOKEN_ID_EXPR} IS NOT NULL`);
 
         builder.addFilters({
-            registryDid:  query.registryDid,
-            registry:     query.registry,
-            tokenId:      query.tokenId,
-            supplyMin:    query.supplyMin,
-            supplyMax:    query.supplyMax,
+            registryDid: query.registryDid,
+            registry: query.registry,
+            tokenId: query.tokenId,
+            supplyMin: query.supplyMin,
+            supplyMax: query.supplyMax,
             mintDateFrom: query.mintDateFrom,
-            mintDateTo:   query.mintDateTo,
+            mintDateTo: query.mintDateTo,
         });
 
         // Accepts a `|`-delimited list so Portfolio can scope one query to its
@@ -277,11 +266,15 @@ export class PgCreditRepository extends CreditRepository {
 
         if (query.methodologyId) {
             const param = builder.nextParam(query.methodologyId);
-            builder.addClause(`COALESCE(meth_primary.methodology_id, meth_fallback.methodology_id) = ${param}`);
+            builder.addClause(`meth.methodology_id = ${param}`);
         }
 
         if (query.linkedOnly) {
             builder.addClause(`proj.project_id IS NOT NULL`);
+        }
+
+        if (query.retiredOnly) {
+            builder.addClause(`${RETIRED_EXPR} > 0`);
         }
 
         if (query.type) {
@@ -297,7 +290,7 @@ export class PgCreditRepository extends CreditRepository {
         if (query.search) {
             const term = query.search.trim();
             const likeParam = builder.nextParam(`%${term}%`);
-            const simParam  = builder.nextParam(term);
+            const simParam = builder.nextParam(term);
 
             builder.addClause(`(
                 tc.name ILIKE ${likeParam}
@@ -323,13 +316,13 @@ export class PgCreditRepository extends CreditRepository {
                 COUNT(DISTINCT reg.registry_name)::int           AS unique_registries,
                 COUNT(DISTINCT proj.project_id)::int             AS unique_projects
             FROM ${buildJoins({
-                registry: query.registry,
-                registryDid: query.registryDid,
-                methodologyId: query.methodologyId,
-                search: query.search,
-                // The stat columns themselves read proj/reg, so both are always required here.
-                forceAttribution: true,
-            })}
+            registry: query.registry,
+            registryDid: query.registryDid,
+            methodologyId: query.methodologyId,
+            search: query.search,
+            // The stat columns themselves read proj/reg, so both are always required here.
+            forceAttribution: true,
+        })}
             WHERE ${builder.getWhereClause()}
         `;
 
@@ -358,9 +351,9 @@ export class PgCreditRepository extends CreditRepository {
             });
 
         const whereSql = builder.getWhereClause();
-        const params   = builder.getParams();
+        const params = builder.getParams();
 
-        const limitParam  = builder.nextParam(limit);
+        const limitParam = builder.nextParam(limit);
         const offsetParam = builder.nextParam(offset);
 
         // Scoped to exactly one project or one methodology (the two Projects-table /
@@ -376,13 +369,14 @@ export class PgCreditRepository extends CreditRepository {
                 tc.type                                                                         AS raw_type,
                 NULL::text                                                                      AS options_token_type,
                 ${SUPPLY_EXPR}                                                                  AS total_supply,
+                ${RETIRED_EXPR}::numeric                                                        AS retired_tokens,
                 COALESCE(proj.registry_did, cred.registry_did)                                  AS "registryDid",
                 reg.registry_name,
                 ${MINT_DATE_EXPR}                                                               AS mint_date,
                 proj.project_id,
                 proj.project_name,
-                COALESCE(meth_primary.methodology_id, meth_fallback.methodology_id)             AS methodology_id,
-                COALESCE(meth_primary.methodology_name, meth_fallback.methodology_name, proj.proj_methodology_name) AS methodology_name,
+                meth.methodology_id,
+                COALESCE(meth.methodology_name, proj.proj_methodology_name)                    AS methodology_name,
                 m."consensusTimestamp"                                                          AS "mintConsensusTimestamp",
                 ${rankExpr}                                                                     AS search_rank
             FROM ${MINT_FROM}
@@ -401,12 +395,12 @@ export class PgCreditRepository extends CreditRepository {
         const countSql = `
             SELECT COUNT(*)::int AS total
             FROM ${buildJoins({
-                registry: query.registry,
-                registryDid: query.registryDid,
-                methodologyId: query.methodologyId,
-                linkedOnly: query.linkedOnly,
-                search,
-            })}
+            registry: query.registry,
+            registryDid: query.registryDid,
+            methodologyId: query.methodologyId,
+            linkedOnly: query.linkedOnly,
+            search,
+        })}
             WHERE ${whereSql}
         `;
 
@@ -422,12 +416,16 @@ export class PgCreditRepository extends CreditRepository {
     }
 
     private static mapRow(row: RawRow): CreditRow {
+        const supply = row.total_supply != null ? parseFloat(row.total_supply) : 0;
+        const retiredTokens = row.retired_tokens != null ? parseFloat(row.retired_tokens) : 0;
+
         return {
             tokenId: row.tokenId ?? null,
             name: row.name ?? null,
             symbol: row.symbol ?? null,
             type: PgCreditRepository.normaliseType(row.raw_type, row.options_token_type),
-            supply: row.total_supply != null ? parseFloat(row.total_supply) : 0,
+            supply,
+            retiredTokens,
             projectId: row.project_id ?? null,
             project: row.project_name ?? null,
             methodologyId: row.methodology_id ?? null,
@@ -478,7 +476,7 @@ export class PgCreditRepository extends CreditRepository {
 
         if (filters.methodologyId) {
             const param = builder.nextParam(filters.methodologyId);
-            builder.addClause(`COALESCE(meth_primary.methodology_id, meth_fallback.methodology_id) = ${param}`);
+            builder.addClause(`meth.methodology_id = ${param}`);
         }
 
         if (filters.type) {
@@ -530,8 +528,8 @@ export class PgCreditRepository extends CreditRepository {
                     tc.type                                                                          AS token_type_raw,
                     ${SUPPLY_EXPR}                                                                AS emissions_reduced,
                     ${MINT_DATE_EXPR}                                                             AS mint_date,
-                    COALESCE(meth_primary.methodology_name, meth_fallback.methodology_name, proj.proj_methodology_name) AS standard,
-                    COALESCE(meth_primary.emission_reduction_approach, meth_fallback.emission_reduction_approach) AS mitigation_type_raw
+                    COALESCE(meth.methodology_name, proj.proj_methodology_name)                       AS standard,
+                    meth.emission_reduction_approach                                                   AS mitigation_type_raw
                 FROM ${MINT_FROM}
                 ${PROJECT_JOIN}
                 ${METHODOLOGY_JOIN}
@@ -600,8 +598,65 @@ export class PgCreditRepository extends CreditRepository {
 
     /** Returns the underlying HCS messages backing a credit: the original Token message and any MintToken VC documents that minted credits against this token, used by the raw-data viewer. */
     async findRaw(tokenId: string): Promise<CreditRawDetail | null> {
-        // 1. The full credit row (reusing the same JOINs as findAll).
-        const creditRows: RawRow[] = await this.dataSource.query(
+        // Steps 1-4 below share no data dependency on each other — only the
+        // policy chain (2b) depends on the credit row's projectId — so they
+        // run concurrently instead of as a 5-deep sequential chain (each was
+        // previously await'ed one after another purely by code placement).
+        const [creditRows, tokenMessageRows, mintRows, projectRows] = await Promise.all([
+            this.findRawCreditRow(tokenId),
+            this.findRawTokenMessage(tokenId),
+            this.findRawMintRows(tokenId),
+            this.findRawProjectRows(tokenId),
+        ]);
+
+        const rawCredit = creditRows[0];
+        const rawSupply = rawCredit ? (parseFloat(rawCredit.total_supply ?? '0') || 0) : 0;
+        const rawRetired = rawCredit ? (parseFloat(rawCredit.retired_tokens ?? '0') || 0) : 0;
+
+        const credit: CreditRow | null = rawCredit ? {
+            tokenId: rawCredit.tokenId,
+            name: rawCredit.name,
+            symbol: rawCredit.symbol,
+            type: PgCreditRepository.normaliseType(rawCredit.raw_type, rawCredit.options_token_type),
+            supply: rawSupply,
+            retiredTokens: rawRetired,
+            projectId: rawCredit.project_id ?? null,
+            project: rawCredit.project_name ?? null,
+            methodologyId: rawCredit.methodology_id ?? null,
+            methodology: rawCredit.methodology_name ?? null,
+            registry: rawCredit.registry_name ?? null,
+            registryDid: rawCredit.registryDid,
+            mintDate: rawCredit.mint_date instanceof Date
+                ? rawCredit.mint_date.toISOString()
+                : (rawCredit.mint_date ?? null),
+            mintConsensusTimestamp: null,
+        } : null;
+
+        const tokenMessage = tokenMessageRows[0] ?? null;
+
+        const { policyId, policyName, policyTopicId } = await this.resolveCreditPolicy(credit?.projectId ?? null);
+
+        const projects: CreditProjectLink[] = projectRows.map(r => ({
+            projectId: r.project_id ?? null,
+            project: r.project_name ?? null,
+        }));
+
+        if (!credit && !tokenMessage && mintRows.length === 0 && projects.length === 0) return null;
+
+        return {
+            credit,
+            projects,
+            tokenMessage,
+            policyId,
+            policyName,
+            policyTopicId,
+            mintEvents: mintRows,
+        };
+    }
+
+    /** 1. The full credit row (reusing the same JOINs as findAll). */
+    private async findRawCreditRow(tokenId: string): Promise<RawRow[]> {
+        return this.dataSource.query(
             `SELECT
                 COALESCE(bv."businessData"->>'tokenId', tc."tokenId") AS "tokenId",
                 COALESCE(bv."displayName", bv."businessData"->'options'->>'tokenName', tc.name) AS name,
@@ -609,6 +664,10 @@ export class PgCreditRepository extends CreditRepository {
                 tc.type AS raw_type,
                 bv."businessData"->'options'->>'tokenType' AS options_token_type,
                 tc."totalSupply"::text AS total_supply,
+                (CASE
+                    WHEN tc.type = 'FUNGIBLE_COMMON' THEN COALESCE(ft_ret.retired_amount, 0)
+                    ELSE COALESCE(pml_agg.serial_retired_count, 0)
+                END)::text AS retired_tokens,
                 bv."registryDid" AS "registryDid",
                 reg.registry_name AS registry_name,
                 to_char(to_timestamp(bv."sourceTimestamp"::numeric) AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS mint_date,
@@ -620,12 +679,18 @@ export class PgCreditRepository extends CreditRepository {
              FROM business_view bv
              LEFT JOIN token_cache tc ON tc."tokenId" = bv."businessData"->>'tokenId'
              LEFT JOIN LATERAL (
-                 SELECT "displayName" AS registry_name
-                 FROM business_view
-                 WHERE "viewType" = 'REGISTRY' AND "registryDid" = bv."registryDid"
-                 ORDER BY "createdAt" DESC NULLS LAST
-                 LIMIT 1
-             ) reg ON true
+                 SELECT SUM(pml2.serial_retired_count)::numeric AS serial_retired_count
+                 FROM project_mint_link pml2
+                 WHERE pml2.token_id = $1
+             ) pml_agg ON true
+             LEFT JOIN LATERAL (
+                 SELECT (SUM(tre.amount) / (10::numeric ^ COALESCE(tc.decimals, 0)))::numeric AS retired_amount
+                 FROM token_retire_event tre
+                 WHERE tre.token_id = $1
+                   AND tre.amount IS NOT NULL
+             ) ft_ret ON tc.type = 'FUNGIBLE_COMMON'
+             LEFT JOIN ${MV_REGISTRY_STATS_NAME} reg
+                 ON reg."registryDid" = bv."registryDid"
              LEFT JOIN LATERAL (
                  SELECT
                      bv_proj."projectKey"                    AS project_id,
@@ -660,27 +725,11 @@ export class PgCreditRepository extends CreditRepository {
              LIMIT 1`,
             [tokenId],
         );
+    }
 
-        const credit: CreditRow | null = creditRows[0] ? {
-            tokenId: creditRows[0].tokenId,
-            name: creditRows[0].name,
-            symbol: creditRows[0].symbol,
-            type: PgCreditRepository.normaliseType(creditRows[0].raw_type, creditRows[0].options_token_type),
-            supply: parseFloat(creditRows[0].total_supply ?? '0') || 0,
-            projectId: creditRows[0].project_id ?? null,
-            project: creditRows[0].project_name ?? null,
-            methodologyId: creditRows[0].methodology_id ?? null,
-            methodology: creditRows[0].methodology_name ?? null,
-            registry: creditRows[0].registry_name ?? null,
-            registryDid: creditRows[0].registryDid,
-            mintDate: creditRows[0].mint_date instanceof Date
-                ? creditRows[0].mint_date.toISOString()
-                : (creditRows[0].mint_date ?? null),
-            mintConsensusTimestamp: null,
-        } : null;
-
-        // 2. The raw Token message from HCS.
-        const tokenMessageRows: Array<Record<string, unknown>> = await this.dataSource.query(
+    /** 2. The raw Token message from HCS. */
+    private async findRawTokenMessage(tokenId: string): Promise<Array<Record<string, unknown>>> {
+        return this.dataSource.query(
             `SELECT "consensusTimestamp", "topicId", owner, uuid, type, action, status, options, files, topics, tokens, "sequenceNumber", "lastUpdate", "createdAt"
              FROM message
              WHERE type = 'Token' AND options->>'tokenId' = $1
@@ -688,53 +737,21 @@ export class PgCreditRepository extends CreditRepository {
              LIMIT 1`,
             [tokenId],
         );
-        const tokenMessage = tokenMessageRows[0] ?? null;
+    }
 
-        // 2b. Resolve the policy governing this token via its linked project's originating VC message: neither
-        //     the Token-creation message nor MintToken VCs carry a policyId, so join back through
-        //     business_view.sourceTimestamp -> message.consensusTimestamp to recover it.
-        let policyId: string | null = null;
-        let policyName: string | null = null;
-        let policyTopicId: string | null = null;
-        if (credit?.projectId) {
-            const projectPolicyRows: Array<{ policyId: string | null }> = await this.dataSource.query(
-                `SELECT m."policyId"
-                 FROM business_view bv
-                 JOIN message m ON m."consensusTimestamp" = bv."sourceTimestamp"
-                 WHERE bv."viewType" = 'PROJECT' AND bv."projectKey" = $1
-                 LIMIT 1`,
-                [credit.projectId],
-            );
-            policyId = projectPolicyRows[0]?.policyId ?? null;
-        }
-        if (policyId) {
-            const policyNameRows: Array<{ policyName: string | null; policyTopicId: string | null }> = await this.dataSource.query(
-                `SELECT ip.options->>'name' AS "policyName",
-                        p."policyTopicId"   AS "policyTopicId"
-                 FROM policy p
-                 JOIN message ip
-                     ON ip.type = 'Instance-Policy'
-                    AND ip.action = 'publish-policy'
-                    AND ip."topicId" = p."policyTopicId"
-                 WHERE p."policyId" = $1
-                 ORDER BY ip."consensusTimestamp" DESC
-                 LIMIT 1`,
-                [policyId],
-            );
-            policyName = policyNameRows[0]?.policyName ?? null;
-            policyTopicId = policyNameRows[0]?.policyTopicId ?? null;
-        }
-
-        // 3. MintToken VC documents that minted credits for this tokenId.
-        const mintRows: Array<{
-            consensusTimestamp: string;
-            topicId: string;
-            amount: string | null;
-            date: string | null;
-            document: Record<string, unknown> | null;
-            projectKey: string | null;
-            type: string | null;
-        }> = await this.dataSource.query(
+    /** 3. MintToken VC documents that minted credits for this tokenId. */
+    private async findRawMintRows(tokenId: string): Promise<Array<{
+        consensusTimestamp: string;
+        topicId: string;
+        amount: string | null;
+        date: string | null;
+        document: Record<string, unknown> | null;
+        projectKey: string | null;
+        type: string | null;
+        mintedAmount: string | null;
+        mintMatchStatus: string | null;
+    }>> {
+        return this.dataSource.query(
             `SELECT
                 m."consensusTimestamp",
                 m."topicId",
@@ -742,7 +759,12 @@ export class PgCreditRepository extends CreditRepository {
                 m.documents->'credentialSubject'->0->>'date'   AS date,
                 m.documents                                    AS document,
                 pml.project_key                                AS "projectKey",
-                m.documents->'credentialSubject'->0->>'type'  AS type
+                m.documents->'credentialSubject'->0->>'type'  AS type,
+                -- What the ledger actually minted for this event, so the UI can
+                -- contrast it with the declared amount above rather than against
+                -- live token supply (which is net of retirements).
+                pml.minted_amount                              AS "mintedAmount",
+                pml.mint_match_status                          AS "mintMatchStatus"
              FROM message m
              LEFT JOIN project_mint_link pml
                  ON pml.mint_consensus_timestamp = m."consensusTimestamp"
@@ -755,37 +777,62 @@ export class PgCreditRepository extends CreditRepository {
              LIMIT 200`,
             [tokenId],
         );
+    }
 
-        // 4. All distinct projects linked to this tokenId (not just the most recent).
-        const projectRows: Array<{ project_id: string | null; project_name: string | null }> =
-            await this.dataSource.query(
-                `SELECT DISTINCT
-                     bv_proj."projectKey"  AS project_id,
-                     bv_proj."displayName" AS project_name
-                 FROM project_mint_link pml
-                 JOIN business_view bv_proj
-                     ON bv_proj."projectKey" = pml.project_key
-                    AND bv_proj."viewType" = 'PROJECT'
-                 WHERE pml.token_id = $1
-                 ORDER BY bv_proj."displayName" ASC NULLS LAST`,
-                [tokenId],
-            );
+    /** 4. All distinct projects linked to this tokenId (not just the most recent). */
+    private async findRawProjectRows(tokenId: string): Promise<Array<{ project_id: string | null; project_name: string | null }>> {
+        return this.dataSource.query(
+            `SELECT DISTINCT
+                 bv_proj."projectKey"  AS project_id,
+                 bv_proj."displayName" AS project_name
+             FROM project_mint_link pml
+             JOIN business_view bv_proj
+                 ON bv_proj."projectKey" = pml.project_key
+                AND bv_proj."viewType" = 'PROJECT'
+             WHERE pml.token_id = $1
+             ORDER BY bv_proj."displayName" ASC NULLS LAST`,
+            [tokenId],
+        );
+    }
 
-        const projects: CreditProjectLink[] = projectRows.map(r => ({
-            projectId: r.project_id ?? null,
-            project: r.project_name ?? null,
-        }));
+    /**
+     * 2b. Resolve the policy governing this token via its linked project's originating VC message: neither
+     * the Token-creation message nor MintToken VCs carry a policyId, so join back through
+     * business_view.sourceTimestamp -> message.consensusTimestamp to recover it. A genuine two-step
+     * dependency chain (policyId must be known before policyName can be looked up), so it stays sequential,
+     * but runs concurrently with the four independent queries above rather than after them.
+     */
+    private async resolveCreditPolicy(projectId: string | null): Promise<{ policyId: string | null; policyName: string | null; policyTopicId: string | null }> {
+        if (!projectId) return { policyId: null, policyName: null, policyTopicId: null };
 
-        if (!credit && !tokenMessage && mintRows.length === 0 && projects.length === 0) return null;
+        const projectPolicyRows: Array<{ policyId: string | null }> = await this.dataSource.query(
+            `SELECT m."policyId"
+             FROM business_view bv
+             JOIN message m ON m."consensusTimestamp" = bv."sourceTimestamp"
+             WHERE bv."viewType" = 'PROJECT' AND bv."projectKey" = $1
+             LIMIT 1`,
+            [projectId],
+        );
+        const policyId = projectPolicyRows[0]?.policyId ?? null;
+        if (!policyId) return { policyId: null, policyName: null, policyTopicId: null };
 
+        const policyNameRows: Array<{ policyName: string | null; policyTopicId: string | null }> = await this.dataSource.query(
+            `SELECT ip.options->>'name' AS "policyName",
+                    p."policyTopicId"   AS "policyTopicId"
+             FROM policy p
+             JOIN message ip
+                 ON ip.type = 'Instance-Policy'
+                AND ip.action = 'publish-policy'
+                AND ip."topicId" = p."policyTopicId"
+             WHERE p."policyId" = $1
+             ORDER BY ip."consensusTimestamp" DESC
+             LIMIT 1`,
+            [policyId],
+        );
         return {
-            credit,
-            projects,
-            tokenMessage,
             policyId,
-            policyName,
-            policyTopicId,
-            mintEvents: mintRows,
+            policyName: policyNameRows[0]?.policyName ?? null,
+            policyTopicId: policyNameRows[0]?.policyTopicId ?? null,
         };
     }
 }

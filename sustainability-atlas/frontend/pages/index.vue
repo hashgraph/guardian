@@ -334,7 +334,7 @@ const filteredStats = computed(() => {
             icon: Flame,
             accent: 'text-orange-500',
             accentBg: 'bg-orange-500/10',
-            to: '/credits',
+            to: { path: '/credits', query: { retiredOnly: 'true', sort: 'retiredTokens', dir: 'desc' } },
         },
     ];
 });
@@ -621,7 +621,7 @@ const filteredStats = computed(() => {
                                 </thead>
                                 <tbody class="divide-y">
                                     <AppLink
-                                        v-for="org in registries"
+                                        v-for="org in registries.slice(0, 10)"
                                         :key="org.name"
                                         :to="{ path: '/registries', query: { displayName: org.name } }"
                                         custom
@@ -751,13 +751,13 @@ const filteredStats = computed(() => {
                     </div>
                     <div class="px-6 pb-6">
                         <div class="rounded-xl border bg-card p-5">
-                            <div v-if="vintageDistribution.length > 0" class="flex items-end gap-3 h-48">
+                            <div v-if="vintageDistribution.length > 0" class="flex items-end gap-3 h-48 overflow-x-auto overflow-y-hidden pb-1">
                                 <div
                                     v-for="v in vintageDistribution"
                                     :key="v.year"
-                                    class="flex-1 flex flex-col items-center gap-2"
+                                    class="flex-shrink-0 w-16 flex flex-col items-center gap-2"
                                 >
-                                    <span class="text-[11px] font-medium text-muted-foreground tabular-nums">{{ formatCredits(v.credits) }}</span>
+                                    <span class="text-[11px] font-medium text-muted-foreground tabular-nums whitespace-nowrap">{{ formatCredits(v.credits) }}</span>
                                     <div
                                         class="w-full rounded-t-md bg-chart-2/80 hover:bg-chart-2 transition-colors"
                                         :style="{ height: `${(v.credits / vintageMax) * 140}px` }"

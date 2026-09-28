@@ -210,9 +210,16 @@ export async function buildMintProjectLinks(
             }
         }
 
-        // amount arrives as a JSONB string; parseFloat handles decimal values
-        // (e.g. "250.5") before rounding to fit the BIGINT column.
-        const amount = mint.amount != null ? Math.round(parseFloat(mint.amount)) : null;
+        // amount arrives as a JSONB string. The column is NUMERIC, so decimal
+        // amounts (e.g. fungible "250.5") are passed through as-is — rounding
+        // here would silently disagree with the on-chain mint it is reconciled
+        // against in serial-mint-linker.
+        // Pass the original string through rather than a parsed float so no
+        // precision is lost; Number() only screens out non-numeric values.
+        const amount =
+            mint.amount != null && mint.amount !== '' && Number.isFinite(Number(mint.amount))
+                ? mint.amount
+                : null;
         const mintDate = mint.mint_date ? new Date(mint.mint_date) : null;
 
         await dataSource.query(`

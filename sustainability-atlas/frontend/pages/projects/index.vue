@@ -11,12 +11,11 @@ import {
   Loader2,
   Save,
 } from "lucide-vue-next";
-import { useDebounceFn } from "@vueuse/core";
 import type { FilterOption } from "~/components/shared/FilterBar.vue";
 import type { SortDirection } from "~/composables/useFilteredPagination";
 import type { ProjectSortKey } from "~/composables/api/useProjectsApi";
 import { formatCredits } from "~/lib/format";
-import { naturalCompare } from "~/lib/utils";
+import { naturalCompare, decodeMultiValue } from "~/lib/utils";
 import { SDG_LIST, getLocalizedSDGName } from "~/lib/sdgs";
 import { SECTOR_I18N_KEYS } from "~/types/enums";
 import { generateProjectVc } from "~/lib/mock-vc";
@@ -29,7 +28,7 @@ import {
   buildProjectCsvRows,
   hederaTimestamp,
 } from "~/lib/csv-export";
-import { mapApiProject } from "~/composables/useProjects";
+import { mapApiProject, resolveCountryCode, normalizeCountryName, ALPHA3_TO_NAME, OTHER_COUNTRY, OTHER_COUNTRY_FILTER_VALUE } from "~/composables/useProjects";
 import type { SavedSearchCriteria } from "~/composables/useSavedSearches";
 import SavedSearchesRow from "~/components/saved-search/SavedSearchesRow.vue";
 
@@ -83,10 +82,10 @@ const currentPage = ref(
 const pageSize = ref(10);
 
 const searchQuery = ref(typeof route.query.q === "string" ? route.query.q : "");
+// FilterBar already debounces its own update:modelValue, so searchQuery only
+// ever changes at that cadence — debouncing again here would stack a second
+// delay on top of it before apiSearch (and therefore the query) changes.
 const apiSearch = ref(searchQuery.value);
-const debouncedSetSearch = useDebounceFn((val: string) => {
-  apiSearch.value = val;
-}, 300);
 
 function initialFiltersFromQuery(): Record<string, string> {
   const reserved = new Set(["q", "page", "sort", "dir", "network", "registryDid", "methodologyId"]);
@@ -125,7 +124,7 @@ function syncToUrl() {
 }
 
 watch(searchQuery, (val) => {
-  debouncedSetSearch(val);
+  apiSearch.value = val;
   currentPage.value = 1;
   syncToUrl();
 });
@@ -181,6 +180,7 @@ const apiFilters = computed<Record<string, any>>(() => {
   const a = activeFilters.value;
   const f: Record<string, any> = {};
   if (a.registry) f.registry = a.registry;
+  if (a.instanceTopicId) f.instanceTopicId = a.instanceTopicId;
   if (a.country) f.country = a.country;
   if (a.vintage) f.vintageRange = a.vintage;
   if (a.sector) f.sector = a.sector;
@@ -205,7 +205,8 @@ const { data, pending } = useProjectsApi({
   filters: apiFilters,
 });
 
-const { filterOptions } = useProjectFilterOptions(network);
+// Renamed — `pending` above is the project list's own fetch state.
+const { filterOptions, pending: filterOptionsPending } = useProjectFilterOptions(network);
 
 const meta = computed(() =>
   data.value?.meta ?? { page: 1, limit: pageSize.value, total: 0, totalPages: 1 },
@@ -321,9 +322,31 @@ function applySavedSearch(criteria: SavedSearchCriteria) {
 const { isAuthenticated } = useAuth();
 const savedSearchesRef = ref<InstanceType<typeof SavedSearchesRow> | null>(null);
 
-const countryFilterOptions = computed(() =>
-  [...filterOptions.value.countries].sort(naturalCompare),
-);
+// Raw distinct country values from the API can be several variants of the
+// same place ("MEX", "Mexico", "mexico") — the table already collapses
+// those to one display name (useProjects.ts's resolveCountryCode), so the
+// filter groups them the same way: one option per resolved country, valued
+// by its alpha-3 code rather than any one raw string. PgProjectRepository
+// resolves a selected code back to every raw variant on record server-side,
+// so filtering stays correct regardless of which spelling a project used.
+// Values that aren't a recognized ISO name/alpha-3 code (typos, placeholder
+// text, leaked geo/file data) collapse into one "Other" option instead of
+// listing each raw string; selecting it is resolved server-side against
+// every unrecognized value, not just the ones current at page-load.
+const countryFilterOptions = computed(() => {
+  const byCode = new Map<string, string>();
+  let hasOther = false;
+  for (const c of filterOptions.value.countries) {
+    const code = resolveCountryCode(c);
+    if (code === "UNK") hasOther = true;
+    else if (!byCode.has(code)) byCode.set(code, normalizeCountryName(c));
+  }
+  const options = [...byCode.entries()]
+    .map(([value, label]) => ({ value, label }))
+    .sort((a, b) => naturalCompare(a.label, b.label));
+  if (hasOther) options.push({ value: OTHER_COUNTRY_FILTER_VALUE, label: OTHER_COUNTRY });
+  return options;
+});
 
 const filters = computed<FilterOption[]>(() => [
   {
@@ -331,17 +354,32 @@ const filters = computed<FilterOption[]>(() => [
     label: t("projects.filters.registry"),
     multiSelect: true,
     searchable: true,
+    loading: filterOptionsPending.value,
     options: filterOptions.value.registries.map((r) => ({
       value: r,
       label: r,
     })),
   },
   {
+    key: "instanceTopicId",
+    label: t("projects.filters.methodology"),
+    multiSelect: true,
+    searchable: true,
+    loading: filterOptionsPending.value,
+    options: filterOptions.value.methodologies
+      .map((m) => ({
+        value: m.topicId,
+        label: m.name ? (m.version ? `${m.name} - ${m.version}` : m.name) : m.topicId,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label)),
+  },
+  {
     key: "country",
     label: t("projects.filters.country"),
     multiSelect: true,
     searchable: true,
-    options: countryFilterOptions.value.map((c) => ({ value: c, label: c })),
+    loading: filterOptionsPending.value,
+    options: countryFilterOptions.value,
   },
   {
     key: "vintage",
@@ -376,12 +414,14 @@ const filters = computed<FilterOption[]>(() => [
     key: "sector",
     label: t("projects.filters.sector"),
     multiSelect: true,
+    loading: filterOptionsPending.value,
     options: filterOptions.value.sectors.map((s) => ({ value: s, label: translateSector(s) })),
   },
   {
     key: "sectoralScope",
     label: t("projects.filters.sectoralScope"),
     multiSelect: true,
+    loading: filterOptionsPending.value,
     options: filterOptions.value.sectoralScopes.map((s) => ({
       value: s,
       label: s,
@@ -392,6 +432,7 @@ const filters = computed<FilterOption[]>(() => [
     label: t("projects.filters.developer"),
     multiSelect: true,
     searchable: true,
+    loading: filterOptionsPending.value,
     options: filterOptions.value.developers.map((d) => ({
       value: d,
       label: d,
@@ -419,6 +460,16 @@ function formatFilterValue(value: string): string {
   return from || to || value;
 }
 
+// The country filter's multiSelect values are alpha-3 codes (or
+// OTHER_COUNTRY_FILTER_VALUE for "Other") — resolve each to its display
+// name before joining, so the summary reads "Mexico, Other" instead of
+// leaking "MEX, __other__".
+function formatCountryFilterValue(value: string): string {
+  return decodeMultiValue(value)
+    .map((v) => (v === OTHER_COUNTRY_FILTER_VALUE ? OTHER_COUNTRY : (ALPHA3_TO_NAME[v] ?? v)))
+    .join(", ");
+}
+
 const filterSummary = computed(() => {
   const items: { label: string; value: string }[] = [];
   if (searchQuery.value.trim()) {
@@ -431,7 +482,9 @@ const filterSummary = computed(() => {
       )
       .map((f) => ({
         label: f.label,
-        value: formatFilterValue(activeFilters.value[f.key]),
+        value: f.key === "country"
+          ? formatCountryFilterValue(activeFilters.value[f.key])
+          : formatFilterValue(activeFilters.value[f.key]),
       })),
   );
   return items;
@@ -462,6 +515,7 @@ async function downloadProjects() {
     const search = searchQuery.value?.trim();
     if (search) query.search = search;
     if (af.registry) query.registry = af.registry;
+    if (af.instanceTopicId) query.instanceTopicId = af.instanceTopicId;
     if (af.country) query.country = af.country;
     if (af.developer) query.developer = af.developer;
     if (af.sector) query.sector = af.sector;

@@ -48,6 +48,7 @@ export interface ProjectSchema {
         creditingPeriodStart: ResolvedField | null;
         creditingPeriodEnd: ResolvedField | null;
         sdgOrCobenefits: ResolvedField | null;
+        estimatedAnnualCredits: ResolvedField | null;
     };
     fieldMap: FieldMapEntry[];
 }

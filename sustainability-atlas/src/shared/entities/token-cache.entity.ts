@@ -47,6 +47,20 @@ export class TokenCache {
     @Column({ type: 'int', nullable: true })
     decimals: number | null;
 
+    /** Highest TOKENMINT consensus timestamp already ingested into token_mint_tx
+     *  for this token. Fungible tokens only — non-fungible mints are tracked by
+     *  serial via `serialNumber`. Declared here as well as in bootstrapSchema
+     *  because worker synchronize would otherwise drop the column. */
+    @Column({ type: 'varchar', length: 30, nullable: true })
+    mintTxWatermark: string | null;
+
+    /** Highest CRYPTOTRANSFER consensus timestamp already scanned for this
+     *  token's treasury. Non-fungible tokens only — fungible balances can't be
+     *  attributed to the mint that created them. Declared here as well as in
+     *  bootstrapSchema so worker synchronize doesn't drop it. */
+    @Column({ type: 'varchar', length: 30, nullable: true })
+    transferTxWatermark: string | null;
+
     @Column({ type: 'timestamp', nullable: true })
     priorityDate: Date | null;
 

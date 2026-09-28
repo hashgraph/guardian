@@ -5,6 +5,7 @@ import { onClickOutside } from '@vueuse/core';
 export interface MappingOption {
     value: string;
     label: string;
+    description?: string;
 }
 export interface MappingOptionGroup {
     label: string;
@@ -50,6 +51,17 @@ const selectedLabel = computed(() => {
     return props.modelValue;
 });
 
+// Full option (incl. description) for the currently-selected value, used to
+// pin it at the top of the panel — see selectedOption's usage below for why.
+const selectedOption = computed<MappingOption | null>(() => {
+    if (!props.modelValue) return null;
+    for (const g of props.groups) {
+        const hit = g.options.find(o => o.value === props.modelValue);
+        if (hit) return hit;
+    }
+    return null;
+});
+
 const filteredGroups = computed<MappingOptionGroup[]>(() => {
     const q = search.value.trim().toLowerCase();
     if (!q) return props.groups;
@@ -66,6 +78,46 @@ const filteredGroups = computed<MappingOptionGroup[]>(() => {
 const totalFiltered = computed(() =>
     filteredGroups.value.reduce((n, g) => n + g.options.length, 0),
 );
+
+// Some methodologies expose tens of thousands of candidate fields — rendering
+// them all as DOM buttons the instant the panel opens is a real, measured
+// freeze (SE-196). Render only the first PAGE_SIZE across all groups, and
+// reveal more as the user scrolls near the bottom, instead of a full virtual
+// list — the common case (pick from the top, or narrow via search) never
+// pays for more than one page.
+const PAGE_SIZE = 150;
+const renderedCount = ref(PAGE_SIZE);
+
+const visibleGroups = computed<MappingOptionGroup[]>(() => {
+    const out: MappingOptionGroup[] = [];
+    let remaining = renderedCount.value;
+    for (const g of filteredGroups.value) {
+        if (remaining <= 0) break;
+        if (g.options.length <= remaining) {
+            out.push(g);
+            remaining -= g.options.length;
+        } else {
+            out.push({ label: g.label, options: g.options.slice(0, remaining) });
+            remaining = 0;
+        }
+    }
+    return out;
+});
+
+const hasMoreToRender = computed(() => renderedCount.value < totalFiltered.value);
+
+// Typing a search narrows filteredGroups to a different (usually much
+// smaller) set — always restart pagination from its top rather than keeping
+// whatever count scrolling had reached for the previous, unrelated list.
+watch(search, () => { renderedCount.value = PAGE_SIZE; });
+
+function onOptionsScroll(e: Event) {
+    if (!hasMoreToRender.value) return;
+    const el = e.target as HTMLElement;
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 120) {
+        renderedCount.value += PAGE_SIZE;
+    }
+}
 
 function updatePosition() {
     if (!import.meta.client) return;
@@ -101,6 +153,7 @@ function toggle() {
     }
     // Position before opening so focus() below doesn't scroll to an unpositioned panel.
     search.value = '';
+    renderedCount.value = PAGE_SIZE;
     updatePosition();
     open.value = true;
     nextTick(() => {
@@ -184,7 +237,10 @@ if (import.meta.client) {
                     </div>
 
                     <!-- Options (scrolls within the fixed panel height) -->
-                    <div class="min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-1">
+                    <div
+                        class="min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-1"
+                        @scroll="onOptionsScroll"
+                    >
                         <!-- Unmapped / clear -->
                         <button
                             type="button"
@@ -196,7 +252,26 @@ if (import.meta.client) {
                             <span>{{ unmappedLabel }}</span>
                         </button>
 
-                        <template v-for="group in filteredGroups" :key="group.label">
+                        <!-- Currently mapped — pinned so it's visible immediately without
+                             scrolling or rendering the full (possibly huge) list to reach it. -->
+                        <template v-if="selectedOption">
+                            <div class="my-1 border-t" />
+                            <div class="px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                Currently mapped
+                            </div>
+                            <button
+                                type="button"
+                                class="flex w-full items-start gap-2 rounded-sm bg-accent/60 px-2.5 py-1.5 text-left text-xs font-medium text-foreground transition-colors hover:bg-accent"
+                                :title="selectedOption.label"
+                                @click="select(selectedOption.value)"
+                            >
+                                <Check class="mt-0.5 h-3 w-3 shrink-0 opacity-100" />
+                                <span class="min-w-0 break-words">{{ selectedOption.label }}</span>
+                                <InfoTooltip v-if="selectedOption.description" :text="selectedOption.description" class="mt-0.5 shrink-0" />
+                            </button>
+                        </template>
+
+                        <template v-for="group in visibleGroups" :key="group.label">
                             <div class="my-1 border-t" />
                             <div class="px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                                 {{ group.label }}
@@ -213,12 +288,18 @@ if (import.meta.client) {
                                 <Check class="mt-0.5 h-3 w-3 shrink-0" :class="modelValue === opt.value ? 'opacity-100' : 'opacity-0'" />
                                 <!-- break-words wraps long field names so they're fully readable -->
                                 <span class="min-w-0 break-words">{{ opt.label }}</span>
+                                <InfoTooltip v-if="opt.description" :text="opt.description" class="mt-0.5 shrink-0" />
                             </button>
                         </template>
 
                         <!-- Empty state -->
                         <div v-if="totalFiltered === 0" class="px-2.5 py-3 text-center text-xs text-muted-foreground">
                             No matching fields
+                        </div>
+
+                        <!-- More options exist below the current page; scrolling near here loads the next page. -->
+                        <div v-if="hasMoreToRender" class="px-2.5 py-2 text-center text-[10px] text-muted-foreground">
+                            Showing {{ renderedCount }} of {{ totalFiltered }} — scroll for more
                         </div>
                     </div>
                 </div>

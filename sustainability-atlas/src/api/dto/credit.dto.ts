@@ -28,12 +28,12 @@ export class CreditQueryDto extends PaginationQueryDto {
     @IsString()
     tokenId?: string;
 
-    @ApiPropertyOptional({ description: 'Filter by exact project key (credentialSubject.id) — returns only issuances linked to this project. Supports a `|`-delimited list to scope to several projects at once.' })
+    @ApiPropertyOptional({ description: 'Filter by exact project key (credentialSubject.id). Returns only issuances linked to this project. Supports a `|`-delimited list to scope to several projects at once.' })
     @IsOptional()
     @IsString()
     projectKey?: string;
 
-    @ApiPropertyOptional({ description: 'Filter by methodology sourceTimestamp — returns only issuances linked to this methodology' })
+    @ApiPropertyOptional({ description: 'Filter by methodology sourceTimestamp. Returns only issuances linked to this methodology' })
     @IsOptional()
     @IsString()
     methodologyId?: string;
@@ -43,6 +43,12 @@ export class CreditQueryDto extends PaginationQueryDto {
     @Transform(({ value }) => value === true || value === 'true')
     @IsBoolean()
     linkedOnly?: boolean;
+
+    @ApiPropertyOptional({ description: 'Return only issuances with retired tokens (retired > 0)' })
+    @IsOptional()
+    @Transform(({ value }) => value === true || value === 'true')
+    @IsBoolean()
+    retiredOnly?: boolean;
 
     @ApiPropertyOptional({ description: 'Minimum minted amount (inclusive)' })
     @IsOptional()
@@ -96,6 +102,9 @@ export class CreditResponseDto {
     @ApiProperty({ description: 'Total supply (token_cache.totalSupply ?? 0)' })
     supply: number;
 
+    @ApiProperty({ description: 'Retired tokens (Retirement amount)' })
+    retiredTokens: number;
+
     @ApiProperty({ nullable: true, description: 'credentialSubject.id of the linked project, resolved via project_mint_link.' })
     projectId: string | null;
 
@@ -127,6 +136,7 @@ export class CreditResponseDto {
             symbol: row.symbol,
             type: row.type,
             supply: row.supply,
+            retiredTokens: row.retiredTokens,
             projectId: row.projectId,
             project: row.project,
             methodologyId: row.methodologyId,
