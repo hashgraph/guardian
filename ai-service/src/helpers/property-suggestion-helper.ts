@@ -4,8 +4,9 @@ import {
     IPropertySuggestionFieldInput,
     IPropertySuggestionResult
 } from '@guardian/interfaces';
+import { PinoLogger } from '@guardian/common';
 
-const promptTemplate = `You are assisting with tagging schema fields to standardized IWA glossary properties.
+const promptTemplate = `You are assisting with tagging schema fields to standardized IWA glossary properties. Your responses always JSON only (see "example of response"). No additional text, no explanation of the reasoning.
 
 Schema: {schemaTitle}
 {schemaDescriptionLine}
@@ -23,6 +24,25 @@ Allowed properties:
 
 Fields:
 {fields}
+
+Example of response:
+{
+  "results": [
+    {
+      "field": "...",
+      "candidates": [
+        {
+          "property": "...",
+          "confidence": ...,
+          "reasonCode": "..."
+        }
+      ]
+    },
+    ...
+      ]
+    }
+  ]
+}
 `;
 
 type RationaleReasonCode = 'name' | 'description' | 'type' | 'current';
@@ -50,7 +70,8 @@ export class PropertySuggestionConnect {
         properties: any[],
         schemaTitle?: string,
         schemaDescription?: string,
-        targetFieldNames?: string[]
+        targetFieldNames?: string[],
+        logger?: PinoLogger
     ): Promise<IPropertySuggestionResult[]> {
         // Which fields we actually owe a suggestion for. `fields` stays the full schema
         // (context only, for consistency), defaulting to it here keeps the old "suggest
@@ -117,7 +138,31 @@ export class PropertySuggestionConnect {
             .replace('{fields}', fieldsText);
 
         const structuredModel = model.withStructuredOutput(schema);
-        const response: any = await structuredModel.invoke(prompt);
+
+        await logger?.info(
+            `[GLOSSARY_AI] LLM call: model="${model.model}" schema="${schemaTitle || 'Untitled schema'}" ` +
+            `targets=[${targets.join(', ')}] properties=${propertyTitles.length} fields=${fields.length} promptChars=${prompt.length}`,
+            ['AI_SERVICE']
+        );
+        // Full prompt in the message (multi-line on purpose) so the exact text sent
+        // to the model - template plus substituted values - is inspectable in the sink.
+        await logger?.debug(`[GLOSSARY_AI] prompt sent to the model:\n${prompt}`, ['AI_SERVICE']);
+
+        const modelStartedAt = Date.now();
+        let response: any;
+        try {
+            response = await structuredModel.invoke(prompt);
+        } catch (error: any) {
+            await logger?.warn(
+                `[GLOSSARY_AI] LLM call failed after ${Date.now() - modelStartedAt}ms: ${error?.message}`,
+                ['AI_SERVICE']
+            );
+            throw error;
+        }
+        await logger?.info(
+            `[GLOSSARY_AI] LLM response after ${Date.now() - modelStartedAt}ms: ${JSON.stringify(response)}`,
+            ['AI_SERVICE']
+        );
 
         const currentPropertyByField = new Map<string, string | undefined>(fields.map((field) => [field.name, field.currentProperty]));
 

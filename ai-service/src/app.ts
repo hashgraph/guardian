@@ -29,7 +29,7 @@ Promise.all([
         const aiManager = new AIManager(logger);
         await aiSuggestionsAPI(aiManager, logger);
         await state.updateState(ApplicationStates.READY);
-        await logger.info('Ai service started', ['AI_SERVICE']);
+        await logger.info('AI service started', ['AI_SERVICE']);
     } catch (error) {
         console.log(error);
         console.error(error);

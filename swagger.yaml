@@ -37522,6 +37522,18 @@ paths:
                   value:
                     statusCode: 500
                     message: Error message
+        '501':
+          description: Not Implemented. Glossary AI is not enabled.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              examples:
+                default:
+                  summary: Glossary AI not enabled
+                  value:
+                    statusCode: 501
+                    message: Glossary AI is not enabled
       security:
         - bearer: []
       summary: Suggest schema field properties
@@ -61000,6 +61012,11 @@ components:
           type: number
         rationale:
           type: string
+        description:
+          type: string
+          description: >-
+            What this property means, sourced from the IWA dMRV v3
+            specification. Omitted for IWA v1 properties.
       required:
         - title
         - confidence
