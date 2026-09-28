@@ -1077,14 +1077,14 @@
                                         <div class="sc-ref-sel-item">
                                             <i class="pi pi-file" style="color:var(--color-primary, #4169E2);font-size:12px"></i>
                                             <span [title]="s.name">{{ s.name }}</span>
-                                            @if (s.version) { <span class="sc-ref-sel-ver">v{{ s.version }}</span> }
+                                            @if (s.component && s.topicId !== topic) { <span class="sc-ref-sel-ver sc-ref-sel-tool">{{ s.component }}</span> } @else if (s.version) { <span class="sc-ref-sel-ver">v{{ s.version }}</span> }
                                         </div>
                                     </ng-template>
                                     <ng-template pTemplate="item" let-s>
                                         <div class="sc-ref-sel-item">
                                             <i class="pi pi-file" style="color:var(--color-primary, #4169E2);font-size:12px"></i>
                                             <span [title]="s.name">{{ s.name }}</span>
-                                            @if (s.version) { <span class="sc-ref-sel-ver">v{{ s.version }}</span> }
+                                            @if (s.component && s.topicId !== topic) { <span class="sc-ref-sel-ver sc-ref-sel-tool">{{ s.component }}</span> } @else if (s.version) { <span class="sc-ref-sel-ver">v{{ s.version }}</span> }
                                         </div>
                                     </ng-template>
                                 </p-select>

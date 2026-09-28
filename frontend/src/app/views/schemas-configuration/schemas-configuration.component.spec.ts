@@ -1849,13 +1849,13 @@ describe('SchemasConfigurationComponent', () => {
             expect(shared[0]).toBe(sidebarCopy);
         });
 
-        it('does not offer a schema from another topic', () => {
+        it('offers a schema of a tool connected to the policy', () => {
             const root = makeSchema({ id: 'root' });
             const toolSchema = makeSchema({ id: 'tool' });
             toolSchema.topicId = 'tool-topic';
             const component = createRefComponent([root], [toolSchema], root);
 
-            expect(optionIris(component)).not.toContain('#tool');
+            expect(optionIris(component)).toContain('#tool');
         });
 
         it('keeps a schema from another topic when it is already in the sidebar', () => {

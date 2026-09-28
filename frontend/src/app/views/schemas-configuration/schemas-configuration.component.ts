@@ -3047,7 +3047,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
         const schemaMap = this.buildRefSchemaMap();
         const list = [...schemaMap.values()]
-            .filter(s => this.schemas.includes(s) || s.topicId === this.topic)
             .filter(s => this.canDragSchema(s, schemaMap));
         // Keep the currently-referenced schema selectable even when it isn't in the
         // draggable list, otherwise the dropdown value matches no option and shows blank.
