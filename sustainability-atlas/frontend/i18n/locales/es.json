@@ -333,6 +333,8 @@
             "Active": "Activo",
             "Inactive": "Inactivo"
         },
+        "fields": "Campos",
+        "changed": "Cambiado",
         "total": "Total"
     },
     "nav": {
@@ -1013,7 +1015,7 @@
             "hideDiscontinued": "Ocultar políticas discontinuadas"
         },
         "statusValues": {
-            "published": "Activa",
+            "published": "Publicada",
             "to_be_discontinued": "Por discontinuar",
             "discontinued": "Discontinuada"
         },
