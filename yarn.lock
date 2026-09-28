@@ -3155,59 +3155,60 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scalar/client-side-rendering@npm:0.4.1":
-  version: 0.4.1
-  resolution: "@scalar/client-side-rendering@npm:0.4.1"
+"@scalar/client-side-rendering@npm:0.4.5":
+  version: 0.4.5
+  resolution: "@scalar/client-side-rendering@npm:0.4.5"
   dependencies:
-    "@scalar/schemas": "npm:0.10.0"
-    "@scalar/types": "npm:0.20.0"
-    "@scalar/validation": "npm:0.6.3"
-  checksum: 10c0/ff3a8206dcf5d992499e8041448d5f837ac3e3ab6178190bac5709160e59a51d768df3b51105a0b42145a55e2cd76d4a1f6211a558de1c84b58fcfda7cabde70
+    "@scalar/helpers": "npm:0.15.0"
+    "@scalar/schemas": "npm:0.12.1"
+    "@scalar/types": "npm:0.22.1"
+    "@scalar/validation": "npm:0.6.5"
+  checksum: 10c0/539c1ff0dc4ac2ca3267d041a498b1b9d56f7f4d326fe3ab4e03d126f556502a11489f3e4720c4a7896ca0944e4cbead025d3e9f625305d5ff34f0208b99f259
   languageName: node
   linkType: hard
 
-"@scalar/helpers@npm:0.12.0":
-  version: 0.12.0
-  resolution: "@scalar/helpers@npm:0.12.0"
-  checksum: 10c0/96100dc5fbeda58b30280fd0787cca68f561e8d82064b84fe7a3259bbf8427229507260766d5cdaafebf2298108b713981486031fcc8a5db4c95c2540292aa05
+"@scalar/helpers@npm:0.15.0":
+  version: 0.15.0
+  resolution: "@scalar/helpers@npm:0.15.0"
+  checksum: 10c0/117da242108191c630c6401b981948b568d163cd472dcb0c5f8a4d771295ca7f25c778061066819e57c1fa3fc5820d346f1914eef6a185a6d1435a6afba18bb3
   languageName: node
   linkType: hard
 
 "@scalar/nestjs-api-reference@npm:^1.2.11":
-  version: 1.2.19
-  resolution: "@scalar/nestjs-api-reference@npm:1.2.19"
+  version: 1.2.23
+  resolution: "@scalar/nestjs-api-reference@npm:1.2.23"
   dependencies:
-    "@scalar/client-side-rendering": "npm:0.4.1"
-  checksum: 10c0/8c26a8cd461aa5d31d0e8af7f96e08e934f70830b072a51b484fee020777040a9028f612de8631d6d6fc455026e335c60f58ca7a246058c07d41769bd7a1d5ab
+    "@scalar/client-side-rendering": "npm:0.4.5"
+  checksum: 10c0/36316287f803ad4c51b6e9a9a461d10fb5738b2916c36e75ce0617914356aad07ddda7811d9192efd0f1c4320db32600507eb34920a98a33638bb51e22b3457c
   languageName: node
   linkType: hard
 
-"@scalar/schemas@npm:0.10.0":
-  version: 0.10.0
-  resolution: "@scalar/schemas@npm:0.10.0"
+"@scalar/schemas@npm:0.12.1":
+  version: 0.12.1
+  resolution: "@scalar/schemas@npm:0.12.1"
   dependencies:
-    "@scalar/helpers": "npm:0.12.0"
-    "@scalar/validation": "npm:0.6.3"
-  checksum: 10c0/94a7d47504d9b95d72f7938c5c85834333315c2c0af96f7bbad0ced9bb4a97a2fbf058bca00b8c0d45300955de5c4dbcae6a00ef8322c0b4b807562daf0e9e4c
+    "@scalar/helpers": "npm:0.15.0"
+    "@scalar/validation": "npm:0.6.5"
+  checksum: 10c0/1915a50fe6bc5241e4f856c8ebe4e7ac82411802b0ca7ba0356e8018c5733609dfaf1d83606792cf2c559e904a4fcabd24691950140bbff39b59b63d65787908
   languageName: node
   linkType: hard
 
-"@scalar/types@npm:0.20.0":
-  version: 0.20.0
-  resolution: "@scalar/types@npm:0.20.0"
+"@scalar/types@npm:0.22.1":
+  version: 0.22.1
+  resolution: "@scalar/types@npm:0.22.1"
   dependencies:
-    "@scalar/helpers": "npm:0.12.0"
+    "@scalar/helpers": "npm:0.15.0"
     nanoid: "npm:^5.1.6"
     type-fest: "npm:^5.8.0"
     zod: "npm:^4.4.3"
-  checksum: 10c0/0c1a906d1daa94c12e3ad82d5054f96f2318b36591ef4401a425f55f9dfd3483ca780c118ae01009bb72b9efbf6be4c07314b6cd286830f09212fb472998311c
+  checksum: 10c0/3a69b4427604c827f7da0b4530e3c0ba22381bd626141d91fdcc02e932a14ebc11b5912826b9962755a363181d7b554c8fdef580c1705382d1f8f27b6d5edb3b
   languageName: node
   linkType: hard
 
-"@scalar/validation@npm:0.6.3":
-  version: 0.6.3
-  resolution: "@scalar/validation@npm:0.6.3"
-  checksum: 10c0/3c510769ff50beeeebc2b4fce1bc9de726dbe89ab5a78525a4eec5209353f534b34a075dee3c86e2238e5068ca5aac8260d110f9496b5b3ad863695ab633855a
+"@scalar/validation@npm:0.6.5":
+  version: 0.6.5
+  resolution: "@scalar/validation@npm:0.6.5"
+  checksum: 10c0/79d883147ba65b0cb3462be773e7b6ed4e35c32cb3b18b5a39843873e55807c13769f3ac4e288b3435e7e9ba8e140e02337b93b76847973e9fdf8b4202de840b
   languageName: node
   linkType: hard
 
