@@ -18,7 +18,7 @@
         "ethers": "6.17.0",
         "exceljs": "^4.4.0",
         "express": "5.2.1",
-        "fs-extra": "11.4.0",
+        "fs-extra": "11.4.1",
         "imurmurhash": "0.1.4",
         "jszip": "3.10.2",
         "mathjs": "^15.2.0",
