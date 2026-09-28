@@ -1592,7 +1592,7 @@ __metadata:
     mongodb: "npm:6.21.0"
     nats: "npm:^2.29.3"
     node-vault: "npm:^0.12.0"
-    pino: "npm:10.1.0"
+    pino: "npm:10.3.1"
     reflect-metadata: "npm:0.2.2"
     rxjs: "npm:7.8.2"
     seq-logging: "npm:^2.2.0"
@@ -11870,7 +11870,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pino@npm:^9.14.0 || ^10.1.0":
+"pino@npm:10.3.1, pino@npm:^9.14.0 || ^10.1.0":
   version: 10.3.1
   resolution: "pino@npm:10.3.1"
   dependencies:
