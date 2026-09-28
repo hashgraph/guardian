@@ -601,7 +601,8 @@ export class XlsxToJson {
             isUpdatable: false,
         };
         try {
-            const key = XlsxToJson.getFieldKey(worksheet, table, row, xlsxResult);
+            const key = XlsxToJson.getFieldKey(worksheet, table, row);
+            XlsxToJson.validateFieldKey(worksheet, table, row, key.rawName, xlsxResult);
             const type = worksheet.getValue<string>(table.getCol(Dictionary.FIELD_TYPE), row);
             const description = worksheet.getValue<string>(table.getCol(Dictionary.QUESTION), row);
             const required = xlsxToBoolean(worksheet.getValue<string>(table.getCol(Dictionary.REQUIRED_FIELD), row));
@@ -1093,7 +1094,7 @@ export class XlsxToJson {
             return null;
         }
 
-        const key = XlsxToJson.getFieldKey(worksheet, table, row, xlsxResult);
+        const key = XlsxToJson.getFieldKey(worksheet, table, row);
         const field = allFields.get(key.path) || fields.find((f) => f.title === key.path);
         const targetPath = fieldPaths.get(key.path);
         const isNested = targetPath && targetPath.length > 1;
@@ -1211,7 +1212,7 @@ export class XlsxToJson {
             return null;
         }
 
-        const key = XlsxToJson.getFieldKey(worksheet, table, row, xlsxResult);
+        const key = XlsxToJson.getFieldKey(worksheet, table, row);
         const description = worksheet.getValue<string>(table.getCol(Dictionary.QUESTION), row);
         const groupIndex = worksheet.getRow(row).getOutline();
         const type = worksheet.getValue<string>(table.getCol(Dictionary.FIELD_TYPE), row);
@@ -1422,8 +1423,7 @@ export class XlsxToJson {
     private static getFieldKey(
         worksheet: Worksheet,
         table: Table,
-        row: number,
-        xlsxResult: XlsxResult,
+        row: number
     ): IFieldKey {
         const path = worksheet.getPath(table.getCol(Dictionary.ANSWER), row);
         const fullPath = worksheet.getFullPath(table.getCol(Dictionary.ANSWER), row);
@@ -1436,6 +1436,20 @@ export class XlsxToJson {
         if (name) {
             name = name.trim();
         }
+        const rawName = name;
+        if (name && name.includes('.')) {
+            name = name.replaceAll('.', '');
+        }
+        return { name, rawName, path, fullPath }
+    }
+
+    private static validateFieldKey(
+        worksheet: Worksheet,
+        table: Table,
+        row: number,
+        name: string,
+        xlsxResult: XlsxResult
+    ): void {
         if (name && name.includes('.')) {
             xlsxResult.addError({
                 type: 'warning',
@@ -1446,9 +1460,18 @@ export class XlsxToJson {
                 row,
                 col: table.getCol(Dictionary.KEY),
             }, null);
-            name = name.replaceAll('.', '');
         }
-        return { name, path, fullPath }
+        if (name && name.includes(':')) {
+            xlsxResult.addError({
+                type: 'error',
+                text: `Invalid field key.`,
+                message: `Key "${name}" contains a colon (':'), which is reserved by JSON-LD for prefix:term compaction. Rename the field key in the Key column before importing.`,
+                worksheet: worksheet.name,
+                cell: worksheet.getPath(table.getCol(Dictionary.KEY), row),
+                row,
+                col: table.getCol(Dictionary.KEY),
+            }, null);
+        }
     }
 
     private static addFieldByName(

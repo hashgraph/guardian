@@ -338,6 +338,14 @@ export class FieldControl {
                     }
                 };
             }
+            if (typeof control.value === 'string' && control.value.includes(':')) {
+                return {
+                    reservedCharacter: {
+                        valid: false,
+                        character: ':'
+                    }
+                };
+            }
             return null;
         };
     }

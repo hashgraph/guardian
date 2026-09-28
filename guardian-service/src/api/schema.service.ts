@@ -54,6 +54,7 @@ import {
     readSchemaTemplateXlsx
 } from '../helpers/import-helpers/index.js'
 import { validateSchemaDependencies } from '../helpers/import-helpers/schema/schema-dependency-validator.js';
+import { validateSchemaFieldKeys } from '../helpers/import-helpers/schema/schema-field-key-validator.js';
 import { getPageOptions } from './helpers/index.js';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -529,6 +530,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
         }) => {
             try {
                 const { item, owner } = msg;
+                validateSchemaFieldKeys(item);
                 await resolveTemplateSchemaContext(item, owner);
                 prepareSchemaTemplateMetadata(item);
                 await createSchemaAndArtifacts(item.category, item, owner, NewNotifier.empty());
@@ -615,6 +617,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     entity: item.entity,
                     document: item.document ? JSON.parse(JSON.stringify(item.document)) : item.document
                 } as ISchema;
+                validateSchemaFieldKeys(next);
                 validateSchemaDependencies(next);
                 await resolveTemplateSchemaContext(next, owner);
                 prepareSchemaTemplateMetadata(next, previous);
