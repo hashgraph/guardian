@@ -1832,4 +1832,115 @@ describe('SchemasConfigurationComponent', () => {
             expect(component.newArrayDependencyOn).toBe('one');
         });
     });
+
+    describe('Referenced schema dropdown options', () => {
+        function createRefComponent(sidebar: any[], full: any[], selected: any): any {
+            const component = createComponent({ schemas: sidebar, selectedSchema: selected });
+            component._subSchemasByIri = new Map(full.map((schema: any) => [schema.iri, schema]));
+            Object.defineProperty(component, 'canAddFieldToSelectedSchema', { get: () => true });
+            return component;
+        }
+
+        function refField(iri: string): any {
+            return makeField({ name: `ref_${iri.slice(1)}`, isRef: true, type: iri, customType: 'subSchema' });
+        }
+
+        function optionIris(component: any): string[] {
+            return component.availableRefSchemas.map((schema: any) => schema.iri);
+        }
+
+        it('offers a schema that is not loaded in the sidebar', () => {
+            const root = makeSchema({ id: 'root' });
+            const far = makeSchema({ id: 'far', name: 'VCS Validation Report Template v4.4' });
+            const component = createRefComponent([root], [far], root);
+
+            expect(optionIris(component)).toContain('#far');
+        });
+
+        it('keeps the previously used schema after the field points to another one', () => {
+            const root = makeSchema({ id: 'root' });
+            const first = makeSchema({ id: 'first' });
+            const second = makeSchema({ id: 'second' });
+            const component = createRefComponent([root], [first, second], root);
+            component.selectedField = refField('#first');
+            component.markDirty = () => component.schemaEditVersion++;
+            component.onSubSchemaRefChange('#second');
+
+            expect(component.selectedField.type).toBe('#second');
+            expect(optionIris(component)).toContain('#second');
+            expect(optionIris(component)).toContain('#first');
+        });
+
+        it('lists a schema loaded in both places once, using the sidebar copy', () => {
+            const root = makeSchema({ id: 'root' });
+            const sidebarCopy = makeSchema({ id: 'shared', name: 'Edited name' });
+            const serverCopy = makeSchema({ id: 'shared', name: 'Saved name' });
+            const component = createRefComponent([root, sidebarCopy], [serverCopy], root);
+
+            const shared = component.availableRefSchemas.filter((schema: any) => schema.iri === '#shared');
+
+            expect(shared.length).toBe(1);
+            expect(shared[0]).toBe(sidebarCopy);
+        });
+
+        it('offers a schema of a tool connected to the policy', () => {
+            const root = makeSchema({ id: 'root' });
+            const toolSchema = makeSchema({ id: 'tool' });
+            toolSchema.topicId = 'tool-topic';
+            const component = createRefComponent([root], [toolSchema], root);
+
+            expect(optionIris(component)).toContain('#tool');
+        });
+
+        it('keeps a schema from another topic when it is already in the sidebar', () => {
+            const root = makeSchema({ id: 'root' });
+            const toolSchema = makeSchema({ id: 'tool' });
+            toolSchema.topicId = 'tool-topic';
+            const component = createRefComponent([root, toolSchema], [], root);
+
+            expect(optionIris(component)).toContain('#tool');
+        });
+
+        it('does not offer the schema being edited', () => {
+            const root = makeSchema({ id: 'root' });
+            const other = makeSchema({ id: 'other' });
+            const component = createRefComponent([root], [other], root);
+
+            expect(optionIris(component)).not.toContain('#root');
+            expect(optionIris(component)).toContain('#other');
+        });
+
+        it('does not offer the schema being viewed in drill-down', () => {
+            const root = makeSchema({ id: 'root' });
+            const middle = makeSchema({ id: 'middle' });
+            const other = makeSchema({ id: 'other' });
+            const component = createRefComponent([root], [middle, other], root);
+            component.drillStack = [{ fieldLabel: 'Middle', fields: [], schemaIri: '#middle' }];
+
+            expect(optionIris(component)).not.toContain('#middle');
+            expect(optionIris(component)).toContain('#other');
+        });
+
+        it('does not offer a schema whose refs lead back through an unloaded schema', () => {
+            const root = makeSchema({ id: 'root' });
+            const middle = makeSchema({ id: 'middle', fields: [refField('#root')] });
+            const top = makeSchema({ id: 'top', fields: [refField('#middle')] });
+            const component = createRefComponent([root, top], [middle], root);
+
+            expect(optionIris(component)).not.toContain('#top');
+            expect(optionIris(component)).not.toContain('#middle');
+        });
+
+        it('reuses the option list until its inputs change', () => {
+            const root = makeSchema({ id: 'root' });
+            const other = makeSchema({ id: 'other' });
+            const component = createRefComponent([root], [other], root);
+
+            const first = component.availableRefSchemas;
+
+            expect(component.availableRefSchemas).toBe(first);
+            component.schemaEditVersion++;
+            expect(component.availableRefSchemas).not.toBe(first);
+        });
+    });
 });

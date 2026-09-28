@@ -3032,16 +3032,64 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return this.schemas.find(s => s.iri === iri) ?? this._subSchemasByIri.get(iri);
     }
 
+    private availableRefSchemasCache: {
+        schemas: Schema[];
+        subSchemas: Map<string, Schema>;
+        topic: string;
+        selectedSchema: Schema | null;
+        drillStack: DrillEntry[];
+        currentIri: string;
+        editVersion: number;
+        canAdd: boolean;
+        result: Schema[];
+    } | null = null;
+
     public get availableRefSchemas(): Schema[] {
-        const list = this.schemas.filter(s => this.canDragSchema(s));
+        const currentIri = this.selectedSubSchemaIri;
+        const canAdd = this.canAddFieldToSelectedSchema;
+        const cache = this.availableRefSchemasCache;
+        if (cache
+            && cache.schemas === this.schemas
+            && cache.subSchemas === this._subSchemasByIri
+            && cache.topic === this.topic
+            && cache.selectedSchema === this.selectedSchema
+            && cache.drillStack === this.drillStack
+            && cache.currentIri === currentIri
+            && cache.editVersion === this.schemaEditVersion
+            && cache.canAdd === canAdd) {
+            return cache.result;
+        }
+
+        const schemaMap = this.buildRefSchemaMap();
+        const list = [...schemaMap.values()]
+            .filter(s => this.canDragSchema(s, schemaMap));
         // Keep the currently-referenced schema selectable even when it isn't in the
         // draggable list, otherwise the dropdown value matches no option and shows blank.
-        const currentIri = this.selectedSubSchemaIri;
+        let result = list;
         if (currentIri && !list.some(s => s.iri === currentIri)) {
             const current = this.resolveRefSchema(currentIri);
-            if (current) { return [current, ...list]; }
+            if (current) { result = [current, ...list]; }
         }
-        return list;
+        this.availableRefSchemasCache = {
+            schemas: this.schemas,
+            subSchemas: this._subSchemasByIri,
+            topic: this.topic,
+            selectedSchema: this.selectedSchema,
+            drillStack: this.drillStack,
+            currentIri,
+            editVersion: this.schemaEditVersion,
+            canAdd,
+            result,
+        };
+        return result;
+    }
+
+    private buildRefSchemaMap(): Map<string, Schema> {
+        const schemaMap = new Map<string, Schema>(this._subSchemasByIri);
+        for (const schema of this.schemas) {
+            if (schema.iri) { schemaMap.set(schema.iri, schema); }
+        }
+        return schemaMap;
     }
 
     public enterSubSchema(field: SchemaField, event: Event): void {
@@ -3155,11 +3203,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.setDragGhost(event);
     }
 
-    public isCircularDependency(schema: Schema): boolean {
+    public isCircularDependency(schema: Schema, schemaMap?: Map<string, Schema>): boolean {
         // Use live field refs, not document.$defs — withDefs() bloats $defs and causes false positives.
-        const schemaMap = new Map<string, Schema>();
-        for (const s of this.schemas) {
-            if (s.iri) { schemaMap.set(s.iri, s); }
+        const refs = schemaMap ?? new Map<string, Schema>();
+        if (!schemaMap) {
+            for (const candidate of this.schemas) {
+                if (candidate.iri) { refs.set(candidate.iri, candidate); }
+            }
         }
 
         const ancestors = new Set<string>();
@@ -3175,7 +3225,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             visited.add(s.iri);
             for (const f of (s.fields || [])) {
                 if (f.isRef && f.type) {
-                    const ref = schemaMap.get(f.type);
+                    const ref = refs.get(f.type);
                     if (ref) { visit(ref); }
                 }
             }
@@ -3188,14 +3238,14 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return false;
     }
 
-    public canDragSchema(schema: Schema): boolean {
+    public canDragSchema(schema: Schema, schemaMap?: Map<string, Schema>): boolean {
         if (!this.canAddFieldToSelectedSchema) { return false; }
         const selId = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
         const schId = schema.id || (schema as any)._id;
         if (selId && selId === schId) { return false; }
         const contextIri = this.currentDrilledSchemaIri;
         if (contextIri && schema.iri === contextIri) { return false; }
-        if (this.isCircularDependency(schema)) { return false; }
+        if (this.isCircularDependency(schema, schemaMap)) { return false; }
         return true;
     }
 
