@@ -9,12 +9,23 @@ import { loadService, capturedHandlers, stubs, StubMessageError, StubMessageResp
 function isResp(r) { return r instanceof StubMessageResponse || (r && r.type === 'response'); }
 function isErr(r) { return r instanceof StubMessageError || (r && r.type === 'error'); }
 
-// Loads a fresh RoleService instance with a DatabaseServer stub whose
-// behavior/call-capture is scenario-specific, and returns a `call(event, msg)`
+// Scenario state read by the DatabaseServer stub. The service is loaded once
+// (esmock re-imports the whole dependency graph, ~1s per load), so each test
+// swaps in its own behavior and gets a fresh call log via `useBehavior`.
+let behavior = {};
+let calls = [];
+
+function useBehavior(next = {}) {
+    behavior = next;
+    calls = [];
+    return calls;
+}
+
+// Loads a RoleService instance with a DatabaseServer stub that delegates to the
+// current `behavior` and records into `calls`, and returns a `call(event, msg)`
 // helper bound to that instance's registered NATS handlers.
-async function loadRoleService(behavior = {}) {
+async function loadRoleService() {
     restoreHarness();
-    const calls = [];
     class StubDb {
         constructor() {}
         async findOne(_entity, filter) {
@@ -49,7 +60,7 @@ async function loadRoleService(behavior = {}) {
         }));
     } catch (e) {
         console.warn('[role-service-ownership.test] dist import failed:', e.message);
-        return { call: null, calls };
+        return null;
     }
 
     const svc = new RoleService();
@@ -63,7 +74,7 @@ async function loadRoleService(behavior = {}) {
         if (!h) throw new Error(`handler not registered: ${eventName}`);
         return h.cb(msg);
     };
-    return { call, calls };
+    return call;
 }
 
 // A non-SR caller: their own DID (creator) differs from their tenant's SR DID
@@ -71,8 +82,15 @@ async function loadRoleService(behavior = {}) {
 const nonSrOwner = { creator: 'user-did', owner: 'sr-did' };
 
 describe('@unit role-service ownership scoping (owner.owner, not owner.creator)', () => {
+    let call;
+
+    before(async function () {
+        this.timeout(10000);
+        call = await loadRoleService();
+    });
+
     it('CREATE_ROLE stamps the new role with owner.owner (the SR), not owner.creator', async () => {
-        const { call, calls } = await loadRoleService({ save: (d) => ({ ...d, id: 'new-id' }) });
+        const calls = useBehavior({ save: (d) => ({ ...d, id: 'new-id' }) });
         if (!call) return;
         const r = await call('CREATE_ROLE', {
             role: { name: 'X', permissions: [] },
@@ -85,7 +103,7 @@ describe('@unit role-service ownership scoping (owner.owner, not owner.creator)'
     });
 
     it('UPDATE_ROLE scopes the lookup by owner.owner, so a non-SR caller can edit a role owned by their SR', async () => {
-        const { call, calls } = await loadRoleService({
+        const calls = useBehavior({
             findOne: () => ({ id: 'r-1', owner: 'sr-did', permissions: [] }),
             update: (d) => d,
         });
@@ -101,7 +119,7 @@ describe('@unit role-service ownership scoping (owner.owner, not owner.creator)'
     });
 
     it('UPDATE_ROLE still rejects a role owned by a different tenant', async () => {
-        const { call } = await loadRoleService({ findOne: () => null });
+        useBehavior({ findOne: () => null });
         if (!call) return;
         const r = await call('UPDATE_ROLE', {
             id: 'r-1',
@@ -112,7 +130,7 @@ describe('@unit role-service ownership scoping (owner.owner, not owner.creator)'
     });
 
     it('DELETE_ROLE scopes the lookup by owner.owner, so a non-SR caller can delete a role owned by their SR', async () => {
-        const { call, calls } = await loadRoleService({
+        const calls = useBehavior({
             findOne: () => ({ id: 'r-1', owner: 'sr-did' }),
             remove: () => {},
         });
@@ -124,7 +142,7 @@ describe('@unit role-service ownership scoping (owner.owner, not owner.creator)'
     });
 
     it('DELETE_ROLE still rejects a role owned by a different tenant', async () => {
-        const { call } = await loadRoleService({ findOne: () => null });
+        useBehavior({ findOne: () => null });
         if (!call) return;
         const r = await call('DELETE_ROLE', {
             id: 'r-1',
