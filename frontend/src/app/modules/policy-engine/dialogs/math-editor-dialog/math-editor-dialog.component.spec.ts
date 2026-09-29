@@ -1,6 +1,7 @@
 import { MathEditorDialogComponent } from './math-editor-dialog.component';
 import { DocumentMap } from './math-model/document-map';
 import { FieldLink } from './math-model/field-link';
+import { MathItemType } from './math-model/math-item.type';
 
 describe('MathEditorDialogComponent input documents', () => {
     function makeDialog(): any {
@@ -352,5 +353,144 @@ describe('MathEditorDialogComponent Table outputs', () => {
         const rows = dialog.syncTableRows([{ year: 'y', old: 'o' }], dialog.getTableColumns(output('results')));
 
         expect(rows).toEqual([{ year: 'y', co2: '' }]);
+    });
+});
+
+describe('MathEditorDialogComponent Table output test results', () => {
+    function makeDialog(
+        outputs: FieldLink[],
+        scope: any,
+        advanced: (result: any) => any = (result) => result
+    ): any {
+        const dialog: any = Object.create(MathEditorDialogComponent.prototype);
+        const documents = new DocumentMap();
+        documents.addDocument({ schema: '#schema', document: { inputValue: 21 } });
+        dialog.getValue = () => documents;
+        dialog.artifactService = {};
+        dialog.gzipService = {};
+        dialog.csvService = {};
+        dialog.idb = {};
+        dialog.engine = {
+            createContext: () => ({
+                setDocument: () => undefined,
+                getContext: () => ({ scope }),
+                getWarnings: () => []
+            }),
+            variables: { getItems: () => [], pages: [] },
+            formulas: { getItems: () => [], pages: [] },
+            outputs: { getItems: () => outputs, pages: [] },
+            getItems: () => outputs
+        };
+        dialog.inputSchema = { iri: '#in' };
+        dialog.outputSchema = {
+            iri: '#out',
+            fields: [
+                { name: 'results', isRef: false, isArray: false, fields: [] },
+                { name: 'total', isRef: false, isArray: false, fields: [] }
+            ]
+        };
+        let codeContext: any = null;
+        dialog.code = {
+            setContext: (context: any) => { codeContext = context; },
+            build: () => () => advanced(codeContext.result)
+        };
+        dialog.onStep = () => undefined;
+        return dialog;
+    }
+
+    function tableOutput(rows: Record<string, string>[]): FieldLink {
+        const link = FieldLink.from({
+            type: MathItemType.LINK,
+            name: '',
+            description: '',
+            field: 'results',
+            schema: '#out',
+            rows
+        })!;
+        link.update();
+        return link;
+    }
+
+    it('fills the grid with the calculated values', async () => {
+        const output = tableOutput([{ year: 'y', co2: 'c' }, { year: 'y2', co2: '' }]);
+        const dialog = makeDialog([output], { y: 2020, c: 42, y2: 2021 });
+
+        await dialog.onTest();
+
+        expect(dialog.getTableValues(output)).toEqual([
+            { year: 2020, co2: 42 },
+            { year: 2021, co2: '' }
+        ]);
+    });
+
+    it('hands the Advanced code the same table value the server writes', async () => {
+        const output = tableOutput([{ year: 'y', co2: 'c' }]);
+        const dialog = makeDialog([output], { y: 2020, c: 42 });
+
+        await dialog.onTest();
+
+        expect(JSON.parse(dialog.result.output)).toEqual({
+            results: { type: 'table', rows: [{ year: 2020, co2: 42 }] }
+        });
+    });
+
+    it('shows the value Advanced code put in place of the table instead of the grid', async () => {
+        const output = tableOutput([{ year: 'y', co2: 'c' }]);
+        const dialog = makeDialog([output], { y: 2020, c: 42 }, () => ({ results: 'set by code' }));
+
+        await dialog.onTest();
+
+        expect(dialog.getTableValues(output)).toBeNull();
+        expect(output.value).toBe('set by code');
+    });
+
+    it('shows the rows as Advanced code left them', async () => {
+        const output = tableOutput([{ year: 'y', co2: 'c' }]);
+        const dialog = makeDialog([output], { y: 2020, c: 42 }, (result) => {
+            result.results.rows.push({ year: 2021, co2: 7 });
+            return result;
+        });
+
+        await dialog.onTest();
+
+        expect(dialog.getTableValues(output)).toEqual([
+            { year: 2020, co2: 42 },
+            { year: 2021, co2: 7 }
+        ]);
+    });
+
+    it('shows an all-empty grid row, which the issued table will not contain', async () => {
+        const output = tableOutput([{ year: 'y', co2: '' }, { year: '', co2: '' }]);
+        const dialog = makeDialog([output], { y: 2020 });
+
+        await dialog.onTest();
+
+        expect(dialog.getTableValues(output)).toEqual([
+            { year: 2020, co2: '' },
+            { year: '', co2: '' }
+        ]);
+    });
+
+    it('keeps the error text when the table cannot be written to its path', async () => {
+        const output = tableOutput([{ year: 'y' }]);
+        output.field = 'missing.results';
+        output.update();
+        const dialog = makeDialog([output], { y: 2020 });
+
+        await dialog.onTest();
+
+        expect(output.value).toBe('Error: Invalid path');
+        expect(dialog.getTableValues(output)).toBeNull();
+    });
+
+    it('keeps the single value view for an ordinary output', async () => {
+        const output = new FieldLink('t', 'total');
+        output.update();
+        const dialog = makeDialog([output], { t: 3 });
+
+        await dialog.onTest();
+
+        expect(output.value).toBe(3);
+        expect(dialog.getTableValues(output)).toBeNull();
     });
 });

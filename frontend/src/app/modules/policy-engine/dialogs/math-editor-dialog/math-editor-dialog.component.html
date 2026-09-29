@@ -1070,27 +1070,58 @@
                           </div>
                         </div>
                       </div>
-                      <div class="formula-eq">=</div>
-                      <div class="formula-name">
-                        <div class="guardian-input-container">
-                          <label class="form-label"></label>
-                          <input
-                            [ngModel]="item.variableNameText"
-                            pInputText
-                            type="text"
-                            [readOnly]="true"/>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row-container" style="gap: 16px">
-                      <div class="guardian-input-container" style="width: 50%">
-                        <label class="form-label">Value</label>
-                        <div class="readonly-input">
-                          <div class="formula-link-value">
-                            <div class="formula-link-value__item">{{getItemValue(item.value)}}</div>
+                      @if (!item.isTable) {
+                        <div class="formula-eq">=</div>
+                        <div class="formula-name">
+                          <div class="guardian-input-container">
+                            <label class="form-label"></label>
+                            <input
+                              [ngModel]="item.variableNameText"
+                              pInputText
+                              type="text"
+                              [readOnly]="true"/>
                           </div>
                         </div>
+                      }
+                    </div>
+                    @if (getTableValues(item); as values) {
+                      <div class="table-output">
+                        <label class="form-label">Rows ({{values.length}})</label>
+                        <div class="table-output-grid">
+                          <table>
+                            <thead>
+                              <tr>
+                                <th class="table-output-index">#</th>
+                                @for (column of getTableColumns(item); track column.key) {
+                                  <th>{{column.name}}</th>
+                                }
+                              </tr>
+                            </thead>
+                            <tbody>
+                              @for (row of values; track $index; let rowIndex = $index) {
+                                <tr>
+                                  <td class="table-output-index">{{rowIndex + 1}}</td>
+                                  @for (column of getTableColumns(item); track column.key) {
+                                    <td>{{getItemValue(row[column.key])}}</td>
+                                  }
+                                </tr>
+                              }
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
+                    }
+                    <div class="row-container" style="gap: 16px">
+                      @if (!getTableValues(item)) {
+                        <div class="guardian-input-container" style="width: 50%">
+                          <label class="form-label">Value</label>
+                          <div class="readonly-input">
+                            <div class="formula-link-value">
+                              <div class="formula-link-value__item">{{getItemValue(item.value)}}</div>
+                            </div>
+                          </div>
+                        </div>
+                      }
                       <div class="guardian-input-container" style="width: 50%">
                         <label class="form-label">Field Name</label>
                         <div class="readonly-input">

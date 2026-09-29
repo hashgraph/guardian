@@ -5,7 +5,7 @@ import { FieldLinkDialog } from '../field-link-dialog/field-link-dialog.componen
 import { SchemaVariables } from '../../structures';
 import { Validators } from '@angular/forms';
 import { TreeListData, TreeListView } from 'src/app/modules/common/tree-graph/tree-list';
-import { Code, FieldLink, MathContext, MathFormula, MathEngine, setDocumentValueByPath, DocumentMap } from './math-model/index';
+import { Code, FieldLink, MathContext, MathFormula, MathEngine, setDocumentValueByPath, getDocumentValueByPath, DocumentMap } from './math-model/index';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { MathGroups } from './math-model/math-groups';
 import { MathGroup } from './math-model/math-group';
@@ -643,6 +643,14 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         return Array.isArray(columns) ? columns.filter((column) => !!column?.key) : [];
     }
 
+    public getTableValues(item: FieldLink): Record<string, any>[] | null {
+        const value = item.value;
+        if (item.isTable && value?.type === 'table' && Array.isArray(value.rows) && !value.fileId) {
+            return value.rows;
+        }
+        return null;
+    }
+
     public addTableRows(item: FieldLink, count: number): void {
         const columns = this.getTableColumns(item);
         const rows = item.rows;
@@ -1248,10 +1256,18 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 outputDocument = {};
             }
 
+            const tableOutputs: FieldLink[] = [];
             for (const link of outputs) {
                 try {
-                    setDocumentValueByPath(this.outputSchema, outputDocument, link.path, context.scope[link.name]);
-                    link.value = context.scope[link.name];
+                    if (link.isTable) {
+                        const table = { type: 'table', rows: link.getTableRows(context.scope) };
+                        setDocumentValueByPath(this.outputSchema, outputDocument, link.path, table);
+                        link.value = table;
+                        tableOutputs.push(link);
+                    } else {
+                        setDocumentValueByPath(this.outputSchema, outputDocument, link.path, context.scope[link.name]);
+                        link.value = context.scope[link.name];
+                    }
                 } catch (error) {
                     console.log(error);
                     link.value = String(error);
@@ -1266,6 +1282,9 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 this.code.setContext(context);
                 builtCode = this.code.build();
                 const output = builtCode();
+                for (const link of tableOutputs) {
+                    link.value = getDocumentValueByPath(output, link.path);
+                }
                 let _output: string = '';
                 try {
                     _output = output ? JSON.stringify(output, null, 4) : '';
