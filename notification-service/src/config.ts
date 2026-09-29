@@ -13,8 +13,8 @@ if (!process.env.OVERRIDE || process.env.OVERRIDE === 'false') {
 } else {
     try {
         const envConfig = dotenv.parse(fs.readFileSync(envPath));
-        for (const k of Object.keys(envConfig)) {
-            process.env[k] = envConfig[k];
+        for (const [k, value] of Object.entries(envConfig)) {
+            process.env[k] = value;
         }
     } catch (err) {
         if (err.code === 'ENOENT') {

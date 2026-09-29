@@ -164,7 +164,7 @@ export class MessageBrokerChannel {
                     const chunks: Buffer[] = [];
                     while (offset < payloadBuffer.length) {
                         chunks.push(
-                            payloadBuffer.subarray(offset, offset + MQ_MESSAGE_CHUNK > payloadBuffer.length ? payloadBuffer.length : offset + MQ_MESSAGE_CHUNK)
+                            payloadBuffer.subarray(offset, Math.min(offset + MQ_MESSAGE_CHUNK, payloadBuffer.length))
                         );
                         offset = offset + MQ_MESSAGE_CHUNK;
                     }
@@ -224,7 +224,7 @@ export class MessageBrokerChannel {
                 const chunks: Buffer[] = [];
                 while(offset < payloadBuffer.length) {
                     chunks.push(
-                        payloadBuffer.subarray(offset, offset + MQ_MESSAGE_CHUNK > payloadBuffer.length ? payloadBuffer.length : offset + MQ_MESSAGE_CHUNK)
+                        payloadBuffer.subarray(offset, Math.min(offset + MQ_MESSAGE_CHUNK, payloadBuffer.length))
                     );
                     offset = offset + MQ_MESSAGE_CHUNK;
                 }

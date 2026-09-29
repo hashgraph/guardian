@@ -14,7 +14,7 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 })
 class AppModule { }
 
-const channelName = (process.env.SERVICE_CHANNEL || `worker.${GenerateUUIDv4().substring(26)}`).toUpperCase();
+const channelName = (process.env.SERVICE_CHANNEL || `worker.${GenerateUUIDv4().slice(26)}`).toUpperCase();
 
 Promise.all([
     MessageBrokerChannel.connect('WORKERS_SERVICE'),

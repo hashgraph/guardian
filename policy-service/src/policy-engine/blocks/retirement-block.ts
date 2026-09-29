@@ -175,7 +175,7 @@ export class RetirementBlock {
                     const endRule = PolicyUtils.aggregate(String(rightRaw), documents);
 
                     if (!Number.isInteger(startRule) || !Number.isInteger(endRule)) {
-                        throw new Error(`Serial numbers must be integers.`);
+                        throw new TypeError(`Serial numbers must be integers.`);
                     }
                     if (startRule < 1 || endRule < 1) {
                         throw new Error('Serial numbers must be greater than or equal to 1');
@@ -192,7 +192,7 @@ export class RetirementBlock {
                         documents
                     );
                     if (!Number.isInteger(valRule)) {
-                        throw new Error(
+                        throw new TypeError(
                             `Serial numbers must be integers.`
                         );
                     }

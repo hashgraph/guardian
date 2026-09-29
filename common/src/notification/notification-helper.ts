@@ -348,7 +348,7 @@ export class NotificationHelper {
         );
         return new NotificationHelper(
             this._users,
-            notifications.filter((item) => item).map((item) => item.id)
+            notifications.filter(Boolean).map((item) => item.id)
         );
     }
 

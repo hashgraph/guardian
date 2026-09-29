@@ -35,9 +35,9 @@ export class DocumentFieldsModel {
         if (typeof document.type === 'string') {
             this.type = document.type;
         } else if (Array.isArray(document.type)) {
-            if (document.type.indexOf('VerifiablePresentation') !== -1) {
+            if (document.type.includes('VerifiablePresentation')) {
                 this.type = 'VerifiablePresentation';
-            } else if (document.type.indexOf('VerifiablePresentation') !== -1) {
+            } else if (document.type.includes('VerifiablePresentation')) {
                 this.type = 'VerifiableCredential';
             } else {
                 this.type = document.type[0];
@@ -65,7 +65,7 @@ export class DocumentFieldsModel {
         } else {
             result = field.path;
         }
-        if (result && (result === 'type' || result.indexOf('@context') !== -1)) {
+        if (result && (result === 'type' || result.includes('@context'))) {
             return null;
         } else {
             return result;
@@ -103,7 +103,6 @@ export class DocumentFieldsModel {
                     data.setDescription(field.description);
                     data.setTitle(field.title);
                     data.setProperty(field.property);
-                    continue;
                 }
             }
         }

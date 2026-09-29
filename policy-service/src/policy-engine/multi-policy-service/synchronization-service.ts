@@ -152,7 +152,7 @@ export class SynchronizationService {
                         if (!vpMap[user]) {
                             vpMap[user] = new Map<string, SynchronizationMessage>();
                         }
-                        const amount = parseFloat(synchronizationMessage.amount);
+                        const amount = Number.parseFloat(synchronizationMessage.amount);
                         if (isFinite(amount) && amount < 1) {
                             vpMap[user].delete(synchronizationMessage.getMessageId());
                         } else {
@@ -168,9 +168,7 @@ export class SynchronizationService {
             const chunkSize = 10;
             for (let i = 0; i < users.length; i += chunkSize) {
                 const chunk = users.slice(i, i + chunkSize);
-                const tasks: any[] = [];
-                for (const user of chunk) {
-                    tasks.push(this.taskByUser(
+                const tasks: any[] = Array.from(chunk, user => this.taskByUser(
                         messageServer,
                         policyOwnerHederaCred,
                         policy,
@@ -179,7 +177,6 @@ export class SynchronizationService {
                         vpMap[user],
                         policyOwnerId
                     ));
-                }
                 await Promise.all<any[][]>(tasks);
             }
         } catch (error) {

@@ -240,7 +240,7 @@ export class VcDocument {
      * @param context
      */
     public addContext(context: string): void {
-        if (context && this.context.indexOf(context) === -1) {
+        if (context && !this.context.includes(context)) {
             this.context.push(context);
         }
     }
@@ -264,7 +264,7 @@ export class VcDocument {
      * @param type
      */
     public addType(type: string): void {
-        if (this.type.indexOf(type) === -1) {
+        if (!this.type.includes(type)) {
             this.type.push(type);
         }
     }
@@ -442,7 +442,7 @@ export class VcDocument {
      * @param uuid
      */
     private static convertUUID(uuid: string): string {
-        if (uuid && uuid.indexOf(':') === -1) {
+        if (uuid && !uuid.includes(':')) {
             return `urn:uuid:${uuid}`;
         }
         return uuid;

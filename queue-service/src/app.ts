@@ -16,7 +16,7 @@ import { QueueService } from './queue-service/queue-service.js';
 class AppModule {
 }
 
-const channelName = (process.env.SERVICE_CHANNEL || `queue.${GenerateUUIDv4().substring(26)}`).toUpperCase();
+const channelName = (process.env.SERVICE_CHANNEL || `queue.${GenerateUUIDv4().slice(26)}`).toUpperCase();
 
 Promise.all([
     MikroORM.init<MongoDriver>({

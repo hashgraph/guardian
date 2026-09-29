@@ -114,7 +114,7 @@ export class FieldTypes {
             unitSystem: undefined,
             customType: undefined,
             hidden: false,
-            pars: (value: any) => String(value)
+            pars: String
         },
         {
             name: 'Boolean',
@@ -191,7 +191,7 @@ export class FieldTypes {
             unitSystem: undefined,
             customType: undefined,
             hidden: false,
-            pars: (value: any) => String(value)
+            pars: String
         },
         {
             name: 'URI',
@@ -203,7 +203,7 @@ export class FieldTypes {
             unitSystem: undefined,
             customType: undefined,
             hidden: false,
-            pars: (value: any) => String(value)
+            pars: String
         },
         {
             name: 'Email',
@@ -215,7 +215,7 @@ export class FieldTypes {
             unitSystem: undefined,
             customType: undefined,
             hidden: false,
-            pars: (value: any) => String(value)
+            pars: String
         },
         {
             name: 'Image',
@@ -227,7 +227,7 @@ export class FieldTypes {
             unitSystem: undefined,
             customType: undefined,
             hidden: false,
-            pars: (value: any) => String(value)
+            pars: String
         },
         {
             name: 'File',
@@ -239,7 +239,7 @@ export class FieldTypes {
             unitSystem: undefined,
             customType: 'file',
             hidden: false,
-            pars: (value: any) => String(value)
+            pars: String
         },
         {
             name: 'Table',
@@ -329,7 +329,7 @@ export class FieldTypes {
             unit: undefined,
             unitSystem: undefined,
             hidden: false,
-            pars: (value: any) => String(value)
+            pars: String
         },
         {
             name: 'Rich Text',
@@ -341,7 +341,7 @@ export class FieldTypes {
             unit: undefined,
             unitSystem: undefined,
             hidden: false,
-            pars: (value: any) => String(value)
+            pars: String
         },
         {
             name: 'Auto-Calculate',
@@ -365,7 +365,7 @@ export class FieldTypes {
             unitSystem: undefined,
             customType: undefined,
             hidden: false,
-            pars: (value: any) => String(value)
+            pars: String
         },
         {
             name: 'Sub-Schema',

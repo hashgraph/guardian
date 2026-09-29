@@ -177,7 +177,7 @@ class GlobalEventsReaderBlock {
     private validateTopicId(topicId: string, ref: AnyBlockType): void {
         try {
             TopicId.fromString(topicId);
-        } catch (_e) {
+        } catch {
             throw new BlockActionError('Invalid topic id format', ref.blockType, ref.uuid);
         }
     }
@@ -223,7 +223,7 @@ class GlobalEventsReaderBlock {
 
             try {
                 this.validateTopicId(optionTopicId, ref);
-            } catch (_e) {
+            } catch {
                 continue;
             }
 
@@ -346,7 +346,7 @@ class GlobalEventsReaderBlock {
             }
 
             return parsed as GlobalEvent;
-        } catch (_e) {
+        } catch {
             return null;
         }
     }
@@ -359,7 +359,7 @@ class GlobalEventsReaderBlock {
 
             const schemaCache = new Map<string, any>();
             return SchemaHelper.parseFields(document, null, schemaCache, null, false);
-        } catch (error) {
+        } catch {
             return null;
         }
     }
@@ -417,7 +417,7 @@ class GlobalEventsReaderBlock {
             }
 
             return true;
-        } catch (error) {
+        } catch {
             return false;
         }
     }
@@ -456,7 +456,7 @@ class GlobalEventsReaderBlock {
             }
 
             return JSON.parse(String(file));
-        } catch (_e) {
+        } catch {
             return payloadObject;
         }
     }
@@ -711,7 +711,7 @@ class GlobalEventsReaderBlock {
             }
 
             return null;
-        } catch (_e) {
+        } catch {
             return null;
         }
     }
@@ -1056,7 +1056,7 @@ class GlobalEventsReaderBlock {
             if (cached && typeof cached === 'object') {
                 cacheState = cached;
             }
-        } catch (_e) {
+        } catch {
             //
         }
         return cacheState;
@@ -1164,7 +1164,7 @@ class GlobalEventsReaderBlock {
 
             try {
                 this.validateTopicId(topicId, ref);
-            } catch (_e) {
+            } catch {
                 continue;
             }
 
@@ -1372,7 +1372,7 @@ class GlobalEventsReaderBlock {
 
             try {
                 this.validateTopicId(topicId, ref);
-            } catch (_e) {
+            } catch {
                 continue;
             }
 
@@ -1532,7 +1532,7 @@ class GlobalEventsReaderBlock {
             }
 
             const actualValue = this.getValueBySchemaFieldName(vcDocument, documentPath);
-            if (typeof actualValue === 'undefined') {
+            if (actualValue === undefined) {
                 return { action: 'error', reason: `Field missing: label="${filterLabel}", path="${documentPath}", expected="${expectedValue.trim()}"` };
             }
 
@@ -1579,7 +1579,7 @@ class GlobalEventsReaderBlock {
             }
 
             return null;
-        } catch (_e) {
+        } catch {
             return null;
         }
     }
@@ -1594,11 +1594,7 @@ class GlobalEventsReaderBlock {
         const byTitle = new Map<string, SchemaFieldRef>();
         const byDescription = new Map<string, SchemaFieldRef>();
 
-        const stack: { field: SchemaField; prefix: string }[] = [];
-
-        for (const field of schemaFieldsTree) {
-            stack.push({ field, prefix: '' });
-        }
+        const stack: { field: SchemaField; prefix: string }[] = Array.from(schemaFieldsTree, field => ({ field, prefix: '' }));
 
         while (stack.length > 0) {
             const item = stack.pop();
@@ -1697,7 +1693,7 @@ class GlobalEventsReaderBlock {
 
         // 1) try as-is
         const direct = this.getValueByPath(document, raw);
-        if (typeof direct !== 'undefined') {
+        if (direct !== undefined) {
             return direct;
         }
 
@@ -1705,14 +1701,14 @@ class GlobalEventsReaderBlock {
         const cs = this.getCredentialSubject(document);
         if (cs) {
             const fromCs = this.getValueByPath(cs, raw);
-            if (typeof fromCs !== 'undefined') {
+            if (fromCs !== undefined) {
                 return fromCs;
             }
         }
 
         // 3) try credentialSubject.<path>
         const prefixed = this.getValueByPath(document, `credentialSubject.${raw}`);
-        if (typeof prefixed !== 'undefined') {
+        if (prefixed !== undefined) {
             return prefixed;
         }
 
@@ -1751,7 +1747,7 @@ class GlobalEventsReaderBlock {
         let current: any = obj;
 
         for (const part of parts) {
-            if (current === null || typeof current === 'undefined') {
+            if (current === null || current === undefined) {
                 return undefined;
             }
 
@@ -1800,10 +1796,10 @@ class GlobalEventsReaderBlock {
         }
 
         // Sometimes schema paths use "/" (rare, but happens)
-        p = p.replace(/\//g, '.');
+        p = p.replaceAll('/', '.');
 
         // Collapse multiple dots
-        p = p.replace(/\.+/g, '.');
+        p = p.replaceAll(/\.+/g, '.');
 
         // Trim trailing dot
         if (p.endsWith('.')) {

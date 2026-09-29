@@ -10,7 +10,7 @@ export function findOptions(document: any, field: any) {
         value = document;
         for (const key of keys) {
             if (key === 'L' && Array.isArray(value)) {
-                value = value[value.length - 1];
+                value = value.at(-1);
             } else {
                 value = value[key];
             }

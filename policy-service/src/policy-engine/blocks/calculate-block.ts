@@ -89,10 +89,7 @@ export class CalculateContainerBlock {
         if (fields) {
             if (Array.isArray(documents)) {
                 for (const field of fields) {
-                    const value = [];
-                    for (const json of documents) {
-                        value.push(json[field.name]);
-                    }
+                    const value = Array.from(documents, json => json[field.name]);
                     scope[field.value] = value;
                 }
             } else {

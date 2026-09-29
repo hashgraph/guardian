@@ -710,7 +710,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                     if (this.permissions.includes('ANY_ROLE')) {
                         return true;
                     }
-                    if (this.permissions.indexOf(user.role) > -1) {
+                    if (this.permissions.includes(user.role)) {
                         return true;
                     }
                     if (this.permissions.includes('NO_ROLE') && !user.role && !user.isAdmin) {
@@ -1045,7 +1045,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                             },
                             { policyId: this.policyId, userDID: user.did }
                         );
-                    } catch (err) {
+                    } catch {
                         // A concurrent call already upserted the same row.
                     }
                 } else {

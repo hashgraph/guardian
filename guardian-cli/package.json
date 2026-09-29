@@ -5,8 +5,7 @@
     "main": "dist/index.js",
     "bin": "dist/index.js",
     "scripts": {
-        "build": "tsc",
-        "lint": "tslint --config ../tslint.json --project ."
+        "build": "tsc"
     },
     "keywords": [
         "guardian",

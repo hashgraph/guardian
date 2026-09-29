@@ -177,7 +177,6 @@ export class SchemaDocumentModel {
                         elseFields
                     }));
                 }
-                continue;
             }
         }
         return conditions;

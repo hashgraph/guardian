@@ -3,7 +3,7 @@ import { ungzip } from 'pako';
 
 function base64urlDecode(input) {
     // Convert the Base64url encoded input to a standard Base64 format
-    const base64 = input.replace(/-/g, '+').replace(/_/g, '/');
+    const base64 = input.replaceAll('-', '+').replaceAll('_', '/');
     const padding = (4 - (base64.length % 4)) % 4;
     const paddedBase64 = base64 + '='.repeat(padding);
 

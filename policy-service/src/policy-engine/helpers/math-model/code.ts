@@ -11,7 +11,7 @@ export class Code {
 
     public run() {
         const code = `const [user, document, relationships, result, variables, formulas, scope, getField, mathjs, formulajs, table] = arguments;\r\n const __result = (() => { ${this.text} })();\r\n if(__result) { return __result; } else { return result; }`;
-        const func = Function(code);
+        const func = new Function(code);
         return func.apply(this.context.document, [
             this.context.user,
             this.context.document,
@@ -30,7 +30,7 @@ export class Code {
     public validate() {
         try {
             const code = `const [user, document, relationships, result, variables, formulas, scope, getField, mathjs, formulajs, table] = arguments;\r\n const __result = (() => { ${this.text} })();\r\n if(__result) { return __result; } else { return result; }`;
-            Function(code);
+            new Function(code);
             return null;
         } catch (error) {
             return String(error);
@@ -54,7 +54,7 @@ export class Code {
         try {
             this.text = json.code || '';
             return this;
-        } catch (error) {
+        } catch {
             return this;
         }
     }
@@ -69,7 +69,7 @@ export class Code {
             } else {
                 return null;
             }
-        } catch (error) {
+        } catch {
             return null;
         }
     }

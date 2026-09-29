@@ -130,10 +130,7 @@ export class PairSearchModel {
         }
         const list = map.getList();
 
-        const rates: IRate<any>[] = [];
-        for (const item of list) {
-            rates.push(new EventsRate(item.left, item.right));
-        }
+        const rates: IRate<any>[] = Array.from(list, item => new EventsRate(item.left, item.right));
 
         return CompareUtils.calcRate(rates);
     }
@@ -154,10 +151,7 @@ export class PairSearchModel {
         }
         const list = map.getList();
 
-        const rates: IRate<any>[] = [];
-        for (const item of list) {
-            rates.push(new PermissionsRate(item.left, item.right));
-        }
+        const rates: IRate<any>[] = Array.from(list, item => new PermissionsRate(item.left, item.right));
 
         return CompareUtils.calcRate(rates);
     }
@@ -178,10 +172,7 @@ export class PairSearchModel {
         }
         const list = map.getList();
 
-        const rates: IRate<any>[] = [];
-        for (const item of list) {
-            rates.push(new ArtifactsRate(item.left, item.right));
-        }
+        const rates: IRate<any>[] = Array.from(list, item => new ArtifactsRate(item.left, item.right));
 
         return CompareUtils.calcRate(rates);
     }

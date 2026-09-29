@@ -171,7 +171,7 @@ export function Response<T>() {
     return (target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<(...params: any[]) => Promise<any>>) => {
         const oldFunc = descriptor.value;
         descriptor.value = async function () {
-            const response: IMessageResponse<T> = await oldFunc.apply(this, arguments);
+            const response: IMessageResponse<T> = await Reflect.apply(oldFunc, this, arguments);
             if (response.code === 0) {
                 throw new Error('Initialization');
             }

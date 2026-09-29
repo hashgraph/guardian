@@ -42,7 +42,6 @@ export class PolicyConverterUtils {
                 return 1;
             }
             if (v1parts[i] === v2parts[i]) {
-                continue;
             }
             else if (v1parts[i] > v2parts[i]) {
                 return 1;

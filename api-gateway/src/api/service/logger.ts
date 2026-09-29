@@ -291,5 +291,5 @@ function escapeRegExp(text: string): string {
     if (!text) {
         return '';
     }
-    return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+    return text.replaceAll(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 }

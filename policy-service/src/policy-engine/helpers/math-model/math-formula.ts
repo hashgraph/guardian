@@ -75,7 +75,7 @@ export class MathFormula {
                     return;
                 }
                 this.type = MathItemType.VARIABLE;
-                this.functionName = text.replace(/,/g, '_');
+                this.functionName = text.replaceAll(',', '_');
                 this.functionParams = [];
                 this.validName = true;
                 return;
@@ -95,7 +95,7 @@ export class MathFormula {
                 return;
             }
 
-            const latex = text.replace(/(\b\w+\b)/g, '\\operatorname{$1}') + ' := 0';
+            const latex = text.replaceAll(/(\b\w+\b)/g, '\\operatorname{$1}') + ' := 0';
             const ce = createComputeEngine();
             const f = ce.parse(latex);
             if (!f.isValid) {
@@ -130,7 +130,7 @@ export class MathFormula {
             this.functionName = fName;
             this.functionParams = fParams;
             this.validName = true;
-        } catch (error) {
+        } catch {
             this._setErrorName();
         }
     }
@@ -154,13 +154,10 @@ export class MathFormula {
             const ce = createComputeEngine();
             const p = ce.parse(text, { canonical: false });
             const commands = findCommand(p.json, 'Tuple');
-            const indexes: string[] = [];
-            for (const command of commands) {
-                indexes.push(command[1]);
-            }
+            const indexes: Set<string> = new Set(Array.from(commands, command => command[1]));
             this.functionBodyJson = JSON.stringify(p.json, null, 4);
             this.bodyUnknowns = p.unknowns as string[];
-            this.bodyUnknowns = this.bodyUnknowns.filter((u) => !indexes.includes(u));
+            this.bodyUnknowns = this.bodyUnknowns.filter((u) => !indexes.has(u));
             this.validBody = p.isValid;
             if (this.validBody) {
                 this.functionBody = this.functionBodyText;
@@ -287,7 +284,7 @@ export class MathFormula {
                 item.empty = false;
                 return item;
             }
-        } catch (error) {
+        } catch {
             return null;
         }
     }

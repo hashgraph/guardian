@@ -34,7 +34,7 @@ export class TransformationButtonBlock {
             // tslint:disable-next-line:no-unused-expression
             new URL(url);
             return true;
-        } catch (_) {
+        } catch {
             return false;
         }
     }

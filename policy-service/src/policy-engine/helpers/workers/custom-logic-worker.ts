@@ -53,8 +53,8 @@ function execute(): void {
     sandbox.Map = Map;
     sandbox.Set = Set;
     sandbox.Promise = Promise;
-    sandbox.parseInt = parseInt;
-    sandbox.parseFloat = parseFloat;
+    sandbox.parseInt = Number.parseInt;
+    sandbox.parseFloat = Number.parseFloat;
     sandbox.isNaN = isNaN;
     sandbox.isFinite = isFinite;
     sandbox.undefined = undefined;

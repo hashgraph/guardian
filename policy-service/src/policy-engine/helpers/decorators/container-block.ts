@@ -54,7 +54,7 @@ export function ContainerBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                             id: child.uuid,
                         }
                     } else {
-                        return undefined;
+                        return;
                     }
                 });
 

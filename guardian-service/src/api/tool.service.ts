@@ -23,7 +23,7 @@ export function sha256(data: ArrayBuffer): string {
             .update(array)
             .digest();
         return Hashing.base58.encode(buffer);
-    } catch (error) {
+    } catch {
         return '';
     }
 }
@@ -392,7 +392,7 @@ export async function publishSchemas(
     //     step.complete();
     // }
 
-    for (const [oldId, newId] of schemaMap.entries()) {
+    for (const [oldId, newId] of schemaMap) {
         replaceAllEntities(tool.config, SchemaFields, oldId, newId);
         replaceAllVariables(tool.config, 'Schema', oldId, newId);
     }
@@ -1355,7 +1355,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                 }
                 const preview = await preparePreviewMessage(messageId, owner, NewNotifier.empty());
                 return new MessageResponse(!!preview);
-            } catch (error) {
+            } catch {
                 return new MessageResponse(false);
             }
         });

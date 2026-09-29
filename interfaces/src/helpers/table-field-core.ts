@@ -71,7 +71,7 @@ function resolveOneTableFormulaColumn(
     }
 
     const columnIndex = table.columnKeys.indexOf(columnKey);
-    if (columnIndex < 0 || typeof table.columnNames[columnIndex] !== 'string') {
+    if (columnIndex === -1 || typeof table.columnNames[columnIndex] !== 'string') {
         return null;
     }
 
@@ -272,7 +272,7 @@ export function buildTableHelper(
 
         if (typeof value === 'string') {
             const normalized = value.replace(',', '.');
-            const parsed = parseFloat(normalized);
+            const parsed = Number.parseFloat(normalized);
             return Number.isFinite(parsed) ? parsed : 0;
         }
 

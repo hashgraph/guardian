@@ -15,7 +15,7 @@ export function timeout(timeoutValue: number) {
                 }, timeoutValue);
             })
             try {
-                return await Promise.race([oldFunc.apply(this, arguments), timeoutPromise]);
+                return await Promise.race([Reflect.apply(oldFunc, this, arguments), timeoutPromise]);
             } finally {
                 // Clear the timer once the race settles so a completed call does not
                 // keep a live timeout (and the captured this/arguments) until it fires.
@@ -31,7 +31,7 @@ export function checkHederaKey(privateKey: string, publicKey: string): boolean {
         const _publicKey = _privateKey.publicKey;
         const _infoKey = PublicKey.fromString(publicKey);
         return _publicKey.equals(_infoKey);
-    } catch (error) {
+    } catch {
         return false;
     }
 }

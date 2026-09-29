@@ -3,7 +3,7 @@ import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 import { WorkerTaskType } from '@guardian/interfaces';
 
 // key types the mirror node reports as one comparable public key
-const COMPARABLE_KEY_TYPES = ['ED25519', 'ECDSA_SECP256K1'];
+const COMPARABLE_KEY_TYPES = new Set(['ED25519', 'ECDSA_SECP256K1']);
 
 /**
  * Prove that a private key controls an account.
@@ -44,7 +44,7 @@ export async function validateHederaAccountKey(
     // a key-list account has no single key to compare against, and PublicKey.fromString
     // throws on its ProtobufEncoded hex - defer it to the signing operations downstream
     const keyType = info?.key?._type;
-    if (keyType && !COMPARABLE_KEY_TYPES.includes(keyType)) {
+    if (keyType && !COMPARABLE_KEY_TYPES.has(keyType)) {
         return;
     }
 

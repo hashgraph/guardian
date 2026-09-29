@@ -16,7 +16,7 @@ export class RolesGuard implements CanActivate {
             const user: IAuthUser = request.user;
             if (user && user.permissions) {
                 for (const permission of permissions) {
-                    if (user.permissions.indexOf(permission) !== -1) {
+                    if (user.permissions.includes(permission)) {
                         return true;
                     }
                 }
@@ -47,14 +47,14 @@ export class RolesAndLocationGuard implements CanActivate {
                 return false;
             }
 
-            if (isLocations && locations.indexOf(user.location) === -1) {
+            if (isLocations && !locations.includes(user.location)) {
                 return false;
             }
 
             if (isPermissions) {
                 if (user.permissions) {
                     for (const permission of permissions) {
-                        if (user.permissions.indexOf(permission) !== -1) {
+                        if (user.permissions.includes(permission)) {
                             return true;
                         }
                     }

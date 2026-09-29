@@ -732,7 +732,7 @@ export class PolicyImport {
             (snapshots || [])
                 .map((snapshot) => snapshot?.templateId)
                 .filter((templateId) => !!templateId)
-                .map((templateId) => String(templateId))
+                .map(String)
         );
 
         const dropped: string[] = [];
