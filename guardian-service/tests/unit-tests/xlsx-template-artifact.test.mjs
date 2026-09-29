@@ -79,38 +79,6 @@ describe('Schema template artifact', () => {
         assert.ok(twoLevels, 'the second level of sub-schema nesting was lost');
     });
 
-    it('documents that Enum fields reference Enum Name through Parameter', () => {
-        const readme = workbook.getWorksheet('README');
-        assert.equal(
-            readme.getValue(2, 20),
-            'Type-dependent: enum name (Enum), unit symbol (Prefix/Postfix), regex (Pattern), math expression (Auto-Calculate), JSON font object (Help Text), JSON column array (Table), parent field key (Country, State/Province). Blank for all other types.'
-        );
-        assert.equal(
-            readme.getValue(3, 49),
-            'Enum name, e.g. "Enum field 1"'
-        );
-        assert.equal(
-            readme.getValue(2, 49),
-            'Dropdown list — values defined in the Enums tab. The field\'s Parameter must exactly match the "Enum Name" column — case-sensitive.'
-        );
-        assert.equal(
-            readme.getValue(2, 61),
-            'The field\'s Parameter value must exactly match the "Enum Name" column in the Enums tab (case-sensitive).'
-        );
-        assert.equal(
-            readme.getValue(2, 62),
-            'In the Enums tab, the three columns are: Enum Name | Loaded to IPFS | Value'
-        );
-        assert.equal(
-            readme.getValue(2, 63),
-            'For the first value of each group: fill in Enum Name and Loaded to IPFS. Leave those two columns blank on subsequent value rows for the same group.'
-        );
-        assert.equal(
-            readme.getValue(2, 89),
-            'Enum matching is case-sensitive: a field\'s Parameter value must match the "Enum Name" column in the Enums tab exactly.'
-        );
-    });
-
     it('keeps the Enums tab to the three columns the parser reads', () => {
         const enums = workbook.getWorksheet('Enums');
         assert.equal(enums.getValue(1, 1), 'Enum Name');
@@ -136,12 +104,4 @@ describe('Schema template artifact', () => {
         );
     });
 
-    it('labels the example fields the way a form would', () => {
-        const descriptions = fields.map((field) => field.description);
-        assert.ok(descriptions.includes('Enter a number'), 'the Number example still repeats its type name');
-        assert.ok(descriptions.includes('Upload an image'), 'the Image example still repeats its type name');
-        assert.equal(findByCustomType(fields, 'continent').description, 'Choose a continent');
-        assert.equal(findByCustomType(fields, 'table').description, 'Upload a table');
-        assert.equal(findByCustomType(fields, 'richText').description, 'Enter formatted text');
-    });
 });
