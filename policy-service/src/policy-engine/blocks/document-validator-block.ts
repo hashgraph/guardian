@@ -153,21 +153,6 @@ export class DocumentValidatorBlock {
         return node;
     }
 
-    private equalsLoosely(a: any, b: any): boolean {
-        if (a === b) {
-            return true;
-        }
-        if (a === null || a === undefined || b === null || b === undefined) {
-            return false;
-        }
-        const an = Number(a);
-        const bn = Number(b);
-        if (!Number.isNaN(an) && !Number.isNaN(bn)) {
-            return an === bn;
-        }
-        return String(a).trim() === String(b).trim();
-    }
-
     private evaluateSchemaCondition(condition: SchemaCondition, data: any): boolean {
         const ifCondition: any = condition?.ifCondition;
         const test = (predicate: any): boolean => {
@@ -177,7 +162,11 @@ export class DocumentValidatorBlock {
             if (!path[0]) {
                 return false;
             }
-            return this.equalsLoosely(this.resolveLocalPath(data, path), predicate.fieldValue);
+            return SchemaHelper.testPredicateValue(
+                predicate?.comparator,
+                this.resolveLocalPath(data, path),
+                predicate.fieldValue
+            );
         };
 
         if (!ifCondition) {
@@ -232,6 +221,7 @@ export class DocumentValidatorBlock {
             return false;
         }
 
+        const matches = [];
         for (const condition of (conditions || [])) {
             const reachable = this.isSchemaConditionReachable(condition, conditions, data);
             const matchesThen = (condition.thenFields || []).some((f) => f.name === path[0]);
@@ -245,14 +235,26 @@ export class DocumentValidatorBlock {
             if (!matchesThen && !matchesElse && !matchesThenTarget && !matchesElseTarget) {
                 continue;
             }
-            if (!reachable) {
-                return true;
-            }
-            const activeThen = this.evaluateSchemaCondition(condition, data);
-            const activeBranchMatches = activeThen
-                ? matchesThen || matchesThenTarget
-                : matchesElse || matchesElseTarget;
-            return !activeBranchMatches;
+            matches.push({
+                condition,
+                reachable,
+                matchesThen,
+                matchesElse,
+                matchesThenTarget,
+                matchesElseTarget
+            });
+        }
+
+        if (matches.length) {
+            return !matches.some((match) => {
+                if (!match.reachable) {
+                    return false;
+                }
+                const activeThen = this.evaluateSchemaCondition(match.condition, data);
+                return activeThen
+                    ? match.matchesThen || match.matchesThenTarget
+                    : match.matchesElse || match.matchesElseTarget;
+            });
         }
 
         const field = (fields || []).find((item) => item.name === path[0]);

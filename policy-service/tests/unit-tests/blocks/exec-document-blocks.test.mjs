@@ -255,6 +255,154 @@ describe('@unit document-validator-block runtime', () => {
         );
     });
 
+    it('uses schema predicate comparators when deciding whether a conditional field is active', async () => {
+        const loadedSchema = schema({
+            fields: [schemaField('kind', { isArray: true })],
+            conditions: [{
+                ifCondition: {
+                    field: schemaField('kind', { isArray: true }),
+                    fieldValue: 'solar',
+                    comparator: 'contains',
+                },
+                thenFields: [schemaField('advancedValue')],
+                elseFields: [],
+            }],
+        });
+        const { block } = makeBlock(DocumentValidatorBlock, {
+            options: {
+                documentType: 'vc-document',
+                schema: '#X',
+                conditions: [{ type: 'equal', field: 'document.credentialSubject.0.advancedValue', value: 'ok' }],
+            },
+            componentsOverrides: { loadSchemaByID: async () => loadedSchema },
+        });
+
+        assert.equal(
+            msg(await block.run(ev(schemaDoc({ kind: ['solar', 'wind'] })))),
+            'Field "advancedValue": got null, expected "ok"'
+        );
+    });
+
+    it('uses schema equality rules when deciding whether a conditional field is inactive', async () => {
+        const loadedSchema = schema({
+            fields: [schemaField('kind')],
+            conditions: [schemaCondition('kind', 0, [schemaField('advancedValue')])],
+        });
+        const { block } = makeBlock(DocumentValidatorBlock, {
+            options: {
+                documentType: 'vc-document',
+                schema: '#X',
+                conditions: [{ type: 'equal', field: 'document.credentialSubject.0.advancedValue', value: 'ok' }],
+            },
+            componentsOverrides: { loadSchemaByID: async () => loadedSchema },
+        });
+
+        assert.equal(await block.run(ev(schemaDoc({ kind: false }))), null);
+    });
+
+    it('does not skip a missing field revealed by another active schema condition', async () => {
+        const loadedSchema = schema({
+            fields: [schemaField('kind'), schemaField('mode')],
+            conditions: [
+                schemaCondition('kind', 'advanced', [schemaField('advancedValue')]),
+                schemaCondition('mode', 'on', [schemaField('advancedValue')]),
+            ],
+        });
+        const { block } = makeBlock(DocumentValidatorBlock, {
+            options: {
+                documentType: 'vc-document',
+                schema: '#X',
+                conditions: [{ type: 'equal', field: 'document.credentialSubject.0.advancedValue', value: 'ok' }],
+            },
+            componentsOverrides: { loadSchemaByID: async () => loadedSchema },
+        });
+
+        assert.equal(
+            msg(await block.run(ev(schemaDoc({ kind: 'basic', mode: 'on' })))),
+            'Field "advancedValue": got null, expected "ok"'
+        );
+    });
+
+    it('skips a missing field when all matching schema conditions are inactive', async () => {
+        const loadedSchema = schema({
+            fields: [schemaField('kind'), schemaField('mode')],
+            conditions: [
+                schemaCondition('kind', 'advanced', [schemaField('advancedValue')]),
+                schemaCondition('mode', 'on', [schemaField('advancedValue')]),
+            ],
+        });
+        const { block } = makeBlock(DocumentValidatorBlock, {
+            options: {
+                documentType: 'vc-document',
+                schema: '#X',
+                conditions: [{ type: 'equal', field: 'document.credentialSubject.0.advancedValue', value: 'ok' }],
+            },
+            componentsOverrides: { loadSchemaByID: async () => loadedSchema },
+        });
+
+        assert.equal(await block.run(ev(schemaDoc({ kind: 'basic', mode: 'off' }))), null);
+    });
+
+    it('treats AND schema conditions as active only when all predicates match', async () => {
+        const loadedSchema = schema({
+            fields: [schemaField('kind'), schemaField('mode')],
+            conditions: [{
+                ifCondition: {
+                    AND: [
+                        { field: schemaField('kind'), fieldValue: 'advanced' },
+                        { field: schemaField('mode'), fieldValue: 'on' },
+                    ],
+                },
+                thenFields: [schemaField('advancedValue')],
+                elseFields: [],
+            }],
+        });
+        const { block } = makeBlock(DocumentValidatorBlock, {
+            options: {
+                documentType: 'vc-document',
+                schema: '#X',
+                conditions: [{ type: 'equal', field: 'document.credentialSubject.0.advancedValue', value: 'ok' }],
+            },
+            componentsOverrides: { loadSchemaByID: async () => loadedSchema },
+        });
+
+        assert.equal(
+            msg(await block.run(ev(schemaDoc({ kind: 'advanced', mode: 'on' })))),
+            'Field "advancedValue": got null, expected "ok"'
+        );
+        assert.equal(await block.run(ev(schemaDoc({ kind: 'advanced', mode: 'off' }))), null);
+    });
+
+    it('treats OR schema conditions as active when any predicate matches', async () => {
+        const loadedSchema = schema({
+            fields: [schemaField('kind'), schemaField('mode')],
+            conditions: [{
+                ifCondition: {
+                    OR: [
+                        { field: schemaField('kind'), fieldValue: 'advanced' },
+                        { field: schemaField('mode'), fieldValue: 'on' },
+                    ],
+                },
+                thenFields: [schemaField('advancedValue')],
+                elseFields: [],
+            }],
+        });
+        const { block } = makeBlock(DocumentValidatorBlock, {
+            options: {
+                documentType: 'vc-document',
+                schema: '#X',
+                conditions: [{ type: 'equal', field: 'document.credentialSubject.0.advancedValue', value: 'ok' }],
+            },
+            componentsOverrides: { loadSchemaByID: async () => loadedSchema },
+        });
+
+        assert.equal(
+            msg(await block.run(ev(schemaDoc({ kind: 'basic', mode: 'on' })))),
+            'Field "advancedValue": got null, expected "ok"'
+        );
+        assert.equal(await block.run(ev(schemaDoc({ kind: 'basic', mode: 'off' }))), null);
+    });
+
     it('skips validator conditions for missing inactive nested schema conditional fields', async () => {
         const child = schemaField('child', {
             isRef: true,
