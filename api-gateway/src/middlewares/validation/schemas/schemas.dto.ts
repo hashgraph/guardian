@@ -247,6 +247,18 @@ export class SchemaDTO {
         example: 1
     })
     topicCount?: number;
+
+    @ApiProperty({
+        type: 'array',
+        items: {
+            type: 'string'
+        },
+        required: false,
+        example: ['#f3b2a9c1e4d5678901234567']
+    })
+    @IsOptional()
+    @IsArray()
+    defs?: string[];
 }
 
 export class SchemaParentDTO {
