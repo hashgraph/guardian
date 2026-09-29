@@ -57904,6 +57904,12 @@ components:
           type: number
           nullable: true
           example: 1
+        defs:
+          type: array
+          items:
+            type: string
+          example:
+            - '#f3b2a9c1e4d5678901234567'
       required:
         - id
         - uuid
