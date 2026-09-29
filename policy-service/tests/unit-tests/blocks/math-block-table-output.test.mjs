@@ -212,14 +212,15 @@ describe('@unit mathBlock result tables', () => {
     });
 
     it('deletes every stored file when the run fails after storing', async () => {
-        const mathBlock = block();
+        const mathBlock = makeBlock(MathBlock, { options: { onErrorAction: 'debug' } }).block;
         mathBlock.triggerEvents = async () => undefined;
+        let file = 0;
         mathBlock.process = async (doc, ref, userId, recordActionId, user, storedTables) => {
-            storedTables.push({ fileId: 'file-a', cid: 'cid-a' });
+            file++;
+            storedTables.push({ fileId: `file-${file}`, cid: `cid-${file}` });
             if (doc.fail) {
                 throw new Error('document creation failed');
             }
-            storedTables.push({ fileId: 'file-b', cid: null });
             return doc;
         };
 
@@ -229,8 +230,8 @@ describe('@unit mathBlock result tables', () => {
             actionStatus: {}
         });
 
-        assert.deepEqual(deletedCids, ['cid-a']);
-        assert.deepEqual(deletedGrid, ['file-a', 'file-b']);
+        assert.deepEqual(deletedCids, ['cid-1', 'cid-2']);
+        assert.deepEqual(deletedGrid, ['file-1', 'file-2']);
     });
 
     const listSchema = () => ({

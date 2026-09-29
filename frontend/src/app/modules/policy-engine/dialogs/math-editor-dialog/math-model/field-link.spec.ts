@@ -133,6 +133,27 @@ describe('FieldLink table output', () => {
         expect(link.error).toBe('Invalid name');
     });
 
+    it('rejects a non-string cell from imported JSON', () => {
+        const link = FieldLink.from(JSON.parse(`{
+            "type": "link",
+            "name": "",
+            "description": "",
+            "field": "results",
+            "schema": "",
+            "rows": [{ "a": 123 }]
+        }`))!;
+        link.update();
+        expect(link.validName).toBeFalse();
+        expect(link.error).toBe('Invalid name');
+    });
+
+    it('rejects more than 1000 rows', () => {
+        const link = tableLink(Array.from({ length: 1001 }, () => ({ a: '' })));
+        link.update();
+        expect(link.validName).toBeFalse();
+        expect(link.error).toBe('Too many rows');
+    });
+
     it('fills each cell from the scope and leaves an empty cell empty', () => {
         const link = tableLink([{ a: 'r1', b: '' }]);
         expect(link.getTableRows({ r1: 5 })).toEqual([{ a: 5, b: '' }]);
@@ -172,6 +193,15 @@ describe('FieldLink table list output', () => {
         link.update();
         expect(link.validName).toBeFalse();
         expect(link.error).toBe('Invalid name');
+    });
+
+    it('counts the 1000-row limit across all tables', () => {
+        const link = tableListLink([
+            Array.from({ length: 600 }, () => ({ a: '' })),
+            Array.from({ length: 401 }, () => ({ a: '' }))
+        ]);
+        link.update();
+        expect(link.error).toBe('Too many rows');
     });
 
     it('rejects more than 100 tables', () => {

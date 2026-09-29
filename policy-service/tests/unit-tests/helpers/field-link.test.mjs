@@ -175,6 +175,20 @@ describe('FieldLink', () => {
             assert.equal(link.error, 'Invalid name');
         });
 
+        it('rejects a non-string cell from imported JSON', () => {
+            const link = tableLink([{ a: 123 }]);
+            link.update();
+            assert.equal(link.validName, false);
+            assert.equal(link.error, 'Invalid name');
+        });
+
+        it('rejects more than 1000 rows', () => {
+            const link = tableLink(Array.from({ length: 1001 }, () => ({ a: '' })));
+            link.update();
+            assert.equal(link.validName, false);
+            assert.equal(link.error, 'Too many rows');
+        });
+
         it('is invalid without a field', () => {
             const link = tableLink([{ a: 'r1' }]);
             link.field = '';
@@ -227,6 +241,15 @@ describe('FieldLink', () => {
             link.update();
             assert.equal(link.validName, false);
             assert.equal(link.error, 'Invalid name');
+        });
+
+        it('counts the 1000-row limit across all tables', () => {
+            const link = tableListLink([
+                Array.from({ length: 600 }, () => ({ a: '' })),
+                Array.from({ length: 401 }, () => ({ a: '' }))
+            ]);
+            link.update();
+            assert.equal(link.error, 'Too many rows');
         });
 
         it('rejects more than 100 tables', () => {

@@ -197,9 +197,10 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     public inputDocumentValue: any = null;
     public inputRelationshipsValue: any[] = [];
 
-    public readonly maxTableRows = 1000;
+    public readonly maxTableRows = FieldLink.MAX_TABLE_ROWS;
     public readonly maxTables = FieldLink.MAX_TABLES;
     public tableRowsToAdd: { [id: string]: number } = {};
+    private tableRowsDraft: { [id: string]: Record<string, string>[][] } = {};
 
     constructor(
         private dialogRef: DynamicDialogRef,
@@ -362,6 +363,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 delete this.tableRowsToAdd[key];
             }
         }
+        delete this.tableRowsDraft[output.id];
         this.engine.deleteOutput(output);
     }
 
@@ -730,9 +732,15 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     }
 
     private updateTableOutput(item: FieldLink): void {
+        const node = item.field ? this.outputSchemaFieldMap.get(item.field) : undefined;
+        if (!node) {
+            item.update();
+            return;
+        }
         const columns = this.getTableColumns(item);
         if (columns.length) {
-            const grids = item.isTable ? item.getGrids() : [[{}]];
+            const grids = item.isTable ? item.getGrids() : (this.tableRowsDraft[item.id] || [[{}]]);
+            delete this.tableRowsDraft[item.id];
             if (this.isTableListField(item)) {
                 item.tables = grids.map((rows) => this.syncTableRows(rows, columns));
                 item.rows = null;
@@ -741,6 +749,9 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 item.tables = null;
             }
         } else {
+            if (item.isTable) {
+                this.tableRowsDraft[item.id] = item.getGrids();
+            }
             item.rows = null;
             item.tables = null;
         }

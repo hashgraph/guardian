@@ -4,6 +4,7 @@ import { MathItemType } from './math-item.type';
 import { IFieldLink } from './math.interface';
 
 export class FieldLink {
+    public static readonly MAX_TABLE_ROWS = 1000;
     public static readonly MAX_TABLES = 100;
 
     public readonly type = MathItemType.LINK;
@@ -75,10 +76,15 @@ export class FieldLink {
                 this.error = 'Too many tables';
                 return;
             }
+            if (grids.reduce((count, rows) => count + rows.length, 0) > FieldLink.MAX_TABLE_ROWS) {
+                this.validName = false;
+                this.error = 'Too many rows';
+                return;
+            }
             if (this.isTable) {
                 this.validName = grids.every((rows) => rows.every((row) => Object.keys(row).every((key) => {
                     const cell = row[key];
-                    return !(typeof cell === 'string' && cell.trim()) || !!FieldLink.toVariableName(cell);
+                    return typeof cell === 'string' && (!cell.trim() || !!FieldLink.toVariableName(cell));
                 })));
             } else {
                 const name = FieldLink.toVariableName(this.variableNameText);

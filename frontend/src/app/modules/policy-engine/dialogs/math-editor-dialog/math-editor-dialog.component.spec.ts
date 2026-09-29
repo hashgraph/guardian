@@ -51,7 +51,9 @@ describe('MathEditorDialogComponent input documents', () => {
 
 describe('MathEditorDialogComponent Table column fields', () => {
     function makeDialog(): any {
-        return Object.create(MathEditorDialogComponent.prototype);
+        const dialog: any = Object.create(MathEditorDialogComponent.prototype);
+        dialog.tableRowsDraft = {};
+        return dialog;
     }
 
     function schema(tableColumns?: { name: string; key: string }[]): any {
@@ -249,6 +251,8 @@ describe('MathEditorDialogComponent Table outputs', () => {
             ['legacy', node('legacy', undefined)],
             ['nested.results', node('nested.results', [{ name: 'Year', key: 'year' }], 1)],
             ['deep.results', node('deep.results', [{ name: 'Year', key: 'year' }], 2)],
+            ['group', { path: 'group', arrayLvl: 0, type: 'object', field: { name: 'group', type: '#Group', isRef: true }, fields: [] }],
+            ['group.results', node('group.results', [{ name: 'Year', key: 'year' }])],
             ['total', { path: 'total', arrayLvl: 0, type: 'number', field: { name: 'total', type: 'number' }, fields: [] }]
         ]);
         dialog.inputSchemaFieldMap = new Map();
@@ -258,6 +262,7 @@ describe('MathEditorDialogComponent Table outputs', () => {
         dialog.activePathItem = null;
         dialog.maxTableRows = 1000;
         dialog.tableRowsToAdd = {};
+        dialog.tableRowsDraft = {};
         return dialog;
     }
 
@@ -300,6 +305,58 @@ describe('MathEditorDialogComponent Table outputs', () => {
 
         expect(item.isTable).toBeFalse();
         expect(item.rows).toBeNull();
+    });
+
+    it('keeps grid rows while a typed path is temporarily unknown', () => {
+        const dialog = makeDialog();
+        const item = output();
+        dialog.onPathChange(item, 'results', 'output');
+        item.rows![0].year = 'y';
+
+        dialog.onPathChange(item, 'resul', 'output');
+        expect(item.rows).toEqual([{ year: 'y', co2: '' }]);
+
+        dialog.onPathChange(item, 'results', 'output');
+        expect(item.rows).toEqual([{ year: 'y', co2: '' }]);
+    });
+
+    it('keeps grid rows when a typed path passes through a known non-table field', () => {
+        const dialog = makeDialog();
+        const item = output();
+        dialog.onPathChange(item, 'group.results', 'output');
+        item.rows![0].year = 'y';
+
+        dialog.onPathChange(item, 'group', 'output');
+        expect(item.isTable).toBeFalse();
+
+        dialog.onPathChange(item, 'group.results', 'output');
+        expect(item.rows).toEqual([{ year: 'y' }]);
+    });
+
+    it('brings the grid back when the Table is chosen again after an ordinary field', () => {
+        const dialog = makeDialog();
+        const item = output();
+        dialog.onPathChange(item, 'results', 'output');
+        item.rows![0].co2 = 'c';
+
+        dialog.selectPathSuggestion(item, 'total', 'output');
+        expect(item.rows).toBeNull();
+
+        dialog.selectPathSuggestion(item, 'results', 'output');
+        expect(item.rows).toEqual([{ year: '', co2: 'c' }]);
+    });
+
+    it('forgets the kept grid when the output is deleted', () => {
+        const dialog = makeDialog();
+        dialog.engine = { deleteOutput: () => undefined };
+        const item = output();
+        dialog.onPathChange(item, 'results', 'output');
+        item.rows![0].co2 = 'c';
+        dialog.onPathChange(item, 'total', 'output');
+
+        dialog.deleteOutput(item);
+
+        expect(dialog.tableRowsDraft[item.id]).toBeUndefined();
     });
 
     it('keeps an old Table without declared columns as a single name', () => {
@@ -405,6 +462,20 @@ describe('MathEditorDialogComponent Table outputs', () => {
         dialog.selectPathSuggestion(item, 'results', 'output');
         expect(item.rows).toEqual([{ year: 'y', co2: '' }]);
         expect(item.tables).toBeNull();
+    });
+
+    it('keeps every table of a list while the path passes through a known non-table field', () => {
+        const dialog = makeDialog();
+        const item = output();
+        dialog.onPathChange(item, 'nested.results', 'output');
+        dialog.addTable(item);
+        item.tables![1][0].year = 'b';
+
+        dialog.onPathChange(item, 'total', 'output');
+        expect(item.isTable).toBeFalse();
+
+        dialog.onPathChange(item, 'nested.results', 'output');
+        expect(item.tables).toEqual([[{ year: '' }], [{ year: 'b' }]]);
     });
 
     it('forgets the row counts of every table when the output is deleted', () => {
