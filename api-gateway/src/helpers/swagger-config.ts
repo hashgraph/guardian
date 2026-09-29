@@ -1,4 +1,5 @@
 import { DocumentBuilder } from '@nestjs/swagger';
+import { getGuardianVersion } from './guardian-version.js';
 
 export const SwaggerConfig = new DocumentBuilder()
     .setTitle('Guardian')
@@ -9,7 +10,7 @@ export const SwaggerConfig = new DocumentBuilder()
         'Policy Workflow Engine and Web3 technology to ensure transparent and fraud-proof operations, ' +
         'making it a key tool for transforming sustainability practices and carbon markets.'
     )
-    .setVersion(process.env.npm_package_version)
+    .setVersion(getGuardianVersion())
     .setContact(
         'API developer',
         'https://hashgraph.com',
@@ -21,7 +22,7 @@ export const SwaggerConfig = new DocumentBuilder()
     )
     .addServer(
         '/api/v1',
-        'version 1.0'
+        'API v1'
     )
     .addSecurity(
         'bearer',
