@@ -223,9 +223,108 @@ export async function loadAnotherSchemas(
  * @returns Does circular dependency exists
  */
 export function checkForCircularDependency(schema: ISchema): boolean {
-    return schema.document?.$defs && schema.document.$id
-        ? Object.keys(schema.document.$defs).includes(schema.document.$id)
-        : false;
+    const document = getSchemaDocument(schema);
+    if (!document) {
+        return false;
+    }
+
+    const rootId = normalizeSchemaRef(document.$id || schema.iri);
+    const defs = document.$defs || {};
+    if (rootId && Object.keys(defs).some((key) => normalizeSchemaRef(key) === rootId)) {
+        return true;
+    }
+
+    const documents = new Map<string, any>();
+    addSchemaDocument(documents, document.$id || schema.iri, document);
+    for (const [key, def] of Object.entries(defs)) {
+        addSchemaDocument(documents, key, def);
+        addSchemaDocument(documents, (def as any)?.$id, def);
+    }
+
+    const visiting = new Set<string>();
+    const visited = new Set<string>();
+
+    const visit = (id: string): boolean => {
+        const normalized = normalizeSchemaRef(id);
+        if (!normalized || !documents.has(normalized)) {
+            return false;
+        }
+        if (visiting.has(normalized)) {
+            return true;
+        }
+        if (visited.has(normalized)) {
+            return false;
+        }
+
+        visiting.add(normalized);
+        const refs = new Set<string>();
+        collectSchemaDocumentRefs(documents.get(normalized), refs);
+        for (const ref of refs) {
+            if (visit(ref)) {
+                return true;
+            }
+        }
+        visiting.delete(normalized);
+        visited.add(normalized);
+        return false;
+    };
+
+    return rootId ? visit(rootId) : false;
+}
+
+function normalizeSchemaRef(value: any): string | null {
+    if (typeof value !== 'string' || !value) {
+        return null;
+    }
+    if (value.startsWith('#/')) {
+        return null;
+    }
+    return value.startsWith('#') ? value : `#${value}`;
+}
+
+function addSchemaDocument(documents: Map<string, any>, key: any, document: any): void {
+    const normalized = normalizeSchemaRef(key);
+    if (normalized && document) {
+        documents.set(normalized, document);
+    }
+}
+
+function collectSchemaDocumentRefs(value: any, refs: Set<string>): void {
+    if (!value || typeof value !== 'object') {
+        return;
+    }
+    if (typeof value.$ref === 'string') {
+        const ref = normalizeSchemaRef(value.$ref);
+        if (ref) {
+            refs.add(ref);
+        }
+    }
+    if (typeof value.type === 'string' && value.type.startsWith('#')) {
+        const ref = normalizeSchemaRef(value.type);
+        if (ref) {
+            refs.add(ref);
+        }
+    }
+    for (const [key, child] of Object.entries(value)) {
+        if (key === '$defs') {
+            continue;
+        }
+        collectSchemaDocumentRefs(child, refs);
+    }
+}
+
+function getSchemaDocument(schema: ISchema): any {
+    if (!schema?.document) {
+        return null;
+    }
+    if (typeof schema.document === 'string') {
+        try {
+            return JSON.parse(schema.document);
+        } catch (error) {
+            return null;
+        }
+    }
+    return schema.document;
 }
 
 export async function getSchemaCategory(topicId: string): Promise<SchemaCategory> {
