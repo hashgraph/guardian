@@ -1,9 +1,7 @@
 import {
     BinaryMessageResponse,
-    CommentMessage,
     DataBaseHelper,
     DatabaseServer,
-    DiscussionMessage,
     DryRun,
     DryRunFiles,
     EncryptUtils,
@@ -12,39 +10,32 @@ import {
     IMessageResponse,
     ImportExportUtils,
     IPFS,
-    MessageAction,
-    loadErrorCode,
     MessageError,
     MessageResponse,
-    MessageServer,
-    MessageType,
     MigrationFailedItem,
     MigrationRun,
     MockEntityType,
-    MockEvent,
     MockType,
-    MockHelper,
     NatsService,
     NewNotifier,
     NotificationStep,
     PinoLogger,
     Policy,
-    PolicyAction, PolicyComment,
+    PolicyAction,
+    PolicyComment,
     PolicyDiscussion,
     PolicyImportExport,
-    PolicyMessage,
     PolicyParameters,
     RecordImportExport,
     RunFunctionAsync,
     Schema as SchemaCollection,
     Singleton,
-    TopicConfig,
     Users,
-    VcHelper,
     MintTransaction,
     containsRegex,
     expandTablesInDocument
 } from '@guardian/common';
+import { MockEvent, VcHelper, CommentMessage, DiscussionMessage, MessageAction, loadErrorCode, MessageServer, MessageType, MockHelper, PolicyMessage, TopicConfig } from '@guardian/hedera';
 import { GenerateBlocks, JsonToXlsx, XlsxToJson } from '../xlsx/index.js';
 import {
     DocumentCategoryType,
@@ -1858,7 +1849,7 @@ export class PolicyEngineService {
                         return new BinaryMessageResponse(arrayBuffer);
                     }
 
-                    const zip = await PolicyImportExport.generate(policy);
+                    const zip = await PolicyImportExport.generate(policy, new VcHelper());
                     const file = await zip.generateAsync({
                         type: 'arraybuffer',
                         compression: 'DEFLATE',

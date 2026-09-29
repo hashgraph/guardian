@@ -1,8 +1,8 @@
 import JSZip from 'jszip';
-import { Tag } from '../entity/index.js';
+import { Tag } from '../entity/tag.js';
 import { ISchema } from '@guardian/interfaces';
 import { ImportExportUtils } from './utils.js';
-import { IAuthUser } from '../interfaces/index.js';
+import { IAuthUser } from '../interfaces/auth.interface.js';
 
 /**
  * Schema components

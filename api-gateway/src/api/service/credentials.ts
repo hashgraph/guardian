@@ -6,7 +6,8 @@ import {
     SERVICE_CREDENTIAL_SCHEMAS,
 } from '@guardian/interfaces';
 import { Guardians, InternalException } from '#helpers';
-import { IAuthUser, PinoLogger } from '@guardian/common';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
 
 /**
  * Credentials route

@@ -1,25 +1,6 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import {
-    GuardianRoleMessage,
-    IAuthUser,
-    MessageAction,
-    MessageError,
-    MessageResponse,
-    MessageServer,
-    Topic,
-    TopicConfig,
-    Users,
-    VcHelper,
-    Schema as SchemaCollection,
-    VcDocument as VcDocumentCollection,
-    UserPermissionsMessage,
-    PinoLogger,
-    KeyType,
-    KEY_TYPE_KEY_ENTITY,
-    KeyEntity,
-    Token, DatabaseServer,
-    NewNotifier,
-} from '@guardian/common';
+import { IAuthUser, MessageError, MessageResponse, Topic, Users, Schema as SchemaCollection, VcDocument as VcDocumentCollection, PinoLogger, KeyType, KEY_TYPE_KEY_ENTITY, KeyEntity, Token, DatabaseServer, NewNotifier } from '@guardian/common';
+import { GuardianRoleMessage, MessageAction, MessageServer, TopicConfig, VcHelper, UserPermissionsMessage } from '@guardian/hedera';
 import { GenerateUUIDv4, IOwner, MessageAPI, Schema, SchemaEntity, SchemaHelper, TopicType } from '@guardian/interfaces';
 import { publishSystemSchema } from '../helpers/import-helpers/index.js';
 

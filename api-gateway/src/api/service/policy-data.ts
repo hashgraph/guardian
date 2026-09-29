@@ -1,4 +1,5 @@
-import { IAuthUser, PinoLogger } from '@guardian/common';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
 import {
     Permissions,
     POLICY_DATA_MAX_PAGE_SIZE,

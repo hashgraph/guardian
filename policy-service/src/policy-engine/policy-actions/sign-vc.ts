@@ -1,4 +1,5 @@
-import { VcHelper, PolicyAction, IDocumentOptions, VcDocumentDefinition } from '@guardian/common';
+import { PolicyAction } from '@guardian/common';
+import { IDocumentOptions, VcHelper, VcDocumentDefinition } from '@guardian/hedera';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyComponentsUtils } from './../policy-components-utils.js';

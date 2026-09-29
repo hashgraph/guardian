@@ -34,8 +34,10 @@ const { ComponentsService } = await esmock.strict(
                 static async getSchemas(filter) { return getSchemasImpl(filter); }
             },
             PinoLogger: class { info() { } warn() { } error() { } },
-            TopicConfig: class { },
             Users: class { },
+        },
+        '@guardian/hedera': {
+            TopicConfig: class { },
             VcHelper: class { },
         },
         '@guardian/interfaces': {

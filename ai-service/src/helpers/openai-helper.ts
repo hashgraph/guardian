@@ -5,7 +5,7 @@ import { createStuffDocumentsChain } from '@langchain/classic/chains/combine_doc
 import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { Methodology, ResponseData } from '../models/models.js';
 import { GetMehodologiesByPolicies } from './general-helper.js';
-import { Policy } from '@guardian/common';
+import { Policy } from '@guardian/common/entity/policy';
 
 const answerAfter = 'For the most up-to-date and comprehensive information on Guardian methodologies, including any new methodologies that might have been introduced since my last update, I recommend visiting the official Guardian website or consulting the Methodologies';
 const promptTemplate = `

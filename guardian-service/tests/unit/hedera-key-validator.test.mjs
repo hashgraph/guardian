@@ -16,6 +16,8 @@ async function load({ accountKey, mirrorKey, taskError } = {}) {
                         return { key: { _type: 'ED25519', key: mirrorKey } };
                     }
                 },
+            },
+            '@guardian/hedera': {
                 checkHederaKey: (priv, pub) => !!priv && !!pub && priv === `priv-of-${pub}`,
             },
             '@hiero-ledger/sdk': {

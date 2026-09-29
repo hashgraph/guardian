@@ -1,6 +1,7 @@
 import { IChainItem, MessageAPI, SchemaEntity } from '@guardian/interfaces';
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { DatabaseServer, DidDocument, MessageError, MessageResponse, PinoLogger, VcDocument, VpDocument, VpDocumentDefinition as HVpDocument, IAuthUser } from '@guardian/common';
+import { DatabaseServer, DidDocument, MessageError, MessageResponse, PinoLogger, VcDocument, VpDocument, IAuthUser } from '@guardian/common';
+import { VpDocumentDefinition as HVpDocument } from '@guardian/hedera';
 import { FilterQuery } from '@mikro-orm/core';
 
 /**

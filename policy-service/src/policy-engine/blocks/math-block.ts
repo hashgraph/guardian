@@ -4,7 +4,7 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { BlockActionError } from '../errors/index.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
-import { ContextHelper, VcDocumentDefinition, VcHelper } from '@guardian/common';
+import { ContextHelper, VcDocumentDefinition, VcHelper } from '@guardian/hedera';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyUtils } from '../helpers/utils.js';

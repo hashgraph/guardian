@@ -8,21 +8,8 @@ import { AnyBlockType, IPolicyAddonBlock, IPolicyDocument, IPolicyEventState, IP
 import { BlockActionError } from '../errors/index.js';
 import { IHederaCredentials, PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
-import {
-    VcDocument as VcDocumentCollection,
-    MessageServer,
-    MessageAction,
-    SchemaMessage,
-    UrlType,
-    PolicyMessage,
-    TopicMessage,
-    ExternalDocument,
-    MessageType,
-    VCMessage,
-    VcHelper,
-    IPFS,
-    SchemaPackageMessage,
-} from '@guardian/common';
+import { VcDocument as VcDocumentCollection, ExternalDocument, IPFS } from '@guardian/common';
+import { MessageServer, MessageAction, SchemaMessage, UrlType, PolicyMessage, TopicMessage, MessageType, VCMessage, VcHelper, SchemaPackageMessage } from '@guardian/hedera';
 import {
     ExternalDocuments,
     ExternalEvent,

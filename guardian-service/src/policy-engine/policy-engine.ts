@@ -29,34 +29,25 @@ import {
     INotificationStep,
     IPFS,
     IPolicyComponents,
-    MessageAction,
-    MessageServer,
-    MessageType,
     MockEntityType,
-    MockHelper,
     MultiPolicy,
     NatsService,
     NewNotifier,
-    NotificationHelper, PinoLogger,
+    NotificationHelper,
+    PinoLogger,
     Policy,
     PolicyImportExport,
-    PolicyMessage,
     replaceAllEntities,
     replaceAllVariables,
     replaceArtifactProperties,
     Schema as SchemaCollection,
     SchemaFields,
-    SchemaMessage,
     Singleton,
-    SynchronizationMessage,
     Token,
-    TokenMessage,
     Topic,
-    TopicConfig,
-    TopicHelper,
-    Users,
-    VcHelper
+    Users
 } from '@guardian/common';
+import { MessageAction, MessageServer, MessageType, MockHelper, PolicyMessage, SchemaMessage, SynchronizationMessage, TokenMessage, TopicConfig, TopicHelper, VcHelper } from '@guardian/hedera';
 import {
     deleteDemoSchema,
     deleteSchema,
@@ -1772,7 +1763,7 @@ export class PolicyEngine extends NatsService {
             const modelToPublish = Object.assign(Object.create(Object.getPrototypeOf(model)), model);
             modelToPublish.config = configToPublish;
 
-            const zip = await PolicyImportExport.generate(modelToPublish, schemaPackageDocuments);
+            const zip = await PolicyImportExport.generate(modelToPublish, new VcHelper(), schemaPackageDocuments);
             const buffer = await zip.generateAsync({
                 type: 'arraybuffer',
                 compression: 'DEFLATE',
@@ -2021,7 +2012,7 @@ export class PolicyEngine extends NatsService {
 
         //Send Message
         notifier.startStep(STEP_PUBLISH_MESSAGE);
-        const zip = await PolicyImportExport.generate(model);
+        const zip = await PolicyImportExport.generate(model, new VcHelper());
         const buffer = await zip.generateAsync({
             type: 'arraybuffer',
             compression: 'DEFLATE',

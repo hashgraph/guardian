@@ -1,21 +1,7 @@
 import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IRefLvl, IPropertiesLvl, RecordComparator, RecordLoader } from '../analytics/index.js';
 import { ApiResponse } from '../api/helpers/api-response.js';
-import {
-    BinaryMessageResponse,
-    DatabaseServer,
-    VcDocument as VcDocumentCollection,
-    VpDocument as VpDocumentCollection,
-    IRecordResult,
-    MessageError,
-    MessageResponse, PinoLogger,
-    Policy,
-    PolicyRecordMessage,
-    RecordImportExport,
-    Record as RecordEntity,
-    MessageServer,
-    MessageType,
-    MessageAction
-} from '@guardian/common';
+import { BinaryMessageResponse, DatabaseServer, VcDocument as VcDocumentCollection, VpDocument as VpDocumentCollection, IRecordResult, MessageError, MessageResponse, PinoLogger, Policy, RecordImportExport, Record as RecordEntity } from '@guardian/common';
+import { PolicyRecordMessage, MessageServer, MessageType, MessageAction } from '@guardian/hedera';
 import { IOwner, MessageAPI, PolicyEvents, PolicyHelper, GenerateUUIDv4 } from '@guardian/interfaces';
 import { GuardiansService } from '../helpers/guardians.js';
 import { FilterObject } from '@mikro-orm/core';

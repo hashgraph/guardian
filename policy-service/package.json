@@ -4,6 +4,7 @@
         "@cortex-js/compute-engine": "^0.27.0",
         "@formulajs/formulajs": "4.6.1",
         "@guardian/common": "workspace:*",
+        "@guardian/hedera": "workspace:*",
         "@guardian/interfaces": "workspace:*",
         "@hiero-ledger/sdk": "2.88.0",
         "@mikro-orm/core": "6.6.16",

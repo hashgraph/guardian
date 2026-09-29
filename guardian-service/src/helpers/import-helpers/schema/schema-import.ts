@@ -11,20 +11,8 @@ import {
     TopicType,
     resolveIwaVersion,
 } from '@guardian/interfaces';
-import {
-    DatabaseServer,
-    PinoLogger,
-    MessageAction,
-    MessageServer,
-    MessageType,
-    replaceValueRecursive,
-    SchemaConverterUtils,
-    TagMessage,
-    TopicConfig,
-    TopicHelper,
-    Users,
-    INotificationStep
-} from '@guardian/common';
+import { DatabaseServer, PinoLogger, replaceValueRecursive, SchemaConverterUtils, Users, INotificationStep } from '@guardian/common';
+import { MessageAction, MessageServer, MessageType, TagMessage, TopicConfig, TopicHelper } from '@guardian/hedera';
 import { ImportSchemaError, ImportSchemaMap, ImportSchemaOptions, ImportSchemaResult } from './schema-import.interface.js';
 import geoJson from '@guardian/interfaces/dist/helpers/geojson-schema/geo-json.js';
 import sentinelHub from '@guardian/interfaces/dist/helpers/sentinel-hub/sentinel-hub-schema.js';

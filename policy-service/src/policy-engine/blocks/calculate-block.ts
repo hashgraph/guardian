@@ -4,7 +4,7 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { BlockActionError } from '../errors/index.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
-import { VcDocumentDefinition, VcHelper } from '@guardian/common';
+import { VcDocumentDefinition, VcHelper } from '@guardian/hedera';
 // tslint:disable-next-line:no-duplicate-imports
 import { VcDocument as VcDocumentCollection } from '@guardian/common';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
