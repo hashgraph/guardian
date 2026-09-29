@@ -108,6 +108,7 @@ All schemas created for importing into Guardian must follow the design of the te
   * EXACT({FieldName},{Value}) – only shown when the condition is true
   * NOT(EXACT({FieldName},{Value})) – only shown when the condition is not true
 * _**Description**_ – Description of the field. This is the text which users would see when filling out the form in Guardian.
+* _**Key**_ – Optional field key used in generated schemas, JSON-LD context terms, formulas, and policy logic. Field keys must be unique within a schema and must not contain spaces or reserved characters. Do not use a dot (`.`), because Guardian reserves it as a path separator, or a colon (`:`), because JSON-LD reserves.
 * _**Allow Multiple Answers**_ – Determines if the data is an array or a single item (Yes/No)
 * _**Test Value**_ – example of the valid data
 
@@ -235,11 +236,12 @@ The following rules are enforced by the import engine. When a rule is violated t
 ### Field rows
 
 | Rule                                     | What triggers it                                        | How to fix                                                                                                                                                                                                                                                  |
-| ---------------------------------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ---------------------------------------- | ------------------------------------------------------- |-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Field Type must not be empty             | The `Field Type` cell for a row is blank                | Set a valid type: `Number`, `Integer`, `String`, `Boolean`, `Date`, `Time`, `DateTime`, `Duration`, `URL`, `URI`, `Email`, `Image`, `File`, `Pattern`, `Help Text`, `GeoJSON`, `HederaAccount`, `Prefix`, `Postfix`, `Auto-Calculate`, `Enum`, `Sub-Schema` |
 | `Help Text` cannot be required           | A `Help Text` field has `Required Field` = Yes          | Set `Required Field` to No for all Help Text fields                                                                                                                                                                                                         |
 | `Auto-Calculate` must have an expression | An `Auto-Calculate` field has an empty `Parameter` cell | Enter a math expression referencing other field cells (e.g. `G6 + G7`) in the `Parameter` column                                                                                                                                                            |
-| Field key cannot contain dots            | The `Key` column value contains a `.` character         | Remove dots from the key — dots are reserved as path separators                                                                                                                                                                                             |
+| Field key cannot contain dots            | The `Key` column value contains a `.` character         | Rename the field key. Dots are reserved as path separators and cannot be used in Guardian schema field keys                                                                                                                                                 |
+| Field key cannot contain colons          | The `Key` column value contains a `:` character         | Rename the field key. Colons are reserved by JSON-LD and cannot be used in Guardian schema field keys                                                                                                                                                       |
 | Field keys must be unique per schema     | Two fields on the same sheet share the same key value   | Rename one of the fields in the `Key` column so every key is unique within the sheet                                                                                                                                                                        |
 
 ### Visibility column

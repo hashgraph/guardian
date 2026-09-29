@@ -338,6 +338,17 @@ export class FieldControl {
                     }
                 };
             }
+            if (typeof control.value === 'string') {
+                const reservedCharacter = ['.', ':'].find((character) => control.value.includes(character));
+                if (reservedCharacter) {
+                    return {
+                        reservedCharacter: {
+                            valid: false,
+                            character: reservedCharacter
+                        }
+                    };
+                }
+            }
             return null;
         };
     }
