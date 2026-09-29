@@ -14,7 +14,7 @@ This README covers what you need to run Guardian locally — quickstart, prerequ
 
 ## Quickstart
 
-This procedure is useful for demos, quick testing, and hackathons. It will only start the minimum required services for using the main Guardian features — including the **ai-service** together with a small local LLM (`gemma3-qat:4B-BF16`) pulled through the Docker Compose model runner, so AI Search and Glossary AI work out of the box. It will not start features like the MRV sender service, Prometheus integration, Grafana integration, etc.
+This procedure is useful for demos, quick testing, and hackathons. It will only start the minimum required services for using the main Guardian features. It will not start features like the MRV sender service, Prometheus integration, Grafana integration, etc.
 
 > ***Note:*** the embedded local model feature requires Docker Compose 2.38 or later.
 
@@ -367,7 +367,7 @@ This will start the containers in detached mode (-d) and build them if necessary
 >
 > ***NOTE 3:*** From the end of June 2023 Compose V1 won’t be supported anymore and will be removed from all Docker Desktop versions. Make sure you use Docker Compose V2 (comes with Docker Desktop > 3.6.0) as at <https://docs.docker.com/compose/install/>
 >
-> ***NOTE 4:*** The Quickstart configurations declare a top-level `models:` block (a local LLM used by `ai-service`). Make sure your Docker Compose supports it; without that support the model runner part is not available and the ai-service will have no LLM to talk to.
+> ***NOTE 4:*** The Quickstart configurations contain a (commented) top-level `models:` block definition (a local LLM used by `ai-service`). Make sure your Docker Compose supports it before uncommenting it; without that support the model runner part is not available and the ai-service will have no LLM to talk to.
 
 #### 7. Browse to <http://localhost:3000> and complete the setup
 

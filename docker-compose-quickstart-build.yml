@@ -14,8 +14,9 @@ x-service-template: &service-template
 
 name: guardian-quickstart
 
-# Uncomment this "models" top-level element and the "models" section in the ai-service to run and use a local LLM model
-# 
+# Uncomment this "models" top-level element and the "models" section in the ai-service to run a local LLM model
+# and set ENABLE_GLOSSARY_AI='true' in the config to enable the Glossary AI feature.
+#
 # models:
 #   llm:
 #     model: ai/gemma3-qat:4B-BF16 # small memory footprint model, suitable for tests
