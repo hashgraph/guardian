@@ -17,6 +17,7 @@ export class FieldLink {
     public description: string | null = '';
 
     public value: any;
+    public rows: Record<string, string>[] | null = null;
 
     public error: string = '';
     public empty: boolean = true;
@@ -40,6 +41,10 @@ export class FieldLink {
         return !this.valid;
     }
 
+    public get isTable(): boolean {
+        return Array.isArray(this.rows);
+    }
+
     constructor(name?: string, path?: string) {
         this.id = GenerateUUIDv4();
         this.empty = true;
@@ -47,14 +52,26 @@ export class FieldLink {
         this.field = path || '';
     }
 
+    private static toVariableName(text: unknown): string | null {
+        const value = typeof text === 'string' ? text.trim() : '';
+        if ((/^[A-Za-z]\w*(?:,\w+)*$/).test(value)) {
+            return value.replace(/,/g, '_');
+        }
+        return null;
+    }
+
     private _update() {
         try {
-            const text = this.variableNameText.trim();
-            if (!text) {
-                this.validName = false;
+            const rows = this.rows;
+            if (rows) {
+                this.validName = rows.every((row) => Object.keys(row).every((key) => {
+                    const cell = row[key];
+                    return !(typeof cell === 'string' && cell.trim()) || !!FieldLink.toVariableName(cell);
+                }));
             } else {
-                if ((/^[A-Za-z]\w*(?:,\w+)*$/).test(text)) {
-                    this.variableName = text.replace(/,/g, '_');
+                const name = FieldLink.toVariableName(this.variableNameText);
+                if (name) {
+                    this.variableName = name;
                     this.validName = true;
                 } else {
                     this.validName = false;
@@ -109,8 +126,32 @@ export class FieldLink {
         return convertValue(this.value);
     }
 
+    public getCellNames(): string[] {
+        const names: string[] = [];
+        for (const row of this.rows || []) {
+            for (const key of Object.keys(row)) {
+                const name = FieldLink.toVariableName(row[key]);
+                if (name) {
+                    names.push(name);
+                }
+            }
+        }
+        return names;
+    }
+
+    public getTableRows(scope: { [name: string]: any }): Record<string, any>[] {
+        return (this.rows || []).map((row) => {
+            const values: Record<string, any> = {};
+            for (const key of Object.keys(row)) {
+                const name = FieldLink.toVariableName(row[key]);
+                values[key] = name ? scope[name] : '';
+            }
+            return values;
+        });
+    }
+
     public toJson(): IFieldLink {
-        return {
+        const json: IFieldLink = {
             type: this.type,
             // Preserve the original user notation (e.g. "x,i") in JSON;
             // CE uses the underscore-normalised variableName internally.
@@ -119,6 +160,10 @@ export class FieldLink {
             field: this.field || '',
             schema: this.schema || ''
         }
+        if (this.rows) {
+            json.rows = this.rows.map((row) => ({ ...row }));
+        }
+        return json;
     }
 
     public static from(json: IFieldLink): FieldLink | null {
@@ -129,6 +174,9 @@ export class FieldLink {
             const link = new FieldLink(json.name, json.field);
             link.schema = json.schema;
             link.description = json.description || '';
+            if (Array.isArray(json.rows)) {
+                link.rows = json.rows.map((row) => ({ ...row }));
+            }
             link.empty = false;
             return link;
         } catch (error) {

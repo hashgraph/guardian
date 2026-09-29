@@ -132,4 +132,68 @@ describe('FieldLink', () => {
             assert.equal(link.empty, false);
         });
     });
+
+    describe('table output', () => {
+        const tableLink = (rows) => FieldLink.from({
+            type: 'link',
+            name: '',
+            description: '',
+            field: 'results',
+            schema: '',
+            rows
+        });
+
+        it('is a table only when it carries rows', () => {
+            assert.equal(new FieldLink('a', 'b').isTable, false);
+            assert.equal(tableLink([]).isTable, true);
+        });
+
+        it('keeps the rows through toJson and from', () => {
+            const rows = [{ year: 'y1', value: 'r1' }, { year: '', value: 'r2' }];
+            const json = tableLink(rows).toJson();
+            assert.deepEqual(json.rows, rows);
+            assert.notEqual(json.rows[0], rows[0]);
+            assert.deepEqual(FieldLink.from(json).rows, rows);
+        });
+
+        it('leaves rows out of the JSON of an ordinary output', () => {
+            const link = new FieldLink('a', 'b');
+            assert.equal('rows' in link.toJson(), false);
+        });
+
+        it('is valid with an empty name when every filled cell is a variable name', () => {
+            const link = tableLink([{ a: 'r1', b: '' }, { a: 'x,i', b: '  ' }]);
+            link.update();
+            assert.equal(link.validName, true);
+            assert.equal(link.valid, true);
+        });
+
+        it('is invalid when a filled cell is not a variable name', () => {
+            const link = tableLink([{ a: 'r1', b: '1bad' }]);
+            link.update();
+            assert.equal(link.validName, false);
+            assert.equal(link.error, 'Invalid name');
+        });
+
+        it('is invalid without a field', () => {
+            const link = tableLink([{ a: 'r1' }]);
+            link.field = '';
+            link.update();
+            assert.equal(link.validField, false);
+        });
+
+        it('lists the normalised names of the filled cells', () => {
+            const link = tableLink([{ a: 'r1', b: '' }, { a: 'x,i', b: 'r1' }]);
+            assert.deepEqual(link.getCellNames(), ['r1', 'x_i', 'r1']);
+        });
+
+        it('fills each cell from the scope and leaves an empty cell empty', () => {
+            const link = tableLink([{ a: 'r1', b: '' }, { a: 'list', b: 'missing' }]);
+            const rows = link.getTableRows({ r1: 5, list: [1, 2] });
+            assert.deepEqual(rows, [
+                { a: 5, b: '' },
+                { a: [1, 2], b: undefined }
+            ]);
+        });
+    });
 });

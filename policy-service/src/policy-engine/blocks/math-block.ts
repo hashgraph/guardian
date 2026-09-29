@@ -4,13 +4,19 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { BlockActionError } from '../errors/index.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
-import { ContextHelper, VcDocumentDefinition, VcHelper } from '@guardian/common';
+import { ContextHelper, DatabaseServer, IPFS, VcDocumentDefinition, VcHelper } from '@guardian/common';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
-import { DocumentMap, IMathDocument } from '../helpers/math-model/index.js';
+import {
+    DocumentMap,
+    getDocumentValueByPath,
+    IMathDocument,
+    MathEngine,
+    setDocumentValueByPath
+} from '../helpers/math-model/index.js';
 import { fileURLToPath } from 'node:url';
 import { Worker } from 'node:worker_threads';
 import path from 'node:path'
@@ -19,6 +25,12 @@ import {
     hydrateTablesInObject,
     loadFileTextById
 } from '../helpers/table-field.js';
+import {
+    buildCompactTableJson,
+    buildTableOutputCsv,
+    gzipTableCsv,
+    isTableOutputValue
+} from '../helpers/table-output.js';
 
 const filename = fileURLToPath(import.meta.url);
 
@@ -35,6 +47,11 @@ interface IMetadata {
 interface IMathWorkerResult {
     result: IPolicyDocument;
     warnings: string[];
+}
+
+interface IStoredTable {
+    fileId: string;
+    cid: string | null;
 }
 
 /**
@@ -184,6 +201,91 @@ export class MathBlock {
         return workerResult.result;
     }
 
+    /**
+     * Store every result table as a file and put its reference into the document
+     * @param ref
+     * @param json
+     * @param userId
+     * @param storedTables
+     * @param user
+     * @private
+     */
+    private async storeResultTables(
+        ref: IPolicyCalculateBlock,
+        json: any,
+        userId: string | null,
+        storedTables: IStoredTable[],
+        user?: PolicyUser
+    ): Promise<void> {
+        const options = await ref.getOptions(user);
+        const engine = MathEngine.from(options.expression);
+        const outputs = engine ? engine.outputs.getItems().filter((link) => link.isTable) : [];
+        if (!outputs.length) {
+            return;
+        }
+
+        const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema);
+        const schema = new Schema(outputSchema);
+        for (const link of outputs) {
+            const value = getDocumentValueByPath(json, link.path);
+            if (!isTableOutputValue(value)) {
+                continue;
+            }
+            const columns = schema.getField(link.path)?.tableColumns;
+            if (!Array.isArray(columns) || !columns.length) {
+                throw new BlockActionError(
+                    `Table output "${link.path}" has no declared columns`,
+                    ref.blockType,
+                    ref.uuid
+                );
+            }
+
+            const buffer = await gzipTableCsv(buildTableOutputCsv(columns, value.rows));
+            const { fileId } = await DatabaseServer.upsertGridFile({
+                buffer,
+                filename: 'table.csv.gz',
+                contentType: 'application/gzip'
+            });
+            const stored: IStoredTable = { fileId, cid: null };
+            storedTables.push(stored);
+
+            if (!ref.dryRun) {
+                const { cid } = await IPFS.addFile(buffer, { userId, interception: null });
+                stored.cid = cid;
+            }
+
+            setDocumentValueByPath(schema, json, link.path, buildCompactTableJson(stored.fileId, stored.cid, columns));
+        }
+    }
+
+    /**
+     * Delete result tables stored by a run that failed
+     * @param ref
+     * @param storedTables
+     * @param userId
+     * @private
+     */
+    private async deleteResultTables(
+        ref: IPolicyCalculateBlock,
+        storedTables: IStoredTable[],
+        userId: string | null
+    ): Promise<void> {
+        for (const stored of storedTables) {
+            if (stored.cid) {
+                try {
+                    await IPFS.deleteCid(stored.cid, { userId, interception: null });
+                } catch (error) {
+                    ref.warn(`Failed to delete result table ${stored.cid}: ${PolicyUtils.getErrorMessage(error)}`);
+                }
+            }
+            try {
+                await DatabaseServer.deleteGridFile(stored.fileId);
+            } catch (error) {
+                ref.warn(`Failed to delete result table ${stored.fileId}: ${PolicyUtils.getErrorMessage(error)}`);
+            }
+        }
+    }
+
     private getCredentialSubject(document: IPolicyDocument): IMathDocument {
         const vc = VcDocumentDefinition.fromJsonTree(document.document);
         const credentialSubject = vc.getCredentialSubject(0).toJsonTree();
@@ -200,6 +302,7 @@ export class MathBlock {
      * @param userId
      * @param recordActionId
      * @param user
+     * @param storedTables
      * @private
      */
     private async process(
@@ -207,7 +310,8 @@ export class MathBlock {
         ref: IPolicyCalculateBlock,
         userId: string | null,
         recordActionId: string | null = null,
-        user?: PolicyUser
+        user?: PolicyUser,
+        storedTables: IStoredTable[] = []
     ): Promise<IPolicyDocument> {
         if (!documents) {
             throw new BlockActionError('Invalid VC', ref.blockType, ref.uuid);
@@ -228,6 +332,7 @@ export class MathBlock {
         map.addRelationships(contextRelationships.map((d) => this.getCredentialSubject(d)));
 
         const newJson = await this.calculate(ref, map, docOwner);
+        await this.storeResultTables(ref, newJson, userId, storedTables, user);
         if (options.unsigned) {
             return await this.createUnsignedDocument(newJson, ref, recordActionId);
         } else {
@@ -401,15 +506,21 @@ export class MathBlock {
     public async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
 
-        if (Array.isArray(event.data.data)) {
-            const result: IPolicyDocument[] = [];
-            for (const doc of event.data.data) {
-                const newVC = await this.process(doc, ref, event?.user?.userId, event.actionStatus?.id ?? null, event.user);
-                result.push(newVC)
+        const storedTables: IStoredTable[] = [];
+        try {
+            if (Array.isArray(event.data.data)) {
+                const result: IPolicyDocument[] = [];
+                for (const doc of event.data.data) {
+                    const newVC = await this.process(doc, ref, event?.user?.userId, event.actionStatus?.id ?? null, event.user, storedTables);
+                    result.push(newVC)
+                }
+                event.data.data = result;
+            } else {
+                event.data.data = await this.process(event.data.data, ref, event?.user?.userId, event.actionStatus?.id ?? null, event.user, storedTables);
             }
-            event.data.data = result;
-        } else {
-            event.data.data = await this.process(event.data.data, ref, event?.user?.userId, event.actionStatus?.id ?? null, event.user);
+        } catch (error) {
+            await this.deleteResultTables(ref, storedTables, event?.user?.userId ?? null);
+            throw error;
         }
 
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data, event.actionStatus);
