@@ -63,6 +63,7 @@ All schemas created for importing into Guardian must follow the design of the te
   * **Sub-Schema (None)** – schemas without additional system fields which are suitable for embedded data.
 * _**Tool**_ _(optional) –_ name of the Tool to which this schema belongs
 * _**Tool Id**_ – message id of the Tool to which this schema belongs (if relevant)
+* _**IWA Version**_ _(optional)_ – which IWA dMRV specification version the schema's field properties (see **IWA Property** below) are authored against: `V1` or `V3`, picked from a dropdown. Workbooks exported before this feature was added have no such row and are treated as `V1` on import.
 
 {% hint style="info" %}
 **Note:** If the imported schema belongs to a Tool (not a Policy) - i.e. there is a Tool ID setting as per above - all extended information about the schema will not be processed during import. Since Tools are immutable and can only be referenced the only relevant information that would be used in the import is the Tool ID.
@@ -110,6 +111,7 @@ All schemas created for importing into Guardian must follow the design of the te
 * _**Description**_ – Description of the field. This is the text which users would see when filling out the form in Guardian.
 * _**Allow Multiple Answers**_ – Determines if the data is an array or a single item (Yes/No)
 * _**Test Value**_ – example of the valid data
+* _**IWA Property**_ _(optional)_ – the IWA dMRV specification property path this field maps to (e.g. `ActivityImpactModule.country`). Offered as a dropdown populated from the hidden **IWA Properties** reference sheet, filtered to the schema's **IWA Version**. Leave blank for fields with no IWA equivalent. A path that isn't in the current version's property list still imports. Guardian keeps the value and reports a warning.
 
 {% hint style="info" %}
 **Note:** Currently only expression containing simple arithmetic operations are supported for **Auto-Calculate** in the _**Test Value.**_ When specified it would result an the generation of the function template as shown on the example below.
@@ -241,6 +243,8 @@ The following rules are enforced by the import engine. When a rule is violated t
 | `Auto-Calculate` must have an expression | An `Auto-Calculate` field has an empty `Parameter` cell | Enter a math expression referencing other field cells (e.g. `G6 + G7`) in the `Parameter` column                                                                                                                                                            |
 | Field key cannot contain dots            | The `Key` column value contains a `.` character         | Remove dots from the key — dots are reserved as path separators                                                                                                                                                                                             |
 | Field keys must be unique per schema     | Two fields on the same sheet share the same key value   | Rename one of the fields in the `Key` column so every key is unique within the sheet                                                                                                                                                                        |
+| Unknown IWA property                     | An `IWA Property` cell contains a path that isn't in the property list for the schema's `IWA Version` | Pick a value from the dropdown, or leave it if the path is intentionally custom. The value is imported either way. |
+| Unrecognized IWA Version                 | The `IWA Version` cell contains a value other than `V1`, `V3`, `1.0.0` or `3.0.0` | Set the cell to `V1` or `V3` using the dropdown. An unrecognized value falls back to `V1`. |
 
 ### Visibility column
 

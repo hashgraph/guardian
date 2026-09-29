@@ -498,6 +498,12 @@
                                                   (ngModelChange)="markDirty()">
                                         </p-select>
                                     </div>
+                                    <div class="sc-schema-props-field">
+                                        <label class="sc-schema-props-label">IWA Version</label>
+                                        <span class="sc-schema-props-iwa"
+                                            [class.sc-schema-props-iwa--v3]="iwaVersionLabel(selectedSchema) === 'V3'"
+                                            [class.sc-schema-props-iwa--v1]="iwaVersionLabel(selectedSchema) === 'V1'">{{ iwaVersionLabel(selectedSchema) }}</span>
+                                    </div>
                                 </div>
                                 <div class="sc-schema-props-field sc-schema-props-field--full">
                                     <label class="sc-schema-props-label">Description <span class="sc-schema-props-optional">(optional)</span></label>
@@ -704,6 +710,12 @@
                                                       (ngModelChange)="markDirty()">
                                             </p-select>
                                         </div>
+                                        <div class="sc-schema-props-field">
+                                            <label class="sc-schema-props-label">IWA Version</label>
+                                            <span class="sc-schema-props-iwa"
+                                                [class.sc-schema-props-iwa--v3]="iwaVersionLabel(ds) === 'V3'"
+                                                [class.sc-schema-props-iwa--v1]="iwaVersionLabel(ds) === 'V1'">{{ iwaVersionLabel(ds) }}</span>
+                                        </div>
                                     </div>
                                     <div class="sc-schema-props-field sc-schema-props-field--full">
                                         <label class="sc-schema-props-label">Description <span class="sc-schema-props-optional">(optional)</span></label>
@@ -849,7 +861,7 @@
                                 type="text"
                                 placeholder="Field title"
                                 [(ngModel)]="selectedField.title"
-                                (ngModelChange)="markDirty()" />
+                                (ngModelChange)="markDirty(); invalidateSelectedFieldSuggestion()" />
                         </div>
                         <div class="sc-rp-group">
                             <label class="sc-rp-label">Key</label>
@@ -869,7 +881,7 @@
                                 type="text"
                                 placeholder="Field description"
                                 [(ngModel)]="selectedField.description"
-                                (ngModelChange)="markDirty()" />
+                                (ngModelChange)="markDirty(); invalidateSelectedFieldSuggestion()" />
                         </div>
                         @if (selectedFieldIsString) {
                             <div class="sc-rp-group">
@@ -1137,28 +1149,17 @@
                                 } @else if (rightPanelSuggestion; as suggestion) {
                                     @if (suggestion.candidates[0]; as topCandidate) {
                                         <div class="sc-rp-ai-hint">
-                                            <div class="sc-rp-ai-hint-row">
-                                                <span class="sc-rp-ai-hint-title" [title]="topCandidate.title">{{ topCandidate.title }}</span>
-                                                <button type="button" class="sc-btn sc-btn-primary" (click)="acceptSuggestion(selectedField.name, topCandidate.title)">Apply</button>
-                                            </div>
-                                            @if (topCandidate.description) {
-                                                <div class="sc-rp-ai-hint-description">{{ topCandidate.description }}</div>
-                                            }
-                                            <span class="sc-rp-ai-hint-confidence">{{ (topCandidate.confidence * 100).toFixed(0) }}%</span>
-                                            <div class="sc-rp-ai-hint-rationale">{{ topCandidate.rationale }}</div>
+                                            <ng-container *ngTemplateOutlet="aiCandidate; context: { $implicit: topCandidate, field: selectedField, primary: true }"></ng-container>
                                             <div class="sc-rp-ai-hint-actions">
                                                 @if (suggestion.candidates.length > 1) {
                                                     <button type="button" class="sc-rp-ai-hint-link" (click)="rightPanelSuggestionExpanded = !rightPanelSuggestionExpanded">See more</button>
                                                 }
+                                                <button type="button" class="sc-rp-ai-hint-link" (click)="suggestPropertyForSelectedField(true)">Refresh</button>
                                                 <button type="button" class="sc-rp-ai-hint-link" (click)="openInPropertyAiTab(selectedField.name)">Move to Glossary AI</button>
                                             </div>
                                             @if (rightPanelSuggestionExpanded) {
                                                 @for (candidate of suggestion.candidates.slice(1); track candidate.title) {
-                                                    <div class="sc-rp-ai-hint-row">
-                                                        <span class="sc-rp-ai-hint-title" [title]="candidate.title">{{ candidate.title }}</span>
-                                                        <span class="sc-rp-ai-hint-confidence">{{ (candidate.confidence * 100).toFixed(0) }}%</span>
-                                                        <button type="button" class="sc-btn" (click)="acceptSuggestion(selectedField.name, candidate.title)">Apply</button>
-                                                    </div>
+                                                    <ng-container *ngTemplateOutlet="aiCandidate; context: { $implicit: candidate, field: selectedField, primary: false }"></ng-container>
                                                 }
                                             }
                                         </div>
@@ -1858,6 +1859,28 @@
         </div>
     </ng-template>
 
+    <!-- AI suggestion candidate -->
+
+    <ng-template #aiCandidate let-c let-field="field" let-primary="primary">
+        <div class="sc-ai-candidate-row">
+            <span class="sc-ai-candidate-title" [title]="c.title">{{ c.title }}</span>
+            <span class="sc-ai-candidate-confidence">{{ (c.confidence * 100).toFixed(0) }}%</span>
+            @if (field && c.title === field.property) {
+                <span class="sc-suggestion-match-label">Already matches</span>
+            } @else {
+                <button type="button" class="sc-btn" [class.sc-btn-primary]="primary"
+                    [disabled]="!field"
+                    (click)="field && acceptSuggestion(field.name, c.title)">Apply</button>
+            }
+        </div>
+        @if (c.description) {
+            <div class="sc-ai-candidate-description" [pTooltip]="c.description" tooltipStyleClass="guardian-tooltip">{{ c.description }}</div>
+        }
+        @if (c.rationale) {
+            <div class="sc-ai-candidate-rationale" [title]="c.rationale">{{ c.rationale }}</div>
+        }
+    </ng-template>
+
     <ng-template #propertyAiCanvas>
         <div class="sc-array-link-canvas">
             <div class="sc-suggestions-toolbar">
@@ -1906,24 +1929,32 @@
                             [class.sc-suggestion-row--highlight]="highlightedFieldName === result.fieldName"
                             [class.sc-suggestion-row--match]="result.candidates[0]?.title === getFieldByName(result.fieldName)?.property">
                             <div class="sc-suggestion-field">
-                                <span class="sc-suggestion-field-name" [title]="result.fieldName">{{ result.fieldName }}</span>
+                                @if (getFieldByName(result.fieldName); as f) {
+                                    <span class="sc-suggestion-field-title" [title]="f.title || f.name">{{ f.title || result.fieldName }}</span>
+                                    <span class="sc-suggestion-field-key" [title]="result.fieldName">{{ result.fieldName }}</span>
+                                    @if (f.description) {
+                                        <span class="sc-suggestion-field-description" [pTooltip]="f.description" tooltipStyleClass="guardian-tooltip">{{ f.description }}</span>
+                                    }
+                                } @else {
+                                    <span class="sc-suggestion-field-title" [title]="result.fieldName">{{ result.fieldName }}</span>
+                                }
                                 <span class="sc-suggestion-current" [title]="'Current: ' + (getFieldByName(result.fieldName)?.property || 'None')">Current: {{ getFieldByName(result.fieldName)?.property || 'None' }}</span>
                             </div>
                             @if (result.candidates[0]; as topCandidate) {
                                 <div class="sc-suggestion-candidate">
-                                    <span class="sc-suggestion-candidate-title" [title]="topCandidate.title">{{ topCandidate.title }}</span>
-                                    @if (topCandidate.description) {
-                                        <span class="sc-suggestion-candidate-description" [title]="topCandidate.description">{{ topCandidate.description }}</span>
+                                    <ng-container *ngTemplateOutlet="aiCandidate; context: { $implicit: topCandidate, field: getFieldByName(result.fieldName), primary: true }"></ng-container>
+                                    @if (result.candidates.length > 1) {
+                                        <button type="button" class="sc-rp-ai-hint-link sc-suggestion-see-more" (click)="toggleGlossaryCandidates(result.fieldName)">
+                                            {{ expandedGlossaryFields.has(result.fieldName) ? 'See less' : 'See more' }}
+                                        </button>
                                     }
-                                    <span class="sc-suggestion-candidate-confidence">{{ (topCandidate.confidence * 100).toFixed(0) }}%</span>
-                                    <span class="sc-suggestion-candidate-rationale" [title]="topCandidate.rationale">{{ topCandidate.rationale }}</span>
+                                    @if (expandedGlossaryFields.has(result.fieldName)) {
+                                        @for (candidate of result.candidates.slice(1); track candidate.title) {
+                                            <ng-container *ngTemplateOutlet="aiCandidate; context: { $implicit: candidate, field: getFieldByName(result.fieldName), primary: false }"></ng-container>
+                                        }
+                                    }
                                 </div>
                                 <div class="sc-suggestion-actions">
-                                    @if (topCandidate.title !== getFieldByName(result.fieldName)?.property) {
-                                        <button type="button" class="sc-btn sc-btn-primary" (click)="acceptSuggestion(result.fieldName, topCandidate.title)">Accept</button>
-                                    } @else {
-                                        <span class="sc-suggestion-match-label">Already matches</span>
-                                    }
                                     <button type="button" class="sc-btn" (click)="goEditField(result.fieldName)">Change</button>
                                     <button type="button" class="sc-btn" (click)="dismissSuggestion(result.fieldName)">Dismiss</button>
                                 </div>
