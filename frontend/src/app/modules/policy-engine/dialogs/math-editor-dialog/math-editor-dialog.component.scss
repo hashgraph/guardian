@@ -243,6 +243,68 @@
         width: 100%;
     }
 
+    .table-output {
+        margin-bottom: 16px;
+
+        .table-output-grid {
+            max-height: 360px;
+            overflow: auto;
+            border: 1px solid var(--guardian-border-color);
+            border-radius: 6px;
+            background: var(--guardian-background);
+        }
+
+        &[error="true"] .table-output-grid {
+            border-color: var(--guardian-failure-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 4px 8px;
+            border-bottom: 1px solid var(--guardian-border-color);
+            text-align: left;
+        }
+
+        th {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background: var(--guardian-grey-background);
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        td input {
+            width: 100%;
+            min-width: 120px;
+        }
+
+        .table-output-index {
+            width: 40px;
+            color: var(--guardian-grey-color-4);
+        }
+
+        .table-output-action {
+            width: 48px;
+        }
+
+        .table-output-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .table-output-count {
+            width: 100px;
+        }
+    }
+
     .var-picker-wrapper {
         position: relative;
         margin-left: 8px;

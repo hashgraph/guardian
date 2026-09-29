@@ -190,17 +190,23 @@ export class MathEngine {
         // Outputs
         for (const page of this.outputs.pages) {
             for (const output of page.validatedItems) {
-                const old = list.get(output.name);
-                if (old) {
-                    if (old.type === MathItemType.FUNCTION) {
-                        output.error = `Invalid value`;
+                if (output.isTable && !output.valid) {
+                    return this.setError('outputs', page.id);
+                }
+                const names = output.isTable ? output.getCellNames() : [output.name];
+                for (const name of names) {
+                    const old = list.get(name);
+                    if (old) {
+                        if (old.type === MathItemType.FUNCTION) {
+                            output.error = `Invalid value`;
+                            output.validName = false;
+                            return this.setError('outputs', page.id);
+                        }
+                    } else {
+                        output.error = `Unknown variable: ${name}`;
                         output.validName = false;
                         return this.setError('outputs', page.id);
                     }
-                } else {
-                    output.error = `Unknown variable: ${output.name}`;
-                    output.validName = false;
-                    return this.setError('outputs', page.id);
                 }
             }
         }

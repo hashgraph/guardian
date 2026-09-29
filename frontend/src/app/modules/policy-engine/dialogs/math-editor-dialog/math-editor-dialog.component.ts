@@ -197,6 +197,9 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     public inputDocumentValue: any = null;
     public inputRelationshipsValue: any[] = [];
 
+    public readonly maxTableRows = 1000;
+    public tableRowsToAdd: { [id: string]: number } = {};
+
     constructor(
         private dialogRef: DynamicDialogRef,
         private dialogService: DialogService,
@@ -257,6 +260,10 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         }
         for (const item of this.engine.outputs.getItems()) {
             this._updateFieldWarning(item, 'output');
+            const columns = this.getTableColumns(item);
+            if (item.rows && columns.length) {
+                item.rows = this.syncTableRows(item.rows, columns);
+            }
         }
     }
 
@@ -346,6 +353,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
 
     public deleteOutput(output: FieldLink) {
         this.fieldWarnings.delete(output.id);
+        delete this.tableRowsToAdd[output.id];
         this.engine.deleteOutput(output);
     }
 
@@ -577,6 +585,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 item.schema = schema?.iri || null;
                 item.update();
                 this._updateFieldWarning(item, 'output');
+                this.updateTableOutput(item);
             }
         });
     }
@@ -625,6 +634,69 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         }
     }
 
+    public getTableColumns(item: FieldLink): { name: string; key: string }[] {
+        const node = item.field ? this.outputSchemaFieldMap.get(item.field) : undefined;
+        if (!node || node.arrayLvl !== 0 || node.field.customType !== 'table') {
+            return [];
+        }
+        const columns = node.field.tableColumns;
+        return Array.isArray(columns) ? columns.filter((column) => !!column?.key) : [];
+    }
+
+    public addTableRows(item: FieldLink, count: number): void {
+        const columns = this.getTableColumns(item);
+        const rows = item.rows;
+        if (!rows || !columns.length) {
+            return;
+        }
+        const size = Math.min(
+            Math.max(Math.trunc(Number(count)) || 0, 0),
+            this.maxTableRows - rows.length
+        );
+        for (let i = 0; i < size; i++) {
+            rows.push(this.createTableRow(columns));
+        }
+        item.update();
+    }
+
+    public deleteTableRow(item: FieldLink, index: number): void {
+        if (!item.rows) {
+            return;
+        }
+        item.rows.splice(index, 1);
+        item.update();
+    }
+
+    private updateTableOutput(item: FieldLink): void {
+        const columns = this.getTableColumns(item);
+        item.rows = columns.length ? this.syncTableRows(item.rows || [{}], columns) : null;
+        item.update();
+    }
+
+    private syncTableRows(
+        rows: Record<string, string>[],
+        columns: { name: string; key: string }[]
+    ): Record<string, string>[] {
+        return rows.map((row) => {
+            const next = this.createTableRow(columns);
+            for (const column of columns) {
+                const cell = row[column.key];
+                if (typeof cell === 'string') {
+                    next[column.key] = cell;
+                }
+            }
+            return next;
+        });
+    }
+
+    private createTableRow(columns: { name: string; key: string }[]): Record<string, string> {
+        const row: Record<string, string> = {};
+        for (const column of columns) {
+            row[column.key] = '';
+        }
+        return row;
+    }
+
     public getItemValue(value: any) {
         if (value === undefined || value === null) {
             return '';
@@ -643,6 +715,9 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         item.update();
         this._computePathSuggestions(item, type);
         this._updateFieldWarning(item, type);
+        if (type === 'output') {
+            this.updateTableOutput(item);
+        }
     }
 
     public onPathKeyup(event: KeyboardEvent): void {
@@ -665,6 +740,9 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         item.field = path;
         item.update();
         this._updateFieldWarning(item, type);
+        if (type === 'output') {
+            this.updateTableOutput(item);
+        }
         this.activePathItem = null;
         this.pathSuggestions = [];
     }

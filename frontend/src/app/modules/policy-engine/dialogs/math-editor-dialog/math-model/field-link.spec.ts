@@ -90,3 +90,52 @@ describe('FieldLink.from — round-trip', () => {
         expect(FieldLink.from(undefined as any)).toBeNull();
     });
 });
+
+// ─── table output ─────────────────────────────────────────────────────────────
+describe('FieldLink table output', () => {
+    function tableLink(rows: Record<string, string>[]): FieldLink {
+        return FieldLink.from({
+            type: MathItemType.LINK,
+            name: '',
+            description: '',
+            field: 'results',
+            schema: '',
+            rows
+        })!;
+    }
+
+    it('is a table only when it carries rows', () => {
+        expect(new FieldLink('a', 'b').isTable).toBeFalse();
+        expect(tableLink([]).isTable).toBeTrue();
+    });
+
+    it('keeps the rows through toJson and from', () => {
+        const rows = [{ year: 'y1', value: 'r1' }, { year: '', value: 'r2' }];
+        const json = tableLink(rows).toJson();
+        expect(json.rows).toEqual(rows);
+        expect(FieldLink.from(json)!.rows).toEqual(rows);
+    });
+
+    it('leaves rows out of the JSON of an ordinary output', () => {
+        expect('rows' in new FieldLink('a', 'b').toJson()).toBeFalse();
+    });
+
+    it('is valid with an empty name when every filled cell is a variable name', () => {
+        const link = tableLink([{ a: 'r1', b: '' }, { a: 'x,i', b: ' ' }]);
+        link.update();
+        expect(link.valid).toBeTrue();
+    });
+
+    it('is invalid when a filled cell is not a variable name', () => {
+        const link = tableLink([{ a: '1bad' }]);
+        link.update();
+        expect(link.validName).toBeFalse();
+        expect(link.error).toBe('Invalid name');
+    });
+
+    it('fills each cell from the scope and leaves an empty cell empty', () => {
+        const link = tableLink([{ a: 'r1', b: '' }]);
+        expect(link.getTableRows({ r1: 5 })).toEqual([{ a: 5, b: '' }]);
+        expect(link.getCellNames()).toEqual(['r1']);
+    });
+});

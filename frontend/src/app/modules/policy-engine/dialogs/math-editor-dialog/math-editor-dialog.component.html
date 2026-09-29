@@ -610,19 +610,98 @@
                             <ng-container *ngTemplateOutlet="pathPicker; context: {item: item, mode: 'output'}"></ng-container>
                           </div>
                         </div>
-                        <div class="formula-eq">=</div>
-                        <div class="formula-name" [attr.error]="!item.validName">
-                          <div class="guardian-input-container">
-                            <label class="form-label"></label>
-                            <input
-                              [(ngModel)]="item.variableNameText"
-                              pInputText
-                              type="text"
-                              placeholder="Name"
-                              (change)="item.update()"/>
+                        @if (!item.isTable) {
+                          <div class="formula-eq">=</div>
+                          <div class="formula-name" [attr.error]="!item.validName">
+                            <div class="guardian-input-container">
+                              <label class="form-label"></label>
+                              <input
+                                [(ngModel)]="item.variableNameText"
+                                pInputText
+                                type="text"
+                                placeholder="Name"
+                                (change)="item.update()"/>
+                            </div>
                           </div>
-                        </div>
+                        }
                       </div>
+                      @if (item.isTable) {
+                        <div class="table-output" [attr.error]="!item.validName">
+                          <label class="form-label">Rows ({{item.rows?.length || 0}} / {{maxTableRows}})</label>
+                          @if (getTableColumns(item).length) {
+                            <div class="table-output-grid">
+                              <table>
+                                <thead>
+                                  <tr>
+                                    <th class="table-output-index">#</th>
+                                    @for (column of getTableColumns(item); track column.key) {
+                                      <th>{{column.name}}</th>
+                                    }
+                                    <th class="table-output-action"></th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  @for (row of item.rows || []; track $index; let rowIndex = $index) {
+                                    <tr>
+                                      <td class="table-output-index">{{rowIndex + 1}}</td>
+                                      @for (column of getTableColumns(item); track column.key) {
+                                        <td>
+                                          <input
+                                            [(ngModel)]="row[column.key]"
+                                            pInputText
+                                            type="text"
+                                            placeholder="Name"
+                                            [readOnly]="readonly"
+                                            (change)="item.update()"/>
+                                        </td>
+                                      }
+                                      <td class="table-output-action">
+                                        @if (!readonly) {
+                                          <button
+                                            class="guardian-icon-button"
+                                            (click)="deleteTableRow(item, rowIndex)">
+                                            <svg-icon
+                                              class="icon-btn svg-icon"
+                                              src="/assets/images/icons/delete.svg"
+                                              svgClass="icon-color-delete">
+                                            </svg-icon>
+                                          </button>
+                                        }
+                                      </td>
+                                    </tr>
+                                  }
+                                </tbody>
+                              </table>
+                            </div>
+                            @if (!readonly) {
+                              <div class="table-output-toolbar">
+                                <button
+                                  class="guardian-button guardian-button-secondary"
+                                  [disabled]="(item.rows?.length || 0) >= maxTableRows"
+                                  (click)="addTableRows(item, 1)">
+                                  <div class="guardian-button-label">Add Row</div>
+                                </button>
+                                <input
+                                  class="table-output-count"
+                                  [(ngModel)]="tableRowsToAdd[item.id]"
+                                  pInputText
+                                  type="number"
+                                  min="1"
+                                  [max]="maxTableRows"
+                                  placeholder="Rows"/>
+                                <button
+                                  class="guardian-button guardian-button-secondary"
+                                  [disabled]="!tableRowsToAdd[item.id] || (item.rows?.length || 0) >= maxTableRows"
+                                  (click)="addTableRows(item, tableRowsToAdd[item.id])">
+                                  <div class="guardian-button-label">Add Rows</div>
+                                </button>
+                              </div>
+                            }
+                          } @else {
+                            <div class="path-unknown-warning">This Table field has no declared columns</div>
+                          }
+                        </div>
+                      }
                       <div class="row-container row-container-last" style="gap: 16px">
                         <div class="guardian-input-container">
                           <label class="form-label">Type</label>

@@ -18,6 +18,7 @@ export interface IFieldLink {
     description: string;
     field: string;
     schema: string;
+    rows?: Record<string, string>[];
 }
 
 export interface IMathFormula {
