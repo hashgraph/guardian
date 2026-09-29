@@ -3225,21 +3225,26 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (!ancestors.size) { return false; }
 
         const visited = new Set<string>();
-        const visit = (s: Schema): void => {
-            if (!s.iri || visited.has(s.iri)) { return; }
-            visited.add(s.iri);
-            for (const f of (s.fields || [])) {
-                if (f.isRef && f.type) {
-                    const ref = refs.get(f.type);
-                    if (ref) { visit(ref); }
-                }
+        const getSchemaReferences = (s: Schema): string[] => {
+            if (Array.isArray(s.fields) && s.fields.length) {
+                return s.fields
+                    .filter(f => f.isRef && f.type)
+                    .map(f => f.type);
             }
+            const defs = (s as any).defs;
+            return Array.isArray(defs) ? defs : [];
         };
-        visit(schema);
-
-        for (const iri of ancestors) {
-            if (visited.has(iri)) { return true; }
-        }
+        const visit = (s: Schema): boolean => {
+            if (!s.iri || visited.has(s.iri)) { return false; }
+            visited.add(s.iri);
+            for (const refIri of getSchemaReferences(s)) {
+                if (ancestors.has(refIri)) { return true; }
+                const ref = refs.get(refIri);
+                if (ref && visit(ref)) { return true; }
+            }
+            return false;
+        };
+        if (visit(schema)) { return true; }
         return false;
     }
 
@@ -3248,6 +3253,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const selId = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
         const schId = schema.id || (schema as any)._id;
         if (selId && selId === schId) { return false; }
+        if (this.selectedSchema?.iri && schema.iri === this.selectedSchema.iri) { return false; }
         const contextIri = this.currentDrilledSchemaIri;
         if (contextIri && schema.iri === contextIri) { return false; }
         if (this.isCircularDependency(schema, schemaMap)) { return false; }
@@ -4411,7 +4417,16 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             .pipe(
                 map((response: HttpResponse<ISchema[]>) => {
                     const items = (response.body || [])
-                        .map(s => { try { return new Schema(s); } catch { return null; } })
+                        .map(s => {
+                            try {
+                                const schema = new Schema(s);
+                                const defs = (s as any).defs;
+                                (schema as any).defs = Array.isArray(defs) ? defs : [];
+                                return schema;
+                            } catch {
+                                return null;
+                            }
+                        })
                         .filter((s): s is Schema => s !== null);
                     return {
                         response,
