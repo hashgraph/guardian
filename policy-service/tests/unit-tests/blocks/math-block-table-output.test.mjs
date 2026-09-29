@@ -211,7 +211,7 @@ describe('@unit mathBlock result tables', () => {
         assert.deepEqual(stored, [{ fileId: 'file-1', cid: null }]);
     });
 
-    it('deletes every stored file when the run fails after storing', async () => {
+    it('deletes every stored GridFS file but keeps the IPFS content when the run fails after storing', async () => {
         const mathBlock = makeBlock(MathBlock, { options: { onErrorAction: 'debug' } }).block;
         mathBlock.triggerEvents = async () => undefined;
         let file = 0;
@@ -230,7 +230,7 @@ describe('@unit mathBlock result tables', () => {
             actionStatus: {}
         });
 
-        assert.deepEqual(deletedCids, ['cid-1', 'cid-2']);
+        assert.deepEqual(deletedCids, []);
         assert.deepEqual(deletedGrid, ['file-1', 'file-2']);
     });
 

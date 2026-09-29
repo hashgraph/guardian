@@ -290,22 +290,13 @@ export class MathBlock {
      * Delete result tables stored by a run that failed
      * @param ref
      * @param storedTables
-     * @param userId
      * @private
      */
     private async deleteResultTables(
         ref: IPolicyCalculateBlock,
-        storedTables: IStoredTable[],
-        userId: string | null
+        storedTables: IStoredTable[]
     ): Promise<void> {
         for (const stored of storedTables) {
-            if (stored.cid) {
-                try {
-                    await IPFS.deleteCid(stored.cid, { userId, interception: null });
-                } catch (error) {
-                    ref.warn(`Failed to delete result table ${stored.cid}: ${PolicyUtils.getErrorMessage(error)}`);
-                }
-            }
             try {
                 await DatabaseServer.deleteGridFile(stored.fileId);
             } catch (error) {
@@ -547,7 +538,7 @@ export class MathBlock {
                 event.data.data = await this.process(event.data.data, ref, event?.user?.userId, event.actionStatus?.id ?? null, event.user, storedTables);
             }
         } catch (error) {
-            await this.deleteResultTables(ref, storedTables, event?.user?.userId ?? null);
+            await this.deleteResultTables(ref, storedTables);
             throw error;
         }
 

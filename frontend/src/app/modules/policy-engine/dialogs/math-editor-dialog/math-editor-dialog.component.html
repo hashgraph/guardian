@@ -97,26 +97,27 @@
     </div>
     @if (!readonly) {
       <div class="table-output-toolbar">
-        <button
-          class="guardian-button guardian-button-secondary"
-          [disabled]="getTableRowCount(item) >= maxTableRows"
-          (click)="addTableRows(item, 1, tableIndex)">
-          <div class="guardian-button-label">Add Row</div>
-        </button>
         <input
           class="table-output-count"
-          [(ngModel)]="tableRowsToAdd[getTableRowsKey(item, tableIndex)]"
+          [ngModel]="getTableRowsToAdd(item, tableIndex)"
+          (ngModelChange)="setTableRowsToAdd(item, tableIndex, $event)"
           pInputText
           type="number"
           min="1"
-          [max]="maxTableRows"
+          [max]="maxTableRowsPerAdd"
           placeholder="Rows"/>
-        <button
-          class="guardian-button guardian-button-secondary"
-          [disabled]="!tableRowsToAdd[getTableRowsKey(item, tableIndex)] || getTableRowCount(item) >= maxTableRows"
-          (click)="addTableRows(item, tableRowsToAdd[getTableRowsKey(item, tableIndex)], tableIndex)">
-          <div class="guardian-button-label">Add Rows</div>
-        </button>
+        <span
+          class="table-output-add"
+          [pTooltip]="getAddTableRowsError(item, getTableRowsToAdd(item, tableIndex))"
+          [tooltipDisabled]="!getAddTableRowsError(item, getTableRowsToAdd(item, tableIndex))"
+          tooltipPosition="top">
+          <button
+            class="guardian-button guardian-button-secondary"
+            [disabled]="!!getAddTableRowsError(item, getTableRowsToAdd(item, tableIndex))"
+            (click)="addTableRows(item, getTableRowsToAdd(item, tableIndex), tableIndex)">
+            <div class="guardian-button-label">Add Rows</div>
+          </button>
+        </span>
       </div>
     }
   </ng-template>

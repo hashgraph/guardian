@@ -304,6 +304,10 @@
             width: 100px;
         }
 
+        .table-output-add button:disabled {
+            pointer-events: none;
+        }
+
         .table-output-item {
             margin: 8px 0 16px 0;
         }

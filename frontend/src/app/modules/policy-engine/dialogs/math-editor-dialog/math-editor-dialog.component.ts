@@ -198,8 +198,9 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     public inputRelationshipsValue: any[] = [];
 
     public readonly maxTableRows = FieldLink.MAX_TABLE_ROWS;
+    public readonly maxTableRowsPerAdd = 20;
     public readonly maxTables = FieldLink.MAX_TABLES;
-    public tableRowsToAdd: { [id: string]: number } = {};
+    public tableRowsToAdd: { [id: string]: number | null } = {};
     private tableRowsDraft: { [id: string]: Record<string, string>[][] } = {};
 
     constructor(
@@ -689,17 +690,42 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         return tableIndex === null ? item.id : `${item.id}:${tableIndex}`;
     }
 
-    public addTableRows(item: FieldLink, count: number, tableIndex: number | null = null): void {
+    public getTableRowsToAdd(item: FieldLink, tableIndex: number | null): number | null {
+        const key = this.getTableRowsKey(item, tableIndex);
+        return key in this.tableRowsToAdd ? this.tableRowsToAdd[key] : 1;
+    }
+
+    public setTableRowsToAdd(item: FieldLink, tableIndex: number | null, count: number | null): void {
+        this.tableRowsToAdd[this.getTableRowsKey(item, tableIndex)] = count;
+    }
+
+    public getAddTableRowsError(item: FieldLink, count: number | null): string {
+        const free = this.maxTableRows - this.getTableRowCount(item);
+        if (free <= 0) {
+            return `The limit of ${this.maxTableRows} rows is reached`;
+        }
+        if (typeof count !== 'number' || !Number.isInteger(count)) {
+            return `Enter a whole number from 1 to ${this.maxTableRowsPerAdd}`;
+        }
+        if (count < 1) {
+            return 'Add at least 1 row';
+        }
+        if (count > this.maxTableRowsPerAdd) {
+            return `You can add at most ${this.maxTableRowsPerAdd} rows at a time`;
+        }
+        if (count > free) {
+            return `Only ${free} more rows fit under the limit of ${this.maxTableRows}`;
+        }
+        return '';
+    }
+
+    public addTableRows(item: FieldLink, count: number | null, tableIndex: number | null = null): void {
         const columns = this.getTableColumns(item);
         const rows = tableIndex === null ? item.rows : item.tables?.[tableIndex];
-        if (!rows || !columns.length) {
+        if (!rows || !columns.length || typeof count !== 'number' || this.getAddTableRowsError(item, count)) {
             return;
         }
-        const size = Math.min(
-            Math.max(Math.trunc(Number(count)) || 0, 0),
-            this.maxTableRows - this.getTableRowCount(item)
-        );
-        for (let i = 0; i < size; i++) {
+        for (let i = 0; i < count; i++) {
             rows.push(this.createTableRow(columns));
         }
         item.update();
@@ -738,19 +764,27 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             return;
         }
         const columns = this.getTableColumns(item);
+        const draft = this.tableRowsDraft[item.id];
+        const grids = item.isTable
+            ? (item.rows && draft ? [item.rows, ...draft.slice(1)] : item.getGrids())
+            : (draft || [[{}]]);
         if (columns.length) {
-            const grids = item.isTable ? item.getGrids() : (this.tableRowsDraft[item.id] || [[{}]]);
-            delete this.tableRowsDraft[item.id];
             if (this.isTableListField(item)) {
+                delete this.tableRowsDraft[item.id];
                 item.tables = grids.map((rows) => this.syncTableRows(rows, columns));
                 item.rows = null;
             } else {
+                if (grids.length > 1) {
+                    this.tableRowsDraft[item.id] = grids;
+                } else {
+                    delete this.tableRowsDraft[item.id];
+                }
                 item.rows = this.syncTableRows(grids[0] || [{}], columns);
                 item.tables = null;
             }
         } else {
             if (item.isTable) {
-                this.tableRowsDraft[item.id] = item.getGrids();
+                this.tableRowsDraft[item.id] = grids;
             }
             item.rows = null;
             item.tables = null;

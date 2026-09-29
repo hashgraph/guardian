@@ -261,6 +261,7 @@ describe('MathEditorDialogComponent Table outputs', () => {
         dialog.pathSuggestions = [];
         dialog.activePathItem = null;
         dialog.maxTableRows = 1000;
+        dialog.maxTableRowsPerAdd = 20;
         dialog.tableRowsToAdd = {};
         dialog.tableRowsDraft = {};
         return dialog;
@@ -368,7 +369,7 @@ describe('MathEditorDialogComponent Table outputs', () => {
         expect(item.isTable).toBeFalse();
     });
 
-    it('adds rows one at a time or by count and stops at 1000', () => {
+    it('adds 1 to 20 rows per click and stops at 1000', () => {
         const dialog = makeDialog();
         const item = output();
         dialog.onPathChange(item, 'results', 'output');
@@ -376,25 +377,70 @@ describe('MathEditorDialogComponent Table outputs', () => {
         dialog.addTableRows(item, 1);
         expect(item.rows!.length).toBe(2);
 
-        dialog.addTableRows(item, 5);
-        expect(item.rows!.length).toBe(7);
+        dialog.addTableRows(item, 20);
+        expect(item.rows!.length).toBe(22);
 
-        dialog.addTableRows(item, 5000);
-        expect(item.rows!.length).toBe(1000);
+        dialog.addTableRows(item, 21);
+        dialog.addTableRows(item, 2000);
+        expect(item.rows!.length).toBe(22);
+
+        item.rows = Array.from({ length: 995 }, () => ({ year: '', co2: '' }));
+        dialog.addTableRows(item, 10);
+        expect(item.rows.length).toBe(995);
+
+        dialog.addTableRows(item, 5);
+        expect(item.rows.length).toBe(1000);
 
         dialog.addTableRows(item, 1);
-        expect(item.rows!.length).toBe(1000);
+        expect(item.rows.length).toBe(1000);
     });
 
-    it('ignores a count that is not a positive number', () => {
+    it('ignores a count that is not a whole number from 1 to 20', () => {
         const dialog = makeDialog();
         const item = output();
         dialog.onPathChange(item, 'results', 'output');
 
         dialog.addTableRows(item, -3);
+        dialog.addTableRows(item, 0);
+        dialog.addTableRows(item, 2.5);
         dialog.addTableRows(item, NaN);
+        dialog.addTableRows(item, null);
 
         expect(item.rows!.length).toBe(1);
+    });
+
+    it('explains why Add Rows is disabled', () => {
+        const dialog = makeDialog();
+        const item = output();
+        dialog.onPathChange(item, 'results', 'output');
+
+        expect(dialog.getAddTableRowsError(item, 1)).toBe('');
+        expect(dialog.getAddTableRowsError(item, 20)).toBe('');
+        expect(dialog.getAddTableRowsError(item, 0)).toBe('Add at least 1 row');
+        expect(dialog.getAddTableRowsError(item, 21)).toBe('You can add at most 20 rows at a time');
+        expect(dialog.getAddTableRowsError(item, null)).toBe('Enter a whole number from 1 to 20');
+        expect(dialog.getAddTableRowsError(item, 2.5)).toBe('Enter a whole number from 1 to 20');
+
+        item.rows = Array.from({ length: 995 }, () => ({ year: '', co2: '' }));
+        expect(dialog.getAddTableRowsError(item, 10)).toBe('Only 5 more rows fit under the limit of 1000');
+
+        item.rows = Array.from({ length: 1000 }, () => ({ year: '', co2: '' }));
+        expect(dialog.getAddTableRowsError(item, 1)).toBe('The limit of 1000 rows is reached');
+    });
+
+    it('starts the row count at 1 and keeps what the author types for each table', () => {
+        const dialog = makeDialog();
+        const item = output();
+
+        expect(dialog.getTableRowsToAdd(item, null)).toBe(1);
+        expect(dialog.getTableRowsToAdd(item, 1)).toBe(1);
+
+        dialog.setTableRowsToAdd(item, 1, 7);
+        dialog.setTableRowsToAdd(item, null, null);
+
+        expect(dialog.getTableRowsToAdd(item, 1)).toBe(7);
+        expect(dialog.getTableRowsToAdd(item, 0)).toBe(1);
+        expect(dialog.getTableRowsToAdd(item, null)).toBeNull();
     });
 
     it('deletes one row', () => {
@@ -437,7 +483,8 @@ describe('MathEditorDialogComponent Table outputs', () => {
         dialog.onPathChange(item, 'nested.results', 'output');
         dialog.addTable(item);
 
-        dialog.addTableRows(item, 5000, 1);
+        item.tables![1] = Array.from({ length: 979 }, () => ({ year: '' }));
+        dialog.addTableRows(item, 20, 1);
         expect(item.tables![0].length).toBe(1);
         expect(item.tables![1].length).toBe(999);
         expect(dialog.getTableRowCount(item)).toBe(1000);
@@ -462,6 +509,38 @@ describe('MathEditorDialogComponent Table outputs', () => {
         dialog.selectPathSuggestion(item, 'results', 'output');
         expect(item.rows).toEqual([{ year: 'y', co2: '' }]);
         expect(item.tables).toBeNull();
+    });
+
+    it('keeps every table of a list while the path passes through a single Table', () => {
+        const dialog = makeDialog();
+        const item = output();
+        dialog.onPathChange(item, 'nested.results', 'output');
+        dialog.addTable(item);
+        item.tables![0][0].year = 'a';
+        item.tables![1][0].year = 'b';
+
+        dialog.selectPathSuggestion(item, 'results', 'output');
+        expect(item.rows).toEqual([{ year: 'a', co2: '' }]);
+        expect(item.tables).toBeNull();
+        item.rows![0].year = 'c';
+
+        dialog.selectPathSuggestion(item, 'nested.results', 'output');
+        expect(item.tables).toEqual([[{ year: 'c' }], [{ year: 'b' }]]);
+    });
+
+    it('keeps every table of a list through a single Table and then a known non-table field', () => {
+        const dialog = makeDialog();
+        const item = output();
+        dialog.onPathChange(item, 'nested.results', 'output');
+        dialog.addTable(item);
+        item.tables![1][0].year = 'b';
+
+        dialog.selectPathSuggestion(item, 'results', 'output');
+        dialog.onPathChange(item, 'total', 'output');
+        expect(item.isTable).toBeFalse();
+
+        dialog.onPathChange(item, 'nested.results', 'output');
+        expect(item.tables).toEqual([[{ year: '' }], [{ year: 'b' }]]);
     });
 
     it('keeps every table of a list while the path passes through a known non-table field', () => {
