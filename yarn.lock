@@ -4656,6 +4656,7 @@ __metadata:
     faiss-node: "npm:0.5.1"
     nodemon: "npm:3.1.14"
     reflect-metadata: "npm:0.2.2"
+    tslint: "npm:^6.1.3"
     typescript: "npm:^5.8.3"
   languageName: unknown
   linkType: soft

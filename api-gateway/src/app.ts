@@ -83,7 +83,7 @@ Promise.all([
         await new PolicyEngine().setConnection(cn).init();
         await new Users().setConnection(cn).init();
         await new Wallet().setConnection(cn).init();
-        await new AISuggestions().setConnection(cn).init();
+        await new AISuggestions(logger).setConnection(cn).init();
         await new ProjectService().setConnection(cn).init();
 
         const server = app.getHttpServer();
