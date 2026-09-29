@@ -198,6 +198,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     public inputRelationshipsValue: any[] = [];
 
     public readonly maxTableRows = 1000;
+    public readonly maxTables = FieldLink.MAX_TABLES;
     public tableRowsToAdd: { [id: string]: number } = {};
 
     constructor(
@@ -263,6 +264,9 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             const columns = this.getTableColumns(item);
             if (item.rows && columns.length) {
                 item.rows = this.syncTableRows(item.rows, columns);
+            }
+            if (item.tables && columns.length) {
+                item.tables = item.tables.map((rows) => this.syncTableRows(rows, columns));
             }
         }
     }
@@ -353,7 +357,11 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
 
     public deleteOutput(output: FieldLink) {
         this.fieldWarnings.delete(output.id);
-        delete this.tableRowsToAdd[output.id];
+        for (const key of Object.keys(this.tableRowsToAdd)) {
+            if (key === output.id || key.startsWith(`${output.id}:`)) {
+                delete this.tableRowsToAdd[key];
+            }
+        }
         this.engine.deleteOutput(output);
     }
 
@@ -636,30 +644,58 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
 
     public getTableColumns(item: FieldLink): { name: string; key: string }[] {
         const node = item.field ? this.outputSchemaFieldMap.get(item.field) : undefined;
-        if (!node || node.arrayLvl !== 0 || node.field.customType !== 'table') {
+        if (!node || node.arrayLvl > 1 || node.field.customType !== 'table') {
             return [];
         }
         const columns = node.field.tableColumns;
         return Array.isArray(columns) ? columns.filter((column) => !!column?.key) : [];
     }
 
+    public isTableListField(item: FieldLink): boolean {
+        const node = item.field ? this.outputSchemaFieldMap.get(item.field) : undefined;
+        return !!node && node.arrayLvl === 1 && this.getTableColumns(item).length > 0;
+    }
+
     public getTableValues(item: FieldLink): Record<string, any>[] | null {
         const value = item.value;
-        if (item.isTable && value?.type === 'table' && Array.isArray(value.rows) && !value.fileId) {
+        if (item.isTable && !item.isTableList && value?.type === 'table' && Array.isArray(value.rows) && !value.fileId) {
             return value.rows;
         }
         return null;
     }
 
-    public addTableRows(item: FieldLink, count: number): void {
+    public getTableListValues(item: FieldLink): Record<string, any>[][] | null {
+        const value = item.value;
+        if (!item.isTableList || !Array.isArray(value)) {
+            return null;
+        }
+        const tables: Record<string, any>[][] = [];
+        for (const table of value) {
+            if (table?.type !== 'table' || !Array.isArray(table.rows) || table.fileId) {
+                return null;
+            }
+            tables.push(table.rows);
+        }
+        return tables;
+    }
+
+    public getTableRowCount(item: FieldLink): number {
+        return item.getGrids().reduce((count, rows) => count + rows.length, 0);
+    }
+
+    public getTableRowsKey(item: FieldLink, tableIndex: number | null): string {
+        return tableIndex === null ? item.id : `${item.id}:${tableIndex}`;
+    }
+
+    public addTableRows(item: FieldLink, count: number, tableIndex: number | null = null): void {
         const columns = this.getTableColumns(item);
-        const rows = item.rows;
+        const rows = tableIndex === null ? item.rows : item.tables?.[tableIndex];
         if (!rows || !columns.length) {
             return;
         }
         const size = Math.min(
             Math.max(Math.trunc(Number(count)) || 0, 0),
-            this.maxTableRows - rows.length
+            this.maxTableRows - this.getTableRowCount(item)
         );
         for (let i = 0; i < size; i++) {
             rows.push(this.createTableRow(columns));
@@ -667,17 +703,47 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         item.update();
     }
 
-    public deleteTableRow(item: FieldLink, index: number): void {
-        if (!item.rows) {
+    public deleteTableRow(item: FieldLink, index: number, tableIndex: number | null = null): void {
+        const rows = tableIndex === null ? item.rows : item.tables?.[tableIndex];
+        if (!rows) {
             return;
         }
-        item.rows.splice(index, 1);
+        rows.splice(index, 1);
+        item.update();
+    }
+
+    public addTable(item: FieldLink): void {
+        const columns = this.getTableColumns(item);
+        if (!item.tables || !columns.length || item.tables.length >= this.maxTables) {
+            return;
+        }
+        item.tables.push(this.getTableRowCount(item) < this.maxTableRows ? [this.createTableRow(columns)] : []);
+        item.update();
+    }
+
+    public deleteTable(item: FieldLink, tableIndex: number): void {
+        if (!item.tables) {
+            return;
+        }
+        item.tables.splice(tableIndex, 1);
         item.update();
     }
 
     private updateTableOutput(item: FieldLink): void {
         const columns = this.getTableColumns(item);
-        item.rows = columns.length ? this.syncTableRows(item.rows || [{}], columns) : null;
+        if (columns.length) {
+            const grids = item.isTable ? item.getGrids() : [[{}]];
+            if (this.isTableListField(item)) {
+                item.tables = grids.map((rows) => this.syncTableRows(rows, columns));
+                item.rows = null;
+            } else {
+                item.rows = this.syncTableRows(grids[0] || [{}], columns);
+                item.tables = null;
+            }
+        } else {
+            item.rows = null;
+            item.tables = null;
+        }
         item.update();
     }
 
@@ -1259,7 +1325,12 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             const tableOutputs: FieldLink[] = [];
             for (const link of outputs) {
                 try {
-                    if (link.isTable) {
+                    if (link.isTableList) {
+                        const tables = link.getTableList(context.scope).map((rows) => ({ type: 'table', rows }));
+                        setDocumentValueByPath(this.outputSchema, outputDocument, link.path, tables);
+                        link.value = tables;
+                        tableOutputs.push(link);
+                    } else if (link.isTable) {
                         const table = { type: 'table', rows: link.getTableRows(context.scope) };
                         setDocumentValueByPath(this.outputSchema, outputDocument, link.path, table);
                         link.value = table;

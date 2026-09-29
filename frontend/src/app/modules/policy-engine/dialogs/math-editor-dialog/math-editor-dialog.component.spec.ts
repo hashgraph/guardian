@@ -248,6 +248,7 @@ describe('MathEditorDialogComponent Table outputs', () => {
             ['results', node('results', [{ name: 'Year', key: 'year' }, { name: 'CO2', key: 'co2' }])],
             ['legacy', node('legacy', undefined)],
             ['nested.results', node('nested.results', [{ name: 'Year', key: 'year' }], 1)],
+            ['deep.results', node('deep.results', [{ name: 'Year', key: 'year' }], 2)],
             ['total', { path: 'total', arrayLvl: 0, type: 'number', field: { name: 'total', type: 'number' }, fields: [] }]
         ]);
         dialog.inputSchemaFieldMap = new Map();
@@ -266,15 +267,18 @@ describe('MathEditorDialogComponent Table outputs', () => {
         return link;
     }
 
-    it('offers the grid only for a Table field with declared columns outside an array', () => {
+    it('offers the grid for a declared Table outside an array or one repeated level down', () => {
         const dialog = makeDialog();
         expect(dialog.getTableColumns(output('results'))).toEqual([
             { name: 'Year', key: 'year' },
             { name: 'CO2', key: 'co2' }
         ]);
+        expect(dialog.getTableColumns(output('nested.results'))).toEqual([{ name: 'Year', key: 'year' }]);
         expect(dialog.getTableColumns(output('legacy'))).toEqual([]);
-        expect(dialog.getTableColumns(output('nested.results'))).toEqual([]);
+        expect(dialog.getTableColumns(output('deep.results'))).toEqual([]);
         expect(dialog.getTableColumns(output('total'))).toEqual([]);
+        expect(dialog.isTableListField(output('nested.results'))).toBeTrue();
+        expect(dialog.isTableListField(output('results'))).toBeFalse();
     });
 
     it('turns an output into a grid with one empty row when a declared Table is chosen', () => {
@@ -347,6 +351,75 @@ describe('MathEditorDialogComponent Table outputs', () => {
         expect(item.rows).toEqual([{ year: 'b', co2: '' }]);
     });
 
+    it('turns a repeated Table output into a list with one table of one empty row', () => {
+        const dialog = makeDialog();
+        const item = output();
+
+        dialog.onPathChange(item, 'nested.results', 'output');
+
+        expect(item.isTableList).toBeTrue();
+        expect(item.rows).toBeNull();
+        expect(item.tables).toEqual([[{ year: '' }]]);
+    });
+
+    it('adds and deletes tables of a list', () => {
+        const dialog = makeDialog();
+        const item = output();
+        dialog.onPathChange(item, 'nested.results', 'output');
+
+        dialog.addTable(item);
+        item.tables![1][0].year = 'b';
+        dialog.deleteTable(item, 0);
+
+        expect(item.tables).toEqual([[{ year: 'b' }]]);
+    });
+
+    it('adds and deletes rows in one table and counts the limit across all tables', () => {
+        const dialog = makeDialog();
+        const item = output();
+        dialog.onPathChange(item, 'nested.results', 'output');
+        dialog.addTable(item);
+
+        dialog.addTableRows(item, 5000, 1);
+        expect(item.tables![0].length).toBe(1);
+        expect(item.tables![1].length).toBe(999);
+        expect(dialog.getTableRowCount(item)).toBe(1000);
+
+        dialog.addTable(item);
+        expect(item.tables![2]).toEqual([]);
+
+        dialog.deleteTableRow(item, 0, 1);
+        expect(item.tables![1].length).toBe(998);
+    });
+
+    it('moves the grid between a single Table and a repeated Table', () => {
+        const dialog = makeDialog();
+        const item = output();
+        dialog.onPathChange(item, 'results', 'output');
+        item.rows![0].year = 'y';
+
+        dialog.selectPathSuggestion(item, 'nested.results', 'output');
+        expect(item.tables).toEqual([[{ year: 'y' }]]);
+        expect(item.rows).toBeNull();
+
+        dialog.selectPathSuggestion(item, 'results', 'output');
+        expect(item.rows).toEqual([{ year: 'y', co2: '' }]);
+        expect(item.tables).toBeNull();
+    });
+
+    it('forgets the row counts of every table when the output is deleted', () => {
+        const dialog = makeDialog();
+        dialog.engine = { deleteOutput: () => undefined };
+        const item = output();
+        dialog.tableRowsToAdd[item.id] = 2;
+        dialog.tableRowsToAdd[`${item.id}:1`] = 3;
+        dialog.tableRowsToAdd.other = 4;
+
+        dialog.deleteOutput(item);
+
+        expect(dialog.tableRowsToAdd).toEqual({ other: 4 });
+    });
+
     it('drops cells of removed columns and adds cells of new ones', () => {
         const dialog = makeDialog();
 
@@ -386,7 +459,14 @@ describe('MathEditorDialogComponent Table output test results', () => {
             iri: '#out',
             fields: [
                 { name: 'results', isRef: false, isArray: false, fields: [] },
-                { name: 'total', isRef: false, isArray: false, fields: [] }
+                { name: 'total', isRef: false, isArray: false, fields: [] },
+                { name: 'series', isRef: false, isArray: true, fields: [] },
+                {
+                    name: 'sites',
+                    isRef: true,
+                    isArray: true,
+                    fields: [{ name: 'results', isRef: false, isArray: false, fields: [] }]
+                }
             ]
         };
         let codeContext: any = null;
@@ -492,5 +572,59 @@ describe('MathEditorDialogComponent Table output test results', () => {
 
         expect(output.value).toBe(3);
         expect(dialog.getTableValues(output)).toBeNull();
+    });
+
+    function tableListOutput(field: string, tables: Record<string, string>[][]): FieldLink {
+        const link = FieldLink.from({
+            type: MathItemType.LINK,
+            name: '',
+            description: '',
+            field,
+            schema: '#out',
+            tables
+        })!;
+        link.update();
+        return link;
+    }
+
+    it('fills one grid per table of a Table field with multiple answers', async () => {
+        const output = tableListOutput('series', [[{ year: 'y' }], [{ year: 'y2' }]]);
+        const dialog = makeDialog([output], { y: 2020, y2: 2021 });
+
+        await dialog.onTest();
+
+        expect(dialog.getTableListValues(output)).toEqual([[{ year: 2020 }], [{ year: 2021 }]]);
+        expect(dialog.getTableValues(output)).toBeNull();
+        expect(JSON.parse(dialog.result.output)).toEqual({
+            series: [
+                { type: 'table', rows: [{ year: 2020 }] },
+                { type: 'table', rows: [{ year: 2021 }] }
+            ]
+        });
+    });
+
+    it('writes table N into entry N of a repeated sub-schema', async () => {
+        const output = tableListOutput('sites.results', [[{ year: 'y' }], [{ year: 'y2' }]]);
+        const dialog = makeDialog([output], { y: 2020, y2: 2021 });
+
+        await dialog.onTest();
+
+        expect(JSON.parse(dialog.result.output)).toEqual({
+            sites: [
+                { results: { type: 'table', rows: [{ year: 2020 }] } },
+                { results: { type: 'table', rows: [{ year: 2021 }] } }
+            ]
+        });
+        expect(dialog.getTableListValues(output)).toEqual([[{ year: 2020 }], [{ year: 2021 }]]);
+    });
+
+    it('shows the value Advanced code put in place of a table list instead of the grids', async () => {
+        const output = tableListOutput('series', [[{ year: 'y' }]]);
+        const dialog = makeDialog([output], { y: 2020 }, () => ({ series: 'set by code' }));
+
+        await dialog.onTest();
+
+        expect(dialog.getTableListValues(output)).toBeNull();
+        expect(output.value).toBe('set by code');
     });
 });

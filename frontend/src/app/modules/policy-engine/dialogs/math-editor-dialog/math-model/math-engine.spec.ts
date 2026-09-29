@@ -31,4 +31,16 @@ describe('MathEngine table output validation', () => {
         const engine = engineWith([{ a: '1x' }]);
         expect(engine.validate()).toEqual(['outputs', engine.outputs.pages[0].id]);
     });
+
+    it('rejects an unknown variable in any table of a table list', () => {
+        const engine = new MathEngine();
+        engine.addVariable('x', 'doc.a').update();
+        const output = engine.addOutput();
+        output.field = 'sites.results';
+        output.tables = [[{ a: 'x' }], [{ a: 'missing' }]];
+        output.update();
+
+        expect(engine.validate()).toEqual(['outputs', engine.outputs.pages[0].id]);
+        expect(output.error).toBe('Unknown variable: missing');
+    });
 });

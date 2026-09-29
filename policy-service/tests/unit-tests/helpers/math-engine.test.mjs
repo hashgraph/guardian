@@ -155,6 +155,17 @@ describe('MathEngine.validate', () => {
         addTableOutput(engine, []);
         assert.equal(engine.validate(), null);
     });
+
+    it('flags an unknown variable in any table of a table list', () => {
+        const engine = new MathEngine();
+        addVariable(engine, 'x', 'doc.a');
+        const output = engine.addOutput();
+        output.field = 'sites.results';
+        output.tables = [[{ a: 'x' }], [{ a: 'missing' }]];
+        output.update();
+        assert.deepEqual(engine.validate(), ['outputs', engine.outputs.pages[0].id]);
+        assert.equal(output.error, 'Unknown variable: missing');
+    });
 });
 
 describe('MathEngine.createContext', () => {

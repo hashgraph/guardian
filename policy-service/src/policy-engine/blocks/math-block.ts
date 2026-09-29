@@ -228,7 +228,8 @@ export class MathBlock {
         const schema = new Schema(outputSchema);
         for (const link of outputs) {
             const value = getDocumentValueByPath(json, link.path);
-            if (!isTableOutputValue(value)) {
+            const tables: unknown[] = link.isTableList ? (Array.isArray(value) ? value : []) : [value];
+            if (!tables.some((table) => isTableOutputValue(table))) {
                 continue;
             }
             const columns = schema.getField(link.path)?.tableColumns;
@@ -240,22 +241,49 @@ export class MathBlock {
                 );
             }
 
-            const buffer = await gzipTableCsv(buildTableOutputCsv(columns, value.rows));
-            const { fileId } = await DatabaseServer.upsertGridFile({
-                buffer,
-                filename: 'table.csv.gz',
-                contentType: 'application/gzip'
-            });
-            const stored: IStoredTable = { fileId, cid: null };
-            storedTables.push(stored);
-
-            if (!ref.dryRun) {
-                const { cid } = await IPFS.addFile(buffer, { userId, interception: null });
-                stored.cid = cid;
+            const values: unknown[] = [];
+            for (const table of tables) {
+                if (isTableOutputValue(table)) {
+                    values.push(await this.storeResultTable(ref, table.rows, columns, userId, storedTables));
+                } else {
+                    values.push(table);
+                }
             }
-
-            setDocumentValueByPath(schema, json, link.path, buildCompactTableJson(stored.fileId, stored.cid, columns));
+            setDocumentValueByPath(schema, json, link.path, link.isTableList ? values : values[0]);
         }
+    }
+
+    /**
+     * Store one result table as a file and return its reference
+     * @param ref
+     * @param rows
+     * @param columns
+     * @param userId
+     * @param storedTables
+     * @private
+     */
+    private async storeResultTable(
+        ref: IPolicyCalculateBlock,
+        rows: unknown[],
+        columns: { name: string; key: string }[],
+        userId: string | null,
+        storedTables: IStoredTable[]
+    ): Promise<string> {
+        const buffer = await gzipTableCsv(buildTableOutputCsv(columns, rows));
+        const { fileId } = await DatabaseServer.upsertGridFile({
+            buffer,
+            filename: 'table.csv.gz',
+            contentType: 'application/gzip'
+        });
+        const stored: IStoredTable = { fileId, cid: null };
+        storedTables.push(stored);
+
+        if (!ref.dryRun) {
+            const { cid } = await IPFS.addFile(buffer, { userId, interception: null });
+            stored.cid = cid;
+        }
+
+        return buildCompactTableJson(stored.fileId, stored.cid, columns);
     }
 
     /**

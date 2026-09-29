@@ -233,6 +233,116 @@ describe('@unit mathBlock result tables', () => {
         assert.deepEqual(deletedGrid, ['file-a', 'file-b']);
     });
 
+    const listSchema = () => ({
+        iri: '#out',
+        name: 'Out',
+        contextURL: 'ctx',
+        document: JSON.stringify({
+            $id: '#out',
+            title: 'Out',
+            type: 'object',
+            properties: {
+                series: {
+                    title: 'series',
+                    description: 'Series',
+                    type: 'array',
+                    items: { type: 'string' },
+                    readOnly: false,
+                    $comment: JSON.stringify({ term: 'series', customType: 'table', tableColumns })
+                },
+                sites: {
+                    title: 'sites',
+                    description: 'Sites',
+                    type: 'array',
+                    items: { $ref: '#site' },
+                    readOnly: false,
+                    $comment: JSON.stringify({ term: 'sites' })
+                }
+            },
+            required: [],
+            $defs: {
+                '#site': {
+                    $id: '#site',
+                    title: 'Site',
+                    type: 'object',
+                    properties: {
+                        name: {
+                            title: 'name',
+                            description: 'Name',
+                            type: 'string',
+                            readOnly: false,
+                            $comment: JSON.stringify({ term: 'name' })
+                        },
+                        results: {
+                            title: 'results',
+                            description: 'Results',
+                            type: 'string',
+                            readOnly: false,
+                            $comment: JSON.stringify({ term: 'results', customType: 'table', tableColumns })
+                        }
+                    },
+                    required: []
+                }
+            }
+        })
+    });
+
+    const listExpression = (field) => ({
+        variables: [],
+        formulas: [],
+        outputs: [{
+            type: 'link',
+            name: '',
+            description: '',
+            field,
+            schema: '#out',
+            tables: [[{ year: 'y', co2_tonnes: 'c' }], [{ year: 'y2', co2_tonnes: '' }]]
+        }]
+    });
+
+    const tableValue = (year, co2) => ({ type: 'table', rows: [{ year, co2_tonnes: co2 }] });
+
+    it('stores one file per table of a Table field with multiple answers', async () => {
+        PolicyUtils.loadSchemaByID = async () => listSchema();
+        const json = { series: [tableValue(2020, 42), tableValue(2021, '')] };
+        const stored = [];
+
+        await block().storeResultTables(refWith({ expression: listExpression('series') }), json, 'user-1', stored);
+
+        assert.equal(gridFiles.length, 2);
+        assert.equal(await decodeGridFileText(gridFiles[1].buffer), 'Year,CO2 (tonnes)\r\n2021,');
+        assert.deepEqual(json.series.map((value) => JSON.parse(value).fileId), ['file-1', 'file-2']);
+        assert.deepEqual(json.series.map((value) => JSON.parse(value).cid), ['cid-1', 'cid-2']);
+        assert.deepEqual(stored, [{ fileId: 'file-1', cid: 'cid-1' }, { fileId: 'file-2', cid: 'cid-2' }]);
+    });
+
+    it('stores table N into entry N of a repeated sub-schema and keeps the other fields', async () => {
+        PolicyUtils.loadSchemaByID = async () => listSchema();
+        const json = {
+            sites: [
+                { name: 'A', results: tableValue(2020, 42) },
+                { name: 'B', results: tableValue(2021, 7) }
+            ]
+        };
+
+        await block().storeResultTables(refWith({ expression: listExpression('sites.results') }), json, 'user-1', []);
+
+        assert.deepEqual(json.sites.map((site) => site.name), ['A', 'B']);
+        assert.deepEqual(json.sites.map((site) => JSON.parse(site.results).fileId), ['file-1', 'file-2']);
+        assert.equal(await decodeGridFileText(gridFiles[1].buffer), 'Year,CO2 (tonnes)\r\n2021,7');
+    });
+
+    it('keeps an entry of a table list that Advanced code replaced', async () => {
+        PolicyUtils.loadSchemaByID = async () => listSchema();
+        const json = { series: [tableValue(2020, 42), 'set by code'] };
+
+        await block().storeResultTables(refWith({ expression: listExpression('series') }), json, 'user-1', []);
+
+        assert.equal(gridFiles.length, 1);
+        assert.equal(JSON.parse(json.series[0]).fileId, 'file-1');
+        assert.equal(json.series[1], 'set by code');
+    });
+
     it('keeps the files of a run that succeeded', async () => {
         const mathBlock = block();
         mathBlock.triggerEvents = async () => undefined;

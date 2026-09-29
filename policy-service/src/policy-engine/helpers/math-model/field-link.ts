@@ -4,6 +4,8 @@ import { MathItemType } from './math-item.type.js';
 import { IFieldLink } from './math.interface.js';
 
 export class FieldLink {
+    public static readonly MAX_TABLES = 100;
+
     public readonly type = MathItemType.LINK;
 
     public readonly id: string;
@@ -18,6 +20,7 @@ export class FieldLink {
 
     public value: any;
     public rows: Record<string, string>[] | null = null;
+    public tables: Record<string, string>[][] | null = null;
 
     public error: string = '';
     public empty: boolean = true;
@@ -42,7 +45,11 @@ export class FieldLink {
     }
 
     public get isTable(): boolean {
-        return Array.isArray(this.rows);
+        return Array.isArray(this.rows) || Array.isArray(this.tables);
+    }
+
+    public get isTableList(): boolean {
+        return Array.isArray(this.tables);
     }
 
     constructor(name?: string, path?: string) {
@@ -62,12 +69,17 @@ export class FieldLink {
 
     private _update() {
         try {
-            const rows = this.rows;
-            if (rows) {
-                this.validName = rows.every((row) => Object.keys(row).every((key) => {
+            const grids = this.getGrids();
+            if (grids.length > FieldLink.MAX_TABLES) {
+                this.validName = false;
+                this.error = 'Too many tables';
+                return;
+            }
+            if (this.isTable) {
+                this.validName = grids.every((rows) => rows.every((row) => Object.keys(row).every((key) => {
                     const cell = row[key];
                     return !(typeof cell === 'string' && cell.trim()) || !!FieldLink.toVariableName(cell);
-                }));
+                })));
             } else {
                 const name = FieldLink.toVariableName(this.variableNameText);
                 if (name) {
@@ -126,21 +138,37 @@ export class FieldLink {
         return convertValue(this.value);
     }
 
+    public getGrids(): Record<string, string>[][] {
+        if (this.tables) {
+            return this.tables;
+        }
+        return this.rows ? [this.rows] : [];
+    }
+
     public getCellNames(): string[] {
         const names: string[] = [];
-        for (const row of this.rows || []) {
-            for (const key of Object.keys(row)) {
-                const name = FieldLink.toVariableName(row[key]);
-                if (name) {
-                    names.push(name);
+        for (const rows of this.getGrids()) {
+            for (const row of rows) {
+                for (const key of Object.keys(row)) {
+                    const name = FieldLink.toVariableName(row[key]);
+                    if (name) {
+                        names.push(name);
+                    }
                 }
             }
         }
         return names;
     }
 
-    public getTableRows(scope: { [name: string]: any }): Record<string, any>[] {
-        return (this.rows || []).map((row) => {
+    public getTableList(scope: { [name: string]: any }): Record<string, any>[][] {
+        return (this.tables || []).map((rows) => this.getTableRows(scope, rows));
+    }
+
+    public getTableRows(
+        scope: { [name: string]: any },
+        rows: Record<string, string>[] | null = this.rows
+    ): Record<string, any>[] {
+        return (rows || []).map((row) => {
             const values: Record<string, any> = {};
             for (const key of Object.keys(row)) {
                 const name = FieldLink.toVariableName(row[key]);
@@ -160,7 +188,9 @@ export class FieldLink {
             field: this.field || '',
             schema: this.schema || ''
         }
-        if (this.rows) {
+        if (this.tables) {
+            json.tables = this.tables.map((rows) => rows.map((row) => ({ ...row })));
+        } else if (this.rows) {
             json.rows = this.rows.map((row) => ({ ...row }));
         }
         return json;
@@ -174,7 +204,9 @@ export class FieldLink {
             const link = new FieldLink(json.name, json.field);
             link.schema = json.schema;
             link.description = json.description || '';
-            if (Array.isArray(json.rows)) {
+            if (Array.isArray(json.tables)) {
+                link.tables = json.tables.map((rows) => Array.isArray(rows) ? rows.map((row) => ({ ...row })) : []);
+            } else if (Array.isArray(json.rows)) {
                 link.rows = json.rows.map((row) => ({ ...row }));
             }
             link.empty = false;

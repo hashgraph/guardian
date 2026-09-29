@@ -303,6 +303,18 @@
         .table-output-count {
             width: 100px;
         }
+
+        .table-output-item {
+            margin: 8px 0 16px 0;
+        }
+
+        .table-output-item-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
     }
 
     .var-picker-wrapper {

@@ -139,3 +139,51 @@ describe('FieldLink table output', () => {
         expect(link.getCellNames()).toEqual(['r1']);
     });
 });
+
+describe('FieldLink table list output', () => {
+    function tableListLink(tables: Record<string, string>[][]): FieldLink {
+        return FieldLink.from({
+            type: MathItemType.LINK,
+            name: '',
+            description: '',
+            field: 'sites.results',
+            schema: '',
+            tables
+        })!;
+    }
+
+    it('is a table and a table list when it carries tables', () => {
+        const link = tableListLink([[{ a: 'r1' }]]);
+        expect(link.isTable).toBeTrue();
+        expect(link.isTableList).toBeTrue();
+        expect(link.rows).toBeNull();
+    });
+
+    it('keeps the tables through toJson and from', () => {
+        const tables = [[{ a: 'r1' }], [{ a: '' }, { a: 'r2' }]];
+        const json = tableListLink(tables).toJson();
+        expect(json.tables).toEqual(tables);
+        expect('rows' in json).toBeFalse();
+        expect(FieldLink.from(json)!.tables).toEqual(tables);
+    });
+
+    it('checks the cells of every table', () => {
+        const link = tableListLink([[{ a: 'r1' }], [{ a: '1bad' }]]);
+        link.update();
+        expect(link.validName).toBeFalse();
+        expect(link.error).toBe('Invalid name');
+    });
+
+    it('rejects more than 100 tables', () => {
+        const link = tableListLink(Array.from({ length: 101 }, () => []));
+        link.update();
+        expect(link.validName).toBeFalse();
+        expect(link.error).toBe('Too many tables');
+    });
+
+    it('fills every table from the scope and names the cells of all tables', () => {
+        const link = tableListLink([[{ a: 'r1' }], [{ a: 'r2' }, { a: '' }]]);
+        expect(link.getTableList({ r1: 1, r2: 2 })).toEqual([[{ a: 1 }], [{ a: 2 }, { a: '' }]]);
+        expect(link.getCellNames()).toEqual(['r1', 'r2']);
+    });
+});

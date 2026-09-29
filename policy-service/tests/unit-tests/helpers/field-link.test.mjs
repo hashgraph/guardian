@@ -196,4 +196,50 @@ describe('FieldLink', () => {
             ]);
         });
     });
+
+    describe('table list output', () => {
+        const tableListLink = (tables) => FieldLink.from({
+            type: 'link',
+            name: '',
+            description: '',
+            field: 'sites.results',
+            schema: '',
+            tables
+        });
+
+        it('is a table and a table list when it carries tables', () => {
+            const link = tableListLink([[{ a: 'r1' }]]);
+            assert.equal(link.isTable, true);
+            assert.equal(link.isTableList, true);
+            assert.equal(link.rows, null);
+        });
+
+        it('keeps the tables through toJson and from', () => {
+            const tables = [[{ a: 'r1' }], [{ a: '' }, { a: 'r2' }]];
+            const json = tableListLink(tables).toJson();
+            assert.deepEqual(json.tables, tables);
+            assert.equal('rows' in json, false);
+            assert.deepEqual(FieldLink.from(json).tables, tables);
+        });
+
+        it('checks the cells of every table', () => {
+            const link = tableListLink([[{ a: 'r1' }], [{ a: '1bad' }]]);
+            link.update();
+            assert.equal(link.validName, false);
+            assert.equal(link.error, 'Invalid name');
+        });
+
+        it('rejects more than 100 tables', () => {
+            const link = tableListLink(Array.from({ length: 101 }, () => []));
+            link.update();
+            assert.equal(link.validName, false);
+            assert.equal(link.error, 'Too many tables');
+        });
+
+        it('fills every table from the scope and names the cells of all tables', () => {
+            const link = tableListLink([[{ a: 'r1' }], [{ a: 'r2' }, { a: '' }]]);
+            assert.deepEqual(link.getTableList({ r1: 1, r2: 2 }), [[{ a: 1 }], [{ a: 2 }, { a: '' }]]);
+            assert.deepEqual(link.getCellNames(), ['r1', 'r2']);
+        });
+    });
 });
