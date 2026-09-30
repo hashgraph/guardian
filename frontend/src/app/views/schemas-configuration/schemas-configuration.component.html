@@ -16,9 +16,83 @@
             }
             @if (selectedSchema) {
                 <i class="pi pi-chevron-right sc-breadcrumb-sep"></i>
-                <span class="sc-crumb-current">{{ selectedSchema.name }}</span>
             }
         </nav>
+
+        @if (selectedSchema) {
+            <div class="sc-identity" [class.open]="identityMenu.overlayVisible" (click)="identityMenu.toggle($event)">
+                <i class="pi pi-table sc-identity-icon"></i>
+                <div class="sc-identity-text">
+                    <span #schemaNameEl class="sc-identity-name"
+                          [pTooltip]="selectedSchema.name || 'Untitled schema'"
+                          [tooltipDisabled]="schemaNameEl.scrollWidth <= schemaNameEl.clientWidth"
+                          tooltipPosition="bottom">{{ selectedSchema.name || 'Untitled schema' }}</span>
+                    <span class="sc-identity-meta">
+                        @if (selectedSchema.version) {
+                            v{{ selectedSchema.version }} ·
+                        }
+                        Schema details
+                    </span>
+                </div>
+                <i class="pi pi-chevron-down sc-identity-caret"></i>
+            </div>
+            @if (selectedSchema.status) {
+                @let badge = getStatusBadge(selectedSchema);
+                <div class="sc-status-badge" [ngClass]="'sc-status-badge--' + badge.variant">
+                    @if (badge.icon) {
+                        <i class="pi" [ngClass]="badge.icon"></i>
+                    }
+                    <span>{{ badge.label }}</span>
+                </div>
+            }
+            @if (isTemplateConfigMode) {
+                <button
+                    class="sc-schema-featured-btn"
+                    [class.active]="isSelectedSchemaFeatured"
+                    [disabled]="isTemplateReadonly"
+                    [pTooltip]="isSelectedSchemaFeatured ? 'Unmark as featured' : 'Mark as featured'"
+                    tooltipPosition="bottom"
+                    (click)="toggleFeaturedForSelectedSchema()">
+                    <i class="pi" [class.pi-star-fill]="isSelectedSchemaFeatured" [class.pi-star]="!isSelectedSchemaFeatured"></i>
+                </button>
+            } @else if (isSchemaFeatured(selectedSchema)) {
+                <i class="pi pi-star-fill schema-featured-icon" pTooltip="Featured" tooltipPosition="bottom"></i>
+            }
+        }
+
+        <p-popover #identityMenu>
+            @if (selectedSchema) {
+                <div class="sc-identity-popover">
+                    <div class="sc-identity-popover-header">Schema details</div>
+                    <div class="sc-identity-row" (click)="copyIdentity('uuid', selectedSchema.uuid, $event)" title="Copy schema ID">
+                        <div class="sc-identity-row-label">Schema ID</div>
+                        <div class="sc-identity-row-value">
+                            <span class="sc-identity-row-mono">{{ selectedSchema.uuid || '–' }}</span>
+                            @if (selectedSchema.uuid) {
+                                <i class="pi" [ngClass]="copiedField === 'uuid' ? 'pi-check' : 'pi-copy'"></i>
+                            }
+                        </div>
+                    </div>
+                    <div class="sc-identity-row" (click)="copyIdentity('iri', selectedSchema.iri, $event)" title="Copy schema IRI">
+                        <div class="sc-identity-row-label">IRI</div>
+                        <div class="sc-identity-row-value">
+                            <span class="sc-identity-row-mono">{{ selectedSchema.iri || '–' }}</span>
+                            @if (selectedSchema.iri) {
+                                <i class="pi" [ngClass]="copiedField === 'iri' ? 'pi-check' : 'pi-copy'"></i>
+                            }
+                        </div>
+                    </div>
+                    @if (selectedSchema.version) {
+                        <div class="sc-identity-row sc-identity-row--plain">
+                            <div class="sc-identity-row-label">Version</div>
+                            <div class="sc-identity-row-value">
+                                <span class="sc-identity-row-plain-value">{{ selectedSchema.version }}</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </p-popover>
 
         <div class="sc-spacer"></div>
 
@@ -374,33 +448,6 @@
                     <!-- ── BUILDER ── -->
                     <div class="sc-editor">
 
-                        <div class="sc-editor-header">
-                            <div class="sc-editor-header-info">
-                                @if (isTemplateConfigMode) {
-                                    <button
-                                        class="sc-schema-featured-btn"
-                                        [class.active]="isSelectedSchemaFeatured"
-                                        [disabled]="isTemplateReadonly"
-                                        [pTooltip]="isSelectedSchemaFeatured ? 'Unmark as featured' : 'Mark as featured'"
-                                        tooltipPosition="top"
-                                        (click)="toggleFeaturedForSelectedSchema()">
-                                        <i class="pi" [class.pi-star-fill]="isSelectedSchemaFeatured" [class.pi-star]="!isSelectedSchemaFeatured"></i>
-                                    </button>
-                                }
-                                @if (isSchemaFeatured(selectedSchema) && !isTemplateConfigMode) {
-                                    <i class="pi pi-star-fill schema-featured-icon" pTooltip="Featured" tooltipPosition="right"></i>
-                                }
-                                <span class="sc-editor-title">{{ selectedSchema.name }}</span>
-                                <span class="sc-schema-status" [class.sc-schema-status--draft]="isDraft(selectedSchema)">
-                                    {{ selectedSchema.status }}
-                                </span>
-                            </div>
-                            <div class="sc-spacer"></div>
-                            @if (selectedSchema.version) {
-                                <span class="sc-editor-version">v{{ selectedSchema.version }}</span>
-                            }
-                        </div>
-
                         <!-- ── Root schema properties panel ── -->
                         <div class="sc-schema-props" [class.sc-schema-props--locked]="selectedSchemaSettingsLocked">
                             <div class="sc-schema-props-header">
@@ -414,9 +461,9 @@
                                     @if (!isTemplateConfigMode && selectedSchema.iri) {
                                         <span class="sc-schema-props-iri">({{ selectedSchema.iri }})</span>
                                         <i class="pi sc-schema-props-iri-copy"
-                                           [class.pi-check]="copiedIri"
-                                           [class.pi-copy]="!copiedIri"
-                                           [title]="copiedIri ? 'Copied' : 'Copy schema IRI'"
+                                           [class.pi-check]="copiedField === 'iri'"
+                                           [class.pi-copy]="copiedField !== 'iri'"
+                                           [title]="copiedField === 'iri' ? 'Copied' : 'Copy schema IRI'"
                                            (click)="copyIri(selectedSchema.iri, $event)"></i>
                                     }
                                 </div>
@@ -672,9 +719,9 @@
                                         @if (ds.iri) {
                                             <span class="sc-schema-props-iri">({{ ds.iri }})</span>
                                             <i class="pi sc-schema-props-iri-copy"
-                                               [class.pi-check]="copiedIri"
-                                               [class.pi-copy]="!copiedIri"
-                                               [title]="copiedIri ? 'Copied' : 'Copy schema IRI'"
+                                               [class.pi-check]="copiedField === 'iri'"
+                                               [class.pi-copy]="copiedField !== 'iri'"
+                                               [title]="copiedField === 'iri' ? 'Copied' : 'Copy schema IRI'"
                                                (click)="copyIri(ds.iri, $event)"></i>
                                         }
                                     </div>
