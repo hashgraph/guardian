@@ -35,6 +35,7 @@ export class TopicListener {
 
     private _name: string;
     private _startNumber: number | null;
+    private _latencySensitive: boolean;
     private _listenerId: string | null;
     private _subscription: Subscription;
 
@@ -45,6 +46,7 @@ export class TopicListener {
         this.topicId = topicId;
 
         this._startNumber = null;
+        this._latencySensitive = false;
         this._observable = null;
         this._listenerId = null;
     }
@@ -53,6 +55,14 @@ export class TopicListener {
         if (name && typeof name === 'string') {
             this._name = name;
         }
+        return this;
+    }
+
+    /**
+     * Poll this topic on a short idle cap. For topics where someone waits for the answer.
+     */
+    public setLatencySensitive(value: boolean = true): TopicListener {
+        this._latencySensitive = !!value;
         return this;
     }
 
@@ -137,6 +147,9 @@ export class TopicListener {
             };
             if (this._name) {
                 options.name = this._name;
+            }
+            if (this._latencySensitive) {
+                options.latencySensitive = true;
             }
             // typeof, not truthiness, so a start position of 0 is still sent. A listener
             // with no start position (null) sends none and resumes from the service's

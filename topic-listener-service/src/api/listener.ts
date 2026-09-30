@@ -12,6 +12,7 @@ export class Listener {
     public readonly id: string;
     public readonly name: string;
     public readonly topicId: string;
+    public latencySensitive: boolean;
 
     private readonly channel: ListenerService;
 
@@ -32,6 +33,12 @@ export class Listener {
         envNumber('LISTENER_IDLE_BACKOFF_STEP_MS', 10 * 1000);
     public static readonly IDLE_BACKOFF_MAX_MS: number =
         envNumber('LISTENER_IDLE_BACKOFF_MAX_MS', 60 * 1000);
+    /**
+     * Idle cap of latency-sensitive listeners (e.g. a policy actions topic, where a
+     * person waits for the answer)
+     */
+    public static readonly FAST_IDLE_BACKOFF_MAX_MS: number =
+        envNumber('LISTENER_FAST_IDLE_BACKOFF_MAX_MS', 3 * 1000);
 
     private _messages: Message[];
 
@@ -50,6 +57,7 @@ export class Listener {
         this.id = listener.id.toString();
         this.name = listener.name || this.id;
         this.topicId = listener.topicId;
+        this.latencySensitive = !!listener.latencySensitive;
 
         const _index = Math.min(listener.searchIndex, listener.sendIndex);
         this._searchIndex = _index;
@@ -119,10 +127,12 @@ export class Listener {
             return;
         }
         this._idleCount++;
-        const delay = Math.min(
-            Listener.IDLE_BACKOFF_MAX_MS,
-            Listener.IDLE_BACKOFF_STEP_MS * Math.pow(2, Math.min(this._idleCount - 1, 30))
-        );
+        const delay = this.latencySensitive
+            ? Listener.FAST_IDLE_BACKOFF_MAX_MS
+            : Math.min(
+                Listener.IDLE_BACKOFF_MAX_MS,
+                Listener.IDLE_BACKOFF_STEP_MS * Math.pow(2, Math.min(this._idleCount - 1, 30))
+            );
         this._nextPollAt = Date.now() + Listener.jitter(delay);
     }
 
@@ -154,6 +164,22 @@ export class Listener {
             this._subscription.unsubscribe();
             this._subscription = null;
         }
+    }
+
+    public async setLatencySensitive(value: boolean): Promise<void> {
+        if (this.latencySensitive === value) {
+            return;
+        }
+        this.latencySensitive = value;
+        if (value) {
+            //drop a long idle wait the listener picked up as a regular one
+            this._nextPollAt = Math.min(this._nextPollAt, Date.now() + Listener.FAST_IDLE_BACKOFF_MAX_MS);
+        }
+        await (new DatabaseServer()).update(
+            ListenerCollection,
+            { id: this.id },
+            { latencySensitive: value }
+        );
     }
 
     public async restart(index: number): Promise<boolean> {
@@ -249,7 +275,7 @@ export class Listener {
                 limit: Listener.REST_API_MAX_LIMIT
             },
             responseType: 'json',
-            //the scheduler is sequential, so one hung request stalls every other listener
+            //a hung request holds one scheduler slot until it times out
             timeout: Listener.REQUEST_TIMEOUT_MS,
         };
         if (lastNumber > 0) {

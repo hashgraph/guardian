@@ -52,6 +52,7 @@ export class PolicyActionsService {
 
         this.topicListener = new TopicListener(this.topicId);
         this.topicListener.setListenerName(`policy_actions_${this.policyId}`);
+        this.topicListener.setLatencySensitive();
         await this.topicListener.subscribe(this.loadTask.bind(this));
     }
 
