@@ -23,6 +23,13 @@
     background: var(--guardian-grey-background, #f9fafc);
 }
 
+/* No top bar is rendered while signed out, even if the horizontal layout is stored.
+   --header-height is redeclared so it picks up the local --topbar-height. */
+.app:not(.signed-in) {
+    --topbar-height: 0px;
+    --header-height: calc(var(--topbar-height) + var(--banner-height));
+}
+
 :root.first-steps-open .content {
     right: var(--first-steps-panel-width, 380px);
 }
