@@ -36,12 +36,13 @@ describe('Table construction', () => {
         assert.isFalse(header.required);
     });
 
-    it('schema headers include name/description/type/tool/tool-id/iwa-version', () => {
+    it('schema headers include name/description/type/version/tool/tool-id/iwa-version', () => {
         const t = new Table({ c: 1, r: 1 });
         const titles = Array.from(t.schemaHeaders).map(h => h.title);
         assert.include(titles, Dictionary.SCHEMA_NAME);
         assert.include(titles, Dictionary.SCHEMA_DESCRIPTION);
         assert.include(titles, Dictionary.SCHEMA_TYPE);
+        assert.include(titles, Dictionary.SCHEMA_VERSION);
         assert.include(titles, Dictionary.SCHEMA_TOOL);
         assert.include(titles, Dictionary.SCHEMA_TOOL_ID);
         assert.include(titles, Dictionary.IWA_VERSION);
@@ -90,9 +91,10 @@ describe('Table.setDefault with tool=true', () => {
         assert.equal(t.getRow(Dictionary.SCHEMA_NAME), 5);
         assert.equal(t.getRow(Dictionary.SCHEMA_DESCRIPTION), 6);
         assert.equal(t.getRow(Dictionary.SCHEMA_TYPE), 7);
-        assert.equal(t.getRow(Dictionary.IWA_VERSION), 8);
-        assert.equal(t.getRow(Dictionary.SCHEMA_TOOL), 9);
-        assert.equal(t.getRow(Dictionary.SCHEMA_TOOL_ID), 10);
+        assert.equal(t.getRow(Dictionary.SCHEMA_VERSION), 8);
+        assert.equal(t.getRow(Dictionary.IWA_VERSION), 9);
+        assert.equal(t.getRow(Dictionary.SCHEMA_TOOL), 10);
+        assert.equal(t.getRow(Dictionary.SCHEMA_TOOL_ID), 11);
     });
 
     it('places field headers on sequential columns from start', () => {

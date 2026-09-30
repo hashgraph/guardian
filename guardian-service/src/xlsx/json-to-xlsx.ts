@@ -2,7 +2,7 @@ import { Dictionary, FieldTypes, geoDisplayValue } from './models/dictionary.js'
 import { anyToXlsx, examplesToXlsx, booleanToXlsx, entityToXlsx, fontToXlsx, stringToXlsx, typeToXlsx, unitToXlsx, valueToFormula, visibilityToXlsx } from './models/value-converters.js';
 import { Hyperlink, Range, Workbook, Worksheet } from './models/workbook.js';
 import { Table } from './models/table.js';
-import { ISchema, IwaVersion, resolveIwaVersion, Schema, SchemaCondition, SchemaField } from '@guardian/interfaces';
+import { ISchema, IwaVersion, resolveIwaVersion, Schema, SchemaCondition, SchemaField, SchemaHelper } from '@guardian/interfaces';
 import { PolicyTool, PolicyProperty, IPFS, DatabaseServer } from '@guardian/common';
 import { IRowField } from './interfaces/row-field.interface.js';
 import { SheetName } from './models/sheet-name.js';
@@ -248,9 +248,11 @@ export class JsonToXlsx {
         worksheet.mergeCells(Range.fromColumns(table.start.c, table.end.c - 1, table.getRow(Dictionary.SCHEMA_NAME)));
         worksheet.setValue(Dictionary.SCHEMA_DESCRIPTION, table.start.c, table.getRow(Dictionary.SCHEMA_DESCRIPTION));
         worksheet.setValue(Dictionary.SCHEMA_TYPE, table.start.c, table.getRow(Dictionary.SCHEMA_TYPE));
+        worksheet.setValue(Dictionary.SCHEMA_VERSION, table.start.c, table.getRow(Dictionary.SCHEMA_VERSION));
         worksheet.setValue(Dictionary.IWA_VERSION, table.start.c, table.getRow(Dictionary.IWA_VERSION));
         worksheet.mergeCells(Range.fromColumns(table.start.c + 1, table.end.c - 1, table.getRow(Dictionary.SCHEMA_DESCRIPTION)));
         worksheet.mergeCells(Range.fromColumns(table.start.c + 1, table.end.c - 1, table.getRow(Dictionary.SCHEMA_TYPE)));
+        worksheet.mergeCells(Range.fromColumns(table.start.c + 1, table.end.c - 1, table.getRow(Dictionary.SCHEMA_VERSION)));
         worksheet.mergeCells(Range.fromColumns(table.start.c + 1, table.end.c - 1, table.getRow(Dictionary.IWA_VERSION)));
         worksheet
             .getCell(table.start.c + 1, table.getRow(Dictionary.SCHEMA_DESCRIPTION))
@@ -260,6 +262,10 @@ export class JsonToXlsx {
             .getCell(table.start.c + 1, table.getRow(Dictionary.SCHEMA_TYPE))
             .setStyle(table.schemaItemStyle)
             .setValue(entityToXlsx(schema.entity));
+        worksheet
+            .getCell(table.start.c + 1, table.getRow(Dictionary.SCHEMA_VERSION))
+            .setStyle(table.schemaItemStyle)
+            .setValue(schema.version || SchemaHelper.getVersion(schema)?.version || '');
         worksheet
             .getCell(table.start.c + 1, table.getRow(Dictionary.IWA_VERSION))
             .setStyle(table.schemaItemStyle)

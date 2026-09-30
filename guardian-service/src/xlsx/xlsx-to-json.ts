@@ -401,6 +401,9 @@ export class XlsxToJson {
             if (table.getRow(Dictionary.SCHEMA_TYPE) !== -1) {
                 schema.entity = xlsxToEntity(worksheet.getValue<string>(startCol + 1, table.getRow(Dictionary.SCHEMA_TYPE)));
             }
+            if (table.getRow(Dictionary.SCHEMA_VERSION) !== -1) {
+                schema.schema.version = worksheet.getValue<string>(startCol + 1, table.getRow(Dictionary.SCHEMA_VERSION));
+            }
 
             if (table.getRow(Dictionary.IWA_VERSION) !== -1) {
                 const rawVersion = worksheet.getValue<string>(startCol + 1, table.getRow(Dictionary.IWA_VERSION));
