@@ -53906,7 +53906,7 @@ tags:
     parent: customization
 servers:
   - url: /api/v1
-    description: version 1.0
+    description: API v1
 components:
   securitySchemes:
     bearer:

@@ -4,6 +4,7 @@ import { FilterObject } from '@mikro-orm/core';
 import { importTag } from '../tag/tag-import-helper.js';
 import { checkForCircularDependency, loadAnotherSchemas, loadSchema } from '../common/load-helper.js';
 import { validateSchemaDependencies } from './schema-dependency-validator.js';
+import { validateSchemaFieldKeys } from './schema-field-key-validator.js';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -415,6 +416,7 @@ export async function createSchema(
     if (checkForCircularDependency(newSchema)) {
         throw new Error(`There is circular dependency in schema: ${newSchema.iri}`);
     }
+    validateSchemaFieldKeys(newSchema);
     validateSchemaDependencies(newSchema);
 
     delete newSchema.id;

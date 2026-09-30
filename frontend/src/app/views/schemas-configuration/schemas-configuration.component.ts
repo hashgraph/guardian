@@ -1220,10 +1220,15 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             errors.push('Key is required');
         } else if (/\s/.test(field.name)) {
             errors.push('Key must not contain spaces');
-        } else if (SchemasConfigurationComponent.SYSTEM_KEYS.has(field.name)) {
-            errors.push('Key is a reserved system name');
-        } else if (allFields.filter(f => f !== field && f.name === field.name).length > 0) {
-            errors.push('Key must be unique within the schema');
+        } else {
+            const reservedCharacter = ['.', ':'].find((character) => field.name.includes(character));
+            if (reservedCharacter) {
+                errors.push(`Key must not contain "${reservedCharacter}" because it is reserved`);
+            } else if (SchemasConfigurationComponent.SYSTEM_KEYS.has(field.name)) {
+                errors.push('Key is a reserved system name');
+            } else if (allFields.filter(f => f !== field && f.name === field.name).length > 0) {
+                errors.push('Key must be unique within the schema');
+            }
         }
 
         if ((field as any).customType === 'enum' && (!Array.isArray(field.enum) || field.enum.length === 0)) {

@@ -34,6 +34,7 @@ import { ImportMode } from '../common/import.interface.js';
 import { importTag } from '../tag/tag-import-helper.js';
 import { updateSchemaDefs } from './schema-helper.js';
 import { validateSchemaDependencies } from './schema-dependency-validator.js';
+import { validateSchemaFieldKeys } from './schema-field-key-validator.js';
 
 export class SchemaImport {
     private readonly mode: ImportMode;
@@ -374,6 +375,7 @@ export class SchemaImport {
             if (checkForCircularDependency(file)) {
                 throw new Error(`There is circular dependency in schema: ${file.iri}`);
             }
+            validateSchemaFieldKeys(file);
             let dependencyError: string | null = null;
             try {
                 validateSchemaDependencies(file);

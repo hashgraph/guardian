@@ -1,10 +1,11 @@
-# Changelog
+# Change Log
 
 A running list of every Guardian release, newest first. Each entry links to its GitHub release notes, and to its Platform Updates post where one exists.
 
 ***
 
-* **3.7.0** (2026) — Schema editor with templates, drag-and-drop reordering & preview, organization entities with role-based management, redesigned policy configurator, bulk DID registration performance & new onboarding ([Platform Update](https://guardian.hedera.com/updates#guardian-3.7.0) · [GitHub](https://github.com/hashgraph/guardian/releases/tag/3.7.0))
+* **3.7.1** (2026) — Multiple schema templates per policy with reorder, preview & conditions lock, rich text & table field types, IWA dMRV v3 versioning ([GitHub](https://github.com/hashgraph/guardian/releases/tag/3.7.1))
+* **3.7.0** — Schema editor with templates, drag-and-drop reordering & preview, organization entities with role-based management, redesigned policy configurator, bulk DID registration performance & new onboarding ([Platform Update](https://guardian.hedera.com/updates#guardian-3.7.0) · [GitHub](https://github.com/hashgraph/guardian/releases/tag/3.7.0))
 * **3.6.0** — Top level api convenience methods, policy integrity tests, multifactor authentication, runtime policy parameter editing & other developer API tooling ([Platform Update](https://guardian.hedera.com/updates#guardian-3.6.0) · [GitHub](https://github.com/hashgraph/guardian/releases/tag/3.6.0))
 * **3.5.1** — Hotfix for customLogicBlock ([Platform Update](https://guardian.hedera.com/updates#guardian-3.5.1-hotfix) · [GitHub](https://github.com/hashgraph/guardian/releases/tag/3.5.1))
 * **3.5.0** — Formula-driven policies, multi-workflow engine, data replay & fine grained certification labels ([GitHub](https://github.com/hashgraph/guardian/releases/tag/3.5.0))
@@ -24,10 +25,9 @@ A running list of every Guardian release, newest first. Each entry links to its 
 * **2.25.0** — Guardian indexer, roles and permissions, project data comparison ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.25.0))
 * **2.24.1** — Hotfix for policy replay and side navigation bar issues ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.24.1))
 * **2.24.0** — Live data migrations, Fireblocks support ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.24.0))
-* **2.23.1** — Hotfix to remove T&C screen ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.23.1))
+* **2.23.1** — Hotfix to remove T\&C screen ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.23.1))
 * **2.23.0** — Hedera DID conformance, new policies and minting fixes ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.23.0))
 * **2.22.0** — Support for external DIDs, new policies ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.22.0))
-* **2.17.1** — Hotfix adding Filebase support ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.17.1))
 * **2.21.1** — Hotfix addressing the worker settings update propagation issue ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.21.1))
 * **2.21.0** — Schemas excel import/export, discontinuing policies, unfccc features, raster images mvp ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.21.0))
 * **2.20.1** — Hotfix introducing w3up API support ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.20.1))
@@ -35,9 +35,10 @@ A running list of every Guardian release, newest first. Each entry links to its 
 * **2.19.1** — Hotfix fixing the build dependencies issues ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.19.1))
 * **2.19.0** — Schema dependency graph, Policies with Tools ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.19.0))
 * **2.18.0** — Token retirement, Block and Policy discoverability ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.18.0))
+* **2.17.1** — Hotfix adding Filebase support ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.17.1))
 * **2.17.0** — Support for UNFCCC Tools, project data diff, improved policy comparison ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.17.0))
 * **2.16.0** — DR with user accounts, separate PROD/DEMO builds ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.16.0))
-* **2.15** — Notifications, statistics, calculations blocks in modules ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.15))
+* **2.15.0** — Notifications, statistics, calculations blocks in modules ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.15))
 * **2.14.2** — Supplementary release for new GHGP policy ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.14.2))
 * **2.14.1** — Hotfix - policy API issues fixed ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.14.1))
 * **2.14.0** — Auto-suggestion, trust chain for policy chains ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.14.0))
@@ -62,7 +63,6 @@ A running list of every Guardian release, newest first. Each entry links to its 
 * **2.4.1** — Dry run, multi-user roles/groups, Web3.storage ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.4.1))
 * **2.3.1** — Hotfix correcting policy blocks and CI issues ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.3.1))
 * **2.3.0** — Minting to custom accounts, automated token actions ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.3.0))
-* **2.0.1** — Hedera SDK vs testnet incompatibility fix ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.0.1))
 * **2.2.2** — Trustchain validity hotfix follow-up ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.2.2))
 * **2.2.1** — Trust chain validity hotfix ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.2.1))
 * **2.2.0** — Revocation, Standard Registry init message, event-driven policies ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.2.0))
@@ -70,6 +70,7 @@ A running list of every Guardian release, newest first. Each entry links to its 
 * **2.1.2** — Hotfix for math expression validations ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.1.2))
 * **2.1.1** — Hotfix for match expressions ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.1.1))
 * **2.1.0** — Aggregation in Policy Workflows and NATS message broker ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.1.0))
+* **2.0.1** — Hedera SDK vs testnet incompatibility fix ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.0.1))
 * **2.0.0** — Discoverable decentralized Guardian ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v2.0.0))
 * **1.2.1** — I-REC demo hotfix ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v1.2.1))
 * **1.2.0** — API stability, Verra Redd+ Policy support ([GitHub](https://github.com/hashgraph/guardian/releases/tag/v1.2.0))
