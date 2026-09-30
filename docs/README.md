@@ -60,7 +60,7 @@ Establishing trust across climate and environmental markets is a hard, shared pr
 
 Guardian is open source under the Apache 2.0 License and developed collaboratively by Hashgraph alongside carbon registries, auditors, project developers, governments, and enterprises building on the platform. Policies in the [Methodology Library](methodology-digitalization/methodology-library.md) are contributed by organizations worldwide by registries, methodology authors, and independent developers.
 
-Community calls, hands-on training sessions, and design workshops are regularly hosted. If you are building on the Guardian, digitizing a methodology, or improving the platform itself — contributions and feedback is welcome.
+[Community calls, hands-on training sessions, and design workshops](https://lu.ma/guardian?utm_source=gitbook) are regularly hosted. If you are building on the Guardian, digitizing a methodology, or improving the platform itself — contributions and feedback is welcome.
 
 * [contributing](community-and-contributing/contributing/ "mention")
 * [community-standards](community-and-contributing/community-standards/ "mention")
