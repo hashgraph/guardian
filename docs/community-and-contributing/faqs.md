@@ -19,13 +19,17 @@ To get started you can choose from one of the following options depending upon y
 
 You can use the policy editor or APIs to create a policy workflow. Some examples can be found in [Methodology Digitalization](https://app.gitbook.com/s/bKnJV8vV7zUxRwKIsJKg/methodology-digitalization "mention") and [creating-a-policy-through-policy-configurator](../guardian/tutorials/creating-a-policy-through-policy-configurator/ "mention")here and there is a quick start guide to help you publish your first policy.
 
+**3. What license does Guardian use?**
+
+Guardian is available under the [Apache License 2.0](https://github.com/hashgraph/guardian/blob/main/LICENSE).
+
 **5. Where can I get notified of updates, trainings, and workshops?**
 
 [Subscribe to the community calendar](https://lu.ma/guardian).
 
 **6. Where can I see the most recent changes made to the Guardian?**
 
-Learn more about past releases here, [https://github.com/hashgraph/guardian/releases](https://github.com/hashgraph/guardian/releases).&#x20;
+Learn more about past releases here, [https://github.com/hashgraph/guardian/releases](https://github.com/hashgraph/guardian/releases).
 
 **7. How do I request a policy or an issue to be worked on?**
 
@@ -43,7 +47,7 @@ You can visit : http://localhost:3000/mrv-sender/
 
 On the docs site, checkout the [API Reference / guardian](https://app.gitbook.com/o/-LuC734MpqlgwA6zyhAO/s/qHzrfhYRf3qLjeOsZTmp/ "mention")
 
-When running via docker, navigate to [https://localhost/api/v1/api-docs](https://localhost/api/v1/api-docs).&#x20;
+When running via docker, navigate to [https://localhost/api/v1/api-docs](https://localhost/api/v1/api-docs).
 
 **11. Why do I get the error INSUFFICENT\_TX\_FEE?**
 
