@@ -21712,12 +21712,14 @@ paths:
                   did: >-
                     did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999
                   username: Administrator
+                  role: Administrator
                   hederaAccountId: 0.0.6046379
                   id: 69c83b92cebecbe1c023104d
                 - active: false
                   did: >-
                     did:hedera:testnet:DoabcYQtNM3kqxAv6DiWadYRF6LYNqGX85ZtZFZibjTA_0.0.8417999
                   username: Virtual User 2
+                  role: Project Proponent
                   hederaAccountId: 0.0.1774730673941
                   id: 69c83db1cebecbe1c0231117
         '401':
@@ -21990,12 +21992,14 @@ paths:
                   did: >-
                     did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999
                   username: Administrator
+                  role: Administrator
                   hederaAccountId: 0.0.6046379
                   id: 69c83b92cebecbe1c023104d
                 - active: true
                   did: >-
                     did:hedera:testnet:9VywBBXBtcV2RW7Whak6aJ9GR7PsKsiJaymAeWnBVvUB_0.0.8417999
                   username: Virtual User 1
+                  role: Project Proponent
                   hederaAccountId: 0.0.1774731899661
                   id: 69c8427bcebecbe1c02311eb
         '401':
