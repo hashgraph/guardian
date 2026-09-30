@@ -2,6 +2,7 @@ import { DidDocumentStatus, LocationType, MessageAPI, SchemaEntity, TopicType, U
 import { ApiResponse } from '../api/helpers/api-response.js';
 import {
     CommonDidDocument,
+    createRemoteUserProof,
     DatabaseServer,
     Environment,
     HederaBBSMethod,
@@ -649,6 +650,52 @@ export function profileAPI(logger: PinoLogger) {
                     msg?.user?.id
                 );
                 return new MessageResponse({ ...item, key });
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Export the profile of a local user, signed for registering it as a remote user on another instance
+     *
+     * @param {any} msg
+     *
+     * @returns {any} - profile file content
+     */
+    ApiResponse(MessageAPI.EXPORT_REMOTE_USER,
+        async (msg: { user: IAuthUser }) => {
+            try {
+                const user = msg?.user;
+                if (!user?.did) {
+                    return new MessageError('User is not registered.');
+                }
+                const db = new DatabaseServer();
+                const didRow = await db.getDidDocument(user.did);
+                if (!didRow || didRow.status !== DidDocumentStatus.CREATE) {
+                    return new MessageError('DID document is not published.');
+                }
+                let topicId = didRow.topicId;
+                if (!topicId) {
+                    const topic = await db.getTopic({ type: TopicType.UserTopic, owner: user.did })
+                        || await db.getTopic({ type: TopicType.UserTopic, owner: user.parent });
+                    topicId = topic?.topicId;
+                }
+                const vcDocument = await db.getVcDocument({
+                    owner: user.did,
+                    type: { $in: [SchemaEntity.USER, SchemaEntity.STANDARD_REGISTRY] }
+                });
+                const didDocument = await new VcHelper().loadDidDocument(user.did, user.id);
+                const proof = createRemoteUserProof(didDocument, user.hederaAccountId, topicId);
+                return new MessageResponse({
+                    username: user.username,
+                    hederaAccountId: user.hederaAccountId,
+                    topicId,
+                    did: user.did,
+                    didDocument: didRow.document,
+                    vcDocument: vcDocument?.document,
+                    proof
+                });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                 return new MessageError(error);

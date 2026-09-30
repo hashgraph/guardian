@@ -1,4 +1,4 @@
-import { Permissions, TaskAction } from '@guardian/interfaces';
+import { LocationType, Permissions, TaskAction } from '@guardian/interfaces';
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Req, Response, Query, Delete } from '@nestjs/common';
 import { ApiAcceptedResponse, ApiBody, ApiConflictResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnauthorizedResponse, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
@@ -16,12 +16,13 @@ import {
     PolicyKeyConfigDTO,
     PolicyKeyDTO,
     ProfileDTO,
+    RemoteUserExportDTO,
     TaskDTO,
     UnauthorizedErrorDTO,
     UnprocessableEntityErrorDTO,
     pageHeader
 } from '#middlewares';
-import { Auth, AuthUser } from '#auth';
+import { Auth, AuthAndLocation, AuthUser } from '#auth';
 import { CacheService, getCacheKey, Guardians, InternalException, ServiceError, TaskManager, UseCache } from '#helpers';
 import { CACHE, CACHE_TAG_PREFIXES, PREFIXES } from '#constants';
 
@@ -90,6 +91,48 @@ export class ProfileApi {
         try {
             const guardians = new Guardians();
             return await guardians.getProfile(user);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Export the authenticated user's profile for registering it as a remote user on another instance.
+     */
+    @Get('/:username/remote-user')
+    @AuthAndLocation([LocationType.LOCAL], [Permissions.PROFILES_USER_READ])
+    @ApiOperation({
+        summary: 'Exports the authenticated user\'s profile for another instance.',
+        description:
+            'Returns the profile file used to register the **currently authenticated user** as a remote user on another Guardian instance. ' +
+            'It contains the published DID document and a proof signed with the DID key, which the other instance verifies. ' +
+            'The proof is accepted for 24 hours. No private keys are included. ' +
+            'The `username` path segment is **not** used to choose whose profile is exported.'
+    })
+    @ApiParam({
+        name: 'username',
+        type: String,
+        description:
+            'Present for URL compatibility with existing clients. The server does not use this value.',
+        required: true,
+        example: 'username'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: RemoteUserExportDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
+    })
+    @HttpCode(HttpStatus.OK)
+    async exportRemoteUser(
+        @AuthUser() user: IAuthUser
+    ): Promise<RemoteUserExportDTO> {
+        try {
+            const guardians = new Guardians();
+            return await guardians.exportRemoteUser(user);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

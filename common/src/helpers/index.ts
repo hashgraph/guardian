@@ -35,3 +35,4 @@ export * from './encrypt-utils.js';
 export * from './table-file-ids.js';
 export * from './table-csv.js';
 export * from './mock-service.js';
+export * from './remote-user-proof.js';
