@@ -410,7 +410,8 @@ export class SchemaImport {
                 const row = schemaForUpdate;
                 const previousIri = row.iri;
                 const previousUuid = row.uuid;
-                const previousVersion = row.sourceVersion || SchemaHelper.getVersion(row)?.previousVersion || '';
+                const previousVersion = row.version || SchemaHelper.getVersion(row)?.version || row.sourceVersion || SchemaHelper.getVersion(row)?.previousVersion || '';
+                const newVersion = file.sourceVersion || schemaObject.sourceVersion || row.version;
                 if (!row || row.owner !== user.owner) {
                     throw new Error('Invalid schema');
                 }
@@ -425,7 +426,7 @@ export class SchemaImport {
                     ? SchemaStatus.ERROR
                     : SchemaStatus.DRAFT;
                 row.errors = dependencyError ? errors : [];
-                SchemaHelper.setVersion(row, row.version, previousVersion);
+                SchemaHelper.setVersion(row, newVersion, previousVersion);
                 SchemaHelper.updateIRI(row);
                 await DatabaseServer.updateSchema(row.id, row);
                 await updateSchemaDefs(row.iri);
@@ -437,6 +438,9 @@ export class SchemaImport {
 
                 if (file.iri !== row.iri) {
                     updatedSchemasIriMap.set(file.iri, row.iri);
+                }
+                if (previousIri && previousIri !== row.iri) {
+                    updatedSchemasIriMap.set(previousIri, row.iri);
                 }
 
             } else {
