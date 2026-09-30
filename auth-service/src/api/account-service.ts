@@ -31,6 +31,7 @@ import { UserUtils, UserPassword, PasswordType, UserAccessTokenService, UserProp
 import { passwordComplexity, PasswordError } from '#constants';
 import { HttpStatus } from '@nestjs/common';
 import { OtpHelper } from '../helpers/otp-helper.js';
+import { getDefaultRole } from './role-service.js';
 
 /**
  * Account service
@@ -69,8 +70,14 @@ export class AccountService extends NatsService {
                         throw new Error('Token expired');
                     }
 
-                    const user = await UserUtils.getUser({ username: decryptedToken.username }, UserProp.REQUIRED);
-                    return new MessageResponse(user);
+                    if (!UserUtils.isUsername(decryptedToken?.username)) {
+                        throw new Error('Unauthorized request');
+                    }
+                    const user = await UserUtils.getUser({ username: decryptedToken.username }, UserProp.RAW);
+                    if (!UserUtils.canHoldSession(user)) {
+                        throw new Error('Unauthorized request');
+                    }
+                    return new MessageResponse(UserUtils.updateUserFields(user, UserProp.REQUIRED));
                 } catch (error) {
                     return new MessageError(error);
                 }
@@ -103,6 +110,9 @@ export class AccountService extends NatsService {
             }) => {
                 const { username, userId } = msg;
                 try {
+                    if (!UserUtils.isUsername(username)) {
+                        return new MessageResponse(null);
+                    }
                     const user = await UserUtils.getUser({ username }, UserProp.WITH_KEYS);
                     return new MessageResponse(user);
                 } catch (error) {
@@ -329,10 +339,63 @@ export class AccountService extends NatsService {
                 }
             });
 
+        /**
+         * Create a remote user without a login for a join request, or return the existing one
+         * @param did - user DID
+         * @param hederaAccountId - user account
+         * @param parent - Standard Registry DID
+         */
+        this.getMessages<any, IUser>(AuthEvents.CREATE_REMOTE_USER,
+            async (msg: { did: string, hederaAccountId: string, parent: string, userId: string | null }) => {
+                try {
+                    const { did, hederaAccountId, parent } = msg || {} as any;
+                    if (!did || !hederaAccountId || !parent) {
+                        return new MessageError('Invalid remote user.');
+                    }
+                    const entityRepository = new DatabaseServer();
+                    const existing = await entityRepository.findOne(User, { did });
+                    if (existing) {
+                        if (
+                            existing.template === true ||
+                            existing.location !== LocationType.REMOTE ||
+                            existing.parent !== parent ||
+                            existing.hederaAccountId !== hederaAccountId
+                        ) {
+                            return new MessageError('The DID is already registered.', HttpStatus.CONFLICT);
+                        }
+                        return new MessageResponse(UserUtils.updateUserFields(existing, UserProp.REQUIRED));
+                    }
+                    const defaultRole = await getDefaultRole(parent);
+                    const row = entityRepository.create(User, {
+                        did,
+                        hederaAccountId,
+                        parent,
+                        role: UserRole.USER,
+                        location: LocationType.REMOTE,
+                        walletToken: '',
+                        permissionsGroup: defaultRole ? [{
+                            uuid: defaultRole.uuid,
+                            roleId: defaultRole.id,
+                            roleName: defaultRole.name,
+                            owner: defaultRole.owner || null
+                        }] : [],
+                        permissions: defaultRole ? defaultRole.permissions : []
+                    });
+                    const result = await entityRepository.save(User, row);
+                    return new MessageResponse(UserUtils.updateUserFields(result, UserProp.REQUIRED));
+                } catch (error) {
+                    await logger.error(error, ['AUTH_SERVICE'], msg?.userId);
+                    return new MessageError(error);
+                }
+            });
+
         this.getMessages<IRegisterNewUserMessage, User>(AuthEvents.GENERATE_NEW_TOKEN_BASED_ON_USER_PROVIDER,
             async (msg: ProviderAuthUser) => {
                 try {
                     const { username, role, provider, providerId } = msg;
+                    if (!UserUtils.isUsername(username)) {
+                        return new MessageError('Unauthorized request', 401);
+                    }
                     let user = await UserUtils.getUser({ username, template: { $ne: true } }, UserProp.REQUIRED)
                     if (!user) {
                         user = await UserUtils.createNewUser({
@@ -362,8 +425,12 @@ export class AccountService extends NatsService {
             async (msg: { username: string, password: string, otp: string }) => {
                 try {
                     const { username, password, otp } = msg;
+                    if (!UserUtils.isUsername(username) || typeof password !== 'string' || !password) {
+                        return new MessageError('Unauthorized request', 401);
+                    }
                     const user = await UserUtils.getUser({ username, template: { $ne: true } }, UserProp.RAW);
-                    if (user) {
+                    // a remote user created from a join request has no password and never signs in
+                    if (UserUtils.hasPasswordLogin(user)) {
                         if (user.passwordVersion === PasswordType.V2) {
                             if (await UserPassword.verifyPasswordV2(user, password)) {
                                 if (await OtpHelper.isConfiguredFor(user) && !otp) {
@@ -408,8 +475,11 @@ export class AccountService extends NatsService {
             async (msg: { username: string, oldPassword: string, newPassword: string, userId: string | null }) => {
                 const { username, oldPassword, newPassword, userId } = msg;
                 try {
+                    if (!UserUtils.isUsername(username) || typeof oldPassword !== 'string' || typeof newPassword !== 'string') {
+                        return new MessageError('Unauthorized request', 401);
+                    }
                     const user = await UserUtils.getUser({ username, template: { $ne: true }, id: userId }, UserProp.RAW);
-                    if (!(await UserPassword.verifyPassword(user, oldPassword))) {
+                    if (!UserUtils.hasPasswordLogin(user) || !(await UserPassword.verifyPassword(user, oldPassword))) {
                         return new MessageError('Unauthorized request', 401);
                     }
 
@@ -455,13 +525,16 @@ export class AccountService extends NatsService {
                 if (Date.now() > decryptedToken.expireAt) {
                     return new MessageResponse({})
                 }
+                if (!UserUtils.isUsername(decryptedToken?.name) || typeof decryptedToken?.id !== 'string') {
+                    return new MessageResponse({})
+                }
 
                 const user = await new DatabaseServer().findOne(User, {
                     refreshToken: decryptedToken.id,
                     username: decryptedToken.name,
                     template: { $ne: true }
                 });
-                if (user) {
+                if (UserUtils.canHoldSession(user)) {
                     const accessToken = userAccessTokenService.generateAccessToken(user, true);
                     return new MessageResponse({ accessToken });
                 } else {
@@ -473,6 +546,9 @@ export class AccountService extends NatsService {
             async (msg: { username: string, item: any, userId: string | null }) => {
                 const { username, item, userId } = msg;
                 try {
+                    if (!UserUtils.isUsername(username)) {
+                        return new MessageResponse(null);
+                    }
                     const usersRepository = new DatabaseServer();
 
                     const user = await usersRepository.findOne(User, { username })
@@ -544,6 +620,11 @@ export class AccountService extends NatsService {
                         if (filters.did) {
                             options.did = filters.did;
                         }
+                    }
+                    // remote users created from a join request have no username and are
+                    // managed in the remote participants of the policy
+                    if (!options.username) {
+                        options.username = { $type: 'string' };
                     }
                     const [items, count] = await new DatabaseServer().findAndCount(User, options, otherOptions);
                     return new MessageResponse({ items, count });

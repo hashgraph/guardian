@@ -136,6 +136,23 @@ export class ExternalPoliciesService {
         return this.http.put<any>(`${this.url}/${messageId}/disconnect`, null, { params });
     }
 
+    public getRemoteParticipants(
+        policyId: string,
+        pageIndex?: number,
+        pageSize?: number
+    ): Observable<HttpResponse<any[]>> {
+        const params = ExternalPoliciesService.getOptions(null, pageIndex, pageSize);
+        return this.http.get<any>(`${this.url}/participants/${policyId}`, { observe: 'response', params });
+    }
+
+    public approveParticipant(participantId: string): Observable<any> {
+        return this.http.post<any>(`${this.url}/participants/${participantId}/approve`, null);
+    }
+
+    public rejectParticipant(participantId: string): Observable<any> {
+        return this.http.post<any>(`${this.url}/participants/${participantId}/reject`, null);
+    }
+
     public delete(messageId: string): Observable<any> {
         return this.http.delete<any>(`${this.url}/${messageId}`);
     }

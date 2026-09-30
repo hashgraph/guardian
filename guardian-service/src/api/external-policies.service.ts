@@ -15,6 +15,7 @@ import { AssignedEntityType, ExternalPolicyStatus, ExternalPolicyType, IOwner, M
 import { PolicyEngine } from '../policy-engine/policy-engine.js';
 import { ImportMode, ImportPolicyOptions, PolicyImportExportHelper } from '../helpers/import-helpers/index.js'
 import { GuardiansService } from '../helpers/guardians.js';
+import { sendRemotePolicyJoin, sendRemotePolicyJoins } from './helpers/remote-policy-join-helper.js';
 
 async function assignPolicy(policyId: string, user: string, assign: boolean): Promise<void> {
     if (!policyId) {
@@ -234,8 +235,12 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
 
                 if (request) {
                     request.type = ExternalPolicyType.IMPORT;
-                    await DatabaseServer.updateExternalPolicy(request);
-                    return new MessageResponse(request);
+                    const updated = await DatabaseServer.updateExternalPolicy(request);
+                    if (policy) {
+                        // importing again retries a join that failed or was rejected
+                        return new MessageResponse(await sendRemotePolicyJoin(policy, updated, logger, true));
+                    }
+                    return new MessageResponse(updated);
                 }
 
                 const policyToImport = await preparePolicyPreviewMessage(messageId, owner, NewNotifier.empty(), logger, owner?.id);
@@ -272,6 +277,9 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                     status,
                     type: ExternalPolicyType.IMPORT,
                 });
+                if (policy) {
+                    return new MessageResponse(await sendRemotePolicyJoin(policy, externalPolicy, logger));
+                }
                 return new MessageResponse(externalPolicy);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -329,6 +337,8 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 if (policy) {
                     await assignPolicy(policy.id, owner.creator, true);
                 }
+
+                await sendRemotePolicyJoins(policy, items, logger);
 
                 notifier.result({ id: messageId, errors });
 
@@ -388,6 +398,8 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                     if (policy) {
                         await assignPolicy(policy.id, owner.creator, true);
                     }
+
+                    await sendRemotePolicyJoins(policy, items, logger);
 
                     notifier.result({ id: messageId, errors });
                 }, async (error) => {

@@ -177,6 +177,9 @@ import { WipeConfigComponent } from './policy-configuration/blocks/tokens/wipe-c
 import { PublishToolDialog } from './dialogs/publish-tool-dialog/publish-tool-dialog.component';
 import { PublishSchemaTemplateDialog } from './dialogs/publish-schema-template-dialog/publish-schema-template-dialog.component';
 import { SaveToolDialog } from './dialogs/save-tool-dialog/save-tool-dialog.component';
+import { RemoteParticipantsDialog } from './dialogs/remote-participants-dialog/remote-participants-dialog.component';
+import { PolicyInviteDialog } from './dialogs/policy-invite-dialog/policy-invite-dialog.component';
+import { QRCodeComponent } from 'angularx-qrcode';
 import { UserPolicyDialog } from './dialogs/user-policy-dialog/user-policy-dialog.component';
 import { GlobalEventsWriterBlockComponent} from './policy-viewer/blocks/global-events-writer-block/global-events-writer-block.component';
 import { GlobalEventsReaderBlockComponent } from './policy-viewer/blocks/global-events-reader-block/global-events-reader-block.component';
@@ -333,6 +336,8 @@ import { ManageSchemaTemplatesDialog } from './dialogs/manage-schema-templates-d
         OnLoadSavepointDialog,
         PolicyRepositoryComponent,
         UserPolicyDialog,
+        RemoteParticipantsDialog,
+        PolicyInviteDialog,
         GlobalEventsReaderBlockComponent,
         GlobalEventsReaderFiltersDialogComponent,
         GlobalEventsWriterBlockComponent,
@@ -374,6 +379,7 @@ import { ManageSchemaTemplatesDialog } from './dialogs/manage-schema-templates-d
         DynamicDialogModule,
 
         TooltipModule,
+        QRCodeComponent,
         TabsModule,
         RadioButtonModule,
         PasswordModule,
