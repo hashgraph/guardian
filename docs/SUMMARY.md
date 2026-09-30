@@ -550,7 +550,6 @@
       * [Unified User Onboarding](developer-tools-and-resources/api-reference/user-operations/account-apis/unified-onboarding.md)
   * [APIs related to Statistics](developer-tools-and-resources/api-reference/apis-related-to-statistics/README.md)
   * [Policy API Documentation & DMRV Aliases](developer-tools-and-resources/api-reference/policy-api-documentation-and-dmrv-aliases.md)
-    * [Prerequesite Steps](developer-tools-and-resources/api-reference/creating-a-policy-using-apis/prerequesite-steps.md)
   * [Policy Comments APIs (aka Complex Iterative Workflows)](developer-tools-and-resources/api-reference/apis-related-2/README.md)
   * [APIs related to Roles & Permissions](developer-tools-and-resources/api-reference/apis-related-to-roles-and-permissions/README.md)
   * [Policy Grid Actions APIs](developer-tools-and-resources/api-reference/policy-grid-actions/README.md)
