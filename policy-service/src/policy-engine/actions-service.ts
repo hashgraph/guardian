@@ -16,6 +16,7 @@ import { PolicyUtils } from './helpers/utils.js';
 import { PolicyComponentsUtils } from './policy-components-utils.js';
 import { PolicyActionsUtils } from './policy-actions/utils.js';
 import { isPolicyAssignedToUserOrg } from './helpers/org-utils.js';
+import { PolicyJoinService } from './policy-join-service.js';
 
 interface IPromise {
     resolve: Function,
@@ -69,6 +70,7 @@ export class PolicyActionsService {
     private resolveReady: () => void;
     private rejectReady: (error: Error) => void;
     private destroyed: boolean;
+    private readonly joins: PolicyJoinService;
 
     constructor(
         policyId: string,
@@ -85,6 +87,7 @@ export class PolicyActionsService {
         this.messageId = policy.messageId;
         this.callback = new Map<string, Function>();
         this.actions = new Map<string, IPromise>();
+        this.joins = new PolicyJoinService(policyId, policy.messageId, policy.owner, policyOwnerId);
         this.executions = new Map<string, Promise<void>>();
         this.expiration = PolicyActionsService.getExpiration();
         this.expirationTimer = null;
@@ -690,6 +693,19 @@ export class PolicyActionsService {
                         await this.failRequest(row);
                     } else {
                         await this.sentNotification(row);
+                    }
+                    break;
+                }
+                case MessageAction.RemotePolicyJoinRequest: {
+                    if (this.isLocal) {
+                        await this.joins.processJoinRequest(data);
+                    }
+                    break;
+                }
+                case MessageAction.RemotePolicyJoinAccepted:
+                case MessageAction.RemotePolicyJoinRejected: {
+                    if (!this.isLocal) {
+                        await this.joins.processJoinReply(message);
                     }
                     break;
                 }

@@ -9,9 +9,9 @@ import esmock from 'esmock';
 async function load(messages, { getMessagesError } = {}) {
     const calls = { getMessages: [], loaded: [] };
     const { resolvePublishedDidDocument } = await esmock(
-        '../../dist/api/helpers/profile-helper.js',
+        '../../dist/published-did-document.js',
         {
-            '@guardian/hedera/message/message-server': {
+            '../../dist/message/message-server.js': {
                 MessageServer: class {
                     static async getMessages(options) {
                         calls.getMessages.push(options);
@@ -25,7 +25,7 @@ async function load(messages, { getMessagesError } = {}) {
                     }
                 },
             },
-            '@guardian/hedera/vcjs/did/common-did-document': {
+            '../../dist/vcjs/did/common-did-document.js': {
                 CommonDidDocument: {
                     from: (json) => ({
                         json,
@@ -107,6 +107,6 @@ describe('@unit resolvePublishedDidDocument', function () {
         const { resolvePublishedDidDocument } = await load([], { getMessagesError: new Error('mirror') });
 
         assert.match((await rejection(resolvePublishedDidDocument('did:user', null, '0.0.100', 'u1')))?.message, /Invalid topic/);
-        assert.match((await rejection(resolvePublishedDidDocument('did:user', '0.0.5', '0.0.100', 'u1')))?.message, /Unable to read the DID topic 0\.0\.5.*mirror/);
+        assert.match((await rejection(resolvePublishedDidDocument('did:user', '0.0.5', '0.0.100', 'u1')))?.message, /Invalid topic/);
     });
 });

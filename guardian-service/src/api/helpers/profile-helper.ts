@@ -21,6 +21,7 @@ import { DidDocument as DidDocumentCollection } from '@guardian/common/entity/di
 import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
 import { INotificationStep } from '@guardian/common/notification/notification-step.interface';
 import { IRemoteUserProof, verifyRemoteUserProof } from '@guardian/hedera/remote-user-proof';
+import { resolvePublishedDidDocument, validateDidWithoutKeys } from '@guardian/hedera/published-did-document';
 import { KeyType, Wallet } from '@guardian/common/helpers/wallet';
 import { MessageError } from '@guardian/common/models/message-response';
 import { PinoLogger } from '@guardian/common/helpers/pino-logger';
@@ -997,58 +998,6 @@ export async function validateCommonDid(json: string | any, keys: IDidKey[]): Pr
         }
     }
     return document;
-}
-
-export async function validateDidWithoutKeys(json: string | any): Promise<CommonDidDocument> {
-    if (!json) {
-        throw new Error(`Invalid did document.`);
-    }
-    const document = CommonDidDocument.from(json);
-    for (const type of [HederaBBSMethod.TYPE, HederaEd25519Method.TYPE]) {
-        const verificationMethod = document.getMethodByType(type);
-        if (!verificationMethod) {
-            throw new Error(`Invalid did document.`);
-        }
-    }
-    return document;
-}
-
-/**
- * Load the DID document the given Hedera account published to the given topic.
- * A remote user profile is only as trustworthy as its DID document, so the
- * supplied copy is used to identify the DID and the published one is stored.
- * @param did
- * @param topicId
- * @param hederaAccountId
- * @param userId
- */
-export async function resolvePublishedDidDocument(
-    did: string,
-    topicId: string,
-    hederaAccountId: string,
-    userId: string
-): Promise<CommonDidDocument> {
-    if (!topicId) {
-        throw new Error(`Invalid topic.`);
-    }
-    let messages: DIDMessage[];
-    try {
-        messages = await MessageServer.getMessages<DIDMessage>({
-            topicId,
-            userId,
-            type: MessageType.DIDDocument
-        });
-    } catch (error) {
-        throw new Error(`Unable to read the DID topic ${topicId}, try again later: ${error?.message || error}`);
-    }
-    const published = messages
-        .filter((message) => message.did === did && message.payer === hederaAccountId)
-        .pop();
-    if (!published) {
-        throw new Error(`DID document is not published by the Hedera account.`);
-    }
-    await MessageServer.loadDocument(published, null, { userId });
-    return await validateDidWithoutKeys(published.getDocument());
 }
 
 export async function validateVc(json: string | any): Promise<VcDocumentDefinition> {

@@ -132,6 +132,42 @@ export class UserUtils {
         return UserUtils.updateUserFields(result, UserProp.REQUIRED);
     }
 
+    /**
+     * Check that a value can identify a user by name. An empty filter value would
+     * match users that have no username, such as remote users created from a join request.
+     * @param username
+     */
+    public static isUsername(username: unknown): username is string {
+        return typeof username === 'string' && username.length > 0;
+    }
+
+    /**
+     * A user can sign in with a password only if it has a username and a password.
+     * Remote users created from a join request have neither and must never authenticate.
+     * @param user
+     */
+    public static hasPasswordLogin(user: User | null | undefined): boolean {
+        return !!user &&
+            user.template !== true &&
+            typeof user.username === 'string' && user.username.length > 0 &&
+            typeof user.password === 'string' && user.password.length > 0;
+    }
+
+    /**
+     * A user can hold a session only if it has a username and a way to sign in
+     * (a password or an identity provider).
+     * @param user
+     */
+    public static canHoldSession(user: User | null | undefined): boolean {
+        return !!user &&
+            user.template !== true &&
+            typeof user.username === 'string' && user.username.length > 0 &&
+            (
+                (typeof user.password === 'string' && user.password.length > 0) ||
+                (typeof user.provider === 'string' && user.provider.length > 0)
+            );
+    }
+
     public static async getUser(filters: any, prop: UserProp): Promise<User | undefined> {
         const user = await new DatabaseServer().findOne(User, filters);
         return UserUtils.updateUserFields(user, prop);

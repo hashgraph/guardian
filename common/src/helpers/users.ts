@@ -236,6 +236,22 @@ export class Users extends NatsService {
     }
 
     /**
+     * Create a remote user without a login, or return the existing one
+     * @param did
+     * @param hederaAccountId
+     * @param parent - Standard Registry DID
+     * @param userId
+     */
+    public async createRemoteUser(
+        did: string,
+        hederaAccountId: string,
+        parent: string,
+        userId: string | null
+    ): Promise<IAuthUser> {
+        return await this.sendMessage(AuthEvents.CREATE_REMOTE_USER, { did, hederaAccountId, parent, userId });
+    }
+
+    /**
      * Generate new template
      * @param role
      * @param did
