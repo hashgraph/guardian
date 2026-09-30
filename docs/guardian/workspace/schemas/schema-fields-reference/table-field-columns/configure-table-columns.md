@@ -74,7 +74,19 @@ Leave the toggle off only when the field must keep the legacy behavior, where co
    Two columns cannot be multiplied directly as `area · factor`. A per-row calculation is written as the sum above, with a row number.
 5. Open the **Testing** tab to run the formula against a real document before running the policy. Each variable is shown as the list of its column cells, and warnings appear on the **Errors** tab.
 
-A cell that holds no number is replaced with `0` by a numeric function; the row keeps its place, and the policy log carries one line per column naming how many cells were replaced. Ordinary formulas are limited to 10 000 rows. A column is input only - it is neither offered nor accepted on the **Outputs** tab. A Table field with **Define columns** off cannot be used this way and stays on the Advanced tab.
+A cell that holds no number is replaced with `0` by a numeric function; the row keeps its place, and the policy log carries one line per column naming how many cells were replaced. Ordinary formulas are limited to 10 000 rows. A column path remains input only and is not accepted on the **Outputs** tab. To write a table, select the declared Table field itself as described below. A Table field with **Define columns** off cannot be used this way and stays on the Advanced tab.
+
+#### Write Math Block results into a Table
+
+1. In the Math Block editor, create the variables and formulas that will supply the table cells.
+2. Go to **Outputs**, add an Output, and select the declared Table field itself. Do not select one of its column paths.
+3. In the grid, enter a variable name from **Inputs** or **Formulas** in each cell that needs a value. Leave a cell empty when the output table should keep that cell empty.
+4. Set **Add Rows** to a number from 1 to 20 and click it to append rows. One grid can contain up to 1 000 rows.
+5. If the Table allows multiple answers or sits inside one repeated schema level, click **Add Table** to configure another table. You can add up to 100 tables, with no more than 1 000 rows in total. Table 1 writes to the first repeated entry, Table 2 to the second, and so on. Other fields already stored in those entries are preserved, and Guardian creates missing entries when another table needs one.
+6. Open **Testing** and select a source document. The result shows the same grids with calculated values instead of variable names. Unknown variables and invalid names appear on the **Errors** tab.
+7. If the Math Block uses **Advanced (Optional)**, remember that this code runs after the configured Outputs. Changes that it makes to the rows become part of the final table. If it replaces the Table value with another value, that replacement is stored instead of a table.
+
+A legacy Table with **Define columns** off keeps the existing single-value Output. A Table below two or more repeated schema levels also keeps the existing single-value Output.
 
 #### Read declared keys through the policy documents API
 
@@ -86,11 +98,17 @@ A cell that holds no number is replaced with `0` by a numeric function; the row 
 
 Guardian stores the Table value with both `columnNames` and `columnKeys`. Guardian and the Indexer show the display names, while calculations, scripts and expanded API row objects use the stable keys.
 
-Declared columns are also available as variables in ordinary Math Block formulas, so a table can be read on the **General** tab without JavaScript. The stored document is unchanged by this: it still holds only the compact Table value, with no rows in it.
+Declared columns are also available as variables in ordinary Math Block formulas, so a table can be read on the **General** tab without JavaScript.
+
+When a Math Block writes a declared Table, Guardian creates a table file from the final rows and stores a compact Table reference. Empty cells and completely empty rows are preserved. A published policy run stores the file in GridFS and IPFS; a Dry Run stores it only in GridFS. The document viewer displays the result like an uploaded Table.
+
+Advanced JavaScript runs after the configured Outputs. Its final value is the value shown in Testing and stored during a policy run, whether it changes the generated rows or replaces the Table with another value.
+
+The same Table field can be both an Input and an Output. Formulas read the source document's uploaded table before the Output replaces that field in the new document; the source document is not changed.
 
 XLSX schema export and import preserve the Table field's column names, keys and order. A blank Table `Parameter` preserves the toggle-off state.
 
-Table fields created before this feature have no declared columns and continue to work. Their column keys come from the first row of each uploaded CSV file.
+Table fields created before this feature have no declared columns and continue to work. Their column keys come from the first row of each uploaded CSV file, and their Math Block Output stays a single value.
 
 ### Troubleshooting
 
@@ -104,7 +122,13 @@ Table fields created before this feature have no declared columns and continue t
 
 **A formula over a column stops with a row-count message.** The table is above the 10 000-row limit of ordinary formulas. Use a smaller file, or move the calculation to the Advanced tab, which is not bound by that limit.
 
-**An Output path with a column is marked as not found.** A column cannot be written to. Bind the Output to an ordinary field instead.
+**An Output path with a column is marked as not found.** A column cannot be written to directly. Select the declared Table field itself to build a complete table, or bind the Output to an ordinary field for a single value.
+
+**Selecting a Table Output does not show a grid.** Check that **Define columns** is on and that the path is not below two or more repeated schema levels. Those cases keep the existing single-value Output.
+
+**Testing reports `Unknown variable` or an invalid name.** Every filled grid cell must contain the exact name of a variable from **Inputs** or **Formulas**. Correct the name or leave the cell empty.
+
+**Rows or tables cannot be added.** **Add Rows** accepts 1 to 20 rows at a time. A single grid and all repeated grids together have a 1 000-row limit, and a repeated Output has a 100-table limit.
 
 **The XLSX schema cannot be imported.** Check the Table row's `Parameter` cell. When it is not blank, it must contain a non-empty JSON array of unique `name` and `key` pairs. Keys cannot contain whitespace.
 
