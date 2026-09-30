@@ -591,7 +591,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         { label: 'Encrypted Verifiable Credential', value: SchemaEntity.EVC },
     ];
 
-    public copiedIri: boolean = false;
+    public copiedField: 'iri' | 'uuid' | null = null;
 
     public get systemFields(): any[] {
         return DefaultFieldDictionary.getDefaultFields(this.selectedSchema?.entity as SchemaEntity);
@@ -1088,6 +1088,25 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public get filteredSchemas(): Schema[] {
         return this.schemas;
+    }
+
+    public getStatusBadge(schema: Schema): { variant: string; icon: string | null; label: string } {
+        switch (schema.status) {
+            case SchemaStatus.DRAFT:
+                return { variant: 'draft', icon: 'pi-pencil', label: 'Draft' };
+            case SchemaStatus.PUBLISHED:
+                return { variant: 'published', icon: 'pi-globe', label: 'Published' };
+            case SchemaStatus.UNPUBLISHED:
+                return { variant: 'muted', icon: null, label: 'Unpublished' };
+            case SchemaStatus.ERROR:
+                return { variant: 'error', icon: 'pi-exclamation-triangle', label: 'Error' };
+            case SchemaStatus.DEMO:
+                return { variant: 'muted', icon: null, label: 'Demo' };
+            case SchemaStatus.VIEW:
+                return { variant: 'muted', icon: 'pi-eye', label: 'View' };
+            default:
+                return { variant: 'muted', icon: null, label: String(schema.status ?? '') };
+        }
     }
 
     public isDraft(schema: Schema): boolean {
@@ -2054,12 +2073,18 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public copyIri(value: string | null | undefined, event?: Event): void {
+        this.copyIdentity('iri', value, event);
+    }
+
+    public copyIdentity(field: 'iri' | 'uuid', value: string | null | undefined, event?: Event): void {
         event?.stopPropagation();
         if (!value) { return; }
         navigator.clipboard.writeText(value).then(() => {
-            this.copiedIri = true;
-            setTimeout(() => { this.copiedIri = false; }, 1500);
-        }).catch(() => { this.copiedIri = false; });
+            this.copiedField = field;
+            setTimeout(() => {
+                if (this.copiedField === field) { this.copiedField = null; }
+            }, 1500);
+        }).catch(() => { this.copiedField = null; });
     }
 
     private static readonly HIDE_VALUES_TYPES = new Set(['helptext', 'file', 'table']);

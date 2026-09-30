@@ -10,6 +10,11 @@
     --sc-elevation: 0 1px 2px var(--guardian-shadow, #00000014), 0 1px 1px var(--guardian-shadow, #00000014);
     --sc-elevation-overlay: 0 8px 24px var(--guardian-shadow, #00000014), 0 2px 6px var(--guardian-shadow, #00000014);
     --sc-featured-color: var(--color-accent-yellow-1, #DA9B22);
+    /* Status badge colours (mirror policy-configurator status badges) */
+    --sc-status-draft-color: #7B61FF;
+    --sc-status-published-color: #21A66B;
+    --sc-status-error-color: #E0463C;
+    --sc-status-muted-color: #8A8F9C;
 }
 
 .sc-page {
@@ -28,7 +33,7 @@
     border-bottom: 1px solid var(--guardian-border-color, #E1E7EF);
     display: flex;
     align-items: center;
-    padding: 0 16px;
+    padding: 0 14px;
     gap: 12px;
     flex-shrink: 0;
     z-index: 10;
@@ -147,9 +152,10 @@
 
 .sc-breadcrumb {
     display: flex;
+    flex-shrink: 0;
     align-items: center;
-    gap: 6px;
-    font-size: 13px;
+    gap: 8px;
+    font-size: 14px;
     color: var(--guardian-font-color-secondary, #848FA9);
 }
 
@@ -202,6 +208,180 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.sc-identity {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 44px;
+    /* Pulls the identity block to the configurator's 6px spacing on both sides */
+    margin: 0 -6px;
+    padding: 0 10px;
+    min-width: 0;
+    max-width: 480px;
+    border: 1px solid transparent;
+    border-radius: var(--sc-radius-sm);
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s ease, border-color 0.15s ease;
+
+    &:hover,
+    &.open {
+        background: var(--guardian-hover, #F0F3FC);
+        border-color: var(--guardian-border-color, #E1E7EF);
+    }
+}
+
+.sc-identity-icon {
+    flex: 0 0 auto;
+    width: 22px;
+    font-size: 20px;
+    text-align: center;
+    color: var(--color-primary, #4169E2);
+}
+
+.sc-identity-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+    line-height: 1.2;
+}
+
+.sc-identity-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--guardian-font-color, #23252E);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.sc-identity-meta {
+    font-size: 11px;
+    color: var(--guardian-font-color-secondary, #848FA9);
+    white-space: nowrap;
+}
+
+.sc-identity-caret {
+    flex: 0 0 auto;
+    font-size: 11px;
+    color: var(--guardian-font-color-secondary, #848FA9);
+}
+
+.sc-status-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 28px;
+    padding: 0 12px;
+    flex-shrink: 0;
+    border-radius: 14px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    user-select: none;
+
+    i { font-size: 14px; }
+
+    &--draft {
+        color: var(--sc-status-draft-color);
+        background: color-mix(in srgb, var(--sc-status-draft-color) 14%, transparent);
+    }
+
+    &--published {
+        color: var(--sc-status-published-color);
+        background: color-mix(in srgb, var(--sc-status-published-color) 14%, transparent);
+    }
+
+    &--error {
+        color: var(--sc-status-error-color);
+        background: color-mix(in srgb, var(--sc-status-error-color) 12%, transparent);
+    }
+
+    &--muted {
+        color: var(--sc-status-muted-color);
+        background: color-mix(in srgb, var(--sc-status-muted-color) 14%, transparent);
+    }
+}
+
+.sc-topnav > .schema-featured-icon {
+    flex-shrink: 0;
+    font-size: 15px;
+}
+
+.sc-identity-popover {
+    min-width: 280px;
+    max-width: 360px;
+    padding: 4px;
+    font-family: var(--font-family-inter, 'Inter', sans-serif);
+}
+
+.sc-identity-popover-header {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--guardian-font-color-secondary, #848FA9);
+    padding: 4px 8px 8px;
+}
+
+.sc-identity-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+
+    &:hover {
+        background: var(--guardian-hover, #F0F3FC);
+    }
+
+    &--plain {
+        cursor: default;
+
+        &:hover {
+            background: transparent;
+        }
+    }
+}
+
+.sc-identity-row-label {
+    flex: 0 0 auto;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--guardian-font-color-secondary, #848FA9);
+}
+
+.sc-identity-row-value {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow: hidden;
+
+    i {
+        flex: 0 0 auto;
+        font-size: 13px;
+        color: var(--color-primary, #4169E2);
+    }
+}
+
+.sc-identity-row-mono {
+    font-family: 'Roboto Mono', ui-monospace, monospace;
+    font-size: 12px;
+    color: var(--guardian-font-color, #23252E);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.sc-identity-row-plain-value {
+    font-size: 13px;
+    color: var(--guardian-font-color, #23252E);
 }
 
 .sc-spacer {
@@ -422,6 +602,7 @@
 
 .sc-nav-tabs {
     display: flex;
+    flex-shrink: 0;
     gap: 2px;
     background: var(--guardian-grey-background, #F9FAFC);
     border-radius: var(--sc-radius-sm);
@@ -453,6 +634,8 @@
 
 .sc-nav-actions {
     display: flex;
+    flex-shrink: 0;
+    white-space: nowrap;
     align-items: center;
     gap: 8px;
 }
@@ -1046,36 +1229,6 @@
     min-height: 100%;
 }
 
-.sc-editor-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 16px;
-    background: var(--guardian-background, #fff);
-    border-bottom: 1px solid var(--guardian-border-color, #E1E7EF);
-    flex-shrink: 0;
-    position: sticky;
-    top: 0;
-    z-index: 5;
-}
-
-.sc-editor-header-info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-width: 0;
-}
-
-.sc-editor-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--guardian-font-color, #23252E);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 320px;
-}
-
 .sc-schema-featured-btn {
     display: flex;
     align-items: center;
@@ -1098,12 +1251,6 @@
         cursor: default;
         opacity: 0.6;
     }
-}
-
-.sc-editor-version {
-    font-size: 11px;
-    color: var(--guardian-font-color-secondary, #848FA9);
-    flex-shrink: 0;
 }
 
 .sc-editor-body {

@@ -123,6 +123,7 @@ import { DialogModule } from 'primeng/dialog';
 import { TagModule } from 'primeng/tag';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
+import { PopoverModule } from 'primeng/popover';
 import { StepperModule } from 'primeng/stepper';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { TabsModule } from 'primeng/tabs';
@@ -283,6 +284,7 @@ const GuardianPreset = definePreset(Aura, {
         TagModule,
         TableModule,
         TooltipModule,
+        PopoverModule,
         StepperModule,
         ProgressBarModule,
         TabsModule,
