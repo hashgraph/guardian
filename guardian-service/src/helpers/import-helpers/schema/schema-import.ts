@@ -408,6 +408,9 @@ export class SchemaImport {
 
                 SchemaHelper.updateOwner(schemaObject, user);
                 const row = schemaForUpdate;
+                const previousIri = row.iri;
+                const previousUuid = row.uuid;
+                const previousVersion = row.sourceVersion || SchemaHelper.getVersion(row)?.previousVersion || '';
                 if (!row || row.owner !== user.owner) {
                     throw new Error('Invalid schema');
                 }
@@ -422,11 +425,15 @@ export class SchemaImport {
                     ? SchemaStatus.ERROR
                     : SchemaStatus.DRAFT;
                 row.errors = dependencyError ? errors : [];
-                SchemaHelper.setVersion(row, null, row.version);
+                SchemaHelper.setVersion(row, row.version, previousVersion);
                 SchemaHelper.updateIRI(row);
                 await DatabaseServer.updateSchema(row.id, row);
                 await updateSchemaDefs(row.iri);
                 this.schemasMapping[index].newID = row.id;
+                this.schemasMapping[index].oldIRI = previousIri || this.schemasMapping[index].oldIRI;
+                this.schemasMapping[index].oldUUID = previousUuid || this.schemasMapping[index].oldUUID;
+                this.schemasMapping[index].newIRI = row.iri;
+                this.schemasMapping[index].newUUID = row.uuid;
 
                 if (file.iri !== row.iri) {
                     updatedSchemasIriMap.set(file.iri, row.iri);
