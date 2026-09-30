@@ -1652,11 +1652,12 @@ export class PolicyComponentsUtils {
         block: IPolicyInterfaceBlock,
         user: PolicyUser,
         data: any,
-        waitRemotePolicy?: boolean
+        waitRemotePolicy?: boolean,
+        waitUntil?: number
     ): Promise<MessageResponse<any> | MessageError<any>> {
         const controller = PolicyComponentsUtils.ActionsControllers.get(block.policyId);
         if (controller) {
-            const result = await controller.sendAction(block, user, data, waitRemotePolicy);
+            const result = await controller.sendAction(block, user, data, waitRemotePolicy, waitUntil);
             return new MessageResponse(result);
         } else {
             return new MessageError('Invalid policy controller', 500);
@@ -1668,13 +1669,14 @@ export class PolicyComponentsUtils {
         user: PolicyUser,
         data: any,
         actionStatus?: RecordActionStep,
-        waitRemotePolicy?: boolean
+        waitRemotePolicy?: boolean,
+        waitUntil?: number
     ): Promise<MessageResponse<any> | MessageError<any>> {
         const _data = await block.setData(user, data, ActionType.LOCAL, actionStatus);
 
         const controller = PolicyComponentsUtils.ActionsControllers.get(block.policyId);
         if (controller) {
-            const result = await controller.sendAction(block, user, _data, waitRemotePolicy);
+            const result = await controller.sendAction(block, user, _data, waitRemotePolicy, waitUntil);
             return new MessageResponse(result);
         } else {
             return new MessageError('Invalid policy controller', 500);
@@ -1742,7 +1744,8 @@ export class PolicyComponentsUtils {
         user: PolicyUser,
         data: any,
         actionStatus?: RecordActionStep,
-        waitRemotePolicy?: boolean
+        waitRemotePolicy?: boolean,
+        waitUntil?: number
     ): Promise<MessageResponse<any> | MessageError<any>> {
         const error = await PolicyComponentsUtils._checkRelayerAccount(block, user, data);
         if (error) {
@@ -1760,10 +1763,10 @@ export class PolicyComponentsUtils {
             if (block.locationType === LocationType.REMOTE) {
                 if (block.actionType === LocationType.CUSTOM) {
                     //Action - custom, policy - remote, user - local
-                    return await PolicyComponentsUtils._blockSetDataCustom(block, user, data, actionStatus, waitRemotePolicy);
+                    return await PolicyComponentsUtils._blockSetDataCustom(block, user, data, actionStatus, waitRemotePolicy, waitUntil);
                 } else {
                     //Action - remote, policy - remote, user - local
-                    return await PolicyComponentsUtils._blockSetDataRemote(block, user, data, waitRemotePolicy);
+                    return await PolicyComponentsUtils._blockSetDataRemote(block, user, data, waitRemotePolicy, waitUntil);
                 }
             } else {
                 //Action - custom | remote, policy - local, user - local

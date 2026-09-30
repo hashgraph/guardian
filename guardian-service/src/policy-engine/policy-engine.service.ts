@@ -597,7 +597,9 @@ export class PolicyEngineService {
                             data,
                             syncEvents,
                             history,
-                            waitRemotePolicy
+                            waitRemotePolicy,
+                            // only a caller-set timeout bounds the wait for a remote policy
+                            timeout: msg.timeout ? timeout : undefined
                         }, timeout) as any;
                     return new MessageResponse(blockData);
                 } catch (error) {
@@ -632,7 +634,9 @@ export class PolicyEngineService {
                             data,
                             syncEvents,
                             history,
-                            waitRemotePolicy
+                            waitRemotePolicy,
+                            // only a caller-set timeout bounds the wait for a remote policy
+                            timeout: msg.timeout ? timeout : undefined
                         }, timeout) as any
                     return new MessageResponse(blockData);
                 } catch (error) {
