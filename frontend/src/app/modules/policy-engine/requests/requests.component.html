@@ -106,7 +106,46 @@
         placeholder="Statuses"
       ></p-select>
     </div>
+    <div class="guardian-user-page-actions">
+      @if (selectedRows.length > 0 && !bulk?.running) {
+        <button
+          (click)="onBulk('approve')"
+          class="guardian-button guardian-button-primary">Approve selected ({{ selectedRows.length }})</button>
+        <button
+          (click)="onBulk('reject')"
+          class="guardian-button guardian-button-secondary">Reject selected ({{ selectedRows.length }})</button>
+      }
+      <button
+        (click)="onToggleTechnical()"
+        class="guardian-button guardian-button-secondary">{{ showTechnical ? 'Hide technical columns' : 'Show technical columns' }}</button>
+    </div>
   </div>
+
+  @if (bulk) {
+    <div class="bulk-progress">
+      <div class="bulk-progress-head">
+        <span>
+          @if (bulk.running) {
+            {{ bulk.label }} {{ bulk.done }} of {{ bulk.total }}...
+          } @else {
+            Processed {{ bulk.total - bulk.failures.length }} of {{ bulk.total }}, {{ bulk.failures.length }} failed
+          }
+        </span>
+        @if (!bulk.running) {
+          <button class="guardian-button guardian-button-secondary" (click)="onDismissBulk()">Dismiss</button>
+        }
+      </div>
+      <div class="bulk-progress-bar">
+        <div class="bulk-progress-value" [style.width.%]="bulk.total ? (bulk.done / bulk.total) * 100 : 0"></div>
+      </div>
+      @for (failure of bulk.failures; track failure) {
+        <div class="bulk-progress-failure">
+          <span class="bulk-progress-failure-name">{{ failure.name }}</span>
+          <span class="bulk-progress-failure-message">{{ failure.message }}</span>
+        </div>
+      }
+    </div>
+  }
 
   <div class="guardian-user-page-grid">
     @if (page && page.length > 0) {
@@ -115,14 +154,35 @@
           class="guardian-grid-table"
           [value]="page"
           [scrollable]="true"
+          [customSort]="true"
+          [sortField]="sortField"
+          [sortOrder]="sortOrder"
+          (sortFunction)="onSort($event)"
           >
           <ng-template pTemplate="header">
             <tr class="guardian-grid-header">
               @for (column of columns; track column) {
                 @if (!column.canDisplay || column.canDisplay()) {
-                  <th
-                    class="header-cell-{{column.type}} col-{{column.size}}"
-                  >{{column.title}}</th>
+                  @if (column.id === 'select') {
+                    <th class="header-cell-{{column.type}} col-{{column.size}}">
+                      <p-checkbox
+                        [binary]="true"
+                        [ngModel]="allSelected"
+                        (ngModelChange)="onSelectAll($event)"
+                        [disabled]="selectableRows.length === 0 || !!bulk?.running"
+                        ariaLabel="Select all"
+                      ></p-checkbox>
+                    </th>
+                  } @else if (column.sortField) {
+                    <th
+                      class="header-cell-{{column.type}} col-{{column.size}}"
+                      [pSortableColumn]="column.sortField"
+                    >{{column.title}} <p-sortIcon [field]="column.sortField"></p-sortIcon></th>
+                  } @else {
+                    <th
+                      class="header-cell-{{column.type}} col-{{column.size}}"
+                    >{{column.title}}</th>
+                  }
                 }
               }
             </tr>
@@ -139,6 +199,20 @@
                     [showDelay]="1000"
                     >
                     @switch (column.id) {
+                      @case ('select') {
+                        @if (canDecide(row)) {
+                          <p-checkbox
+                            [binary]="true"
+                            [ngModel]="isSelected(row)"
+                            (ngModelChange)="onSelect(row, $event)"
+                            [disabled]="!!bulk?.running"
+                            ariaLabel="Select request"
+                          ></p-checkbox>
+                        }
+                      }
+                      @case ('createDate') {
+                        <span class="text-truncate">{{ row.createDate | date: 'dd MMM yyyy, HH:mm' }}</span>
+                      }
                       @case ('status') {
                         <div class="policy-status {{row.status}}-status">
                           {{ getStatusName(row) }}
@@ -173,7 +247,7 @@
                             }
                             @if (row.type === 'ACTION') {
                               @if (row.status === 'NEW') {
-                                <button class="guardian-button reject-btn" (click)="onCancel(row)">Cancel</button>
+                                <button class="guardian-button reject-btn" (click)="onCancel(row)">Cancel request</button>
                               }
                             }
                           </div>
@@ -215,7 +289,7 @@
           class="svg-icon-32"
           src="/assets/images/icons/32/list.svg"
         svgClass="icon-color-disabled"></svg-icon>
-        <span class="guardian-user-not-data__text-strong">There are no actions</span>
+        <span class="guardian-user-not-data__text-strong">You have no incoming requests</span>
       </div>
     }
   </div>

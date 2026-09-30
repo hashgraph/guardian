@@ -38,6 +38,7 @@ export class NewHeaderComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     public policyRequests = 0;
     public newPolicyRequests = 0;
+    public hasRemotePolicies = false;
 
     private commonLinksDisabled: boolean = false;
     private balanceType: string;
@@ -352,6 +353,9 @@ export class NewHeaderComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     private updateRemotePolicyRequests() {
         if (!this.isLogin) {
+            this.hasRemotePolicies = false;
+            this.policyRequests = 0;
+            this.newPolicyRequests = 0;
             return;
         }
         this.externalPoliciesService.getActionRequestsCount().subscribe((response) => {
@@ -359,6 +363,11 @@ export class NewHeaderComponent implements OnInit, OnDestroy, AfterViewChecked {
                 this.newPolicyRequests = response.body.requestsCount;
                 this.policyRequests = response.body.total;
             }
-        })
+        });
+        if (!this.hasRemotePolicies && this.user.POLICIES_EXTERNAL_POLICY_READ) {
+            this.externalPoliciesService.getPolicyRequests(0, 1).subscribe((response) => {
+                this.hasRemotePolicies = this.externalPoliciesService.parsePage(response).count > 0;
+            });
+        }
     }
 }

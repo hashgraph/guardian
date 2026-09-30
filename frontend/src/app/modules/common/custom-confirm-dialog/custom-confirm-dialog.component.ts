@@ -25,6 +25,7 @@ export class CustomConfirmDialogComponent implements OnInit {
     public regularText: boolean;
     public texts: string[];
     public details: string[];
+    public json: string = '';
     public buttons: {
         name: string,
         class: string,
@@ -47,6 +48,10 @@ export class CustomConfirmDialogComponent implements OnInit {
         this.regularText = !!this.config.data.regularText;
         this.texts = this.config.data.texts;
         this.details = this.config.data.details;
+        const document = this.config.data.document;
+        if (document) {
+            this.json = typeof document === 'string' ? document : JSON.stringify(document, null, 4);
+        }
 
         this.buttons = this.config.data.buttons;
         this.options = this.config.data.options;

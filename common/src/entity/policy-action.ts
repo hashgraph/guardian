@@ -1,4 +1,4 @@
-import { AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeUpdate, Entity, OnLoad, Property } from '@mikro-orm/core';
+import { AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeUpdate, Entity, Index, OnLoad, Property } from '@mikro-orm/core';
 import { BaseEntity } from '../models/base-entity.js';
 import { GenerateUUIDv4, PolicyActionStatus, PolicyActionType } from '@guardian/interfaces';
 import { DataBaseHelper } from '../helpers/db-helper.js';
@@ -8,6 +8,14 @@ import { ObjectId } from '@mikro-orm/mongodb';
  * PolicyActions collection
  */
 @Entity()
+@Index({
+    properties: ['accountId', 'startMessageId'],
+    name: 'accountId_startMessageId_index',
+})
+@Index({
+    properties: ['accountId', 'lastStatus', 'type'],
+    name: 'accountId_lastStatus_type_index',
+})
 export class PolicyAction extends BaseEntity {
     /**
      * Action UUID
@@ -121,6 +129,12 @@ export class PolicyAction extends BaseEntity {
     document?: any;
 
     /**
+     * Document type (copy of document.type, the document itself is stored in GridFS)
+     */
+    @Property({ nullable: true })
+    documentType?: string;
+
+    /**
      * Document file id
      */
     @Property({ nullable: true })
@@ -168,6 +182,7 @@ export class PolicyAction extends BaseEntity {
         this.status = this.status || PolicyActionStatus.NEW;
         this.lastStatus = this.lastStatus || this.status;
         if (this.document) {
+            this.documentType = this.document.type || this.documentType;
             const document = JSON.stringify(this.document);
             this.documentFileId = await this._createFile(document, 'PolicyAction');
             delete this.document;
@@ -193,6 +208,7 @@ export class PolicyAction extends BaseEntity {
     @BeforeUpdate()
     async updateFiles() {
         if (this.document) {
+            this.documentType = this.document.type || this.documentType;
             const document = JSON.stringify(this.document);
             const documentFileId = await this._createFile(document, 'PolicyAction');
             if (documentFileId) {

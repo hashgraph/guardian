@@ -149,3 +149,59 @@
 .guardian-user-page-filters p-select {
     margin-right: 18px;
 }
+.guardian-user-page-actions {
+    display: flex;
+    flex-direction: row;
+    flex-shrink: 0;
+    gap: 12px;
+    margin-left: 18px;
+    white-space: nowrap;
+}
+
+.bulk-progress {
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
+    border-radius: 8px;
+    background: var(--guardian-background, #fff);
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    color: var(--guardian-font-color, #23252E);
+
+    .bulk-progress-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+
+        button {
+            height: 28px;
+            padding: 0px 12px;
+        }
+    }
+
+    .bulk-progress-bar {
+        height: 6px;
+        border-radius: 3px;
+        background: var(--guardian-grey-background, #E1E7EF);
+        overflow: hidden;
+
+        .bulk-progress-value {
+            height: 100%;
+            background: var(--color-primary, #4169E2);
+            transition: width 0.2s ease;
+        }
+    }
+
+    .bulk-progress-failure {
+        display: flex;
+        gap: 16px;
+        margin-top: 8px;
+        color: #FF432A;
+
+        .bulk-progress-failure-name {
+            flex-shrink: 0;
+            font-weight: 500;
+        }
+    }
+}

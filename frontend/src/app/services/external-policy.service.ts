@@ -90,12 +90,18 @@ export class ExternalPoliciesService {
         return this.http.get<any>(`${this.url}/requests`, { observe: 'response', params });
     }
 
-    public approveAction(messageId: string): Observable<any> {
-        return this.http.put<any>(`${this.url}/requests/${messageId}/approve`, null);
+    /**
+     * @param silent the caller reports the failure itself (the bulk actions list it per row),
+     * so the global interceptor must not toast it a second time
+     */
+    public approveAction(messageId: string, silent: boolean = false): Observable<any> {
+        const context = silent ? this.silent() : undefined;
+        return this.http.put<any>(`${this.url}/requests/${messageId}/approve`, null, { context });
     }
 
-    public rejectAction(messageId: string): Observable<any> {
-        return this.http.put<any>(`${this.url}/requests/${messageId}/reject`, null);
+    public rejectAction(messageId: string, silent: boolean = false): Observable<any> {
+        const context = silent ? this.silent() : undefined;
+        return this.http.put<any>(`${this.url}/requests/${messageId}/reject`, null, { context });
     }
 
     public cancelAction(messageId: string): Observable<any> {
