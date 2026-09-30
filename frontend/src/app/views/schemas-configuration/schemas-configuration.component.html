@@ -546,7 +546,7 @@
                                         <button class="sc-ctp-btn"
                                             [class.active]="activeCanvasTab === 'propertyAi'"
                                             (click)="setCanvasTab('propertyAi')">
-                                            <svg-icon class="svg-icon-16" src="/assets/images/icons/auto_awesome.svg"></svg-icon>Glossary AI
+                                            <svg-icon class="svg-icon-16" src="/assets/images/icons/auto_awesome.svg"></svg-icon>Suggest IWA Property Mappings
                                             @if (pendingSuggestionCount) {
                                                 <span class="sc-ctp-count">{{ pendingSuggestionCount }}</span>
                                             }
@@ -1103,71 +1103,6 @@
                             </div>
                         }
 
-                        @if (propertyOptions.length) {
-                            <div class="sc-rp-divider"></div>
-                            <div class="sc-rp-group">
-                                <div class="sc-rp-label-row">
-                                    <label class="sc-rp-label">Property</label>
-                                    @if (glossaryAiEnabled) {
-                                        <button type="button" class="sc-rp-suggest-btn" title="Suggest with Glossary AI"
-                                            [disabled]="rightPanelSuggestLoading"
-                                            (click)="suggestPropertyForSelectedField()">
-                                            @if (rightPanelSuggestLoading) {
-                                                <i class="pi pi-spin pi-spinner"></i>
-                                            } @else {
-                                                <svg-icon class="svg-icon-16" src="/assets/images/icons/auto_awesome.svg"></svg-icon>
-                                            }
-                                        </button>
-                                    }
-                                </div>
-                                <p-select
-                                    class="guardian-dropdown sc-rp-select"
-                                    panelStyleClass="guardian-dropdown-panel"
-                                    [options]="propertyOptions"
-                                    [showClear]="true"
-                                    [filter]="true"
-                                    filterBy="title"
-                                    optionLabel="title"
-                                    optionValue="title"
-                                    appendTo="body"
-                                    placeholder="Select a property"
-                                    [(ngModel)]="$any(selectedField).property"
-                                    (ngModelChange)="markDirty()">
-                                    <ng-template pTemplate="item" let-p>
-                                        <div class="sc-rp-prop-item">
-                                            <span [title]="p.title">{{ p.title }}</span>
-                                            @if (p.description) {
-                                                <span class="sc-rp-prop-desc">{{ p.description }}</span>
-                                            }
-                                        </div>
-                                    </ng-template>
-                                </p-select>
-                                @if (rightPanelSuggestUnavailable) {
-                                    <div class="sc-rp-ai-hint">
-                                        <span class="sc-rp-ai-hint-rationale">Glossary AI is unavailable right now.</span>
-                                    </div>
-                                } @else if (rightPanelSuggestion; as suggestion) {
-                                    @if (suggestion.candidates[0]; as topCandidate) {
-                                        <div class="sc-rp-ai-hint">
-                                            <ng-container *ngTemplateOutlet="aiCandidate; context: { $implicit: topCandidate, field: selectedField, primary: true }"></ng-container>
-                                            <div class="sc-rp-ai-hint-actions">
-                                                @if (suggestion.candidates.length > 1) {
-                                                    <button type="button" class="sc-rp-ai-hint-link" (click)="rightPanelSuggestionExpanded = !rightPanelSuggestionExpanded">See more</button>
-                                                }
-                                                <button type="button" class="sc-rp-ai-hint-link" (click)="suggestPropertyForSelectedField(true)">Refresh</button>
-                                                <button type="button" class="sc-rp-ai-hint-link" (click)="openInPropertyAiTab(selectedField.name)">Move to Glossary AI</button>
-                                            </div>
-                                            @if (rightPanelSuggestionExpanded) {
-                                                @for (candidate of suggestion.candidates.slice(1); track candidate.title) {
-                                                    <ng-container *ngTemplateOutlet="aiCandidate; context: { $implicit: candidate, field: selectedField, primary: false }"></ng-container>
-                                                }
-                                            }
-                                        </div>
-                                    }
-                                }
-                            </div>
-                        }
-
                         <div class="sc-rp-divider"></div>
                         <div class="sc-rp-label">Required / Visibility</div>
                         <div class="sc-radio-list">
@@ -1454,6 +1389,77 @@
                                     </div>
                                 </div>
                             }
+                        }
+
+                        @if (propertyOptions.length) {
+                            <div class="sc-rp-divider"></div>
+                            <div class="sc-rp-group">
+                                <div class="sc-rp-label-row">
+                                    <label class="sc-rp-label">
+                                        IWA Mapping
+                                        <i class="pi pi-info-circle sc-rp-info"
+                                            pTooltip="Map this schema field to an IWA property"
+                                            tooltipPosition="top"
+                                            tooltipStyleClass="guardian-tooltip"></i>
+                                    </label>
+                                    @if (glossaryAiEnabled) {
+                                        <button type="button" class="sc-rp-suggest-btn" title="Suggest an IWA property mapping"
+                                            [disabled]="rightPanelSuggestLoading"
+                                            (click)="suggestPropertyForSelectedField()">
+                                            @if (rightPanelSuggestLoading) {
+                                                <i class="pi pi-spin pi-spinner"></i>
+                                            } @else {
+                                                <svg-icon class="svg-icon-16" src="/assets/images/icons/auto_awesome.svg"></svg-icon>
+                                            }
+                                        </button>
+                                    }
+                                </div>
+                                <p-select
+                                    class="guardian-dropdown sc-rp-select"
+                                    panelStyleClass="guardian-dropdown-panel"
+                                    [options]="propertyOptions"
+                                    [showClear]="true"
+                                    [filter]="true"
+                                    filterBy="title"
+                                    optionLabel="title"
+                                    optionValue="title"
+                                    appendTo="body"
+                                    placeholder="Select an IWA property"
+                                    [(ngModel)]="$any(selectedField).property"
+                                    (ngModelChange)="markDirty()">
+                                    <ng-template pTemplate="item" let-p>
+                                        <div class="sc-rp-prop-item">
+                                            <span [title]="p.title">{{ p.title }}</span>
+                                            @if (p.description) {
+                                                <span class="sc-rp-prop-desc">{{ p.description }}</span>
+                                            }
+                                        </div>
+                                    </ng-template>
+                                </p-select>
+                                @if (rightPanelSuggestUnavailable) {
+                                    <div class="sc-rp-ai-hint">
+                                        <span class="sc-rp-ai-hint-rationale">IWA property suggestions are unavailable right now.</span>
+                                    </div>
+                                } @else if (rightPanelSuggestion; as suggestion) {
+                                    @if (suggestion.candidates[0]; as topCandidate) {
+                                        <div class="sc-rp-ai-hint">
+                                            <ng-container *ngTemplateOutlet="aiCandidate; context: { $implicit: topCandidate, field: selectedField, primary: true }"></ng-container>
+                                            <div class="sc-rp-ai-hint-actions">
+                                                @if (suggestion.candidates.length > 1) {
+                                                    <button type="button" class="sc-rp-ai-hint-link" (click)="rightPanelSuggestionExpanded = !rightPanelSuggestionExpanded">See more</button>
+                                                }
+                                                <button type="button" class="sc-rp-ai-hint-link" (click)="suggestPropertyForSelectedField(true)">Refresh</button>
+                                                <button type="button" class="sc-rp-ai-hint-link" (click)="openInPropertyAiTab(selectedField.name)">Open in IWA suggestions</button>
+                                            </div>
+                                            @if (rightPanelSuggestionExpanded) {
+                                                @for (candidate of suggestion.candidates.slice(1); track candidate.title) {
+                                                    <ng-container *ngTemplateOutlet="aiCandidate; context: { $implicit: candidate, field: selectedField, primary: false }"></ng-container>
+                                                }
+                                            }
+                                        </div>
+                                    }
+                                }
+                            </div>
                         }
                     </div>
 
@@ -1883,6 +1889,10 @@
 
     <ng-template #propertyAiCanvas>
         <div class="sc-array-link-canvas">
+            <div class="sc-suggestions-help">
+                <i class="pi pi-info-circle"></i>
+                <span>Review the suggested IWA property mappings for this schema.</span>
+            </div>
             <div class="sc-suggestions-toolbar">
                 <button type="button" class="sc-btn"
                     [disabled]="suggestionsLoading || !highConfidenceSuggestionCount"
@@ -1900,7 +1910,7 @@
             @if (suggestionsLoading) {
                 <div class="sc-array-link-empty">
                     <i class="pi pi-spin pi-spinner"></i>
-                    <span>Getting Glossary AI suggestions…</span>
+                    <span>Getting IWA property suggestions…</span>
                 </div>
             } @else if (!(currentContextSchema?.fields ?? []).length) {
                 <div class="sc-array-link-empty">
@@ -1910,17 +1920,17 @@
             } @else if (!suggestionsAvailable) {
                 <div class="sc-array-link-empty">
                     <i class="pi pi-exclamation-triangle"></i>
-                    <span>Glossary AI is unavailable right now – you can still set properties manually.</span>
+                    <span>IWA property suggestions are unavailable right now. You can still set IWA mappings manually.</span>
                 </div>
             } @else if (!suggestionResults.length) {
                 <div class="sc-array-link-empty">
                     <i class="pi pi-sparkles"></i>
-                    <span>Refresh to get Glossary AI suggestions for this schema.</span>
+                    <span>Refresh to get IWA property suggestions for this schema.</span>
                 </div>
             } @else if (!pendingSuggestionCount) {
                 <div class="sc-array-link-empty">
                     <i class="pi pi-check"></i>
-                    <span>No property changes suggested.</span>
+                    <span>No IWA mapping changes suggested.</span>
                 </div>
             } @else {
                 <div class="sc-suggestions-list">

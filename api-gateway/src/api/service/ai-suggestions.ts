@@ -135,7 +135,7 @@ export class AISuggestionsAPI {
     )
     @ApiOperation({
         summary: 'Returns whether Glossary AI is enabled',
-        description: 'Lets the client know upfront whether it should show the Glossary AI schema-tagging UI at all.',
+        description: 'Lets the client know upfront whether it should show the IWA property mapping suggestions UI at all.',
     })
     @ApiOkResponse({
         description: 'Successful operation.',

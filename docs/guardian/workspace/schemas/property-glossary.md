@@ -36,22 +36,22 @@ before changing anything:
 
 The upgrade is safe to re-run — applying it to an already-upgraded schema changes nothing.
 
-## Glossary AI
+## Suggest IWA Property Mappings
 
-Guardian can suggest which property to use for each field, instead of picking one by hand from the reference tables below.
+In the schema builder, each field has an **IWA Mapping** setting at the bottom of the field properties panel. It maps the schema field to an IWA property. Guardian can suggest which IWA property to use for each field, instead of picking one by hand from the reference tables below.
 
-**In the schema builder**, open the **Glossary AI** tab (next to Fields, Conditions, and Repeatable links). Suggestions load automatically for every field in the schema, scored against the property list for that schema's `iwaVersion`. Each row shows the field, its current property (if any), and the AI's top match with a confidence score and a short reason. From there:
+**In the schema builder**, open the **Suggest IWA Property Mappings** tab (next to Fields, Conditions, and Repeatable links) to review the suggested IWA property mappings for the schema. Suggestions load automatically for every field in the schema, scored against the property list for that schema's `iwaVersion`. Each row shows the field, its current IWA mapping (if any), and the AI's top match with a confidence score and a short reason. From there:
 
-* **Accept** applies that property to the field.
-* **Change** jumps to the Fields tab with that field already selected, so you can pick a different property yourself.
+* **Accept** applies that IWA property to the field.
+* **Change** jumps to the Fields tab with that field already selected, so you can pick a different IWA property yourself.
 * **Dismiss** clears the row without changing the field.
 * **Apply all high-confidence** accepts every suggestion at or above the confidence threshold shown in the button label, in one click.
 
 A field whose current property already matches the AI's top suggestion shows **Already matches** instead of an action — nothing to do there.
 
-**On a single field**, the sparkle button next to the **Property** dropdown runs the same suggestion for just that field. **See more** expands the next-best candidates; **Move to Glossary AI** switches to the full tab with that field's row highlighted.
+**On a single field**, the sparkle button next to the **IWA Mapping** dropdown runs the same suggestion for just that field. **See more** expands the next-best candidates; **Open in IWA suggestions** switches to the full tab with that field's row highlighted.
 
-If AI suggestions aren't available, the tab says so and the Property dropdown keeps working manually, exactly as described above.
+If AI suggestions aren't available, the tab says so and the IWA Mapping dropdown keeps working manually, exactly as described above.
 
 ## What changed in v3
 

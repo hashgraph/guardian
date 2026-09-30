@@ -1248,7 +1248,7 @@
 // Schema name, entity type, IWA version
 .sc-schema-props-row--main {
     grid-template-columns: minmax(0, 1fr) minmax(200px, 260px) minmax(70px, auto);
-    align-items: end;
+    align-items: start;
     margin-top: 14px;
 
     @media (max-width: 720px) {
@@ -1270,13 +1270,15 @@
     align-items: center;
     justify-content: center;
     align-self: flex-start;
-    height: 32px;
-    padding: 0 10px;
+    // Same height and text size as the inputs so labels and values line up
+    height: 40px;
+    min-width: 48px;
+    padding: 0 12px;
     box-sizing: border-box;
     border-radius: var(--sc-radius-sm);
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 600;
-    font-family: var(--font-mono, monospace);
+    line-height: 1;
     white-space: nowrap;
 
     &--v3 {
@@ -2348,6 +2350,12 @@
     justify-content: space-between;
 }
 
+.sc-rp-info {
+    font-size: 11px;
+    margin-left: 4px;
+    cursor: help;
+}
+
 .sc-rp-suggest-btn {
     display: flex;
     align-items: center;
@@ -3164,6 +3172,15 @@
     align-items: center;
     justify-content: center;
     line-height: 1;
+}
+
+.sc-suggestions-help {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    color: var(--guardian-font-color-secondary, #848FA9);
 }
 
 .sc-suggestions-toolbar {
