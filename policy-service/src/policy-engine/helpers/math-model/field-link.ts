@@ -24,6 +24,7 @@ export class FieldLink {
     public rows: Record<string, string>[] | null = null;
     public tables: Record<string, string>[][] | null = null;
     public columns: Record<string, string> | null = null;
+    public tableList: boolean = false;
 
     public error: string = '';
     public empty: boolean = true;
@@ -52,7 +53,7 @@ export class FieldLink {
     }
 
     public get isTableList(): boolean {
-        return Array.isArray(this.tables);
+        return Array.isArray(this.tables) || (!!this.columns && this.tableList);
     }
 
     constructor(name?: string, path?: string) {
@@ -169,6 +170,9 @@ export class FieldLink {
     }
 
     public getTableList(scope: { [name: string]: any }): Record<string, any>[][] {
+        if (this.columns) {
+            return this.getColumnTables(scope);
+        }
         return (this.tables || []).map((rows) => this.getTableRows(scope, rows));
     }
 
@@ -211,6 +215,34 @@ export class FieldLink {
             }
         }
         return Array.from(unknown);
+    }
+
+    public getColumnTables(scope: { [name: string]: any }): Record<string, any>[][] {
+        const keys = Object.keys(this.columns || {});
+        const values = this.getColumnValues(scope);
+        const count = FieldLink.getColumnLength(values);
+        if (count > FieldLink.MAX_TABLES) {
+            throw new Error(`Too many tables: ${count}. The limit is ${FieldLink.MAX_TABLES}`);
+        }
+        const tables: Record<string, any>[][] = [];
+        let total = 0;
+        for (let index = 0; index < count; index++) {
+            const tableValues: Record<string, any> = {};
+            for (const key of Object.keys(values)) {
+                const value = values[key];
+                if (!Array.isArray(value)) {
+                    tableValues[key] = value;
+                } else if (index < value.length) {
+                    tableValues[key] = value[index];
+                }
+            }
+            total += FieldLink.getColumnLength(tableValues);
+            if (total > FieldLink.MAX_COLUMN_ROWS) {
+                throw new Error(`Too many rows: ${total}. The limit is ${FieldLink.MAX_COLUMN_ROWS}`);
+            }
+            tables.push(FieldLink.toColumnRows(keys, tableValues));
+        }
+        return tables;
     }
 
     private getColumnValues(scope: { [name: string]: any }): Record<string, any> {
@@ -270,6 +302,9 @@ export class FieldLink {
         }
         if (this.columns) {
             json.columns = { ...this.columns };
+            if (this.tableList) {
+                json.tableList = true;
+            }
         } else if (this.tables) {
             json.tables = this.tables.map((rows) => rows.map((row) => ({ ...row })));
         } else if (this.rows) {
@@ -288,6 +323,7 @@ export class FieldLink {
             link.description = json.description || '';
             if (json.columns && typeof json.columns === 'object' && !Array.isArray(json.columns)) {
                 link.columns = { ...json.columns };
+                link.tableList = json.tableList === true;
             } else if (Array.isArray(json.tables)) {
                 link.tables = json.tables.map((rows) => Array.isArray(rows) ? rows.map((row) => ({ ...row })) : []);
             } else if (Array.isArray(json.rows)) {

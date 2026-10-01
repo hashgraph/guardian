@@ -795,7 +795,11 @@
                               </button>
                             }
                           } @else if (item.columns && getTableColumns(item).length) {
-                            <label class="form-label">Columns: one variable per column. Element N of a list goes to row N; a single value goes to every row.</label>
+                            @if (item.tableList) {
+                              <label class="form-label">Columns: one variable per column. Element N of a list goes to table N, and element M inside it to row M; a single value goes everywhere.</label>
+                            } @else {
+                              <label class="form-label">Columns: one variable per column. Element N of a list goes to row N; a single value goes to every row.</label>
+                            }
                             <ng-container *ngTemplateOutlet="tableColumnsGrid; context: {item: item}"></ng-container>
                           } @else {
                             <label class="form-label">Rows ({{getTableRowCount(item)}} / {{maxTableRows}})</label>

@@ -20,6 +20,7 @@ export interface IFieldLink {
     rows?: Record<string, string>[];
     tables?: Record<string, string>[][];
     columns?: Record<string, string>;
+    tableList?: boolean;
 }
 
 export interface IMathFormula {

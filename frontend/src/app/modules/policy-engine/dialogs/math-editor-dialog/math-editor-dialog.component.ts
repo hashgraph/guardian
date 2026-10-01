@@ -666,7 +666,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     }
 
     public canUseTableColumns(item: FieldLink): boolean {
-        return this.getTableColumns(item).length > 0 && !this.isTableListField(item);
+        return this.getTableColumns(item).length > 0;
     }
 
     public setTableColumnsMode(item: FieldLink, enabled: boolean): void {
@@ -794,6 +794,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         if (item.columns) {
             this.tableColumnsDraft[item.id] = item.columns;
             item.columns = null;
+            item.tableList = false;
         }
         const columns = this.getTableColumns(item);
         const draft = this.tableRowsDraft[item.id];
@@ -839,11 +840,14 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     }
 
     private useTableColumns(item: FieldLink): void {
-        if (item.rows) {
+        if (item.tables) {
+            this.tableRowsDraft[item.id] = item.tables;
+        } else if (item.rows) {
             const draft = this.tableRowsDraft[item.id];
             this.tableRowsDraft[item.id] = [item.rows, ...(draft ? draft.slice(1) : [])];
         }
         item.columns = this.syncTableRows([this.tableColumnsDraft[item.id] || {}], this.getTableColumns(item))[0];
+        item.tableList = this.isTableListField(item);
         delete this.tableColumnsDraft[item.id];
         item.rows = null;
         item.tables = null;
@@ -854,9 +858,17 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             this.tableColumnsDraft[item.id] = item.columns;
         }
         const draft = this.tableRowsDraft[item.id];
+        const columns = this.getTableColumns(item);
         item.columns = null;
-        item.rows = this.syncTableRows(draft?.[0] || [{}], this.getTableColumns(item));
-        item.tables = null;
+        item.tableList = false;
+        if (this.isTableListField(item)) {
+            delete this.tableRowsDraft[item.id];
+            item.tables = (draft || [[{}]]).map((rows) => this.syncTableRows(rows, columns));
+            item.rows = null;
+        } else {
+            item.rows = this.syncTableRows(draft?.[0] || [{}], columns);
+            item.tables = null;
+        }
     }
 
     private syncTableRows(

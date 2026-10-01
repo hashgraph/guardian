@@ -591,12 +591,13 @@ describe('MathEditorDialogComponent Table outputs', () => {
         expect(rows).toEqual([{ year: 'y', co2: '' }]);
     });
 
-    it('offers the columns mode only for a single declared Table', () => {
+    it('offers the columns mode for a declared Table, single or one repeated level down', () => {
         const dialog = makeDialog();
 
         expect(dialog.canUseTableColumns(output('results'))).toBeTrue();
         expect(dialog.canUseTableColumns(output('group.results'))).toBeTrue();
-        expect(dialog.canUseTableColumns(output('nested.results'))).toBeFalse();
+        expect(dialog.canUseTableColumns(output('nested.results'))).toBeTrue();
+        expect(dialog.canUseTableColumns(output('deep.results'))).toBeFalse();
         expect(dialog.canUseTableColumns(output('legacy'))).toBeFalse();
         expect(dialog.canUseTableColumns(output('total'))).toBeFalse();
     });
@@ -653,7 +654,7 @@ describe('MathEditorDialogComponent Table outputs', () => {
         expect(item.rows).toBeNull();
     });
 
-    it('uses cells for a repeated Table and returns to columns on the single Table', () => {
+    it('keeps the columns mode on a repeated Table and marks the output as a list', () => {
         const dialog = makeDialog();
         const item = output();
         dialog.onPathChange(item, 'results', 'output');
@@ -662,15 +663,36 @@ describe('MathEditorDialogComponent Table outputs', () => {
         item.columns!.year = 'years';
 
         dialog.selectPathSuggestion(item, 'nested.results', 'output');
-        expect(item.columns).toBeNull();
-        expect(item.tables).toEqual([[{ year: 'y' }]]);
+        expect(item.columns).toEqual({ year: 'years' });
+        expect(item.tableList).toBeTrue();
+        expect(item.isTableList).toBeTrue();
+        expect(item.tables).toBeNull();
 
         dialog.selectPathSuggestion(item, 'results', 'output');
         expect(item.columns).toEqual({ year: 'years', co2: '' });
+        expect(item.tableList).toBeFalse();
         expect(item.tables).toBeNull();
 
         dialog.setTableColumnsMode(item, false);
         expect(item.rows).toEqual([{ year: 'y', co2: '' }]);
+    });
+
+    it('switches a repeated Table between cells and columns and keeps every table', () => {
+        const dialog = makeDialog();
+        const item = output();
+        dialog.onPathChange(item, 'nested.results', 'output');
+        dialog.addTable(item);
+        item.tables![1][0].year = 'b';
+
+        dialog.setTableColumnsMode(item, true);
+        expect(item.columns).toEqual({ year: '' });
+        expect(item.tableList).toBeTrue();
+        expect(item.tables).toBeNull();
+
+        dialog.setTableColumnsMode(item, false);
+        expect(item.columns).toBeNull();
+        expect(item.tableList).toBeFalse();
+        expect(item.tables).toEqual([[{ year: '' }], [{ year: 'b' }]]);
     });
 
     it('moves the columns to the columns of another single Table', () => {
@@ -986,6 +1008,33 @@ describe('MathEditorDialogComponent Table output test results', () => {
         const values = [{ year: 2020 }, { year: 2021 }];
 
         expect(dialog.getTestTableRows(values)).toBe(values);
+    });
+
+    it('fills one table per element of the outer list in a repeated column table', async () => {
+        const output = FieldLink.from({
+            type: MathItemType.LINK,
+            name: '',
+            description: '',
+            field: 'series',
+            schema: '#out',
+            columns: { year: 'y', co2: 'c' },
+            tableList: true
+        })!;
+        output.update();
+        const dialog = makeDialog([output], { y: [[2020, 2021], [2022]], c: [1, 2] });
+
+        await dialog.onTest();
+
+        expect(dialog.getTableListValues(output)).toEqual([
+            [{ year: 2020, co2: 1 }, { year: 2021, co2: 1 }],
+            [{ year: 2022, co2: 2 }]
+        ]);
+        expect(JSON.parse(dialog.result.output)).toEqual({
+            series: [
+                { type: 'table', rows: [{ year: 2020, co2: 1 }, { year: 2021, co2: 1 }] },
+                { type: 'table', rows: [{ year: 2022, co2: 2 }] }
+            ]
+        });
     });
 
     it('shows the row limit error of a column table as its value', async () => {

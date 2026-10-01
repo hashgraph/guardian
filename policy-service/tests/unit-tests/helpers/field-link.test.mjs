@@ -366,4 +366,68 @@ describe('FieldLink', () => {
             assert.deepEqual(list.getUnknownColumns(['year']), ['old']);
         });
     });
+
+    describe('column table list output', () => {
+        const columnListLink = (columns) => FieldLink.from({
+            type: 'link',
+            name: '',
+            description: '',
+            field: 'sites.results',
+            schema: '#s',
+            columns,
+            tableList: true
+        });
+
+        it('is a table list and keeps the tableList flag through toJson and from', () => {
+            const link = columnListLink({ year: 'y' });
+            assert.equal(link.isTable, true);
+            assert.equal(link.isTableList, true);
+            const json = link.toJson();
+            assert.equal(json.tableList, true);
+            assert.equal(FieldLink.from(json).isTableList, true);
+            const single = FieldLink.from({ ...json, tableList: undefined });
+            assert.equal(single.isTableList, false);
+            assert.equal('tableList' in single.toJson(), false);
+        });
+
+        it('puts element N of the outer list into table N and element M inside it into row M', () => {
+            const link = columnListLink({ year: 'y', co2: 'c', site: 's' });
+            assert.deepEqual(link.getTableList({ y: [[2020, 2021], [2022]], c: [1, 2], s: 'S' }), [
+                [{ year: 2020, co2: 1, site: 'S' }, { year: 2021, co2: 1, site: 'S' }],
+                [{ year: 2022, co2: 2, site: 'S' }]
+            ]);
+        });
+
+        it('leaves the cells of a column empty in tables its list does not reach', () => {
+            const link = columnListLink({ year: 'y', co2: 'c' });
+            assert.deepEqual(link.getTableList({ y: [[2020], [2021]], c: [[5]] }), [
+                [{ year: 2020, co2: 5 }],
+                [{ year: 2021, co2: '' }]
+            ]);
+        });
+
+        it('rejects more than 100 tables', () => {
+            const link = columnListLink({ year: 'y' });
+            assert.throws(
+                () => link.getTableList({ y: new Array(101).fill([1]) }),
+                'Too many tables: 101. The limit is 100'
+            );
+        });
+
+        it('counts the 10000-row limit across all tables', () => {
+            const link = columnListLink({ year: 'y' });
+            assert.throws(
+                () => link.getTableList({ y: [new Array(6000).fill(1), new Array(4001).fill(1)] }),
+                'Too many rows: 10001. The limit is 10000'
+            );
+        });
+
+        it('rejects a huge inner list before it builds that table', () => {
+            const link = columnListLink({ year: 'y' });
+            assert.throws(
+                () => link.getTableList({ y: [[2020], new Array(1000000000)] }),
+                'Too many rows: 1000000001. The limit is 10000'
+            );
+        });
+    });
 });
