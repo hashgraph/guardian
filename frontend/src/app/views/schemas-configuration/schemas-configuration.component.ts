@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, HostListener, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpResponse } from '@angular/common/http';
 import { EMPTY, Observable, Subject, Subscription, firstValueFrom, forkJoin, of } from 'rxjs';
@@ -590,7 +590,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         { label: 'Encrypted Verifiable Credential', value: SchemaEntity.EVC },
     ];
 
-    public copiedField: 'iri' | 'uuid' | null = null;
+    public copiedField: 'iri' | 'uuid' | 'id' | null = null;
+    public showTemplateSettings: boolean = false;
 
     public get systemFields(): any[] {
         return DefaultFieldDictionary.getDefaultFields(this.selectedSchema?.entity as SchemaEntity);
@@ -1178,6 +1179,27 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 return { variant: 'muted', icon: 'pi-eye', label: 'View' };
             default:
                 return { variant: 'muted', icon: null, label: String(schema.status ?? '') };
+        }
+    }
+
+    @HostListener('document:keydown.escape')
+    public onEscapeKey(): void {
+        if (this.showTemplateSettings) {
+            this.showTemplateSettings = false;
+        }
+    }
+
+    public getTemplateStatusBadge(): { variant: string; icon: string | null; label: string } {
+        const status = this.schemaTemplate?.status;
+        switch (status) {
+            case ModuleStatus.DRAFT:
+                return { variant: 'draft', icon: 'pi-pencil', label: 'Draft' };
+            case ModuleStatus.PUBLISHED:
+                return { variant: 'published', icon: 'pi-globe', label: 'Published' };
+            case ModuleStatus.PUBLISH_ERROR:
+                return { variant: 'error', icon: 'pi-exclamation-triangle', label: 'Publish error' };
+            default:
+                return { variant: 'muted', icon: null, label: String(status ?? '') };
         }
     }
 
@@ -2148,7 +2170,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.copyIdentity('iri', value, event);
     }
 
-    public copyIdentity(field: 'iri' | 'uuid', value: string | null | undefined, event?: Event): void {
+    public copyIdentity(field: 'iri' | 'uuid' | 'id', value: string | null | undefined, event?: Event): void {
         event?.stopPropagation();
         if (!value) { return; }
         navigator.clipboard.writeText(value).then(() => {

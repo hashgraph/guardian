@@ -6,7 +6,9 @@
                 <i class="pi pi-arrow-left"></i>
             </button>
             <a class="sc-crumb-link" (click)="goToBreadcrumbRoot()">{{ breadcrumbRootLabel }}</a>
-            @if (isTemplateMode) {
+            @if (isTemplateConfigMode) {
+                <i class="pi pi-chevron-right sc-breadcrumb-sep"></i>
+            } @else if (isTemplateMode) {
                 <i class="pi pi-chevron-right sc-breadcrumb-sep"></i>
                 @if (isTemplateBreadcrumbLink) {
                     <a class="sc-crumb-link" (click)="goToTemplateConfiguration()">{{ breadcrumbTemplateLabel }}</a>
@@ -14,12 +16,38 @@
                     <span class="sc-crumb-current">{{ breadcrumbTemplateLabel }}</span>
                 }
             }
-            @if (selectedSchema) {
+            @if (selectedSchema && !isTemplateConfigMode) {
                 <i class="pi pi-chevron-right sc-breadcrumb-sep"></i>
             }
         </nav>
 
-        @if (selectedSchema) {
+        @if (isTemplateConfigMode) {
+            <div class="sc-identity" [class.open]="templateIdentityMenu.overlayVisible" (click)="templateIdentityMenu.toggle($event)">
+                <i class="pi pi-clone sc-identity-icon"></i>
+                <div class="sc-identity-text">
+                    <span #templateNameEl class="sc-identity-name"
+                          [pTooltip]="breadcrumbTemplateLabel"
+                          [tooltipDisabled]="templateNameEl.scrollWidth <= templateNameEl.clientWidth"
+                          tooltipPosition="bottom">{{ breadcrumbTemplateLabel }}</span>
+                    <span class="sc-identity-meta">
+                        @if (schemaTemplate?.version) {
+                            v{{ schemaTemplate?.version }} ·
+                        }
+                        Template details
+                    </span>
+                </div>
+                <i class="pi pi-chevron-down sc-identity-caret"></i>
+            </div>
+            @if (schemaTemplate?.status) {
+                @let templateBadge = getTemplateStatusBadge();
+                <div class="sc-status-badge" [ngClass]="'sc-status-badge--' + templateBadge.variant">
+                    @if (templateBadge.icon) {
+                        <i class="pi" [ngClass]="templateBadge.icon"></i>
+                    }
+                    <span>{{ templateBadge.label }}</span>
+                </div>
+            }
+        } @else if (selectedSchema) {
             <div class="sc-identity" [class.open]="identityMenu.overlayVisible" (click)="identityMenu.toggle($event)">
                 <i class="pi pi-table sc-identity-icon"></i>
                 <div class="sc-identity-text">
@@ -45,20 +73,38 @@
                     <span>{{ badge.label }}</span>
                 </div>
             }
-            @if (isTemplateConfigMode) {
-                <button
-                    class="sc-schema-featured-btn"
-                    [class.active]="isSelectedSchemaFeatured"
-                    [disabled]="isTemplateReadonly"
-                    [pTooltip]="isSelectedSchemaFeatured ? 'Unmark as featured' : 'Mark as featured'"
-                    tooltipPosition="bottom"
-                    (click)="toggleFeaturedForSelectedSchema()">
-                    <i class="pi" [class.pi-star-fill]="isSelectedSchemaFeatured" [class.pi-star]="!isSelectedSchemaFeatured"></i>
-                </button>
-            } @else if (isSchemaFeatured(selectedSchema)) {
+            @if (isSchemaFeatured(selectedSchema)) {
                 <i class="pi pi-star-fill schema-featured-icon" pTooltip="Featured" tooltipPosition="bottom"></i>
             }
         }
+
+        <p-popover #templateIdentityMenu>
+            <div class="sc-identity-popover">
+                <div class="sc-identity-popover-header">Template details</div>
+                <div class="sc-identity-row" (click)="copyIdentity('id', schemaTemplate?.id, $event)" title="Copy template ID">
+                    <div class="sc-identity-row-label">Template ID</div>
+                    <div class="sc-identity-row-value">
+                        <span class="sc-identity-row-mono">{{ schemaTemplate?.id || '–' }}</span>
+                        @if (schemaTemplate?.id) {
+                            <i class="pi" [ngClass]="copiedField === 'id' ? 'pi-check' : 'pi-copy'"></i>
+                        }
+                    </div>
+                </div>
+                @if (schemaTemplate?.version) {
+                    <div class="sc-identity-row sc-identity-row--plain">
+                        <div class="sc-identity-row-label">Version</div>
+                        <div class="sc-identity-row-value">
+                            <span class="sc-identity-row-plain-value">{{ schemaTemplate?.version }}</span>
+                        </div>
+                    </div>
+                }
+                <div class="sc-identity-divider"></div>
+                <div class="sc-identity-action" (click)="showTemplateSettings = true; templateIdentityMenu.hide()">
+                    <i class="pi" [ngClass]="isTemplateReadonly ? 'pi-eye' : 'pi-pencil'"></i>
+                    <span>{{ isTemplateReadonly ? 'View template details' : 'Edit template details' }}</span>
+                </div>
+            </div>
+        </p-popover>
 
         <p-popover #identityMenu>
             @if (selectedSchema) {
@@ -231,18 +277,17 @@
     }
 
     @if (isTemplateConfigMode) {
-        <div class="st-template-settings-panel">
-            <div class="st-template-settings-header">
-                <div class="st-template-settings-title">
-                    <i class="pi pi-sliders-h"></i>
-                    Template settings
-                </div>
-                <div class="st-template-settings-meta">
-                    <span class="st-template-settings-chip">{{ schemaTemplate?.status || '' }}</span>
-                    @if (schemaTemplate?.version) {
-                        <span class="st-template-settings-chip">v{{ schemaTemplate?.version }}</span>
-                    }
-                </div>
+        @if (showTemplateSettings) {
+            <div class="st-drawer-backdrop" (click)="showTemplateSettings = false"></div>
+        }
+        <div class="st-drawer" [class.open]="showTemplateSettings" [attr.aria-hidden]="!showTemplateSettings"
+             role="dialog" aria-modal="true" aria-labelledby="st-drawer-title">
+            <div class="st-drawer-title">
+                <i class="pi pi-cog"></i>
+                <span id="st-drawer-title">Template details</span>
+                <button type="button" class="st-drawer-close" (click)="showTemplateSettings = false" title="Close">
+                    <i class="pi pi-times"></i>
+                </button>
             </div>
             @if (isTemplateReadonly) {
                 <div class="st-lock-note st-lock-note--inline">
@@ -250,22 +295,22 @@
                     <span>Published template is read-only. Create a new version to edit it.</span>
                 </div>
             }
-            <div class="st-template-settings-form">
-                <div class="sc-schema-props-field">
-                    <label class="sc-schema-props-label">Name</label>
-                    <input class="sc-schema-props-name"
+            <div class="st-drawer-form">
+                <div class="st-drawer-field">
+                    <label class="st-drawer-label">Name</label>
+                    <input class="st-drawer-input"
                            [ngModel]="schemaTemplate?.name || ''"
                            [readonly]="isTemplateReadonly"
                            (ngModelChange)="setTemplateName($event)"
                            placeholder="Template name" />
                 </div>
-                <div class="sc-schema-props-field sc-schema-props-field--full">
-                    <label class="sc-schema-props-label">Description <span class="sc-schema-props-optional">(optional)</span></label>
-                    <textarea class="sc-schema-props-desc"
+                <div class="st-drawer-field">
+                    <label class="st-drawer-label">Description <span class="st-drawer-optional">(optional)</span></label>
+                    <textarea class="st-drawer-input st-drawer-textarea"
                               [ngModel]="schemaTemplate?.description || ''"
                               [readonly]="isTemplateReadonly"
                               (ngModelChange)="setTemplateDescription($event)"
-                              rows="2"
+                              rows="5"
                               placeholder="What this template represents..."></textarea>
                 </div>
             </div>
@@ -450,6 +495,44 @@
 
                         <!-- ── Root schema properties panel ── -->
                         <div class="sc-schema-props" [class.sc-schema-props--locked]="selectedSchemaSettingsLocked">
+                            @if (isTemplateConfigMode) {
+                                <div class="st-schema-identity">
+                                    <i class="pi pi-table st-schema-identity-icon"></i>
+                                    <span #panelSchemaNameEl class="st-schema-identity-name"
+                                          [pTooltip]="selectedSchema.name || 'Untitled schema'"
+                                          [tooltipDisabled]="panelSchemaNameEl.scrollWidth <= panelSchemaNameEl.clientWidth"
+                                          tooltipPosition="bottom">{{ selectedSchema.name || 'Untitled schema' }}</span>
+                                    @if (selectedSchema.version) {
+                                        <span class="st-schema-identity-version">v{{ selectedSchema.version }}</span>
+                                    }
+                                    @if (selectedSchema.status) {
+                                        @let schemaBadge = getStatusBadge(selectedSchema);
+                                        <div class="sc-status-badge sc-status-badge--compact" [ngClass]="'sc-status-badge--' + schemaBadge.variant">
+                                            @if (schemaBadge.icon) {
+                                                <i class="pi" [ngClass]="schemaBadge.icon"></i>
+                                            }
+                                            <span>{{ schemaBadge.label }}</span>
+                                        </div>
+                                    }
+                                    <button class="st-schema-identity-info"
+                                            [class.open]="identityMenu.overlayVisible"
+                                            pTooltip="Schema details"
+                                            tooltipPosition="bottom"
+                                            (click)="identityMenu.toggle($event)">
+                                        <i class="pi pi-info-circle"></i>
+                                    </button>
+                                    <span class="sc-spacer"></span>
+                                    <button
+                                        class="sc-schema-featured-btn"
+                                        [class.active]="isSelectedSchemaFeatured"
+                                        [disabled]="isTemplateReadonly"
+                                        [pTooltip]="isSelectedSchemaFeatured ? 'Unmark as featured' : 'Mark as featured'"
+                                        tooltipPosition="bottom"
+                                        (click)="toggleFeaturedForSelectedSchema()">
+                                        <i class="pi" [class.pi-star-fill]="isSelectedSchemaFeatured" [class.pi-star]="!isSelectedSchemaFeatured"></i>
+                                    </button>
+                                </div>
+                            }
                             <div class="sc-schema-props-header">
                                 <div class="sc-schema-props-title">
                                     <i class="pi pi-file-edit"></i>
