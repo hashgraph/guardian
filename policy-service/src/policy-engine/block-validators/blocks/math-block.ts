@@ -59,8 +59,8 @@ export class MathBlock {
                 return;
             }
 
-            const outputSchema = validator.getSchema(ref.options.outputSchema || ref.options.inputSchema);
-            const schema = new Schema(outputSchema);
+            const tableOutputSchema = validator.getSchema(ref.options.outputSchema || ref.options.inputSchema);
+            const schema = new Schema(tableOutputSchema);
             for (const link of group.outputs.getItems()) {
                 if (!link.isTable) {
                     continue;
