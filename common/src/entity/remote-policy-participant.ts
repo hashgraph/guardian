@@ -1,6 +1,7 @@
 import { BeforeCreate, Entity, Property, Unique } from '@mikro-orm/core';
 import { BaseEntity } from '../models/index.js';
 import { RemoteParticipantStatus } from '@guardian/interfaces';
+import type { ISealedBox } from '../helpers/remote-policy-join.js';
 
 /**
  * A user of another instance who asked to take part in a policy of this instance
@@ -55,6 +56,25 @@ export class RemotePolicyParticipant extends BaseEntity {
      */
     @Property({ nullable: true })
     issued?: string;
+
+    /**
+     * Time the latest join was received, pending participants expire after it
+     */
+    @Property({ nullable: true })
+    joinedAt?: Date;
+
+    /**
+     * Message key of the latest join, still sealed to the policy owner.
+     * It is opened only when the policy owner approves the participant.
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    sealedKey?: ISealedBox;
+
+    /**
+     * The USER_PERMISSIONS credential of a remote user created on approval is not published yet
+     */
+    @Property({ nullable: true })
+    permissionsPending?: boolean;
 
     /**
      * Status

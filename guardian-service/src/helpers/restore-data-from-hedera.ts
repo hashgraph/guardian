@@ -1139,7 +1139,9 @@ export class RestoreDataFromHedera {
             if (
                 template &&
                 template.role === UserRole.USER &&
-                template.parent === parentDid
+                template.parent === parentDid &&
+                // a remote user has no username to update the role by; its role comes from approval
+                !!template.username
             ) {
                 const roleIds: string[] = [];
                 for (const item of userRoles) {

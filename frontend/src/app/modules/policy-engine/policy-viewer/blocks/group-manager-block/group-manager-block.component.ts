@@ -168,9 +168,9 @@ export class GroupManagerBlockComponent implements OnInit {
 
     onDelete(user: any) {
         const groupLabel = this.selected.groupLabel || this.selected.id;
-        const title = `Withdraw user ${user.username} from group ${groupLabel}`;
+        const title = `Withdraw user ${user.username || user.did} from group ${groupLabel}`;
         const description = [
-            `User: ${user.username}`,
+            `User: ${user.username || user.did}`,
             `User DID: ${user.did}`,
             `Group: ${groupLabel}`,
             `Group ID: ${this.selected.id}`,

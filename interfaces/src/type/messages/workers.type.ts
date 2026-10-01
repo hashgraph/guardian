@@ -29,6 +29,7 @@ export enum WorkerTaskType {
     GET_TOPIC_MESSAGES = 'get-topic-messages',
     GET_TOPIC_MESSAGE_BY_INDEX = 'get-topic-message-by-index',
     GET_TOPIC_MESSAGE_CHUNKS = 'get-topic-message-chunks',
+    GET_TOPIC_INFO_REST = 'get-topic-info-rest',
     CREATE_CONTRACT = 'create-contract',
     CREATE_CONTRACT_V2 = 'create-contract-v2',
     CONTRACT_CALL = 'contract-call',

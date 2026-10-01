@@ -53,11 +53,16 @@ function topicMessage(join, { payer = ACCOUNT, owner = USER, accountId = ACCOUNT
     };
 }
 
-async function makeService({ user, owner, existingUser = null, createUserError = null }) {
-    const store = { RemotePolicyParticipant: [], DidDocument: [], Topic: [] };
-    const calls = { users: [], keys: [], savedKeys: [], replies: [], notifications: [] };
+
+async function makeService({ user, owner, limit = 100, disconnected = false } = {}) {
+    const store = {
+        RemotePolicyParticipant: [],
+        DisconnectedPolicy: disconnected ? [{ policyId: 'policy-1', owner: USER }] : [],
+    };
+    const calls = { users: [], keys: [], replies: [], notifications: [], expired: 0, reconnected: [] };
     const ipfs = new Map();
     let nextId = 1;
+    const matches = (row, filter) => Object.entries(filter).every(([k, v]) => row[k] === v);
 
     const { PolicyJoinService } = await esmock(SERVICE, {
         '@guardian/common': {
@@ -69,9 +74,9 @@ async function makeService({ user, owner, existingUser = null, createUserError =
             },
             DataBaseHelper: class {
                 constructor(entity) { this.rows = store[entity.name]; }
-                async findOne(filter) {
-                    return this.rows.find((row) => Object.entries(filter).every(([k, v]) => row[k] === v)) || null;
-                }
+                create(row) { return { ...row }; }
+                async findOne(filter) { return this.rows.find((row) => matches(row, filter)) || null; }
+                async count(filter) { return this.rows.filter((row) => matches(row, filter)).length; }
                 async save(row) {
                     if (!row.id) {
                         row.id = String(nextId++);
@@ -80,10 +85,15 @@ async function makeService({ user, owner, existingUser = null, createUserError =
                     return row;
                 }
             },
-            DatabaseServer: {
-                getKeys: async () => calls.savedKeys,
-                saveKey: async (row) => { calls.savedKeys.push(row); return row; },
+            DatabaseServer: class {
+                static async reconnectPolicy(policyId, did) {
+                    calls.reconnected.push({ policyId, did });
+                    store.DisconnectedPolicy.length = 0;
+                }
+                async reconnectPolicyDocuments() { return null; }
             },
+            expireRemoteParticipants: async () => { calls.expired++; },
+            remoteJoinLimits: () => ({ pendingLimit: limit, pendingExpiryMs: 1000 }),
             resolvePublishedDidDocument: async (did, topicId, account) => {
                 assert.equal(did, USER);
                 assert.equal(account, ACCOUNT);
@@ -98,16 +108,13 @@ async function makeService({ user, owner, existingUser = null, createUserError =
             Users: class {
                 async createRemoteUser(did, account, parent) {
                     calls.users.push({ did, account, parent });
-                    if (createUserError) { throw createUserError; }
-                    return existingUser || { did, hederaAccountId: account, parent };
+                    return { did };
                 }
             },
-            Wallet: class {
-                async setUserKey(did, type, slot, key) { calls.keys.push({ did, slot, key }); }
-            },
+            saveRemoteUserMessageKey: async (did, messageId, key) => { calls.keys.push({ did, messageId, key }); },
             NotificationHelper: { info: async (...args) => { calls.notifications.push(args); } },
-            sendRemoteJoinReply: async (participant, accepted) => {
-                calls.replies.push({ participant, accepted });
+            sendRemoteJoinReply: async (participant, accepted, userId, key) => {
+                calls.replies.push({ participant, accepted, key });
                 return 'reply-1';
             },
         },
@@ -142,35 +149,36 @@ describe('@unit PolicyJoinService – join requests on the Main instance', funct
         owner = await didWithKeys(OWNER);
     });
 
-    const join = () => createRemoteJoinDocument(user.document, owner.published, ACCOUNT, '0.0.5', POLICY, messageKey);
+    const join = (key = messageKey) => createRemoteJoinDocument(user.document, owner.published, ACCOUNT, '0.0.5', POLICY, key);
+    const now = () => Math.floor(Date.now() / 1000);
 
-    it('creates a login-less remote user and a pending participant', async () => {
+    it('records only a pending participant with the key still sealed', async () => {
         const { receive, store, calls } = await makeService({ user, owner });
+        const document = join();
 
-        const participant = await receive(topicMessage(join()));
+        const participant = await receive(topicMessage(document));
 
         assert.equal(participant.status, RemoteParticipantStatus.PENDING);
         assert.equal(participant.did, USER);
         assert.equal(participant.hederaAccountId, ACCOUNT);
         assert.equal(participant.policyMessageId, POLICY);
         assert.equal(participant.owner, OWNER);
+        assert.deepEqual(participant.sealedKey, document.messageKey);
+        assert.instanceOf(participant.joinedAt, Date);
         assert.lengthOf(store.RemotePolicyParticipant, 1);
-        assert.deepEqual(calls.users, [{ did: USER, account: ACCOUNT, parent: OWNER }]);
-        assert.deepEqual(calls.keys, [{ did: USER, slot: `${USER}#${POLICY}`, key: messageKey }],
-            'the unsealed key is stored in the virtual user slot');
-        assert.lengthOf(store.DidDocument, 1);
-        assert.equal(store.DidDocument[0].did, USER);
+        assert.lengthOf(calls.users, 0, 'no remote user before approval');
+        assert.lengthOf(calls.keys, 0, 'the key is not opened before approval');
         assert.lengthOf(calls.replies, 0, 'approval is always manual');
+        assert.equal(calls.expired, 1, 'expired requests are dropped first');
     });
 
     it('rejects a join paid by another account', async () => {
-        const { receive, store, calls } = await makeService({ user, owner });
+        const { receive, store } = await makeService({ user, owner });
 
         const error = await rejection(receive(topicMessage(join(), { payer: '0.0.666' })));
 
         assert.match(error?.message, /not paid by the account/);
         assert.lengthOf(store.RemotePolicyParticipant, 0);
-        assert.lengthOf(calls.users, 0);
     });
 
     it('rejects a join whose message claims another account or DID than the proof', async () => {
@@ -186,14 +194,13 @@ describe('@unit PolicyJoinService – join requests on the Main instance', funct
 
     it('rejects a join signed with another key', async () => {
         const forged = await didWithKeys(USER);
-        const { receive, store, calls } = await makeService({ user, owner });
+        const { receive, store } = await makeService({ user, owner });
         const document = createRemoteJoinDocument(forged.document, owner.published, ACCOUNT, '0.0.5', POLICY, messageKey);
 
         const error = await rejection(receive(topicMessage(document)));
 
         assert.match(error?.message, /Invalid join proof/);
         assert.lengthOf(store.RemotePolicyParticipant, 0);
-        assert.lengthOf(calls.keys, 0);
     });
 
     it('rejects a join for another policy', async () => {
@@ -208,16 +215,15 @@ describe('@unit PolicyJoinService – join requests on the Main instance', funct
 
     it('rejects a join replayed long after it was issued', async () => {
         const { receive, store } = await makeService({ user, owner });
-        const later = Math.floor(Date.now() / 1000) + 2 * 24 * 60 * 60;
 
-        const error = await rejection(receive(topicMessage(join(), { timestamp: `${later}.000000001` })));
+        const error = await rejection(receive(topicMessage(join(), { timestamp: `${now() + 2 * 24 * 60 * 60}.000000001` })));
 
         assert.match(error?.message, /expired/);
         assert.lengthOf(store.RemotePolicyParticipant, 0);
     });
 
     it('treats a duplicate join as a no-op', async () => {
-        const { receive, store, calls } = await makeService({ user, owner });
+        const { receive, store } = await makeService({ user, owner });
         const data = topicMessage(join());
 
         const first = await receive(data);
@@ -225,46 +231,105 @@ describe('@unit PolicyJoinService – join requests on the Main instance', funct
 
         assert.strictEqual(second, first);
         assert.lengthOf(store.RemotePolicyParticipant, 1);
-        assert.lengthOf(calls.users, 1);
-        assert.lengthOf(calls.keys, 1);
     });
 
     it('ignores an older join after a newer one', async () => {
         const { receive, store } = await makeService({ user, owner });
-        const now = Math.floor(Date.now() / 1000);
+        const t = now();
 
-        await receive(topicMessage(join(), { timestamp: `${now}.000000002` }));
-        const participant = await receive(topicMessage(join(), { timestamp: `${now}.000000001` }));
+        await receive(topicMessage(join(), { timestamp: `${t}.000000002` }));
+        const participant = await receive(topicMessage(join(), { timestamp: `${t}.000000001` }));
 
-        assert.equal(participant.joinMessageId, `${now}.000000002`);
+        assert.equal(participant.joinMessageId, `${t}.000000002`);
         assert.lengthOf(store.RemotePolicyParticipant, 1);
     });
 
-    it('reopens a rejected participant on a new join and answers again an approved one', async () => {
-        const { receive, store, calls } = await makeService({ user, owner });
-        const now = Math.floor(Date.now() / 1000);
-
-        const participant = await receive(topicMessage(join(), { timestamp: `${now}.000000001` }));
-        participant.status = RemoteParticipantStatus.REJECTED;
-        await receive(topicMessage(join(), { timestamp: `${now}.000000002` }));
-        assert.equal(store.RemotePolicyParticipant[0].status, RemoteParticipantStatus.PENDING);
-
-        participant.status = RemoteParticipantStatus.APPROVED;
-        await receive(topicMessage(join(), { timestamp: `${now}.000000003` }));
-        assert.equal(store.RemotePolicyParticipant[0].status, RemoteParticipantStatus.APPROVED);
-        assert.lengthOf(calls.replies, 1);
-        assert.isTrue(calls.replies[0].accepted);
-    });
-
-    it('creates no participant when the DID belongs to another user', async () => {
-        const { receive, store } = await makeService({
-            user, owner, createUserError: new Error('The DID is already registered.')
+    it('drops a new join without a reply when the pending limit is reached', async () => {
+        const { receive, store, calls } = await makeService({ user, owner, limit: 1 });
+        store.RemotePolicyParticipant.push({
+            id: 'other', policyId: 'policy-1', did: 'did:other', status: RemoteParticipantStatus.PENDING
         });
 
-        const error = await rejection(receive(topicMessage(join())));
+        const result = await receive(topicMessage(join()));
 
-        assert.match(error?.message, /already registered/);
-        assert.lengthOf(store.RemotePolicyParticipant, 0);
+        assert.isNull(result);
+        assert.lengthOf(store.RemotePolicyParticipant, 1);
+        assert.lengthOf(calls.replies, 0);
+    });
+
+    it('still refreshes a pending participant at the limit', async () => {
+        const { receive, store } = await makeService({ user, owner, limit: 1 });
+        const t = now();
+
+        await receive(topicMessage(join(), { timestamp: `${t}.000000001` }));
+        const refreshed = await receive(topicMessage(join(), { timestamp: `${t}.000000002` }));
+
+        assert.equal(refreshed.joinMessageId, `${t}.000000002`);
+        assert.lengthOf(store.RemotePolicyParticipant, 1);
+    });
+
+    it('reopens a rejected participant on a new join without reconnecting it', async () => {
+        const { receive, store, calls } = await makeService({ user, owner, disconnected: true });
+        const t = now();
+
+        const participant = await receive(topicMessage(join(), { timestamp: `${t}.000000001` }));
+        participant.status = RemoteParticipantStatus.REJECTED;
+        participant.sealedKey = null;
+        const document = join();
+        await receive(topicMessage(document, { timestamp: `${t}.000000002` }));
+
+        assert.equal(store.RemotePolicyParticipant[0].status, RemoteParticipantStatus.PENDING);
+        assert.deepEqual(store.RemotePolicyParticipant[0].sealedKey, document.messageKey);
+        assert.lengthOf(calls.replies, 0);
+        assert.lengthOf(calls.reconnected, 0);
+        assert.lengthOf(store.DisconnectedPolicy, 1);
+    });
+
+    it('reconnects a disconnected approved participant, stores the new key and answers again', async () => {
+        const { receive, store, calls } = await makeService({ user, owner, disconnected: true });
+        const t = now();
+
+        const participant = await receive(topicMessage(join(), { timestamp: `${t}.000000001` }));
+        participant.status = RemoteParticipantStatus.APPROVED;
+        participant.sealedKey = null;
+        const newKey = PrivateKey.generate().toString();
+        await receive(topicMessage(join(newKey), { timestamp: `${t}.000000002` }));
+
+        assert.deepEqual(calls.reconnected, [{ policyId: 'policy-1', did: USER }]);
+        assert.lengthOf(store.DisconnectedPolicy, 0);
+        assert.deepEqual(calls.keys, [{ did: USER, messageId: POLICY, key: newKey }]);
+        assert.lengthOf(calls.replies, 1);
+        assert.isTrue(calls.replies[0].accepted);
+        assert.equal(calls.replies[0].key, newKey);
+        assert.equal(store.RemotePolicyParticipant[0].status, RemoteParticipantStatus.APPROVED);
+        assert.equal(store.RemotePolicyParticipant[0].joinMessageId, `${t}.000000002`);
+        assert.lengthOf(calls.users, 0);
+    });
+
+    it('does not reconnect on a replay of the approved join', async () => {
+        const { receive, calls } = await makeService({ user, owner, disconnected: true });
+        const data = topicMessage(join());
+
+        const participant = await receive(data);
+        participant.status = RemoteParticipantStatus.APPROVED;
+        await receive(data);
+
+        assert.lengthOf(calls.reconnected, 0);
+        assert.lengthOf(calls.replies, 0);
+    });
+
+    it('does not reconnect on a join signed with another key', async () => {
+        const forged = await didWithKeys(USER);
+        const { receive, calls } = await makeService({ user, owner, disconnected: true });
+        const t = now();
+
+        const participant = await receive(topicMessage(join(), { timestamp: `${t}.000000001` }));
+        participant.status = RemoteParticipantStatus.APPROVED;
+        const document = createRemoteJoinDocument(forged.document, owner.published, ACCOUNT, '0.0.5', POLICY, messageKey);
+        const error = await rejection(receive(topicMessage(document, { timestamp: `${t}.000000002` })));
+
+        assert.match(error?.message, /Invalid join proof/);
+        assert.lengthOf(calls.reconnected, 0);
     });
 });
 

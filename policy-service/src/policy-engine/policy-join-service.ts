@@ -1,8 +1,9 @@
 import {
     DataBaseHelper,
     DatabaseServer,
-    DidDocument,
+    DisconnectedPolicy,
     ExternalPolicy,
+    expireRemoteParticipants,
     IRemoteJoinDocument,
     IRemoteJoinReply,
     ITopicMessage,
@@ -14,15 +15,16 @@ import {
     PolicyActionMessage,
     PolicyJoinMessage,
     RemotePolicyParticipant,
+    remoteJoinLimits,
     resolvePublishedDidDocument,
+    saveRemoteUserMessageKey,
     sendRemoteJoinReply,
-    Topic,
     Users,
     VcHelper,
     verifyRemoteJoinProof,
     Wallet,
 } from '@guardian/common';
-import { DidDocumentStatus, RemoteJoinStatus, RemoteParticipantStatus, TopicType } from '@guardian/interfaces';
+import { RemoteJoinStatus, RemoteParticipantStatus } from '@guardian/interfaces';
 
 /**
  * Consensus time of a message id (`seconds.nanos`) in milliseconds
@@ -65,7 +67,12 @@ export class PolicyJoinService {
     }
 
     /**
-     * Process a join request on the Main instance
+     * Process a join request on the Main instance.
+     * Anyone can post to the actions topic, so a verified join only records a pending
+     * participant with the message key still sealed: the remote user, its DID document
+     * and its key are stored when the policy owner approves it.
+     * A newer join of an approved participant (for example after a full disconnection)
+     * reconnects the user.
      * @param data - topic message
      * @returns the participant, or null when the request is ignored
      */
@@ -92,6 +99,7 @@ export class PolicyJoinService {
         }
 
         const collection = new DataBaseHelper(RemotePolicyParticipant);
+        await expireRemoteParticipants(this.policyId);
         const existing = await collection.findOne({ policyId: this.policyId, did: proof.did });
         if (existing) {
             // a replayed or older join changes nothing
@@ -100,6 +108,16 @@ export class PolicyJoinService {
             }
             if (existing.joinMessageId && compareMessageIds(message.id, existing.joinMessageId) <= 0) {
                 return existing;
+            }
+        }
+        const approved = existing?.status === RemoteParticipantStatus.APPROVED;
+        const newPending = !existing || existing.status === RemoteParticipantStatus.REJECTED;
+        if (newPending) {
+            const { pendingLimit } = remoteJoinLimits();
+            const pending = await collection.count({ policyId: this.policyId, status: RemoteParticipantStatus.PENDING });
+            if (pending >= pendingLimit) {
+                console.warn(`Remote join of ${proof.did} to policy ${this.policyId} dropped: ${pending} requests are pending.`);
+                return null;
             }
         }
 
@@ -117,58 +135,73 @@ export class PolicyJoinService {
             consensusTime(message.id)
         );
 
+        if (approved) {
+            return await this.rejoin(existing, document, message.id);
+        }
+
+        const participant = existing || collection.create({
+            policyId: this.policyId,
+            policyMessageId: this.policyMessageId,
+            owner: this.policyOwner,
+            did: proof.did
+        });
+        participant.hederaAccountId = proof.hederaAccountId;
+        participant.topicId = proof.topicId;
+        participant.joinMessageId = message.id;
+        participant.issued = proof.issued;
+        participant.joinedAt = new Date();
+        participant.sealedKey = document.messageKey;
+        participant.status = RemoteParticipantStatus.PENDING;
+        const saved = await collection.save(participant);
+
+        if (this.policyOwnerId) {
+            NotificationHelper.info(
+                'Remote participant',
+                `A remote user ${proof.did} asked to join the policy`,
+                this.policyOwnerId
+            ).catch(() => null);
+        }
+        return saved;
+    }
+
+    /**
+     * A newer verified join of an approved participant: the home instance may have a new
+     * message key, and the user may have disconnected from the policy.
+     * @param participant
+     * @param document
+     * @param joinMessageId
+     */
+    private async rejoin(
+        participant: RemotePolicyParticipant,
+        document: IRemoteJoinDocument,
+        joinMessageId: string
+    ): Promise<RemotePolicyParticipant> {
+        const collection = new DataBaseHelper(RemotePolicyParticipant);
         const ownerDidDocument = await new VcHelper().loadDidDocument(this.policyOwner, this.policyOwnerId);
         if (!ownerDidDocument) {
             throw new Error('Policy owner DID document is not available.');
         }
         const messageKey = openRemoteJoinMessageKey(document, ownerDidDocument);
+        await saveRemoteUserMessageKey(participant.did, this.policyMessageId, messageKey, this.policyOwnerId);
 
-        const user = await new Users().createRemoteUser(
-            proof.did,
-            proof.hederaAccountId,
-            this.policyOwner,
-            this.policyOwnerId
-        );
-        await this.saveDidDocument(didDocument.getDid(), didDocument.getDocument(), proof.topicId);
-        await this.saveMessageKey(proof.did, messageKey);
-
-        let participant: RemotePolicyParticipant;
-        if (existing) {
-            participant = existing;
-            participant.hederaAccountId = proof.hederaAccountId;
-            participant.topicId = proof.topicId;
-            participant.joinMessageId = message.id;
-            participant.issued = proof.issued;
-            if (participant.status !== RemoteParticipantStatus.APPROVED) {
-                participant.status = RemoteParticipantStatus.PENDING;
-            }
-            await collection.save(participant);
-        } else {
-            participant = await collection.save({
-                policyId: this.policyId,
-                policyMessageId: this.policyMessageId,
-                owner: this.policyOwner,
-                did: proof.did,
-                hederaAccountId: proof.hederaAccountId,
-                topicId: proof.topicId,
-                joinMessageId: message.id,
-                issued: proof.issued,
-                status: RemoteParticipantStatus.PENDING
-            });
+        const disconnected = await new DataBaseHelper(DisconnectedPolicy)
+            .findOne({ policyId: this.policyId, owner: participant.did });
+        if (disconnected) {
+            await DatabaseServer.reconnectPolicy(this.policyId, participant.did);
+            await new DatabaseServer().reconnectPolicyDocuments(this.policyId, { did: participant.did } as any);
         }
 
-        if (participant.status === RemoteParticipantStatus.APPROVED) {
-            // the home instance sent a new join, so it lost the earlier reply
-            participant.replyMessageId = await sendRemoteJoinReply(participant, true, this.policyOwnerId);
-            await collection.save(participant);
-        } else if (this.policyOwnerId) {
-            NotificationHelper.info(
-                'Remote participant',
-                `A remote user ${user?.did || proof.did} asked to join the policy`,
-                this.policyOwnerId
-            ).catch(() => null);
-        }
-        return participant;
+        participant.hederaAccountId = document.proof.hederaAccountId;
+        participant.topicId = document.proof.topicId;
+        participant.joinMessageId = joinMessageId;
+        participant.issued = document.proof.issued;
+        participant.joinedAt = new Date();
+        participant.sealedKey = null;
+        await collection.save(participant);
+
+        // the home instance sent a new join, so it waits for a new answer
+        participant.replyMessageId = await sendRemoteJoinReply(participant, true, this.policyOwnerId, messageKey);
+        return await collection.save(participant);
     }
 
     /**
@@ -239,46 +272,5 @@ export class PolicyJoinService {
             // notification is best-effort
         }
         return item;
-    }
-
-    private async saveDidDocument(did: string, document: any, topicId: string): Promise<void> {
-        const didCollection = new DataBaseHelper(DidDocument);
-        const row = await didCollection.findOne({ did });
-        if (!row) {
-            await didCollection.save({
-                did,
-                document,
-                status: DidDocumentStatus.CREATE,
-                topicId,
-                verificationMethods: {}
-            });
-        }
-        const topicCollection = new DataBaseHelper(Topic);
-        const topic = await topicCollection.findOne({ topicId });
-        if (!topic) {
-            await topicCollection.save({
-                type: TopicType.UserTopic,
-                name: TopicType.UserTopic,
-                description: TopicType.UserTopic,
-                owner: did,
-                topicId,
-                policyId: null,
-                policyUUID: null,
-            });
-        }
-    }
-
-    private async saveMessageKey(did: string, messageKey: string): Promise<void> {
-        const keys = await DatabaseServer.getKeys({ messageId: this.policyMessageId, owner: did });
-        if (!keys?.length) {
-            await DatabaseServer.saveKey({ messageId: this.policyMessageId, owner: did });
-        }
-        await new Wallet().setUserKey(
-            did,
-            KeyType.MESSAGE_KEY,
-            `${did}#${this.policyMessageId}`,
-            messageKey,
-            this.policyOwnerId
-        );
     }
 }
