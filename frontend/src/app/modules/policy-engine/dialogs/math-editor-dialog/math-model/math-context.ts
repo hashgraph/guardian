@@ -92,17 +92,30 @@ function boxedScalar(value: unknown, ce: ComputeEngine): BoxedExpression {
     return typeof scalar === 'number' ? ce.number(scalar) : ce.string(scalar);
 }
 
+const TABLE_LOOKUP_FUNCTIONS = ['LookupTwo', 'LookupMin', 'LookupMax', 'EqualString'];
+
 function rewriteTableFormula(
     expression: any,
     tableColumns: Map<string, ITableFormulaColumn>,
-    getNumericAlias: (name: string) => string
+    getNumericAlias: (name: string) => string,
+    getLookupAlias: (name: string) => string,
+    inLookup: boolean = false
 ): { expression: any; changed: boolean } {
+    if (inLookup && typeof expression === 'string' && tableColumns.has(expression)) {
+        return { expression: getLookupAlias(expression), changed: true };
+    }
     if (!Array.isArray(expression)) {
         return { expression, changed: false };
     }
     const operator = expression[0];
-    const operands = expression.slice(1).map((operand) =>
-        rewriteTableFormula(operand, tableColumns, getNumericAlias)
+    const operands = expression.slice(1).map((operand, index) =>
+        rewriteTableFormula(
+            operand,
+            tableColumns,
+            getNumericAlias,
+            getLookupAlias,
+            inLookup || TABLE_LOOKUP_FUNCTIONS.includes(operator) || (operator === 'Lookup' && index === 2)
+        )
     );
     if (operator === 'Sum' && expression.length === 2 &&
         typeof expression[1] === 'string' && tableColumns.has(expression[1])) {
@@ -116,7 +129,7 @@ function rewriteTableFormula(
         return {
             expression: [
                 'At',
-                getNumericAlias(expression[1]),
+                inLookup ? getLookupAlias(expression[1]) : getNumericAlias(expression[1]),
                 ...operands.slice(1).map((operand) => operand.expression)
             ],
             changed: true
@@ -275,6 +288,7 @@ export class MathContext {
     private readonly tableColumns: Map<string, ITableFormulaColumn> = new Map();
     private readonly tableColumnSources: Map<string, string> = new Map();
     private readonly numericTableAliases: Map<string, string> = new Map();
+    private readonly lookupTableAliases: Map<string, string> = new Map();
     private readonly tableWarnings: Map<string, string> = new Map();
 
     constructor(list: (MathFormula | FieldLink)[]) {
@@ -404,6 +418,7 @@ export class MathContext {
         this.scope = {};
         this.getField = this.__get.bind(doc);
         this.numericTableAliases.clear();
+        this.lookupTableAliases.clear();
         this.tableWarnings.clear();
         try {
             const ce = createComputeEngine();
@@ -426,12 +441,22 @@ export class MathContext {
                 }
                 return alias;
             };
+            const getLookupAlias = (name: string): string => {
+                const cached = this.lookupTableAliases.get(name);
+                if (cached) { return cached; }
+                const alias = `__table_formula_lookup_${this.lookupTableAliases.size}`;
+                const values = this.tableColumns.get(name)?.values || [];
+                this.lookupTableAliases.set(name, alias);
+                ce.assign(alias, ce.box(['List', ...values.map((value) => boxedScalar(value, ce))]));
+                return alias;
+            };
             const parseFormula = (latex: string): BoxedExpression => {
                 const parsed = ce.parse(latex);
                 const rewritten = rewriteTableFormula(
                     parsed.json,
                     this.tableColumns,
-                    getNumericAlias
+                    getNumericAlias,
+                    getLookupAlias
                 );
                 return rewritten.changed ? ce.box(rewritten.expression as any) : parsed;
             };

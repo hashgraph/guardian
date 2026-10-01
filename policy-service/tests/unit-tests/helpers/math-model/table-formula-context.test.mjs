@@ -245,6 +245,104 @@ describe('MathContext Table columns', () => {
         );
     });
 
+    const cohortMarker = JSON.stringify({
+        type: 'table',
+        fileId: 'cohort-file',
+        columnKeys: ['instanceId', 'year', 'delta'],
+        columnNames: ['Cohort', 'Year', 'Delta']
+    });
+    const cohortPack = {
+        'cohort-file': {
+            columnKeys: ['instanceId', 'year', 'delta'],
+            rows: [
+                { instanceId: 'C1', year: '2020', delta: '100' },
+                { instanceId: 'C1', year: '2021', delta: '150' },
+                { instanceId: 'C2', year: '2021', delta: '80' }
+            ]
+        }
+    };
+    const cohortLinks = () => [
+        link('inst', 'area.instanceId'),
+        link('year', 'area.year'),
+        link('delta', 'area.delta')
+    ];
+
+    it('finds the previous-year value with LookupTwo over Table columns', () => {
+        const context = new MathContext([
+            ...cohortLinks(),
+            formula(
+                'prevYear',
+                '\\mathrm{Map}\\left(1..\\mathrm{Length}\\left(\\mathrm{year}\\right),\\ \\mathrm{i} \\mapsto '
+                + '\\mathrm{At}\\left(\\mathrm{year},\\ \\mathrm{i}\\right) - 1\\right)'
+            ),
+            formula(
+                'deltaPrev',
+                '\\mathrm{Map}\\left(1..\\mathrm{Length}\\left(\\mathrm{year}\\right),\\ \\mathrm{i} \\mapsto '
+                + '\\mathrm{LookupTwo}\\left(\\mathrm{delta},\\ \\mathrm{inst},\\ \\mathrm{At}\\left(\\mathrm{inst},\\ \\mathrm{i}\\right),'
+                + '\\ \\mathrm{year},\\ \\mathrm{At}\\left(\\mathrm{prevYear},\\ \\mathrm{i}\\right)\\right)\\right)'
+            )
+        ]);
+
+        const result = context.setDocument(documentMap({ area: cohortMarker }), cohortPack);
+
+        assert.deepEqual(result.scope.prevYear, [2019, 2020, 2020]);
+        assert.deepEqual(result.scope.deltaPrev, [0, 100, 0]);
+        assert.deepEqual(context.getWarnings(), []);
+    });
+
+    it('keeps a text key read with At inside Lookup', () => {
+        const context = new MathContext([
+            ...cohortLinks(),
+            formula(
+                'firstDelta',
+                '\\mathrm{Lookup}\\left(\\mathrm{delta},\\ \\mathrm{inst},\\ \\mathrm{At}\\left(\\mathrm{inst},\\ 3\\right)\\right)'
+            )
+        ]);
+
+        const result = context.setDocument(documentMap({ area: cohortMarker }), cohortPack);
+
+        assert.equal(result.scope.firstDelta, 80);
+        assert.deepEqual(context.getWarnings(), []);
+    });
+
+    it('reads Table columns as numbers and text in LookupMin, LookupMax and EqualString', () => {
+        const context = new MathContext([
+            ...cohortLinks(),
+            formula(
+                'firstC1',
+                '\\mathrm{LookupMin}\\left(\\mathrm{delta},\\ \\mathrm{inst},\\ \\mathrm{At}\\left(\\mathrm{inst},\\ 1\\right),\\ \\mathrm{year}\\right)'
+            ),
+            formula(
+                'lastC1',
+                '\\mathrm{LookupMax}\\left(\\mathrm{delta},\\ \\mathrm{inst},\\ \\mathrm{At}\\left(\\mathrm{inst},\\ 1\\right),\\ \\mathrm{year}\\right)'
+            ),
+            formula(
+                'isC2',
+                '\\mathrm{EqualString}\\left(\\mathrm{At}\\left(\\mathrm{inst},\\ 3\\right),\\ \\text{C2}\\right)'
+            )
+        ]);
+
+        const result = context.setDocument(documentMap({ area: cohortMarker }), cohortPack);
+
+        assert.equal(result.scope.firstC1, 100);
+        assert.equal(result.scope.lastC1, 150);
+        assert.equal(result.scope.isC2, 1);
+    });
+
+    it('still turns text into 0 with a warning when At is used in arithmetic', () => {
+        const context = new MathContext([
+            ...cohortLinks(),
+            formula('wrong', '\\mathrm{At}\\left(\\mathrm{inst},\\ 1\\right) + 1')
+        ]);
+
+        const result = context.setDocument(documentMap({ area: cohortMarker }), cohortPack);
+
+        assert.equal(result.scope.wrong, 1);
+        assert.deepEqual(context.getWarnings(), [
+            'Table column "Cohort" replaced 3 nonnumeric cells with 0.'
+        ]);
+    });
+
     it('rejects a declared column above the shared row limit', () => {
         const context = new MathContext([link('area', 'siteTable.area.total')]);
         const largeRows = Array.from({ length: 10001 }, (_, index) => ({

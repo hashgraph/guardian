@@ -645,6 +645,9 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     public getFieldType(type: 'input' | 'output', schema: string | null, link: string): string {
         const field = this.getField(type, schema, link);
         if (field) {
+            if (field.field.customType === 'table') {
+                return 'table' + '[]'.repeat(field.arrayLvl);
+            }
             return field.type;
         } else {
             return '';

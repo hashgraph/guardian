@@ -139,6 +139,60 @@ describe('MathEditorDialogComponent Table column fields', () => {
         expect(fields[0].fields[0].field.customType).toBe('');
     });
 
+    it('shows a Table field as table and keeps the type of its columns', () => {
+        const dialog = makeDialog();
+        const fields = dialog.getSchemaFields(schema([
+            { name: 'Area (ha)', key: 'area_ha' }
+        ]));
+        dialog.inputSchemaFieldMap = dialog.createFieldMap(fields, new Map());
+        dialog.outputSchemaFieldMap = dialog.createFieldMap(schema([
+            { name: 'Area (ha)', key: 'area_ha' }
+        ]).getDeepFields(), new Map());
+
+        expect(dialog.getFieldType('input', null, 'siteTable')).toBe('table');
+        expect(dialog.getFieldType('output', null, 'siteTable')).toBe('table');
+        expect(dialog.getFieldType('input', null, 'siteTable.area_ha')).toBe('string[]');
+        expect(dialog.getFieldType('input', null, 'missing')).toBe('');
+    });
+
+    it('shows a Table without declared columns as table', () => {
+        const dialog = makeDialog();
+        dialog.outputSchemaFieldMap = dialog.createFieldMap(schema(undefined).getDeepFields(), new Map());
+
+        expect(dialog.getFieldType('output', null, 'siteTable')).toBe('table');
+    });
+
+    it('shows a repeated Table as table[] and leaves other fields as they are', () => {
+        const dialog = makeDialog();
+        dialog.outputSchemaFieldMap = new Map<string, any>([
+            ['tables', {
+                path: 'tables',
+                arrayLvl: 1,
+                type: 'string[]',
+                field: { name: 'tables', type: 'string', customType: 'table', isArray: true },
+                fields: []
+            }],
+            ['note', {
+                path: 'note',
+                arrayLvl: 0,
+                type: 'string',
+                field: { name: 'note', type: 'string', isArray: false },
+                fields: []
+            }],
+            ['amounts', {
+                path: 'amounts',
+                arrayLvl: 1,
+                type: 'number[]',
+                field: { name: 'amounts', type: 'number', isArray: true },
+                fields: []
+            }]
+        ]);
+
+        expect(dialog.getFieldType('output', null, 'tables')).toBe('table[]');
+        expect(dialog.getFieldType('output', null, 'note')).toBe('string');
+        expect(dialog.getFieldType('output', null, 'amounts')).toBe('number[]');
+    });
+
     it('keeps Table columns out of an Output path bound to a schema', () => {
         const dialog = makeDialog();
         const outputSchema = schema([{ name: 'Area (ha)', key: 'area_ha' }]);
