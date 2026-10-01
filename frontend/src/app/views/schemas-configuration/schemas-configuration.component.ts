@@ -3188,7 +3188,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
         const schemaMap = this.buildRefSchemaMap();
         const list = [...schemaMap.values()]
-            .filter(s => this.canDragSchema(s, schemaMap));
+            .filter(s => this.canDragSchema(s, schemaMap))
+            .sort((a, b) => this.compareRefSchemas(a, b));
         // Keep the currently-referenced schema selectable even when it isn't in the
         // draggable list, otherwise the dropdown value matches no option and shows blank.
         let result = list;
@@ -3216,6 +3217,16 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             if (schema.iri) { schemaMap.set(schema.iri, schema); }
         }
         return schemaMap;
+    }
+
+    private compareRefSchemas(a: Schema, b: Schema): number {
+        const featured = Number(!!b.templateFeatured) - Number(!!a.templateFeatured);
+        if (featured) { return featured; }
+        const aId = a.id || a._id || '';
+        const bId = b.id || b._id || '';
+        if (!aId || !bId) { return Number(!bId) - Number(!aId); }
+        if (aId === bId) { return 0; }
+        return aId < bId ? 1 : -1;
     }
 
     public enterSubSchema(field: SchemaField, event: Event): void {
