@@ -121,6 +121,34 @@
       </div>
     }
   </ng-template>
+  <ng-template #tableColumnsGrid let-item="item">
+    <div class="table-output-grid">
+      <table>
+        <thead>
+          <tr>
+            @for (column of getTableColumns(item); track column.key) {
+              <th>{{column.name}}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            @for (column of getTableColumns(item); track column.key) {
+              <td>
+                <input
+                  [(ngModel)]="item.columns[column.key]"
+                  pInputText
+                  type="text"
+                  placeholder="Name"
+                  [readOnly]="readonly"
+                  (change)="item.update()"/>
+              </td>
+            }
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-template>
   <ng-template #tableValues let-item="item" let-values="values" let-title="title">
     <div class="table-output">
       <label class="form-label">{{title}}Rows ({{values.length}})</label>
@@ -725,6 +753,18 @@
                       </div>
                       @if (item.isTable) {
                         <div class="table-output" [attr.error]="!item.validName">
+                          @if (canUseTableColumns(item)) {
+                            <div class="guardian-selector table-output-mode">
+                              <div
+                                class="guardian-selector-item"
+                                [attr.selected]="!item.columns"
+                                (click)="setTableColumnsMode(item, false)">By cells</div>
+                              <div
+                                class="guardian-selector-item"
+                                [attr.selected]="!!item.columns"
+                                (click)="setTableColumnsMode(item, true)">By columns</div>
+                            </div>
+                          }
                           @if (getTableColumns(item).length && item.tables) {
                             <label class="form-label">Tables ({{item.tables.length}} / {{maxTables}}), rows ({{getTableRowCount(item)}} / {{maxTableRows}})</label>
                             @for (rows of item.tables; track $index; let tableIndex = $index) {
@@ -754,6 +794,9 @@
                                 <div class="guardian-button-label">Add Table</div>
                               </button>
                             }
+                          } @else if (item.columns && getTableColumns(item).length) {
+                            <label class="form-label">Columns: one variable per column. Element N of a list goes to row N; a single value goes to every row.</label>
+                            <ng-container *ngTemplateOutlet="tableColumnsGrid; context: {item: item}"></ng-container>
                           } @else {
                             <label class="form-label">Rows ({{getTableRowCount(item)}} / {{maxTableRows}})</label>
                             @if (getTableColumns(item).length) {

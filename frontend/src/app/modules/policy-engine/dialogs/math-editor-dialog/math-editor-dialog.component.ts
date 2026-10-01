@@ -202,6 +202,8 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     public readonly maxTables = FieldLink.MAX_TABLES;
     public tableRowsToAdd: { [id: string]: number | null } = {};
     private tableRowsDraft: { [id: string]: Record<string, string>[][] } = {};
+    private tableColumnsDraft: { [id: string]: Record<string, string> } = {};
+    private tableColumnsMode: { [id: string]: boolean } = {};
 
     constructor(
         private dialogRef: DynamicDialogRef,
@@ -270,6 +272,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             if (item.tables && columns.length) {
                 item.tables = item.tables.map((rows) => this.syncTableRows(rows, columns));
             }
+            this.openTableColumns(item);
         }
     }
 
@@ -365,6 +368,8 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             }
         }
         delete this.tableRowsDraft[output.id];
+        delete this.tableColumnsDraft[output.id];
+        delete this.tableColumnsMode[output.id];
         this.engine.deleteOutput(output);
     }
 
@@ -659,6 +664,24 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         return !!node && node.arrayLvl === 1 && this.getTableColumns(item).length > 0;
     }
 
+    public canUseTableColumns(item: FieldLink): boolean {
+        return this.getTableColumns(item).length > 0 && !this.isTableListField(item);
+    }
+
+    public setTableColumnsMode(item: FieldLink, enabled: boolean): void {
+        if (this.readonly || !this.canUseTableColumns(item) || enabled === !!item.columns) {
+            return;
+        }
+        if (enabled) {
+            this.tableColumnsMode[item.id] = true;
+            this.useTableColumns(item);
+        } else {
+            delete this.tableColumnsMode[item.id];
+            this.useTableCells(item);
+        }
+        item.update();
+    }
+
     public getTableValues(item: FieldLink): Record<string, any>[] | null {
         const value = item.value;
         if (item.isTable && !item.isTableList && value?.type === 'table' && Array.isArray(value.rows) && !value.fileId) {
@@ -763,6 +786,10 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             item.update();
             return;
         }
+        if (item.columns) {
+            this.tableColumnsDraft[item.id] = item.columns;
+            item.columns = null;
+        }
         const columns = this.getTableColumns(item);
         const draft = this.tableRowsDraft[item.id];
         const grids = item.isTable
@@ -789,7 +816,42 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             item.rows = null;
             item.tables = null;
         }
+        if (this.tableColumnsMode[item.id] && this.canUseTableColumns(item)) {
+            this.useTableColumns(item);
+        }
         item.update();
+    }
+
+    private openTableColumns(item: FieldLink): void {
+        if (!item.columns) {
+            return;
+        }
+        this.tableColumnsMode[item.id] = true;
+        const columns = this.getTableColumns(item);
+        if (columns.length) {
+            item.columns = this.syncTableRows([item.columns], columns)[0];
+        }
+    }
+
+    private useTableColumns(item: FieldLink): void {
+        if (item.rows) {
+            const draft = this.tableRowsDraft[item.id];
+            this.tableRowsDraft[item.id] = [item.rows, ...(draft ? draft.slice(1) : [])];
+        }
+        item.columns = this.syncTableRows([this.tableColumnsDraft[item.id] || {}], this.getTableColumns(item))[0];
+        delete this.tableColumnsDraft[item.id];
+        item.rows = null;
+        item.tables = null;
+    }
+
+    private useTableCells(item: FieldLink): void {
+        if (item.columns) {
+            this.tableColumnsDraft[item.id] = item.columns;
+        }
+        const draft = this.tableRowsDraft[item.id];
+        item.columns = null;
+        item.rows = this.syncTableRows(draft?.[0] || [{}], this.getTableColumns(item));
+        item.tables = null;
     }
 
     private syncTableRows(

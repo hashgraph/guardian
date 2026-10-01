@@ -53,6 +53,8 @@ describe('MathEditorDialogComponent Table column fields', () => {
     function makeDialog(): any {
         const dialog: any = Object.create(MathEditorDialogComponent.prototype);
         dialog.tableRowsDraft = {};
+        dialog.tableColumnsDraft = {};
+        dialog.tableColumnsMode = {};
         return dialog;
     }
 
@@ -264,6 +266,9 @@ describe('MathEditorDialogComponent Table outputs', () => {
         dialog.maxTableRowsPerAdd = 20;
         dialog.tableRowsToAdd = {};
         dialog.tableRowsDraft = {};
+        dialog.tableColumnsDraft = {};
+        dialog.tableColumnsMode = {};
+        dialog.readonly = false;
         return dialog;
     }
 
@@ -577,6 +582,146 @@ describe('MathEditorDialogComponent Table outputs', () => {
 
         expect(rows).toEqual([{ year: 'y', co2: '' }]);
     });
+
+    it('offers the columns mode only for a single declared Table', () => {
+        const dialog = makeDialog();
+
+        expect(dialog.canUseTableColumns(output('results'))).toBeTrue();
+        expect(dialog.canUseTableColumns(output('group.results'))).toBeTrue();
+        expect(dialog.canUseTableColumns(output('nested.results'))).toBeFalse();
+        expect(dialog.canUseTableColumns(output('legacy'))).toBeFalse();
+        expect(dialog.canUseTableColumns(output('total'))).toBeFalse();
+    });
+
+    it('switches a single Table between cells and columns and keeps what was typed in both', () => {
+        const dialog = makeDialog();
+        const item = output();
+        dialog.onPathChange(item, 'results', 'output');
+        item.rows![0].year = 'y';
+
+        dialog.setTableColumnsMode(item, true);
+        expect(item.columns).toEqual({ year: '', co2: '' });
+        expect(item.rows).toBeNull();
+        expect(item.isTable).toBeTrue();
+        item.columns!.year = 'years';
+
+        dialog.setTableColumnsMode(item, false);
+        expect(item.columns).toBeNull();
+        expect(item.rows).toEqual([{ year: 'y', co2: '' }]);
+
+        dialog.setTableColumnsMode(item, true);
+        expect(item.columns).toEqual({ year: 'years', co2: '' });
+        expect(item.rows).toBeNull();
+    });
+
+    it('does not switch modes in a read-only dialog', () => {
+        const dialog = makeDialog();
+        const item = output();
+        dialog.onPathChange(item, 'results', 'output');
+        dialog.readonly = true;
+
+        dialog.setTableColumnsMode(item, true);
+
+        expect(item.columns).toBeNull();
+        expect(item.rows).toEqual([{ year: '', co2: '' }]);
+    });
+
+    it('keeps the columns while the path passes through an unknown path and a known non-table field', () => {
+        const dialog = makeDialog();
+        const item = output();
+        dialog.onPathChange(item, 'results', 'output');
+        dialog.setTableColumnsMode(item, true);
+        item.columns!.year = 'years';
+
+        dialog.onPathChange(item, 'resul', 'output');
+        expect(item.columns).toEqual({ year: 'years', co2: '' });
+
+        dialog.onPathChange(item, 'total', 'output');
+        expect(item.isTable).toBeFalse();
+        expect(item.columns).toBeNull();
+
+        dialog.onPathChange(item, 'results', 'output');
+        expect(item.columns).toEqual({ year: 'years', co2: '' });
+        expect(item.rows).toBeNull();
+    });
+
+    it('uses cells for a repeated Table and returns to columns on the single Table', () => {
+        const dialog = makeDialog();
+        const item = output();
+        dialog.onPathChange(item, 'results', 'output');
+        item.rows![0].year = 'y';
+        dialog.setTableColumnsMode(item, true);
+        item.columns!.year = 'years';
+
+        dialog.selectPathSuggestion(item, 'nested.results', 'output');
+        expect(item.columns).toBeNull();
+        expect(item.tables).toEqual([[{ year: 'y' }]]);
+
+        dialog.selectPathSuggestion(item, 'results', 'output');
+        expect(item.columns).toEqual({ year: 'years', co2: '' });
+        expect(item.tables).toBeNull();
+
+        dialog.setTableColumnsMode(item, false);
+        expect(item.rows).toEqual([{ year: 'y', co2: '' }]);
+    });
+
+    it('moves the columns to the columns of another single Table', () => {
+        const dialog = makeDialog();
+        const item = output();
+        dialog.onPathChange(item, 'results', 'output');
+        dialog.setTableColumnsMode(item, true);
+        item.columns!.year = 'years';
+        item.columns!.co2 = 'c';
+
+        dialog.selectPathSuggestion(item, 'group.results', 'output');
+
+        expect(item.columns).toEqual({ year: 'years' });
+    });
+
+    it('opens a saved column output in columns mode, aligned to the declared columns', () => {
+        const dialog = makeDialog();
+        const item = FieldLink.from({
+            type: MathItemType.LINK,
+            name: '',
+            description: '',
+            field: 'results',
+            schema: '#out',
+            columns: { year: 'years', old: 'x' }
+        })!;
+
+        dialog.openTableColumns(item);
+        expect(item.columns).toEqual({ year: 'years', co2: '' });
+        expect(dialog.tableColumnsMode[item.id]).toBeTrue();
+
+        dialog.onPathChange(item, 'total', 'output');
+        dialog.onPathChange(item, 'results', 'output');
+        expect(item.columns).toEqual({ year: 'years', co2: '' });
+    });
+
+    it('leaves a saved grid output as it is when it opens', () => {
+        const dialog = makeDialog();
+        const item = output('results');
+        item.rows = [{ year: 'y', co2: '' }];
+
+        dialog.openTableColumns(item);
+
+        expect(dialog.tableColumnsMode[item.id]).toBeUndefined();
+        expect(item.rows).toEqual([{ year: 'y', co2: '' }]);
+    });
+
+    it('forgets the columns and the mode when the output is deleted', () => {
+        const dialog = makeDialog();
+        dialog.engine = { deleteOutput: () => undefined };
+        const item = output();
+        dialog.onPathChange(item, 'results', 'output');
+        dialog.setTableColumnsMode(item, true);
+        dialog.onPathChange(item, 'total', 'output');
+
+        dialog.deleteOutput(item);
+
+        expect(dialog.tableColumnsDraft).toEqual({});
+        expect(dialog.tableColumnsMode).toEqual({});
+    });
 });
 
 describe('MathEditorDialogComponent Table output test results', () => {
@@ -776,5 +921,49 @@ describe('MathEditorDialogComponent Table output test results', () => {
 
         expect(dialog.getTableListValues(output)).toBeNull();
         expect(output.value).toBe('set by code');
+    });
+
+    function columnOutput(columns: Record<string, string>): FieldLink {
+        const link = FieldLink.from({
+            type: MathItemType.LINK,
+            name: '',
+            description: '',
+            field: 'results',
+            schema: '#out',
+            columns
+        })!;
+        link.update();
+        return link;
+    }
+
+    it('fills a column table with one row per list element', async () => {
+        const output = columnOutput({ year: 'y', co2: 'c', site: 's' });
+        const dialog = makeDialog([output], { y: [2020, 2021], c: [42], s: 'S1' });
+
+        await dialog.onTest();
+
+        expect(dialog.getTableValues(output)).toEqual([
+            { year: 2020, co2: 42, site: 'S1' },
+            { year: 2021, co2: '', site: 'S1' }
+        ]);
+        expect(JSON.parse(dialog.result.output)).toEqual({
+            results: {
+                type: 'table',
+                rows: [
+                    { year: 2020, co2: 42, site: 'S1' },
+                    { year: 2021, co2: '', site: 'S1' }
+                ]
+            }
+        });
+    });
+
+    it('shows the row limit error of a column table as its value', async () => {
+        const output = columnOutput({ year: 'y' });
+        const dialog = makeDialog([output], { y: new Array(10001).fill(1) });
+
+        await dialog.onTest();
+
+        expect(output.value).toBe('Error: Too many rows: 10001. The limit is 10000');
+        expect(dialog.getTableValues(output)).toBeNull();
     });
 });
