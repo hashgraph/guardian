@@ -181,4 +181,42 @@ describe('@unit auth-service – remote users without a login', function () {
         }
         assert.equal(state.saved.length, 0);
     });
+
+    it('marks only newly created remote users as created', async () => {
+        state.user = null;
+        const created = await call('CREATE_REMOTE_USER', { did: loginLess.did, hederaAccountId: '0.0.100', parent: 'did:sr' });
+        assert.equal(created.body.created, true);
+
+        state.user = { ...loginLess };
+        const reused = await call('CREATE_REMOTE_USER', { did: loginLess.did, hederaAccountId: '0.0.100', parent: 'did:sr' });
+        assert.equal(reused.body.created, false);
+    });
+});
+
+describe('@unit auth-service – role handlers do not match a user without a username', function () {
+    this.timeout(60000);
+    let roleHandlers;
+
+    before(async () => {
+        capturedHandlers.length = 0;
+        const overrides = { '@guardian/common': { DatabaseServer: FakeDatabaseServer } };
+        const utils = await loadService('../dist/utils/index.js', overrides);
+        const { RoleService } = await loadService('../dist/api/role-service.js', overrides, { '#utils': utils });
+        new RoleService().registerListeners({ async error() {}, async info() {}, async warn() {} });
+        roleHandlers = new Map(capturedHandlers.map(({ event, cb }) => [event, cb]));
+    });
+
+    it('refuses to update, delegate or read the roles of an empty username', async () => {
+        state.user = { ...loginLess };
+        const owner = { creator: 'did:sr', owner: 'did:sr' };
+        for (const username of [undefined, null, '']) {
+            const update = await roleHandlers.get('Enum.UPDATE_USER_ROLE')({ username, userRoles: ['r'], owner });
+            const delegate = await roleHandlers.get('Enum.DELEGATE_USER_ROLE')({ username, userRoles: ['r'], owner });
+            const read = await roleHandlers.get('Enum.GET_USER_PERMISSIONS')({ username });
+            assert.equal(update.type, 'error');
+            assert.equal(update.error, 'User does not exist');
+            assert.equal(delegate.type, 'error');
+            assert.equal(read.body, null);
+        }
+    });
 });

@@ -6,9 +6,9 @@ import esmock from 'esmock';
  * so anyone could register a document with keys of their choosing under another
  * user's DID. The stored copy must be the one the account published on Hedera.
  */
-async function load(messages, { getMessagesError } = {}) {
-    const calls = { getMessages: [], loaded: [] };
-    const { resolvePublishedDidDocument } = await esmock(
+async function load(messages, { getMessagesError, topicInfo = { submitKey: null }, topicInfoError } = {}) {
+    const calls = { getMessages: [], loaded: [], tasks: [] };
+    const { resolvePublishedDidDocument, resolveOwnerDidDocument } = await esmock(
         '../../dist/published-did-document.js',
         {
             '../../dist/message/message-server.js': {
@@ -34,9 +34,19 @@ async function load(messages, { getMessagesError } = {}) {
                     }),
                 },
             },
+            '@guardian/common/helpers/workers': {
+                Workers: class {
+                    async addRetryableTask(task) {
+                        calls.tasks.push(task);
+                        if (topicInfoError) { throw topicInfoError; }
+                        return topicInfo;
+                    }
+                },
+            },
+            '@guardian/interfaces': { WorkerTaskType: { GET_TOPIC_INFO_REST: 'get-topic-info-rest' } },
         }
     );
-    return { resolvePublishedDidDocument, calls };
+    return { resolvePublishedDidDocument, resolveOwnerDidDocument, calls };
 }
 
 const didMessage = (did, payer, keys) => ({
@@ -108,5 +118,63 @@ describe('@unit resolvePublishedDidDocument', function () {
 
         assert.match((await rejection(resolvePublishedDidDocument('did:user', null, '0.0.100', 'u1')))?.message, /Invalid topic/);
         assert.match((await rejection(resolvePublishedDidDocument('did:user', '0.0.5', '0.0.100', 'u1')))?.message, /Invalid topic/);
+    });
+});
+
+/*
+ * The DID topic of a Standard Registry normally has a submit key, so only the instance
+ * holding it can post: which account paid does not matter. Other users of that instance
+ * post their own DID documents to the same topic, and DID documents are never updated,
+ * so a later document claiming the owner's DID is a forgery. An open topic keeps the payer rule.
+ */
+describe('@unit resolveOwnerDidDocument', function () {
+    this.timeout(30000);
+
+    it('accepts the first document of the DID on a topic with a submit key, whoever paid', async () => {
+        const { resolveOwnerDidDocument, calls } = await load([
+            didMessage('did:other', '0.0.300', 'other-keys'),
+            didMessage('did:owner', '0.0.300', 'owner-keys'),
+            didMessage('did:owner', '0.0.100', 'later-keys'),
+        ], { topicInfo: { submitKey: 'key' } });
+
+        const document = await resolveOwnerDidDocument('did:owner', '0.0.7', '0.0.100', 'u1');
+
+        assert.equal(document.json.keys, 'owner-keys', 'a later document for the same DID is ignored');
+        assert.equal(calls.tasks[0].type, 'get-topic-info-rest');
+        assert.equal(calls.tasks[0].data.topicId, '0.0.7');
+    });
+
+    it('keeps the payer rule on a topic without a submit key', async () => {
+        const { resolveOwnerDidDocument } = await load([
+            didMessage('did:owner', '0.0.100', 'owner-keys'),
+            didMessage('did:owner', '0.0.666', 'forged-keys'),
+        ]);
+
+        const document = await resolveOwnerDidDocument('did:owner', '0.0.7', '0.0.100', 'u1');
+
+        assert.equal(document.json.keys, 'owner-keys');
+    });
+
+    it('rejects an open topic without a document from the payer', async () => {
+        const { resolveOwnerDidDocument } = await load([didMessage('did:owner', '0.0.666', 'forged-keys')]);
+
+        const error = await rejection(resolveOwnerDidDocument('did:owner', '0.0.7', '0.0.100', 'u1'));
+
+        assert.match(error?.message, /not published by the Hedera account/);
+    });
+
+    it('rejects a topic it cannot read', async () => {
+        const { resolveOwnerDidDocument } = await load([], { topicInfoError: new Error('mirror') });
+
+        assert.match((await rejection(resolveOwnerDidDocument('did:owner', '0.0.7', '0.0.100', 'u1')))?.message, /Invalid topic/);
+        assert.match((await rejection(resolveOwnerDidDocument('did:owner', null, '0.0.100', 'u1')))?.message, /Invalid topic/);
+    });
+
+    it('does not ask for topic info when resolving a registering user', async () => {
+        const { resolvePublishedDidDocument, calls } = await load([didMessage('did:user', '0.0.100', 'keys')]);
+
+        await resolvePublishedDidDocument('did:user', '0.0.5', '0.0.100', 'u1');
+
+        assert.lengthOf(calls.tasks, 0);
     });
 });
