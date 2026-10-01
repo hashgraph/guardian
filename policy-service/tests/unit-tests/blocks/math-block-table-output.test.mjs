@@ -198,6 +198,23 @@ describe('@unit mathBlock result tables', () => {
         assert.equal(gridFiles.length, 0);
     });
 
+    it('reads the table columns from the input schema when the block has no output schema', async () => {
+        const loaded = [];
+        PolicyUtils.loadSchemaByID = async (ref, id) => {
+            loaded.push(id);
+            return id === '#in'
+                ? { iri: '#in', name: 'In', document: outputSchemaDocument(columns), contextURL: 'ctx' }
+                : undefined;
+        };
+        const json = workerResult();
+
+        await block().storeResultTables(refWith({ outputSchema: '' }), json, 'user-1', []);
+
+        assert.deepEqual(loaded, ['#in']);
+        assert.equal(gridFiles.length, 1);
+        assert.deepEqual(JSON.parse(json.results).columnKeys, ['year', 'co2_tonnes']);
+    });
+
     const outputExpression = (output) => ({
         variables: [],
         formulas: [],

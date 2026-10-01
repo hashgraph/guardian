@@ -224,7 +224,7 @@ export class MathBlock {
             return;
         }
 
-        const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema);
+        const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema || options.inputSchema);
         const schema = new Schema(outputSchema);
         for (const link of outputs) {
             const value = getDocumentValueByPath(json, link.path);
