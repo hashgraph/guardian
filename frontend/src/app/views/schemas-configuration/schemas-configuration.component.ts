@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, HostListener, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpResponse } from '@angular/common/http';
 import { EMPTY, Observable, Subject, Subscription, firstValueFrom, forkJoin, of } from 'rxjs';
@@ -1107,6 +1107,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 return { variant: 'muted', icon: 'pi-eye', label: 'View' };
             default:
                 return { variant: 'muted', icon: null, label: String(schema.status ?? '') };
+        }
+    }
+
+    @HostListener('document:keydown.escape')
+    public onEscapeKey(): void {
+        if (this.showTemplateSettings) {
+            this.showTemplateSettings = false;
         }
     }
 

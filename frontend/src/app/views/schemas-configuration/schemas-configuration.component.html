@@ -280,10 +280,11 @@
         @if (showTemplateSettings) {
             <div class="st-drawer-backdrop" (click)="showTemplateSettings = false"></div>
         }
-        <div class="st-drawer" [class.open]="showTemplateSettings" [attr.aria-hidden]="!showTemplateSettings">
+        <div class="st-drawer" [class.open]="showTemplateSettings" [attr.aria-hidden]="!showTemplateSettings"
+             role="dialog" aria-modal="true" aria-labelledby="st-drawer-title">
             <div class="st-drawer-title">
                 <i class="pi pi-cog"></i>
-                <span>Template details</span>
+                <span id="st-drawer-title">Template details</span>
                 <button type="button" class="st-drawer-close" (click)="showTemplateSettings = false" title="Close">
                     <i class="pi pi-times"></i>
                 </button>
