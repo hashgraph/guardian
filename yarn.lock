@@ -5113,7 +5113,7 @@ __metadata:
     express: "npm:5.2.1"
     js-yaml: "npm:^4.1.0"
     mocha: "npm:^10.2.0"
-    morgan: "npm:^1.11.0"
+    morgan: "npm:^1.12.1"
     nodemon: "npm:3.1.14"
     swagger-ui-express: "npm:5.0.1"
     ts-node: "npm:^10.9.1"
@@ -11755,16 +11755,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"morgan@npm:^1.11.0":
-  version: 1.12.0
-  resolution: "morgan@npm:1.12.0"
+"morgan@npm:^1.12.1":
+  version: 1.12.1
+  resolution: "morgan@npm:1.12.1"
   dependencies:
     basic-auth: "npm:~2.0.1"
     debug: "npm:2.6.9"
     depd: "npm:~2.0.0"
     on-finished: "npm:~2.4.1"
     on-headers: "npm:~1.1.0"
-  checksum: 10c0/84480e2414c0df6986ae7ade3cd92f74b960e26e31ba4f8e0791d0a9909813882249f85fde03542b93cdefc7cd9a13f382a28f167a063d01d2877294e059970e
+  checksum: 10c0/543ef12deae8c30d12df9cd0412353dc6003a075530a2c093099a91792fa969778d5eeb863f0fdcbd0333f25281b17a5b7bc3e38cf759024679b24ca7b950be9
   languageName: node
   linkType: hard
 
