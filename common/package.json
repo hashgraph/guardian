@@ -83,8 +83,8 @@
         "dev": "tsc -w",
         "lint": "tslint --config ../tslint.json --project .",
         "prepack": "npm run build:prod",
-        "test": "mocha --file ./tests/helpers/quiet-console.mjs tests/**/*.test.mjs --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/common.xml --exit",
-        "test:local": "mocha --file ./tests/helpers/quiet-console.mjs tests/**/*.test.mjs --exit"
+        "test": "mocha --file ./tests/helpers/quiet-console.mjs 'tests/**/*.test.mjs' --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/common.xml --exit",
+        "test:local": "mocha --file ./tests/helpers/quiet-console.mjs 'tests/**/*.test.mjs' --exit"
     },
     "type": "module",
     "version": "3.7.1-rc"

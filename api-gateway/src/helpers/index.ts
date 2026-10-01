@@ -1,5 +1,6 @@
 export * from './ai-suggestions.js';
 export * from './cache-service.js';
+export * from './guardian-version.js';
 export * from './guardians.js';
 export * from './ipfs.js';
 export * from './org-response.js';

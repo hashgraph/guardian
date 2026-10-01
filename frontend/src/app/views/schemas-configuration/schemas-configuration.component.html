@@ -16,9 +16,83 @@
             }
             @if (selectedSchema) {
                 <i class="pi pi-chevron-right sc-breadcrumb-sep"></i>
-                <span class="sc-crumb-current">{{ selectedSchema.name }}</span>
             }
         </nav>
+
+        @if (selectedSchema) {
+            <div class="sc-identity" [class.open]="identityMenu.overlayVisible" (click)="identityMenu.toggle($event)">
+                <i class="pi pi-table sc-identity-icon"></i>
+                <div class="sc-identity-text">
+                    <span #schemaNameEl class="sc-identity-name"
+                          [pTooltip]="selectedSchema.name || 'Untitled schema'"
+                          [tooltipDisabled]="schemaNameEl.scrollWidth <= schemaNameEl.clientWidth"
+                          tooltipPosition="bottom">{{ selectedSchema.name || 'Untitled schema' }}</span>
+                    <span class="sc-identity-meta">
+                        @if (selectedSchema.version) {
+                            v{{ selectedSchema.version }} ·
+                        }
+                        Schema details
+                    </span>
+                </div>
+                <i class="pi pi-chevron-down sc-identity-caret"></i>
+            </div>
+            @if (selectedSchema.status) {
+                @let badge = getStatusBadge(selectedSchema);
+                <div class="sc-status-badge" [ngClass]="'sc-status-badge--' + badge.variant">
+                    @if (badge.icon) {
+                        <i class="pi" [ngClass]="badge.icon"></i>
+                    }
+                    <span>{{ badge.label }}</span>
+                </div>
+            }
+            @if (isTemplateConfigMode) {
+                <button
+                    class="sc-schema-featured-btn"
+                    [class.active]="isSelectedSchemaFeatured"
+                    [disabled]="isTemplateReadonly"
+                    [pTooltip]="isSelectedSchemaFeatured ? 'Unmark as featured' : 'Mark as featured'"
+                    tooltipPosition="bottom"
+                    (click)="toggleFeaturedForSelectedSchema()">
+                    <i class="pi" [class.pi-star-fill]="isSelectedSchemaFeatured" [class.pi-star]="!isSelectedSchemaFeatured"></i>
+                </button>
+            } @else if (isSchemaFeatured(selectedSchema)) {
+                <i class="pi pi-star-fill schema-featured-icon" pTooltip="Featured" tooltipPosition="bottom"></i>
+            }
+        }
+
+        <p-popover #identityMenu>
+            @if (selectedSchema) {
+                <div class="sc-identity-popover">
+                    <div class="sc-identity-popover-header">Schema details</div>
+                    <div class="sc-identity-row" (click)="copyIdentity('uuid', selectedSchema.uuid, $event)" title="Copy schema ID">
+                        <div class="sc-identity-row-label">Schema ID</div>
+                        <div class="sc-identity-row-value">
+                            <span class="sc-identity-row-mono">{{ selectedSchema.uuid || '–' }}</span>
+                            @if (selectedSchema.uuid) {
+                                <i class="pi" [ngClass]="copiedField === 'uuid' ? 'pi-check' : 'pi-copy'"></i>
+                            }
+                        </div>
+                    </div>
+                    <div class="sc-identity-row" (click)="copyIdentity('iri', selectedSchema.iri, $event)" title="Copy schema IRI">
+                        <div class="sc-identity-row-label">IRI</div>
+                        <div class="sc-identity-row-value">
+                            <span class="sc-identity-row-mono">{{ selectedSchema.iri || '–' }}</span>
+                            @if (selectedSchema.iri) {
+                                <i class="pi" [ngClass]="copiedField === 'iri' ? 'pi-check' : 'pi-copy'"></i>
+                            }
+                        </div>
+                    </div>
+                    @if (selectedSchema.version) {
+                        <div class="sc-identity-row sc-identity-row--plain">
+                            <div class="sc-identity-row-label">Version</div>
+                            <div class="sc-identity-row-value">
+                                <span class="sc-identity-row-plain-value">{{ selectedSchema.version }}</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </p-popover>
 
         <div class="sc-spacer"></div>
 
@@ -374,33 +448,6 @@
                     <!-- ── BUILDER ── -->
                     <div class="sc-editor">
 
-                        <div class="sc-editor-header">
-                            <div class="sc-editor-header-info">
-                                @if (isTemplateConfigMode) {
-                                    <button
-                                        class="sc-schema-featured-btn"
-                                        [class.active]="isSelectedSchemaFeatured"
-                                        [disabled]="isTemplateReadonly"
-                                        [pTooltip]="isSelectedSchemaFeatured ? 'Unmark as featured' : 'Mark as featured'"
-                                        tooltipPosition="top"
-                                        (click)="toggleFeaturedForSelectedSchema()">
-                                        <i class="pi" [class.pi-star-fill]="isSelectedSchemaFeatured" [class.pi-star]="!isSelectedSchemaFeatured"></i>
-                                    </button>
-                                }
-                                @if (isSchemaFeatured(selectedSchema) && !isTemplateConfigMode) {
-                                    <i class="pi pi-star-fill schema-featured-icon" pTooltip="Featured" tooltipPosition="right"></i>
-                                }
-                                <span class="sc-editor-title">{{ selectedSchema.name }}</span>
-                                <span class="sc-schema-status" [class.sc-schema-status--draft]="isDraft(selectedSchema)">
-                                    {{ selectedSchema.status }}
-                                </span>
-                            </div>
-                            <div class="sc-spacer"></div>
-                            @if (selectedSchema.version) {
-                                <span class="sc-editor-version">v{{ selectedSchema.version }}</span>
-                            }
-                        </div>
-
                         <!-- ── Root schema properties panel ── -->
                         <div class="sc-schema-props" [class.sc-schema-props--locked]="selectedSchemaSettingsLocked">
                             <div class="sc-schema-props-header">
@@ -414,9 +461,9 @@
                                     @if (!isTemplateConfigMode && selectedSchema.iri) {
                                         <span class="sc-schema-props-iri">({{ selectedSchema.iri }})</span>
                                         <i class="pi sc-schema-props-iri-copy"
-                                           [class.pi-check]="copiedIri"
-                                           [class.pi-copy]="!copiedIri"
-                                           [title]="copiedIri ? 'Copied' : 'Copy schema IRI'"
+                                           [class.pi-check]="copiedField === 'iri'"
+                                           [class.pi-copy]="copiedField !== 'iri'"
+                                           [title]="copiedField === 'iri' ? 'Copied' : 'Copy schema IRI'"
                                            (click)="copyIri(selectedSchema.iri, $event)"></i>
                                     }
                                 </div>
@@ -498,6 +545,12 @@
                                                   (ngModelChange)="markDirty()">
                                         </p-select>
                                     </div>
+                                    <div class="sc-schema-props-field">
+                                        <label class="sc-schema-props-label">IWA Version</label>
+                                        <span class="sc-schema-props-iwa"
+                                            [class.sc-schema-props-iwa--v3]="iwaVersionLabel(selectedSchema) === 'V3'"
+                                            [class.sc-schema-props-iwa--v1]="iwaVersionLabel(selectedSchema) === 'V1'">{{ iwaVersionLabel(selectedSchema) }}</span>
+                                    </div>
                                 </div>
                                 <div class="sc-schema-props-field sc-schema-props-field--full">
                                     <label class="sc-schema-props-label">Description <span class="sc-schema-props-optional">(optional)</span></label>
@@ -540,7 +593,7 @@
                                         <button class="sc-ctp-btn"
                                             [class.active]="activeCanvasTab === 'propertyAi'"
                                             (click)="setCanvasTab('propertyAi')">
-                                            <svg-icon class="svg-icon-16" src="/assets/images/icons/auto_awesome.svg"></svg-icon>Glossary AI
+                                            <svg-icon class="svg-icon-16" src="/assets/images/icons/auto_awesome.svg"></svg-icon>Suggest IWA Property Mappings
                                             @if (pendingSuggestionCount) {
                                                 <span class="sc-ctp-count">{{ pendingSuggestionCount }}</span>
                                             }
@@ -672,9 +725,9 @@
                                         @if (ds.iri) {
                                             <span class="sc-schema-props-iri">({{ ds.iri }})</span>
                                             <i class="pi sc-schema-props-iri-copy"
-                                               [class.pi-check]="copiedIri"
-                                               [class.pi-copy]="!copiedIri"
-                                               [title]="copiedIri ? 'Copied' : 'Copy schema IRI'"
+                                               [class.pi-check]="copiedField === 'iri'"
+                                               [class.pi-copy]="copiedField !== 'iri'"
+                                               [title]="copiedField === 'iri' ? 'Copied' : 'Copy schema IRI'"
                                                (click)="copyIri(ds.iri, $event)"></i>
                                         }
                                     </div>
@@ -703,6 +756,12 @@
                                                       [(ngModel)]="ds.entity"
                                                       (ngModelChange)="markDirty()">
                                             </p-select>
+                                        </div>
+                                        <div class="sc-schema-props-field">
+                                            <label class="sc-schema-props-label">IWA Version</label>
+                                            <span class="sc-schema-props-iwa"
+                                                [class.sc-schema-props-iwa--v3]="iwaVersionLabel(ds) === 'V3'"
+                                                [class.sc-schema-props-iwa--v1]="iwaVersionLabel(ds) === 'V1'">{{ iwaVersionLabel(ds) }}</span>
                                         </div>
                                     </div>
                                     <div class="sc-schema-props-field sc-schema-props-field--full">
@@ -849,7 +908,7 @@
                                 type="text"
                                 placeholder="Field title"
                                 [(ngModel)]="selectedField.title"
-                                (ngModelChange)="markDirty()" />
+                                (ngModelChange)="markDirty(); invalidateSelectedFieldSuggestion()" />
                         </div>
                         <div class="sc-rp-group">
                             <label class="sc-rp-label">Key</label>
@@ -869,7 +928,7 @@
                                 type="text"
                                 placeholder="Field description"
                                 [(ngModel)]="selectedField.description"
-                                (ngModelChange)="markDirty()" />
+                                (ngModelChange)="markDirty(); invalidateSelectedFieldSuggestion()" />
                         </div>
                         @if (selectedFieldIsString) {
                             <div class="sc-rp-group">
@@ -1088,82 +1147,6 @@
                                         </div>
                                     </ng-template>
                                 </p-select>
-                            </div>
-                        }
-
-                        @if (propertyOptions.length) {
-                            <div class="sc-rp-divider"></div>
-                            <div class="sc-rp-group">
-                                <div class="sc-rp-label-row">
-                                    <label class="sc-rp-label">Property</label>
-                                    @if (glossaryAiEnabled) {
-                                        <button type="button" class="sc-rp-suggest-btn" title="Suggest with Glossary AI"
-                                            [disabled]="rightPanelSuggestLoading"
-                                            (click)="suggestPropertyForSelectedField()">
-                                            @if (rightPanelSuggestLoading) {
-                                                <i class="pi pi-spin pi-spinner"></i>
-                                            } @else {
-                                                <svg-icon class="svg-icon-16" src="/assets/images/icons/auto_awesome.svg"></svg-icon>
-                                            }
-                                        </button>
-                                    }
-                                </div>
-                                <p-select
-                                    class="guardian-dropdown sc-rp-select"
-                                    panelStyleClass="guardian-dropdown-panel"
-                                    [options]="propertyOptions"
-                                    [showClear]="true"
-                                    [filter]="true"
-                                    filterBy="title"
-                                    optionLabel="title"
-                                    optionValue="title"
-                                    appendTo="body"
-                                    placeholder="Select a property"
-                                    [(ngModel)]="$any(selectedField).property"
-                                    (ngModelChange)="markDirty()">
-                                    <ng-template pTemplate="item" let-p>
-                                        <div class="sc-rp-prop-item">
-                                            <span [title]="p.title">{{ p.title }}</span>
-                                            @if (p.description) {
-                                                <span class="sc-rp-prop-desc">{{ p.description }}</span>
-                                            }
-                                        </div>
-                                    </ng-template>
-                                </p-select>
-                                @if (rightPanelSuggestUnavailable) {
-                                    <div class="sc-rp-ai-hint">
-                                        <span class="sc-rp-ai-hint-rationale">Glossary AI is unavailable right now.</span>
-                                    </div>
-                                } @else if (rightPanelSuggestion; as suggestion) {
-                                    @if (suggestion.candidates[0]; as topCandidate) {
-                                        <div class="sc-rp-ai-hint">
-                                            <div class="sc-rp-ai-hint-row">
-                                                <span class="sc-rp-ai-hint-title" [title]="topCandidate.title">{{ topCandidate.title }}</span>
-                                                <button type="button" class="sc-btn sc-btn-primary" (click)="acceptSuggestion(selectedField.name, topCandidate.title)">Apply</button>
-                                            </div>
-                                            @if (topCandidate.description) {
-                                                <div class="sc-rp-ai-hint-description">{{ topCandidate.description }}</div>
-                                            }
-                                            <span class="sc-rp-ai-hint-confidence">{{ (topCandidate.confidence * 100).toFixed(0) }}%</span>
-                                            <div class="sc-rp-ai-hint-rationale">{{ topCandidate.rationale }}</div>
-                                            <div class="sc-rp-ai-hint-actions">
-                                                @if (suggestion.candidates.length > 1) {
-                                                    <button type="button" class="sc-rp-ai-hint-link" (click)="rightPanelSuggestionExpanded = !rightPanelSuggestionExpanded">See more</button>
-                                                }
-                                                <button type="button" class="sc-rp-ai-hint-link" (click)="openInPropertyAiTab(selectedField.name)">Move to Glossary AI</button>
-                                            </div>
-                                            @if (rightPanelSuggestionExpanded) {
-                                                @for (candidate of suggestion.candidates.slice(1); track candidate.title) {
-                                                    <div class="sc-rp-ai-hint-row">
-                                                        <span class="sc-rp-ai-hint-title" [title]="candidate.title">{{ candidate.title }}</span>
-                                                        <span class="sc-rp-ai-hint-confidence">{{ (candidate.confidence * 100).toFixed(0) }}%</span>
-                                                        <button type="button" class="sc-btn" (click)="acceptSuggestion(selectedField.name, candidate.title)">Apply</button>
-                                                    </div>
-                                                }
-                                            }
-                                        </div>
-                                    }
-                                }
                             </div>
                         }
 
@@ -1453,6 +1436,77 @@
                                     </div>
                                 </div>
                             }
+                        }
+
+                        @if (propertyOptions.length) {
+                            <div class="sc-rp-divider"></div>
+                            <div class="sc-rp-group">
+                                <div class="sc-rp-label-row">
+                                    <label class="sc-rp-label">
+                                        IWA Mapping
+                                        <i class="pi pi-info-circle sc-rp-info"
+                                            pTooltip="Map this schema field to an IWA property"
+                                            tooltipPosition="top"
+                                            tooltipStyleClass="guardian-tooltip"></i>
+                                    </label>
+                                    @if (glossaryAiEnabled) {
+                                        <button type="button" class="sc-rp-suggest-btn" title="Suggest an IWA property mapping"
+                                            [disabled]="rightPanelSuggestLoading"
+                                            (click)="suggestPropertyForSelectedField()">
+                                            @if (rightPanelSuggestLoading) {
+                                                <i class="pi pi-spin pi-spinner"></i>
+                                            } @else {
+                                                <svg-icon class="svg-icon-16" src="/assets/images/icons/auto_awesome.svg"></svg-icon>
+                                            }
+                                        </button>
+                                    }
+                                </div>
+                                <p-select
+                                    class="guardian-dropdown sc-rp-select"
+                                    panelStyleClass="guardian-dropdown-panel"
+                                    [options]="propertyOptions"
+                                    [showClear]="true"
+                                    [filter]="true"
+                                    filterBy="title"
+                                    optionLabel="title"
+                                    optionValue="title"
+                                    appendTo="body"
+                                    placeholder="Select an IWA property"
+                                    [(ngModel)]="$any(selectedField).property"
+                                    (ngModelChange)="markDirty()">
+                                    <ng-template pTemplate="item" let-p>
+                                        <div class="sc-rp-prop-item">
+                                            <span [title]="p.title">{{ p.title }}</span>
+                                            @if (p.description) {
+                                                <span class="sc-rp-prop-desc">{{ p.description }}</span>
+                                            }
+                                        </div>
+                                    </ng-template>
+                                </p-select>
+                                @if (rightPanelSuggestUnavailable) {
+                                    <div class="sc-rp-ai-hint">
+                                        <span class="sc-rp-ai-hint-rationale">IWA property suggestions are unavailable right now.</span>
+                                    </div>
+                                } @else if (rightPanelSuggestion; as suggestion) {
+                                    @if (suggestion.candidates[0]; as topCandidate) {
+                                        <div class="sc-rp-ai-hint">
+                                            <ng-container *ngTemplateOutlet="aiCandidate; context: { $implicit: topCandidate, field: selectedField, primary: true }"></ng-container>
+                                            <div class="sc-rp-ai-hint-actions">
+                                                @if (suggestion.candidates.length > 1) {
+                                                    <button type="button" class="sc-rp-ai-hint-link" (click)="rightPanelSuggestionExpanded = !rightPanelSuggestionExpanded">See more</button>
+                                                }
+                                                <button type="button" class="sc-rp-ai-hint-link" (click)="suggestPropertyForSelectedField(true)">Refresh</button>
+                                                <button type="button" class="sc-rp-ai-hint-link" (click)="openInPropertyAiTab(selectedField.name)">Open in IWA suggestions</button>
+                                            </div>
+                                            @if (rightPanelSuggestionExpanded) {
+                                                @for (candidate of suggestion.candidates.slice(1); track candidate.title) {
+                                                    <ng-container *ngTemplateOutlet="aiCandidate; context: { $implicit: candidate, field: selectedField, primary: false }"></ng-container>
+                                                }
+                                            }
+                                        </div>
+                                    }
+                                }
+                            </div>
                         }
                     </div>
 
@@ -1858,8 +1912,34 @@
         </div>
     </ng-template>
 
+    <!-- AI suggestion candidate -->
+
+    <ng-template #aiCandidate let-c let-field="field" let-primary="primary">
+        <div class="sc-ai-candidate-row">
+            <span class="sc-ai-candidate-title" [title]="c.title">{{ c.title }}</span>
+            <span class="sc-ai-candidate-confidence">{{ (c.confidence * 100).toFixed(0) }}%</span>
+            @if (field && c.title === field.property) {
+                <span class="sc-suggestion-match-label">Already matches</span>
+            } @else {
+                <button type="button" class="sc-btn" [class.sc-btn-primary]="primary"
+                    [disabled]="!field"
+                    (click)="field && acceptSuggestion(field.name, c.title)">Apply</button>
+            }
+        </div>
+        @if (c.description) {
+            <div class="sc-ai-candidate-description" [pTooltip]="c.description" tooltipStyleClass="guardian-tooltip">{{ c.description }}</div>
+        }
+        @if (c.rationale) {
+            <div class="sc-ai-candidate-rationale" [title]="c.rationale">{{ c.rationale }}</div>
+        }
+    </ng-template>
+
     <ng-template #propertyAiCanvas>
         <div class="sc-array-link-canvas">
+            <div class="sc-suggestions-help">
+                <i class="pi pi-info-circle"></i>
+                <span>Review the suggested IWA property mappings for this schema.</span>
+            </div>
             <div class="sc-suggestions-toolbar">
                 <button type="button" class="sc-btn"
                     [disabled]="suggestionsLoading || !highConfidenceSuggestionCount"
@@ -1877,7 +1957,7 @@
             @if (suggestionsLoading) {
                 <div class="sc-array-link-empty">
                     <i class="pi pi-spin pi-spinner"></i>
-                    <span>Getting Glossary AI suggestions…</span>
+                    <span>Getting IWA property suggestions…</span>
                 </div>
             } @else if (!(currentContextSchema?.fields ?? []).length) {
                 <div class="sc-array-link-empty">
@@ -1887,17 +1967,17 @@
             } @else if (!suggestionsAvailable) {
                 <div class="sc-array-link-empty">
                     <i class="pi pi-exclamation-triangle"></i>
-                    <span>Glossary AI is unavailable right now – you can still set properties manually.</span>
+                    <span>IWA property suggestions are unavailable right now. You can still set IWA mappings manually.</span>
                 </div>
             } @else if (!suggestionResults.length) {
                 <div class="sc-array-link-empty">
                     <i class="pi pi-sparkles"></i>
-                    <span>Refresh to get Glossary AI suggestions for this schema.</span>
+                    <span>Refresh to get IWA property suggestions for this schema.</span>
                 </div>
             } @else if (!pendingSuggestionCount) {
                 <div class="sc-array-link-empty">
                     <i class="pi pi-check"></i>
-                    <span>No property changes suggested.</span>
+                    <span>No IWA mapping changes suggested.</span>
                 </div>
             } @else {
                 <div class="sc-suggestions-list">
@@ -1906,24 +1986,32 @@
                             [class.sc-suggestion-row--highlight]="highlightedFieldName === result.fieldName"
                             [class.sc-suggestion-row--match]="result.candidates[0]?.title === getFieldByName(result.fieldName)?.property">
                             <div class="sc-suggestion-field">
-                                <span class="sc-suggestion-field-name" [title]="result.fieldName">{{ result.fieldName }}</span>
+                                @if (getFieldByName(result.fieldName); as f) {
+                                    <span class="sc-suggestion-field-title" [title]="f.title || f.name">{{ f.title || result.fieldName }}</span>
+                                    <span class="sc-suggestion-field-key" [title]="result.fieldName">{{ result.fieldName }}</span>
+                                    @if (f.description) {
+                                        <span class="sc-suggestion-field-description" [pTooltip]="f.description" tooltipStyleClass="guardian-tooltip">{{ f.description }}</span>
+                                    }
+                                } @else {
+                                    <span class="sc-suggestion-field-title" [title]="result.fieldName">{{ result.fieldName }}</span>
+                                }
                                 <span class="sc-suggestion-current" [title]="'Current: ' + (getFieldByName(result.fieldName)?.property || 'None')">Current: {{ getFieldByName(result.fieldName)?.property || 'None' }}</span>
                             </div>
                             @if (result.candidates[0]; as topCandidate) {
                                 <div class="sc-suggestion-candidate">
-                                    <span class="sc-suggestion-candidate-title" [title]="topCandidate.title">{{ topCandidate.title }}</span>
-                                    @if (topCandidate.description) {
-                                        <span class="sc-suggestion-candidate-description" [title]="topCandidate.description">{{ topCandidate.description }}</span>
+                                    <ng-container *ngTemplateOutlet="aiCandidate; context: { $implicit: topCandidate, field: getFieldByName(result.fieldName), primary: true }"></ng-container>
+                                    @if (result.candidates.length > 1) {
+                                        <button type="button" class="sc-rp-ai-hint-link sc-suggestion-see-more" (click)="toggleGlossaryCandidates(result.fieldName)">
+                                            {{ expandedGlossaryFields.has(result.fieldName) ? 'See less' : 'See more' }}
+                                        </button>
                                     }
-                                    <span class="sc-suggestion-candidate-confidence">{{ (topCandidate.confidence * 100).toFixed(0) }}%</span>
-                                    <span class="sc-suggestion-candidate-rationale" [title]="topCandidate.rationale">{{ topCandidate.rationale }}</span>
+                                    @if (expandedGlossaryFields.has(result.fieldName)) {
+                                        @for (candidate of result.candidates.slice(1); track candidate.title) {
+                                            <ng-container *ngTemplateOutlet="aiCandidate; context: { $implicit: candidate, field: getFieldByName(result.fieldName), primary: false }"></ng-container>
+                                        }
+                                    }
                                 </div>
                                 <div class="sc-suggestion-actions">
-                                    @if (topCandidate.title !== getFieldByName(result.fieldName)?.property) {
-                                        <button type="button" class="sc-btn sc-btn-primary" (click)="acceptSuggestion(result.fieldName, topCandidate.title)">Accept</button>
-                                    } @else {
-                                        <span class="sc-suggestion-match-label">Already matches</span>
-                                    }
                                     <button type="button" class="sc-btn" (click)="goEditField(result.fieldName)">Change</button>
                                     <button type="button" class="sc-btn" (click)="dismissSuggestion(result.fieldName)">Dismiss</button>
                                 </div>

@@ -638,10 +638,13 @@ const linkedProjectsStageOptions = computed<SingleSelectOption[]>(() => [
 
 const compareVersionOptions = computed<SingleSelectOption[]>(() => [
   { value: '', label: t('methodologies.detail.actions.selectVersionPlaceholder') },
-  ...otherVersions.value.map(v => ({
-    value: v.topicId || '',
-    label: `${v.version ?? v.topicId} · ${fmtDate(v.sourceTimestamp)} · ${v.status ?? '—'}`,
-  })),
+  ...otherVersions.value.map(v => {
+    const statusLabel = t(`methodologies.statusValues.${methodologyStatus(v)}`);
+    return {
+      value: v.topicId || '',
+      label: `${v.version ?? v.topicId} · ${fmtDate(v.sourceTimestamp)} · ${statusLabel}`,
+    };
+  }),
 ]);
 
 // Compute the initial (original) form state so we can diff to find changes.
@@ -888,9 +891,9 @@ const compareRows = computed((): CompareRow[] => {
     },
     {
       label: t('methodologies.detail.actions.compareRows.status'),
-      a: fmtVal(cur.status),
-      b: fmtVal(target.status),
-      changed: cur.status !== target.status,
+      a: t(`methodologies.statusValues.${methodologyStatus(cur)}`),
+      b: t(`methodologies.statusValues.${methodologyStatus(target)}`),
+      changed: methodologyStatus(cur) !== methodologyStatus(target),
     },
     {
       label: t('methodologies.detail.actions.compareRows.published'),

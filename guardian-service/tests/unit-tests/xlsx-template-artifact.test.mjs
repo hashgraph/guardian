@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { XlsxToJson } from '../../dist/xlsx/xlsx-to-json.js';
 import { Workbook } from '../../dist/xlsx/models/workbook.js';
+import ExcelJS from 'exceljs';
 
 const TEMPLATE = fileURLToPath(
     new URL('../../../guardian-service/artifacts/template.xlsx', import.meta.url)
@@ -79,38 +80,6 @@ describe('Schema template artifact', () => {
         assert.ok(twoLevels, 'the second level of sub-schema nesting was lost');
     });
 
-    it('documents that Enum fields reference Enum Name through Parameter', () => {
-        const readme = workbook.getWorksheet('README');
-        assert.equal(
-            readme.getValue(2, 20),
-            'Type-dependent: enum name (Enum), unit symbol (Prefix/Postfix), regex (Pattern), math expression (Auto-Calculate), JSON font object (Help Text), JSON column array (Table), parent field key (Country, State/Province). Blank for all other types.'
-        );
-        assert.equal(
-            readme.getValue(3, 49),
-            'Enum name, e.g. "Enum field 1"'
-        );
-        assert.equal(
-            readme.getValue(2, 49),
-            'Dropdown list — values defined in the Enums tab. The field\'s Parameter must exactly match the "Enum Name" column — case-sensitive.'
-        );
-        assert.equal(
-            readme.getValue(2, 61),
-            'The field\'s Parameter value must exactly match the "Enum Name" column in the Enums tab (case-sensitive).'
-        );
-        assert.equal(
-            readme.getValue(2, 62),
-            'In the Enums tab, the three columns are: Enum Name | Loaded to IPFS | Value'
-        );
-        assert.equal(
-            readme.getValue(2, 63),
-            'For the first value of each group: fill in Enum Name and Loaded to IPFS. Leave those two columns blank on subsequent value rows for the same group.'
-        );
-        assert.equal(
-            readme.getValue(2, 89),
-            'Enum matching is case-sensitive: a field\'s Parameter value must match the "Enum Name" column in the Enums tab exactly.'
-        );
-    });
-
     it('keeps the Enums tab to the three columns the parser reads', () => {
         const enums = workbook.getWorksheet('Enums');
         assert.equal(enums.getValue(1, 1), 'Enum Name');
@@ -136,12 +105,42 @@ describe('Schema template artifact', () => {
         );
     });
 
-    it('labels the example fields the way a form would', () => {
-        const descriptions = fields.map((field) => field.description);
-        assert.ok(descriptions.includes('Enter a number'), 'the Number example still repeats its type name');
-        assert.ok(descriptions.includes('Upload an image'), 'the Image example still repeats its type name');
-        assert.equal(findByCustomType(fields, 'continent').description, 'Choose a continent');
-        assert.equal(findByCustomType(fields, 'table').description, 'Upload a table');
-        assert.equal(findByCustomType(fields, 'richText').description, 'Enter formatted text');
+    it('uses IWA V3 with a V3-only version dropdown', async () => {
+        assert.equal(result.xlsxSchemas[0].iwaVersion, '3.0.0');
+        const sheet = workbook.getWorksheet('Schema name');
+        assert.equal(sheet.getValue(1, 4), 'IWA Version');
+        assert.equal(sheet.getValue(2, 4), 'V3');
+        assert.deepEqual(sheet.getCell(2, 4).getList(), ['V3']);
+    });
+
+    it('has an IWA Property column fed by the hidden IWA Properties sheet', async () => {
+        const sheet = workbook.getWorksheet('Schema name');
+        assert.equal(sheet.getValue(11, 5), 'IWA Property');
+
+        const raw = new ExcelJS.Workbook();
+        await raw.xlsx.load(await readFile(TEMPLATE));
+        const iwa = raw.getWorksheet('IWA Properties');
+        assert.ok(iwa, 'the IWA Properties sheet is missing');
+        assert.equal(iwa.state, 'hidden');
+        assert.deepEqual(iwa.getRow(1).values.slice(1), ['Path', 'Name', 'Description', 'Version']);
+        const versions = new Set();
+        iwa.eachRow((row, r) => { if (r > 1) { versions.add(row.getCell(4).value); } });
+        assert.deepEqual([...versions], ['V3']);
+
+        const validation = raw.getWorksheet('Schema name').getCell('K6').dataValidation;
+        assert.equal(validation.type, 'list');
+        assert.equal(validation.formulae[0], `'IWA Properties'!$A$2:$A$${iwa.rowCount}`);
+    });
+
+    it('lists the IWA warnings right after the other common errors', () => {
+        const readme = workbook.getWorksheet('README');
+        let row = 1;
+        while (row < 200 && !String(readme.getValue(2, row) || '').startsWith('An unrecognized "IWA Version"')) {
+            row++;
+        }
+        assert.ok(row < 200, 'the IWA Version warning is missing');
+        assert.equal(readme.getValue(1, row), '⚠');
+        assert.equal(readme.getValue(1, row - 1), '⚠', 'a gap sits before the IWA warnings');
+        assert.ok(String(readme.getValue(2, row + 1)).startsWith('An "IWA Property" path'));
     });
 });

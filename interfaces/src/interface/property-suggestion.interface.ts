@@ -25,15 +25,39 @@ export interface IPropertySuggestionFieldInput {
 }
 
 /**
+ * Property suggestion schema input (current editor state)
+ */
+export interface IPropertySuggestionSchemaInput {
+    /**
+     * Name
+     */
+    name?: string;
+    /**
+     * Description
+     */
+    description?: string;
+    /**
+     * IWA version
+     */
+    iwaVersion?: string;
+    /**
+     * Fields
+     */
+    fields: IPropertySuggestionFieldInput[];
+}
+
+/**
  * Property suggestion request
  */
 export interface IPropertySuggestionRequest {
     /**
-     * Id of the schema the field(s) needing a suggestion belong to.
-     * The schema itself (all its fields, name and description) is always
-     * fetched server-side from this id, never trusted from the client.
+     * Schema id (logging only)
      */
-    schemaId: string;
+    schemaId?: string;
+    /**
+     * Schema
+     */
+    schema: IPropertySuggestionSchemaInput;
     /**
      * Names of the fields to return suggestions for. Suggestions are still
      * computed with the full schema as context, so the same field gets the

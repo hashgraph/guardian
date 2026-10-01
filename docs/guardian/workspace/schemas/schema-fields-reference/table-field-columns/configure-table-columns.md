@@ -56,6 +56,26 @@ Leave the toggle off only when the field must keep the legacy behavior, where co
 2. Reference the Table field's declared column with the `table` helper, using the key rather than the display name: `table.col(tableData, 'co2_tonnes')`.
 3. A legacy Table with no declared columns still works with the same helper, using the exact text of its file's header row as the key instead: `table.col(tableLegacy, 'CO2 (tonnes)')`.
 
+#### Use a column in an ordinary Math Block formula
+
+1. Open the Math Block editor and go to **Inputs**.
+2. Add a variable row and press the search button. In the field tree, a Table field with declared columns now opens and lists those columns by display name.
+3. Pick a column and give the variable a short name, for example `area`. The variable holds the whole column, in row order. Repeat for every column the calculation needs.
+4. Go to **Formulas → General** and write an ordinary formula. The existing functions accept a column:
+
+   ```
+   Σ area
+   Lookup(area, year, "2021")
+   At(area, 1)
+   Length(area)
+   Σ (from i=1 to Length(area)) At(area, i) · At(factor, i)
+   ```
+
+   Two columns cannot be multiplied directly as `area · factor`. A per-row calculation is written as the sum above, with a row number.
+5. Open the **Testing** tab to run the formula against a real document before running the policy. Each variable is shown as the list of its column cells, and warnings appear on the **Errors** tab.
+
+A cell that holds no number is replaced with `0` by a numeric function; the row keeps its place, and the policy log carries one line per column naming how many cells were replaced. Ordinary formulas are limited to 10 000 rows. A column is input only - it is neither offered nor accepted on the **Outputs** tab. A Table field with **Define columns** off cannot be used this way and stays on the Advanced tab.
+
 #### Read declared keys through the policy documents API
 
 1. Call `GET /policies/{policyId}/documents` with `includeDocument=true` and `expandTables=true`.
@@ -65,6 +85,8 @@ Leave the toggle off only when the field must keep the legacy behavior, where co
 ### Result
 
 Guardian stores the Table value with both `columnNames` and `columnKeys`. Guardian and the Indexer show the display names, while calculations, scripts and expanded API row objects use the stable keys.
+
+Declared columns are also available as variables in ordinary Math Block formulas, so a table can be read on the **General** tab without JavaScript. The stored document is unchanged by this: it still holds only the compact Table value, with no rows in it.
 
 XLSX schema export and import preserve the Table field's column names, keys and order. A blank Table `Parameter` preserves the toggle-off state.
 
@@ -77,6 +99,12 @@ Table fields created before this feature have no declared columns and continue t
 **The file is rejected after upload.** Its number of columns does not match the schema. Correct the file or the draft schema, then upload it again.
 
 **Values appear under the wrong names.** Guardian matches columns by position, not by header text. Reorder the file columns or the declared rows so both orders match.
+
+**The Table field does not open in the Math Block field picker.** Its **Define columns** toggle is off. Declare the columns in the schema, or read the table through the `table` helper on the Advanced tab.
+
+**A formula over a column stops with a row-count message.** The table is above the 10 000-row limit of ordinary formulas. Use a smaller file, or move the calculation to the Advanced tab, which is not bound by that limit.
+
+**An Output path with a column is marked as not found.** A column cannot be written to. Bind the Output to an ordinary field instead.
 
 **The XLSX schema cannot be imported.** Check the Table row's `Parameter` cell. When it is not blank, it must contain a non-empty JSON array of unique `name` and `key` pairs. Keys cannot contain whitespace.
 

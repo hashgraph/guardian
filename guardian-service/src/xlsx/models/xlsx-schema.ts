@@ -45,6 +45,14 @@ export class XlsxSchema {
         this.schema.entity = value;
     }
 
+    public get iwaVersion(): string {
+        return this.schema.iwaVersion;
+    }
+
+    public set iwaVersion(value: string) {
+        this.schema.iwaVersion = value;
+    }
+
     public get errors(): any[] {
         return this.schema.errors;
     }

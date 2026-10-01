@@ -166,9 +166,9 @@ services:
         #     - '8080:8080'   # gateway (uncomment for host debugging)
         #     - '5001:5001'   # API (uncomment for host debugging)
 
-    # One-shot helper that fixes ownership on the bind-mounted policy-zips
-    # directory before the workers (which run as a non-root user) start.
-    # No-op if the directory is already writable by the worker user.
+        # One-shot helper that fixes ownership on the bind-mounted policy-zips
+        # directory before the workers (which run as a non-root user) start.
+        # No-op if the directory is already writable by the worker user.
     policy-zips-init:
         image: alpine:3.20
         container_name: se-policy-zips-init
@@ -258,7 +258,7 @@ services:
             HEDERA_NET: testnet
             # MV refresh and the business-view rebuild are full-table scans —
             # keeping them off the ingest workers stops them stealing that CPU.
-            WORKER_QUEUES: maintenance-*
+            WORKER_QUEUES: maintenance-*,policy-status
             SCHEDULER_ENABLED: 'false'
 
     # --- mainnet: same split, behind --profile roles-mainnet ---
@@ -307,7 +307,7 @@ services:
             HEDERA_NET: mainnet
             # MV refresh and the business-view rebuild are full-table scans —
             # keeping them off the ingest workers stops them stealing that CPU.
-            WORKER_QUEUES: maintenance-*
+            WORKER_QUEUES: maintenance-*,policy-status
             SCHEDULER_ENABLED: 'false'
 
     # ─── Guardian event-sync ────────────────────────────────────────────────

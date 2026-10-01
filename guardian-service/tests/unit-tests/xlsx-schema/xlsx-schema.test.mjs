@@ -48,6 +48,12 @@ describe('XlsxSchema getters/setters', () => {
         assert.equal(x.entity, SchemaEntity.VC);
     });
 
+    it('iwaVersion setter/getter', () => {
+        x.iwaVersion = '1.0.0';
+        assert.equal(x.iwaVersion, '1.0.0');
+        assert.equal(x.schema.iwaVersion, '1.0.0');
+    });
+
     it('errors setter/getter', () => {
         x.errors = [{ code: 'E1' }];
         assert.deepEqual(x.errors, [{ code: 'E1' }]);

@@ -3,15 +3,12 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/commo
 import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ObjectExamples, AboutResponseDTO, SettingsDTO, InternalServerErrorDTO } from '#middlewares';
 import { Auth, AuthUser } from '#auth';
-import { Guardians, InternalException } from '#helpers';
+import { Guardians, InternalException, getGuardianVersion } from '#helpers';
 import { IAuthUser, PinoLogger } from '@guardian/common';
-import fs from 'node:fs';
 
 @Controller('settings')
 @ApiTags('settings')
 export class SettingsApi {
-    private cachedVersion?: string;
-
     constructor(private readonly logger: PinoLogger) {
     }
 
@@ -191,27 +188,7 @@ export class SettingsApi {
     @ApiExtraModels(AboutResponseDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getAbout(): Promise<AboutInterface> {
-        let version = this.cachedVersion;
-
-        if (!version) {
-            const envVersion = process.env.npm_package_version;
-            if (envVersion) {
-                version = envVersion;
-            } else {
-                const unknown = 'Unknown';
-                try {
-                    const packageJsonUrl = new URL('../../../package.json', import.meta.url);
-                    const raw = fs.readFileSync(packageJsonUrl, 'utf-8');
-                    const parsed = JSON.parse(raw);
-
-                    version = parsed.version || unknown;
-                } catch (error) {
-                    version = unknown;
-                }
-            }
-
-            this.cachedVersion = version;
-        }
+        const version = getGuardianVersion();
 
         return { version };
     }

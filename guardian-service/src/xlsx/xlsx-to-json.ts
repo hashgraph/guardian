@@ -4,7 +4,8 @@ import { xlsxToBoolean, xlsxToEntity, xlsxToFont, xlsxToPresetArray, xlsxToPrese
 import { Table } from './models/table.js';
 import * as mathjs from 'mathjs';
 import { XlsxSchemaConditions } from './models/schema-condition.js';
-import { isAncestorType, isRelationType, relationParent, SchemaCategory, SchemaEntity, SchemaField } from '@guardian/interfaces';
+import { isAncestorType, isRelationType, IwaVersion, relationParent, SchemaCategory, SchemaEntity, SchemaField } from '@guardian/interfaces';
+import { DatabaseServer } from '@guardian/common';
 import { XlsxResult } from './models/xlsx-result.js';
 import { XlsxEnum } from './models/xlsx-enum.js';
 import { EnumTable, SharedEnumTable } from './models/enum-table.js';
@@ -25,6 +26,9 @@ interface ICondition {
 }
 
 export class XlsxToJson {
+    // Sub-schema display name, kept off field.property so it doesn't collide with the IWA property path.
+    private static readonly subSchemaNames = new WeakMap<SchemaField, string>();
+
     public static async parse(buffer: Buffer, options?: IOption): Promise<XlsxResult> {
         const preview = options?.preview === true;
         const xlsxResult = new XlsxResult();
@@ -32,6 +36,7 @@ export class XlsxToJson {
             const workbook = new Workbook();
             await workbook.read(buffer as any);
             const worksheets = workbook.getWorksheets();
+            const propertyCache = new Map<string, Set<string> | null>();
 
             // Pass 0: shared enum tab
             for (const worksheet of worksheets) {
@@ -70,7 +75,7 @@ export class XlsxToJson {
             // Pass 2: schema sheets
             for (const worksheet of worksheets) {
                 if (XlsxToJson.isSchema(worksheet)) {
-                    const schema = await XlsxToJson.readSchemaSheet(worksheet, xlsxResult);
+                    const schema = await XlsxToJson.readSchemaSheet(worksheet, xlsxResult, propertyCache);
                     if (schema) {
                         if (schema.category === SchemaCategory.TOOL) {
                             xlsxResult.addTool(worksheet, schema as XlsxTool);
@@ -146,6 +151,9 @@ export class XlsxToJson {
             return false;
         }
         if (worksheet.name === Dictionary.README_SHEET) {
+            return false;
+        }
+        if (worksheet.name === Dictionary.IWA_PROPERTIES_SHEET) {
             return false;
         }
         return !XlsxToJson.isSchema(worksheet);
@@ -319,7 +327,8 @@ export class XlsxToJson {
 
     private static async readSchemaSheet(
         worksheet: Worksheet,
-        xlsxResult: XlsxResult
+        xlsxResult: XlsxResult,
+        propertyCache: Map<string, Set<string> | null> = new Map()
     ): Promise<XlsxSchema | XlsxTool> {
         const schema: XlsxSchema = new XlsxSchema(worksheet);
         try {
@@ -393,6 +402,29 @@ export class XlsxToJson {
                 schema.entity = xlsxToEntity(worksheet.getValue<string>(startCol + 1, table.getRow(Dictionary.SCHEMA_TYPE)));
             }
 
+            if (table.getRow(Dictionary.IWA_VERSION) !== -1) {
+                const rawVersion = worksheet.getValue<string>(startCol + 1, table.getRow(Dictionary.IWA_VERSION));
+                const parsedVersion = XlsxToJson.parseIwaVersion(rawVersion);
+                if (parsedVersion) {
+                    schema.iwaVersion = parsedVersion;
+                } else {
+                    // No valid tag falls back to v1, not the current create-default.
+                    schema.iwaVersion = IwaVersion.V1;
+                    if (rawVersion) {
+                        xlsxResult.addError({
+                            type: 'warning',
+                            text: `Unrecognized IWA Version "${rawVersion}".`,
+                            message: `Sheet "${worksheet.name}" has an "IWA Version" value of "${rawVersion}", which is not recognized. `
+                                + `Expected one of: V1, V3, 1.0.0, 3.0.0. The schema will be treated as IWA v1.`,
+                            worksheet: worksheet.name,
+                            row: table.getRow(Dictionary.IWA_VERSION),
+                        }, schema);
+                    }
+                }
+            } else {
+                schema.iwaVersion = IwaVersion.V1;
+            }
+
             let toolName: string;
             let messageId: string;
             if (table.getRow(Dictionary.SCHEMA_TOOL) !== -1) {
@@ -445,7 +477,7 @@ export class XlsxToJson {
             const createInlineSchemas = (schemaFields: SchemaField[]) => {
                 for (const field of schemaFields) {
                     if (field.isRef && field.customType === 'subSchema') {
-                        const name = field.property || field.description;
+                        const name = XlsxToJson.subSchemaNames.get(field) || field.description;
                         const childFields = field.fields || [];
                         if (seenSchemaNames.has(name)) {
                             const existing = seenSchemaNames.get(name);
@@ -472,6 +504,8 @@ export class XlsxToJson {
                 }
             };
             createInlineSchemas(fields);
+
+            await XlsxToJson.validateIwaProperties(worksheet, fields, schema.iwaVersion, propertyCache, xlsxResult);
 
             row = table.end.r + 1;
             const conditionCache: XlsxSchemaConditions[] = [];
@@ -601,7 +635,8 @@ export class XlsxToJson {
             isUpdatable: false,
         };
         try {
-            const key = XlsxToJson.getFieldKey(worksheet, table, row, xlsxResult);
+            const key = XlsxToJson.getFieldKey(worksheet, table, row);
+            XlsxToJson.validateFieldKey(worksheet, table, row, key.name, xlsxResult);
             const type = worksheet.getValue<string>(table.getCol(Dictionary.FIELD_TYPE), row);
             const description = worksheet.getValue<string>(table.getCol(Dictionary.QUESTION), row);
             const required = xlsxToBoolean(worksheet.getValue<string>(table.getCol(Dictionary.REQUIRED_FIELD), row));
@@ -615,6 +650,14 @@ export class XlsxToJson {
             field.isArray = isArray;
             field.hidden = visibility === 'Hidden';
             field.autocalculate = visibility === 'Auto';
+
+            if (table.hasCol(Dictionary.IWA_PROPERTY)) {
+                const rawProperty = worksheet.getValue<string>(table.getCol(Dictionary.IWA_PROPERTY), row);
+                const trimmedProperty = rawProperty === undefined || rawProperty === null
+                    ? ''
+                    : String(rawProperty).trim();
+                field.property = trimmedProperty || null;
+            }
 
             let typeError = false;
             const fieldType = FieldTypes.findByName(type);
@@ -711,6 +754,88 @@ export class XlsxToJson {
             }, field);
             return null;
         }
+    }
+
+    // Accepts 'V1'/'V3' (case-insensitive) or '1.0.0'/'3.0.0'; null if blank or unrecognized.
+    private static parseIwaVersion(raw: any): IwaVersion | null {
+        const text = raw === undefined || raw === null ? '' : String(raw).trim().toLowerCase();
+        if (text === 'v1' || text === IwaVersion.V1) {
+            return IwaVersion.V1;
+        }
+        if (text === 'v3' || text === IwaVersion.V3) {
+            return IwaVersion.V3;
+        }
+        return null;
+    }
+
+    private static hasAnyProperty(fields: SchemaField[]): boolean {
+        for (const field of fields) {
+            if (field.property) {
+                return true;
+            }
+            if (Array.isArray(field.fields) && field.fields.length && XlsxToJson.hasAnyProperty(field.fields)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Null means "couldn't check" (e.g. DB unavailable) - callers must skip validation, not warn.
+    private static async loadKnownPolicyProperties(iwaVersion: string): Promise<Set<string> | null> {
+        try {
+            const properties = await DatabaseServer.getPolicyProperties(iwaVersion);
+            return new Set(properties.map((property) => property.title));
+        } catch (error) {
+            return null;
+        }
+    }
+
+    /** @internal Called from unit tests. Renaming breaks them at run time, not at compile time. */
+    private static checkFieldProperties(
+        worksheet: Worksheet,
+        fields: SchemaField[],
+        known: Set<string>,
+        iwaVersion: string,
+        xlsxResult: XlsxResult
+    ): void {
+        for (const field of fields) {
+            if (field.property && !known.has(field.property)) {
+                xlsxResult.addError({
+                    type: 'warning',
+                    text: `Unknown IWA property "${field.property}".`,
+                    message: `Field "${field.description}" on sheet "${worksheet.name}" references IWA property "${field.property}", `
+                        + `which is not in the IWA ${iwaVersion === IwaVersion.V3 ? 'v3' : 'v1'} property list. `
+                        + `The value is kept as entered.`,
+                    worksheet: worksheet.name,
+                    row: field.order,
+                }, field);
+            }
+            if (Array.isArray(field.fields) && field.fields.length) {
+                XlsxToJson.checkFieldProperties(worksheet, field.fields, known, iwaVersion, xlsxResult);
+            }
+        }
+    }
+
+    // Skips the database lookup when the sheet has no IWA Property values at all.
+    private static async validateIwaProperties(
+        worksheet: Worksheet,
+        fields: SchemaField[],
+        iwaVersion: string,
+        propertyCache: Map<string, Set<string> | null>,
+        xlsxResult: XlsxResult
+    ): Promise<void> {
+        if (!XlsxToJson.hasAnyProperty(fields)) {
+            return;
+        }
+        let known = propertyCache.get(iwaVersion);
+        if (known === undefined) {
+            known = await XlsxToJson.loadKnownPolicyProperties(iwaVersion);
+            propertyCache.set(iwaVersion, known);
+        }
+        if (known === null) {
+            return;
+        }
+        XlsxToJson.checkFieldProperties(worksheet, fields, known, iwaVersion, xlsxResult);
     }
 
     private static checkGeoPreset(
@@ -933,7 +1058,7 @@ export class XlsxToJson {
             if (fieldType.name === 'Sub-Schema') {
                 const subSchemaName = param || field.description;
                 field.type = xlsxResult.addLink(subSchemaName, null);
-                field.property = subSchemaName;
+                XlsxToJson.subSchemaNames.set(field, subSchemaName);
             }
             if (isRelationType('geo', fieldType.customType)) {
                 if (param && relationParent('geo', fieldType.customType)) {
@@ -1093,7 +1218,7 @@ export class XlsxToJson {
             return null;
         }
 
-        const key = XlsxToJson.getFieldKey(worksheet, table, row, xlsxResult);
+        const key = XlsxToJson.getFieldKey(worksheet, table, row);
         const field = allFields.get(key.path) || fields.find((f) => f.title === key.path);
         const targetPath = fieldPaths.get(key.path);
         const isNested = targetPath && targetPath.length > 1;
@@ -1211,7 +1336,7 @@ export class XlsxToJson {
             return null;
         }
 
-        const key = XlsxToJson.getFieldKey(worksheet, table, row, xlsxResult);
+        const key = XlsxToJson.getFieldKey(worksheet, table, row);
         const description = worksheet.getValue<string>(table.getCol(Dictionary.QUESTION), row);
         const groupIndex = worksheet.getRow(row).getOutline();
         const type = worksheet.getValue<string>(table.getCol(Dictionary.FIELD_TYPE), row);
@@ -1422,8 +1547,7 @@ export class XlsxToJson {
     private static getFieldKey(
         worksheet: Worksheet,
         table: Table,
-        row: number,
-        xlsxResult: XlsxResult,
+        row: number
     ): IFieldKey {
         const path = worksheet.getPath(table.getCol(Dictionary.ANSWER), row);
         const fullPath = worksheet.getFullPath(table.getCol(Dictionary.ANSWER), row);
@@ -1436,19 +1560,38 @@ export class XlsxToJson {
         if (name) {
             name = name.trim();
         }
+        return { name, path, fullPath }
+    }
+
+    private static validateFieldKey(
+        worksheet: Worksheet,
+        table: Table,
+        row: number,
+        name: string,
+        xlsxResult: XlsxResult
+    ): void {
         if (name && name.includes('.')) {
             xlsxResult.addError({
-                type: 'warning',
-                text: `Invalid character.`,
-                message: `Key "${name}" contains a dot ('.'), which is not allowed in field keys. The dot has been removed automatically — rename the key in the Key column to avoid this.`,
+                type: 'error',
+                text: `Invalid field key.`,
+                message: `Key "${name}" contains a dot ('.'), which is reserved as a path separator. Rename the field key in the Key column before importing.`,
                 worksheet: worksheet.name,
                 cell: worksheet.getPath(table.getCol(Dictionary.KEY), row),
                 row,
                 col: table.getCol(Dictionary.KEY),
             }, null);
-            name = name.replaceAll('.', '');
         }
-        return { name, path, fullPath }
+        if (name && name.includes(':')) {
+            xlsxResult.addError({
+                type: 'error',
+                text: `Invalid field key.`,
+                message: `Key "${name}" contains a colon (':'), which is reserved by JSON-LD for prefix:term compaction. Rename the field key in the Key column before importing.`,
+                worksheet: worksheet.name,
+                cell: worksheet.getPath(table.getCol(Dictionary.KEY), row),
+                row,
+                col: table.getCol(Dictionary.KEY),
+            }, null);
+        }
     }
 
     private static addFieldByName(

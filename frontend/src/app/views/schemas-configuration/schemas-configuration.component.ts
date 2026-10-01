@@ -4,7 +4,7 @@ import { HttpResponse } from '@angular/common/http';
 import { EMPTY, Observable, Subject, Subscription, firstValueFrom, forkJoin, of } from 'rxjs';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { catchError, debounceTime, distinctUntilChanged, map, shareReplay, switchMap, takeUntil } from 'rxjs/operators';
-import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, relationAncestors, ModuleStatus, ISchemaTemplate, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus, ISchemaArrayDependency, ISchemaArrayDependencyMapping, DEFAULT_IWA_VERSION, IwaVersion, resolveIwaVersion, IPropertySuggestionResult, } from '@guardian/interfaces';
+import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, relationAncestors, ModuleStatus, ISchemaTemplate, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus, ISchemaArrayDependency, ISchemaArrayDependencyMapping, DEFAULT_IWA_VERSION, IwaVersion, resolveIwaVersion, IPropertySuggestionResult, IPropertySuggestionRequest, } from '@guardian/interfaces';
 import { SchemaService } from 'src/app/services/schema.service';
 import { TagsService } from 'src/app/services/tag.service';
 import { ProjectComparisonService } from 'src/app/services/project-comparison.service';
@@ -125,7 +125,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public get selectedField(): SchemaField | null { return this._selectedField; }
     public set selectedField(field: SchemaField | null) {
         this._selectedField = field;
-        this.rightPanelSuggestion = null;
         this.rightPanelSuggestionExpanded = false;
         this.rightPanelSuggestLoading = false;
         this.rightPanelSuggestUnavailable = false;
@@ -591,7 +590,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         { label: 'Encrypted Verifiable Credential', value: SchemaEntity.EVC },
     ];
 
-    public copiedIri: boolean = false;
+    public copiedField: 'iri' | 'uuid' | null = null;
 
     public get systemFields(): any[] {
         return DefaultFieldDictionary.getDefaultFields(this.selectedSchema?.entity as SchemaEntity);
@@ -632,11 +631,17 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public suggestionsLoading: boolean = false;
     public suggestionsAvailable: boolean = true;
     public suggestionResults: IPropertySuggestionResult[] = [];
-    public rightPanelSuggestion: IPropertySuggestionResult | null = null;
+    /** Suggestion for the selected field, shared with the Glossary AI tab. */
+    public get rightPanelSuggestion(): IPropertySuggestionResult | null {
+        if (!this.selectedField) { return null; }
+        return this.suggestionResults.find((result) => result.fieldName === this.selectedField!.name) || null;
+    }
     public rightPanelSuggestionExpanded: boolean = false;
     public rightPanelSuggestLoading: boolean = false;
     public rightPanelSuggestUnavailable: boolean = false;
     public highlightedFieldName: string | null = null;
+    /** Fields whose "See more" candidates are expanded in the Glossary AI tab. */
+    public expandedGlossaryFields = new Set<string>();
 
     /** Glossary AI results per schema/sub-schema, so switching away and back doesn't re-spend AI tokens. */
     private suggestionsCacheByContextKey = new Map<string, { results: IPropertySuggestionResult[]; available: boolean }>();
@@ -653,6 +658,37 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const key = this.getContextSchemaCacheKey(previousContext);
         if (!key || !this.suggestionsCacheByContextKey.has(key)) { return; }
         this.suggestionsCacheByContextKey.set(key, { results: this.suggestionResults, available: this.suggestionsAvailable });
+    }
+
+    private persistCurrentContextSuggestions(): void {
+        const key = this.getContextSchemaCacheKey(this.currentContextSchema);
+        if (!key) { return; }
+        this.suggestionsCacheByContextKey.set(key, { results: this.suggestionResults, available: this.suggestionsAvailable });
+    }
+
+    private upsertSuggestionResults(results: IPropertySuggestionResult[]): void {
+        if (!results.length) { return; }
+        const merged = [...this.suggestionResults];
+        for (const result of results) {
+            const idx = merged.findIndex((r) => r.fieldName === result.fieldName);
+            if (idx >= 0) { merged[idx] = result; } else { merged.push(result); }
+        }
+        this.suggestionResults = merged;
+        this.suggestionsAvailable = true;
+        this.persistCurrentContextSuggestions();
+    }
+
+    /** Drop a stale suggestion after its field changes. */
+    private invalidateFieldSuggestion(fieldName: string | null | undefined): void {
+        if (!fieldName) { return; }
+        const before = this.suggestionResults.length;
+        this.suggestionResults = this.suggestionResults.filter((result) => result.fieldName !== fieldName);
+        if (this.suggestionResults.length === before) { return; }
+        this.persistCurrentContextSuggestions();
+    }
+
+    public invalidateSelectedFieldSuggestion(): void {
+        this.invalidateFieldSuggestion(this.selectedField?.name);
     }
 
     private restoreOrClearSuggestionsForContext(): void {
@@ -745,6 +781,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return schema.status === SchemaStatus.DRAFT || schema.status === SchemaStatus.ERROR;
     }
 
+    public iwaVersionLabel(schema: Schema | null): string {
+        return resolveIwaVersion(schema) === IwaVersion.V3 ? 'V3' : 'V1';
+    }
+
     /**
      * Remap every field property on the open draft schema from IWA v1 to v3.
      *
@@ -819,10 +859,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         // (or applied) under the wrong schema.
         const key = this.getContextSchemaCacheKey(schema);
         this.suggestionsLoading = true;
-        const request = {
-            schemaId: schema?.id || (schema as any)?._id,
-            fieldNames: fields.map((field) => field.name)
-        };
+        const request = this.buildSuggestionRequest(schema, fields.map((field) => field.name));
         this.aiSearchService.suggestSchemaProperties(request)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
@@ -848,6 +885,27 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return (this.currentContextSchema?.fields ?? []).find((f) => f.name === fieldName);
     }
 
+    /** Uses the current editor state, so unsaved changes are included. */
+    private buildSuggestionRequest(schema: Schema | null, fieldNames: string[]): IPropertySuggestionRequest {
+        const fields = (schema?.fields ?? []).map((field) => ({
+            name: field.name,
+            title: field.title || undefined,
+            description: field.description || undefined,
+            type: field.type || undefined,
+            currentProperty: field.property || undefined,
+        }));
+        return {
+            schemaId: schema?.id || (schema as any)?._id || undefined,
+            schema: {
+                name: schema?.name || undefined,
+                description: schema?.description || undefined,
+                iwaVersion: schema?.iwaVersion || undefined,
+                fields,
+            },
+            fieldNames,
+        };
+    }
+
     public acceptSuggestion(fieldName: string, title: string): void {
         const field = this.getFieldByName(fieldName);
         if (!field) { return; }
@@ -857,6 +915,15 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public dismissSuggestion(fieldName: string): void {
         this.suggestionResults = this.suggestionResults.filter((result) => result.fieldName !== fieldName);
+        this.persistCurrentContextSuggestions();
+    }
+
+    public toggleGlossaryCandidates(fieldName: string): void {
+        if (this.expandedGlossaryFields.has(fieldName)) {
+            this.expandedGlossaryFields.delete(fieldName);
+        } else {
+            this.expandedGlossaryFields.add(fieldName);
+        }
     }
 
     public applyAllHighConfidence(threshold: number = SchemasConfigurationComponent.HIGH_CONFIDENCE_THRESHOLD): void {
@@ -875,17 +942,19 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.selectedField = field;
     }
 
-    public suggestPropertyForSelectedField(): void {
+    public suggestPropertyForSelectedField(force: boolean = false): void {
         if (!this.glossaryAiEnabled) { return; }
         const field = this.selectedField;
         if (!field) { return; }
+        // Reuse an existing result unless a refresh was requested
+        if (!force && this.suggestionResults.some((result) => result.fieldName === field.name)) {
+            this.rightPanelSuggestUnavailable = false;
+            return;
+        }
         this.rightPanelSuggestLoading = true;
         this.rightPanelSuggestUnavailable = false;
         const contextSchema = this.currentContextSchema;
-        const request = {
-            schemaId: contextSchema?.id || (contextSchema as any)?._id,
-            fieldNames: [field.name]
-        };
+        const request = this.buildSuggestionRequest(contextSchema, [field.name]);
         this.aiSearchService.suggestSchemaProperties(request)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
@@ -893,7 +962,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     if (this.selectedField !== field) { return; }
                     this.rightPanelSuggestLoading = false;
                     this.rightPanelSuggestUnavailable = !response.available;
-                    this.rightPanelSuggestion = response.results?.[0] || null;
+                    if (!response.available) {
+                        this.invalidateFieldSuggestion(field.name);
+                    }
+                    this.upsertSuggestionResults(response.results || []);
                     this.rightPanelSuggestionExpanded = false;
                     this._cdr.markForCheck();
                 },
@@ -1090,6 +1162,25 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return this.schemas;
     }
 
+    public getStatusBadge(schema: Schema): { variant: string; icon: string | null; label: string } {
+        switch (schema.status) {
+            case SchemaStatus.DRAFT:
+                return { variant: 'draft', icon: 'pi-pencil', label: 'Draft' };
+            case SchemaStatus.PUBLISHED:
+                return { variant: 'published', icon: 'pi-globe', label: 'Published' };
+            case SchemaStatus.UNPUBLISHED:
+                return { variant: 'muted', icon: null, label: 'Unpublished' };
+            case SchemaStatus.ERROR:
+                return { variant: 'error', icon: 'pi-exclamation-triangle', label: 'Error' };
+            case SchemaStatus.DEMO:
+                return { variant: 'muted', icon: null, label: 'Demo' };
+            case SchemaStatus.VIEW:
+                return { variant: 'muted', icon: 'pi-eye', label: 'View' };
+            default:
+                return { variant: 'muted', icon: null, label: String(schema.status ?? '') };
+        }
+    }
+
     public isDraft(schema: Schema): boolean {
         return schema.status === SchemaStatus.DRAFT || schema.status === SchemaStatus.ERROR;
     }
@@ -1148,10 +1239,15 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             errors.push('Key is required');
         } else if (/\s/.test(field.name)) {
             errors.push('Key must not contain spaces');
-        } else if (SchemasConfigurationComponent.SYSTEM_KEYS.has(field.name)) {
-            errors.push('Key is a reserved system name');
-        } else if (allFields.filter(f => f !== field && f.name === field.name).length > 0) {
-            errors.push('Key must be unique within the schema');
+        } else {
+            const reservedCharacter = ['.', ':'].find((character) => field.name.includes(character));
+            if (reservedCharacter) {
+                errors.push(`Key must not contain "${reservedCharacter}" because it is reserved`);
+            } else if (SchemasConfigurationComponent.SYSTEM_KEYS.has(field.name)) {
+                errors.push('Key is a reserved system name');
+            } else if (allFields.filter(f => f !== field && f.name === field.name).length > 0) {
+                errors.push('Key must be unique within the schema');
+            }
         }
 
         if ((field as any).customType === 'enum' && (!Array.isArray(field.enum) || field.enum.length === 0)) {
@@ -2049,12 +2145,18 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public copyIri(value: string | null | undefined, event?: Event): void {
+        this.copyIdentity('iri', value, event);
+    }
+
+    public copyIdentity(field: 'iri' | 'uuid', value: string | null | undefined, event?: Event): void {
         event?.stopPropagation();
         if (!value) { return; }
         navigator.clipboard.writeText(value).then(() => {
-            this.copiedIri = true;
-            setTimeout(() => { this.copiedIri = false; }, 1500);
-        }).catch(() => { this.copiedIri = false; });
+            this.copiedField = field;
+            setTimeout(() => {
+                if (this.copiedField === field) { this.copiedField = null; }
+            }, 1500);
+        }).catch(() => { this.copiedField = null; });
     }
 
     private static readonly HIDE_VALUES_TYPES = new Set(['helptext', 'file', 'table']);
@@ -2628,6 +2730,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             return;
         }
         const oldName = this.selectedField.name;
+        this.invalidateFieldSuggestion(oldName);
         this.selectedField.name = name;
         for (const candidate of this.currentFieldScope) {
             if (candidate.dependency?.kind === 'geo' && candidate.dependency.on === oldName) {
@@ -2639,6 +2742,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public changeFieldType(ft: FieldTypeUI): void {
         if (!this.selectedField) { return; }
+        this.invalidateSelectedFieldSuggestion();
         if (ft.key === 'sub-schema') {
             // Already a sub-schema: keep the current reference — the "Referenced schema"
             // dropdown is how it gets changed, so clicking the tile is a no-op.
