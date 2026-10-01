@@ -74,7 +74,20 @@ Leave the toggle off only when the field must keep the legacy behavior, where co
    Two columns cannot be multiplied directly as `area · factor`. A per-row calculation is written as the sum above, with a row number.
 5. Open the **Testing** tab to run the formula against a real document before running the policy. Each variable is shown as the list of its column cells, and warnings appear on the **Errors** tab.
 
-A cell that holds no number is replaced with `0` by a numeric function; the row keeps its place, and the policy log carries one line per column naming how many cells were replaced. Ordinary formulas are limited to 10 000 rows. A column is input only - it is neither offered nor accepted on the **Outputs** tab. A Table field with **Define columns** off cannot be used this way and stays on the Advanced tab.
+A cell that holds no number is replaced with `0` by a numeric function; the row keeps its place, and the policy log carries one line per column naming how many cells were replaced. Ordinary formulas are limited to 10 000 rows. A column path remains input only and is not accepted on the **Outputs** tab. To write a table, select the declared Table field itself as described below. A Table field with **Define columns** off cannot be used this way and stays on the Advanced tab.
+
+#### Write Math Block results into a Table
+
+1. In the Math Block editor, create the variables and formulas that will supply the table.
+2. Go to **Outputs**, add an Output, and select the declared Table field itself. Do not select one of its column paths.
+3. Choose an output mode:
+    * Select **By cells** to build a fixed grid. Enter a variable name from **Inputs** or **Formulas** in each cell. Use **Add Rows** to add rows and, for a repeated Table, **Add Table** to add another table.
+    * Select **By columns** to bind one variable to each declared column. A list fills its column in row order. The longest list sets the number of rows, shorter lists leave empty cells, and a single value repeats in every row. If all bound values are single values, the result has one row. An unbound column stays empty.
+4. For a repeated Table in **By columns**, use variables whose outer list elements represent tables and whose inner list elements represent rows.
+5. Open **Testing** and select a source document. Each result table shows up to 20 rows. Open **Code → Output** to see the complete result.
+6. If the Math Block uses **Advanced (Optional)**, remember that this code runs after the configured Outputs and can change or replace the generated Table value.
+
+Only the active **By cells** or **By columns** mode is saved. **By cells** allows up to 1 000 rows in one table or across all tables of a repeated output, and up to 100 tables. **By columns** allows up to 10 000 rows and, for a repeated output, up to 100 tables. A legacy Table with **Define columns** off, or a Table below two or more repeated schema levels, keeps the existing single-value Output.
 
 #### Read declared keys through the policy documents API
 
@@ -86,11 +99,13 @@ A cell that holds no number is replaced with `0` by a numeric function; the row 
 
 Guardian stores the Table value with both `columnNames` and `columnKeys`. Guardian and the Indexer show the display names, while calculations, scripts and expanded API row objects use the stable keys.
 
-Declared columns are also available as variables in ordinary Math Block formulas, so a table can be read on the **General** tab without JavaScript. The stored document is unchanged by this: it still holds only the compact Table value, with no rows in it.
+Declared columns are also available as variables in ordinary Math Block formulas, so a table can be read on the **General** tab without JavaScript.
+
+When a Math Block writes a declared Table, Guardian creates a table file from the calculated rows and stores the same compact Table value used for an uploaded file. A published policy run stores the file in GridFS and IPFS; a Dry Run stores it only in GridFS.
 
 XLSX schema export and import preserve the Table field's column names, keys and order. A blank Table `Parameter` preserves the toggle-off state.
 
-Table fields created before this feature have no declared columns and continue to work. Their column keys come from the first row of each uploaded CSV file.
+Table fields created before this feature have no declared columns and continue to work. Their column keys come from the first row of each uploaded CSV file, and their Math Block Output stays a single value.
 
 ### Troubleshooting
 
@@ -104,7 +119,11 @@ Table fields created before this feature have no declared columns and continue t
 
 **A formula over a column stops with a row-count message.** The table is above the 10 000-row limit of ordinary formulas. Use a smaller file, or move the calculation to the Advanced tab, which is not bound by that limit.
 
-**An Output path with a column is marked as not found.** A column cannot be written to. Bind the Output to an ordinary field instead.
+**An Output path with a column is marked as not found.** A column cannot be written to directly. Select the declared Table field itself to write a complete table.
+
+**Testing reports `Unknown variable`.** Check every filled cell or column binding and use an exact variable name from **Inputs** or **Formulas**.
+
+**Publishing or Dry Run reports unknown Table columns.** The Table schema changed after the Output was configured. Reopen the Math Block, bind the current columns, and save it again.
 
 **The XLSX schema cannot be imported.** Check the Table row's `Parameter` cell. When it is not blank, it must contain a non-empty JSON array of unique `name` and `key` pairs. Keys cannot contain whitespace.
 
