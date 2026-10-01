@@ -26,9 +26,17 @@ describe('Table construction', () => {
         assert.include(titles, Dictionary.KEY);
         assert.include(titles, Dictionary.DEFAULT);
         assert.include(titles, Dictionary.SUGGEST);
+        assert.include(titles, Dictionary.IWA_PROPERTY);
     });
 
-    it('schema headers include name/description/type/tool/tool-id', () => {
+    it('IWA Property is registered as a non-required field header', () => {
+        const t = new Table({ c: 1, r: 1 });
+        const header = Array.from(t.fieldHeaders).find(h => h.title === Dictionary.IWA_PROPERTY);
+        assert.ok(header);
+        assert.isFalse(header.required);
+    });
+
+    it('schema headers include name/description/type/tool/tool-id/iwa-version', () => {
         const t = new Table({ c: 1, r: 1 });
         const titles = Array.from(t.schemaHeaders).map(h => h.title);
         assert.include(titles, Dictionary.SCHEMA_NAME);
@@ -36,6 +44,14 @@ describe('Table construction', () => {
         assert.include(titles, Dictionary.SCHEMA_TYPE);
         assert.include(titles, Dictionary.SCHEMA_TOOL);
         assert.include(titles, Dictionary.SCHEMA_TOOL_ID);
+        assert.include(titles, Dictionary.IWA_VERSION);
+    });
+
+    it('IWA Version is registered as a non-required schema header', () => {
+        const t = new Table({ c: 1, r: 1 });
+        const header = Array.from(t.schemaHeaders).find(h => h.title === Dictionary.IWA_VERSION);
+        assert.ok(header);
+        assert.isFalse(header.required);
     });
 });
 
@@ -70,12 +86,13 @@ describe('Table.setDefault with tool=true', () => {
         t.setDefault(true);
     });
 
-    it('places schema headers on sequential rows from start', () => {
+    it('places schema headers on sequential rows from start, with IWA Version after Schema Type', () => {
         assert.equal(t.getRow(Dictionary.SCHEMA_NAME), 5);
         assert.equal(t.getRow(Dictionary.SCHEMA_DESCRIPTION), 6);
         assert.equal(t.getRow(Dictionary.SCHEMA_TYPE), 7);
-        assert.equal(t.getRow(Dictionary.SCHEMA_TOOL), 8);
-        assert.equal(t.getRow(Dictionary.SCHEMA_TOOL_ID), 9);
+        assert.equal(t.getRow(Dictionary.IWA_VERSION), 8);
+        assert.equal(t.getRow(Dictionary.SCHEMA_TOOL), 9);
+        assert.equal(t.getRow(Dictionary.SCHEMA_TOOL_ID), 10);
     });
 
     it('places field headers on sequential columns from start', () => {
@@ -84,8 +101,17 @@ describe('Table.setDefault with tool=true', () => {
         assert.equal(t.getCol(Dictionary.PARAMETER), 4);
     });
 
+    it('places IWA Property after Key, the last field column', () => {
+        assert.equal(t.getCol(Dictionary.IWA_PROPERTY), t.getCol(Dictionary.KEY) + 1);
+    });
+
     it('hasCol returns true for placed field headers', () => {
         assert.isTrue(t.hasCol(Dictionary.REQUIRED_FIELD));
+        assert.isTrue(t.hasCol(Dictionary.IWA_PROPERTY));
+    });
+
+    it('hasCol returns false for an unregistered header name', () => {
+        assert.isFalse(t.hasCol('Not A Real Header'));
     });
 
     it('getErrorHeader returns null once required headers are placed', () => {
@@ -94,12 +120,13 @@ describe('Table.setDefault with tool=true', () => {
 });
 
 describe('Table.setDefault with tool=false', () => {
-    it('removes tool headers from the schema header set', () => {
+    it('removes tool headers from the schema header set, but keeps IWA Version', () => {
         const t = new Table({ c: 1, r: 1 });
         t.setDefault(false);
         const titles = Array.from(t.schemaHeaders).map(h => h.title);
         assert.notInclude(titles, Dictionary.SCHEMA_TOOL);
         assert.notInclude(titles, Dictionary.SCHEMA_TOOL_ID);
+        assert.include(titles, Dictionary.IWA_VERSION);
     });
 
     it('isSchemaHeader is false for removed tool headers', () => {

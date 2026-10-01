@@ -12,7 +12,7 @@ import {
     IPropertySuggestionFieldInput,
     IPropertySuggestionRequest,
     IPropertySuggestionResponse,
-    Schema,
+    resolveIwaVersion,
 } from '@guardian/interfaces';
 
 dotenv.config();
@@ -131,34 +131,22 @@ export class AIManager {
         const startedAt = Date.now();
         try {
             const fieldNames = request?.fieldNames || [];
+            const liveFields = request?.schema?.fields || [];
             await this.logger.info(
-                `[GLOSSARY_AI] suggestProperties received: schemaId=${request?.schemaId} requestedFields=${fieldNames.length} timeoutMs=${timeoutMs}`,
+                `[GLOSSARY_AI] suggestProperties received: schemaId=${request?.schemaId} liveFields=${liveFields.length} requestedFields=${fieldNames.length} timeoutMs=${timeoutMs}`,
                 ['AI_SERVICE'],
             );
-            if (!request?.schemaId || !fieldNames.length) {
+            if (!liveFields.length || !fieldNames.length) {
                 return { available: true, results: [] };
             }
 
-            const dbRequests = new AISuggestionsDB();
-            const rawSchema = await dbRequests.getSchemaById(request.schemaId);
-            if (!rawSchema) {
-                await this.logger.warn(
-                    `[GLOSSARY_AI] schema "${request.schemaId}" not found; returning unavailable`,
-                    ['AI_SERVICE'],
-                );
-                return { available: false, results: [] };
-            }
-            // Full schema
-            const schema = new Schema(rawSchema);
-
-            const allFields: IPropertySuggestionFieldInput[] = (
-                schema.fields || []
-            ).map((field) => ({
-                name: field.name,
-                title: field.title,
-                description: field.description,
-                type: field.type,
-                currentProperty: field.property,
+            // Fields come from the editor, so unsaved changes are included
+            const allFields: IPropertySuggestionFieldInput[] = liveFields.map((field) => ({
+                name: field?.name,
+                title: field?.title,
+                description: field?.description,
+                type: field?.type,
+                currentProperty: field?.currentProperty,
             }));
 
             const existingFieldNames = new Set(
@@ -171,8 +159,9 @@ export class AIManager {
                 return { available: true, results: [] };
             }
 
+            const dbRequests = new AISuggestionsDB();
             const properties = await dbRequests.getPolicyProperties(
-                schema.iwaVersion,
+                resolveIwaVersion(request.schema),
             );
 
             const modelTimeoutMs = AIManager.remainingModelTimeoutMs(
@@ -207,8 +196,8 @@ export class AIManager {
                 model,
                 allFields,
                 properties || [],
-                schema.name,
-                schema.description,
+                request.schema.name,
+                request.schema.description,
                 targetFieldNames,
                 this.logger,
             );

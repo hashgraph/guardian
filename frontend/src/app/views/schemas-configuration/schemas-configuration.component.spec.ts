@@ -87,6 +87,9 @@ describe('SchemasConfigurationComponent', () => {
         component.projectComparisonService = { getProperties: () => of([]) };
         component._cancelLoadSchemas$ = new Subject<void>();
         component._subSchemasByIri = new Map();
+        component.suggestionResults = [];
+        component.suggestionsAvailable = true;
+        component.suggestionsCacheByContextKey = new Map();
 
         component._buildRefs = () => ({});
         component.loadAppliedSchemaTemplate = () => {};
@@ -1579,6 +1582,78 @@ describe('SchemasConfigurationComponent', () => {
             const errors = component.getFieldErrors(field, [field]);
 
             expect(errors.some((e: string) => e.toLowerCase().includes('column'))).toBeFalse();
+        });
+    });
+
+    describe('IWA property suggestion invalidation', () => {
+
+        function suggestion(fieldName: string): any {
+            return { fieldName, candidates: [{ title: `${fieldName}-prop`, confidence: 0.9 }] };
+        }
+
+        function suggestionComponent(): any {
+            const fieldA = makeField({ name: 'fieldA', type: 'string' });
+            const fieldB = makeField({ name: 'fieldB', type: 'string' });
+            const schema = makeSchema({ id: 'root', iri: '#root', fields: [fieldA, fieldB] });
+            const component = createComponent({ schemas: [schema], selectedSchema: schema });
+            component.fieldTypes = FIELD_TYPES_UI;
+            component.selectedField = fieldA;
+            component.suggestionResults = [suggestion('fieldA'), suggestion('fieldB')];
+            component.suggestionsCacheByContextKey.set('root', {
+                results: component.suggestionResults,
+                available: true,
+            });
+            return component;
+        }
+
+        function names(results: any[]): string[] {
+            return results.map((r) => r.fieldName);
+        }
+
+        it('drops the selected field suggestion when its type changes', () => {
+            const component = suggestionComponent();
+
+            component.changeFieldType(FIELD_TYPES_UI.find(ft => ft.key === 'number'));
+
+            expect(names(component.suggestionResults)).toEqual(['fieldB']);
+        });
+
+        it('drops only the selected field suggestion when its name or description is edited', () => {
+            const component = suggestionComponent();
+
+            component.invalidateSelectedFieldSuggestion();
+
+            expect(names(component.suggestionResults)).toEqual(['fieldB']);
+            expect(component.rightPanelSuggestion).toBeNull();
+        });
+
+        it('updates the cached results so returning to the schema does not bring it back', () => {
+            const component = suggestionComponent();
+
+            component.invalidateSelectedFieldSuggestion();
+
+            expect(names(component.suggestionsCacheByContextKey.get('root').results)).toEqual(['fieldB']);
+        });
+
+        it('leaves results and cache untouched when the field has no suggestion', () => {
+            const component = suggestionComponent();
+            component.selectedField = makeField({ name: 'fieldC' });
+            const cached = component.suggestionsCacheByContextKey.get('root');
+
+            component.invalidateSelectedFieldSuggestion();
+
+            expect(names(component.suggestionResults)).toEqual(['fieldA', 'fieldB']);
+            expect(component.suggestionsCacheByContextKey.get('root')).toBe(cached);
+        });
+
+        it('does nothing when no field is selected', () => {
+            const component = suggestionComponent();
+            component.selectedField = null;
+
+            component.invalidateSelectedFieldSuggestion();
+            component.changeFieldType(FIELD_TYPES_UI.find(ft => ft.key === 'number'));
+
+            expect(names(component.suggestionResults)).toEqual(['fieldA', 'fieldB']);
         });
     });
 

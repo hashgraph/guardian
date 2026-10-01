@@ -2,8 +2,8 @@ import { Dictionary, FieldTypes, geoDisplayValue } from './models/dictionary.js'
 import { anyToXlsx, examplesToXlsx, booleanToXlsx, entityToXlsx, fontToXlsx, stringToXlsx, typeToXlsx, unitToXlsx, valueToFormula, visibilityToXlsx } from './models/value-converters.js';
 import { Hyperlink, Range, Workbook, Worksheet } from './models/workbook.js';
 import { Table } from './models/table.js';
-import { ISchema, Schema, SchemaCondition, SchemaField } from '@guardian/interfaces';
-import { PolicyTool, IPFS } from '@guardian/common';
+import { ISchema, IwaVersion, resolveIwaVersion, Schema, SchemaCondition, SchemaField } from '@guardian/interfaces';
+import { PolicyTool, PolicyProperty, IPFS, DatabaseServer } from '@guardian/common';
 import { IRowField } from './interfaces/row-field.interface.js';
 import { SheetName } from './models/sheet-name.js';
 import { XlsxEnum } from './models/xlsx-enum.js';
@@ -97,6 +97,17 @@ export class JsonToXlsx {
         // Write all enums to shared tab
         JsonToXlsx.writeSharedEnum(enumWorksheet, _enums);
 
+        // Load and write the IWA property reference sheet for the dropdowns.
+        const iwaVersionsUsed = new Set<IwaVersion>();
+        for (const item of _schemas) {
+            iwaVersionsUsed.add(resolveIwaVersion(item.schema as Schema));
+        }
+        const iwaPropertiesByVersion = new Map<IwaVersion, PolicyProperty[]>();
+        for (const version of iwaVersionsUsed) {
+            iwaPropertiesByVersion.set(version, await JsonToXlsx.loadPolicyProperties(version));
+        }
+        const iwaPropertyRanges = JsonToXlsx.writeIwaPropertiesSheet(workbook, iwaPropertiesByVersion);
+
         // Write Fields
         for (const item of _schemas) {
             JsonToXlsx.writeSchema(
@@ -105,7 +116,8 @@ export class JsonToXlsx {
                 item.tool,
                 _schemaCache,
                 _enumsCache,
-                _subSchemaNamesCache
+                _subSchemaNamesCache,
+                iwaPropertyRanges.get(resolveIwaVersion(item.schema as Schema))
             );
         }
         //Write
@@ -218,7 +230,8 @@ export class JsonToXlsx {
         tool: PolicyTool,
         schemaCache: Map<string, string>,
         enumsCache: Map<string, XlsxEnum>,
-        subSchemaNames: Map<string, string> = new Map()
+        subSchemaNames: Map<string, string> = new Map(),
+        iwaPropertyRange?: string
     ): void {
         const range = worksheet.getRange();
 
@@ -235,8 +248,10 @@ export class JsonToXlsx {
         worksheet.mergeCells(Range.fromColumns(table.start.c, table.end.c - 1, table.getRow(Dictionary.SCHEMA_NAME)));
         worksheet.setValue(Dictionary.SCHEMA_DESCRIPTION, table.start.c, table.getRow(Dictionary.SCHEMA_DESCRIPTION));
         worksheet.setValue(Dictionary.SCHEMA_TYPE, table.start.c, table.getRow(Dictionary.SCHEMA_TYPE));
+        worksheet.setValue(Dictionary.IWA_VERSION, table.start.c, table.getRow(Dictionary.IWA_VERSION));
         worksheet.mergeCells(Range.fromColumns(table.start.c + 1, table.end.c - 1, table.getRow(Dictionary.SCHEMA_DESCRIPTION)));
         worksheet.mergeCells(Range.fromColumns(table.start.c + 1, table.end.c - 1, table.getRow(Dictionary.SCHEMA_TYPE)));
+        worksheet.mergeCells(Range.fromColumns(table.start.c + 1, table.end.c - 1, table.getRow(Dictionary.IWA_VERSION)));
         worksheet
             .getCell(table.start.c + 1, table.getRow(Dictionary.SCHEMA_DESCRIPTION))
             .setStyle(table.schemaItemStyle)
@@ -245,6 +260,11 @@ export class JsonToXlsx {
             .getCell(table.start.c + 1, table.getRow(Dictionary.SCHEMA_TYPE))
             .setStyle(table.schemaItemStyle)
             .setValue(entityToXlsx(schema.entity));
+        worksheet
+            .getCell(table.start.c + 1, table.getRow(Dictionary.IWA_VERSION))
+            .setStyle(table.schemaItemStyle)
+            .setValue(resolveIwaVersion(schema) === IwaVersion.V3 ? 'V3' : 'V1')
+            .setList(['V1', 'V3']);
 
         if (tool) {
             worksheet.setValue(Dictionary.SCHEMA_TOOL, table.start.c, table.getRow(Dictionary.SCHEMA_TOOL));
@@ -284,7 +304,8 @@ export class JsonToXlsx {
                 enumsCache,
                 fieldCache,
                 row,
-                subSchemaNames
+                subSchemaNames,
+                iwaPropertyRange
             );
             row = JsonToXlsx.writeSubFields(
                 worksheet,
@@ -295,7 +316,8 @@ export class JsonToXlsx {
                 row,
                 subSchemaNames,
                 fieldCache,
-                [field.name]
+                [field.name],
+                iwaPropertyRange
             );
         }
 
@@ -318,6 +340,7 @@ export class JsonToXlsx {
         fieldCache: Map<string, IRowField>,
         row: number,
         subSchemaNames: Map<string, string> = new Map(),
+        iwaPropertyRange?: string,
         parent?: SchemaField,
     ) {
         const fieldItemStyle = parent ? table.subItemStyle : table.fieldItemStyle;
@@ -350,6 +373,13 @@ export class JsonToXlsx {
         worksheet
             .getCell(table.getCol(Dictionary.KEY), row)
             .setValue(stringToXlsx(field.name));
+
+        const iwaPropertyCell = worksheet
+            .getCell(table.getCol(Dictionary.IWA_PROPERTY), row)
+            .setValue(stringToXlsx(field.property));
+        if (iwaPropertyRange) {
+            iwaPropertyCell.setList2(iwaPropertyRange);
+        }
 
         const type = FieldTypes.findByValue(field);
         if (type) {
@@ -502,7 +532,8 @@ export class JsonToXlsx {
         row: number,
         subSchemaNames: Map<string, string> = new Map(),
         rootFieldCache?: Map<string, IRowField>,
-        pathPrefix?: string[]
+        pathPrefix?: string[],
+        iwaPropertyRange?: string
     ): number {
         if (!parent || !parent.isRef || !Array.isArray(parent.fields) || parent.fields.length === 0) {
             return row;
@@ -531,6 +562,7 @@ export class JsonToXlsx {
                 fieldCache,
                 row,
                 subSchemaNames,
+                iwaPropertyRange,
                 parent
             );
             if (rootFieldCache && pathPrefix) {
@@ -552,7 +584,8 @@ export class JsonToXlsx {
                 row,
                 subSchemaNames,
                 rootFieldCache,
-                pathPrefix ? [...pathPrefix, field.name] : undefined
+                pathPrefix ? [...pathPrefix, field.name] : undefined,
+                iwaPropertyRange
             );
         }
 
@@ -654,6 +687,57 @@ export class JsonToXlsx {
         } catch (error) {
             return [];
         }
+    }
+
+    // A failed lookup just means no dropdown - the column still exports as plain text.
+    private static async loadPolicyProperties(version: IwaVersion): Promise<PolicyProperty[]> {
+        try {
+            return await DatabaseServer.getPolicyProperties(version);
+        } catch (error) {
+            return [];
+        }
+    }
+
+    // Groups rows into one contiguous range per version, for the per-field dropdown formula.
+    private static writeIwaPropertiesSheet(
+        workbook: Workbook,
+        propertiesByVersion: Map<IwaVersion, PolicyProperty[]>
+    ): Map<IwaVersion, string> {
+        const ranges = new Map<IwaVersion, string>();
+        const hasData = Array.from(propertiesByVersion.values()).some((list) => list.length > 0);
+        if (!hasData) {
+            return ranges;
+        }
+
+        const worksheet = workbook.createWorksheet(Dictionary.IWA_PROPERTIES_SHEET).setHidden(true);
+        const headerStyle = { font: { size: 14, bold: true } };
+        const itemStyle = { font: { size: 11, bold: false }, alignment: { wrapText: true } };
+
+        worksheet.setValue('Path', 1, 1).setStyle(headerStyle);
+        worksheet.setValue('Name', 2, 1).setStyle(headerStyle);
+        worksheet.setValue('Description', 3, 1).setStyle(headerStyle);
+        worksheet.setValue('Version', 4, 1).setStyle(headerStyle);
+        worksheet.getCol(1).setWidth(50);
+        worksheet.getCol(2).setWidth(40);
+        worksheet.getCol(3).setWidth(60);
+        worksheet.getCol(4).setWidth(10);
+
+        let row = 2;
+        for (const [version, properties] of propertiesByVersion) {
+            if (!properties.length) {
+                continue;
+            }
+            const startRow = row;
+            for (const property of properties) {
+                worksheet.getCell(1, row).setValue(stringToXlsx(property.title)).setStyle(itemStyle);
+                worksheet.getCell(2, row).setValue(stringToXlsx(property.value)).setStyle(itemStyle);
+                worksheet.getCell(3, row).setValue(stringToXlsx(property.description)).setStyle(itemStyle);
+                worksheet.getCell(4, row).setValue(version === IwaVersion.V3 ? 'V3' : 'V1').setStyle(itemStyle);
+                row++;
+            }
+            ranges.set(version, `'${Dictionary.IWA_PROPERTIES_SHEET}'!$A$${startRow}:$A$${row - 1}`);
+        }
+        return ranges;
     }
 
     private static buildIfFormula(
