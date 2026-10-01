@@ -50,7 +50,7 @@
         "dev:docker": "nodemon .",
         "lint": "tslint --config ../tslint.json --project .",
         "start": "node dist/index.js",
-        "test": "mocha --require ts-node/register tests/**/*.ts --timeout 10000"
+        "test": "mocha --require ts-node/register 'tests/**/*.ts' --timeout 10000"
     },
     "type": "module",
     "version": "3.7.1-rc"
