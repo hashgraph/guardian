@@ -43,4 +43,27 @@ describe('MathEngine table output validation', () => {
         expect(engine.validate()).toEqual(['outputs', engine.outputs.pages[0].id]);
         expect(output.error).toBe('Unknown variable: missing');
     });
+
+    it('rejects a column table output whose column names an unknown variable', () => {
+        const engine = new MathEngine();
+        engine.addVariable('x', 'doc.a').update();
+        const output = engine.addOutput();
+        output.field = 'results';
+        output.columns = { year: 'x', co2: 'missing' };
+        output.update();
+
+        expect(engine.validate()).toEqual(['outputs', engine.outputs.pages[0].id]);
+        expect(output.error).toBe('Unknown variable: missing');
+    });
+
+    it('accepts a column table output whose columns name known variables', () => {
+        const engine = new MathEngine();
+        engine.addVariable('x', 'doc.a').update();
+        const output = engine.addOutput();
+        output.field = 'results';
+        output.columns = { year: 'x', co2: '' };
+        output.update();
+
+        expect(engine.validate()).toBeNull();
+    });
 });

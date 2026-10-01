@@ -1,3 +1,4 @@
+import { Schema } from '@guardian/interfaces';
 import { BlockValidator, IBlockProp } from '../index.js';
 import { CommonBlock } from './common.js';
 import { MathEngine, Code } from '../../helpers/math-model/index.js';
@@ -56,6 +57,24 @@ export class MathBlock {
             if (groupError) {
                 validator.addError('Option "expression" is incorrect');
                 return;
+            }
+
+            const outputSchema = validator.getSchema(ref.options.outputSchema || ref.options.inputSchema);
+            const schema = new Schema(outputSchema);
+            for (const link of group.outputs.getItems()) {
+                if (!link.isTable) {
+                    continue;
+                }
+                const columns = schema.getField(link.path)?.tableColumns;
+                if (!Array.isArray(columns) || !columns.length) {
+                    validator.addError(`Table output "${link.path}" has no declared columns`);
+                    return;
+                }
+                const unknown = link.getUnknownColumns(columns.map((column) => column.key));
+                if (unknown.length) {
+                    validator.addError(`Table output "${link.path}" has unknown columns: ${unknown.join(', ')}`);
+                    return;
+                }
             }
 
             const code = Code.from(ref.options.expression);

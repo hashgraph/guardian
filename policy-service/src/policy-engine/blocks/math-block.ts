@@ -240,6 +240,14 @@ export class MathBlock {
                     ref.uuid
                 );
             }
+            const unknown = link.getUnknownColumns(columns.map((column) => column.key));
+            if (unknown.length) {
+                throw new BlockActionError(
+                    `Table output "${link.path}" has unknown columns: ${unknown.join(', ')}`,
+                    ref.blockType,
+                    ref.uuid
+                );
+            }
 
             const values: unknown[] = [];
             for (const table of tables) {

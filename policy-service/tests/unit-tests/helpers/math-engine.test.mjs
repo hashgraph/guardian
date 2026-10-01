@@ -166,6 +166,27 @@ describe('MathEngine.validate', () => {
         assert.deepEqual(engine.validate(), ['outputs', engine.outputs.pages[0].id]);
         assert.equal(output.error, 'Unknown variable: missing');
     });
+
+    it('accepts a column table output whose columns name known variables', () => {
+        const engine = new MathEngine();
+        addVariable(engine, 'x', 'doc.a');
+        const output = engine.addOutput();
+        output.field = 'results';
+        output.columns = { year: 'x', co2: '' };
+        output.update();
+        assert.equal(engine.validate(), null);
+    });
+
+    it('flags a column table output whose column names an unknown variable', () => {
+        const engine = new MathEngine();
+        addVariable(engine, 'x', 'doc.a');
+        const output = engine.addOutput();
+        output.field = 'results';
+        output.columns = { year: 'x', co2: 'missing' };
+        output.update();
+        assert.deepEqual(engine.validate(), ['outputs', engine.outputs.pages[0].id]);
+        assert.equal(output.error, 'Unknown variable: missing');
+    });
 });
 
 describe('MathEngine.createContext', () => {

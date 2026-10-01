@@ -198,6 +198,47 @@ describe('@unit mathBlock result tables', () => {
         assert.equal(gridFiles.length, 0);
     });
 
+    const outputExpression = (output) => ({
+        variables: [],
+        formulas: [],
+        outputs: [{ type: 'link', name: '', description: '', field: 'results', schema: '#out', ...output }]
+    });
+
+    it('rejects a grid cell under a column the schema does not declare and stores no file', async () => {
+        const options = { expression: outputExpression({ rows: [{ yeer: 'y', co2_tonnes: 'c' }] }) };
+
+        await assert.rejects(
+            () => block().storeResultTables(refWith(options), workerResult(), 'user-1', []),
+            /Table output "results" has unknown columns: yeer/
+        );
+        assert.equal(gridFiles.length, 0);
+        assert.equal(ipfsFiles.length, 0);
+    });
+
+    it('rejects a column binding the schema does not declare and stores no file', async () => {
+        const options = { expression: outputExpression({ columns: { yeer: 'y', co2_tonnes: 'c' } }) };
+
+        await assert.rejects(
+            () => block().storeResultTables(refWith(options), workerResult(), 'user-1', []),
+            /Table output "results" has unknown columns: yeer/
+        );
+        assert.equal(gridFiles.length, 0);
+        assert.equal(ipfsFiles.length, 0);
+    });
+
+    it('stores a column table whose configuration leaves a declared column out', async () => {
+        const options = { expression: outputExpression({ columns: { year: 'y' } }) };
+        const json = { results: { type: 'table', rows: [{ year: 2020 }, { year: 2021 }] } };
+
+        await block().storeResultTables(refWith(options), json, 'user-1', []);
+
+        assert.equal(gridFiles.length, 1);
+        assert.equal(
+            await decodeGridFileText(gridFiles[0].buffer),
+            'Year,CO2 (tonnes)\r\n2020,\r\n2021,'
+        );
+    });
+
     it('keeps a GridFS file in the list even when the IPFS upload fails', async () => {
         const stored = [];
         IPFS.addFile = async () => {

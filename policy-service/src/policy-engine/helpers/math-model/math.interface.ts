@@ -19,6 +19,7 @@ export interface IFieldLink {
     schema: string;
     rows?: Record<string, string>[];
     tables?: Record<string, string>[][];
+    columns?: Record<string, string>;
 }
 
 export interface IMathFormula {

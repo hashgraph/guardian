@@ -6,6 +6,7 @@ import { IFieldLink } from './math.interface.js';
 export class FieldLink {
     public static readonly MAX_TABLE_ROWS = 1000;
     public static readonly MAX_TABLES = 100;
+    public static readonly MAX_COLUMN_ROWS = 10000;
 
     public readonly type = MathItemType.LINK;
 
@@ -22,6 +23,7 @@ export class FieldLink {
     public value: any;
     public rows: Record<string, string>[] | null = null;
     public tables: Record<string, string>[][] | null = null;
+    public columns: Record<string, string> | null = null;
 
     public error: string = '';
     public empty: boolean = true;
@@ -46,7 +48,7 @@ export class FieldLink {
     }
 
     public get isTable(): boolean {
-        return Array.isArray(this.rows) || Array.isArray(this.tables);
+        return Array.isArray(this.rows) || Array.isArray(this.tables) || !!this.columns;
     }
 
     public get isTableList(): boolean {
@@ -82,7 +84,7 @@ export class FieldLink {
                 return;
             }
             if (this.isTable) {
-                this.validName = grids.every((rows) => rows.every((row) => Object.keys(row).every((key) => {
+                this.validName = this.getNameGrids().every((rows) => rows.every((row) => Object.keys(row).every((key) => {
                     const cell = row[key];
                     return typeof cell === 'string' && (!cell.trim() || !!FieldLink.toVariableName(cell));
                 })));
@@ -153,7 +155,7 @@ export class FieldLink {
 
     public getCellNames(): string[] {
         const names: string[] = [];
-        for (const rows of this.getGrids()) {
+        for (const rows of this.getNameGrids()) {
             for (const row of rows) {
                 for (const key of Object.keys(row)) {
                     const name = FieldLink.toVariableName(row[key]);
@@ -174,6 +176,9 @@ export class FieldLink {
         scope: { [name: string]: any },
         rows: Record<string, string>[] | null = this.rows
     ): Record<string, any>[] {
+        if (this.columns) {
+            return this.getColumnRows(scope);
+        }
         return (rows || []).map((row) => {
             const values: Record<string, any> = {};
             for (const key of Object.keys(row)) {
@@ -182,6 +187,75 @@ export class FieldLink {
             }
             return values;
         });
+    }
+
+    public getColumnRows(scope: { [name: string]: any }): Record<string, any>[] {
+        const values = this.getColumnValues(scope);
+        const count = FieldLink.getColumnLength(values);
+        if (count > FieldLink.MAX_COLUMN_ROWS) {
+            throw new Error(`Too many rows: ${count}. The limit is ${FieldLink.MAX_COLUMN_ROWS}`);
+        }
+        return FieldLink.toColumnRows(Object.keys(this.columns || {}), values);
+    }
+
+    public getUnknownColumns(keys: string[]): string[] {
+        const known = new Set(keys);
+        const unknown = new Set<string>();
+        for (const rows of this.getNameGrids()) {
+            for (const row of rows) {
+                for (const key of Object.keys(row)) {
+                    if (!known.has(key)) {
+                        unknown.add(key);
+                    }
+                }
+            }
+        }
+        return Array.from(unknown);
+    }
+
+    private getColumnValues(scope: { [name: string]: any }): Record<string, any> {
+        const values: Record<string, any> = {};
+        const columns = this.columns || {};
+        for (const key of Object.keys(columns)) {
+            const name = FieldLink.toVariableName(columns[key]);
+            if (name) {
+                values[key] = scope[name];
+            }
+        }
+        return values;
+    }
+
+    private static getColumnLength(values: Record<string, any>): number {
+        const bound = Object.keys(values);
+        const lists = bound.filter((key) => Array.isArray(values[key]));
+        if (lists.length) {
+            return Math.max(...lists.map((key) => values[key].length));
+        }
+        return bound.length ? 1 : 0;
+    }
+
+    private static toColumnRows(keys: string[], values: Record<string, any>): Record<string, any>[] {
+        const count = FieldLink.getColumnLength(values);
+        const rows: Record<string, any>[] = [];
+        for (let index = 0; index < count; index++) {
+            const row: Record<string, any> = {};
+            for (const key of keys) {
+                const value = values[key];
+                if (!(key in values)) {
+                    row[key] = '';
+                } else if (Array.isArray(value)) {
+                    row[key] = index < value.length ? value[index] : '';
+                } else {
+                    row[key] = value;
+                }
+            }
+            rows.push(row);
+        }
+        return rows;
+    }
+
+    private getNameGrids(): Record<string, string>[][] {
+        return this.columns ? [[this.columns]] : this.getGrids();
     }
 
     public toJson(): IFieldLink {
@@ -194,7 +268,9 @@ export class FieldLink {
             field: this.field || '',
             schema: this.schema || ''
         }
-        if (this.tables) {
+        if (this.columns) {
+            json.columns = { ...this.columns };
+        } else if (this.tables) {
             json.tables = this.tables.map((rows) => rows.map((row) => ({ ...row })));
         } else if (this.rows) {
             json.rows = this.rows.map((row) => ({ ...row }));
@@ -210,7 +286,9 @@ export class FieldLink {
             const link = new FieldLink(json.name, json.field);
             link.schema = json.schema;
             link.description = json.description || '';
-            if (Array.isArray(json.tables)) {
+            if (json.columns && typeof json.columns === 'object' && !Array.isArray(json.columns)) {
+                link.columns = { ...json.columns };
+            } else if (Array.isArray(json.tables)) {
                 link.tables = json.tables.map((rows) => Array.isArray(rows) ? rows.map((row) => ({ ...row })) : []);
             } else if (Array.isArray(json.rows)) {
                 link.rows = json.rows.map((row) => ({ ...row }));

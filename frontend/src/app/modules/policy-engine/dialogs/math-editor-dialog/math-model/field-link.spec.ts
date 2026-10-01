@@ -217,3 +217,100 @@ describe('FieldLink table list output', () => {
         expect(link.getCellNames()).toEqual(['r1', 'r2']);
     });
 });
+
+describe('FieldLink column table output', () => {
+    function columnLink(columns: Record<string, any>): FieldLink {
+        return FieldLink.from({
+            type: MathItemType.LINK,
+            name: '',
+            description: '',
+            field: 'results',
+            schema: '#s',
+            columns
+        })!;
+    }
+
+    it('is a single table and keeps the columns through toJson and from', () => {
+        const link = columnLink({ year: 'y', co2: '' });
+        expect(link.isTable).toBeTrue();
+        expect(link.isTableList).toBeFalse();
+        const json = link.toJson();
+        expect(json.columns).toEqual({ year: 'y', co2: '' });
+        expect('rows' in json).toBeFalse();
+        expect('tables' in json).toBeFalse();
+        expect(FieldLink.from(json)!.columns).toEqual({ year: 'y', co2: '' });
+    });
+
+    it('accepts variable names and empty columns, and names the bound variables', () => {
+        const link = columnLink({ year: 'y', co2: '', area: 'x,i' });
+        link.update();
+        expect(link.validName).toBeTrue();
+        expect(link.error).toBe('');
+        expect(link.getCellNames()).toEqual(['y', 'x_i']);
+    });
+
+    it('rejects a column that is not a variable name or not a string', () => {
+        const bad = columnLink({ year: '1bad' });
+        bad.update();
+        expect(bad.validName).toBeFalse();
+        expect(bad.error).toBe('Invalid name');
+        const number = columnLink({ year: 5 });
+        number.update();
+        expect(number.validName).toBeFalse();
+    });
+
+    it('puts element N of every list into row N and fills shorter lists with empty cells', () => {
+        const link = columnLink({ year: 'y', co2: 'c', note: '' });
+        expect(link.getTableRows({ y: [2020, 2021, 2022], c: [42, 20] })).toEqual([
+            { year: 2020, co2: 42, note: '' },
+            { year: 2021, co2: 20, note: '' },
+            { year: 2022, co2: '', note: '' }
+        ]);
+    });
+
+    it('repeats a single value in every row and keeps nested values as they are', () => {
+        const link = columnLink({ year: 'y', site: 's', area: 'a' });
+        expect(link.getTableRows({ y: [2020, 2021], s: 'S1', a: [[1, 2], [3]] })).toEqual([
+            { year: 2020, site: 'S1', area: [1, 2] },
+            { year: 2021, site: 'S1', area: [3] }
+        ]);
+    });
+
+    it('makes one row from single values and no rows when no column is bound', () => {
+        expect(columnLink({ year: 'y', co2: '' }).getTableRows({ y: 2020 })).toEqual([{ year: 2020, co2: '' }]);
+        expect(columnLink({ year: '', co2: '' }).getTableRows({})).toEqual([]);
+    });
+
+    it('makes no rows from an empty list', () => {
+        expect(columnLink({ year: 'y', site: 's' }).getTableRows({ y: [], s: 'S1' })).toEqual([]);
+    });
+
+    it('rejects more than 10000 rows', () => {
+        const link = columnLink({ year: 'y' });
+        expect(link.getTableRows({ y: new Array(10000).fill(1) }).length).toBe(10000);
+        expect(() => link.getTableRows({ y: new Array(10001).fill(1) }))
+            .toThrowError('Too many rows: 10001. The limit is 10000');
+    });
+
+    it('is not limited to 1000 rows by the grid limit', () => {
+        const link = columnLink({ year: 'y' });
+        link.update();
+        expect(link.validName).toBeTrue();
+        expect(link.getTableRows({ y: new Array(1500).fill(1) }).length).toBe(1500);
+    });
+
+    it('rejects a huge list before it builds any row', () => {
+        const link = columnLink({ year: 'y', co2: 'c' });
+        expect(() => link.getTableRows({ y: new Array(1000000000), c: 1 }))
+            .toThrowError('Too many rows: 1000000000. The limit is 10000');
+    });
+
+    it('names the configured columns the schema does not declare', () => {
+        expect(columnLink({ year: 'y', yeer: 'z', co2: '' }).getUnknownColumns(['year', 'co2'])).toEqual(['yeer']);
+        expect(columnLink({ year: 'y' }).getUnknownColumns(['year', 'co2'])).toEqual([]);
+        const grid = FieldLink.from({ type: MathItemType.LINK, name: '', description: '', field: 'results', schema: '', rows: [{ year: 'y' }, { note: '' }] })!;
+        expect(grid.getUnknownColumns(['year'])).toEqual(['note']);
+        const list = FieldLink.from({ type: MathItemType.LINK, name: '', description: '', field: 'results', schema: '', tables: [[{ year: 'y' }], [{ old: '' }]] })!;
+        expect(list.getUnknownColumns(['year'])).toEqual(['old']);
+    });
+});

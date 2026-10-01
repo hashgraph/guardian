@@ -265,4 +265,105 @@ describe('FieldLink', () => {
             assert.deepEqual(link.getCellNames(), ['r1', 'r2']);
         });
     });
+
+    describe('column table output', () => {
+        const columnLink = (columns) => FieldLink.from({
+            type: 'link',
+            name: '',
+            description: '',
+            field: 'results',
+            schema: '#s',
+            columns
+        });
+
+        it('is a single table and keeps the columns through toJson and from', () => {
+            const link = columnLink({ year: 'y', co2: '' });
+            assert.equal(link.isTable, true);
+            assert.equal(link.isTableList, false);
+            const json = link.toJson();
+            assert.deepEqual(json.columns, { year: 'y', co2: '' });
+            assert.equal('rows' in json, false);
+            assert.equal('tables' in json, false);
+            assert.deepEqual(FieldLink.from(json).columns, { year: 'y', co2: '' });
+        });
+
+        it('accepts variable names and empty columns, and names the bound variables', () => {
+            const link = columnLink({ year: 'y', co2: '', area: 'x,i' });
+            link.update();
+            assert.equal(link.validName, true);
+            assert.equal(link.error, '');
+            assert.deepEqual(link.getCellNames(), ['y', 'x_i']);
+        });
+
+        it('rejects a column that is not a variable name or not a string', () => {
+            const bad = columnLink({ year: '1bad' });
+            bad.update();
+            assert.equal(bad.validName, false);
+            assert.equal(bad.error, 'Invalid name');
+            const number = columnLink({ year: 5 });
+            number.update();
+            assert.equal(number.validName, false);
+        });
+
+        it('puts element N of every list into row N and fills shorter lists with empty cells', () => {
+            const link = columnLink({ year: 'y', co2: 'c', note: '' });
+            assert.deepEqual(link.getTableRows({ y: [2020, 2021, 2022], c: [42, 20] }), [
+                { year: 2020, co2: 42, note: '' },
+                { year: 2021, co2: 20, note: '' },
+                { year: 2022, co2: '', note: '' }
+            ]);
+        });
+
+        it('repeats a single value in every row and keeps nested values as they are', () => {
+            const link = columnLink({ year: 'y', site: 's', area: 'a' });
+            assert.deepEqual(link.getTableRows({ y: [2020, 2021], s: 'S1', a: [[1, 2], [3]] }), [
+                { year: 2020, site: 'S1', area: [1, 2] },
+                { year: 2021, site: 'S1', area: [3] }
+            ]);
+        });
+
+        it('makes one row from single values and no rows when no column is bound', () => {
+            assert.deepEqual(columnLink({ year: 'y', co2: '' }).getTableRows({ y: 2020 }), [
+                { year: 2020, co2: '' }
+            ]);
+            assert.deepEqual(columnLink({ year: '', co2: '' }).getTableRows({}), []);
+        });
+
+        it('makes no rows from an empty list', () => {
+            assert.deepEqual(columnLink({ year: 'y', site: 's' }).getTableRows({ y: [], s: 'S1' }), []);
+        });
+
+        it('rejects more than 10000 rows', () => {
+            const link = columnLink({ year: 'y' });
+            assert.equal(link.getTableRows({ y: new Array(10000).fill(1) }).length, 10000);
+            assert.throws(
+                () => link.getTableRows({ y: new Array(10001).fill(1) }),
+                'Too many rows: 10001. The limit is 10000'
+            );
+        });
+
+        it('is not limited to 1000 rows by the grid limit', () => {
+            const link = columnLink({ year: 'y' });
+            link.update();
+            assert.equal(link.validName, true);
+            assert.equal(link.getTableRows({ y: new Array(1500).fill(1) }).length, 1500);
+        });
+
+        it('rejects a huge list before it builds any row', () => {
+            const link = columnLink({ year: 'y', co2: 'c' });
+            assert.throws(
+                () => link.getTableRows({ y: new Array(1000000000), c: 1 }),
+                'Too many rows: 1000000000. The limit is 10000'
+            );
+        });
+
+        it('names the configured columns the schema does not declare', () => {
+            assert.deepEqual(columnLink({ year: 'y', yeer: 'z', co2: '' }).getUnknownColumns(['year', 'co2']), ['yeer']);
+            assert.deepEqual(columnLink({ year: 'y' }).getUnknownColumns(['year', 'co2']), []);
+            const grid = FieldLink.from({ type: 'link', name: '', description: '', field: 'results', schema: '', rows: [{ year: 'y' }, { note: '' }] });
+            assert.deepEqual(grid.getUnknownColumns(['year']), ['note']);
+            const list = FieldLink.from({ type: 'link', name: '', description: '', field: 'results', schema: '', tables: [[{ year: 'y' }], [{ old: '' }]] });
+            assert.deepEqual(list.getUnknownColumns(['year']), ['old']);
+        });
+    });
 });
