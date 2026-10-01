@@ -15,7 +15,7 @@
 #    api-reference-indexer) via GitBook Site redirects (.gitbook.yaml cannot
 #    target an external domain)
 #
-# 741 entries below, grouped by source path prefix for scanning;
+# 864 entries below, grouped by source path prefix for scanning;
 # alphabetical within each group. Last updated 2026-09-24 -- pre-emptively
 # retargeted 24 entries whose current target is being moved/renamed/deleted
 # by GitBook change request #484 (Schema Section restructuring), plus added
@@ -23,6 +23,8 @@
 # both land correctly once that CR merges instead of going stale.
 
 redirects:
+  # ---- ai-toolkit (1) ----
+  ai-toolkit: developer-tools-and-resources/ai-toolkit.md
   # ---- ai-toolkit/first-ingestion-and-semantic-search (1) ----
   ai-toolkit/first-ingestion-and-semantic-search: developer-tools-and-resources/ai-toolkit/first-ingestion-and-semantic-search.md
   # ---- ai-toolkit/hedera-guardian-ai-toolkit (1) ----
@@ -31,6 +33,8 @@ redirects:
   ai-toolkit/installation-and-setup-from-zero: developer-tools-and-resources/ai-toolkit/installation-and-setup-from-zero.md
   # ---- ai-toolkit/mapping-and-transformation (1) ----
   ai-toolkit/mapping-and-transformation: developer-tools-and-resources/ai-toolkit/mapping-and-transformation.md
+  # ---- ai-toolkit/repository-and-architecture-walkthrough (1) ----
+  ai-toolkit/repository-and-architecture-walkthrough: developer-tools-and-resources/ai-toolkit/repository-and-architecture-walkthrough.md
   # ---- ai-toolkit/schema-and-formula-generation (1) ----
   ai-toolkit/schema-and-formula-generation: developer-tools-and-resources/ai-toolkit/schema-and-formula-generation.md
   # ---- cpbae/contact (1) ----
@@ -57,7 +61,7 @@ redirects:
   developer-tools-and-resources/global-indexer: explorers/explorers-overview.md
   # ---- docs/3.6.0 (1) ----
   docs/3.6.0/guardian/users/multi-policy/page-2: guardian/getting-started.md
-  # ---- docs/develop (33) ----
+  # ---- docs/develop (36) ----
   docs/develop/accounts-and-profiles: guardian/getting-started.md
   docs/develop/ai-toolkit: developer-tools-and-resources/ai-toolkit.md
   docs/develop/community-and-contributing/feedback: guardian/getting-started.md
@@ -66,10 +70,12 @@ redirects:
   docs/develop/feedback/feedback-in-pipelines: guardian/getting-started.md
   docs/develop/guardian-in-production: guardian/getting-started.md
   docs/develop/guardian-in-production/cloud-infrastructure: guardian/getting-started.md
+  docs/develop/guardian-in-production/api-architecture-customization: guardian/getting-started.md
+  docs/develop/guardian-in-production/independent-packaged-deployment: guardian/getting-started.md
   docs/develop/guardian-in-production/monitoring-tools: guardian/architecture/external-events/monitoring-tools.md
   docs/develop/guardian-in-production/performance-improvement: guardian/getting-started.md
   docs/develop/guardian/demo-guide/carbon-offsets/climate-action-reserves-u.s.-landfill-protocol-version-6.0: guardian/tutorials/carbon-emissions/climate-action-reserves-u.s.-landfill-protocol-version-6.0.md
-  docs/develop/guardian/project-account-relayer-account: guardian/getting-started.md
+  docs/develop/guardian/project-account-relayer-account: guardian/hedera/relayer-accounts.md
   docs/develop/guardian/readme-1/api-guideline: guardian/getting-started.md
   docs/develop/guardian/readme-1/contact: guardian/getting-started.md
   docs/develop/guardian/readme-1/getting-started/how-to-configure-hedera-local-node: guardian/getting-started.md
@@ -85,7 +91,9 @@ redirects:
   docs/develop/guardian/standard-registry/policies/exporting-project-data-in-csv: guardian/getting-started.md
   docs/develop/guardian/standard-registry/policies/modules/modules-differentiation: guardian/getting-started.md
   docs/develop/guardian/tokens/dynamic-token-creation-in-policies: guardian/getting-started.md
+  docs/develop/guardian/users: guardian/getting-started.md
   docs/develop/guardian/users/user-profile-setup: guardian/getting-started.md
+  docs/develop/guardian/workspace/schemas/schema-differentiation: guardian/workspace/schemas/schema-differentiation.md
   docs/develop/operations: guardian/getting-started.md
   docs/develop/schemas: guardian/workspace/schemas.md
   docs/develop/security-and-identity/security-1: guardian/getting-started.md
@@ -95,6 +103,12 @@ redirects:
   feedback: guardian/getting-started.md
   # ---- feedback/feedback-in-pipelines (1) ----
   feedback/feedback-in-pipelines: guardian/getting-started.md
+  # ---- files/3jxxut2w4yvhqby5oegg (1) ----
+  files/3jxxut2w4yvhqby5oegg: guardian/getting-started.md
+  # ---- files/fuysshmyynntjgwsije7 (1) ----
+  files/fuysshmyynntjgwsije7: guardian/getting-started.md
+  # ---- files/xhy8tj6wbddtdshwaqvc (1) ----
+  files/xhy8tj6wbddtdshwaqvc: guardian/getting-started.md
   # ---- getting-started/getting-started (1) ----
   getting-started/getting-started/how-to-create-operator-id-and-operator-key: developer-tools-and-resources/dev-environments-and-faqs/how-to-create-operator-id-and-operator-key.md
   # ---- guardian-in-production (1) ----
@@ -112,14 +126,17 @@ redirects:
   # ---- guardian/automation-testing (2) ----
   guardian/automation-testing: developer-tools-and-resources/automation-testing.md
   guardian/automation-testing/how-to-perform-api-automation-testing: developer-tools-and-resources/automation-testing/how-to-perform-api-automation-testing.md
-  # ---- guardian/available-policy-workflow-blocks (2) ----
+  # ---- guardian/available-policy-workflow-blocks (3) ----
   guardian/available-policy-workflow-blocks/external-data-workflow-block: guardian/workspace/policies/policy-creation/introduction/external-data-workflow-block.md
+  guardian/available-policy-workflow-blocks/paginationaddon: guardian/workspace/policies/policy-creation/introduction/paginationaddon.md
   guardian/available-policy-workflow-blocks/splitblock: guardian/workspace/policies/policy-creation/introduction/splitblock.md
   # ---- guardian/available-schema-types (1) ----
   guardian/available-schema-types/available-schema-types: guardian/workspace/schemas/available-schema-types.md
-  # ---- guardian/community-standards (4) ----
+  # ---- guardian/community-standards (6) ----
   guardian/community-standards: community-and-contributing/community-standards.md
   guardian/community-standards/documentation-standards: community-and-contributing/community-standards/documentation-standards.md
+  guardian/community-standards/documentation-standards/page-templates: community-and-contributing/community-standards/documentation-standards/page-templates.md
+  guardian/community-standards/guardian-policy-standards-gps: community-and-contributing/community-standards/guardian-policy-standards-gps.md
   guardian/community-standards/guardian-system-standards-gss: community-and-contributing/community-standards/guardian-system-standards-gss.md
   guardian/community-standards/proposal-for-defining-standards: community-and-contributing/community-standards/proposal-for-defining-standards.md
   # ---- guardian/complex-iterative-review-and-approval-workflows (3) ----
@@ -129,8 +146,9 @@ redirects:
   # ---- guardian/decentralized-guardian (2) ----
   guardian/decentralized-guardian: guardian/workspace/decentralized-guardian.md
   guardian/decentralized-guardian/remote-policy-ui: guardian/workspace/decentralized-guardian/remote-policy-ui.md
-  # ---- guardian/demo-guide (53) ----
+  # ---- guardian/demo-guide (61) ----
   guardian/demo-guide: guardian/tutorials.md
+  guardian/demo-guide/api-workflow-of-irec-demo: guardian/tutorials/renewable-energy-credits/api-workflow-of-irec-demo.md
   guardian/demo-guide/carbon-emissions: guardian/tutorials/carbon-emissions.md
   guardian/demo-guide/carbon-emissions/atma-ghg-scope-ii-carbon-emission-policy: guardian/tutorials/carbon-emissions/atma-ghg-scope-ii-carbon-emission-policy.md
   guardian/demo-guide/carbon-emissions/atma-scope-3-ghg-policy: guardian/tutorials/carbon-emissions/atma-scope-3-ghg-policy.md
@@ -139,11 +157,13 @@ redirects:
   guardian/demo-guide/carbon-emissions/ghgp-corporate-standard: guardian/tutorials/carbon-emissions/ghgp-corporate-standard.md
   guardian/demo-guide/carbon-emissions/ghgp-corporate-standard-v2: guardian/tutorials/carbon-emissions/ghgp-corporate-standard-v2.md
   guardian/demo-guide/carbon-emissions/remote-work-ghg-policy/ghg-policy-user-journey-ui-demo-guide: guardian/tutorials/carbon-emissions/remote-work-ghg-policy/ghg-policy-user-journey-ui-demo-guide.md
+  guardian/demo-guide/carbon-emissions/remote-work-ghg-policy/introduction-to-remote-work-ghg: guardian/tutorials/carbon-emissions/remote-work-ghg-policy/introduction-to-remote-work-ghg.md
   guardian/demo-guide/carbon-emissions/remote-work-ghg-policy/remote-ghg-policy-demo-guide: guardian/tutorials/carbon-emissions/remote-work-ghg-policy/remote-ghg-policy-demo-guide.md
   guardian/demo-guide/carbon-offsets: guardian/tutorials/carbon-offsets.md
   guardian/demo-guide/carbon-offsets/ams-i.d-grid-connected-renewable-electricity-generation-v.18.0: guardian/tutorials/carbon-offsets/ams-i.d-grid-connected-renewable-electricity-generation-v.18.0.md
   guardian/demo-guide/carbon-offsets/carbon-development-mechanism-cdm-ams-iii.ar-policy: guardian/tutorials/carbon-offsets/carbon-development-mechanism-cdm-ams-iii.ar-policy.md
   guardian/demo-guide/carbon-offsets/carbon-reduction-measurement-ghg-corporate-standard-policy-guide: guardian/tutorials/carbon-offsets/carbon-reduction-measurement-ghg-corporate-standard-policy-guide.md
+  guardian/demo-guide/carbon-offsets/cdm-acm0001-flaring-or-use-of-landfill-gas: guardian/tutorials/carbon-offsets/cdm-acm0001-flaring-or-use-of-landfill-gas.md
   guardian/demo-guide/carbon-offsets/cdm-acm0002-grid-connected-electricity-generation-from-renewable-sources: guardian/tutorials/carbon-offsets/cdm-acm0002-grid-connected-electricity-generation-from-renewable-sources.md
   guardian/demo-guide/carbon-offsets/cdm-acm0006-electricity-and-heat-generation-from-biomass: guardian/tutorials/carbon-offsets/cdm-acm0006-electricity-and-heat-generation-from-biomass.md
   guardian/demo-guide/carbon-offsets/cdm-acm0007-conversion-from-single-cycle-to-combined-cycle-power-generation: guardian/tutorials/carbon-offsets/cdm-acm0007-conversion-from-single-cycle-to-combined-cycle-power-generation.md
@@ -153,6 +173,7 @@ redirects:
   guardian/demo-guide/carbon-offsets/cdm-ams-i.f.-renewable-electricity-generation-for-captive-use-and-mini-grid: guardian/tutorials/carbon-offsets/cdm-ams-i.f.-renewable-electricity-generation-for-captive-use-and-mini-grid.md
   guardian/demo-guide/carbon-offsets/cdm-ams-ii.g: guardian/tutorials/carbon-offsets/cdm-ams-ii.g.md
   guardian/demo-guide/carbon-offsets/cdm-ams-ii.j.-demand-side-activities-for-efficient-lighting-technologies: guardian/tutorials/carbon-offsets/cdm-ams-ii.j.-demand-side-activities-for-efficient-lighting-technologies.md
+  guardian/demo-guide/carbon-offsets/cdm-ams-iii.av.-low-greenhouse-gas-emitting-safe-drinking-water-production-systems: guardian/tutorials/carbon-offsets/cdm-ams-iii.av.-low-greenhouse-gas-emitting-safe-drinking-water-production-systems.md
   guardian/demo-guide/carbon-offsets/cdm-ams-iii.bb: guardian/tutorials/carbon-offsets/cdm-ams-iii.bb.md
   guardian/demo-guide/carbon-offsets/cdm-ams-iii.d: guardian/tutorials/carbon-offsets/cdm-ams-iii.d.md
   guardian/demo-guide/carbon-offsets/cdm-ams-iii.f.-avoidance-of-methane-emissions-through-composting: guardian/tutorials/carbon-offsets/cdm-ams-iii.f.-avoidance-of-methane-emissions-through-composting.md
@@ -172,6 +193,8 @@ redirects:
   guardian/demo-guide/carbon-offsets/pwrm0002-plastic-waste-recycling: guardian/tutorials/carbon-offsets/pwrm0002-plastic-waste-recycling.md
   guardian/demo-guide/carbon-offsets/verra-afforestation-reforestation-and-revegetation-arr-v0.1: guardian/tutorials/carbon-offsets/verra-afforestation-reforestation-and-revegetation-arr-v0.1.md
   guardian/demo-guide/carbon-offsets/verra-pwrm0001-plastic-waste-reduction-methodology: guardian/tutorials/carbon-offsets/verra-pwrm0001-plastic-waste-reduction-methodology.md
+  guardian/demo-guide/carbon-offsets/verra-redd+-demo-guide: guardian/tutorials/carbon-offsets/verra-redd+-demo-guide.md
+  guardian/demo-guide/carbon-offsets/verra-redd_3-user-journey-demo-ui-guide: guardian/tutorials/carbon-offsets/verra-redd_3-user-journey-demo-ui-guide.md
   guardian/demo-guide/carbon-offsets/verra-vm0017-redd+-methodology: guardian/tutorials/carbon-offsets/verra-vm0017-redd+-methodology.md
   guardian/demo-guide/carbon-offsets/verra-vm0041: guardian/tutorials/carbon-offsets/verra-vm0041.md
   guardian/demo-guide/carbon-offsets/verra-vm0042-redd+-methodology: guardian/tutorials/carbon-offsets/verra-vm0042-redd+-methodology.md
@@ -180,8 +203,10 @@ redirects:
   guardian/demo-guide/carbon-offsets/vm0033-methodology-for-tidal-wetland-and-seagrass-restoration: guardian/tutorials/carbon-offsets/vm0033-methodology-for-tidal-wetland-and-seagrass-restoration.md
   guardian/demo-guide/carbon-offsets/vm0042-improved-agricultural-land-management-v2.1: guardian/tutorials/carbon-offsets/vm0042-improved-agricultural-land-management-v2.1.md
   guardian/demo-guide/renewable-energy-credits: guardian/tutorials/renewable-energy-credits.md
+  guardian/demo-guide/renewable-energy-credits/api-workflow-of-irec-demo: guardian/tutorials/renewable-energy-credits/api-workflow-of-irec-demo.md
   guardian/demo-guide/renewable-energy-credits/introduction-to-international-renewable-energy-credit-standard-irec: guardian/tutorials/renewable-energy-credits/introduction-to-international-renewable-energy-credit-standard-irec.md
   guardian/demo-guide/renewable-energy-credits/irec-5-json: guardian/tutorials/renewable-energy-credits/irec-5-json.md
+  guardian/demo-guide/renewable-energy-credits/irec-7-user-journey-ui-demo-guide: guardian/tutorials/renewable-energy-credits/irec-7-user-journey-ui-demo-guide.md
   guardian/demo-guide/renewable-energy-credits/irec-demo-guide: guardian/tutorials/renewable-energy-credits/irec-demo-guide.md
   # ---- guardian/faq (1) ----
   guardian/faq: community-and-contributing/faqs.md
@@ -198,25 +223,45 @@ redirects:
   # ---- guardian/global-indexer (3) ----
   guardian/global-indexer: explorers/explorers-overview.md
   guardian/global-indexer/indexer-apis: explorers/guardian-indexer.md
+  guardian/global-indexer/indexer-apis/*: explorers/guardian-indexer.md
   guardian/global-indexer/indexer-user-guide: explorers/explorers-overview.md
-  # ---- guardian/guardian (229) ----
+  # ---- guardian/guardian (1) ----
   guardian/guardian: guardian/getting-started.md
+  # ---- guardian/guardian-in-production (6) ----
+  guardian/guardian-in-production: developer-tools-and-resources/dev-environments-and-faqs.md
+  guardian/guardian-in-production/api-architecture-customization: guardian/getting-started.md
+  guardian/guardian-in-production/cloud-infrastructure: developer-tools-and-resources/dev-environments-and-faqs.md
+  guardian/guardian-in-production/independent-packaged-deployment: developer-tools-and-resources/dev-environments-and-faqs.md
+  guardian/guardian-in-production/monitoring-tools: guardian/architecture/external-events/monitoring-tools.md
+  guardian/guardian-in-production/performance-improvement: developer-tools-and-resources/dev-environments-and-faqs.md
+  # ---- guardian/guardian (292) ----
+  guardian/guardian/architecture: guardian/architecture.md
   guardian/guardian/architecture/mrv-splitting-logic: guardian/architecture/mrv-splitting-logic.md
+  guardian/guardian/architecture/schema-architecture: guardian/architecture/schema-architecture.md
   guardian/guardian/community-standards/guardian-system-standards-gss: community-and-contributing/community-standards/guardian-system-standards-gss.md
   guardian/guardian/community-standards/proposal-for-defining-standards: community-and-contributing/community-standards/proposal-for-defining-standards.md
   guardian/guardian/complex-iterative-review-and-approval-workflows: guardian/workspace/complex-iterative-review-and-approval-workflows.md
   guardian/guardian/demo-guide/carbon-emissions: guardian/tutorials/carbon-emissions.md
+  guardian/guardian/demo-guide/carbon-emissions/atma-ghg-scope-ii-carbon-emission-policy: guardian/tutorials/carbon-emissions/atma-ghg-scope-ii-carbon-emission-policy.md
   guardian/guardian/demo-guide/carbon-emissions/atma-scope-3-ghg-policy: guardian/tutorials/carbon-emissions/atma-scope-3-ghg-policy.md
   guardian/guardian/demo-guide/carbon-emissions/carbon-emissions-measurement-ghg-corporate-standard-policy-guide: guardian/tutorials/carbon-emissions/carbon-emissions-measurement-ghg-corporate-standard-policy-guide.md
   guardian/guardian/demo-guide/carbon-emissions/climate-action-reserves-u.s.-landfill-protocol-version-6.0: guardian/tutorials/carbon-emissions/climate-action-reserves-u.s.-landfill-protocol-version-6.0.md
   guardian/guardian/demo-guide/carbon-emissions/ghgp-corporate-standard: guardian/tutorials/carbon-emissions/ghgp-corporate-standard.md
+  guardian/guardian/demo-guide/carbon-emissions/ghgp-corporate-standard-v2: guardian/tutorials/carbon-emissions/ghgp-corporate-standard-v2.md
   guardian/guardian/demo-guide/carbon-emissions/remote-work-ghg-policy: guardian/tutorials/carbon-emissions/remote-work-ghg-policy.md
   guardian/guardian/demo-guide/carbon-offsets: guardian/tutorials/carbon-offsets.md
   guardian/guardian/demo-guide/carbon-offsets/ams-i.d-grid-connected-renewable-electricity-generation-v.18.0: guardian/tutorials/carbon-offsets/ams-i.d-grid-connected-renewable-electricity-generation-v.18.0.md
   guardian/guardian/demo-guide/carbon-offsets/ams-i.e-switch-from-non-renewable-biomass-for-thermal-applications-by-the-user: guardian/tutorials/carbon-offsets/ams-i.e-switch-from-non-renewable-biomass-for-thermal-applications-by-the-user.md
+  guardian/guardian/demo-guide/carbon-offsets/carbon-development-mechanism-cdm-ams-iii.ar-policy: guardian/tutorials/carbon-offsets/carbon-development-mechanism-cdm-ams-iii.ar-policy.md
   guardian/guardian/demo-guide/carbon-offsets/cdm-acm0002-grid-connected-electricity-generation-from-renewable-sources: guardian/tutorials/carbon-offsets/cdm-acm0002-grid-connected-electricity-generation-from-renewable-sources.md
   guardian/guardian/demo-guide/carbon-offsets/cdm-acm0006-electricity-and-heat-generation-from-biomass: guardian/tutorials/carbon-offsets/cdm-acm0006-electricity-and-heat-generation-from-biomass.md
+  guardian/guardian/demo-guide/carbon-offsets/cdm-acm0007-conversion-from-single-cycle-to-combined-cycle-power-generation: guardian/tutorials/carbon-offsets/cdm-acm0007-conversion-from-single-cycle-to-combined-cycle-power-generation.md
+  guardian/guardian/demo-guide/carbon-offsets/cdm-acm0018-electricity-generation-from-biomass-in-power-only-plants: guardian/tutorials/carbon-offsets/cdm-acm0018-electricity-generation-from-biomass-in-power-only-plants.md
   guardian/guardian/demo-guide/carbon-offsets/cdm-ams-i.a.-electricity-generation-by-the-user: guardian/tutorials/carbon-offsets/cdm-ams-i.a.-electricity-generation-by-the-user.md
+  guardian/guardian/demo-guide/carbon-offsets/cdm-ams-i.c.-thermal-energy-production-with-or-without-electricity: guardian/tutorials/carbon-offsets/cdm-ams-i.c.-thermal-energy-production-with-or-without-electricity.md
+  guardian/guardian/demo-guide/carbon-offsets/cdm-ams-ii.g: guardian/tutorials/carbon-offsets/cdm-ams-ii.g.md
+  guardian/guardian/demo-guide/carbon-offsets/cdm-ams-ii.j.-demand-side-activities-for-efficient-lighting-technologies: guardian/tutorials/carbon-offsets/cdm-ams-ii.j.-demand-side-activities-for-efficient-lighting-technologies.md
+  guardian/guardian/demo-guide/carbon-offsets/cdm-ams-iii.av.-low-greenhouse-gas-emitting-safe-drinking-water-production-systems: guardian/tutorials/carbon-offsets/cdm-ams-iii.av.-low-greenhouse-gas-emitting-safe-drinking-water-production-systems.md
   guardian/guardian/demo-guide/carbon-offsets/cdm-ams-iii.bb: guardian/tutorials/carbon-offsets/cdm-ams-iii.bb.md
   guardian/guardian/demo-guide/carbon-offsets/cdm-ams-iii.d: guardian/tutorials/carbon-offsets/cdm-ams-iii.d.md
   guardian/guardian/demo-guide/carbon-offsets/cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment: guardian/tutorials/carbon-offsets/cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment.md
@@ -230,53 +275,73 @@ redirects:
   guardian/guardian/demo-guide/carbon-offsets/improved-cookstove: guardian/tutorials/carbon-offsets/improved-cookstove.md
   guardian/guardian/demo-guide/carbon-offsets/introduction-to-verra-redd: guardian/tutorials/carbon-offsets/introduction-to-verra-redd+.md
   guardian/guardian/demo-guide/carbon-offsets/introduction-to-verra-redd+: guardian/tutorials/carbon-offsets/introduction-to-verra-redd+.md
+  guardian/guardian/demo-guide/carbon-offsets/methane-emission-reduction-by-adjusted-water-management-practice-in-rice-cultivation: guardian/tutorials/carbon-offsets/methane-emission-reduction-by-adjusted-water-management-practice-in-rice-cultivation.md
   guardian/guardian/demo-guide/carbon-offsets/pwrm0002-plastic-waste-recycling: guardian/tutorials/carbon-offsets/pwrm0002-plastic-waste-recycling.md
   guardian/guardian/demo-guide/carbon-offsets/verra-afforestation-reforestation-and-revegetation-arr-v0.1: guardian/tutorials/carbon-offsets/verra-afforestation-reforestation-and-revegetation-arr-v0.1.md
   guardian/guardian/demo-guide/carbon-offsets/verra-pwrm0001-plastic-waste-reduction-methodology: guardian/tutorials/carbon-offsets/verra-pwrm0001-plastic-waste-reduction-methodology.md
+  guardian/guardian/demo-guide/carbon-offsets/verra-redd+-demo-guide: guardian/tutorials/carbon-offsets/verra-redd+-demo-guide.md
   guardian/guardian/demo-guide/carbon-offsets/verra-redd_3-user-journey-demo-ui-guide: guardian/tutorials/carbon-offsets/verra-redd_3-user-journey-demo-ui-guide.md
   guardian/guardian/demo-guide/carbon-offsets/verra-vm0017-redd+-methodology: guardian/tutorials/carbon-offsets/verra-vm0017-redd+-methodology.md
   guardian/guardian/demo-guide/carbon-offsets/verra-vm0044: guardian/tutorials/carbon-offsets/verra-vm0044.md
   guardian/guardian/demo-guide/carbon-offsets/verra-vmr0006-energy-efficiency-and-fuel-switch-measures-in-thermal-applications: guardian/tutorials/carbon-offsets/verra-vmr0006-energy-efficiency-and-fuel-switch-measures-in-thermal-applications.md
   guardian/guardian/demo-guide/carbon-offsets/vm0033-methodology-for-tidal-wetland-and-seagrass-restoration: guardian/tutorials/carbon-offsets/vm0033-methodology-for-tidal-wetland-and-seagrass-restoration.md
   guardian/guardian/demo-guide/carbon-offsets/vm0042-improved-agricultural-land-management-v2.1: guardian/tutorials/carbon-offsets/vm0042-improved-agricultural-land-management-v2.1.md
+  guardian/guardian/demo-guide/renewable-energy-credits/introduction-to-international-renewable-energy-credit-standard-irec: guardian/tutorials/renewable-energy-credits/introduction-to-international-renewable-energy-credit-standard-irec.md
   guardian/guardian/demo-guide/renewable-energy-credits/irec-5-json: guardian/tutorials/renewable-energy-credits/irec-5-json.md
   guardian/guardian/demo-guide/renewable-energy-credits/irec-demo-guide: guardian/tutorials/renewable-energy-credits/irec-demo-guide.md
   guardian/guardian/faqs: community-and-contributing/faqs.md
   guardian/guardian/global-indexer/indexer-apis: explorers/guardian-indexer.md
   guardian/guardian/global-indexer/indexer-user-guide: explorers/explorers-overview.md
   guardian/guardian/guidance-for-open-source-policy: community-and-contributing/contributing/guidance-for-open-source-policy.md
+  guardian/guardian/readme: guardian/getting-started.md
+  guardian/guardian/readme/api-guideline: guardian/getting-started.md
   guardian/guardian/readme/built-with: guardian/getting-started/built-with.md
   guardian/guardian/readme/built-with/guardian-cli: developer-tools-and-resources/guardian-cli.md
   guardian/guardian/readme/change-log: community-and-contributing/change-log.md
   guardian/guardian/readme/contributing: community-and-contributing/contributing.md
   guardian/guardian/readme/discovering-esg-assets-on-hedera: guardian/getting-started.md
   guardian/guardian/readme/environments/ecosystem-environments: developer-tools-and-resources/dev-environments-and-faqs/ecosystem-environments.md
+  guardian/guardian/readme/environments/multi-session-consistency-according-to-environment: developer-tools-and-resources/dev-environments-and-faqs/multi-session-consistency-according-to-environment.md
+  guardian/guardian/readme/getting-started: guardian/getting-started.md
   guardian/guardian/readme/getting-started/how-to-change-explorer-url: developer-tools-and-resources/dev-environments-and-faqs/how-to-change-explorer-url.md
   guardian/guardian/readme/getting-started/how-to-configure-hashicorp-vault: developer-tools-and-resources/dev-environments-and-faqs/how-to-configure-hashicorp-vault.md
   guardian/guardian/readme/getting-started/how-to-configure-hedera-local-node: developer-tools-and-resources/dev-environments-and-faqs.md
   guardian/guardian/readme/getting-started/how-to-generate-web3.storage-api-key: developer-tools-and-resources/dev-environments-and-faqs.md
+  guardian/guardian/readme/getting-started/installation: developer-tools-and-resources/dev-environments-and-faqs/installation.md
+  guardian/guardian/readme/getting-started/installation/build-executables-and-run-manually: developer-tools-and-resources/dev-environments-and-faqs/build-executables-and-run-manually.md
   guardian/guardian/readme/getting-started/installation/building-from-pre-build-containers: developer-tools-and-resources/dev-environments-and-faqs/building-from-pre-build-containers.md
   guardian/guardian/readme/getting-started/installation/building-from-source-and-run-using-docker: developer-tools-and-resources/dev-environments-and-faqs/building-from-source-and-run-using-docker.md
+  guardian/guardian/readme/getting-started/installation/building-from-source-and-run-using-docker/deploying-guardian-using-a-specific-environment-develop: guardian/getting-started.md
   guardian/guardian/readme/getting-started/installation/building-from-source-and-run-using-docker/deploying-guardian-using-a-specific-environment-qa: developer-tools-and-resources/dev-environments-and-faqs.md
+  guardian/guardian/readme/getting-started/installation/building-from-source-and-run-using-docker/deploying-guardian-using-default-environment: guardian/getting-started.md
+  guardian/guardian/readme/getting-started/installation/cloud-deployment: developer-tools-and-resources/dev-environments-and-faqs/cloud-deployment.md
   guardian/guardian/readme/getting-started/installation/launching-guardian: developer-tools-and-resources/dev-environments-and-faqs/launching-guardian.md
   guardian/guardian/readme/getting-started/installation/upgrading: developer-tools-and-resources/dev-environments-and-faqs/upgrading.md
   guardian/guardian/readme/guardian-glossary: guardian/getting-started/guardian-glossary.md
   guardian/guardian/readme/guardian-vault: security-identity-and-privacy/guardian-vault.md
+  guardian/guardian/readme/license: guardian/getting-started.md
+  guardian/guardian/readme/roadmap: community-and-contributing/roadmap.md
+  guardian/guardian/readme/security-1: guardian/getting-started.md
   guardian/guardian/readme/security-1/how-it-works: security-identity-and-privacy/guardian-vault.md
   guardian/guardian/standard-registry: guardian/platform/standard-registry.md
   guardian/guardian/standard-registry/artifacts/artifacts-apis/returns-all-artifacts-1: guardian/workspace/artifacts.md
   guardian/guardian/standard-registry/artifacts/artifacts-apis/upload-artifacts-1: guardian/workspace/artifacts.md
   guardian/guardian/standard-registry/bring-your-own-dids/apis: security-identity-and-privacy/bring-your-own-dids.md
+  guardian/guardian/standard-registry/bring-your-own-dids/bring-your-own-byo-dids-ui: security-identity-and-privacy/bring-your-own-dids/bring-your-own-byo-dids-ui.md
   guardian/guardian/standard-registry/change-password/password-security-hardening-and-change-password-using-ui: security-identity-and-privacy/password-management/password-change-hardening.md
   guardian/guardian/standard-registry/decentralized-guardian/remote-policy-ui: guardian/workspace/decentralized-guardian/remote-policy-ui.md
   guardian/guardian/standard-registry/discontinuing-policy-workflow/deprecating-vm0042-v1.0-and-migrating-to-vm0042-v2.1-using-migration-wizard: guardian/workspace/policies/discontinuing-policy-workflow/deprecating-vm0042-v1.0-and-migrating-to-vm0042-v2.1-using-migration-wizard.md
   guardian/guardian/standard-registry/external-events: guardian/architecture/external-events.md
+  guardian/guardian/standard-registry/fireblocks-raw-signing/getting-keys-from-fireblocks-ui: security-identity-and-privacy/fireblocks-raw-signing/getting-keys-from-fireblocks-ui.md
+  guardian/guardian/standard-registry/import-export-in-excel: guardian/getting-started.md
+  guardian/guardian/standard-registry/live-project-data-migration: guardian/platform/live-project-data-migration.md
   guardian/guardian/standard-registry/live-project-data-migration/live-project-data-migration-ui: guardian/platform/live-project-data-migration/live-project-data-migration-ui.md
   guardian/guardian/standard-registry/mobile-support-for-data-interface: guardian/platform/mobile-support-for-data-interface.md
   guardian/guardian/standard-registry/notifications: guardian/platform/notifications.md
   guardian/guardian/standard-registry/notifications/apis-related-to-notification: guardian/platform/notifications/user-guide.md
   guardian/guardian/standard-registry/password-management: security-identity-and-privacy/password-management.md
   guardian/guardian/standard-registry/password-management/password-policy: security-identity-and-privacy/password-management/password-policy.md
+  guardian/guardian/standard-registry/policies: guardian/workspace/policies.md
   guardian/guardian/standard-registry/policies/api-versioning-and-deprecation-policy: guardian/workspace/policies/versioning-and-deprecation-policy.md
   guardian/guardian/standard-registry/policies/auto-suggestion: guardian/workspace/policies/auto-suggestion.md
   guardian/guardian/standard-registry/policies/auto-suggestion/demo-using-ui: guardian/workspace/policies/auto-suggestion/demo-using-ui.md
@@ -284,17 +349,21 @@ redirects:
   guardian/guardian/standard-registry/policies/auto-testing-of-the-policies/auto-testing-policies-apis: guardian/workspace/policies/dry-run/auto-testing-using-ui.md
   guardian/guardian/standard-registry/policies/block-policy-discoverability: guardian/workspace/policies/block-policy-discoverability.md
   guardian/guardian/standard-registry/policies/block-policy-discoverability/search-block-using-ui: guardian/workspace/policies/block-policy-discoverability/search-block-using-ui.md
+  guardian/guardian/standard-registry/policies/creating-a-policy-through-policy-configurator: guardian/tutorials/creating-a-policy-through-policy-configurator.md
   guardian/guardian/standard-registry/policies/creating-a-policy-using-apis: guardian/workspace/policies/policy-creation.md
   guardian/guardian/standard-registry/policies/demo-guide-on-dry-run-operations: guardian/workspace/policies/dry-run/demo-guide-on-dry-run-operations.md
   guardian/guardian/standard-registry/policies/document-comparison: guardian/workspace/policies/verifiable-credential-documents/document-comparison.md
   guardian/guardian/standard-registry/policies/document-comparison/document-comparison-using-ui: guardian/workspace/policies/verifiable-credential-documents/document-comparison/document-comparison-using-ui.md
+  guardian/guardian/standard-registry/policies/dry-run/demo-guide-on-dry-run-operations: guardian/workspace/policies/dry-run/demo-guide-on-dry-run-operations.md
   guardian/guardian/standard-registry/policies/dry-run/dry-run-mode-using-apis/deletes-savepoint: guardian/workspace/policies/dry-run.md
   guardian/guardian/standard-registry/policies/exporting-project-data-in-csv/export-documents-in-csv-using-ui: guardian/workspace/policies/export-documents-in-csv-using-ui.md
   guardian/guardian/standard-registry/policies/formula-linked-definitions: guardian/workspace/policies/formula-linked-definitions.md
   guardian/guardian/standard-registry/policies/formula-linked-definitions/apis-related-to-formula-linked: guardian/workspace/policies/formula-linked-definitions.md
+  guardian/guardian/standard-registry/policies/formula-linked-definitions/formula-linked-definitions-using-ui: guardian/workspace/policies/formula-linked-definitions/formula-linked-definitions-using-ui.md
   guardian/guardian/standard-registry/policies/integrating-3rd-party-data-resources: guardian/workspace/policies/integrating-3rd-party-data-resources.md
   guardian/guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-firms-api-methods: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-firms-api-methods.md
   guardian/guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-firms-api-methods/getareadata: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-firms-api-methods/getareadata.md
+  guardian/guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-firms-api-methods/getareadatawithdate: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-firms-api-methods/getareadatawithdate.md
   guardian/guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-firms-api-methods/getcountrydatawithdate: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-firms-api-methods/getcountrydatawithdate.md
   guardian/guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-firms-api-methods/getdataavailability: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-firms-api-methods/getdataavailability.md
   guardian/guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods.md
@@ -306,6 +375,7 @@ redirects:
   guardian/guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/getcreationoptions: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/getcreationoptions.md
   guardian/guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/getcreationoptionsforasset: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/getcreationoptionsforasset.md
   guardian/guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/getfeatures: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/getfeatures.md
+  guardian/guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/getfieldmetadataforasset: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/getfieldmetadataforasset.md
   guardian/guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/getfields: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/getfields.md
   guardian/guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/getfieldsforasset: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/getfieldsforasset.md
   guardian/guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/getgeostorebyversion: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/getgeostorebyversion.md
@@ -321,6 +391,8 @@ redirects:
   guardian/guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-kanop-api-methods/getaggregationlevelvalues: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-kanop-api-methods/getaggregationlevelvalues.md
   guardian/guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-kanop-api-methods/getchangemetricforpolygon: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-kanop-api-methods/getchangemetricforpolygon.md
   guardian/guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-kanop-api-methods/getconfiguration: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-kanop-api-methods/getconfiguration.md
+  guardian/guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-kanop-api-methods/getprojectreferences: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-kanop-api-methods/getprojectreferences.md
+  guardian/guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-kanop-api-methods/getprojects: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-kanop-api-methods/getprojects.md
   guardian/guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-kanop-api-methods/getstockmetricforpolygons: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-kanop-api-methods/getstockmetricforpolygons.md
   guardian/guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-kanop-api-methods/getsummarymetricsforrequest: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-kanop-api-methods/getsummarymetricsforrequest.md
   guardian/guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-kanop-api-methods/getvariationgisfiles: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-kanop-api-methods/getvariationgisfiles.md
@@ -332,10 +404,12 @@ redirects:
   guardian/guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-world-bank-api-methods/getindicatorbyid: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-world-bank-api-methods/getindicatorbyid.md
   guardian/guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-world-bank-api-methods/getindicatorsbytopic: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-world-bank-api-methods/getindicatorsbytopic.md
   guardian/guardian/standard-registry/policies/introduction/aggregatedocumentblock: guardian/workspace/policies/policy-creation/introduction/aggregatedocumentblock.md
+  guardian/guardian/standard-registry/policies/introduction/external-data-workflow-block: guardian/workspace/policies/policy-creation/introduction/external-data-workflow-block.md
   guardian/guardian/standard-registry/policies/introduction/revokeblock: guardian/workspace/policies/policy-creation/introduction/revokeblock.md
   guardian/guardian/standard-registry/policies/introduction/splitblock: guardian/workspace/policies/policy-creation/introduction/splitblock.md
   guardian/guardian/standard-registry/policies/introduction/tokenconfirmationblock: guardian/workspace/policies/policy-creation/introduction/tokenconfirmationblock.md
   guardian/guardian/standard-registry/policies/library-of-policy-examples: guardian/workspace/policies/library-of-policy-examples.md
+  guardian/guardian/standard-registry/policies/library-of-policy-examples/creating-and-using-roles: guardian/workspace/policies/library-of-policy-examples/creating-and-using-roles.md
   guardian/guardian/standard-registry/policies/library-of-policy-examples/data-input-via-forms-using-roles-to-partition-user-activities.: guardian/workspace/policies/library-of-policy-examples/data-input-via-forms-using-roles-to-partition-user-activities..md
   guardian/guardian/standard-registry/policies/library-of-policy-examples/mrv-aggregation-and-splitting-for-minting-tokens: guardian/workspace/policies/library-of-policy-examples/mrv-aggregation-and-splitting-for-minting-tokens.md
   guardian/guardian/standard-registry/policies/library-of-policy-examples/mrv-document-operations: guardian/workspace/policies/library-of-policy-examples/mrv-document-operations.md
@@ -350,10 +424,12 @@ redirects:
   guardian/guardian/standard-registry/policies/multi-policy: guardian/workspace/policies/multi-policy.md
   guardian/guardian/standard-registry/policies/policy-creation/creating-a-policy-through-policy-configurator: guardian/tutorials/creating-a-policy-through-policy-configurator.md
   guardian/guardian/standard-registry/policies/policy-creation/creating-a-policy-through-policy-configurator/getting-started-with-the-policy-workflows: guardian/tutorials/creating-a-policy-through-policy-configurator/getting-started-with-the-policy-workflows.md
+  guardian/guardian/standard-registry/policies/policy-creation/creating-a-policy-through-policy-configurator/policy-workflow-step-10: guardian/tutorials/creating-a-policy-through-policy-configurator/policy-workflow-step-10.md
   guardian/guardian/standard-registry/policies/policy-creation/creating-a-policy-through-policy-configurator/policy-workflow-step-11: guardian/tutorials/creating-a-policy-through-policy-configurator/policy-workflow-step-11.md
   guardian/guardian/standard-registry/policies/policy-creation/creating-a-policy-through-policy-configurator/policy-workflow-step-13: guardian/tutorials/creating-a-policy-through-policy-configurator/policy-workflow-step-13.md
   guardian/guardian/standard-registry/policies/policy-creation/creating-a-policy-through-policy-configurator/policy-workflow-step-16: guardian/tutorials/creating-a-policy-through-policy-configurator/policy-workflow-step-16.md
   guardian/guardian/standard-registry/policies/policy-creation/creating-a-policy-through-policy-configurator/policy-workflow-step-3: guardian/tutorials/creating-a-policy-through-policy-configurator/policy-workflow-step-3.md
+  guardian/guardian/standard-registry/policies/policy-creation/introduction: guardian/workspace/policies/policy-creation/introduction.md
   guardian/guardian/standard-registry/policies/policy-creation/introduction/action-workflow-block: guardian/workspace/policies/policy-creation/introduction/action-workflow-block.md
   guardian/guardian/standard-registry/policies/policy-creation/introduction/buttonblock: guardian/workspace/policies/policy-creation/introduction/buttonblock.md
   guardian/guardian/standard-registry/policies/policy-creation/introduction/container-workflow-block: guardian/workspace/policies/policy-creation/introduction/container-workflow-block.md
@@ -364,16 +440,21 @@ redirects:
   guardian/guardian/standard-registry/policies/policy-creation/introduction/http-request-block: guardian/workspace/policies/policy-creation/introduction/http-request-block.md
   guardian/guardian/standard-registry/policies/policy-creation/introduction/impactaddon: guardian/workspace/policies/policy-creation/introduction/impactaddon.md
   guardian/guardian/standard-registry/policies/policy-creation/introduction/interfacedocumentssourceblock: guardian/workspace/policies/policy-creation/introduction/interfacedocumentssourceblock.md
+  guardian/guardian/standard-registry/policies/policy-creation/introduction/request-workflow-block: guardian/workspace/policies/policy-creation/introduction/request-workflow-block.md
   guardian/guardian/standard-registry/policies/policy-creation/introduction/send-workflow-block: guardian/workspace/policies/policy-creation/introduction/send-workflow-block.md
   guardian/guardian/standard-registry/policies/policy-creation/introduction/splitblock: guardian/workspace/policies/policy-creation/introduction/splitblock.md
+  guardian/guardian/standard-registry/policies/policy-creation/introduction/timerblock: guardian/workspace/policies/policy-creation/introduction/timerblock.md
   guardian/guardian/standard-registry/policies/policy-creation/introduction/token-wipe-workflow-block: guardian/workspace/policies/policy-creation/introduction/wipedocumentblock.md
   guardian/guardian/standard-registry/policies/policy-creation/policy-demo: guardian/workspace/policies/policy-creation/policy-demo.md
+  guardian/guardian/standard-registry/policies/policy-demo: guardian/workspace/policies/policy-creation/policy-demo.md
   guardian/guardian/standard-registry/policies/policy-differentiation: guardian/workspace/policies/policy-differentiation.md
   guardian/guardian/standard-registry/policies/policy-differentiation-apis: guardian/workspace/policies/policy-differentiation.md
   guardian/guardian/standard-registry/policies/policy-glossary: guardian/workspace/policies/policy-glossary.md
   guardian/guardian/standard-registry/policies/policy-labels/apis-related-to-policy-labels: guardian/workspace/policies/policy-labels.md
   guardian/guardian/standard-registry/policies/policy-labels/policy-labels-ui: guardian/workspace/policies/policy-labels/policy-labels-ui.md
+  guardian/guardian/standard-registry/policies/policy-warnings: guardian/workspace/policies/policy-warnings.md
   guardian/guardian/standard-registry/policies/policy-wizard: guardian/workspace/policies/policy-wizard.md
+  guardian/guardian/standard-registry/policies/policy-wizard/demo-on-policy-wizard-using-ui: guardian/workspace/policies/policy-wizard/demo-on-policy-wizard-using-ui.md
   guardian/guardian/standard-registry/policies/python-implementation-in-guardian: guardian/workspace/policies/python-implementation-in-guardian.md
   guardian/guardian/standard-registry/policies/record-replay: guardian/workspace/policies/dry-run/record-replay.md
   guardian/guardian/standard-registry/policies/record-replay/policy-execution-record-and-replay-using-ui: guardian/workspace/policies/dry-run/record-replay/policy-execution-record-and-replay-using-ui.md
@@ -383,6 +464,7 @@ redirects:
   guardian/guardian/standard-registry/policies/savepoints/demo-using-ui: guardian/workspace/policies/dry-run/savepoints/demo-using-ui.md
   guardian/guardian/standard-registry/policies/tagging: guardian/platform/tagging.md
   guardian/guardian/standard-registry/policies/tagging/tagging-using-ui: guardian/platform/tagging/tagging-using-ui.md
+  guardian/guardian/standard-registry/policies/testing-debugging-code/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui: guardian/workspace/policies/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui.md
   guardian/guardian/standard-registry/policies/themes: guardian/platform/themes.md
   guardian/guardian/standard-registry/policies/themes/themes-apis: guardian/platform/themes.md
   guardian/guardian/standard-registry/policies/themes/themes-using-ui: guardian/platform/themes/themes-reference.md
@@ -392,10 +474,16 @@ redirects:
   guardian/guardian/standard-registry/project-account-relayer-account: guardian/hedera/relayer-accounts.md
   guardian/guardian/standard-registry/project-comparison: guardian/platform/project-comparison.md
   guardian/guardian/standard-registry/project-comparison/project-comparison-apis: guardian/platform/project-comparison.md
+  guardian/guardian/standard-registry/project-comparison/project-comparison-using-ui: guardian/platform/project-comparison/project-comparison-using-ui.md
+  guardian/guardian/standard-registry/roles-and-permissions: guardian/platform/roles-and-permissions.md
   guardian/guardian/standard-registry/roles-and-permissions/roles-and-permissions-user-guide: guardian/platform/roles-and-permissions/roles-and-permissions-user-guide.md
   guardian/guardian/standard-registry/schemas: guardian/workspace/schemas.md
   guardian/guardian/standard-registry/schemas/available-schema-types: guardian/workspace/schemas/available-schema-types.md
   guardian/guardian/standard-registry/schemas/available-schema-types/custom-logic-block-and-tables: guardian/workspace/schemas/available-schema-types/table-data-input-field/custom-logic-block-and-tables.md
+  guardian/guardian/standard-registry/schemas/available-schema-types/table-data-input-field: guardian/workspace/schemas/available-schema-types/table-data-input-field.md
+  guardian/guardian/standard-registry/schemas/available-schema-types/table-data-input-field-with-autocalculate: guardian/workspace/schemas/available-schema-types/table-data-input-field/table-data-input-field-with-autocalculate.md
+  guardian/guardian/standard-registry/schemas/best-practices-to-implement-schema/integration-with-policy-workflow: guardian/getting-started.md
+  guardian/guardian/standard-registry/schemas/best-practices-to-implement-schema/reusability-and-modularity: guardian/workspace/schemas/best-practices-to-implement-schema/reusability-and-modularity.md
   guardian/guardian/standard-registry/schemas/best-practices-to-implement-schema/version-control-and-migration: guardian/workspace/schemas/best-practices-to-implement-schema/version-control-and-migration.md
   guardian/guardian/standard-registry/schemas/creating-policy-schema-using-ui: guardian/workspace/schemas.md
   guardian/guardian/standard-registry/schemas/creating-system-schema-using-ui: guardian/workspace/schemas/create-schema.md
@@ -403,13 +491,19 @@ redirects:
   guardian/guardian/standard-registry/schemas/demo-on-how-to-create-policy-from-a-standard: guardian/workspace/schemas.md
   guardian/guardian/standard-registry/schemas/example-data: guardian/workspace/schemas/example-data.md
   guardian/guardian/standard-registry/schemas/example-data/adding-example-data-using-ui: guardian/workspace/schemas/example-data.md
+  guardian/guardian/standard-registry/schemas/how-to-handle-large-location-files: guardian/workspace/schemas/how-to-handle-large-location-files.md
   guardian/guardian/standard-registry/schemas/property-glossary: guardian/workspace/schemas/property-glossary.md
   guardian/guardian/standard-registry/schemas/schema-differentiation: guardian/workspace/schemas/schema-differentiation-using-ui.md
   guardian/guardian/standard-registry/schemas/schema-differentiation/schema-differentiation-apis/exports-schema-differentiation-results: guardian/workspace/schemas/schema-differentiation/schema-differentiation-using-ui.md
   guardian/guardian/standard-registry/schemas/schema-predefined-values-using-ui: guardian/workspace/schemas/setting-predefined-values.md
+  guardian/guardian/standard-registry/schemas/schema-rules: guardian/getting-started.md
+  guardian/guardian/standard-registry/schemas/schema-rules/defining-schema-rules-using-ui: guardian/workspace/defining-schema-rules-using-ui.md
   guardian/guardian/standard-registry/schemas/schema-tree: guardian/workspace/schemas/schema-tree.md
+  guardian/guardian/standard-registry/schemas/schema-tree/schema-tree-ui: guardian/workspace/schemas/schema-tree/schema-tree-ui.md
+  guardian/guardian/standard-registry/schemas/schema-versioning-and-deprecation-policy: guardian/workspace/schemas/schema-versioning-and-deprecation-policy.md
   guardian/guardian/standard-registry/schemas/system-policy-schemas: guardian/workspace/schemas.md
   guardian/guardian/standard-registry/schemas/system-schema-apis: guardian/workspace/schemas/create-schema.md
+  guardian/guardian/standard-registry/schemas/tag-schema: guardian/workspace/schemas/tag-schema.md
   guardian/guardian/standard-registry/schemas/tag-schema/schema-tags-apis: guardian/workspace/schemas/tag-schema.md
   guardian/guardian/standard-registry/selective-disclosure/user-guide: security-identity-and-privacy/selective-disclosure/user-guide.md
   guardian/guardian/standard-registry/show-list-of-hedera-transactions/showing-list-of-hedera-transactions-using: guardian/hedera/hedera-transactions.md
@@ -419,24 +513,24 @@ redirects:
   guardian/guardian/standard-registry/trustchain/trustchain-apis: guardian/platform/trustchain.md
   guardian/guardian/standard-registry/usage-statistics: guardian/platform/usage-statistics.md
   guardian/guardian/standard-registry/usage-statistics/apis-related-to-statistics: guardian/platform/usage-statistics.md
+  guardian/guardian/standard-registry/usage-statistics/statistics: guardian/platform/usage-statistics/statistics.md
   guardian/guardian/tokens: guardian/hedera/tokens.md
   guardian/guardian/tokens/creating-token-using-ui: guardian/hedera/tokens/creating-token-using-ui.md
   guardian/guardian/tokens/dynamic-token-creation-in-policies/dynamic-token-creation-in-guardian-policies-using-ui: guardian/hedera/tokens/dynamic-token-creation-in-guardian-policies-using-ui.md
   guardian/guardian/tokens/retirement-contract/creating-contract-using-ui: guardian/hedera/contracts/creating-contract-using-ui.md
+  guardian/guardian/tokens/retirement-contract/trustchain-representation-of-token-retirement: guardian/hedera/contracts/trustchain-representation-of-token-retirement.md
   guardian/guardian/tokens/token-authenticity/how-to-establish-token-authenticity: guardian/hedera/tokens/how-to-establish-token-authenticity.md
+  guardian/guardian/tokens/token-operations/apis-for-asynchronous-execution/associating-user-with-the-hedera-token: guardian/getting-started.md
   guardian/guardian/tokens/token-operations/token-apis: guardian/hedera/tokens/creating-token-using-ui.md
   guardian/guardian/tokens/token-template: guardian/hedera/tokens/how-to-create-token-template.md
   guardian/guardian/tokens/token-template/creating-token-through-ui: guardian/hedera/tokens/creating-token-through-ui.md
   guardian/guardian/tokens/token-template/how-to-create-token-template: guardian/hedera/tokens/how-to-create-token-template.md
   guardian/guardian/users/ai-search: guardian/platform/ai-search.md
-  # ---- guardian/guardian-in-production (5) ----
-  guardian/guardian-in-production: developer-tools-and-resources/dev-environments-and-faqs.md
-  guardian/guardian-in-production/cloud-infrastructure: developer-tools-and-resources/dev-environments-and-faqs.md
-  guardian/guardian-in-production/independent-packaged-deployment: developer-tools-and-resources/dev-environments-and-faqs.md
-  guardian/guardian-in-production/monitoring-tools: guardian/architecture/external-events/monitoring-tools.md
-  guardian/guardian-in-production/performance-improvement: developer-tools-and-resources/dev-environments-and-faqs.md
+  guardian/guardian/users/bottom-up-data-traceability/bottom-up-data-traceability-using-ui: guardian/platform/usage-statistics/bottom-up-data-traceability-using-ui.md
   # ---- guardian/guidance-for-open-source-policy (1) ----
   guardian/guidance-for-open-source-policy: community-and-contributing/contributing/guidance-for-open-source-policy.md
+  # ---- guardian/import (1) ----
+  guardian/import: guardian/getting-started.md
   # ---- guardian/logging-configuration-using-pino-library (1) ----
   guardian/logging-configuration-using-pino-library: developer-tools-and-resources/logging-configuration.md
   # ---- guardian/map-related-apis (2) ----
@@ -444,23 +538,32 @@ redirects:
   guardian/map-related-apis/returning-map-api-key: guardian/platform/usage-statistics.md
   # ---- guardian/methodology-digitalization (1) ----
   guardian/methodology-digitalization/methodology-digitization-handbook/part-4/chapter-16: methodology-digitalization/methodology-digitization-handbook/part-4/chapter-16.md
-  # ---- guardian/methodology-digitization (17) ----
+  # ---- guardian/methodology-digitization (26) ----
   guardian/methodology-digitization/methodology-digitization-handbook: methodology-digitalization/methodology-digitization-handbook.md
   guardian/methodology-digitization/methodology-digitization-handbook/_shared/artifacts: methodology-digitalization/methodology-digitization-handbook/_shared/artifacts.md
   guardian/methodology-digitization/methodology-digitization-handbook/_shared/templates: methodology-digitalization/methodology-digitization-handbook/_shared/templates.md
   guardian/methodology-digitization/methodology-digitization-handbook/chapter-outlines: methodology-digitalization/methodology-digitization-handbook/chapter-outlines.md
+  guardian/methodology-digitization/methodology-digitization-handbook/part-1/chapter-2: methodology-digitalization/methodology-digitization-handbook/part-1/chapter-2.md
   guardian/methodology-digitization/methodology-digitization-handbook/part-1/chapter-3: methodology-digitalization/methodology-digitization-handbook/part-1/chapter-3.md
   guardian/methodology-digitization/methodology-digitization-handbook/part-2: methodology-digitalization/methodology-digitization-handbook/part-2.md
   guardian/methodology-digitization/methodology-digitization-handbook/part-2/chapter-4: methodology-digitalization/methodology-digitization-handbook/part-2/chapter-4.md
   guardian/methodology-digitization/methodology-digitization-handbook/part-2/chapter-5: methodology-digitalization/methodology-digitization-handbook/part-2/chapter-5.md
   guardian/methodology-digitization/methodology-digitization-handbook/part-2/chapter-6: methodology-digitalization/methodology-digitization-handbook/part-2/chapter-6.md
   guardian/methodology-digitization/methodology-digitization-handbook/part-3: methodology-digitalization/methodology-digitization-handbook/part-3.md
+  guardian/methodology-digitization/methodology-digitization-handbook/part-3/chapter-11: methodology-digitalization/methodology-digitization-handbook/part-3/chapter-11.md
   guardian/methodology-digitization/methodology-digitization-handbook/part-3/chapter-12: methodology-digitalization/methodology-digitization-handbook/part-3/chapter-12.md
+  guardian/methodology-digitization/methodology-digitization-handbook/part-3/chapter-9: methodology-digitalization/methodology-digitization-handbook/part-3/chapter-9.md
+  guardian/methodology-digitization/methodology-digitization-handbook/part-5/chapter-18: methodology-digitalization/methodology-digitization-handbook/part-5/chapter-18.md
   guardian/methodology-digitization/methodology-digitization-handbook/part-5/chapter-19: methodology-digitalization/methodology-digitization-handbook/part-5/chapter-19.md
   guardian/methodology-digitization/methodology-digitization-handbook/part-5/chapter-20: methodology-digitalization/methodology-digitization-handbook/part-5/chapter-20.md
   guardian/methodology-digitization/methodology-digitization-handbook/part-5/chapter-21: methodology-digitalization/methodology-digitization-handbook/part-5/chapter-21.md
+  guardian/methodology-digitization/methodology-digitization-handbook/part-6: methodology-digitalization/methodology-digitization-handbook/part-6.md
   guardian/methodology-digitization/methodology-digitization-handbook/part-6/chapter-24: methodology-digitalization/methodology-digitization-handbook/part-6/chapter-24.md
+  guardian/methodology-digitization/methodology-digitization-handbook/part-7: methodology-digitalization/methodology-digitization-handbook/part-7.md
   guardian/methodology-digitization/methodology-digitization-handbook/part-7/chapter-25: methodology-digitalization/methodology-digitization-handbook/part-7/chapter-25.md
+  guardian/methodology-digitization/methodology-digitization-handbook/part-7/chapter-26: methodology-digitalization/methodology-digitization-handbook/part-7/chapter-26.md
+  guardian/methodology-digitization/methodology-digitization-handbook/part-8/chapter-27: guardian/getting-started.md
+  guardian/methodology-digitization/methodology-digitization-handbook/part-8/chapter-28: guardian/getting-started.md
   guardian/methodology-digitization/methodology-digitization-handbook/table-of-contents: methodology-digitalization/methodology-digitization-handbook/table-of-contents.md
   # ---- guardian/notifications (2) ----
   guardian/notifications: guardian/platform/notifications.md
@@ -481,7 +584,7 @@ redirects:
   guardian/project-comparison: guardian/platform/project-comparison.md
   guardian/project-comparison/project-comparison-apis: guardian/platform/project-comparison.md
   guardian/project-comparison/project-comparison-using-ui: guardian/platform/project-comparison/project-comparison-using-ui.md
-  # ---- guardian/readme (34) ----
+  # ---- guardian/readme (35) ----
   guardian/readme/built-with: guardian/getting-started/built-with.md
   guardian/readme/built-with/guardian-cli: developer-tools-and-resources/guardian-cli.md
   guardian/readme/change-log: community-and-contributing/change-log.md
@@ -500,6 +603,7 @@ redirects:
   guardian/readme/getting-started/installation: developer-tools-and-resources/dev-environments-and-faqs/installation.md
   guardian/readme/getting-started/installation/backup-tools: developer-tools-and-resources/dev-environments-and-faqs/backup-tools.md
   guardian/readme/getting-started/installation/build-executables-and-run-manually: developer-tools-and-resources/dev-environments-and-faqs/build-executables-and-run-manually.md
+  guardian/readme/getting-started/installation/building-from-pre-build-containers: developer-tools-and-resources/dev-environments-and-faqs/building-from-pre-build-containers.md
   guardian/readme/getting-started/installation/building-from-source-and-run-using-docker: developer-tools-and-resources/dev-environments-and-faqs/building-from-source-and-run-using-docker.md
   guardian/readme/getting-started/installation/building-from-source-and-run-using-docker/deploying-guardian-using-a-specific-environment-qa: developer-tools-and-resources/dev-environments-and-faqs/building-from-source-and-run-using-docker.md
   guardian/readme/getting-started/installation/building-from-source-and-run-using-docker/deploying-guardian-using-default-environment: developer-tools-and-resources/dev-environments-and-faqs/building-from-source-and-run-using-docker.md
@@ -516,10 +620,11 @@ redirects:
   guardian/readme/security-1: community-and-contributing/security.md
   guardian/readme/security-1/how-it-works: community-and-contributing/security.md
   guardian/readme/vm0033-api-workthrough: guardian/tutorials/vm0033-api-workthrough.md
-  # ---- guardian/schema-creation-using-the-guardian-apis (2) ----
+  # ---- guardian/schema-creation-using-the-guardian-apis (3) ----
+  guardian/schema-creation-using-the-guardian-apis/creation-of-a-schema: guardian/getting-started.md
   guardian/schema-creation-using-the-guardian-apis/import-schema-from-ipfs: guardian/workspace/schemas.md
   guardian/schema-creation-using-the-guardian-apis/import-schema-from-ipfs-1: guardian/workspace/schemas.md
-  # ---- guardian/standard-registry (224) ----
+  # ---- guardian/standard-registry (247) ----
   guardian/standard-registry: guardian/platform/standard-registry.md
   guardian/standard-registry/artifacts: guardian/workspace/artifacts.md
   guardian/standard-registry/artifacts/how-to-import-delete-artifacts: guardian/workspace/artifacts/how-to-import-delete-artifacts.md
@@ -543,25 +648,33 @@ redirects:
   guardian/standard-registry/external-events/monitoring-tools/application-events-module: guardian/architecture/external-events/monitoring-tools/application-events-module.md
   guardian/standard-registry/fireblocks-raw-signing: security-identity-and-privacy/fireblocks-raw-signing.md
   guardian/standard-registry/import-export-in-excel: guardian/workspace/schemas/import-and-export-excel-file-user-guide.md
+  guardian/standard-registry/import-export-in-excel/import-and-export-excel-file-user-guide: guardian/workspace/schemas/import-and-export-excel-file-user-guide.md
   guardian/standard-registry/live-project-data-migration: guardian/platform/live-project-data-migration.md
   guardian/standard-registry/live-project-data-migration/apis-related-to-live-project-data-migration: guardian/platform/live-project-data-migration.md
   guardian/standard-registry/live-project-data-migration/apis-related-to-live-project-data-migration/retry-failed-migration-items-asynchronous: guardian/platform/live-project-data-migration.md
   guardian/standard-registry/live-project-data-migration/live-project-data-migration-ui: guardian/platform/live-project-data-migration/live-project-data-migration-ui.md
   guardian/standard-registry/mobile-support-for-data-interface: guardian/platform/mobile-support-for-data-interface.md
+  guardian/standard-registry/mobile-support-for-data-interface/mobile-operation-for-the-standard-registry: guardian/platform/mobile-support-for-data-interface/mobile-operation-for-the-standard-registry.md
   guardian/standard-registry/password-management: security-identity-and-privacy/password-management.md
+  guardian/standard-registry/password-management/4108-multifactor-authentication-2fa: security-identity-and-privacy/password-management/4108-multifactor-authentication-2fa.md
   guardian/standard-registry/password-management/change-password/api-related-to-change-password: security-identity-and-privacy/password-management/password-change-hardening.md
   guardian/standard-registry/password-management/change-password/password-security-hardening-and-change-password-using-ui: security-identity-and-privacy/password-management/password-change-hardening.md
   guardian/standard-registry/password-management/multifactor-authentication-api-2fa-api/confirm-otp: security-identity-and-privacy/password-management/4108-multifactor-authentication-2fa.md
   guardian/standard-registry/password-management/multifactor-authentication-api-2fa-api/deactivate-otp: security-identity-and-privacy/password-management/4108-multifactor-authentication-2fa.md
+  guardian/standard-registry/password-management/password-policy: security-identity-and-privacy/password-management/password-policy.md
   guardian/standard-registry/policies: guardian/workspace/policies.md
   guardian/standard-registry/policies/auto-suggestion: guardian/workspace/policies/auto-suggestion.md
   guardian/standard-registry/policies/auto-suggestion/auto-suggestion-apis: guardian/workspace/policies/auto-suggestion.md
+  guardian/standard-registry/policies/auto-suggestion/demo-using-ui: guardian/workspace/policies/auto-suggestion/demo-using-ui.md
   guardian/standard-registry/policies/auto-testing-of-the-policies/auto-testing-policies-apis: guardian/workspace/policies/dry-run/auto-testing-using-ui.md
   guardian/standard-registry/policies/auto-testing-of-the-policies/auto-testing-using-ui: guardian/workspace/policies/dry-run/auto-testing-using-ui.md
   guardian/standard-registry/policies/block-policy-discoverability: guardian/workspace/policies/block-policy-discoverability.md
+  guardian/standard-registry/policies/block-policy-discoverability/search-block-using-ui: guardian/workspace/policies/block-policy-discoverability/search-block-using-ui.md
+  guardian/standard-registry/policies/block-policy-discoverability/search-policy-using-ui: guardian/workspace/policies/block-policy-discoverability/search-policy-using-ui.md
   guardian/standard-registry/policies/capture-replay-and-compare-data-for-published-policies/apis/returns-all-policies-with-imported-records.: guardian/workspace/policies/dry-run/record-replay.md
   guardian/standard-registry/policies/demo-on-integrating-external-policies-using-ui: guardian/workspace/policies/demo-on-integrating-external-policies-using-ui.md
   guardian/standard-registry/policies/dry-run: guardian/workspace/policies/dry-run.md
+  guardian/standard-registry/policies/dry-run/3642-dry-run-virtual-users: guardian/workspace/policies/dry-run/3642-dry-run-virtual-users.md
   guardian/standard-registry/policies/dry-run/demo-guide-on-dry-run-operations: guardian/workspace/policies/dry-run/demo-guide-on-dry-run-operations.md
   guardian/standard-registry/policies/dry-run/policy-integrity-tests/attach-a-policy-integrity-test: guardian/workspace/policies/dry-run/policy-integrity-tests/attach-a-policy-integrity-test.md
   guardian/standard-registry/policies/dry-run/policy-integrity-tests/create-a-policy-integrity-test: guardian/workspace/policies/dry-run/policy-integrity-tests/create-a-policy-integrity-test.md
@@ -570,20 +683,30 @@ redirects:
   guardian/standard-registry/policies/dry-run/savepoints/apis-related-to-savepoints/deletes-the-specified-savepoints-for-the-policy-dry-run-only-.: guardian/workspace/policies/dry-run/savepoints.md
   guardian/standard-registry/policies/dry-run/savepoints/apis-related-to-savepoints/returns-the-list-of-savepoints-for-the-policy-dry-run-only: guardian/workspace/policies/dry-run/savepoints.md
   guardian/standard-registry/policies/exporting-project-data-in-csv: guardian/workspace/policies/export-documents-in-csv-using-ui.md
+  guardian/standard-registry/policies/exporting-project-data-in-csv/apis/get-policy-documents-with-filters: guardian/getting-started.md
   guardian/standard-registry/policies/fine-grained-policy-workflow-certification-labels: guardian/workspace/policies/fine-grained-policy-workflow-certification-labels.md
   guardian/standard-registry/policies/formula-linked-definitions: guardian/workspace/policies/formula-linked-definitions.md
   guardian/standard-registry/policies/formula-linked-definitions/formula-linked-definitions-using-ui: guardian/workspace/policies/formula-linked-definitions/formula-linked-definitions-using-ui.md
   guardian/standard-registry/policies/formula-linked-definitions/formulas-graphical-view: guardian/workspace/policies/formula-linked-definitions/formulas-graphical-view.md
+  guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-firms-api-methods: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-firms-api-methods/README.md
+  guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-firms-api-methods/getareadata: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-firms-api-methods/getareadata.md
   guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-firms-api-methods/getcountrydatawithdate: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-firms-api-methods/getcountrydatawithdate.md
+  guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/README.md
   guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/downloadcsv: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/downloadcsv.md
   guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/downloadcsvpost: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/downloadcsvpost.md
+  guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/downloadgeotiff: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/downloadgeotiff.md
   guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/downloadjson: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/downloadjson.md
+  guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/downloadjsonpost: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/downloadjsonpost.md
   guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/getchangelog: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/getchangelog.md
   guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/getchangelogforasset: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/getchangelogforasset.md
   guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/getextent: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/getextent.md
+  guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/getfieldmetadataforasset: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/getfieldmetadataforasset.md
+  guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/getfields: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/getfields.md
   guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/getmetadata: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/getmetadata.md
+  guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/getmetadataforasset: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/getmetadataforasset.md
   guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/getnasaviirsfirealertsfeatures: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/getnasaviirsfirealertsfeatures.md
   guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/querydatasetjsonpost: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/querydatasetjsonpost.md
+  guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-kanop-api-methods/getaggregationlevelforproject: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-kanop-api-methods/getaggregationlevelforproject.md
   guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-kanop-api-methods/getprojectreferences: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-kanop-api-methods/getprojectreferences.md
   guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-kanop-api-methods/getprojects: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-kanop-api-methods/getprojects.md
   guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-kanop-api-methods/getsummarymetricsforrequest: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-kanop-api-methods/getsummarymetricsforrequest.md
@@ -631,6 +754,8 @@ redirects:
   guardian/standard-registry/policies/policy-creation/introduction/aggregatedocumentblock: guardian/workspace/policies/policy-creation/introduction/aggregatedocumentblock.md
   guardian/standard-registry/policies/policy-creation/introduction/button-block-addon-buttonblockaddon: guardian/workspace/policies/policy-creation/introduction/button-block-addon-buttonblockaddon.md
   guardian/standard-registry/policies/policy-creation/introduction/buttonblock: guardian/workspace/policies/policy-creation/introduction/buttonblock.md
+  guardian/standard-registry/policies/policy-creation/introduction/container-workflow-block: guardian/workspace/policies/policy-creation/introduction/container-workflow-block.md
+  guardian/standard-registry/policies/policy-creation/introduction/create-token-block: guardian/workspace/policies/policy-creation/introduction/create-token-block.md
   guardian/standard-registry/policies/policy-creation/introduction/customlogicblock: guardian/workspace/policies/policy-creation/introduction/customlogicblock.md
   guardian/standard-registry/policies/policy-creation/introduction/data-transformation-addon: guardian/workspace/policies/policy-creation/introduction/data-transformation-addon.md
   guardian/standard-registry/policies/policy-creation/introduction/documentssourceaddonblock: guardian/workspace/policies/policy-creation/introduction/documentssourceaddonblock.md
@@ -644,6 +769,7 @@ redirects:
   guardian/standard-registry/policies/policy-creation/introduction/http-request-block: guardian/workspace/policies/policy-creation/introduction/http-request-block.md
   guardian/standard-registry/policies/policy-creation/introduction/impactaddon: guardian/workspace/policies/policy-creation/introduction/impactaddon.md
   guardian/standard-registry/policies/policy-creation/introduction/information-workflow-block: guardian/workspace/policies/policy-creation/introduction/information-workflow-block.md
+  guardian/standard-registry/policies/policy-creation/introduction/integrationbuttonblock: guardian/workspace/policies/policy-creation/introduction/integrationbuttonblock.md
   guardian/standard-registry/policies/policy-creation/introduction/interfacedocumentssourceblock: guardian/workspace/policies/policy-creation/introduction/interfacedocumentssourceblock.md
   guardian/standard-registry/policies/policy-creation/introduction/mathblock: guardian/workspace/policies/policy-creation/introduction/mathblock.md
   guardian/standard-registry/policies/policy-creation/introduction/messagesreportblock: guardian/workspace/policies/policy-creation/introduction/messagesreportblock.md
@@ -674,6 +800,7 @@ redirects:
   guardian/standard-registry/policies/policy-labels/apis-related-to-policy-labels: guardian/workspace/policies/policy-labels.md
   guardian/standard-registry/policies/policy-labels/policy-labels-ui: guardian/workspace/policies/policy-labels/policy-labels-ui.md
   guardian/standard-registry/policies/policy-warnings: guardian/workspace/policies/policy-warnings.md
+  guardian/standard-registry/policies/policy-warnings/demo-using-ui: guardian/workspace/policies/policy-warnings/demo-using-ui.md
   guardian/standard-registry/policies/policy-wizard: guardian/workspace/policies/policy-wizard.md
   guardian/standard-registry/policies/policy-wizard/demo-on-policy-wizard-using-ui: guardian/workspace/policies/policy-wizard/demo-on-policy-wizard-using-ui.md
   guardian/standard-registry/policies/policy-wizard/policy-wizard-apis: guardian/workspace/policies/policy-wizard.md
@@ -705,10 +832,12 @@ redirects:
   guardian/standard-registry/roles-and-permissions: guardian/platform/roles-and-permissions.md
   guardian/standard-registry/roles-and-permissions/roles-and-permissions-user-guide: guardian/platform/roles-and-permissions/roles-and-permissions-user-guide.md
   guardian/standard-registry/schemas: guardian/workspace/schemas.md
+  guardian/standard-registry/schemas/available-schema-types/table-data-input-field/custom-logic-block-and-tables: guardian/workspace/schemas/available-schema-types/table-data-input-field/custom-logic-block-and-tables.md
   guardian/standard-registry/schemas/available-schema-types/table-data-input-field/importing-excel-tables-into-the-project-schema-in-vm0033-methodology: guardian/workspace/schemas/available-schema-types/table-data-input-field/importing-excel-tables-into-the-project-schema-in-vm0033-methodology.md
   guardian/standard-registry/schemas/best-practices-to-implement-schema/conditional-and-visibility-logic: guardian/workspace/schemas/best-practices-to-implement-schema/conditional-and-visibility-logic.md
   guardian/standard-registry/schemas/best-practices-to-implement-schema/documentation-and-metadata: guardian/workspace/schemas/best-practices-to-implement-schema/documentation-and-metadata.md
   guardian/standard-registry/schemas/best-practices-to-implement-schema/excel-first-design: guardian/workspace/schemas/best-practices-to-implement-schema/excel-first-design.md
+  guardian/standard-registry/schemas/best-practices-to-implement-schema/incremental-development: guardian/workspace/schemas/best-practices-to-implement-schema/incremental-development.md
   guardian/standard-registry/schemas/best-practices-to-implement-schema/testing-and-validation: guardian/workspace/schemas/best-practices-to-implement-schema/testing-and-validation.md
   guardian/standard-registry/schemas/best-practices-to-implement-schema/version-control-and-migration: guardian/workspace/schemas/best-practices-to-implement-schema/version-control-and-migration.md
   guardian/standard-registry/schemas/creating-system-schema-using-ui: guardian/workspace/schemas/create-schema.md
@@ -735,6 +864,7 @@ redirects:
   guardian/standard-registry/schemas/tag-schema: guardian/workspace/schemas/tag-schema.md
   guardian/standard-registry/schemas/tag-schema/creating-tag-schemas-using-ui: guardian/workspace/schemas/tag-schema/creating-tag-schemas-using-ui.md
   guardian/standard-registry/selective-disclosure: security-identity-and-privacy/selective-disclosure.md
+  guardian/standard-registry/selective-disclosure/selective-disclosure-demo: guardian/getting-started.md
   guardian/standard-registry/selective-disclosure/user-guide: security-identity-and-privacy/selective-disclosure/user-guide.md
   guardian/standard-registry/show-list-of-hedera-transactions: guardian/hedera/hedera-transactions.md
   guardian/standard-registry/standard-registry-operations: guardian/workspace.md
@@ -744,7 +874,7 @@ redirects:
   guardian/standard-registry/usage-statistics: guardian/platform/usage-statistics.md
   guardian/standard-registry/usage-statistics/apis-related-to-statistics: guardian/platform/usage-statistics.md
   guardian/standard-registry/usage-statistics/statistics: guardian/platform/usage-statistics/statistics.md
-  # ---- guardian/tokens (13) ----
+  # ---- guardian/tokens (14) ----
   guardian/tokens: guardian/hedera/tokens.md
   guardian/tokens/creating-token-using-ui: guardian/hedera/tokens/creating-token-using-ui.md
   guardian/tokens/dynamic-token-creation-in-policies/dynamic-token-creation-in-guardian-policies-using-ui: guardian/hedera/tokens/dynamic-token-creation-in-guardian-policies-using-ui.md
@@ -753,6 +883,7 @@ redirects:
   guardian/tokens/token-operations: guardian/workspace/policies/library-of-policy-examples/token-operations.md
   guardian/tokens/token-operations/apis-for-asynchronous-execution: guardian/workspace/policies/library-of-policy-examples/token-operations.md
   guardian/tokens/token-operations/apis-for-asynchronous-execution/token-creation: guardian/workspace/policies/library-of-policy-examples/token-operations.md
+  guardian/tokens/token-operations/apis-for-asynchronous-execution/unsetting-kyc-for-the-user: guardian/getting-started.md
   guardian/tokens/token-operations/token-apis: guardian/hedera/tokens/creating-token-using-ui.md
   guardian/tokens/token-operations/token-apis/token-transfer: guardian/workspace/policies/library-of-policy-examples/token-operations.md
   guardian/tokens/token-template: guardian/hedera/tokens/how-to-create-token-template.md
@@ -773,6 +904,8 @@ redirects:
   guardian/users/mobile-support-for-data-interface/mobile-operation-for-the-user: guardian/platform/mobile-support-for-data-interface.md
   guardian/users/multi-policy: guardian/workspace/policies/multi-policy.md
   guardian/users/multi-policy/page-1: guardian/workspace/policies/multi-policy/page-1.md
+  # ---- guardian/versioning-and-deprecation-policy (1) ----
+  guardian/versioning-and-deprecation-policy/schema-versioning-and-deprecation-policy: guardian/workspace/schemas/schema-versioning-and-deprecation-policy.md
   # ---- guardian/workspace (35) ----
   guardian/workspace/policies/multi-policy/page-2: guardian/workspace/policies/multi-policy.md
   guardian/workspace/schemas/adding-example-data-using-ui: guardian/workspace/schemas/example-data.md
@@ -828,5 +961,9 @@ redirects:
   tokens: guardian/hedera/tokens.md
   # ---- tokens/token-apis (1) ----
   tokens/token-apis: guardian/hedera/tokens/creating-token-using-ui.md
+  # ---- updates/1339 (1) ----
+  updates/1339: guardian/getting-started.md
+  # ---- updates/1817 (1) ----
+  updates/1817: guardian/getting-started.md
   # ---- updates/2027 (1) ----
   updates/2027: guardian/getting-started.md
