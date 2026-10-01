@@ -70,6 +70,7 @@ redirects:
   docs/develop/feedback/feedback-in-pipelines: guardian/getting-started.md
   docs/develop/guardian-in-production: guardian/getting-started.md
   docs/develop/guardian-in-production/cloud-infrastructure: guardian/getting-started.md
+  docs/develop/guardian-in-production/api-architecture-customization: guardian/getting-started.md
   docs/develop/guardian-in-production/independent-packaged-deployment: guardian/getting-started.md
   docs/develop/guardian-in-production/monitoring-tools: guardian/architecture/external-events/monitoring-tools.md
   docs/develop/guardian-in-production/performance-improvement: guardian/getting-started.md
@@ -222,6 +223,7 @@ redirects:
   # ---- guardian/global-indexer (3) ----
   guardian/global-indexer: explorers/explorers-overview.md
   guardian/global-indexer/indexer-apis: explorers/guardian-indexer.md
+  guardian/global-indexer/indexer-apis/*: explorers/guardian-indexer.md
   guardian/global-indexer/indexer-user-guide: explorers/explorers-overview.md
   # ---- guardian/guardian (1) ----
   guardian/guardian: guardian/getting-started.md
@@ -686,8 +688,10 @@ redirects:
   guardian/standard-registry/policies/formula-linked-definitions: guardian/workspace/policies/formula-linked-definitions.md
   guardian/standard-registry/policies/formula-linked-definitions/formula-linked-definitions-using-ui: guardian/workspace/policies/formula-linked-definitions/formula-linked-definitions-using-ui.md
   guardian/standard-registry/policies/formula-linked-definitions/formulas-graphical-view: guardian/workspace/policies/formula-linked-definitions/formulas-graphical-view.md
+  guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-firms-api-methods: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-firms-api-methods/README.md
   guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-firms-api-methods/getareadata: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-firms-api-methods/getareadata.md
   guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-firms-api-methods/getcountrydatawithdate: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-firms-api-methods/getcountrydatawithdate.md
+  guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/README.md
   guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/downloadcsv: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/downloadcsv.md
   guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/downloadcsvpost: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/downloadcsvpost.md
   guardian/standard-registry/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/downloadgeotiff: guardian/workspace/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/downloadgeotiff.md
