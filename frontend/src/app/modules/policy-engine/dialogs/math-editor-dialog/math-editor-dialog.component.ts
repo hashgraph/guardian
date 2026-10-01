@@ -100,6 +100,24 @@ class Tooltip {
     }
 }
 
+type MathIssueStep = 'step_1' | 'step_2' | 'step_3';
+type MathIssueGroup = 'inputs' | 'formulas' | 'outputs';
+
+interface MathIssue {
+    id: string;
+    group: MathIssueGroup;
+    step: MathIssueStep;
+    pageId: string;
+    title: string;
+    message: string;
+}
+
+interface MathIssueGroupView {
+    key: MathIssueGroup;
+    label: string;
+    issues: MathIssue[];
+}
+
 /**
  * Dialog.
  */
@@ -193,6 +211,10 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     public activePathItem: FieldLink | null = null;
     public pathSuggestions: string[] = [];
     public fieldWarnings = new Map<string, boolean>();
+    public mathIssues: MathIssue[] = [];
+    public issueGroups: MathIssueGroupView[] = [];
+    public issuesVisible: boolean = false;
+    public validationChecked: boolean = false;
 
     public inputDocumentValue: any = null;
     public inputRelationshipsValue: any[] = [];
@@ -275,6 +297,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             }
             this.openTableColumns(item);
         }
+        this.updateIssues();
     }
 
     ngAfterContentInit() {
@@ -302,6 +325,146 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         return this.engine.outputs.view;
     }
 
+    public hasPathWarning(item: FieldLink): boolean {
+        return !!this.fieldWarnings.get(item.id);
+    }
+
+    public get validationState(): 'default' | 'success' | 'error' {
+        if (!this.validationChecked) {
+            return 'default';
+        }
+        return this.mathIssues.length ? 'error' : 'success';
+    }
+
+    public get validationErrorsLabel(): string {
+        return `${this.mathIssues.length} validation ${this.mathIssues.length === 1 ? 'error' : 'errors'}`;
+    }
+
+    public getIssueId(type: 'variables' | 'formulas' | 'outputs', item: FieldLink | MathFormula): string {
+        return `${type}-${item.id}`;
+    }
+
+    private updateIssueGroups(): void {
+        const groups: MathIssueGroupView[] = [
+            { key: 'inputs', label: 'INPUTS', issues: [] },
+            { key: 'formulas', label: 'FORMULAS', issues: [] },
+            { key: 'outputs', label: 'OUTPUTS', issues: [] }
+        ];
+        const groupMap = new Map<MathIssueGroup, MathIssueGroupView>(
+            groups.map((group): [MathIssueGroup, MathIssueGroupView] => [group.key, group])
+        );
+        for (const issue of this.mathIssues) {
+            groupMap.get(issue.group)?.issues.push(issue);
+        }
+        this.issueGroups = groups.filter((group) => group.issues.length);
+    }
+
+    private updateIssues(): void {
+        const issues: MathIssue[] = [];
+        if (!this.engine) {
+            this.mathIssues = issues;
+            this.updateIssueGroups();
+            this.issuesVisible = false;
+            return;
+        }
+
+        for (const page of this.engine.variables?.pages || []) {
+            for (const item of page.items) {
+                if (item.empty) {
+                    continue;
+                }
+                if (item.invalid) {
+                    issues.push({
+                        id: this.getIssueId('variables', item),
+                        group: 'inputs',
+                        step: 'step_1',
+                        pageId: page.id,
+                        title: item.error || 'Invalid variable',
+                        message: item.variableNameText || item.field || 'Variable'
+                    });
+                } else if (this.hasPathWarning(item)) {
+                    issues.push({
+                        id: this.getIssueId('variables', item),
+                        group: 'inputs',
+                        step: 'step_1',
+                        pageId: page.id,
+                        title: 'Path not found in schema',
+                        message: item.field || 'Variable path'
+                    });
+                }
+            }
+        }
+
+        for (const page of this.engine.formulas?.pages || []) {
+            for (const item of page.items) {
+                if (item.empty) {
+                    continue;
+                }
+                if (item.invalid) {
+                    issues.push({
+                        id: this.getIssueId('formulas', item),
+                        group: 'formulas',
+                        step: 'step_2',
+                        pageId: page.id,
+                        title: item.error || 'Invalid formula',
+                        message: item.functionNameText || item.functionBodyText || 'Formula'
+                    });
+                }
+            }
+        }
+
+        for (const page of this.engine.outputs?.pages || []) {
+            for (const item of page.items) {
+                if (item.empty) {
+                    continue;
+                }
+                if (item.invalid) {
+                    issues.push({
+                        id: this.getIssueId('outputs', item),
+                        group: 'outputs',
+                        step: 'step_3',
+                        pageId: page.id,
+                        title: item.error || 'Invalid output',
+                        message: item.variableNameText || item.field || 'Output'
+                    });
+                } else if (this.hasPathWarning(item)) {
+                    issues.push({
+                        id: this.getIssueId('outputs', item),
+                        group: 'outputs',
+                        step: 'step_3',
+                        pageId: page.id,
+                        title: 'Path not found in schema',
+                        message: item.field || 'Output path'
+                    });
+                }
+            }
+        }
+
+        this.mathIssues = issues;
+        this.updateIssueGroups();
+        if (!this.mathIssues.length) {
+            this.issuesVisible = false;
+        }
+    }
+
+    public toggleIssues(): void {
+        this.validationChecked = true;
+        this.engine.validate();
+        for (const item of this.engine.variables.getItems()) {
+            this._updateFieldWarning(item);
+        }
+        for (const item of this.engine.outputs.getItems()) {
+            this._updateFieldWarning(item, 'output');
+        }
+        this.updateIssues();
+        this.issuesVisible = !!this.mathIssues.length && !this.issuesVisible;
+    }
+
+    public goToIssue(issue: MathIssue): void {
+        this.issuesVisible = false;
+        this.onStep(issue.step, issue.pageId, `.rows-container[data-issue-id="${issue.id}"]`);
+    }
+
     public onFullscreen() {
         this.el.nativeElement.classList.toggle('fullscreen');
         this.el.nativeElement.parentElement.parentElement.classList.toggle('fullscreen');
@@ -310,6 +473,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     public onSave(): void {
         if (this.engine) {
             const error = this.engine.validate();
+            this.updateIssues();
             if (error) {
                 if (error[0] === 'variables') {
                     this.onStep('step_1', error[1], '.rows-container[error="true"]');
@@ -354,11 +518,13 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             this.varPickerFormula = null;
         }
         this.engine.deleteFormula(formula);
+        this.updateIssues();
     }
 
     public deleteVariable(variable: FieldLink) {
         this.fieldWarnings.delete(variable.id);
         this.engine.deleteVariable(variable);
+        this.updateIssues();
     }
 
     public deleteOutput(output: FieldLink) {
@@ -372,6 +538,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         delete this.tableColumnsDraft[output.id];
         delete this.tableColumnsMode[output.id];
         this.engine.deleteOutput(output);
+        this.updateIssues();
     }
 
     public addFormula() {
@@ -577,6 +744,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 item.schema = result.group || schema?.iri || null;
                 item.update();
                 this._updateFieldWarning(item);
+                this.updateIssues();
             }
         });
     }
@@ -603,6 +771,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 item.update();
                 this._updateFieldWarning(item, 'output');
                 this.updateTableOutput(item);
+                this.updateIssues();
             }
         });
     }
@@ -919,6 +1088,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         if (type === 'output') {
             this.updateTableOutput(item);
         }
+        this.updateIssues();
     }
 
     public onPathKeyup(event: KeyboardEvent): void {
@@ -944,6 +1114,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         if (type === 'output') {
             this.updateTableOutput(item);
         }
+        this.updateIssues();
         this.activePathItem = null;
         this.pathSuggestions = [];
     }
@@ -1021,7 +1192,15 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
 
     public onValidate() {
         if (this.engine) {
+            this.validationChecked = true;
             const error = this.engine.validate();
+            for (const item of this.engine.variables.getItems()) {
+                this._updateFieldWarning(item);
+            }
+            for (const item of this.engine.outputs.getItems()) {
+                this._updateFieldWarning(item, 'output');
+            }
+            this.updateIssues();
             if (error) {
                 if (error[0] === 'variables') {
                     this.onStep('step_1', error[1], '.rows-container[error="true"]');
