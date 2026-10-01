@@ -2017,5 +2017,44 @@ describe('SchemasConfigurationComponent', () => {
             component.schemaEditVersion++;
             expect(component.availableRefSchemas).not.toBe(first);
         });
+
+        it('lists schemas newest first, like the sidebar', () => {
+            const root = makeSchema({ id: 'id-0' });
+            const oldest = makeSchema({ id: 'id-1' });
+            const middle = makeSchema({ id: 'id-2' });
+            const newest = makeSchema({ id: 'id-3' });
+            const component = createRefComponent([root, middle], [oldest, middle, newest], root);
+
+            expect(optionIris(component)).toEqual(['#id-3', '#id-2', '#id-1']);
+        });
+
+        it('lists featured template schemas before the others', () => {
+            const root = makeSchema({ id: 'id-0' });
+            const featured = makeSchema({ id: 'id-1' });
+            featured.templateFeatured = true;
+            const newest = makeSchema({ id: 'id-2' });
+            const component = createRefComponent([root], [newest, featured], root);
+
+            expect(optionIris(component)).toEqual(['#id-1', '#id-2']);
+        });
+
+        it('lists a schema that is not saved yet first', () => {
+            const root = makeSchema({ id: 'id-0' });
+            const saved = makeSchema({ id: 'id-1' });
+            const unsaved = makeSchema({ iri: '#unsaved' });
+            const component = createRefComponent([root, saved, unsaved], [], root);
+
+            expect(optionIris(component)).toEqual(['#unsaved', '#id-1']);
+        });
+
+        it('keeps the current schema on top when it is no longer allowed', () => {
+            const root = makeSchema({ id: 'id-0' });
+            const blocked = makeSchema({ id: 'id-1', fields: [refField('#id-0')] });
+            const newest = makeSchema({ id: 'id-2' });
+            const component = createRefComponent([root], [blocked, newest], root);
+            component.selectedField = refField('#id-1');
+
+            expect(optionIris(component)).toEqual(['#id-1', '#id-2']);
+        });
     });
 });
