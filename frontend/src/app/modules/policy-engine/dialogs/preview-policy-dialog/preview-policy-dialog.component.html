@@ -228,8 +228,8 @@
     <div class="summary-value summary-value--mono summary-value--copy">
       <span [title]="owner || ''">{{ owner ? shortenId(owner) : 'N/A' }}</span>
       @if (owner) {
-        <button type="button" class="icon-button" tabindex="-1" title="Copy creator DID" (click)="copyToClipboard(owner)">
-          <i class="pi pi-copy"></i>
+        <button type="button" class="icon-button" tabindex="-1" title="Copy creator DID" (click)="copyCreator(owner, $event)">
+          <i class="pi" [ngClass]="creatorCopied ? 'pi-check' : 'pi-copy'"></i>
         </button>
       }
     </div>

@@ -92,6 +92,7 @@ export class PreviewPolicyDialog {
     public schemasOverflow: boolean = false;
     public descriptionExpanded: boolean = false;
     public searchActive: boolean = false;
+    public creatorCopied: boolean = false;
     private _schemaListObserver?: ResizeObserver;
 
     public isLargeSize: boolean = true;
@@ -269,8 +270,19 @@ export class PreviewPolicyDialog {
         return `${value.substring(0, 26)}…${value.substring(value.length - 16)}`;
     }
 
-    public copyToClipboard(text: string): void {
-        navigator.clipboard.writeText(text || '');
+    public copyCreator(value: string, event?: Event): void {
+        event?.stopPropagation();
+        if (!value) {
+            return;
+        }
+        navigator.clipboard.writeText(value).then(() => {
+            this.creatorCopied = true;
+            setTimeout(() => {
+                this.creatorCopied = false;
+            }, 1500);
+        }).catch(() => {
+            this.creatorCopied = false;
+        });
     }
 
     public onFilters(messageId: string, $event: any) {

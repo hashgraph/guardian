@@ -136,9 +136,14 @@
 .icon-button {
     display: inline-flex;
     color: var(--guardian-grey-color-4, #6C7791);
+    transition: color 0.12s;
 
     &:hover {
         color: var(--color-primary, #4169E2);
+    }
+
+    .pi-check {
+        color: var(--color-accent-green-1, #19BE47);
     }
 }
 
