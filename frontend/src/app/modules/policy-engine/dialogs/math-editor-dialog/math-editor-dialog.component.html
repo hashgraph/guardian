@@ -151,7 +151,7 @@
   </ng-template>
   <ng-template #tableValues let-item="item" let-values="values" let-title="title">
     <div class="table-output">
-      <label class="form-label">{{title}}Rows ({{values.length}})</label>
+      <label class="form-label">{{title}}Rows ({{values.length}}){{values.length > maxTestTableRows ? ', showing the first ' + maxTestTableRows + '. All rows are in Code → Output' : ''}}</label>
       <div class="table-output-grid">
         <table>
           <thead>
@@ -163,7 +163,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (row of values; track $index; let rowIndex = $index) {
+            @for (row of getTestTableRows(values); track $index; let rowIndex = $index) {
               <tr>
                 <td class="table-output-index">{{rowIndex + 1}}</td>
                 @for (column of getTableColumns(item); track column.key) {

@@ -200,6 +200,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     public readonly maxTableRows = FieldLink.MAX_TABLE_ROWS;
     public readonly maxTableRowsPerAdd = 20;
     public readonly maxTables = FieldLink.MAX_TABLES;
+    public readonly maxTestTableRows = 20;
     public tableRowsToAdd: { [id: string]: number | null } = {};
     private tableRowsDraft: { [id: string]: Record<string, string>[][] } = {};
     private tableColumnsDraft: { [id: string]: Record<string, string> } = {};
@@ -703,6 +704,10 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             tables.push(table.rows);
         }
         return tables;
+    }
+
+    public getTestTableRows(values: Record<string, any>[]): Record<string, any>[] {
+        return values.length > this.maxTestTableRows ? values.slice(0, this.maxTestTableRows) : values;
     }
 
     public getTableRowCount(item: FieldLink): number {

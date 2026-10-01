@@ -1,3 +1,11 @@
+import { CommonModule } from '@angular/common';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { ArtifactService } from 'src/app/services/artifact.service';
+import { CsvService } from 'src/app/services/csv.service';
+import { GzipService } from 'src/app/services/gzip.service';
+import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { MathEditorDialogComponent } from './math-editor-dialog.component';
 import { DocumentMap } from './math-model/document-map';
 import { FieldLink } from './math-model/field-link';
@@ -957,6 +965,29 @@ describe('MathEditorDialogComponent Table output test results', () => {
         });
     });
 
+    it('shows only the first 20 rows of a long result table and keeps all rows in the output', async () => {
+        const years = Array.from({ length: 25 }, (_, index) => 2000 + index);
+        const output = columnOutput({ year: 'y' });
+        const dialog = makeDialog([output], { y: years });
+        dialog.maxTestTableRows = 20;
+
+        await dialog.onTest();
+
+        const values = dialog.getTableValues(output);
+        expect(values.length).toBe(25);
+        expect(dialog.getTestTableRows(values).length).toBe(20);
+        expect(dialog.getTestTableRows(values)[19]).toEqual({ year: 2019 });
+        expect(JSON.parse(dialog.result.output).results.rows.length).toBe(25);
+    });
+
+    it('shows a short result table in full', () => {
+        const dialog: any = Object.create(MathEditorDialogComponent.prototype);
+        dialog.maxTestTableRows = 20;
+        const values = [{ year: 2020 }, { year: 2021 }];
+
+        expect(dialog.getTestTableRows(values)).toBe(values);
+    });
+
     it('shows the row limit error of a column table as its value', async () => {
         const output = columnOutput({ year: 'y' });
         const dialog = makeDialog([output], { y: new Array(10001).fill(1) });
@@ -965,5 +996,73 @@ describe('MathEditorDialogComponent Table output test results', () => {
 
         expect(output.value).toBe('Error: Too many rows: 10001. The limit is 10000');
         expect(dialog.getTableValues(output)).toBeNull();
+    });
+});
+
+describe('MathEditorDialogComponent rendered Testing table', () => {
+    async function render(rows: Record<string, number>[]): Promise<ComponentFixture<MathEditorDialogComponent>> {
+        spyOn(MathEditorDialogComponent.prototype, 'ngOnInit').and.stub();
+        spyOn(MathEditorDialogComponent.prototype, 'ngAfterContentInit').and.stub();
+        await TestBed.configureTestingModule({
+            declarations: [MathEditorDialogComponent],
+            imports: [CommonModule],
+            providers: [
+                { provide: DynamicDialogRef, useValue: {} },
+                { provide: DialogService, useValue: {} },
+                { provide: DynamicDialogConfig, useValue: { data: {} } },
+                { provide: ArtifactService, useValue: {} },
+                { provide: GzipService, useValue: {} },
+                { provide: CsvService, useValue: {} },
+                { provide: IndexedDbRegistryService, useValue: {} },
+            ],
+            schemas: [NO_ERRORS_SCHEMA],
+        }).compileComponents();
+
+        const fixture = TestBed.createComponent(MathEditorDialogComponent);
+        const dialog: any = fixture.componentInstance;
+        const output = FieldLink.from({
+            type: MathItemType.LINK,
+            name: '',
+            description: '',
+            field: 'results',
+            schema: '#out',
+            rows: [{ year: 'y' }]
+        })!;
+        output.value = { type: 'table', rows };
+        dialog.loading = false;
+        dialog.inputSchema = {};
+        dialog.step = 'step_5';
+        dialog.resultStep = 'output';
+        dialog.result = {
+            variables: [],
+            formulas: [],
+            outputs: [output],
+            input: '',
+            output: '',
+            error: ''
+        };
+        dialog.outputSchemaFieldMap = new Map([['results', {
+            arrayLvl: 0,
+            field: {
+                description: 'Results',
+                customType: 'table',
+                tableColumns: [{ name: 'Year', key: 'year' }]
+            }
+        }]]);
+        fixture.detectChanges();
+        return fixture;
+    }
+
+    it('renders the first 20 rows and the full count for a long result table', async () => {
+        const rows = Array.from({ length: 25 }, (_, index) => ({ year: 2000 + index }));
+        const fixture = await render(rows);
+        const tableOutput: HTMLElement = fixture.nativeElement.querySelector('.table-output');
+
+        expect(tableOutput.querySelector('.form-label')?.textContent?.trim()).toBe(
+            'Rows (25), showing the first 20. All rows are in Code → Output'
+        );
+        const renderedRows = tableOutput.querySelectorAll('tbody tr');
+        expect(renderedRows.length).toBe(20);
+        expect(renderedRows[19].textContent).toContain('2019');
     });
 });
