@@ -19,7 +19,7 @@
         "@mikro-orm/mongodb": "6.6.16",
         "@nestjs/common": "^11.1.24",
         "@nestjs/core": "^11.1.24",
-        "@nestjs/microservices": "^11.1.24",
+        "@nestjs/microservices": "^11.2.5",
         "@noble/curves": "^1.3.0",
         "ajv": "^8.17.1",
         "ajv-formats": "^3.0.1",

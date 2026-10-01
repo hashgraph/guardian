@@ -8,7 +8,7 @@
         "@mikro-orm/mongodb": "6.6.16",
         "@nestjs/common": "^11.1.24",
         "@nestjs/core": "^11.1.24",
-        "@nestjs/microservices": "^11.1.24",
+        "@nestjs/microservices": "^11.2.5",
         "axios": "^1.16.1",
         "axios-retry": "4.5.0",
         "cids": "^1.1.9",

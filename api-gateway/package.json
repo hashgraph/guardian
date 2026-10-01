@@ -8,7 +8,7 @@
         "@guardian/interfaces": "workspace:*",
         "@nestjs/common": "^11.1.24",
         "@nestjs/core": "^11.1.24",
-        "@nestjs/microservices": "^11.1.24",
+        "@nestjs/microservices": "^11.2.5",
         "@nestjs/platform-express": "^11.1.24",
         "@nestjs/platform-fastify": "^11.1.24",
         "@nestjs/swagger": "^11.4.4",
