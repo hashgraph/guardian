@@ -12,7 +12,7 @@ import {
     PolicyJoinMessage,
     PolicyMessage,
     REMOTE_POLICY_JOIN_TAG,
-    resolvePublishedDidDocument,
+    resolveOwnerDidDocument,
     TopicConfig,
     Users,
     VcHelper,
@@ -73,12 +73,15 @@ async function loadOrCreateMessageKey(did: string, policyMessageId: string, user
  * @param item - the import request of the user
  * @param logger
  * @param retryRejected - send again after a rejection (the user imported the policy again)
+ * @param force - send a new join even if one was answered (the user imported the policy
+ * again after disconnecting from it, the new join reconnects the user on the Main instance)
  */
 export async function sendRemotePolicyJoin(
     policy: Policy,
     item: ExternalPolicy,
     logger: PinoLogger,
-    retryRejected: boolean = false
+    retryRejected: boolean = false,
+    force: boolean = false
 ): Promise<ExternalPolicy> {
     if (
         !policy?.actionsTopicId ||
@@ -89,6 +92,7 @@ export async function sendRemotePolicyJoin(
         return item;
     }
     if (
+        !force &&
         item.joinMessageId && (
             item.joinStatus === RemoteJoinStatus.SENT ||
             item.joinStatus === RemoteJoinStatus.ACCEPTED ||
@@ -123,7 +127,8 @@ export async function sendRemotePolicyJoin(
             throw new Error('Policy owner is unknown.');
         }
         const ownerTopicId = HederaDid.parse(ownerDid).topicId?.toString();
-        const ownerDidDocument = await resolvePublishedDidDocument(
+        // the owner's DID topic usually has a submit key; an open topic falls back to the payer of the policy
+        const ownerDidDocument = await resolveOwnerDidDocument(
             ownerDid,
             ownerTopicId,
             policyMessage.payer,

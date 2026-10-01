@@ -517,7 +517,8 @@ export class PolicyCommentsUtils {
             policyInstanceTopicId: policy.instanceTopicId,
             sender: user.did,
             senderRole: userRole,
-            senderName: user.username,
+            // a remote user has no username
+            senderName: user.username || user.did,
             recipients: data.recipients,
             fields: Array.from(fields),
             field: discussion.field,

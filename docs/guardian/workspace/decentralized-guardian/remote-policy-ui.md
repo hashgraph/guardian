@@ -42,16 +42,25 @@ Once the import is approved and the policy is assigned to the user, the user's G
 * a signature made with the Ed25519 key of the user's DID over the DID, the Hedera account, the policy Message ID and the issue time. The signature is bound to the policy and can't be reused as a registration proof, or the other way round;
 * a new message key for the policy (see Section 5), sealed to the Ed25519 key of the policy owner's DID: only the Standard Registry that owns the policy can open it.
 
+To find that key, the home instance loads the policy owner's DID document from the owner's DID topic on Hedera. If the topic has a submit key, only the instance holding it could have posted to it, so the first DID document of the owner on it is used. DID documents are never updated, and later documents on that topic come from other users of the same instance. If the topic is open, only a DID document paid by the account that published the policy is accepted.
+
 The home instance stores the same message key for the user, so the user doesn't have to generate or copy any key.
 
 The join request is sent when the import is approved, or straight away when a user imports a policy that is already approved on the home instance. It is sent once per user and policy: if it could not be sent, or the Main instance rejected it, importing the policy again sends it again. Standard Registry accounts only view remote policies and don't send join requests.
 
-The Main instance checks that the request was paid by the account it names, loads the user's DID document from Hedera, verifies the signature and opens the message key. A request issued more than 24 hours before it reached Hedera, a request for another policy and a copy of an earlier request are ignored. For a valid request the Main instance creates a remote user with the user's DID and Hedera account. This user has no username or password and can never sign in to the Main instance. If the DID is already a remote user of the same Standard Registry, that user is reused.
+The Main instance checks that the request was paid by the account it names, loads the user's DID document from Hedera and verifies the signature. A request issued more than 24 hours before it reached Hedera, a request for another policy and a copy of an earlier request are ignored. Anyone can post to the actions topic, so a valid request only adds a pending entry with the message key still sealed: no user, DID document or key is stored until the policy owner approves it.
 
 The request then waits for the policy owner. On the Main instance, open the policy menu in the Policies grid and select **Remote participants** (available to users with the permission to manage user roles). Every request must be approved or rejected by hand:
 
-* **Approve** assigns the policy to the remote user, the same as assigning it in the user permissions.
-* **Reject** leaves the policy unassigned. A rejected user can send a new request by importing the policy again.
+* **Approve** creates a remote user with the user's DID and Hedera account, stores the user's DID document and message key, and assigns the policy to the user, the same as assigning it in the user permissions. For a new remote user, the Standard Registry also publishes the user's permissions credential, as it does when a user registers with a profile file. The remote user has no username or password and can never sign in to the Main instance. If the DID is already a remote user of the same Standard Registry, that user is reused; if the DID belongs to another user, the approval fails with an error.
+* **Reject** leaves the policy unassigned and deletes the sealed key. A rejected user can send a new request by importing the policy again.
+
+A policy keeps a limited number of pending requests, and a pending request expires if the owner doesn't decide on it. New requests over the limit are dropped without an answer. Both limits are set with environment variables of the policy service and the guardian service:
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `REMOTE_POLICY_PENDING_JOIN_LIMIT` | 100 | Pending requests a policy accepts. |
+| `REMOTE_POLICY_PENDING_JOIN_EXPIRY_DAYS` | 30 | Days a pending request waits for the policy owner before it is removed. |
 
 The Main instance publishes the answer on the actions topic, encrypted with the user's message key. On the home instance, the **Participation** column of the Remote Policy Requests page shows where the request is:
 
@@ -64,6 +73,8 @@ The Main instance publishes the answer on the actions topic, encrypted with the 
 | Join request failed | The join request could not be sent, for example because the user's account has no funds. Import the policy again to retry. |
 
 The Standard Registry of the home instance sees the same status per user in the **Users** dialogue of each request.
+
+A user who disconnected from the policy (see Section 7) reconnects by importing it again on the home instance. The import sends a new join request, and the Main instance reconnects an approved user when it receives it, without any sign-in on the Main instance. A rejected user's new request waits for the policy owner again.
 
 ### **4. Users registered by profile file**
 
@@ -144,7 +155,7 @@ Full disconnection removes your user from:
 * The remote policy on the current Guardian instance, and
 * The same policy on the Main Guardian instance where it is deployed.
 
-In this case, if you need to resume working with the policy, you will have to:
+In this case, if you need to resume working with the policy, import it again on the home instance: the new join request reconnects you on the Main instance (see Section 3). A user registered by profile file (see Section 4) instead has to:
 
 1. Reconnect (import/connect) the policy again on the remote Guardian instance.
 2. Log in to the Main Guardian instance where the policy is deployed and reconnect there as well (see Section 1).

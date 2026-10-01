@@ -234,11 +234,13 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 if (request) {
+                    const reconnect = request.type === ExternalPolicyType.DISCONNECT;
                     request.type = ExternalPolicyType.IMPORT;
                     const updated = await DatabaseServer.updateExternalPolicy(request);
                     if (policy) {
-                        // importing again retries a join that failed or was rejected
-                        return new MessageResponse(await sendRemotePolicyJoin(policy, updated, logger, true));
+                        // importing again retries a join that failed or was rejected, and after
+                        // a disconnection sends a new one that reconnects the user on the Main instance
+                        return new MessageResponse(await sendRemotePolicyJoin(policy, updated, logger, true, reconnect));
                     }
                     return new MessageResponse(updated);
                 }

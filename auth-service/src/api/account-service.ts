@@ -230,7 +230,8 @@ export class AccountService extends NatsService {
                 try {
                     const userRepository = new DatabaseServer()
 
-                    const users = await userRepository.find(User, { role: UserRole.USER })
+                    // remote users created from a join request have no username and cannot be addressed by it
+                    const users = await userRepository.find(User, { role: UserRole.USER, username: { $ne: null } })
 
                     const userAccounts = users.map((e) => ({
                         username: e.username,
@@ -277,7 +278,7 @@ export class AccountService extends NatsService {
                 try {
                     const userRepository = new DatabaseServer()
 
-                    const users = await userRepository.find(User, { template: { $ne: true } })
+                    const users = await userRepository.find(User, { template: { $ne: true }, username: { $ne: null } })
 
                     const userAccounts = users.map((e) => ({
                         parent: e.parent,
@@ -363,7 +364,10 @@ export class AccountService extends NatsService {
                         ) {
                             return new MessageError('The DID is already registered.', HttpStatus.CONFLICT);
                         }
-                        return new MessageResponse(UserUtils.updateUserFields(existing, UserProp.REQUIRED));
+                        return new MessageResponse({
+                            ...UserUtils.updateUserFields(existing, UserProp.REQUIRED),
+                            created: false
+                        } as any);
                     }
                     const defaultRole = await getDefaultRole(parent);
                     const row = entityRepository.create(User, {
@@ -382,7 +386,10 @@ export class AccountService extends NatsService {
                         permissions: defaultRole ? defaultRole.permissions : []
                     });
                     const result = await entityRepository.save(User, row);
-                    return new MessageResponse(UserUtils.updateUserFields(result, UserProp.REQUIRED));
+                    return new MessageResponse({
+                        ...UserUtils.updateUserFields(result, UserProp.REQUIRED),
+                        created: true
+                    } as any);
                 } catch (error) {
                     await logger.error(error, ['AUTH_SERVICE'], msg?.userId);
                     return new MessageError(error);
@@ -624,7 +631,7 @@ export class AccountService extends NatsService {
                     // remote users created from a join request have no username and are
                     // managed in the remote participants of the policy
                     if (!options.username) {
-                        options.username = { $type: 'string' };
+                        options.username = { $ne: null };
                     }
                     const [items, count] = await new DatabaseServer().findAndCount(User, options, otherOptions);
                     return new MessageResponse({ items, count });
