@@ -75,10 +75,7 @@ export class AISuggestionsAPI {
         @Query('q') q: string,
     ): Promise<string> {
         try {
-            // All routes share the same singleton AISuggestions instance, so every
-            // construction site must pass the logger or the first route hit would
-            // leave the shared instance without one.
-            const aiSuggestions = new AISuggestions(this.logger);
+            const aiSuggestions = new AISuggestions();
             return await aiSuggestions.getAIAnswer(q);
         } catch (error) {
             await InternalException(error, this.logger, null);
@@ -119,7 +116,7 @@ export class AISuggestionsAPI {
     @HttpCode(HttpStatus.OK)
     async rebuildVector(): Promise<boolean> {
         try {
-            const aiSuggestions = new AISuggestions(this.logger);
+            const aiSuggestions = new AISuggestions();
             return await aiSuggestions.rebuildAIVector();
         } catch (error) {
             await InternalException(error, this.logger, null);
@@ -213,7 +210,7 @@ export class AISuggestionsAPI {
             throw new NotImplementedException('Glossary AI is not enabled');
         }
         try {
-            const aiSuggestions = new AISuggestions(this.logger);
+            const aiSuggestions = new AISuggestions();
             return await aiSuggestions.getPropertySuggestions(body);
         } catch (error) {
             await InternalException(error, this.logger, user.id);

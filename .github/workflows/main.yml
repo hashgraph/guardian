@@ -113,6 +113,9 @@ jobs:
           pushd common
           npm run lint
           popd
+          pushd ai-service
+          npm run lint
+          popd
           pushd logger-service
           npm run lint
           popd

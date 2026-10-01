@@ -36,13 +36,24 @@ export class AIManager {
         this.categories = [];
         this.policies = [];
         this.policyDescriptions = [];
-        // Langchain forces the check on the API key format before calling the LLM server's endpoint, so we need to set something "realistic" regardless if the sever actually ask for credentials (i.e. usually not present for local LLMs).
-        const openAIApiKey = process.env.OPENAI_API_KEY || "1234567890"; 
+        // Langchain forces the check on the API key format before calling the LLM server's endpoint, so
+        // we need to set something "realistic" regardless if the sever actually ask for credentials
+        // (i.e. usually not present for local LLMs).
+        const openAIApiKey = process.env.OPENAI_API_KEY || '1234567890';
 
-        // Models that don't support temperature parameter
+        // LLM_MODEL is defined by an optional configuration by docker compose (the model runner
+        // injects it) and takes precedence over GPT_VERSION; when it is not set we fall back to
+        // versionGPT (GPT_VERSION, default 'gpt-5-nano') instead of nothing, because an undefined
+        // model name makes @langchain/openai silently use its own 'gpt-3.5-turbo' default.
+        const modelName = process.env.LLM_MODEL || this.versionGPT;
+
+        // Models that don't support temperature parameter. Decided from the model that is
+        // actually sent: a model configured through LLM_MODEL (e.g. a local gemma) must not be
+        // judged on GPT_VERSION, or it would never get temperature: 0 - and the reverse would
+        // send temperature to a model that rejects it.
         const noTemperatureModels = ['o1', 'o3', 'o4', 'gpt-5'];
         const supportsTemperature = !noTemperatureModels.some((model) =>
-            this.versionGPT.toLowerCase().startsWith(model),
+            modelName.toLowerCase().startsWith(model),
         );
 
         this.logger.info('process.env.LLM_MODEL:' + process.env.LLM_MODEL, [
@@ -59,23 +70,23 @@ export class AIManager {
             ['AI_SERVICE'],
         );
 
-        // LLM_URL and LLM_MODEL are defined by an optional configuration by docker compose, and
-        // they take precedence over GTP_VERSION and OPENAI_API_BASE.
-        const modelName = process.env.LLM_MODEL
-            ? process.env.LLM_MODEL
-            : process.env.GPT_VERSION;
-        // LLM_URL usually looks like http://model-runner.docker.internal/v1/ ; the
-        // trailing slash is dropped when present so the base URL never ends with one,
-        // but a URL without it is left untouched (slice(0, -1) would eat its last char).
+        // LLM_URL (docker compose, optional) takes precedence over OPENAI_API_BASE. It usually
+        // looks like http://model-runner.docker.internal/v1/ ; the trailing slash is dropped
+        // when present so the base URL never ends with one, but a URL without it is left untouched.
         const llmServiceAPIUrl = process.env.LLM_URL
             ? process.env.LLM_URL.replace(/\/+$/, '')
             : process.env.OPENAI_API_BASE;
 
         // Configure model with or without temperature based on model support
+        // The effective values, so a container log shows what is really sent.
+        this.logger.info(
+            `resolved model:"${modelName}" temperature:${supportsTemperature ? 0 : 'not set'} baseUrl:"${llmServiceAPIUrl}"`,
+            ['AI_SERVICE'],
+        );
         const modelConfig: any = {
-            modelName: modelName,
+            modelName,
             apiKey: openAIApiKey,
-            configuration: { baseURL: llmServiceAPIUrl, }
+            configuration: { baseURL: llmServiceAPIUrl },
         };
 
         if (supportsTemperature) {

@@ -1,6 +1,6 @@
 /**
  * Shared mocha bootstrap, loaded before the test files of every workspace that
- * passes `--file ../test-helpers/quiet-console.mjs` (see the `test` script in
+ * passes `--file <PATH_TO_THIS_FOLDER>/quiet-console.mjs` (see the `test` script in
  * package.json).
  *
  * Several helpers log to the console on their failure paths (e.g. `console.error(err)`
