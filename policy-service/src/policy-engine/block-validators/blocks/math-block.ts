@@ -5,7 +5,7 @@ import { MathEngine, Code } from '../../helpers/math-model/index.js';
 import { FieldLink } from '../../helpers/math-model/field-link.js';
 import { IFieldNode, ISchema, Schema, SchemaField } from '@guardian/interfaces';
 
-type MathPathType = 'input variables' | 'outputs';
+type MathPathType = 'inputs' | 'outputs';
 
 interface MathPathIssue {
     type: MathPathType;
@@ -126,7 +126,7 @@ export class MathBlock {
             const schemaId = variable.schema || inputSchemaId;
             if (MathBlock.hasMissingPath(validator, schemaMaps, schemaId, variable, true)) {
                 issues.push({
-                    type: 'input variables',
+                    type: 'inputs',
                     schema: schemaId,
                     path: variable.path
                 });
@@ -274,7 +274,7 @@ export class MathBlock {
             groups.get(issue.type).set(`${issue.schema}:${issue.path}`, issue);
         }
 
-        const errors: string[] = [];
+        const sections: string[] = [];
         for (const [type, groupedIssues] of groups) {
             const list = Array.from(groupedIssues.values());
             if (!list.length) {
@@ -286,11 +286,20 @@ export class MathBlock {
                 .map((issue) => hasMultipleSchemas && issue.schema ? `${issue.path} (${issue.schema})` : issue.path)
                 .join(', ');
             const remaining = list.length > 10 ? `, and ${list.length - 10} more` : '';
-            errors.push(
-                `Path not found in schema for Math block ${type}: ${examples}${remaining}. ` +
-                'Review the Math block field paths and update references to existing schema fields.'
-            );
+            sections.push(`${type}: ${examples}${remaining}`);
         }
-        return errors;
+        if (!sections.length) {
+            return [];
+        }
+        if (sections.length === 1) {
+            return [
+                `Path not found in schema for Math block ${sections[0]}. ` +
+                'Review the Math block field paths and update references to existing schema fields.'
+            ];
+        }
+        return [
+            `Path not found in schema for Math block paths: ${sections.join('; ')}. ` +
+            'Review the Math block field paths and update references to existing schema fields.'
+        ];
     }
 }

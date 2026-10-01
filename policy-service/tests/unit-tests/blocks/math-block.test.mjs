@@ -126,7 +126,7 @@ describe('MathBlock.validate', () => {
         }));
 
         assert.lengthOf(v.errors, 1);
-        assert.include(v.errors[0], 'Path not found in schema for Math block input variables');
+        assert.include(v.errors[0], 'Path not found in schema for Math block inputs');
         assert.include(v.errors[0], 'missing.');
     });
 
@@ -146,7 +146,7 @@ describe('MathBlock.validate', () => {
         }));
 
         assert.lengthOf(v.errors, 1);
-        assert.include(v.errors[0], 'Path not found in schema for Math block input variables');
+        assert.include(v.errors[0], 'Path not found in schema for Math block inputs');
         assert.include(v.errors[0], 'anyPath');
     });
 
@@ -217,5 +217,30 @@ describe('MathBlock.validate', () => {
         assert.lengthOf(v.errors, 1);
         assert.include(v.errors[0], 'Path not found in schema for Math block outputs');
         assert.include(v.errors[0], 'siteTable.area_ha.');
+    });
+
+    it('combines input and output path errors under one corrective action', async () => {
+        const v = new FakeValidator({
+            schemas: {
+                'in-1': { fields: [field('existing')] },
+                'out-1': { fields: [field('result')] },
+            },
+        });
+
+        await MathBlock.validate(v, refWith({
+            expression: expressionWith({
+                variables: [link('x', 'missingInput')],
+                outputs: [link('x', 'missingOutput')],
+            }),
+        }));
+
+        assert.lengthOf(v.errors, 1);
+        assert.include(v.errors[0], 'Path not found in schema for Math block paths');
+        assert.include(v.errors[0], 'inputs: missingInput');
+        assert.include(v.errors[0], 'outputs: missingOutput');
+        assert.equal(
+            v.errors[0].split('Review the Math block field paths and update references to existing schema fields.').length,
+            2
+        );
     });
 });

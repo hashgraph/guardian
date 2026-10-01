@@ -55,6 +55,7 @@ import {
 } from '../helpers/import-helpers/index.js'
 import { validateSchemaDependencies } from '../helpers/import-helpers/schema/schema-dependency-validator.js';
 import { validateSchemaFieldKeys } from '../helpers/import-helpers/schema/schema-field-key-validator.js';
+import { PolicyEngine } from '../policy-engine/policy-engine.js';
 import { getPageOptions } from './helpers/index.js';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -2867,15 +2868,22 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     owner?.id
                 );
 
+                let validation = null;
                 if (category === SchemaCategory.TOOL) {
                     await updateToolConfig(target);
                     await DatabaseServer.updateTool(target);
                 } else if (category === SchemaCategory.POLICY) {
                     await PolicyImportExportHelper.updatePolicyComponents(target, logger, owner?.id);
+                    const policyValidation = await new PolicyEngine(logger).validateModel(target.id);
+                    validation = {
+                        isValid: !policyValidation.blocks.some((block) => !block.isValid),
+                        errors: policyValidation
+                    };
                 }
 
                 return new MessageResponse({
                     schemas: xlsxResult.schemas,
+                    validation,
                     errors: result.errors
                 });
             } catch (error) {
@@ -2962,16 +2970,24 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 );
                 notifier.completeStep(STEP_IMPORT_SCHEMAS);
 
+                let validation = null;
                 if (category === SchemaCategory.TOOL) {
                     await updateToolConfig(target);
                     await DatabaseServer.updateTool(target);
                 } else if (category === SchemaCategory.POLICY) {
                     await PolicyImportExportHelper.updatePolicyComponents(target, logger, owner?.id);
+                    const policyValidation = await new PolicyEngine(logger).validateModel(target.id);
+                    validation = {
+                        isValid: !policyValidation.blocks.some((block) => !block.isValid),
+                        errors: policyValidation
+                    };
                 }
                 notifier.complete();
 
                 notifier.result({
                     schemas: xlsxResult.schemas,
+                    policyId: category === SchemaCategory.POLICY ? target.id : null,
+                    validation,
                     errors: result.errors
                 });
             }, async (error) => {
