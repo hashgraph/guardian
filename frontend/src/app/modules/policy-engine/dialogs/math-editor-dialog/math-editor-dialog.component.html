@@ -50,6 +50,132 @@
       <div class="path-unknown-warning">Path not found in schema</div>
     }
   </ng-template>
+  <ng-template #tableGrid let-item="item" let-rows="rows" let-tableIndex="tableIndex">
+    <div class="table-output-grid">
+      <table>
+        <thead>
+          <tr>
+            <th class="table-output-index">#</th>
+            @for (column of getTableColumns(item); track column.key) {
+              <th>{{column.name}}</th>
+            }
+            <th class="table-output-action"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows || []; track $index; let rowIndex = $index) {
+            <tr>
+              <td class="table-output-index">{{rowIndex + 1}}</td>
+              @for (column of getTableColumns(item); track column.key) {
+                <td>
+                  <input
+                    [(ngModel)]="row[column.key]"
+                    pInputText
+                    type="text"
+                    placeholder="Name"
+                    [readOnly]="readonly"
+                    (change)="item.update()"/>
+                </td>
+              }
+              <td class="table-output-action">
+                @if (!readonly) {
+                  <button
+                    class="guardian-icon-button"
+                    (click)="deleteTableRow(item, rowIndex, tableIndex)">
+                    <svg-icon
+                      class="icon-btn svg-icon"
+                      src="/assets/images/icons/delete.svg"
+                      svgClass="icon-color-delete">
+                    </svg-icon>
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    @if (!readonly) {
+      <div class="table-output-toolbar">
+        <input
+          class="table-output-count"
+          [ngModel]="getTableRowsToAdd(item, tableIndex)"
+          (ngModelChange)="setTableRowsToAdd(item, tableIndex, $event)"
+          pInputText
+          type="number"
+          min="1"
+          [max]="maxTableRowsPerAdd"
+          placeholder="Rows"/>
+        <span
+          class="table-output-add"
+          [pTooltip]="getAddTableRowsError(item, getTableRowsToAdd(item, tableIndex))"
+          [tooltipDisabled]="!getAddTableRowsError(item, getTableRowsToAdd(item, tableIndex))"
+          tooltipPosition="top">
+          <button
+            class="guardian-button guardian-button-secondary"
+            [disabled]="!!getAddTableRowsError(item, getTableRowsToAdd(item, tableIndex))"
+            (click)="addTableRows(item, getTableRowsToAdd(item, tableIndex), tableIndex)">
+            <div class="guardian-button-label">Add Rows</div>
+          </button>
+        </span>
+      </div>
+    }
+  </ng-template>
+  <ng-template #tableColumnsGrid let-item="item">
+    <div class="table-output-grid">
+      <table>
+        <thead>
+          <tr>
+            @for (column of getTableColumns(item); track column.key) {
+              <th>{{column.name}}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            @for (column of getTableColumns(item); track column.key) {
+              <td>
+                <input
+                  [(ngModel)]="item.columns[column.key]"
+                  pInputText
+                  type="text"
+                  placeholder="Name"
+                  [readOnly]="readonly"
+                  (change)="item.update()"/>
+              </td>
+            }
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-template>
+  <ng-template #tableValues let-item="item" let-values="values" let-title="title">
+    <div class="table-output">
+      <label class="form-label">{{title}}Rows ({{values.length}}){{values.length > maxTestTableRows ? ', showing the first ' + maxTestTableRows + '. All rows are in Code → Output' : ''}}</label>
+      <div class="table-output-grid">
+        <table>
+          <thead>
+            <tr>
+              <th class="table-output-index">#</th>
+              @for (column of getTableColumns(item); track column.key) {
+                <th>{{column.name}}</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of getTestTableRows(values); track $index; let rowIndex = $index) {
+              <tr>
+                <td class="table-output-index">{{rowIndex + 1}}</td>
+                @for (column of getTableColumns(item); track column.key) {
+                  <td>{{getItemValue(row[column.key])}}</td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </ng-template>
   @if (loading) {
     <div class="guardian-loading">
       <div class="guardian-loading-image"></div>
@@ -610,19 +736,81 @@
                             <ng-container *ngTemplateOutlet="pathPicker; context: {item: item, mode: 'output'}"></ng-container>
                           </div>
                         </div>
-                        <div class="formula-eq">=</div>
-                        <div class="formula-name" [attr.error]="!item.validName">
-                          <div class="guardian-input-container">
-                            <label class="form-label"></label>
-                            <input
-                              [(ngModel)]="item.variableNameText"
-                              pInputText
-                              type="text"
-                              placeholder="Name"
-                              (change)="item.update()"/>
+                        @if (!item.isTable) {
+                          <div class="formula-eq">=</div>
+                          <div class="formula-name" [attr.error]="!item.validName">
+                            <div class="guardian-input-container">
+                              <label class="form-label"></label>
+                              <input
+                                [(ngModel)]="item.variableNameText"
+                                pInputText
+                                type="text"
+                                placeholder="Name"
+                                (change)="item.update()"/>
+                            </div>
                           </div>
-                        </div>
+                        }
                       </div>
+                      @if (item.isTable) {
+                        <div class="table-output" [attr.error]="!item.validName">
+                          @if (canUseTableColumns(item)) {
+                            <div class="guardian-selector table-output-mode">
+                              <div
+                                class="guardian-selector-item"
+                                [attr.selected]="!item.columns"
+                                (click)="setTableColumnsMode(item, false)">By cells</div>
+                              <div
+                                class="guardian-selector-item"
+                                [attr.selected]="!!item.columns"
+                                (click)="setTableColumnsMode(item, true)">By columns</div>
+                            </div>
+                          }
+                          @if (getTableColumns(item).length && item.tables) {
+                            <label class="form-label">Tables ({{item.tables.length}} / {{maxTables}}), rows ({{getTableRowCount(item)}} / {{maxTableRows}})</label>
+                            @for (rows of item.tables; track $index; let tableIndex = $index) {
+                              <div class="table-output-item">
+                                <div class="table-output-item-header">
+                                  <span>Table {{tableIndex + 1}}</span>
+                                  @if (!readonly) {
+                                    <button
+                                      class="guardian-icon-button"
+                                      (click)="deleteTable(item, tableIndex)">
+                                      <svg-icon
+                                        class="icon-btn svg-icon"
+                                        src="/assets/images/icons/delete.svg"
+                                        svgClass="icon-color-delete">
+                                      </svg-icon>
+                                    </button>
+                                  }
+                                </div>
+                                <ng-container *ngTemplateOutlet="tableGrid; context: {item: item, rows: rows, tableIndex: tableIndex}"></ng-container>
+                              </div>
+                            }
+                            @if (!readonly) {
+                              <button
+                                class="guardian-button guardian-button-secondary"
+                                [disabled]="item.tables.length >= maxTables"
+                                (click)="addTable(item)">
+                                <div class="guardian-button-label">Add Table</div>
+                              </button>
+                            }
+                          } @else if (item.columns && getTableColumns(item).length) {
+                            @if (item.tableList) {
+                              <label class="form-label">Columns: one variable per column. Element N of a list goes to table N, and element M inside it to row M; a single value goes everywhere.</label>
+                            } @else {
+                              <label class="form-label">Columns: one variable per column. Element N of a list goes to row N; a single value goes to every row.</label>
+                            }
+                            <ng-container *ngTemplateOutlet="tableColumnsGrid; context: {item: item}"></ng-container>
+                          } @else {
+                            <label class="form-label">Rows ({{getTableRowCount(item)}} / {{maxTableRows}})</label>
+                            @if (getTableColumns(item).length) {
+                              <ng-container *ngTemplateOutlet="tableGrid; context: {item: item, rows: item.rows, tableIndex: null}"></ng-container>
+                            } @else {
+                              <div class="path-unknown-warning">This Table field has no declared columns</div>
+                            }
+                          }
+                        </div>
+                      }
                       <div class="row-container row-container-last" style="gap: 16px">
                         <div class="guardian-input-container">
                           <label class="form-label">Type</label>
@@ -991,27 +1179,39 @@
                           </div>
                         </div>
                       </div>
-                      <div class="formula-eq">=</div>
-                      <div class="formula-name">
-                        <div class="guardian-input-container">
-                          <label class="form-label"></label>
-                          <input
-                            [ngModel]="item.variableNameText"
-                            pInputText
-                            type="text"
-                            [readOnly]="true"/>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row-container" style="gap: 16px">
-                      <div class="guardian-input-container" style="width: 50%">
-                        <label class="form-label">Value</label>
-                        <div class="readonly-input">
-                          <div class="formula-link-value">
-                            <div class="formula-link-value__item">{{getItemValue(item.value)}}</div>
+                      @if (!item.isTable) {
+                        <div class="formula-eq">=</div>
+                        <div class="formula-name">
+                          <div class="guardian-input-container">
+                            <label class="form-label"></label>
+                            <input
+                              [ngModel]="item.variableNameText"
+                              pInputText
+                              type="text"
+                              [readOnly]="true"/>
                           </div>
                         </div>
-                      </div>
+                      }
+                    </div>
+                    @if (getTableValues(item); as values) {
+                      <ng-container *ngTemplateOutlet="tableValues; context: {item: item, values: values, title: ''}"></ng-container>
+                    }
+                    @if (getTableListValues(item); as tables) {
+                      @for (values of tables; track $index; let tableIndex = $index) {
+                        <ng-container *ngTemplateOutlet="tableValues; context: {item: item, values: values, title: 'Table ' + (tableIndex + 1) + ': '}"></ng-container>
+                      }
+                    }
+                    <div class="row-container" style="gap: 16px">
+                      @if (!getTableValues(item) && !getTableListValues(item)) {
+                        <div class="guardian-input-container" style="width: 50%">
+                          <label class="form-label">Value</label>
+                          <div class="readonly-input">
+                            <div class="formula-link-value">
+                              <div class="formula-link-value__item">{{getItemValue(item.value)}}</div>
+                            </div>
+                          </div>
+                        </div>
+                      }
                       <div class="guardian-input-container" style="width: 50%">
                         <label class="form-label">Field Name</label>
                         <div class="readonly-input">

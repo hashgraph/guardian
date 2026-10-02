@@ -11,7 +11,6 @@ import {DB_NAME, STORES_NAME} from "../constants";
 @Injectable({ providedIn: 'root' })
 export class TablePersistenceService {
     private draftMode = false;
-    private pendingIpfsCids = new Set<string>();
     private pendingGridFsFiles: { fileId: string; idbKey: string }[] = [];
 
     constructor(
@@ -23,7 +22,6 @@ export class TablePersistenceService {
 
     public async persistTablesInDocument(root: unknown, isDryRun: boolean, policyId: string = '', blockId: string = '', draft: boolean = false): Promise<void> {
         this.draftMode = draft;
-        this.pendingIpfsCids.clear();
         this.pendingGridFsFiles = [];
         await this.visitNode(root, isDryRun);
     }
@@ -188,11 +186,7 @@ export class TablePersistenceService {
         const cid = await firstValueFrom(this.ipfsService.addFileDirect(file));
 
         if (typeof cid === 'string' && cid.trim()) {
-            const normalizedCid = cid.trim();
-
-            this.pendingIpfsCids.add(normalizedCid);
-
-            return normalizedCid;
+            return cid.trim();
         }
 
         return null;
@@ -295,15 +289,6 @@ export class TablePersistenceService {
     }
 
     public async rollbackIpfsUploads(): Promise<void> {
-        const cids = Array.from(this.pendingIpfsCids);
-        this.pendingIpfsCids.clear();
-
-        for (const cid of cids) {
-            try {
-                await firstValueFrom(this.ipfsService.deleteCid(cid));
-            } catch {}
-        }
-
         const gridFiles = [...this.pendingGridFsFiles];
         this.pendingGridFsFiles = [];
 

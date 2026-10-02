@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { of } from 'rxjs';
 import { TablePersistenceService } from './table-persistence.service';
 import { ArtifactService } from './artifact.service';
 import { IPFSService } from './ipfs.service';
@@ -79,5 +80,48 @@ describe('TablePersistenceService', () => {
         const result = await persist(JSON.stringify({ type: 'geo', fileId: 'f1' }));
 
         expect(JSON.parse(result)).toEqual({ type: 'geo', fileId: 'f1' });
+    });
+});
+
+describe('TablePersistenceService rollback of a failed submit', () => {
+    it('restores the GridFS file for a resubmit and keeps the IPFS content pinned', async () => {
+        const blob = new Blob(['x'], { type: 'application/gzip' });
+        const deleteCid = jasmine.createSpy('deleteCid').and.returnValue(of(undefined));
+        const deleteFile = jasmine.createSpy('deleteFile').and.returnValue(of(true));
+        const put = jasmine.createSpy('put').and.resolveTo(undefined);
+        TestBed.configureTestingModule({
+            providers: [
+                TablePersistenceService,
+                {
+                    provide: ArtifactService,
+                    useValue: {
+                        upsertFile: () => of({ fileId: 'f1' }),
+                        getFileBlob: () => of(blob),
+                        deleteFile,
+                    },
+                },
+                { provide: IPFSService, useValue: { addFileDirect: () => of('c1'), deleteCid } },
+                {
+                    provide: IndexedDbRegistryService,
+                    useValue: {
+                        get: async () => ({ blob, originalName: 'table.csv.gz' }),
+                        put,
+                        delete: async () => undefined,
+                    },
+                },
+                { provide: GzipService, useValue: { gunzipToText: async () => 'Year\r\n2020' } },
+            ],
+        });
+        const service = TestBed.inject(TablePersistenceService);
+        const document: Record<string, unknown> = { field0: JSON.stringify({ type: 'table', idbKey: 'k1' }) };
+
+        await service.persistTablesInDocument(document, false);
+        expect(JSON.parse(String(document['field0']))).toEqual({ type: 'table', fileId: 'f1', cid: 'c1' });
+
+        await service.rollbackIpfsUploads();
+
+        expect(deleteCid).not.toHaveBeenCalled();
+        expect(put).toHaveBeenCalledWith(jasmine.any(String), jasmine.any(String), jasmine.objectContaining({ id: 'k1', blob }));
+        expect(deleteFile).toHaveBeenCalledWith('f1');
     });
 });

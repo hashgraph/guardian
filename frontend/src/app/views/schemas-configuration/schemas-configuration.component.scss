@@ -4165,8 +4165,11 @@
 
 .sc-table-column-key {
     width: 100%;
+    padding-top: 4px;
     padding-right: 32px;
+    padding-bottom: 4px;
     font-family: monospace;
+    line-height: 20px;
 
     &:disabled {
         color: var(--guardian-font-color-secondary, #848FA9);
