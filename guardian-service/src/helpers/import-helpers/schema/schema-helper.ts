@@ -96,17 +96,26 @@ export async function incrementSchemaVersion(
     const { previousVersion } = SchemaHelper.getVersion(schema);
     let newVersion = '1.0.0';
     if (previousVersion) {
-        const schemas = await DatabaseServer.getSchemas({ uuid: schema.uuid });
-        const versions = [];
-        for (const element of schemas) {
-            const elementVersions = SchemaHelper.getVersion(element);
-            versions.push(elementVersions.version, elementVersions.previousVersion);
-        }
-        newVersion = SchemaHelper.incrementVersion(previousVersion, versions);
+        newVersion = await incrementVersionByUuid(schema.uuid, previousVersion);
     }
     schema.version = newVersion;
 
     return schema;
+}
+
+/**
+ * Next version not yet used by any schema with this uuid
+ * @param uuid Schema UUID
+ * @param previousVersion Version to increment from
+ */
+export async function incrementVersionByUuid(uuid: string, previousVersion: string): Promise<string> {
+    const schemas = await DatabaseServer.getSchemas({ uuid });
+    const versions = [];
+    for (const element of schemas) {
+        const elementVersions = SchemaHelper.getVersion(element);
+        versions.push(elementVersions.version, elementVersions.previousVersion);
+    }
+    return SchemaHelper.incrementVersion(previousVersion, versions);
 }
 
 /**
@@ -347,7 +356,7 @@ export async function createSchemaAndArtifacts(
         newSchema.contextURL = `schema:${newSchema.uuid}`;
     }
 
-    const newVersion = old ? SchemaHelper.incrementVersion(previousVersion, []) : '';
+    const newVersion = old ? await incrementVersionByUuid(old.uuid, previousVersion) : '';
     SchemaHelper.setVersion(newSchema, newVersion, previousVersion);
     const row = await createSchema(newSchema, user, notifier);
 
