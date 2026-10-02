@@ -100,7 +100,7 @@ function syncToUrl() {
   if (filters.value.decodeStatus) q.decodeStatus = String(filters.value.decodeStatus); else delete q.decodeStatus;
   if (filters.value.registryDid) q.registryDid = String(filters.value.registryDid); else delete q.registryDid;
   if (filters.value.status) q.status = String(filters.value.status); else delete q.status;
-  if (hideDiscontinued.value) delete q.hideDiscontinued; else q.hideDiscontinued = "0";if (hideDiscontinued.value) q.hideDiscontinued = "1"; else delete q.hideDiscontinued;
+  if (hideDiscontinued.value) delete q.hideDiscontinued; else q.hideDiscontinued = "0";
   router.replace({ query: q });
 }
 
