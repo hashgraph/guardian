@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { XlsxToJson } from '../../dist/xlsx/xlsx-to-json.js';
 import { Workbook } from '../../dist/xlsx/models/workbook.js';
+import ExcelJS from 'exceljs';
 
 const TEMPLATE = fileURLToPath(
     new URL('../../../guardian-service/artifacts/template.xlsx', import.meta.url)
@@ -104,4 +105,42 @@ describe('Schema template artifact', () => {
         );
     });
 
+    it('uses IWA V3 with a V3-only version dropdown', async () => {
+        assert.equal(result.xlsxSchemas[0].iwaVersion, '3.0.0');
+        const sheet = workbook.getWorksheet('Schema name');
+        assert.equal(sheet.getValue(1, 4), 'IWA Version');
+        assert.equal(sheet.getValue(2, 4), 'V3');
+        assert.deepEqual(sheet.getCell(2, 4).getList(), ['V3']);
+    });
+
+    it('has an IWA Property column fed by the hidden IWA Properties sheet', async () => {
+        const sheet = workbook.getWorksheet('Schema name');
+        assert.equal(sheet.getValue(11, 5), 'IWA Property');
+
+        const raw = new ExcelJS.Workbook();
+        await raw.xlsx.load(await readFile(TEMPLATE));
+        const iwa = raw.getWorksheet('IWA Properties');
+        assert.ok(iwa, 'the IWA Properties sheet is missing');
+        assert.equal(iwa.state, 'hidden');
+        assert.deepEqual(iwa.getRow(1).values.slice(1), ['Path', 'Name', 'Description', 'Version']);
+        const versions = new Set();
+        iwa.eachRow((row, r) => { if (r > 1) { versions.add(row.getCell(4).value); } });
+        assert.deepEqual([...versions], ['V3']);
+
+        const validation = raw.getWorksheet('Schema name').getCell('K6').dataValidation;
+        assert.equal(validation.type, 'list');
+        assert.equal(validation.formulae[0], `'IWA Properties'!$A$2:$A$${iwa.rowCount}`);
+    });
+
+    it('lists the IWA warnings right after the other common errors', () => {
+        const readme = workbook.getWorksheet('README');
+        let row = 1;
+        while (row < 200 && !String(readme.getValue(2, row) || '').startsWith('An unrecognized "IWA Version"')) {
+            row++;
+        }
+        assert.ok(row < 200, 'the IWA Version warning is missing');
+        assert.equal(readme.getValue(1, row), '⚠');
+        assert.equal(readme.getValue(1, row - 1), '⚠', 'a gap sits before the IWA warnings');
+        assert.ok(String(readme.getValue(2, row + 1)).startsWith('An "IWA Property" path'));
+    });
 });

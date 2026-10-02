@@ -200,6 +200,11 @@ export class Worksheet {
         return this;
     }
 
+    public setHidden(hidden: boolean = true): Worksheet {
+        this.worksheet.state = hidden ? 'hidden' : 'visible';
+        return this;
+    }
+
     public empty(startCol: number, endCol: number, row: number): boolean {
         for (let col = startCol; col < endCol; col++) {
             const value = this.getValue(col, row);

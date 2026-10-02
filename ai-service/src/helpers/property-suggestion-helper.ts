@@ -29,18 +29,17 @@ Example of response:
 {
   "results": [
     {
-      "field": "...",
+      "fieldName": "...",
       "candidates": [
         {
-          "property": "...",
+          "title": "...",
           "confidence": ...,
           "reasonCode": "..."
-        }
+        },
+        ...
       ]
     },
     ...
-      ]
-    }
   ]
 }
 `;
@@ -159,6 +158,9 @@ export class PropertySuggestionConnect {
             );
             throw error;
         }
+        if (response.length > 50) {
+            response = response.slice(0, 47) + '...';
+        }
         await logger?.info(
             `[GLOSSARY_AI] LLM response after ${Date.now() - modelStartedAt}ms: ${JSON.stringify(response)}`,
             ['AI_SERVICE']
@@ -168,6 +170,15 @@ export class PropertySuggestionConnect {
 
         const resultsByField = new Map<string, IPropertySuggestionCandidate[]>();
         for (const item of (response?.results || [])) {
+            // Gives a warning if basic checks don't pass. The output parser does not validate a plain JSON schema and,
+            // in case ofwrong result, the filter below returns an empty - but successful - response.
+            if (!item || !targets.includes(item.fieldName)) {
+                await logger?.warn(
+                    `[GLOSSARY_AI] dropping a result with a missing or non-target fieldName: ${JSON.stringify(item?.fieldName)}`,
+                    ['AI_SERVICE']
+                );
+                continue;
+            }
             // Defensive re-filter: the enum makes a hallucinated title unlikely, not impossible.
             const seenTitles = new Set<string>();
             const currentProperty = currentPropertyByField.get(item.fieldName);

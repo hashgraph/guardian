@@ -225,6 +225,11 @@ export class Table {
                 .setStyle(this.fieldHeadersStyle)
                 .setWidth(50)
         );
+        this._fieldHeaders.set(Dictionary.IWA_PROPERTY,
+            new TableHeader(Dictionary.IWA_PROPERTY, false)
+                .setStyle(this.fieldHeadersStyle)
+                .setWidth(50)
+        );
         // Backward-compat aliases (separate map so they don't inflate _fieldHeaders.size)
         this._fieldAliases = new Map([
             ['Question', Dictionary.QUESTION],
@@ -250,6 +255,10 @@ export class Table {
             new TableHeader(Dictionary.SCHEMA_TYPE, false)
                 .setStyle(this.schemaHeadersStyle)
         );
+        this._schemaHeaders.set(Dictionary.IWA_VERSION,
+            new TableHeader(Dictionary.IWA_VERSION, false)
+                .setStyle(this.schemaHeadersStyle)
+        );
 
         this._schemaHeaders.set(Dictionary.SCHEMA_TOOL,
             new TableHeader(Dictionary.SCHEMA_TOOL, false)
@@ -272,7 +281,8 @@ export class Table {
     }
 
     public hasCol(name: Dictionary): boolean {
-        return this._fieldHeaders.get(name)?.column !== -1;
+        const header = this._fieldHeaders.get(name);
+        return !!header && header.column !== -1;
     }
 
     public getCol(name: Dictionary): number {
@@ -300,6 +310,7 @@ export class Table {
         this._schemaHeaders.get(Dictionary.SCHEMA_NAME).setPoint(col, row++);
         this._schemaHeaders.get(Dictionary.SCHEMA_DESCRIPTION).setPoint(col, row++);
         this._schemaHeaders.get(Dictionary.SCHEMA_TYPE).setPoint(col, row++);
+        this._schemaHeaders.get(Dictionary.IWA_VERSION).setPoint(col, row++);
 
         if (tool) {
             this._schemaHeaders.get(Dictionary.SCHEMA_TOOL).setPoint(col, row++);
@@ -319,6 +330,7 @@ export class Table {
         this._fieldHeaders.get(Dictionary.DEFAULT).setPoint(col++, row);
         this._fieldHeaders.get(Dictionary.SUGGEST).setPoint(col++, row);
         this._fieldHeaders.get(Dictionary.KEY).setPoint(col++, row);
+        this._fieldHeaders.get(Dictionary.IWA_PROPERTY).setPoint(col++, row);
 
         this.end = {
             c: this.start.c + this._fieldHeaders.size,
