@@ -1,0 +1,71 @@
+{
+  "tenantId": "6a58e6adfd350caf22397730",
+  "createDate": "2026-07-17T19:21:11.096Z",
+  "updateDate": "2026-07-17T19:21:11.229Z",
+  "dryRunId": "6a58e7b2c7892208461cfa53",
+  "savepointId": null,
+  "dryRunClass": "VcDocumentCollection",
+  "systemMode": true,
+  "owner": "did:hedera:testnet:GwWmdPNs8B3Tex8Gvw69ztGftp3SKvQCDczGSfHQ1r1p_0.0.9599267",
+  "hash": "HYxcjeiGxdPD5VFWqNyGFpaMzq8EVJSbUQY2dmzs93ym",
+  "document": {
+    "id": "urn:uuid:8df62aad-b0af-4fdc-9f6b-9b43df2524ee",
+    "type": [
+      "VerifiableCredential"
+    ],
+    "issuer": "did:hedera:testnet:GwWmdPNs8B3Tex8Gvw69ztGftp3SKvQCDczGSfHQ1r1p_0.0.9599267",
+    "issuanceDate": "2026-07-17T19:21:11.061Z",
+    "@context": [
+      "https://www.w3.org/2018/credentials/v1",
+      "ipfs://QmRVK4hNarbwohZBFehUpvYBt3WsmmV6P1nGrnVszPMvPM"
+    ],
+    "credentialSubject": [
+      {
+        "name": "ACM0014 v8.0 Treatment of Wastewater dMRV (Policy C)_1783892846911",
+        "description": "CDM ACM0014 v8.0 (Treatment of wastewater) methane-baseline dMRV on Hedera Guardian for the DLT Earth bounty. Full 12-month TOOL14 van't Hoff-Arrhenius engine in mathBlock.",
+        "topicDescription": "ACM0014 v8.0",
+        "version": "Dry Run",
+        "policyTag": "Tag_1784211365021.4b959c75",
+        "owner": "did:hedera:testnet:GwWmdPNs8B3Tex8Gvw69ztGftp3SKvQCDczGSfHQ1r1p_0.0.9599267",
+        "cid": "a9a29e13-aee2-40eb-ac87-b3927756cad9",
+        "url": "ipfs://a9a29e13-aee2-40eb-ac87-b3927756cad9",
+        "uuid": "48f63732-4662-4454-bde5-b5eea997ff04",
+        "operation": "PUBLISH",
+        "@context": [
+          "ipfs://QmRVK4hNarbwohZBFehUpvYBt3WsmmV6P1nGrnVszPMvPM"
+        ],
+        "id": "urn:uuid:17843160705.886722816",
+        "type": "Policy&1.0.0"
+      }
+    ],
+    "proof": {
+      "type": "Ed25519Signature2018",
+      "created": "2026-07-17T19:21:11Z",
+      "verificationMethod": "did:hedera:testnet:GwWmdPNs8B3Tex8Gvw69ztGftp3SKvQCDczGSfHQ1r1p_0.0.9599267#did-root-key",
+      "proofPurpose": "assertionMethod",
+      "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..m1QVBHX52DC21Y-Q4tMKVpo_7e67Jgl4qg0ZUXN_xE9-kc_ElR8RUeS69Y97LHsObuPAc6wAJWqNd8JIF2ZtAw"
+    }
+  },
+  "documentFileId": "6a5a80a7c7892208461dfd20",
+  "status": "NEW",
+  "signature": 0,
+  "type": "POLICY",
+  "policyId": "6a58e7b2c7892208461cfa53",
+  "option": {
+    "status": "NEW"
+  },
+  "hederaStatus": "NEW",
+  "uuid": "e956c424-982e-43c6-ab2b-541ecf035d64",
+  "entity": "NONE",
+  "iri": "e956c424-982e-43c6-ab2b-541ecf035d64",
+  "readonly": false,
+  "system": false,
+  "active": false,
+  "codeVersion": "1.0.0",
+  "isMintNeeded": true,
+  "isTransferNeeded": false,
+  "wasTransferNeeded": false,
+  "tableFileIds": [],
+  "_id": "6a5a80a7c7892208461dfd13",
+  "id": "6a5a80a7c7892208461dfd13"
+}
