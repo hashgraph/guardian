@@ -32,62 +32,7 @@
   }
 
   @if (isConfirmed && disconnected) {
-    <div
-      [attr.expired]="!!policyInfo.discontinuedDate"
-      [attr.policy-status]="policyInfo.status"
-      class="policy-header"
-      >
-      @if (!policyInfo.discontinuedDate) {
-        <div class="schema-breadcrumb">
-          <a (click)="onBack()" class="breadcrumb-back">Policies</a>
-          <span class="breadcrumb-sep"> / </span>
-          <span class="breadcrumb-current">{{ policyInfo?.name }}</span>
-        </div>
-      }
-      @if (policyInfo) {
-        <div class="policy-info-container">
-          <div class="policy-name-container">
-            @if (policyInfo && policyInfo.name) {
-              <span>{{ policyInfo.name }}</span>
-            }
-            @if (policyInfo && policyInfo.status === 'VIEW') {
-              <span class="policy-status">Remote</span>
-            }
-          </div>
-          <div class="policy-additional-info-container">
-            @if (policyInfo && policyInfo.version) {
-              <span
-                [ngClass]="{ 'white-additional-policy-info-text': isDryRun || !!policyInfo.discontinuedDate }"
-                class="additional-policy-info-text"
-                >
-                Version: ({{ policyInfo.version }})
-              </span>
-            }
-            @if (!groups.length && !isMultipleGroups) {
-              <span
-                [ngClass]="{ 'white-additional-policy-info-text': isDryRun || !!policyInfo.discontinuedDate }"
-                class="additional-policy-info-text"
-                >
-                Role: {{ policyInfo.userRoles.join(", ") }}
-              </span>
-            }
-            @if (isMultipleGroups) {
-              <span class="current-user-group">
-                <span
-                  [ngClass]="isDryRun ? 'white-additional-policy-info-text' : ''"
-                  class="additional-policy-info-text"
-                  title="Group: {{userGroup}} / Role: {{userRole}}"
-                  >
-                Group: {{ userGroup }} / Role: {{ userRole }}</span>
-                <div>
-                  <i class="pi pi-caret-down"></i>
-                </div>
-              </span>
-            }
-          </div>
-        </div>
-      }
-    </div>
+    <ng-container [ngTemplateOutlet]="topBar"></ng-container>
     <div
       [attr.policy-status]="policyInfo.status"
       class="policy-body"
@@ -112,172 +57,7 @@
   }
 
   @if (isConfirmed && policyId && policy) {
-    @if (isDryRun) {
-      <div class="dry-run-content">
-        <div
-          [queryParams]="{ policyId }"
-          [routerLink]="['/policy-configuration']"
-          class="dry-run-action-btn"
-          title="Edit Policy"
-          >
-          <i class="pi pi-pencil"></i>
-          <span>Edit</span>
-        </div>
-        <div
-          (click)="restartDryRun()"
-          class="dry-run-action-btn"
-          title="Save Policy"
-          >
-          <svg-icon
-            class="icon-style-restart_alt"
-            src="/assets/images/icons/restart_alt.svg"
-          svgClass="icon-style-restart_alt"></svg-icon>
-          <span>Restart</span>
-        </div>
-        <div class="delimiter"></div>
-        <div
-          class="dry-run-action-btn"
-          (click)="canCreateSavepoint && openAddSavepointDialog()"
-          [attr.aria-disabled]="!canCreateSavepoint"
-          pTooltip="{{ savepointLimitTooltip }}"
-          [tooltipDisabled]="canCreateSavepoint"
-          tooltipPosition="top"
-          tooltipStyleClass="guardian-tooltip"
-          >
-          <i class="pi pi-flag"></i>
-          <span>Savepoint</span>
-        </div>
-        <div
-          class="dry-run-action-btn"
-          (click)="canRestoreSavepoint && openClickRestoreSavepointDialog()"
-          [attr.aria-disabled]="!canRestoreSavepoint"
-          pTooltip="{{ canRestoreSavepoint ? 'Restore or manage savepoints' : 'No savepoint to restore yet' }}"
-          [tooltipDisabled]="canRestoreSavepoint"
-          tooltipPosition="top"
-          tooltipStyleClass="guardian-tooltip"
-          >
-          <i class="pi pi-undo"></i>
-          <span>Restore</span>
-        </div>
-        <div class="delimiter"></div>
-        <div (click)="createVirtualUser()" class="dry-run-action-btn">
-          <i class="pi pi-user-plus"></i>
-          <span>Create User</span>
-        </div>
-        <div (click)="menu.toggle($event)" class="dry-run-group-btn">
-          <i class="pi pi-users"></i>
-          <span>Users</span>
-          <div class="expand-group">
-            <i class="pi pi-sort-down-fill"></i>
-          </div>
-        </div>
-        <div class="delimiter"></div>
-        <div
-          (click)="startRecord()"
-          [attr.disabled]="recordingActive"
-          class="dry-run-action-btn record-btn"
-          title="Start Record">
-          <i class="pi pi-circle-on"></i>
-          <span>Record</span>
-        </div>
-        <div
-          (click)="runRecord()"
-          [attr.disabled]="recordingActive"
-          class="dry-run-action-btn run-btn"
-          title="Run Record">
-          <i class="pi pi-play"></i>
-          <span>Run</span>
-        </div>
-        <div class="delimiter"></div>
-        <div (click)="viewMenu.toggle($event)" class="dry-run-group-btn dry-run-view-btn">
-          <i class="pi pi-eye"></i>
-          <span>{{ viewLabels[view] }}</span>
-          <div class="expand-group">
-            <i class="pi pi-sort-down-fill"></i>
-          </div>
-        </div>
-      </div>
-    }
-    <div
-      [attr.expired]="!!policyInfo.discontinuedDate"
-      [attr.policy-status]="policyInfo.status"
-      class="policy-header"
-      >
-      @if (!policyInfo.discontinuedDate) {
-        <div class="schema-breadcrumb">
-          <a (click)="onBack()" class="breadcrumb-back">Policies</a>
-          <span class="breadcrumb-sep"> / </span>
-          <span class="breadcrumb-current">{{ policyInfo?.name }}</span>
-        </div>
-      }
-      @if (!!policyInfo.discontinuedDate) {
-        <div class="guardian-user-back-button">
-          <button
-            (click)="onBack()"
-            class="dry-run-back-button guardian-button guardian-button-secondary"
-            >
-            <div class="guardian-button-icon">
-              <svg-icon class="icon-btn svg-icon"
-                src="/assets/images/icons/left-arrow.svg"
-                svgClass="icon-color-primary">
-              </svg-icon>
-            </div>
-            <div class="guardian-button-label">Back to Manage Policies</div>
-          </button>
-        </div>
-      }
-      @if (policyInfo) {
-        <div class="policy-info-container">
-          <div class="policy-name-container">
-            @if (policyInfo && policyInfo.name) {
-              <span>{{ policyInfo.name }}</span>
-            }
-            @if (policyInfo && policyInfo.status === 'VIEW') {
-              <span class="policy-status">Remote</span>
-            }
-          </div>
-          <div class="policy-additional-info-container">
-            @if (policyInfo && policyInfo.version) {
-              <span
-                [ngClass]="{ 'white-additional-policy-info-text': isDryRun || !!policyInfo.discontinuedDate }"
-                class="additional-policy-info-text"
-                >
-                Version: ({{ policyInfo.version }})
-              </span>
-            }
-            @if (!groups.length && !isMultipleGroups) {
-              <span
-                [ngClass]="{ 'white-additional-policy-info-text': isDryRun || !!policyInfo.discontinuedDate }"
-                class="additional-policy-info-text"
-                >
-                Role: {{ policyInfo.userRoles.join(", ") }}
-              </span>
-            }
-            @if (editableParameters.length) {
-              <button  (click)="openParametersSettings()" class="policy-settings-button guardian-button guardian-button-secondary">
-                <div class="guardian-button-icon">
-                  <i class="pi pi-cog"></i>
-                </div>
-                <div class="guardian-button-label">Policy Settings</div>
-              </button>
-            }
-            @if (isMultipleGroups) {
-              <span (click)="group.toggle($event)" class="current-user-group">
-                <span
-                  [ngClass]="isDryRun ? 'white-additional-policy-info-text' : ''"
-                  class="additional-policy-info-text"
-                  title="Group: {{userGroup}} / Role: {{userRole}}"
-                  >
-                Group: {{ userGroup }} / Role: {{ userRole }}</span>
-                <div>
-                  <i class="pi pi-caret-down"></i>
-                </div>
-              </span>
-            }
-          </div>
-        </div>
-      }
-    </div>
+    <ng-container [ngTemplateOutlet]="topBar"></ng-container>
     @if (view == 'policy') {
       <div
         [attr.hidden-container]="view !== 'policy'"
@@ -286,13 +66,6 @@
         >
         @if (!isDryRun) {
           <p-tabs [(value)]="activeTabIndex" (valueChange)="onTabChange($event)">
-            <p-tablist>
-              <p-tab [value]="0">General</p-tab>
-              <p-tab [value]="1">Export Documents</p-tab>
-              @if (permissions.STANDARD_REGISTRY) {
-                <p-tab [value]="2">Mint Requests</p-tab>
-              }
-            </p-tablist>
             <p-tabpanels>
               <p-tabpanel [value]="0">
                 <div class="policy-container {{!navigationFooterDisabled ? 'step-container' : 'no-step-container' }}">
@@ -798,67 +571,334 @@
   }
 </div>
 
-<p-popover #viewMenu>
-  <div (click)="onView('policy', viewMenu)"       [attr.active]="view === 'policy'"       class="view-menu-item">Policy View</div>
-  <div (click)="onView('transactions', viewMenu)" [attr.active]="view === 'transactions'" class="view-menu-item">Transactions</div>
-  <div (click)="onView('artifacts', viewMenu)"    [attr.active]="view === 'artifacts'"    class="view-menu-item">Artifacts</div>
-  <div (click)="onView('ipfs', viewMenu)"         [attr.active]="view === 'ipfs'"         class="view-menu-item">IPFS</div>
-  <div (click)="onView('mock_config', viewMenu)"  [attr.active]="view === 'mock_config'"  class="view-menu-item">Mock Config</div>
-  <div (click)="onView('mock_data', viewMenu)"    [attr.active]="view === 'mock_data'"    class="view-menu-item">Mock Data</div>
-</p-popover>
+<ng-template #topBar>
+  <div class="policy-viewer-toolbar-container">
+    <div [class.policy-viewer-toolbar--dry-run]="isDryRun" class="top-toolbar policy-viewer-toolbar">
+      <!-- ============ LEFT ZONE: identity + status ============ -->
+      <nav class="pc-breadcrumb">
+        <div (click)="onBack()" class="pc-back-crumb" title="Back to policies">
+          <i class="pi pi-arrow-left"></i>
+        </div>
+        <a (click)="onBack()" class="pc-crumb-link">Policies</a>
+        <i class="pi pi-chevron-right pc-breadcrumb-sep"></i>
+      </nav>
+      <div (click)="identityMenu.toggle($event)" class="policy-identity">
+        <div class="policy-identity-icon">
+          <svg-icon src="/assets/images/icons/article.svg" svgClass="icon-style-article"></svg-icon>
+        </div>
+        <div class="policy-identity-text">
+          <span #policyNameEl class="policy-identity-name"
+            [pTooltip]="policyInfo?.name"
+            [tooltipDisabled]="policyNameEl.scrollWidth <= policyNameEl.clientWidth"
+            tooltipPosition="bottom">{{ policyInfo?.name }}</span>
+          <span class="policy-identity-meta">Policy details</span>
+        </div>
+        <i class="pi pi-chevron-down policy-identity-caret"></i>
+      </div>
+      @if (policyInfo?.status === 'DRY-RUN') {
+        <div class="status-badge status-badge--dryrun">
+          <svg-icon src="/assets/images/icons/build.svg" svgClass="icon-style-build"></svg-icon>
+          <span>In Dry Run</span>
+        </div>
+      } @else if (policyInfo?.status === 'DEMO') {
+        <div class="status-badge status-badge--demo">
+          <i class="pi pi-globe"></i>
+          <span>Demo</span>
+        </div>
+      } @else if (policyInfo?.status === 'VIEW') {
+        <div class="status-badge status-badge--demo">
+          <i class="pi pi-globe"></i>
+          <span>Remote</span>
+          @if (policyInfo.version) {
+            <span class="status-badge-version">v{{ policyInfo.version }}</span>
+          }
+        </div>
+      } @else if (policyInfo?.status === 'DISCONTINUED') {
+        <div class="status-badge status-badge--discontinued"
+          [pTooltip]="'Discontinued on ' + (policyInfo.discontinuedDate | date: 'dd MMM yyyy, HH:mm')"
+          [tooltipDisabled]="!policyInfo.discontinuedDate"
+          tooltipPosition="bottom">
+          <i class="pi pi-ban"></i>
+          <span>Discontinued</span>
+          @if (policyInfo.version) {
+            <span class="status-badge-version">v{{ policyInfo.version }}</span>
+          }
+        </div>
+      } @else if (policyInfo?.discontinuedDate) {
+        <div class="status-badge status-badge--expiring"
+          [pTooltip]="'Discontinues on ' + (policyInfo.discontinuedDate | date: 'dd MMM yyyy, HH:mm')"
+          tooltipPosition="bottom">
+          <i class="pi pi-clock"></i>
+          <span>Discontinues {{ policyInfo.discontinuedDate | date: 'dd MMM yyyy' }}</span>
+          @if (policyInfo.version) {
+            <span class="status-badge-version">v{{ policyInfo.version }}</span>
+          }
+        </div>
+      } @else if (policyInfo) {
+        <div class="status-badge status-badge--published">
+          <i class="pi pi-globe"></i>
+          <span>Published</span>
+          @if (policyInfo.version) {
+            <span class="status-badge-version">v{{ policyInfo.version }}</span>
+          }
+        </div>
+      }
 
-<p-popover #menu>
-  @for (item of virtualUsers; track item) {
-    <div
-      (click)="setVirtualUser(item, menu)"
-      [attr.active]="item.active"
-      class="debug-user"
-      >
-      <div class="debug-user-name">{{ item.username }}</div>
-      <div class="debug-user-did">{{ item.hederaAccountId }}</div>
-      <div class="debug-user-did">{{ item.did }}</div>
+      @if (policyInfo) {
+        @if (isDryRun) {
+          <div (click)="openVirtualUsersMenu($event, usersMenu)" class="user-chip" title="Acting as">
+            <span class="user-chip-avatar"><i class="pi pi-user"></i></span>
+            <span class="user-chip-text">
+              <span class="user-chip-label">Acting as</span>
+              <span class="user-chip-value">{{ actingAsLabel }}</span>
+            </span>
+            <i class="pi pi-chevron-down user-chip-caret"></i>
+          </div>
+        } @else {
+          <div (click)="hasRoleMenu && roleMenu.toggle($event)"
+            [class.user-chip--static]="!hasRoleMenu"
+            class="user-chip">
+            <span class="user-chip-avatar"><i class="pi pi-user"></i></span>
+            <span class="user-chip-text">
+              @if (isMultipleGroups) {
+                <span class="user-chip-label">Group: {{ userGroup }}</span>
+                <span class="user-chip-value">{{ userRole }}</span>
+              } @else {
+                <span class="user-chip-label">Role</span>
+                <span class="user-chip-value">{{ policyInfo.userRoles?.join(', ') }}</span>
+              }
+            </span>
+            @if (hasRoleMenu) {
+              <i class="pi pi-chevron-down user-chip-caret"></i>
+            }
+          </div>
+        }
+      }
+
+      @if (isDryRun) {
+        <div [queryParams]="{ policyId }" [routerLink]="['/policy-configuration']"
+          class="top-toolbar-btn top-toolbar-btn--primary" title="Edit policy">
+          <i class="pi pi-pencil"></i>
+          <span>Edit</span>
+        </div>
+      }
+
+      <div class="toolbar-spacer"></div>
+
+      <!-- ============ RIGHT ZONE: views + dry-run tools ============ -->
+      @if (policy) {
+        @if (isDryRun) {
+          <div class="view-segment">
+            <div (click)="onView('policy')" [class.active]="view === 'policy'" class="view-segment-item">Policy</div>
+            <div (click)="onView('transactions')" [class.active]="view === 'transactions'" class="view-segment-item">Transactions</div>
+            <div (click)="onView('artifacts')" [class.active]="view === 'artifacts'" class="view-segment-item">Artifacts</div>
+            <div (click)="onView('ipfs')" [class.active]="view === 'ipfs'" class="view-segment-item">IPFS</div>
+            <div (click)="mocksMenu.toggle($event)" [class.active]="isMockView" class="view-segment-item">
+              {{ isMockView ? viewLabels[view] : 'Mocks' }}
+              <i class="pi pi-chevron-down view-segment-caret"></i>
+            </div>
+          </div>
+          <div (click)="viewMenu.toggle($event)" class="view-select">
+            <span>{{ viewLabels[view] }}</span>
+            <i class="pi pi-chevron-down"></i>
+          </div>
+
+          <div class="delimiter"></div>
+
+          <div (click)="restartDryRun()" class="top-toolbar-btn icon-only bordered-btn"
+            pTooltip="Restart dry run" tooltipPosition="bottom">
+            <i class="pi pi-refresh"></i>
+          </div>
+          <div class="top-toolbar-group savepoint-btn bordered-btn"
+            (click)="canCreateSavepoint && openAddSavepointDialog()"
+            [attr.aria-disabled]="!canCreateSavepoint"
+            [pTooltip]="canCreateSavepoint ? 'Create savepoint' : savepointLimitTooltip"
+            tooltipPosition="bottom">
+            <i class="pi pi-flag"></i>
+            <span class="savepoint-count">{{ savepointsCount }}/{{ MAX_SAVEPOINTS }}</span>
+            <div class="expand-group"
+              (click)="$event.stopPropagation(); canRestoreSavepoint && openClickRestoreSavepointDialog()"
+              [attr.aria-disabled]="!canRestoreSavepoint"
+              [pTooltip]="canRestoreSavepoint ? 'Restore or manage savepoints' : 'No savepoint to restore yet'"
+              tooltipPosition="bottom">
+              <i class="pi pi-chevron-down"></i>
+            </div>
+          </div>
+          @if (permissions.POLICIES_RECORD_ALL) {
+            <div class="toolbar-btn-group">
+              <div (click)="startRecord()" [attr.disabled]="recordingActive"
+                class="top-toolbar-btn icon-only record-btn"
+                pTooltip="Start recording" tooltipPosition="bottom">
+                <i class="pi pi-circle-fill"></i>
+              </div>
+              <div (click)="runRecord()" [attr.disabled]="recordingActive"
+                class="top-toolbar-btn icon-only replay-btn"
+                pTooltip="Replay recording" tooltipPosition="bottom">
+                <i class="pi pi-play"></i>
+              </div>
+            </div>
+          }
+        } @else {
+          <div class="view-segment">
+            <div (click)="onSelectTab(0)" [class.active]="activeTabIndex === 0" class="view-segment-item">General</div>
+            <div (click)="onSelectTab(1)" [class.active]="activeTabIndex === 1" class="view-segment-item">Export Documents</div>
+            @if (permissions.STANDARD_REGISTRY) {
+              <div (click)="onSelectTab(2)" [class.active]="activeTabIndex === 2" class="view-segment-item">Mint Requests</div>
+            }
+          </div>
+          <div (click)="tabMenu.toggle($event)" class="view-select">
+            <span>{{ tabLabels[activeTabIndex] }}</span>
+            <i class="pi pi-chevron-down"></i>
+          </div>
+        }
+      }
     </div>
-  }
-</p-popover>
-
-<p-popover #group>
-  <div class="group-header">
-    Select Group
   </div>
-  <div class="group-container">
-    @for (item of groups; track item) {
-      <div
-        (click)="setGroup(item, group)"
-        [attr.active]="item.active"
-        class="user-group"
-        >
-        <div class="user-group-header">
-          @if (item.groupLabel) {
-            <span>{{ item.groupLabel }}</span>
-          }
-          @if (!item.groupLabel) {
-            <span>{{ item.uuid }}</span>
-          }
+</ng-template>
+
+<p-popover #identityMenu>
+  <div class="identity-popover">
+    <div class="identity-popover-header">Policy details</div>
+    <div class="identity-row" (click)="copyIdentity('id', policyInfo?.id, $event)" title="Copy policy ID">
+      <div class="identity-row-label">Policy ID</div>
+      <div class="identity-row-value">
+        <span class="identity-row-mono">{{ policyInfo?.id || '–' }}</span>
+        @if (policyInfo?.id) {
+          <i class="pi" [ngClass]="copiedField === 'id' ? 'pi-check' : 'pi-copy'"></i>
+        }
+      </div>
+    </div>
+    @if (isPublicPolicy) {
+      <div class="identity-row" (click)="copyIdentity('timestamp', policyInfo.messageId, $event)" title="Copy timestamp">
+        <div class="identity-row-label">Timestamp</div>
+        <div class="identity-row-value">
+          <span class="identity-row-stack">
+            <span class="identity-row-mono">{{ policyInfo.messageId }}</span>
+            @if (messageTimestampDate) {
+              <span class="identity-row-hint">{{ messageTimestampDate | date: 'dd MMM yyyy, HH:mm:ss' }}</span>
+            }
+          </span>
+          <i class="pi" [ngClass]="copiedField === 'timestamp' ? 'pi-check' : 'pi-copy'"></i>
         </div>
-        <div class="user-group-value">
-          <span>Group: </span><span>{{ item.groupName }}</span>
-        </div>
-        <div class="user-group-value">
-          <span>Role: </span><span>{{ item.role }}</span>
+      </div>
+    }
+    <div class="identity-row" (click)="copyIdentity('tag', policyInfo?.policyTag, $event)" title="Copy policy tag">
+      <div class="identity-row-label">Tag</div>
+      <div class="identity-row-value">
+        <span class="identity-row-mono">{{ policyInfo?.policyTag || '–' }}</span>
+        @if (policyInfo?.policyTag) {
+          <i class="pi" [ngClass]="copiedField === 'tag' ? 'pi-check' : 'pi-copy'"></i>
+        }
+      </div>
+    </div>
+    @if (!isDryRun && policyInfo?.version) {
+      <div class="identity-row identity-row--plain">
+        <div class="identity-row-label">Version</div>
+        <div class="identity-row-value">
+          <span class="identity-row-plain-value">{{ policyInfo.version }}</span>
         </div>
       </div>
     }
   </div>
-  <div (click)="setGroup(null, group)" class="user-group user-group-default">
-    <div class="user-group-header">
-      Default state
+</p-popover>
+
+<p-popover #usersMenu>
+  <div class="viewer-menu viewer-menu--users">
+    <div class="viewer-menu-header">Acting as</div>
+    <div class="viewer-menu-list">
+      @for (item of virtualUsers; track item.did) {
+        <div (click)="setVirtualUser(item, usersMenu)" [attr.active]="item.active" class="viewer-menu-item">
+          <i class="pi pi-user viewer-menu-icon"></i>
+          <div class="viewer-menu-text">
+            <div class="viewer-menu-title">{{ virtualUserLabel(item) }}</div>
+            <div class="viewer-menu-sub" [title]="item.did">{{ item.hederaAccountId }} · {{ shortDid(item.did) }}</div>
+          </div>
+          @if (item.active) {
+            <i class="pi pi-check viewer-menu-check"></i>
+          }
+        </div>
+      }
     </div>
-    <div class="user-group-value">
-      <span>Group: </span><span>Not Set</span>
+    @if (isMultipleGroups) {
+      <div class="viewer-menu-divider"></div>
+      <ng-container [ngTemplateOutlet]="groupList" [ngTemplateOutletContext]="{ menu: usersMenu }"></ng-container>
+    }
+    <div class="viewer-menu-divider"></div>
+    <div (click)="usersMenu.hide(); createVirtualUser()" class="viewer-menu-item viewer-menu-action">
+      <i class="pi pi-user-plus"></i>
+      <span>Create virtual user</span>
     </div>
-    <div class="user-group-value">
-      <span>Role: </span><span>Not Set</span>
+    @if (editableParameters.length) {
+      <div (click)="usersMenu.hide(); openParametersSettings()" class="viewer-menu-item viewer-menu-action">
+        <i class="pi pi-cog"></i>
+        <span>Policy settings</span>
+      </div>
+    }
+  </div>
+</p-popover>
+
+<p-popover #roleMenu>
+  <div class="viewer-menu">
+    @if (isMultipleGroups) {
+      <ng-container [ngTemplateOutlet]="groupList" [ngTemplateOutletContext]="{ menu: roleMenu }"></ng-container>
+    }
+    @if (isMultipleGroups && editableParameters.length) {
+      <div class="viewer-menu-divider"></div>
+    }
+    @if (editableParameters.length) {
+      <div (click)="roleMenu.hide(); openParametersSettings()" class="viewer-menu-item viewer-menu-action">
+        <i class="pi pi-cog"></i>
+        <span>Policy settings</span>
+      </div>
+    }
+  </div>
+</p-popover>
+
+<ng-template #groupList let-menu="menu">
+  <div class="viewer-menu-header">Group</div>
+  <div class="viewer-menu-list">
+    @for (item of groups; track item.uuid) {
+      <div (click)="setGroup(item, menu)" [attr.active]="item.active" class="viewer-menu-item">
+        <div class="viewer-menu-text">
+          <div class="viewer-menu-title">{{ item.groupLabel || item.groupName || item.uuid }}</div>
+          <div class="viewer-menu-sub viewer-menu-sub--plain">Role: {{ item.role }}</div>
+        </div>
+        @if (item.active) {
+          <i class="pi pi-check viewer-menu-check"></i>
+        }
+      </div>
+    }
+    <div (click)="setGroup(null, menu)" class="viewer-menu-item">
+      <div class="viewer-menu-text">
+        <div class="viewer-menu-title">Default state</div>
+        <div class="viewer-menu-sub viewer-menu-sub--plain">Group and role not set</div>
+      </div>
     </div>
+  </div>
+</ng-template>
+
+<p-popover #mocksMenu>
+  <div class="viewer-menu">
+    <div (click)="onView('mock_config', mocksMenu)" [attr.active]="view === 'mock_config'" class="viewer-menu-item">Mock Config</div>
+    <div (click)="onView('mock_data', mocksMenu)" [attr.active]="view === 'mock_data'" class="viewer-menu-item">Mock Data</div>
+  </div>
+</p-popover>
+
+<p-popover #viewMenu>
+  <div class="viewer-menu">
+    @for (item of viewOrder; track item) {
+      <div (click)="onView(item, viewMenu)" [attr.active]="view === item" class="viewer-menu-item">{{ viewLabels[item] }}</div>
+    }
+  </div>
+</p-popover>
+
+<p-popover #tabMenu>
+  <div class="viewer-menu">
+    <div (click)="tabMenu.hide(); onSelectTab(0)" [attr.active]="activeTabIndex === 0" class="viewer-menu-item">General</div>
+    <div (click)="tabMenu.hide(); onSelectTab(1)" [attr.active]="activeTabIndex === 1" class="viewer-menu-item">Export Documents</div>
+    @if (permissions.STANDARD_REGISTRY) {
+      <div (click)="tabMenu.hide(); onSelectTab(2)" [attr.active]="activeTabIndex === 2" class="viewer-menu-item">Mint Requests</div>
+    }
   </div>
 </p-popover>
 

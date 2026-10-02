@@ -2420,6 +2420,7 @@ export class PolicyEngineService {
                         throw new Error(`Policy is not in Dry Run`);
                     }
                     const users = await DatabaseServer.getVirtualUsers(policyId, savepointIds, false, false, owner?.id);
+                    await PolicyComponentsUtils.SetVirtualUserRoles(model, users, savepointIds);
                     return new MessageResponse(users);
                 } catch (error) {
                     return new MessageError(error);
@@ -2496,6 +2497,7 @@ export class PolicyEngineService {
                         });
 
                     const users = await DatabaseServer.getVirtualUsers(policyId, savepointIds, false, false, owner?.id);
+                    await PolicyComponentsUtils.SetVirtualUserRoles(model, users, savepointIds);
                     return new MessageResponse(users);
                 } catch (error) {
                     return new MessageError(error);
@@ -2581,6 +2583,7 @@ export class PolicyEngineService {
 
                     await DatabaseServer.setVirtualUser(policyId, virtualDID, owner?.id)
                     const users = await DatabaseServer.getVirtualUsers(policyId, undefined, false, false, owner?.id);
+                    await PolicyComponentsUtils.SetVirtualUserRoles(model, users);
 
                     await (new GuardiansService())
                         .sendPolicyMessage(PolicyEvents.SET_VIRTUAL_USER, policyId, { did: virtualDID });
