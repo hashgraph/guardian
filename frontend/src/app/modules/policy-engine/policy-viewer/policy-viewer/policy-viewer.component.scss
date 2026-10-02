@@ -688,6 +688,8 @@
     }
 
     .status-badge {
+        cursor: default;
+
         &--discontinued {
             color: var(--color-accent-red-1, #FF432A);
             background: color-mix(in srgb, var(--color-accent-red-1, #FF432A) 12%, transparent);
