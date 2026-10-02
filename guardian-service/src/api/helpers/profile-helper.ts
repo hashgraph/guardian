@@ -25,10 +25,11 @@ import {
     HederaEd25519Method,
     IAuthUser,
     INotificationStep,
+    IRemoteUserProof,
     KeyType,
     MessageAction,
     MessageError,
-    MessageServer, PinoLogger,
+    MessageServer, MessageType, PinoLogger,
     RegistrationMessage,
     Schema as SchemaCollection,
     Settings,
@@ -40,6 +41,7 @@ import {
     VcDocumentDefinition,
     VcHelper,
     VCMessage,
+    verifyRemoteUserProof,
     Wallet,
     Workers,
 } from '@guardian/common';
@@ -70,6 +72,7 @@ export interface ICredentials {
     useFireblocksSigning: boolean;
     fireblocksConfig: IFireblocksConfig;
     topicId: string;
+    proof?: IRemoteUserProof;
 }
 
 /**
@@ -614,16 +617,19 @@ export async function createRemoteUserProfile({
         hederaAccountId,
         vcDocument,
         didDocument,
-        topicId
+        topicId,
+        proof
     } = profile;
     const dataBaseServer = new DatabaseServer();
 
     // <-- Steps
     const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+    const STEP_RESOLVE_DID = 'Resolve DID document';
     const STEP_SAVE = 'Save';
     // Steps -->
 
     notifier.addStep(STEP_RESOLVE_ACCOUNT);
+    notifier.addStep(STEP_RESOLVE_DID);
     notifier.addStep(STEP_SAVE);
     notifier.start();
 
@@ -654,9 +660,18 @@ export async function createRemoteUserProfile({
     // ------------------------
     // <-- DID Document
     // ------------------------
+    notifier.startStep(STEP_RESOLVE_DID);
+    const userDID = (await validateDidWithoutKeys(didDocument)).getDid();
+    const currentDidDocument = await resolvePublishedDidDocument(
+        userDID,
+        topicId,
+        hederaAccountId,
+        user.id.toString()
+    );
+    verifyRemoteUserProof(proof, currentDidDocument, hederaAccountId, topicId);
+    notifier.completeStep(STEP_RESOLVE_DID);
+
     notifier.startStep(STEP_SAVE);
-    const currentDidDocument = await validateDidWithoutKeys(didDocument);
-    const userDID = currentDidDocument.getDid();
 
     const existingUser = await dataBaseServer.findOne(DidDocumentCollection, { did: userDID });
     if (existingUser) {
@@ -997,6 +1012,44 @@ export async function validateDidWithoutKeys(json: string | any): Promise<Common
         }
     }
     return document;
+}
+
+/**
+ * Load the DID document the given Hedera account published to the given topic.
+ * A remote user profile is only as trustworthy as its DID document, so the
+ * supplied copy is used to identify the DID and the published one is stored.
+ * @param did
+ * @param topicId
+ * @param hederaAccountId
+ * @param userId
+ */
+export async function resolvePublishedDidDocument(
+    did: string,
+    topicId: string,
+    hederaAccountId: string,
+    userId: string
+): Promise<CommonDidDocument> {
+    if (!topicId) {
+        throw new Error(`Invalid topic.`);
+    }
+    let messages: DIDMessage[];
+    try {
+        messages = await MessageServer.getMessages<DIDMessage>({
+            topicId,
+            userId,
+            type: MessageType.DIDDocument
+        });
+    } catch (error) {
+        throw new Error(`Invalid topic.`);
+    }
+    const published = messages
+        .filter((message) => message.did === did && message.payer === hederaAccountId)
+        .pop();
+    if (!published) {
+        throw new Error(`DID document is not published by the Hedera account.`);
+    }
+    await MessageServer.loadDocument(published, null, { userId });
+    return await validateDidWithoutKeys(published.getDocument());
 }
 
 export async function validateVc(json: string | any): Promise<VcDocumentDefinition> {
