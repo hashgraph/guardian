@@ -110,32 +110,6 @@ export async function incrementSchemaVersion(
 }
 
 /**
- * Get highest schema version
- * @param topicId Topic ID
- */
-export async function incrementHighestSchemaVersion(topicId: string): Promise<string> {
-    const schemas = await DatabaseServer.getSchemas({ topicId });
-    const versions = [];
-    let highestVersion = '1.0.0';
-    for (const element of schemas) {
-        const elementVersions = SchemaHelper.getVersion(element);
-        if (elementVersions.version) {
-            versions.push(elementVersions.version);
-            if (ModelHelper.versionCompare(elementVersions.version, highestVersion) === 1) {
-                highestVersion = elementVersions.version;
-            }
-        }
-        if (elementVersions.previousVersion) {
-            versions.push(elementVersions.previousVersion);
-            if (ModelHelper.versionCompare(elementVersions.previousVersion, highestVersion) === 1) {
-                highestVersion = elementVersions.previousVersion;
-            }
-        }
-    }
-    return SchemaHelper.incrementVersion(highestVersion, versions);
-}
-
-/**
  * Update schema document
  * @param schema Schema
  */
@@ -298,7 +272,7 @@ export async function copySchemaAsync(
     item.status = SchemaStatus.DRAFT;
     item.topicId = topicId;
 
-    const newVersion = await incrementHighestSchemaVersion(item.topicId)
+    const newVersion = SchemaHelper.incrementVersion(item.version, []);
     SchemaHelper.setVersion(item, newVersion, item.version);
     SchemaHelper.updateIRI(item);
     item.iri = item.iri || item.uuid;
