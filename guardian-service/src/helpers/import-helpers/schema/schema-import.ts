@@ -3,6 +3,7 @@ import {
     IOwner,
     IRootConfig,
     ISchema,
+    ModelHelper,
     ModuleStatus,
     Schema,
     SchemaCategory,
@@ -411,7 +412,16 @@ export class SchemaImport {
                 const previousIri = row.iri;
                 const previousUuid = row.uuid;
                 const previousVersion = row.version || SchemaHelper.getVersion(row)?.version || row.sourceVersion || SchemaHelper.getVersion(row)?.previousVersion || '';
-                const newVersion = file.sourceVersion || schemaObject.sourceVersion || row.version;
+                let newVersion = (file.sourceVersion || schemaObject.sourceVersion || row.version || '').trim();
+                if (newVersion && !ModelHelper.checkVersionFormat(newVersion)) {
+                    this.errors.push({
+                        type: 'schema',
+                        uuid: row.uuid,
+                        name: row.name,
+                        error: `Invalid version "${newVersion}" ignored on import, previous version "${previousVersion}" kept.`
+                    });
+                    newVersion = previousVersion;
+                }
                 if (!row || row.owner !== user.owner) {
                     throw new Error('Invalid schema');
                 }
