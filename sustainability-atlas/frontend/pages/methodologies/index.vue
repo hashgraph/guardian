@@ -61,9 +61,11 @@ if (route.query.decodeStatus && typeof route.query.decodeStatus === "string") {
 /** What "hide discontinued" leaves visible when the dropdown is on All. */
 const STILL_LIVE_STATUSES: MethodologyStatus[] = ['published', 'to_be_discontinued'];
 
-// Unchecked (the default) lists every methodology; checking it hides the
-// discontinued ones.
-const hideDiscontinued = ref(route.query.hideDiscontinued === "1");
+// Checked by default, so the list opens on the policies that are still live.
+// Unchecking it lists every methodology, including the discontinued ones, and
+// that choice rides in the URL as `hideDiscontinued=0` — the default state is
+// left out, the way every other filter on this page encodes itself.
+const hideDiscontinued = ref(route.query.hideDiscontinued !== "0");
 /** Keeps only recognised statuses, dropping "discontinued" while it is hidden. */
 function allowedStatuses(values: string[], hidden: boolean): MethodologyStatus[] {
   return values.filter((s): s is MethodologyStatus =>
@@ -98,7 +100,7 @@ function syncToUrl() {
   if (filters.value.decodeStatus) q.decodeStatus = String(filters.value.decodeStatus); else delete q.decodeStatus;
   if (filters.value.registryDid) q.registryDid = String(filters.value.registryDid); else delete q.registryDid;
   if (filters.value.status) q.status = String(filters.value.status); else delete q.status;
-  if (hideDiscontinued.value) q.hideDiscontinued = "1"; else delete q.hideDiscontinued;
+  if (hideDiscontinued.value) delete q.hideDiscontinued; else q.hideDiscontinued = "0";if (hideDiscontinued.value) q.hideDiscontinued = "1"; else delete q.hideDiscontinued;
   router.replace({ query: q });
 }
 
