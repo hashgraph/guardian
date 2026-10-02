@@ -3244,8 +3244,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             }
             return false;
         };
-        if (visit(schema)) { return true; }
-        return false;
+        return visit(schema);
     }
 
     public canDragSchema(schema: Schema, schemaMap?: Map<string, Schema>): boolean {
