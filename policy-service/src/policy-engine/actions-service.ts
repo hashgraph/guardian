@@ -634,11 +634,15 @@ export class PolicyActionsService {
      * claimed, so a redelivered message cannot run the action a second time.
      * Keyed on messageId, not _id: insertOrUpdate deletes _id from the row it is
      * given when the row already exists.
+     *
+     * `executedAt` lives only in the database and is deliberately not mapped on
+     * the PolicyAction entity: an ORM save of a row read before the claim would
+     * otherwise write it back as undefined and erase the claim.
      */
     private async claimForExecution(row: PolicyAction): Promise<boolean> {
-        const collection = DataBaseHelper.orm.em.getCollection<PolicyAction>('PolicyAction');
+        const collection = DataBaseHelper.orm.em.getCollection('PolicyAction');
         const result = await collection.updateOne(
-            { messageId: row.messageId, executedAt: null } as any,
+            { messageId: row.messageId, executedAt: null },
             { $set: { executedAt: new Date() } }
         );
         return result?.modifiedCount === 1;
