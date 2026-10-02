@@ -411,7 +411,7 @@ export class XlsxToJson {
                         xlsxResult.addError({
                             type: 'warning',
                             text: `Invalid Version "${rawVersion}".`,
-                            message: `Sheet "${worksheet.name}" has a "${Dictionary.SCHEMA_VERSION}" value of "${rawVersion}", which is not a valid version.`
+                            message: `Sheet "${worksheet.name}" has a "${Dictionary.SCHEMA_VERSION}" value of "${rawVersion}", which is not a valid version. `
                                 + `Expected digits separated by dots, e.g. 1.0.0. The existing schema version will be kept.`,
                             worksheet: worksheet.name,
                             row: table.getRow(Dictionary.SCHEMA_VERSION),
