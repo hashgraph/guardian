@@ -1404,13 +1404,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             return;
         }
         if (this.isTemplateMode) {
-            void this.router.navigate(['/schema-template-configuration'], {
-                queryParams: {
-                    type: 'template',
-                    topic: this.topic || undefined,
-                    templateId: this.templateId || undefined,
-                },
-            });
+            this.navigateToTemplateConfiguration();
             return;
         }
         const queryParams: Record<string, string> = {};
@@ -1433,11 +1427,16 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (!this.isTemplateMode || this.isTemplateConfigMode) {
             return;
         }
+        this.navigateToTemplateConfiguration();
+    }
+
+    private navigateToTemplateConfiguration(): void {
         void this.router.navigate(['/schema-template-configuration'], {
             queryParams: {
                 type: 'template',
                 topic: this.topic || undefined,
                 templateId: this.templateId || undefined,
+                schemaId: this.selectedSchemaId || undefined,
             },
         });
     }
