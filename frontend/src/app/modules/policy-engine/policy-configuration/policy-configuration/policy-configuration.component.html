@@ -169,7 +169,11 @@
           }
           @if (toolTemplate.isPublished) {
             <div class="status-badge status-badge--published">
-              <i class="pi pi-globe"></i><span>Published</span>
+              <i class="pi pi-globe"></i>
+              <span>Published</span>
+              @if (toolTemplate.version) {
+                <span class="status-badge-version">v{{ toolTemplate.version }}</span>
+              }
             </div>
           }
         }
