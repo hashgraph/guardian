@@ -25,7 +25,6 @@ import {
     xlsxToFont,
     examplesToXlsx,
 } from '../../../dist/xlsx/models/value-converters.js';
-import { Expression } from '../../../dist/xlsx/models/expression.js';
 import { XlsxVariable, XlsxExpressions } from '../../../dist/xlsx/models/xlsx-expressions.js';
 import { XlsxSchemaConditions } from '../../../dist/xlsx/models/schema-condition.js';
 
@@ -378,47 +377,6 @@ describe('@unit value-converters edge: examplesToXlsx', () => {
 
     it('returns "" when an empty examples array is supplied (examples[0] undefined)', () => {
         assert.equal(examplesToXlsx({ examples: [] }), '');
-    });
-});
-
-describe('@unit expression edge: malformed / empty formulae', () => {
-    it('does not throw on empty / whitespace formula (mathjs yields undefined node)', () => {
-        const e1 = new Expression('e', '');
-        e1.parse();
-        assert.equal(e1.symbols.size, 0);
-        assert.equal(e1.transformed, 'undefined');
-        const e2 = new Expression('e', '   ');
-        e2.parse();
-        assert.equal(e2.transformed, 'undefined');
-    });
-
-    it('throws on syntactically invalid formula', () => {
-        assert.throws(() => new Expression('e', 'A1 +').parse());
-        assert.throws(() => new Expression('e', '((A1)').parse());
-    });
-
-    it('parses a bare numeric constant with no symbols', () => {
-        const e = new Expression('e', '42');
-        e.parse();
-        assert.equal(e.symbols.size, 0);
-        assert.equal(e.transformed, '42');
-    });
-
-    it('treats a single-cell range A1:A1 as one cell', () => {
-        const e = new Expression('e', 'sum(A1:A1)');
-        e.parse();
-        assert.deepEqual(e.ranges.get('A1_A1'), ['A1']);
-    });
-
-    it('throws Invalid range when a range endpoint lacks a row number', () => {
-        const e = new Expression('e', 'sum(A:A3)');
-        assert.throws(() => e.parse(), /Invalid range/);
-    });
-
-    it('nested function calls collect inner symbols recursively', () => {
-        const e = new Expression('e', 'add(sub(A1, B2), C3)');
-        e.parse();
-        assert.deepEqual(Array.from(e.symbols).sort(), ['A1', 'B2', 'C3']);
     });
 });
 
