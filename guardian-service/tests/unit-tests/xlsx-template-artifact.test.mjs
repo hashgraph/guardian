@@ -108,14 +108,14 @@ describe('Schema template artifact', () => {
     it('uses IWA V3 with a V3-only version dropdown', async () => {
         assert.equal(result.xlsxSchemas[0].iwaVersion, '3.0.0');
         const sheet = workbook.getWorksheet('Schema name');
-        assert.equal(sheet.getValue(1, 4), 'IWA Version');
-        assert.equal(sheet.getValue(2, 4), 'V3');
-        assert.deepEqual(sheet.getCell(2, 4).getList(), ['V3']);
+        assert.equal(sheet.getValue(1, 5), 'IWA Version');
+        assert.equal(sheet.getValue(2, 5), 'V3');
+        assert.deepEqual(sheet.getCell(2, 5).getList(), ['V3']);
     });
 
     it('has an IWA Property column fed by the hidden IWA Properties sheet', async () => {
         const sheet = workbook.getWorksheet('Schema name');
-        assert.equal(sheet.getValue(11, 5), 'IWA Property');
+        assert.equal(sheet.getValue(11, 6), 'IWA Property');
 
         const raw = new ExcelJS.Workbook();
         await raw.xlsx.load(await readFile(TEMPLATE));
@@ -124,12 +124,18 @@ describe('Schema template artifact', () => {
         assert.equal(iwa.state, 'hidden');
         assert.deepEqual(iwa.getRow(1).values.slice(1), ['Path', 'Name', 'Description', 'Version']);
         const versions = new Set();
-        iwa.eachRow((row, r) => { if (r > 1) { versions.add(row.getCell(4).value); } });
+        let lastDataRow = 1;
+        iwa.eachRow((row, r) => {
+            if (r > 1 && row.getCell(1).value) {
+                versions.add(row.getCell(4).value);
+                lastDataRow = r;
+            }
+        });
         assert.deepEqual([...versions], ['V3']);
 
-        const validation = raw.getWorksheet('Schema name').getCell('K6').dataValidation;
+        const validation = raw.getWorksheet('Schema name').getCell('K7').dataValidation;
         assert.equal(validation.type, 'list');
-        assert.equal(validation.formulae[0], `'IWA Properties'!$A$2:$A$${iwa.rowCount}`);
+        assert.equal(validation.formulae[0], `'IWA Properties'!$A$2:$A$${lastDataRow}`);
     });
 
     it('lists the IWA warnings right after the other common errors', () => {
