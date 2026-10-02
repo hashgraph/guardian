@@ -1,4 +1,3 @@
-import { Schema } from '@guardian/interfaces';
 import { BlockValidator, IBlockProp } from '../index.js';
 import { CommonBlock } from './common.js';
 import { MathEngine, Code } from '../../helpers/math-model/index.js';
