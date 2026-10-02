@@ -4,7 +4,7 @@ import { xlsxToBoolean, xlsxToEntity, xlsxToFont, xlsxToPresetArray, xlsxToPrese
 import { Table } from './models/table.js';
 import * as mathjs from 'mathjs';
 import { XlsxSchemaConditions } from './models/schema-condition.js';
-import { isAncestorType, isRelationType, IwaVersion, relationParent, SchemaCategory, SchemaEntity, SchemaField } from '@guardian/interfaces';
+import { isAncestorType, isRelationType, IwaVersion, ModelHelper, relationParent, SchemaCategory, SchemaEntity, SchemaField } from '@guardian/interfaces';
 import { DatabaseServer } from '@guardian/common';
 import { XlsxResult } from './models/xlsx-result.js';
 import { XlsxEnum } from './models/xlsx-enum.js';
@@ -400,6 +400,24 @@ export class XlsxToJson {
             }
             if (table.getRow(Dictionary.SCHEMA_TYPE) !== -1) {
                 schema.entity = xlsxToEntity(worksheet.getValue<string>(startCol + 1, table.getRow(Dictionary.SCHEMA_TYPE)));
+            }
+            if (table.getRow(Dictionary.SCHEMA_VERSION) !== -1) {
+                const versionCell = worksheet.getValue<string | number>(startCol + 1, table.getRow(Dictionary.SCHEMA_VERSION));
+                const rawVersion = versionCell === null || versionCell === undefined ? '' : String(versionCell).trim();
+                if (rawVersion) {
+                    if (ModelHelper.checkVersionFormat(rawVersion)) {
+                        schema.schema.version = rawVersion;
+                    } else {
+                        xlsxResult.addError({
+                            type: 'warning',
+                            text: `Invalid Version "${rawVersion}".`,
+                            message: `Sheet "${worksheet.name}" has a "${Dictionary.SCHEMA_VERSION}" value of "${rawVersion}", which is not a valid version.`
+                                + `Expected digits separated by dots, e.g. 1.0.0. The existing schema version will be kept.`,
+                            worksheet: worksheet.name,
+                            row: table.getRow(Dictionary.SCHEMA_VERSION),
+                        }, schema);
+                    }
+                }
             }
 
             if (table.getRow(Dictionary.IWA_VERSION) !== -1) {

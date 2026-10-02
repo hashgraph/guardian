@@ -62,6 +62,7 @@ export enum Dictionary {
     SCHEMA_DESCRIPTION = 'Schema Description',
     VISIBILITY = 'Visibility',
     SCHEMA_TYPE = 'Schema Type',
+    SCHEMA_VERSION = 'Schema Version',
     IWA_VERSION = 'IWA Version',
     SCHEMA_TOOL = 'Tool',
     SCHEMA_TOOL_ID = 'Tool Id',

@@ -255,6 +255,10 @@ export class Table {
             new TableHeader(Dictionary.SCHEMA_TYPE, false)
                 .setStyle(this.schemaHeadersStyle)
         );
+        this._schemaHeaders.set(Dictionary.SCHEMA_VERSION,
+            new TableHeader(Dictionary.SCHEMA_VERSION, false)
+                .setStyle(this.schemaHeadersStyle)
+        );
         this._schemaHeaders.set(Dictionary.IWA_VERSION,
             new TableHeader(Dictionary.IWA_VERSION, false)
                 .setStyle(this.schemaHeadersStyle)
@@ -310,6 +314,7 @@ export class Table {
         this._schemaHeaders.get(Dictionary.SCHEMA_NAME).setPoint(col, row++);
         this._schemaHeaders.get(Dictionary.SCHEMA_DESCRIPTION).setPoint(col, row++);
         this._schemaHeaders.get(Dictionary.SCHEMA_TYPE).setPoint(col, row++);
+        this._schemaHeaders.get(Dictionary.SCHEMA_VERSION).setPoint(col, row++);
         this._schemaHeaders.get(Dictionary.IWA_VERSION).setPoint(col, row++);
 
         if (tool) {
