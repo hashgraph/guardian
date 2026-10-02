@@ -14,7 +14,7 @@ x-service-template: &service-template
 
 name: guardian-quickstart
 
-# Uncomment this "models" top-level element and the "models" section in the ai-service to run a local LLM model
+# Uncomment this "models" top-level element and the "ai-service" section below to run a local LLM model
 # and set ENABLE_GLOSSARY_AI='true' in the config to enable the Glossary AI feature.
 #
 # models:
@@ -25,26 +25,24 @@ name: guardian-quickstart
 #       - "--no-prefill-assistant"
 
 services:
-  ai-service:
-    build:
-      context: .
-      dockerfile: ./ai-service/Dockerfile
-    depends_on:
-      - logger-service
-      - message-broker
-      - mongo
-    volumes:
-      - ./ai-service/faiss-vector:/usr/local/app/ai-service/faiss-vector:rw
-      - ./ai-service/data:/usr/local/app/ai-service/data:rw
-      - ./ai-service/configs:/usr/local/app/ai-service/configs:ro
-    environment:
-      VECTOR_STORAGE_PATH: ./faiss-vector
-      DOCS_STORAGE_PATH: ./data/generated-data
-    <<: *service-template
-    expose:
-      - '3013'
-    # models:
-    #   - llm
+  # ai-service:
+  #   image: gcr.io/hedera-registry/ai-service:${GUARDIAN_VERSION:-latest}
+  #   depends_on:
+  #     - logger-service
+  #     - message-broker
+  #     - mongo
+  #   volumes:
+  #     - ./ai-service/faiss-vector:/usr/local/app/ai-service/faiss-vector:rw
+  #     - ./ai-service/data:/usr/local/app/ai-service/data:rw
+  #     - ./ai-service/configs:/usr/local/app/ai-service/configs:ro
+  #   environment:
+  #     VECTOR_STORAGE_PATH: ./faiss-vector
+  #     DOCS_STORAGE_PATH: ./data/generated-data
+  #   <<: *service-template
+  #   expose:
+  #     - '3013'
+  #   models:
+  #     - llm
 
   api-gateway:
     build:
