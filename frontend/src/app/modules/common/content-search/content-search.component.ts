@@ -1,7 +1,9 @@
 import {
     Component,
+    EventEmitter,
     Input,
     OnDestroy,
+    Output,
 } from '@angular/core';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
@@ -20,6 +22,8 @@ export class ContentSearchComponent implements OnDestroy {
     @Input() searchContainer!: HTMLElement;
     @Input() placeholder: string = 'Quick Search by keyword';
     @Input() debounce: number = 300;
+    /** Emits the trimmed query on every edit, ahead of the debounced search. */
+    @Output() queryChange = new EventEmitter<string>();
 
     public query: string = '';
     public matchCount: number = 0;
@@ -48,11 +52,13 @@ export class ContentSearchComponent implements OnDestroy {
 
     public onInput(value: string): void {
         this.query = value;
+        this.queryChange.emit(value.trim());
         this.search$.next(value.trim().toLowerCase());
     }
 
     public onClear(): void {
         this.query = '';
+        this.queryChange.emit('');
         this.search$.next('');
     }
 

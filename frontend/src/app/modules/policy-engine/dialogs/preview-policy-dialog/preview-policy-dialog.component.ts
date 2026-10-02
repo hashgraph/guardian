@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ToolsService } from 'src/app/services/tools.service';
@@ -23,6 +23,17 @@ interface SchemaTemplateRow {
     valid: boolean;
 }
 
+/** A named entry rendered as a chip in the preview lists. */
+interface PreviewItem {
+    name: string;
+    version?: string;
+}
+
+type PreviewSection = 'schemas' | 'tools' | 'templates' | 'tokens' | 'formulas' | 'similar' | 'errors';
+
+/** Two rows of chips; the schema list is clamped to this height until expanded. */
+const CHIP_LIST_CLAMP_HEIGHT = 60;
+
 /**
  * Dialog for export/import policy.
  */
@@ -35,15 +46,15 @@ interface SchemaTemplateRow {
 export class PreviewPolicyDialog {
     public loading = true;
     public policy!: any;
-    public schemas!: string;
-    public tokens!: string;
-    public tools!: string;
-    public toolConfigs!: { name: string, messageId: string }[];
-    public policyGroups!: string;
+    public schemas: PreviewItem[] = [];
+    public tokens: PreviewItem[] = [];
+    public tools: PreviewItem[] = [];
+    public toolConfigs: { name: string, messageId: string }[] = [];
+    public roles: string[] = [];
     public newVersions: any[] = [];
     public versionOfTopicId: any;
     public policies!: any[];
-    public similar!: any[];
+    public similar: PreviewItem[] = [];
     public module!: any;
     public tool!: any;
     public xlsx!: any;
@@ -52,7 +63,7 @@ export class PreviewPolicyDialog {
     public isFile?: boolean;
     public mode: string = 'new';
     public originalTracking: boolean = false;
-    public formulas!: string;
+    public formulas: PreviewItem[] = [];
     public title!: string;
     public validTool: {
         [messageId: string]: '' | 'load' | 'valid' | 'invalid'
@@ -68,8 +79,50 @@ export class PreviewPolicyDialog {
     private _schemaTemplateDestroyMap: any = {};
     private _map = new Map<string, boolean>();
 
+    public sections: Record<PreviewSection, boolean> = {
+        schemas: true,
+        tools: true,
+        templates: true,
+        tokens: false,
+        formulas: false,
+        similar: false,
+        errors: true,
+    };
+    public showAllSchemas: boolean = false;
+    public schemasOverflow: boolean = false;
+    public descriptionExpanded: boolean = false;
+    public searchActive: boolean = false;
+    public creatorCopied: boolean = false;
+    private _schemaListObserver?: ResizeObserver;
+
     public isLargeSize: boolean = true;
     @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
+
+    @ViewChild('schemaList', { static: false })
+    set schemaList(el: ElementRef<HTMLDivElement> | undefined) {
+        this._schemaListObserver?.disconnect();
+        this._schemaListObserver = undefined;
+        if (!el || typeof ResizeObserver === 'undefined') {
+            return;
+        }
+        const element = el.nativeElement;
+        this._schemaListObserver = new ResizeObserver(() => {
+            const overflow = element.scrollHeight > CHIP_LIST_CLAMP_HEIGHT;
+            if (overflow !== this.schemasOverflow) {
+                this.schemasOverflow = overflow;
+                this.cdr.detectChanges();
+            }
+        });
+        this._schemaListObserver.observe(element);
+    }
+
+    public get invalidToolsCount(): number {
+        return this.toolConfigs.filter((t) => this.validTool[t.messageId] === 'invalid').length;
+    }
+
+    public get templatesAttentionCount(): number {
+        return this.schemaTemplateRows.filter((row) => row.status === 'invalid' && !row.detach).length;
+    }
 
     public get inValid(): boolean {
         if (!(this.policy || this.module || this.tool || this.xlsx)) {
@@ -97,6 +150,7 @@ export class PreviewPolicyDialog {
         private toolsService: ToolsService,
         private schemaTemplatesService: SchemaTemplatesService,
         private dialogService: DialogService,
+        private cdr: ChangeDetectorRef,
         public config: DynamicDialogConfig
     ) {
         this.validTool = {};
@@ -109,36 +163,11 @@ export class PreviewPolicyDialog {
             this.newVersions = importFile.newVersions || [];
             this.policy = importFile.policy;
 
-            this.policyGroups = '';
-            if (this.policy.policyRoles) {
-                this.policyGroups += this.policy.policyRoles.join(', ');
-            }
-
-            const schemas = importFile.schemas || [];
-            const tokens = importFile.tokens || [];
-
-            this.schemas = schemas
-                .map((s: any) => {
-                    if (s.version) {
-                        return `${s.name} (${s.version})`;
-                    }
-                    return s.name;
-                })
-                .join(', ');
-            this.tokens = tokens.map((s: any) => s.tokenName).join(', ');
-
-            const formulas = importFile.formulas || [];
-            this.formulas = formulas.map((s: any) => s.name).join(', ');
-
-            const similar = importFile.similar || [];
-            this.similar = similar
-                .map((s: any) => {
-                    if (s.version) {
-                        return `${s.name} (${s.version})`;
-                    }
-                    return s.name;
-                })
-                .join(', ');
+            this.roles = ['Standard Registry', ...(this.policy.policyRoles || [])];
+            this.schemas = this.toItems(importFile.schemas);
+            this.tokens = (importFile.tokens || []).map((t: any) => ({ name: t.tokenName }));
+            this.formulas = this.toItems(importFile.formulas);
+            this.similar = this.toItems(importFile.similar);
 
             this.toolConfigs = importFile.tools || [];
             this.schemaTemplateSnapshots = importFile.schemaTemplateSnapshots || [];
@@ -182,29 +211,13 @@ export class PreviewPolicyDialog {
                     this.checkTool(toolConfigs.messageId, toolConfigs.messageId);
                 }
             }
-            this.tools = this.toolConfigs.map((tool) => tool.name).join(', ');
+            this.tools = this.toItems(this.toolConfigs);
         }
 
         if (this.config.data.xlsx) {
             this.xlsx = this.config.data.xlsx;
-            const schemas = this.xlsx.schemas || [];
-            this.schemas = schemas
-                .map((s: any) => {
-                    if (s.version) {
-                        return `${s.name} (${s.version})`;
-                    }
-                    return s.name;
-                })
-                .join(', ');
-
-            const tools = this.xlsx.tools || [];
-            this.tools = tools
-                .map((s: any) => {
-                    return s.name;
-                })
-                .join(', ');
-
-            tools
+            this.schemas = this.toItems(this.xlsx.schemas);
+            this.tools = this.toItems(this.xlsx.tools);
             this.errors = this.xlsx.errors || [];
             for (const error of this.errors) {
                 if (error.cell) {
@@ -218,6 +231,58 @@ export class PreviewPolicyDialog {
         }
 
         this.policies = this.config.data.policies || [];
+    }
+
+    private toItems(list: any[] | undefined): PreviewItem[] {
+        return (list || []).map((item: any) => ({ name: item.name, version: item.version }));
+    }
+
+    public isSectionOpen(section: PreviewSection): boolean {
+        return this.searchActive || this.isSectionForced(section) || this.sections[section];
+    }
+
+    /** Sections with something to fix stay open so the problem is never hidden. */
+    public isSectionForced(section: PreviewSection): boolean {
+        if (section === 'tools') {
+            return this.invalidToolsCount > 0;
+        }
+        if (section === 'templates') {
+            return this.templatesAttentionCount > 0;
+        }
+        return false;
+    }
+
+    public toggleSection(section: PreviewSection): void {
+        if (this.searchActive || this.isSectionForced(section)) {
+            return;
+        }
+        this.sections[section] = !this.sections[section];
+    }
+
+    public onSearchQueryChange(query: string): void {
+        this.searchActive = !!query;
+    }
+
+    public shortenId(value: string): string {
+        if (!value || value.length <= 44) {
+            return value;
+        }
+        return `${value.substring(0, 26)}…${value.substring(value.length - 16)}`;
+    }
+
+    public copyCreator(value: string, event?: Event): void {
+        event?.stopPropagation();
+        if (!value) {
+            return;
+        }
+        navigator.clipboard.writeText(value).then(() => {
+            this.creatorCopied = true;
+            setTimeout(() => {
+                this.creatorCopied = false;
+            }, 1500);
+        }).catch(() => {
+            this.creatorCopied = false;
+        });
     }
 
     public onFilters(messageId: string, $event: any) {
@@ -344,6 +409,7 @@ export class PreviewPolicyDialog {
     }
 
     ngOnDestroy(): void {
+        this._schemaListObserver?.disconnect();
         this._destroy$.next();
         this._destroy$.complete();
     }
@@ -372,10 +438,6 @@ export class PreviewPolicyDialog {
             tools: this.toolForm?.value,
             schemaTemplates: this.getSchemaTemplateMetadataMap(),
         });
-    }
-
-    onChangeType() {
-
     }
 
     onSelectMode(mode: string) {
