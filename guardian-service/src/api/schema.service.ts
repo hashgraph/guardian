@@ -55,6 +55,7 @@ import {
 } from '../helpers/import-helpers/index.js'
 import { validateSchemaDependencies } from '../helpers/import-helpers/schema/schema-dependency-validator.js';
 import { validateSchemaFieldKeys } from '../helpers/import-helpers/schema/schema-field-key-validator.js';
+import { PolicyEngine } from '../policy-engine/policy-engine.js';
 import { getPageOptions } from './helpers/index.js';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -2211,7 +2212,9 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     notifier.fail('Invalid import schema parameter');
                 }
 
-                const category = await getSchemaCategory(topicId);
+                const schemaTarget = await getSchemaTarget(topicId);
+                const category = schemaTarget?.category || SchemaCategory.POLICY;
+                const target = schemaTarget?.target || null;
 
                 const schemasMap = await SchemaImportExportHelper.importSchemasByMessages(
                     messageIds,
@@ -2225,7 +2228,26 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     owner?.id,
                     schemasIds,
                 );
-                notifier.result(schemasMap);
+
+                let validation = null;
+                if (category === SchemaCategory.POLICY && target) {
+                    await PolicyImportExportHelper.updatePolicyComponents(target, logger, owner?.id);
+                    try {
+                        const policyValidation = await new PolicyEngine(logger).validateModel(target.id);
+                        validation = {
+                            isValid: !policyValidation.blocks.some((block) => !block.isValid),
+                            errors: policyValidation
+                        };
+                    } catch (error) {
+                        await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
+                    }
+                }
+
+                notifier.result({
+                    ...schemasMap,
+                    policyId: category === SchemaCategory.POLICY ? target?.id : null,
+                    validation
+                });
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 notifier.fail(error);
@@ -2298,7 +2320,9 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     notifier.fail('Invalid import schema parameter');
                 }
 
-                const category = await getSchemaCategory(topicId);
+                const schemaTarget = await getSchemaTarget(topicId);
+                const category = schemaTarget?.category || SchemaCategory.POLICY;
+                const target = schemaTarget?.target || null;
                 let result = await SchemaImportExportHelper.importSchemaByFiles(
                     schemas,
                     owner,
@@ -2312,7 +2336,25 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 );
                 result = await importTagsByFiles(result, tags, notifier);
 
-                notifier.result(result);
+                let validation = null;
+                if (category === SchemaCategory.POLICY && target) {
+                    await PolicyImportExportHelper.updatePolicyComponents(target, logger, owner?.id);
+                    try {
+                        const policyValidation = await new PolicyEngine(logger).validateModel(target.id);
+                        validation = {
+                            isValid: !policyValidation.blocks.some((block) => !block.isValid),
+                            errors: policyValidation
+                        };
+                    } catch (error) {
+                        await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
+                    }
+                }
+
+                notifier.result({
+                    ...result,
+                    policyId: category === SchemaCategory.POLICY ? target?.id : null,
+                    validation
+                });
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 notifier.fail(error);
@@ -2867,15 +2909,26 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     owner?.id
                 );
 
+                let validation = null;
                 if (category === SchemaCategory.TOOL) {
                     await updateToolConfig(target);
                     await DatabaseServer.updateTool(target);
                 } else if (category === SchemaCategory.POLICY) {
                     await PolicyImportExportHelper.updatePolicyComponents(target, logger, owner?.id);
+                    try {
+                        const policyValidation = await new PolicyEngine(logger).validateModel(target.id);
+                        validation = {
+                            isValid: !policyValidation.blocks.some((block) => !block.isValid),
+                            errors: policyValidation
+                        };
+                    } catch (error) {
+                        await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
+                    }
                 }
 
                 return new MessageResponse({
                     schemas: xlsxResult.schemas,
+                    validation,
                     errors: result.errors
                 });
             } catch (error) {
@@ -2962,16 +3015,28 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 );
                 notifier.completeStep(STEP_IMPORT_SCHEMAS);
 
+                let validation = null;
                 if (category === SchemaCategory.TOOL) {
                     await updateToolConfig(target);
                     await DatabaseServer.updateTool(target);
                 } else if (category === SchemaCategory.POLICY) {
                     await PolicyImportExportHelper.updatePolicyComponents(target, logger, owner?.id);
+                    try {
+                        const policyValidation = await new PolicyEngine(logger).validateModel(target.id);
+                        validation = {
+                            isValid: !policyValidation.blocks.some((block) => !block.isValid),
+                            errors: policyValidation
+                        };
+                    } catch (error) {
+                        await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
+                    }
                 }
                 notifier.complete();
 
                 notifier.result({
                     schemas: xlsxResult.schemas,
+                    policyId: category === SchemaCategory.POLICY ? target.id : null,
+                    validation,
                     errors: result.errors
                 });
             }, async (error) => {

@@ -278,7 +278,8 @@
                   @for (item of variables; track item) {
                     <div
                       class="rows-container"
-                      [attr.error]="item.invalid && item.validated"
+                      [attr.error]="(item.invalid && item.validated) || hasPathWarning(item)"
+                      [attr.data-issue-id]="getIssueId('variables', item)"
                       cdkDrag
                       cdkDragLockAxis="y"
                       [cdkDragDisabled]="readonly"
@@ -303,7 +304,7 @@
                           </div>
                         </div>
                         <div class="formula-eq">=</div>
-                        <div class="formula-body" [attr.error]="!item.validField">
+                        <div class="formula-body" [attr.error]="!item.validField || hasPathWarning(item)">
                           <div class="guardian-input-container">
                             <label class="form-label"></label>
                             <ng-container *ngTemplateOutlet="pathPicker; context: {item: item, mode: 'input'}"></ng-container>
@@ -421,6 +422,7 @@
                     <div
                       class="rows-container"
                       [attr.error]="item.invalid && item.validated"
+                      [attr.data-issue-id]="getIssueId('formulas', item)"
                       cdkDrag
                       cdkDragLockAxis="y"
                       [cdkDragDisabled]="readonly"
@@ -717,7 +719,8 @@
                   @for (item of outputs; track item) {
                     <div
                       class="rows-container"
-                      [attr.error]="item.invalid && item.validated"
+                      [attr.error]="(item.invalid && item.validated) || hasPathWarning(item)"
+                      [attr.data-issue-id]="getIssueId('outputs', item)"
                       cdkDrag
                       cdkDragLockAxis="y"
                       [cdkDragDisabled]="readonly"
@@ -730,7 +733,7 @@
                         </svg-icon>
                       </div>
                       <div class="row-container">
-                        <div class="formula-body" [attr.error]="!item.validField">
+                        <div class="formula-body" [attr.error]="!item.validField || hasPathWarning(item)">
                           <div class="guardian-input-container">
                             <label class="form-label">Output</label>
                             <ng-container *ngTemplateOutlet="pathPicker; context: {item: item, mode: 'output'}"></ng-container>
@@ -1315,10 +1318,49 @@
 <div class="dialog-footer">
   <div class="action-buttons">
     @if (inputSchema && (step === 'step_1' || step === 'step_2' || step === 'step_3')) {
-      <div class="dialog-button">
+      <div class="dialog-button validation-actions">
         <button
           (click)="onValidate()"
-        class="guardian-button guardian-button-secondary left-btn">Validate</button>
+          class="guardian-button guardian-button-secondary validate-button"
+          [attr.state]="validationState">Validate</button>
+        @if (validationChecked && !mathIssues.length) {
+          <div class="validation-status validation-status-success">
+            <i class="pi pi-check-circle"></i>
+            <span>No errors</span>
+          </div>
+        }
+        @if (validationChecked && mathIssues.length) {
+          <div class="validation-status-container">
+            <button
+              (click)="toggleIssues()"
+              class="validation-status validation-status-error">
+              <i class="pi pi-exclamation-triangle"></i>
+              <span>Errors ({{mathIssues.length}})</span>
+              <i class="pi pi-chevron-down validation-status-chevron" [class.open]="issuesVisible"></i>
+            </button>
+            @if (issuesVisible) {
+              <div class="issues-menu">
+                @for (group of issueGroups; track group.key) {
+                  <div class="issues-menu-group">
+                    <div class="issues-menu-group-title">{{group.label}}</div>
+                    @for (issue of group.issues; track issue.id) {
+                      <button class="issues-menu-item" (click)="goToIssue(issue)">
+                        <i class="pi pi-times"></i>
+                        <span class="issues-menu-item-content">
+                          <span class="issues-menu-item-title">{{issue.title}}</span>
+                          @if (issue.message) {
+                            <span class="issues-menu-item-message">{{issue.message}}</span>
+                          }
+                        </span>
+                      </button>
+                    }
+                  </div>
+                }
+                <div class="issues-menu-footer">{{validationErrorsLabel}}</div>
+              </div>
+            }
+          </div>
+        }
       </div>
     }
     <div class="dialog-button">
