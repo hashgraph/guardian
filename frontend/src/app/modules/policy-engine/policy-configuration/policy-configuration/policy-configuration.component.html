@@ -50,9 +50,34 @@
               <i class="pi pi-sort-down-fill status-badge-caret"></i>
             </div>
           }
-          @if (policyTemplate.isPublished) {
+          @if (policyTemplate.isDiscontinued) {
+            <div class="status-badge status-badge--discontinued"
+              [pTooltip]="'Discontinued on ' + (policyTemplate.discontinuedDate | date: 'dd MMM yyyy, HH:mm')"
+              [tooltipDisabled]="!policyTemplate.discontinuedDate"
+              tooltipPosition="bottom">
+              <i class="pi pi-ban"></i>
+              <span>Discontinued</span>
+              @if (policyTemplate.version) {
+                <span class="status-badge-version">v{{ policyTemplate.version }}</span>
+              }
+            </div>
+          } @else if (policyTemplate.isPublished && policyTemplate.discontinuedDate) {
+            <div class="status-badge status-badge--expiring"
+              [pTooltip]="'Discontinues on ' + (policyTemplate.discontinuedDate | date: 'dd MMM yyyy, HH:mm')"
+              tooltipPosition="bottom">
+              <i class="pi pi-clock"></i>
+              <span>Discontinues {{ policyTemplate.discontinuedDate | date: 'dd MMM yyyy' }}</span>
+              @if (policyTemplate.version) {
+                <span class="status-badge-version">v{{ policyTemplate.version }}</span>
+              }
+            </div>
+          } @else if (policyTemplate.isPublished) {
             <div class="status-badge status-badge--published">
-              <i class="pi pi-globe"></i><span>Published</span>
+              <i class="pi pi-globe"></i>
+              <span>Published</span>
+              @if (policyTemplate.version) {
+                <span class="status-badge-version">v{{ policyTemplate.version }}</span>
+              }
             </div>
           }
           @if (policyTemplate.isDemo) {
