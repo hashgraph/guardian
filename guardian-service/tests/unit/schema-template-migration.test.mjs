@@ -17,6 +17,13 @@ function matches(doc, filter) {
     for (const [key, spec] of Object.entries(filter || {})) {
         const present = Object.prototype.hasOwnProperty.call(doc, key);
         const value = doc[key];
+        // mongo's `field: null` also matches a missing field
+        if (spec === null) {
+            if (value !== null && value !== undefined) {
+                return false;
+            }
+            continue;
+        }
         if (spec && typeof spec === 'object' && !Array.isArray(spec)) {
             if (spec.$exists === true && !present) {
                 return false;
@@ -78,13 +85,14 @@ function fakeCollection(documents) {
     };
 }
 
-function runMigration(policyDocuments, schemaDocuments = [], propertyDocuments = []) {
+function runMigration(policyDocuments, schemaDocuments = [], propertyDocuments = [], actionDocuments = []) {
     const policies = fakeCollection(policyDocuments);
     const schemas = fakeCollection(schemaDocuments);
     // the description backfill reads the shipped CSVs and updates PolicyProperty
     // rows; these fixtures seed none, so every updateMany is a no-op here
     const properties = fakeCollection(propertyDocuments);
-    const collections = { Policy: policies, Schema: schemas, policy_property: properties };
+    const actions = fakeCollection(actionDocuments);
+    const collections = { Policy: policies, Schema: schemas, policy_property: properties, PolicyAction: actions };
     const migration = Object.create(ReleaseMigration.prototype);
     migration.ctx = 'session-1';
     migration.getCollection = (name) => {
@@ -100,7 +108,7 @@ function runMigration(policyDocuments, schemaDocuments = [], propertyDocuments =
             }),
         }),
     };
-    return { collection: policies, policies, schemas, properties, run: () => migration.up() };
+    return { collection: policies, policies, schemas, properties, actions, run: () => migration.up() };
 }
 
 describe('v3-7-1 migration - schemaTemplate to schemaTemplates', () => {
@@ -337,5 +345,41 @@ describe('v3-7-1 migration - policy schema template ids', () => {
         assert.equal(schemas[0].templateId, 'local-1');
         assert.equal(schemas[1].templateId, 'local-2',
             'the second binding must be repaired too, not left naming the source instance');
+    });
+});
+
+describe('v3-7-1 migration - policy action execution marker', () => {
+    /*
+     * Policy actions are now claimed through `executedAt` before they run. Rows
+     * written before that carry no claim, so without the backfill a topic replay
+     * would run every one of them again.
+     */
+    it('marks existing actions as executed', async () => {
+        const actions = [
+            { _id: 'action-1', type: 'ACTION' },
+            { _id: 'action-2', type: 'REMOTE_ACTION', executedAt: null },
+        ];
+        const { run } = runMigration([], [], [], actions);
+
+        await run();
+
+        assert.ok(actions[0].executedAt instanceof Date);
+        assert.ok(actions[1].executedAt instanceof Date);
+    });
+
+    it('leaves requests and already claimed actions alone', async () => {
+        const claimedAt = new Date('2026-01-01T00:00:00Z');
+        const actions = [
+            { _id: 'request-1', type: 'REQUEST' },
+            { _id: 'action-1', type: 'ACTION', executedAt: claimedAt },
+        ];
+        const { run, actions: collection } = runMigration([], [], [], actions);
+
+        await run();
+
+        assert.equal(Object.prototype.hasOwnProperty.call(actions[0], 'executedAt'), false,
+            'requests are not executed through the claim, so they must not be marked');
+        assert.equal(actions[1].executedAt, claimedAt);
+        assert.equal(collection.calls.updateMany[0].options.session, 'session-1');
     });
 });

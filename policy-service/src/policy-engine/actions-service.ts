@@ -629,6 +629,25 @@ export class PolicyActionsService {
         return row;
     }
 
+    /**
+     * Atomically claim a row for execution. Returns false when it was already
+     * claimed, so a redelivered message cannot run the action a second time.
+     * Keyed on messageId, not _id: insertOrUpdate deletes _id from the row it is
+     * given when the row already exists.
+     *
+     * `executedAt` lives only in the database and is deliberately not mapped on
+     * the PolicyAction entity: an ORM save of a row read before the claim would
+     * otherwise write it back as undefined and erase the claim.
+     */
+    private async claimForExecution(row: PolicyAction): Promise<boolean> {
+        const collection = DataBaseHelper.orm.em.getCollection('PolicyAction');
+        const result = await collection.updateOne(
+            { messageId: row.messageId, executedAt: null },
+            { $set: { executedAt: new Date() } }
+        );
+        return result?.modifiedCount === 1;
+    }
+
     private async executeAction(row: PolicyAction) {
         try {
             if (!row) {
@@ -651,6 +670,12 @@ export class PolicyActionsService {
             const access = await this.accessPolicy(policyUser);
             if (!access) {
                 throw new Error('Insufficient permissions to execute the policy.');
+            }
+
+            // Claimed only after the checks above, so a delivery that failed them
+            // (document not loaded yet, user not synced yet) can still be retried.
+            if (!await this.claimForExecution(row)) {
+                return;
             }
 
             if (row.type === PolicyActionType.REMOTE_ACTION) {
