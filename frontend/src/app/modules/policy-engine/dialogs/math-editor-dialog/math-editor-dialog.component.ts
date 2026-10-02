@@ -448,15 +448,6 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     }
 
     public toggleIssues(): void {
-        this.validationChecked = true;
-        this.engine.validate();
-        for (const item of this.engine.variables.getItems()) {
-            this._updateFieldWarning(item);
-        }
-        for (const item of this.engine.outputs.getItems()) {
-            this._updateFieldWarning(item, 'output');
-        }
-        this.updateIssues();
         this.issuesVisible = !!this.mathIssues.length && !this.issuesVisible;
     }
 
