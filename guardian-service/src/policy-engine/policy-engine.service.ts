@@ -45,7 +45,7 @@ import {
     containsRegex,
     expandTablesInDocument
 } from '@guardian/common';
-import { GenerateBlocks, JsonToXlsx, XlsxToJson } from '../xlsx/index.js';
+import { JsonToXlsx, XlsxToJson } from '../xlsx/index.js';
 import {
     DocumentCategoryType,
     DocumentType,
@@ -2279,7 +2279,6 @@ export class PolicyEngineService {
                         }
                     }
                     xlsxResult.updateSchemas(false);
-                    GenerateBlocks.generate(xlsxResult);
                     return new MessageResponse(xlsxResult.toJson());
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -2309,7 +2308,6 @@ export class PolicyEngineService {
                     xlsxResult.updateSchemas(false);
                     xlsxResult.updatePolicy(policy);
                     xlsxResult.addErrors(errors);
-                    GenerateBlocks.generate(xlsxResult);
                     const category = await getSchemaCategory(policy.topicId);
                     const result = await SchemaImportExportHelper.importSchemaByFiles(
                         xlsxResult.schemas,
@@ -2376,7 +2374,6 @@ export class PolicyEngineService {
                     xlsxResult.updateSchemas(false);
                     xlsxResult.updatePolicy(policy);
                     xlsxResult.addErrors(errors);
-                    GenerateBlocks.generate(xlsxResult);
                     notifier.completeStep(STEP_IMPORT_TOOLS);
 
                     notifier.startStep(STEP_IMPORT_SCHEMAS);

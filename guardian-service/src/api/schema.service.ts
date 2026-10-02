@@ -15,7 +15,7 @@ import {
     ImportExportUtils,
     Users
 } from '@guardian/common';
-import { GenerateBlocks, JsonToXlsx, XlsxToJson } from '../xlsx/index.js';
+import { JsonToXlsx, XlsxToJson } from '../xlsx/index.js';
 import {
     IOwner,
     GenerateUUIDv4,
@@ -2853,7 +2853,6 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 xlsxResult.updateSchemas(false);
                 xlsxResult.updatePolicy(target);
                 xlsxResult.addErrors(errors);
-                GenerateBlocks.generate(xlsxResult);
 
                 const result = await SchemaImportExportHelper.importSchemaByFiles(
                     xlsxResult.schemas,
@@ -2941,10 +2940,6 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 xlsxResult.updateSchemas(false);
                 xlsxResult.updatePolicy(target);
                 xlsxResult.addErrors(errors);
-                const isReplacement = Array.isArray(schemasIds) && schemasIds.some((schemaId) => !!schemaId);
-                if (!isReplacement) {
-                    GenerateBlocks.generate(xlsxResult);
-                }
                 notifier.completeStep(STEP_IMPORT_TOOLS);
 
                 notifier.startStep(STEP_IMPORT_SCHEMAS);
@@ -3008,7 +3003,6 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     }
                 }
                 xlsxResult.updateSchemas(false);
-                GenerateBlocks.generate(xlsxResult);
 
                 return new MessageResponse(xlsxResult.toJson());
             } catch (error) {

@@ -13,6 +13,5 @@ export * from './models/table.js';
 export * from './models/value-converters.js';
 export * from './models/workbook.js';
 export * from './models/xlsx-result.js';
-export * from './generate-blocks.js';
 export * from './json-to-xlsx.js';
 export * from './xlsx-to-json.js';
