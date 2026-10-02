@@ -151,6 +151,14 @@ export class PolicyAction extends BaseEntity {
     _documentFileId?: ObjectId;
 
     /**
+     * Set once, when the row is claimed for execution.
+     * Never written by savePolicyAction, which rewrites `status` on every
+     * redelivery and so cannot tell whether the action already ran.
+     */
+    @Property({ nullable: true })
+    executedAt?: Date;
+
+    /**
      * User disconnected
      */
     @Property({
