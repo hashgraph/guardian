@@ -2004,10 +2004,12 @@ export class PolicyEngineService {
                     // <-- Steps
                     const STEP_IMPORT_POLICY = 'Import policy';
                     const STEP_START_POLICY = 'Start policy';
+                    const STEP_VALIDATE_POLICY = 'Validate policy';
                     // Steps -->
 
-                    notifier.addStep(STEP_IMPORT_POLICY, 90);
+                    notifier.addStep(STEP_IMPORT_POLICY, 80);
                     notifier.addStep(STEP_START_POLICY, 10);
+                    notifier.addStep(STEP_VALIDATE_POLICY, 10);
                     notifier.start();
 
                     await logger.info(`Import policy by file`, ['GUARDIAN_SERVICE'], owner?.id);
@@ -2036,8 +2038,23 @@ export class PolicyEngineService {
                             notifier.getStep(STEP_START_POLICY)
                         );
                     }
+
+                    notifier.startStep(STEP_VALIDATE_POLICY);
+                    let validation = null;
+                    try {
+                        const policyValidation = await this.policyEngine.validateModel(result.policy.id);
+                        validation = {
+                            isValid: !policyValidation.blocks.some((block) => !block.isValid),
+                            errors: policyValidation
+                        };
+                    } catch (error) {
+                        await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
+                    }
+                    notifier.completeStep(STEP_VALIDATE_POLICY);
+
                     notifier.result({
                         policyId: result.policy.id,
+                        validation,
                         errors: result.errors
                     });
 
@@ -2196,11 +2213,13 @@ export class PolicyEngineService {
                         const STEP_LOAD_POLICY = 'Load policy';
                         const STEP_IMPORT_POLICY = 'Import policy';
                         const STEP_START_POLICY = 'Start policy';
+                        const STEP_VALIDATE_POLICY = 'Validate policy';
                         // Steps -->
 
                         notifier.addStep(STEP_LOAD_POLICY, 5);
-                        notifier.addStep(STEP_IMPORT_POLICY, 90);
+                        notifier.addStep(STEP_IMPORT_POLICY, 80);
                         notifier.addStep(STEP_START_POLICY, 5);
+                        notifier.addStep(STEP_VALIDATE_POLICY, 10);
                         notifier.start();
 
                         notifier.startStep(STEP_LOAD_POLICY);
@@ -2233,9 +2252,24 @@ export class PolicyEngineService {
                                 notifier.getStep(STEP_START_POLICY)
                             );
                         }
+
+                        notifier.startStep(STEP_VALIDATE_POLICY);
+                        let validation = null;
+                        try {
+                            const policyValidation = await this.policyEngine.validateModel(result.policy.id);
+                            validation = {
+                                isValid: !policyValidation.blocks.some((block) => !block.isValid),
+                                errors: policyValidation
+                            };
+                        } catch (error) {
+                            await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
+                        }
+                        notifier.completeStep(STEP_VALIDATE_POLICY);
+
                         notifier.complete();
                         notifier.result({
                             policyId: result.policy.id,
+                            validation,
                             errors: result.errors
                         });
 
@@ -2332,13 +2366,19 @@ export class PolicyEngineService {
                         await this.policyEngine.updateSchemaId(policy, schemaMap);
                     }
                     await PolicyImportExportHelper.updatePolicyComponents(policy, logger, owner?.id);
-                    const validation = await this.policyEngine.validateModel(policy.id);
+                    let validation = null;
+                    try {
+                        const policyValidation = await this.policyEngine.validateModel(policy.id);
+                        validation = {
+                            isValid: !policyValidation.blocks.some((block) => !block.isValid),
+                            errors: policyValidation
+                        };
+                    } catch (error) {
+                        await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
+                    }
                     return new MessageResponse({
                         policyId: policy.id,
-                        validation: {
-                            isValid: !validation.blocks.some((block) => !block.isValid),
-                            errors: validation
-                        },
+                        validation,
                         errors: result.errors
                     });
                 } catch (error) {
@@ -2425,16 +2465,22 @@ export class PolicyEngineService {
                     notifier.completeStep(STEP_IMPORT_SCHEMAS);
 
                     notifier.startStep(STEP_VALIDATE_POLICY);
-                    const validation = await this.policyEngine.validateModel(policy.id);
+                    let validation = null;
+                    try {
+                        const policyValidation = await this.policyEngine.validateModel(policy.id);
+                        validation = {
+                            isValid: !policyValidation.blocks.some((block) => !block.isValid),
+                            errors: policyValidation
+                        };
+                    } catch (error) {
+                        await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
+                    }
                     notifier.completeStep(STEP_VALIDATE_POLICY);
                     notifier.complete();
 
                     notifier.result({
                         policyId: policy.id,
-                        validation: {
-                            isValid: !validation.blocks.some((block) => !block.isValid),
-                            errors: validation
-                        },
+                        validation,
                         errors: result.errors
                     });
                 }, async (error) => {
