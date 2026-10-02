@@ -34,6 +34,27 @@ const outputSchema = (columns) => ({
     })
 });
 
+const inputSchema = {
+    iri: '#in',
+    name: 'In',
+    contextURL: 'ctx',
+    document: JSON.stringify({
+        $id: '#in',
+        title: 'In',
+        type: 'object',
+        properties: {
+            a: {
+                title: 'a',
+                description: 'A',
+                type: 'number',
+                readOnly: false,
+                $comment: JSON.stringify({ term: 'a' })
+            }
+        },
+        required: []
+    })
+};
+
 class FakeValidator {
     constructor(columns = tableColumns) {
         this.errors = [];
@@ -45,7 +66,7 @@ class FakeValidator {
     validateSchemaVariable(name, value, required) {
         return !value && required ? `Option "${name}" is not set` : null;
     }
-    getSchema() { return this.schema; }
+    getSchema(iri) { return iri === '#in' ? inputSchema : this.schema; }
 }
 
 const ref = (output) => ({

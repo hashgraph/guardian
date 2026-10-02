@@ -1169,3 +1169,67 @@ describe('MathEditorDialogComponent rendered Testing table', () => {
         expect(renderedRows[19].textContent).toContain('2019');
     });
 });
+
+describe('MathEditorDialogComponent issues', () => {
+    function makeDialog(): any {
+        const dialog: any = Object.create(MathEditorDialogComponent.prototype);
+        dialog.fieldWarnings = new Map();
+        dialog.mathIssues = [];
+        dialog.issueGroups = [];
+        dialog.issuesVisible = false;
+        dialog.validationChecked = false;
+        dialog.engine = {
+            variables: { pages: [] },
+            formulas: { pages: [] },
+            outputs: { pages: [] }
+        };
+        return dialog;
+    }
+
+    it('collects path warnings as clickable issues', () => {
+        const dialog = makeDialog();
+        const variable: any = {
+            id: 'v-1',
+            empty: false,
+            invalid: false,
+            field: 'missing.path',
+            variableNameText: 'x'
+        };
+        dialog.engine.variables.pages = [{ id: 'tab-1', items: [variable] }];
+        dialog.fieldWarnings.set('v-1', true);
+
+        dialog.updateIssues();
+
+        expect(dialog.mathIssues).toEqual([{
+            id: 'variables-v-1',
+            group: 'inputs',
+            step: 'step_1',
+            pageId: 'tab-1',
+            title: 'Path not found in schema',
+            message: 'missing.path'
+        }]);
+        expect(dialog.issueGroups[0].issues).toEqual(dialog.mathIssues);
+    });
+
+    it('navigates to the issue row', () => {
+        const dialog = makeDialog();
+        const calls: any[] = [];
+        dialog.onStep = (...args: any[]) => calls.push(args);
+
+        dialog.goToIssue({
+            id: 'outputs-o-1',
+            group: 'outputs',
+            step: 'step_3',
+            pageId: 'tab-3',
+            title: 'Path not found in schema',
+            message: 'result.path'
+        });
+
+        expect(dialog.issuesVisible).toBeFalse();
+        expect(calls).toEqual([[
+            'step_3',
+            'tab-3',
+            '.rows-container[data-issue-id="outputs-o-1"]'
+        ]]);
+    });
+});
