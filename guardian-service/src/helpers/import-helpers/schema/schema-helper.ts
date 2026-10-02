@@ -373,7 +373,7 @@ export async function createSchemaAndArtifacts(
         newSchema.contextURL = `schema:${newSchema.uuid}`;
     }
 
-    const newVersion = old ? await incrementHighestSchemaVersion(newSchema.topicId) : '';
+    const newVersion = old ? SchemaHelper.incrementVersion(previousVersion, []) : '';
     SchemaHelper.setVersion(newSchema, newVersion, previousVersion);
     const row = await createSchema(newSchema, user, notifier);
 
