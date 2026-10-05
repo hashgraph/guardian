@@ -151,10 +151,10 @@ jobs:
           ACCESS_TOKEN_UPDATE_INTERVAL: 600000
 
       - name: Set up Docker Buildx
-        uses: step-security/setup-buildx-action@a4709e2865773e1792246433e8eb922f9743a875 # v4.2.0
+        uses: step-security/setup-buildx-action@e50058a0fcd8d1a7d626c905502d010a468bf238 # v4.4.1
 
       - name: Build Cypress Docker image
-        uses: step-security/docker-build-push-action@144392094f7fc3199dda455efe3b70dbea4b72a0 # v7.3.0
+        uses: step-security/docker-build-push-action@b736dc8a921e02a288f956d3dd9111e276a4cfec # v7.4.0
         with:
           context: ./e2e-tests
           tags: cypress-runner
@@ -195,7 +195,7 @@ jobs:
           path: e2e-tests/cypress/screenshots
 
       - name: Publish API Test Results
-        uses: step-security/publish-unit-test-result-action@681100d67b09305624c089873f12c545ee7cbc24 # v2.23.0
+        uses: step-security/publish-unit-test-result-action@8cf946dca1a299ebf36dff640273fda13717050a # v2.24.0
         if: always()
         with:
           files: e2e-tests/cypress/test_results/**/*.xml
