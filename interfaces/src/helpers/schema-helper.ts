@@ -677,6 +677,61 @@ export class SchemaHelper {
         });
     }
 
+    private static getConditionFieldIdentity(field: any): string {
+        return field?.templateFieldId || field?.name || '';
+    }
+
+    private static getParsedConditionTargetPaths(targets: any[]): string[][] {
+        return (targets || [])
+            .map((target: any) => target?.fieldPath || [])
+            .filter((fieldPath: string[]) => fieldPath.length > 0);
+    }
+
+    /**
+     * Content hash for one condition - "structure" (trigger/operator/rows + branch field
+     * identity/target paths), not the branch fields' own content, which has its own independent
+     * per-field lock. Catches a same-signature content change - e.g. a predicate's comparator,
+     * or a then/else target - that trigger-signature matching alone would miss.
+     * @param condition
+     */
+    public static getConditionComparableFields(condition: any): any {
+        return {
+            op: condition?.ifCondition?.AND ? 'AND' : condition?.ifCondition?.OR ? 'OR' : 'SINGLE',
+            if: SchemaHelper.getConditionTriggerPredicates(condition?.ifCondition).map((predicate: any) => [
+                SchemaHelper.getConditionFieldIdentity(predicate.field),
+                predicate.fieldPath || [],
+                SchemaHelper.cloneSchemaRuntimeValue(predicate.fieldValue),
+                predicate.comparator || 'equals'
+            ]),
+            then: (condition?.thenFields || []).map(SchemaHelper.getConditionFieldIdentity),
+            else: (condition?.elseFields || []).map(SchemaHelper.getConditionFieldIdentity),
+            thenTargets: SchemaHelper.getParsedConditionTargetPaths(condition?.thenTargets),
+            elseTargets: SchemaHelper.getParsedConditionTargetPaths(condition?.elseTargets)
+        };
+    }
+
+    public static getConditionComparableHash(condition: any): string {
+        return SchemaHelper.stableStringify(SchemaHelper.getConditionComparableFields(condition));
+    }
+
+    /**
+     * Walks a repeatable-link path (e.g. `['parent']` or `['grandparent', 'child']`) down a
+     * field tree to the field it ultimately names.
+     * @param fields
+     * @param fieldPath
+     */
+    public static resolveFieldByPath(fields: SchemaField[], fieldPath: string[]): SchemaField | null {
+        let current = fields || [];
+        for (let i = 0; i < fieldPath.length - 1; i++) {
+            const next = current.find((field) => field.name === fieldPath[i]);
+            if (!next) {
+                return null;
+            }
+            current = next.fields || [];
+        }
+        return current.find((field) => field.name === fieldPath[fieldPath.length - 1]) || null;
+    }
+
     /**
      * Which condition branch reveals each field, by field name.
      *

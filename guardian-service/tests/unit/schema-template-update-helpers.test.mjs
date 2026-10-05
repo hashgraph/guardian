@@ -672,6 +672,39 @@ describe('preparePolicySchemaUpdate — condition-branch membership', () => {
             'the pre-existing root restoration must still happen too');
     });
 
+    it('reverts an edited condition back to the template version when the edit broke its match (ProjectId==2 -> ProjectTitle==3)', () => {
+        const projectId = field('ProjectId', { templateFieldId: 'tpl-project-id' });
+        const projectTitle = field('ProjectTitle', { templateFieldId: 'tpl-project-title' });
+        const revealed = field('revealed', { templateFieldId: 'tpl-revealed-1' });
+
+        // Policy author edited the condition away from the template - trigger field AND value
+        // both changed, so its signature no longer matches anything in the template.
+        const targetDocument = SchemaHelper.buildDocument(
+            baseSchema(),
+            [projectId, projectTitle, revealed],
+            [{ ifCondition: { field: projectTitle, fieldValue: 3 }, thenFields: [revealed], elseFields: [] }]
+        );
+        stripEnvelope(targetDocument);
+
+        // Template's own version never changed - still triggers on ProjectId == 2.
+        const sourceDocument = SchemaHelper.buildDocument(
+            baseSchema(),
+            [projectId, projectTitle, revealed],
+            [{ ifCondition: { field: projectId, fieldValue: 2 }, thenFields: [revealed], elseFields: [] }]
+        );
+
+        const target = asSchema(targetDocument);
+        const source = asSchema(sourceDocument);
+
+        preparePolicySchemaUpdate(target, source, 'template-1', { customFieldsLocked: false, schemaSettingsLocked: false, conditionsLocked: false });
+
+        assert.deepEqual(
+            target.document.allOf[0].if,
+            sourceDocument.allOf[0].if,
+            'nothing policy-authored was at risk (revealed is a template field, not custom), so the edited-away condition must revert to the template\'s own ProjectId == 2 condition, not stay on the policy\'s edited ProjectTitle == 3'
+        );
+    });
+
     it('matches the condition by trigger id even when the trigger field was renamed', () => {
         const trigger = field('trigger', { templateFieldId: 'tpl-trigger-1' });
         const branchCustom = field('branchCustom');
@@ -1298,6 +1331,92 @@ describe('buildSchemaTemplateUpdatePreviewFromContext — condition removal', ()
 
         assert.equal(preview.canApply, true);
         assert.equal(preview.conflicts.length, 0);
+        assert.ok(!preview.changes.some((c) => c.type === 'CONDITION_ADD'), 'an already-matched condition must not also be reported as newly added');
+    });
+
+    it('reports a CONDITION_ADD change when the template introduces a brand new condition', () => {
+        const trigger1 = field('trigger1', { templateFieldId: 'tpl-trigger-1' });
+        const trigger2 = field('trigger2', { templateFieldId: 'tpl-trigger-2' });
+        const revealed = field('revealed', { templateFieldId: 'tpl-revealed-1' });
+        // An empty thenFields/elseFields condition doesn't survive the document round-trip
+        // (new InterfaceSchema(...).conditions drops it) - give it a branch field so
+        // policySnapshot.conditions actually sees trigger1's condition as matchable.
+        const policyDocument = SchemaHelper.buildDocument(
+            baseSchema(),
+            [trigger1, revealed],
+            [{ ifCondition: { field: trigger1, fieldValue: 'yes' }, thenFields: [revealed], elseFields: [] }]
+        );
+        delete policyDocument.properties['@context'];
+        delete policyDocument.properties.type;
+        delete policyDocument.properties.id;
+
+        const previousConditions = [{ ifCondition: { field: trigger1, fieldValue: 'yes' }, thenFields: [revealed], elseFields: [] }];
+        const nextConditions = [
+            { ifCondition: { field: trigger1, fieldValue: 'yes' }, thenFields: [revealed], elseFields: [] },
+            { ifCondition: { field: trigger2, fieldValue: 'no' }, thenFields: [], elseFields: [] },
+        ];
+        const context = buildContext(nextConditions, previousConditions, policyDocument);
+
+        const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
+
+        const addChange = preview.changes.find((c) => c.type === 'CONDITION_ADD');
+        assert.ok(addChange, 'a brand new template condition must be reported as added');
+        assert.equal(addChange.fieldName, 'trigger2');
+        assert.ok(!preview.changes.some((c) => c.type === 'CONDITION_ADD' && c.fieldName === 'trigger1'),
+            'the already-matched condition must not also be reported as added');
+    });
+
+    it('reports CONDITION_REMOVE but raises no conflict for an orphaned condition with no custom content attached', () => {
+        const trigger = field('trigger', { templateFieldId: 'tpl-trigger-1' });
+        const revealed = field('revealed', { templateFieldId: 'tpl-revealed-1' });
+        const policyDocument = SchemaHelper.buildDocument(
+            baseSchema(),
+            [trigger, revealed],
+            [{ ifCondition: { field: trigger, fieldValue: 'yes' }, thenFields: [revealed], elseFields: [] }]
+        );
+        delete policyDocument.properties['@context'];
+        delete policyDocument.properties.type;
+        delete policyDocument.properties.id;
+
+        const previousConditions = [{ ifCondition: { field: trigger, fieldValue: 'yes' }, thenFields: [revealed], elseFields: [] }];
+        // Next template version no longer has a matching trigger - same ambiguity as a policy
+        // author editing the trigger away: the system can't tell which happened, only that
+        // nothing policy-authored (no custom field, no cross target) is at risk either way.
+        const context = buildContext([], previousConditions, policyDocument);
+
+        const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
+
+        const change = preview.changes.find((c) => c.type === 'CONDITION_REMOVE');
+        assert.ok(change, 'an orphaned condition must always be reported, even with no custom content');
+        assert.equal(preview.conflicts.length, 0, 'nothing policy-authored is at risk, so no resolution should be required');
+        assert.equal(preview.canApply, true);
+    });
+
+    it('reports both a REMOVE and an ADD when the policy re-points an unlocked condition away from the template-unchanged original', () => {
+        const triggerA = field('triggerA', { templateFieldId: 'tpl-trigger-a' });
+        const triggerB = field('triggerB', { templateFieldId: 'tpl-trigger-b' });
+        const revealed = field('revealed', { templateFieldId: 'tpl-revealed-1' });
+        // Policy author edited the condition's own trigger from A to B (allowed - unlocked).
+        const policyDocument = SchemaHelper.buildDocument(
+            baseSchema(),
+            [triggerA, triggerB, revealed],
+            [{ ifCondition: { field: triggerB, fieldValue: 'yes' }, thenFields: [revealed], elseFields: [] }]
+        );
+        delete policyDocument.properties['@context'];
+        delete policyDocument.properties.type;
+        delete policyDocument.properties.id;
+
+        const previousConditions = [{ ifCondition: { field: triggerB, fieldValue: 'yes' }, thenFields: [revealed], elseFields: [] }];
+        // Template's own version of this condition is untouched - still keyed on trigger A.
+        const nextConditions = [{ ifCondition: { field: triggerA, fieldValue: 'yes' }, thenFields: [revealed], elseFields: [] }];
+        const context = buildContext(nextConditions, previousConditions, policyDocument);
+
+        const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
+
+        assert.ok(preview.changes.some((c) => c.type === 'CONDITION_REMOVE'),
+            'the policy-edited condition no longer matches anything in the template, so it must be reported as removed');
+        assert.ok(preview.changes.some((c) => c.type === 'CONDITION_ADD'),
+            'the template\'s own unchanged condition has no match among the policy\'s edited conditions, so it must be reported as added');
     });
 
     it('raises no conflict when customFieldsLocked already removes the field unconditionally', () => {
@@ -1479,7 +1598,242 @@ describe('buildSchemaTemplateUpdatePreviewFromContext — condition removal', ()
         assert.equal(lockedDetail.before, 'No');
         assert.equal(lockedDetail.after, 'Yes');
     });
+
+    it('reports a per-condition lock toggle change even when the condition itself did not change', () => {
+        const trigger = field('trigger', { templateFieldId: 'tpl-trigger-1' });
+        const revealed = field('revealed');
+        const condition = { ifCondition: { field: trigger, fieldValue: 'yes' }, thenFields: [revealed], elseFields: [] };
+        const policyDocument = SchemaHelper.buildDocument(baseSchema(), [trigger, revealed], [condition]);
+        delete policyDocument.properties['@context'];
+        delete policyDocument.properties.type;
+        delete policyDocument.properties.id;
+
+        const signatureKey = 'SINGLE,tpl-trigger-1:"yes"';
+        const policySchema = {
+            document: policyDocument,
+            name: 'N', description: 'D', entity: 'NONE', version: '1.0.0',
+            templateSchemaId: 'tsid-1', id: 'policy-schema-1',
+        };
+        const context = {
+            policy: { id: 'policy-1' },
+            binding: { templateId: 'template-1', templateName: 'T', templateVersion: '1.0.0' },
+            snapshot: {
+                schemas: { schemas: { 'tsid-1': { templateSchemaId: 'tsid-1', name: 'N', description: 'D', entity: 'NONE', version: '1.0.0', fields: [trigger], conditions: [condition] } } },
+                config: { schemas: { 'tsid-1': { conditions: { [signatureKey]: { locked: false } } } } },
+            },
+            nextSchemas: {
+                schemas: { 'tsid-1': { templateSchemaId: 'tsid-1', name: 'N', description: 'D', entity: 'NONE', version: '1.0.1', fields: [trigger], conditions: [condition] } },
+            },
+            template: {
+                id: 'template-1', name: 'T', version: '1.0.1',
+                config: { schemas: { 'tsid-1': { conditions: { [signatureKey]: { locked: true } } } } },
+            },
+            templateSchemas: [],
+            policySchemaByTemplateId: new Map([['tsid-1', policySchema]]),
+        };
+
+        const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
+
+        const change = preview.changes.find((c) => c.type === 'CONDITION_UPDATE');
+        assert.ok(change, 'a per-condition lock toggle must be reported even when the condition is unchanged');
+        const lockedDetail = (change.details || []).find((d) => d.label === 'Locked');
+        assert.ok(lockedDetail, 'the condition-level lock change must appear as a detail row');
+        assert.equal(lockedDetail.before, 'No');
+        assert.equal(lockedDetail.after, 'Yes');
+    });
+
+    it('reports a single CONDITION_UPDATE (not remove+add) when only the trigger value changed (A==2 -> A==3)', () => {
+        const trigger = field('A', { templateFieldId: 'tpl-a' });
+        const revealed = field('revealed', { templateFieldId: 'tpl-revealed-1' });
+        // Policy author edited the value only - same field, same combinator.
+        const policyDocument = SchemaHelper.buildDocument(
+            baseSchema(),
+            [trigger, revealed],
+            [{ ifCondition: { field: trigger, fieldValue: 3 }, thenFields: [revealed], elseFields: [] }]
+        );
+        delete policyDocument.properties['@context'];
+        delete policyDocument.properties.type;
+        delete policyDocument.properties.id;
+
+        const previousConditions = [{ ifCondition: { field: trigger, fieldValue: 3 }, thenFields: [revealed], elseFields: [] }];
+        // Template's own version never changed - still triggers on A == 2.
+        const nextConditions = [{ ifCondition: { field: trigger, fieldValue: 2 }, thenFields: [revealed], elseFields: [] }];
+        const context = buildContext(nextConditions, previousConditions, policyDocument);
+
+        const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
+
+        assert.ok(!preview.changes.some((c) => c.type === 'CONDITION_ADD'),
+            'an unambiguous value-only change must not also be reported as a brand new condition');
+        assert.ok(!preview.changes.some((c) => c.type === 'CONDITION_REMOVE'),
+            'an unambiguous value-only change must not also be reported as a removed condition');
+        const change = preview.changes.find((c) => c.type === 'CONDITION_UPDATE');
+        assert.ok(change, 'a value-only change on the same trigger field must be reported as a single update');
+        const detail = (change.details || []).find((d) => d.label === 'Condition');
+        assert.ok(detail, 'the condition summary row must show the value change');
+        assert.ok(detail.before.includes('3'), `expected before to mention 3, got: ${detail.before}`);
+        assert.ok(detail.after.includes('2'), `expected after to mention 2, got: ${detail.after}`);
+    });
+
+    it('reports a CONDITION_UPDATE with content details when only the comparator changes', () => {
+        const trigger = field('trigger', { templateFieldId: 'tpl-trigger-1' });
+        const revealed = field('revealed', { templateFieldId: 'tpl-revealed-1' });
+        const policyDocument = SchemaHelper.buildDocument(
+            baseSchema(),
+            [trigger, revealed],
+            [{ ifCondition: { field: trigger, fieldValue: 'yes' }, thenFields: [revealed], elseFields: [] }]
+        );
+        delete policyDocument.properties['@context'];
+        delete policyDocument.properties.type;
+        delete policyDocument.properties.id;
+
+        const previousConditions = [{ ifCondition: { field: trigger, fieldValue: 'yes' }, thenFields: [revealed], elseFields: [] }];
+        // Same field, same value, same combinator (still matches by trigger signature) -
+        // only the comparator differs, which signature matching alone doesn't cover.
+        const nextConditions = [{ ifCondition: { field: trigger, fieldValue: 'yes', comparator: 'contains' }, thenFields: [revealed], elseFields: [] }];
+        const context = buildContext(nextConditions, previousConditions, policyDocument);
+
+        const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
+
+        const change = preview.changes.find((c) => c.type === 'CONDITION_UPDATE');
+        assert.ok(change, 'a comparator-only change on an otherwise-matched condition must still be reported');
+        const detail = (change.details || []).find((d) => d.label === 'Condition');
+        assert.ok(detail, 'the condition summary row must show the comparator change');
+        assert.ok(detail.before.includes('equals'));
+        assert.ok(detail.after.includes('contains'));
+    });
+
+    it('reports a per-link lock toggle change even when the link itself did not change', () => {
+        const parent = field('parent', { templateFieldId: 'tpl-parent', isArray: true });
+        const child = field('child', { templateFieldId: 'tpl-child', isArray: true });
+        const dependency = { field: ['child'], on: ['parent'], kind: 'array' };
+        // This block's own baseSchema() takes no arrayDependencies param (unlike the one in the
+        // repeatable-link-removal block below) - add arrayDependencies on top of it here instead.
+        const policyDocument = SchemaHelper.buildDocument({ ...baseSchema(), arrayDependencies: [dependency] }, [parent, child], []);
+        delete policyDocument.properties['@context'];
+        delete policyDocument.properties.type;
+        delete policyDocument.properties.id;
+
+        const policySchema = {
+            document: policyDocument,
+            name: 'N', description: 'D', entity: 'NONE', version: '1.0.0',
+            templateSchemaId: 'tsid-1', id: 'policy-schema-1',
+        };
+        const context = {
+            policy: { id: 'policy-1' },
+            binding: { templateId: 'template-1', templateName: 'T', templateVersion: '1.0.0' },
+            snapshot: {
+                schemas: { schemas: { 'tsid-1': { templateSchemaId: 'tsid-1', name: 'N', description: 'D', entity: 'NONE', version: '1.0.0', fields: [parent, child], conditions: [], arrayDependencies: [dependency] } } },
+                config: { schemas: { 'tsid-1': { repeatableLinks: { 'tpl-child': { locked: false } } } } },
+            },
+            nextSchemas: {
+                schemas: { 'tsid-1': { templateSchemaId: 'tsid-1', name: 'N', description: 'D', entity: 'NONE', version: '1.0.1', fields: [parent, child], conditions: [], arrayDependencies: [dependency] } },
+            },
+            template: {
+                id: 'template-1', name: 'T', version: '1.0.1',
+                config: { schemas: { 'tsid-1': { repeatableLinks: { 'tpl-child': { locked: true } } } } },
+            },
+            templateSchemas: [],
+            policySchemaByTemplateId: new Map([['tsid-1', policySchema]]),
+        };
+
+        const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
+
+        const change = preview.changes.find((c) => c.type === 'REPEATABLE_LINK_UPDATE');
+        assert.ok(change, 'a per-link lock toggle must be reported even when the link is unchanged');
+        const lockedDetail = (change.details || []).find((d) => d.label === 'Locked');
+        assert.ok(lockedDetail, 'the link-level lock change must appear as a detail row');
+        assert.equal(lockedDetail.before, 'No');
+        assert.equal(lockedDetail.after, 'Yes');
+    });
+
+    it('reports a REPEATABLE_LINK_UPDATE with content details when a matched link is re-pointed to a different source array', () => {
+        const parent = field('parent', { templateFieldId: 'tpl-parent', isArray: true });
+        const grandparent = field('grandparent', { templateFieldId: 'tpl-grandparent', isArray: true });
+        const child = field('child', { templateFieldId: 'tpl-child', isArray: true });
+        const previousDependency = { field: ['child'], on: ['parent'], kind: 'array' };
+        const policyDocument = SchemaHelper.buildDocument(
+            { ...baseSchema(), arrayDependencies: [previousDependency] },
+            [parent, grandparent, child],
+            []
+        );
+        delete policyDocument.properties['@context'];
+        delete policyDocument.properties.type;
+        delete policyDocument.properties.id;
+
+        const policySchema = {
+            document: policyDocument,
+            name: 'N', description: 'D', entity: 'NONE', version: '1.0.0',
+            templateSchemaId: 'tsid-1', id: 'policy-schema-1',
+        };
+        // Template's next version still links the same dependent field ('child' - matched by
+        // templateFieldId), but its source array changed from 'parent' to 'grandparent'.
+        const nextDependency = { field: ['child'], on: ['grandparent'], kind: 'array' };
+        const context = {
+            policy: { id: 'policy-1' },
+            binding: { templateId: 'template-1', templateName: 'T', templateVersion: '1.0.0' },
+            snapshot: {
+                schemas: { schemas: { 'tsid-1': { templateSchemaId: 'tsid-1', name: 'N', description: 'D', entity: 'NONE', version: '1.0.0', fields: [parent, grandparent, child], conditions: [], arrayDependencies: [previousDependency] } } },
+                config: { schemas: {} },
+            },
+            nextSchemas: {
+                schemas: { 'tsid-1': { templateSchemaId: 'tsid-1', name: 'N', description: 'D', entity: 'NONE', version: '1.0.1', fields: [parent, grandparent, child], conditions: [], arrayDependencies: [nextDependency] } },
+            },
+            template: { id: 'template-1', name: 'T', version: '1.0.1', config: { schemas: {} } },
+            templateSchemas: [],
+            policySchemaByTemplateId: new Map([['tsid-1', policySchema]]),
+        };
+
+        const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
+
+        const change = preview.changes.find((c) => c.type === 'REPEATABLE_LINK_UPDATE');
+        assert.ok(change, 'a re-pointed source array on an otherwise-matched link must still be reported');
+        const detail = (change.details || []).find((d) => d.label === 'Source array');
+        assert.ok(detail, 'the source-array row must show the change');
+        assert.equal(detail.before, 'parent');
+        assert.equal(detail.after, 'grandparent');
+    });
+
+    it('reports a whole-schema repeatableLinksLocked toggle change even when nothing else changed', () => {
+        const trigger = field('trigger', { templateFieldId: 'tpl-trigger-1' });
+        const policyDocument = SchemaHelper.buildDocument(baseSchema(), [trigger], []);
+        delete policyDocument.properties['@context'];
+        delete policyDocument.properties.type;
+        delete policyDocument.properties.id;
+
+        const context = buildContextForLockDiff(policyDocument, trigger);
+        context.snapshot.config = { schemas: { 'tsid-1': {} } };
+        context.template.config = { schemas: { 'tsid-1': { repeatableLinksLocked: true } } };
+
+        const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
+
+        const change = preview.changes.find((c) => c.type === 'SCHEMA_UPDATE');
+        assert.ok(change, 'a repeatableLinksLocked toggle-only change must still be reported as a change');
+        const labels = (change.details || []).map((d) => d.label);
+        assert.ok(labels.includes('Repeatable links locked'));
+    });
 });
+
+function buildContextForLockDiff(policyDocument, trigger) {
+    const policySchema = {
+        document: policyDocument,
+        name: 'N', description: 'D', entity: 'NONE', version: '1.0.0',
+        templateSchemaId: 'tsid-1', id: 'policy-schema-1',
+    };
+    return {
+        policy: { id: 'policy-1' },
+        binding: { templateId: 'template-1', templateName: 'T', templateVersion: '1.0.0' },
+        snapshot: {
+            schemas: { schemas: { 'tsid-1': { templateSchemaId: 'tsid-1', name: 'N', description: 'D', entity: 'NONE', version: '1.0.0', fields: [trigger], conditions: [] } } },
+            config: { schemas: {} },
+        },
+        nextSchemas: {
+            schemas: { 'tsid-1': { templateSchemaId: 'tsid-1', name: 'N', description: 'D', entity: 'NONE', version: '1.0.1', fields: [trigger], conditions: [] } },
+        },
+        template: { id: 'template-1', name: 'T', version: '1.0.1', config: { schemas: {} } },
+        templateSchemas: [],
+        policySchemaByTemplateId: new Map([['tsid-1', policySchema]]),
+    };
+}
 
 // `preparePolicySchemaUpdate` clones `source.document` wholesale, including `$comment` where
 // arrayDependencies live (interfaces/src/models/schema.ts:288-291). Classification mirrors
@@ -1560,7 +1914,7 @@ describe('preparePolicySchemaUpdate — repeatable link membership', () => {
         assert.deepEqual(readLinks(target.document), [dependency]);
     });
 
-    it('drops all repeatable links when conditionsLocked is true (whole-tab reuse, not a new flag)', () => {
+    it('drops all repeatable links when repeatableLinksLocked is true', () => {
         const parent = field('parent', { templateFieldId: 'tpl-parent', isArray: true });
         const customChild = field('customChild', { isArray: true });
         const dependency = { field: ['customChild'], on: ['parent'], kind: 'array' };
@@ -1571,10 +1925,10 @@ describe('preparePolicySchemaUpdate — repeatable link membership', () => {
         const target = asSchema(targetDocument);
         const source = asSchema(sourceDocument);
 
-        preparePolicySchemaUpdate(target, source, 'template-1', { customFieldsLocked: false, conditionsLocked: true, schemaSettingsLocked: false });
+        preparePolicySchemaUpdate(target, source, 'template-1', { customFieldsLocked: false, repeatableLinksLocked: true, schemaSettingsLocked: false });
 
         assert.deepEqual(readLinks(target.document), [],
-            'conditionsLocked must drop every repeatable link unconditionally, same as customFieldsLocked does for fields');
+            'repeatableLinksLocked must drop every repeatable link unconditionally, same as customFieldsLocked does for fields');
     });
 
     it('drops an orphaned repeatable link (template unlinked two still-existing fields) when no resolution is given', () => {
@@ -1650,7 +2004,7 @@ describe('buildSchemaTemplateUpdatePreviewFromContext — repeatable link remova
         uuid: 'u-1', version: '1.0.0', name: 'N', description: 'D', contextURL: 'ctx:', arrayDependencies,
     });
 
-    const buildContext = (nextLinks, previousLinks, policyDocument) => {
+    const buildContext = (nextLinks, previousLinks, policyDocument, nextFields = []) => {
         const policySchema = {
             document: policyDocument,
             name: 'N', description: 'D', entity: 'NONE', version: '1.0.0',
@@ -1664,7 +2018,7 @@ describe('buildSchemaTemplateUpdatePreviewFromContext — repeatable link remova
                 config: { schemas: {} },
             },
             nextSchemas: {
-                schemas: { 'tsid-1': { templateSchemaId: 'tsid-1', name: 'N', description: 'D', entity: 'NONE', version: '1.0.1', fields: [], conditions: [], arrayDependencies: nextLinks } },
+                schemas: { 'tsid-1': { templateSchemaId: 'tsid-1', name: 'N', description: 'D', entity: 'NONE', version: '1.0.1', fields: nextFields, conditions: [], arrayDependencies: nextLinks } },
             },
             template: { id: 'template-1', name: 'T', version: '1.0.1', config: { schemas: {} } },
             templateSchemas: [],
@@ -1702,15 +2056,34 @@ describe('buildSchemaTemplateUpdatePreviewFromContext — repeatable link remova
         delete policyDocument.properties.type;
         delete policyDocument.properties.id;
 
-        const context = buildContext([dependency], [dependency], policyDocument);
+        const context = buildContext([dependency], [dependency], policyDocument, [parent, child]);
 
         const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
 
         assert.equal(preview.canApply, true);
         assert.equal(preview.conflicts.length, 0);
+        assert.ok(!preview.changes.some((c) => c.type === 'REPEATABLE_LINK_ADD'), 'an already-matched link must not also be reported as newly added');
     });
 
-    it('raises no conflict when conditionsLocked already removes every link unconditionally', () => {
+    it('reports a REPEATABLE_LINK_ADD change when the template introduces a brand new link', () => {
+        const parent = field('parent', { templateFieldId: 'tpl-parent', isArray: true });
+        const child = field('child', { templateFieldId: 'tpl-child', isArray: true });
+        const dependency = { field: ['child'], on: ['parent'], kind: 'array' };
+        const policyDocument = SchemaHelper.buildDocument(baseSchema([]), [parent, child], []);
+        delete policyDocument.properties['@context'];
+        delete policyDocument.properties.type;
+        delete policyDocument.properties.id;
+
+        const context = buildContext([dependency], [], policyDocument, [parent, child]);
+
+        const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
+
+        const addChange = preview.changes.find((c) => c.type === 'REPEATABLE_LINK_ADD');
+        assert.ok(addChange, 'a brand new template link must be reported as added');
+        assert.equal(addChange.fieldName, 'child');
+    });
+
+    it('raises no conflict when repeatableLinksLocked already removes every link unconditionally', () => {
         const parent = field('parent', { templateFieldId: 'tpl-parent', isArray: true });
         const child = field('child', { templateFieldId: 'tpl-child', isArray: true });
         const dependency = { field: ['child'], on: ['parent'], kind: 'array' };
@@ -1720,7 +2093,7 @@ describe('buildSchemaTemplateUpdatePreviewFromContext — repeatable link remova
         delete policyDocument.properties.id;
 
         const context = buildContext([], [dependency], policyDocument);
-        context.template.config = { schemas: { 'tsid-1': { conditionsLocked: true } } };
+        context.template.config = { schemas: { 'tsid-1': { repeatableLinksLocked: true } } };
 
         const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
 

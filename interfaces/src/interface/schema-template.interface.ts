@@ -2,6 +2,7 @@ import { ModuleStatus } from '../type/module-status.type.js';
 import { SchemaEntity } from '../type/schema-entity.type.js';
 import { SchemaCondition } from './schema-condition.interface.js';
 import { SchemaField } from './schema-field.interface.js';
+import { ISchemaArrayDependency } from './schema-array-dependency.interface.js';
 
 export interface IPolicySchemaTemplateBinding {
     templateId: string;
@@ -32,6 +33,7 @@ export interface ISchemaTemplateSnapshotSchema {
     version?: string;
     fields: ISchemaTemplateSnapshotField[];
     conditions?: SchemaCondition[];
+    arrayDependencies?: ISchemaArrayDependency[];
 }
 
 export interface ISchemaTemplateSnapshotSchemas {
@@ -68,18 +70,25 @@ export enum SchemaTemplateUpdateChangeType {
     FIELD_REMOVE = 'FIELD_REMOVE',
     CUSTOM_FIELD_PRESERVE = 'CUSTOM_FIELD_PRESERVE',
     CUSTOM_FIELD_REMOVE = 'CUSTOM_FIELD_REMOVE',
-    CONDITION_REMOVE = 'CONDITION_REMOVE'
+    CONDITION_ADD = 'CONDITION_ADD',
+    CONDITION_REMOVE = 'CONDITION_REMOVE',
+    CONDITION_UPDATE = 'CONDITION_UPDATE',
+    REPEATABLE_LINK_ADD = 'REPEATABLE_LINK_ADD',
+    REPEATABLE_LINK_REMOVE = 'REPEATABLE_LINK_REMOVE',
+    REPEATABLE_LINK_UPDATE = 'REPEATABLE_LINK_UPDATE'
 }
 
 export enum SchemaTemplateUpdateConflictType {
     SCHEMA_REMOVED_WITH_POLICY_USAGE = 'SCHEMA_REMOVED_WITH_POLICY_USAGE',
-    CONDITION_REMOVED_WITH_POLICY_USAGE = 'CONDITION_REMOVED_WITH_POLICY_USAGE'
+    CONDITION_REMOVED_WITH_POLICY_USAGE = 'CONDITION_REMOVED_WITH_POLICY_USAGE',
+    REPEATABLE_LINK_REMOVED_WITH_POLICY_USAGE = 'REPEATABLE_LINK_REMOVED_WITH_POLICY_USAGE'
 }
 
 export enum SchemaTemplateUpdateResolutionAction {
     KEEP_AS_CUSTOM_SCHEMA = 'KEEP_AS_CUSTOM_SCHEMA',
     REMOVE_FROM_POLICY = 'REMOVE_FROM_POLICY',
-    KEEP_AS_CUSTOM_CONDITION = 'KEEP_AS_CUSTOM_CONDITION'
+    KEEP_AS_CUSTOM_CONDITION = 'KEEP_AS_CUSTOM_CONDITION',
+    KEEP_AS_CUSTOM_LINK = 'KEEP_AS_CUSTOM_LINK'
 }
 
 export interface ISchemaTemplateUpdateChange {
@@ -160,23 +169,26 @@ export interface ISchemaTemplateFieldConfig {
 
 export interface ISchemaTemplateSchemaConfig {
     schemaSettingsLocked?: boolean;
+    /** Prevents adding new custom fields. Does not block editing/removing an existing one - that's governed by `fields`. */
     customFieldsLocked?: boolean;
+    /** Prevents adding new conditions. Does not block editing/removing an existing one - that's governed by `conditions`. */
     conditionsLocked?: boolean;
+    /** Prevents adding new repeatable links. Does not block editing/removing an existing one - that's governed by `repeatableLinks`. */
+    repeatableLinksLocked?: boolean;
     guidelines?: string;
     featured?: boolean;
     fields?: Record<string, ISchemaTemplateFieldConfig>;
     /**
      * Per-individual-condition lock, keyed by the condition's trigger signature
      * (`SchemaHelper.getConditionTriggerSignature(condition).join(',')`). Independent of
-     * `conditionsLocked` (the whole-tab toggle) - locks only that condition's own
-     * trigger/operator/rows/existence, not the content of its then/else branch fields,
-     * which stay governed solely by the existing per-field lock in `fields`.
+     * `conditionsLocked` - locks only that condition's own trigger/operator/rows/existence,
+     * not the content of its then/else branch fields, which stay governed solely by the
+     * existing per-field lock in `fields`.
      */
     conditions?: Record<string, ISchemaTemplateFieldConfig>;
     /**
      * Per-individual-repeatable-link lock, keyed by the dependent field's own
-     * `templateFieldId`. The whole-tab lock reuses `conditionsLocked` directly; this is the
-     * finer-grained, per-link layer on top, mirroring `fields`.
+     * `templateFieldId`. Independent of `repeatableLinksLocked`, mirroring `fields`.
      */
     repeatableLinks?: Record<string, ISchemaTemplateFieldConfig>;
 }

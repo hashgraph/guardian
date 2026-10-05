@@ -73,49 +73,17 @@ function getSchemaFields(schema: ISchema): SchemaField[] {
     return new Schema(schema, true).fields || [];
 }
 
-function getConditionFieldId(field: any): string {
-    return field?.templateFieldId || field?.name || '';
-}
-
-function getParsedConditionTargetPaths(targets: any[]): string[][] {
-    return (targets || [])
-        .map((target: any) => target.fieldPath || [])
-        .filter((fieldPath: string[]) => fieldPath.length > 0);
-}
-
-function conditionComparableFields(condition: any): any {
-    return {
-        op: condition.ifCondition?.AND ? 'AND' : condition.ifCondition?.OR ? 'OR' : 'SINGLE',
-        if: SchemaHelper.getConditionTriggerPredicates(condition.ifCondition).map((predicate: any) => [
-            getConditionFieldId(predicate.field),
-            predicate.fieldPath || [],
-            SchemaHelper.cloneSchemaRuntimeValue(predicate.fieldValue),
-            // Signature matching ignores comparator by design, so this hash must cover it,
-            // or a comparator-only change (same field, same value) stays undetected.
-            predicate.comparator || 'equals'
-        ]),
-        then: (condition.thenFields || []).map(getConditionFieldId),
-        else: (condition.elseFields || []).map(getConditionFieldId),
-        thenTargets: getParsedConditionTargetPaths(condition.thenTargets),
-        elseTargets: getParsedConditionTargetPaths(condition.elseTargets)
-    };
-}
-
-function getConditionsHash(schema: ISchema): string {
-    const conditions = new Schema(schema, true).conditions || [];
-    return SchemaHelper.stableStringify(conditions.map(conditionComparableFields));
-}
-
 /**
  * Content hash for one condition - "structure" (trigger/operator/rows + branch field
  * identity/target paths), not the branch fields' own content, which has its own independent
  * per-field lock. Used by the per-condition lock, alongside signature-based match/removal
  * detection (which alone would miss a same-signature content change, e.g. a predicate's
- * comparator changing without its field/value changing).
+ * comparator changing without its field/value changing). Shared with the update-preview
+ * builder in schema-template.service.ts, which needs the identical notion of "changed".
  * @param condition
  */
 function conditionComparableHash(condition: any): string {
-    return SchemaHelper.stableStringify(conditionComparableFields(condition));
+    return SchemaHelper.getConditionComparableHash(condition);
 }
 
 function getConditionConfig(schemaConfig: ISchemaTemplateSchemaConfig, condition: any): any {
@@ -126,35 +94,13 @@ function getConditionConfig(schemaConfig: ISchemaTemplateSchemaConfig, condition
     return schemaConfig.conditions?.[signature.join(',')] || null;
 }
 
-/**
- * Walks a repeatable-link path (e.g. `['parent']` or `['grandparent', 'child']`) down a
- * field tree to the field it ultimately names.
- * @param fields
- * @param fieldPath
- */
-function resolveFieldByPath(fields: SchemaField[], fieldPath: string[]): SchemaField | null {
-    let current = fields || [];
-    for (let i = 0; i < fieldPath.length - 1; i++) {
-        const next = current.find((field) => field.name === fieldPath[i]);
-        if (!next) {
-            return null;
-        }
-        current = next.fields || [];
-    }
-    return current.find((field) => field.name === fieldPath[fieldPath.length - 1]) || null;
-}
-
 function getArrayDependencyConfig(schemaConfig: ISchemaTemplateSchemaConfig, fields: SchemaField[], dependency: any): any {
-    const templateFieldId = resolveFieldByPath(fields, dependency?.field || [])?.templateFieldId;
+    const templateFieldId = SchemaHelper.resolveFieldByPath(fields, dependency?.field || [])?.templateFieldId;
     return templateFieldId ? (schemaConfig.repeatableLinks?.[templateFieldId] || null) : null;
 }
 
 function arrayDependencyComparableHash(dependency: any): string {
     return SchemaHelper.stableStringify(dependency);
-}
-
-function getArrayDependenciesHash(schema: ISchema): string {
-    return SchemaHelper.stableStringify(new Schema(schema, true).arrayDependencies || []);
 }
 
 function flattenFields(fields: SchemaField[], result: SchemaField[] = []): SchemaField[] {
@@ -273,16 +219,22 @@ export function validateTemplateSchemaUpdateByConfig(
         throw new Error(`Schema settings for "${previous.name}" are locked by schema template and cannot be edited.`);
     }
 
-    if (schemaConfig.conditionsLocked && getConditionsHash(previous) !== getConditionsHash(next)) {
-        throw new Error(`Conditions for "${previous.name}" are locked by schema template and cannot be edited.`);
-    }
-
-    // Per-individual-condition lock - independent of the whole-tab check above. Unlike
-    // per-field locks, a condition with no config entry defaults to *unlocked*: this is an
-    // opt-in extra restriction on top of conditionsLocked, not a default-safe state every
-    // condition starts in.
     const previousConditions = new Schema(previous, true).conditions || [];
     const nextConditions = new Schema(next, true).conditions || [];
+
+    // Mirrors customFieldsLocked exactly: blocks adding a brand-new condition, not editing or
+    // removing an existing one - that's the per-condition lock's job, below. Count-based, not
+    // identity-based: a condition has no stable key independent of its own content (unlike a
+    // field's `path`), so matching by trigger field names/operator would misclassify a
+    // legitimate structural edit to an individually-unlocked condition (e.g. changing its
+    // operator or trigger field) as "a new condition was added".
+    if (schemaConfig.conditionsLocked && nextConditions.length > previousConditions.length) {
+        throw new Error(`Schema "${previous.name}" does not allow new conditions because it is locked by schema template.`);
+    }
+
+    // Per-individual-condition lock - independent of conditionsLocked above. Unlike per-field
+    // locks, a condition with no config entry defaults to *unlocked*: this is an opt-in extra
+    // restriction, not a default-safe state every condition starts in.
     for (const previousCondition of previousConditions) {
         if (getConditionConfig(schemaConfig, previousCondition)?.locked !== true) {
             continue;
@@ -297,22 +249,28 @@ export function validateTemplateSchemaUpdateByConfig(
         }
     }
 
-    if (schemaConfig.conditionsLocked && getArrayDependenciesHash(previous) !== getArrayDependenciesHash(next)) {
-        throw new Error(`Repeatable links for "${previous.name}" are locked by schema template and cannot be edited.`);
-    }
-
-    // Per-individual-repeatable-link lock, same opt-in-only default as conditions above.
     const previousFieldTree = getSchemaFields(previous);
     const nextFieldTree = getSchemaFields(next);
     const previousLinks = new Schema(previous, true).arrayDependencies || [];
     const nextLinks = new Schema(next, true).arrayDependencies || [];
+
+    // Mirrors customFieldsLocked/conditionsLocked: blocks adding a brand-new repeatable link,
+    // not editing or removing an existing one - that's the per-link lock's job, below.
+    // Count-based for the same reason as conditions above: re-pointing an individually-unlocked
+    // link to a different source/dependent array is a legitimate edit, not an addition, even
+    // though it changes the field/on pair that would otherwise identify the link.
+    if (schemaConfig.repeatableLinksLocked && nextLinks.length > previousLinks.length) {
+        throw new Error(`Schema "${previous.name}" does not allow new repeatable links because it is locked by schema template.`);
+    }
+
+    // Per-individual-repeatable-link lock, same opt-in-only default as conditions above.
     for (const previousLink of previousLinks) {
         if (getArrayDependencyConfig(schemaConfig, previousFieldTree, previousLink)?.locked !== true) {
             continue;
         }
-        const templateFieldId = resolveFieldByPath(previousFieldTree, previousLink.field || [])?.templateFieldId;
+        const templateFieldId = SchemaHelper.resolveFieldByPath(previousFieldTree, previousLink.field || [])?.templateFieldId;
         const matchIndex = nextLinks.findIndex((candidate) =>
-            resolveFieldByPath(nextFieldTree, candidate.field || [])?.templateFieldId === templateFieldId
+            SchemaHelper.resolveFieldByPath(nextFieldTree, candidate.field || [])?.templateFieldId === templateFieldId
         );
         if (matchIndex === -1) {
             throw new Error(`A repeatable link in "${previous.name}" is locked by schema template and cannot be removed.`);

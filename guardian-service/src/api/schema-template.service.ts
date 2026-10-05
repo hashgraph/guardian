@@ -26,6 +26,7 @@ import {
     GenerateUUIDv4,
     IOwner,
     ISchema,
+    ISchemaArrayDependency,
     ISchemaTemplate,
     IPolicySchemaTemplateBinding,
     ISchemaTemplateConfig,
@@ -747,7 +748,8 @@ function toSnapshotSchema(
         fields: (parsed.fields || [])
             .filter((field) => !SYSTEM_ENVELOPE_FIELD_NAMES.has(field?.name))
             .map((field) => toSnapshotField(field, templateSchemaByIri)),
-        conditions: SchemaHelper.cloneSchemaRuntimeValue(parsed.conditions || [])
+        conditions: SchemaHelper.cloneSchemaRuntimeValue(parsed.conditions || []),
+        arrayDependencies: SchemaHelper.cloneSchemaRuntimeValue(parsed.arrayDependencies || [])
     };
 }
 
@@ -963,6 +965,53 @@ export function classifyConditionsAgainstSource(previousConditions: any[], sourc
             continue;
         }
         const matchedIndex = findMatchingConditionIndex(sourceConditions || [], signature);
+        if (matchedIndex === -1) {
+            orphanedIndices.add(i);
+        } else {
+            matchedIndexByOldIndex.set(i, matchedIndex);
+        }
+    }
+    return { matchedIndexByOldIndex, whollyCustomIndices, orphanedIndices };
+}
+
+function arrayDependencyDependentTemplateFieldId(fields: any[], dependency: ISchemaArrayDependency): string | null {
+    return SchemaHelper.resolveFieldByPath(fields, dependency?.field || [])?.templateFieldId || null;
+}
+
+export interface IArrayDependencyClassification {
+    matchedIndexByOldIndex: Map<number, number>;
+    whollyCustomIndices: Set<number>;
+    orphanedIndices: Set<number>;
+}
+
+/**
+ * Same three-way split as `classifyConditionsAgainstSource`, identity keyed on the dependent
+ * field's templateFieldId instead of a trigger signature - a link has no sub-structure a
+ * policy author could add onto an otherwise-matched one, so there is no branch/cross-target
+ * equivalent to restore for the matched case.
+ * @param previousLinks
+ * @param previousFields
+ * @param sourceLinks
+ * @param sourceFields
+ */
+export function classifyArrayDependenciesAgainstSource(
+    previousLinks: ISchemaArrayDependency[],
+    previousFields: any[],
+    sourceLinks: ISchemaArrayDependency[],
+    sourceFields: any[]
+): IArrayDependencyClassification {
+    const matchedIndexByOldIndex = new Map<number, number>();
+    const whollyCustomIndices = new Set<number>();
+    const orphanedIndices = new Set<number>();
+    for (let i = 0; i < (previousLinks || []).length; i++) {
+        const templateFieldId = arrayDependencyDependentTemplateFieldId(previousFields, previousLinks[i]);
+        if (!templateFieldId) {
+            whollyCustomIndices.add(i);
+            continue;
+        }
+        const matchedIndex = (sourceLinks || []).findIndex((candidate) =>
+            arrayDependencyDependentTemplateFieldId(sourceFields, candidate) === templateFieldId
+        );
         if (matchedIndex === -1) {
             orphanedIndices.add(i);
         } else {
@@ -1388,7 +1437,8 @@ function buildSchemaConfigChangeDetails(previous: any, next: any): ISchemaTempla
     return buildDetails(previous, next, [
         { key: 'schemaSettingsLocked', label: 'Schema settings locked' },
         { key: 'customFieldsLocked', label: 'Custom fields locked' },
-        { key: 'conditionsLocked', label: 'Conditions locked' }
+        { key: 'conditionsLocked', label: 'Conditions locked' },
+        { key: 'repeatableLinksLocked', label: 'Repeatable links locked' }
     ]);
 }
 
@@ -1408,6 +1458,198 @@ function buildFieldLockChangeDetails(
         { locked: isFieldLockedByConfig(nextSchemaConfig, templateFieldId) },
         [{ key: 'locked', label: 'Locked' }]
     );
+}
+
+/**
+ * Opt-in default, unlike isFieldLockedByConfig: a condition/link with no config entry is
+ * locked only when explicitly `true`, not merely "not explicitly false".
+ */
+function isConditionLockedByConfig(schemaConfig: any, signatureKey: string): boolean {
+    return schemaConfig?.conditions?.[signatureKey]?.locked === true;
+}
+
+function isLinkLockedByConfig(schemaConfig: any, templateFieldId: string): boolean {
+    return schemaConfig?.repeatableLinks?.[templateFieldId]?.locked === true;
+}
+
+function buildConditionLockChangeDetails(
+    previousSchemaConfig: any,
+    nextSchemaConfig: any,
+    signatureKey: string
+): ISchemaTemplateUpdateChange['details'] {
+    return buildDetails(
+        { locked: isConditionLockedByConfig(previousSchemaConfig, signatureKey) },
+        { locked: isConditionLockedByConfig(nextSchemaConfig, signatureKey) },
+        [{ key: 'locked', label: 'Locked' }]
+    );
+}
+
+function buildLinkLockChangeDetails(
+    previousSchemaConfig: any,
+    nextSchemaConfig: any,
+    templateFieldId: string
+): ISchemaTemplateUpdateChange['details'] {
+    return buildDetails(
+        { locked: isLinkLockedByConfig(previousSchemaConfig, templateFieldId) },
+        { locked: isLinkLockedByConfig(nextSchemaConfig, templateFieldId) },
+        [{ key: 'locked', label: 'Locked' }]
+    );
+}
+
+/** IF/IF ALL/IF ANY + each predicate's field, comparator and value, in one readable row. */
+function formatConditionPredicateSummary(ifCondition: any): string {
+    if (!ifCondition) {
+        return '-';
+    }
+    const combinator = Array.isArray(ifCondition.AND) ? 'IF ALL' : Array.isArray(ifCondition.OR) ? 'IF ANY' : 'IF';
+    const parts = SchemaHelper.getConditionTriggerPredicates(ifCondition).map((predicate: any) =>
+        `${getFieldDisplayName(predicate.field)} ${predicate.comparator || 'equals'} ${formatDiffJson(predicate.fieldValue)}`
+    );
+    return parts.length ? `${combinator}: ${parts.join(', ')}` : '-';
+}
+
+function formatConditionTargetList(targets: any[]): string {
+    const names = (targets || []).map((target: any) => getFieldDisplayName(target?.field));
+    return names.length ? names.join(', ') : '-';
+}
+
+/**
+ * Trigger-signature matching only covers field/value/combinator - a predicate's comparator,
+ * or a then/else cross-schema target, can change on an otherwise-matched condition without
+ * ever showing up anywhere else in the diff.
+ */
+function buildConditionContentChangeDetails(
+    previousCondition: any,
+    sourceCondition: any
+): ISchemaTemplateUpdateChange['details'] {
+    const rows: ISchemaTemplateUpdateChange['details'] = [];
+    const push = (label: string, before: string, after: string) => {
+        if (before !== after) {
+            rows.push({ label, before, after });
+        }
+    };
+    push(
+        'Condition',
+        formatConditionPredicateSummary(previousCondition?.ifCondition),
+        formatConditionPredicateSummary(sourceCondition?.ifCondition)
+    );
+    push(
+        'Then targets',
+        formatConditionTargetList(previousCondition?.thenTargets),
+        formatConditionTargetList(sourceCondition?.thenTargets)
+    );
+    push(
+        'Else targets',
+        formatConditionTargetList(previousCondition?.elseTargets),
+        formatConditionTargetList(sourceCondition?.elseTargets)
+    );
+    return rows;
+}
+
+function formatArrayDependencyFieldName(fields: any[], path: string[]): string {
+    const resolved = SchemaHelper.resolveFieldByPath(fields, path || []);
+    return resolved ? getFieldDisplayName(resolved) : (path || []).join('.') || '-';
+}
+
+/** A matched link's own identity is its dependent field - its source array can still be re-pointed. */
+function buildLinkContentChangeDetails(
+    previousFields: any[],
+    previousLink: any,
+    nextFields: any[],
+    sourceLink: any
+): ISchemaTemplateUpdateChange['details'] {
+    const rows: ISchemaTemplateUpdateChange['details'] = [];
+    const push = (label: string, before: string, after: string) => {
+        if (before !== after) {
+            rows.push({ label, before, after });
+        }
+    };
+    push(
+        'Source array',
+        formatArrayDependencyFieldName(previousFields, previousLink?.on),
+        formatArrayDependencyFieldName(nextFields, sourceLink?.on)
+    );
+    push('Kind', previousLink?.kind || '-', sourceLink?.kind || '-');
+    return rows;
+}
+
+/**
+ * A condition's trigger field(s) + combinator, ignoring the value(s) compared against -
+ * looser than `conditionTriggerSignature`, used only to recognize "the same condition, its
+ * value changed" as an update instead of an unrelated remove+add. Returns null under the same
+ * circumstances as the signature (no templateFieldId on some predicate's field).
+ */
+function conditionTriggerFieldKey(condition: any): string | null {
+    const ifCondition = condition?.ifCondition;
+    if (!ifCondition) {
+        return null;
+    }
+    const combinator = Array.isArray(ifCondition.AND) ? 'AND' : Array.isArray(ifCondition.OR) ? 'OR' : 'SINGLE';
+    const ids: string[] = [];
+    for (const predicate of SchemaHelper.getConditionTriggerPredicates(ifCondition)) {
+        const id = (predicate as any)?.field?.templateFieldId;
+        if (!id) {
+            return null;
+        }
+        ids.push(id);
+    }
+    return [combinator, ...ids.sort()].join(',');
+}
+
+/**
+ * Pairs up orphaned previous conditions with unmatched source conditions that share the same
+ * trigger field(s) - only when the pairing is unambiguous (exactly one candidate on each side).
+ * Two conditions can legitimately share one trigger field with different values (e.g. one per
+ * enum option), so a field-only match is only trustworthy when there's no competing candidate;
+ * ambiguous cases are left as separate orphan/add, same as before.
+ */
+function findValueChangedConditionPairs(
+    previousConditions: any[],
+    sourceConditions: any[],
+    orphanedIndices: Set<number>,
+    matchedSourceIndices: Set<number>
+): Map<number, number> {
+    const orphanedByFieldKey = new Map<string, number[]>();
+    for (const oldIndex of orphanedIndices) {
+        const key = conditionTriggerFieldKey(previousConditions[oldIndex]);
+        if (!key) {
+            continue;
+        }
+        const list = orphanedByFieldKey.get(key) || [];
+        list.push(oldIndex);
+        orphanedByFieldKey.set(key, list);
+    }
+    const unmatchedByFieldKey = new Map<string, number[]>();
+    for (let sourceIndex = 0; sourceIndex < sourceConditions.length; sourceIndex++) {
+        if (matchedSourceIndices.has(sourceIndex)) {
+            continue;
+        }
+        const key = conditionTriggerFieldKey(sourceConditions[sourceIndex]);
+        if (!key) {
+            continue;
+        }
+        const list = unmatchedByFieldKey.get(key) || [];
+        list.push(sourceIndex);
+        unmatchedByFieldKey.set(key, list);
+    }
+    const pairs = new Map<number, number>();
+    for (const [key, oldIndices] of orphanedByFieldKey) {
+        const sourceIndices = unmatchedByFieldKey.get(key);
+        if (oldIndices.length === 1 && sourceIndices?.length === 1) {
+            pairs.set(oldIndices[0], sourceIndices[0]);
+        }
+    }
+    return pairs;
+}
+
+/**
+ * Best-effort display name for a condition, since unlike a field it has no name of its own -
+ * falls back to its trigger field's display name.
+ */
+function conditionDisplayName(condition: any): string {
+    const predicates = SchemaHelper.getConditionTriggerPredicates(condition?.ifCondition);
+    const field = predicates[0]?.field;
+    return field ? getFieldDisplayName(field) : 'Condition';
 }
 
 function hasDetails(details: ISchemaTemplateUpdateChange['details']): boolean {
@@ -1678,6 +1920,66 @@ export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<Ret
             ? conditionCustomFieldNames(previousConditions, policyCustomFields)
             : new Set<string>();
 
+        // Per-condition lock-change visibility, independent of conditionsLocked/customFieldsLocked
+        // - same blind spot buildFieldLockChangeDetails already fixed for fields, extended here.
+        // Only matched conditions (present, unremoved, in both versions) are meaningful: an
+        // orphaned one's lock state doesn't matter once it's gone.
+        const conditionClassification = classifyConditionsAgainstSource(previousConditions, sourceConditions);
+        const matchedSourceConditionIndices = new Set(conditionClassification.matchedIndexByOldIndex.values());
+        // A condition whose value changed (same trigger field, different value) strictly
+        // orphans by signature - recover it here as an update instead of a remove+add, as long
+        // as there's exactly one candidate on each side (no competing same-field condition).
+        const valueChangedConditionPairs = findValueChangedConditionPairs(
+            previousConditions, sourceConditions, conditionClassification.orphanedIndices, matchedSourceConditionIndices
+        );
+        const allMatchedConditionPairs = new Map([
+            ...conditionClassification.matchedIndexByOldIndex,
+            ...valueChangedConditionPairs
+        ]);
+        for (const [oldIndex, newIndex] of allMatchedConditionPairs) {
+            const signature = conditionTriggerSignature(previousConditions[oldIndex]);
+            const conditionDetails = [
+                ...(signature ? buildConditionLockChangeDetails(previousSchemaConfig, nextSchemaConfig, signature.join(',')) : []),
+                ...buildConditionContentChangeDetails(previousConditions[oldIndex], sourceConditions[newIndex])
+            ];
+            if (hasDetails(conditionDetails)) {
+                changes.push(createChange(
+                    SchemaTemplateUpdateChangeType.CONDITION_UPDATE,
+                    `A condition changed in schema "${nextSchema.name}".`,
+                    {
+                        templateSchemaId,
+                        schemaName: nextSchema.name,
+                        fieldName: conditionDisplayName(sourceConditions[newIndex]),
+                        details: conditionDetails
+                    }
+                ));
+            }
+        }
+
+        // Unconditional, same as CONDITION_UPDATE above - a template version always applies its
+        // own new conditions regardless of customFieldsLocked/conditionsLocked, those flags only
+        // govern whether the policy's own additions survive.
+        const matchedOrRecoveredSourceConditionIndices = new Set([
+            ...matchedSourceConditionIndices,
+            ...valueChangedConditionPairs.values()
+        ]);
+        for (let sourceIndex = 0; sourceIndex < sourceConditions.length; sourceIndex++) {
+            if (matchedOrRecoveredSourceConditionIndices.has(sourceIndex)) {
+                continue;
+            }
+            changes.push(createChange(
+                SchemaTemplateUpdateChangeType.CONDITION_ADD,
+                `A new condition will be added to schema "${nextSchema.name}".`,
+                {
+                    templateSchemaId,
+                    schemaName: nextSchema.name,
+                    fieldName: conditionDisplayName(sourceConditions[sourceIndex]),
+                    before: 'Not present',
+                    after: 'Added by schema template'
+                }
+            ));
+        }
+
         for (const [templateFieldId, field] of nextFields.entries()) {
             const previousField = previousFields.get(templateFieldId);
             if (!previousField) {
@@ -1800,19 +2102,20 @@ export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<Ret
                     orphanedFieldsByConditionIndex.set(placement.conditionIndex, list);
                 }
             }
-            const { orphanedIndices } = classifyConditionsAgainstSource(previousConditions, sourceConditions);
+            const { orphanedIndices } = conditionClassification;
             for (const conditionIndex of orphanedIndices) {
-                const orphanedFields = orphanedFieldsByConditionIndex.get(conditionIndex) || [];
-                // A cross-schema target has no independent "is this custom" marker of its
-                // own, unlike a field - any target on an orphaned condition is at risk.
-                if (!orphanedFields.length && !conditionHasCrossTargets(policySchema.document, conditionIndex)) {
+                if (valueChangedConditionPairs.has(conditionIndex)) {
+                    // Recovered above as an update (same trigger field, value changed) -
+                    // already reported there, not a remove.
                     continue;
                 }
+                const orphanedFields = orphanedFieldsByConditionIndex.get(conditionIndex) || [];
+                const hasCrossTargets = conditionHasCrossTargets(policySchema.document, conditionIndex);
                 const condition = previousConditions[conditionIndex];
                 const triggerIds = conditionTriggerSignature(condition) || [];
                 const fieldNames = orphanedFields.length
                     ? orphanedFields.map((f) => getFieldDisplayName(f)).join(', ')
-                    : '(cross-schema target only, no custom field)';
+                    : (hasCrossTargets ? '(cross-schema target only, no custom field)' : conditionDisplayName(condition));
                 changes.push(createChange(
                     SchemaTemplateUpdateChangeType.CONDITION_REMOVE,
                     `A condition in schema "${nextSchema.name}" was removed from the template.`,
@@ -1824,6 +2127,12 @@ export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<Ret
                         after: 'Removed from template'
                     }
                 ));
+                // A cross-schema target has no independent "is this custom" marker of its own,
+                // unlike a field - any target on an orphaned condition is at risk. Without either,
+                // there's nothing policy-authored to lose, so it reverts silently - no conflict needed.
+                if (!orphanedFields.length && !hasCrossTargets) {
+                    continue;
+                }
                 conflicts.push(createConflict(
                     SchemaTemplateUpdateConflictType.CONDITION_REMOVED_WITH_POLICY_USAGE,
                     `A condition in schema "${nextSchema.name}" was removed from the template, but it still reveals custom field(s): ${fieldNames}. Choose whether to keep it as a custom condition or remove it from the policy.`,
@@ -1834,6 +2143,97 @@ export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<Ret
                         fieldName: fieldNames,
                         allowedActions: [
                             SchemaTemplateUpdateResolutionAction.KEEP_AS_CUSTOM_CONDITION,
+                            SchemaTemplateUpdateResolutionAction.REMOVE_FROM_POLICY
+                        ]
+                    }
+                ));
+            }
+        }
+
+        // Per-link lock-change visibility, independent of repeatableLinksLocked/customFieldsLocked
+        // - same blind spot buildFieldLockChangeDetails already fixed for fields, extended here.
+        // Only matched links (present, unremoved, in both versions) are meaningful.
+        const previousLinks = policySnapshot.arrayDependencies || [];
+        const sourceLinks = nextSchema.arrayDependencies || [];
+        const linkClassification = classifyArrayDependenciesAgainstSource(
+            previousLinks, policySnapshot.fields, sourceLinks, nextSchema.fields
+        );
+        for (const [oldIndex, newIndex] of linkClassification.matchedIndexByOldIndex) {
+            const templateFieldId = arrayDependencyDependentTemplateFieldId(policySnapshot.fields, previousLinks[oldIndex]);
+            if (!templateFieldId) {
+                continue;
+            }
+            const linkDetails = [
+                ...buildLinkLockChangeDetails(previousSchemaConfig, nextSchemaConfig, templateFieldId),
+                ...buildLinkContentChangeDetails(policySnapshot.fields, previousLinks[oldIndex], nextSchema.fields, sourceLinks[newIndex])
+            ];
+            if (hasDetails(linkDetails)) {
+                const dependentField = SchemaHelper.resolveFieldByPath(policySnapshot.fields, previousLinks[oldIndex]?.field || []);
+                changes.push(createChange(
+                    SchemaTemplateUpdateChangeType.REPEATABLE_LINK_UPDATE,
+                    `A repeatable link changed in schema "${nextSchema.name}".`,
+                    {
+                        templateSchemaId,
+                        templateFieldId,
+                        schemaName: nextSchema.name,
+                        fieldName: getFieldDisplayName(dependentField),
+                        details: linkDetails
+                    }
+                ));
+            }
+        }
+
+        // Unconditional, same as REPEATABLE_LINK_UPDATE above - a template version always applies
+        // its own new links regardless of repeatableLinksLocked/customFieldsLocked.
+        const matchedSourceLinkIndices = new Set(linkClassification.matchedIndexByOldIndex.values());
+        for (let sourceIndex = 0; sourceIndex < sourceLinks.length; sourceIndex++) {
+            if (matchedSourceLinkIndices.has(sourceIndex)) {
+                continue;
+            }
+            const sourceDependentField = SchemaHelper.resolveFieldByPath(nextSchema.fields, sourceLinks[sourceIndex]?.field || []);
+            changes.push(createChange(
+                SchemaTemplateUpdateChangeType.REPEATABLE_LINK_ADD,
+                `A new repeatable link will be added to schema "${nextSchema.name}".`,
+                {
+                    templateSchemaId,
+                    schemaName: nextSchema.name,
+                    fieldName: getFieldDisplayName(sourceDependentField),
+                    before: 'Not present',
+                    after: 'Added by schema template'
+                }
+            ));
+        }
+
+        // repeatableLinksLocked removes every policy-authored link addition unconditionally,
+        // so nothing is left to resolve.
+        if (!nextSchemaConfig.repeatableLinksLocked) {
+            const { orphanedIndices: orphanedLinkIndices } = linkClassification;
+            for (const linkIndex of orphanedLinkIndices) {
+                const dependency = previousLinks[linkIndex];
+                const templateFieldId = arrayDependencyDependentTemplateFieldId(policySnapshot.fields, dependency);
+                const dependentField = SchemaHelper.resolveFieldByPath(policySnapshot.fields, dependency?.field || []);
+                const fieldName = getFieldDisplayName(dependentField);
+                changes.push(createChange(
+                    SchemaTemplateUpdateChangeType.REPEATABLE_LINK_REMOVE,
+                    `A repeatable link in schema "${nextSchema.name}" was removed from the template.`,
+                    {
+                        templateSchemaId,
+                        schemaName: nextSchema.name,
+                        fieldName,
+                        before: 'Link present',
+                        after: 'Removed from template'
+                    }
+                ));
+                conflicts.push(createConflict(
+                    SchemaTemplateUpdateConflictType.REPEATABLE_LINK_REMOVED_WITH_POLICY_USAGE,
+                    `A repeatable link in schema "${nextSchema.name}" (dependent field: ${fieldName}) was removed from the template. Choose whether to keep it as a custom link or remove it from the policy.`,
+                    {
+                        templateSchemaId,
+                        templateFieldId,
+                        schemaName: nextSchema.name,
+                        fieldName,
+                        allowedActions: [
+                            SchemaTemplateUpdateResolutionAction.KEEP_AS_CUSTOM_LINK,
                             SchemaTemplateUpdateResolutionAction.REMOVE_FROM_POLICY
                         ]
                     }
@@ -2100,6 +2500,32 @@ export function preparePolicySchemaUpdate(
         }
     }
 
+    // repeatableLinksLocked: when true, drop everything policy-added unconditionally, mirroring
+    // customFieldsLocked for fields - matched/template-provided links already come through via
+    // the wholesale document clone below regardless.
+    const previousLinks = previousParsed.arrayDependencies || [];
+    const sourceLinks = sourceParsed.arrayDependencies || [];
+    const carryOverLinkIndices = new Set<number>();
+    if (!schemaConfig.repeatableLinksLocked) {
+        const linkClassification = classifyArrayDependenciesAgainstSource(
+            previousLinks, previousParsed.fields || [], sourceLinks, sourceParsed.fields || []
+        );
+        for (const index of linkClassification.whollyCustomIndices) {
+            carryOverLinkIndices.add(index);
+        }
+        for (const index of linkClassification.orphanedIndices) {
+            const templateFieldId = arrayDependencyDependentTemplateFieldId(previousParsed.fields || [], previousLinks[index]);
+            const conflict = conditionConflicts.find((item) =>
+                item.type === SchemaTemplateUpdateConflictType.REPEATABLE_LINK_REMOVED_WITH_POLICY_USAGE &&
+                item.templateFieldId === templateFieldId
+            );
+            const action = conflict ? conditionResolutions.get(conflict.id) : undefined;
+            if (action === SchemaTemplateUpdateResolutionAction.KEEP_AS_CUSTOM_LINK) {
+                carryOverLinkIndices.add(index);
+            }
+        }
+    }
+
     const settingsLocked = !!schemaConfig.schemaSettingsLocked;
     const name = settingsLocked ? source.name : target.name;
     const description = settingsLocked ? source.description : target.description;
@@ -2156,6 +2582,18 @@ export function preparePolicySchemaUpdate(
     }
     for (const conditionIndex of carryOverConditionIndices) {
         carryOverCustomCondition(target.document, previousDocument, conditionIndex);
+    }
+
+    if (carryOverLinkIndices.size) {
+        const parsedComment = SchemaHelper.parseSchemaComment(target.document.$comment);
+        const existingLinks: ISchemaArrayDependency[] = parsedComment.arrayDependencies || [];
+        const additionalLinks = Array.from(carryOverLinkIndices).map((index) => previousLinks[index]);
+        target.document.$comment = SchemaHelper.buildSchemaComment(
+            parsedComment.term,
+            parsedComment['@id'],
+            parsedComment.previousVersion,
+            [...existingLinks, ...additionalLinks]
+        );
     }
 
     SchemaHelper.setVersion(target, target.version, target.version);
