@@ -6,11 +6,11 @@
     "dependencies": {
         "@guardian/common": "workspace:*",
         "@guardian/interfaces": "workspace:*",
-        "@langchain/classic": "1.0.48",
+        "@langchain/classic": "1.0.52",
         "@langchain/community": "1.1.29",
-        "@langchain/core": "1.2.12",
-        "@langchain/openai": "1.5.13",
-        "@langchain/textsplitters": "1.0.1",
+        "@langchain/core": "1.2.14",
+        "@langchain/openai": "1.6.2",
+        "@langchain/textsplitters": "1.0.2",
         "dotenv": "^16.6.1",
         "faiss-node": "0.5.1",
         "reflect-metadata": "0.2.2"
