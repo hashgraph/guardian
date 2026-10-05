@@ -688,10 +688,11 @@ export class SchemaHelper {
     }
 
     /**
-     * Content hash for one condition - "structure" (trigger/operator/rows + branch field
-     * identity/target paths), not the branch fields' own content, which has its own independent
-     * per-field lock. Catches a same-signature content change - e.g. a predicate's comparator,
-     * or a then/else target - that trigger-signature matching alone would miss.
+     * Content hash for the per-condition lock - trigger (operator/field/value/comparator) and
+     * cross-schema target paths only. Branch field membership is deliberately excluded: a locked
+     * condition still allows adding or removing branch fields (each governed by its own per-field
+     * lock and the whole-schema custom-fields lock), so hashing them here would reject those
+     * UI-permitted edits. Trigger field/value changes are already caught by the signature match.
      * @param condition
      */
     public static getConditionComparableFields(condition: any): any {
@@ -703,8 +704,6 @@ export class SchemaHelper {
                 SchemaHelper.cloneSchemaRuntimeValue(predicate.fieldValue),
                 predicate.comparator || 'equals'
             ]),
-            then: (condition?.thenFields || []).map(SchemaHelper.getConditionFieldIdentity),
-            else: (condition?.elseFields || []).map(SchemaHelper.getConditionFieldIdentity),
             thenTargets: SchemaHelper.getParsedConditionTargetPaths(condition?.thenTargets),
             elseTargets: SchemaHelper.getParsedConditionTargetPaths(condition?.elseTargets)
         };

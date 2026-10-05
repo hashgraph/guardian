@@ -4294,7 +4294,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     // ── THEN / ELSE fields ───────────────────────────────────────────────────
 
     public addThenField(cond: SchemaCondition): void {
-        if (!this.canAddFieldToSelectedSchema) { return; }
+        if (!this.canAddFieldToSelectedSchema || this.isConditionLocked(cond)) { return; }
         const schema = this.currentContextSchema;
         if (!schema) { return; }
         const newField = this.buildNewField(this.defaultFieldType, schema.fields);
@@ -4304,7 +4304,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public addElseField(cond: SchemaCondition): void {
-        if (!this.canAddFieldToSelectedSchema) { return; }
+        if (!this.canAddFieldToSelectedSchema || this.isConditionLocked(cond)) { return; }
         const schema = this.currentContextSchema;
         if (!schema) { return; }
         const newField = this.buildNewField(this.defaultFieldType, schema.fields);

@@ -2354,7 +2354,7 @@
                                         </div>
                                     }
                                     <div class="sc-cond-te-add-row">
-                                        <button class="sc-cond-te-add-btn" [disabled]="!canAddFieldToSelectedSchema" (click)="addThenField(cond)">
+                                        <button class="sc-cond-te-add-btn" [disabled]="!canAddFieldToSelectedSchema || isConditionLocked(cond)" (click)="addThenField(cond)">
                                             <i class="pi pi-plus"></i>New field
                                         </button>
                                         <p-select
@@ -2445,7 +2445,7 @@
                                         </div>
                                     }
                                     <div class="sc-cond-te-add-row">
-                                        <button class="sc-cond-te-add-btn" [disabled]="!canAddFieldToSelectedSchema" (click)="addElseField(cond)">
+                                        <button class="sc-cond-te-add-btn" [disabled]="!canAddFieldToSelectedSchema || isConditionLocked(cond)" (click)="addElseField(cond)">
                                             <i class="pi pi-plus"></i>New field
                                         </button>
                                         <p-select
