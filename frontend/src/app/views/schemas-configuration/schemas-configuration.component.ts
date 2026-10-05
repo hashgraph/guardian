@@ -4,7 +4,7 @@ import { HttpResponse } from '@angular/common/http';
 import { EMPTY, Observable, Subject, Subscription, firstValueFrom, forkJoin, of } from 'rxjs';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { catchError, debounceTime, distinctUntilChanged, map, shareReplay, switchMap, takeUntil } from 'rxjs/operators';
-import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, relationAncestors, ModuleStatus, ISchemaTemplate, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus, ISchemaArrayDependency, ISchemaArrayDependencyMapping, DEFAULT_IWA_VERSION, IwaVersion, resolveIwaVersion, IPropertySuggestionResult, IPropertySuggestionRequest, } from '@guardian/interfaces';
+import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, relationAncestors, ModuleStatus, ISchemaTemplate, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus, ISchemaArrayDependency, ISchemaArrayDependencyMapping, DEFAULT_IWA_VERSION, IwaVersion, resolveIwaVersion, IPropertySuggestionResult, IPropertySuggestionRequest } from '@guardian/interfaces';
 import { SchemaService } from 'src/app/services/schema.service';
 import { TagsService } from 'src/app/services/tag.service';
 import { ProjectComparisonService } from 'src/app/services/project-comparison.service';
@@ -3340,7 +3340,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public isCircularDependency(schema: Schema, schemaMap?: Map<string, Schema>): boolean {
-        // Use live field refs, not document.$defs — withDefs() bloats $defs and causes false positives.
         const refs = schemaMap ?? new Map<string, Schema>();
         if (!schemaMap) {
             for (const candidate of this.schemas) {
@@ -3356,15 +3355,12 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (!ancestors.size) { return false; }
 
         const visited = new Set<string>();
-        const getSchemaReferences = (s: Schema): string[] => {
-            if (Array.isArray(s.fields) && s.fields.length) {
-                return s.fields
-                    .filter(f => f.isRef && f.type)
-                    .map(f => f.type);
-            }
-            const defs = (s as any).defs;
-            return Array.isArray(defs) ? defs : [];
-        };
+        // defs is never pruned (stale refs persist on the backend), so only check
+        // against loaded fields; the backend rejects real cycles on save.
+        const getSchemaReferences = (s: Schema): string[] =>
+            (s.fields || [])
+                .filter(f => f.isRef && f.type)
+                .map(f => f.type);
         const visit = (s: Schema): boolean => {
             if (!s.iri || visited.has(s.iri)) { return false; }
             visited.add(s.iri);
@@ -4547,16 +4543,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             .pipe(
                 map((response: HttpResponse<ISchema[]>) => {
                     const items = (response.body || [])
-                        .map(s => {
-                            try {
-                                const schema = new Schema(s);
-                                const defs = (s as any).defs;
-                                (schema as any).defs = Array.isArray(defs) ? defs : [];
-                                return schema;
-                            } catch {
-                                return null;
-                            }
-                        })
+                        .map(s => { try { return new Schema(s); } catch { return null; } })
                         .filter((s): s is Schema => s !== null);
                     return {
                         response,

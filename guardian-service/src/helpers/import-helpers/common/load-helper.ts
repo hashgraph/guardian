@@ -230,16 +230,13 @@ export function checkForCircularDependency(schema: ISchema): boolean {
 
     const rootId = normalizeSchemaRef(document.$id || schema.iri);
     const defs = document.$defs || {};
-    if (rootId && Object.keys(defs).some((key) => normalizeSchemaRef(key) === rootId)) {
-        return true;
-    }
 
     const documents = new Map<string, any>();
-    addSchemaDocument(documents, document.$id || schema.iri, document);
     for (const [key, def] of Object.entries(defs)) {
         addSchemaDocument(documents, key, def);
         addSchemaDocument(documents, (def as any)?.$id, def);
     }
+    addSchemaDocument(documents, document.$id || schema.iri, document);
 
     const visiting = new Set<string>();
     const visited = new Set<string>();
