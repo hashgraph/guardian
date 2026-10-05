@@ -615,6 +615,54 @@ export class SchemaHelper {
     }
 
     /**
+     * The predicates a condition's `if` reads, as the raw predicate objects (field + value),
+     * not just field names - distinct from `getConditionPredicates`, which returns field
+     * names only for reachability analysis. Used to build a condition's trigger signature.
+     * @param ifCondition
+     */
+    public static getConditionTriggerPredicates(ifCondition: any): SchemaFieldPredicate[] {
+        if (!ifCondition) {
+            return [];
+        }
+        if (Array.isArray(ifCondition.AND)) {
+            return ifCondition.AND;
+        }
+        if (Array.isArray(ifCondition.OR)) {
+            return ifCondition.OR;
+        }
+        return [ifCondition];
+    }
+
+    /**
+     * A condition's identity across template versions is its trigger field(s)' templateFieldId
+     * plus the value(s) it compares against - templateFieldId alone isn't enough, since two
+     * separate conditions can share the same trigger field with different values (e.g. one
+     * per enum option). Neither `allOf` array position nor trigger field name is stable enough
+     * to use either. Returns null when any predicate's field lacks a templateFieldId - wholly
+     * policy-authored, or otherwise unmatchable.
+     * @param condition
+     */
+    public static getConditionTriggerSignature(condition: SchemaCondition): string[] | null {
+        const ifCondition: any = condition?.ifCondition;
+        if (!ifCondition) {
+            return null;
+        }
+        // AND vs OR must be part of the signature too - the same predicates combined either
+        // way would otherwise produce the same sorted parts and be treated as one condition.
+        const combinator = Array.isArray(ifCondition.AND) ? 'AND' : Array.isArray(ifCondition.OR) ? 'OR' : 'SINGLE';
+        const predicates = SchemaHelper.getConditionTriggerPredicates(ifCondition);
+        const parts: string[] = [];
+        for (const predicate of predicates) {
+            const id = (predicate as any)?.field?.templateFieldId;
+            if (!id) {
+                return null;
+            }
+            parts.push(`${id}:${JSON.stringify((predicate as any).fieldValue)}`);
+        }
+        return [combinator, ...parts.sort()];
+    }
+
+    /**
      * Which condition branch reveals each field, by field name.
      *
      * A name revealed by more than one condition is ambiguous — there is no way to tell

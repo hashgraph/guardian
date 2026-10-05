@@ -881,25 +881,12 @@ export function getRuntimeCustomFields(schema: Schema): any[] {
     return customFieldsFromParsedFields(parsed.fields || []);
 }
 
-function conditionPredicates(ifCondition: any): any[] {
-    if (!ifCondition) {
-        return [];
-    }
-    if (Array.isArray(ifCondition.AND)) {
-        return ifCondition.AND;
-    }
-    if (Array.isArray(ifCondition.OR)) {
-        return ifCondition.OR;
-    }
-    return [ifCondition];
-}
-
 function conditionCustomFieldNames(conditions: any[], fields: any[]): Set<string> {
     const customFieldNames = new Set((fields || []).map((field) => field?.name).filter(Boolean));
     const result = new Set<string>();
     for (const condition of conditions || []) {
-        for (const predicate of conditionPredicates(condition?.ifCondition)) {
-            const field = predicate?.field;
+        for (const predicate of SchemaHelper.getConditionTriggerPredicates(condition?.ifCondition)) {
+            const field = (predicate as any)?.field;
             if (!field?.templateFieldId && customFieldNames.has(field?.name)) {
                 result.add(field.name);
             }
@@ -914,31 +901,13 @@ function conditionCustomFieldNames(conditions: any[], fields: any[]): Set<string
 }
 
 /**
- * A condition's identity across template versions is its trigger field(s)' templateFieldId
- * plus the value(s) it compares against - templateFieldId alone isn't enough, since two
- * separate conditions can share the same trigger field with different values (e.g. one
- * per enum option). Neither allOf array position nor trigger field name is stable enough
- * to use either. Returns null when any predicate's field lacks a templateFieldId - wholly
- * policy-authored, or otherwise unmatchable.
+ * @deprecated moved to `SchemaHelper.getConditionTriggerSignature` (interfaces package) so the
+ * frontend and guardian-service/src/api/schema.service.ts can share the same implementation
+ * instead of each keeping their own copy. Re-exported here unchanged so existing imports of
+ * this module keep working.
  */
 export function conditionTriggerSignature(condition: any): string[] | null {
-    const ifCondition = condition?.ifCondition;
-    if (!ifCondition) {
-        return null;
-    }
-    // AND vs OR must be part of the signature too - the same predicates combined either
-    // way would otherwise produce the same sorted parts and be treated as one condition.
-    const combinator = Array.isArray(ifCondition.AND) ? 'AND' : Array.isArray(ifCondition.OR) ? 'OR' : 'SINGLE';
-    const predicates = conditionPredicates(ifCondition);
-    const parts: string[] = [];
-    for (const predicate of predicates) {
-        const id = predicate?.field?.templateFieldId;
-        if (!id) {
-            return null;
-        }
-        parts.push(`${id}:${JSON.stringify(predicate.fieldValue)}`);
-    }
-    return [combinator, ...parts.sort()];
+    return SchemaHelper.getConditionTriggerSignature(condition);
 }
 
 export function findMatchingConditionIndex(conditions: any[], signature: string[]): number {

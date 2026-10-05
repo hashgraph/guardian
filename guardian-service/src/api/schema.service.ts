@@ -77,10 +77,6 @@ function getConditionFieldId(field: any): string {
     return field?.templateFieldId || field?.name || '';
 }
 
-function getConditionPredicates(ifCondition: any): any[] {
-    return ifCondition?.AND ?? ifCondition?.OR ?? (ifCondition ? [ifCondition] : []);
-}
-
 function getParsedConditionTargetPaths(targets: any[]): string[][] {
     return (targets || [])
         .map((target: any) => target.fieldPath || [])
@@ -92,7 +88,7 @@ function getConditionsHash(schema: ISchema): string {
     return SchemaHelper.stableStringify(
         conditions.map((condition: any) => ({
             op: condition.ifCondition?.AND ? 'AND' : condition.ifCondition?.OR ? 'OR' : 'SINGLE',
-            if: getConditionPredicates(condition.ifCondition).map((predicate: any) => [
+            if: SchemaHelper.getConditionTriggerPredicates(condition.ifCondition).map((predicate: any) => [
                 getConditionFieldId(predicate.field),
                 predicate.fieldPath || [],
                 SchemaHelper.cloneSchemaRuntimeValue(predicate.fieldValue)
