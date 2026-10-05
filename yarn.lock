@@ -1557,7 +1557,7 @@ __metadata:
     "@digitalbazaar/vc": "npm:7.3.0"
     "@google-cloud/secret-manager": "npm:6.3.0"
     "@guardian/interfaces": "workspace:*"
-    "@hiero-ledger/sdk": "npm:2.88.0"
+    "@hiero-ledger/sdk": "npm:2.89.1"
     "@mattrglobal/jsonld-signatures-bbs": "npm:1.2.0"
     "@mikro-orm/core": "npm:6.6.17"
     "@mikro-orm/migrations-mongodb": "npm:6.6.17"
@@ -1618,9 +1618,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@hiero-ledger/cryptography@npm:1.21.0":
-  version: 1.21.0
-  resolution: "@hiero-ledger/cryptography@npm:1.21.0"
+"@hiero-ledger/cryptography@npm:1.22.0":
+  version: 1.22.0
+  resolution: "@hiero-ledger/cryptography@npm:1.22.0"
   dependencies:
     "@noble/ciphers": "npm:2.2.0"
     "@noble/curves": "npm:2.2.0"
@@ -1638,7 +1638,7 @@ __metadata:
   peerDependenciesMeta:
     expo-crypto:
       optional: true
-  checksum: 10c0/8b71922f75564c3b44083e5e416a42efebac707d3ad5e3932bc00d6209ef555312ba3fe3671f744a75c590ecafb6a79065a50ea90ea2ac94fd51fdb390548f77
+  checksum: 10c0/b73c5c8303667fc2250f952aff1c36e5305a3c916d8dba66a69606931209333134fd48f00247872223bba33022ccbbcd0970616ca753fcf0c62fb2dbf2610e16
   languageName: node
   linkType: hard
 
@@ -1657,12 +1657,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@hiero-ledger/sdk@npm:2.88.0":
-  version: 2.88.0
-  resolution: "@hiero-ledger/sdk@npm:2.88.0"
+"@hiero-ledger/sdk@npm:2.89.1":
+  version: 2.89.1
+  resolution: "@hiero-ledger/sdk@npm:2.89.1"
   dependencies:
     "@grpc/grpc-js": "npm:1.12.7"
-    "@hiero-ledger/cryptography": "npm:1.21.0"
+    "@hiero-ledger/cryptography": "npm:1.22.0"
     "@hiero-ledger/proto": "npm:2.31.0"
     ansi-regex: "npm:6.2.2"
     ansi-styles: "npm:7.0.0"
@@ -1681,7 +1681,7 @@ __metadata:
     utf8: "npm:3.0.0"
   peerDependencies:
     bn.js: 5.2.3
-  checksum: 10c0/e374ba95849f7660c8012c9687b9c425d8ac8ba80a5eaa423420ee0f853c71b97bb117570091811b00203c0e8c922440ae7e6d6f2d5bb6598cdbe74506671f78
+  checksum: 10c0/890178820c9c3ac47702b4a92304ebeb2dfb5c0f89873d9c0ec70e98daea33aca03c18fe50b775eeb9f4827a481fd0cc594516c1d022ead7ef7a4b52ee1edff2
   languageName: node
   linkType: hard
 
@@ -8205,7 +8205,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "guardian-cli@workspace:guardian-cli"
   dependencies:
-    "@hiero-ledger/sdk": "npm:2.88.0"
+    "@hiero-ledger/sdk": "npm:2.89.1"
     "@types/node": "npm:24.19.1"
     axios: "npm:^1.16.1"
     commander: "npm:^11.1.0"
@@ -8225,7 +8225,7 @@ __metadata:
     "@guardian/common": "workspace:*"
     "@guardian/interfaces": "workspace:*"
     "@hiero-ledger/proto": "npm:2.31.0"
-    "@hiero-ledger/sdk": "npm:2.88.0"
+    "@hiero-ledger/sdk": "npm:2.89.1"
     "@mikro-orm/core": "npm:6.6.17"
     "@mikro-orm/migrations-mongodb": "npm:6.6.17"
     "@mikro-orm/mongodb": "npm:6.6.17"
@@ -11934,7 +11934,7 @@ __metadata:
     "@formulajs/formulajs": "npm:4.6.1"
     "@guardian/common": "workspace:*"
     "@guardian/interfaces": "workspace:*"
-    "@hiero-ledger/sdk": "npm:2.88.0"
+    "@hiero-ledger/sdk": "npm:2.89.1"
     "@mikro-orm/core": "npm:6.6.17"
     "@mikro-orm/mongodb": "npm:6.6.17"
     "@nestjs/common": "npm:^11.1.24"
@@ -14894,7 +14894,7 @@ __metadata:
     "@filebase/client": "npm:0.0.5"
     "@guardian/common": "workspace:*"
     "@guardian/interfaces": "workspace:*"
-    "@hiero-ledger/sdk": "npm:2.88.0"
+    "@hiero-ledger/sdk": "npm:2.89.1"
     "@mikro-orm/core": "npm:6.6.17"
     "@mikro-orm/mongodb": "npm:6.6.17"
     "@nestjs/common": "npm:^11.1.24"
