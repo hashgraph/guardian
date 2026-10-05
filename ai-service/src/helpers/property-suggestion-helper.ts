@@ -61,6 +61,28 @@ function renderRationale(reasonCode: string, fieldName: string, propertyTitle: s
     return template(fieldName, propertyTitle);
 }
 
+const MAX_LOGGED_STRING_LENGTH = 50;
+const MAX_LOGGED_ARRAY_ITEMS = 5;
+
+/**
+ * Serializes a value for logging, shortening long strings and large arrays
+ * so the output stays valid JSON (unlike truncating the serialized text).
+ */
+export function stringifyForLog(value: unknown): string {
+    return JSON.stringify(value, (_key, item) => {
+        if (typeof item === 'string' && item.length > MAX_LOGGED_STRING_LENGTH) {
+            return item.slice(0, MAX_LOGGED_STRING_LENGTH - 3) + '...';
+        }
+        if (Array.isArray(item) && item.length > MAX_LOGGED_ARRAY_ITEMS) {
+            return [
+                ...item.slice(0, MAX_LOGGED_ARRAY_ITEMS),
+                `... +${item.length - MAX_LOGGED_ARRAY_ITEMS} more`
+            ];
+        }
+        return item;
+    });
+}
+
 export class PropertySuggestionConnect {
 
     static async suggest(
@@ -158,11 +180,9 @@ export class PropertySuggestionConnect {
             );
             throw error;
         }
-        if (response.length > 50) {
-            response = response.slice(0, 47) + '...';
-        }
+
         await logger?.info(
-            `[GLOSSARY_AI] LLM response after ${Date.now() - modelStartedAt}ms: ${JSON.stringify(response)}`,
+            `[GLOSSARY_AI] LLM response after ${Date.now() - modelStartedAt}ms: ${stringifyForLog(response)}`,
             ['AI_SERVICE']
         );
 
