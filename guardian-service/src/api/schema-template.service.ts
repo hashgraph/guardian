@@ -30,6 +30,7 @@ import {
     ISchemaTemplate,
     IPolicySchemaTemplateBinding,
     ISchemaTemplateConfig,
+    ISchemaTemplateSchemaConfig,
     ISchemaTemplateDetachBlockedSchema,
     ISchemaTemplateDetachPreview,
     ISchemaTemplateSnapshot,
@@ -636,7 +637,65 @@ function cloneJson<T>(value: T): T {
     return value === undefined ? value : JSON.parse(JSON.stringify(value));
 }
 
-function normalizeTemplateConfigKeys(
+/** The trigger field ids inside a condition lock key (`COMBINATOR,id:value,id:value`), as a sorted set key. */
+function conditionLockKeyFieldSet(key: string): string {
+    const ids: string[] = [];
+    for (const match of key.matchAll(/(?:^|,)([^,:]+):/g)) {
+        ids.push(match[1]);
+    }
+    return ids.sort().join(',');
+}
+
+/**
+ * A condition's lock is keyed by its trigger signature (field ids + compared values + combinator),
+ * so editing the value, field set or IF / IF ALL / IF ANY of a locked condition leaves its lock
+ * under a key nothing matches any more - the edited condition would silently come back unlocked.
+ * Moves such an entry onto the one current condition that has the same trigger fields and no
+ * entry of its own. Only an unambiguous 1:1 match is moved; anything else is left alone. A value
+ * containing a comma can add a bogus id to the parsed key, which only makes it fail to match.
+ */
+function reconcileConditionLockKeys(schemaConfig: ISchemaTemplateSchemaConfig | undefined, schema: Schema): void {
+    const locks = schemaConfig?.conditions;
+    if (!locks || !Object.keys(locks).length) {
+        return;
+    }
+    let conditions: any[];
+    try {
+        conditions = new InterfaceSchema(schema as ISchema, true).conditions || [];
+    } catch {
+        return;
+    }
+    const currentByKey = new Map<string, string>();
+    for (const condition of conditions) {
+        const signature = conditionTriggerSignature(condition);
+        const fieldKey = conditionTriggerFieldKey(condition);
+        if (signature && fieldKey !== null) {
+            currentByKey.set(signature.join(','), fieldKey.split(',').sort().join(','));
+        }
+    }
+    const staleByFieldSet = new Map<string, string[]>();
+    for (const key of Object.keys(locks)) {
+        if (!currentByKey.has(key)) {
+            const fieldSet = conditionLockKeyFieldSet(key);
+            staleByFieldSet.set(fieldSet, [...(staleByFieldSet.get(fieldSet) || []), key]);
+        }
+    }
+    const unlockedByFieldSet = new Map<string, string[]>();
+    for (const [key, fieldSet] of currentByKey) {
+        if (!locks[key]) {
+            unlockedByFieldSet.set(fieldSet, [...(unlockedByFieldSet.get(fieldSet) || []), key]);
+        }
+    }
+    for (const [fieldSet, staleKeys] of staleByFieldSet) {
+        const candidates = unlockedByFieldSet.get(fieldSet);
+        if (staleKeys.length === 1 && candidates?.length === 1) {
+            locks[candidates[0]] = locks[staleKeys[0]];
+            delete locks[staleKeys[0]];
+        }
+    }
+}
+
+export function normalizeTemplateConfigKeys(
     config: ISchemaTemplateConfig | null | undefined,
     schemas: Schema[]
 ): ISchemaTemplateConfig {
@@ -652,6 +711,9 @@ function normalizeTemplateConfigKeys(
             normalized.schemas[stableKey] = cloneJson(normalized.schemas[dbKey]);
         }
         delete normalized.schemas[dbKey];
+    }
+    for (const schema of schemas || []) {
+        reconcileConditionLockKeys(normalized.schemas[schema.templateSchemaId || ''], schema);
     }
     return normalized;
 }
@@ -978,6 +1040,46 @@ function arrayDependencyDependentTemplateFieldId(fields: any[], dependency: ISch
     return SchemaHelper.resolveFieldByPath(fields, dependency?.field || [])?.templateFieldId || null;
 }
 
+/**
+ * True when some ancestor of `path` exists in `fields` but has no nested `fields` to descend into.
+ * That is how a template snapshot stores a sub-schema array (toSnapshotField drops the nested
+ * fields), so a failed lookup under such an ancestor means "not recorded here", not "not there".
+ */
+function pathEndsInUnrecordedSubSchema(fields: any[], path: string[]): boolean {
+    let current = fields || [];
+    for (let i = 0; i < (path?.length || 0) - 1; i++) {
+        const next = current.find((field) => field?.name === path[i]);
+        if (!next) {
+            return false;
+        }
+        if (!Array.isArray(next.fields) || !next.fields.length) {
+            return true;
+        }
+        current = next.fields;
+    }
+    return false;
+}
+
+/**
+ * Dependent templateFieldId of a link, looked up in `fields`. A template snapshot cannot resolve a
+ * path that runs through a sub-schema array, so for those only, `fallbackFields` (the policy side,
+ * which keeps nested fields) supplies the identity. A top-level path is always resolved against
+ * `fields` alone, so a field the template really removed is never mistaken for a nested one.
+ */
+function resolveLinkDependentTemplateFieldId(
+    fields: any[],
+    dependency: ISchemaArrayDependency,
+    fallbackFields: any[]
+): string | null {
+    const direct = arrayDependencyDependentTemplateFieldId(fields, dependency);
+    if (direct) {
+        return direct;
+    }
+    return pathEndsInUnrecordedSubSchema(fields, dependency?.field || [])
+        ? arrayDependencyDependentTemplateFieldId(fallbackFields, dependency)
+        : null;
+}
+
 export interface IArrayDependencyClassification {
     matchedIndexByOldIndex: Map<number, number>;
     whollyCustomIndices: Set<number>;
@@ -989,16 +1091,22 @@ export interface IArrayDependencyClassification {
  * field's templateFieldId instead of a trigger signature - a link has no sub-structure a
  * policy author could add onto an otherwise-matched one, so there is no branch/cross-target
  * equivalent to restore for the matched case.
+ *
+ * A link only counts as orphaned (removed from the template) when `previousSnapshot` shows the
+ * template actually had a link for that dependent field. One the template never had - the policy
+ * author added it on a template array field - is policy-authored, same as one on a custom field.
  * @param previousLinks
  * @param previousFields
  * @param sourceLinks
  * @param sourceFields
+ * @param previousSnapshot the previous template version's links and fields, when known
  */
 export function classifyArrayDependenciesAgainstSource(
     previousLinks: ISchemaArrayDependency[],
     previousFields: any[],
     sourceLinks: ISchemaArrayDependency[],
-    sourceFields: any[]
+    sourceFields: any[],
+    previousSnapshot?: { links: ISchemaArrayDependency[]; fields: any[] }
 ): IArrayDependencyClassification {
     const matchedIndexByOldIndex = new Map<number, number>();
     const whollyCustomIndices = new Set<number>();
@@ -1010,15 +1118,32 @@ export function classifyArrayDependenciesAgainstSource(
             continue;
         }
         const matchedIndex = (sourceLinks || []).findIndex((candidate) =>
-            arrayDependencyDependentTemplateFieldId(sourceFields, candidate) === templateFieldId
+            resolveLinkDependentTemplateFieldId(sourceFields, candidate, previousFields) === templateFieldId
         );
-        if (matchedIndex === -1) {
+        if (matchedIndex !== -1) {
+            matchedIndexByOldIndex.set(i, matchedIndex);
+            continue;
+        }
+        const templateHadLink = !previousSnapshot || (previousSnapshot.links || []).some((candidate) =>
+            resolveLinkDependentTemplateFieldId(previousSnapshot.fields, candidate, previousFields) === templateFieldId
+        );
+        if (templateHadLink) {
             orphanedIndices.add(i);
         } else {
-            matchedIndexByOldIndex.set(i, matchedIndex);
+            whollyCustomIndices.add(i);
         }
     }
     return { matchedIndexByOldIndex, whollyCustomIndices, orphanedIndices };
+}
+
+/** Top-level field names a link is anchored on: the first segment of its dependent and source paths. */
+function arrayDependencyRootFieldNames(dependency: ISchemaArrayDependency): string[] {
+    return [dependency?.field?.[0], dependency?.on?.[0]].filter((name): name is string => !!name);
+}
+
+/** True when both root fields of a link are still properties of the (already rebuilt) document. */
+function arrayDependencyFieldsSurviveInDocument(document: any, dependency: ISchemaArrayDependency): boolean {
+    return arrayDependencyRootFieldNames(dependency).every((name) => !!document?.properties?.[name]);
 }
 
 export interface IConditionFieldPlacement {
@@ -1472,14 +1597,19 @@ function isLinkLockedByConfig(schemaConfig: any, templateFieldId: string): boole
     return schemaConfig?.repeatableLinks?.[templateFieldId]?.locked === true;
 }
 
+/**
+ * A condition's lock is keyed by its trigger signature, which includes the compared value, so a
+ * value-changed condition has a different key in each version - each config is read under its own.
+ */
 function buildConditionLockChangeDetails(
     previousSchemaConfig: any,
     nextSchemaConfig: any,
-    signatureKey: string
+    previousSignatureKey: string,
+    nextSignatureKey: string = previousSignatureKey
 ): ISchemaTemplateUpdateChange['details'] {
     return buildDetails(
-        { locked: isConditionLockedByConfig(previousSchemaConfig, signatureKey) },
-        { locked: isConditionLockedByConfig(nextSchemaConfig, signatureKey) },
+        { locked: isConditionLockedByConfig(previousSchemaConfig, previousSignatureKey) },
+        { locked: isConditionLockedByConfig(nextSchemaConfig, nextSignatureKey) },
         [{ key: 'locked', label: 'Locked' }]
     );
 }
@@ -2028,8 +2158,13 @@ export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<Ret
         ]);
         for (const [oldIndex, newIndex] of allMatchedConditionPairs) {
             const signature = conditionTriggerSignature(previousConditions[oldIndex]);
+            const nextSignature = conditionTriggerSignature(sourceConditions[newIndex]);
             const conditionDetails = [
-                ...(signature ? buildConditionLockChangeDetails(previousSchemaConfig, nextSchemaConfig, signature.join(',')) : []),
+                ...(signature
+                    ? buildConditionLockChangeDetails(
+                        previousSchemaConfig, nextSchemaConfig, signature.join(','), (nextSignature || signature).join(',')
+                    )
+                    : []),
                 ...buildConditionContentChangeDetails(previousConditions[oldIndex], sourceConditions[newIndex])
             ];
             if (hasDetails(conditionDetails)) {
@@ -2206,11 +2341,11 @@ export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<Ret
             }
             const { orphanedIndices } = conditionClassification;
             for (const conditionIndex of orphanedIndices) {
-                if (valueChangedConditionPairs.has(conditionIndex)) {
-                    // Recovered above as an update (same trigger field, value changed) -
-                    // already reported there, not a remove.
-                    continue;
-                }
+                // Recovered above as an update (same trigger field, value changed), so no separate
+                // remove entry. Apply still treats it as orphaned by signature, though: policy-authored
+                // custom fields / cross-schema targets under it are dropped unless the user keeps
+                // them, so the conflict below must be raised for it exactly as for a removed one.
+                const isValueChanged = valueChangedConditionPairs.has(conditionIndex);
                 const orphanedFields = orphanedFieldsByConditionIndex.get(conditionIndex) || [];
                 const hasCrossTargets = conditionHasCrossTargets(policySchema.document, conditionIndex);
                 const condition = previousConditions[conditionIndex];
@@ -2218,17 +2353,19 @@ export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<Ret
                 const fieldNames = orphanedFields.length
                     ? orphanedFields.map((f) => getFieldDisplayName(f)).join(', ')
                     : (hasCrossTargets ? '(cross-schema target only, no custom field)' : conditionDisplayName(condition));
-                changes.push(createChange(
-                    SchemaTemplateUpdateChangeType.CONDITION_REMOVE,
-                    `A condition in schema "${nextSchema.name}" was removed from the template.`,
-                    {
-                        templateSchemaId,
-                        schemaName: nextSchema.name,
-                        fieldName: fieldNames,
-                        before: 'Condition present',
-                        after: 'Removed from template'
-                    }
-                ));
+                if (!isValueChanged) {
+                    changes.push(createChange(
+                        SchemaTemplateUpdateChangeType.CONDITION_REMOVE,
+                        `A condition in schema "${nextSchema.name}" was removed from the template.`,
+                        {
+                            templateSchemaId,
+                            schemaName: nextSchema.name,
+                            fieldName: fieldNames,
+                            before: 'Condition present',
+                            after: 'Removed from template'
+                        }
+                    ));
+                }
                 if (hasNothingToResolve) {
                     continue;
                 }
@@ -2240,7 +2377,9 @@ export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<Ret
                 }
                 conflicts.push(createConflict(
                     SchemaTemplateUpdateConflictType.CONDITION_REMOVED_WITH_POLICY_USAGE,
-                    `A condition in schema "${nextSchema.name}" was removed from the template, but it still reveals custom field(s): ${fieldNames}. Choose whether to keep it as a custom condition or remove it from the policy.`,
+                    isValueChanged
+                        ? `A condition in schema "${nextSchema.name}" was changed in the template, so the policy's version of it no longer matches, but it still holds custom content: ${fieldNames}. Choose whether to keep it as a custom condition or remove it from the policy.`
+                        : `A condition in schema "${nextSchema.name}" was removed from the template, but it still reveals custom field(s): ${fieldNames}. Choose whether to keep it as a custom condition or remove it from the policy.`,
                     {
                         templateSchemaId,
                         templateFieldId: triggerIds.join(','),
@@ -2261,7 +2400,8 @@ export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<Ret
         const previousLinks = policySnapshot.arrayDependencies || [];
         const sourceLinks = nextSchema.arrayDependencies || [];
         const linkClassification = classifyArrayDependenciesAgainstSource(
-            previousLinks, policySnapshot.fields, sourceLinks, nextSchema.fields
+            previousLinks, policySnapshot.fields, sourceLinks, nextSchema.fields,
+            { links: previousSchema.arrayDependencies || [], fields: previousSchema.fields || [] }
         );
         for (const [oldIndex, newIndex] of linkClassification.matchedIndexByOldIndex) {
             const templateFieldId = arrayDependencyDependentTemplateFieldId(policySnapshot.fields, previousLinks[oldIndex]);
@@ -2309,41 +2449,83 @@ export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<Ret
             ));
         }
 
+        // The removal of a link the template dropped is always reported, even under
+        // repeatableLinksLocked: that flag only decides whether the policy has a choice to make
+        // (the conflict below), not whether the link disappears.
         // repeatableLinksLocked removes every policy-authored link addition unconditionally,
         // so nothing is left to resolve.
-        if (!nextSchemaConfig.repeatableLinksLocked) {
-            const { orphanedIndices: orphanedLinkIndices } = linkClassification;
-            for (const linkIndex of orphanedLinkIndices) {
-                const dependency = previousLinks[linkIndex];
-                const templateFieldId = arrayDependencyDependentTemplateFieldId(policySnapshot.fields, dependency);
-                const dependentField = SchemaHelper.resolveFieldByPath(policySnapshot.fields, dependency?.field || []);
-                const fieldName = getFieldDisplayName(dependentField);
-                changes.push(createChange(
-                    SchemaTemplateUpdateChangeType.REPEATABLE_LINK_REMOVE,
-                    `A repeatable link in schema "${nextSchema.name}" was removed from the template.`,
-                    {
-                        templateSchemaId,
-                        schemaName: nextSchema.name,
-                        fieldName,
-                        before: formatArrayDependencySummary(policySnapshot.fields, dependency),
-                        after: 'Removed from template'
-                    }
-                ));
-                conflicts.push(createConflict(
-                    SchemaTemplateUpdateConflictType.REPEATABLE_LINK_REMOVED_WITH_POLICY_USAGE,
-                    `A repeatable link in schema "${nextSchema.name}" (dependent field: ${fieldName}) was removed from the template. Choose whether to keep it as a custom link or remove it from the policy.`,
-                    {
-                        templateSchemaId,
-                        templateFieldId,
-                        schemaName: nextSchema.name,
-                        fieldName,
-                        allowedActions: [
-                            SchemaTemplateUpdateResolutionAction.KEEP_AS_CUSTOM_LINK,
-                            SchemaTemplateUpdateResolutionAction.REMOVE_FROM_POLICY
-                        ]
-                    }
-                ));
+        const { orphanedIndices: orphanedLinkIndices } = linkClassification;
+        for (const linkIndex of orphanedLinkIndices) {
+            const dependency = previousLinks[linkIndex];
+            const templateFieldId = arrayDependencyDependentTemplateFieldId(policySnapshot.fields, dependency);
+            const dependentField = SchemaHelper.resolveFieldByPath(policySnapshot.fields, dependency?.field || []);
+            const fieldName = getFieldDisplayName(dependentField);
+            changes.push(createChange(
+                SchemaTemplateUpdateChangeType.REPEATABLE_LINK_REMOVE,
+                `A repeatable link in schema "${nextSchema.name}" was removed from the template.`,
+                {
+                    templateSchemaId,
+                    schemaName: nextSchema.name,
+                    fieldName,
+                    before: formatArrayDependencySummary(policySnapshot.fields, dependency),
+                    after: 'Removed from template'
+                }
+            ));
+            if (nextSchemaConfig.repeatableLinksLocked) {
+                continue;
             }
+            conflicts.push(createConflict(
+                SchemaTemplateUpdateConflictType.REPEATABLE_LINK_REMOVED_WITH_POLICY_USAGE,
+                `A repeatable link in schema "${nextSchema.name}" (dependent field: ${fieldName}) was removed from the template. Choose whether to keep it as a custom link or remove it from the policy.`,
+                {
+                    templateSchemaId,
+                    templateFieldId,
+                    schemaName: nextSchema.name,
+                    fieldName,
+                    allowedActions: [
+                        SchemaTemplateUpdateResolutionAction.KEEP_AS_CUSTOM_LINK,
+                        SchemaTemplateUpdateResolutionAction.REMOVE_FROM_POLICY
+                    ]
+                }
+            ));
+        }
+
+        // Policy-authored links are carried over by the update, unless something removes them: the
+        // template locking repeatable links, or the fields they point at not surviving. Report
+        // those losses the same way custom fields are (CUSTOM_FIELD_REMOVE), instead of dropping
+        // them silently.
+        const linkRootSurvives = (name: string): boolean => {
+            const root = (policySnapshot.fields || []).find((candidate: any) => candidate?.name === name);
+            if (!root) {
+                return false;
+            }
+            if (root.templateFieldId) {
+                return nextFields.has(String(root.templateFieldId));
+            }
+            return !nextSchemaConfig.customFieldsLocked && !conditionFieldNamesToRemove.has(name);
+        };
+        for (const linkIndex of linkClassification.whollyCustomIndices) {
+            const dependency = previousLinks[linkIndex];
+            const reason = nextSchemaConfig.repeatableLinksLocked
+                ? 'repeatable links are locked by the template'
+                : (arrayDependencyRootFieldNames(dependency).every(linkRootSurvives)
+                    ? null
+                    : 'one of the fields it links will be removed');
+            if (!reason) {
+                continue;
+            }
+            const dependentField = SchemaHelper.resolveFieldByPath(policySnapshot.fields, dependency?.field || []);
+            changes.push(createChange(
+                SchemaTemplateUpdateChangeType.REPEATABLE_LINK_REMOVE,
+                `A policy-added repeatable link in schema "${nextSchema.name}" will be removed because ${reason}.`,
+                {
+                    templateSchemaId,
+                    schemaName: nextSchema.name,
+                    fieldName: dependentField ? getFieldDisplayName(dependentField) : (dependency?.field || []).join('.'),
+                    before: formatArrayDependencySummary(policySnapshot.fields, dependency),
+                    after: 'Removed'
+                }
+            ));
         }
     }
 
@@ -2613,7 +2795,10 @@ export function preparePolicySchemaUpdate(
     const carryOverLinkIndices = new Set<number>();
     if (!schemaConfig.repeatableLinksLocked) {
         const linkClassification = classifyArrayDependenciesAgainstSource(
-            previousLinks, previousParsed.fields || [], sourceLinks, sourceParsed.fields || []
+            previousLinks, previousParsed.fields || [], sourceLinks, sourceParsed.fields || [],
+            previousSnapshotSchema
+                ? { links: previousSnapshotSchema.arrayDependencies || [], fields: previousSnapshotSchema.fields || [] }
+                : undefined
         );
         for (const index of linkClassification.whollyCustomIndices) {
             carryOverLinkIndices.add(index);
@@ -2692,7 +2877,12 @@ export function preparePolicySchemaUpdate(
     if (carryOverLinkIndices.size) {
         const parsedComment = SchemaHelper.parseSchemaComment(target.document.$comment);
         const existingLinks: ISchemaArrayDependency[] = parsedComment.arrayDependencies || [];
-        const additionalLinks = Array.from(carryOverLinkIndices).map((index) => previousLinks[index]);
+        // A carried-over link must still point at fields that exist after the rebuild: custom
+        // fields removed by customFieldsLocked / conditionsLocked / a declined condition would
+        // otherwise leave a link whose paths resolve to nothing.
+        const additionalLinks = Array.from(carryOverLinkIndices)
+            .map((index) => previousLinks[index])
+            .filter((link) => arrayDependencyFieldsSurviveInDocument(target.document, link));
         target.document.$comment = SchemaHelper.buildSchemaComment(
             parsedComment.term,
             parsedComment['@id'],

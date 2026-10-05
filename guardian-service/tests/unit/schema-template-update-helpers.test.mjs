@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {
     analyzeConditionFieldPlacements,
     buildFieldChangeDetails,
+    classifyArrayDependenciesAgainstSource,
     buildLinkContentChangeDetails,
     buildSchemaTemplateUpdatePreviewFromContext,
     buildTemplateSchemasSnapshot,
@@ -12,6 +13,7 @@ import {
     getPolicySchemaByTemplateId,
     getRuntimeCustomFields,
     mergeCustomFieldsIntoDocument,
+    normalizeTemplateConfigKeys,
     normalizeFieldForDiff,
     preparePolicySchemaUpdate,
 } from '../../dist/api/schema-template.service.js';
@@ -1809,6 +1811,56 @@ describe('buildSchemaTemplateUpdatePreviewFromContext — condition removal', ()
         });
     }
 
+    it('raises the keep-or-remove conflict when a changed condition value leaves policy custom fields under the old one', () => {
+        const trigger = field('A', { templateFieldId: 'tpl-a' });
+        const revealed = field('revealed', { templateFieldId: 'tpl-revealed-1' });
+        const custom = field('custom', { templateFieldId: undefined });
+        const policyDocument = SchemaHelper.buildDocument(
+            baseSchema(),
+            [trigger, revealed, custom],
+            [{ ifCondition: { field: trigger, fieldValue: 1 }, thenFields: [revealed, custom], elseFields: [] }]
+        );
+        delete policyDocument.properties['@context'];
+        delete policyDocument.properties.type;
+        delete policyDocument.properties.id;
+
+        const previousConditions = [{ ifCondition: { field: trigger, fieldValue: 1 }, thenFields: [revealed], elseFields: [] }];
+        const nextConditions = [{ ifCondition: { field: trigger, fieldValue: 2 }, thenFields: [revealed], elseFields: [] }];
+        const preview = buildSchemaTemplateUpdatePreviewFromContext(buildContext(nextConditions, previousConditions, policyDocument));
+
+        assert.ok(preview.changes.some((c) => c.type === 'CONDITION_UPDATE'), 'still reported as one update');
+        assert.ok(!preview.changes.some((c) => c.type === 'CONDITION_REMOVE'), 'no separate remove entry');
+        const conflict = preview.conflicts.find((c) => c.type === 'CONDITION_REMOVED_WITH_POLICY_USAGE');
+        assert.ok(conflict, 'apply drops the custom field unless the user keeps it, so the user must be asked');
+        assert.equal(preview.canApply, false);
+    });
+
+    it('does not report a false lock change when a locked condition value changes and the lock moved with it', () => {
+        const trigger = field('A', { templateFieldId: 'tpl-a' });
+        const revealed = field('revealed', { templateFieldId: 'tpl-revealed-1' });
+        const policyDocument = SchemaHelper.buildDocument(
+            baseSchema(),
+            [trigger, revealed],
+            [{ ifCondition: { field: trigger, fieldValue: 1 }, thenFields: [revealed], elseFields: [] }]
+        );
+        delete policyDocument.properties['@context'];
+        delete policyDocument.properties.type;
+        delete policyDocument.properties.id;
+
+        const previousConditions = [{ ifCondition: { field: trigger, fieldValue: 1 }, thenFields: [revealed], elseFields: [] }];
+        const nextConditions = [{ ifCondition: { field: trigger, fieldValue: 2 }, thenFields: [revealed], elseFields: [] }];
+        const context = buildContext(nextConditions, previousConditions, policyDocument);
+        // Locked before under the old signature, and still locked after under the new one.
+        context.snapshot.config = { schemas: { 'tsid-1': { conditions: { 'SINGLE,tpl-a:1': { locked: true } } } } };
+        context.template.config = { schemas: { 'tsid-1': { conditions: { 'SINGLE,tpl-a:2': { locked: true } } } } };
+
+        const change = buildSchemaTemplateUpdatePreviewFromContext(context).changes.find((c) => c.type === 'CONDITION_UPDATE');
+
+        assert.ok(change);
+        assert.ok(!change.details.some((d) => d.label === 'Locked'), 'the lock is unchanged, only the value moved');
+        assert.ok(change.details.some((d) => d.label === 'Condition'));
+    });
+
     it('reports a CONDITION_UPDATE with content details when only the comparator changes', () => {
         const trigger = field('trigger', { templateFieldId: 'tpl-trigger-1' });
         const revealed = field('revealed', { templateFieldId: 'tpl-revealed-1' });
@@ -2235,7 +2287,7 @@ describe('buildSchemaTemplateUpdatePreviewFromContext — repeatable link remova
         uuid: 'u-1', version: '1.0.0', name: 'N', description: 'D', contextURL: 'ctx:', arrayDependencies,
     });
 
-    const buildContext = (nextLinks, previousLinks, policyDocument, nextFields = []) => {
+    const buildContext = (nextLinks, previousLinks, policyDocument, nextFields = [], previousFields = []) => {
         const policySchema = {
             document: policyDocument,
             name: 'N', description: 'D', entity: 'NONE', version: '1.0.0',
@@ -2245,7 +2297,7 @@ describe('buildSchemaTemplateUpdatePreviewFromContext — repeatable link remova
             policy: { id: 'policy-1' },
             binding: { templateId: 'template-1', templateName: 'T', templateVersion: '1.0.0' },
             snapshot: {
-                schemas: { schemas: { 'tsid-1': { templateSchemaId: 'tsid-1', name: 'N', description: 'D', entity: 'NONE', version: '1.0.0', fields: [], conditions: [], arrayDependencies: previousLinks } } },
+                schemas: { schemas: { 'tsid-1': { templateSchemaId: 'tsid-1', name: 'N', description: 'D', entity: 'NONE', version: '1.0.0', fields: previousFields, conditions: [], arrayDependencies: previousLinks } } },
                 config: { schemas: {} },
             },
             nextSchemas: {
@@ -2266,7 +2318,7 @@ describe('buildSchemaTemplateUpdatePreviewFromContext — repeatable link remova
         delete policyDocument.properties.type;
         delete policyDocument.properties.id;
 
-        const context = buildContext([], [dependency], policyDocument);
+        const context = buildContext([], [dependency], policyDocument, [], [parent, child]);
 
         const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
 
@@ -2330,5 +2382,226 @@ describe('buildSchemaTemplateUpdatePreviewFromContext — repeatable link remova
 
         assert.equal(preview.conflicts.length, 0,
             'nothing left to resolve when every link is removed unconditionally anyway');
+    });
+
+    it('treats a link the policy added on a template array field as policy-authored, not as removed from the template', () => {
+        const parent = field('parent', { templateFieldId: 'tpl-parent', isArray: true });
+        const child = field('child', { templateFieldId: 'tpl-child', isArray: true });
+        const dependency = { field: ['child'], on: ['parent'], kind: 'array' };
+        const policyDocument = SchemaHelper.buildDocument(baseSchema([dependency]), [parent, child], []);
+        delete policyDocument.properties['@context'];
+        delete policyDocument.properties.type;
+        delete policyDocument.properties.id;
+
+        // The template never had this link - neither its previous nor its next version.
+        const context = buildContext([], [], policyDocument, [parent, child], [parent, child]);
+        const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
+
+        assert.ok(!preview.changes.some((c) => c.type === 'REPEATABLE_LINK_REMOVE'),
+            'a policy-added link was never in the template, so it cannot have been removed from it');
+        assert.ok(!preview.conflicts.some((c) => c.type === 'REPEATABLE_LINK_REMOVED_WITH_POLICY_USAGE'));
+    });
+
+    it('still raises the removal conflict when the previous template version did have the link', () => {
+        const parent = field('parent', { templateFieldId: 'tpl-parent', isArray: true });
+        const child = field('child', { templateFieldId: 'tpl-child', isArray: true });
+        const dependency = { field: ['child'], on: ['parent'], kind: 'array' };
+        const policyDocument = SchemaHelper.buildDocument(baseSchema([dependency]), [parent, child], []);
+        delete policyDocument.properties['@context'];
+        delete policyDocument.properties.type;
+        delete policyDocument.properties.id;
+
+        const context = buildContext([], [dependency], policyDocument, [parent, child], [parent, child]);
+        const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
+
+        assert.ok(preview.conflicts.some((c) => c.type === 'REPEATABLE_LINK_REMOVED_WITH_POLICY_USAGE'));
+    });
+
+    it('matches a link whose dependent path runs through a sub-schema array the template snapshot cannot resolve', () => {
+        const entry = [field('inner', { templateFieldId: 'tpl-inner' })];
+        // Policy side keeps the nested fields; the template snapshot drops them for a sub-schema ref.
+        const policyFields = [field('outer', { templateFieldId: 'tpl-outer', isArray: true, fields: entry })];
+        const templateFields = [field('outer', { templateFieldId: 'tpl-outer', isArray: true, refTemplateSchemaId: 'sub-outer' })];
+        const nestedLink = { field: ['outer', 'inner'], on: ['outer', 'inner'], kind: 'array' };
+
+        const classification = classifyArrayDependenciesAgainstSource(
+            [nestedLink], policyFields, [nestedLink], templateFields,
+            { links: [nestedLink], fields: templateFields }
+        );
+
+        assert.deepEqual([...classification.matchedIndexByOldIndex], [[0, 0]], 'the same link must match itself');
+        assert.equal(classification.orphanedIndices.size, 0);
+    });
+
+    it('does not borrow the policy identity for a top-level link field the template really removed', () => {
+        const policyFields = [field('gone', { templateFieldId: 'tpl-gone', isArray: true })];
+        const link = { field: ['gone'], on: ['gone'], kind: 'array' };
+
+        const classification = classifyArrayDependenciesAgainstSource(
+            [link], policyFields, [], [], { links: [link], fields: policyFields }
+        );
+
+        assert.equal(classification.matchedIndexByOldIndex.size, 0);
+        assert.deepEqual([...classification.orphanedIndices], [0], 'a removed template link is still an orphan');
+    });
+});
+
+
+describe('preparePolicySchemaUpdate - value-changed condition with policy custom fields', () => {
+    const field = (name, over = {}) => ({
+        name, title: name, description: name, type: 'string', required: false,
+        isArray: false, isRef: false, readOnly: false, templateFieldId: `tpl-${name}`, ...over,
+    });
+    const base = { uuid: 'u-1', version: '1.0.0', name: 'N', description: 'D', contextURL: 'ctx:' };
+    const trigger = field('A');
+    const revealed = field('revealed');
+    const custom = field('custom', { templateFieldId: undefined });
+    const makeSchema = (fields, conditions) => ({
+        document: SchemaHelper.buildDocument(base, fields, conditions),
+        name: 'N', description: 'D', entity: 'NONE', version: '1.0.0', contextURL: 'ctx:', templateSchemaId: 'tsid-1',
+    });
+    const run = (resolution) => {
+        const target = makeSchema(
+            [trigger, revealed, custom],
+            [{ ifCondition: { field: trigger, fieldValue: '1' }, thenFields: [revealed, custom], elseFields: [] }]
+        );
+        const source = makeSchema(
+            [trigger, revealed],
+            [{ ifCondition: { field: trigger, fieldValue: '2' }, thenFields: [revealed], elseFields: [] }]
+        );
+        const conflicts = [{ id: 'c-1', type: 'CONDITION_REMOVED_WITH_POLICY_USAGE', templateFieldId: 'SINGLE,tpl-A:"1"' }];
+        preparePolicySchemaUpdate(target, source, 'template-1', {}, conflicts, new Map(resolution ? [['c-1', resolution]] : []));
+        return JSON.stringify(target.document);
+    };
+
+    it('drops the custom field when the user chooses to remove it', () => {
+        assert.ok(!run('REMOVE_FROM_POLICY').includes('"custom"'));
+    });
+
+    it('keeps the custom field when the user chooses to keep the old condition as custom', () => {
+        assert.ok(run('KEEP_AS_CUSTOM_CONDITION').includes('"custom"'));
+    });
+});
+
+
+describe('policy-authored repeatable links when their fields or the link category are removed', () => {
+    const field = (name, over = {}) => ({
+        name, title: name, description: name, type: 'string', required: false,
+        isArray: true, isRef: false, readOnly: false, ...over,
+    });
+    const base = { uuid: 'u-1', version: '1.0.0', name: 'N', description: 'D', contextURL: 'ctx:' };
+    const templateField = field('t1', { templateFieldId: 'tpl-t1' });
+    const x = field('x');
+    const y = field('y');
+    const link = { field: ['y'], on: ['x'], kind: 'array' };
+    const makeSchema = (fields, links) => ({
+        document: SchemaHelper.buildDocument({ ...base, arrayDependencies: links }, fields, []),
+        name: 'N', description: 'D', entity: 'NONE', version: '1.0.0', contextURL: 'ctx:', templateSchemaId: 'tsid-1',
+    });
+    const linksAfterApply = (config) => {
+        const target = makeSchema([templateField, x, y], [link]);
+        preparePolicySchemaUpdate(target, makeSchema([templateField], []), 'template-1', config, [], new Map());
+        return new InterfaceSchema(target, true).arrayDependencies || [];
+    };
+    const previewFor = (config) => {
+        const policy = makeSchema([templateField, x, y], [link]);
+        const snapshot = (version) => ({
+            templateSchemaId: 'tsid-1', name: 'N', description: 'D', entity: 'NONE', version,
+            fields: [templateField], conditions: [], arrayDependencies: [],
+        });
+        return buildSchemaTemplateUpdatePreviewFromContext({
+            policy: { id: 'policy-1' },
+            binding: { templateId: 'template-1', templateName: 'T', templateVersion: '1.0.0' },
+            snapshot: { schemas: { schemas: { 'tsid-1': snapshot('1.0.0') } }, config: { schemas: {} } },
+            nextSchemas: { schemas: { 'tsid-1': snapshot('1.0.1') } },
+            template: { id: 'template-1', name: 'T', version: '1.0.1', config: { schemas: { 'tsid-1': config } } },
+            templateSchemas: [],
+            policySchemaByTemplateId: new Map([['tsid-1', { ...policy, id: 'policy-schema-1' }]]),
+        });
+    };
+
+    it('does not carry a link over when customFieldsLocked removes the fields it points at', () => {
+        assert.deepEqual(linksAfterApply({ customFieldsLocked: true }), []);
+    });
+
+    it('still carries the link over when its fields survive', () => {
+        assert.equal(linksAfterApply({}).length, 1);
+    });
+
+    it('reports a REPEATABLE_LINK_REMOVE for a policy link dropped by repeatableLinksLocked', () => {
+        const change = previewFor({ repeatableLinksLocked: true }).changes.find((c) => c.type === 'REPEATABLE_LINK_REMOVE');
+        assert.ok(change, 'the silent loss must be visible');
+        assert.ok(change.message.includes('locked'), change.message);
+    });
+
+    it('reports a REPEATABLE_LINK_REMOVE for a policy link whose fields are removed by customFieldsLocked', () => {
+        const change = previewFor({ customFieldsLocked: true }).changes.find((c) => c.type === 'REPEATABLE_LINK_REMOVE');
+        assert.ok(change);
+        assert.ok(change.message.includes('removed'), change.message);
+    });
+
+    it('reports nothing for a surviving policy link', () => {
+        assert.ok(!previewFor({}).changes.some((c) => c.type === 'REPEATABLE_LINK_REMOVE'));
+    });
+});
+
+describe('condition lock keys follow an edited condition', () => {
+    const field = (name, id) => ({
+        name, title: name, description: name, type: 'string', required: false,
+        isArray: false, isRef: false, readOnly: false, templateFieldId: id,
+    });
+    const a = field('a', 'tpl-a');
+    const b = field('b', 'tpl-b');
+    const revealed = field('revealed', 'tpl-r');
+    const base = { uuid: 'u-1', version: '1.0.0', name: 'N', description: 'D', contextURL: 'ctx:' };
+    const schemaWith = (conditions) => ({
+        document: SchemaHelper.buildDocument(base, [a, b, revealed], conditions),
+        name: 'N', description: 'D', entity: 'NONE', version: '1.0.0', contextURL: 'ctx:',
+        templateSchemaId: 'tsid-1', id: 'db-1',
+    });
+    const cond = (ifCondition) => ({ ifCondition, thenFields: [revealed], elseFields: [] });
+    const keys = (config) => Object.keys(config.schemas['tsid-1'].conditions);
+
+    it('moves a lock onto the same condition after its value changes', () => {
+        const config = { schemas: { 'tsid-1': { conditions: { 'SINGLE,tpl-a:"1"': { locked: true } } } } };
+        const result = normalizeTemplateConfigKeys(config, [schemaWith([cond({ field: a, fieldValue: '2' })])]);
+
+        assert.deepEqual(keys(result), ['SINGLE,tpl-a:"2"']);
+        assert.equal(result.schemas['tsid-1'].conditions['SINGLE,tpl-a:"2"'].locked, true);
+    });
+
+    it('moves a lock onto the same condition after IF ALL becomes IF ANY', () => {
+        const config = { schemas: { 'tsid-1': { conditions: { 'AND,tpl-a:"1",tpl-b:"2"': { locked: true } } } } };
+        const result = normalizeTemplateConfigKeys(config, [
+            schemaWith([cond({ OR: [{ field: a, fieldValue: '1' }, { field: b, fieldValue: '2' }] })]),
+        ]);
+
+        assert.deepEqual(keys(result), ['OR,tpl-a:"1",tpl-b:"2"']);
+        assert.equal(result.schemas['tsid-1'].conditions['OR,tpl-a:"1",tpl-b:"2"'].locked, true);
+    });
+
+    it('leaves a lock alone when its condition still matches', () => {
+        const config = { schemas: { 'tsid-1': { conditions: { 'SINGLE,tpl-a:"1"': { locked: true } } } } };
+        const result = normalizeTemplateConfigKeys(config, [schemaWith([cond({ field: a, fieldValue: '1' })])]);
+
+        assert.deepEqual(keys(result), ['SINGLE,tpl-a:"1"']);
+    });
+
+    it('does not move a lock onto a condition on a different trigger field', () => {
+        const config = { schemas: { 'tsid-1': { conditions: { 'SINGLE,tpl-a:"1"': { locked: true } } } } };
+        const result = normalizeTemplateConfigKeys(config, [schemaWith([cond({ field: b, fieldValue: '1' })])]);
+
+        assert.deepEqual(keys(result), ['SINGLE,tpl-a:"1"'], 'a different trigger field is a different condition');
+    });
+
+    it('does not guess when two edited conditions share the trigger field', () => {
+        const config = {
+            schemas: { 'tsid-1': { conditions: { 'SINGLE,tpl-a:"1"': { locked: true }, 'SINGLE,tpl-a:"2"': { locked: true } } } },
+        };
+        const result = normalizeTemplateConfigKeys(config, [
+            schemaWith([cond({ field: a, fieldValue: '8' }), cond({ field: a, fieldValue: '9' })]),
+        ]);
+
+        assert.deepEqual(keys(result).sort(), ['SINGLE,tpl-a:"1"', 'SINGLE,tpl-a:"2"']);
     });
 });
