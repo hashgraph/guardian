@@ -24,6 +24,11 @@ export function getClient(): Client {
         try {
             const networkObj = JSON.parse(network);
             client = Client.forNetwork(networkObj);
+            // forNetwork() configures no mirror node, which the balance queries need
+            const mirrorNetwork = process.env.MIRROR_NETWORK;
+            if (mirrorNetwork) {
+                client.setMirrorNetwork(mirrorNetwork.split(',').map(address => address.trim()));
+            }
         } catch (e) {
             throw new Error(`Invalid HEDERA_NETWORK value: ${network}. Use "local", "testnet", "mainnet", or a valid JSON object.`);
         }
@@ -245,6 +250,8 @@ export async function executeContractRaw(
 
 const BALANCE_POLL_TIMEOUT_MS = 30_000;
 const BALANCE_POLL_INTERVAL_MS = 1_000;
+// Longer than the mirror node lag: a "no change" outcome cannot be polled for
+const BALANCE_SETTLE_MS = 10_000;
 
 const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
 
@@ -357,6 +364,11 @@ export async function assertBalanceChange(
 ) {
     const initialBalance = await waitForFundedTokenBalance(client, accountId, tokenId);
     const result = await action();
+    if (expectedChange === 0) {
+        // Already true on the first read, which may predate the mirror node
+        // seeing the action's transactions, so let it catch up first.
+        await sleep(BALANCE_SETTLE_MS);
+    }
     const finalBalance = await waitForTokenBalance(
         client,
         accountId,
