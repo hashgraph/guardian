@@ -165,6 +165,14 @@ export interface ISchemaTemplateSchemaConfig {
     guidelines?: string;
     featured?: boolean;
     fields?: Record<string, ISchemaTemplateFieldConfig>;
+    /**
+     * Per-individual-condition lock, keyed by the condition's trigger signature
+     * (`SchemaHelper.getConditionTriggerSignature(condition).join(',')`). Independent of
+     * `conditionsLocked` (the whole-tab toggle) - locks only that condition's own
+     * trigger/operator/rows/existence, not the content of its then/else branch fields,
+     * which stay governed solely by the existing per-field lock in `fields`.
+     */
+    conditions?: Record<string, ISchemaTemplateFieldConfig>;
 }
 
 export interface ISchemaTemplateConfig {

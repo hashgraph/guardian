@@ -2134,15 +2134,15 @@
                         <div class="sc-cond-type-group">
                             <button class="sc-cond-type-btn"
                                 [class.active]="getIfOperator(cond) === 'SINGLE'"
-                                [disabled]="!canChangeConditionsForSelectedSchema"
+                                [disabled]="!canChangeConditionsForSelectedSchema || isConditionLocked(cond)"
                                 (click)="setConditionOperator(cond, 'SINGLE')">IF</button>
                             <button class="sc-cond-type-btn"
                                 [class.active]="getIfOperator(cond) === 'AND'"
-                                [disabled]="!canChangeConditionsForSelectedSchema"
+                                [disabled]="!canChangeConditionsForSelectedSchema || isConditionLocked(cond)"
                                 (click)="setConditionOperator(cond, 'AND')">IF ALL</button>
                             <button class="sc-cond-type-btn"
                                 [class.active]="getIfOperator(cond) === 'OR'"
-                                [disabled]="!canChangeConditionsForSelectedSchema"
+                                [disabled]="!canChangeConditionsForSelectedSchema || isConditionLocked(cond)"
                                 (click)="setConditionOperator(cond, 'OR')">IF ANY</button>
                         </div>
                         <span class="sc-cond-type-note">
@@ -2150,10 +2150,21 @@
                             @else if (getIfOperator(cond) === 'AND') { — all must match }
                             @else { — any must match }
                         </span>
+                        @if (isTemplateConfigMode) {
+                            <button class="sc-cond-block-lock"
+                                tooltipPosition="top"
+                                [pTooltip]="isConditionLocked(cond) ? 'Unlock this condition' : 'Lock this condition'"
+                                [disabled]="isTemplateReadonly"
+                                (click)="toggleConditionLocked(cond)">
+                                <i class="pi" [class.pi-lock]="isConditionLocked(cond)" [class.pi-lock-open]="!isConditionLocked(cond)"></i>
+                            </button>
+                        } @else if (isConditionLocked(cond)) {
+                            <i class="pi pi-lock sc-cond-block-lock-badge" title="Locked by the applied template"></i>
+                        }
                         <button class="sc-cond-block-del"
                             tooltipPosition="top"
                             [pTooltip]="getRemoveConditionTitle(cond)"
-                            [disabled]="!canChangeConditionsForSelectedSchema || conditionHasLockedField(cond)"
+                            [disabled]="!canChangeConditionsForSelectedSchema || conditionHasLockedField(cond) || isConditionLocked(cond)"
                             (click)="removeConditionAt(ci)">
                             <i class="pi pi-trash"></i>
                         </button>
@@ -2180,7 +2191,7 @@
                                     [virtualScrollItemSize]="38"
                                     appendTo="body"
                                     placeholder="Select field…"
-                                    [disabled]="!canChangeConditionsForSelectedSchema"
+                                    [disabled]="!canChangeConditionsForSelectedSchema || isConditionLocked(cond)"
                                     [ngModel]="getIfRowFieldPath(row)"
                                     (onChange)="setIfRowField(cond, ri, $event.value)">
                                     <ng-template pTemplate="item" let-option>
@@ -2198,6 +2209,7 @@
                                         optionLabel="label"
                                         optionValue="value"
                                         appendTo="body"
+                                        [disabled]="!canChangeConditionsForSelectedSchema || isConditionLocked(cond)"
                                         [ngModel]="getIfRowComparator(row)"
                                         (onChange)="setIfRowComparator(cond, ri, $event.value)">
                                         <ng-template pTemplate="item" let-option>
@@ -2218,7 +2230,7 @@
                                             [options]="getIfRowOptions(row)"
                                             appendTo="body"
                                             placeholder="Select value…"
-                                            [disabled]="!canChangeConditionsForSelectedSchema"
+                                            [disabled]="!canChangeConditionsForSelectedSchema || isConditionLocked(cond)"
                                             [ngModel]="getIfRowValue(row)"
                                             (onChange)="setIfRowValue(cond, ri, $event.value)">
                                             <ng-template pTemplate="item" let-option>
@@ -2227,13 +2239,13 @@
                                         </p-select>
                                     } @else {
                                         <input class="sc-cond-val-inp" type="text" placeholder="value"
-                                            [disabled]="!canChangeConditionsForSelectedSchema"
+                                            [disabled]="!canChangeConditionsForSelectedSchema || isConditionLocked(cond)"
                                             [value]="getIfRowValue(row)"
                                             (input)="setIfRowValue(cond, ri, $any($event.target).value)" />
                                     }
                                 </div>
                                 <button class="sc-cond-row-del"
-                                    [disabled]="getIfRows(cond).length <= 1 || !canChangeConditionsForSelectedSchema"
+                                    [disabled]="getIfRows(cond).length <= 1 || !canChangeConditionsForSelectedSchema || isConditionLocked(cond)"
                                     (click)="removeIfRow(cond, ri)">
                                     <i class="pi pi-times"></i>
                                 </button>
@@ -2241,7 +2253,7 @@
                         }
 
                         @if (getIfOperator(cond) !== 'SINGLE') {
-                            <button class="sc-cond-add-rule" [disabled]="!canChangeConditionsForSelectedSchema" (click)="addIfRow(cond)">
+                            <button class="sc-cond-add-rule" [disabled]="!canChangeConditionsForSelectedSchema || isConditionLocked(cond)" (click)="addIfRow(cond)">
                                 <i class="pi pi-plus"></i> Add condition row
                             </button>
                         }

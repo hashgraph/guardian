@@ -3704,6 +3704,29 @@
     &:disabled { opacity: 0.3; cursor: default; }
 }
 
+.sc-cond-block-lock {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-grey-5);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    padding: 5px 8px;
+    border-radius: 6px;
+    transition: color 0.12s, background 0.12s;
+
+    &:hover:not(:disabled) { color: var(--color-primary); background: var(--guardian-hover); }
+    &:disabled { opacity: 0.3; cursor: default; }
+}
+
+.sc-cond-block-lock-badge {
+    color: var(--color-grey-5);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+}
+
 .sc-cond-block-body {
     padding: 14px 16px;
     display: flex;

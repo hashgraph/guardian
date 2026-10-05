@@ -910,11 +910,12 @@ export function conditionTriggerSignature(condition: any): string[] | null {
     return SchemaHelper.getConditionTriggerSignature(condition);
 }
 
+/**
+ * @deprecated moved to `SchemaHelper.findConditionIndexBySignature` (interfaces package) -
+ * see the note on `conditionTriggerSignature` above. Re-exported unchanged.
+ */
 export function findMatchingConditionIndex(conditions: any[], signature: string[]): number {
-    return (conditions || []).findIndex((condition) => {
-        const candidate = conditionTriggerSignature(condition);
-        return !!candidate && candidate.length === signature.length && candidate.every((part, i) => part === signature[i]);
-    });
+    return SchemaHelper.findConditionIndexBySignature(conditions, signature);
 }
 
 /**

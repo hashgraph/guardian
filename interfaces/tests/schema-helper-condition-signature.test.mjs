@@ -1,10 +1,4 @@
 import assert from 'node:assert/strict';
-// Namespace import, not a named import: `getConditionTriggerSignature`/`getConditionTriggerPredicates`
-// do not exist on SchemaHelper yet (issue #7071 moves them here from
-// guardian-service/src/api/schema-template.service.ts, where they live today as private
-// functions `conditionTriggerSignature`/`conditionPredicates`). A named import of a
-// not-yet-existing export would crash this whole file at load time; a namespace import lets
-// the missing-method call fail as an ordinary assertion inside each `it()` instead.
 import * as SchemaHelperModule from '../dist/helpers/schema-helper.js';
 
 const { SchemaHelper } = SchemaHelperModule;
@@ -21,12 +15,6 @@ const field = (name, over = {}) => ({
     ...over,
 });
 
-// Mirrors the exact behavior already unit-tested for the private
-// `conditionTriggerSignature` in guardian-service/tests/unit/schema-template-update-helpers.test.mjs
-// ("condition-branch identity helpers") - this is the same algorithm, relocated so the
-// frontend (for the new per-condition lock key) and guardian-service/src/api/schema.service.ts
-// (for the new per-condition lock server-side check) can both import one implementation
-// instead of a third hand-copied version.
 describe('SchemaHelper.getConditionTriggerSignature', () => {
     it('reads a single-predicate trigger signature', () => {
         const cond = { ifCondition: { field: field('a', { templateFieldId: 't-a' }), fieldValue: 'x' } };

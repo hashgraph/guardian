@@ -1481,17 +1481,13 @@ describe('buildSchemaTemplateUpdatePreviewFromContext — condition removal', ()
     });
 });
 
-// Issue #7071 — repeatable links get zero reconciliation today: `preparePolicySchemaUpdate`
-// clones `source.document` wholesale (including its `$comment`, where arrayDependencies live -
-// interfaces/src/models/schema.ts:288-291), and nothing anywhere in schema-template.service.ts
-// reads or restores `arrayDependencies` (confirmed via grep - zero hits before this feature).
-// Classification mirrors conditions exactly: a link is "wholly custom" when its DEPENDENT
-// field (ISchemaArrayDependency.field, the terminal path segment) has no templateFieldId at
-// all - carries over automatically, no conflict, same as a wholly-custom condition. A link
-// whose dependent field DOES have a templateFieldId but has no match in the new template's own
-// arrayDependencies is "orphaned" - same ambiguity conditions already accept (the system
-// cannot tell "template removed this" from "policy added this on a template field", so both
-// require a resolution) - dropped by default, kept via KEEP_AS_CUSTOM_LINK.
+// `preparePolicySchemaUpdate` clones `source.document` wholesale, including `$comment` where
+// arrayDependencies live (interfaces/src/models/schema.ts:288-291). Classification mirrors
+// conditions: a link is "wholly custom" when its dependent field (ISchemaArrayDependency.field,
+// the terminal path segment) has no templateFieldId - carries over automatically, no conflict.
+// A link whose dependent field has a templateFieldId but no match in the new template's own
+// arrayDependencies is "orphaned" (the system cannot tell "template removed this" from "policy
+// added this on a template field") - dropped by default, kept via KEEP_AS_CUSTOM_LINK.
 describe('preparePolicySchemaUpdate — repeatable link membership', () => {
     const field = (name, over = {}) => ({
         name,
@@ -1615,10 +1611,8 @@ describe('preparePolicySchemaUpdate — repeatable link membership', () => {
         const target = asSchema(targetDocument);
         const source = asSchema(sourceDocument);
 
-        // Reuses the SAME conflict/resolution parameters conditions already use (positions 5
-        // and 6) - these are generic ISchemaTemplateUpdateConflict[]/Map<string, action>
-        // collections already filtered by `.type` at every existing call site, not a
-        // condition-exclusive mechanism; see docs/schema-template-repeatable-conditions-lock-design.md.
+        // Same conflict/resolution parameters conditions use (positions 5 and 6) - generic
+        // ISchemaTemplateUpdateConflict[]/Map<string, action> collections, filtered by `.type`.
         preparePolicySchemaUpdate(
             target, source, 'template-1',
             { customFieldsLocked: false, conditionsLocked: false, schemaSettingsLocked: false },
@@ -1636,11 +1630,9 @@ describe('preparePolicySchemaUpdate — repeatable link membership', () => {
     });
 });
 
-// Mirrors `buildSchemaTemplateUpdatePreviewFromContext — condition removal` exactly, for
-// repeatable links. `arrayDependencies` is set directly on the snapshot/next schema objects
-// (paralleling `.conditions` there), a new field `ISchemaTemplateSnapshotSchema` needs
-// (interfaces/src/interface/schema-template.interface.ts) - not yet declared, since this test
-// file constructs plain JS fixtures rather than type-checked ones.
+// Mirrors `buildSchemaTemplateUpdatePreviewFromContext — condition removal`, for repeatable
+// links. `arrayDependencies` is set directly on the snapshot/next schema objects, paralleling
+// `.conditions` there.
 describe('buildSchemaTemplateUpdatePreviewFromContext — repeatable link removal', () => {
     const field = (name, over = {}) => ({
         name,

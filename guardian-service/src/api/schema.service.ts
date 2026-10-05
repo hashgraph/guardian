@@ -83,22 +83,47 @@ function getParsedConditionTargetPaths(targets: any[]): string[][] {
         .filter((fieldPath: string[]) => fieldPath.length > 0);
 }
 
+function conditionComparableFields(condition: any): any {
+    return {
+        op: condition.ifCondition?.AND ? 'AND' : condition.ifCondition?.OR ? 'OR' : 'SINGLE',
+        if: SchemaHelper.getConditionTriggerPredicates(condition.ifCondition).map((predicate: any) => [
+            getConditionFieldId(predicate.field),
+            predicate.fieldPath || [],
+            SchemaHelper.cloneSchemaRuntimeValue(predicate.fieldValue),
+            // Signature matching ignores comparator by design, so this hash must cover it,
+            // or a comparator-only change (same field, same value) stays undetected.
+            predicate.comparator || 'equals'
+        ]),
+        then: (condition.thenFields || []).map(getConditionFieldId),
+        else: (condition.elseFields || []).map(getConditionFieldId),
+        thenTargets: getParsedConditionTargetPaths(condition.thenTargets),
+        elseTargets: getParsedConditionTargetPaths(condition.elseTargets)
+    };
+}
+
 function getConditionsHash(schema: ISchema): string {
     const conditions = new Schema(schema, true).conditions || [];
-    return SchemaHelper.stableStringify(
-        conditions.map((condition: any) => ({
-            op: condition.ifCondition?.AND ? 'AND' : condition.ifCondition?.OR ? 'OR' : 'SINGLE',
-            if: SchemaHelper.getConditionTriggerPredicates(condition.ifCondition).map((predicate: any) => [
-                getConditionFieldId(predicate.field),
-                predicate.fieldPath || [],
-                SchemaHelper.cloneSchemaRuntimeValue(predicate.fieldValue)
-            ]),
-            then: (condition.thenFields || []).map(getConditionFieldId),
-            else: (condition.elseFields || []).map(getConditionFieldId),
-            thenTargets: getParsedConditionTargetPaths(condition.thenTargets),
-            elseTargets: getParsedConditionTargetPaths(condition.elseTargets)
-        }))
-    );
+    return SchemaHelper.stableStringify(conditions.map(conditionComparableFields));
+}
+
+/**
+ * Content hash for one condition - "structure" (trigger/operator/rows + branch field
+ * identity/target paths), not the branch fields' own content, which has its own independent
+ * per-field lock. Used by the per-condition lock, alongside signature-based match/removal
+ * detection (which alone would miss a same-signature content change, e.g. a predicate's
+ * comparator changing without its field/value changing).
+ * @param condition
+ */
+function conditionComparableHash(condition: any): string {
+    return SchemaHelper.stableStringify(conditionComparableFields(condition));
+}
+
+function getConditionConfig(schemaConfig: ISchemaTemplateSchemaConfig, condition: any): any {
+    const signature = SchemaHelper.getConditionTriggerSignature(condition);
+    if (!signature) {
+        return null;
+    }
+    return schemaConfig.conditions?.[signature.join(',')] || null;
 }
 
 function flattenFields(fields: SchemaField[], result: SchemaField[] = []): SchemaField[] {
@@ -219,6 +244,26 @@ export function validateTemplateSchemaUpdateByConfig(
 
     if (schemaConfig.conditionsLocked && getConditionsHash(previous) !== getConditionsHash(next)) {
         throw new Error(`Conditions for "${previous.name}" are locked by schema template and cannot be edited.`);
+    }
+
+    // Per-individual-condition lock - independent of the whole-tab check above. Unlike
+    // per-field locks, a condition with no config entry defaults to *unlocked*: this is an
+    // opt-in extra restriction on top of conditionsLocked, not a default-safe state every
+    // condition starts in.
+    const previousConditions = new Schema(previous, true).conditions || [];
+    const nextConditions = new Schema(next, true).conditions || [];
+    for (const previousCondition of previousConditions) {
+        if (getConditionConfig(schemaConfig, previousCondition)?.locked !== true) {
+            continue;
+        }
+        const signature = SchemaHelper.getConditionTriggerSignature(previousCondition);
+        const matchIndex = SchemaHelper.findConditionIndexBySignature(nextConditions, signature);
+        if (matchIndex === -1) {
+            throw new Error(`A condition in "${previous.name}" is locked by schema template and cannot be removed.`);
+        }
+        if (conditionComparableHash(previousCondition) !== conditionComparableHash(nextConditions[matchIndex])) {
+            throw new Error(`A condition in "${previous.name}" is locked by schema template and cannot be edited.`);
+        }
     }
 
     const previousFields = flattenFields(getSchemaFields(previous));

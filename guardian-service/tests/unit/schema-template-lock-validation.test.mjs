@@ -381,15 +381,10 @@ describe('validateTemplateSchemaUpdateByConfig', () => {
 
 });
 
-// Issue #7071 — per-condition lock, independent of the whole-tab `conditionsLocked`
-// toggle. A locked condition's signature is `getConditionTriggerSignature(condition).join(',')`
-// (interfaces/src/helpers/schema-helper.ts, moved there from
-// guardian-service/src/api/schema-template.service.ts's private `conditionTriggerSignature` -
-// see docs/schema-template-repeatable-conditions-lock-design.md). Scope is "structure only":
-// the condition's trigger field(s), operator (SINGLE/AND/OR), and its own existence - NOT the
-// content of its then/else branch fields, which stay governed solely by the existing per-field
-// lock. These tests are expected to fail until that per-condition enforcement is added to
-// validateTemplateSchemaUpdateByConfig (guardian-service/src/api/schema.service.ts).
+// Per-condition lock, independent of the whole-tab `conditionsLocked` toggle. Keyed by
+// `SchemaHelper.getConditionTriggerSignature(condition).join(',')`. Scope is structure only:
+// trigger field(s), operator, and the condition's own existence - not its then/else branch
+// fields, which keep using the existing per-field lock.
 describe('validateTemplateSchemaUpdateByConfig — per-condition lock', () => {
     const withConditions = (conditions) => schema({
         document: {
@@ -504,18 +499,85 @@ describe('validateTemplateSchemaUpdateByConfig — per-condition lock', () => {
             }
         ));
     });
+
+    // The trigger signature ignores `comparator` ('equals' vs 'contains' - two conditions
+    // with the same field+value can mean different things), so a comparator-only change must
+    // be caught by the structural hash instead.
+    it('rejects a locked condition\'s comparator changing with its field/value unchanged', () => {
+        const arrayTrigger = (comparator) => schema({
+            document: {
+                ...schemaDocument({
+                    field_1: {
+                        title: 'Field 1',
+                        description: 'Field 1',
+                        type: 'array',
+                        items: { type: 'string' },
+                        templateFieldId: 'template-field-1',
+                    },
+                }),
+                allOf: [{
+                    if: {
+                        properties: {
+                            field_1: comparator === 'contains' ? { contains: { const: 'a' } } : { items: { const: 'a' }, minItems: 1 },
+                        },
+                        required: ['field_1'],
+                    },
+                    then: { properties: { revealed: { title: 'Revealed', description: 'Revealed', type: 'string' } } },
+                }],
+            },
+        });
+
+        assert.throws(
+            () => validateTemplateSchemaUpdateByConfig(
+                arrayTrigger('equals'),
+                arrayTrigger('contains'),
+                {
+                    conditionsLocked: false,
+                    conditions: { [lockedSignature]: { locked: true } },
+                }
+            ),
+            /[Cc]ondition.*locked/
+        );
+    });
+
+    it('rejects a comparator-only change even under the whole-tab conditionsLocked check', () => {
+        const arrayTrigger = (comparator) => schema({
+            document: {
+                ...schemaDocument({
+                    field_1: {
+                        title: 'Field 1',
+                        description: 'Field 1',
+                        type: 'array',
+                        items: { type: 'string' },
+                        templateFieldId: 'template-field-1',
+                    },
+                }),
+                allOf: [{
+                    if: {
+                        properties: {
+                            field_1: comparator === 'contains' ? { contains: { const: 'a' } } : { items: { const: 'a' }, minItems: 1 },
+                        },
+                        required: ['field_1'],
+                    },
+                    then: { properties: { revealed: { title: 'Revealed', description: 'Revealed', type: 'string' } } },
+                }],
+            },
+        });
+
+        assert.throws(
+            () => validateTemplateSchemaUpdateByConfig(arrayTrigger('equals'), arrayTrigger('contains'), {
+                conditionsLocked: true,
+            }),
+            /Conditions.*locked/
+        );
+    });
 });
 
-// Issue #7071 — repeatable-link locking. Two tiers, per the confirmed design:
-// (1) whole-tab, reusing the existing `conditionsLocked` flag (its UI label already reads
-//     "Lock schema fields, conditions, and repeatable links" as of issue #6734 - see
-//     docs/schema-template-repeatable-conditions-lock-design.md's "Mid-session correction").
-// (2) per-individual-link, keyed by the dependent field's own `templateFieldId`, in a new
-//     `repeatableLinks` record mirroring the existing per-field `fields` record.
-// Repeatable links live in `document.$comment` (SchemaHelper.parseSchemaComment/
-// buildSchemaComment), not `properties`/`allOf` - confirmed via interfaces/src/models/schema.ts:288-291.
-// These tests are expected to fail until `getArrayDependenciesHash` and the two lock checks are
-// added to validateTemplateSchemaUpdateByConfig.
+// Repeatable-link locking, two tiers: whole-tab reuses the existing `conditionsLocked` flag;
+// per-individual-link uses a new `repeatableLinks` record keyed by the dependent field's
+// `templateFieldId`, mirroring the existing per-field `fields` record. Repeatable links live in
+// `document.$comment` (SchemaHelper.parseSchemaComment/buildSchemaComment), not
+// `properties`/`allOf`.
 describe('validateTemplateSchemaUpdateByConfig — repeatable links', () => {
     const commentWithLinks = (arrayDependencies) => JSON.stringify({
         '@id': '#schema-1&1.0.0',

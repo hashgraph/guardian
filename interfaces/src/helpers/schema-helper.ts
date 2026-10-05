@@ -663,6 +663,21 @@ export class SchemaHelper {
     }
 
     /**
+     * Finds the condition in `conditions` whose own trigger signature matches `signature`
+     * exactly, or -1 if none does. Shared so every consumer that needs to locate "the same
+     * condition" across two condition lists (by signature, not array position or name) uses
+     * one implementation.
+     * @param conditions
+     * @param signature
+     */
+    public static findConditionIndexBySignature(conditions: SchemaCondition[], signature: string[]): number {
+        return (conditions || []).findIndex((condition) => {
+            const candidate = SchemaHelper.getConditionTriggerSignature(condition);
+            return !!candidate && candidate.length === signature.length && candidate.every((part, i) => part === signature[i]);
+        });
+    }
+
+    /**
      * Which condition branch reveals each field, by field name.
      *
      * A name revealed by more than one condition is ambiguous — there is no way to tell

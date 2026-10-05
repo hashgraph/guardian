@@ -287,6 +287,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return (field as any)?.templateFieldId || field?.name || '';
     }
 
+    /** Same joined-signature string `SchemaHelper.findConditionIndexBySignature` matches on -
+     * null (wholly policy-authored trigger, unmatchable) becomes '', same convention as a
+     * field with no templateFieldId. */
+    private getConditionConfigKey(condition: SchemaCondition | null | undefined): string {
+        return SchemaHelper.getConditionTriggerSignature(condition as any)?.join(',') ?? '';
+    }
+
     public get selectedSchemaConfig(): any {
         const key = this.getSchemaConfigKey(this.selectedSchema);
         if (!key) {
@@ -413,7 +420,32 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             .some((field) => this.isTemplateFieldLocked(field));
     }
 
+    /** Per-individual-condition lock - independent of `canChangeConditionsForSelectedSchema`
+     * (the whole-tab toggle). Unlike a field, a condition with no config entry defaults to
+     * *unlocked*: this is an opt-in extra restriction on top of the whole-tab lock, not a
+     * default-safe state every condition starts in. Scope is structure only (trigger/operator/
+     * rows/existence) - it does not reach the condition's then/else branch fields, which keep
+     * using their own independent per-field lock. */
+    public isConditionLocked(condition?: SchemaCondition): boolean {
+        if (this.isTemplateReadonly) {
+            return true;
+        }
+        if (!this.isTemplateConfigMode && !this.hasAppliedTemplateConfig) {
+            return false;
+        }
+        const key = this.getConditionConfigKey(condition);
+        if (!key) {
+            return false;
+        }
+        const schema = this.getSchemaForFieldLocks();
+        const schemaConfig = this.getSchemaTemplateConfig(schema);
+        return schemaConfig?.conditions?.[key]?.locked === true;
+    }
+
     public getRemoveConditionTitle(condition: SchemaCondition): string {
+        if (this.isConditionLocked(condition)) {
+            return 'Cannot remove a condition locked by the applied template';
+        }
         if (this.conditionHasLockedField(condition)) {
             return 'Cannot remove condition with locked template fields';
         }
@@ -1601,6 +1633,20 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.templateConfigDirty = true;
     }
 
+    /** Toggles directly from the condition block's own header - unlike the per-field lock,
+     * there is no select-then-toggle-in-side-panel step. */
+    public toggleConditionLocked(condition: SchemaCondition): void {
+        if (this.isTemplateReadonly) {
+            return;
+        }
+        const config = this.ensureConditionConfig(condition);
+        if (!config) {
+            return;
+        }
+        config.locked = !this.isConditionLocked(condition);
+        this.templateConfigDirty = true;
+    }
+
     public setSelectedSchemaGuidelines(guidelines: string): void {
         if (this.isTemplateReadonly) {
             return;
@@ -1727,6 +1773,17 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
         schemaConfig.fields[fieldKey] = schemaConfig.fields[fieldKey] || {};
         return schemaConfig.fields[fieldKey];
+    }
+
+    private ensureConditionConfig(condition: SchemaCondition | null | undefined): any | null {
+        const schemaConfig = this.ensureSelectedSchemaConfig();
+        const key = this.getConditionConfigKey(condition);
+        if (!schemaConfig || !key) {
+            return null;
+        }
+        schemaConfig.conditions = schemaConfig.conditions || {};
+        schemaConfig.conditions[key] = schemaConfig.conditions[key] || {};
+        return schemaConfig.conditions[key];
     }
 
     /*
@@ -3988,7 +4045,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public setConditionOperator(cond: SchemaCondition, op: 'SINGLE' | 'AND' | 'OR'): void {
-        if (!this.canChangeConditionsForSelectedSchema) { return; }
+        if (!this.canChangeConditionsForSelectedSchema || this.isConditionLocked(cond)) { return; }
         const rows = this.getIfRows(cond);
         const firstEntry = this._firstConditionEntry;
         // getIfRows returns a placeholder row for a null ifCondition, so an existing row is
@@ -4060,6 +4117,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public setIfRowComparator(cond: SchemaCondition, rowIdx: number, comparator: string): void {
+        if (!this.canChangeConditionsForSelectedSchema || this.isConditionLocked(cond)) { return; }
         const ic = cond.ifCondition as any;
         if (!ic) { return; }
         const apply = (row: any) => {
@@ -4074,7 +4132,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public setIfRowField(cond: SchemaCondition, rowIdx: number, pathStr: string): void {
-        if (!this.canChangeConditionsForSelectedSchema) { return; }
+        if (!this.canChangeConditionsForSelectedSchema || this.isConditionLocked(cond)) { return; }
         const field = this._resolveConditionField(pathStr);
         if (!field) { return; }
         const fieldPath = pathStr.split('.');
@@ -4091,7 +4149,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public setIfRowValue(cond: SchemaCondition, rowIdx: number, value: any): void {
-        if (!this.canChangeConditionsForSelectedSchema) { return; }
+        if (!this.canChangeConditionsForSelectedSchema || this.isConditionLocked(cond)) { return; }
         const ic = cond.ifCondition as any;
         if (!ic) { return; }
         if ('AND' in ic) { ic.AND[rowIdx].fieldValue = value; }
@@ -4101,7 +4159,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public addIfRow(cond: SchemaCondition): void {
-        if (!this.canChangeConditionsForSelectedSchema) { return; }
+        if (!this.canChangeConditionsForSelectedSchema || this.isConditionLocked(cond)) { return; }
         const ic = cond.ifCondition as any;
         if (!ic) { return; }
         const firstEntry = this._firstConditionEntry;
@@ -4116,7 +4174,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public removeIfRow(cond: SchemaCondition, rowIdx: number): void {
-        if (!this.canChangeConditionsForSelectedSchema) { return; }
+        if (!this.canChangeConditionsForSelectedSchema || this.isConditionLocked(cond)) { return; }
         const ic = cond.ifCondition as any;
         if (!ic) { return; }
         if ('AND' in ic && ic.AND.length > 1) { ic.AND.splice(rowIdx, 1); }
@@ -4435,7 +4493,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const schema = this.currentContextSchema;
         if (!schema) { return; }
         const condToCheck = schema.conditions?.[index];
-        if (this.conditionHasLockedField(condToCheck)) { return; }
+        if (this.conditionHasLockedField(condToCheck) || this.isConditionLocked(condToCheck)) { return; }
         // H1: rekey index-keyed dropdown state before the conditions array shrinks
         const rekey = (rec: Record<number, string | null>) => {
             const out: Record<number, string | null> = {};
