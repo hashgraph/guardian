@@ -2135,6 +2135,11 @@
     font-size: 13px;
     cursor: grab;
     flex-shrink: 0;
+
+    &.sc-drag-handle--disabled {
+        cursor: default;
+        opacity: 0.35;
+    }
 }
 
 .sc-field-type-icon {
@@ -2483,7 +2488,7 @@
 }
 
 .st-lock-note--inline {
-    margin: 0;
+    margin: 8px 0 0;
 }
 
 // ── Tab bar ──────────────────────────────────────────────────────────────────

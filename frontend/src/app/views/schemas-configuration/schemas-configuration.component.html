@@ -560,24 +560,24 @@
                             @if (isTemplateConfigMode) {
                                 <button class="st-toggle-row st-toggle-row--inline" [disabled]="isTemplateReadonly" (click)="toggleCanChangeSelectedSchemaSettings()">
                                     <span>
-                                        <strong>Change schema settings</strong>
-                                        <small>Allows changing schema name, description and entity type after applying.</small>
+                                        <strong>Lock schema settings</strong>
+                                        <small>Users can't rename the schema, change its description, or entity type.</small>
                                     </span>
-                                    <span class="st-toggle" [class.active]="canChangeSelectedSchemaSettings"></span>
+                                    <span class="st-toggle" [class.active]="selectedSchemaSettingsConfigLocked"></span>
                                 </button>
                                 <button class="st-toggle-row st-toggle-row--inline" [disabled]="isTemplateReadonly" (click)="toggleCanAddCustomFieldsToSelectedSchema()">
                                     <span>
-                                        <strong>Can add custom fields</strong>
-                                        <small>Allows adding fields outside the template standard when applied.</small>
+                                        <strong>Lock custom fields</strong>
+                                        <small>Users can only use fields defined in this template.</small>
                                     </span>
-                                    <span class="st-toggle" [class.active]="canAddCustomFieldsToSelectedSchema"></span>
+                                    <span class="st-toggle" [class.active]="selectedSchemaCustomFieldsConfigLocked"></span>
                                 </button>
                                 <button class="st-toggle-row st-toggle-row--inline" [disabled]="isTemplateReadonly" (click)="toggleCanChangeSelectedSchemaConditions()">
                                     <span>
-                                        <strong>Can change conditions</strong>
-                                        <small>Allows adding, editing or removing conditions when applied.</small>
+                                        <strong>Lock schema fields, conditions, and repeatable links</strong>
+                                        <small>Users can't edit or remove fields, conditions, or repeatable links.</small>
                                     </span>
-                                    <span class="st-toggle" [class.active]="canChangeSelectedSchemaConditions"></span>
+                                    <span class="st-toggle" [class.active]="selectedSchemaConditionsConfigLocked"></span>
                                 </button>
                                 <div class="st-guidelines-editor">
                                     <label class="st-guidelines-label" for="st-schema-guidelines-textarea">Guidelines</label>
@@ -928,10 +928,10 @@
                         </div>
                         <button class="st-toggle-row" [disabled]="isTemplateReadonly" (click)="toggleCanEditSelectedFieldInTemplate()">
                             <span>
-                                <strong>Can edit selected field</strong>
-                                <small>Allows editing this field when the template is applied.</small>
+                                <strong>Lock field editing</strong>
+                                <small>Users can't edit this field when template is applied.</small>
                             </span>
-                            <span class="st-toggle" [class.active]="canEditSelectedFieldInTemplate"></span>
+                            <span class="st-toggle" [class.active]="selectedFieldConfigLocked"></span>
                         </button>
                         <div class="st-guidelines-editor">
                             <label class="st-guidelines-label" for="st-field-guidelines-textarea">Guidelines</label>
@@ -1637,7 +1637,7 @@
                             [class.sc-field-card--drag-bot]="!isTemplateConfigMode && sidebarDropIndex === i && sidebarDropPos === 'bot'"
                             (mousedown)="!isTemplateConfigMode ? onCardMouseDown($event, field, isDrilling ? drillCurrentFields : (selectedSchema?.fields ?? [])) : null"
                             (click)="selectField(field)">
-                            <span class="sc-drag-handle"><i class="pi pi-bars"></i></span>
+                            <span class="sc-drag-handle" [class.sc-drag-handle--disabled]="isTemplateConfigMode || isTemplateFieldLocked(field)"><i class="pi pi-bars"></i></span>
                             <div class="sc-field-type-icon" [class.sc-field-type-icon--ref]="getFieldCurrentType(field) === 'sub-schema'">
                                 <i class="pi {{ getFieldIcon(field) }}"></i>
                             </div>
