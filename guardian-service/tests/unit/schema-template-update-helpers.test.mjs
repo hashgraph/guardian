@@ -1480,3 +1480,259 @@ describe('buildSchemaTemplateUpdatePreviewFromContext — condition removal', ()
         assert.equal(lockedDetail.after, 'Yes');
     });
 });
+
+// Issue #7071 — repeatable links get zero reconciliation today: `preparePolicySchemaUpdate`
+// clones `source.document` wholesale (including its `$comment`, where arrayDependencies live -
+// interfaces/src/models/schema.ts:288-291), and nothing anywhere in schema-template.service.ts
+// reads or restores `arrayDependencies` (confirmed via grep - zero hits before this feature).
+// Classification mirrors conditions exactly: a link is "wholly custom" when its DEPENDENT
+// field (ISchemaArrayDependency.field, the terminal path segment) has no templateFieldId at
+// all - carries over automatically, no conflict, same as a wholly-custom condition. A link
+// whose dependent field DOES have a templateFieldId but has no match in the new template's own
+// arrayDependencies is "orphaned" - same ambiguity conditions already accept (the system
+// cannot tell "template removed this" from "policy added this on a template field", so both
+// require a resolution) - dropped by default, kept via KEEP_AS_CUSTOM_LINK.
+describe('preparePolicySchemaUpdate — repeatable link membership', () => {
+    const field = (name, over = {}) => ({
+        name,
+        title: name,
+        description: name,
+        type: 'string',
+        required: false,
+        isArray: false,
+        isRef: false,
+        readOnly: false,
+        ...over,
+    });
+
+    const baseSchema = (arrayDependencies = []) => ({
+        uuid: 'u-1', version: '1.0.0', name: 'N', description: 'D', contextURL: 'ctx:', arrayDependencies,
+    });
+
+    const asSchema = (document, over = {}) => ({
+        document,
+        name: 'N',
+        description: 'D',
+        entity: 'NONE',
+        version: '1.0.0',
+        templateSchemaId: 'tsid-1',
+        ...over,
+    });
+
+    const stripEnvelope = (document) => {
+        delete document.properties['@context'];
+        delete document.properties.type;
+        delete document.properties.id;
+    };
+
+    const readLinks = (document) => SchemaHelper.parseSchemaComment(document.$comment).arrayDependencies || [];
+
+    it('preserves a wholly policy-authored repeatable link across a template update (the real pre-existing bug)', () => {
+        // Both the dependent field and the link itself are purely policy-authored - the
+        // template never defined either, in any version. No ambiguity, no conflict needed:
+        // this must always survive, exactly like a wholly-custom condition always does.
+        const parent = field('parent', { templateFieldId: 'tpl-parent', isArray: true });
+        const customChild = field('customChild', { isArray: true }); // no templateFieldId
+        const dependency = { field: ['customChild'], on: ['parent'], kind: 'array' };
+        const targetDocument = SchemaHelper.buildDocument(baseSchema([dependency]), [parent, customChild], []);
+        stripEnvelope(targetDocument);
+        const sourceDocument = SchemaHelper.buildDocument(baseSchema([]), [parent], []);
+
+        const target = asSchema(targetDocument);
+        const source = asSchema(sourceDocument);
+
+        preparePolicySchemaUpdate(target, source, 'template-1', { customFieldsLocked: false, conditionsLocked: false, schemaSettingsLocked: false });
+
+        assert.deepEqual(readLinks(target.document), [dependency],
+            'a wholly policy-authored repeatable link must survive a template update, not be silently wiped');
+    });
+
+    it('does not duplicate a link the new template still defines itself (matched case)', () => {
+        const parent = field('parent', { templateFieldId: 'tpl-parent', isArray: true });
+        const child = field('child', { templateFieldId: 'tpl-child', isArray: true });
+        const dependency = { field: ['child'], on: ['parent'], kind: 'array' };
+        const targetDocument = SchemaHelper.buildDocument(baseSchema([dependency]), [parent, child], []);
+        stripEnvelope(targetDocument);
+        // The new template version still defines this exact link itself.
+        const sourceDocument = SchemaHelper.buildDocument(baseSchema([dependency]), [parent, child], []);
+
+        const target = asSchema(targetDocument);
+        const source = asSchema(sourceDocument);
+
+        preparePolicySchemaUpdate(target, source, 'template-1', { customFieldsLocked: false, conditionsLocked: false, schemaSettingsLocked: false });
+
+        assert.deepEqual(readLinks(target.document), [dependency]);
+    });
+
+    it('drops all repeatable links when conditionsLocked is true (whole-tab reuse, not a new flag)', () => {
+        const parent = field('parent', { templateFieldId: 'tpl-parent', isArray: true });
+        const customChild = field('customChild', { isArray: true });
+        const dependency = { field: ['customChild'], on: ['parent'], kind: 'array' };
+        const targetDocument = SchemaHelper.buildDocument(baseSchema([dependency]), [parent, customChild], []);
+        stripEnvelope(targetDocument);
+        const sourceDocument = SchemaHelper.buildDocument(baseSchema([]), [parent], []);
+
+        const target = asSchema(targetDocument);
+        const source = asSchema(sourceDocument);
+
+        preparePolicySchemaUpdate(target, source, 'template-1', { customFieldsLocked: false, conditionsLocked: true, schemaSettingsLocked: false });
+
+        assert.deepEqual(readLinks(target.document), [],
+            'conditionsLocked must drop every repeatable link unconditionally, same as customFieldsLocked does for fields');
+    });
+
+    it('drops an orphaned repeatable link (template unlinked two still-existing fields) when no resolution is given', () => {
+        const parent = field('parent', { templateFieldId: 'tpl-parent', isArray: true });
+        const child = field('child', { templateFieldId: 'tpl-child', isArray: true });
+        const dependency = { field: ['child'], on: ['parent'], kind: 'array' };
+        const targetDocument = SchemaHelper.buildDocument(baseSchema([dependency]), [parent, child], []);
+        stripEnvelope(targetDocument);
+        // Both arrays still exist in the new template (same templateFieldIds) - the template
+        // author just removed the pairing between them, not either field.
+        const sourceDocument = SchemaHelper.buildDocument(baseSchema([]), [parent, child], []);
+
+        const target = asSchema(targetDocument);
+        const source = asSchema(sourceDocument);
+
+        preparePolicySchemaUpdate(
+            target, source, 'template-1',
+            { customFieldsLocked: false, conditionsLocked: false, schemaSettingsLocked: false },
+            [], new Map()
+        );
+
+        assert.deepEqual(readLinks(target.document), [],
+            'an orphaned link with no explicit keep-resolution must be dropped, not silently restored');
+    });
+
+    it('restores an orphaned repeatable link verbatim via KEEP_AS_CUSTOM_LINK', () => {
+        const parent = field('parent', { templateFieldId: 'tpl-parent', isArray: true });
+        const child = field('child', { templateFieldId: 'tpl-child', isArray: true });
+        const dependency = { field: ['child'], on: ['parent'], kind: 'array' };
+        const targetDocument = SchemaHelper.buildDocument(baseSchema([dependency]), [parent, child], []);
+        stripEnvelope(targetDocument);
+        const sourceDocument = SchemaHelper.buildDocument(baseSchema([]), [parent, child], []);
+
+        const target = asSchema(targetDocument);
+        const source = asSchema(sourceDocument);
+
+        // Reuses the SAME conflict/resolution parameters conditions already use (positions 5
+        // and 6) - these are generic ISchemaTemplateUpdateConflict[]/Map<string, action>
+        // collections already filtered by `.type` at every existing call site, not a
+        // condition-exclusive mechanism; see docs/schema-template-repeatable-conditions-lock-design.md.
+        preparePolicySchemaUpdate(
+            target, source, 'template-1',
+            { customFieldsLocked: false, conditionsLocked: false, schemaSettingsLocked: false },
+            [{
+                id: 'conflict-link-1',
+                type: 'REPEATABLE_LINK_REMOVED_WITH_POLICY_USAGE',
+                templateFieldId: 'tpl-child',
+                allowedActions: ['KEEP_AS_CUSTOM_LINK', 'REMOVE_FROM_POLICY'],
+            }],
+            new Map([['conflict-link-1', 'KEEP_AS_CUSTOM_LINK']])
+        );
+
+        assert.deepEqual(readLinks(target.document), [dependency],
+            'KEEP_AS_CUSTOM_LINK must carry the orphaned link over verbatim');
+    });
+});
+
+// Mirrors `buildSchemaTemplateUpdatePreviewFromContext — condition removal` exactly, for
+// repeatable links. `arrayDependencies` is set directly on the snapshot/next schema objects
+// (paralleling `.conditions` there), a new field `ISchemaTemplateSnapshotSchema` needs
+// (interfaces/src/interface/schema-template.interface.ts) - not yet declared, since this test
+// file constructs plain JS fixtures rather than type-checked ones.
+describe('buildSchemaTemplateUpdatePreviewFromContext — repeatable link removal', () => {
+    const field = (name, over = {}) => ({
+        name,
+        title: name,
+        description: name,
+        type: 'string',
+        required: false,
+        isArray: false,
+        isRef: false,
+        readOnly: false,
+        ...over,
+    });
+
+    const baseSchema = (arrayDependencies = []) => ({
+        uuid: 'u-1', version: '1.0.0', name: 'N', description: 'D', contextURL: 'ctx:', arrayDependencies,
+    });
+
+    const buildContext = (nextLinks, previousLinks, policyDocument) => {
+        const policySchema = {
+            document: policyDocument,
+            name: 'N', description: 'D', entity: 'NONE', version: '1.0.0',
+            templateSchemaId: 'tsid-1', id: 'policy-schema-1',
+        };
+        return {
+            policy: { id: 'policy-1' },
+            binding: { templateId: 'template-1', templateName: 'T', templateVersion: '1.0.0' },
+            snapshot: {
+                schemas: { schemas: { 'tsid-1': { templateSchemaId: 'tsid-1', name: 'N', description: 'D', entity: 'NONE', version: '1.0.0', fields: [], conditions: [], arrayDependencies: previousLinks } } },
+                config: { schemas: {} },
+            },
+            nextSchemas: {
+                schemas: { 'tsid-1': { templateSchemaId: 'tsid-1', name: 'N', description: 'D', entity: 'NONE', version: '1.0.1', fields: [], conditions: [], arrayDependencies: nextLinks } },
+            },
+            template: { id: 'template-1', name: 'T', version: '1.0.1', config: { schemas: {} } },
+            templateSchemas: [],
+            policySchemaByTemplateId: new Map([['tsid-1', policySchema]]),
+        };
+    };
+
+    it('raises a blocking conflict when the template removes a repeatable link holding policy usage', () => {
+        const parent = field('parent', { templateFieldId: 'tpl-parent', isArray: true });
+        const child = field('child', { templateFieldId: 'tpl-child', isArray: true });
+        const dependency = { field: ['child'], on: ['parent'], kind: 'array' };
+        const policyDocument = SchemaHelper.buildDocument(baseSchema([dependency]), [parent, child], []);
+        delete policyDocument.properties['@context'];
+        delete policyDocument.properties.type;
+        delete policyDocument.properties.id;
+
+        const context = buildContext([], [dependency], policyDocument);
+
+        const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
+
+        assert.equal(preview.canApply, false, 'a blocking conflict must prevent applying without a resolution');
+        const conflict = preview.conflicts.find((c) => c.type === 'REPEATABLE_LINK_REMOVED_WITH_POLICY_USAGE');
+        assert.ok(conflict, 'must raise the new conflict type');
+        assert.equal(conflict.templateFieldId, 'tpl-child');
+        assert.deepEqual(conflict.allowedActions, ['KEEP_AS_CUSTOM_LINK', 'REMOVE_FROM_POLICY']);
+        assert.ok(preview.changes.some((c) => c.type === 'REPEATABLE_LINK_REMOVE'));
+    });
+
+    it('raises no conflict when the repeatable link still matches in the new template', () => {
+        const parent = field('parent', { templateFieldId: 'tpl-parent', isArray: true });
+        const child = field('child', { templateFieldId: 'tpl-child', isArray: true });
+        const dependency = { field: ['child'], on: ['parent'], kind: 'array' };
+        const policyDocument = SchemaHelper.buildDocument(baseSchema([dependency]), [parent, child], []);
+        delete policyDocument.properties['@context'];
+        delete policyDocument.properties.type;
+        delete policyDocument.properties.id;
+
+        const context = buildContext([dependency], [dependency], policyDocument);
+
+        const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
+
+        assert.equal(preview.canApply, true);
+        assert.equal(preview.conflicts.length, 0);
+    });
+
+    it('raises no conflict when conditionsLocked already removes every link unconditionally', () => {
+        const parent = field('parent', { templateFieldId: 'tpl-parent', isArray: true });
+        const child = field('child', { templateFieldId: 'tpl-child', isArray: true });
+        const dependency = { field: ['child'], on: ['parent'], kind: 'array' };
+        const policyDocument = SchemaHelper.buildDocument(baseSchema([dependency]), [parent, child], []);
+        delete policyDocument.properties['@context'];
+        delete policyDocument.properties.type;
+        delete policyDocument.properties.id;
+
+        const context = buildContext([], [dependency], policyDocument);
+        context.template.config = { schemas: { 'tsid-1': { conditionsLocked: true } } };
+
+        const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
+
+        assert.equal(preview.conflicts.length, 0,
+            'nothing left to resolve when every link is removed unconditionally anyway');
+    });
+});

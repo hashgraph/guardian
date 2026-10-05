@@ -380,3 +380,233 @@ describe('validateTemplateSchemaUpdateByConfig', () => {
     });
 
 });
+
+// Issue #7071 — per-condition lock, independent of the whole-tab `conditionsLocked`
+// toggle. A locked condition's signature is `getConditionTriggerSignature(condition).join(',')`
+// (interfaces/src/helpers/schema-helper.ts, moved there from
+// guardian-service/src/api/schema-template.service.ts's private `conditionTriggerSignature` -
+// see docs/schema-template-repeatable-conditions-lock-design.md). Scope is "structure only":
+// the condition's trigger field(s), operator (SINGLE/AND/OR), and its own existence - NOT the
+// content of its then/else branch fields, which stay governed solely by the existing per-field
+// lock. These tests are expected to fail until that per-condition enforcement is added to
+// validateTemplateSchemaUpdateByConfig (guardian-service/src/api/schema.service.ts).
+describe('validateTemplateSchemaUpdateByConfig — per-condition lock', () => {
+    const withConditions = (conditions) => schema({
+        document: {
+            ...schemaDocument({
+                field_1: {
+                    title: 'Field 1',
+                    description: 'Field 1',
+                    type: 'string',
+                    templateFieldId: 'template-field-1',
+                },
+                field_2: {
+                    title: 'Field 2',
+                    description: 'Field 2',
+                    type: 'string',
+                    templateFieldId: 'template-field-2',
+                },
+            }),
+            allOf: conditions,
+        },
+    });
+
+    const singleCondition = (trigger, value) => ({
+        if: { properties: { [trigger]: { const: value } }, required: [trigger] },
+        then: { properties: { revealed: { title: 'Revealed', description: 'Revealed', type: 'string' } } },
+    });
+
+    // Signature for { field_1 const 'a' }: ['SINGLE', 'template-field-1:"a"'].join(',')
+    const lockedSignature = 'SINGLE,template-field-1:"a"';
+
+    it('rejects a locked condition\'s trigger value changing (the condition no longer matches by signature)', () => {
+        const previous = withConditions([singleCondition('field_1', 'a')]);
+        const next = withConditions([singleCondition('field_1', 'b')]);
+
+        assert.throws(
+            () => validateTemplateSchemaUpdateByConfig(previous, next, {
+                conditionsLocked: false,
+                conditions: { [lockedSignature]: { locked: true } },
+            }),
+            /[Cc]ondition.*locked/
+        );
+    });
+
+    it('rejects a locked condition\'s operator changing from SINGLE to AND', () => {
+        const previous = withConditions([singleCondition('field_1', 'a')]);
+        const next = withConditions([{
+            if: {
+                allOf: [
+                    { properties: { field_1: { const: 'a' } }, required: ['field_1'] },
+                    { properties: { field_2: { const: 'x' } }, required: ['field_2'] },
+                ],
+            },
+            then: { properties: { revealed: { title: 'Revealed', description: 'Revealed', type: 'string' } } },
+        }]);
+
+        assert.throws(
+            () => validateTemplateSchemaUpdateByConfig(previous, next, {
+                conditionsLocked: false,
+                conditions: { [lockedSignature]: { locked: true } },
+            }),
+            /[Cc]ondition.*locked/
+        );
+    });
+
+    it('rejects removing a locked condition entirely', () => {
+        const previous = withConditions([singleCondition('field_1', 'a')]);
+        const next = withConditions([]);
+
+        assert.throws(
+            () => validateTemplateSchemaUpdateByConfig(previous, next, {
+                conditionsLocked: false,
+                conditions: { [lockedSignature]: { locked: true } },
+            }),
+            /[Cc]ondition.*locked/
+        );
+    });
+
+    it('allows editing a different, unlocked condition even when another condition in the same schema is individually locked', () => {
+        const previous = withConditions([
+            singleCondition('field_1', 'a'),
+            singleCondition('field_2', 'x'),
+        ]);
+        const next = withConditions([
+            singleCondition('field_1', 'a'),
+            singleCondition('field_2', 'y'),
+        ]);
+
+        assert.doesNotThrow(() => validateTemplateSchemaUpdateByConfig(previous, next, {
+            conditionsLocked: false,
+            conditions: { [lockedSignature]: { locked: true } },
+        }));
+    });
+
+    it('allows unrelated schema edits when a condition is individually locked but that condition is unchanged', () => {
+        const document = {
+            ...schemaDocument({
+                field_1: {
+                    title: 'Field 1',
+                    description: 'Field 1',
+                    type: 'string',
+                    templateFieldId: 'template-field-1',
+                },
+            }),
+            allOf: [singleCondition('field_1', 'a')],
+        };
+
+        assert.doesNotThrow(() => validateTemplateSchemaUpdateByConfig(
+            schema({ document }),
+            schema({ document, name: 'Renamed' }),
+            {
+                conditionsLocked: false,
+                conditions: { [lockedSignature]: { locked: true } },
+            }
+        ));
+    });
+});
+
+// Issue #7071 — repeatable-link locking. Two tiers, per the confirmed design:
+// (1) whole-tab, reusing the existing `conditionsLocked` flag (its UI label already reads
+//     "Lock schema fields, conditions, and repeatable links" as of issue #6734 - see
+//     docs/schema-template-repeatable-conditions-lock-design.md's "Mid-session correction").
+// (2) per-individual-link, keyed by the dependent field's own `templateFieldId`, in a new
+//     `repeatableLinks` record mirroring the existing per-field `fields` record.
+// Repeatable links live in `document.$comment` (SchemaHelper.parseSchemaComment/
+// buildSchemaComment), not `properties`/`allOf` - confirmed via interfaces/src/models/schema.ts:288-291.
+// These tests are expected to fail until `getArrayDependenciesHash` and the two lock checks are
+// added to validateTemplateSchemaUpdateByConfig.
+describe('validateTemplateSchemaUpdateByConfig — repeatable links', () => {
+    const commentWithLinks = (arrayDependencies) => JSON.stringify({
+        '@id': '#schema-1&1.0.0',
+        term: 'schema-1&1.0.0',
+        arrayDependencies,
+    });
+
+    const withLinks = (arrayDependencies) => schema({
+        document: {
+            ...schemaDocument({
+                parent: {
+                    title: 'Parent',
+                    description: 'Parent',
+                    type: 'array',
+                    items: { type: 'object' },
+                    templateFieldId: 'template-field-parent',
+                },
+                child: {
+                    title: 'Child',
+                    description: 'Child',
+                    type: 'array',
+                    items: { type: 'object' },
+                    templateFieldId: 'template-field-child',
+                },
+            }),
+            $comment: commentWithLinks(arrayDependencies),
+        },
+    });
+
+    const link = (titleOverride) => ([{
+        field: ['child'],
+        on: ['parent'],
+        kind: 'array',
+        ...(titleOverride ? { title: titleOverride } : {}),
+    }]);
+
+    it('rejects a repeatable link change when the whole tab is locked via conditionsLocked', () => {
+        assert.throws(
+            () => validateTemplateSchemaUpdateByConfig(
+                withLinks(link()),
+                withLinks(link(['titleField'])),
+                { conditionsLocked: true }
+            ),
+            /(Conditions|[Ll]ink).*locked/
+        );
+    });
+
+    it('allows a repeatable link change when conditionsLocked is false and nothing is individually locked', () => {
+        assert.doesNotThrow(() => validateTemplateSchemaUpdateByConfig(
+            withLinks(link()),
+            withLinks(link(['titleField'])),
+            { conditionsLocked: false }
+        ));
+    });
+
+    it('rejects a change to a specifically-locked repeatable link', () => {
+        assert.throws(
+            () => validateTemplateSchemaUpdateByConfig(
+                withLinks(link()),
+                withLinks(link(['titleField'])),
+                {
+                    conditionsLocked: false,
+                    repeatableLinks: { 'template-field-child': { locked: true } },
+                }
+            ),
+            /[Ll]ink.*locked/
+        );
+    });
+
+    it('allows a change to an explicitly-unlocked repeatable link when conditionsLocked is false', () => {
+        assert.doesNotThrow(() => validateTemplateSchemaUpdateByConfig(
+            withLinks(link()),
+            withLinks(link(['titleField'])),
+            {
+                conditionsLocked: false,
+                repeatableLinks: { 'template-field-child': { locked: false } },
+            }
+        ));
+    });
+
+    it('rejects removing a locked repeatable link entirely', () => {
+        assert.throws(
+            () => validateTemplateSchemaUpdateByConfig(
+                withLinks(link()),
+                withLinks([]),
+                {
+                    conditionsLocked: false,
+                    repeatableLinks: { 'template-field-child': { locked: true } },
+                }
+            ),
+            /[Ll]ink.*locked/
+        );
+    });
+});
