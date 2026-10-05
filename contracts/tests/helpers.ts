@@ -1,4 +1,4 @@
-import {AccountBalanceQuery, AccountCreateTransaction, AccountId, Client, ContractCreateFlow, ContractExecuteTransaction, ContractFunctionParameters, ContractId, Hbar, PrivateKey, TokenCreateTransaction, TokenMintTransaction, TokenSupplyType, TokenType, TransactionRecordQuery, TransferTransaction} from '@hiero-ledger/sdk';
+import {AccountCreateTransaction, AccountId, Client, ContractCreateFlow, ContractExecuteTransaction, ContractFunctionParameters, ContractId, Hbar, MirrorNodeTokenBalanceQuery, PrivateKey, TokenCreateTransaction, TokenMintTransaction, TokenSupplyType, TokenType, TransactionRecordQuery, TransferTransaction} from '@hiero-ledger/sdk';
 import * as dotenv from 'dotenv';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
@@ -243,19 +243,76 @@ export async function executeContractRaw(
     return {receipt, record};
 }
 
+const BALANCE_POLL_TIMEOUT_MS = 30_000;
+const BALANCE_POLL_INTERVAL_MS = 1_000;
+
+const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
+
+/**
+ * Reads a token balance from the mirror node. The mirror node lags consensus
+ * by a few seconds, so a read right after a transaction can be stale - use
+ * waitForTokenBalance when the expected outcome is known.
+ */
 export async function getTokenBalance(
     client: Client,
     accountId: string,
     tokenId: string
 ): Promise<number> {
-    // Not MirrorNodeAccountBalanceQuery: it returns hbars only, and the mirror
-    // node lags consensus - these assertions straddle a transfer.
-    const balance = await new AccountBalanceQuery()
+    const tokenBalance = await new MirrorNodeTokenBalanceQuery()
         .setAccountId(accountId)
+        .setTokenId(tokenId)
         .execute(client);
 
-    const tokenBalance = balance.tokens?.get(tokenId);
-    return tokenBalance ? tokenBalance.toNumber() : 0;
+    return tokenBalance.balance.toNumber();
+}
+
+/**
+ * Polls the token balance until `isExpected` accepts it. Returns the last
+ * balance read when the timeout expires, so the caller's own assertion reports
+ * the mismatch. Read errors (e.g. the account is not yet visible on the mirror
+ * node) are retried; if no read ever succeeds the last error is thrown.
+ */
+export async function waitForTokenBalance(
+    client: Client,
+    accountId: string,
+    tokenId: string,
+    isExpected: (balance: number) => boolean,
+    timeoutMs: number = BALANCE_POLL_TIMEOUT_MS
+): Promise<number> {
+    const deadline = Date.now() + timeoutMs;
+    let balance: number | undefined;
+    let lastError: unknown;
+
+    for (;;) {
+        try {
+            balance = await getTokenBalance(client, accountId, tokenId);
+            if (isExpected(balance)) {
+                return balance;
+            }
+        } catch (error) {
+            lastError = error;
+        }
+
+        if (Date.now() >= deadline) {
+            if (balance === undefined) {
+                throw lastError;
+            }
+            return balance;
+        }
+        await sleep(BALANCE_POLL_INTERVAL_MS);
+    }
+}
+
+/**
+ * Balance of an account that has just been funded: waits until the funding
+ * transfer is visible on the mirror node.
+ */
+export function waitForFundedTokenBalance(
+    client: Client,
+    accountId: string,
+    tokenId: string
+): Promise<number> {
+    return waitForTokenBalance(client, accountId, tokenId, balance => balance > 0);
 }
 
 export function solidityAddressToTokenId(address: string): string {
@@ -298,9 +355,14 @@ export async function assertBalanceChange(
     expectedChange: number,
     action: () => Promise<any>
 ) {
-    const initialBalance = await getTokenBalance(client, accountId, tokenId);
+    const initialBalance = await waitForFundedTokenBalance(client, accountId, tokenId);
     const result = await action();
-    const finalBalance = await getTokenBalance(client, accountId, tokenId);
+    const finalBalance = await waitForTokenBalance(
+        client,
+        accountId,
+        tokenId,
+        balance => balance - initialBalance === expectedChange
+    );
     const actualChange = finalBalance - initialBalance;
 
     if (actualChange !== expectedChange) {
