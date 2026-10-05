@@ -157,12 +157,12 @@
             <div class="sc-nav-actions">
                 @if (isTemplatePreviewMode) {
                     <span class="sc-preview-mode-badge">
-                        <i class="pi pi-eye"></i>
-                        Previewing template - changes here are never saved
+                        <i class="pi pi-play-circle"></i>
+                        Trying template - changes here are never saved
                     </span>
                     <button class="sc-btn" (click)="goToTemplateConfiguration()">
                         <i class="pi pi-sign-out"></i>
-                        Exit preview
+                        Exit trial
                     </button>
                 } @else {
                 @if (currentSchemaErrorCount > 0) {
@@ -227,8 +227,8 @@
                 <button class="sc-btn"
                     [disabled]="!schemaTemplate?.id"
                     (click)="onPreviewTemplate()">
-                    <i class="pi pi-eye"></i>
-                    Preview
+                    <i class="pi pi-play-circle"></i>
+                    Try Template
                 </button>
                 <button class="sc-btn"
                     [disabled]="!canExportTemplate"
@@ -258,8 +258,8 @@
 
     @if (isTemplatePreviewMode) {
         <div class="st-applied-template-banner st-applied-template-banner--preview">
-            <i class="pi pi-eye"></i>
-            <span>Previewing template:</span>
+            <i class="pi pi-play-circle"></i>
+            <span>Trying template:</span>
             <strong>{{ breadcrumbTemplateLabel }}</strong>
             @if (schemaTemplate?.version) {
                 <span class="st-applied-template-version">v{{ schemaTemplate?.version }}</span>
