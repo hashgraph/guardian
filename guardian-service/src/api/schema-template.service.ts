@@ -1546,45 +1546,127 @@ function buildConditionContentChangeDetails(
     return rows;
 }
 
-function formatArrayDependencyFieldName(fields: any[], path: string[]): string {
-    const resolved = SchemaHelper.resolveFieldByPath(fields, path || []);
+function formatArrayDependencyFieldName(fields: any[], path: string[], fallbackFields: any[] = []): string {
+    const resolved = SchemaHelper.resolveFieldByPath(fields, path || [])
+        || SchemaHelper.resolveFieldByPath(fallbackFields, path || []);
     return resolved ? getFieldDisplayName(resolved) : (path || []).join('.') || '-';
 }
 
-/** A matched link's own identity is its dependent field - its source array can still be re-pointed. */
-function buildLinkContentChangeDetails(
+/**
+ * The entry fields of the array a link path points at. Template snapshots drop the nested
+ * `fields` of sub-schema arrays while policy snapshots keep them, so the same path can resolve on
+ * one side only - `fallbackFields` (the other side) fills that gap for display purposes.
+ */
+function resolveArrayDependencyEntryFields(fields: any[], fallbackFields: any[], arrayPath: string[]): any[] {
+    return SchemaHelper.resolveFieldByPath(fields, arrayPath || [])?.fields
+        || SchemaHelper.resolveFieldByPath(fallbackFields, arrayPath || [])?.fields
+        || [];
+}
+
+/** A path inside a link's source/dependent entry, as the entry field's display name when it resolves. */
+function formatArrayDependencyEntryPath(entryFields: any[], path: string[]): string {
+    if (!path?.length) {
+        return '-';
+    }
+    const resolved = SchemaHelper.resolveFieldByPath(entryFields, path);
+    return resolved ? getFieldDisplayName(resolved) : path.join('.');
+}
+
+/**
+ * Copied value pairs as `source -> target` display names, sorted so a pure reorder is not
+ * reported as a change. Source paths are relative to a source array entry, target paths to a
+ * dependent array entry.
+ */
+function formatArrayDependencyMappings(fields: any[], link: any, fallbackFields: any[] = []): string {
+    const sourceEntryFields = resolveArrayDependencyEntryFields(fields, fallbackFields, link?.on);
+    const dependentEntryFields = resolveArrayDependencyEntryFields(fields, fallbackFields, link?.field);
+    const pairs = (link?.valueMappings || []).map((mapping: any) =>
+        `${formatArrayDependencyEntryPath(sourceEntryFields, mapping?.source)} -> ${formatArrayDependencyEntryPath(dependentEntryFields, mapping?.target)}`
+    );
+    return pairs.length ? pairs.sort().join('; ') : '-';
+}
+
+/** Raw-path form of the copied pairs, order-insensitive. Identity for change detection - unlike display names it does not depend on which side could resolve nested fields. */
+function arrayDependencyMappingsKey(link: any): string {
+    return (link?.valueMappings || [])
+        .map((mapping: any) => `${(mapping?.source || []).join('.')}->${(mapping?.target || []).join('.')}`)
+        .sort()
+        .join(';');
+}
+
+/** Display name (block title) of a link: a field of the source entry. */
+function formatArrayDependencyTitle(fields: any[], link: any, fallbackFields: any[] = []): string {
+    return formatArrayDependencyEntryPath(resolveArrayDependencyEntryFields(fields, fallbackFields, link?.on), link?.title);
+}
+
+/** One-line description of a whole link, for the added/removed entries that have no before/after rows. */
+function formatArrayDependencySummary(fields: any[], link: any): string {
+    return [
+        `Dependent array: ${formatArrayDependencyFieldName(fields, link?.field)}`,
+        `Source array: ${formatArrayDependencyFieldName(fields, link?.on)}`,
+        `Display name: ${formatArrayDependencyTitle(fields, link)}`,
+        `Copied values: ${formatArrayDependencyMappings(fields, link)}`
+    ].join(' | ');
+}
+
+/**
+ * A matched link's own identity is its dependent field - everything else about it can still change.
+ * A row is reported only when the raw paths differ; display names are presentation only, so a path
+ * that resolves to a name on one side but not the other can never look like a change by itself.
+ */
+export function buildLinkContentChangeDetails(
     previousFields: any[],
     previousLink: any,
     nextFields: any[],
     sourceLink: any
 ): ISchemaTemplateUpdateChange['details'] {
     const rows: ISchemaTemplateUpdateChange['details'] = [];
-    const push = (label: string, before: string, after: string) => {
-        if (before !== after) {
+    const pathKey = (path: string[] | undefined) => (path || []).join('.');
+    const push = (label: string, changed: boolean, before: string, after: string) => {
+        if (changed) {
             rows.push({ label, before, after });
         }
     };
     push(
         'Source array',
-        formatArrayDependencyFieldName(previousFields, previousLink?.on),
-        formatArrayDependencyFieldName(nextFields, sourceLink?.on)
+        pathKey(previousLink?.on) !== pathKey(sourceLink?.on),
+        formatArrayDependencyFieldName(previousFields, previousLink?.on, nextFields),
+        formatArrayDependencyFieldName(nextFields, sourceLink?.on, previousFields)
     );
-    push('Kind', previousLink?.kind || '-', sourceLink?.kind || '-');
+    push(
+        'Dependent array',
+        pathKey(previousLink?.field) !== pathKey(sourceLink?.field),
+        formatArrayDependencyFieldName(previousFields, previousLink?.field, nextFields),
+        formatArrayDependencyFieldName(nextFields, sourceLink?.field, previousFields)
+    );
+    push(
+        'Display name',
+        pathKey(previousLink?.title) !== pathKey(sourceLink?.title),
+        formatArrayDependencyTitle(previousFields, previousLink, nextFields),
+        formatArrayDependencyTitle(nextFields, sourceLink, previousFields)
+    );
+    push(
+        'Copied value pairs',
+        arrayDependencyMappingsKey(previousLink) !== arrayDependencyMappingsKey(sourceLink),
+        formatArrayDependencyMappings(previousFields, previousLink, nextFields),
+        formatArrayDependencyMappings(nextFields, sourceLink, previousFields)
+    );
+    push('Kind', (previousLink?.kind || '-') !== (sourceLink?.kind || '-'), previousLink?.kind || '-', sourceLink?.kind || '-');
     return rows;
 }
 
 /**
- * A condition's trigger field(s) + combinator, ignoring the value(s) compared against -
- * looser than `conditionTriggerSignature`, used only to recognize "the same condition, its
- * value changed" as an update instead of an unrelated remove+add. Returns null under the same
- * circumstances as the signature (no templateFieldId on some predicate's field).
+ * A condition's trigger field(s), ignoring both the value(s) compared against and the
+ * combinator (IF / IF ALL / IF ANY) - looser than `conditionTriggerSignature`, used only to
+ * recognize "the same condition, its value or combinator changed" as an update instead of an
+ * unrelated remove+add. Returns null under the same circumstances as the signature (no
+ * templateFieldId on some predicate's field).
  */
 function conditionTriggerFieldKey(condition: any): string | null {
     const ifCondition = condition?.ifCondition;
     if (!ifCondition) {
         return null;
     }
-    const combinator = Array.isArray(ifCondition.AND) ? 'AND' : Array.isArray(ifCondition.OR) ? 'OR' : 'SINGLE';
     const ids: string[] = [];
     for (const predicate of SchemaHelper.getConditionTriggerPredicates(ifCondition)) {
         const id = (predicate as any)?.field?.templateFieldId;
@@ -1593,7 +1675,7 @@ function conditionTriggerFieldKey(condition: any): string | null {
         }
         ids.push(id);
     }
-    return [combinator, ...ids.sort()].join(',');
+    return ids.sort().join(',');
 }
 
 /**
@@ -1644,12 +1726,19 @@ function findValueChangedConditionPairs(
 
 /**
  * Best-effort display name for a condition, since unlike a field it has no name of its own -
- * falls back to its trigger field's display name.
+ * "A = 23" (or "A = 1 AND B contains x" for compound triggers), so conditions on the same
+ * field with different values stay distinguishable in the change list.
  */
 function conditionDisplayName(condition: any): string {
-    const predicates = SchemaHelper.getConditionTriggerPredicates(condition?.ifCondition);
-    const field = predicates[0]?.field;
-    return field ? getFieldDisplayName(field) : 'Condition';
+    const ifCondition = condition?.ifCondition;
+    const predicates = SchemaHelper.getConditionTriggerPredicates(ifCondition).filter((predicate: any) => predicate?.field);
+    if (!predicates.length) {
+        return 'Condition';
+    }
+    const parts = predicates.map((predicate: any) =>
+        `${getFieldDisplayName(predicate.field)} ${predicate.comparator === 'contains' ? 'contains' : '='} ${formatDiffJson(predicate.fieldValue)}`
+    );
+    return parts.join(Array.isArray(ifCondition?.OR) ? ' OR ' : ' AND ');
 }
 
 function hasDetails(details: ISchemaTemplateUpdateChange['details']): boolean {
@@ -1914,6 +2003,7 @@ export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<Ret
         const previousFields = fieldsByTemplateId(previousSchema.fields);
         const nextFields = fieldsByTemplateId(nextSchema.fields);
         const policyCustomFields = customFields(policySnapshot.fields);
+        const policyFieldsByTemplateId = fieldsByTemplateId(policySnapshot.fields);
         const previousConditions = policySnapshot.conditions || [];
         const sourceConditions = nextSchema.conditions || [];
         const conditionFieldNamesToRemove = nextSchemaConfig.conditionsLocked
@@ -1996,8 +2086,19 @@ export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<Ret
                     }
                 ));
             } else {
+                // Applying clones the template's field over the policy's, so an edit made only in the
+                // policy is reverted without any template change. When the policy copy exists and
+                // is comparable, diff it against the incoming field - the real effect on the policy -
+                // instead of the old template against the new one.
+                const policyField = policyFieldsByTemplateId.get(templateFieldId);
+                const comparablePolicyField = policyField && !policyField.isRef && !field.refTemplateSchemaId && !field.isRef
+                    ? policyField
+                    : null;
+                const contentDetails = comparablePolicyField
+                    ? buildFieldChangeDetails(comparablePolicyField, field).filter((detail) => detail.label !== 'Order')
+                    : buildFieldChangeDetails(previousField, field);
                 const fieldDetails = [
-                    ...buildFieldChangeDetails(previousField, field),
+                    ...contentDetails,
                     ...buildFieldLockChangeDetails(previousSchemaConfig, nextSchemaConfig, templateFieldId)
                 ];
                 if (fieldHash(previousField) !== fieldHash(field) || hasDetails(fieldDetails)) {
@@ -2092,7 +2193,8 @@ export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<Ret
 
         // customFieldsLocked removes every custom field, and conditionsLocked removes
         // every policy-authored condition addition, so nothing is left to resolve.
-        if (!nextSchemaConfig.customFieldsLocked && !nextSchemaConfig.conditionsLocked) {
+        const hasNothingToResolve = !!(nextSchemaConfig.customFieldsLocked || nextSchemaConfig.conditionsLocked);
+        {
             const placements = analyzeConditionFieldPlacements(previousConditions, sourceConditions, policyCustomFields);
             const orphanedFieldsByConditionIndex = new Map<number, any[]>();
             for (const placement of placements) {
@@ -2127,6 +2229,9 @@ export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<Ret
                         after: 'Removed from template'
                     }
                 ));
+                if (hasNothingToResolve) {
+                    continue;
+                }
                 // A cross-schema target has no independent "is this custom" marker of its own,
                 // unlike a field - any target on an orphaned condition is at risk. Without either,
                 // there's nothing policy-authored to lose, so it reverts silently - no conflict needed.
@@ -2199,7 +2304,7 @@ export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<Ret
                     schemaName: nextSchema.name,
                     fieldName: getFieldDisplayName(sourceDependentField),
                     before: 'Not present',
-                    after: 'Added by schema template'
+                    after: formatArrayDependencySummary(nextSchema.fields, sourceLinks[sourceIndex])
                 }
             ));
         }
@@ -2220,7 +2325,7 @@ export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<Ret
                         templateSchemaId,
                         schemaName: nextSchema.name,
                         fieldName,
-                        before: 'Link present',
+                        before: formatArrayDependencySummary(policySnapshot.fields, dependency),
                         after: 'Removed from template'
                     }
                 ));

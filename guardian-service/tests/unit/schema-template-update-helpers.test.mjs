@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {
     analyzeConditionFieldPlacements,
     buildFieldChangeDetails,
+    buildLinkContentChangeDetails,
     buildSchemaTemplateUpdatePreviewFromContext,
     buildTemplateSchemasSnapshot,
     conditionTriggerSignature,
@@ -15,6 +16,7 @@ import {
     preparePolicySchemaUpdate,
 } from '../../dist/api/schema-template.service.js';
 import { SchemaHelper } from '../../../interfaces/dist/helpers/schema-helper.js';
+import { Schema as InterfaceSchema } from '../../../interfaces/dist/models/schema.js';
 
 const baseDocument = (uuid, version, title, properties) => ({
     $id: `#${uuid}&${version}`,
@@ -1246,6 +1248,66 @@ describe('preparePolicySchemaUpdate — condition-branch membership', () => {
     });
 });
 
+describe('buildSchemaTemplateUpdatePreviewFromContext - policy-side field edits', () => {
+    const field = (name, over = {}) => ({
+        name, title: name, description: name, type: 'string', required: false,
+        isArray: false, isRef: false, readOnly: false, templateFieldId: `tpl-${name}`, ...over,
+    });
+    const baseSchema = () => ({ uuid: 'u-1', version: '1.0.0', name: 'N', description: 'D', contextURL: 'ctx:' });
+
+    // templateField is what the template (previous and next) holds; policyField is what the policy holds.
+    const buildContext = (rawTemplateField, policyField) => {
+        // Real snapshots come from parsing a document, which fills in defaults (semantic id, term,
+        // hidden, autocalculate...) - parse the template side the same way so the fixture has no
+        // representation noise against the policy side.
+        const templateDocument = SchemaHelper.buildDocument(baseSchema(), [rawTemplateField], []);
+        const templateField = new InterfaceSchema(
+            { document: templateDocument, name: 'N', description: 'D', entity: 'NONE', contextURL: 'ctx:' }, true
+        ).fields.find((f) => f.name === rawTemplateField.name);
+        const policyDocument = SchemaHelper.buildDocument(baseSchema(), [policyField], []);
+        delete policyDocument.properties['@context'];
+        delete policyDocument.properties.type;
+        delete policyDocument.properties.id;
+        const snapshotSchema = (version) => ({
+            templateSchemaId: 'tsid-1', name: 'N', description: 'D', entity: 'NONE', version, fields: [templateField], conditions: [],
+        });
+        return {
+            policy: { id: 'policy-1' },
+            binding: { templateId: 'template-1', templateName: 'T', templateVersion: '1.0.0' },
+            snapshot: { schemas: { schemas: { 'tsid-1': snapshotSchema('1.0.0') } }, config: { schemas: {} } },
+            nextSchemas: { schemas: { 'tsid-1': snapshotSchema('1.0.1') } },
+            template: { id: 'template-1', name: 'T', version: '1.0.1', config: { schemas: {} } },
+            templateSchemas: [],
+            policySchemaByTemplateId: new Map([['tsid-1', {
+                document: policyDocument, name: 'N', description: 'D', entity: 'NONE', version: '1.0.0',
+                templateSchemaId: 'tsid-1', id: 'policy-schema-1',
+            }]]),
+        };
+    };
+
+    it('reports type, required, array and autocalculate edits made only in the policy as reverted', () => {
+        const templateField = field('a');
+        const policyField = field('a', { type: 'number', required: true, isArray: true, autocalculate: true });
+        const preview = buildSchemaTemplateUpdatePreviewFromContext(buildContext(templateField, policyField));
+
+        const change = preview.changes.find((c) => c.type === 'FIELD_UPDATE');
+        assert.ok(change, 'a policy-only edit that the update reverts must be visible');
+        const byLabel = Object.fromEntries(change.details.map((d) => [d.label, d]));
+        assert.deepEqual([byLabel.Type.before, byLabel.Type.after], ['number', 'string']);
+        assert.deepEqual([byLabel.Required.before, byLabel.Required.after], ['Yes', 'No']);
+        assert.deepEqual([byLabel.Array.before, byLabel.Array.after], ['Yes', 'No']);
+        assert.equal(byLabel.Autocalculate.before, 'Yes');
+    });
+
+    it('reports nothing for a field the policy left identical to the template', () => {
+        const templateField = field('a');
+        const preview = buildSchemaTemplateUpdatePreviewFromContext(buildContext(templateField, field('a')));
+
+        assert.ok(!preview.changes.some((c) => c.type === 'FIELD_UPDATE'),
+            'an untouched policy field and an unchanged template must produce no field update');
+    });
+});
+
 describe('buildSchemaTemplateUpdatePreviewFromContext — condition removal', () => {
     const field = (name, over = {}) => ({
         name,
@@ -1361,8 +1423,8 @@ describe('buildSchemaTemplateUpdatePreviewFromContext — condition removal', ()
 
         const addChange = preview.changes.find((c) => c.type === 'CONDITION_ADD');
         assert.ok(addChange, 'a brand new template condition must be reported as added');
-        assert.equal(addChange.fieldName, 'trigger2');
-        assert.ok(!preview.changes.some((c) => c.type === 'CONDITION_ADD' && c.fieldName === 'trigger1'),
+        assert.equal(addChange.fieldName, 'trigger2 = no');
+        assert.ok(!preview.changes.some((c) => c.type === 'CONDITION_ADD' && c.fieldName === 'trigger1 = yes'),
             'the already-matched condition must not also be reported as added');
     });
 
@@ -1417,6 +1479,32 @@ describe('buildSchemaTemplateUpdatePreviewFromContext — condition removal', ()
             'the policy-edited condition no longer matches anything in the template, so it must be reported as removed');
         assert.ok(preview.changes.some((c) => c.type === 'CONDITION_ADD'),
             'the template\'s own unchanged condition has no match among the policy\'s edited conditions, so it must be reported as added');
+    });
+
+    it('still reports REMOVE and ADD when the template swaps a condition trigger field and conditionsLocked is on', () => {
+        const triggerA = field('triggerA', { templateFieldId: 'tpl-trigger-a' });
+        const triggerB = field('triggerB', { templateFieldId: 'tpl-trigger-b' });
+        const revealed = field('revealed', { templateFieldId: 'tpl-revealed-1' });
+        const policyDocument = SchemaHelper.buildDocument(
+            baseSchema(),
+            [triggerA, triggerB, revealed],
+            [{ ifCondition: { field: triggerA, fieldValue: 'yes' }, thenFields: [revealed], elseFields: [] }]
+        );
+        delete policyDocument.properties['@context'];
+        delete policyDocument.properties.type;
+        delete policyDocument.properties.id;
+
+        const previousConditions = [{ ifCondition: { field: triggerA, fieldValue: 'yes' }, thenFields: [revealed], elseFields: [] }];
+        const nextConditions = [{ ifCondition: { field: triggerB, fieldValue: 'yes' }, thenFields: [revealed], elseFields: [] }];
+        const context = buildContext(nextConditions, previousConditions, policyDocument);
+        context.template.config = { schemas: { 'tsid-1': { conditionsLocked: true } } };
+
+        const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
+
+        assert.ok(preview.changes.some((c) => c.type === 'CONDITION_REMOVE'),
+            'the replaced condition must be reported as removed even when conditions are locked');
+        assert.ok(preview.changes.some((c) => c.type === 'CONDITION_ADD'));
+        assert.equal(preview.conflicts.length, 0, 'locked conditions leave nothing for the user to resolve');
     });
 
     it('raises no conflict when customFieldsLocked already removes the field unconditionally', () => {
@@ -1674,6 +1762,53 @@ describe('buildSchemaTemplateUpdatePreviewFromContext — condition removal', ()
         assert.ok(detail.after.includes('2'), `expected after to mention 2, got: ${detail.after}`);
     });
 
+    const predicate = (f, v) => ({ field: f, fieldValue: v });
+    const combinatorCases = [
+        {
+            label: 'IF -> IF ALL',
+            prevIf: (a) => predicate(a, 'x'),
+            nextIf: (a) => ({ AND: [predicate(a, 'x')] }),
+            before: 'IF: ',
+            after: 'IF ALL: ',
+        },
+        {
+            label: 'IF ALL -> IF ANY',
+            prevIf: (a, b) => ({ AND: [predicate(a, 'x'), predicate(b, 'y')] }),
+            nextIf: (a, b) => ({ OR: [predicate(a, 'x'), predicate(b, 'y')] }),
+            before: 'IF ALL: ',
+            after: 'IF ANY: ',
+        },
+    ];
+    for (const { label, prevIf, nextIf, before, after } of combinatorCases) {
+        it(`reports a single CONDITION_UPDATE when only the combinator changes (${label})`, () => {
+            const a = field('a', { templateFieldId: 'tpl-a' });
+            const b = field('b', { templateFieldId: 'tpl-b' });
+            const revealed = field('revealed', { templateFieldId: 'tpl-revealed-1' });
+            const previousIf = prevIf(a, b);
+            const policyDocument = SchemaHelper.buildDocument(
+                baseSchema(), [a, b, revealed], [{ ifCondition: previousIf, thenFields: [revealed], elseFields: [] }]
+            );
+            delete policyDocument.properties['@context'];
+            delete policyDocument.properties.type;
+            delete policyDocument.properties.id;
+
+            const context = buildContext(
+                [{ ifCondition: nextIf(a, b), thenFields: [revealed], elseFields: [] }],
+                [{ ifCondition: previousIf, thenFields: [revealed], elseFields: [] }],
+                policyDocument
+            );
+            const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
+
+            assert.ok(!preview.changes.some((c) => c.type === 'CONDITION_ADD' || c.type === 'CONDITION_REMOVE'),
+                'a combinator-only change must not be split into a remove + add');
+            const change = preview.changes.find((c) => c.type === 'CONDITION_UPDATE');
+            assert.ok(change, 'a combinator-only change must be reported as an update');
+            const detail = change.details.find((d) => d.label === 'Condition');
+            assert.ok(detail.before.startsWith(before), `before: ${detail.before}`);
+            assert.ok(detail.after.startsWith(after), `after: ${detail.after}`);
+        });
+    }
+
     it('reports a CONDITION_UPDATE with content details when only the comparator changes', () => {
         const trigger = field('trigger', { templateFieldId: 'tpl-trigger-1' });
         const revealed = field('revealed', { templateFieldId: 'tpl-revealed-1' });
@@ -1791,6 +1926,102 @@ describe('buildSchemaTemplateUpdatePreviewFromContext — condition removal', ()
         assert.ok(detail, 'the source-array row must show the change');
         assert.equal(detail.before, 'parent');
         assert.equal(detail.after, 'grandparent');
+    });
+
+    const buildLinkContext = (previousLinks, nextLinks, policyLinks = previousLinks) => {
+        const parent = field('parent', { templateFieldId: 'tpl-parent', isArray: true });
+        const child = field('child', { templateFieldId: 'tpl-child', isArray: true });
+        const policyDocument = SchemaHelper.buildDocument(
+            { ...baseSchema(), arrayDependencies: policyLinks }, [parent, child], []
+        );
+        delete policyDocument.properties['@context'];
+        delete policyDocument.properties.type;
+        delete policyDocument.properties.id;
+        const snapshotSchema = (version, arrayDependencies) => ({
+            templateSchemaId: 'tsid-1', name: 'N', description: 'D', entity: 'NONE', version,
+            fields: [parent, child], conditions: [], arrayDependencies,
+        });
+        return {
+            policy: { id: 'policy-1' },
+            binding: { templateId: 'template-1', templateName: 'T', templateVersion: '1.0.0' },
+            snapshot: { schemas: { schemas: { 'tsid-1': snapshotSchema('1.0.0', previousLinks) } }, config: { schemas: {} } },
+            nextSchemas: { schemas: { 'tsid-1': snapshotSchema('1.0.1', nextLinks) } },
+            template: { id: 'template-1', name: 'T', version: '1.0.1', config: { schemas: {} } },
+            templateSchemas: [],
+            policySchemaByTemplateId: new Map([['tsid-1', {
+                document: policyDocument, name: 'N', description: 'D', entity: 'NONE', version: '1.0.0',
+                templateSchemaId: 'tsid-1', id: 'policy-schema-1',
+            }]]),
+        };
+    };
+
+    it('reports display name and copied value pair changes on an otherwise-matched link', () => {
+        const previous = { field: ['child'], on: ['parent'], kind: 'array', title: ['name'], valueMappings: [{ source: ['code'], target: ['label'] }] };
+        const next = { field: ['child'], on: ['parent'], kind: 'array', title: ['code'], valueMappings: [{ source: ['code'], target: ['label2'] }] };
+        const preview = buildSchemaTemplateUpdatePreviewFromContext(buildLinkContext([previous], [next]));
+
+        const change = preview.changes.find((c) => c.type === 'REPEATABLE_LINK_UPDATE');
+        assert.ok(change, 'display name / copied value changes on a matched link must be reported');
+        const byLabel = Object.fromEntries(change.details.map((d) => [d.label, d]));
+        assert.deepEqual([byLabel['Display name'].before, byLabel['Display name'].after], ['name', 'code']);
+        assert.deepEqual(
+            [byLabel['Copied value pairs'].before, byLabel['Copied value pairs'].after],
+            ['code -> label', 'code -> label2']
+        );
+        assert.ok(!byLabel['Source array'] && !byLabel['Dependent array'], 'unchanged rows are not listed');
+    });
+
+    describe('link content details when only one side can resolve nested fields', () => {
+        // Policy snapshots keep a sub-schema array's nested fields; template snapshots drop them,
+        // so a path like ['field_1'] resolves to "field 1" on the policy side and not on the template side.
+        const entry = [
+            { name: 'field_1', title: 'field 1', description: 'field 1' },
+            { name: 'field_2', title: 'field 2', description: 'field 2' },
+        ];
+        const policyFields = [
+            { name: 'parent', isArray: true, fields: entry },
+            { name: 'child', isArray: true, fields: entry },
+        ];
+        const templateFields = [
+            { name: 'parent', isArray: true, refTemplateSchemaId: 'sub-parent' },
+            { name: 'child', isArray: true, refTemplateSchemaId: 'sub-child' },
+        ];
+        const link = { field: ['child'], on: ['parent'], kind: 'array', title: ['field_1'], valueMappings: [{ source: ['field_1'], target: ['field_2'] }] };
+
+        it('reports nothing for an identical link (no field 1 vs field_1 false difference)', () => {
+            assert.deepEqual(buildLinkContentChangeDetails(policyFields, link, templateFields, { ...link }), []);
+        });
+
+        it('shows the same display names on both sides of a real change', () => {
+            const next = { ...link, title: ['field_2'], valueMappings: [{ source: ['field_2'], target: ['field_1'] }] };
+            const rows = Object.fromEntries(buildLinkContentChangeDetails(policyFields, link, templateFields, next).map((d) => [d.label, d]));
+
+            assert.deepEqual([rows['Display name'].before, rows['Display name'].after], ['field 1', 'field 2']);
+            assert.deepEqual(
+                [rows['Copied value pairs'].before, rows['Copied value pairs'].after],
+                ['field 1 -> field 2', 'field 2 -> field 1']
+            );
+        });
+    });
+
+    it('does not report a pure reorder of copied value pairs', () => {
+        const pairs = [{ source: ['a'], target: ['x'] }, { source: ['b'], target: ['y'] }];
+        const previous = { field: ['child'], on: ['parent'], kind: 'array', valueMappings: pairs };
+        const next = { ...previous, valueMappings: [...pairs].reverse() };
+        const preview = buildSchemaTemplateUpdatePreviewFromContext(buildLinkContext([previous], [next]));
+
+        assert.ok(!preview.changes.some((c) => c.type === 'REPEATABLE_LINK_UPDATE'));
+    });
+
+    it('describes source, dependent, display name and copied values on an added link', () => {
+        const next = { field: ['child'], on: ['parent'], kind: 'array', title: ['name'], valueMappings: [{ source: ['code'], target: ['label'] }] };
+        const preview = buildSchemaTemplateUpdatePreviewFromContext(buildLinkContext([], [next]));
+
+        const change = preview.changes.find((c) => c.type === 'REPEATABLE_LINK_ADD');
+        assert.ok(change);
+        for (const part of ['Dependent array: child', 'Source array: parent', 'Display name: name', 'Copied values: code -> label']) {
+            assert.ok(change.after.includes(part), `expected "${part}" in: ${change.after}`);
+        }
     });
 
     it('reports a whole-schema repeatableLinksLocked toggle change even when nothing else changed', () => {

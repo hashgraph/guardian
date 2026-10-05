@@ -438,13 +438,12 @@
         }
 
         .diff-row-name {
-            overflow: hidden;
             color: var(--guardian-font-color, #23252e);
             font-size: 14px;
             font-weight: 600;
             line-height: 20px;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            overflow-wrap: anywhere;
+            white-space: normal;
         }
 
         .diff-row-scope {
