@@ -35,7 +35,7 @@
     "devDependencies": {
         "@types/deep-equal": "1.0.4",
         "@types/express": "5.0.6",
-        "@types/node": "24.13.6",
+        "@types/node": "24.19.1",
         "chai": "4.5.0",
         "esmock": "^2.6.7",
         "mocha": "10.8.2",
