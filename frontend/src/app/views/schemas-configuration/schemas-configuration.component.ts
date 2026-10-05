@@ -317,20 +317,20 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return this.selectedFieldConfig?.guidelines || '';
     }
 
-    public get canAddCustomFieldsToSelectedSchema(): boolean {
-        return !this.selectedSchemaConfig?.customFieldsLocked;
+    public get selectedSchemaCustomFieldsConfigLocked(): boolean {
+        return !!this.selectedSchemaConfig?.customFieldsLocked;
     }
 
     public get isSelectedSchemaFeatured(): boolean {
         return !!this.selectedSchemaConfig?.featured;
     }
 
-    public get canChangeSelectedSchemaSettings(): boolean {
-        return !this.selectedSchemaConfig?.schemaSettingsLocked;
+    public get selectedSchemaSettingsConfigLocked(): boolean {
+        return !!this.selectedSchemaConfig?.schemaSettingsLocked;
     }
 
-    public get canChangeSelectedSchemaConditions(): boolean {
-        return !this.selectedSchemaConfig?.conditionsLocked;
+    public get selectedSchemaConditionsConfigLocked(): boolean {
+        return !!this.selectedSchemaConfig?.conditionsLocked;
     }
 
     public get canAddFieldToSelectedSchema(): boolean {
@@ -351,8 +351,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             !this.isTemplateSchemaConditionsLocked(schema);
     }
 
-    public get canEditSelectedFieldInTemplate(): boolean {
-        return this.selectedFieldConfig?.locked === false;
+    public get selectedFieldConfigLocked(): boolean {
+        return this.selectedFieldConfig?.locked !== false;
     }
 
     public get selectedFieldLocked(): boolean {
@@ -1597,7 +1597,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (!config) {
             return;
         }
-        config.locked = this.canEditSelectedFieldInTemplate;
+        config.locked = !this.selectedFieldConfigLocked;
         this.templateConfigDirty = true;
     }
 
