@@ -16,7 +16,7 @@
     },
     "description": "",
     "devDependencies": {
-        "@types/node": "24.13.6",
+        "@types/node": "24.19.1",
         "concurrently": "^8.2.2",
         "mocha": "10.8.2",
         "mocha-junit-reporter": "2.2.1",
