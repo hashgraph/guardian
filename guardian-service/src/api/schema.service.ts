@@ -126,6 +126,37 @@ function getConditionConfig(schemaConfig: ISchemaTemplateSchemaConfig, condition
     return schemaConfig.conditions?.[signature.join(',')] || null;
 }
 
+/**
+ * Walks a repeatable-link path (e.g. `['parent']` or `['grandparent', 'child']`) down a
+ * field tree to the field it ultimately names.
+ * @param fields
+ * @param fieldPath
+ */
+function resolveFieldByPath(fields: SchemaField[], fieldPath: string[]): SchemaField | null {
+    let current = fields || [];
+    for (let i = 0; i < fieldPath.length - 1; i++) {
+        const next = current.find((field) => field.name === fieldPath[i]);
+        if (!next) {
+            return null;
+        }
+        current = next.fields || [];
+    }
+    return current.find((field) => field.name === fieldPath[fieldPath.length - 1]) || null;
+}
+
+function getArrayDependencyConfig(schemaConfig: ISchemaTemplateSchemaConfig, fields: SchemaField[], dependency: any): any {
+    const templateFieldId = resolveFieldByPath(fields, dependency?.field || [])?.templateFieldId;
+    return templateFieldId ? (schemaConfig.repeatableLinks?.[templateFieldId] || null) : null;
+}
+
+function arrayDependencyComparableHash(dependency: any): string {
+    return SchemaHelper.stableStringify(dependency);
+}
+
+function getArrayDependenciesHash(schema: ISchema): string {
+    return SchemaHelper.stableStringify(new Schema(schema, true).arrayDependencies || []);
+}
+
 function flattenFields(fields: SchemaField[], result: SchemaField[] = []): SchemaField[] {
     for (const field of fields || []) {
         result.push(field);
@@ -263,6 +294,31 @@ export function validateTemplateSchemaUpdateByConfig(
         }
         if (conditionComparableHash(previousCondition) !== conditionComparableHash(nextConditions[matchIndex])) {
             throw new Error(`A condition in "${previous.name}" is locked by schema template and cannot be edited.`);
+        }
+    }
+
+    if (schemaConfig.conditionsLocked && getArrayDependenciesHash(previous) !== getArrayDependenciesHash(next)) {
+        throw new Error(`Repeatable links for "${previous.name}" are locked by schema template and cannot be edited.`);
+    }
+
+    // Per-individual-repeatable-link lock, same opt-in-only default as conditions above.
+    const previousFieldTree = getSchemaFields(previous);
+    const nextFieldTree = getSchemaFields(next);
+    const previousLinks = new Schema(previous, true).arrayDependencies || [];
+    const nextLinks = new Schema(next, true).arrayDependencies || [];
+    for (const previousLink of previousLinks) {
+        if (getArrayDependencyConfig(schemaConfig, previousFieldTree, previousLink)?.locked !== true) {
+            continue;
+        }
+        const templateFieldId = resolveFieldByPath(previousFieldTree, previousLink.field || [])?.templateFieldId;
+        const matchIndex = nextLinks.findIndex((candidate) =>
+            resolveFieldByPath(nextFieldTree, candidate.field || [])?.templateFieldId === templateFieldId
+        );
+        if (matchIndex === -1) {
+            throw new Error(`A repeatable link in "${previous.name}" is locked by schema template and cannot be removed.`);
+        }
+        if (arrayDependencyComparableHash(previousLink) !== arrayDependencyComparableHash(nextLinks[matchIndex])) {
+            throw new Error(`A repeatable link in "${previous.name}" is locked by schema template and cannot be edited.`);
         }
     }
 

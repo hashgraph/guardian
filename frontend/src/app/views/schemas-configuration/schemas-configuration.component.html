@@ -663,15 +663,15 @@
                                         <span class="sc-ctp-count">{{ schemaConditionCount }}</span>
                                     }
                                 </button>
+                                <button class="sc-ctp-btn"
+                                    [class.active]="activeCanvasTab === 'links'"
+                                    (click)="setCanvasTab('links')">
+                                    <i class="pi pi-link"></i>Repeatable links
+                                    @if (arrayDependencyCount) {
+                                        <span class="sc-ctp-count">{{ arrayDependencyCount }}</span>
+                                    }
+                                </button>
                                 @if (!isTemplateConfigMode) {
-                                    <button class="sc-ctp-btn"
-                                        [class.active]="activeCanvasTab === 'links'"
-                                        (click)="setCanvasTab('links')">
-                                        <i class="pi pi-link"></i>Repeatable links
-                                        @if (arrayDependencyCount) {
-                                            <span class="sc-ctp-count">{{ arrayDependencyCount }}</span>
-                                        }
-                                    </button>
                                     @if (glossaryAiEnabled) {
                                         <button class="sc-ctp-btn"
                                             [class.active]="activeCanvasTab === 'propertyAi'"
@@ -1733,10 +1733,27 @@
                 <i class="pi pi-info-circle"></i>
                 Link repeatable sub-schema fields from parent to child. Entries stay paired by index.
             </div>
+            @if (!canChangeConditionsForSelectedSchema && !isTemplateConfigMode) {
+                <div class="st-lock-note st-lock-note--inline">
+                    <i class="pi pi-lock"></i>
+                    <span>Repeatable links are locked by the applied template.</span>
+                </div>
+            }
 
             @for (dependency of arrayDependencies; track dependency) {
                 <div class="sc-array-link-card"
                     [class.sc-array-link-card--editing]="isEditingArrayDependency(dependency)">
+                    @if (isTemplateConfigMode) {
+                        <button class="sc-array-link-lock"
+                            tooltipPosition="top"
+                            [pTooltip]="isLinkLocked(dependency) ? 'Unlock this repeatable link' : 'Lock this repeatable link'"
+                            [disabled]="isTemplateReadonly"
+                            (click)="toggleLinkLocked(dependency)">
+                            <i class="pi" [class.pi-lock]="isLinkLocked(dependency)" [class.pi-lock-open]="!isLinkLocked(dependency)"></i>
+                        </button>
+                    } @else if (isLinkLocked(dependency)) {
+                        <i class="pi pi-lock sc-array-link-lock-badge" title="Locked by the applied template"></i>
+                    }
                     <div class="sc-array-link-paths">
                         <div class="sc-array-link-path">
                             <span class="sc-array-link-label">Source</span>
@@ -1782,10 +1799,12 @@
                         }
                     </div>
                     <button class="sc-array-link-edit" title="Edit link"
+                        [disabled]="!canChangeConditionsForSelectedSchema || isLinkLocked(dependency)"
                         (click)="startEditArrayDependency(dependency)">
                         <i class="pi pi-pencil"></i>
                     </button>
                     <button class="sc-array-link-remove" title="Remove link"
+                        [disabled]="!canChangeConditionsForSelectedSchema || isLinkLocked(dependency)"
                         (click)="removeArrayDependency(dependency)">
                         <i class="pi pi-trash"></i>
                     </button>
@@ -1819,6 +1838,7 @@
                             [resetFilterOnHide]="true"
                             appendTo="body"
                             placeholder="Select source array"
+                            [disabled]="!canChangeConditionsForSelectedSchema"
                             [(ngModel)]="newArrayDependencyOn"
                             (mousedown)="updateArrayLinkPanelWidth($event)"
                             (onChange)="onArrayDependencySourceChange()">
@@ -1852,6 +1872,7 @@
                             [resetFilterOnHide]="true"
                             appendTo="body"
                             placeholder="Select dependent array"
+                            [disabled]="!canChangeConditionsForSelectedSchema"
                             (mousedown)="updateArrayLinkPanelWidth($event)"
                             [(ngModel)]="newArrayDependencyField"
                             (onChange)="onArrayDependencyTargetChange()">
@@ -1880,7 +1901,7 @@
                             [showClear]="true"
                             appendTo="body"
                             placeholder="Select title field"
-                            [disabled]="!newArrayDependencyOn"
+                            [disabled]="!newArrayDependencyOn || !canChangeConditionsForSelectedSchema"
                             (mousedown)="updateArrayLinkPanelWidth($event)"
                             [(ngModel)]="newArrayDependencyTitle">
                             <ng-template pTemplate="selectedItem" let-option>
@@ -1915,6 +1936,7 @@
                                         </span>
                                     </div>
                                     <button class="sc-array-link-remove" title="Remove pair"
+                                        [disabled]="!canChangeConditionsForSelectedSchema || isLinkLocked(editingArrayDependency)"
                                         (click)="removeArrayDependencyMapping(mapping)">
                                         <i class="pi pi-trash"></i>
                                     </button>
@@ -1931,7 +1953,7 @@
                             optionValue="pathStr"
                             appendTo="body"
                             placeholder="Source field"
-                            [disabled]="!newArrayDependencyOn"
+                            [disabled]="!newArrayDependencyOn || !canChangeConditionsForSelectedSchema || isLinkLocked(editingArrayDependency)"
                             (mousedown)="updateArrayLinkPanelWidth($event)"
                             [(ngModel)]="newArrayDependencyMappingSource">
                             <ng-template pTemplate="selectedItem" let-option>
@@ -1952,7 +1974,7 @@
                             optionValue="pathStr"
                             appendTo="body"
                             placeholder="Dependent field"
-                            [disabled]="!newArrayDependencyField"
+                            [disabled]="!newArrayDependencyField || !canChangeConditionsForSelectedSchema || isLinkLocked(editingArrayDependency)"
                             (mousedown)="updateArrayLinkPanelWidth($event)"
                             [(ngModel)]="newArrayDependencyMappingTarget">
                             <ng-template pTemplate="selectedItem" let-option>
@@ -1965,7 +1987,7 @@
                             </ng-template>
                         </p-select>
                         <button class="sc-btn"
-                            [disabled]="!canAddArrayDependencyMapping()"
+                            [disabled]="!canAddArrayDependencyMapping() || !canChangeConditionsForSelectedSchema || isLinkLocked(editingArrayDependency)"
                             (click)="addArrayDependencyMapping()">
                             <i class="pi pi-plus"></i>Add pair
                         </button>
@@ -1981,7 +2003,7 @@
                             </button>
                         }
                         <button class="sc-btn sc-btn-primary"
-                            [disabled]="!canApplyArrayDependency()"
+                            [disabled]="!canApplyArrayDependency() || !canChangeConditionsForSelectedSchema || isLinkLocked(editingArrayDependency)"
                             (click)="applyArrayDependency()">
                             @if (editingArrayDependency) {
                                 <i class="pi pi-check"></i>Save link

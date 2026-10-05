@@ -455,6 +455,41 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return 'Remove condition';
     }
 
+    /** Resolves a repeatable link's dependent field (the terminal segment of
+     * `dependency.field`) so it can be keyed by `templateFieldId`, same identity space as a
+     * regular field's own lock. */
+    private resolveLinkDependentField(dependency: ISchemaArrayDependency | null | undefined): SchemaField | null {
+        const path = dependency?.field;
+        if (!path?.length) {
+            return null;
+        }
+        const containerFields = path.length > 1
+            ? this.resolveArrayDependencyItemFields(path.slice(0, -1))
+            : (this.selectedSchema?.fields ?? []);
+        return containerFields.find(f => f.name === path[path.length - 1]) ?? null;
+    }
+
+    private getLinkConfigKey(dependency: ISchemaArrayDependency | null | undefined): string {
+        return this.getFieldConfigKey(this.resolveLinkDependentField(dependency));
+    }
+
+    /** Per-individual-repeatable-link lock, same opt-in-only semantics as `isConditionLocked`. */
+    public isLinkLocked(dependency?: ISchemaArrayDependency | null): boolean {
+        if (this.isTemplateReadonly) {
+            return true;
+        }
+        if (!this.isTemplateConfigMode && !this.hasAppliedTemplateConfig) {
+            return false;
+        }
+        const key = this.getLinkConfigKey(dependency);
+        if (!key) {
+            return false;
+        }
+        const schema = this.getSchemaForFieldLocks();
+        const schemaConfig = this.getSchemaTemplateConfig(schema);
+        return schemaConfig?.repeatableLinks?.[key]?.locked === true;
+    }
+
     public isTemplateSchemaCustomFieldsLocked(schema: Schema): boolean {
         if (!this.isTemplateConfigMode && !this.hasAppliedTemplateConfig) {
             return false;
@@ -1647,6 +1682,18 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.templateConfigDirty = true;
     }
 
+    public toggleLinkLocked(dependency: ISchemaArrayDependency): void {
+        if (this.isTemplateReadonly) {
+            return;
+        }
+        const config = this.ensureLinkConfig(dependency);
+        if (!config) {
+            return;
+        }
+        config.locked = !this.isLinkLocked(dependency);
+        this.templateConfigDirty = true;
+    }
+
     public setSelectedSchemaGuidelines(guidelines: string): void {
         if (this.isTemplateReadonly) {
             return;
@@ -1784,6 +1831,17 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         schemaConfig.conditions = schemaConfig.conditions || {};
         schemaConfig.conditions[key] = schemaConfig.conditions[key] || {};
         return schemaConfig.conditions[key];
+    }
+
+    private ensureLinkConfig(dependency: ISchemaArrayDependency | null | undefined): any | null {
+        const schemaConfig = this.ensureSelectedSchemaConfig();
+        const key = this.getLinkConfigKey(dependency);
+        if (!schemaConfig || !key) {
+            return null;
+        }
+        schemaConfig.repeatableLinks = schemaConfig.repeatableLinks || {};
+        schemaConfig.repeatableLinks[key] = schemaConfig.repeatableLinks[key] || {};
+        return schemaConfig.repeatableLinks[key];
     }
 
     /*
@@ -3103,6 +3161,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public startEditArrayDependency(dependency: ISchemaArrayDependency): void {
+        if (!this.canChangeConditionsForSelectedSchema || this.isLinkLocked(dependency)) { return; }
         this.editingArrayDependency = dependency;
         this.newArrayDependencyOn = dependency.on.join('.');
         this.newArrayDependencyField = dependency.field.join('.');
@@ -3132,6 +3191,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const field = this.newArrayDependencyField;
         const on = this.newArrayDependencyOn;
         const editing = this.editingArrayDependency;
+        if (!this.canChangeConditionsForSelectedSchema || this.isLinkLocked(editing)) { return; }
         if (!schema || !field || !on || !this.canApplyArrayDependency()) { return; }
         const dependency: ISchemaArrayDependency = {
             field: field.split('.'),
@@ -3159,6 +3219,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public removeArrayDependency(dependency: ISchemaArrayDependency): void {
+        if (!this.canChangeConditionsForSelectedSchema || this.isLinkLocked(dependency)) { return; }
         const schema = this.selectedSchema;
         if (!schema) { return; }
         if (this.editingArrayDependency === dependency) {
@@ -3187,6 +3248,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public addArrayDependencyMapping(): void {
+        if (!this.canChangeConditionsForSelectedSchema || this.isLinkLocked(this.editingArrayDependency)) { return; }
         const source = this.newArrayDependencyMappingSource;
         const target = this.newArrayDependencyMappingTarget;
         if (!source || !target || !this.canAddArrayDependencyMapping()) { return; }
@@ -3199,6 +3261,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public removeArrayDependencyMapping(mapping: ISchemaArrayDependencyMapping): void {
+        if (!this.canChangeConditionsForSelectedSchema || this.isLinkLocked(this.editingArrayDependency)) { return; }
         this.newArrayDependencyValueMappings = this.newArrayDependencyValueMappings
             .filter(item => item !== mapping);
     }

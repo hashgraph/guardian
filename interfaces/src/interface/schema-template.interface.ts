@@ -173,6 +173,12 @@ export interface ISchemaTemplateSchemaConfig {
      * which stay governed solely by the existing per-field lock in `fields`.
      */
     conditions?: Record<string, ISchemaTemplateFieldConfig>;
+    /**
+     * Per-individual-repeatable-link lock, keyed by the dependent field's own
+     * `templateFieldId`. The whole-tab lock reuses `conditionsLocked` directly; this is the
+     * finer-grained, per-link layer on top, mirroring `fields`.
+     */
+    repeatableLinks?: Record<string, ISchemaTemplateFieldConfig>;
 }
 
 export interface ISchemaTemplateConfig {

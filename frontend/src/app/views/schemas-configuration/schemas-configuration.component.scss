@@ -4866,10 +4866,12 @@
     color: var(--guardian-font-color-secondary);
     cursor: pointer;
 
-    &:hover {
+    &:hover:not(:disabled) {
         background: rgba(235, 87, 87, 0.08);
         color: var(--guardian-error-color, #EB5757);
     }
+
+    &:disabled { opacity: 0.4; cursor: default; }
 }
 
 .sc-array-link-edit {
@@ -4882,10 +4884,41 @@
     color: var(--guardian-font-color-secondary);
     cursor: pointer;
 
-    &:hover {
+    &:hover:not(:disabled) {
         background: var(--guardian-grey-background, #F9FAFC);
         color: var(--color-primary);
     }
+
+    &:disabled { opacity: 0.4; cursor: default; }
+}
+
+.sc-array-link-lock {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: var(--sc-radius-sm);
+    background: transparent;
+    color: var(--guardian-font-color-secondary);
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+        background: var(--guardian-hover);
+        color: var(--color-primary);
+    }
+
+    &:disabled { opacity: 0.4; cursor: default; }
+}
+
+.sc-array-link-lock-badge {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--guardian-font-color-secondary);
+    font-size: 14px;
 }
 
 .sc-array-link-card--editing {
