@@ -4,7 +4,7 @@ import { HttpResponse } from '@angular/common/http';
 import { EMPTY, Observable, Subject, Subscription, firstValueFrom, forkJoin, of } from 'rxjs';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { catchError, debounceTime, distinctUntilChanged, map, shareReplay, switchMap, takeUntil } from 'rxjs/operators';
-import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, relationAncestors, ModuleStatus, ISchemaTemplate, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus, ISchemaArrayDependency, ISchemaArrayDependencyMapping, DEFAULT_IWA_VERSION, IwaVersion, resolveIwaVersion, IPropertySuggestionResult, IPropertySuggestionRequest, } from '@guardian/interfaces';
+import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, relationAncestors, ModuleStatus, ISchemaTemplate, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus, ISchemaArrayDependency, ISchemaArrayDependencyMapping, DEFAULT_IWA_VERSION, IwaVersion, resolveIwaVersion, IPropertySuggestionResult, IPropertySuggestionRequest } from '@guardian/interfaces';
 import { SchemaService } from 'src/app/services/schema.service';
 import { TagsService } from 'src/app/services/tag.service';
 import { ProjectComparisonService } from 'src/app/services/project-comparison.service';
@@ -3340,7 +3340,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public isCircularDependency(schema: Schema, schemaMap?: Map<string, Schema>): boolean {
-        // Use live field refs, not document.$defs — withDefs() bloats $defs and causes false positives.
         const refs = schemaMap ?? new Map<string, Schema>();
         if (!schemaMap) {
             for (const candidate of this.schemas) {
@@ -3356,22 +3355,23 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (!ancestors.size) { return false; }
 
         const visited = new Set<string>();
-        const visit = (s: Schema): void => {
-            if (!s.iri || visited.has(s.iri)) { return; }
+        // defs is never pruned (stale refs persist on the backend), so only check
+        // against loaded fields; the backend rejects real cycles on save.
+        const getSchemaReferences = (s: Schema): string[] =>
+            (s.fields || [])
+                .filter(f => f.isRef && f.type)
+                .map(f => f.type);
+        const visit = (s: Schema): boolean => {
+            if (!s.iri || visited.has(s.iri)) { return false; }
             visited.add(s.iri);
-            for (const f of (s.fields || [])) {
-                if (f.isRef && f.type) {
-                    const ref = refs.get(f.type);
-                    if (ref) { visit(ref); }
-                }
+            for (const refIri of getSchemaReferences(s)) {
+                if (ancestors.has(refIri)) { return true; }
+                const ref = refs.get(refIri);
+                if (ref && visit(ref)) { return true; }
             }
+            return false;
         };
-        visit(schema);
-
-        for (const iri of ancestors) {
-            if (visited.has(iri)) { return true; }
-        }
-        return false;
+        return visit(schema);
     }
 
     public canDragSchema(schema: Schema, schemaMap?: Map<string, Schema>): boolean {
@@ -3379,6 +3379,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const selId = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
         const schId = schema.id || (schema as any)._id;
         if (selId && selId === schId) { return false; }
+        if (this.selectedSchema?.iri && schema.iri === this.selectedSchema.iri) { return false; }
         const contextIri = this.currentDrilledSchemaIri;
         if (contextIri && schema.iri === contextIri) { return false; }
         if (this.isCircularDependency(schema, schemaMap)) { return false; }

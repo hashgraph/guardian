@@ -603,9 +603,6 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 if (!row || row.owner !== owner.owner) {
                     throw new Error('Invalid schema');
                 }
-                if (checkForCircularDependency(row)) {
-                    throw new Error(`There is circular dependency in schema: ${row.iri}`);
-                }
                 const previous = {
                     templateId: row.templateId,
                     templateSchemaId: row.templateSchemaId,
@@ -618,6 +615,9 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     entity: item.entity,
                     document: item.document ? JSON.parse(JSON.stringify(item.document)) : item.document
                 } as ISchema;
+                if (checkForCircularDependency(next)) {
+                    throw new Error(`There is circular dependency in schema: ${next.iri}`);
+                }
                 validateSchemaFieldKeys(next);
                 validateSchemaDependencies(next);
                 await resolveTemplateSchemaContext(next, owner);

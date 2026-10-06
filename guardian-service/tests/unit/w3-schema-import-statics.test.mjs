@@ -67,8 +67,13 @@ describe('SchemaImportExportHelper.validateDefs', () => {
         assert.equal(SchemaImportExportHelper.validateDefs('#missing', [], new Map()), 'Invalid defs');
     });
 
-    it('reports circular dependencies', () => {
-        const schema = fakeSchema('#A', [], { $id: '#A', $defs: { '#A': {} } });
+    it('reports circular dependency ($ref cycle back to the schema itself)', () => {
+        const schema = fakeSchema('#A', [], {
+            $id: '#A',
+            $defs: { '#R': { $id: '#R', type: 'object', properties: { back: { $ref: '#A' } } } },
+            type: 'object',
+            properties: { toR: { $ref: '#R' } },
+        });
         const error = SchemaImportExportHelper.validateDefs('#A', [schema], new Map());
         assert.equal(error, 'There is circular dependency in schema: #A');
     });
