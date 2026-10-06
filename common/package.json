@@ -87,5 +87,5 @@
         "test:local": "mocha --file ./tests/helpers/quiet-console.mjs 'tests/**/*.test.mjs' --exit"
     },
     "type": "module",
-    "version": "3.7.1-rc"
+    "version": "3.7.1"
 }

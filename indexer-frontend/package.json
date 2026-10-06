@@ -1,7 +1,7 @@
 {
     "author": "Hashgraph <guardian@hashgraph.com>",
     "name": "indexer-frontend",
-    "version": "3.7.1-rc",
+    "version": "3.7.1",
     "scripts": {
         "ng": "ng",
         "start": "ng serve --proxy-config ./proxy.conf.json",
