@@ -36,7 +36,7 @@
         "cids": "^1.1.9",
         "class-transformer": "^0.5.1",
         "class-validator": "^0.14.1",
-        "compression": "^1.7.5",
+        "compression": "^1.8.2",
         "cookie-parser": "^1.4.7",
         "dotenv": "^17.4.0",
         "exceljs": "4.4.0",
