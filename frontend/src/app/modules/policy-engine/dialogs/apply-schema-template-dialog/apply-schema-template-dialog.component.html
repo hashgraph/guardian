@@ -124,9 +124,9 @@
                           @for (detail of change.details; track detail) {
                             <div class="diff-detail-row">
                               <div class="diff-detail-label">{{ detail.label }}</div>
-                              <div class="diff-detail-value before">{{ detail.before || '-' }}</div>
+                              <div class="diff-detail-value before" [title]="detail.before || '-'">{{ detail.before || '-' }}</div>
                               <div class="diff-arrow">&rarr;</div>
-                              <div class="diff-detail-value after">{{ detail.after || '-' }}</div>
+                              <div class="diff-detail-value after" [title]="detail.after || '-'">{{ detail.after || '-' }}</div>
                             </div>
                           }
                         </div>
@@ -154,32 +154,132 @@
                           @for (detail of change.details; track detail) {
                             <div class="diff-detail-row">
                               <div class="diff-detail-label">{{ detail.label }}</div>
-                              <div class="diff-detail-value before">{{ detail.before || '-' }}</div>
+                              <div class="diff-detail-value before" [title]="detail.before || '-'">{{ detail.before || '-' }}</div>
                               <div class="diff-arrow">&rarr;</div>
-                              <div class="diff-detail-value after">{{ detail.after || '-' }}</div>
+                              <div class="diff-detail-value after" [title]="detail.after || '-'">{{ detail.after || '-' }}</div>
                             </div>
                           }
                         </div>
                       } @else if (isAddChange(change.type)) {
                         <div class="diff-single diff-single-add">
                           <div class="diff-value-label">Added</div>
-                          <div class="diff-value-text">{{ change.after || change.message }}</div>
+                          <div class="diff-value-text" [title]="change.after || change.message">{{ change.after || change.message }}</div>
                         </div>
                       } @else if (isRemoveChange(change.type)) {
                         <div class="diff-single diff-single-remove">
                           <div class="diff-value-label">Removed</div>
-                          <div class="diff-value-text">{{ change.before || change.message }}</div>
+                          <div class="diff-value-text" [title]="change.before || change.message">{{ change.before || change.message }}</div>
                         </div>
                       } @else {
                         <div class="diff-values">
                           <div class="diff-value diff-value-before">
                             <div class="diff-value-label">Before</div>
-                            <div class="diff-value-text">{{ change.before || '-' }}</div>
+                            <div class="diff-value-text" [title]="change.before || '-'">{{ change.before || '-' }}</div>
                           </div>
                           <div class="diff-arrow">&rarr;</div>
                           <div class="diff-value diff-value-after">
                             <div class="diff-value-label">After</div>
-                            <div class="diff-value-text">{{ change.after || '-' }}</div>
+                            <div class="diff-value-text" [title]="change.after || '-'">{{ change.after || '-' }}</div>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  }
+                }
+                @if (group.conditionChanges.length) {
+                  <div class="diff-section-title">Conditions</div>
+                  @for (change of group.conditionChanges; track change) {
+                    <div class="diff-row">
+                      <div class="diff-row-main">
+                        <span class="diff-badge diff-badge-{{ getChangeColor(change.type) }}">
+                          {{ getChangeLabel(change.type) }}
+                        </span>
+                        <div class="diff-row-title">
+                          <div class="diff-row-name">{{ getChangeTitle(change) }}</div>
+                          <div class="diff-row-scope">{{ getChangeScope(change.type) }}</div>
+                        </div>
+                      </div>
+                      @if (hasDetails(change)) {
+                        <div class="diff-details">
+                          @for (detail of change.details; track detail) {
+                            <div class="diff-detail-row">
+                              <div class="diff-detail-label">{{ detail.label }}</div>
+                              <div class="diff-detail-value before" [title]="detail.before || '-'">{{ detail.before || '-' }}</div>
+                              <div class="diff-arrow">&rarr;</div>
+                              <div class="diff-detail-value after" [title]="detail.after || '-'">{{ detail.after || '-' }}</div>
+                            </div>
+                          }
+                        </div>
+                      } @else if (isAddChange(change.type)) {
+                        <div class="diff-single diff-single-add">
+                          <div class="diff-value-label">Added</div>
+                          <div class="diff-value-text" [title]="change.after || change.message">{{ change.after || change.message }}</div>
+                        </div>
+                      } @else if (isRemoveChange(change.type)) {
+                        <div class="diff-single diff-single-remove">
+                          <div class="diff-value-label">Removed</div>
+                          <div class="diff-value-text" [title]="change.before || change.message">{{ change.before || change.message }}</div>
+                        </div>
+                      } @else {
+                        <div class="diff-values">
+                          <div class="diff-value diff-value-before">
+                            <div class="diff-value-label">Before</div>
+                            <div class="diff-value-text" [title]="change.before || '-'">{{ change.before || '-' }}</div>
+                          </div>
+                          <div class="diff-arrow">&rarr;</div>
+                          <div class="diff-value diff-value-after">
+                            <div class="diff-value-label">After</div>
+                            <div class="diff-value-text" [title]="change.after || '-'">{{ change.after || '-' }}</div>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  }
+                }
+                @if (group.linkChanges.length) {
+                  <div class="diff-section-title">Repeatable Links</div>
+                  @for (change of group.linkChanges; track change) {
+                    <div class="diff-row">
+                      <div class="diff-row-main">
+                        <span class="diff-badge diff-badge-{{ getChangeColor(change.type) }}">
+                          {{ getChangeLabel(change.type) }}
+                        </span>
+                        <div class="diff-row-title">
+                          <div class="diff-row-name">{{ getChangeTitle(change) }}</div>
+                          <div class="diff-row-scope">{{ getChangeScope(change.type) }}</div>
+                        </div>
+                      </div>
+                      @if (hasDetails(change)) {
+                        <div class="diff-details">
+                          @for (detail of change.details; track detail) {
+                            <div class="diff-detail-row">
+                              <div class="diff-detail-label">{{ detail.label }}</div>
+                              <div class="diff-detail-value before" [title]="detail.before || '-'">{{ detail.before || '-' }}</div>
+                              <div class="diff-arrow">&rarr;</div>
+                              <div class="diff-detail-value after" [title]="detail.after || '-'">{{ detail.after || '-' }}</div>
+                            </div>
+                          }
+                        </div>
+                      } @else if (isAddChange(change.type)) {
+                        <div class="diff-single diff-single-add">
+                          <div class="diff-value-label">Added</div>
+                          <div class="diff-value-text" [title]="change.after || change.message">{{ change.after || change.message }}</div>
+                        </div>
+                      } @else if (isRemoveChange(change.type)) {
+                        <div class="diff-single diff-single-remove">
+                          <div class="diff-value-label">Removed</div>
+                          <div class="diff-value-text" [title]="change.before || change.message">{{ change.before || change.message }}</div>
+                        </div>
+                      } @else {
+                        <div class="diff-values">
+                          <div class="diff-value diff-value-before">
+                            <div class="diff-value-label">Before</div>
+                            <div class="diff-value-text" [title]="change.before || '-'">{{ change.before || '-' }}</div>
+                          </div>
+                          <div class="diff-arrow">&rarr;</div>
+                          <div class="diff-value diff-value-after">
+                            <div class="diff-value-label">After</div>
+                            <div class="diff-value-text" [title]="change.after || '-'">{{ change.after || '-' }}</div>
                           </div>
                         </div>
                       }
@@ -211,6 +311,9 @@
                           Keep as custom
                         }
                         @case (resolutionAction.KEEP_AS_CUSTOM_CONDITION) {
+                          Keep as custom
+                        }
+                        @case (resolutionAction.KEEP_AS_CUSTOM_LINK) {
                           Keep as custom
                         }
                         @case (resolutionAction.REMOVE_FROM_POLICY) {

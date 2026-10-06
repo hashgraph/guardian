@@ -36,12 +36,24 @@ Template configuration is a map keyed by template schema identity:
     "template-schema-id": {
       "schemaSettingsLocked": true,
       "customFieldsLocked": false,
+      "conditionsLocked": false,
+      "repeatableLinksLocked": false,
       "guidelines": "Use this schema for project registration data.",
       "featured": true,
       "fields": {
         "template-field-id": {
           "locked": true,
           "guidelines": "Enter the external registry identifier."
+        }
+      },
+      "conditions": {
+        "condition-signature": {
+          "locked": true
+        }
+      },
+      "repeatableLinks": {
+        "dependent-template-field-id": {
+          "locked": true
         }
       }
     }
@@ -51,16 +63,24 @@ Template configuration is a map keyed by template schema identity:
 
 The configuration controls:
 
-* **Change schema settings**: whether schema name, description, and entity type can be changed.
+* **Lock schema settings**: whether schema name, description, and entity type can be changed.
   * `schemaSettingsLocked: false` allows changes. `true` prevents them.
-* **Can add custom fields**: lets policy developers add custom fields to the schema.
+* **Lock custom fields**: whether policy developers can add custom fields to the schema.
   * `customFieldsLocked`: `false` allows custom fields, while `true` prevents them.
+* **Lock custom conditions**: whether policy developers can add new conditions to the schema.
+  * `conditionsLocked`: `false` allows new conditions, while `true` prevents adding them. It is add-only - it does not block editing or removing an existing condition, which is governed by each condition's own lock below.
+* **Lock custom repeatable links**: whether policy developers can add new repeatable field links to the schema.
+  * `repeatableLinksLocked`: `false` allows new links, while `true` prevents adding them. Like conditions, it is add-only and does not block editing or removing an existing link.
 * **Featured**: marks a template schema so it stands out in schema lists.
   * `featured: true` shows a filled star next to the schema and sorts it first within its topic on the main Schemas grid, and also in policy configurator schema-picker dropdowns. `false` (the default) does neither.
   * Denormalized onto the schema itself as `templateFeatured` when the template is saved, since template configuration is not queryable on its own - this is what powers the grid sort and the star shown outside the template config editor.
-* **Can edit selected field**: whether an individual template field can be edited or removed.
+* **Lock field**: whether an individual template field can be edited or removed.
   * `locked: false` allows edits or removal. `true` prevents them.
   * Template-owned fields are locked by default.
+* **Lock condition**: whether an individual condition can be edited or removed.
+  * Keyed in `conditions` by the condition's trigger signature. `locked: true` prevents changing or removing that specific condition. Conditions are unlocked by default (opt-in), unlike fields.
+* **Lock repeatable link**: whether an individual repeatable field link can be edited or removed.
+  * Keyed in `repeatableLinks` by the dependent field's `templateFieldId`. `locked: true` prevents changing or removing that specific link. Links are unlocked by default (opt-in), unlike fields.
 * **Guidelines**: notes written by the template author for policy developers.
   * Schema guidelines are stored on the schema configuration.
   * Field guidelines are stored on the field configuration.
@@ -80,7 +100,9 @@ When an applied template is updated, Guardian compares:
 * the snapshot that was applied to the policy;
 * the current policy schemas.
 
-The update preview groups changes by schema and field. Locked template fields and locked schema settings are overwritten by the template. Allowed custom fields are preserved. Custom fields are removed when the new template configuration does not allow them. Removed template schemas with policy custom work require user resolution.
+The update preview groups changes into separate Schema, Fields, Conditions, and Repeatable Links sections. Locked template fields and locked schema settings are overwritten by the template. Allowed custom fields are preserved. Custom fields are removed when the new template configuration does not allow them. Removed template schemas with policy custom work require user resolution.
+
+Conditions and repeatable links are matched across template versions by identity (a condition by its trigger field(s) and value, a link by its dependent field), so the preview reports them as added, removed, or changed. A condition whose trigger value a policy developer edited (for example `A == 2` changed to `A == 3`) no longer matches the template's own condition; updating the template reverts it to the template version unless the edited condition reveals custom policy fields, in which case the preview raises a conflict to resolve.
 
 ### Key distinctions
 
