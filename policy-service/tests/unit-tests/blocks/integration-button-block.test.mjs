@@ -1,6 +1,6 @@
 import { assert } from 'chai';
 import { IntegrationButtonBlock } from '../../../dist/policy-engine/block-validators/blocks/integration-button-block.js';
-import { IntegrationServiceFactory } from '@guardian/common';
+import { IntegrationServiceFactory } from '../../../dist/integrations/index.js';
 import { ParseTypes } from '@guardian/interfaces';
 
 class FakeValidator {

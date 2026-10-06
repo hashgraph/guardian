@@ -1,6 +1,6 @@
 import { IsOptional, IsString, IsArray, ArrayNotEmpty, ArrayMaxSize } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { PaginationQueryDto } from './pagination.dto';
+import { PaginationQueryDto, PaginationMeta } from './pagination.dto';
 import { ProjectRow, ActivityEventRow, PolicySchemaRow, IssuanceEventRow } from '../repositories/project.repository';
 
 export class ActivityEventDto {
@@ -101,6 +101,51 @@ export class IssuanceEventDto {
     @ApiProperty({ nullable: true, description: 'Raw MintToken VC document from the Hedera message' })
     rawVc: Record<string, any> | null;
 
+    @ApiProperty({
+        nullable: true,
+        description:
+            'HCS consensus timestamp of the mint VP-Document. Guardian base64-encodes this value into the ' +
+            'metadata of every NFT serial minted for this event, or into the fungible TOKENMINT ' +
+            "transaction's memo. Either way it is how the on-chain mint is attributed to this VC.",
+    })
+    vpConsensusTimestamp: string | null;
+
+    @ApiProperty({
+        nullable: true,
+        description:
+            'What the ledger actually minted, in display units: the attributed serial count for ' +
+            'non-fungible tokens, the summed mint-transaction amount (scaled by token decimals) for ' +
+            'fungible ones. Null until the mint has been reconciled. Compare against `amount`, which is ' +
+            'only what the MintToken VC declared. The two differ when a mint partially failed.',
+    })
+    mintedAmount: number | null;
+
+    @ApiProperty({ nullable: true, description: "NFT serials whose metadata carries this mint's VP timestamp. Null for fungible tokens, which have no serials." })
+    serialCount: number | null;
+
+    @ApiProperty({ nullable: true, description: 'Of those serials, how many Mirror Node marks deleted (retired). Null for fungible tokens.' })
+    serialRetiredCount: number | null;
+
+    @ApiProperty({
+        nullable: true,
+        description:
+            "Of those serials, how many are held by an account other than the token's treasury and are not " +
+            'retired, i.e. transferred to a third party. Ownership is the only transfer signal available: ' +
+            'Guardian writes no transfer record. Null for fungible tokens, whose balances cannot be traced ' +
+            'back to the mint that created them.',
+    })
+    serialTransferredCount: number | null;
+
+    @ApiProperty({
+        nullable: true,
+        description:
+            'How far the on-chain mint reconciles against the VC: "verified" (minted amount equals the ' +
+            'declared amount), "mismatch" (both known but different), "unmatched" (VP resolved, but no ' +
+            'on-chain mint record carries its timestamp), "ambiguous" (multiple VPs claim this mint, not ' +
+            'attributed), or null (no VP resolved yet).',
+    })
+    mintMatchStatus: string | null;
+
     static fromRow(row: IssuanceEventRow): IssuanceEventDto {
         return {
             mintConsensusTimestamp: row.mintConsensusTimestamp,
@@ -112,8 +157,145 @@ export class IssuanceEventDto {
             mintDate: row.mintDate ?? null,
             linkMethod: row.linkMethod ?? null,
             rawVc: row.rawVc ?? null,
+            vpConsensusTimestamp: row.vpConsensusTimestamp ?? null,
+            mintedAmount: row.mintedAmount ?? null,
+            serialCount: row.serialCount ?? null,
+            serialRetiredCount: row.serialRetiredCount ?? null,
+            serialTransferredCount: row.serialTransferredCount ?? null,
+            mintMatchStatus: row.mintMatchStatus ?? null,
         };
     }
+}
+
+export class SerialRangeDto {
+    @ApiProperty({ description: 'First serial in the run' })
+    from: number;
+
+    @ApiProperty({ description: 'Last serial in the run (equals `from` for a single serial)' })
+    to: number;
+
+    @ApiProperty({ description: 'Serials in this run' })
+    count: number;
+
+    @ApiProperty({ description: 'True when every serial in the run is retired (Mirror Node marks it deleted)' })
+    deleted: boolean;
+
+    @ApiProperty({
+        nullable: true,
+        description:
+            'Account holding every serial in the range. Null when ownership has not been synced yet, ' +
+            'and for retired serials, which no longer have a holder. Ranges are split on a change of ' +
+            'holder, so a range never spans two owners.',
+    })
+    accountId: string | null;
+}
+
+export class MintSerialsResponseDto {
+    @ApiProperty({ description: 'HCS consensus timestamp of the MintToken VC message' })
+    mintConsensusTimestamp: string;
+
+    @ApiProperty({ nullable: true, description: 'HCS consensus timestamp of the mint VP-Document (the value encoded in NFT metadata)' })
+    vpConsensusTimestamp: string | null;
+
+    @ApiProperty({ nullable: true, description: 'Hedera token ID these serials belong to' })
+    tokenId: string | null;
+
+    @ApiProperty({ nullable: true, description: 'Mint reconciliation status. See IssuanceEventDto.mintMatchStatus' })
+    mintMatchStatus: string | null;
+
+    @ApiProperty({ description: 'Serials this issuance produced in total, across every page' })
+    totalSerials: number;
+
+    @ApiProperty({ description: 'Of those, how many are still live' })
+    activeCount: number;
+
+    @ApiProperty({ description: 'Of those, how many are retired' })
+    retiredCount: number;
+
+    @ApiProperty({
+        type: [SerialRangeDto],
+        description:
+            'Serials as contiguous ranges, ascending. A run of consecutive serials sharing the same ' +
+            'retired state collapses to one entry. Lossless: every serial\'s status is implied by the ' +
+            'range containing it. Enumerating them individually would mean ~1.6 MB for a large ' +
+            'issuance where one range says the same thing.',
+    })
+    data: SerialRangeDto[];
+
+    @ApiProperty({ type: PaginationMeta, description: 'Pagination over ranges, not over serials' })
+    meta: PaginationMeta;
+}
+
+export class MintTransactionDto {
+    @ApiProperty({
+        enum: ['retirement', 'transfer'],
+        description:
+            'Whether the credits changed hands or left circulation (exactly one of two values). ' +
+            '"transfer": the credits moved to another account and remain valid for future sale or ' +
+            'retirement. "retirement": the credits can never be used again. A transfer that destroyed ' +
+            'every credit it moved, and was their last movement, is a retirement in substance and is ' +
+            'reported as one. Sorting by this field groups all retirements and all transfers.',
+    })
+    event: 'retirement' | 'transfer';
+
+    @ApiProperty({ description: 'Hedera consensus timestamp of the transaction' })
+    consensusTimestamp: string;
+
+    @ApiProperty({
+        enum: ['guardian', 'ledger'],
+        nullable: true,
+        description:
+            'How well documented the offset claim is. "guardian": the registry\'s retirement ' +
+            'contract recorded the claim on-chain, naming the retiring account and the exact ' +
+            'serials. "ledger": the credits are provably destroyed, but nothing on-chain identifies ' +
+            'who claimed the offset or when. Null on transfers.',
+    })
+    retirementSource: 'guardian' | 'ledger' | null;
+
+    @ApiProperty({
+        nullable: true,
+        description:
+            'Account holding the credits at the moment they left circulation. Retirements only. ' +
+            'Where the retirement is evidenced only by destruction, this is the last transfer\'s ' +
+            'recipient (the party that held the credits), not whoever sent them.',
+    })
+    holderAccountId: string | null;
+
+    @ApiProperty({ nullable: true, description: 'Account the credits moved from. Transfers only.' })
+    senderAccountId: string | null;
+
+    @ApiProperty({ nullable: true, description: 'Account the credits moved to. Transfers only.' })
+    receiverAccountId: string | null;
+
+    @ApiProperty({ type: [Number], description: 'Serials from this mint event affected by the transaction, ascending' })
+    serials: number[];
+
+    @ApiProperty({
+        description:
+            'On a transfer, how many of the credits it moved have since been retired. The rest are ' +
+            'still held and remain tradable. Always 0 on a retirement, which covers every credit it names.',
+    })
+    retiredSince: number;
+}
+
+export class MintTransactionsResponseDto {
+    @ApiProperty({ nullable: true, description: 'The issuance these transactions were scoped to; null when covering every issuance of the project' })
+    mintConsensusTimestamp: string | null;
+
+    @ApiProperty({
+        description:
+            'Whether every treasury behind these credits has had its transfer history ingested. ' +
+            'False means transfers may exist that have not been read yet, so an empty result is ' +
+            '"not known yet" rather than "nothing happened". Retirements are unaffected, as they come ' +
+            'from the retirement contracts, not from the treasury sweep.',
+    })
+    transferHistorySynced: boolean;
+
+    @ApiProperty({ type: [MintTransactionDto], description: 'Transactions, newest first' })
+    data: MintTransactionDto[];
+
+    @ApiProperty({ type: PaginationMeta })
+    meta: PaginationMeta;
 }
 
 export class LinkedVcDto {
@@ -144,6 +326,24 @@ export class MilestoneDto {
     dateType: string | null;
 }
 
+export class ProjectedIssuanceDto {
+    @ApiProperty({
+        nullable: true,
+        description:
+            'Total projected emission reduction (tCO2e): the mapped Estimated Annual Credits value as-is, ' +
+            'never multiplied out across the crediting period (a single figure cannot honestly stand in ' +
+            'for every year). Null when no amount is mapped/extracted, in which case periodStart/periodEnd ' +
+            'may still be populated on their own.',
+    })
+    totalTco2e: number | null;
+
+    @ApiProperty({ nullable: true, description: 'First year of the crediting period, when resolvable' })
+    periodStart: number | null;
+
+    @ApiProperty({ nullable: true, description: 'Last year of the crediting period, when resolvable' })
+    periodEnd: number | null;
+}
+
 export class LinkedSchemaDto {
     @ApiProperty({ description: 'Schema UUID from the VC type field, or literal "MintToken" for mint VCs' })
     schemaUuid: string;
@@ -170,7 +370,7 @@ export class ProjectQueryDto extends PaginationQueryDto {
     @IsString()
     name?: string;
 
-    @ApiPropertyOptional({ description: 'Filter by country name (partial match)' })
+    @ApiPropertyOptional({ description: 'Filter by country name (partial match). The sentinel "__other__" instead matches every project whose stored country is non-empty but not a recognized ISO 3166-1 name/alpha-3 code.' })
     @IsOptional()
     @IsString()
     country?: string;
@@ -207,17 +407,17 @@ export class ProjectQueryDto extends PaginationQueryDto {
     @IsString()
     status?: string;
 
-    @ApiPropertyOptional({ description: 'Filter by policy topic ID (exact match) — returns all projects under the same Guardian policy (every version of it)' })
+    @ApiPropertyOptional({ description: 'Filter by policy topic ID (exact match). Returns all projects under the same Guardian policy (every version of it)' })
     @IsOptional()
     @IsString()
     policyTopicId?: string;
 
-    @ApiPropertyOptional({ description: 'Filter by instance topic ID (exact match) — returns only projects registered against this specific version of the methodology' })
+    @ApiPropertyOptional({ description: 'Filter by instance topic ID (exact match). Returns only projects registered against this specific version of the methodology. Supports a `|`-delimited list to match any of several versions.' })
     @IsOptional()
     @IsString()
     instanceTopicId?: string;
 
-    @ApiPropertyOptional({ description: 'Filter by SDG numbers — match-any. Supports a `|`-delimited list, e.g. "3|7|13".' })
+    @ApiPropertyOptional({ description: 'Filter by SDG numbers (match any). Supports a `|`-delimited list, e.g. "3|7|13".' })
     @IsOptional()
     @IsString()
     sdgs?: string;
@@ -232,7 +432,7 @@ export class ProjectQueryDto extends PaginationQueryDto {
     @IsString()
     sectoralScope?: string;
 
-    @ApiPropertyOptional({ description: 'Vintage year range as "min|max" — either bound may be omitted, e.g. "2018|" or "|2024".' })
+    @ApiPropertyOptional({ description: 'Vintage year range as "min|max". Either bound may be omitted, e.g. "2018|" or "|2024".' })
     @IsOptional()
     @IsString()
     vintageRange?: string;
@@ -247,7 +447,7 @@ export class ProjectQueryDto extends PaginationQueryDto {
     @IsString()
     lifecycleStage?: string;
 
-    @ApiPropertyOptional({ description: 'Expected issuance year range as "min|max" — either bound may be omitted.' })
+    @ApiPropertyOptional({ description: 'Expected issuance year range as "min|max". Either bound may be omitted.' })
     @IsOptional()
     @IsString()
     expectedIssuanceYearRange?: string;
@@ -256,6 +456,17 @@ export class ProjectQueryDto extends PaginationQueryDto {
     @IsOptional()
     @IsString()
     isPipeline?: string;
+}
+
+export class MethodologyFilterOptionDto {
+    @ApiProperty({ description: "Methodology instance topic ID. Matches a project's instanceTopicId" })
+    topicId: string;
+
+    @ApiProperty({ nullable: true, description: 'Methodology display name' })
+    name: string | null;
+
+    @ApiProperty({ nullable: true, description: 'Methodology version' })
+    version: string | null;
 }
 
 export class ProjectFilterOptionsDto {
@@ -279,6 +490,9 @@ export class ProjectFilterOptionsDto {
 
     @ApiProperty({ type: [String], description: 'Raw stored country values (not geocoded/display-resolved)' })
     countries: string[];
+
+    @ApiProperty({ type: [MethodologyFilterOptionDto], description: 'All methodologies (name + version) available in the system, for filter dropdowns' })
+    methodologies: MethodologyFilterOptionDto[];
 }
 
 export class ProjectListSummaryDto {
@@ -365,6 +579,22 @@ export class ProjectResponseDto {
     @ApiProperty({ nullable: true, description: 'Project developer / owner name' })
     developer: string | null;
 
+    @ApiProperty({
+        type: [String],
+        description:
+            'Detail-page-only (full=true) contact emails for every developer on the project, ' +
+            'when the policy schema exposes them. Empty on list responses.',
+    })
+    developerEmails: string[];
+
+    @ApiProperty({
+        type: [String],
+        description:
+            'Detail-page-only (full=true) contact phone numbers for every developer on the project, ' +
+            'when the policy schema exposes them. Empty on list responses.',
+    })
+    developerPhones: string[];
+
     @ApiProperty({ nullable: true, description: 'Accumulated emission reduction credits (ER_y)' })
     credits: number | null;
 
@@ -382,6 +612,9 @@ export class ProjectResponseDto {
 
     @ApiProperty({ nullable: true, description: 'Project category' })
     category: string | null;
+
+    @ApiProperty({ nullable: true, description: 'Project scale (e.g. Large-scale, Small-scale)' })
+    scale: string | null;
 
     @ApiProperty({ nullable: true, description: 'Project sector' })
     sector: string | null;
@@ -434,8 +667,28 @@ export class ProjectResponseDto {
     @ApiProperty({ type: [IssuanceEventDto], description: 'Per-mint-event issuance history, oldest first' })
     issuanceEvents: IssuanceEventDto[];
 
-    @ApiProperty({ description: 'Total credits ever minted (NFT serials + fungible supply)' })
+    @ApiProperty({
+        description:
+            'Total credits the ledger actually minted, reconciled from NFT serials and fungible mint ' +
+            "transactions. Falls back to the MintToken VC's declared amount for mints not yet reconciled.",
+    })
     totalIssued: number;
+
+    @ApiProperty({
+        description:
+            'Total credits the MintToken VCs declared. Differs from totalIssued when a mint partially ' +
+            'failed. The VC states an intent, the ledger records what happened.',
+    })
+    totalDeclared: number;
+
+    @ApiProperty({
+        nullable: true,
+        description:
+            "Non-fungible credits held by an account other than the token's treasury, i.e. transferred to a " +
+            'third party. Null when transfers cannot be determined (list responses, or fungible-only ' +
+            'projects, whose balances cannot be traced back to a mint event).',
+    })
+    totalTransferred: number | null;
 
     @ApiProperty({ description: 'Total credits retired (NFT serials marked deleted by Mirror Node)' })
     totalRetired: number;
@@ -455,7 +708,7 @@ export class ProjectResponseDto {
     @ApiProperty({
         type: [LinkedSchemaDto],
         description:
-            'VCs attached to this project whose schema is bound to a policy externalDataBlock — pushed ' +
+            'VCs attached to this project whose schema is bound to a policy externalDataBlock, pushed ' +
             'external/IoT MRV data, reported separately from the regular Detailed Information schemas.',
     })
     mrvSchemas: LinkedSchemaDto[];
@@ -471,6 +724,15 @@ export class ProjectResponseDto {
 
     @ApiProperty({ nullable: true, description: 'Projected/actual credit volume: totalIssued when Issued, otherwise null ("Not estimated")' })
     projectedVolume: number | null;
+
+    @ApiProperty({
+        type: ProjectedIssuanceDto,
+        nullable: true,
+        description:
+            'Detail-page-only (full=true) projected issuance breakdown for pipeline (non-Issued) projects, ' +
+            'built from the mapped Estimated Annual Credits field. Null when Issued or when no estimate is mapped.',
+    })
+    projectedIssuance: ProjectedIssuanceDto | null;
 
     @ApiProperty({ type: [MilestoneDto], description: 'Registration → Validation → MRV Submission → Verification → Issuance milestone tracker' })
     milestones: MilestoneDto[];
@@ -661,7 +923,29 @@ export class ProjectResponseDto {
         }
 
         // §3.4 — credits is reported-to-date, never a forward projection (F5); only totalIssued qualifies.
-        const projectedVolume = isIssued ? totalIssued : null;
+        let projectedVolume = isIssued ? totalIssued : null;
+
+        let projectedIssuance: ProjectedIssuanceDto | null = null;
+        if (full) {
+            const rawAmount = typeof data['estimatedAnnualCredits'] === 'number' ? data['estimatedAnnualCredits']
+                : typeof data['estimatedAnnualCredits'] === 'string' ? parseFloat(data['estimatedAnnualCredits']) : null;
+            const estimatedAmount = rawAmount && rawAmount > 0 ? rawAmount : null;
+
+            const startYear = typeof data['creditingPeriodStart'] === 'string'
+                ? parseInt(data['creditingPeriodStart'].match(/\d{4}/)?.[0] ?? '', 10)
+                : (typeof data['vintage'] === 'string' ? parseInt(data['vintage'].match(/\d{4}/)?.[0] ?? '', 10) : NaN);
+            const endYear = typeof data['creditingPeriodEnd'] === 'string'
+                ? parseInt(data['creditingPeriodEnd'].match(/\d{4}/)?.[0] ?? '', 10)
+                : NaN;
+            const periodStart = Number.isFinite(startYear) ? startYear : null;
+            const periodEnd = Number.isFinite(endYear) ? endYear : null;
+
+            if (estimatedAmount !== null || periodStart !== null || periodEnd !== null) {
+                projectedIssuance = { totalTco2e: estimatedAmount, periodStart, periodEnd };
+            }
+
+            if (projectedIssuance?.totalTco2e != null && !isIssued) projectedVolume = projectedIssuance.totalTco2e;
+        }
 
         // Milestones are only rendered on the detail page — skip building them
         // (and the earliest-VC lookups they need) on list rows.
@@ -730,12 +1014,28 @@ export class ProjectResponseDto {
             registryDid: row.registryDid,
             registryName: row.registryName,
             developer: typeof data['developer'] === 'string' ? data['developer'] : null,
+            // Detail-page-only, matching linkedSchemas/mrvSchemas: contact details
+            // never ship on list rows (privacy + payload weight). Falls back to
+            // the legacy singular businessData key for rows written before
+            // array support existed — project-mapper.service.ts no longer
+            // writes that key, but old rows still have it instead of the array.
+            developerEmails: full
+                ? (Array.isArray(data['developerEmails'])
+                    ? (data['developerEmails'] as string[])
+                    : typeof data['developerEmail'] === 'string' ? [data['developerEmail']] : [])
+                : [],
+            developerPhones: full
+                ? (Array.isArray(data['developerPhones'])
+                    ? (data['developerPhones'] as string[])
+                    : typeof data['developerPhone'] === 'string' ? [data['developerPhone']] : [])
+                : [],
             credits: typeof data['credits'] === 'number' ? data['credits'] : null,
             status: typeof data['status'] === 'string' ? data['status'] : null,
             vintage: typeof data['vintage'] === 'string' ? data['vintage'] : null,
             sdgs: Array.isArray(data['sdgs']) ? (data['sdgs'] as number[]) : [],
             cobenefits: typeof data['cobenefits'] === 'string' ? data['cobenefits'] : null,
             category: typeof data['category'] === 'string' ? data['category'] : null,
+            scale: typeof data['scale'] === 'string' ? data['scale'] : null,
             sector: typeof data['sector'] === 'string' ? data['sector'] : null,
             sectoralScope: typeof data['sectoralScope'] === 'string' ? data['sectoralScope'] : null,
             createdAt: typeof data['createdAt'] === 'string' ? data['createdAt'] : null,
@@ -764,14 +1064,22 @@ export class ProjectResponseDto {
             issuanceEvents: (row.issuanceEvents ?? []).map(e => IssuanceEventDto.fromRow(e)),
             issuanceCount: row.issuanceCount ?? 0,
             totalIssued: row.totalIssued ?? 0,
+            totalDeclared: row.totalDeclared ?? row.totalIssued ?? 0,
+            totalTransferred: row.totalTransferred ?? null,
             totalRetired: row.totalRetired ?? 0,
             totalActive: row.totalActive ?? 0,
-            linkedSchemas,
-            mrvSchemas,
+            // Detail-page-only: LinkedVcsPanel/ProjectPolicyCanvas/RelationshipDiagram
+            // (pages/projects/[id].vue) are the only consumers — the list page never
+            // reads these, so list rows skip shipping the per-schema/per-VC arrays.
+            // Still computed above either way (friendlyName's ID-lookalike fallback,
+            // and the pre-MV lifecycle-stage derivation, both depend on it).
+            linkedSchemas: full ? linkedSchemas : [],
+            mrvSchemas: full ? mrvSchemas : [],
             hasMrvData,
             lifecycleStage,
             expectedIssuanceYear,
             projectedVolume,
+            projectedIssuance,
             milestones,
         };
     }

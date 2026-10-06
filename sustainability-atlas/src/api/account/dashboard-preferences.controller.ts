@@ -11,7 +11,7 @@ import { DashboardPreferencesService } from './dashboard-preferences.service';
 import { GetDashboardQueryDto } from './dto/get-dashboard-query.dto';
 import { SaveDashboardDto } from './dto/save-dashboard.dto';
 
-@ApiTags('account')
+@ApiTags('My account')
 @ApiCookieAuth()
 @Controller('api/v1/me/dashboard')
 @UseGuards(JwtAuthGuard)
@@ -19,7 +19,12 @@ export class DashboardPreferencesController {
     constructor(private readonly service: DashboardPreferencesService) {}
 
     @Get()
-    @ApiOperation({ summary: 'Get all saved dashboard preferences for a network' })
+    @ApiOperation({
+        summary: 'Get my saved Portfolio layout',
+        description:
+            'Returns every Portfolio preference the caller has saved for the network: watchlist, widgets, ' +
+            'custom charts and watchlist filters.',
+    })
     async get(
         @Query() query: GetDashboardQueryDto,
         @CurrentUser() user: AuthenticatedUser,
@@ -30,7 +35,13 @@ export class DashboardPreferencesController {
     @Put()
     @UseGuards(CsrfGuard)
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Upsert one dashboard preference type for a network' })
+    @ApiOperation({
+        summary: 'Save my Portfolio layout',
+        description:
+            'Creates or replaces one preference type (`watchlist`, `widgets`, `custom_charts` or ' +
+            '`watchlist_filters`) for the network. The saved layout for that type is overwritten as a whole; ' +
+            'other types are untouched. Requires the `X-CSRF-Token` header.',
+    })
     async save(
         @Body() dto: SaveDashboardDto,
         @CurrentUser() user: AuthenticatedUser,

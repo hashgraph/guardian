@@ -4,6 +4,9 @@ import { FilterObject } from '@mikro-orm/core';
 import { importTag } from '../tag/tag-import-helper.js';
 import { checkForCircularDependency, loadAnotherSchemas, loadSchema } from '../common/load-helper.js';
 import { validateSchemaDependencies } from './schema-dependency-validator.js';
+import { validateSchemaFieldKeys } from './schema-field-key-validator.js';
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 
 /**
  * Only unique
@@ -93,13 +96,7 @@ export async function incrementSchemaVersion(
     const { previousVersion } = SchemaHelper.getVersion(schema);
     let newVersion = '1.0.0';
     if (previousVersion) {
-        const schemas = await DatabaseServer.getSchemas({ uuid: schema.uuid });
-        const versions = [];
-        for (const element of schemas) {
-            const elementVersions = SchemaHelper.getVersion(element);
-            versions.push(elementVersions.version, elementVersions.previousVersion);
-        }
-        newVersion = SchemaHelper.incrementVersion(previousVersion, versions);
+        newVersion = await incrementVersionByUuid(schema.uuid, previousVersion);
     }
     schema.version = newVersion;
 
@@ -107,29 +104,18 @@ export async function incrementSchemaVersion(
 }
 
 /**
- * Get highest schema version
- * @param topicId Topic ID
+ * Next version not yet used by any schema with this uuid
+ * @param uuid Schema UUID
+ * @param previousVersion Version to increment from
  */
-export async function incrementHighestSchemaVersion(topicId: string): Promise<string> {
-    const schemas = await DatabaseServer.getSchemas({ topicId });
+export async function incrementVersionByUuid(uuid: string, previousVersion: string): Promise<string> {
+    const schemas = await DatabaseServer.getSchemas({ uuid });
     const versions = [];
-    let highestVersion = '1.0.0';
     for (const element of schemas) {
         const elementVersions = SchemaHelper.getVersion(element);
-        if (elementVersions.version) {
-            versions.push(elementVersions.version);
-            if (ModelHelper.versionCompare(elementVersions.version, highestVersion) === 1) {
-                highestVersion = elementVersions.version;
-            }
-        }
-        if (elementVersions.previousVersion) {
-            versions.push(elementVersions.previousVersion);
-            if (ModelHelper.versionCompare(elementVersions.previousVersion, highestVersion) === 1) {
-                highestVersion = elementVersions.previousVersion;
-            }
-        }
+        versions.push(elementVersions.version, elementVersions.previousVersion);
     }
-    return SchemaHelper.incrementVersion(highestVersion, versions);
+    return SchemaHelper.incrementVersion(previousVersion, versions);
 }
 
 /**
@@ -295,7 +281,7 @@ export async function copySchemaAsync(
     item.status = SchemaStatus.DRAFT;
     item.topicId = topicId;
 
-    const newVersion = await incrementHighestSchemaVersion(item.topicId)
+    const newVersion = SchemaHelper.incrementVersion(item.version, []);
     SchemaHelper.setVersion(item, newVersion, item.version);
     SchemaHelper.updateIRI(item);
     item.iri = item.iri || item.uuid;
@@ -370,7 +356,7 @@ export async function createSchemaAndArtifacts(
         newSchema.contextURL = `schema:${newSchema.uuid}`;
     }
 
-    const newVersion = await incrementHighestSchemaVersion(newSchema.topicId)
+    const newVersion = old ? await incrementVersionByUuid(old.uuid, previousVersion) : '';
     SchemaHelper.setVersion(newSchema, newVersion, previousVersion);
     const row = await createSchema(newSchema, user, notifier);
 
@@ -413,6 +399,7 @@ export async function createSchema(
     if (checkForCircularDependency(newSchema)) {
         throw new Error(`There is circular dependency in schema: ${newSchema.iri}`);
     }
+    validateSchemaFieldKeys(newSchema);
     validateSchemaDependencies(newSchema);
 
     delete newSchema.id;
@@ -637,4 +624,12 @@ export async function prepareSchemaPreview(
 
     notifier.complete();
     return schemas;
+}
+
+/**
+ * Read schema template xlsx
+ */
+export async function readSchemaTemplateXlsx(): Promise<ArrayBuffer> {
+    const file = await readFile(path.join(process.cwd(), 'artifacts', 'template.xlsx'));
+    return file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength);
 }

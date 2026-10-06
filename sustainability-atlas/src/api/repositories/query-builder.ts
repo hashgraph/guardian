@@ -19,7 +19,7 @@ import { BadRequestException } from '@nestjs/common';
  * unbounded input would let a single request bloat the query plan and put
  * CPU/memory pressure on Postgres.
  */
-const MAX_MULTI_VALUE_PARTS = 32;
+export const MAX_MULTI_VALUE_PARTS = 32;
 
 export type FilterOperator =
     | 'eq'

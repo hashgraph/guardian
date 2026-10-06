@@ -49,36 +49,39 @@ export function usePortfolioDashboard(watchlistItems: Ref<WatchlistItem[]>) {
     // projectCount = projects in sector; creditCount = per-project minted totals from
     // portfolio-stats, distributed by sector — same total as totalCreditsIssued.
     const sectorBreakdown = computed(() => {
-        const map: Record<string, { label: string; projectCount: number; creditCount: number }> = {};
+        const map: Record<string, { label: string; projectCount: number; creditCount: number; retiredCount: number }> = {};
         for (const p of filteredProjects.value) {
             const key = p.sector || SectorType.Undefined;
-            if (!map[key]) map[key] = { label: key, projectCount: 0, creditCount: 0 };
+            if (!map[key]) map[key] = { label: key, projectCount: 0, creditCount: 0, retiredCount: 0 };
             map[key].projectCount++;
             map[key].creditCount += (p.projectKey != null ? amountByKey.value.get(p.projectKey) : undefined) ?? 0;
+            map[key].retiredCount += p.totalRetired ?? 0;
         }
         return Object.values(map).sort((a, b) => b.projectCount - a.projectCount);
     });
 
     // Registry breakdown — same pattern.
     const registryBreakdown = computed(() => {
-        const map: Record<string, { label: string; projectCount: number; creditCount: number }> = {};
+        const map: Record<string, { label: string; projectCount: number; creditCount: number; retiredCount: number }> = {};
         for (const p of filteredProjects.value) {
             const key = p.registry || 'Unknown';
-            if (!map[key]) map[key] = { label: key, projectCount: 0, creditCount: 0 };
+            if (!map[key]) map[key] = { label: key, projectCount: 0, creditCount: 0, retiredCount: 0 };
             map[key].projectCount++;
             map[key].creditCount += (p.projectKey != null ? amountByKey.value.get(p.projectKey) : undefined) ?? 0;
+            map[key].retiredCount += p.totalRetired ?? 0;
         }
         return Object.values(map).sort((a, b) => b.projectCount - a.projectCount);
     });
 
-    // Vintage distribution  { year, credits, projects }
+    // Vintage distribution  { year, credits, projects, retired }
     const vintageDistribution = computed(() => {
-        const map: Record<number, { year: number; credits: number; projects: number }> = {};
+        const map: Record<number, { year: number; credits: number; projects: number; retired: number }> = {};
         for (const p of filteredProjects.value) {
             const year = parseInt(String(p.vintage)) || new Date().getFullYear();
-            if (!map[year]) map[year] = { year, credits: 0, projects: 0 };
+            if (!map[year]) map[year] = { year, credits: 0, projects: 0, retired: 0 };
             map[year].credits += p.credits ?? 0;
             map[year].projects++;
+            map[year].retired += p.totalRetired ?? 0;
         }
         return Object.values(map).sort((a, b) => a.year - b.year);
     });
@@ -90,6 +93,7 @@ export function usePortfolioDashboard(watchlistItems: Ref<WatchlistItem[]>) {
     // Registries table  { name, policies, projects, credits }  — matches useDashboard shape
     const registries = computed(() => {
         const creditsByReg: Record<string, number> = {};
+        const retiredByReg: Record<string, number> = {};
         const map: Record<string, { name: string; policies: Set<string>; projects: number }> = {};
         for (const p of filteredProjects.value) {
             const key = p.registry || 'Unknown';
@@ -97,6 +101,7 @@ export function usePortfolioDashboard(watchlistItems: Ref<WatchlistItem[]>) {
             if (p.methodologyId) map[key].policies.add(p.methodologyId);
             map[key].projects++;
             creditsByReg[key] = (creditsByReg[key] ?? 0) + ((p.projectKey != null ? amountByKey.value.get(p.projectKey) : undefined) ?? 0);
+            retiredByReg[key] = (retiredByReg[key] ?? 0) + (p.totalRetired ?? 0);
         }
         return Object.values(map)
             .map(r => ({
@@ -105,6 +110,7 @@ export function usePortfolioDashboard(watchlistItems: Ref<WatchlistItem[]>) {
                 projects: r.projects,
                 credits: formatCredits(creditsByReg[r.name] ?? 0),
                 creditsRaw: creditsByReg[r.name] ?? 0,
+                retiredRaw: retiredByReg[r.name] ?? 0,
             }))
             .sort((a, b) => b.projects - a.projects);
     });
@@ -113,13 +119,14 @@ export function usePortfolioDashboard(watchlistItems: Ref<WatchlistItem[]>) {
     // from portfolio-stats' per-project totals, joined via p.projectKey so the
     // numbers stay consistent with totalCreditsIssued/sectorBreakdown/etc.
     const countryRaw = computed(() => {
-        const map: Record<string, { credits: number; projects: number }> = {};
+        const map: Record<string, { credits: number; projects: number; retired: number }> = {};
         for (const p of filteredProjects.value) {
             const name = resolvedCountryName(p);
             if (!isValidCountryName(name)) continue;
-            if (!map[name]) map[name] = { credits: 0, projects: 0 };
+            if (!map[name]) map[name] = { credits: 0, projects: 0, retired: 0 };
             map[name].projects++;
             map[name].credits += (p.projectKey != null ? amountByKey.value.get(p.projectKey) : undefined) ?? 0;
+            map[name].retired += p.totalRetired ?? 0;
         }
 
         return Object.entries(map)
@@ -225,6 +232,12 @@ export function usePortfolioDashboard(watchlistItems: Ref<WatchlistItem[]>) {
         return bucketMintSeries(stats.value.mintSeries, period);
     }
 
+    // Retirement trend, scoped to the watched projects and bucketed on the same
+    // time axis as the issuance series above.
+    function buildRetirementSeries(period: 'monthly' | 'quarterly' | 'yearly'): { label: string; value: number }[] {
+        return bucketMintSeries(stats.value.retirementSeries, period);
+    }
+
     // Recent issuances — last 5 by mintDate. The stats endpoint deliberately omits
     // project name/type (client already has both from the batch-fetched project
     // records), so join on projectKey here.
@@ -250,16 +263,19 @@ export function usePortfolioDashboard(watchlistItems: Ref<WatchlistItem[]>) {
     // Credit amounts are distributed per project across each of its SDGs — no
     // server-side SDG grouping, so no double-counting risk (a project's amount
     // is added once per SDG it belongs to, same as before the cutover).
-    const filteredSdgStats = computed<SdgStatsDto[]>(() => {
+    const filteredSdgStats = computed<Array<SdgStatsDto & { retired: number }>>(() => {
         const apiSdgs = sdgsData.value?.data ?? [];
 
         const projectCounts = new Map<number, number>();
         const creditCounts = new Map<number, number>();
+        const retiredCounts = new Map<number, number>();
         for (const p of filteredProjects.value) {
             const amount = (p.projectKey != null ? amountByKey.value.get(p.projectKey) : undefined) ?? 0;
+            const retired = p.totalRetired ?? 0;
             for (const id of (p.sdgs ?? [])) {
                 projectCounts.set(id, (projectCounts.get(id) ?? 0) + 1);
                 creditCounts.set(id, (creditCounts.get(id) ?? 0) + amount);
+                retiredCounts.set(id, (retiredCounts.get(id) ?? 0) + retired);
             }
         }
 
@@ -267,6 +283,7 @@ export function usePortfolioDashboard(watchlistItems: Ref<WatchlistItem[]>) {
             ...s,
             projects: projectCounts.get(s.id) ?? 0,
             credits: creditCounts.get(s.id) ?? 0,
+            retired: retiredCounts.get(s.id) ?? 0,
         }));
     });
 
@@ -295,6 +312,7 @@ export function usePortfolioDashboard(watchlistItems: Ref<WatchlistItem[]>) {
         mapPoints,
         getCountryDetail,
         buildIssuanceSeries,
+        buildRetirementSeries,
         recentIssuances,
         filteredSdgStats,
         recentActivity,

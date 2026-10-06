@@ -6,7 +6,6 @@ import {
     buildTemplateSchemasSnapshot,
     removePolicySchemaTemplateSnapshot,
     schemaTemplatesAPI,
-    validateSchemaNameCollisions,
 } from '../../dist/api/schema-template.service.js';
 import {
     callHandler,
@@ -232,7 +231,7 @@ describe('multi-template: APPLY_SCHEMA_TEMPLATE', () => {
         assert.match(response.error, /already applied/i);
     });
 
-    it('rejects a template whose schema name collides with a schema already in the policy', async () => {
+    it('allows a template schema name that already exists in the policy', async () => {
         await arrange(
             policy(),
             { 'template-1': template('template-1') },
@@ -243,13 +242,13 @@ describe('multi-template: APPLY_SCHEMA_TEMPLATE', () => {
 
         const response = await apply('template-1');
 
-        assert.equal(ok(response), false,
-            'a colliding schema name must not silently produce a duplicate');
-        assert.match(response.error, /Project Description/,
-            'the error must name the colliding schema');
+        assert.equal(ok(response), true, response && response.error);
+        assert.equal(state.updatedPolicy.schemaTemplates.length, 1,
+            'same-name schemas are allowed; the binding still records the copied schema by id');
+        assert.equal(state.updatedPolicy.schemaTemplates[0].templateId, 'template-1');
     });
 
-    it('rejects a template whose schema name collides with another applied template', async () => {
+    it('allows two applied templates to define schemas with the same name', async () => {
         await arrange(
             policy({ schemaTemplates: [binding('template-1')] }),
             { 'template-2': template('template-2') },
@@ -260,65 +259,12 @@ describe('multi-template: APPLY_SCHEMA_TEMPLATE', () => {
 
         const response = await apply('template-2');
 
-        assert.equal(ok(response), false,
-            'two templates defining the same schema name must not collide unnoticed');
-        assert.match(response.error, /Project Description/);
-    });
-
-    /*
-     * Detach does not delete the copied schemas, it only clears their markers, so
-     * they stay in the policy under the template's names. Advising a detach when the
-     * colliding schema is unbound would send the user round the loop they are
-     * already in - the detach they just did is what created the collision.
-     */
-    it('says to rename an unbound schema rather than to detach something', async () => {
-        await arrange(
-            policy(),
-            { 'template-1': template('template-1') },
-            (filter) => (filter.category === SchemaCategory.TEMPLATE
-                ? [templateSchema('template-1', 'Project Description')]
-                : [policySchema('leftover-1', 'Project Description')]),
+        assert.equal(ok(response), true, response && response.error);
+        assert.deepEqual(
+            state.updatedPolicy.schemaTemplates.map((item) => item.templateId),
+            ['template-1', 'template-2'],
+            'same-name schemas are distinguished by template binding, not display name',
         );
-
-        const response = await apply('template-1');
-
-        assert.equal(ok(response), false);
-        assert.match(response.error, /rename or delete/i,
-            'an unbound schema is freed by renaming it, not by detaching a template');
-        assert.doesNotMatch(response.error, /detach/i);
-    });
-
-    it('names the applied template to detach when one owns the colliding name', async () => {
-        await arrange(
-            policy({ schemaTemplates: [binding('template-1')] }),
-            { 'template-2': template('template-2') },
-            (filter) => (filter.category === SchemaCategory.TEMPLATE
-                ? [templateSchema('template-2', 'Project Description')]
-                : [policySchema('policy-schema-template-1', 'Project Description', 'template-1')]),
-        );
-
-        const response = await apply('template-2');
-
-        assert.equal(ok(response), false);
-        assert.match(response.error, /detach/i);
-        assert.match(response.error, /Template template-1/,
-            'the user has to be told which of the applied templates to detach');
-    });
-
-    it('names every colliding schema, not just the first', async () => {
-        await arrange(
-            policy(),
-            { 'template-1': template('template-1') },
-            (filter) => (filter.category === SchemaCategory.TEMPLATE
-                ? [templateSchema('template-1', 'Site'), templateSchema('template-1', 'Report')]
-                : [policySchema('existing-1', 'Site'), policySchema('existing-2', 'Report')]),
-        );
-
-        const response = await apply('template-1');
-
-        assert.equal(ok(response), false);
-        assert.match(response.error, /Site/);
-        assert.match(response.error, /Report/);
     });
 
     it('applies a template whose schema names do not collide', async () => {
@@ -333,123 +279,6 @@ describe('multi-template: APPLY_SCHEMA_TEMPLATE', () => {
         const response = await apply('template-2');
 
         assert.equal(ok(response), true, response && response.error);
-    });
-});
-
-/*
- * Issue #6711, step 8. validateSchemaNameCollisions used to be called only from
- * applySchemaTemplate. updateAppliedSchemaTemplate's SCHEMA_ADD path copied new
- * schemas through createSchemaAndArtifacts with no collision check at all, so
- * updating one applied template could introduce a name already owned by another
- * applied template or an ordinary policy schema - exactly what the apply-time
- * check exists to prevent. These exercise the shared validator the same way the
- * update path calls it.
- *
- * `excludeSchemaIds` used to be `excludeTemplateId`, which excluded every schema
- * belonging to the template being updated - not just the ones actually vacating
- * their current name. That let a rename (or an add) silently land on an unchanged
- * sibling schema from the same template: both ended up with the same name in the
- * policy, exactly the ambiguity this whole check exists to prevent. Narrowed to
- * the specific policy schema ids about to change identity.
- */
-describe('multi-template: schema name collisions on update (validateSchemaNameCollisions)', () => {
-    afterEach(() => restoreStubs());
-
-    it('still catches a collision with a different applied template', async () => {
-        stub(DatabaseServer, 'getSchemas', async () => [
-            policySchema('policy-schema-template-1', 'Site', 'template-1'),
-            policySchema('policy-schema-template-2', 'Monitoring Report', 'template-2'),
-        ]);
-
-        const targetPolicy = policy({
-            schemaTemplates: [binding('template-1'), binding('template-2')],
-        });
-
-        await assert.rejects(
-            validateSchemaNameCollisions(
-                template('template-1'),
-                targetPolicy,
-                [{ name: 'Monitoring Report' }],
-            ),
-            /Monitoring Report/,
-            'a new schema added by updating template-1 must still collide with template-2\'s schema',
-        );
-    });
-
-    it('still rejects a new schema that collides with an unchanged sibling of the same template', async () => {
-        stub(DatabaseServer, 'getSchemas', async () => [
-            policySchema('policy-schema-template-1', 'Site', 'template-1'),
-        ]);
-
-        const targetPolicy = policy({
-            schemaTemplates: [binding('template-1')],
-        });
-
-        await assert.rejects(
-            validateSchemaNameCollisions(
-                template('template-1'),
-                targetPolicy,
-                [{ name: 'Site' }],
-            ),
-            /Site/,
-            'the added schema would share a name with an untouched sibling from the same template - a real collision',
-        );
-    });
-
-    it('excludes only the schema actually being renamed, not its whole template', async () => {
-        stub(DatabaseServer, 'getSchemas', async () => [
-            policySchema('policy-schema-template-1', 'Site', 'template-1'),
-            policySchema('policy-schema-template-2', 'Region', 'template-1'),
-        ]);
-
-        const targetPolicy = policy({
-            schemaTemplates: [binding('template-1')],
-        });
-
-        // policy-schema-template-2 is being renamed to "Site"; policy-schema-template-1
-        // ("Site") is an untouched sibling and must still block the collision.
-        await assert.rejects(
-            validateSchemaNameCollisions(
-                template('template-1'),
-                targetPolicy,
-                [{ name: 'Site' }],
-                new Set(['policy-schema-template-2']),
-            ),
-            /Site/,
-            'excluding the renamed schema itself must not also exempt its unrelated sibling',
-        );
-
-        // With the sibling itself excluded too (e.g. it is being renamed away in the
-        // same update), the same new name must not be flagged as a self-collision.
-        await assert.doesNotReject(
-            validateSchemaNameCollisions(
-                template('template-1'),
-                targetPolicy,
-                [{ name: 'Site' }],
-                new Set(['policy-schema-template-1', 'policy-schema-template-2']),
-            ),
-            'excluding both schemas (a name swap) must not flag either as colliding with itself',
-        );
-    });
-
-    it('still rejects a collision with an ordinary policy schema', async () => {
-        stub(DatabaseServer, 'getSchemas', async () => [
-            policySchema('policy-schema-template-1', 'Site', 'template-1'),
-            policySchema('plain-schema-1', 'Custom Report'),
-        ]);
-
-        const targetPolicy = policy({
-            schemaTemplates: [binding('template-1')],
-        });
-
-        await assert.rejects(
-            validateSchemaNameCollisions(
-                template('template-1'),
-                targetPolicy,
-                [{ name: 'Custom Report' }],
-            ),
-            /Custom Report/,
-        );
     });
 });
 
@@ -1290,7 +1119,7 @@ describe('multi-template: a snapshot written before the envelope filter', () => 
     });
 });
 
-describe('multi-template: UPDATE_APPLIED_SCHEMA_TEMPLATE - rename-in-place collisions', () => {
+describe('multi-template: UPDATE_APPLIED_SCHEMA_TEMPLATE - duplicate schema names', () => {
     let update;
 
     /**
@@ -1345,7 +1174,7 @@ describe('multi-template: UPDATE_APPLIED_SCHEMA_TEMPLATE - rename-in-place colli
         });
     };
 
-    it('rejects a template-driven rename that collides with an existing policy schema', async () => {
+    it('allows a template-driven rename to a name already used by another policy schema', async () => {
         const templateRow = template('template-1', {
             config: { schemas: { 'tsid-template-1': { schemaSettingsLocked: true } } },
         });
@@ -1368,10 +1197,7 @@ describe('multi-template: UPDATE_APPLIED_SCHEMA_TEMPLATE - rename-in-place colli
 
         const response = await update();
 
-        assert.equal(ok(response), false,
-            'the template renamed its own schema to a name another policy schema already owns - ' +
-            'the rename must not silently produce two schemas with the same name');
-        assert.match(response.error, /Location/);
+        assert.equal(ok(response), true, response && response.error);
     });
 
     it('allows the rename when the new name is free', async () => {

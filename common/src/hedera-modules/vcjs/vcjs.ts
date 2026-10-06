@@ -668,8 +668,15 @@ export class VCJS {
 
     private describeIfConditionLeaf(node: any, leafKey: string): string {
         if (!node) { return ''; }
-        if (node.const !== undefined) {
-            return `${leafKey} = '${node.const}'`;
+        const leaf = SchemaHelper.readConstLeaf(node);
+        if (leaf) {
+            if (leaf.comparator === 'contains') {
+                return `${leafKey} contains '${leaf.value}'`;
+            }
+            if (leaf.comparator === 'equals') {
+                return `every element of ${leafKey} = '${leaf.value}'`;
+            }
+            return `${leafKey} = '${leaf.value}'`;
         }
         if (node.properties) {
             return Object.entries(node.properties as Record<string, any>)
@@ -715,6 +722,16 @@ export class VCJS {
                     ? contextProp?.items?.type
                     : contextProp?.type;
                 if (type) { val.const = coerceConst(val.const, type); }
+                return;
+            }
+            if (val.contains && 'const' in val.contains) {
+                const type = contextProp?.items?.type;
+                if (type) { val.contains.const = coerceConst(val.contains.const, type); }
+                return;
+            }
+            if (val.items && 'const' in val.items) {
+                const type = contextProp?.items?.type;
+                if (type) { val.items.const = coerceConst(val.items.const, type); }
                 return;
             }
             if (val.properties) {

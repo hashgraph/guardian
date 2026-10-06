@@ -28,14 +28,35 @@ export const MV_METHODOLOGY_STATS_CREATE_SQL = `
     -- column they already join, instead of deduplicating every METHODOLOGY row
     -- on each request.
     canonical AS (
-        SELECT DISTINCT ON ("relatedTopicId") "relatedTopicId", id
+        SELECT DISTINCT ON ("relatedTopicId") "relatedTopicId", id, "createdAt"
         FROM business_view
         WHERE "viewType" = 'METHODOLOGY' AND "relatedTopicId" IS NOT NULL
         ORDER BY "relatedTopicId", "sourceTimestamp"::numeric DESC, id DESC
+    ),
+    -- Every project's mint count alongside BOTH topics it can hang off, folded
+    -- down to one small row per project.
+    project_mint_counts AS MATERIALIZED (
+        SELECT proj."projectKey"                       AS project_key,
+               proj."businessData"->>'instanceTopicId' AS instance_topic,
+               proj."businessData"->>'policyTopicId'   AS policy_topic,
+               COUNT(pml.*) FILTER (WHERE pml.token_id IS NOT NULL) AS mints
+        FROM business_view proj
+        LEFT JOIN project_mint_link pml ON pml.project_key = proj."projectKey"
+        WHERE proj."viewType" = 'PROJECT' AND proj."projectKey" IS NOT NULL
+        GROUP BY 1, 2, 3
+    ),
+    schema_counts AS MATERIALIZED (
+        SELECT p2."policyTopicId" AS policy_topic_id,
+               COUNT(DISTINCT entry_iri)::bigint AS schema_count
+        FROM policy p2,
+             LATERAL jsonb_object_keys(COALESCE(p2."rawSchemaJson", '{}'::jsonb)) AS entry_iri
+        WHERE p2."decodeStatus" = 'decoded'
+        GROUP BY 1
     )
     SELECT
         mb."relatedTopicId",
         c.id AS canonical_id,
+        c."createdAt",
         COALESCE((
             SELECT COUNT(*)
             FROM business_view p
@@ -49,32 +70,20 @@ export const MV_METHODOLOGY_STATS_CREATE_SQL = `
               AND p."businessData"->>'instanceTopicId' = mb."relatedTopicId"
         ), 0)::bigint AS instance_project_count,
         COALESCE((
-            SELECT COUNT(*)
-            FROM project_mint_link pml
-            JOIN business_view proj
-                ON proj."projectKey" = pml.project_key
-               AND proj."viewType" = 'PROJECT'
-               AND (
-                   proj."businessData"->>'instanceTopicId' = mb."relatedTopicId"
-                   OR proj."businessData"->>'policyTopicId' = mb.policy_topic_id
-               )
-            WHERE pml.token_id IS NOT NULL
+            SELECT SUM(pmc.mints)
+            FROM project_mint_counts pmc
+            WHERE pmc.instance_topic = mb."relatedTopicId"
+               OR pmc.policy_topic  = mb.policy_topic_id
         ), 0)::bigint AS issuance_count,
         COALESCE((
-            SELECT COUNT(*)
-            FROM project_mint_link pml
-            JOIN business_view proj
-                ON proj."projectKey" = pml.project_key
-               AND proj."viewType" = 'PROJECT'
-               AND proj."businessData"->>'instanceTopicId' = mb."relatedTopicId"
-            WHERE pml.token_id IS NOT NULL
+            SELECT SUM(pmc.mints)
+            FROM project_mint_counts pmc
+            WHERE pmc.instance_topic = mb."relatedTopicId"
         ), 0)::bigint AS instance_issuance_count,
         COALESCE((
-            SELECT COUNT(DISTINCT entry_iri)
-            FROM policy p2,
-                 LATERAL jsonb_object_keys(COALESCE(p2."rawSchemaJson", '{}'::jsonb)) AS entry_iri
-            WHERE p2."policyTopicId" = mb.policy_topic_id
-              AND p2."decodeStatus" = 'decoded'
+            SELECT sc.schema_count
+            FROM schema_counts sc
+            WHERE sc.policy_topic_id = mb.policy_topic_id
         ), 0)::bigint AS schema_count,
         p."decodeStatus" AS decode_status,
         p.attempts       AS decode_attempts,
@@ -131,4 +140,13 @@ export const MV_METHODOLOGY_STATS_INDEX_SQL = `
     ON ${MV_METHODOLOGY_STATS_NAME} ("relatedTopicId");
     CREATE INDEX IF NOT EXISTS idx_${MV_METHODOLOGY_STATS_NAME}_canonical_id
     ON ${MV_METHODOLOGY_STATS_NAME} (canonical_id);
+    -- Backs PgMethodologyRepository's findAllDefaultView fast path: lets the
+    -- default (unfiltered/unsearched) /methodologies list order by createdAt
+    -- via an index scan instead of joining+sorting the full candidate set.
+    -- NULLS LAST is required: the column has no NOT NULL constraint (an MV does
+    -- not inherit one from its source), so the planner only matches this index
+    -- to the query's "createdAt" DESC NULLS LAST ordering if it declares the
+    -- same null placement -- a bare DESC index defaults to NULLS FIRST.
+    CREATE INDEX IF NOT EXISTS idx_${MV_METHODOLOGY_STATS_NAME}_created_at
+    ON ${MV_METHODOLOGY_STATS_NAME} ("createdAt" DESC NULLS LAST);
 `;

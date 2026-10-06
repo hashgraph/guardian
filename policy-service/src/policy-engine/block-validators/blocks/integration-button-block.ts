@@ -1,4 +1,4 @@
-import { IntegrationServiceFactory } from '@guardian/common';
+import { IntegrationServiceFactory } from '../../../integrations/index.js';
 import { BlockValidator, IBlockProp } from '../../block-validators/index.js';
 import { CommonBlock } from './common.js';
 import { ParseTypes, SchemaEntity } from '@guardian/interfaces';

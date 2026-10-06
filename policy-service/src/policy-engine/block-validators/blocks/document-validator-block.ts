@@ -50,6 +50,9 @@ export class DocumentValidatorBlock {
                 if (item.conditions !== undefined && !Array.isArray(item.conditions)) {
                     validator.addError('Option "conditions" must be an array');
                 }
+                if (item.allowEmptySource !== undefined && typeof item.allowEmptySource !== 'boolean') {
+                    validator.addError('Option "allowEmptySource" must be a boolean');
+                }
             }
         } catch (error) {
             validator.addError(`Unhandled exception ${validator.getErrorMessage(error)}`);

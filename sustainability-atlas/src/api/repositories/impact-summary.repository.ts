@@ -17,7 +17,7 @@ export interface ImpactSummarySdgRow {
 }
 
 export interface ImpactSummaryGeoRow {
-    /** ISO-ish country label from businessData->>'country'; 'Unknown' when blank/missing. */
+    /** ISO-ish country label from businessData->>'country'; 'Other' when blank/missing. */
     country: string;
     projectCount: number;
     /** On-chain credits issued (mv_project_stats.total_issued) summed across this country's projects. */
@@ -80,7 +80,7 @@ export interface ImpactSummaryRow {
     /** Inferred from Mirror-Node-deleted NFT serials (nft_cache.deleted via mv_project_stats) — never a ledger figure. */
     totalRetiredInferred: number;
     activeProjects: number;
-    /** Distinct non-'Unknown' countries across PROJECT rows. */
+    /** Distinct non-'Other' countries across PROJECT rows. */
     activeCountries: number;
     /** Projects per derived lifecycle stage (mv_project_lifecycle); sums to `activeProjects`. */
     lifecycleStages: ImpactSummaryLifecycleRow[];

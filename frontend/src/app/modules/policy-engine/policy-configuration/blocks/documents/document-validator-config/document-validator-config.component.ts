@@ -98,6 +98,9 @@ export class DocumentValidatorConfigComponent implements OnInit {
             this.conditionsGroupInitialized = true;
         }
         this.properties.sourceValidations = this.properties.sourceValidations || [];
+        for (const validation of this.properties.sourceValidations) {
+            validation.allowEmptySource ??= false;
+        }
         this.schemas = this.moduleVariables?.schemas || [];
     }
 
@@ -142,6 +145,7 @@ export class DocumentValidatorConfigComponent implements OnInit {
             onlyOwnByGroupDocuments: false,
             onlyAssignDocuments: false,
             onlyAssignByGroupDocuments: false,
+            allowEmptySource: false,
             filters: [],
             conditions: [],
         });

@@ -6,6 +6,11 @@ on:
       - '.github/**'
       - 'docs/**'
       - '**/*.md'
+
+permissions:
+  contents: read
+  checks: write        # required by publish-unit-test-result-action
+
 jobs:
   buildAndTest:
     name: Build and Test (Manual - Main)
@@ -108,6 +113,9 @@ jobs:
           pushd common
           npm run lint
           popd
+          pushd ai-service
+          npm run lint
+          popd
           pushd logger-service
           npm run lint
           popd
@@ -187,7 +195,7 @@ jobs:
           OPERATOR_KEY: ${{ secrets.CI_HEDERA_PRIV_KEY }}
 
       - name: Publish Unit Test Results
-        uses: step-security/publish-unit-test-result-action@681100d67b09305624c089873f12c545ee7cbc24 # v2.23.0
+        uses: step-security/publish-unit-test-result-action@8cf946dca1a299ebf36dff640273fda13717050a # v2.24.0
         if: always()
         with:
           files: test_results/**/*.xml

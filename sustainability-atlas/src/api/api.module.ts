@@ -10,6 +10,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { SystemDatabaseModule } from '@api/database/system-database.module';
 import { NetworkDatabaseModule } from '@api/database/network-database.module';
 import { RedisModule } from '@shared/redis/redis.module';
+import { SingleFlightModule } from '@shared/single-flight/single-flight.module';
 
 // Controllers
 import { RegistriesController } from './controllers/registries.controller';
@@ -18,6 +19,7 @@ import { PolicySchemasController } from './controllers/policy-schemas.controller
 import { PoliciesController } from './controllers/policies.controller';
 import { ProjectsController } from './controllers/project.controller';
 import { CreditsController } from './controllers/credits.controller';
+import { IssuanceController } from './controllers/issuance.controller';
 import { QueueStatusController } from './controllers/queue-status.controller';
 import { GuardianSyncController } from './controllers/guardian-sync.controller';
 import { SdgsController } from './controllers/sdgs.controller';
@@ -26,6 +28,7 @@ import { DashboardController } from './controllers/dashboard.controller';
 import { PortfolioController } from './controllers/portfolio.controller';
 import { ExportsController } from './controllers/exports.controller';
 import { ImpactSummaryController } from './controllers/impact-summary.controller';
+import { IpfsController } from './controllers/ipfs.controller';
 
 // Services
 import { RegistriesService } from './services/registries.service';
@@ -36,6 +39,7 @@ import { PoliciesService } from './services/policies.service';
 import { ProjectsService } from './services/project.service';
 import { ProjectExportService } from './services/project-export.service';
 import { CreditsService } from './services/credits.service';
+import { IssuanceService } from './services/issuance.service';
 import { SdgsService } from './services/sdgs.service';
 import { DevelopersService } from './services/developers.service';
 import { DashboardService } from './services/dashboard.service';
@@ -61,6 +65,7 @@ import { LocalPolicyZipStorage } from '@worker/services/storage/local-policy-zip
         SystemDatabaseModule,
         NetworkDatabaseModule,
         RedisModule,
+        SingleFlightModule,
         AuthModule,
         AdminModule,
         AccountModule,
@@ -73,6 +78,7 @@ import { LocalPolicyZipStorage } from '@worker/services/storage/local-policy-zip
         PoliciesController,
         ProjectsController,
         CreditsController,
+        IssuanceController,
         QueueStatusController,
         GuardianSyncController,
         SdgsController,
@@ -81,6 +87,7 @@ import { LocalPolicyZipStorage } from '@worker/services/storage/local-policy-zip
         PortfolioController,
         ExportsController,
         ImpactSummaryController,
+        IpfsController,
     ],
     providers: [
         RegistriesService,
@@ -91,6 +98,7 @@ import { LocalPolicyZipStorage } from '@worker/services/storage/local-policy-zip
         ProjectsService,
         ProjectExportService,
         CreditsService,
+        IssuanceService,
         SdgsService,
         DevelopersService,
         DashboardService,

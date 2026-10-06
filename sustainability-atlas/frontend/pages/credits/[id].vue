@@ -9,7 +9,7 @@ import {
     Receipt,
     Shield,
 } from 'lucide-vue-next';
-import { formatCredits, formatDate, formatTransactionType } from '~/lib/format';
+import { formatCredits, formatDate, formatNumber, formatTransactionType } from '~/lib/format';
 import type { CreditDto, CreditsResponse } from '~/composables/api/useCreditsApi';
 import { displayProject } from '~/composables/useCredits';
 
@@ -21,6 +21,9 @@ interface MintEvent {
     document: Record<string, any> | null;
     projectKey: string | null;
     type: string | null;
+    /** What the ledger actually minted for this event; null until reconciled. */
+    mintedAmount: string | null;
+    mintMatchStatus: 'verified' | 'mismatch' | 'unmatched' | 'ambiguous' | null;
 }
 
 interface CreditRaw {
@@ -77,6 +80,20 @@ const { data, pending } = useAsyncData<CreditRawDetail | null>(
 const credit = computed(() => data.value?.credit ?? null);
 const mintEvents = computed(() => data.value?.mintEvents ?? []);
 const projects = computed(() => data.value?.projects ?? []);
+
+// A token id cannot name an issuance — a token routinely carries several mint
+// events — so hand off to the issuance page. The newest mint is the sensible
+// landing point for a bare token link (search results, older bookmarks).
+// Tokens with no Guardian mint credential have nothing to redirect to and keep
+// rendering this token-only view.
+watch(mintEvents, (events) => {
+    const newest = [...events]
+        .filter(e => e.consensusTimestamp)
+        .sort((a, b) => Number(b.consensusTimestamp) - Number(a.consensusTimestamp))[0];
+    if (newest) {
+        navigateTo(`/issuances/${encodeURIComponent(newest.consensusTimestamp)}`, { replace: true });
+    }
+}, { immediate: true });
 
 // The project the user clicked from the list (passed as ?projectId= query param).
 const connectedProjectId = computed(() => (route.query.projectId as string) || null);
@@ -139,8 +156,33 @@ const totalMintedProject = computed<number | null>(() => {
         .reduce((s, e) => s + (e.amount ? parseFloat(e.amount) : 0), 0);
 });
 
+// What the ledger actually minted across every mint event for this token.
+// Falls back to the declared amount for events not yet reconciled, so the total
+// stays complete rather than dipping while sync catches up.
+const totalMintedOnChain = computed(() =>
+    mintEvents.value.reduce(
+        (s, e) => s + (e.mintedAmount !== null ? parseFloat(e.mintedAmount) : (e.amount ? parseFloat(e.amount) : 0)),
+        0,
+    ),
+);
+
+// Compare declared against actually-minted — NOT against live token supply.
+// Supply is net of retirements, so comparing to it flags every token that has
+// ever retired a credit as if its mint had failed.
+const mismatchedEvents = computed(() => mintEvents.value.filter(e => e.mintMatchStatus === 'mismatch'));
 const hasDifference = computed(
-    () => tokenSupply.value > 0 && totalMintedAll.value > 0 && tokenSupply.value !== totalMintedAll.value,
+    () => mismatchedEvents.value.length > 0
+        || (totalMintedOnChain.value > 0 && totalMintedAll.value > 0 && totalMintedOnChain.value !== totalMintedAll.value),
+);
+
+const supplyDifferenceMessage = computed(() =>
+    mismatchedEvents.value.length > 0
+        ? t('credits.detail.mintDifferenceTooltip', {
+            count: mismatchedEvents.value.length,
+            declared: formatNumber(totalMintedAll.value),
+            minted: formatNumber(totalMintedOnChain.value),
+        })
+        : t('credits.detail.mintPendingTooltip'),
 );
 
 // Mint events scoped to the connected project; falls back to all events on deep-links.
@@ -400,15 +442,15 @@ function viewRawVc(title: string, doc: Record<string, any> | null) {
         <!-- Tabbed card -->
         <div class="rounded-xl border bg-card overflow-hidden">
             <!-- Tab bar -->
-            <div class="border-b">
+            <div class="border-b bg-muted/30">
                 <nav class="flex gap-0 -mb-px overflow-x-auto">
                     <button
                         v-for="tab in tabs"
                         :key="tab.key"
                         :class="[
                             activeTab === tab.key
-                                ? 'border-primary text-primary'
-                                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border',
+                                ? 'border-primary text-primary bg-card'
+                                : 'border-transparent text-muted-foreground hover:text-foreground',
                             'flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap',
                         ]"
                         @click="setTab(tab.key)"
@@ -470,7 +512,7 @@ function viewRawVc(title: string, doc: Record<string, any> | null) {
                                             >
                                                 <div v-if="warnTooltipVisible" :style="warnTooltipStyle" class="pointer-events-none">
                                                     <div class="max-w-[240px] rounded-md bg-foreground px-3 py-2 text-[11px] leading-relaxed text-background shadow-lg">
-                                                        {{ $t('credits.detail.supplyDifferenceTooltip') }}
+                                                        {{ supplyDifferenceMessage }}
                                                     </div>
                                                     <div class="mx-auto h-0 w-0 border-x-[5px] border-x-transparent border-t-[5px] border-t-foreground" />
                                                 </div>

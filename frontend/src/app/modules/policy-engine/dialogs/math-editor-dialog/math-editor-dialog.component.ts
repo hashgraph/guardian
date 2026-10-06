@@ -5,7 +5,7 @@ import { FieldLinkDialog } from '../field-link-dialog/field-link-dialog.componen
 import { SchemaVariables } from '../../structures';
 import { Validators } from '@angular/forms';
 import { TreeListData, TreeListView } from 'src/app/modules/common/tree-graph/tree-list';
-import { Code, FieldLink, MathContext, MathFormula, MathEngine, setDocumentValueByPath, DocumentMap } from './math-model/index';
+import { Code, FieldLink, MathContext, MathFormula, MathEngine, setDocumentValueByPath, getDocumentValueByPath, DocumentMap } from './math-model/index';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { MathGroups } from './math-model/math-groups';
 import { MathGroup } from './math-model/math-group';
@@ -17,7 +17,7 @@ import { ArtifactService } from 'src/app/services/artifact.service';
 import { CsvService } from 'src/app/services/csv.service';
 import { GzipService } from 'src/app/services/gzip.service';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
-import { hydrateDocumentTables } from './math-model/table-hydration';
+import { hydrateDocumentMapTables } from './math-model/table-hydration';
 
 class Tooltip {
     public visible: boolean;
@@ -98,6 +98,24 @@ class Tooltip {
     public destroy() {
         this._container.removeChild(this._body);
     }
+}
+
+type MathIssueStep = 'step_1' | 'step_2' | 'step_3';
+type MathIssueGroup = 'inputs' | 'formulas' | 'outputs';
+
+interface MathIssue {
+    id: string;
+    group: MathIssueGroup;
+    step: MathIssueStep;
+    pageId: string;
+    title: string;
+    message: string;
+}
+
+interface MathIssueGroupView {
+    key: MathIssueGroup;
+    label: string;
+    issues: MathIssue[];
 }
 
 /**
@@ -193,9 +211,22 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     public activePathItem: FieldLink | null = null;
     public pathSuggestions: string[] = [];
     public fieldWarnings = new Map<string, boolean>();
+    public mathIssues: MathIssue[] = [];
+    public issueGroups: MathIssueGroupView[] = [];
+    public issuesVisible: boolean = false;
+    public validationChecked: boolean = false;
 
     public inputDocumentValue: any = null;
     public inputRelationshipsValue: any[] = [];
+
+    public readonly maxTableRows = FieldLink.MAX_TABLE_ROWS;
+    public readonly maxTableRowsPerAdd = 20;
+    public readonly maxTables = FieldLink.MAX_TABLES;
+    public readonly maxTestTableRows = 20;
+    public tableRowsToAdd: { [id: string]: number | null } = {};
+    private tableRowsDraft: { [id: string]: Record<string, string>[][] } = {};
+    private tableColumnsDraft: { [id: string]: Record<string, string> } = {};
+    private tableColumnsMode: { [id: string]: boolean } = {};
 
     constructor(
         private dialogRef: DynamicDialogRef,
@@ -255,6 +286,18 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         for (const item of this.engine.variables.getItems()) {
             this._updateFieldWarning(item);
         }
+        for (const item of this.engine.outputs.getItems()) {
+            this._updateFieldWarning(item, 'output');
+            const columns = this.getTableColumns(item);
+            if (item.rows && columns.length) {
+                item.rows = this.syncTableRows(item.rows, columns);
+            }
+            if (item.tables && columns.length) {
+                item.tables = item.tables.map((rows) => this.syncTableRows(rows, columns));
+            }
+            this.openTableColumns(item);
+        }
+        this.updateIssues();
     }
 
     ngAfterContentInit() {
@@ -282,6 +325,137 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         return this.engine.outputs.view;
     }
 
+    public hasPathWarning(item: FieldLink): boolean {
+        return !!this.fieldWarnings.get(item.id);
+    }
+
+    public get validationState(): 'default' | 'success' | 'error' {
+        if (!this.validationChecked) {
+            return 'default';
+        }
+        return this.mathIssues.length ? 'error' : 'success';
+    }
+
+    public get validationErrorsLabel(): string {
+        return `${this.mathIssues.length} validation ${this.mathIssues.length === 1 ? 'error' : 'errors'}`;
+    }
+
+    public getIssueId(type: 'variables' | 'formulas' | 'outputs', item: FieldLink | MathFormula): string {
+        return `${type}-${item.id}`;
+    }
+
+    private updateIssueGroups(): void {
+        const groups: MathIssueGroupView[] = [
+            { key: 'inputs', label: 'INPUTS', issues: [] },
+            { key: 'formulas', label: 'FORMULAS', issues: [] },
+            { key: 'outputs', label: 'OUTPUTS', issues: [] }
+        ];
+        const groupMap = new Map<MathIssueGroup, MathIssueGroupView>(
+            groups.map((group): [MathIssueGroup, MathIssueGroupView] => [group.key, group])
+        );
+        for (const issue of this.mathIssues) {
+            groupMap.get(issue.group)?.issues.push(issue);
+        }
+        this.issueGroups = groups.filter((group) => group.issues.length);
+    }
+
+    private updateIssues(): void {
+        const issues: MathIssue[] = [];
+        if (!this.engine) {
+            this.mathIssues = issues;
+            this.updateIssueGroups();
+            this.issuesVisible = false;
+            return;
+        }
+
+        for (const page of this.engine.variables?.pages || []) {
+            for (const item of page.items) {
+                if (item.empty) {
+                    continue;
+                }
+                if (item.invalid) {
+                    issues.push({
+                        id: this.getIssueId('variables', item),
+                        group: 'inputs',
+                        step: 'step_1',
+                        pageId: page.id,
+                        title: item.error || 'Invalid variable',
+                        message: item.variableNameText || item.field || 'Variable'
+                    });
+                } else if (this.hasPathWarning(item)) {
+                    issues.push({
+                        id: this.getIssueId('variables', item),
+                        group: 'inputs',
+                        step: 'step_1',
+                        pageId: page.id,
+                        title: 'Path not found in schema',
+                        message: item.field || 'Variable path'
+                    });
+                }
+            }
+        }
+
+        for (const page of this.engine.formulas?.pages || []) {
+            for (const item of page.items) {
+                if (item.empty) {
+                    continue;
+                }
+                if (item.invalid) {
+                    issues.push({
+                        id: this.getIssueId('formulas', item),
+                        group: 'formulas',
+                        step: 'step_2',
+                        pageId: page.id,
+                        title: item.error || 'Invalid formula',
+                        message: item.functionNameText || item.functionBodyText || 'Formula'
+                    });
+                }
+            }
+        }
+
+        for (const page of this.engine.outputs?.pages || []) {
+            for (const item of page.items) {
+                if (item.empty) {
+                    continue;
+                }
+                if (item.invalid) {
+                    issues.push({
+                        id: this.getIssueId('outputs', item),
+                        group: 'outputs',
+                        step: 'step_3',
+                        pageId: page.id,
+                        title: item.error || 'Invalid output',
+                        message: item.variableNameText || item.field || 'Output'
+                    });
+                } else if (this.hasPathWarning(item)) {
+                    issues.push({
+                        id: this.getIssueId('outputs', item),
+                        group: 'outputs',
+                        step: 'step_3',
+                        pageId: page.id,
+                        title: 'Path not found in schema',
+                        message: item.field || 'Output path'
+                    });
+                }
+            }
+        }
+
+        this.mathIssues = issues;
+        this.updateIssueGroups();
+        if (!this.mathIssues.length) {
+            this.issuesVisible = false;
+        }
+    }
+
+    public toggleIssues(): void {
+        this.issuesVisible = !!this.mathIssues.length && !this.issuesVisible;
+    }
+
+    public goToIssue(issue: MathIssue): void {
+        this.issuesVisible = false;
+        this.onStep(issue.step, issue.pageId, `.rows-container[data-issue-id="${issue.id}"]`);
+    }
+
     public onFullscreen() {
         this.el.nativeElement.classList.toggle('fullscreen');
         this.el.nativeElement.parentElement.parentElement.classList.toggle('fullscreen');
@@ -290,6 +464,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     public onSave(): void {
         if (this.engine) {
             const error = this.engine.validate();
+            this.updateIssues();
             if (error) {
                 if (error[0] === 'variables') {
                     this.onStep('step_1', error[1], '.rows-container[error="true"]');
@@ -334,16 +509,27 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             this.varPickerFormula = null;
         }
         this.engine.deleteFormula(formula);
+        this.updateIssues();
     }
 
     public deleteVariable(variable: FieldLink) {
         this.fieldWarnings.delete(variable.id);
         this.engine.deleteVariable(variable);
+        this.updateIssues();
     }
 
     public deleteOutput(output: FieldLink) {
         this.fieldWarnings.delete(output.id);
+        for (const key of Object.keys(this.tableRowsToAdd)) {
+            if (key === output.id || key.startsWith(`${output.id}:`)) {
+                delete this.tableRowsToAdd[key];
+            }
+        }
+        delete this.tableRowsDraft[output.id];
+        delete this.tableColumnsDraft[output.id];
+        delete this.tableColumnsMode[output.id];
         this.engine.deleteOutput(output);
+        this.updateIssues();
     }
 
     public addFormula() {
@@ -370,14 +556,14 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         for (const schema of this.schemas) {
             const iri = String(schema.iri || '');
             const name = String(schema.name || '');
-            const fields = schema.getDeepFields();
+            const fields = this.getSchemaFields(schema);
             const map = this.createFieldMap(fields, new Map<string, IFieldNode>());
             this.schemaNames.set(iri, name);
             this.schemaFieldMap.set(iri, map);
         }
 
         if (this.inputSchema) {
-            const fields = this.inputSchema.getDeepFields();
+            const fields = this.getSchemaFields(this.inputSchema);
             this.inputSchemaFieldMap = this.createFieldMap(fields, new Map<string, IFieldNode>());
             this.inputSchemaName = String(this.inputSchema.name || '');
             this.codeMirrorOptions.inputLinks = this.createLinks(fields);
@@ -388,6 +574,43 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             this.outputSchemaFieldMap = this.createFieldMap(fields, new Map<string, IFieldNode>());
             this.outputSchemaName = String(this.outputSchema.name || '');
             this.codeMirrorOptions.outputLinks = this.createLinks(fields);
+        }
+    }
+
+    private getSchemaFields(schema: Schema): IFieldNode[] {
+        const fields = schema.getDeepFields();
+        this.addTableColumnFields(fields);
+        return fields;
+    }
+
+    private addTableColumnFields(fields: IFieldNode[]): void {
+        for (const node of fields) {
+            this.addTableColumnFields(node.fields);
+            const columns = node.field.customType === 'table' && Array.isArray(node.field.tableColumns)
+                ? node.field.tableColumns
+                : [];
+            for (const column of columns) {
+                if (!column?.key || !column?.name) {
+                    continue;
+                }
+                node.fields.push({
+                    path: `${node.path}.${column.key}`,
+                    arrayLvl: node.arrayLvl + 1,
+                    type: 'string[]',
+                    field: {
+                        ...node.field,
+                        name: column.key,
+                        description: column.name,
+                        isArray: true,
+                        isRef: false,
+                        type: 'string',
+                        customType: '',
+                        fields: [],
+                        tableColumns: undefined
+                    },
+                    fields: []
+                });
+            }
         }
     }
 
@@ -441,8 +664,8 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         }
     }
 
-    private createSchemaView(schema: Schema) {
-        const fields = schema.getDeepFields();
+    private createSchemaView(schema: Schema, includeTableColumns: boolean = true) {
+        const fields = includeTableColumns ? this.getSchemaFields(schema) : schema.getDeepFields();
 
         const list = TreeListData.fromObject<IFieldNode>({ fields }, 'fields', (item) => {
             const node: IFieldNode = item.data;
@@ -512,6 +735,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 item.schema = result.group || schema?.iri || null;
                 item.update();
                 this._updateFieldWarning(item);
+                this.updateIssues();
             }
         });
     }
@@ -528,7 +752,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             data: {
                 title: 'Select Field',
                 value: item.field,
-                view: this.createSchemaView(schema),
+                view: this.createSchemaView(schema, false),
             },
         })!;
         dialogRef.onClose.subscribe((result: any | null) => {
@@ -536,6 +760,9 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 item.field = result.value;
                 item.schema = schema?.iri || null;
                 item.update();
+                this._updateFieldWarning(item, 'output');
+                this.updateTableOutput(item);
+                this.updateIssues();
             }
         });
     }
@@ -557,14 +784,13 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     }
 
     private getField(type: 'input' | 'output', schema: string | null, link: string) {
+        if (type === 'output') {
+            return this.outputSchemaFieldMap.get(link);
+        }
         if (schema) {
             return this.schemaFieldMap.get(schema)?.get(link);
         }
-        if (type === 'input') {
-            return this.inputSchemaFieldMap.get(link);
-        } else {
-            return this.outputSchemaFieldMap.get(link);
-        }
+        return this.inputSchemaFieldMap.get(link);
     }
 
     public getFieldName(type: 'input' | 'output', schema: string | null, link: string): string {
@@ -579,10 +805,257 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     public getFieldType(type: 'input' | 'output', schema: string | null, link: string): string {
         const field = this.getField(type, schema, link);
         if (field) {
+            if (field.field.customType === 'table') {
+                return 'table' + '[]'.repeat(field.arrayLvl);
+            }
             return field.type;
         } else {
             return '';
         }
+    }
+
+    public getTableColumns(item: FieldLink): { name: string; key: string }[] {
+        const node = item.field ? this.outputSchemaFieldMap.get(item.field) : undefined;
+        if (!node || node.arrayLvl > 1 || node.field.customType !== 'table') {
+            return [];
+        }
+        const columns = node.field.tableColumns;
+        return Array.isArray(columns) ? columns.filter((column) => !!column?.key) : [];
+    }
+
+    public isTableListField(item: FieldLink): boolean {
+        const node = item.field ? this.outputSchemaFieldMap.get(item.field) : undefined;
+        return !!node && node.arrayLvl === 1 && this.getTableColumns(item).length > 0;
+    }
+
+    public canUseTableColumns(item: FieldLink): boolean {
+        return this.getTableColumns(item).length > 0;
+    }
+
+    public setTableColumnsMode(item: FieldLink, enabled: boolean): void {
+        if (this.readonly || !this.canUseTableColumns(item) || enabled === !!item.columns) {
+            return;
+        }
+        if (enabled) {
+            this.tableColumnsMode[item.id] = true;
+            this.useTableColumns(item);
+        } else {
+            delete this.tableColumnsMode[item.id];
+            this.useTableCells(item);
+        }
+        item.update();
+    }
+
+    public getTableValues(item: FieldLink): Record<string, any>[] | null {
+        const value = item.value;
+        if (item.isTable && !item.isTableList && value?.type === 'table' && Array.isArray(value.rows) && !value.fileId) {
+            return value.rows;
+        }
+        return null;
+    }
+
+    public getTableListValues(item: FieldLink): Record<string, any>[][] | null {
+        const value = item.value;
+        if (!item.isTableList || !Array.isArray(value)) {
+            return null;
+        }
+        const tables: Record<string, any>[][] = [];
+        for (const table of value) {
+            if (table?.type !== 'table' || !Array.isArray(table.rows) || table.fileId) {
+                return null;
+            }
+            tables.push(table.rows);
+        }
+        return tables;
+    }
+
+    public getTestTableRows(values: Record<string, any>[]): Record<string, any>[] {
+        return values.length > this.maxTestTableRows ? values.slice(0, this.maxTestTableRows) : values;
+    }
+
+    public getTableRowCount(item: FieldLink): number {
+        return item.getGrids().reduce((count, rows) => count + rows.length, 0);
+    }
+
+    public getTableRowsKey(item: FieldLink, tableIndex: number | null): string {
+        return tableIndex === null ? item.id : `${item.id}:${tableIndex}`;
+    }
+
+    public getTableRowsToAdd(item: FieldLink, tableIndex: number | null): number | null {
+        const key = this.getTableRowsKey(item, tableIndex);
+        return key in this.tableRowsToAdd ? this.tableRowsToAdd[key] : 1;
+    }
+
+    public setTableRowsToAdd(item: FieldLink, tableIndex: number | null, count: number | null): void {
+        this.tableRowsToAdd[this.getTableRowsKey(item, tableIndex)] = count;
+    }
+
+    public getAddTableRowsError(item: FieldLink, count: number | null): string {
+        const free = this.maxTableRows - this.getTableRowCount(item);
+        if (free <= 0) {
+            return `The limit of ${this.maxTableRows} rows is reached`;
+        }
+        if (typeof count !== 'number' || !Number.isInteger(count)) {
+            return `Enter a whole number from 1 to ${this.maxTableRowsPerAdd}`;
+        }
+        if (count < 1) {
+            return 'Add at least 1 row';
+        }
+        if (count > this.maxTableRowsPerAdd) {
+            return `You can add at most ${this.maxTableRowsPerAdd} rows at a time`;
+        }
+        if (count > free) {
+            return `Only ${free} more rows fit under the limit of ${this.maxTableRows}`;
+        }
+        return '';
+    }
+
+    public addTableRows(item: FieldLink, count: number | null, tableIndex: number | null = null): void {
+        const columns = this.getTableColumns(item);
+        const rows = tableIndex === null ? item.rows : item.tables?.[tableIndex];
+        if (!rows || !columns.length || typeof count !== 'number' || this.getAddTableRowsError(item, count)) {
+            return;
+        }
+        for (let i = 0; i < count; i++) {
+            rows.push(this.createTableRow(columns));
+        }
+        item.update();
+    }
+
+    public deleteTableRow(item: FieldLink, index: number, tableIndex: number | null = null): void {
+        const rows = tableIndex === null ? item.rows : item.tables?.[tableIndex];
+        if (!rows) {
+            return;
+        }
+        rows.splice(index, 1);
+        item.update();
+    }
+
+    public addTable(item: FieldLink): void {
+        const columns = this.getTableColumns(item);
+        if (!item.tables || !columns.length || item.tables.length >= this.maxTables) {
+            return;
+        }
+        item.tables.push(this.getTableRowCount(item) < this.maxTableRows ? [this.createTableRow(columns)] : []);
+        item.update();
+    }
+
+    public deleteTable(item: FieldLink, tableIndex: number): void {
+        if (!item.tables) {
+            return;
+        }
+        item.tables.splice(tableIndex, 1);
+        item.update();
+    }
+
+    private updateTableOutput(item: FieldLink): void {
+        const node = item.field ? this.outputSchemaFieldMap.get(item.field) : undefined;
+        if (!node) {
+            item.update();
+            return;
+        }
+        if (item.columns) {
+            this.tableColumnsDraft[item.id] = item.columns;
+            item.columns = null;
+            item.tableList = false;
+        }
+        const columns = this.getTableColumns(item);
+        const draft = this.tableRowsDraft[item.id];
+        const grids = item.isTable
+            ? (item.rows && draft ? [item.rows, ...draft.slice(1)] : item.getGrids())
+            : (draft || [[{}]]);
+        if (columns.length) {
+            if (this.isTableListField(item)) {
+                delete this.tableRowsDraft[item.id];
+                item.tables = grids.map((rows) => this.syncTableRows(rows, columns));
+                item.rows = null;
+            } else {
+                if (grids.length > 1) {
+                    this.tableRowsDraft[item.id] = grids;
+                } else {
+                    delete this.tableRowsDraft[item.id];
+                }
+                item.rows = this.syncTableRows(grids[0] || [{}], columns);
+                item.tables = null;
+            }
+        } else {
+            if (item.isTable) {
+                this.tableRowsDraft[item.id] = grids;
+            }
+            item.rows = null;
+            item.tables = null;
+        }
+        if (this.tableColumnsMode[item.id] && this.canUseTableColumns(item)) {
+            this.useTableColumns(item);
+        }
+        item.update();
+    }
+
+    private openTableColumns(item: FieldLink): void {
+        if (!item.columns) {
+            return;
+        }
+        this.tableColumnsMode[item.id] = true;
+        const columns = this.getTableColumns(item);
+        if (columns.length) {
+            item.columns = this.syncTableRows([item.columns], columns)[0];
+        }
+    }
+
+    private useTableColumns(item: FieldLink): void {
+        if (item.tables) {
+            this.tableRowsDraft[item.id] = item.tables;
+        } else if (item.rows) {
+            const draft = this.tableRowsDraft[item.id];
+            this.tableRowsDraft[item.id] = [item.rows, ...(draft ? draft.slice(1) : [])];
+        }
+        item.columns = this.syncTableRows([this.tableColumnsDraft[item.id] || {}], this.getTableColumns(item))[0];
+        item.tableList = this.isTableListField(item);
+        delete this.tableColumnsDraft[item.id];
+        item.rows = null;
+        item.tables = null;
+    }
+
+    private useTableCells(item: FieldLink): void {
+        if (item.columns) {
+            this.tableColumnsDraft[item.id] = item.columns;
+        }
+        const draft = this.tableRowsDraft[item.id];
+        const columns = this.getTableColumns(item);
+        item.columns = null;
+        item.tableList = false;
+        if (this.isTableListField(item)) {
+            delete this.tableRowsDraft[item.id];
+            item.tables = (draft || [[{}]]).map((rows) => this.syncTableRows(rows, columns));
+            item.rows = null;
+        } else {
+            item.rows = this.syncTableRows(draft?.[0] || [{}], columns);
+            item.tables = null;
+        }
+    }
+
+    private syncTableRows(
+        rows: Record<string, string>[],
+        columns: { name: string; key: string }[]
+    ): Record<string, string>[] {
+        return rows.map((row) => {
+            const next = this.createTableRow(columns);
+            for (const column of columns) {
+                const cell = row[column.key];
+                if (typeof cell === 'string') {
+                    next[column.key] = cell;
+                }
+            }
+            return next;
+        });
+    }
+
+    private createTableRow(columns: { name: string; key: string }[]): Record<string, string> {
+        const row: Record<string, string> = {};
+        for (const column of columns) {
+            row[column.key] = '';
+        }
+        return row;
     }
 
     public getItemValue(value: any) {
@@ -598,19 +1071,15 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         return String(value);
     }
 
-    public deleteLink(item: FieldLink, $event: any) {
-        $event.preventDefault();
-        $event.stopPropagation();
-        item.field = null;
-        item.update();
-        this._updateFieldWarning(item);
-    }
-
-    public onPathChange(item: FieldLink, value: string): void {
+    public onPathChange(item: FieldLink, value: string, type: 'input' | 'output' = 'input'): void {
         item.field = value;
         item.update();
-        this._computePathSuggestions(item);
-        this._updateFieldWarning(item);
+        this._computePathSuggestions(item, type);
+        this._updateFieldWarning(item, type);
+        if (type === 'output') {
+            this.updateTableOutput(item);
+        }
+        this.updateIssues();
     }
 
     public onPathKeyup(event: KeyboardEvent): void {
@@ -629,28 +1098,32 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         }, 200);
     }
 
-    public selectPathSuggestion(item: FieldLink, path: string): void {
+    public selectPathSuggestion(item: FieldLink, path: string, type: 'input' | 'output' = 'input'): void {
         item.field = path;
         item.update();
-        this._updateFieldWarning(item);
+        this._updateFieldWarning(item, type);
+        if (type === 'output') {
+            this.updateTableOutput(item);
+        }
+        this.updateIssues();
         this.activePathItem = null;
         this.pathSuggestions = [];
     }
 
-    private _updateFieldWarning(item: FieldLink): void {
-        this.fieldWarnings.set(item.id, !!(item.field && !this.getField('input', item.schema, item.field)));
+    private _updateFieldWarning(item: FieldLink, type: 'input' | 'output' = 'input'): void {
+        this.fieldWarnings.set(item.id, !!(item.field && !this.getField(type, item.schema, item.field)));
     }
 
-    private _computePathSuggestions(item: FieldLink): void {
+    private _computePathSuggestions(item: FieldLink, type: 'input' | 'output' = 'input'): void {
         const prefix = item.field || '';
         if (!prefix) {
             this.pathSuggestions = [];
             this.activePathItem = null;
             return;
         }
-        const map = item.schema
-            ? this.schemaFieldMap.get(item.schema)
-            : this.inputSchemaFieldMap;
+        const map = type === 'output'
+            ? this.outputSchemaFieldMap
+            : (item.schema ? this.schemaFieldMap.get(item.schema) : this.inputSchemaFieldMap);
         if (!map) {
             this.pathSuggestions = [];
             this.activePathItem = null;
@@ -710,7 +1183,15 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
 
     public onValidate() {
         if (this.engine) {
+            this.validationChecked = true;
             const error = this.engine.validate();
+            for (const item of this.engine.variables.getItems()) {
+                this._updateFieldWarning(item);
+            }
+            for (const item of this.engine.outputs.getItems()) {
+                this._updateFieldWarning(item, 'output');
+            }
+            this.updateIssues();
             if (error) {
                 if (error[0] === 'variables') {
                     this.onStep('step_1', error[1], '.rows-container[error="true"]');
@@ -1035,7 +1516,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             const inputDocument = inputDocuments.getCurrent();
 
             try {
-                await hydrateDocumentTables(inputDocument, {
+                await hydrateDocumentMapTables(inputDocuments, {
                     artifactService: this.artifactService,
                     gzipService: this.gzipService,
                     csvService: this.csvService,
@@ -1095,8 +1576,26 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 return;
             }
 
-            this.context.setDocument(inputDocuments);
+            try {
+                this.context.setDocument(inputDocuments);
+            } catch (error) {
+                this.loading = false;
+                this.error = 'Invalid data';
+                this.result = {
+                    valid: true,
+                    error: String(error),
+                    variables: [],
+                    formulas: [],
+                    outputs: [],
+                    input: '',
+                    output: ''
+                };
+                this.resultStep = 'errors';
+                this.onStep('step_5');
+                return;
+            }
             const context = this.context.getContext();
+            const warnings = this.context.getWarnings();
 
             const variables = this.engine.variables.getItems();
             const formulas = this.engine.formulas.getItems();
@@ -1120,10 +1619,23 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 outputDocument = {};
             }
 
+            const tableOutputs: FieldLink[] = [];
             for (const link of outputs) {
                 try {
-                    setDocumentValueByPath(this.outputSchema, outputDocument, link.path, context.scope[link.name]);
-                    link.value = context.scope[link.name];
+                    if (link.isTableList) {
+                        const tables = link.getTableList(context.scope).map((rows) => ({ type: 'table', rows }));
+                        setDocumentValueByPath(this.outputSchema, outputDocument, link.path, tables);
+                        link.value = tables;
+                        tableOutputs.push(link);
+                    } else if (link.isTable) {
+                        const table = { type: 'table', rows: link.getTableRows(context.scope) };
+                        setDocumentValueByPath(this.outputSchema, outputDocument, link.path, table);
+                        link.value = table;
+                        tableOutputs.push(link);
+                    } else {
+                        setDocumentValueByPath(this.outputSchema, outputDocument, link.path, context.scope[link.name]);
+                        link.value = context.scope[link.name];
+                    }
                 } catch (error) {
                     console.log(error);
                     link.value = String(error);
@@ -1138,6 +1650,9 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 this.code.setContext(context);
                 builtCode = this.code.build();
                 const output = builtCode();
+                for (const link of tableOutputs) {
+                    link.value = getDocumentValueByPath(output, link.path);
+                }
                 let _output: string = '';
                 try {
                     _output = output ? JSON.stringify(output, null, 4) : '';
@@ -1146,7 +1661,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 }
                 this.result = {
                     valid: true,
-                    error: '',
+                    error: warnings.join('\n'),
                     variables: variables,
                     formulas: formulas,
                     outputs: outputs,

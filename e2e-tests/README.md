@@ -117,7 +117,7 @@ UI_GATEWAY_HOST=host.docker.internal UI_GATEWAY_PORT=3002 docker compose run --r
 From the `/e2e-tests` folder, run the following command to install Cypress:
 
 ```bash
-npm install cypress --save-dev
+npm install cypress
 ```
 
 ### Configuration

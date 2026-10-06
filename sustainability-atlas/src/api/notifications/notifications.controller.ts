@@ -24,7 +24,7 @@ import { NotificationEventsBus } from './notification-events-bus.service';
 import { ListNotificationsQueryDto } from './dto/list-notifications-query.dto';
 import { NetworkQueryDto } from './dto/network-query.dto';
 
-@ApiTags('notifications')
+@ApiTags('Notifications')
 @ApiCookieAuth()
 @Controller('api/v1/me/notifications')
 @UseGuards(JwtAuthGuard)
@@ -41,11 +41,11 @@ export class NotificationsController {
 
     @Sse('events')
     @ApiOperation({
-        summary: 'Server-Sent Events stream for real-time notification pushes',
+        summary: 'Receive my notifications live',
         description:
             'Streams se:notifications pub/sub messages addressed to the current ' +
             'user, plus a heartbeat every 25s. Connect with EventSource on the ' +
-            'client. The DB row is always the source of truth — a missed push ' +
+            'client. The DB row is always the source of truth, so a missed push ' +
             'is still visible on the next list/unread-count fetch.',
     })
     @ApiResponse({ status: 200, description: 'SSE stream established' })
@@ -54,7 +54,13 @@ export class NotificationsController {
     }
 
     @Get()
-    @ApiOperation({ summary: 'List the current user\'s notifications for a network (keyset paginated)' })
+    @ApiOperation({
+        summary: 'List my notifications',
+        description:
+            'Returns the caller\'s notifications for one network. Pagination is keyset-based: pass the `cursor` ' +
+            'from the previous response to fetch the next page (`limit` defaults to 20, max 100). Set ' +
+            '`unreadOnly=true` to return unread notifications only.',
+    })
     async list(
         @Query() query: ListNotificationsQueryDto,
         @CurrentUser() user: AuthenticatedUser,
@@ -67,7 +73,10 @@ export class NotificationsController {
     }
 
     @Get('unread-count')
-    @ApiOperation({ summary: 'Get the current user\'s unread notification count for a network (cached 30s)' })
+    @ApiOperation({
+        summary: 'Count my unread notifications',
+        description: 'Returns `{ count }`, the number of unread notifications the caller has on the network. Cached for 30 seconds.',
+    })
     async unreadCount(
         @Query() query: NetworkQueryDto,
         @CurrentUser() user: AuthenticatedUser,
@@ -79,7 +88,12 @@ export class NotificationsController {
     @Patch(':id/read')
     @UseGuards(CsrfGuard)
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Mark a single notification as read' })
+    @ApiOperation({
+        summary: 'Mark a notification as read',
+        description:
+            'Marks one of the caller\'s notifications on the network as read and returns `{ updated }`. ' +
+            'Requires the `X-CSRF-Token` header.',
+    })
     @ApiParam({ name: 'id', description: 'Notification UUID' })
     async markRead(
         @Param('id', ParseUUIDPipe) id: string,
@@ -93,7 +107,12 @@ export class NotificationsController {
     @Post('read-all')
     @UseGuards(CsrfGuard)
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Mark all of the current user\'s unread notifications (for a network) as read' })
+    @ApiOperation({
+        summary: 'Mark all my notifications as read',
+        description:
+            'Marks every unread notification the caller has on the network as read and returns how many ' +
+            'changed as `{ count }`. Requires the `X-CSRF-Token` header.',
+    })
     async markAllRead(
         @Query() query: NetworkQueryDto,
         @CurrentUser() user: AuthenticatedUser,
@@ -105,7 +124,12 @@ export class NotificationsController {
     @Delete()
     @UseGuards(CsrfGuard)
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Permanently delete all of the current user\'s notifications for a network' })
+    @ApiOperation({
+        summary: 'Delete all my notifications',
+        description:
+            'Deletes all of the caller\'s notifications on the network (read and unread) and returns how many ' +
+            'were removed as `{ count }`. Cannot be undone. Requires the `X-CSRF-Token` header.',
+    })
     async clearAll(
         @Query() query: NetworkQueryDto,
         @CurrentUser() user: AuthenticatedUser,

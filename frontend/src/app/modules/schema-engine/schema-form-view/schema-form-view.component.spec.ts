@@ -1,4 +1,5 @@
 import { SchemaFormViewComponent } from './schema-form-view.component';
+import { IPFSService } from 'src/app/services/ipfs.service';
 
 describe('SchemaFormViewComponent', () => {
     let component: SchemaFormViewComponent;
@@ -10,6 +11,7 @@ describe('SchemaFormViewComponent', () => {
         ipfs = {
             getImageByLink: jasmine.createSpy('getImageByLink').and.returnValue(Promise.resolve('')),
             getImageFromDryRunStorage: jasmine.createSpy('getImageFromDryRunStorage').and.returnValue(Promise.resolve('')),
+            getImageWithDryRunFallback: IPFSService.prototype.getImageWithDryRunFallback,
         };
         dialogService = {
             open: jasmine.createSpy('open').and.returnValue({ onClose: { subscribe: jasmine.createSpy() } }),
@@ -90,6 +92,82 @@ describe('SchemaFormViewComponent', () => {
 
         it('returns an empty string for a non-string value', () => {
             expect(component.getRichTextValue(null)).toBe('');
+        });
+    });
+
+    describe('rich text images', () => {
+        const reference = 'ipfs://bafkreiabcdef123456';
+        const dataUrl = 'data:image/jpg;base64,AAAA';
+        const markdown = `Before\n\n![Site photo](${reference})\n\nAfter`;
+
+        const flush = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+        const richTextField = (name: string) => ({
+            name,
+            title: name,
+            description: '',
+            type: 'string',
+            customType: 'richText',
+            isArray: false,
+            isRef: false
+        } as any);
+
+        it('resolves a reference inside the value and renders it as src', async () => {
+            ipfs.getImageByLink.and.returnValue(Promise.resolve(dataUrl));
+            component.values = { field0: markdown };
+
+            (component as any).update([richTextField('field0')]);
+            await flush();
+
+            expect(ipfs.getImageByLink).toHaveBeenCalledWith(reference);
+            const html = component.getRichTextValue(markdown);
+            expect(html).toContain(`src="${dataUrl}"`);
+            expect(html).toContain('Before');
+        });
+
+        it('fetches one reference once when two fields share it', async () => {
+            ipfs.getImageByLink.and.returnValue(Promise.resolve(dataUrl));
+            component.values = { field0: markdown, field1: markdown };
+
+            (component as any).update([richTextField('field0'), richTextField('field1')]);
+            await flush();
+
+            expect(ipfs.getImageByLink).toHaveBeenCalledTimes(1);
+        });
+
+        it('leaves src empty when the fetch fails and does not request it again', async () => {
+            ipfs.getImageByLink.and.returnValue(Promise.reject(new Error('404')));
+            component.values = { field0: markdown };
+
+            (component as any).update([richTextField('field0')]);
+            await flush();
+            (component as any).update([richTextField('field0')]);
+            await flush();
+
+            expect(ipfs.getImageByLink).toHaveBeenCalledTimes(1);
+            expect(component.getRichTextValue(markdown)).toContain('src=""');
+        });
+
+        it('falls back to ipfs when the dry-run store has no such file', async () => {
+            component.dryRun = true;
+            ipfs.getImageFromDryRunStorage.and.returnValue(Promise.reject(new Error('404')));
+            ipfs.getImageByLink.and.returnValue(Promise.resolve(dataUrl));
+            component.values = { field0: markdown };
+
+            (component as any).update([richTextField('field0')]);
+            await flush();
+
+            expect(ipfs.getImageFromDryRunStorage).toHaveBeenCalledWith(reference);
+            expect(component.getRichTextValue(markdown)).toContain(`src="${dataUrl}"`);
+        });
+
+        it('does not fetch anything for a value with no image', async () => {
+            component.values = { field0: 'Just text' };
+
+            (component as any).update([richTextField('field0')]);
+            await flush();
+
+            expect(ipfs.getImageByLink).not.toHaveBeenCalled();
         });
     });
 

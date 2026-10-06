@@ -3,9 +3,9 @@
     "dependencies": {
         "@indexer/common": "workspace:*",
         "@indexer/interfaces": "workspace:*",
-        "@mikro-orm/core": "6.6.16",
-        "@mikro-orm/migrations-mongodb": "6.6.16",
-        "@mikro-orm/mongodb": "6.6.16",
+        "@mikro-orm/core": "6.6.17",
+        "@mikro-orm/migrations-mongodb": "6.6.17",
+        "@mikro-orm/mongodb": "6.6.17",
         "@nestjs/common": "^11.1.24",
         "@nestjs/core": "^11.1.24",
         "@nestjs/microservices": "^11.1.24",
@@ -18,7 +18,7 @@
         "dotenv": "16.6.1",
         "escape-string-regexp": "^5.0.0",
         "imurmurhash": "0.1.4",
-        "jszip": "3.10.1",
+        "jszip": "3.10.2",
         "mongodb": "6.21.0",
         "reflect-metadata": "0.2.2",
         "rxjs": "7.8.2"
@@ -26,7 +26,7 @@
     "description": "",
     "devDependencies": {
         "@types/glob": "^8.1.0",
-        "@types/node": "24.13.3",
+        "@types/node": "24.19.1",
         "chai": "4.5.0",
         "mocha": "10.8.2",
         "mocha-junit-reporter": "2.2.1",
@@ -51,9 +51,9 @@
         "dev:docker": "nodemon .",
         "lint": "tslint --config ../tslint.json --project .",
         "start": "node dist/index.js",
-        "test": "mocha tests/**/*.test.mjs --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/indexer-service.xml --exit"
+        "test": "mocha 'tests/**/*.test.mjs' --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/indexer-service.xml --exit"
     },
     "type": "module",
     "types": "dist/index.d.ts",
-    "version": "3.7.1-rc"
+    "version": "3.7.1"
 }

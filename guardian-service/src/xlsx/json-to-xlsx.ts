@@ -1,0 +1,787 @@
+import { Dictionary, FieldTypes, geoDisplayValue } from './models/dictionary.js';
+import { anyToXlsx, examplesToXlsx, booleanToXlsx, entityToXlsx, fontToXlsx, stringToXlsx, typeToXlsx, unitToXlsx, valueToFormula, visibilityToXlsx } from './models/value-converters.js';
+import { Hyperlink, Range, Workbook, Worksheet } from './models/workbook.js';
+import { Table } from './models/table.js';
+import { ISchema, IwaVersion, resolveIwaVersion, Schema, SchemaCondition, SchemaField, SchemaHelper } from '@guardian/interfaces';
+import { PolicyTool, PolicyProperty, IPFS, DatabaseServer } from '@guardian/common';
+import { IRowField } from './interfaces/row-field.interface.js';
+import { SheetName } from './models/sheet-name.js';
+import { XlsxEnum } from './models/xlsx-enum.js';
+import { SharedEnumTable } from './models/enum-table.js';
+
+export interface IJsonToXlsxOptions {
+    template?: ArrayBuffer;
+}
+
+export class JsonToXlsx {
+    public static async generate(
+        schemas: ISchema[],
+        tools: PolicyTool[],
+        toolSchemas: ISchema[],
+        options?: IJsonToXlsxOptions
+    ): Promise<ArrayBuffer> {
+        const workbook = await JsonToXlsx.createWorkbook(options);
+        const names = new SheetName();
+
+        const _schemas: any = [];
+        const _enums: XlsxEnum[] = [];
+        const _schemaCache = new Map<string, string>();
+        const _enumsCache = new Map<string, XlsxEnum>();
+
+        // Identify inline schemas
+        const inlineSchemaIRIs = new Set<string>();
+        for (const item of schemas) {
+            const schema = new Schema(item);
+            JsonToXlsx.collectInlineRefs(schema.fields, inlineSchemaIRIs);
+        }
+
+        // Map inline schema IRI to display name for Parameter column and build top-level schema list
+        const _subSchemaNamesCache = new Map<string, string>();
+        for (const item of schemas) {
+            const schema = new Schema(item);
+            if (inlineSchemaIRIs.has(schema.iri)) {
+                _subSchemaNamesCache.set(schema.iri, schema.name);
+                continue;
+            }
+            JsonToXlsx.updateFieldPaths(schema.fields, schema.iri);
+            const sheetName = names.getSchemaName(schema.name);
+            const worksheet = workbook.createWorksheet(sheetName);
+            _schemas.push({
+                schema,
+                worksheet,
+                sheetName
+            });
+            _schemaCache.set(schema.iri, sheetName);
+        }
+
+        // Tools
+        for (const item of toolSchemas) {
+            const schema = new Schema(item);
+            JsonToXlsx.updateFieldPaths(schema.fields, schema.iri);
+            const sheetName = names.getToolName(schema.name);
+            const worksheet = workbook.createWorksheet(sheetName);
+            const tool = tools.find((t) => t.topicId === item.topicId);
+            _schemas.push({
+                schema,
+                worksheet,
+                sheetName,
+                tool
+            });
+            _schemaCache.set(schema.iri, sheetName);
+        }
+
+        // Enums
+        const enumWorksheet = workbook.createWorksheet(Dictionary.SHARED_ENUM_SHEET);
+        const _enumNames = new Set<string>();
+        for (const item of _schemas) {
+            JsonToXlsx.collectEnums(
+                (item.schema as Schema).fields,
+                item.schema as Schema,
+                _enums,
+                _enumsCache,
+                enumWorksheet,
+                new Map(),
+                _subSchemaNamesCache,
+                _enumNames
+            );
+        }
+
+        // Pre-load IPFS enums
+        for (const _enum of _enums) {
+            if (_enum.field.remoteLink && _enum.data.length === 0) {
+                const enumValues = await JsonToXlsx.loadEnum(_enum.field.remoteLink);
+                _enum.setData(enumValues);
+            }
+        }
+
+        // Write all enums to shared tab
+        JsonToXlsx.writeSharedEnum(enumWorksheet, _enums);
+
+        // Load and write the IWA property reference sheet for the dropdowns.
+        const iwaVersionsUsed = new Set<IwaVersion>();
+        for (const item of _schemas) {
+            iwaVersionsUsed.add(resolveIwaVersion(item.schema as Schema));
+        }
+        const iwaPropertiesByVersion = new Map<IwaVersion, PolicyProperty[]>();
+        for (const version of iwaVersionsUsed) {
+            iwaPropertiesByVersion.set(version, await JsonToXlsx.loadPolicyProperties(version));
+        }
+        const iwaPropertyRanges = JsonToXlsx.writeIwaPropertiesSheet(workbook, iwaPropertiesByVersion);
+
+        // Write Fields
+        for (const item of _schemas) {
+            JsonToXlsx.writeSchema(
+                item.worksheet,
+                item.schema,
+                item.tool,
+                _schemaCache,
+                _enumsCache,
+                _subSchemaNamesCache,
+                iwaPropertyRanges.get(resolveIwaVersion(item.schema as Schema))
+            );
+        }
+        //Write
+        if (workbook.sheetLength === 0) {
+            workbook.createWorksheet('blank');
+        }
+        return await workbook.write();
+    }
+
+    private static async createWorkbook(options?: IJsonToXlsxOptions): Promise<Workbook> {
+        const workbook = new Workbook();
+        if (options?.template) {
+            await workbook.read(options.template);
+            for (const name of workbook.sheetNames) {
+                if (name !== Dictionary.README_SHEET) {
+                    workbook.removeWorksheet(name);
+                }
+            }
+        }
+        return workbook;
+    }
+
+    private static collectInlineRefs(fields: SchemaField[], set: Set<string>): void {
+        for (const field of fields) {
+            if (field.isRef && field.customType === 'subSchema' && field.type) {
+                set.add(field.type);
+            }
+            if (field.fields) {
+                JsonToXlsx.collectInlineRefs(field.fields, set);
+            }
+        }
+    }
+
+    private static collectEnums(
+        fields: SchemaField[],
+        schema: Schema,
+        _enums: XlsxEnum[],
+        _enumsCache: Map<string, XlsxEnum>,
+        enumWorksheet: Worksheet,
+        _seenMap: Map<string, XlsxEnum> = new Map(),
+        subSchemaNames: Map<string, string> = new Map(),
+        usedNames: Set<string> = new Set()
+    ): void {
+        for (const field of fields) {
+            if (field.enum || field.remoteLink) {
+                const enumBaseName = field.enumName || field.description;
+                const existing = _seenMap.get(enumBaseName);
+                if (existing) {
+                    const existingValues = existing.data.join('\0');
+                    const currentValues = (field.enum || []).join('\0');
+                    if (existingValues === currentValues) {
+                        _enumsCache.set(field.path, existing);
+                        continue;
+                    }
+                }
+                const _enum = new XlsxEnum(enumWorksheet);
+                _enum.setSchema(schema);
+                _enum.setField(field);
+                _enum.setEnumName(JsonToXlsx.uniqueEnumName(enumBaseName, usedNames));
+                if (field.enum) {
+                    _enum.setData(field.enum);
+                }
+                _enums.push(_enum);
+                _enumsCache.set(field.path, _enum);
+                if (!existing) {
+                    _seenMap.set(enumBaseName, _enum);
+                }
+            }
+            if (field.isRef && field.fields) {
+                const subName = subSchemaNames.get(field.type);
+                const subSchema = subName
+                    ? { ...schema, name: subName } as Schema
+                    : schema;
+                JsonToXlsx.collectEnums(field.fields, subSchema, _enums, _enumsCache, enumWorksheet, _seenMap, subSchemaNames, usedNames);
+            }
+        }
+    }
+
+    /**
+     * Build a workbook-unique enum name from a base string (the field description),
+     * appending a numeric suffix on collision so each named enum maps to one tab group.
+     */
+    private static uniqueEnumName(base: string, used: Set<string>): string {
+        const name = (base && base.trim()) ? base.trim() : 'Enum';
+        if (!used.has(name)) {
+            used.add(name);
+            return name;
+        }
+        let i = 1;
+        while (used.has(`${name} (${i})`)) {
+            i++;
+        }
+        const result = `${name} (${i})`;
+        used.add(result);
+        return result;
+    }
+
+    private static updateFieldPaths(fields: SchemaField[], parent: string) {
+        for (const field of fields) {
+            field.path = `${parent}:${field.name}`;
+            if (field.isRef && field.fields) {
+                JsonToXlsx.updateFieldPaths(field.fields, field.type);
+            }
+        }
+    }
+
+    public static writeSchema(
+        worksheet: Worksheet,
+        schema: Schema,
+        tool: PolicyTool,
+        schemaCache: Map<string, string>,
+        enumsCache: Map<string, XlsxEnum>,
+        subSchemaNames: Map<string, string> = new Map(),
+        iwaPropertyRange?: string
+    ): void {
+        const range = worksheet.getRange();
+
+        const table = new Table(range.s);
+        table.setDefault(!!tool);
+
+        //Schema headers
+        for (const header of table.schemaHeaders) {
+            worksheet
+                .setValue(header.title, header.column, header.row)
+                .setStyle(header.style);
+        }
+        worksheet.setValue(schema.name, table.start.c, table.getRow(Dictionary.SCHEMA_NAME));
+        worksheet.mergeCells(Range.fromColumns(table.start.c, table.end.c - 1, table.getRow(Dictionary.SCHEMA_NAME)));
+        worksheet.setValue(Dictionary.SCHEMA_DESCRIPTION, table.start.c, table.getRow(Dictionary.SCHEMA_DESCRIPTION));
+        worksheet.setValue(Dictionary.SCHEMA_TYPE, table.start.c, table.getRow(Dictionary.SCHEMA_TYPE));
+        worksheet.setValue(Dictionary.SCHEMA_VERSION, table.start.c, table.getRow(Dictionary.SCHEMA_VERSION));
+        worksheet.setValue(Dictionary.IWA_VERSION, table.start.c, table.getRow(Dictionary.IWA_VERSION));
+        worksheet.mergeCells(Range.fromColumns(table.start.c + 1, table.end.c - 1, table.getRow(Dictionary.SCHEMA_DESCRIPTION)));
+        worksheet.mergeCells(Range.fromColumns(table.start.c + 1, table.end.c - 1, table.getRow(Dictionary.SCHEMA_TYPE)));
+        worksheet.mergeCells(Range.fromColumns(table.start.c + 1, table.end.c - 1, table.getRow(Dictionary.SCHEMA_VERSION)));
+        worksheet.mergeCells(Range.fromColumns(table.start.c + 1, table.end.c - 1, table.getRow(Dictionary.IWA_VERSION)));
+        worksheet
+            .getCell(table.start.c + 1, table.getRow(Dictionary.SCHEMA_DESCRIPTION))
+            .setStyle(table.schemaItemStyle)
+            .setValue(schema.description);
+        worksheet
+            .getCell(table.start.c + 1, table.getRow(Dictionary.SCHEMA_TYPE))
+            .setStyle(table.schemaItemStyle)
+            .setValue(entityToXlsx(schema.entity));
+        worksheet
+            .getCell(table.start.c + 1, table.getRow(Dictionary.SCHEMA_VERSION))
+            .setStyle(table.schemaItemStyle)
+            .setValue(schema.version || SchemaHelper.getVersion(schema)?.version || '');
+        worksheet
+            .getCell(table.start.c + 1, table.getRow(Dictionary.IWA_VERSION))
+            .setStyle(table.schemaItemStyle)
+            .setValue(resolveIwaVersion(schema) === IwaVersion.V3 ? 'V3' : 'V1')
+            .setList(['V1', 'V3']);
+
+        if (tool) {
+            worksheet.setValue(Dictionary.SCHEMA_TOOL, table.start.c, table.getRow(Dictionary.SCHEMA_TOOL));
+            worksheet.setValue(Dictionary.SCHEMA_TOOL_ID, table.start.c, table.getRow(Dictionary.SCHEMA_TOOL_ID));
+            worksheet.mergeCells(Range.fromColumns(table.start.c + 1, table.end.c - 1, table.getRow(Dictionary.SCHEMA_TOOL)));
+            worksheet.mergeCells(Range.fromColumns(table.start.c + 1, table.end.c - 1, table.getRow(Dictionary.SCHEMA_TOOL_ID)));
+            worksheet
+                .getCell(table.start.c + 1, table.getRow(Dictionary.SCHEMA_TOOL))
+                .setStyle(table.schemaItemStyle)
+                .setValue(tool.name);
+            worksheet
+                .getCell(table.start.c + 1, table.getRow(Dictionary.SCHEMA_TOOL_ID))
+                .setStyle(table.schemaItemStyle)
+                .setValue(tool.messageId);
+        }
+
+        //Field headers
+        for (const header of table.fieldHeaders) {
+            worksheet
+                .getCol(header.column)
+                .setWidth(header.width)
+            worksheet
+                .setValue(header.title, header.column, header.row)
+                .setStyle(header.style);
+        }
+
+        const fieldCache = new Map<string, IRowField>();
+
+        let row = table.end.r;
+        for (const field of schema.fields) {
+            row++
+            JsonToXlsx.writeField(
+                worksheet,
+                table,
+                field,
+                schemaCache,
+                enumsCache,
+                fieldCache,
+                row,
+                subSchemaNames,
+                iwaPropertyRange
+            );
+            row = JsonToXlsx.writeSubFields(
+                worksheet,
+                table,
+                field,
+                schemaCache,
+                enumsCache,
+                row,
+                subSchemaNames,
+                fieldCache,
+                [field.name],
+                iwaPropertyRange
+            );
+        }
+
+        for (const condition of schema.conditions) {
+            JsonToXlsx.writeCondition(
+                worksheet,
+                table,
+                condition,
+                fieldCache
+            );
+        }
+    }
+
+    public static writeField(
+        worksheet: Worksheet,
+        table: Table,
+        field: SchemaField,
+        schemaCache: Map<string, string>,
+        enumsCache: Map<string, XlsxEnum>,
+        fieldCache: Map<string, IRowField>,
+        row: number,
+        subSchemaNames: Map<string, string> = new Map(),
+        iwaPropertyRange?: string,
+        parent?: SchemaField,
+    ) {
+        const fieldItemStyle = parent ? table.subItemStyle : table.fieldItemStyle;
+        for (const header of table.fieldHeaders) {
+            worksheet
+                .getCell(header.column, row)
+                .setStyle(fieldItemStyle);
+        }
+        worksheet
+            .getCell(table.getCol(Dictionary.QUESTION), row)
+            .setValue(stringToXlsx(field.description));
+        worksheet
+            .getCell(table.getCol(Dictionary.REQUIRED_FIELD), row)
+            .setValue(booleanToXlsx(field.required));
+        worksheet
+            .getCell(table.getCol(Dictionary.ALLOW_MULTIPLE_ANSWERS), row)
+            .setValue(booleanToXlsx(field.isArray));
+        worksheet
+            .getCell(table.getCol(Dictionary.PARAMETER), row)
+            .setValue(anyToXlsx(undefined));
+        worksheet
+            .getCell(table.getCol(Dictionary.ANSWER), row)
+            .setValue(anyToXlsx(undefined));
+        worksheet
+            .getCell(table.getCol(Dictionary.DEFAULT), row)
+            .setValue(anyToXlsx(undefined));
+        worksheet
+            .getCell(table.getCol(Dictionary.SUGGEST), row)
+            .setValue(anyToXlsx(undefined));
+        worksheet
+            .getCell(table.getCol(Dictionary.KEY), row)
+            .setValue(stringToXlsx(field.name));
+
+        const iwaPropertyCell = worksheet
+            .getCell(table.getCol(Dictionary.IWA_PROPERTY), row)
+            .setValue(stringToXlsx(field.property));
+        if (iwaPropertyRange) {
+            iwaPropertyCell.setList2(iwaPropertyRange);
+        }
+
+        const type = FieldTypes.findByValue(field);
+        if (type) {
+            worksheet
+                .getCell(table.getCol(Dictionary.FIELD_TYPE), row)
+                .setValue(typeToXlsx(type));
+        } else if (field.isRef) {
+            const sheetName = schemaCache.get(field.type);
+            if (sheetName) {
+                // Old-format sub-schema
+                worksheet
+                    .getCell(table.getCol(Dictionary.FIELD_TYPE), row)
+                    .setLink(sheetName, new Hyperlink(sheetName, 'A1'))
+                    .setStyle(table.linkStyle);
+            } else {
+                // New inline sub-schema
+                worksheet
+                    .getCell(table.getCol(Dictionary.FIELD_TYPE), row)
+                    .setValue(Dictionary.SUB_SCHEMA);
+                const subSchemaName = subSchemaNames.get(field.type);
+                if (subSchemaName) {
+                    worksheet
+                        .getCell(table.getCol(Dictionary.PARAMETER), row)
+                        .setValue(stringToXlsx(subSchemaName))
+                        .setStyle(table.paramStyle);
+                }
+            }
+        } else {
+            throw new Error(`Unknown field type (${worksheet.name}: ${field.name}).`);
+        }
+
+        if (type?.name === 'Table' && Array.isArray(field.tableColumns) && field.tableColumns.length) {
+            worksheet
+                .getCell(table.getCol(Dictionary.PARAMETER), row)
+                .setValue(JSON.stringify(field.tableColumns))
+                .setStyle(table.paramStyle);
+        }
+        if (type && type.pattern === true) {
+            worksheet
+                .getCell(table.getCol(Dictionary.PARAMETER), row)
+                .setValue(stringToXlsx(field.pattern));
+        }
+        if (field.unit) {
+            worksheet
+                .getCell(table.getCol(Dictionary.PARAMETER), row)
+                .setValue(stringToXlsx(field.unit))
+                .setStyle(table.paramStyle);
+            worksheet.getCell(table.getCol(Dictionary.ANSWER), row)
+                .setFormat(unitToXlsx(field));
+        }
+        if (field.autocalculate) {
+            worksheet
+                .getCell(table.getCol(Dictionary.PARAMETER), row)
+                .setValue(stringToXlsx(field.expression))
+                .setStyle(table.paramStyle);
+        }
+        if (field.dependency && field.dependency.on && field.dependency.kind === 'geo') {
+            worksheet
+                .getCell(table.getCol(Dictionary.PARAMETER), row)
+                .setValue(stringToXlsx(field.dependency.on))
+                .setStyle(table.paramStyle);
+        }
+        if (field.font) {
+            worksheet
+                .getCell(table.getCol(Dictionary.PARAMETER), row)
+                .setValue(JSON.stringify(field.font))
+                .setStyle(table.paramStyle);
+            worksheet
+                .getCell(table.getCol(Dictionary.QUESTION), row)
+                .setStyle(fontToXlsx(field.font, fieldItemStyle));
+        }
+        if (field.enum || field.remoteLink) {
+            const _enum = enumsCache.get(field.path);
+            if (_enum) {
+                worksheet
+                    .getCell(table.getCol(Dictionary.PARAMETER), row)
+                    .setValue(stringToXlsx(_enum.enumName))
+                    .setStyle(table.paramStyle);
+                if (!field.isArray) {
+                    worksheet
+                        .getCell(table.getCol(Dictionary.ANSWER), row)
+                        .setList2(_enum.getData());
+                    worksheet
+                        .getCell(table.getCol(Dictionary.DEFAULT), row)
+                        .setList2(_enum.getData());
+                    worksheet
+                        .getCell(table.getCol(Dictionary.SUGGEST), row)
+                        .setList2(_enum.getData());
+                }
+            } else {
+                throw new Error(`Enum ('${worksheet.name}', ${field.name}, '${field.description}', ${field.path}) not found.`);
+            }
+        }
+
+        worksheet
+            .getCell(table.getCol(Dictionary.ANSWER), row)
+            .setValue(examplesToXlsx(field));
+        worksheet
+            .getCell(table.getCol(Dictionary.DEFAULT), row)
+            .setValue(anyToXlsx(geoDisplayValue(field.customType, field.default)));
+        worksheet
+            .getCell(table.getCol(Dictionary.SUGGEST), row)
+            .setValue(anyToXlsx(geoDisplayValue(field.customType, field.suggest)));
+
+        if (field.hidden) {
+            worksheet
+                .getCell(table.getCol(Dictionary.VISIBILITY), row)
+                .setValue(visibilityToXlsx('Hidden'));
+        }
+        if (field.autocalculate) {
+            worksheet
+                .getCell(table.getCol(Dictionary.VISIBILITY), row)
+                .setValue(visibilityToXlsx('Auto'));
+        }
+
+        const name = worksheet.getPath(table.getCol(Dictionary.ANSWER), row);
+        const path = worksheet.getFullPath(table.getCol(Dictionary.ANSWER), row);
+        fieldCache.set(field.name, { key: field.name, name, path, row });
+    }
+
+    public static writeCondition(
+        worksheet: Worksheet,
+        table: Table,
+        condition: SchemaCondition,
+        fieldCache: Map<string, IRowField>,
+    ) {
+        const baseFormula = JsonToXlsx.buildIfFormula(condition.ifCondition, fieldCache);
+        const thenFormula = baseFormula;
+        const elseFormula = `NOT(${baseFormula})`;
+
+        const writeCell = (key: string, formula: string) => {
+            const rowField = fieldCache.get(key);
+            if (rowField) {
+                worksheet.getCell(table.getCol(Dictionary.VISIBILITY), rowField.row).setFormulae(formula);
+            }
+        };
+
+        for (const field of condition.thenFields || []) { writeCell(field.name, thenFormula); }
+        for (const field of condition.elseFields || []) { writeCell(field.name, elseFormula); }
+        for (const t of condition.thenTargets || []) { writeCell(t.fieldPath.join('.'), thenFormula); }
+        for (const t of condition.elseTargets || []) { writeCell(t.fieldPath.join('.'), elseFormula); }
+    }
+
+    public static writeSubFields(
+        worksheet: Worksheet,
+        table: Table,
+        parent: SchemaField,
+        schemaCache: Map<string, string>,
+        enumsCache: Map<string, XlsxEnum>,
+        row: number,
+        subSchemaNames: Map<string, string> = new Map(),
+        rootFieldCache?: Map<string, IRowField>,
+        pathPrefix?: string[],
+        iwaPropertyRange?: string
+    ): number {
+        if (!parent || !parent.isRef || !Array.isArray(parent.fields) || parent.fields.length === 0) {
+            return row;
+        }
+
+        const lvl = worksheet.getRow(row).getOutline() + 1;
+        if (lvl > 7) {
+            return row;
+        }
+        if (lvl > 1) {
+            for (const header of table.fieldHeaders) {
+                worksheet
+                    .getCell(header.column, row)
+                    .setStyle(table.subHeadersStyle);
+            }
+        }
+        const fieldCache = new Map<string, IRowField>();
+        for (const field of parent.fields) {
+            row++
+            JsonToXlsx.writeField(
+                worksheet,
+                table,
+                field,
+                schemaCache,
+                enumsCache,
+                fieldCache,
+                row,
+                subSchemaNames,
+                iwaPropertyRange,
+                parent
+            );
+            if (rootFieldCache && pathPrefix) {
+                const dotPath = [...pathPrefix, field.name].join('.');
+                const rowField = fieldCache.get(field.name);
+                if (rowField) {
+                    rootFieldCache.set(dotPath, rowField);
+                }
+            }
+            worksheet
+                .getRow(row)
+                .setOutline(lvl);
+            row = JsonToXlsx.writeSubFields(
+                worksheet,
+                table,
+                field,
+                schemaCache,
+                enumsCache,
+                row,
+                subSchemaNames,
+                rootFieldCache,
+                pathPrefix ? [...pathPrefix, field.name] : undefined,
+                iwaPropertyRange
+            );
+        }
+
+        // Extend local cache with relative dot-paths from rootFieldCache so nested fieldPath refs resolve.
+        let condCache = fieldCache;
+        if (rootFieldCache && pathPrefix) {
+            const prefix = pathPrefix.join('.') + '.';
+            condCache = new Map(fieldCache);
+            for (const [k, v] of rootFieldCache) {
+                if (k.startsWith(prefix)) {
+                    condCache.set(k.slice(prefix.length), v);
+                }
+            }
+        }
+        for (const condition of parent.conditions) {
+            JsonToXlsx.writeCondition(
+                worksheet,
+                table,
+                condition,
+                condCache
+            );
+        }
+
+        return row;
+    }
+
+    public static writeSharedEnum(
+        worksheet: Worksheet,
+        enums: XlsxEnum[]
+    ): void {
+        const shared = new SharedEnumTable();
+
+        worksheet
+            .setValue(Dictionary.ENUM_NAME, SharedEnumTable.COL_NAME, SharedEnumTable.HEADER_ROW)
+            .setStyle(shared.headerStyle);
+        worksheet
+            .setValue(Dictionary.ENUM_IPFS, SharedEnumTable.COL_IPFS, SharedEnumTable.HEADER_ROW)
+            .setStyle(shared.headerStyle);
+        worksheet
+            .setValue(Dictionary.ENUM_VALUE, SharedEnumTable.COL_VALUE, SharedEnumTable.HEADER_ROW)
+            .setStyle(shared.headerStyle);
+
+        worksheet.getCol(SharedEnumTable.COL_NAME).setWidth(30);
+        worksheet.getCol(SharedEnumTable.COL_IPFS).setWidth(20);
+        worksheet.getCol(SharedEnumTable.COL_VALUE).setWidth(30);
+
+        let currentRow = SharedEnumTable.FIRST_DATA_ROW;
+
+        for (const xlsxEnum of enums) {
+            const groupStartRow = currentRow;
+            const items = xlsxEnum.data;
+
+            if (items.length === 0) {
+                worksheet
+                    .getCell(SharedEnumTable.COL_NAME, currentRow)
+                    .setValue(stringToXlsx(xlsxEnum.enumName))
+                    .setStyle(shared.itemStyle);
+                worksheet
+                    .getCell(SharedEnumTable.COL_IPFS, currentRow)
+                    .setValue(booleanToXlsx(!!xlsxEnum.field?.remoteLink))
+                    .setStyle(shared.itemStyle);
+                currentRow++;
+            } else {
+                for (let i = 0; i < items.length; i++) {
+                    if (i === 0) {
+                        worksheet
+                            .getCell(SharedEnumTable.COL_NAME, currentRow)
+                            .setValue(stringToXlsx(xlsxEnum.enumName))
+                            .setStyle(shared.itemStyle);
+                        worksheet
+                            .getCell(SharedEnumTable.COL_IPFS, currentRow)
+                            .setValue(booleanToXlsx(!!xlsxEnum.field?.remoteLink))
+                            .setStyle(shared.itemStyle);
+                    }
+                    worksheet
+                        .getCell(SharedEnumTable.COL_VALUE, currentRow)
+                        .setValue(stringToXlsx(items[i]))
+                        .setStyle(shared.itemStyle);
+                    currentRow++;
+                }
+            }
+
+            xlsxEnum.setRange(Range.fromRows(groupStartRow, currentRow - 1, SharedEnumTable.COL_VALUE));
+        }
+    }
+
+    private static async loadEnum(link: string): Promise<string[]> {
+        try {
+            const cidMatches = link.match(/Qm[1-9A-HJ-NP-Za-km-z]{44,}|b[A-Za-z2-7]{58,}|B[A-Z2-7]{58,}|z[1-9A-HJ-NP-Za-km-z]{48,}|F[0-9A-F]{50,}/);
+            const cid = (cidMatches && cidMatches[0]) || '';
+            const file = await IPFS.getFile(cid, 'raw', IPFS.DEFAULT_OPTIONS);
+            const buffer = Buffer.from(file);
+            const json = JSON.parse(buffer.toString());
+            if (Array.isArray(json.enum)) {
+                return json.enum;
+            } else {
+                return [];
+            }
+        } catch (error) {
+            return [];
+        }
+    }
+
+    // A failed lookup just means no dropdown - the column still exports as plain text.
+    private static async loadPolicyProperties(version: IwaVersion): Promise<PolicyProperty[]> {
+        try {
+            return await DatabaseServer.getPolicyProperties(version);
+        } catch (error) {
+            return [];
+        }
+    }
+
+    // Groups rows into one contiguous range per version, for the per-field dropdown formula.
+    private static writeIwaPropertiesSheet(
+        workbook: Workbook,
+        propertiesByVersion: Map<IwaVersion, PolicyProperty[]>
+    ): Map<IwaVersion, string> {
+        const ranges = new Map<IwaVersion, string>();
+        const hasData = Array.from(propertiesByVersion.values()).some((list) => list.length > 0);
+        if (!hasData) {
+            return ranges;
+        }
+
+        const worksheet = workbook.createWorksheet(Dictionary.IWA_PROPERTIES_SHEET).setHidden(true);
+        const headerStyle = { font: { size: 14, bold: true } };
+        const itemStyle = { font: { size: 11, bold: false }, alignment: { wrapText: true } };
+
+        worksheet.setValue('Path', 1, 1).setStyle(headerStyle);
+        worksheet.setValue('Name', 2, 1).setStyle(headerStyle);
+        worksheet.setValue('Description', 3, 1).setStyle(headerStyle);
+        worksheet.setValue('Version', 4, 1).setStyle(headerStyle);
+        worksheet.getCol(1).setWidth(50);
+        worksheet.getCol(2).setWidth(40);
+        worksheet.getCol(3).setWidth(60);
+        worksheet.getCol(4).setWidth(10);
+
+        let row = 2;
+        for (const [version, properties] of propertiesByVersion) {
+            if (!properties.length) {
+                continue;
+            }
+            const startRow = row;
+            for (const property of properties) {
+                worksheet.getCell(1, row).setValue(stringToXlsx(property.title)).setStyle(itemStyle);
+                worksheet.getCell(2, row).setValue(stringToXlsx(property.value)).setStyle(itemStyle);
+                worksheet.getCell(3, row).setValue(stringToXlsx(property.description)).setStyle(itemStyle);
+                worksheet.getCell(4, row).setValue(version === IwaVersion.V3 ? 'V3' : 'V1').setStyle(itemStyle);
+                row++;
+            }
+            ranges.set(version, `'${Dictionary.IWA_PROPERTIES_SHEET}'!$A$${startRow}:$A$${row - 1}`);
+        }
+        return ranges;
+    }
+
+    private static buildIfFormula(
+        condition: SchemaCondition['ifCondition'],
+        fieldCache: Map<string, IRowField>
+    ): string {
+        const toFormula = (sub: any): string => {
+            const key = (sub.fieldPath?.length > 1)
+                ? (sub.fieldPath as string[]).join('.')
+                : sub.field.name;
+            const f = fieldCache.get(key) ?? fieldCache.get(sub.field.name);
+            if (!f) {
+                throw new Error(`Condition refers to unknown field "${sub.field?.name}".`);
+            }
+            const v = valueToFormula(sub.fieldValue);
+            const isArrayField = !!(sub.field?.isArray && !sub.field?.isRef);
+
+            if (sub.comparator === 'contains' && isArrayField) {
+                return `ISNUMBER(FIND(","&${v}&",", ","&SUBSTITUTE(${f.name},", ",",")&","))`;
+            }
+            return `EXACT(${f.name},${v})`;
+        };
+
+        if ((condition as any).field && (condition as any).fieldValue !== undefined) {
+            return toFormula(condition as any);
+        }
+
+        if ((condition as any).OR) {
+            const parts = (condition as any).OR.map((x: any) => toFormula(x));
+            return `OR(${parts.join(',')})`;
+        }
+
+        if ((condition as any).AND) {
+            const parts = (condition as any).AND.map((x: any) => toFormula(x));
+            return `AND(${parts.join(',')})`;
+        }
+
+        throw new Error('Unsupported condition format in ifCondition');
+    }
+
+}

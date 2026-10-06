@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { Hash } from 'lucide-vue-next';
+import { Hash, Mail, PhoneCall, Check } from 'lucide-vue-next';
 import type { Project } from '~/types/models';
 import { formatCredits } from '~/lib/format';
 import { formatDate } from '~/lib/format';
 import { useMethodologyApi } from '~/composables/api/useMethodologiesApi';
 import { IWA_TO_CADTRUST, IWA_TO_CDOP } from '~/lib/standard-field-mappings.generated';
+import { mapIwaPathV1ToV3 } from '~/lib/iwa-version';
 import { SECTOR_I18N_KEYS } from '~/types/enums';
+import { formatNumber } from '~/lib/format';
 
 const props = defineProps<{
     project: Project;
@@ -15,6 +17,22 @@ const props = defineProps<{
 
 const { t } = useI18n();
 const { network } = useNetwork();
+
+const phoneCopied = ref(false);
+
+// project.dto.ts already falls back to the legacy singular businessData key
+// for rows written before array support existed, so these are always the
+// full list — no fallback needed here.
+const developerEmails = computed(() => props.project.developerEmails ?? []);
+const developerPhones = computed(() => props.project.developerPhones ?? []);
+
+async function copyDeveloperPhones(phones: string[]) {
+    try {
+        await navigator.clipboard.writeText(phones.join('\n'));
+        phoneCopied.value = true;
+        setTimeout(() => { phoneCopied.value = false; }, 2000);
+    } catch { /* ignore */ }
+}
 
 function translateSector(raw?: string): string {
     if (!raw) return '—';
@@ -48,8 +66,17 @@ const creditingPeriodEnd = computed(() => {
     return isNaN(yr) ? '—' : formatDate(`${yr + 9}-12-31`);
 });
 
+const totalCreditsValue = computed(() => props.project.projectedIssuance?.totalTco2e != null
+    ? `${formatNumber(props.project.projectedIssuance?.totalTco2e)}`
+    : t('projects.notEstimated'));
+
 function tip(iwaPaths: string): string {
-    const paths = iwaPaths.split(',');
+    // Normalise to IWA v3 so the tooltip and the CADTrust/CDOP lookups agree
+    // with what the export endpoint now emits.
+    const paths = iwaPaths.split(',').map(p => {
+        const raw = p.trim();
+        return mapIwaPathV1ToV3(raw) ?? raw;
+    });
     const iwaLine = `IWA: ${paths.join(', ')}`;
     const ctSet = new Set(paths.map(p => IWA_TO_CADTRUST[p]).filter(Boolean));
     const cdSet = new Set(paths.map(p => IWA_TO_CDOP[p]).filter(Boolean));
@@ -70,7 +97,7 @@ function tip(iwaPaths: string): string {
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2">
             <!-- Methodology -->
-            <div class="bg-card px-5 py-4 border-b sm:border-r">
+            <div class="bg-card px-5 py-4 border-b sm:border-r min-w-0">
                 <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
                     {{ $t('projects.details.methodology') }}
                     <InfoTooltip :text="tip('QualityStandard.name')" />
@@ -78,11 +105,11 @@ function tip(iwaPaths: string): string {
                 <AppLink
                     v-if="project.instanceTopicId"
                     :to="`/methodologies/${project.instanceTopicId}`"
-                    class="text-sm font-medium text-foreground hover:text-primary hover:underline transition-colors"
+                    class="block text-sm font-medium text-foreground hover:text-primary hover:underline transition-colors break-words"
                 >
                     {{ fullMethodologyName }}
                 </AppLink>
-                <div v-else class="text-sm font-medium text-foreground">{{ fullMethodologyName || '—' }}</div>
+                <div v-else class="text-sm font-medium text-foreground break-words">{{ fullMethodologyName || '—' }}</div>
             </div>
 
             <!-- Methodology Version -->
@@ -116,7 +143,32 @@ function tip(iwaPaths: string): string {
                     {{ $t('projects.details.developer') }}
                     <InfoTooltip :text="tip('ActivityImpactModule.developers')" />
                 </div>
-                <div class="text-sm font-medium text-foreground">{{ project.developer || '—' }}</div>
+                <div class="text-sm font-medium text-foreground flex items-center gap-3">
+                    <span>{{ project.developer || '—' }}</span>
+                    <InfoTooltip v-if="developerEmails.length" :text="developerEmails.join('\n')">
+                        <a
+                            :href="`mailto:${developerEmails.join(',')}`"
+                            :aria-label="$t('projects.details.developerEmail')"
+                            class="text-muted-foreground/50 hover:text-primary transition-colors"
+                        >
+                            <Mail class="h-3.5 w-3.5" />
+                        </a>
+                    </InfoTooltip>
+                    <InfoTooltip
+                        v-if="developerPhones.length"
+                        :text="phoneCopied ? $t('common.copied') : developerPhones.join('\n')"
+                    >
+                        <button
+                            type="button"
+                            :aria-label="$t('projects.details.developerPhone')"
+                            class="cursor-pointer text-muted-foreground/50 hover:text-primary transition-colors"
+                            @click="copyDeveloperPhones(developerPhones)"
+                        >
+                            <Check v-if="phoneCopied" class="h-3.5 w-3.5 text-stat-green" />
+                            <PhoneCall v-else class="h-3.5 w-3.5" />
+                        </button>
+                    </InfoTooltip>
+                </div>
             </div>
 
             <!-- Country -->
@@ -198,9 +250,9 @@ function tip(iwaPaths: string): string {
             <div class="bg-card px-5 py-4">
                 <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
                     {{ $t('projects.details.estimatedTotalCredits') }}
-                    <InfoTooltip :text="tip('ImpactClaim.quantity')" />
+                    <InfoTooltip :text="tip('OriginationProcessAgreement.estimatedAnnualCredits')" />
                 </div>
-                <div class="text-sm font-semibold text-foreground tabular-nums">{{ formatCredits(project.credits) }}</div>
+                <div class="text-sm font-semibold text-foreground tabular-nums">{{ formatCredits(totalCreditsValue) }}</div>
             </div>
         </div>
     </div>

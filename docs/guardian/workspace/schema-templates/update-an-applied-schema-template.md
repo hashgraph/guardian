@@ -20,8 +20,8 @@ Update a draft policy after its template changes. See [Schema Templates Concept]
 2. Select **Schema Templates** on that policy's row to open the management dialog.
 3. In the **Applied templates** grid, select the update action on the binding you want to refresh. If more than one template is applied, only the selected one is affected.
 4. Keep the currently bound template to refresh it, or pick a different template or version to switch the binding to it.
-5. Review the comparison preview.
-6. Resolve any reported schema or field conflicts.
+5. Review the comparison preview. Changes are grouped into separate Schema, Fields, Conditions, and Repeatable Links sections, each showing what was added, removed, or changed.
+6. Resolve any reported schema, field, condition, or repeatable-link conflicts.
 7. Confirm the update.
 
 ### Result
@@ -43,13 +43,15 @@ For each reported conflict, choose:
 
 Resolve every conflict before confirming the update.
 
+**Why did my edited condition revert to the template's version?**
+
+Conditions and repeatable links are matched to the template by identity - a condition by its trigger field and value, a link by its dependent field. If a policy developer edited an unlocked condition's trigger value (for example from `A == 2` to `A == 3`), it no longer matches the template's own condition, so updating the template reverts it to the template version. If the edited condition still reveals custom policy fields, the update raises a conflict instead so you can keep it as a custom condition.
+
 **Why can't I switch to the template I picked?**
 
 That template is already applied to this policy through another binding. A policy can hold a given template only once. Detach the other binding first, or pick a different template.
 
-**Why was the update rejected because of schema names?**
 
-The new template version renames a schema, or adds one, under a name another schema in the policy already uses. The error names every clash. Rename the conflicting policy schema, or detach the template that owns it, then run the update again.
 
 ### Related
 

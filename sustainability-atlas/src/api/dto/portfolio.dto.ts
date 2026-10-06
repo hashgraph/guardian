@@ -48,4 +48,13 @@ export class PortfolioStatsDto {
 
     @ApiProperty({ type: [PortfolioRecentIssuanceDto], description: 'Most recent issuances, newest first' })
     recentIssuances: PortfolioRecentIssuanceDto[];
+
+    @ApiProperty({
+        type: [MintSeriesEntryDto],
+        description:
+            'Monthly retired amounts across the given project keys, sorted ascending. Each credit is ' +
+            'dated by its retirement contract record where one exists, and otherwise by its last ' +
+            'movement, the point at which it left circulation.',
+    })
+    retirementSeries: MintSeriesEntryDto[];
 }

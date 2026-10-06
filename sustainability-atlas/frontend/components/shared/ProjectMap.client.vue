@@ -3,6 +3,14 @@ import L from 'leaflet';
 
 const { t } = useI18n();
 
+// CARTO watermarks unauthenticated raster tile requests as of 2026-08; append
+// the key when configured (see NUXT_PUBLIC_CARTO_API_KEY).
+const cartoApiKey = useRuntimeConfig().public.cartoApiKey;
+function cartoTileUrl(style: string): string {
+    const base = `https://{s}.basemaps.cartocdn.com/${style}/{z}/{x}/{y}{r}.png`;
+    return cartoApiKey ? `${base}?key=${cartoApiKey}` : base;
+}
+
 export interface CountryData {
     country: string;
     countryCode: string;
@@ -95,7 +103,7 @@ async function initMap() {
         maxBoundsViscosity: 1.0,
     });
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+    L.tileLayer(cartoTileUrl('light_nolabels'), {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
         maxZoom: 18,
         noWrap: true,
@@ -150,7 +158,7 @@ async function initMap() {
         console.error('[project-map] failed to load country boundaries:', err);
     }
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
+    L.tileLayer(cartoTileUrl('light_only_labels'), {
         maxZoom: 18,
         pane: 'overlayPane',
         noWrap: true,

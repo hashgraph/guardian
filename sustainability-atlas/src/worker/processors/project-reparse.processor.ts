@@ -1,14 +1,14 @@
 import { Processor, WorkerHost, OnWorkerEvent } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
-import { QUEUE_NAMES } from '@shared/config/bullmq.config';
+import { QUEUE_NAMES, getWorkerOptions } from '@shared/config/bullmq.config';
 import { ProjectMapperService } from '../services/project-mapper.service';
 
 export interface ProjectReparseJobData {
     messageConsensusTimestamp: string;
 }
 
-@Processor(QUEUE_NAMES.PROJECT_REPARSE)
+@Processor(QUEUE_NAMES.PROJECT_REPARSE, getWorkerOptions(QUEUE_NAMES.PROJECT_REPARSE))
 export class ProjectReparseProcessor extends WorkerHost {
     private readonly logger = new Logger(ProjectReparseProcessor.name);
 

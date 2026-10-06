@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 import {ContractFunctionParameters, TokenAssociateTransaction, TransferTransaction} from '@hiero-ledger/sdk';
 import {deployRetireDoubleContract, deployWipeContract, initializeClient, sharedState} from './shared-setup';
-import {createAccount, createFungibleToken, executeContract, executeContractRaw, getClient, getTokenBalance} from './helpers';
+import {createAccount, createFungibleToken, executeContract, executeContractRaw, getClient, waitForFundedTokenBalance, waitForTokenBalance} from './helpers';
 
 describe('RetireDoubleToken - Retire Operations', function () {
     this.timeout(300000);
@@ -110,8 +110,8 @@ describe('RetireDoubleToken - Retire Operations', function () {
         });
 
         it('should retire with exact ratio', async () => {
-            const balance1Before = await getTokenBalance(sharedState.client!, user.accountId, token1Id);
-            const balance2Before = await getTokenBalance(sharedState.client!, user.accountId, token2Id);
+            const balance1Before = await waitForFundedTokenBalance(sharedState.client!, user.accountId, token1Id);
+            const balance2Before = await waitForFundedTokenBalance(sharedState.client!, user.accountId, token2Id);
 
             const abi = ['function retire(tuple(address token, int64 count, int64[] serials)[])'];
             const args = [
@@ -132,8 +132,8 @@ describe('RetireDoubleToken - Retire Operations', function () {
 
             expect(receipt.status.toString()).to.equal('SUCCESS');
 
-            const balance1After = await getTokenBalance(sharedState.client!, user.accountId, token1Id);
-            const balance2After = await getTokenBalance(sharedState.client!, user.accountId, token2Id);
+            const balance1After = await waitForTokenBalance(sharedState.client!, user.accountId, token1Id, balance => balance < balance1Before);
+            const balance2After = await waitForTokenBalance(sharedState.client!, user.accountId, token2Id, balance => balance < balance2Before);
 
             expect(balance1After).to.be.lessThan(balance1Before);
             expect(balance2After).to.be.lessThan(balance2Before);
@@ -238,8 +238,8 @@ describe('RetireDoubleToken - Retire Operations', function () {
         });
 
         it('should retire multiple of ratio', async () => {
-            const balance1Before = await getTokenBalance(sharedState.client!, user.accountId, token1Id);
-            const balance2Before = await getTokenBalance(sharedState.client!, user.accountId, token2Id);
+            const balance1Before = await waitForFundedTokenBalance(sharedState.client!, user.accountId, token1Id);
+            const balance2Before = await waitForFundedTokenBalance(sharedState.client!, user.accountId, token2Id);
 
             const abi = ['function retire(tuple(address token, int64 count, int64[] serials)[])'];
             const args = [
@@ -260,8 +260,8 @@ describe('RetireDoubleToken - Retire Operations', function () {
 
             expect(receipt.status.toString()).to.equal('SUCCESS');
 
-            const balance1After = await getTokenBalance(sharedState.client!, user.accountId, token1Id);
-            const balance2After = await getTokenBalance(sharedState.client!, user.accountId, token2Id);
+            const balance1After = await waitForTokenBalance(sharedState.client!, user.accountId, token1Id, balance => balance === balance1Before - 50);
+            const balance2After = await waitForTokenBalance(sharedState.client!, user.accountId, token2Id, balance => balance === balance2Before - 100);
 
             expect(balance1After).to.equal(balance1Before - 50);
             expect(balance2After).to.equal(balance2Before - 100);

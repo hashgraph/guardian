@@ -161,6 +161,173 @@ describe('SchemaHelper.buildDocument — condition serialization', () => {
     });
 });
 
+describe('SchemaHelper.buildDocument — array comparators (issue #6687)', () => {
+    const build = (conditions) => SchemaHelper.buildDocument(baseSchema(), [field('a'), field('b')], conditions);
+
+    it('comparator absent still serialises to a bare const (no migration for legacy conditions)', () => {
+        const doc = build([{ ifCondition: { field: { name: 'a' }, fieldValue: 'x' }, thenFields: [field('t1')], elseFields: [] }]);
+        assert.deepEqual(doc.allOf[0].if.properties, { a: { const: 'x' } });
+    });
+
+    it('serialises contains to {contains: {const}}', () => {
+        const ifCondition = { field: field('a', { isArray: true }), fieldValue: 2, comparator: 'contains' };
+        const doc = build([{ ifCondition, thenFields: [field('t1')], elseFields: [] }]);
+        assert.deepEqual(doc.allOf[0].if.properties, { a: { contains: { const: 2 } } });
+    });
+
+    it('a stale "contains" on a field that is no longer an array self-corrects to a bare const', () => {
+        const ifCondition = { field: field('a', { isArray: false }), fieldValue: 2, comparator: 'contains' };
+        const doc = build([{ ifCondition, thenFields: [field('t1')], elseFields: [] }]);
+        assert.deepEqual(doc.allOf[0].if.properties, { a: { const: 2 } });
+    });
+
+    it('serialises explicit equals on an array field to {items: {const}, minItems: 1} ("each")', () => {
+        const ifCondition = { field: field('a', { isArray: true }), fieldValue: 2, comparator: 'equals' };
+        const doc = build([{ ifCondition, thenFields: [field('t1')], elseFields: [] }]);
+        assert.deepEqual(doc.allOf[0].if.properties, { a: { items: { const: 2 }, minItems: 1 } });
+    });
+
+    it('absent comparator on an array field ALSO serialises to items/minItems - no legacy carve-out', () => {
+        // equals is one universal default for every field; an array-field '=' predicate saved
+        // before this comparator existed means exactly the same thing as one authored today.
+        const ifCondition = { field: field('a', { isArray: true }), fieldValue: 2 };
+        const doc = build([{ ifCondition, thenFields: [field('t1')], elseFields: [] }]);
+        assert.deepEqual(doc.allOf[0].if.properties, { a: { items: { const: 2 }, minItems: 1 } });
+    });
+
+    it('explicit equals on a scalar field is unaffected - still a bare const', () => {
+        const ifCondition = { field: field('a', { isArray: false }), fieldValue: 2, comparator: 'equals' };
+        const doc = build([{ ifCondition, thenFields: [field('t1')], elseFields: [] }]);
+        assert.deepEqual(doc.allOf[0].if.properties, { a: { const: 2 } });
+    });
+
+    it('minItems: 1 is mandatory — an empty array must not satisfy "each element equals"', async () => {
+        const { default: Ajv } = await import('ajv');
+        const ajv = new Ajv({ strict: false });
+        // Without minItems, {items: {const}} alone is vacuously true on [].
+        assert.equal(ajv.validate({ items: { const: 2 } }, []), true);
+        // With it, the trap is closed.
+        assert.equal(ajv.validate({ items: { const: 2 }, minItems: 1 }, []), false);
+    });
+
+    it('contains composes correctly under a nested fieldPath', () => {
+        const ifCondition = { field: field('leaf', { isArray: true }), fieldValue: 2, fieldPath: ['ref1', 'leaf'], comparator: 'contains' };
+        const doc = build([{ ifCondition, thenFields: [field('t1')], elseFields: [] }]);
+        assert.deepEqual(doc.allOf[0].if.properties, {
+            ref1: { properties: { leaf: { contains: { const: 2 } } }, required: ['leaf'] },
+        });
+    });
+
+    it('round-trips contains through build → parse', () => {
+        const arrayField = field('a', { isArray: true });
+        const conditions = [{
+            ifCondition: { field: arrayField, fieldValue: 2, comparator: 'contains' },
+            thenFields: [field('t1')],
+            elseFields: [],
+        }];
+        const doc = SchemaHelper.buildDocument(baseSchema(), [arrayField, field('b')], conditions);
+        const [cond] = SchemaHelper.parseConditions(doc, 'ctx:', [arrayField, field('b')], new Map());
+        assert.equal(cond.ifCondition.comparator, 'contains');
+        assert.equal(cond.ifCondition.fieldValue, 2);
+    });
+
+    it('round-trips explicit equals-on-array ("each") through build → parse', () => {
+        const arrayField = field('a', { isArray: true });
+        const conditions = [{
+            ifCondition: { field: arrayField, fieldValue: 2, comparator: 'equals' },
+            thenFields: [field('t1')],
+            elseFields: [],
+        }];
+        const doc = SchemaHelper.buildDocument(baseSchema(), [arrayField, field('b')], conditions);
+        const [cond] = SchemaHelper.parseConditions(doc, 'ctx:', [arrayField, field('b')], new Map());
+        assert.equal(cond.ifCondition.comparator, 'equals');
+    });
+
+    it('an existing const-only document still parses to comparator: undefined', () => {
+        const doc = {
+            allOf: [{ if: { properties: { a: { const: 'x' } } }, then: { properties: {} } }],
+        };
+        const [cond] = SchemaHelper.parseConditions(doc, 'ctx:', [field('a'), field('b')], new Map());
+        assert.equal(cond.ifCondition.comparator, undefined);
+    });
+});
+
+describe('SchemaHelper.testPredicateValue', () => {
+    it('equals (default/absent comparator) is unchanged: numeric string vs number', () => {
+        assert.equal(SchemaHelper.testPredicateValue(undefined, '2', 2), true);
+    });
+
+    it('absent comparator against an array actual also means "each element equals" - no legacy carve-out', () => {
+        assert.equal(SchemaHelper.testPredicateValue(undefined, [2, 2, 2], 2), true);
+        assert.equal(SchemaHelper.testPredicateValue(undefined, [2, 2, 3], 2), false);
+        assert.equal(SchemaHelper.testPredicateValue(undefined, [], 2), false);
+    });
+
+    it('equals: trimmed string comparison', () => {
+        assert.equal(SchemaHelper.testPredicateValue('equals', ' foo ', 'foo'), true);
+    });
+
+    it('equals: identical null/undefined match, mismatched null vs undefined does not', () => {
+        assert.equal(SchemaHelper.testPredicateValue('equals', null, null), true);
+        assert.equal(SchemaHelper.testPredicateValue('equals', null, undefined), false);
+        assert.equal(SchemaHelper.testPredicateValue('equals', undefined, 'x'), false);
+    });
+
+    it('contains: element present', () => {
+        assert.equal(SchemaHelper.testPredicateValue('contains', [1, 2, 3], 2), true);
+    });
+
+    it('contains: element absent', () => {
+        assert.equal(SchemaHelper.testPredicateValue('contains', [1, 3], 2), false);
+    });
+
+    it('contains: empty array never matches', () => {
+        assert.equal(SchemaHelper.testPredicateValue('contains', [], 2), false);
+    });
+
+    it('contains against a non-array actual self-corrects to plain equals, does not stay permanently false', () => {
+        // Regression: a predicate can still say 'contains' after its field's "Allow Multiple
+        // Answers" was turned off (isArray -> false). It must not become permanently
+        // unsatisfiable - it falls through to the same universal equals default as absent.
+        assert.equal(SchemaHelper.testPredicateValue('contains', 2, 2), true);
+        assert.equal(SchemaHelper.testPredicateValue('contains', 2, 3), false);
+        assert.equal(SchemaHelper.testPredicateValue('contains', 'A', 'A'), true);
+    });
+
+    it('contains: numeric coercion applies per element', () => {
+        assert.equal(SchemaHelper.testPredicateValue('contains', ['1', '2'], 2), true);
+    });
+
+    it('equals against an array actual ("each element equals"): all elements match', () => {
+        assert.equal(SchemaHelper.testPredicateValue('equals', [2, 2, 2], 2), true);
+    });
+
+    it('equals against an array actual: one mismatch fails the whole predicate', () => {
+        assert.equal(SchemaHelper.testPredicateValue('equals', [2, 2, 3], 2), false);
+    });
+
+    it('equals against an array actual: empty array must not match', () => {
+        assert.equal(SchemaHelper.testPredicateValue('equals', [], 2), false);
+    });
+
+    it('equals against a non-array actual is plain scalar equality, unaffected', () => {
+        assert.equal(SchemaHelper.testPredicateValue('equals', 2, 2), true);
+        assert.equal(SchemaHelper.testPredicateValue('equals', 3, 2), false);
+    });
+
+    it('absent/undefined field (undefined actual) never matches, for every comparator', () => {
+        assert.equal(SchemaHelper.testPredicateValue(undefined, undefined, 2), false);
+        assert.equal(SchemaHelper.testPredicateValue('contains', undefined, 2), false);
+        assert.equal(SchemaHelper.testPredicateValue('equals', undefined, 2), false);
+    });
+
+    it('accepts a custom equals function (used by the form for its moment()-aware comparison)', () => {
+        const alwaysTrue = () => true;
+        assert.equal(SchemaHelper.testPredicateValue('contains', [1], 999, alwaysTrue), true);
+        assert.equal(SchemaHelper.testPredicateValue('equals', 1, 999, alwaysTrue), true);
+    });
+});
+
 describe('SchemaHelper — branch-level required round-trip', () => {
     const fields = [field('a'), field('b')];
 

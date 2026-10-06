@@ -25,7 +25,7 @@ import { CreateApiKeyDto } from './dto/create-api-key.dto';
  * authenticated user qualifies. CsrfGuard on mutating routes. All key operations
  * are scoped to req.user.id inside the service (ownership in the SQL WHERE).
  */
-@ApiTags('account')
+@ApiTags('My account')
 @ApiCookieAuth()
 @Controller('api/v1/me/api-keys')
 @UseGuards(JwtAuthGuard)
@@ -33,7 +33,13 @@ export class AccountController {
     constructor(private readonly apiKeys: ApiKeyService) {}
 
     @Get()
-    @ApiOperation({ summary: 'List my API keys (secrets are never returned)' })
+    @ApiOperation({
+        summary: 'List my API keys',
+        description:
+            'Returns every API key the caller has created (active and revoked) with its name, public prefix, ' +
+            'status, last-used and creation time. The secret part of a key is stored only as a hash, so it can ' +
+            'never be shown again after creation.',
+    })
     @ApiResponse({ status: 200, description: 'The caller\'s API keys' })
     async list(@CurrentUser() user: AuthenticatedUser) {
         return this.apiKeys.list(user.id);
@@ -42,9 +48,16 @@ export class AccountController {
     @Post()
     @UseGuards(CsrfGuard)
     @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: 'Generate a new API key (full key shown ONCE)' })
+    @ApiOperation({
+        summary: 'Create an API key (shown only once)',
+        description:
+            'Creates a named API key and returns it in full, in the form `se_<prefix>_<secret>`. This response ' +
+            'is the only time the full key is available: store it securely, and if it is lost revoke it and ' +
+            'generate a new one. Send it in the `X-API-Key` header for programmatic access. The number of ' +
+            'active keys per account is capped (default 3). Requires the `X-CSRF-Token` header.',
+    })
     @ApiResponse({ status: 201, description: 'The created key including the one-time secret' })
-    @ApiResponse({ status: 409, description: 'Active key limit reached — revoke one first' })
+    @ApiResponse({ status: 409, description: 'Active key limit reached. Revoke one first.' })
     async create(
         @Body() dto: CreateApiKeyDto,
         @CurrentUser() user: AuthenticatedUser,
@@ -55,7 +68,13 @@ export class AccountController {
     @Delete(':id')
     @UseGuards(CsrfGuard)
     @HttpCode(HttpStatus.NO_CONTENT)
-    @ApiOperation({ summary: 'Revoke one of my API keys' })
+    @ApiOperation({
+        summary: 'Revoke an API key',
+        description:
+            'Permanently disables one of the caller\'s keys. Takes effect immediately and cannot be undone. The ' +
+            'key stays in the list with status `revoked` and no longer counts toward the active-key cap. ' +
+            'Requires the `X-CSRF-Token` header.',
+    })
     @ApiResponse({ status: 204, description: 'Revoked' })
     @ApiResponse({ status: 404, description: 'Key not found (or not owned by caller)' })
     async revoke(

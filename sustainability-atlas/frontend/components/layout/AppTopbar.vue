@@ -7,6 +7,7 @@ import {
 import { onClickOutside, useDebounceFn } from '@vueuse/core';
 import { networkOptions } from '~/composables/useNetwork';
 import { formatCredits } from '~/lib/format';
+import { isAbortError } from '~/lib/utils';
 
 const { t, locale, locales, setLocale } = useI18n();
 
@@ -170,18 +171,28 @@ interface GlobalResult {
 const filteredResults = ref<GlobalResult[]>([]);
 const searchPending = ref(false);
 let searchSeq = 0;
+// Global search is a raw $fetch fan-out, not useAsyncData, so it gets none of
+// Nuxt's built-in dedupe cancellation — this aborts the previous keystroke's 4
+// in-flight requests at the network layer. `searchSeq` stays as the guard
+// against a stale *result* landing; this only stops the wasted work.
+let searchAbort: AbortController | null = null;
 
 const PER_TYPE_LIMIT = 4;
 
 async function runGlobalSearch(rawQuery: string) {
+    searchAbort?.abort();
+
     const q = rawQuery.trim();
     if (q.length < 2) {
+        searchAbort = null;
         filteredResults.value = [];
         searchPending.value = false;
         return;
     }
 
     const seq = ++searchSeq;
+    const controller = new AbortController();
+    searchAbort = controller;
     searchPending.value = true;
 
     const config = useRuntimeConfig();
@@ -195,20 +206,33 @@ async function runGlobalSearch(rawQuery: string) {
                 {
                     baseURL,
                     params: { search: q, limit: PER_TYPE_LIMIT, page: 1 },
+                    signal: controller.signal,
                 },
             );
             return res?.data ?? [];
-        } catch {
+        } catch (err) {
+            // A real failure degrades to "no results of this type"; an abort
+            // means a newer search owns the dropdown now, so bail out entirely
+            // rather than rendering a partial/empty result set.
+            if (isAbortError(err)) throw err;
             return [];
         }
     };
 
-    const [projects, methodologies, registries, credits] = await Promise.all([
-        fetchList<any>('projects'),
-        fetchList<any>('methodologies'),
-        fetchList<any>('registries'),
-        fetchList<any>('credits'),
-    ]);
+    let projects: any[], methodologies: any[], registries: any[], credits: any[];
+    try {
+        [projects, methodologies, registries, credits] = await Promise.all([
+            fetchList<any>('projects'),
+            fetchList<any>('methodologies'),
+            fetchList<any>('registries'),
+            fetchList<any>('credits'),
+        ]);
+    } catch (err) {
+        // Leave filteredResults and searchPending alone — the newer search that
+        // triggered this abort is now responsible for both.
+        if (isAbortError(err)) return;
+        throw err;
+    }
 
     // A more recent search may have started while this one was in flight \u2014
     // discard stale results to avoid flicker.

@@ -16,6 +16,7 @@ export const IWA_TO_CADTRUST: Record<string, string> = {
     "ProjectModule.description": "project.project_description",
     "ActivityImpactModule.projectScope": "project.project_sector",
     "ActivityImpactModule.projectType": "project.project_type",
+    "ActivityImpactModule.projectScale": "project.project_scale",
     "ActivityImpactModule.validations": "project.project_status",
     "Validation.validationDate": "project.project_status_date",
     "ImpactClaim.unitOfMeasure": "project.project_unit_metric",
@@ -44,7 +45,8 @@ export const IWA_TO_CADTRUST: Record<string, string> = {
     "Attestation.type": "rating.rating_type",
     "Attestation.tag.name": "rating.rating_name",
     "QualityStandard.standard": "program.program_registry",
-    "PACompliance.correspondingAdjustment": "aef_t2_authorizations.aef_t2_authorizations_purposes_for_authorization"
+    "PACompliance.correspondingAdjustment": "aef_t2_authorizations.aef_t2_authorizations_purposes_for_authorization",
+    "QualityStandard.methdologyAndTools": "methodology.methodology_code"
 };
 
 /** IWA field path → CDOP field path (entity.field_name) */
@@ -63,7 +65,7 @@ export const IWA_TO_CDOP: Record<string, string> = {
     "AccountableImpactOrganization.address.postalCode": "facility.postal code",
     "ActivityImpactModule.geographicLocation.geographicLocationFile": "geolocation_file.file name",
     "ActivityImpactModule.geographicLocation.geoJsonOrKml": "geolocation_file.file format",
-    "ActivityImpactModule.geographicLocation": "geolocation_file.validity start date",
+    "ActivityImpactModule.geographicLocation": "geolocation_file.geolocation_data",
     "ActivityImpactModule.name": "crediting_program.crediting_program_name",
     "QualityStandard.standard": "crediting_program.standard_name",
     "QualityStandard.version": "crediting_program.current_standard_version",
@@ -75,12 +77,13 @@ export const IWA_TO_CDOP: Record<string, string> = {
     "Validation.stepDocumentLink": "project.project_design_document_link",
     "ActivityImpactModule.classificationCategory": "project.program_type",
     "ActivityImpactModule.classificationMethod": "project.activity_type",
+    "ActivityImpactModule.projectScale": "project.project_scale",
     "ActivityImpactModule.ProjectScope": "project.project_sector",
     "ActivityImpactModule.CarbonCategory": "project.project_type",
     "ActivityImpactModule.validations": "project.project_status",
     "Validation.validationDate": "project.project_status_updated_at",
     "MRVRequirements.claimPeriod": "project.number_of_crediting_periods",
-    "ActivityImpactModule.firstYearIssuance": "project.crediting_period_length",
+    "ActivityImpactModule.firstYearIssuance": "vintage.vintage",
     "AccountableImpactOrganization.name": "project_stakeholder.project_developer_name",
     "AccountableImpactOrganization.developers": "project_stakeholder.project_stakeholder_name",
     "OriginationProcessAgreement.name": "registry.current_registry",

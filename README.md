@@ -14,7 +14,9 @@ This README covers what you need to run Guardian locally — quickstart, prerequ
 
 ## Quickstart
 
-This procedure is useful for demos, quick testing, and hackathons. It will only start the minimum required services for using the main Guardian features. It will not start features like the AI or MRV sender services, Prometheus integration, Grafana integration, etc.
+This procedure is useful for demos, quick testing, and hackathons. It will only start the minimum required services for using the main Guardian features. It will not start features like the MRV sender service, Prometheus integration, Grafana integration, etc.
+
+> ***Note:*** the embedded local model feature requires Docker Compose 2.38 or later.
 
 1. Ensure to have [Git](https://git-scm.com/downloads) and [Docker](https://www.docker.com/) installed on your machine.
 2. Clone this repository
@@ -244,11 +246,11 @@ To let the Multi-environment transition happen in a transparent way the `GUARDIA
 
 ##### 3.2. Setting up JWT keys in /.env file
 
-To start of auth-service it is necessary to fill in `JWT_PRIVATE_KEY` and `JWT_PUBLIC_KEY`, which are RSA key pair. You can generate it in any convenient way, for example, using [this service](https://travistidwell.com/jsencrypt/demo/).
+To start of auth-service it is necessary to fill in `JWT_PRIVATE_KEY` and `JWT_PUBLIC_KEY`, which are (minimum) 2048-bit RSA key pair. You can generate it in any convenient way, for example, using [this service](https://travistidwell.com/jsencrypt/demo/).
 
 ##### 3.3. Setting up JWT keys for each service in the .env file
 
-To start all services, you need to create a 2048-bit RSA key pair for each service. You can generate a key pair in any convenient way—for example, using [the online tool](https://mkjwk.org/) with the following settings:
+To start all services, you need to create a (minimum) 2048-bit RSA key pair for each service. You can generate a key pair in any convenient way—for example, using [the online tool](https://mkjwk.org/) with the following settings:
 
 - key size: 2048
 - key use: signature
@@ -304,12 +306,28 @@ configuration.
 For detailed setup instructions, refer to the
 official <https://docs.filebase.com/api-documentation/ipfs-pinning-service-api>.
 
-#### 5. Setting up Chat GPT API KEY to enable AI Search and Guided Search
+#### 5. Setting up the LLM used by AI Search and Glossary AI
 
-For setting up AI and Guided Search, we need to set OPENAI_API_KEY variable in `./configs/.env*` files.
+AI Search (`/api/v1/ai-suggestions/ask`) and Glossary AI property suggestions (`/api/v1/ai-suggestions/schema-properties`) need an LLM. Guided Search is plain database filtering and does not use one. Configure the model in the `./configs/.env*` files, either against OpenAI or against any local OpenAI-compatible server (LM Studio, Ollama, vLLM, ...):
 
 ```shell
+# OpenAI (default)
 OPENAI_API_KEY="..."
+GPT_VERSION="gpt-5-nano"
+
+# ...or a local / self-hosted LLM: no API key required
+#OPENAI_API_KEY="..."
+GPT_VERSION="google/gemma-4-12b-qat"
+OPENAI_API_BASE="http://host.docker.internal:1234/v1"
+```
+
+`GPT_VERSION` defaults to `gpt-5-nano`. `OPENAI_API_KEY` is only required to talk to OpenAI itself: when it is unset the ai-service still starts (it sends a placeholder key, which local servers ignore) instead of failing at startup. The `models:` entry of `docker-compose-quickstart-build.yml` runs a local model runner and injects `LLM_MODEL` and `LLM_URL`, which take precedence over `GPT_VERSION` and `OPENAI_API_BASE` for the chat model. The AI Search vector index is embedded with `OpenAIEmbeddings`, which reads `OPENAI_API_KEY` and the OpenAI SDK's own `OPENAI_BASE_URL`.
+
+Glossary AI is off by default and has its own switches:
+
+```shell
+ENABLE_GLOSSARY_AI='true'        # enables /api/v1/ai-suggestions/schema-properties (default 'false')
+GLOSSARY_AI_TIMEOUT_MS='300000'  # budget for one suggestion request, enforced by both api-gateway and ai-service
 ```
 
 #### 6. Build and launch with Docker
@@ -319,6 +337,7 @@ The following list outlines various Docker Compose configurations for different 
 | Configuration | Description | Command to Run |
 | --------------- | ------------- | ---------------- |
 | Guardian (Quickstart) | Guardian using minimal number of services with pre-built images | `docker compose -f docker-compose-quickstart.yml up -d --pull always` |
+| Guardian (Quickstart Build) | Guardian quickstart building services from source code, including `ai-service` and its local LLM | `docker compose -f docker-compose-quickstart-build.yml up -d --build` |
 | Guardian (Demo Mode) | Guardian demo using pre-built images | `docker compose up -d --build --pull always` |
 | Guardian Build (Demo Mode) | Guardian demo building services from source code | `docker compose -f docker-compose-build.yml up -d --build` |
 | Production Guardian | Guardian using pre-built images, no demo mode | `docker compose -f docker-compose-production.yml up -d --build --pull always` |
@@ -347,6 +366,8 @@ This will start the containers in detached mode (-d) and build them if necessary
 > ***NOTE 2:*** Production configurations do not include demo features and will not contain any debug information.
 >
 > ***NOTE 3:*** From the end of June 2023 Compose V1 won’t be supported anymore and will be removed from all Docker Desktop versions. Make sure you use Docker Compose V2 (comes with Docker Desktop > 3.6.0) as at <https://docs.docker.com/compose/install/>
+>
+> ***NOTE 4:*** The Quickstart configurations contain a (commented) top-level `models:` block definition (a local LLM used by `ai-service`). Make sure your Docker Compose supports it before uncommenting it; without that support the model runner part is not available and the ai-service will have no LLM to talk to.
 
 #### 7. Browse to <http://localhost:3000> and complete the setup
 
@@ -391,7 +412,9 @@ Install, configure and start all the prerequisites, then build and start each co
    OVERRIDE="false"
    ```
 
-- Configure the file `./<service_name>/configs/.env.<service>.<GUARDIAN_ENV>` file: to do this copy, paste and rename the file  `./<service_name>/.env.<service>.template`
+   Not every service ships a `.env.template` — `ai-service`, `mrv-sender` and `web-proxy` have none. For `ai-service` this step can be skipped: it reads `./ai-service/configs/.env.ai-service` by default. To run it against another environment, copy `./ai-service/configs/.env.ai-service.template` to `./ai-service/configs/.env.ai-service.<GUARDIAN_ENV>` and export `GUARDIAN_ENV` (in `./ai-service/.env` or in the shell).
+
+- Configure the file `./<service_name>/configs/.env.<service>.<GUARDIAN_ENV>` file: to do this copy, paste and rename the file  `./<service_name>/configs/.env.<service>.template`
 
    following previous example:
 
@@ -402,10 +425,12 @@ Install, configure and start all the prerequisites, then build and start each co
    OPERATOR_KEY="..."
    ```
 
-- Set up Chat GPT API KEY to enable AI Search and Guided Search. For setting up AI and Guided Search, we need to set OPENAI_API_KEY variable in `./ai-service/configs/.env*` files.
+- Configure the LLM used by AI Search and Glossary AI (see [step 5](#5-setting-up-the-llm-used-by-ai-search-and-glossary-ai)). For a manual run the ai-service reads `./ai-service/configs/.env*`:
 
    ```text
-   OPENAI_API_KEY="..."
+   OPENAI_API_KEY="..."                          # only needed to talk to OpenAI
+   GPT_VERSION="gpt-5-nano"                      # model name
+   #OPENAI_API_BASE="http://localhost:1234/v1"   # local OpenAI-compatible server
    ```
 
 > ***NOTE:*** Once you start each service, please wait for the initialization process to be completed.**
@@ -530,7 +555,7 @@ npm --workspace=worker-service start
 
 #### 8. Build and start the **notification-service** service
 
-Configure the service as previously described. Update **OPERATOR_ID** and **OPERATOR_KEY** values in `./notification-service/configs/.env.worker` file as in the example above. The service will start on <http://localhost:3002> by default.
+Configure the service as previously described. Update **OPERATOR_ID** and **OPERATOR_KEY** values in `./notification-service/configs/.env.worker` file as in the example above. It has no HTTP port: it runs as a message-broker microservice only.
 
 Yarn:
 
@@ -548,7 +573,7 @@ npm --workspace=notification-service start
 
 #### 9. Build and start the **guardian-service** service
 
-Configure the service as previously described. Update **OPERATOR_ID** and **OPERATOR_KEY** values in `./guardian-service/configs/.env.worker` file as in the example above. The service will start on <http://localhost:3002> by default.
+Configure the service as previously described. Update **OPERATOR_ID** and **OPERATOR_KEY** values in `./guardian-service/configs/.env.worker` file as in the example above. It has no HTTP port: it runs as a message-broker microservice only.
 
 Yarn:
 
@@ -566,7 +591,7 @@ npm --workspace=guardian-service start
 
 #### 10. From the **api-gateway** folder
 
-Configure the service as previously described. Do not need special configuration variables. The service will start on <http://localhost:3002> by default.
+Configure the service as previously described (it reads `./configs/.env.gateway` or `./configs/.env.gateway.<GUARDIAN_ENV>`). The service will start on <http://localhost:3002> by default. The Glossary AI endpoints are opt-in: set `ENABLE_GLOSSARY_AI='true'` — and, if needed, `GLOSSARY_AI_TIMEOUT_MS` (milliseconds, default `300000`) — in `./api-gateway/.env` or in `./api-gateway/configs/.env.gateway*`. When you run with Docker Compose both variables are read from the shared `./configs/.env*` file instead, and `ENABLE_GLOSSARY_AI` defaults to `'false'` (the quickstart environment sets it to `'true'`).
 
 Yarn:
 
@@ -594,7 +619,7 @@ npm start
 
 #### 12. From the **ai-service** folder
 
-Configure the service as previously described. Do not need special configuration variables.
+Configure the service as previously described: it reads `./configs/.env.ai-service` (or `./configs/.env.ai-service.<GUARDIAN_ENV>` when `GUARDIAN_ENV` is set). It has no HTTP port — it only answers requests coming from the api-gateway over the message broker — but it does need an LLM: set `OPENAI_API_KEY` for OpenAI, or `GPT_VERSION` and `OPENAI_API_BASE` for a local server (see [step 5](#5-setting-up-the-llm-used-by-ai-search-and-glossary-ai)).
 
 Yarn:
 

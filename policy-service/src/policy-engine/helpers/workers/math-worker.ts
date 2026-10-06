@@ -19,7 +19,7 @@ function execute(): void {
     //Calculate
     const documentMap = DocumentMap.from(documents)
     const document = documentMap.getCurrent();
-    groupContext.setDocument(documentMap);
+    groupContext.setDocument(documentMap, tablesPack);
     const context = groupContext.getContext();
 
     let result: any;
@@ -32,7 +32,19 @@ function execute(): void {
     //Output
     const outputs = group.outputs.getItems();
     for (const link of outputs) {
-        setDocumentValueByPath(schema, result, link.path, context.scope[link.name]);
+        if (link.isTableList) {
+            setDocumentValueByPath(schema, result, link.path, link.getTableList(context.scope).map((rows) => ({
+                type: 'table',
+                rows
+            })));
+        } else if (link.isTable) {
+            setDocumentValueByPath(schema, result, link.path, {
+                type: 'table',
+                rows: link.getTableRows(context.scope)
+            });
+        } else {
+            setDocumentValueByPath(schema, result, link.path, context.scope[link.name]);
+        }
     }
 
     //Code
@@ -48,7 +60,11 @@ function execute(): void {
         result = code.run();
     }
 
-    parentPort.postMessage({ type: 'done', result });
+    parentPort.postMessage({
+        type: 'done',
+        result,
+        warnings: groupContext.getWarnings()
+    });
 }
 
 execute();

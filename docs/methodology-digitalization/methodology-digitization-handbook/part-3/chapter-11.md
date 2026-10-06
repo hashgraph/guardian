@@ -17,7 +17,7 @@ While Excel-first approach works well for initial development, API operations ma
 * **Integration**: Connecting schema management to external workflows
 * **Field Key Updates**: Programmatically renaming field keys for better calculation code
 
-For detailed API operations, see [Schema Creation Using APIs](../../../developer-tools-and-resources/api-reference/schema-creation-using-apis/).
+For detailed API operations, see [Schema Creation Using APIs](https://guardian.hedera.com/api-reference-guardian/guardian-schemas).
 
 ## Importance of Good Key Names
 
@@ -62,19 +62,11 @@ Guardian's Property Glossary provides standardized data definitions based on the
 
 ### Understanding Standardized Properties
 
-For complete property definitions, see [Available Schema Types](../../../guardian/workspace/schemas/available-schema-types/) and [Property Glossary](../../../guardian/workspace/schemas/property-glossary.md).
+For complete property definitions, see [Available Schema Types](../../../guardian/workspace/schemas/available-schema-types.md) and [Property Glossary](../../../guardian/workspace/schemas/property-glossary.md).
 
-**Choosing a specification version**: Guardian supports two versions of the IWA dMRV
-property namespace. Schemas created from Guardian 3.7.0 onward are tagged IWA v3.0.0
-and author against the v3 list; schemas created earlier are treated as IWA v1 and keep
-the v1 list. The schema editor only offers the properties belonging to the schema's own
-version, so a schema never mixes the two.
+**Choosing a specification version**: Guardian supports two versions of the IWA dMRV property namespace. Schemas created from Guardian 3.7.0 onward are tagged IWA v3.0.0 and author against the v3 list; schemas created earlier are treated as IWA v1 and keep the v1 list. The schema editor only offers the properties belonging to the schema's own version, so a schema never mixes the two.
 
-A published schema cannot change version — its field properties are frozen on IPFS. To
-move an existing schema to v3, create a new version and use the **Upgrade to IWA v3**
-action on the resulting draft, which remaps every field property and reports any the v3
-specification removed. See the [Property Glossary](../../../guardian/workspace/schemas/property-glossary.md)
-for the full v1 → v3 mapping.
+A published schema cannot change version — its field properties are frozen on IPFS. To move an existing schema to v3, create a new version and use the **Upgrade to IWA v3** action on the resulting draft, which remaps every field property and reports any the v3 specification removed. See the [Property Glossary](../../../guardian/workspace/schemas/property-glossary.md) for the full v1 → v3 mapping.
 
 **Purpose of Standardized Properties**:
 

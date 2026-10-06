@@ -1,4 +1,6 @@
+import { isAbortError } from '~/lib/utils';
 import type { NetworkId } from '~/composables/useNetwork';
+import type { MethodologyStatus } from '~/lib/methodology-status';
 
 export type MethodologySortKey =
     | 'name'
@@ -70,6 +72,8 @@ export interface MethodologyDto {
     totalActive?: number;
     decodeStatus?: 'success' | 'failed' | 'pending' | 'unknown';
     policySourceCid?: string | null;
+    lifecycleStatus?: MethodologyStatus;
+    discontinuedAt?: string | null;
 }
 
 export interface MethodologiesMeta {
@@ -103,7 +107,7 @@ export interface UseMethodologiesApiOptions {
 }
 
 // Filter keys recognised by the backend methodologies endpoint.
-const METHODOLOGY_FILTER_KEYS = ['name', 'id', 'description', 'decodeStatus', 'registryDid', 'registryName', 'version', 'policyTopicId'] as const;
+const METHODOLOGY_FILTER_KEYS = ['name', 'id', 'description', 'decodeStatus', 'status', 'registryDid', 'registryName', 'version', 'policyTopicId'] as const;
 
 const emptyResponse = (limit: number): MethodologiesResponse => ({
     data: [],
@@ -153,14 +157,22 @@ export const useMethodologiesApi = (opts: UseMethodologiesApiOptions) => {
 
     const { data, pending, error, refresh } = useAsyncData<MethodologiesResponse>(
         key.value,
-        async () => {
+        // `signal` is Nuxt's own dedupe:'cancel' AbortSignal. Forwarding it to
+        // $fetch tears the superseded request down at the network layer instead
+        // of letting it run to completion for a result Nuxt will discard.
+        async (_nuxtApp, { signal }) => {
             try {
                 const res = await $fetch<MethodologiesResponse>(url.value, {
                     baseURL,
                     query: buildQuery(),
+                    signal,
                 });
                 return res ?? emptyResponse(opts.limit.value);
             } catch (err) {
+                // An abort means a newer search superseded this one, not a
+                // failure. Returning emptyResponse here would risk flashing an
+                // empty list; rethrowing lets Nuxt's dedupe drop it silently.
+                if (isAbortError(err)) throw err;
                 console.error('[useMethodologiesApi] fetch failed:', err);
                 return emptyResponse(opts.limit.value);
             }

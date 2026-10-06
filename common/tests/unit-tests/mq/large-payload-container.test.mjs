@@ -48,3 +48,45 @@ describe('LargePayloadContainer', () => {
         assert.instanceOf(url, URL);
     });
 });
+
+describe('LargePayloadContainer server', () => {
+    const base = 'http://127.0.0.1:51234';
+
+    before(async () => {
+        const container = new LargePayloadContainer();
+        container.runServer();
+        while (!container.started) {
+            await new Promise((resolve) => setTimeout(resolve, 10));
+        }
+    });
+
+    it('serves a stored object by its id', async () => {
+        const url = new LargePayloadContainer().addObject(Buffer.from('payload'));
+        const res = await fetch(`${base}${url.pathname}`);
+        assert.equal(res.status, 200);
+        assert.equal(await res.text(), 'payload');
+    });
+
+    it('returns 404 for an unknown id', async () => {
+        const res = await fetch(`${base}/unknown`);
+        assert.equal(res.status, 404);
+    });
+
+    it('returns 404 for a nested path', async () => {
+        const res = await fetch(`${base}/a/b`);
+        assert.equal(res.status, 404);
+    });
+
+    it('returns 404 for a non-GET request', async () => {
+        const url = new LargePayloadContainer().addObject(Buffer.from('payload'));
+        const res = await fetch(`${base}${url.pathname}`, { method: 'POST' });
+        assert.equal(res.status, 404);
+    });
+
+    it('returns 404 for a malformed percent-encoding and keeps serving', async () => {
+        const res = await fetch(`${base}/%E0%A4%A`);
+        assert.equal(res.status, 404);
+        const after = await fetch(`${base}/unknown`);
+        assert.equal(after.status, 404);
+    });
+});

@@ -8,13 +8,14 @@ import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Job, Queue } from 'bullmq';
 import { DataSource } from 'typeorm';
-import { QUEUE_NAMES } from '@shared/config/bullmq.config';
+import { QUEUE_NAMES, getWorkerOptions } from '@shared/config/bullmq.config';
 import { ROOT_TOPICS } from '@shared/config/configuration';
 import {
     ParsedMessage,
     parseMessageJson,
     extractDiscoverableTopics,
     extractTokenIds,
+    DISCONTINUE_ACTIONS,
 } from '@shared/utils/message-parser';
 import { isTopicBlocked } from '@shared/config/topic-blocklist';
 import { isRegistryAllowlistActive, isTopicAllowedFromSeed } from '@shared/config/registry-allowlist';
@@ -22,6 +23,10 @@ import { isRegistryAllowlistActive, isTopicAllowedFromSeed } from '@shared/confi
 export interface MessageProcessJobData {
     consensusTimestamp: string;
     topicId: string;
+    // True when the topic-sync job that found this message ran on
+    // TOPIC_SYNC_PRIORITY (root/registry topic, guardian-sync events, or a
+    // topic that itself cascaded from one of those).
+    fromPriorityLane?: boolean;
 }
 
 // Message types for which IPFS fetch is always enqueued immediately (not VCs).
@@ -32,7 +37,7 @@ const EAGER_IPFS_TYPES = new Set([
     //'VP-Document' TODO: Check the relationship attribute whether we can use it
 ]);
 
-@Processor(QUEUE_NAMES.MESSAGE_PARSE)
+@Processor(QUEUE_NAMES.MESSAGE_PARSE, getWorkerOptions(QUEUE_NAMES.MESSAGE_PARSE))
 export class MessageProcessProcessor extends WorkerHost {
     private readonly logger = new Logger(MessageProcessProcessor.name);
     private readonly seedTopicId: string;
@@ -43,7 +48,9 @@ export class MessageProcessProcessor extends WorkerHost {
         @InjectQueue(QUEUE_NAMES.IPFS_FETCH) private readonly ipfsQueue: Queue,
         @InjectQueue(QUEUE_NAMES.POLICY_DECODE) private readonly policyDecodeQueue: Queue,
         @InjectQueue(QUEUE_NAMES.TOPIC_SYNC) private readonly topicQueue: Queue,
+        @InjectQueue(QUEUE_NAMES.TOPIC_SYNC_PRIORITY) private readonly topicPriorityQueue: Queue,
         @InjectQueue(QUEUE_NAMES.TOKEN_SYNC) private readonly tokenQueue: Queue,
+        @InjectQueue(QUEUE_NAMES.POLICY_STATUS) private readonly policyStatusQueue: Queue,
     ) {
         super();
         const network = this.configService.get<string>('app.hedera.network') || 'testnet';
@@ -53,7 +60,7 @@ export class MessageProcessProcessor extends WorkerHost {
     }
 
     async process(job: Job<MessageProcessJobData>): Promise<void> {
-        const { consensusTimestamp, topicId } = job.data;
+        const { consensusTimestamp, topicId, fromPriorityLane = false } = job.data;
 
         if (isTopicBlocked(topicId)) {
             this.logger.debug(`Topic ${topicId} is blocklisted — skipping message ${consensusTimestamp}`);
@@ -99,7 +106,7 @@ export class MessageProcessProcessor extends WorkerHost {
         }
 
         // Upsert into message table
-        await this.dataSource.query(
+        const [{ id: messageId }]: Array<{ id: string }> = await this.dataSource.query(
             `INSERT INTO message (
                 "consensusTimestamp",
                 "topicId",
@@ -142,7 +149,8 @@ export class MessageProcessProcessor extends WorkerHost {
                     ELSE 'mirror_node'
                 END,
                 "lastUpdate" = EXCLUDED."lastUpdate",
-                "updatedAt" = NOW()`,
+                "updatedAt" = NOW()
+            RETURNING id`,
             [
                 consensusTimestamp,
                 topicId,
@@ -166,6 +174,26 @@ export class MessageProcessProcessor extends WorkerHost {
             ],
         );
 
+        // Reconcile message_ipfs_cid — the precomputed (cid, message) relationship
+        // GET /:network/ipfs-status reads instead of unnest()ing message.files
+        // live on every request. `files` can change on reprocess (project-reparse
+        // requeues from sequence 0), so this deletes whatever this message used to
+        // reference that it no longer does, then inserts whatever's new.
+        // `cid <> ALL($2)` against an empty array is vacuously true — deletes
+        // every existing row for this message when files is now empty, correctly.
+        await this.dataSource.query(
+            `DELETE FROM message_ipfs_cid WHERE "messageId" = $1 AND cid <> ALL($2::text[])`,
+            [messageId, parsed.files],
+        );
+        if (parsed.files.length > 0) {
+            await this.dataSource.query(
+                `INSERT INTO message_ipfs_cid (cid, "messageId", "topicId", "messageType")
+                 SELECT unnest($1::text[]), $2, $3, $4
+                 ON CONFLICT (cid, "messageId") DO NOTHING`,
+                [parsed.files, messageId, topicId, parsed.type],
+            );
+        }
+
         const isPublishedPolicy =
             parsed.type === 'Instance-Policy' &&
             (parsed.action || '').toLowerCase() === 'publish-policy';
@@ -188,9 +216,30 @@ export class MessageProcessProcessor extends WorkerHost {
                     policyTopicId,
                     instanceTopicId,
                 }, {
-                    jobId: `policy-decode-${policyTopicId}-${cid}`,
+                    // Keyed on the CID alone so this dedupes against the scheduler's
+                    // seeding, which enqueues the same unit of work — and against
+                    // the decode lease, which conflicts on "sourceCid".
+                    jobId: `policy-decode-${cid}`,
                 });
             }
+
+            // Register the policy topic with the policy-status queue, so a
+            // discontinuation that was already on-chain before this publish was
+            // ingested resolves immediately instead of waiting for the reconciler.
+            // Keyed on the topic the message physically landed on, because that is
+            // what PolicyStatusProcessor selects by.
+            await this.enqueuePolicyStatus(topicId, 'publish', consensusTimestamp);
+        }
+
+        // A methodology being discontinued (immediately or on a future date).
+        // Guardian sends these as `Policy` messages to the same policy topic as
+        // the publish message, so they arrive through this same path.
+        // The topic is enough to resolve it: PolicyStatusProcessor re-reads every
+        // discontinue message on the topic and attributes each to the version it
+        // names, so a message that names no version is reported there rather than
+        // being filtered out here.
+        if (parsed.type === 'Policy' && parsed.action && DISCONTINUE_ACTIONS.has(parsed.action)) {
+            await this.enqueuePolicyStatus(topicId, 'discontinue', consensusTimestamp);
         }
 
         // ── IPFS fetch strategy ────────────────────────────────────────────────
@@ -223,16 +272,14 @@ export class MessageProcessProcessor extends WorkerHost {
                 );
                 continue;
             }
-            // No priority: prioritized jobs are starved here because the
-            // continuous topic re-poll stream keeps the `wait` list non-empty,
-            // so the worker never drains the `prioritized` set. Enqueueing
-            // discovery on the same `wait` FIFO guarantees it is processed.
-            await this.topicQueue.add(
+            const targetQueue = fromPriorityLane ? this.topicPriorityQueue : this.topicQueue;
+            await targetQueue.add(
                 'sync',
                 {
                     topicId: topic.topicId,
                     fromSequenceNumber: 0,
                     isOrgTopic: topic.isOrgTopic,
+                    oneTimePriority: fromPriorityLane,
                 },
                 {
                     jobId: `topic-${topic.topicId}-0`,
@@ -240,7 +287,18 @@ export class MessageProcessProcessor extends WorkerHost {
             );
         }
 
-        // Enqueue token sync for discovered tokens
+        // Enqueue token sync for discovered tokens, coalesced per token per
+        // minute rather than per (token, message). A token referenced by a
+        // thousand messages used to produce a thousand identical full syncs, each
+        // one a getToken plus a serial walk.
+        //
+        // The time bucket matters. Keying on the token alone looked tidier but
+        // tied the dedup window to job retention: once a sync completed, every
+        // later message about that token enqueued nothing at all until the
+        // finished job aged out, and nothing else re-syncs a token in the
+        // meantime — scheduleTokenSyncs only runs during boot seeding — so those
+        // updates were silently dropped.
+        const tokenBucket = Math.floor(Date.now() / 60_000);
         const tokenIds = extractTokenIds(parsed);
         for (const tokenId of tokenIds) {
             await this.tokenQueue.add(
@@ -251,7 +309,7 @@ export class MessageProcessProcessor extends WorkerHost {
                     fromSerial: 0,
                 },
                 {
-                    jobId: `token-${tokenId}-${consensusTimestamp}`,
+                    jobId: `token-${tokenId}-${tokenBucket}`,
                 },
             );
         }
@@ -261,6 +319,28 @@ export class MessageProcessProcessor extends WorkerHost {
 
         this.logger.debug(
             `Processed message ${consensusTimestamp}: type=${parsed.type} action=${parsed.action}`,
+        );
+    }
+
+    /**
+     * Asks the policy-status queue to re-resolve one methodology's discontinue
+     * state.
+     *
+     * The jobId is scoped to the triggering MESSAGE, never to the methodology
+     * alone: finished jobs are retained for QUEUE_KEEP_COMPLETED_AGE_S (an hour
+     * by default) and re-adding a retained jobId is silently dropped — which
+     * would swallow exactly the case that matters, an edited deferral arriving
+     * minutes after the discontinuation it replaces.
+     */
+    private async enqueuePolicyStatus(
+        policyTopicId: string,
+        reason: 'publish' | 'discontinue',
+        consensusTimestamp: string,
+    ): Promise<void> {
+        await this.policyStatusQueue.add(
+            'resolve',
+            { policyTopicId, reason },
+            { jobId: `policy-status-${policyTopicId}-${reason}-${consensusTimestamp}` },
         );
     }
 

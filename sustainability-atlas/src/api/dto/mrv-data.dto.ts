@@ -46,7 +46,7 @@ export class MrvDataQueryDto {
     @IsISO8601()
     from?: string;
 
-    @ApiPropertyOptional({ description: 'ISO 8601 range end. Overlap counterpart of `from` — matches when the record period STARTS on/before this instant (record start <= to); for a single-date-column schema, "that column <= to".' })
+    @ApiPropertyOptional({ description: 'ISO 8601 range end. Overlap counterpart of `from`: matches when the record period STARTS on/before this instant (record start <= to); for a single-date-column schema, "that column <= to".' })
     @IsOptional()
     @IsISO8601()
     to?: string;
@@ -62,31 +62,31 @@ export class MrvColumnDto {
     @ApiProperty({ required: false, nullable: true, description: 'Field description, when defined by the schema' })
     description: string | null;
 
-    @ApiProperty({ description: 'True for the (first-detected) date-time column — drives the default sort and the time-range filter' })
+    @ApiProperty({ description: 'True for the (first-detected) date-time column. Drives the default sort and the time-range filter' })
     isDate: boolean;
 }
 
 export class MrvRecordRowDto {
-    @ApiProperty({ description: 'HCS consensus timestamp identifying this VC message — use with GET /:id/vc-evidence/:consensusTimestamp for the raw document' })
+    @ApiProperty({ description: 'HCS consensus timestamp identifying this VC message. Use with GET /:id/vc-evidence/:consensusTimestamp for the raw document' })
     consensusTimestamp: string;
 
     @ApiProperty({ description: 'Formatted column values keyed by column key' })
     values: Record<string, string>;
 
-    @ApiProperty({ nullable: true, description: 'Device / measurement-point label this record (or, when flattened, this item) is associated with, when the schema has a device-like nested field. When a record spans MULTIPLE devices, this is a comma-joined string (e.g. "IOT-DEV-8, IOT-DEV-939") — use deviceLabels for the individual, filter-matchable values.' })
+    @ApiProperty({ nullable: true, description: 'Device / measurement-point label this record (or, when flattened, this item) is associated with, when the schema has a device-like nested field. When a record spans MULTIPLE devices, this is a comma-joined string (e.g. "IOT-DEV-8, IOT-DEV-939"). Use deviceLabels for the individual, filter-matchable values.' })
     device: string | null;
 
     @ApiProperty({
         type: [String],
         nullable: true,
-        description: 'The individual DISTINCT device/measurement-point labels backing `device` (unjoined) — pass ONE of these as the `device` query filter; `device` itself (the joined string) can never match the single-array-element equality check the filter performs.',
+        description: 'The individual DISTINCT device/measurement-point labels backing `device` (unjoined). Pass ONE of these as the `device` query filter; `device` itself (the joined string) can never match the single-array-element equality check the filter performs.',
     })
     deviceLabels: string[] | null;
 
     @ApiProperty({
         required: false,
         nullable: true,
-        description: 'Present only when MrvDataResponseDto.flattened is true — 1-based position of this item within its parent VC\'s device array, since several rows then share one consensusTimestamp',
+        description: 'Present only when MrvDataResponseDto.flattened is true: 1-based position of this item within its parent VC\'s device array, since several rows then share one consensusTimestamp',
     })
     itemIndex?: number;
 }
@@ -122,7 +122,7 @@ export class MrvDataResponseDto {
     @ApiProperty({
         description:
             'True when this schema has no top-level scalar fields and its columns were promoted from a repeatable ' +
-            'device/item array instead — rows are then one-per-item rather than one-per-VC, so several rows can share a consensusTimestamp.',
+            'device/item array instead. Rows are then one-per-item rather than one-per-VC, so several rows can share a consensusTimestamp.',
     })
     flattened: boolean;
 }

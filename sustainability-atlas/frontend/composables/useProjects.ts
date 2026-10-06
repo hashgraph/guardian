@@ -1,4 +1,4 @@
-import type { Project, ProjectIssuance, IssuanceEvent, LinkedSchema, LinkedVc, Milestone } from '~/types/models';
+import type { Project, ProjectIssuance, IssuanceEvent, MintMatchStatus, LinkedSchema, LinkedVc, Milestone, ProjectedIssuance } from '~/types/models';
 
 // country display name → ISO 3166-1 alpha-3 for CountryFlag component
 export const COUNTRY_ALPHA3: Record<string, string> = {
@@ -61,7 +61,7 @@ export const COUNTRY_ALPHA3: Record<string, string> = {
     'Oman': 'OMN',
     // P
     'Pakistan': 'PAK', 'Palau': 'PLW', 'Palestine': 'PSE', 'Panama': 'PAN',
-    'Papua New Guinea': 'PNG', 'Paraguay': 'PRY', 'Peru': 'PER', 'Philippines': 'PHL',
+    'Papua New Guinea': 'PNG', 'Paraguay': 'PRY', 'Peru': 'PER', 'Perú': 'PER', 'Philippines': 'PHL',
     'Poland': 'POL', 'Portugal': 'PRT', 'Puerto Rico': 'PRI', 
     // Q
     'Qatar': 'QAT',
@@ -102,14 +102,42 @@ for (const [name, code] of Object.entries(COUNTRY_ALPHA3)) {
     if (!(code in ALPHA3_TO_NAME)) ALPHA3_TO_NAME[code] = name;
 }
 
+const COUNTRY_ALPHA3_LOWER: Record<string, string> = {};
+for (const [name, code] of Object.entries(COUNTRY_ALPHA3)) {
+    COUNTRY_ALPHA3_LOWER[name.toLowerCase()] = code;
+}
+
+// Display bucket for a raw project country value that isn't a recognized ISO
+// 3166-1 name/alpha-3 code (a registry-side typo, placeholder text, or leaked
+// geo/file data) — shown instead of the garbage value itself.
+export const OTHER_COUNTRY = 'Other';
+
+// Sentinel the country filter sends to the API to mean "every project whose
+// stored country is non-empty but not a recognized ISO name/alpha-3 code"
+// (the OTHER_COUNTRY bucket) — see PgProjectRepository.applyCountryFilter,
+// which special-cases this exact value since a plain ILIKE can't express it.
+export const OTHER_COUNTRY_FILTER_VALUE = '__other__';
+
+/**
+ * Resolves a raw project country value — a free-text name (any case), a
+ * known alias, or an ISO 3166-1 alpha-3 code (any case) — to its canonical
+ * alpha-3 code. Returns 'UNK' for empty input and for anything unrecognized;
+ * callers that need to tell those two apart check the raw value themselves
+ * (normalizeCountryName below does, returning '' vs. OTHER_COUNTRY).
+ */
+export function resolveCountryCode(raw: string): string {
+    const value = (raw ?? '').trim();
+    if (!value) return 'UNK';
+    if (ALPHA3_TO_NAME[value.toUpperCase()]) return value.toUpperCase();
+    return COUNTRY_ALPHA3_LOWER[value.toLowerCase()] || 'UNK';
+}
+
 export function normalizeCountryName(raw: string): string {
     const value = (raw ?? '').trim();
     if (!value) return '';
-    const asCode = ALPHA3_TO_NAME[value.toUpperCase()];
-    if (asCode) return asCode;
-    const code = COUNTRY_ALPHA3[value];
-    if (code && ALPHA3_TO_NAME[code]) return ALPHA3_TO_NAME[code];
-    return value;
+    const code = resolveCountryCode(value);
+    if (code === 'UNK') return OTHER_COUNTRY;
+    return ALPHA3_TO_NAME[code] || value;
 }
 
 function mapLinkedSchema(s: Record<string, any>): LinkedSchema {
@@ -129,6 +157,16 @@ function mapLinkedSchema(s: Record<string, any>): LinkedSchema {
     };
 }
 
+function mapProjectedIssuance(raw: unknown): ProjectedIssuance | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const r = raw as Record<string, any>;
+    return {
+        totalTco2e: typeof r['totalTco2e'] === 'number' ? r['totalTco2e'] : null,
+        periodStart: typeof r['periodStart'] === 'number' ? r['periodStart'] : null,
+        periodEnd: typeof r['periodEnd'] === 'number' ? r['periodEnd'] : null,
+    };
+}
+
 function parseSdgs(sdgs: unknown): number[] {
     if (Array.isArray(sdgs)) return (sdgs as unknown[]).map(Number).filter(Boolean);
     if (typeof sdgs === 'string' && sdgs.trim()) {
@@ -138,7 +176,7 @@ function parseSdgs(sdgs: unknown): number[] {
 }
 
 export function mapApiProject(raw: Record<string, any>): Project {
-    const countryCode = COUNTRY_ALPHA3[raw.country] || 'UNK';
+    const countryCode = resolveCountryCode(raw.country ?? '');
     return {
         id: raw.sourceTimestamp || raw.id,
         name: raw.name ?? '',
@@ -153,8 +191,10 @@ export function mapApiProject(raw: Record<string, any>): Project {
         methodologyId: raw.methodologyId ?? '',
         registry: raw.registryName ?? raw.registry ?? raw.registryDid ?? 'Unknown Registry',
         developer: raw.developer ?? '',
+        developerEmails: Array.isArray(raw.developerEmails) ? raw.developerEmails : [],
+        developerPhones: Array.isArray(raw.developerPhones) ? raw.developerPhones : [],
         credits: raw.credits ?? 0,
-        status: raw.status ?? 'Issuing',
+        status: raw.lifecycleStage ?? raw.status ?? 'Registered',
         vintage: raw.vintage ?? '',
         sdgs: parseSdgs(raw.sdgs),
         category: raw.category ?? '',
@@ -189,12 +229,19 @@ export function mapApiProject(raw: Record<string, any>): Project {
                 symbol: typeof e['symbol'] === 'string' ? e['symbol'] : null,
                 type: typeof e['type'] === 'string' ? e['type'] : null,
                 amount: typeof e['amount'] === 'number' ? e['amount'] : null,
+                mintedAmount: typeof e['mintedAmount'] === 'number' ? e['mintedAmount'] : null,
+                serialCount: typeof e['serialCount'] === 'number' ? e['serialCount'] : null,
+                serialRetiredCount: typeof e['serialRetiredCount'] === 'number' ? e['serialRetiredCount'] : null,
+                serialTransferredCount: typeof e['serialTransferredCount'] === 'number' ? e['serialTransferredCount'] : null,
+                mintMatchStatus: typeof e['mintMatchStatus'] === 'string' ? (e['mintMatchStatus'] as MintMatchStatus) : null,
                 mintDate: typeof e['mintDate'] === 'string' ? e['mintDate'] : null,
                 linkMethod: typeof e['linkMethod'] === 'string' ? e['linkMethod'] : null,
                 rawVc: e['rawVc'] && typeof e['rawVc'] === 'object' ? (e['rawVc'] as Record<string, any>) : null,
             }))
             : [],
         totalIssued: typeof raw.totalIssued === 'number' ? raw.totalIssued : 0,
+        totalDeclared: typeof raw.totalDeclared === 'number' ? raw.totalDeclared : undefined,
+        totalTransferred: typeof raw.totalTransferred === 'number' ? raw.totalTransferred : null,
         totalRetired: typeof raw.totalRetired === 'number' ? raw.totalRetired : 0,
         totalActive: typeof raw.totalActive === 'number' ? raw.totalActive : 0,
         linkedSchemas: Array.isArray(raw.linkedSchemas)
@@ -209,6 +256,7 @@ export function mapApiProject(raw: Record<string, any>): Project {
         lifecycleStage: typeof raw.lifecycleStage === 'string' ? raw.lifecycleStage : ((raw.totalIssued ?? 0) > 0 ? 'Issued' : 'Registered'),
         expectedIssuanceYear: typeof raw.expectedIssuanceYear === 'string' ? raw.expectedIssuanceYear : null,
         projectedVolume: typeof raw.projectedVolume === 'number' ? raw.projectedVolume : null,
+        projectedIssuance: mapProjectedIssuance(raw.projectedIssuance),
         milestones: Array.isArray(raw.milestones)
             ? (raw.milestones as Array<Record<string, any>>).map((m): Milestone => ({
                 key: typeof m['key'] === 'string' ? m['key'] : '',

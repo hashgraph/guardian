@@ -6,6 +6,8 @@ const EMPTY: DashboardMintStatsDto = {
     mintSeries: [],
     bySector: [],
     byRegistry: [],
+    totalRetired: 0,
+    retirementSeries: [],
 };
 
 export function useMintStats(filters?: Ref<{ registry?: string; developer?: string }>) {
@@ -49,6 +51,12 @@ export function useMintStats(filters?: Ref<{ registry?: string; developer?: stri
         return bucketMintSeries(mintStats.value.mintSeries, period, locale.value);
     }
 
+    // Retirement volume over time. Bucketed identically to the mint series so
+    // the two charts read against the same time axis.
+    function buildRetirementSeries(period: 'monthly' | 'quarterly' | 'yearly'): { label: string; value: number }[] {
+        return bucketMintSeries(mintStats.value.retirementSeries, period, locale.value);
+    }
+
     // Quick lookup: minted amount by sector label
     const mintedBySector = computed(() =>
         new Map(mintStats.value.bySector.map(e => [e.label, e.amount])),
@@ -63,6 +71,7 @@ export function useMintStats(filters?: Ref<{ registry?: string; developer?: stri
         mintStats,
         mintPending: pending,
         buildMintSeries,
+        buildRetirementSeries,
         mintedBySector,
         mintedByRegistry,
     };

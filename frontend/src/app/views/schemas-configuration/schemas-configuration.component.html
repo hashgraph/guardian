@@ -6,7 +6,9 @@
                 <i class="pi pi-arrow-left"></i>
             </button>
             <a class="sc-crumb-link" (click)="goToBreadcrumbRoot()">{{ breadcrumbRootLabel }}</a>
-            @if (isTemplateMode) {
+            @if (isTemplateConfigMode) {
+                <i class="pi pi-chevron-right sc-breadcrumb-sep"></i>
+            } @else if (isTemplateMode) {
                 <i class="pi pi-chevron-right sc-breadcrumb-sep"></i>
                 @if (isTemplateBreadcrumbLink) {
                     <a class="sc-crumb-link" (click)="goToTemplateConfiguration()">{{ breadcrumbTemplateLabel }}</a>
@@ -14,16 +16,134 @@
                     <span class="sc-crumb-current">{{ breadcrumbTemplateLabel }}</span>
                 }
             }
-            @if (selectedSchema) {
+            @if (selectedSchema && !isTemplateConfigMode) {
                 <i class="pi pi-chevron-right sc-breadcrumb-sep"></i>
-                <span class="sc-crumb-current">{{ selectedSchema.name }}</span>
             }
         </nav>
+
+        @if (isTemplateConfigMode) {
+            <div class="sc-identity" [class.open]="templateIdentityMenu.overlayVisible" (click)="templateIdentityMenu.toggle($event)">
+                <i class="pi pi-clone sc-identity-icon"></i>
+                <div class="sc-identity-text">
+                    <span #templateNameEl class="sc-identity-name"
+                          [pTooltip]="breadcrumbTemplateLabel"
+                          [tooltipDisabled]="templateNameEl.scrollWidth <= templateNameEl.clientWidth"
+                          tooltipPosition="bottom">{{ breadcrumbTemplateLabel }}</span>
+                    <span class="sc-identity-meta">
+                        @if (schemaTemplate?.version) {
+                            v{{ schemaTemplate?.version }} ·
+                        }
+                        Template details
+                    </span>
+                </div>
+                <i class="pi pi-chevron-down sc-identity-caret"></i>
+            </div>
+            @if (schemaTemplate?.status) {
+                @let templateBadge = getTemplateStatusBadge();
+                <div class="sc-status-badge" [ngClass]="'sc-status-badge--' + templateBadge.variant">
+                    @if (templateBadge.icon) {
+                        <i class="pi" [ngClass]="templateBadge.icon"></i>
+                    }
+                    <span>{{ templateBadge.label }}</span>
+                </div>
+            }
+        } @else if (selectedSchema) {
+            <div class="sc-identity" [class.open]="identityMenu.overlayVisible" (click)="identityMenu.toggle($event)">
+                <i class="pi pi-table sc-identity-icon"></i>
+                <div class="sc-identity-text">
+                    <span #schemaNameEl class="sc-identity-name"
+                          [pTooltip]="selectedSchema.name || 'Untitled schema'"
+                          [tooltipDisabled]="schemaNameEl.scrollWidth <= schemaNameEl.clientWidth"
+                          tooltipPosition="bottom">{{ selectedSchema.name || 'Untitled schema' }}</span>
+                    <span class="sc-identity-meta">
+                        @if (selectedSchema.version) {
+                            v{{ selectedSchema.version }} ·
+                        }
+                        Schema details
+                    </span>
+                </div>
+                <i class="pi pi-chevron-down sc-identity-caret"></i>
+            </div>
+            @if (selectedSchema.status) {
+                @let badge = getStatusBadge(selectedSchema);
+                <div class="sc-status-badge" [ngClass]="'sc-status-badge--' + badge.variant">
+                    @if (badge.icon) {
+                        <i class="pi" [ngClass]="badge.icon"></i>
+                    }
+                    <span>{{ badge.label }}</span>
+                </div>
+            }
+            @if (isSchemaFeatured(selectedSchema)) {
+                <i class="pi pi-star-fill schema-featured-icon" pTooltip="Featured" tooltipPosition="bottom"></i>
+            }
+        }
+
+        <p-popover #templateIdentityMenu>
+            <div class="sc-identity-popover">
+                <div class="sc-identity-popover-header">Template details</div>
+                <div class="sc-identity-row" (click)="copyIdentity('id', schemaTemplate?.id, $event)" title="Copy template ID">
+                    <div class="sc-identity-row-label">Template ID</div>
+                    <div class="sc-identity-row-value">
+                        <span class="sc-identity-row-mono">{{ schemaTemplate?.id || '–' }}</span>
+                        @if (schemaTemplate?.id) {
+                            <i class="pi" [ngClass]="copiedField === 'id' ? 'pi-check' : 'pi-copy'"></i>
+                        }
+                    </div>
+                </div>
+                @if (schemaTemplate?.version) {
+                    <div class="sc-identity-row sc-identity-row--plain">
+                        <div class="sc-identity-row-label">Version</div>
+                        <div class="sc-identity-row-value">
+                            <span class="sc-identity-row-plain-value">{{ schemaTemplate?.version }}</span>
+                        </div>
+                    </div>
+                }
+                <div class="sc-identity-divider"></div>
+                <div class="sc-identity-action" (click)="showTemplateSettings = true; templateIdentityMenu.hide()">
+                    <i class="pi" [ngClass]="isTemplateReadonly ? 'pi-eye' : 'pi-pencil'"></i>
+                    <span>{{ isTemplateReadonly ? 'View template details' : 'Edit template details' }}</span>
+                </div>
+            </div>
+        </p-popover>
+
+        <p-popover #identityMenu>
+            @if (selectedSchema) {
+                <div class="sc-identity-popover">
+                    <div class="sc-identity-popover-header">Schema details</div>
+                    <div class="sc-identity-row" (click)="copyIdentity('uuid', selectedSchema.uuid, $event)" title="Copy schema ID">
+                        <div class="sc-identity-row-label">Schema ID</div>
+                        <div class="sc-identity-row-value">
+                            <span class="sc-identity-row-mono">{{ selectedSchema.uuid || '–' }}</span>
+                            @if (selectedSchema.uuid) {
+                                <i class="pi" [ngClass]="copiedField === 'uuid' ? 'pi-check' : 'pi-copy'"></i>
+                            }
+                        </div>
+                    </div>
+                    <div class="sc-identity-row" (click)="copyIdentity('iri', selectedSchema.iri, $event)" title="Copy schema IRI">
+                        <div class="sc-identity-row-label">IRI</div>
+                        <div class="sc-identity-row-value">
+                            <span class="sc-identity-row-mono">{{ selectedSchema.iri || '–' }}</span>
+                            @if (selectedSchema.iri) {
+                                <i class="pi" [ngClass]="copiedField === 'iri' ? 'pi-check' : 'pi-copy'"></i>
+                            }
+                        </div>
+                    </div>
+                    @if (selectedSchema.version) {
+                        <div class="sc-identity-row sc-identity-row--plain">
+                            <div class="sc-identity-row-label">Version</div>
+                            <div class="sc-identity-row-value">
+                                <span class="sc-identity-row-plain-value">{{ selectedSchema.version }}</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </p-popover>
 
         <div class="sc-spacer"></div>
 
         @if (showTopSaveActions) {
-            @if (!isTemplateConfigMode) {
+            @if (!isTemplateConfigMode && (!isTemplatePreviewMode || selectedSchema)) {
             <div class="sc-nav-tabs">
                 <button class="sc-nav-tab" [class.active]="activeTab === 'builder'" (click)="activeTab = 'builder'">
                     Builder
@@ -35,6 +155,16 @@
             }
 
             <div class="sc-nav-actions">
+                @if (isTemplatePreviewMode) {
+                    <span class="sc-preview-mode-badge">
+                        <i class="pi pi-play-circle"></i>
+                        Trying template - changes here are never saved
+                    </span>
+                    <button class="sc-btn" (click)="goToTemplateConfiguration()">
+                        <i class="pi pi-sign-out"></i>
+                        Done
+                    </button>
+                } @else {
                 @if (currentSchemaErrorCount > 0) {
                     <span class="sc-validation-errors">
                         <i class="pi pi-exclamation-triangle"></i>
@@ -95,6 +225,12 @@
                 }
                 @if (isTemplateConfigMode) {
                 <button class="sc-btn"
+                    [disabled]="!schemaTemplate?.id"
+                    (click)="onPreviewTemplate()">
+                    <i class="pi pi-play-circle"></i>
+                    Try Template
+                </button>
+                <button class="sc-btn"
                     [disabled]="!canExportTemplate"
                     (click)="onExportTemplate()">
                     <i class="pi pi-download"></i>
@@ -115,11 +251,21 @@
                     </button>
                 }
                 }
+                }
             </div>
         }
     </header>
 
-    @if (hasAppliedTemplate) {
+    @if (isTemplatePreviewMode) {
+        <div class="st-applied-template-banner st-applied-template-banner--preview">
+            <i class="pi pi-play-circle"></i>
+            <span>Trying template:</span>
+            <strong>{{ breadcrumbTemplateLabel }}</strong>
+            @if (schemaTemplate?.version) {
+                <span class="st-applied-template-version">v{{ schemaTemplate?.version }}</span>
+            }
+        </div>
+    } @else if (hasAppliedTemplate) {
         <div class="st-applied-template-banner">
             <i class="pi pi-lock"></i>
             <span>Template applied:</span>
@@ -131,18 +277,17 @@
     }
 
     @if (isTemplateConfigMode) {
-        <div class="st-template-settings-panel">
-            <div class="st-template-settings-header">
-                <div class="st-template-settings-title">
-                    <i class="pi pi-sliders-h"></i>
-                    Template settings
-                </div>
-                <div class="st-template-settings-meta">
-                    <span class="st-template-settings-chip">{{ schemaTemplate?.status || '' }}</span>
-                    @if (schemaTemplate?.version) {
-                        <span class="st-template-settings-chip">v{{ schemaTemplate?.version }}</span>
-                    }
-                </div>
+        @if (showTemplateSettings) {
+            <div class="st-drawer-backdrop" (click)="showTemplateSettings = false"></div>
+        }
+        <div class="st-drawer" [class.open]="showTemplateSettings" [attr.aria-hidden]="!showTemplateSettings"
+             role="dialog" aria-modal="true" aria-labelledby="st-drawer-title">
+            <div class="st-drawer-title">
+                <i class="pi pi-cog"></i>
+                <span id="st-drawer-title">Template details</span>
+                <button type="button" class="st-drawer-close" (click)="showTemplateSettings = false" title="Close">
+                    <i class="pi pi-times"></i>
+                </button>
             </div>
             @if (isTemplateReadonly) {
                 <div class="st-lock-note st-lock-note--inline">
@@ -150,22 +295,22 @@
                     <span>Published template is read-only. Create a new version to edit it.</span>
                 </div>
             }
-            <div class="st-template-settings-form">
-                <div class="sc-schema-props-field">
-                    <label class="sc-schema-props-label">Name</label>
-                    <input class="sc-schema-props-name"
+            <div class="st-drawer-form">
+                <div class="st-drawer-field">
+                    <label class="st-drawer-label">Name</label>
+                    <input class="st-drawer-input"
                            [ngModel]="schemaTemplate?.name || ''"
                            [readonly]="isTemplateReadonly"
                            (ngModelChange)="setTemplateName($event)"
                            placeholder="Template name" />
                 </div>
-                <div class="sc-schema-props-field sc-schema-props-field--full">
-                    <label class="sc-schema-props-label">Description <span class="sc-schema-props-optional">(optional)</span></label>
-                    <textarea class="sc-schema-props-desc"
+                <div class="st-drawer-field">
+                    <label class="st-drawer-label">Description <span class="st-drawer-optional">(optional)</span></label>
+                    <textarea class="st-drawer-input st-drawer-textarea"
                               [ngModel]="schemaTemplate?.description || ''"
                               [readonly]="isTemplateReadonly"
                               (ngModelChange)="setTemplateDescription($event)"
-                              rows="2"
+                              rows="5"
                               placeholder="What this template represents..."></textarea>
                 </div>
             </div>
@@ -237,9 +382,11 @@
                                 [ngModel]="schemaSearch"
                                 (ngModelChange)="schemaSearch$.next($event)" />
                         </div>
+                        @if (!isTemplatePreviewMode) {
                         <button class="sc-btn-new-schema" [disabled]="isTemplateReadonly" (click)="onNewSchema()" title="New schema">
                             <i class="pi pi-plus"></i>
                         </button>
+                        }
                     </div>
 
                     <div class="sc-schemas-list" (scroll)="onSidebarScroll($event)">
@@ -346,35 +493,46 @@
                     <!-- ── BUILDER ── -->
                     <div class="sc-editor">
 
-                        <div class="sc-editor-header">
-                            <div class="sc-editor-header-info">
-                                @if (isTemplateConfigMode) {
+                        <!-- ── Root schema properties panel ── -->
+                        <div class="sc-schema-props" [class.sc-schema-props--locked]="selectedSchemaSettingsLocked">
+                            @if (isTemplateConfigMode) {
+                                <div class="st-schema-identity">
+                                    <i class="pi pi-table st-schema-identity-icon"></i>
+                                    <span #panelSchemaNameEl class="st-schema-identity-name"
+                                          [pTooltip]="selectedSchema.name || 'Untitled schema'"
+                                          [tooltipDisabled]="panelSchemaNameEl.scrollWidth <= panelSchemaNameEl.clientWidth"
+                                          tooltipPosition="bottom">{{ selectedSchema.name || 'Untitled schema' }}</span>
+                                    @if (selectedSchema.version) {
+                                        <span class="st-schema-identity-version">v{{ selectedSchema.version }}</span>
+                                    }
+                                    @if (selectedSchema.status) {
+                                        @let schemaBadge = getStatusBadge(selectedSchema);
+                                        <div class="sc-status-badge sc-status-badge--compact" [ngClass]="'sc-status-badge--' + schemaBadge.variant">
+                                            @if (schemaBadge.icon) {
+                                                <i class="pi" [ngClass]="schemaBadge.icon"></i>
+                                            }
+                                            <span>{{ schemaBadge.label }}</span>
+                                        </div>
+                                    }
+                                    <button class="st-schema-identity-info"
+                                            [class.open]="identityMenu.overlayVisible"
+                                            pTooltip="Schema details"
+                                            tooltipPosition="bottom"
+                                            (click)="identityMenu.toggle($event)">
+                                        <i class="pi pi-info-circle"></i>
+                                    </button>
+                                    <span class="sc-spacer"></span>
                                     <button
                                         class="sc-schema-featured-btn"
                                         [class.active]="isSelectedSchemaFeatured"
                                         [disabled]="isTemplateReadonly"
                                         [pTooltip]="isSelectedSchemaFeatured ? 'Unmark as featured' : 'Mark as featured'"
-                                        tooltipPosition="top"
+                                        tooltipPosition="bottom"
                                         (click)="toggleFeaturedForSelectedSchema()">
                                         <i class="pi" [class.pi-star-fill]="isSelectedSchemaFeatured" [class.pi-star]="!isSelectedSchemaFeatured"></i>
                                     </button>
-                                }
-                                @if (isSchemaFeatured(selectedSchema) && !isTemplateConfigMode) {
-                                    <i class="pi pi-star-fill schema-featured-icon" pTooltip="Featured" tooltipPosition="right"></i>
-                                }
-                                <span class="sc-editor-title">{{ selectedSchema.name }}</span>
-                                <span class="sc-schema-status" [class.sc-schema-status--draft]="isDraft(selectedSchema)">
-                                    {{ selectedSchema.status }}
-                                </span>
-                            </div>
-                            <div class="sc-spacer"></div>
-                            @if (selectedSchema.version) {
-                                <span class="sc-editor-version">v{{ selectedSchema.version }}</span>
+                                </div>
                             }
-                        </div>
-
-                        <!-- ── Root schema properties panel ── -->
-                        <div class="sc-schema-props" [class.sc-schema-props--locked]="selectedSchemaSettingsLocked">
                             <div class="sc-schema-props-header">
                                 <div class="sc-schema-props-title">
                                     <i class="pi pi-file-edit"></i>
@@ -386,9 +544,9 @@
                                     @if (!isTemplateConfigMode && selectedSchema.iri) {
                                         <span class="sc-schema-props-iri">({{ selectedSchema.iri }})</span>
                                         <i class="pi sc-schema-props-iri-copy"
-                                           [class.pi-check]="copiedIri"
-                                           [class.pi-copy]="!copiedIri"
-                                           [title]="copiedIri ? 'Copied' : 'Copy schema IRI'"
+                                           [class.pi-check]="copiedField === 'iri'"
+                                           [class.pi-copy]="copiedField !== 'iri'"
+                                           [title]="copiedField === 'iri' ? 'Copied' : 'Copy schema IRI'"
                                            (click)="copyIri(selectedSchema.iri, $event)"></i>
                                     }
                                 </div>
@@ -402,17 +560,31 @@
                             @if (isTemplateConfigMode) {
                                 <button class="st-toggle-row st-toggle-row--inline" [disabled]="isTemplateReadonly" (click)="toggleCanChangeSelectedSchemaSettings()">
                                     <span>
-                                        <strong>Change schema settings</strong>
-                                        <small>Allows changing schema name, description and entity type after applying.</small>
+                                        <strong>Lock schema settings</strong>
+                                        <small>Users can't rename the schema, change its description, or entity type.</small>
                                     </span>
-                                    <span class="st-toggle" [class.active]="canChangeSelectedSchemaSettings"></span>
+                                    <span class="st-toggle" [class.active]="selectedSchemaSettingsConfigLocked"></span>
                                 </button>
                                 <button class="st-toggle-row st-toggle-row--inline" [disabled]="isTemplateReadonly" (click)="toggleCanAddCustomFieldsToSelectedSchema()">
                                     <span>
-                                        <strong>Can add custom fields</strong>
-                                        <small>Allows adding fields outside the template standard when applied.</small>
+                                        <strong>Lock custom fields</strong>
+                                        <small>Users can only use fields defined in this template.</small>
                                     </span>
-                                    <span class="st-toggle" [class.active]="canAddCustomFieldsToSelectedSchema"></span>
+                                    <span class="st-toggle" [class.active]="selectedSchemaCustomFieldsConfigLocked"></span>
+                                </button>
+                                <button class="st-toggle-row st-toggle-row--inline" [disabled]="isTemplateReadonly" (click)="toggleCanChangeSelectedSchemaConditions()">
+                                    <span>
+                                        <strong>Lock custom conditions</strong>
+                                        <small>Prevents adding new conditions. Editing or removing an existing one is governed by its own lock.</small>
+                                    </span>
+                                    <span class="st-toggle" [class.active]="selectedSchemaConditionsConfigLocked"></span>
+                                </button>
+                                <button class="st-toggle-row st-toggle-row--inline" [disabled]="isTemplateReadonly" (click)="toggleCanChangeSelectedSchemaRepeatableLinks()">
+                                    <span>
+                                        <strong>Lock custom repeatable links</strong>
+                                        <small>Prevents adding new repeatable links. Editing or removing an existing one is governed by its own lock.</small>
+                                    </span>
+                                    <span class="st-toggle" [class.active]="selectedSchemaRepeatableLinksConfigLocked"></span>
                                 </button>
                                 <div class="st-guidelines-editor">
                                     <label class="st-guidelines-label" for="st-schema-guidelines-textarea">Guidelines</label>
@@ -463,6 +635,12 @@
                                                   (ngModelChange)="markDirty()">
                                         </p-select>
                                     </div>
+                                    <div class="sc-schema-props-field">
+                                        <label class="sc-schema-props-label">IWA Version</label>
+                                        <span class="sc-schema-props-iwa"
+                                            [class.sc-schema-props-iwa--v3]="iwaVersionLabel(selectedSchema) === 'V3'"
+                                            [class.sc-schema-props-iwa--v1]="iwaVersionLabel(selectedSchema) === 'V1'">{{ iwaVersionLabel(selectedSchema) }}</span>
+                                    </div>
                                 </div>
                                 <div class="sc-schema-props-field sc-schema-props-field--full">
                                     <label class="sc-schema-props-label">Description <span class="sc-schema-props-optional">(optional)</span></label>
@@ -477,7 +655,6 @@
                         </div>
 
                         <!-- ── Canvas tab bar ── -->
-                        @if (!isTemplateConfigMode) {
                         <div class="sc-canvas-tab-bar">
                             <div class="sc-canvas-tab-pill">
                                 <button class="sc-ctp-btn"
@@ -501,19 +678,20 @@
                                         <span class="sc-ctp-count">{{ arrayDependencyCount }}</span>
                                     }
                                 </button>
-                                @if (glossaryAiEnabled) {
-                                    <button class="sc-ctp-btn"
-                                        [class.active]="activeCanvasTab === 'propertyAi'"
-                                        (click)="setCanvasTab('propertyAi')">
-                                        <svg-icon class="svg-icon-16" src="/assets/images/icons/auto_awesome.svg"></svg-icon>Glossary AI
-                                        @if (pendingSuggestionCount) {
-                                            <span class="sc-ctp-count">{{ pendingSuggestionCount }}</span>
-                                        }
-                                    </button>
+                                @if (!isTemplateConfigMode) {
+                                    @if (glossaryAiEnabled) {
+                                        <button class="sc-ctp-btn"
+                                            [class.active]="activeCanvasTab === 'propertyAi'"
+                                            (click)="setCanvasTab('propertyAi')">
+                                            <svg-icon class="svg-icon-16" src="/assets/images/icons/auto_awesome.svg"></svg-icon>Suggest IWA Property Mappings
+                                            @if (pendingSuggestionCount) {
+                                                <span class="sc-ctp-count">{{ pendingSuggestionCount }}</span>
+                                            }
+                                        </button>
+                                    }
                                 }
                             </div>
                         </div>
-                        }
 
                         @if (activeCanvasTab === 'fields') {
                         <div class="sc-editor-body"
@@ -566,7 +744,7 @@
                         </div>
                         } <!-- /fields tab -->
 
-                        @if (activeCanvasTab === 'conditions' && !isTemplateConfigMode) {
+                        @if (activeCanvasTab === 'conditions') {
                             <ng-container *ngTemplateOutlet="conditionsCanvas"></ng-container>
                         }
                         @if (activeCanvasTab === 'links') {
@@ -637,9 +815,9 @@
                                         @if (ds.iri) {
                                             <span class="sc-schema-props-iri">({{ ds.iri }})</span>
                                             <i class="pi sc-schema-props-iri-copy"
-                                               [class.pi-check]="copiedIri"
-                                               [class.pi-copy]="!copiedIri"
-                                               [title]="copiedIri ? 'Copied' : 'Copy schema IRI'"
+                                               [class.pi-check]="copiedField === 'iri'"
+                                               [class.pi-copy]="copiedField !== 'iri'"
+                                               [title]="copiedField === 'iri' ? 'Copied' : 'Copy schema IRI'"
                                                (click)="copyIri(ds.iri, $event)"></i>
                                         }
                                     </div>
@@ -668,6 +846,12 @@
                                                       [(ngModel)]="ds.entity"
                                                       (ngModelChange)="markDirty()">
                                             </p-select>
+                                        </div>
+                                        <div class="sc-schema-props-field">
+                                            <label class="sc-schema-props-label">IWA Version</label>
+                                            <span class="sc-schema-props-iwa"
+                                                [class.sc-schema-props-iwa--v3]="iwaVersionLabel(ds) === 'V3'"
+                                                [class.sc-schema-props-iwa--v1]="iwaVersionLabel(ds) === 'V1'">{{ iwaVersionLabel(ds) }}</span>
                                         </div>
                                     </div>
                                     <div class="sc-schema-props-field sc-schema-props-field--full">
@@ -751,10 +935,10 @@
                         </div>
                         <button class="st-toggle-row" [disabled]="isTemplateReadonly" (click)="toggleCanEditSelectedFieldInTemplate()">
                             <span>
-                                <strong>Can edit selected field</strong>
-                                <small>Allows editing this field when the template is applied.</small>
+                                <strong>Lock field editing</strong>
+                                <small>Users can't edit this field when template is applied.</small>
                             </span>
-                            <span class="st-toggle" [class.active]="canEditSelectedFieldInTemplate"></span>
+                            <span class="st-toggle" [class.active]="selectedFieldConfigLocked"></span>
                         </button>
                         <div class="st-guidelines-editor">
                             <label class="st-guidelines-label" for="st-field-guidelines-textarea">Guidelines</label>
@@ -814,7 +998,7 @@
                                 type="text"
                                 placeholder="Field title"
                                 [(ngModel)]="selectedField.title"
-                                (ngModelChange)="markDirty()" />
+                                (ngModelChange)="markDirty(); invalidateSelectedFieldSuggestion()" />
                         </div>
                         <div class="sc-rp-group">
                             <label class="sc-rp-label">Key</label>
@@ -834,7 +1018,7 @@
                                 type="text"
                                 placeholder="Field description"
                                 [(ngModel)]="selectedField.description"
-                                (ngModelChange)="markDirty()" />
+                                (ngModelChange)="markDirty(); invalidateSelectedFieldSuggestion()" />
                         </div>
                         @if (selectedFieldIsString) {
                             <div class="sc-rp-group">
@@ -1021,7 +1205,7 @@
                             <div class="sc-rp-group">
                                 <label class="sc-rp-label">
                                     <i class="pi pi-sitemap" style="font-size:11px;color:var(--color-primary, #4169E2);margin-right:4px"></i>
-                                    Referenced schema
+                                    Sub-schema reference
                                 </label>
                                 <p-select
                                     class="guardian-dropdown sc-rp-select"
@@ -1032,6 +1216,8 @@
                                     optionLabel="name"
                                     optionValue="iri"
                                     [showClear]="false"
+                                    [virtualScroll]="true"
+                                    [virtualScrollItemSize]="40"
                                     appendTo="body"
                                     placeholder="Select schema…"
                                     [ngModel]="selectedSubSchemaIri"
@@ -1040,93 +1226,17 @@
                                         <div class="sc-ref-sel-item">
                                             <i class="pi pi-file" style="color:var(--color-primary, #4169E2);font-size:12px"></i>
                                             <span [title]="s.name">{{ s.name }}</span>
-                                            @if (s.version) { <span class="sc-ref-sel-ver">v{{ s.version }}</span> }
+                                            @if (s.component && s.topicId !== topic) { <span class="sc-ref-sel-ver sc-ref-sel-tool">{{ s.component }}</span> } @else if (s.version) { <span class="sc-ref-sel-ver">v{{ s.version }}</span> }
                                         </div>
                                     </ng-template>
                                     <ng-template pTemplate="item" let-s>
                                         <div class="sc-ref-sel-item">
                                             <i class="pi pi-file" style="color:var(--color-primary, #4169E2);font-size:12px"></i>
                                             <span [title]="s.name">{{ s.name }}</span>
-                                            @if (s.version) { <span class="sc-ref-sel-ver">v{{ s.version }}</span> }
+                                            @if (s.component && s.topicId !== topic) { <span class="sc-ref-sel-ver sc-ref-sel-tool">{{ s.component }}</span> } @else if (s.version) { <span class="sc-ref-sel-ver">v{{ s.version }}</span> }
                                         </div>
                                     </ng-template>
                                 </p-select>
-                            </div>
-                        }
-
-                        @if (propertyOptions.length) {
-                            <div class="sc-rp-divider"></div>
-                            <div class="sc-rp-group">
-                                <div class="sc-rp-label-row">
-                                    <label class="sc-rp-label">Property</label>
-                                    @if (glossaryAiEnabled) {
-                                        <button type="button" class="sc-rp-suggest-btn" title="Suggest with Glossary AI"
-                                            [disabled]="rightPanelSuggestLoading"
-                                            (click)="suggestPropertyForSelectedField()">
-                                            @if (rightPanelSuggestLoading) {
-                                                <i class="pi pi-spin pi-spinner"></i>
-                                            } @else {
-                                                <svg-icon class="svg-icon-16" src="/assets/images/icons/auto_awesome.svg"></svg-icon>
-                                            }
-                                        </button>
-                                    }
-                                </div>
-                                <p-select
-                                    class="guardian-dropdown sc-rp-select"
-                                    panelStyleClass="guardian-dropdown-panel"
-                                    [options]="propertyOptions"
-                                    [showClear]="true"
-                                    [filter]="true"
-                                    filterBy="title"
-                                    optionLabel="title"
-                                    optionValue="title"
-                                    appendTo="body"
-                                    placeholder="Select a property"
-                                    [(ngModel)]="$any(selectedField).property"
-                                    (ngModelChange)="markDirty()">
-                                    <ng-template pTemplate="item" let-p>
-                                        <div class="sc-rp-prop-item">
-                                            <span [title]="p.title">{{ p.title }}</span>
-                                            @if (p.description) {
-                                                <span class="sc-rp-prop-desc">{{ p.description }}</span>
-                                            }
-                                        </div>
-                                    </ng-template>
-                                </p-select>
-                                @if (rightPanelSuggestUnavailable) {
-                                    <div class="sc-rp-ai-hint">
-                                        <span class="sc-rp-ai-hint-rationale">Glossary AI is unavailable right now.</span>
-                                    </div>
-                                } @else if (rightPanelSuggestion; as suggestion) {
-                                    @if (suggestion.candidates[0]; as topCandidate) {
-                                        <div class="sc-rp-ai-hint">
-                                            <div class="sc-rp-ai-hint-row">
-                                                <span class="sc-rp-ai-hint-title" [title]="topCandidate.title">{{ topCandidate.title }}</span>
-                                                <button type="button" class="sc-btn sc-btn-primary" (click)="acceptSuggestion(selectedField.name, topCandidate.title)">Apply</button>
-                                            </div>
-                                            @if (topCandidate.description) {
-                                                <div class="sc-rp-ai-hint-description">{{ topCandidate.description }}</div>
-                                            }
-                                            <span class="sc-rp-ai-hint-confidence">{{ (topCandidate.confidence * 100).toFixed(0) }}%</span>
-                                            <div class="sc-rp-ai-hint-rationale">{{ topCandidate.rationale }}</div>
-                                            <div class="sc-rp-ai-hint-actions">
-                                                @if (suggestion.candidates.length > 1) {
-                                                    <button type="button" class="sc-rp-ai-hint-link" (click)="rightPanelSuggestionExpanded = !rightPanelSuggestionExpanded">See more</button>
-                                                }
-                                                <button type="button" class="sc-rp-ai-hint-link" (click)="openInPropertyAiTab(selectedField.name)">Move to Glossary AI</button>
-                                            </div>
-                                            @if (rightPanelSuggestionExpanded) {
-                                                @for (candidate of suggestion.candidates.slice(1); track candidate.title) {
-                                                    <div class="sc-rp-ai-hint-row">
-                                                        <span class="sc-rp-ai-hint-title" [title]="candidate.title">{{ candidate.title }}</span>
-                                                        <span class="sc-rp-ai-hint-confidence">{{ (candidate.confidence * 100).toFixed(0) }}%</span>
-                                                        <button type="button" class="sc-btn" (click)="acceptSuggestion(selectedField.name, candidate.title)">Apply</button>
-                                                    </div>
-                                                }
-                                            }
-                                        </div>
-                                    }
-                                }
                             </div>
                         }
 
@@ -1417,6 +1527,77 @@
                                 </div>
                             }
                         }
+
+                        @if (propertyOptions.length) {
+                            <div class="sc-rp-divider"></div>
+                            <div class="sc-rp-group">
+                                <div class="sc-rp-label-row">
+                                    <label class="sc-rp-label">
+                                        IWA Mapping
+                                        <i class="pi pi-info-circle sc-rp-info"
+                                            pTooltip="Map this schema field to an IWA property"
+                                            tooltipPosition="top"
+                                            tooltipStyleClass="guardian-tooltip"></i>
+                                    </label>
+                                    @if (glossaryAiEnabled) {
+                                        <button type="button" class="sc-rp-suggest-btn" title="Suggest an IWA property mapping"
+                                            [disabled]="rightPanelSuggestLoading"
+                                            (click)="suggestPropertyForSelectedField()">
+                                            @if (rightPanelSuggestLoading) {
+                                                <i class="pi pi-spin pi-spinner"></i>
+                                            } @else {
+                                                <svg-icon class="svg-icon-16" src="/assets/images/icons/auto_awesome.svg"></svg-icon>
+                                            }
+                                        </button>
+                                    }
+                                </div>
+                                <p-select
+                                    class="guardian-dropdown sc-rp-select"
+                                    panelStyleClass="guardian-dropdown-panel"
+                                    [options]="propertyOptions"
+                                    [showClear]="true"
+                                    [filter]="true"
+                                    filterBy="title"
+                                    optionLabel="title"
+                                    optionValue="title"
+                                    appendTo="body"
+                                    placeholder="Select an IWA property"
+                                    [(ngModel)]="$any(selectedField).property"
+                                    (ngModelChange)="markDirty()">
+                                    <ng-template pTemplate="item" let-p>
+                                        <div class="sc-rp-prop-item">
+                                            <span [title]="p.title">{{ p.title }}</span>
+                                            @if (p.description) {
+                                                <span class="sc-rp-prop-desc">{{ p.description }}</span>
+                                            }
+                                        </div>
+                                    </ng-template>
+                                </p-select>
+                                @if (rightPanelSuggestUnavailable) {
+                                    <div class="sc-rp-ai-hint">
+                                        <span class="sc-rp-ai-hint-rationale">IWA property suggestions are unavailable right now.</span>
+                                    </div>
+                                } @else if (rightPanelSuggestion; as suggestion) {
+                                    @if (suggestion.candidates[0]; as topCandidate) {
+                                        <div class="sc-rp-ai-hint">
+                                            <ng-container *ngTemplateOutlet="aiCandidate; context: { $implicit: topCandidate, field: selectedField, primary: true }"></ng-container>
+                                            <div class="sc-rp-ai-hint-actions">
+                                                @if (suggestion.candidates.length > 1) {
+                                                    <button type="button" class="sc-rp-ai-hint-link" (click)="rightPanelSuggestionExpanded = !rightPanelSuggestionExpanded">See more</button>
+                                                }
+                                                <button type="button" class="sc-rp-ai-hint-link" (click)="suggestPropertyForSelectedField(true)">Refresh</button>
+                                                <button type="button" class="sc-rp-ai-hint-link" (click)="openInPropertyAiTab(selectedField.name)">Open in IWA suggestions</button>
+                                            </div>
+                                            @if (rightPanelSuggestionExpanded) {
+                                                @for (candidate of suggestion.candidates.slice(1); track candidate.title) {
+                                                    <ng-container *ngTemplateOutlet="aiCandidate; context: { $implicit: candidate, field: selectedField, primary: false }"></ng-container>
+                                                }
+                                            }
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        }
                     </div>
 
                 </aside>
@@ -1463,7 +1644,7 @@
                             [class.sc-field-card--drag-bot]="!isTemplateConfigMode && sidebarDropIndex === i && sidebarDropPos === 'bot'"
                             (mousedown)="!isTemplateConfigMode ? onCardMouseDown($event, field, isDrilling ? drillCurrentFields : (selectedSchema?.fields ?? [])) : null"
                             (click)="selectField(field)">
-                            <span class="sc-drag-handle"><i class="pi pi-bars"></i></span>
+                            <span class="sc-drag-handle" [class.sc-drag-handle--disabled]="isTemplateConfigMode || isTemplateFieldLocked(field)"><i class="pi pi-bars"></i></span>
                             <div class="sc-field-type-icon" [class.sc-field-type-icon--ref]="getFieldCurrentType(field) === 'sub-schema'">
                                 <i class="pi {{ getFieldIcon(field) }}"></i>
                             </div>
@@ -1563,6 +1744,17 @@
             @for (dependency of arrayDependencies; track dependency) {
                 <div class="sc-array-link-card"
                     [class.sc-array-link-card--editing]="isEditingArrayDependency(dependency)">
+                    @if (isTemplateConfigMode) {
+                        <button class="sc-array-link-lock"
+                            tooltipPosition="top"
+                            [pTooltip]="isLinkLocked(dependency) ? 'Unlock this repeatable link' : 'Lock this repeatable link'"
+                            [disabled]="isTemplateReadonly"
+                            (click)="toggleLinkLocked(dependency)">
+                            <i class="pi" [class.pi-lock]="isLinkLocked(dependency)" [class.pi-lock-open]="!isLinkLocked(dependency)"></i>
+                        </button>
+                    } @else if (isLinkLocked(dependency)) {
+                        <i class="pi pi-lock sc-array-link-lock-badge" title="Locked by the applied template"></i>
+                    }
                     <div class="sc-array-link-paths">
                         <div class="sc-array-link-path">
                             <span class="sc-array-link-label">Source</span>
@@ -1608,13 +1800,17 @@
                         }
                     </div>
                     <button class="sc-array-link-edit" title="Edit link"
+                        [disabled]="isLinkLocked(dependency)"
                         (click)="startEditArrayDependency(dependency)">
                         <i class="pi pi-pencil"></i>
                     </button>
-                    <button class="sc-array-link-remove" title="Remove link"
-                        (click)="removeArrayDependency(dependency)">
-                        <i class="pi pi-trash"></i>
-                    </button>
+                    @if (!isTemplateConfigMode) {
+                        <button class="sc-array-link-remove" title="Remove link"
+                            [disabled]="isLinkLocked(dependency)"
+                            (click)="removeArrayDependency(dependency)">
+                            <i class="pi pi-trash"></i>
+                        </button>
+                    }
                 </div>
             } @empty {
                 <div class="sc-array-link-empty">
@@ -1623,6 +1819,14 @@
                 </div>
             }
 
+            @if (!canAddLinkToSelectedSchema && !isTemplateConfigMode) {
+                <div class="st-lock-note st-lock-note--inline">
+                    <i class="pi pi-lock"></i>
+                    <span>New repeatable links are locked by the applied template.</span>
+                </div>
+            }
+
+            @if (!isTemplateConfigMode) {
             <div class="sc-array-link-editor" #arrayLinkEditor
                 [class.sc-array-link-editor--editing]="editingArrayDependency">
                 <div class="sc-array-link-editor-title">
@@ -1645,6 +1849,7 @@
                             [resetFilterOnHide]="true"
                             appendTo="body"
                             placeholder="Select source array"
+                            [disabled]="isArrayDependencyFormLocked"
                             [(ngModel)]="newArrayDependencyOn"
                             (mousedown)="updateArrayLinkPanelWidth($event)"
                             (onChange)="onArrayDependencySourceChange()">
@@ -1678,6 +1883,7 @@
                             [resetFilterOnHide]="true"
                             appendTo="body"
                             placeholder="Select dependent array"
+                            [disabled]="isArrayDependencyFormLocked"
                             (mousedown)="updateArrayLinkPanelWidth($event)"
                             [(ngModel)]="newArrayDependencyField"
                             (onChange)="onArrayDependencyTargetChange()">
@@ -1706,7 +1912,7 @@
                             [showClear]="true"
                             appendTo="body"
                             placeholder="Select title field"
-                            [disabled]="!newArrayDependencyOn"
+                            [disabled]="!newArrayDependencyOn || isArrayDependencyFormLocked"
                             (mousedown)="updateArrayLinkPanelWidth($event)"
                             [(ngModel)]="newArrayDependencyTitle">
                             <ng-template pTemplate="selectedItem" let-option>
@@ -1741,6 +1947,7 @@
                                         </span>
                                     </div>
                                     <button class="sc-array-link-remove" title="Remove pair"
+                                        [disabled]="isArrayDependencyFormLocked"
                                         (click)="removeArrayDependencyMapping(mapping)">
                                         <i class="pi pi-trash"></i>
                                     </button>
@@ -1757,7 +1964,7 @@
                             optionValue="pathStr"
                             appendTo="body"
                             placeholder="Source field"
-                            [disabled]="!newArrayDependencyOn"
+                            [disabled]="!newArrayDependencyOn || isArrayDependencyFormLocked"
                             (mousedown)="updateArrayLinkPanelWidth($event)"
                             [(ngModel)]="newArrayDependencyMappingSource">
                             <ng-template pTemplate="selectedItem" let-option>
@@ -1778,7 +1985,7 @@
                             optionValue="pathStr"
                             appendTo="body"
                             placeholder="Dependent field"
-                            [disabled]="!newArrayDependencyField"
+                            [disabled]="!newArrayDependencyField || isArrayDependencyFormLocked"
                             (mousedown)="updateArrayLinkPanelWidth($event)"
                             [(ngModel)]="newArrayDependencyMappingTarget">
                             <ng-template pTemplate="selectedItem" let-option>
@@ -1791,7 +1998,7 @@
                             </ng-template>
                         </p-select>
                         <button class="sc-btn"
-                            [disabled]="!canAddArrayDependencyMapping()"
+                            [disabled]="!canAddArrayDependencyMapping() || isArrayDependencyFormLocked"
                             (click)="addArrayDependencyMapping()">
                             <i class="pi pi-plus"></i>Add pair
                         </button>
@@ -1807,7 +2014,7 @@
                             </button>
                         }
                         <button class="sc-btn sc-btn-primary"
-                            [disabled]="!canApplyArrayDependency()"
+                            [disabled]="!canApplyArrayDependency() || isArrayDependencyFormLocked"
                             (click)="applyArrayDependency()">
                             @if (editingArrayDependency) {
                                 <i class="pi pi-check"></i>Save link
@@ -1818,11 +2025,38 @@
                     </div>
                 </div>
             </div>
+            }
         </div>
+    </ng-template>
+
+    <!-- AI suggestion candidate -->
+
+    <ng-template #aiCandidate let-c let-field="field" let-primary="primary">
+        <div class="sc-ai-candidate-row">
+            <span class="sc-ai-candidate-title" [title]="c.title">{{ c.title }}</span>
+            <span class="sc-ai-candidate-confidence">{{ (c.confidence * 100).toFixed(0) }}%</span>
+            @if (field && c.title === field.property) {
+                <span class="sc-suggestion-match-label">Already matches</span>
+            } @else {
+                <button type="button" class="sc-btn" [class.sc-btn-primary]="primary"
+                    [disabled]="!field"
+                    (click)="field && acceptSuggestion(field.name, c.title)">Apply</button>
+            }
+        </div>
+        @if (c.description) {
+            <div class="sc-ai-candidate-description" [pTooltip]="c.description" tooltipStyleClass="guardian-tooltip">{{ c.description }}</div>
+        }
+        @if (c.rationale) {
+            <div class="sc-ai-candidate-rationale" [title]="c.rationale">{{ c.rationale }}</div>
+        }
     </ng-template>
 
     <ng-template #propertyAiCanvas>
         <div class="sc-array-link-canvas">
+            <div class="sc-suggestions-help">
+                <i class="pi pi-info-circle"></i>
+                <span>Review the suggested IWA property mappings for this schema.</span>
+            </div>
             <div class="sc-suggestions-toolbar">
                 <button type="button" class="sc-btn"
                     [disabled]="suggestionsLoading || !highConfidenceSuggestionCount"
@@ -1840,7 +2074,7 @@
             @if (suggestionsLoading) {
                 <div class="sc-array-link-empty">
                     <i class="pi pi-spin pi-spinner"></i>
-                    <span>Getting Glossary AI suggestions…</span>
+                    <span>Getting IWA property suggestions…</span>
                 </div>
             } @else if (!(currentContextSchema?.fields ?? []).length) {
                 <div class="sc-array-link-empty">
@@ -1850,17 +2084,17 @@
             } @else if (!suggestionsAvailable) {
                 <div class="sc-array-link-empty">
                     <i class="pi pi-exclamation-triangle"></i>
-                    <span>Glossary AI is unavailable right now – you can still set properties manually.</span>
+                    <span>IWA property suggestions are unavailable right now. You can still set IWA mappings manually.</span>
                 </div>
             } @else if (!suggestionResults.length) {
                 <div class="sc-array-link-empty">
                     <i class="pi pi-sparkles"></i>
-                    <span>Refresh to get Glossary AI suggestions for this schema.</span>
+                    <span>Refresh to get IWA property suggestions for this schema.</span>
                 </div>
             } @else if (!pendingSuggestionCount) {
                 <div class="sc-array-link-empty">
                     <i class="pi pi-check"></i>
-                    <span>No property changes suggested.</span>
+                    <span>No IWA mapping changes suggested.</span>
                 </div>
             } @else {
                 <div class="sc-suggestions-list">
@@ -1869,24 +2103,32 @@
                             [class.sc-suggestion-row--highlight]="highlightedFieldName === result.fieldName"
                             [class.sc-suggestion-row--match]="result.candidates[0]?.title === getFieldByName(result.fieldName)?.property">
                             <div class="sc-suggestion-field">
-                                <span class="sc-suggestion-field-name" [title]="result.fieldName">{{ result.fieldName }}</span>
+                                @if (getFieldByName(result.fieldName); as f) {
+                                    <span class="sc-suggestion-field-title" [title]="f.title || f.name">{{ f.title || result.fieldName }}</span>
+                                    <span class="sc-suggestion-field-key" [title]="result.fieldName">{{ result.fieldName }}</span>
+                                    @if (f.description) {
+                                        <span class="sc-suggestion-field-description" [pTooltip]="f.description" tooltipStyleClass="guardian-tooltip">{{ f.description }}</span>
+                                    }
+                                } @else {
+                                    <span class="sc-suggestion-field-title" [title]="result.fieldName">{{ result.fieldName }}</span>
+                                }
                                 <span class="sc-suggestion-current" [title]="'Current: ' + (getFieldByName(result.fieldName)?.property || 'None')">Current: {{ getFieldByName(result.fieldName)?.property || 'None' }}</span>
                             </div>
                             @if (result.candidates[0]; as topCandidate) {
                                 <div class="sc-suggestion-candidate">
-                                    <span class="sc-suggestion-candidate-title" [title]="topCandidate.title">{{ topCandidate.title }}</span>
-                                    @if (topCandidate.description) {
-                                        <span class="sc-suggestion-candidate-description" [title]="topCandidate.description">{{ topCandidate.description }}</span>
+                                    <ng-container *ngTemplateOutlet="aiCandidate; context: { $implicit: topCandidate, field: getFieldByName(result.fieldName), primary: true }"></ng-container>
+                                    @if (result.candidates.length > 1) {
+                                        <button type="button" class="sc-rp-ai-hint-link sc-suggestion-see-more" (click)="toggleGlossaryCandidates(result.fieldName)">
+                                            {{ expandedGlossaryFields.has(result.fieldName) ? 'See less' : 'See more' }}
+                                        </button>
                                     }
-                                    <span class="sc-suggestion-candidate-confidence">{{ (topCandidate.confidence * 100).toFixed(0) }}%</span>
-                                    <span class="sc-suggestion-candidate-rationale" [title]="topCandidate.rationale">{{ topCandidate.rationale }}</span>
+                                    @if (expandedGlossaryFields.has(result.fieldName)) {
+                                        @for (candidate of result.candidates.slice(1); track candidate.title) {
+                                            <ng-container *ngTemplateOutlet="aiCandidate; context: { $implicit: candidate, field: getFieldByName(result.fieldName), primary: false }"></ng-container>
+                                        }
+                                    }
                                 </div>
                                 <div class="sc-suggestion-actions">
-                                    @if (topCandidate.title !== getFieldByName(result.fieldName)?.property) {
-                                        <button type="button" class="sc-btn sc-btn-primary" (click)="acceptSuggestion(result.fieldName, topCandidate.title)">Accept</button>
-                                    } @else {
-                                        <span class="sc-suggestion-match-label">Already matches</span>
-                                    }
                                     <button type="button" class="sc-btn" (click)="goEditField(result.fieldName)">Change</button>
                                     <button type="button" class="sc-btn" (click)="dismissSuggestion(result.fieldName)">Dismiss</button>
                                 </div>
@@ -1906,11 +2148,17 @@
     </ng-template>
 
     <ng-template #conditionsCanvas>
-        <div class="sc-cond-canvas">
+        <div class="sc-cond-canvas" [class.sc-cond-canvas--locked]="!canAddConditionToSelectedSchema && !isTemplateConfigMode">
             <div class="sc-cond-scope-note">
                 <i class="pi pi-info-circle"></i>
                 Conditions control field visibility: IF a field equals a value, THEN show / ELSE show other fields.
             </div>
+            @if (!canAddConditionToSelectedSchema && !isTemplateConfigMode) {
+                <div class="st-lock-note st-lock-note--inline">
+                    <i class="pi pi-lock"></i>
+                    <span>New conditions are locked by the applied template.</span>
+                </div>
+            }
 
             @for (cond of (currentContextSchema?.conditions || []); track cond; let ci = $index) {
                 <div class="sc-cond-block">
@@ -1920,12 +2168,15 @@
                         <div class="sc-cond-type-group">
                             <button class="sc-cond-type-btn"
                                 [class.active]="getIfOperator(cond) === 'SINGLE'"
+                                [disabled]="isConditionLocked(cond)"
                                 (click)="setConditionOperator(cond, 'SINGLE')">IF</button>
                             <button class="sc-cond-type-btn"
                                 [class.active]="getIfOperator(cond) === 'AND'"
+                                [disabled]="isConditionLocked(cond)"
                                 (click)="setConditionOperator(cond, 'AND')">IF ALL</button>
                             <button class="sc-cond-type-btn"
                                 [class.active]="getIfOperator(cond) === 'OR'"
+                                [disabled]="isConditionLocked(cond)"
                                 (click)="setConditionOperator(cond, 'OR')">IF ANY</button>
                         </div>
                         <span class="sc-cond-type-note">
@@ -1933,9 +2184,26 @@
                             @else if (getIfOperator(cond) === 'AND') { — all must match }
                             @else { — any must match }
                         </span>
-                        <button class="sc-cond-block-del" title="Remove condition" (click)="removeConditionAt(ci)">
-                            <i class="pi pi-trash"></i>
-                        </button>
+                        @if (isTemplateConfigMode) {
+                            <button class="sc-cond-block-lock"
+                                tooltipPosition="top"
+                                [pTooltip]="isConditionLocked(cond) ? 'Unlock this condition' : 'Lock this condition'"
+                                [disabled]="isTemplateReadonly"
+                                (click)="toggleConditionLocked(cond)">
+                                <i class="pi" [class.pi-lock]="isConditionLocked(cond)" [class.pi-lock-open]="!isConditionLocked(cond)"></i>
+                            </button>
+                        } @else if (isConditionLocked(cond)) {
+                            <i class="pi pi-lock sc-cond-block-lock-badge" title="Locked by the applied template"></i>
+                        }
+                        @if (!isTemplateConfigMode) {
+                            <button class="sc-cond-block-del"
+                                tooltipPosition="top"
+                                [pTooltip]="getRemoveConditionTitle(cond)"
+                                [disabled]="conditionHasLockedField(cond) || isConditionLocked(cond)"
+                                (click)="removeConditionAt(ci)">
+                                <i class="pi pi-trash"></i>
+                            </button>
+                        }
                     </div>
 
                     <!-- Rule rows -->
@@ -1959,6 +2227,7 @@
                                     [virtualScrollItemSize]="38"
                                     appendTo="body"
                                     placeholder="Select field…"
+                                    [disabled]="isConditionLocked(cond)"
                                     [ngModel]="getIfRowFieldPath(row)"
                                     (onChange)="setIfRowField(cond, ri, $event.value)">
                                     <ng-template pTemplate="item" let-option>
@@ -1968,7 +2237,27 @@
                                         </span>
                                     </ng-template>
                                 </p-select>
-                                <span class="sc-cond-op-eq">=</span>
+                                @if (getIfRowComparatorOptions(row).length > 1) {
+                                    <p-select
+                                        class="sc-cond-op-sel guardian-dropdown"
+                                        panelStyleClass="guardian-dropdown-panel"
+                                        [options]="getIfRowComparatorOptions(row)"
+                                        optionLabel="label"
+                                        optionValue="value"
+                                        appendTo="body"
+                                        [disabled]="isConditionLocked(cond)"
+                                        [ngModel]="getIfRowComparator(row)"
+                                        (onChange)="setIfRowComparator(cond, ri, $event.value)">
+                                        <ng-template pTemplate="item" let-option>
+                                            <span class="sc-cond-opt-row">
+                                                <span class="sc-cond-opt-label"
+                                                      (mouseover)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
+                                            </span>
+                                        </ng-template>
+                                    </p-select>
+                                } @else {
+                                    <span class="sc-cond-op-eq">=</span>
+                                }
                                 <div class="sc-cond-val-wrap">
                                     @if (isIfRowEnum(row)) {
                                         <p-select
@@ -1977,6 +2266,7 @@
                                             [options]="getIfRowOptions(row)"
                                             appendTo="body"
                                             placeholder="Select value…"
+                                            [disabled]="isConditionLocked(cond)"
                                             [ngModel]="getIfRowValue(row)"
                                             (onChange)="setIfRowValue(cond, ri, $event.value)">
                                             <ng-template pTemplate="item" let-option>
@@ -1985,12 +2275,13 @@
                                         </p-select>
                                     } @else {
                                         <input class="sc-cond-val-inp" type="text" placeholder="value"
+                                            [disabled]="isConditionLocked(cond)"
                                             [value]="getIfRowValue(row)"
                                             (input)="setIfRowValue(cond, ri, $any($event.target).value)" />
                                     }
                                 </div>
                                 <button class="sc-cond-row-del"
-                                    [disabled]="getIfRows(cond).length <= 1"
+                                    [disabled]="getIfRows(cond).length <= 1 || isConditionLocked(cond)"
                                     (click)="removeIfRow(cond, ri)">
                                     <i class="pi pi-times"></i>
                                 </button>
@@ -1998,7 +2289,7 @@
                         }
 
                         @if (getIfOperator(cond) !== 'SINGLE') {
-                            <button class="sc-cond-add-rule" (click)="addIfRow(cond)">
+                            <button class="sc-cond-add-rule" [disabled]="isConditionLocked(cond)" (click)="addIfRow(cond)">
                                 <i class="pi pi-plus"></i> Add condition row
                             </button>
                         }
@@ -2034,10 +2325,17 @@
                                                 </div>
                                             </div>
                                             <div class="sc-field-card-actions">
-                                                <button class="sc-icon-btn sc-icon-btn--danger" title="Remove" (click)="removeThenField(cond, f); $event.stopPropagation()">
-                                                    <i class="pi pi-trash"></i>
-                                                </button>
+                                                @if (!isTemplateConfigMode && !isTemplateFieldLocked(f)) {
+                                                    <button class="sc-icon-btn sc-icon-btn--danger" title="Remove" (click)="removeThenField(cond, f); $event.stopPropagation()">
+                                                        <i class="pi pi-trash"></i>
+                                                    </button>
+                                                }
                                             </div>
+                                            @if (isTemplateFieldLocked(f)) {
+                                                <span class="st-field-lock" pTooltip="Field editing is locked" tooltipPosition="top">
+                                                    <i class="pi pi-lock"></i>
+                                                </span>
+                                            }
                                         </div>
                                     }
                                     @for (t of (cond.thenTargets || []); track t.fieldPath.join('.')) {
@@ -2048,13 +2346,15 @@
                                             <span class="sc-cond-te-badge sc-cond-te-badge--show sc-cond-te-badge--nav"
                                                 title="Open schema"
                                                 (click)="openTargetSchema(t)">open</span>
-                                            <button class="sc-cond-te-del" (click)="removeThenTarget(cond, t)">
-                                                <i class="pi pi-times"></i>
-                                            </button>
+                                            @if (!isTemplateConfigMode) {
+                                                <button class="sc-cond-te-del" [disabled]="isConditionLocked(cond)" (click)="removeThenTarget(cond, t)">
+                                                    <i class="pi pi-times"></i>
+                                                </button>
+                                            }
                                         </div>
                                     }
                                     <div class="sc-cond-te-add-row">
-                                        <button class="sc-cond-te-add-btn" (click)="addThenField(cond)">
+                                        <button class="sc-cond-te-add-btn" [disabled]="!canAddFieldToSelectedSchema || isConditionLocked(cond)" (click)="addThenField(cond)">
                                             <i class="pi pi-plus"></i>New field
                                         </button>
                                         <p-select
@@ -2071,7 +2371,7 @@
                                             [virtualScrollItemSize]="38"
                                             appendTo="body"
                                             [placeholder]="getCrossTargetPSelectGroups().length ? 'Ref field' : '(no sub-schema fields)'"
-                                            [disabled]="!getCrossTargetPSelectGroups().length"
+                                            [disabled]="!getCrossTargetPSelectGroups().length || isConditionLocked(cond)"
                                             [(ngModel)]="condThenRefVal[ci]"
                                             (onChange)="onCondThenRefChange(cond, ci, $event.value)">
                                             <ng-template pTemplate="item" let-option>
@@ -2116,10 +2416,17 @@
                                                 </div>
                                             </div>
                                             <div class="sc-field-card-actions">
-                                                <button class="sc-icon-btn sc-icon-btn--danger" title="Remove" (click)="removeElseField(cond, f); $event.stopPropagation()">
-                                                    <i class="pi pi-trash"></i>
-                                                </button>
+                                                @if (!isTemplateConfigMode && !isTemplateFieldLocked(f)) {
+                                                    <button class="sc-icon-btn sc-icon-btn--danger" title="Remove" (click)="removeElseField(cond, f); $event.stopPropagation()">
+                                                        <i class="pi pi-trash"></i>
+                                                    </button>
+                                                }
                                             </div>
+                                            @if (isTemplateFieldLocked(f)) {
+                                                <span class="st-field-lock" pTooltip="Field editing is locked" tooltipPosition="top">
+                                                    <i class="pi pi-lock"></i>
+                                                </span>
+                                            }
                                         </div>
                                     }
                                     @for (t of (cond.elseTargets || []); track t.fieldPath.join('.')) {
@@ -2130,13 +2437,15 @@
                                             <span class="sc-cond-te-badge sc-cond-te-badge--hide sc-cond-te-badge--nav"
                                                 title="Open schema"
                                                 (click)="openTargetSchema(t)">open</span>
-                                            <button class="sc-cond-te-del" (click)="removeElseTarget(cond, t)">
-                                                <i class="pi pi-times"></i>
-                                            </button>
+                                            @if (!isTemplateConfigMode) {
+                                                <button class="sc-cond-te-del" [disabled]="isConditionLocked(cond)" (click)="removeElseTarget(cond, t)">
+                                                    <i class="pi pi-times"></i>
+                                                </button>
+                                            }
                                         </div>
                                     }
                                     <div class="sc-cond-te-add-row">
-                                        <button class="sc-cond-te-add-btn" (click)="addElseField(cond)">
+                                        <button class="sc-cond-te-add-btn" [disabled]="!canAddFieldToSelectedSchema || isConditionLocked(cond)" (click)="addElseField(cond)">
                                             <i class="pi pi-plus"></i>New field
                                         </button>
                                         <p-select
@@ -2153,7 +2462,7 @@
                                             [virtualScrollItemSize]="38"
                                             appendTo="body"
                                             [placeholder]="getCrossTargetPSelectGroups().length ? 'Ref field' : '(no sub-schema fields)'"
-                                            [disabled]="!getCrossTargetPSelectGroups().length"
+                                            [disabled]="!getCrossTargetPSelectGroups().length || isConditionLocked(cond)"
                                             [(ngModel)]="condElseRefVal[ci]"
                                             (onChange)="onCondElseRefChange(cond, ci, $event.value)">
                                             <ng-template pTemplate="item" let-option>
@@ -2182,7 +2491,7 @@
                 </div>
             }
 
-            <button class="sc-add-cond-btn" [disabled]="!canAddCondition" (click)="addNewCondition()">
+            <button class="sc-add-cond-btn" [disabled]="!canAddCondition || !canAddConditionToSelectedSchema" (click)="addNewCondition()">
                 <i class="pi pi-plus"></i> Add condition
             </button>
         </div>
@@ -2225,20 +2534,22 @@
     [draggable]="false"
     [resizable]="false"
     [style]="{ width: 'min(760px, 95vw)' }"
-    [closeOnEscape]="!isRichTextPresetLinkOpen()"
-    [styleClass]="isRichTextPresetLinkOpen() ? 'sc-rte-preset-dialog sc-rte-preset-dialog--locked' : 'sc-rte-preset-dialog'"
+    [closeOnEscape]="!isRichTextPresetBusy()"
+    [styleClass]="isRichTextPresetBusy() ? 'sc-rte-preset-dialog sc-rte-preset-dialog--locked' : 'sc-rte-preset-dialog'"
     (onHide)="closeRichTextPresetDialog()">
     <div class="sc-rte-preset-dialog-body">
         <app-rich-text-editor
             #richTextPresetEditor
             [ngModel]="getRichTextPresetValue()"
             (ngModelChange)="setRichTextPresetValue($event)"
+            [imageUploader]="uploadRichTextImage"
+            [imageResolver]="resolveRichTextImage"
             placeholder="Write formatted text…"
         ></app-rich-text-editor>
     </div>
     <ng-template pTemplate="footer">
-        <button class="sc-btn sc-btn-primary" [disabled]="isRichTextPresetLinkOpen()"
-                [title]="isRichTextPresetLinkOpen() ? 'Finish the link first' : ''"
+        <button class="sc-btn sc-btn-primary" [disabled]="isRichTextPresetBusy()"
+                [title]="isRichTextPresetBusy() ? 'Finish the link or wait for the upload' : ''"
                 (click)="closeRichTextPresetDialog()">Done</button>
     </ng-template>
 </p-dialog>

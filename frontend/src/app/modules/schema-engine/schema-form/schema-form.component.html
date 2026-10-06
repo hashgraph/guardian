@@ -144,6 +144,8 @@
                           [formControl]="item.control"
                           [placeholder]="getPlaceholderByFieldType(item)"
                           [readonly]="!!(isEditMode && !item.isUpdatable)"
+                          [imageUploader]="uploadRichTextImage"
+                          [imageResolver]="resolveRichTextImage"
                         ></app-rich-text-editor>
                       </div>
                     }
@@ -382,7 +384,8 @@
                                       [attr.readonly-field]="isEditMode && !itemControl.isUpdatable"
                                       >
                                       <textarea
-                                        class="p-inputtextarea p-inputtext textarea-resize-none"
+                                        pInputTextarea
+                                        class="textarea-resize-none"
                                         [formControl]="itemControl.control"
                                         (focus)="onFocusField(itemControl.format, itemControl)"
                                         (blur)="onUnfocusField(itemControl.format, itemControl)"
@@ -701,6 +704,8 @@
                                   [formControl]="listItem.control"
                                   [placeholder]="getPlaceholderByFieldType(item)"
                                   [readonly]="!!(isEditMode && !item.isUpdatable)"
+                                  [imageUploader]="uploadRichTextImage"
+                                  [imageResolver]="resolveRichTextImage"
                                 ></app-rich-text-editor>
                               </div>
                             }

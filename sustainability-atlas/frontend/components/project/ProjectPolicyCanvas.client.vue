@@ -391,20 +391,25 @@ function downloadPolicyJson() {
         <div v-if="jsonOpen" class="fixed inset-0 z-50 flex justify-end">
             <div class="absolute inset-0 bg-black/40" @click="jsonOpen = false" />
             <div class="relative z-10 flex h-full w-full max-w-2xl flex-col border-l bg-card shadow-xl">
-                <div class="flex items-center justify-between gap-3 border-b bg-muted/30 px-5 py-4">
-                    <h3 class="flex items-center gap-2 text-sm font-semibold text-foreground">
-                        <Braces class="h-4 w-4 text-primary" /> {{ $t('projects.detail.canvas.policyJson') }}
+                <div class="flex items-center justify-between gap-3 border-b bg-muted/30 px-5 py-4 shrink-0">
+                    <h3 class="flex items-center gap-2 text-sm font-semibold text-foreground min-w-0 truncate">
+                        <Braces class="h-4 w-4 shrink-0 text-primary" />
+                        <span class="truncate">{{ $t('projects.detail.canvas.policyJson') }}</span>
                     </h3>
-                    <div class="flex items-center gap-1">
+                    <div class="flex items-center gap-1.5 shrink-0">
                         <button
                             v-if="policyRaw"
-                            class="flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                            class="flex h-7 shrink-0 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                             @click="downloadPolicyJson"
                         >
                             <Download class="h-3.5 w-3.5" />
-                            {{ $t('common.download') }}
+                            <span>{{ $t('common.download') }}</span>
                         </button>
-                        <button class="text-muted-foreground transition-colors hover:text-foreground" @click="jsonOpen = false">
+                        <button
+                            class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-muted ml-1"
+                            :title="$t('common.close')"
+                            @click="jsonOpen = false"
+                        >
                             <X class="h-4 w-4" />
                         </button>
                     </div>

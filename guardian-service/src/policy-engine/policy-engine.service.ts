@@ -8,12 +8,10 @@ import {
     DryRunFiles,
     EncryptUtils,
     findAllEntities,
-    GenerateBlocks,
     IAuthUser,
     IMessageResponse,
     ImportExportUtils,
     IPFS,
-    JsonToXlsx,
     MessageAction,
     loadErrorCode,
     MessageError,
@@ -44,10 +42,10 @@ import {
     Users,
     VcHelper,
     MintTransaction,
-    XlsxToJson,
     containsRegex,
     expandTablesInDocument
 } from '@guardian/common';
+import { JsonToXlsx, XlsxToJson } from '../xlsx/index.js';
 import {
     DocumentCategoryType,
     DocumentType,
@@ -90,7 +88,10 @@ import { PolicyDataImportExport } from './helpers/policy-data/policy-data-import
 import { PolicyComponentsUtils } from './policy-components-utils.js';
 import { PolicyAccessCode, PolicyEngine } from './policy-engine.js';
 import { IPolicyUser } from './policy-user.js';
-import { getSchemaCategory, ImportMode, ImportPolicyOptions, importSubTools, PolicyImportExportHelper, previewToolByMessage, SchemaImportExportHelper } from '../helpers/import-helpers/index.js';
+import {
+    getSchemaCategory, ImportMode, ImportPolicyOptions, importSubTools, PolicyImportExportHelper, previewToolByMessage,
+    readSchemaTemplateXlsx, SchemaImportExportHelper
+} from '../helpers/import-helpers/index.js';
 import { PolicyCommentsUtils } from './policy-comments-utils.js';
 import { PersistStepPayload, RecordPersistService } from './helpers/record-persist.service.js';
 
@@ -1900,7 +1901,8 @@ export class PolicyEngineService {
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, owner, 'read');
                     const { schemas, tools, toolSchemas } = await PolicyImportExport.loadAllSchemas(policy);
-                    const buffer = await JsonToXlsx.generate(schemas, tools, toolSchemas);
+                    const template = await readSchemaTemplateXlsx();
+                    const buffer = await JsonToXlsx.generate(schemas, tools, toolSchemas, { template });
                     return new BinaryMessageResponse(buffer);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -2002,10 +2004,12 @@ export class PolicyEngineService {
                     // <-- Steps
                     const STEP_IMPORT_POLICY = 'Import policy';
                     const STEP_START_POLICY = 'Start policy';
+                    const STEP_VALIDATE_POLICY = 'Validate policy';
                     // Steps -->
 
-                    notifier.addStep(STEP_IMPORT_POLICY, 90);
+                    notifier.addStep(STEP_IMPORT_POLICY, 80);
                     notifier.addStep(STEP_START_POLICY, 10);
+                    notifier.addStep(STEP_VALIDATE_POLICY, 10);
                     notifier.start();
 
                     await logger.info(`Import policy by file`, ['GUARDIAN_SERVICE'], owner?.id);
@@ -2034,8 +2038,23 @@ export class PolicyEngineService {
                             notifier.getStep(STEP_START_POLICY)
                         );
                     }
+
+                    notifier.startStep(STEP_VALIDATE_POLICY);
+                    let validation = null;
+                    try {
+                        const policyValidation = await this.policyEngine.validateModel(result.policy.id);
+                        validation = {
+                            isValid: !policyValidation.blocks.some((block) => !block.isValid),
+                            errors: policyValidation
+                        };
+                    } catch (error) {
+                        await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
+                    }
+                    notifier.completeStep(STEP_VALIDATE_POLICY);
+
                     notifier.result({
                         policyId: result.policy.id,
+                        validation,
                         errors: result.errors
                     });
 
@@ -2194,11 +2213,13 @@ export class PolicyEngineService {
                         const STEP_LOAD_POLICY = 'Load policy';
                         const STEP_IMPORT_POLICY = 'Import policy';
                         const STEP_START_POLICY = 'Start policy';
+                        const STEP_VALIDATE_POLICY = 'Validate policy';
                         // Steps -->
 
                         notifier.addStep(STEP_LOAD_POLICY, 5);
-                        notifier.addStep(STEP_IMPORT_POLICY, 90);
+                        notifier.addStep(STEP_IMPORT_POLICY, 80);
                         notifier.addStep(STEP_START_POLICY, 5);
+                        notifier.addStep(STEP_VALIDATE_POLICY, 10);
                         notifier.start();
 
                         notifier.startStep(STEP_LOAD_POLICY);
@@ -2231,9 +2252,24 @@ export class PolicyEngineService {
                                 notifier.getStep(STEP_START_POLICY)
                             );
                         }
+
+                        notifier.startStep(STEP_VALIDATE_POLICY);
+                        let validation = null;
+                        try {
+                            const policyValidation = await this.policyEngine.validateModel(result.policy.id);
+                            validation = {
+                                isValid: !policyValidation.blocks.some((block) => !block.isValid),
+                                errors: policyValidation
+                            };
+                        } catch (error) {
+                            await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
+                        }
+                        notifier.completeStep(STEP_VALIDATE_POLICY);
+
                         notifier.complete();
                         notifier.result({
                             policyId: result.policy.id,
+                            validation,
                             errors: result.errors
                         });
 
@@ -2277,7 +2313,6 @@ export class PolicyEngineService {
                         }
                     }
                     xlsxResult.updateSchemas(false);
-                    GenerateBlocks.generate(xlsxResult);
                     return new MessageResponse(xlsxResult.toJson());
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -2307,7 +2342,6 @@ export class PolicyEngineService {
                     xlsxResult.updateSchemas(false);
                     xlsxResult.updatePolicy(policy);
                     xlsxResult.addErrors(errors);
-                    GenerateBlocks.generate(xlsxResult);
                     const category = await getSchemaCategory(policy.topicId);
                     const result = await SchemaImportExportHelper.importSchemaByFiles(
                         xlsxResult.schemas,
@@ -2320,9 +2354,29 @@ export class PolicyEngineService {
                         notifier,
                         owner?.id
                     );
+                    const schemaMap = new Map<string, string>();
+                    for (const item of result.schemasMap || []) {
+                        if (item.oldIRI && item.newIRI && item.oldIRI !== item.newIRI) {
+                            schemaMap.set(item.oldIRI, item.newIRI);
+                        }
+                    }
+                    if (schemaMap.size) {
+                        await this.policyEngine.updateSchemaId(policy, schemaMap);
+                    }
                     await PolicyImportExportHelper.updatePolicyComponents(policy, logger, owner?.id);
+                    let validation = null;
+                    try {
+                        const policyValidation = await this.policyEngine.validateModel(policy.id);
+                        validation = {
+                            isValid: !policyValidation.blocks.some((block) => !block.isValid),
+                            errors: policyValidation
+                        };
+                    } catch (error) {
+                        await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
+                    }
                     return new MessageResponse({
                         policyId: policy.id,
+                        validation,
                         errors: result.errors
                     });
                 } catch (error) {
@@ -2347,11 +2401,13 @@ export class PolicyEngineService {
                     const STEP_LOAD_POLICY = 'Load file';
                     const STEP_IMPORT_TOOLS = 'Import tools';
                     const STEP_IMPORT_SCHEMAS = 'Import schemas';
+                    const STEP_VALIDATE_POLICY = 'Validate policy';
                     // Steps -->
 
                     notifier.addStep(STEP_LOAD_POLICY);
                     notifier.addStep(STEP_IMPORT_TOOLS);
                     notifier.addStep(STEP_IMPORT_SCHEMAS);
+                    notifier.addStep(STEP_VALIDATE_POLICY);
                     notifier.start();
 
                     notifier.startStep(STEP_LOAD_POLICY);
@@ -2374,7 +2430,6 @@ export class PolicyEngineService {
                     xlsxResult.updateSchemas(false);
                     xlsxResult.updatePolicy(policy);
                     xlsxResult.addErrors(errors);
-                    GenerateBlocks.generate(xlsxResult);
                     notifier.completeStep(STEP_IMPORT_TOOLS);
 
                     notifier.startStep(STEP_IMPORT_SCHEMAS);
@@ -2391,12 +2446,35 @@ export class PolicyEngineService {
                         owner?.id,
                         schemasIds,
                     );
+                    const schemaMap = new Map<string, string>();
+                    for (const item of result.schemasMap || []) {
+                        if (item.oldIRI && item.newIRI && item.oldIRI !== item.newIRI) {
+                            schemaMap.set(item.oldIRI, item.newIRI);
+                        }
+                    }
+                    if (schemaMap.size) {
+                        await this.policyEngine.updateSchemaId(policy, schemaMap);
+                    }
                     await PolicyImportExportHelper.updatePolicyComponents(policy, logger, owner?.id);
                     notifier.completeStep(STEP_IMPORT_SCHEMAS);
+
+                    notifier.startStep(STEP_VALIDATE_POLICY);
+                    let validation = null;
+                    try {
+                        const policyValidation = await this.policyEngine.validateModel(policy.id);
+                        validation = {
+                            isValid: !policyValidation.blocks.some((block) => !block.isValid),
+                            errors: policyValidation
+                        };
+                    } catch (error) {
+                        await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
+                    }
+                    notifier.completeStep(STEP_VALIDATE_POLICY);
                     notifier.complete();
 
                     notifier.result({
                         policyId: policy.id,
+                        validation,
                         errors: result.errors
                     });
                 }, async (error) => {

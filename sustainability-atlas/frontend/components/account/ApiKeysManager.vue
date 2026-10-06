@@ -8,7 +8,11 @@ const MAX_ACTIVE = 3;
 const apiKeys = useApiKeys();
 const { t } = useI18n();
 
-const { data, pending, refresh } = await useAsyncData('my-api-keys', () => apiKeys.list());
+const { data, pending, refresh } = await useAsyncData(
+    'my-api-keys',
+    () => apiKeys.list(),
+    { server: false },
+);
 const keys = computed<ApiKey[]>(() => data.value ?? []);
 const activeCount = computed(() => keys.value.filter((k) => k.status === 'active').length);
 const atLimit = computed(() => activeCount.value >= MAX_ACTIVE);
@@ -17,7 +21,11 @@ const atLimit = computed(() => activeCount.value >= MAX_ACTIVE);
 // required — disable the key controls (existing keys stay visible). Shares the
 // RateLimitCard's getMine fetch via the same useAsyncData key.
 const rl = useRateLimit();
-const { data: rlSummary } = await useAsyncData('my-rate-limit', () => rl.getMine());
+const { data: rlSummary } = await useAsyncData(
+    'my-rate-limit',
+    () => rl.getMine(),
+    { server: false },
+);
 const publicAccess = computed(() => (rlSummary.value ? !rlSummary.value.dataAccessEnforced : false));
 
 const showGenerate = ref(false);

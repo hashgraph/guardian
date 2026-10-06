@@ -20,7 +20,8 @@ import {
 import { formatCredits } from '~/lib/format';
 import { allocateDonutColors, mergeTopBinsWithOther, DONUT_TOP_N, DONUT_OTHER_COLOR } from '~/lib/chart-colors';
 import type { MethodologyDto, MethodologiesResponse } from '~/composables/api/useMethodologiesApi';
-import { COUNTRY_ALPHA3 } from '~/composables/useProjects';
+import { ALPHA3_TO_NAME, resolveCountryCode } from '~/composables/useProjects';
+import { useGeocodedCountries } from '~/composables/useGeocodedCountries';
 
 const { t, locale } = useI18n();
 const route = useRoute();
@@ -131,17 +132,40 @@ const mapPoints = computed(() =>
     summary.value.mapPoints.map(p => ({ lat: p.lat, lng: p.lng, name: p.name ?? '' })),
 );
 
+// Reverse-geocode fallback for projects whose stored `country` didn't resolve
+// but which carry real coordinates — same recovery the dashboard map uses
+// (see docs/dashboard-map-country-shading-investigation.md), otherwise such a
+// project gets a pin here but its country never shades.
+const mapPointsWithCode = computed(() =>
+    summary.value.mapPoints.map(p => ({
+        ...p,
+        country: p.country ?? '',
+        countryCode: resolveCountryCode(p.country ?? ''),
+    })),
+);
+const { resolvedCode } = useGeocodedCountries(mapPointsWithCode);
+
 // Country choropleth data for ProjectMap
 const mapCountries = computed(() => {
     const counts: Record<string, { projects: number; credits: number; name: string }> = {};
     for (const row of summary.value.countries) {
         const raw = row.country ?? '';
-        const code = COUNTRY_ALPHA3[raw] || 'UNK';
+        const code = resolveCountryCode(raw);
         if (code === 'UNK' || !raw) continue;
         if (!counts[code]) counts[code] = { projects: 0, credits: 0, name: raw };
         counts[code].projects += row.projects;
         counts[code].credits += row.credits;
     }
+
+    for (const point of mapPointsWithCode.value) {
+        if (point.countryCode !== 'UNK') continue; // already counted above
+        const recovered = resolvedCode(point);
+        if (recovered === 'UNK') continue; // not (yet) geocoded, or genuinely unresolvable
+        if (!counts[recovered]) counts[recovered] = { projects: 0, credits: 0, name: ALPHA3_TO_NAME[recovered] || recovered };
+        counts[recovered].projects += 1;
+        counts[recovered].credits += point.credits;
+    }
+
     return Object.entries(counts).map(([code, d]) => ({
         countryCode: code,
         country: d.name,
@@ -161,7 +185,7 @@ const activeMapDetail = computed(() => {
     const catCounts: Record<string, number> = {};
     let total = 0;
     for (const row of summary.value.countrySectors) {
-        if ((COUNTRY_ALPHA3[row.country ?? ''] || 'UNK') !== code) continue;
+        if (resolveCountryCode(row.country ?? '') !== code) continue;
         const label = row.label || 'Unknown';
         catCounts[label] = (catCounts[label] ?? 0) + row.projectCount;
         total += row.projectCount;
@@ -373,15 +397,15 @@ function openRawData() {
             <!-- ── Details / Advanced Tab Card ──────────────────────── -->
             <div class="rounded-xl border bg-card overflow-hidden">
                 <!-- Tab nav -->
-                <div class="border-b">
+                <div class="border-b bg-muted/30">
                     <nav class="flex gap-0 -mb-px overflow-x-auto">
                         <button
                             v-for="tab in tabs"
                             :key="tab.key"
                             :class="[
                                 activeTab === tab.key
-                                    ? 'border-primary text-primary'
-                                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border',
+                                    ? 'border-primary text-primary bg-card'
+                                    : 'border-transparent text-muted-foreground hover:text-foreground',
                                 'flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap',
                             ]"
                             @click="setTab(tab.key)"

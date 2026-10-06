@@ -62,7 +62,7 @@ describe('@unit mathBlock table hydration', () => {
         let captured = null;
         block.createWorker = async (workerData) => {
             captured = workerData;
-            return { done: true };
+            return { result: { done: true }, warnings: [] };
         };
 
         return { block, map, worker: () => captured };
@@ -148,7 +148,7 @@ describe('@unit mathBlock table hydration', () => {
         let captured = null;
         block.createWorker = async (workerData) => {
             captured = workerData;
-            return { done: true };
+            return { result: { done: true }, warnings: [] };
         };
 
         await block.calculate(refWith(), map, makeUser());

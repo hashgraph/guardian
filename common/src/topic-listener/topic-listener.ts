@@ -103,8 +103,13 @@ export class TopicListener {
 
             const index = message.sequenceNumber;
             if (index > this._startNumber) {
-                this._startNumber = index;
-                await this._observable(message);
+                try {
+                    await this._observable(message);
+                    this._startNumber = index;
+                } catch (error) {
+                    // The message is confirmed below and dropped by the service: it is not retried.
+                    await this.sendError(error);
+                }
             }
 
             await TopicListener.channel.publish(`${ListenerEvents.CONFIRM_LISTENER_MESSAGE}.${this._listenerId}`, index);
@@ -133,7 +138,10 @@ export class TopicListener {
             if (this._name) {
                 options.name = this._name;
             }
-            if (this._startNumber) {
+            // typeof, not truthiness, so a start position of 0 is still sent. A listener
+            // with no start position (null) sends none and resumes from the service's
+            // persisted index.
+            if (typeof this._startNumber === 'number') {
                 options.index = this._startNumber;
             }
             const result = await TopicListener.channel

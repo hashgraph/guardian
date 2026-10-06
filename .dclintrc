@@ -1,5 +1,22 @@
 {
-  "rules": {},
+  "rules": {
+    "top-level-properties-order": [
+      2,
+      {
+        "customOrder": [
+          "x-properties",
+          "name",
+          "models",
+          "services",
+          "version",
+          "networks",
+          "volumes",
+          "secrets",
+          "configs"
+        ]
+      }
+    ]
+  },
   "quiet": false,
   "debug": false,
   "exclude": []

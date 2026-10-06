@@ -47,6 +47,11 @@
             @if (isRootBlockStyle(item)) {
               <div class="block-body module-body">
                 <div class="block-item" (click)="onSelect($event, item)">
+                  @if (item.error) {
+                    <div class="block-error-mark">
+                      <i class="pi pi-exclamation-circle"></i>
+                    </div>
+                  }
                   <div class="module-item-icon">
                     <svg-icon src="/assets/images/icons/article.svg"
                       svgClass="icon-style-article action-color"
@@ -61,6 +66,11 @@
             @if (isRootModuleStyle(item)) {
               <div class="block-body module-body">
                 <div class="block-item" (click)="onSelect($event, item)">
+                  @if (item.error) {
+                    <div class="block-error-mark">
+                      <i class="pi pi-exclamation-circle"></i>
+                    </div>
+                  }
                   <div class="module-item-icon">
                     <svg-icon src="/assets/images/icons/policy-module.svg" class="svg-icon"></svg-icon>
                   </div>
@@ -73,6 +83,11 @@
             @if (isRootToolStyle(item)) {
               <div class="block-body module-body">
                 <div class="block-item" (click)="onSelect($event, item)">
+                  @if (item.error) {
+                    <div class="block-error-mark">
+                      <i class="pi pi-exclamation-circle"></i>
+                    </div>
+                  }
                   <div class="module-item-icon">
                     <svg-icon src="/assets/images/icons/handyman.svg" svgClass="icon-style-handyman"></svg-icon>
                   </div>
@@ -90,6 +105,11 @@
                   </div>
                 }
                 <div class="block-item" (click)="onSelect($event, item)" theme-all>
+                  @if (item.error) {
+                    <div class="block-error-mark">
+                      <i class="pi pi-exclamation-circle"></i>
+                    </div>
+                  }
                   <div class="block-item-icon">
                     <i [ngClass]="'pi pi-' + item.icon" class="theme-text"></i>
                   </div>
@@ -167,6 +187,11 @@
             @if (isModuleStyle(item)) {
               <div class="block-body module-body">
                 <div class="block-item" (click)="onSelect($event, item)" (dblclick)="onOpen($event, item)">
+                  @if (item.error) {
+                    <div class="block-error-mark">
+                      <i class="pi pi-exclamation-circle"></i>
+                    </div>
+                  }
                   <div class="module-item-icon">
                     <svg-icon src="/assets/images/icons/policy-module.svg" class="svg-icon"></svg-icon>
                   </div>
@@ -216,6 +241,11 @@
                   </div>
                 }
                 <div class="block-item" (click)="onSelect($event, item)" (dblclick)="onOpen($event, item)">
+                  @if (item.error) {
+                    <div class="block-error-mark">
+                      <i class="pi pi-exclamation-circle"></i>
+                    </div>
+                  }
                   <div class="module-item-icon">
                     <svg-icon src="/assets/images/icons/handyman.svg" svgClass="icon-style-handyman"></svg-icon>
                   </div>

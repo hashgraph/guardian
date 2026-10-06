@@ -73,6 +73,7 @@ export class PolicyMappingPipelineService {
                 description,
                 document: (doc['document'] as Record<string, unknown> | undefined) ?? doc,
                 rawSchema: doc,
+                iwaVersion: typeof doc['iwaVersion'] === 'string' ? (doc['iwaVersion'] as string) : undefined,
             });
         }
         return out;

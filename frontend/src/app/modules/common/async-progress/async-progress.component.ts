@@ -266,6 +266,9 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 break;
             case TaskAction.IMPORT_POLICY_FILE:
             case TaskAction.IMPORT_POLICY_MESSAGE:
+                if (this.reportImportValidationResult(result)) {
+                    break;
+                }
                 if (this.redir) {
                     setTimeout(() => {
                         this.router.navigate(['policy-configuration'], {
@@ -463,6 +466,9 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.IMPORT_SCHEMA_FILE:
             case TaskAction.IMPORT_SCHEMA_MESSAGE:
                 this.reportSchemaErrors(result, this.action === TaskAction.DELETE_SCHEMAS ? 'deleted' : 'imported');
+                if (this.reportImportValidationResult(result)) {
+                    break;
+                }
                 if (this.last) {
                     const schemaId = typeof result === 'string' && result ? result : null;
                     const lastWithSchema = schemaId
@@ -571,6 +577,64 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 }, 500);
                 break;
         }
+    }
+
+    private reportImportValidationResult(result: any): boolean {
+        const validation = result?.validation;
+        if (!validation) {
+            return false;
+        }
+        const policyId = result?.policyId;
+        if (!validation.isValid) {
+            const msg = this.getPolicyValidationText(validation.errors);
+            this.toastService.error(
+                msg,
+                'Policy validation found errors after schema import',
+                { sticky: true, logMessage: msg }
+            );
+            if (policyId && validation.errors) {
+                this._configurationErrors.set(policyId, validation.errors);
+                setTimeout(() => {
+                    this.router.navigate(['policy-configuration'], {
+                        queryParams: {
+                            policyId,
+                        },
+                        replaceUrl: true,
+                    });
+                }, 500);
+            }
+            return true;
+        }
+        this.toastService.success(
+            'No policy validation errors were found.',
+            'Policy validation completed'
+        );
+        return false;
+    }
+
+    private getPolicyValidationText(errors: any): string {
+        const text = [];
+        const blocks = Array.isArray(errors?.blocks) ? errors.blocks : [];
+        const invalidBlocks = blocks.filter(
+            (block: any) => !block.isValid
+        );
+        for (let i = 0; i < invalidBlocks.length; i++) {
+            const block = invalidBlocks[i];
+            const blockErrors = Array.isArray(block.errors)
+                ? block.errors.filter((error: any) => !!error)
+                : [];
+            if (!blockErrors.length) {
+                continue;
+            }
+            if (block.id && blockErrors.length > 1) {
+                text.push(`${block.id}:\n${blockErrors.map((error: string) => `- ${error}`).join('\n')}`);
+            } else if (block.id) {
+                text.push(`${block.id}: ${blockErrors[0]}`);
+            } else {
+                text.push(...blockErrors);
+            }
+        }
+        return text.join('\n') || 'The imported schemas introduced policy validation errors.';
     }
 
     private setStatuses(statuses: any) {

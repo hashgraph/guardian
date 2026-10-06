@@ -166,6 +166,19 @@ a:visited {
     }
 }
 
+.messages {
+    display: flex;
+    flex-direction: column;
+    row-gap: 4px;
+}
+
+.message {
+    color: var(--color-accent-red-1, #FF432A);
+    font-family: Inter, serif;
+    font-size: 14px;
+    word-break: break-word;
+}
+
 .actions-container {
     width: 100%;
     min-height: 32px;

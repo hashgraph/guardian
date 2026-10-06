@@ -3,23 +3,24 @@ import {
     OnModuleDestroy,
     OnApplicationBootstrap,
     Logger,
-    Inject,
     Optional,
 } from '@nestjs/common';
-import { InjectQueue } from '@nestjs/bullmq';
+import { getQueueToken } from '@nestjs/bullmq';
+import { ModuleRef } from '@nestjs/core';
 import { Queue, Worker } from 'bullmq';
 import { WorkerHost } from '@nestjs/bullmq';
-import Redis from 'ioredis';
 import {
     QUEUE_NAMES,
     BASE_QUEUE_NAMES,
     getQueueConfigs,
     getWorkerNetwork,
+    envInt,
 } from '@shared/config/bullmq.config';
 
 // Processor imports — we inject the live instances so we can access their
 // underlying BullMQ Worker (via WorkerHost.worker) and mutate concurrency.
 import { TopicSyncProcessor } from '../processors/topic-sync.processor';
+import { TopicSyncPriorityProcessor } from '../processors/topic-sync-priority.processor';
 import { MessageProcessProcessor } from '../processors/message-process.processor';
 import { TokenSyncProcessor } from '../processors/token-sync.processor';
 import { IpfsFetchProcessor } from '../processors/ipfs-fetch.processor';
@@ -27,6 +28,8 @@ import { MvRefreshProcessor } from '../processors/mv-refresh.processor';
 import { BusinessViewBuilderProcessor } from '../processors/business-view-builder.processor';
 import { PolicyDecodeProcessor } from '../processors/policy-decode.processor';
 import { ProjectReparseProcessor } from '../processors/project-reparse.processor';
+import { RetireSyncProcessor } from '../processors/retire-sync.processor';
+import { PolicyStatusProcessor } from '../processors/policy-status.processor';
 
 interface ScalingEntry {
     queue: Queue;
@@ -38,53 +41,51 @@ interface ScalingEntry {
 /**
  * In-process concurrency autoscaler for BullMQ workers.
  *
- * Runs a scaling loop every 30 seconds (leader-elected, scoped per network).
- * Adjusts each processor's BullMQ Worker.concurrency dynamically based on
- * queue depth without restarting the process.
+ * Runs a scaling loop every 30 seconds in EVERY worker process, adjusting that
+ * process's own BullMQ Worker.concurrency from shared queue depth.
  *
- * Scale-up rule:  waiting > 100  → concurrency += 2 (immediate)
- * Scale-down rule: waiting < 10 AND active < 50% concurrency for 2
+ * Scale-up rule:  backlog > 100  → concurrency += 2 (immediate)
+ * Scale-down rule: backlog < 10 AND active < 50% concurrency for 2
  *                  consecutive 30s cycles → concurrency -= 1
+ *
+ * Deliberately NOT leader-elected. It used to be, which inverted the intent the
+ * moment anyone scaled out: `Worker.concurrency` is a property of one process,
+ * so a single elected leader could only ever scale its own workers, leaving
+ * every other replica pinned at its baseline. Queue depth is shared state and
+ * reading it is cheap, so each replica decides for itself.
+ *
+ * The consequence to size for is that the ceiling is PER REPLICA — N replicas
+ * can reach N × maxConcurrency in total. Lower WORKER_MAX_CONCURRENCY_FACTOR
+ * (or a per-queue WORKER_<QUEUE>_MAX_CONCURRENCY) when scaling out, so the
+ * fleet's combined ceiling still fits Postgres' pool and the mirror-node rate
+ * budget.
  *
  * NOTE: This is a smoothing layer only. For sustained load, scale horizontally
  * (more worker containers partitioned via WORKER_QUEUES).
- *
- * Leader election key: se:autoscaler:leader:{network}
- * (distinct from the scheduler key se:scheduler:leader:{network})
  */
 @Injectable()
 export class QueueAutoscalerService implements OnApplicationBootstrap, OnModuleDestroy {
     private readonly logger = new Logger(QueueAutoscalerService.name);
     private readonly network = getWorkerNetwork();
-    private readonly leaderKey = `se:autoscaler:leader:${this.network}`;
-    private readonly instanceId = `autoscaler-${process.pid}-${Date.now()}`;
 
-    private isLeader = false;
     private scalingInterval: ReturnType<typeof setInterval> | null = null;
-    private leaderRenewalInterval: ReturnType<typeof setInterval> | null = null;
     private readonly scaleDownCounters: Record<string, number> = {};
 
     /** Populated in onApplicationBootstrap once all processors have initialised. */
     private readonly scalingTargets = new Map<string, ScalingEntry>();
 
     constructor(
-        // Redict client (same provider as all other workers/schedulers)
-        @Inject('REDICT_PUB') private readonly redis: Redis,
-
-        // Queues
-        @InjectQueue(QUEUE_NAMES.TOPIC_SYNC) private readonly topicQueue: Queue,
-        @InjectQueue(QUEUE_NAMES.MESSAGE_PARSE) private readonly messageQueue: Queue,
-        @InjectQueue(QUEUE_NAMES.TOKEN_SYNC) private readonly tokenQueue: Queue,
-        @InjectQueue(QUEUE_NAMES.IPFS_FETCH) private readonly ipfsQueue: Queue,
-        @InjectQueue(QUEUE_NAMES.MV_REFRESH) private readonly mvQueue: Queue,
-        @InjectQueue(QUEUE_NAMES.BUSINESS_VIEW_BUILD) private readonly bvQueue: Queue,
-        @InjectQueue(QUEUE_NAMES.POLICY_DECODE) private readonly pdQueue: Queue,
-        @InjectQueue(QUEUE_NAMES.PROJECT_REPARSE) private readonly projectReparseQueue: Queue,
+        // Queues are resolved lazily from the DI container rather than injected:
+        // a role-partitioned worker (WORKER_QUEUES) only registers the queues it
+        // actually needs, and ten hard @InjectQueue params would force every
+        // worker to register — and open a connection to — all ten regardless.
+        private readonly moduleRef: ModuleRef,
 
         // Processor instances — decorated with @Optional() because worker.module.ts
         // only registers processors for active queues. NestJS resolves missing
         // optional providers as undefined rather than throwing.
         @Optional() private readonly topicProcessor: TopicSyncProcessor,
+        @Optional() private readonly topicPriorityProcessor: TopicSyncPriorityProcessor,
         @Optional() private readonly messageProcessor: MessageProcessProcessor,
         @Optional() private readonly tokenProcessor: TokenSyncProcessor,
         @Optional() private readonly ipfsProcessor: IpfsFetchProcessor,
@@ -92,13 +93,15 @@ export class QueueAutoscalerService implements OnApplicationBootstrap, OnModuleD
         @Optional() private readonly bvProcessor: BusinessViewBuilderProcessor,
         @Optional() private readonly pdProcessor: PolicyDecodeProcessor,
         @Optional() private readonly projectReparseProcessor: ProjectReparseProcessor,
+        @Optional() private readonly retireProcessor: RetireSyncProcessor,
+        @Optional() private readonly policyStatusProcessor: PolicyStatusProcessor,
     ) {}
 
     /**
      * Runs after all OnModuleInit hooks — at this point every processor's
      * internal BullMQ Worker instance is guaranteed to be initialized.
      */
-    async onApplicationBootstrap(): Promise<void> {
+    onApplicationBootstrap(): void {
         this.buildScalingTargets();
 
         if (this.scalingTargets.size === 0) {
@@ -106,53 +109,29 @@ export class QueueAutoscalerService implements OnApplicationBootstrap, OnModuleD
             return;
         }
 
-        this.isLeader = await this.tryAcquireLeader();
-
-        if (this.isLeader) {
-            this.logger.log(`[Autoscaler] Acquired leadership (${this.instanceId})`);
-            this.startScalingLoop();
-        } else {
-            this.logger.log('[Autoscaler] Another instance holds the leader lock — standby');
-        }
-
-        // Renew leadership every 15s; take over from a dropped leader
-        this.leaderRenewalInterval = setInterval(async () => {
-            try {
-                const wasLeader = this.isLeader;
-                this.isLeader = await this.tryAcquireLeader();
-
-                if (this.isLeader && wasLeader) {
-                    await this.redis.expire(this.leaderKey, 30);
-                } else if (this.isLeader && !wasLeader) {
-                    this.logger.log('[Autoscaler] Took over leadership');
-                    for (const key of Object.keys(this.scaleDownCounters)) {
-                        this.scaleDownCounters[key] = 0;
-                    }
-                    this.startScalingLoop();
-                } else if (!this.isLeader && wasLeader) {
-                    this.logger.warn('[Autoscaler] Lost leadership — pausing scaling loop');
-                    this.stopScalingLoop();
-                }
-            } catch {
-                // Silent — retry next interval
-            }
-        }, 15_000);
+        // Every replica scales its own workers — see the class comment.
+        this.startScalingLoop();
     }
 
     onModuleDestroy(): void {
         this.stopScalingLoop();
-        if (this.leaderRenewalInterval) {
-            clearInterval(this.leaderRenewalInterval);
-            this.leaderRenewalInterval = null;
-        }
-        if (this.isLeader) {
-            this.redis.del(this.leaderKey).catch(() => {});
-        }
     }
 
     // ---------------------------------------------------------------------------
     // Private helpers
     // ---------------------------------------------------------------------------
+
+    /**
+     * Returns the Queue provider for a queue name, or undefined when this
+     * worker role does not register it.
+     */
+    private resolveQueue(queueName: string): Queue | undefined {
+        try {
+            return this.moduleRef.get<Queue>(getQueueToken(queueName), { strict: false });
+        } catch {
+            return undefined;
+        }
+    }
 
     /**
      * Builds the scaling targets map from processors that are actually
@@ -170,61 +149,71 @@ export class QueueAutoscalerService implements OnApplicationBootstrap, OnModuleD
         const candidates: Array<{
             baseName: string;
             queueName: string;
-            queue: Queue;
             processor: WorkerHost | undefined;
         }> = [
             {
                 baseName: BASE_QUEUE_NAMES.TOPIC_SYNC,
                 queueName: QUEUE_NAMES.TOPIC_SYNC,
-                queue: this.topicQueue,
                 processor: this.topicProcessor,
+            },
+            {
+                baseName: BASE_QUEUE_NAMES.TOPIC_SYNC_PRIORITY,
+                queueName: QUEUE_NAMES.TOPIC_SYNC_PRIORITY,
+                processor: this.topicPriorityProcessor,
             },
             {
                 baseName: BASE_QUEUE_NAMES.MESSAGE_PARSE,
                 queueName: QUEUE_NAMES.MESSAGE_PARSE,
-                queue: this.messageQueue,
                 processor: this.messageProcessor,
             },
             {
                 baseName: BASE_QUEUE_NAMES.TOKEN_SYNC,
                 queueName: QUEUE_NAMES.TOKEN_SYNC,
-                queue: this.tokenQueue,
                 processor: this.tokenProcessor,
             },
             {
                 baseName: BASE_QUEUE_NAMES.IPFS_FETCH,
                 queueName: QUEUE_NAMES.IPFS_FETCH,
-                queue: this.ipfsQueue,
                 processor: this.ipfsProcessor,
             },
             {
                 baseName: BASE_QUEUE_NAMES.MV_REFRESH,
                 queueName: QUEUE_NAMES.MV_REFRESH,
-                queue: this.mvQueue,
                 processor: this.mvProcessor,
             },
             {
                 baseName: BASE_QUEUE_NAMES.BUSINESS_VIEW_BUILD,
                 queueName: QUEUE_NAMES.BUSINESS_VIEW_BUILD,
-                queue: this.bvQueue,
                 processor: this.bvProcessor,
             },
             {
                 baseName: BASE_QUEUE_NAMES.POLICY_DECODE,
                 queueName: QUEUE_NAMES.POLICY_DECODE,
-                queue: this.pdQueue,
                 processor: this.pdProcessor,
             },
             {
                 baseName: BASE_QUEUE_NAMES.PROJECT_REPARSE,
                 queueName: QUEUE_NAMES.PROJECT_REPARSE,
-                queue: this.projectReparseQueue,
                 processor: this.projectReparseProcessor,
+            },
+            {
+                baseName: BASE_QUEUE_NAMES.RETIRE_SYNC,
+                queueName: QUEUE_NAMES.RETIRE_SYNC,
+                processor: this.retireProcessor,
+            },
+            {
+                baseName: BASE_QUEUE_NAMES.POLICY_STATUS,
+                queueName: QUEUE_NAMES.POLICY_STATUS,
+                processor: this.policyStatusProcessor,
             },
         ];
 
-        for (const { baseName, queueName, queue, processor } of candidates) {
+        for (const { baseName, queueName, processor } of candidates) {
             if (!processor) continue;
+
+            // Not registered in this worker role — nothing to scale.
+            const queue = this.resolveQueue(queueName);
+            if (!queue) continue;
 
             // Verify the underlying BullMQ Worker is accessible
             try {
@@ -246,9 +235,14 @@ export class QueueAutoscalerService implements OnApplicationBootstrap, OnModuleD
                 process.env[`WORKER_${envKey}_MAX_CONCURRENCY`] || '0',
                 10,
             );
+            // Per-replica ceiling. The factor is configurable because the fleet
+            // total is N × this: at one worker the historic 4× is right, but a
+            // four-replica ingest tier at 4× would put 16× the baseline against
+            // one Postgres pool and one mirror-node rate budget.
+            const factor = envInt('WORKER_MAX_CONCURRENCY_FACTOR', 4);
             const maxConcurrency = maxEnv > 0
                 ? maxEnv
-                : Math.max(baseline * 4, baseline + 4);
+                : Math.max(baseline * factor, baseline + 4);
 
             this.scalingTargets.set(baseName, {
                 queue,
@@ -282,8 +276,18 @@ export class QueueAutoscalerService implements OnApplicationBootstrap, OnModuleD
     private async runScalingCycle(): Promise<void> {
         for (const [baseName, entry] of this.scalingTargets.entries()) {
             try {
-                const waiting = await entry.queue.getWaitingCount();
-                const active = await entry.queue.getActiveCount();
+                // getWaitingCount() counts ONLY the 'wait' list. Any job added
+                // with a `priority` goes to the separate 'prioritized' ZSET
+                // instead, so a queue whose producers all set a priority reports
+                // waiting=0 no matter how deep its backlog is — MESSAGE_PARSE
+                // sat at ~1M prioritized jobs while this loop read 0 and tried
+                // to scale it DOWN. Both sets are runnable backlog.
+                const [wait, prioritized, active] = await Promise.all([
+                    entry.queue.getWaitingCount(),
+                    entry.queue.getPrioritizedCount(),
+                    entry.queue.getActiveCount(),
+                ]);
+                const waiting = wait + prioritized;
 
                 // BullMQ Worker.concurrency is a proper get/set property (verified
                 // in node_modules/bullmq/dist/cjs/classes/worker.js lines 214-224).
@@ -319,22 +323,5 @@ export class QueueAutoscalerService implements OnApplicationBootstrap, OnModuleD
                 );
             }
         }
-    }
-
-    /**
-     * Acquires or verifies the distributed leader lock in Redict.
-     * TTL: 30s. Renewed every 15s by the leader.
-     */
-    private async tryAcquireLeader(): Promise<boolean> {
-        const result = await this.redis.set(
-            this.leaderKey,
-            this.instanceId,
-            'EX', 30,
-            'NX',
-        );
-        if (result === 'OK') return true;
-
-        const current = await this.redis.get(this.leaderKey);
-        return current === this.instanceId;
     }
 }

@@ -1,7 +1,7 @@
 import WebSocket, { WebSocketServer } from 'ws'
 import { IncomingMessage, Server } from 'node:http';
-import { GenerateUUIDv4, MessageAPI, NotifyAPI } from '@guardian/interfaces';
-import { IAuthUser, MessageResponse, NatsService, NotificationHelper, PinoLogger, Singleton } from '@guardian/common';
+import { ApplicationStates, GenerateUUIDv4, MessageAPI, NotifyAPI } from '@guardian/interfaces';
+import { IAuthUser, JwtServicesValidator, MessageResponse, NatsService, NotificationHelper, PinoLogger, Singleton } from '@guardian/common';
 import { NatsConnection } from 'nats';
 import { Users } from '#helpers';
 import { Mutex } from 'async-mutex';
@@ -63,7 +63,10 @@ export class WebSocketsService {
     // Pause for the current poll's replies to land before broadcasting.
     private static readonly STATUS_POLL_WAIT = 500;
     // Last status reply per service instance (keyed by service channel, or name).
-    private readonly serviceLiveness = new Map<string, { name: string; state: string; lastSeen: number }>();
+    private readonly serviceLiveness = new Map<string, { name: string; state: string; message?: string; lastSeen: number }>();
+    // Problems with this gateway's service JWT keys. Services with a broken
+    // key cannot sign their own status, so the gateway reports it for them.
+    private serviceKeyErrors: string[] = [];
     /**
      * Get statuses mutex
      * @private
@@ -101,6 +104,10 @@ export class WebSocketsService {
      * Register all listeners
      */
     public async init(): Promise<void> {
+        this.serviceKeyErrors = JwtServicesValidator.checkKeys();
+        for (const error of this.serviceKeyErrors) {
+            console.error(`API_GATEWAY_SERVICE: ${error}`);
+        }
         this.registerConnection();
         this.registerMessageHandler();
         await this.channel.init();
@@ -225,9 +232,16 @@ export class WebSocketsService {
             NOTIFICATION_SERVICE: [],
         };
 
+        const messages: Record<string, string[]> = {};
+
         // Prompt replies; the persistent SEND_STATUS listener records them,
         // including any that arrive after this wait (they count next time).
-        this.channel.publish(MessageAPI.GET_STATUS);
+        // Publishing fails when the service key is unusable; still answer the UI.
+        try {
+            await this.channel.publish(MessageAPI.GET_STATUS);
+        } catch (error) {
+            console.error(`Status request failed: ${error.message}`);
+        }
         await new Promise((resolve) => setTimeout(resolve, WebSocketsService.STATUS_POLL_WAIT));
 
         const now = Date.now();
@@ -240,12 +254,21 @@ export class WebSocketsService {
                 statuses[info.name] = [];
             }
             statuses[info.name].push(info.state);
+            if (info.message && !messages[info.name]?.includes(info.message)) {
+                messages[info.name] = [...(messages[info.name] || []), info.message];
+            }
         });
+
+        if (this.serviceKeyErrors.length) {
+            statuses.API_GATEWAY_SERVICE = [ApplicationStates.BAD_CONFIGURATION];
+            messages.API_GATEWAY_SERVICE = this.serviceKeyErrors;
+        }
 
         this.getStatusesClients.forEach((client: any) => {
             this.send(client, {
                 type,
                 data: statuses,
+                messages,
             });
         });
         this.getStatusesClients.clear();
@@ -371,13 +394,14 @@ export class WebSocketsService {
         });
 
         this.channel.subscribe(MessageAPI.SEND_STATUS, (msg) => {
-            const { name, state, serviceName } = msg || {};
+            const { name, state, message, serviceName } = msg || {};
             if (!name) {
                 return;
             }
             this.serviceLiveness.set(serviceName || name, {
                 name,
                 state,
+                message,
                 lastSeen: Date.now(),
             });
         });

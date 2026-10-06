@@ -49,6 +49,83 @@ describe('SchemaToJson.conditionToJson — single predicates entry', () => {
     });
 });
 
+describe('SchemaToJson.conditionToJson — comparator (issue #6687)', () => {
+    it('carries comparator through for a plain single predicate', () => {
+        const json = SchemaToJson.conditionToJson({
+            ifCondition: { field: { name: 'a' }, fieldValue: 2, comparator: 'contains' },
+            thenFields: [],
+            elseFields: [],
+        });
+        assert.equal(json.if.comparator, 'contains');
+    });
+
+    it('omits comparator entirely when absent (no migration for legacy conditions)', () => {
+        const json = SchemaToJson.conditionToJson({
+            ifCondition: { field: { name: 'a' }, fieldValue: 2 },
+            thenFields: [],
+            elseFields: [],
+        });
+        assert.equal('comparator' in json.if, false);
+    });
+
+    it('carries comparator through a single-element AND collapse', () => {
+        const json = SchemaToJson.conditionToJson({
+            ifCondition: { AND: [{ field: { name: 'a' }, fieldValue: 2, comparator: 'contains' }] },
+            thenFields: [],
+            elseFields: [],
+        });
+        assert.equal(json.if.comparator, 'contains');
+    });
+
+    it('carries comparator through a single-element OR collapse', () => {
+        const json = SchemaToJson.conditionToJson({
+            ifCondition: { OR: [{ field: { name: 'a' }, fieldValue: 2, comparator: 'contains' }] },
+            thenFields: [],
+            elseFields: [],
+        });
+        assert.equal(json.if.comparator, 'contains');
+    });
+
+    it('carries comparator through a single-element predicates collapse', () => {
+        const json = SchemaToJson.conditionToJson({
+            ifCondition: { predicates: [{ field: { name: 'a' }, fieldValue: 2, comparator: 'contains' }] },
+            thenFields: [],
+            elseFields: [],
+        });
+        assert.equal(json.if.comparator, 'contains');
+    });
+
+    it('carries comparator through each entry of a multi-element AND array', () => {
+        const json = SchemaToJson.conditionToJson({
+            ifCondition: {
+                AND: [
+                    { field: { name: 'a' }, fieldValue: 2, comparator: 'contains' },
+                    { field: { name: 'b' }, fieldValue: 3 },
+                ],
+            },
+            thenFields: [],
+            elseFields: [],
+        });
+        assert.equal(json.if.AND[0].comparator, 'contains');
+        assert.equal('comparator' in json.if.AND[1], false);
+    });
+
+    it('carries comparator through each entry of a multi-element OR array', () => {
+        const json = SchemaToJson.conditionToJson({
+            ifCondition: {
+                OR: [
+                    { field: { name: 'a' }, fieldValue: 2, comparator: 'contains' },
+                    { field: { name: 'b' }, fieldValue: 3 },
+                ],
+            },
+            thenFields: [],
+            elseFields: [],
+        });
+        assert.equal(json.if.OR[0].comparator, 'contains');
+        assert.equal('comparator' in json.if.OR[1], false);
+    });
+});
+
 describe('JsonToSchema.fromType — literal and system names', () => {
     it("maps the literal 'String' name case-insensitively", () => {
         assert.equal(JsonToSchema.fromType({ type: 'string' }, [], ctx()), 'string');

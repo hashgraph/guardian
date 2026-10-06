@@ -27,9 +27,9 @@ export class PortfolioStatsService {
         if (cached) return cached;
 
         const repo = new PgPortfolioRepository(this.dataSources.getDataSource(network));
-        const [totals, series, recent] = await repo.getAggregations(sorted);
+        const [totals, series, recent, retirements] = await repo.getAggregations(sorted);
 
-        const result = this.pivot(totals, series, recent);
+        const result = this.pivot(totals, series, recent, retirements);
         await this.redis.setJson(key, result, CACHE_TTL_SECONDS);
         return result;
     }
@@ -43,10 +43,21 @@ export class PortfolioStatsService {
         return `portfolio-stats:${userId}:${network}:${hash}`;
     }
 
+    /** Postgres may hand back a Date or a date string; both become 'YYYY-MM-01'. */
+    private static toMonthSeries(rows: PortfolioMonthRow[]): Array<{ month: string; amount: number }> {
+        return rows.map(row => ({
+            month: (row.month instanceof Date
+                ? row.month.toISOString().slice(0, 7)
+                : String(row.month).slice(0, 7)) + '-01',
+            amount: Number(row.amount) || 0,
+        }));
+    }
+
     private pivot(
         totals: PortfolioProjectTotalRow[],
         series: PortfolioMonthRow[],
         recent: PortfolioRecentIssuanceRow[],
+        retirements: PortfolioMonthRow[],
     ): PortfolioStatsDto {
         let totalMinted = 0;
         const byProjectKey = totals.map(row => {
@@ -55,12 +66,8 @@ export class PortfolioStatsService {
             return { projectKey: row.projectKey, amount };
         });
 
-        const mintSeries = series.map(row => ({
-            month: row.month instanceof Date
-                ? row.month.toISOString().slice(0, 7) + '-01'
-                : String(row.month).slice(0, 7) + '-01',
-            amount: Number(row.amount) || 0,
-        }));
+        const mintSeries = PortfolioStatsService.toMonthSeries(series);
+        const retirementSeries = PortfolioStatsService.toMonthSeries(retirements);
 
         const recentIssuances = recent.map(row => ({
             projectKey: row.projectKey,
@@ -69,6 +76,6 @@ export class PortfolioStatsService {
             mintDate: row.mintDate ? row.mintDate.toISOString() : null,
         }));
 
-        return { totalMinted, byProjectKey, mintSeries, recentIssuances };
+        return { totalMinted, byProjectKey, mintSeries, recentIssuances, retirementSeries };
     }
 }

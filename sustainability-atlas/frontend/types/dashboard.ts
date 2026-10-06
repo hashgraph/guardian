@@ -13,12 +13,16 @@ export interface DashboardMintStatsDto {
     mintSeries: MintSeriesEntry[];
     bySector: MintBreakdownEntry[];
     byRegistry: MintBreakdownEntry[];
+    /** Total retired credits. Matches the retired totals shown elsewhere. */
+    totalRetired: number;
+    /** Monthly retired amounts, dated by retirement record where one exists, otherwise by the credit's last movement. */
+    retirementSeries: MintSeriesEntry[];
 }
 
 // ── Dashboard summary ────────────────────────────────────────────────────────
 // Server-side aggregates from GET /:network/dashboard/summary. Country / sector
 // / vintage / registry labels arrive as raw stored values; display
-// normalisation (ISO country codes, "Unknown" bucketing) stays on the client.
+// normalisation (ISO country codes, "Other" bucketing) stays on the client.
 
 export interface DashboardTotals {
     registries: number;
@@ -57,7 +61,9 @@ export interface CountryBreakdown {
 }
 
 export interface DashboardMapPoint {
+    id: string;
     name: string | null;
+    country: string | null;
     lat: number;
     lng: number;
     credits: number;
@@ -121,4 +127,6 @@ export interface PortfolioStatsDto {
     byProjectKey: PortfolioProjectTotal[];
     mintSeries: MintSeriesEntry[];
     recentIssuances: PortfolioRecentIssuance[];
+    /** Monthly retired amounts for the watched projects, dated by retirement record where one exists, otherwise by last movement. */
+    retirementSeries: MintSeriesEntry[];
 }

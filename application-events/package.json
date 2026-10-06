@@ -3,11 +3,14 @@
     "dependencies": {
         "@guardian/common": "workspace:*",
         "@guardian/interfaces": "workspace:*",
+        "@mikro-orm/core": "6.6.17",
+        "@mikro-orm/mongodb": "6.6.17",
         "axios": "^1.16.1",
         "dotenv": "^16.6.1",
         "express": "5.2.1",
         "js-yaml": "^4.1.0",
         "morgan": "^1.11.0",
+        "reflect-metadata": "0.2.2",
         "swagger-ui-express": "5.0.1",
         "yup": "^1.0.2"
     },
@@ -15,11 +18,10 @@
     "devDependencies": {
         "@types/chai": "^4.3.4",
         "@types/express": "5.0.6",
-        "@types/glob": "^8.1.0",
         "@types/js-yaml": "^4.0.5",
         "@types/mocha": "10.0.10",
         "@types/morgan": "1.9.10",
-        "@types/node": "24.13.3",
+        "@types/node": "24.19.1",
         "@types/swagger-ui-express": "4.1.8",
         "chai": "^4.3.7",
         "chai-http": "4.4.0",
@@ -48,8 +50,8 @@
         "dev:docker": "nodemon .",
         "lint": "tslint --config ../tslint.json --project .",
         "start": "node dist/index.js",
-        "test": "mocha --require ts-node/register tests/**/*.ts --timeout 10000"
+        "test": "mocha --require ts-node/register 'tests/**/*.ts' --timeout 10000"
     },
     "type": "module",
-    "version": "3.7.1-rc"
+    "version": "3.7.1"
 }

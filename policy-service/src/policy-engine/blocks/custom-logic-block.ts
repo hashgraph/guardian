@@ -17,6 +17,7 @@ import { IGenerateDidBatch } from '../policy-actions/generate-did.js';
 import { BlockActionError } from '../errors/index.js';
 import { collectTablesPack, hydrateTablesInObject, loadFileTextById } from '../helpers/table-field.js';
 import { RecordActionStep } from '../record-action-step.js';
+import { buildSandboxWorkerEnv } from '../helpers/workers/sandbox-worker-env.js';
 
 const filename = fileURLToPath(import.meta.url);
 
@@ -370,13 +371,7 @@ export class CustomLogicBlock {
                         // Give the worker an explicit minimal env instead of inheriting the
                         // full process environment. The worker reads nothing from process.env;
                         // these keys cover Node/pyodide runtime needs.
-                        const sandboxEnvAllowlist = ['PATH', 'HOME', 'TMPDIR', 'LANG', 'LC_ALL', 'TZ'];
-                        const sandboxEnv: Record<string, string> = {};
-                        for (const key of sandboxEnvAllowlist) {
-                            if (typeof process.env[key] === 'string') {
-                                sandboxEnv[key] = process.env[key];
-                            }
-                        }
+                        const sandboxEnv = buildSandboxWorkerEnv();
 
                         // Cap the pyodide worker's heap (MB) so a misbehaving script can't exhaust
                         // host memory. Env-tunable; the default is conservative.
@@ -475,6 +470,7 @@ export class CustomLogicBlock {
                                 sources: context.sources,
                                 tablesPack
                             },
+                            env: buildSandboxWorkerEnv()
                         });
                     // Release the worker's V8 isolate; without this each invocation leaks ~30 MB.
                     const cleanup = () => {

@@ -1,9 +1,15 @@
 import { ClientProxy } from '@nestjs/microservices';
 import { Body, Controller, Get, HttpCode, HttpStatus, Inject, NotImplementedException, Post, Put, Query } from '@nestjs/common';
-import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiExtraModels, ApiQuery, ApiBody } from '@nestjs/swagger';
+import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiResponse, ApiTags, ApiExtraModels, ApiQuery, ApiBody } from '@nestjs/swagger';
 import { Auth, AuthUser } from '#auth';
 import { AISuggestions, InternalException } from '#helpers';
-import { InternalServerErrorDTO, PropertySuggestionRequestDTO, PropertySuggestionResponseDTO } from '#middlewares';
+import {
+    InternalServerErrorDTO,
+    PropertySuggestionFieldInputDTO,
+    PropertySuggestionRequestDTO,
+    PropertySuggestionResponseDTO,
+    PropertySuggestionSchemaInputDTO
+} from '#middlewares';
 import { IAuthUser, PinoLogger } from '@guardian/common';
 import { IPropertySuggestionResponse, Permissions } from '@guardian/interfaces';
 import process from 'node:process';
@@ -126,7 +132,7 @@ export class AISuggestionsAPI {
     )
     @ApiOperation({
         summary: 'Returns whether Glossary AI is enabled',
-        description: 'Lets the client know upfront whether it should show the Glossary AI schema-tagging UI at all.',
+        description: 'Lets the client know upfront whether it should show the IWA property mapping suggestions UI at all.',
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -154,16 +160,29 @@ export class AISuggestionsAPI {
     )
     @ApiOperation({
         summary: 'Suggest schema field properties',
-        description: 'Returns ranked IWA property candidates for each schema field',
+        description: 'Returns ranked IWA property candidates for each schema field, based on the schema sent in the request.',
     })
     @ApiBody({
-        description: 'Schema fields to tag.',
+        description: 'Live schema state and the fields to tag.',
         required: true,
         type: PropertySuggestionRequestDTO
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: PropertySuggestionResponseDTO
+    })
+    @ApiResponse({
+        // The flag is checked before the try/catch below, so the 501 never goes
+        // through InternalException() and must be documented explicitly here.
+        status: 501,
+        description: 'Not Implemented. Glossary AI is not enabled.',
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Glossary AI not enabled',
+                value: { statusCode: 501, message: 'Glossary AI is not enabled' }
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -175,7 +194,13 @@ export class AISuggestionsAPI {
             }
         }
     })
-    @ApiExtraModels(PropertySuggestionRequestDTO, PropertySuggestionResponseDTO, InternalServerErrorDTO)
+    @ApiExtraModels(
+        PropertySuggestionRequestDTO,
+        PropertySuggestionSchemaInputDTO,
+        PropertySuggestionFieldInputDTO,
+        PropertySuggestionResponseDTO,
+        InternalServerErrorDTO
+    )
     @HttpCode(HttpStatus.OK)
     async getPropertySuggestions(
         @AuthUser() user: IAuthUser,

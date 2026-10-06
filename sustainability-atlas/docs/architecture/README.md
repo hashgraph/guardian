@@ -139,12 +139,15 @@ Hedera Mirror Node REST API          IPFS Gateways
 
 | Queue | Concurrency | Purpose |
 |-------|-------------|---------|
-| `mirror-node-topics` | 5 | Fetch HCS messages from Mirror Node by topic ID |
+| `mirror-node-topics` | 20 (autoscales to 80) | Fetch HCS messages from Mirror Node by topic ID (bulk crawl — every already-discovered topic's steady-state re-poll) |
+| `mirror-node-topics-priority` | 5 (autoscales) | Same job, separate queue: root/registry topic, guardian-sync's event-triggered syncs, and topics discovered from a priority-lane message (`oneTimePriority`, handed back to the bulk queue once caught up — see `topic-sync-priority.processor.ts`). Topics discovered from an ordinary bulk-crawl message stay on the bulk queue — the `fromPriorityLane` flag on `MESSAGE_PARSE` jobs scopes priority treatment to guardian-sync's own lineage instead of the whole crawl. Kept physically apart from the bulk queue so these never queue behind it — `priority`/`lifo` job options were tried and don't reliably jump a job forward once the bulk queue has 100k+ entries. |
 | `mirror-node-messages` | 10 | Decode, parse, and classify raw messages |
-| `mirror-node-tokens` | 2 | Fetch token metadata and NFT serials |
+| `mirror-node-tokens` | 2 | Fetch token metadata, NFT serials and owners, fungible mint transactions, and treasury transfers |
+| `mirror-node-retirements` | 2 | Read executed retirement events from Guardian's RETIRE contracts (see [credit lifecycle tracking](credit-lifecycle-tracking.md)) |
 | `ipfs-files` | 3 | Fetch documents from IPFS gateways |
 | `maintenance-refresh-mvs` | 1 | Refresh PostgreSQL materialized views |
 | `maintenance-build-business-views` | 5 | Map raw messages to business entities |
+| `policy-status` | 3 | Resolve a policy topic's discontinuation state and write it onto its `business_view` rows. One job settles every published version on the topic: publish messages and discontinue messages share it, so two indexed reads attribute each discontinuation to the version it names (newest valid message wins per version). Local SQL only — no Mirror Node calls. Fed by message ingest, plus the liveness reconciler's watch list — the policy topics still holding a discontinuation that has no immediate `discontinue-policy` recorded against it. A topic leaves that list once every such version is terminal; deferred ones stay, because a deferral can still be edited. Discontinue messages ingested before the parser recognised those actions carry no `instanceTopicId`; the reconciler re-parses them from `message_cache` (`RECONCILE_DISCONTINUE_REPARSE_LIMIT` per tick) until none remain |
 
 ## Deduplication
 
@@ -278,8 +281,10 @@ Each worker instance can be configured to process only specific queues via the `
 # Process all queues (default, single-instance mode)
 WORKER_QUEUES=
 
-# Process only topic and message queues
-WORKER_QUEUES=mirror-node-topics,mirror-node-messages
+# Process only topic and message queues — note: mirror-node-topics-priority
+# needs listing explicitly too, or that instance never gets root-topic /
+# guardian-sync-triggered syncs (mirror-node-* covers both, see below)
+WORKER_QUEUES=mirror-node-topics,mirror-node-topics-priority,mirror-node-messages
 
 # Process only IPFS fetching
 WORKER_QUEUES=ipfs-files
@@ -745,11 +750,24 @@ Each network has its own database containing the same set of tables. There is no
 | `MessageCache` | `message_cache` | Interim storage during processing |
 | `TopicCache` | `topic_cache` | Topic sync watermarks |
 | `TokenCache` | `token_cache` | Token metadata + NFT watermarks |
-| `NftCache` | `nft_cache` | Individual NFT serial tracking |
+| `NftCache` | `nft_cache` | Per-serial tracking: decoded mint VP timestamp, current holder, deleted flag |
 | `IpfsFile` | `ipfs_files` | IPFS document content storage (per-network, not deduped across networks) |
 | `BusinessView` | `business_view` | Materialized business entities + generated `searchVector` tsvector |
 | `SynchronizationTask` | `synchronization_task` | Data source sync timestamps |
 | `Log` | `log` | Error and event logging |
+
+Tables created by `bootstrapSchema` rather than TypeORM (no entity — they are outside `synchronize`'s
+reach, so it cannot drop their columns). All documented in
+[credit lifecycle tracking](credit-lifecycle-tracking.md):
+
+| Table | Purpose |
+|-------|---------|
+| `project_mint_link` | One row per MintToken VC: project attribution, declared vs actually-minted amount, serial/retired/transferred counts, reconciliation status |
+| `token_mint_tx` | Fungible mint transactions and the mint VP timestamp decoded from their memo |
+| `token_retire_event` | Documented retirements from Guardian's RETIRE contract: account, serials, amount |
+| `token_transfer_event` | Credits leaving a token's treasury: sender, receiver, serial |
+| `contract_cache` | Discovered Guardian WIPE/RETIRE contracts and their log watermark |
+| `project_geometry` | Project polygons |
 
 ### Materialized views
 

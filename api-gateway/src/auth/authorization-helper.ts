@@ -1,4 +1,4 @@
-import { NextFunction, Response } from 'express';
+import type { NextFunction, Response } from 'express';
 import { Users } from '../helpers/users.js';
 import { AuthenticatedRequest, IAuthUser, PinoLogger } from '@guardian/common';
 import { createParamDecorator, ExecutionContext, HttpException, HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';

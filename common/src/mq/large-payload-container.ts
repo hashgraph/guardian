@@ -1,4 +1,3 @@
-import express from 'express'
 import http from 'node:http'
 import https from 'node:https'
 import { hostname } from 'node:os';
@@ -108,19 +107,23 @@ export class LargePayloadContainer {
         if (this.started) {
             return;
         }
-        const app = express();
-        app.get('/:objectId', (req, res) => {
-            const objectID = req.params.objectId;
-            const buf = this.objectsMap.get(objectID);
+        const requestListener: http.RequestListener = (req, res) => {
+            const objectID = this.parseObjectId(req);
+            const buf = objectID && this.objectsMap.get(objectID);
             if (!buf) {
-                res.sendStatus(404);
-                return
+                res.writeHead(404, { 'Content-Type': 'text/plain' });
+                res.end('Not Found');
+                return;
             }
             setTimeout(() => {
                 this.objectsMap.delete(objectID);
             }, 60 * 1000);
-            res.send(buf);
-        })
+            res.writeHead(200, {
+                'Content-Type': 'application/octet-stream',
+                'Content-Length': String(buf.byteLength)
+            });
+            res.end(buf);
+        };
 
         let s: http.Server | https.Server;
 
@@ -129,9 +132,9 @@ export class LargePayloadContainer {
                 key: this.tlsKey,
                 cert: this.tlsCert,
                 ca: this.tlsCA
-            }, app);
+            }, requestListener);
         } else {
-            s = http.createServer(app);
+            s = http.createServer(requestListener);
         }
 
         const server = s.listen(this.PORT, () => {
@@ -162,6 +165,27 @@ export class LargePayloadContainer {
         const objectID = GenerateUUIDv4();
         this.objectsMap.set(objectID, o);
         return new URL(`/${objectID}`, `${this.PROTOCOL}://${this.DOMAIN}:${this.PORT}`);
+    }
+
+    /**
+     * Extract the object id from a single-segment GET request path
+     * @param req
+     * @private
+     */
+    private parseObjectId(req: http.IncomingMessage): string | null {
+        if (req.method !== 'GET') {
+            return null;
+        }
+        const pathname = new URL(req.url, `${this.PROTOCOL}://${this.DOMAIN}`).pathname;
+        const segments = pathname.split('/').filter((segment) => segment.length > 0);
+        if (segments.length !== 1) {
+            return null;
+        }
+        try {
+            return decodeURIComponent(segments[0]);
+        } catch {
+            return null;
+        }
     }
 
     /**

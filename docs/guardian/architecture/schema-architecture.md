@@ -1,9 +1,4 @@
----
-tags:
-  - flagged-for-rewrite
----
-
-# Policies,Projects and Topics Mapping Architecture
+# Policies, Projects, and Topics - Mapping Architecture
 
 **Note:**
 

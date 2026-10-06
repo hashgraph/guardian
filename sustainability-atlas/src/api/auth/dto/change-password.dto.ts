@@ -22,7 +22,7 @@ export class ChangePasswordDto {
     @MinLength(1)
     currentPassword: string;
 
-    @ApiProperty({ description: `The new password — ${PASSWORD_MESSAGE}`, minLength: PASSWORD_POLICY.minLength, maxLength: 128 })
+    @ApiProperty({ description: `The new password. ${PASSWORD_MESSAGE}`, minLength: PASSWORD_POLICY.minLength, maxLength: 128 })
     @IsString()
     @MaxLength(128)
     @Matches(PASSWORD_PATTERN, { message: PASSWORD_MESSAGE })

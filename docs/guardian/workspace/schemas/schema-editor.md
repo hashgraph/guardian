@@ -43,9 +43,9 @@ Work in the editor is a draft until saved, and the header reports whether change
 
 #### Related
 
-* Task: [Creating a Schema](creating-system-schema-using-ui.md)
-* Task: [Importing a Schema](importing-schema-using-ui.md)
-* Reference: [Available Schema Data Types](available-schema-types/)
+* Task: [Creating a Schema](create-schema.md)
+* Task: [Importing a Schema](import-schema.md)
+* Reference: [Available Schema Data Types](available-schema-types.md)
 * Concept: [Schemas](./)
-* Concept: [Cross-Schema Conditions](cross-schema-conditions/)
+* Concept: [Cross-Schema Conditions](schema-fields-reference/cross-schema-conditions/)
 * Concept: [Schema Tree](schema-tree/)

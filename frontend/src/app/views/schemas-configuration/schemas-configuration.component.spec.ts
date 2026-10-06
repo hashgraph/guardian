@@ -87,6 +87,9 @@ describe('SchemasConfigurationComponent', () => {
         component.projectComparisonService = { getProperties: () => of([]) };
         component._cancelLoadSchemas$ = new Subject<void>();
         component._subSchemasByIri = new Map();
+        component.suggestionResults = [];
+        component.suggestionsAvailable = true;
+        component.suggestionsCacheByContextKey = new Map();
 
         component._buildRefs = () => ({});
         component.loadAppliedSchemaTemplate = () => {};
@@ -136,6 +139,40 @@ describe('SchemasConfigurationComponent', () => {
             expect(component.isRichTextPresetLinkOpen()).toBeTrue();
             expect(component.richTextPresetTarget).toBe('default');
             expect(component.richTextPresetEditor.cancelLink).not.toHaveBeenCalled();
+        });
+
+        it('refuses to close while the editor is still uploading an image', () => {
+            const component = createComponent();
+            component.selectedField = makeField({ default: '<p>Default</p>' });
+            component.richTextPresetEditor = {
+                showLinkDialog: false,
+                imageLoading: true,
+                cancelLink: jasmine.createSpy('cancelLink')
+            };
+
+            component.openRichTextPresetDialog('default');
+            component.closeRichTextPresetDialog();
+
+            expect(component.isRichTextPresetBusy()).toBeTrue();
+            expect(component.isRichTextPresetLinkOpen()).toBeFalse();
+            expect(component.richTextPresetTarget).toBe('default');
+            expect(component.richTextPresetEditor.cancelLink).not.toHaveBeenCalled();
+        });
+
+        it('closes once the upload has finished', () => {
+            const component = createComponent();
+            component.selectedField = makeField({ default: '<p>Default</p>' });
+            component.richTextPresetEditor = {
+                showLinkDialog: false,
+                imageLoading: false,
+                cancelLink: jasmine.createSpy('cancelLink')
+            };
+
+            component.openRichTextPresetDialog('default');
+            component.closeRichTextPresetDialog();
+
+            expect(component.isRichTextPresetBusy()).toBeFalse();
+            expect(component.richTextPresetTarget).toBeNull();
         });
 
         it('clears the editor link state when it does close', () => {
@@ -1548,6 +1585,78 @@ describe('SchemasConfigurationComponent', () => {
         });
     });
 
+    describe('IWA property suggestion invalidation', () => {
+
+        function suggestion(fieldName: string): any {
+            return { fieldName, candidates: [{ title: `${fieldName}-prop`, confidence: 0.9 }] };
+        }
+
+        function suggestionComponent(): any {
+            const fieldA = makeField({ name: 'fieldA', type: 'string' });
+            const fieldB = makeField({ name: 'fieldB', type: 'string' });
+            const schema = makeSchema({ id: 'root', iri: '#root', fields: [fieldA, fieldB] });
+            const component = createComponent({ schemas: [schema], selectedSchema: schema });
+            component.fieldTypes = FIELD_TYPES_UI;
+            component.selectedField = fieldA;
+            component.suggestionResults = [suggestion('fieldA'), suggestion('fieldB')];
+            component.suggestionsCacheByContextKey.set('root', {
+                results: component.suggestionResults,
+                available: true,
+            });
+            return component;
+        }
+
+        function names(results: any[]): string[] {
+            return results.map((r) => r.fieldName);
+        }
+
+        it('drops the selected field suggestion when its type changes', () => {
+            const component = suggestionComponent();
+
+            component.changeFieldType(FIELD_TYPES_UI.find(ft => ft.key === 'number'));
+
+            expect(names(component.suggestionResults)).toEqual(['fieldB']);
+        });
+
+        it('drops only the selected field suggestion when its name or description is edited', () => {
+            const component = suggestionComponent();
+
+            component.invalidateSelectedFieldSuggestion();
+
+            expect(names(component.suggestionResults)).toEqual(['fieldB']);
+            expect(component.rightPanelSuggestion).toBeNull();
+        });
+
+        it('updates the cached results so returning to the schema does not bring it back', () => {
+            const component = suggestionComponent();
+
+            component.invalidateSelectedFieldSuggestion();
+
+            expect(names(component.suggestionsCacheByContextKey.get('root').results)).toEqual(['fieldB']);
+        });
+
+        it('leaves results and cache untouched when the field has no suggestion', () => {
+            const component = suggestionComponent();
+            component.selectedField = makeField({ name: 'fieldC' });
+            const cached = component.suggestionsCacheByContextKey.get('root');
+
+            component.invalidateSelectedFieldSuggestion();
+
+            expect(names(component.suggestionResults)).toEqual(['fieldA', 'fieldB']);
+            expect(component.suggestionsCacheByContextKey.get('root')).toBe(cached);
+        });
+
+        it('does nothing when no field is selected', () => {
+            const component = suggestionComponent();
+            component.selectedField = null;
+
+            component.invalidateSelectedFieldSuggestion();
+            component.changeFieldType(FIELD_TYPES_UI.find(ft => ft.key === 'number'));
+
+            expect(names(component.suggestionResults)).toEqual(['fieldA', 'fieldB']);
+        });
+    });
+
     describe('editing a saved repeatable field link', () => {
 
         function arrayField(name: string, itemFields: string[] = ['a', 'b']): any {
@@ -1796,6 +1905,156 @@ describe('SchemasConfigurationComponent', () => {
 
             expect(component.editingArrayDependency).toBe(edited);
             expect(component.newArrayDependencyOn).toBe('one');
+        });
+    });
+
+    describe('Referenced schema dropdown options', () => {
+        function createRefComponent(sidebar: any[], full: any[], selected: any): any {
+            const component = createComponent({ schemas: sidebar, selectedSchema: selected });
+            component._subSchemasByIri = new Map(full.map((schema: any) => [schema.iri, schema]));
+            Object.defineProperty(component, 'canAddFieldToSelectedSchema', { get: () => true });
+            return component;
+        }
+
+        function refField(iri: string): any {
+            return makeField({ name: `ref_${iri.slice(1)}`, isRef: true, type: iri, customType: 'subSchema' });
+        }
+
+        function optionIris(component: any): string[] {
+            return component.availableRefSchemas.map((schema: any) => schema.iri);
+        }
+
+        it('offers a schema that is not loaded in the sidebar', () => {
+            const root = makeSchema({ id: 'root' });
+            const far = makeSchema({ id: 'far', name: 'VCS Validation Report Template v4.4' });
+            const component = createRefComponent([root], [far], root);
+
+            expect(optionIris(component)).toContain('#far');
+        });
+
+        it('keeps the previously used schema after the field points to another one', () => {
+            const root = makeSchema({ id: 'root' });
+            const first = makeSchema({ id: 'first' });
+            const second = makeSchema({ id: 'second' });
+            const component = createRefComponent([root], [first, second], root);
+            component.selectedField = refField('#first');
+            component.markDirty = () => component.schemaEditVersion++;
+            component.onSubSchemaRefChange('#second');
+
+            expect(component.selectedField.type).toBe('#second');
+            expect(optionIris(component)).toContain('#second');
+            expect(optionIris(component)).toContain('#first');
+        });
+
+        it('lists a schema loaded in both places once, using the sidebar copy', () => {
+            const root = makeSchema({ id: 'root' });
+            const sidebarCopy = makeSchema({ id: 'shared', name: 'Edited name' });
+            const serverCopy = makeSchema({ id: 'shared', name: 'Saved name' });
+            const component = createRefComponent([root, sidebarCopy], [serverCopy], root);
+
+            const shared = component.availableRefSchemas.filter((schema: any) => schema.iri === '#shared');
+
+            expect(shared.length).toBe(1);
+            expect(shared[0]).toBe(sidebarCopy);
+        });
+
+        it('offers a schema of a tool connected to the policy', () => {
+            const root = makeSchema({ id: 'root' });
+            const toolSchema = makeSchema({ id: 'tool' });
+            toolSchema.topicId = 'tool-topic';
+            const component = createRefComponent([root], [toolSchema], root);
+
+            expect(optionIris(component)).toContain('#tool');
+        });
+
+        it('keeps a schema from another topic when it is already in the sidebar', () => {
+            const root = makeSchema({ id: 'root' });
+            const toolSchema = makeSchema({ id: 'tool' });
+            toolSchema.topicId = 'tool-topic';
+            const component = createRefComponent([root, toolSchema], [], root);
+
+            expect(optionIris(component)).toContain('#tool');
+        });
+
+        it('does not offer the schema being edited', () => {
+            const root = makeSchema({ id: 'root' });
+            const other = makeSchema({ id: 'other' });
+            const component = createRefComponent([root], [other], root);
+
+            expect(optionIris(component)).not.toContain('#root');
+            expect(optionIris(component)).toContain('#other');
+        });
+
+        it('does not offer the schema being viewed in drill-down', () => {
+            const root = makeSchema({ id: 'root' });
+            const middle = makeSchema({ id: 'middle' });
+            const other = makeSchema({ id: 'other' });
+            const component = createRefComponent([root], [middle, other], root);
+            component.drillStack = [{ fieldLabel: 'Middle', fields: [], schemaIri: '#middle' }];
+
+            expect(optionIris(component)).not.toContain('#middle');
+            expect(optionIris(component)).toContain('#other');
+        });
+
+        it('does not offer a schema whose refs lead back through an unloaded schema', () => {
+            const root = makeSchema({ id: 'root' });
+            const middle = makeSchema({ id: 'middle', fields: [refField('#root')] });
+            const top = makeSchema({ id: 'top', fields: [refField('#middle')] });
+            const component = createRefComponent([root, top], [middle], root);
+
+            expect(optionIris(component)).not.toContain('#top');
+            expect(optionIris(component)).not.toContain('#middle');
+        });
+
+        it('reuses the option list until its inputs change', () => {
+            const root = makeSchema({ id: 'root' });
+            const other = makeSchema({ id: 'other' });
+            const component = createRefComponent([root], [other], root);
+
+            const first = component.availableRefSchemas;
+
+            expect(component.availableRefSchemas).toBe(first);
+            component.schemaEditVersion++;
+            expect(component.availableRefSchemas).not.toBe(first);
+        });
+
+        it('lists schemas newest first, like the sidebar', () => {
+            const root = makeSchema({ id: 'id-0' });
+            const oldest = makeSchema({ id: 'id-1' });
+            const middle = makeSchema({ id: 'id-2' });
+            const newest = makeSchema({ id: 'id-3' });
+            const component = createRefComponent([root, middle], [oldest, middle, newest], root);
+
+            expect(optionIris(component)).toEqual(['#id-3', '#id-2', '#id-1']);
+        });
+
+        it('lists featured template schemas before the others', () => {
+            const root = makeSchema({ id: 'id-0' });
+            const featured = makeSchema({ id: 'id-1' });
+            featured.templateFeatured = true;
+            const newest = makeSchema({ id: 'id-2' });
+            const component = createRefComponent([root], [newest, featured], root);
+
+            expect(optionIris(component)).toEqual(['#id-1', '#id-2']);
+        });
+
+        it('lists a schema that is not saved yet first', () => {
+            const root = makeSchema({ id: 'id-0' });
+            const saved = makeSchema({ id: 'id-1' });
+            const unsaved = makeSchema({ iri: '#unsaved' });
+            const component = createRefComponent([root, saved, unsaved], [], root);
+
+            expect(optionIris(component)).toEqual(['#unsaved', '#id-1']);
+        });
+
+        it('keeps the current schema on top when it is no longer allowed', () => {
+            const root = makeSchema({ id: 'id-0' });
+            const blocked = makeSchema({ id: 'id-1', fields: [refField('#id-0')] });
+            const newest = makeSchema({ id: 'id-2' });
+            const component = createRefComponent([root], [blocked, newest], root);
+            component.selectedField = refField('#id-1');
+
+            expect(optionIris(component)).toEqual(['#id-1', '#id-2']);
         });
     });
 });

@@ -55,6 +55,18 @@ export class IpfsFetchFailureRepository {
                 "lastFailedAt"    = NOW()`,
             [cid, lastError, errorCategory, messageTimestamp],
         );
+
+        // Keep message_ipfs_cid.status in sync — see its column comment in
+        // schema-bootstrap.ts for why this needs to be a real, indexed column
+        // rather than derived at query time. Guarded against 'fetched': a CID
+        // reaching this method should never already be fetched (the processor
+        // returns early on an existing ipfs_files row before any fetch is
+        // attempted), but the guard costs nothing and removes the possibility
+        // of a race clobbering a concurrent success.
+        await this.dataSource.query(
+            `UPDATE message_ipfs_cid SET status = 'failed' WHERE cid = $1 AND status <> 'fetched'`,
+            [cid],
+        );
     }
 
     /**

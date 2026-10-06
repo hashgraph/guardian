@@ -23,19 +23,19 @@ Learn more [schema-templates](../guardian/workspace/schema-templates/ "mention")
 
 Once the template structure is set, the next challenge is making sure users are only ever asked for what actually applies to their project. Guardian addresses this during schema authoring with cross-schema conditions, which allow fields and sections to be shown or hidden based on the user's previous responses, whether nested within the same schema or dependent on a response in another schema entirely. This keeps the form relevant to the specific project rather than presenting every possible field regardless of applicability.
 
-Learn more [cross-schema-conditions](../guardian/workspace/schemas/cross-schema-conditions/ "mention")
+Learn more [cross-schema-conditions](../guardian/workspace/schemas/schema-fields-reference/cross-schema-conditions/ "mention")
 
 ### Repeatable Field Links
 
 A related challenge arises with grouped or multi-instance projects. If a project proponent indicates they have a grouped project with two project locations, they need to name each instance (e.g., instance1, instance2), and every subsequent field requiring an instance name should reflect those same instances automatically. Guardian handles this with repeatable field links, which define dependencies between fields so that once instances are established, users respond to every relevant requirement for each instance consistently, rather than re-entering or mismatching instance names across the report.
 
-Learn more: [repeatable-field-links](../guardian/workspace/schemas/repeatable-field-links/ "mention")
+Learn more: [repeatable-field-links](../guardian/workspace/schemas/schema-fields-reference/repeatable-field-links/ "mention")
 
 ### Geo Field Types
 
 Location data introduces its own risk of inconsistency, since a continent, country, and state or province can easily be entered in ways that don't logically align. To prevent this, Guardian's geo field types validate that these selections match one another correctly.
 
-Learn more: [geo-fields](../guardian/workspace/schemas/geo-fields/ "mention")&#x20;
+Learn more: [geo-fields](../guardian/workspace/schemas/schema-fields-reference/geo-fields/ "mention")
 
 ### Calculations and the Math Block
 
@@ -55,4 +55,4 @@ Tying it all together, every schema should be designed with both the human user 
 
 ## Ready to go further?
 
-[Review the handbook for in depth topics and details. ](https://app.gitbook.com/s/bKnJV8vV7zUxRwKIsJKg/methodology-digitalization)
+[Review the handbook for in depth topics and details.](https://app.gitbook.com/s/bKnJV8vV7zUxRwKIsJKg/methodology-digitalization)

@@ -1,5 +1,23 @@
 import { ITableField } from '../interface/table-field.interface.js';
 
+export const TABLE_FORMULA_MAX_ROWS = 10000;
+
+export interface ITableFormulaColumn {
+    key: string;
+    name: string;
+    values: unknown[];
+}
+
+export interface ITableFormulaNumbers {
+    values: number[];
+    replacements: number;
+}
+
+type TableFormulaPack = Record<string, {
+    rows: any[];
+    columnKeys: string[];
+}>;
+
 /**
  * Returns true if the value is a plain object (i.e., created via object literal or Object).
  */
@@ -27,6 +45,109 @@ export function isTableValue(value: unknown): value is ITableField {
     }
 
     return (value as any).type === 'table';
+}
+
+function parseTableFormulaValue(value: unknown): ITableField | null {
+    if (typeof value === 'string') {
+        try {
+            const parsed = JSON.parse(value);
+            return isTableValue(parsed) ? parsed : null;
+        } catch {
+            return null;
+        }
+    }
+
+    return isTableValue(value) ? value : null;
+}
+
+function resolveOneTableFormulaColumn(
+    value: unknown,
+    columnKey: string,
+    tablesPack?: TableFormulaPack
+): ITableFormulaColumn | null {
+    const table = parseTableFormulaValue(value);
+    if (!table || !Array.isArray(table.columnKeys) || !Array.isArray(table.columnNames)) {
+        return null;
+    }
+
+    const columnIndex = table.columnKeys.indexOf(columnKey);
+    if (columnIndex < 0 || typeof table.columnNames[columnIndex] !== 'string') {
+        return null;
+    }
+
+    return {
+        key: columnKey,
+        name: table.columnNames[columnIndex],
+        values: buildTableHelper(tablesPack).col(table, columnKey)
+    };
+}
+
+export function resolveTableFormulaColumn(
+    value: unknown,
+    columnKey: string,
+    tablesPack?: TableFormulaPack,
+    maxRows: number = TABLE_FORMULA_MAX_ROWS
+): ITableFormulaColumn | null {
+    const sources = Array.isArray(value) ? value : [value];
+    const columns = sources
+        .map((source) => resolveOneTableFormulaColumn(source, columnKey, tablesPack))
+        .filter((column): column is ITableFormulaColumn => column !== null);
+
+    if (columns.length === 0) {
+        return null;
+    }
+
+    const result: ITableFormulaColumn = {
+        key: columnKey,
+        name: columns[0].name,
+        values: columns.flatMap((column) => column.values)
+    };
+
+    if (result.values.length > maxRows) {
+        throw new Error(
+            `Table column "${result.name}" has ${result.values.length} rows; `
+            + `General formulas are limited to ${maxRows}`
+        );
+    }
+
+    return result;
+}
+
+export function getTableFormulaScalar(value: unknown): number | string {
+    if (typeof value === 'number') {
+        return Number.isFinite(value) ? value : String(value);
+    }
+
+    if (typeof value !== 'string') {
+        return String(value ?? '');
+    }
+
+    const trimmed = value.trim();
+    const unsigned = trimmed.replace(/^[+-]/, '');
+    if (/^0\d/.test(unsigned)) {
+        return value;
+    }
+
+    if (!/^[+-]?(?:\d+(?:[.,]\d+)?|[.,]\d+)(?:[eE][+-]?\d+)?$/.test(trimmed)) {
+        return value;
+    }
+
+    const parsed = Number(trimmed.replace(',', '.'));
+    return Number.isFinite(parsed) ? parsed : value;
+}
+
+export function getTableFormulaNumbers(values: unknown[]): ITableFormulaNumbers {
+    let replacements = 0;
+    const numbers = values.map((value) => {
+        const scalar = getTableFormulaScalar(value);
+        if (typeof scalar === 'number') {
+            return scalar;
+        }
+        replacements += 1;
+        return 0;
+    });
+
+    return { values: numbers, replacements };
 }
 
 /**

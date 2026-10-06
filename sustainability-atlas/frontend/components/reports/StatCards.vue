@@ -21,7 +21,7 @@ const HISTORY_SAMPLE_SIZE = 50;
 const { data: history, pending } = await useAsyncData(
     'reports-stat-cards-recent-exports',
     () => listRecent({ page: 1, limit: HISTORY_SAMPLE_SIZE }),
-    { watch: [network] },
+    { server: false, watch: [network] },
 );
 
 const historyItems = computed<ExportHistoryItem[]>(() => history.value?.data ?? []);

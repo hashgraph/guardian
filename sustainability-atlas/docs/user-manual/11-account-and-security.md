@@ -1,106 +1,134 @@
-# 11 — Account and security
+# 11 — Account and Security
 
-**Requires a signed-in account.**
+The Account and Security page allows users to manage their personal account information, update their password, view API request limits, manage API keys, review recent account activity, and replay the guided product tour. It requires a signed-in account.
 
-This chapter covers Account Settings — the only settings page in the Atlas. It holds your profile,
-your password, your request allowance, your API keys, a log of recent activity on your account, and a
-card for replaying the guided tour.
+To access this page, select your account menu in the top-right corner of the application and choose **Account Settings**.
 
-Reach it from the account menu in the top-right corner: click your name, then **Account Settings**.
+![Account Settings](images/fig-66-account-settings.png)
 
 ## Profile
 
-The profile card shows your details and an **Edit** button that turns them into a form.
+The Profile section displays your personal account information and allows you to update your profile details. Select **Edit** to modify the editable fields.
 
-| Field | Editable? |
-|---|---|
-| **First name**, **Last name** | Yes. |
-| **Organisation**, **Job Title**, **Country** | Yes. |
-| **Email Address** | **No.** Your email identifies your account and cannot be changed here. The page says so explicitly. |
-| **Member Since** | No — it is a fact, not a setting. |
+| Field | Description |
+| --- | --- |
+| First Name | Your given name. |
+| Last Name | Your family name. |
+| Organization | The organization associated with your account. |
+| Job Title | Your current role or position. |
+| Country | Your country or region. |
+| Email Address | The email address used to sign in. This field is read-only and cannot be changed from this page. |
+| Member Since | The date your account was created. This information is read-only. |
 
-**Save changes** applies your edits and confirms with a short *Profile updated* message. **Cancel**
-discards them.
+![Profile Edit Option](images/fig-67-profile-edit-option.png)
 
-A badge shows your role — **Administrator** or **Registered User**. It is set by an administrator,
-not by you. If you need a different role, ask one.
+![Editing Profile Details](images/fig-68-editing-profile-details.png)
 
-## Changing your password
+## Change Your Password
 
-The **Security** section explains that this changes the password you use to sign in, with a **Change
-password** button that opens the form.
+Changes the password used to sign in to the Sustainability Atlas, from the Security section of Account Settings. To reset a password you no longer know, use [Reset a forgotten password](01-getting-started.md#reset-a-forgotten-password) instead.
 
-You are asked for your current password and a new one. As you type the new password, the same live
-rule checklist you saw at sign-up appears, ticking each rule off as you satisfy it — typically a
-minimum length plus a mix of character types. The rules come from the server, so what the checklist
-accepts is exactly what will be accepted. A short *Password updated* confirmation appears when it is
-done.
+### Prerequisites
 
-If you were required to change your password on first sign-in, that is a different, non-dismissible
-dialog and is covered in chapter 01.
+* A signed-in account.
+
+### Steps
+
+1. Open **Account Settings** from the account menu and go to the Security section.
+2. Select **Change Password**.
+3. Enter your current password.
+4. Enter a new password.
+   * As you type, the system displays the current password requirements and automatically indicates which have been satisfied.
+5. Confirm the new password.
+6. Submit the form.
+
+![Change Password Option](images/fig-69-change-password-option.png)
+
+![Changing Password](images/fig-70-changing-password.png)
+
+### Result
+
+The password is changed. Use the new password the next time you sign in.
 
 ## Request limits
 
-The **API Rate Limit** card shows how many requests per hour your account is allowed, and what the
-default for your role is. It exists because programmatic access has to be metered — it does not
-affect normal browsing.
+The API Request Limits section displays the number of API requests your account is permitted to make within a given time period. This limit applies only to programmatic access through the API and does not affect normal use of the Sustainability Atlas through the web interface.
 
-If the allowance is not enough, **Request Increase** opens a short form: the quota you want (up to a
-stated maximum) and a **Justification** of at least a few sentences explaining why. Submitting it
-puts the request in front of an administrator; while it is waiting, the card shows an *Increase
-request pending* marker.
+The card displays your current request limit and the default request limit assigned to your role.
 
-**Request history** lists your past requests with their current, requested and submitted values, and
-their outcome — **Pending**, **Approved**, **Adjusted** or **Declined**. *Adjusted* means an
-administrator approved a different number from the one you asked for; the approved figure is the one
-that applies.
+![API Rate Limit](images/fig-71-api-rate-limit.png)
 
-Two variations you may see. Administrators hold the administrator quota and review other people's
-requests rather than submitting their own, so the card shows a note to that effect and a link to the
-review queue instead of a request form. And if rate limiting is switched off for this deployment
-entirely, the card carries an **Off** badge and explains that no limit is being enforced.
+## Request a Higher API Limit
+
+Requests additional API capacity beyond the default limit assigned to your role. The request is reviewed by a system administrator.
+
+### Prerequisites
+
+* A signed-in account.
+
+### Steps
+
+1. Open **Account Settings** from the account menu and locate the API Request Limits card.
+2. Select **Request Increase**.
+3. In the request form, specify:
+   * The requested API limit (up to the maximum allowed).
+   * A justification explaining why the additional capacity is required.
+4. Submit the request.
+
+![API Rate Limit Increase Request](images/fig-72-api-rate-limit-increase-request.png)
+
+### Result
+
+The request is submitted for administrator review. While awaiting approval, the page displays an **Increase Request Pending** status.
+
+![API Rate Increase Request Pending](images/fig-73-api-rate-increase-request-pending.png)
+
+The Request History table records all submitted requests together with their status:
+
+| Status | Description |
+| --- | --- |
+| Pending | The request is awaiting review. |
+| Approved | The requested limit has been approved. |
+| Adjusted | The request was approved with a different limit than originally requested. |
+| Declined | The request was not approved. |
+
+![API Requests Status](images/fig-77-api-requests-status.png)
+
+Administrators review these requests from the User Management panel — see [Administration](13-administration.md#reviewing-api-limit-increase-requests).
 
 ## API keys
 
-API keys let a script or an integration read Atlas data without a browser session.
+API keys allow external applications, scripts and system integrations to securely access Sustainability Atlas data without requiring an interactive browser session.
 
-- **Generate Key** asks for a name — something that tells you later where the key is used, like
-  `prod-pipeline` or `dev` — and creates it.
-- The full key is shown **once**, immediately after generation, with a **Copy** button and the
-  explicit warning that this is the only time you will see it. Copy it into wherever it is going
-  before you dismiss the dialog. There is no way to retrieve it afterwards; if you lose it, revoke
-  the key and generate a new one.
-- The table lists your keys by **Name / Key**, **Created**, **Last Used** and **Status**, with a
-  **Revoke** action. Revoking is immediate and permanent — the key stops working and is marked
-  **Revoked**.
-- You may hold a maximum of **three active keys**. At the limit, the generate control explains that
-  you must revoke one before creating another.
+### Generating an API key
 
-The whole section can appear with a **Not required** badge. That means this deployment serves data
-publicly and does not need a key at all — nothing is broken and there is nothing you need to do.
+1. Open **Account Settings** from the account menu and locate the API Keys section.
+2. Select **Generate Key**.
+3. When prompted, provide a descriptive name for the key (e.g., *Production Integration*, *Development Environment*).
+4. After the key has been generated, select **Copy** to save it, and store it securely.
+   * The full API key is displayed only once. After the dialog is closed, the key cannot be viewed again. If the key is lost, it must be revoked and replaced with a new one.
 
-## Recent activity
+![Generate API Key](images/fig-78-generate-api-key.png)
 
-A log of what has happened on your account: sign-ins, password changes, profile edits, key
-generation and revocation, and similar events.
+![API Keys](images/fig-79-api-keys.png)
 
-Each row shows the **Activity**, its **Status**, the **IP address** it came from and **When** it
-happened. The **All activity** dropdown filters to a single kind of event, and the table pages
-through history with **Previous** and **Next**.
+### Managing existing keys
 
-It is worth a glance occasionally. A sign-in you do not recognise, from an address you do not
-recognise, is the earliest signal that something is wrong — change your password and revoke your API
-keys if you see one.
+The API Key table displays the key name, key identifier, date created, last used, and current status. Each active key includes a **Revoke** action.
 
-## Product tour
+* Revoking an API key immediately disables it and permanently prevents any future use.
+* Each account can maintain a limited number of active API keys simultaneously. If the maximum has been reached, new keys cannot be generated until an existing key has been revoked.
 
-Below API Keys, just above the activity log, is the **Product tour** card with a **Replay the tour**
-button. It restarts the
-guided tour described in chapter 01, from step one, taking you back to the Dashboard first.
+![Managing API Keys](images/fig-80-managing-api-keys.png)
 
-This is the second of the two ways to restart the tour; the other is the **?** button in the top bar,
-which is available on every page and to guests as well.
+### Result
+
+New keys appear in the API Key table with an active status; revoked keys are disabled immediately.
 
 ---
 
-Next: [12 — Sync status](12-sync-status.md) · Back to [index](README.md)
+### Related & Workflow Progression
+
+* ← **Previous**: [10 — Reports and Exports](10-reports-and-exports.md) – Custom dataset exports and ESG impact summaries
+* **Step 11 of 15**: **Account and Security** – Profile settings, password changes, API keys, and rate limits
+* → **Next**: [12 — Sync Status](12-sync-status.md) – Real-time Hedera mirror node synchronization and pipeline health

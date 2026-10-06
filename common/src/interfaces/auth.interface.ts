@@ -1,5 +1,5 @@
-import { Request } from 'express';
-import WebSocket from 'ws';
+import type { Request } from 'express';
+import type WebSocket from 'ws';
 import { IGroup, LocationType, UserRole } from '@guardian/interfaces';
 
 /**

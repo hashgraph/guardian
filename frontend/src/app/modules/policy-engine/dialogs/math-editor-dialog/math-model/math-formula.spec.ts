@@ -1,4 +1,4 @@
-import { MathFormula } from './math-formula';
+import { MathFormula, splitNameGroups } from './math-formula';
 import { MathItemType } from './math-item.type';
 
 // ─── variable name validation ─────────────────────────────────────────────────
@@ -139,5 +139,60 @@ describe('MathFormula.from — round-trip', () => {
     it('returns null for invalid input', () => {
         expect(MathFormula.from(null as any)).toBeNull();
         expect(MathFormula.from(undefined as any)).toBeNull();
+    });
+});
+
+describe('splitNameGroups', () => {
+    it('moves what follows the name out of the name group', () => {
+        expect(splitNameGroups('\\mathrm{Lookup\\left(\\right)}'))
+            .toBe('\\mathrm{Lookup}\\left(\\right)');
+    });
+
+    it('keeps a name that fills the whole group', () => {
+        expect(splitNameGroups('\\operatorname{area}')).toBe('\\operatorname{area}');
+    });
+
+    it('keeps an underscore inside a column name', () => {
+        expect(splitNameGroups('\\operatorname{area_ha}')).toBe('\\operatorname{area_ha}');
+    });
+
+    it('unwraps a picked variable that was wrapped twice', () => {
+        expect(splitNameGroups('\\operatorname{\\mathrm{area},}'))
+            .toBe('\\mathrm{area},');
+    });
+
+    it('repairs the whole body the editor produces for a typed call', () => {
+        expect(splitNameGroups(
+            '\\mathrm{Lookup}\\left(\\operatorname{\\mathrm{area},}\\operatorname{\\mathrm{year}},2021\\right)'
+        )).toBe('\\mathrm{Lookup}\\left(\\mathrm{area},\\mathrm{year},2021\\right)');
+    });
+
+    it('splits every name group in the same formula', () => {
+        expect(splitNameGroups('\\mathrm{Lookup\\left(\\operatorname{area},2021\\right)}'))
+            .toBe('\\mathrm{Lookup}\\left(\\operatorname{area},2021\\right)');
+    });
+
+    it('leaves a formula with no name group untouched', () => {
+        expect(splitNameGroups('2x+1')).toBe('2x+1');
+    });
+});
+
+describe('MathFormula._updateBody — typed function name', () => {
+    it('leaves a body that already parses exactly as it was', () => {
+        const body = '\\sum\\operatorname{area}+2x';
+        const f = new MathFormula('y', body);
+        f.updateBody();
+
+        expect(f.validBody).toBeTrue();
+        expect(f.functionBody).toBe(body);
+        expect(f.functionBodyText).toBe(body);
+    });
+
+    it('accepts a function typed in the editor, with the parenthesis inside the name', () => {
+        const f = new MathFormula('y', '\\mathrm{Lookup}\\left(\\operatorname{\\mathrm{area},}\\operatorname{\\mathrm{year}},2021\\right)');
+        f.updateBody();
+
+        expect(f.validBody).toBeTrue();
+        expect(f.functionBody).toBe('\\mathrm{Lookup}\\left(\\mathrm{area},\\mathrm{year},2021\\right)');
     });
 });

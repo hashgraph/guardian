@@ -72,7 +72,7 @@ export class ReleaseMigration extends Migration {
      * against IWA v1.
      */
     async tagExistingSchemasAsV1() {
-        const collection = this.getCollection('schema');
+        const collection = this.getCollection('Schema');
         await collection.updateMany(
             { iwaVersion: { $exists: false } },
             { $set: { iwaVersion: IwaVersion.V1 } }
