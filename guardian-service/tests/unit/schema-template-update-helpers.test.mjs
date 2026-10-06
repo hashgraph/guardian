@@ -6,10 +6,8 @@ import {
     buildLinkContentChangeDetails,
     buildSchemaTemplateUpdatePreviewFromContext,
     buildTemplateSchemasSnapshot,
-    conditionTriggerSignature,
     createTemplateStateHash,
     findFieldConditionMembership,
-    findMatchingConditionIndex,
     getPolicySchemaByTemplateId,
     getRuntimeCustomFields,
     mergeCustomFieldsIntoDocument,
@@ -521,12 +519,12 @@ describe('condition-branch identity helpers', () => {
 
     it('reads a single-predicate trigger signature', () => {
         const cond = { ifCondition: { field: field('a', { templateFieldId: 't-a' }), fieldValue: 'x' } };
-        assert.deepEqual(conditionTriggerSignature(cond), ['SINGLE', 't-a:"x"']);
+        assert.deepEqual(SchemaHelper.getConditionTriggerSignature(cond), ['SINGLE', 't-a:"x"']);
     });
 
     it('returns null when the trigger field has no templateFieldId', () => {
         const cond = { ifCondition: { field: field('a'), fieldValue: 'x' } };
-        assert.equal(conditionTriggerSignature(cond), null);
+        assert.equal(SchemaHelper.getConditionTriggerSignature(cond), null);
     });
 
     it('returns null for an AND condition if any predicate is missing an id', () => {
@@ -538,7 +536,7 @@ describe('condition-branch identity helpers', () => {
                 ],
             },
         };
-        assert.equal(conditionTriggerSignature(cond), null);
+        assert.equal(SchemaHelper.getConditionTriggerSignature(cond), null);
     });
 
     it('sorts multi-predicate signature parts so order does not affect matching', () => {
@@ -550,7 +548,7 @@ describe('condition-branch identity helpers', () => {
                 ],
             },
         };
-        assert.deepEqual(conditionTriggerSignature(cond), ['AND', 't-a:1', 't-b:2']);
+        assert.deepEqual(SchemaHelper.getConditionTriggerSignature(cond), ['AND', 't-a:1', 't-b:2']);
     });
 
     it('distinguishes two conditions sharing the same trigger field but different values', () => {
@@ -558,7 +556,7 @@ describe('condition-branch identity helpers', () => {
         // field drives more than one condition (e.g. one branch per enum option).
         const conditionA = { ifCondition: { field: field('status', { templateFieldId: 't-status' }), fieldValue: 'A' } };
         const conditionB = { ifCondition: { field: field('status', { templateFieldId: 't-status' }), fieldValue: 'B' } };
-        assert.notDeepEqual(conditionTriggerSignature(conditionA), conditionTriggerSignature(conditionB));
+        assert.notDeepEqual(SchemaHelper.getConditionTriggerSignature(conditionA), SchemaHelper.getConditionTriggerSignature(conditionB));
     });
 
     it('distinguishes AND from OR over the same predicates', () => {
@@ -570,16 +568,16 @@ describe('condition-branch identity helpers', () => {
         ];
         const andCond = { ifCondition: { AND: predicates } };
         const orCond = { ifCondition: { OR: predicates } };
-        assert.notDeepEqual(conditionTriggerSignature(andCond), conditionTriggerSignature(orCond));
+        assert.notDeepEqual(SchemaHelper.getConditionTriggerSignature(andCond), SchemaHelper.getConditionTriggerSignature(orCond));
     });
 
-    it('findMatchingConditionIndex finds the condition with the same trigger signature', () => {
+    it('findConditionIndexBySignature finds the condition with the same trigger signature', () => {
         const conditions = [
             { ifCondition: { field: field('x', { templateFieldId: 't-x' }), fieldValue: 1 } },
             { ifCondition: { field: field('renamed', { templateFieldId: 't-y' }), fieldValue: 2 } },
         ];
-        assert.equal(findMatchingConditionIndex(conditions, ['SINGLE', 't-y:2']), 1);
-        assert.equal(findMatchingConditionIndex(conditions, ['SINGLE', 't-z:2']), -1);
+        assert.equal(SchemaHelper.findConditionIndexBySignature(conditions, ['SINGLE', 't-y:2']), 1);
+        assert.equal(SchemaHelper.findConditionIndexBySignature(conditions, ['SINGLE', 't-z:2']), -1);
     });
 
     it('findFieldConditionMembership finds a field by name in either branch', () => {

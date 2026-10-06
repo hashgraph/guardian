@@ -667,7 +667,7 @@ function reconcileConditionLockKeys(schemaConfig: ISchemaTemplateSchemaConfig | 
     }
     const currentByKey = new Map<string, string>();
     for (const condition of conditions) {
-        const signature = conditionTriggerSignature(condition);
+        const signature = SchemaHelper.getConditionTriggerSignature(condition);
         const fieldKey = conditionTriggerFieldKey(condition);
         if (signature && fieldKey !== null) {
             currentByKey.set(signature.join(','), fieldKey.split(',').sort().join(','));
@@ -965,24 +965,6 @@ function conditionCustomFieldNames(conditions: any[], fields: any[]): Set<string
 }
 
 /**
- * @deprecated moved to `SchemaHelper.getConditionTriggerSignature` (interfaces package) so the
- * frontend and guardian-service/src/api/schema.service.ts can share the same implementation
- * instead of each keeping their own copy. Re-exported here unchanged so existing imports of
- * this module keep working.
- */
-export function conditionTriggerSignature(condition: any): string[] | null {
-    return SchemaHelper.getConditionTriggerSignature(condition);
-}
-
-/**
- * @deprecated moved to `SchemaHelper.findConditionIndexBySignature` (interfaces package) -
- * see the note on `conditionTriggerSignature` above. Re-exported unchanged.
- */
-export function findMatchingConditionIndex(conditions: any[], signature: string[]): number {
-    return SchemaHelper.findConditionIndexBySignature(conditions, signature);
-}
-
-/**
  * Matches by name, not object identity - the fields/conditions here can come from
  * independent parses (e.g. a snapshot clone), where the same logical field is a
  * different object instance in each.
@@ -1021,12 +1003,12 @@ export function classifyConditionsAgainstSource(previousConditions: any[], sourc
     const whollyCustomIndices = new Set<number>();
     const orphanedIndices = new Set<number>();
     for (let i = 0; i < (previousConditions || []).length; i++) {
-        const signature = conditionTriggerSignature(previousConditions[i]);
+        const signature = SchemaHelper.getConditionTriggerSignature(previousConditions[i]);
         if (signature === null) {
             whollyCustomIndices.add(i);
             continue;
         }
-        const matchedIndex = findMatchingConditionIndex(sourceConditions || [], signature);
+        const matchedIndex = SchemaHelper.findConditionIndexBySignature(sourceConditions || [], signature);
         if (matchedIndex === -1) {
             orphanedIndices.add(i);
         } else {
@@ -1170,7 +1152,7 @@ export function analyzeConditionFieldPlacements(
         }
         const triggerIds = classification.whollyCustomIndices.has(membership.conditionIndex)
             ? null
-            : conditionTriggerSignature(previousConditions[membership.conditionIndex]);
+            : SchemaHelper.getConditionTriggerSignature(previousConditions[membership.conditionIndex]);
         const matchedIndex = classification.matchedIndexByOldIndex.get(membership.conditionIndex) ?? -1;
         result.push({ field, conditionIndex: membership.conditionIndex, branch: membership.branch, triggerIds, matchedIndex });
     }
@@ -1787,7 +1769,7 @@ export function buildLinkContentChangeDetails(
 
 /**
  * A condition's trigger field(s), ignoring both the value(s) compared against and the
- * combinator (IF / IF ALL / IF ANY) - looser than `conditionTriggerSignature`, used only to
+ * combinator (IF / IF ALL / IF ANY) - looser than `SchemaHelper.getConditionTriggerSignature`, used only to
  * recognize "the same condition, its value or combinator changed" as an update instead of an
  * unrelated remove+add. Returns null under the same circumstances as the signature (no
  * templateFieldId on some predicate's field).
@@ -2157,8 +2139,8 @@ export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<Ret
             ...valueChangedConditionPairs
         ]);
         for (const [oldIndex, newIndex] of allMatchedConditionPairs) {
-            const signature = conditionTriggerSignature(previousConditions[oldIndex]);
-            const nextSignature = conditionTriggerSignature(sourceConditions[newIndex]);
+            const signature = SchemaHelper.getConditionTriggerSignature(previousConditions[oldIndex]);
+            const nextSignature = SchemaHelper.getConditionTriggerSignature(sourceConditions[newIndex]);
             const conditionDetails = [
                 ...(signature
                     ? buildConditionLockChangeDetails(
@@ -2300,9 +2282,9 @@ export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<Ret
         if (nextSchemaConfig.conditionsLocked) {
             const previousSnapshotDocument = buildSnapshotSchemaDocument(previousSchema);
             for (let conditionIndex = 0; conditionIndex < previousConditions.length; conditionIndex++) {
-                const signature = conditionTriggerSignature(previousConditions[conditionIndex]);
+                const signature = SchemaHelper.getConditionTriggerSignature(previousConditions[conditionIndex]);
                 const previousSnapshotConditionIndex = signature
-                    ? findMatchingConditionIndex(previousSchema.conditions || [], signature)
+                    ? SchemaHelper.findConditionIndexBySignature(previousSchema.conditions || [], signature)
                     : -1;
                 if (!conditionHasPolicyAddedCrossTargets(
                     policySchema.document,
@@ -2329,69 +2311,67 @@ export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<Ret
         // customFieldsLocked removes every custom field, and conditionsLocked removes
         // every policy-authored condition addition, so nothing is left to resolve.
         const hasNothingToResolve = !!(nextSchemaConfig.customFieldsLocked || nextSchemaConfig.conditionsLocked);
-        {
-            const placements = analyzeConditionFieldPlacements(previousConditions, sourceConditions, policyCustomFields);
-            const orphanedFieldsByConditionIndex = new Map<number, any[]>();
-            for (const placement of placements) {
-                if (placement.triggerIds !== null && placement.matchedIndex === -1) {
-                    const list = orphanedFieldsByConditionIndex.get(placement.conditionIndex) || [];
-                    list.push(placement.field);
-                    orphanedFieldsByConditionIndex.set(placement.conditionIndex, list);
-                }
+        const placements = analyzeConditionFieldPlacements(previousConditions, sourceConditions, policyCustomFields);
+        const orphanedFieldsByConditionIndex = new Map<number, any[]>();
+        for (const placement of placements) {
+            if (placement.triggerIds !== null && placement.matchedIndex === -1) {
+                const list = orphanedFieldsByConditionIndex.get(placement.conditionIndex) || [];
+                list.push(placement.field);
+                orphanedFieldsByConditionIndex.set(placement.conditionIndex, list);
             }
-            const { orphanedIndices } = conditionClassification;
-            for (const conditionIndex of orphanedIndices) {
-                // Recovered above as an update (same trigger field, value changed), so no separate
-                // remove entry. Apply still treats it as orphaned by signature, though: policy-authored
-                // custom fields / cross-schema targets under it are dropped unless the user keeps
-                // them, so the conflict below must be raised for it exactly as for a removed one.
-                const isValueChanged = valueChangedConditionPairs.has(conditionIndex);
-                const orphanedFields = orphanedFieldsByConditionIndex.get(conditionIndex) || [];
-                const hasCrossTargets = conditionHasCrossTargets(policySchema.document, conditionIndex);
-                const condition = previousConditions[conditionIndex];
-                const triggerIds = conditionTriggerSignature(condition) || [];
-                const fieldNames = orphanedFields.length
-                    ? orphanedFields.map((f) => getFieldDisplayName(f)).join(', ')
-                    : (hasCrossTargets ? '(cross-schema target only, no custom field)' : conditionDisplayName(condition));
-                if (!isValueChanged) {
-                    changes.push(createChange(
-                        SchemaTemplateUpdateChangeType.CONDITION_REMOVE,
-                        `A condition in schema "${nextSchema.name}" was removed from the template.`,
-                        {
-                            templateSchemaId,
-                            schemaName: nextSchema.name,
-                            fieldName: fieldNames,
-                            before: 'Condition present',
-                            after: 'Removed from template'
-                        }
-                    ));
-                }
-                if (hasNothingToResolve) {
-                    continue;
-                }
-                // A cross-schema target has no independent "is this custom" marker of its own,
-                // unlike a field - any target on an orphaned condition is at risk. Without either,
-                // there's nothing policy-authored to lose, so it reverts silently - no conflict needed.
-                if (!orphanedFields.length && !hasCrossTargets) {
-                    continue;
-                }
-                conflicts.push(createConflict(
-                    SchemaTemplateUpdateConflictType.CONDITION_REMOVED_WITH_POLICY_USAGE,
-                    isValueChanged
-                        ? `A condition in schema "${nextSchema.name}" was changed in the template, so the policy's version of it no longer matches, but it still holds custom content: ${fieldNames}. Choose whether to keep it as a custom condition or remove it from the policy.`
-                        : `A condition in schema "${nextSchema.name}" was removed from the template, but it still reveals custom field(s): ${fieldNames}. Choose whether to keep it as a custom condition or remove it from the policy.`,
+        }
+        const { orphanedIndices } = conditionClassification;
+        for (const conditionIndex of orphanedIndices) {
+            // Recovered above as an update (same trigger field, value changed), so no separate
+            // remove entry. Apply still treats it as orphaned by signature, though: policy-authored
+            // custom fields / cross-schema targets under it are dropped unless the user keeps
+            // them, so the conflict below must be raised for it exactly as for a removed one.
+            const isValueChanged = valueChangedConditionPairs.has(conditionIndex);
+            const orphanedFields = orphanedFieldsByConditionIndex.get(conditionIndex) || [];
+            const hasCrossTargets = conditionHasCrossTargets(policySchema.document, conditionIndex);
+            const condition = previousConditions[conditionIndex];
+            const triggerIds = SchemaHelper.getConditionTriggerSignature(condition) || [];
+            const fieldNames = orphanedFields.length
+                ? orphanedFields.map((f) => getFieldDisplayName(f)).join(', ')
+                : (hasCrossTargets ? '(cross-schema target only, no custom field)' : conditionDisplayName(condition));
+            if (!isValueChanged) {
+                changes.push(createChange(
+                    SchemaTemplateUpdateChangeType.CONDITION_REMOVE,
+                    `A condition in schema "${nextSchema.name}" was removed from the template.`,
                     {
                         templateSchemaId,
-                        templateFieldId: triggerIds.join(','),
                         schemaName: nextSchema.name,
                         fieldName: fieldNames,
-                        allowedActions: [
-                            SchemaTemplateUpdateResolutionAction.KEEP_AS_CUSTOM_CONDITION,
-                            SchemaTemplateUpdateResolutionAction.REMOVE_FROM_POLICY
-                        ]
+                        before: 'Condition present',
+                        after: 'Removed from template'
                     }
                 ));
             }
+            if (hasNothingToResolve) {
+                continue;
+            }
+            // A cross-schema target has no independent "is this custom" marker of its own,
+            // unlike a field - any target on an orphaned condition is at risk. Without either,
+            // there's nothing policy-authored to lose, so it reverts silently - no conflict needed.
+            if (!orphanedFields.length && !hasCrossTargets) {
+                continue;
+            }
+            conflicts.push(createConflict(
+                SchemaTemplateUpdateConflictType.CONDITION_REMOVED_WITH_POLICY_USAGE,
+                isValueChanged
+                    ? `A condition in schema "${nextSchema.name}" was changed in the template, so the policy's version of it no longer matches, but it still holds custom content: ${fieldNames}. Choose whether to keep it as a custom condition or remove it from the policy.`
+                    : `A condition in schema "${nextSchema.name}" was removed from the template, but it still reveals custom field(s): ${fieldNames}. Choose whether to keep it as a custom condition or remove it from the policy.`,
+                {
+                    templateSchemaId,
+                    templateFieldId: triggerIds.join(','),
+                    schemaName: nextSchema.name,
+                    fieldName: fieldNames,
+                    allowedActions: [
+                        SchemaTemplateUpdateResolutionAction.KEEP_AS_CUSTOM_CONDITION,
+                        SchemaTemplateUpdateResolutionAction.REMOVE_FROM_POLICY
+                    ]
+                }
+            ));
         }
 
         // Per-link lock-change visibility, independent of repeatableLinksLocked/customFieldsLocked
@@ -2771,7 +2751,7 @@ export function preparePolicySchemaUpdate(
             if (!orphanedFields.length && !conditionHasCrossTargets(previousDocument, conditionIndex)) {
                 continue;
             }
-            const signature = conditionTriggerSignature(previousConditions[conditionIndex]) || [];
+            const signature = SchemaHelper.getConditionTriggerSignature(previousConditions[conditionIndex]) || [];
             const conflict = conditionConflicts.find((item) =>
                 item.type === SchemaTemplateUpdateConflictType.CONDITION_REMOVED_WITH_POLICY_USAGE &&
                 item.templateFieldId === signature.join(',')
@@ -2857,9 +2837,9 @@ export function preparePolicySchemaUpdate(
     // can exist without any custom field alongside it. Snapshot targets are filtered
     // inside restoreConditionCrossTargets so template-removed targets stay removed.
     for (const [oldIndex, newIndex] of matchedIndexByOldIndex) {
-        const signature = conditionTriggerSignature(previousConditions[oldIndex]);
+        const signature = SchemaHelper.getConditionTriggerSignature(previousConditions[oldIndex]);
         const previousSnapshotConditionIndex = signature
-            ? findMatchingConditionIndex(previousSnapshotConditions, signature)
+            ? SchemaHelper.findConditionIndexBySignature(previousSnapshotConditions, signature)
             : -1;
         restoreConditionCrossTargets(
             target.document,
