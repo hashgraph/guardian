@@ -1902,6 +1902,101 @@ export class SchemaHelper {
     }
 
     /**
+     * Collect the set of schema ids genuinely reachable from a document via real
+     * $ref/type pointers (direct and transitive), as opposed to the raw keys of
+     * $defs, which accumulate over time and are never pruned.
+     * @param document
+     * @param rootIri
+     */
+    public static collectReachableRefs(document: any, rootIri?: string): string[] {
+        if (!document) {
+            return [];
+        }
+
+        const rootId = SchemaHelper.normalizeSchemaRef(document.$id || rootIri);
+        const defs = document.$defs || {};
+
+        const documents = new Map<string, any>();
+        for (const [key, def] of Object.entries(defs)) {
+            SchemaHelper.addSchemaDocument(documents, key, def);
+            SchemaHelper.addSchemaDocument(documents, (def as any)?.$id, def);
+        }
+        SchemaHelper.addSchemaDocument(documents, document.$id || rootIri, document);
+
+        const visited = new Set<string>();
+        const collected = new Set<string>();
+
+        const visit = (id: string): void => {
+            const normalized = SchemaHelper.normalizeSchemaRef(id);
+            if (!normalized || !documents.has(normalized) || visited.has(normalized)) {
+                return;
+            }
+            visited.add(normalized);
+            const refs = new Set<string>();
+            SchemaHelper.collectSchemaDocumentRefs(documents.get(normalized), refs);
+            for (const ref of refs) {
+                collected.add(ref);
+                visit(ref);
+            }
+        };
+
+        if (rootId) {
+            visit(rootId);
+        }
+        return Array.from(collected);
+    }
+
+    /**
+     * @private
+     */
+    private static normalizeSchemaRef(value: any): string | null {
+        if (typeof value !== 'string' || !value) {
+            return null;
+        }
+        if (value.startsWith('#/')) {
+            return null;
+        }
+        return value.startsWith('#') ? value : `#${value}`;
+    }
+
+    /**
+     * @private
+     */
+    private static addSchemaDocument(documents: Map<string, any>, key: any, document: any): void {
+        const normalized = SchemaHelper.normalizeSchemaRef(key);
+        if (normalized && document) {
+            documents.set(normalized, document);
+        }
+    }
+
+    /**
+     * @private
+     */
+    private static collectSchemaDocumentRefs(value: any, refs: Set<string>): void {
+        if (!value || typeof value !== 'object') {
+            return;
+        }
+        if (typeof value.$ref === 'string') {
+            const ref = SchemaHelper.normalizeSchemaRef(value.$ref);
+            if (ref) {
+                refs.add(ref);
+            }
+        }
+        if (typeof value.type === 'string' && value.type.startsWith('#')) {
+            const ref = SchemaHelper.normalizeSchemaRef(value.type);
+            if (ref) {
+                refs.add(ref);
+            }
+        }
+        for (const [key, child] of Object.entries(value)) {
+            if (key === '$defs') {
+                continue;
+            }
+            SchemaHelper.collectSchemaDocumentRefs(child, refs);
+        }
+    }
+
+    /**
      * Get unique refs
      * @param map
      * @param newMap

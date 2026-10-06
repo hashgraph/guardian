@@ -1,4 +1,4 @@
-import { DEFAULT_IWA_VERSION, GenerateUUIDv4, ISchema, ISchemaDocument, SchemaCategory, SchemaEntity, SchemaStatus } from '@guardian/interfaces';
+import { DEFAULT_IWA_VERSION, GenerateUUIDv4, ISchema, ISchemaDocument, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
 import { AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeUpdate, Entity, Enum, Index, OnLoad, Property } from '@mikro-orm/core';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { DataBaseHelper, SchemaConverterUtils } from '../helpers/index.js';
@@ -269,7 +269,7 @@ export class Schema extends BaseEntity implements ISchema {
 
         if (this.document) {
             if (this.document.$defs) {
-                this.defs = Object.keys(this.document.$defs);
+                this.defs = SchemaHelper.collectReachableRefs(this.document, this.iri);
             }
             const document = JSON.stringify(this.document);
             this.documentFileId = await this._createFile(document, 'Schema');
@@ -309,7 +309,7 @@ export class Schema extends BaseEntity implements ISchema {
     async updateFiles() {
         if (this.document) {
             if (this.document.$defs) {
-                this.defs = Object.keys(this.document.$defs);
+                this.defs = SchemaHelper.collectReachableRefs(this.document, this.iri);
             }
             const document = JSON.stringify(this.document);
             const documentFileId = await this._createFile(document, 'Schema');
