@@ -40,7 +40,7 @@
         "cookie-parser": "^1.4.7",
         "dotenv": "^17.4.0",
         "exceljs": "4.4.0",
-        "file-type": "16.5.4",
+        "file-type": "21.3.2",
         "helmet": "^8.0.0",
         "ioredis": "^5.4.0",
         "jszip": "^3.10.1",
