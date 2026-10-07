@@ -615,6 +615,123 @@ export class SchemaHelper {
     }
 
     /**
+     * The predicates a condition's `if` reads, as the raw predicate objects (field + value),
+     * not just field names - distinct from `getConditionPredicates`, which returns field
+     * names only for reachability analysis. Used to build a condition's trigger signature.
+     * @param ifCondition
+     */
+    public static getConditionTriggerPredicates(ifCondition: any): SchemaFieldPredicate[] {
+        if (!ifCondition) {
+            return [];
+        }
+        if (Array.isArray(ifCondition.AND)) {
+            return ifCondition.AND;
+        }
+        if (Array.isArray(ifCondition.OR)) {
+            return ifCondition.OR;
+        }
+        return [ifCondition];
+    }
+
+    /**
+     * A condition's identity across template versions is its trigger field(s)' templateFieldId
+     * plus the value(s) it compares against - templateFieldId alone isn't enough, since two
+     * separate conditions can share the same trigger field with different values (e.g. one
+     * per enum option). Neither `allOf` array position nor trigger field name is stable enough
+     * to use either. Returns null when any predicate's field lacks a templateFieldId - wholly
+     * policy-authored, or otherwise unmatchable.
+     * @param condition
+     */
+    public static getConditionTriggerSignature(condition: SchemaCondition): string[] | null {
+        const ifCondition: any = condition?.ifCondition;
+        if (!ifCondition) {
+            return null;
+        }
+        // AND vs OR must be part of the signature too - the same predicates combined either
+        // way would otherwise produce the same sorted parts and be treated as one condition.
+        const combinator = Array.isArray(ifCondition.AND) ? 'AND' : Array.isArray(ifCondition.OR) ? 'OR' : 'SINGLE';
+        const predicates = SchemaHelper.getConditionTriggerPredicates(ifCondition);
+        const parts: string[] = [];
+        for (const predicate of predicates) {
+            const id = (predicate as any)?.field?.templateFieldId;
+            if (!id) {
+                return null;
+            }
+            parts.push(`${id}:${JSON.stringify((predicate as any).fieldValue)}`);
+        }
+        return [combinator, ...parts.sort()];
+    }
+
+    /**
+     * Finds the condition in `conditions` whose own trigger signature matches `signature`
+     * exactly, or -1 if none does. Shared so every consumer that needs to locate "the same
+     * condition" across two condition lists (by signature, not array position or name) uses
+     * one implementation.
+     * @param conditions
+     * @param signature
+     */
+    public static findConditionIndexBySignature(conditions: SchemaCondition[], signature: string[]): number {
+        return (conditions || []).findIndex((condition) => {
+            const candidate = SchemaHelper.getConditionTriggerSignature(condition);
+            return !!candidate && candidate.length === signature.length && candidate.every((part, i) => part === signature[i]);
+        });
+    }
+
+    private static getConditionFieldIdentity(field: any): string {
+        return field?.templateFieldId || field?.name || '';
+    }
+
+    private static getParsedConditionTargetPaths(targets: any[]): string[][] {
+        return (targets || [])
+            .map((target: any) => target?.fieldPath || [])
+            .filter((fieldPath: string[]) => fieldPath.length > 0);
+    }
+
+    /**
+     * Content hash for the per-condition lock - trigger (operator/field/value/comparator) and
+     * cross-schema target paths only. Branch field membership is deliberately excluded: a locked
+     * condition still allows adding or removing branch fields (each governed by its own per-field
+     * lock and the whole-schema custom-fields lock), so hashing them here would reject those
+     * UI-permitted edits. Trigger field/value changes are already caught by the signature match.
+     * @param condition
+     */
+    public static getConditionComparableFields(condition: any): any {
+        return {
+            op: condition?.ifCondition?.AND ? 'AND' : condition?.ifCondition?.OR ? 'OR' : 'SINGLE',
+            if: SchemaHelper.getConditionTriggerPredicates(condition?.ifCondition).map((predicate: any) => [
+                SchemaHelper.getConditionFieldIdentity(predicate.field),
+                predicate.fieldPath || [],
+                SchemaHelper.cloneSchemaRuntimeValue(predicate.fieldValue),
+                predicate.comparator || 'equals'
+            ]),
+            thenTargets: SchemaHelper.getParsedConditionTargetPaths(condition?.thenTargets),
+            elseTargets: SchemaHelper.getParsedConditionTargetPaths(condition?.elseTargets)
+        };
+    }
+
+    public static getConditionComparableHash(condition: any): string {
+        return SchemaHelper.stableStringify(SchemaHelper.getConditionComparableFields(condition));
+    }
+
+    /**
+     * Walks a repeatable-link path (e.g. `['parent']` or `['grandparent', 'child']`) down a
+     * field tree to the field it ultimately names.
+     * @param fields
+     * @param fieldPath
+     */
+    public static resolveFieldByPath(fields: SchemaField[], fieldPath: string[]): SchemaField | null {
+        let current = fields || [];
+        for (let i = 0; i < fieldPath.length - 1; i++) {
+            const next = current.find((field) => field.name === fieldPath[i]);
+            if (!next) {
+                return null;
+            }
+            current = next.fields || [];
+        }
+        return current.find((field) => field.name === fieldPath[fieldPath.length - 1]) || null;
+    }
+
+    /**
      * Which condition branch reveals each field, by field name.
      *
      * A name revealed by more than one condition is ambiguous — there is no way to tell

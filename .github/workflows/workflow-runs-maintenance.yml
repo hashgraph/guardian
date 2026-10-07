@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   cleanup:
-    runs-on: guardian-linux-medium
+    runs-on: hg-guard-lin-md
     timeout-minutes: 60
 
     steps:

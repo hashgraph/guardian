@@ -50,3 +50,4 @@ The second location chose _Quantification Approach 1_ — the same card hides th
 #### Related
 
 * Task: [Set up repeatable field links](set-up-repeatable-field-links.md)
+* Concept: [Schema Templates](../../../schema-templates/) — a template author can lock repeatable field links so policy developers cannot add, edit, or remove them.

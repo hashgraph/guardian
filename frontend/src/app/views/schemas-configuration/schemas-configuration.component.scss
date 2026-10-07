@@ -2135,6 +2135,11 @@
     font-size: 13px;
     cursor: grab;
     flex-shrink: 0;
+
+    &.sc-drag-handle--disabled {
+        cursor: default;
+        opacity: 0.35;
+    }
 }
 
 .sc-field-type-icon {
@@ -2483,7 +2488,7 @@
 }
 
 .st-lock-note--inline {
-    margin: 0;
+    margin: 8px 0 0;
 }
 
 // ── Tab bar ──────────────────────────────────────────────────────────────────
@@ -3699,6 +3704,29 @@
     &:disabled { opacity: 0.3; cursor: default; }
 }
 
+.sc-cond-block-lock {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-grey-5);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    padding: 5px 8px;
+    border-radius: 6px;
+    transition: color 0.12s, background 0.12s;
+
+    &:hover:not(:disabled) { color: var(--color-primary); background: var(--guardian-hover); }
+    &:disabled { opacity: 0.3; cursor: default; }
+}
+
+.sc-cond-block-lock-badge {
+    color: var(--color-grey-5);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+}
+
 .sc-cond-block-body {
     padding: 14px 16px;
     display: flex;
@@ -3771,6 +3799,27 @@
 
 .sc-cond-val-sel {
     width: 100%;
+}
+
+// A condition locked by the applied template disables its field / comparator / value
+// selects - PrimeNG's own disabled look is not enough against the guardian-dropdown theme,
+// so spell out the grey state (same palette as the disabled value input above).
+// PrimeNG puts .p-select on the host, so match both the host and any descendant.
+.sc-cond-block ::ng-deep {
+    p-select.p-disabled,
+    .p-select.p-disabled {
+        background: var(--guardian-grey-background, #F1F3F9);
+        border-color: var(--guardian-border-color, #E1E7EF);
+        cursor: not-allowed;
+        opacity: 1;
+
+        .p-select-label,
+        .p-select-dropdown,
+        .p-select-dropdown-icon {
+            color: var(--guardian-disabled-color, #848FA9);
+            cursor: not-allowed;
+        }
+    }
 }
 
 .sc-cond-row-del {
@@ -4838,10 +4887,12 @@
     color: var(--guardian-font-color-secondary);
     cursor: pointer;
 
-    &:hover {
+    &:hover:not(:disabled) {
         background: rgba(235, 87, 87, 0.08);
         color: var(--guardian-error-color, #EB5757);
     }
+
+    &:disabled { opacity: 0.4; cursor: default; }
 }
 
 .sc-array-link-edit {
@@ -4854,10 +4905,41 @@
     color: var(--guardian-font-color-secondary);
     cursor: pointer;
 
-    &:hover {
+    &:hover:not(:disabled) {
         background: var(--guardian-grey-background, #F9FAFC);
         color: var(--color-primary);
     }
+
+    &:disabled { opacity: 0.4; cursor: default; }
+}
+
+.sc-array-link-lock {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: var(--sc-radius-sm);
+    background: transparent;
+    color: var(--guardian-font-color-secondary);
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+        background: var(--guardian-hover);
+        color: var(--color-primary);
+    }
+
+    &:disabled { opacity: 0.4; cursor: default; }
+}
+
+.sc-array-link-lock-badge {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--guardian-font-color-secondary);
+    font-size: 14px;
 }
 
 .sc-array-link-card--editing {

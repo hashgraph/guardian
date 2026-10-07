@@ -53717,7 +53717,7 @@ info:
     leverages a customizable Policy Workflow Engine and Web3 technology to
     ensure transparent and fraud-proof operations, making it a key tool for
     transforming sustainability practices and carbon markets.
-  version: 3.7.1-rc
+  version: 3.7.1
   contact:
     name: API developer
     url: https://hashgraph.com
@@ -57904,6 +57904,12 @@ components:
           type: number
           nullable: true
           example: 1
+        defs:
+          type: array
+          items:
+            type: string
+          example:
+            - '#f3b2a9c1e4d5678901234567'
       required:
         - id
         - uuid

@@ -18,7 +18,8 @@ export interface SchemaTemplateGridItem extends ISchemaTemplate {
 export enum SchemaTemplateUpdateResolutionAction {
     KEEP_AS_CUSTOM_SCHEMA = 'KEEP_AS_CUSTOM_SCHEMA',
     REMOVE_FROM_POLICY = 'REMOVE_FROM_POLICY',
-    KEEP_AS_CUSTOM_CONDITION = 'KEEP_AS_CUSTOM_CONDITION'
+    KEEP_AS_CUSTOM_CONDITION = 'KEEP_AS_CUSTOM_CONDITION',
+    KEEP_AS_CUSTOM_LINK = 'KEEP_AS_CUSTOM_LINK'
 }
 
 export interface SchemaTemplateUpdateConflict {

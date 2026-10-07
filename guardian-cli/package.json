@@ -15,14 +15,14 @@
     "author": "Hashgraph <guardian@hashgraph.com>",
     "license": "Apache-2.0",
     "devDependencies": {
-        "@types/node": "24.13.6",
+        "@types/node": "24.19.1",
         "typescript": "^5.8.3"
     },
     "engines": {
         "node": ">=24.15.0"
     },
     "dependencies": {
-        "@hiero-ledger/sdk": "2.88.0",
+        "@hiero-ledger/sdk": "2.89.1",
         "axios": "^1.16.1",
         "commander": "^11.1.0",
         "solc": "0.8.37",

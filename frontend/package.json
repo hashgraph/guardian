@@ -59,7 +59,6 @@
     "@types/glob": "^8.1.0",
     "@types/jasmine": "6.0.0",
     "@types/js-yaml": "4.0.9",
-    "@types/mapbox-gl": "3.5.0",
     "@types/mark.js": "8.11.12",
     "@types/node": "24.13.2",
     "@types/pako": "2.0.4",
@@ -90,5 +89,5 @@
     "test": "ng test",
     "watch": "ng build --watch --configuration development --output-path ../www-data"
   },
-  "version": "3.7.1-rc"
+  "version": "3.7.1"
 }

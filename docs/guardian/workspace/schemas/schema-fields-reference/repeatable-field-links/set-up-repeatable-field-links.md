@@ -63,3 +63,4 @@ The schema stores the configured links and conditions. When the schema is used i
 #### Related
 
 * Concept: [Repeatable Field Links](README.md)
+* Concept: [Schema Templates](../../../schema-templates/) — repeatable field links can be locked by a schema template.

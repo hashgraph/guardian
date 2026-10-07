@@ -6,7 +6,7 @@
         "country-region-data": "4.1.0"
     },
     "devDependencies": {
-        "@types/node": "24.13.6",
+        "@types/node": "24.19.1",
         "ajv": "^8.17.1",
         "mocha": "10.8.2",
         "mocha-junit-reporter": "2.2.1",
@@ -33,5 +33,5 @@
         "test": "mocha 'tests/**/*.test.mjs' --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/interfaces.xml --exit"
     },
     "type": "module",
-    "version": "3.7.1-rc"
+    "version": "3.7.1"
 }

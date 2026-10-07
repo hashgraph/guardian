@@ -33,7 +33,7 @@
         "prometheus-api-metrics": "4.0.0",
         "reflect-metadata": "0.2.2",
         "rxjs": "7.8.2",
-        "ws": "8.21.3",
+        "ws": "8.22.0",
         "yaml": "2.9.1",
         "yup": "1.7.1"
     },
@@ -42,8 +42,8 @@
         "@types/express": "5.0.6",
         "@types/express-fileupload": "1.5.1",
         "@types/glob": "^8.1.0",
-        "@types/node": "24.13.6",
-        "@types/ws": "8.18.1",
+        "@types/node": "24.19.1",
+        "@types/ws": "8.18.2",
         "chai": "^4.3.4",
         "cross-env": "10.1.0",
         "mocha": "10.8.2",
@@ -74,5 +74,5 @@
         "start": "node dist/index.js"
     },
     "type": "module",
-    "version": "3.7.1-rc"
+    "version": "3.7.1"
 }

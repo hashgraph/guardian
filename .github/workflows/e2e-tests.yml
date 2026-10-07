@@ -33,7 +33,7 @@ concurrency:
 jobs:
   buildAndTest:
     name: Build and Test
-    runs-on: guardian-linux-medium
+    runs-on: hg-guard-lin-md
     timeout-minutes: 240
     env:
       # .yarnrc.yml does not set enableGlobalCache and Yarn 4 defaults it to true,
@@ -459,7 +459,7 @@ jobs:
         run: node scripts/report-summary.mjs
 
       - name: Publish API Test Results
-        uses: step-security/publish-unit-test-result-action@681100d67b09305624c089873f12c545ee7cbc24 # v2.23.0
+        uses: step-security/publish-unit-test-result-action@8cf946dca1a299ebf36dff640273fda13717050a # v2.24.0
         if: always()
         with:
           files: e2e-tests/cypress/test_results/**/*.xml
