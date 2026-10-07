@@ -1681,6 +1681,13 @@
                                             <i class="pi pi-code"></i>Condition
                                         </span>
                                     }
+                                    @if (isFieldConditionOwned(field)) {
+                                        <span class="sc-badge sc-badge--cond-member"
+                                            pTooltip="Shown only when the condition it belongs to matches"
+                                            tooltipPosition="top">
+                                            <i class="pi pi-eye"></i>Conditional field
+                                        </span>
+                                    }
                                 </div>
                             </div>
                             @if (isTemplateConfigMode && canEnterSubSchema(field)) {

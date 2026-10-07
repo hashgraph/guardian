@@ -3964,9 +3964,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public get canvasFields(): SchemaField[] {
-        const all = this.isDrilling ? this.drillCurrentFields : (this.selectedSchema?.fields ?? []);
-        const owned = this.conditionOwnedFieldNames;
-        return all.filter(f => !owned.has(f.name));
+        return this.isDrilling ? this.drillCurrentFields : (this.selectedSchema?.fields ?? []);
+    }
+
+    public isFieldConditionOwned(field: SchemaField): boolean {
+        return this.conditionOwnedFieldNames.has(field.name);
     }
 
     // Rebuilt only when the schema list itself changes; these getters run on every
