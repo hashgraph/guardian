@@ -230,10 +230,10 @@ export class FieldForm {
         if (conditions) {
             for (const condition of conditions) {
                 for (const field of (condition.thenFields || [])) {
-                    this.conditionFields.add(field.name);
+                    if (!field.conditionUserOrdered) { this.conditionFields.add(field.name); }
                 }
                 for (const field of (condition.elseFields || [])) {
-                    this.conditionFields.add(field.name);
+                    if (!field.conditionUserOrdered) { this.conditionFields.add(field.name); }
                 }
                 const allTargets: SchemaConditionTarget[] = [
                     ...(condition.thenTargets || []),
@@ -400,6 +400,31 @@ export class FieldForm {
         return controls;
     }
 
+    // A conditionUserOrdered field already has a base IFieldControl built by buildFields
+    // (it's not in conditionFields, so it isn't excluded) - reuse that same object instead
+    // of creating a second wrapper, so condition-driven show/hide applies in place at its
+    // real position rather than via a separate control that rebuildControls would need to
+    // anchor-group next to the trigger.
+    private makeConditionControl(
+        field: SchemaField,
+        expr: IConditionExpr,
+        condition: SchemaCondition,
+        conditionInvert: boolean,
+        deps: string[]
+    ): IConditionControl<any> {
+        const base = field.conditionUserOrdered
+            ? this.fieldControls?.find(c => c.name === field.name)
+            : null;
+        const fieldControl = base ?? this.createFieldControl(field, this.preset);
+        return Object.assign(fieldControl, {
+            conditionExpr: expr,
+            sourceCondition: condition,
+            conditionInvert,
+            dependsOn: deps,
+            visibility: base ? fieldControl.visibility : false,
+        });
+    }
+
     private buildConditions(conditions: SchemaCondition[] | undefined): IConditionControl<any>[] | null {
         if (!conditions) return null;
 
@@ -410,28 +435,12 @@ export class FieldForm {
             this.conditionExprBySource.set(condition, expr);
             const deps = Array.from(new Set(expr.pairs.map(p => p.path ? p.path.split('.')[0] : p.name).filter(Boolean)));
             for (const thenField of condition.thenFields) {
-                const fieldControl = this.createFieldControl(thenField, this.preset);
-                const item: IConditionControl<any> = {
-                    ...fieldControl,
-                    conditionExpr: expr,
-                    sourceCondition: condition,
-                    conditionInvert: false,
-                    dependsOn: deps,
-                    visibility: false
-                };
+                const item = this.makeConditionControl(thenField, expr, condition, false, deps);
                 controls.push(item);
             }
 
             for (const elseField of (condition.elseFields || [])) {
-                const fieldControl = this.createFieldControl(elseField, this.preset);
-                const item: IConditionControl<any> = {
-                    ...fieldControl,
-                    conditionExpr: expr,
-                    sourceCondition: condition,
-                    conditionInvert: true,
-                    dependsOn: deps,
-                    visibility: false
-                };
+                const item = this.makeConditionControl(elseField, expr, condition, true, deps);
                 controls.push(item);
             }
 
@@ -815,8 +824,11 @@ export class FieldForm {
 
         // Group the revealed fields under the field their condition reads, keeping
         // the order in which the conditions (and the fields inside them) were declared.
+        // A conditionUserOrdered field is skipped here: it's already in baseControls at
+        // its real schema position, so anchor-grouping it too would render it twice.
         const childrenByAnchor = new Map<string, IConditionControl<any>[]>();
         for (const cc of this.conditionControls) {
+            if (cc.conditionUserOrdered) { continue; }
             const anchor = this.getAnchorName(cc, declOrder);
             if (anchor === null) {
                 continue;
@@ -835,6 +847,9 @@ export class FieldForm {
         // so unrelated fields are unaffected by a sibling's reveal chain.
         const result: IFieldControl<any>[] = [];
         const emitted = new Set<IConditionControl<any>>();
+        for (const cc of this.conditionControls) {
+            if (cc.conditionUserOrdered) { emitted.add(cc); }
+        }
         const emitSubtree = (root: IFieldControl<any>) => {
             const queue: IFieldControl<any>[] = [root];
             while (queue.length) {
