@@ -29,7 +29,7 @@ interface PreviewItem {
     version?: string;
 }
 
-type PreviewSection = 'schemas' | 'tools' | 'templates' | 'tokens' | 'formulas' | 'similar' | 'errors';
+type PreviewSection = 'schemas' | 'tools' | 'templates' | 'tokens' | 'formulas' | 'errors';
 
 /** Two rows of chips; the schema list is clamped to this height until expanded. */
 const CHIP_LIST_CLAMP_HEIGHT = 60;
@@ -54,7 +54,6 @@ export class PreviewPolicyDialog {
     public newVersions: any[] = [];
     public versionOfTopicId: any;
     public policies!: any[];
-    public similar: PreviewItem[] = [];
     public module!: any;
     public tool!: any;
     public xlsx!: any;
@@ -85,7 +84,6 @@ export class PreviewPolicyDialog {
         templates: true,
         tokens: false,
         formulas: false,
-        similar: false,
         errors: true,
     };
     public showAllSchemas: boolean = false;
@@ -167,7 +165,6 @@ export class PreviewPolicyDialog {
             this.schemas = this.toItems(importFile.schemas);
             this.tokens = (importFile.tokens || []).map((t: any) => ({ name: t.tokenName }));
             this.formulas = this.toItems(importFile.formulas);
-            this.similar = this.toItems(importFile.similar);
 
             this.toolConfigs = importFile.tools || [];
             this.schemaTemplateSnapshots = importFile.schemaTemplateSnapshots || [];

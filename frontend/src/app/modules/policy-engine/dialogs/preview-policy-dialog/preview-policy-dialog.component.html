@@ -136,9 +136,6 @@
         @if (formulas.length) {
           <ng-container *ngTemplateOutlet="chipSection; context: { section: 'formulas', title: 'Formulas', items: formulas }"></ng-container>
         }
-        @if (similar.length) {
-          <ng-container *ngTemplateOutlet="chipSection; context: { section: 'similar', title: 'Similar policies', items: similar }"></ng-container>
-        }
       </div>
     }
 
@@ -245,7 +242,7 @@
     <span class="section-title">{{ title }}</span>
     <span class="count-badge">{{ count }}</span>
     @if (attention) {
-      <span class="count-badge count-badge--attention">{{ attention }} needs attention</span>
+      <span class="count-badge count-badge--attention">{{ attention }} {{ attention === 1 ? 'needs' : 'need' }} attention</span>
     }
   </button>
 </ng-template>
