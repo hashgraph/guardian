@@ -65,10 +65,30 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         transactions: 'Transactions',
         artifacts: 'Artifacts',
         ipfs: 'IPFS',
-        mock_config: 'Mock Config',
-        mock_data: 'Mock Data',
+        mock_config: 'Mock config',
+        mock_data: 'Mock data',
     };
-    public viewOrder: string[] = ['policy', 'transactions', 'artifacts', 'ipfs', 'mock_config', 'mock_data'];
+    public viewIcons: any = {
+        policy: 'list',
+        transactions: 'arrow-right-arrow-left',
+        artifacts: 'paperclip',
+        ipfs: 'cloud',
+        mock_config: 'cog',
+        mock_data: 'database',
+    };
+    public viewHints: any = {
+        policy: 'Run the policy and fill in forms',
+        transactions: 'Messages sent to Hedera',
+        artifacts: 'Documents produced by blocks',
+        ipfs: 'Files stored off-chain',
+        mock_config: 'Choose which Hedera and IPFS calls are simulated',
+        mock_data: 'Simulated messages, files and tokens',
+    };
+    public viewMenuGroups: { title: string, items: string[] }[] = [
+        { title: '', items: ['policy'] },
+        { title: 'Technical views', items: ['transactions', 'artifacts', 'ipfs'] },
+        { title: 'Developer tools', items: ['mock_config', 'mock_data'] },
+    ];
     public tabLabels: string[] = ['General', 'Export Documents', 'Mint Requests'];
     public copiedField: string = '';
     public pageIndex: number;

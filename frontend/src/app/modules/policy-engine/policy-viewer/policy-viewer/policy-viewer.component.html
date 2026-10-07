@@ -688,19 +688,11 @@
       <!-- ============ RIGHT ZONE: views + dry-run tools ============ -->
       @if (policy) {
         @if (isDryRun) {
-          <div class="view-segment">
-            <div (click)="onView('policy')" [class.active]="view === 'policy'" class="view-segment-item">Policy</div>
-            <div (click)="onView('transactions')" [class.active]="view === 'transactions'" class="view-segment-item">Transactions</div>
-            <div (click)="onView('artifacts')" [class.active]="view === 'artifacts'" class="view-segment-item">Artifacts</div>
-            <div (click)="onView('ipfs')" [class.active]="view === 'ipfs'" class="view-segment-item">IPFS</div>
-            <div (click)="mocksMenu.toggle($event)" [class.active]="isMockView" class="view-segment-item">
-              {{ isMockView ? viewLabels[view] : 'Mocks' }}
-              <i class="pi pi-chevron-down view-segment-caret"></i>
-            </div>
-          </div>
-          <div (click)="viewMenu.toggle($event)" class="view-select">
+          <div (click)="viewMenu.toggle($event)"
+            class="top-toolbar-btn bordered-btn view-btn" pTooltip="Switch view" tooltipPosition="bottom">
+            <i class="pi pi-{{ viewIcons[view] }}"></i>
             <span>{{ viewLabels[view] }}</span>
-            <i class="pi pi-chevron-down"></i>
+            <i class="pi pi-chevron-down view-btn-caret"></i>
           </div>
 
           <div class="delimiter"></div>
@@ -877,17 +869,25 @@
   </div>
 </ng-template>
 
-<p-popover #mocksMenu>
-  <div class="viewer-menu">
-    <div (click)="onView('mock_config', mocksMenu)" [attr.active]="view === 'mock_config'" class="viewer-menu-item">Mock Config</div>
-    <div (click)="onView('mock_data', mocksMenu)" [attr.active]="view === 'mock_data'" class="viewer-menu-item">Mock Data</div>
-  </div>
-</p-popover>
-
 <p-popover #viewMenu>
-  <div class="viewer-menu">
-    @for (item of viewOrder; track item) {
-      <div (click)="onView(item, viewMenu)" [attr.active]="view === item" class="viewer-menu-item">{{ viewLabels[item] }}</div>
+  <div class="viewer-menu viewer-menu--views">
+    @for (group of viewMenuGroups; track group.title) {
+      @if (group.title) {
+        <div class="viewer-menu-divider"></div>
+        <div class="viewer-menu-header">{{ group.title }}</div>
+      }
+      @for (item of group.items; track item) {
+        <div (click)="onView(item, viewMenu)" [attr.active]="view === item" class="viewer-menu-item">
+          <i class="pi pi-{{ viewIcons[item] }} viewer-menu-icon"></i>
+          <div class="viewer-menu-text">
+            <div class="viewer-menu-title">{{ viewLabels[item] }}</div>
+            <div class="viewer-menu-sub viewer-menu-sub--plain">{{ viewHints[item] }}</div>
+          </div>
+          @if (view === item) {
+            <i class="pi pi-check viewer-menu-check"></i>
+          }
+        </div>
+      }
     }
   </div>
 </p-popover>

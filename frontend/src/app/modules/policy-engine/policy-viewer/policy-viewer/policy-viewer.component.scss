@@ -769,9 +769,19 @@
         padding: 0 12px;
         gap: 6px;
         white-space: nowrap;
+    }
 
-        .view-segment-caret {
-            font-size: 9px;
+    .view-btn {
+        gap: 8px;
+        padding: 0 12px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--pc-text-color);
+        white-space: nowrap;
+
+        .view-btn-caret {
+            font-size: 10px;
+            color: var(--pc-no-active-color);
         }
     }
 
@@ -834,18 +844,6 @@
     }
 }
 
-@container policy-viewer-toolbar (max-width: 1400px) {
-    .policy-viewer-toolbar--dry-run {
-        .view-segment {
-            display: none;
-        }
-
-        .view-select {
-            display: flex;
-        }
-    }
-}
-
 @container policy-viewer-toolbar (max-width: 1000px) {
     .view-segment {
         display: none;
@@ -881,6 +879,16 @@
     &.viewer-menu--users {
         min-width: 320px;
         max-width: 480px;
+    }
+
+    &.viewer-menu--views {
+        min-width: 280px;
+
+        .viewer-menu-header {
+            font-weight: 500;
+            letter-spacing: 0;
+            text-transform: none;
+        }
     }
 
     .viewer-menu-header {
