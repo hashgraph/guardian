@@ -2869,7 +2869,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (!field || this.getFieldCurrentType(field) !== 'sub-schema') {
             return false;
         }
-        return this.schemas.some(schema => !!schema.iri && schema.iri === field.type);
+        return !!this.resolveRefSchema(field.type);
     }
 
     private get currentFieldScope(): SchemaField[] {
@@ -3424,7 +3424,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public enterTemplateSubSchema(field: SchemaField, event: Event): void {
         event.stopPropagation();
         if (!this.canEnterSubSchema(field)) { return; }
-        const subSchema = this.schemas.find(s => s.iri === field.type);
+        const subSchema = this.resolveRefSchema(field.type);
         if (subSchema) {
             this.switchSchema(subSchema);
         }
