@@ -11,9 +11,12 @@
 </div>
 <div class="dialog-body">
   @if (!loading) {
-    <content-search
-      [searchContainer]="dialogContent"
-    ></content-search>
+    <div class="search-bar">
+      <content-search
+        [searchContainer]="dialogContent"
+        (queryChange)="onSearchQueryChange($event)"
+      ></content-search>
+    </div>
   }
   <div #dialogContent>
     @if (loading) {
@@ -23,436 +26,169 @@
     }
 
     @if (policy) {
-      <div>
+      <div class="summary">
+        <div class="summary-title">
+          <span class="summary-name">{{ policy.name || 'N/A' }}</span>
+          @if (policy.version) {
+            <span class="chip">{{ policy.version }}</span>
+          }
+        </div>
+        <ng-container *ngTemplateOutlet="descriptionTemplate; context: { $implicit: policy.description }"></ng-container>
+        <div class="summary-grid">
+          <div class="summary-field">
+            <div class="summary-label">Tag</div>
+            <div class="summary-value summary-value--mono" [title]="policy.policyTag || ''">{{ policy.policyTag || 'N/A' }}</div>
+          </div>
+          <ng-container *ngTemplateOutlet="creatorTemplate; context: { $implicit: policy.owner }"></ng-container>
+          <div class="summary-field">
+            <div class="summary-label">Roles</div>
+            <div class="chip-list">
+              @for (role of roles; track $index) {
+                <span class="chip">{{ role }}</span>
+              }
+            </div>
+          </div>
+        </div>
+        @if (newVersions.length) {
+          <app-new-versions
+            (onClick)="onNewVersionClick($event)"
+            [newVersions]="newVersions"
+            class="version-container__new-versions"
+            type="policy"
+          ></app-new-versions>
+        }
+      </div>
+
+      <div class="import-bar">
+        <span class="import-bar__label">Import as</span>
+        <div class="segmented" role="radiogroup" aria-label="Import mode">
+          <button type="button" role="radio" tabindex="-1"
+            [class.segmented__option--active]="mode === 'new'"
+            [attr.aria-checked]="mode === 'new'"
+            (click)="onSelectMode('new')"
+            class="segmented__option">New policy</button>
+          <button type="button" role="radio" tabindex="-1"
+            [class.segmented__option--active]="mode === 'version'"
+            [attr.aria-checked]="mode === 'version'"
+            [disabled]="!policies.length"
+            (click)="onSelectMode('version')"
+            class="segmented__option">New version</button>
+          <button type="button" role="radio" tabindex="-1"
+            [class.segmented__option--active]="mode === 'demo'"
+            [attr.aria-checked]="mode === 'demo'"
+            (click)="onSelectMode('demo')"
+            class="segmented__option">Demo mode</button>
+        </div>
+        @if (mode === 'version') {
+          <div class="import-bar__version">
+            <label for="versionOf">of</label>
+            <p-select
+              [(ngModel)]="versionOfTopicId"
+              [options]="policies"
+              appendTo="body"
+              class="version-of-dropdown guardian-dropdown"
+              panelStyleClass="guardian-dropdown-panel"
+              inputId="versionOf"
+              optionLabel="name"
+              optionValue="topicId"
+              placeholder="Select Policy"
+            ></p-select>
+          </div>
+        }
         @if (canImportRecords) {
-          <div class="field-container">
-            <div class="field-value checkbox-field">
-              <p-checkbox
-                [(ngModel)]="importRecords"
-                inputId="import-records"
-                binary="true"
-                tabindex="-1"
-              ></p-checkbox>
-              <label for="import-records">Import existing records for this policy</label>
+          <div class="import-bar__records">
+            <p-checkbox
+              [(ngModel)]="importRecords"
+              inputId="import-records"
+              binary="true"
+              tabindex="-1"
+            ></p-checkbox>
+            <label for="import-records">Import existing records for this policy</label>
+          </div>
+        }
+      </div>
+
+      <div class="sections">
+        @if (schemas.length) {
+          <ng-container *ngTemplateOutlet="schemasTemplate"></ng-container>
+        }
+        @if (toolConfigs.length) {
+          <div class="section">
+            <ng-container *ngTemplateOutlet="sectionHeader; context: { section: 'tools', title: 'Tools', count: toolConfigs.length, attention: invalidToolsCount }"></ng-container>
+            <div class="section-body" [class.section-body--hidden]="!isSectionOpen('tools')">
+              <ng-container *ngTemplateOutlet="toolsTableTemplate"></ng-container>
             </div>
           </div>
         }
-        <div class="group-container">
-          <div class="group-header">Import mode</div>
-          <div class="field-container">
-            <div class="field-value">
-              <div class="change-mode">
-                <div (click)="onSelectMode('new')">
-                  <p-radioButton
-                    (onChange)="onChangeType()"
-                    [(ngModel)]="mode"
-                    value="new"
-                    id="new-mode"
-                    inputId="new-mode"
-                    name="mode"
-                  tabindex="-1"></p-radioButton>
-                  <label class="radio-label" for="new-mode">As New Policy</label>
-                </div>
-                <div (click)="onSelectMode('version')"
-                  [attr.disabled]="!policies.length">
-                  <p-radioButton
-                    (onChange)="onChangeType()"
-                    [disabled]="!policies.length"
-                    [(ngModel)]="mode"
-                    value="version"
-                    id="version-mode"
-                    inputId="version-mode"
-                    name="mode"
-                  tabindex="-1"></p-radioButton>
-                  <label class="radio-label" for="version-mode">As New Version</label>
-                </div>
-                <div (click)="onSelectMode('demo')">
-                  <p-radioButton
-                    (onChange)="onChangeType()"
-                    [(ngModel)]="mode"
-                    value="demo"
-                    id="demo-mode"
-                    inputId="demo-mode"
-                    name="mode"
-                  tabindex="-1"></p-radioButton>
-                  <label class="radio-label" for="demo-mode">In Demo mode</label>
-                </div>
-              </div>
-            </div>
-          </div>
-          @if (mode==='version') {
-            <div class="field-container">
-              <div class="field-header">Version of</div>
-              <div class="field-value">
-                <p-select
-                  [(ngModel)]="versionOfTopicId"
-                  [options]="policies"
-                  appendTo="body"
-                  class="version-of-dropdown guardian-dropdown"
-                  panelStyleClass="guardian-dropdown-panel"
-                  id="versionOf"
-                  optionLabel="name"
-                  optionValue="topicId"
-                  placeholder="Select Policy"
-                ></p-select>
-              </div>
-            </div>
-          }
-        </div>
-        <div class="group-container">
-          <div class="group-header">Details</div>
-          <div class="field-container">
-            <div class="field-header">Description</div>
-            <div class="field-value">{{ policy.description || 'N/A' }}</div>
-          </div>
-          <div class="field-container">
-            <div class="field-header">Version</div>
-            <div class="field-value">{{ policy.version || 'N/A' }}</div>
-            @if (newVersions.length) {
-              <div class="field-value">
-                <app-new-versions
-                  (onClick)="onNewVersionClick($event)"
-                  [newVersions]="newVersions"
-                  class="version-container__new-versions"
-                  type="policy"
-                ></app-new-versions>
-              </div>
-            }
-          </div>
-          <div class="field-container">
-            <div class="field-header">Tag</div>
-            <div class="field-value">{{ policy.policyTag || 'N/A' }}</div>
-          </div>
-          <div class="field-container">
-            <div class="field-header">Creator</div>
-            <div class="field-value" [title]="policy.owner">{{ policy.owner || 'N/A' }}</div>
-          </div>
-          <div class="field-container">
-            <div class="field-header">Involved Roles</div>
-            <div class="field-value">Standard Registry, {{ policyGroups }}</div>
-          </div>
-          @if (schemas) {
-            <div class="field-container">
-              <div class="field-header">Schemas Overview</div>
-              <div class="field-value">{{ schemas }}</div>
-            </div>
-          }
-          @if (tokens) {
-            <div class="field-container">
-              <div class="field-header">Tokens</div>
-              <div class="field-value">{{ tokens }}</div>
-            </div>
-          }
-          @if (formulas) {
-            <div class="field-container">
-              <div class="field-header">Formulas</div>
-              <div class="field-value">{{ formulas }}</div>
-            </div>
-          }
-          @if (similar) {
-            <div class="field-container">
-              <div class="field-header">Similar Policies</div>
-              <div class="field-value">{{ similar }}</div>
-            </div>
-          }
-          @if (toolConfigs.length) {
-            <div class="field-container">
-              <div class="field-header">Tools</div>
-              <form [formGroup]="toolForm">
-                @for (toolConfig of toolConfigs; track toolConfig) {
-                  <div class="field-input guardian-input-container tool-item" >
-                    <label [for]="toolConfig.messageId">{{toolConfig.name}}</label>
-                    <input
-                      [id]="toolConfig.messageId"
-                      class="input"
-                      type="text"
-                      pInputText
-                      [formControlName]="toolConfig.messageId"
-                      (change)="onFilters(toolConfig.messageId, $event)"
-                      [attr.status]="validTool[toolConfig.messageId]"
-                      maxlength="20"
-                      tabindex="-1"
-                      (input)="enforceMask(toolConfig.messageId, $event)">
-                    <div class="tool-search">
-                      <div class="guardian-icon-button" (click)="onToolSearch(toolConfig)">
-                        <svg-icon
-                          class="icon-btn svg-icon"
-                          src="/assets/images/icons/search.svg"
-                        svgClass="icon-color-primary"></svg-icon>
-                      </div>
-                    </div>
-                    <div class="tool-status">
-                      @if (validTool[toolConfig.messageId]==='load') {
-                        <div>
-                          <div class="preloader-image"></div>
-                        </div>
-                      }
-                      @if (validTool[toolConfig.messageId]==='valid') {
-                        <div>
-                          <svg-icon
-                            class="svg-icon"
-                            src="/assets/images/icons/check.svg"
-                            svgClass="icon-color-success">
-                          </svg-icon>
-                        </div>
-                      }
-                      @if (validTool[toolConfig.messageId]==='invalid') {
-                        <div
-                          pTooltip="This Tool is inaccessible."
-                          [tooltipOptions]="{showDelay: 300}"
-                          tooltipPosition="top"
-                          >
-                          <svg-icon
-                            class="svg-icon"
-                            src="/assets/images/icons/warning.svg"
-                            svgClass="icon-color-failure">
-                          </svg-icon>
-                        </div>
-                      }
-                    </div>
-                  </div>
-                }
-              </form>
-            </div>
-          }
-          @for (row of schemaTemplateRows; track row.templateId) {
-            <div class="schema-template-panel">
-              <div class="schema-template-panel__header">
-                <div>
-                  <div class="schema-template-panel__eyebrow">Schema Template</div>
-                  <div class="schema-template-panel__title">
-                    {{ row.templateName || 'N/A' }}
-                    @if (row.templateVersion) {
-                      <span>v{{row.templateVersion}}</span>
-                    }
-                  </div>
-                </div>
-                <div class="schema-template-panel__badges">
-                  @if (row.templateStatus) {
-                    <span class="schema-template-badge">{{ getTemplateStatusLabel(row.templateStatus) }}</span>
-                  }
-                  @if (row.status==='local') {
-                    <span class="schema-template-badge schema-template-badge--success">Local</span>
-                  }
-                  @if (row.status==='network') {
-                    <span class="schema-template-badge schema-template-badge--success">Network</span>
-                  }
-                  @if (row.status==='invalid' && !row.detach) {
-                    <span class="schema-template-badge schema-template-badge--warning">Needs selection</span>
-                  }
-                </div>
-              </div>
-
-              <label class="schema-template-option" for="detach-schema-template-{{row.templateId}}">
-                <p-checkbox
-                  [(ngModel)]="row.detach"
-                  (onChange)="onDetachSchemaTemplateChange(row)"
-                  inputId="detach-schema-template-{{row.templateId}}"
-                  binary="true"
-                  tabindex="-1"
-                ></p-checkbox>
-                <div>
-                <div class="schema-template-option__title">Detach template during import</div>
-                <div class="schema-template-option__hint">Imported schemas stay in the policy.</div>
-                </div>
-              </label>
-
-              <div class="schema-template-message">
-                <label for="schema-template-message-id-{{row.templateId}}">Template message ID</label>
-                <div class="schema-template-message__control">
-                  <input
-                    id="schema-template-message-id-{{row.templateId}}"
-                    class="input"
-                    type="text"
-                    pInputText
-                    [(ngModel)]="row.messageId"
-                    (change)="onSchemaTemplateMessageChange(row, $event)"
-                    [disabled]="row.detach"
-                    [attr.status]="row.status === 'invalid' ? 'invalid' : ''"
-                    maxlength="20"
-                    tabindex="-1">
-                  <div class="schema-template-message__actions">
-                    @if (row.status==='load') {
-                      <div class="preloader-image"></div>
-                    }
-                    @if (row.status==='local' || row.status==='network') {
-                      <div
-                        [pTooltip]="row.status === 'local' ? 'Template found locally.' : 'Template found in Hedera/IPFS and will be imported.'"
-                        [tooltipOptions]="{showDelay: 300}"
-                        tooltipPosition="top">
-                        <svg-icon
-                          class="svg-icon"
-                          src="/assets/images/icons/check.svg"
-                          svgClass="icon-color-success">
-                        </svg-icon>
-                      </div>
-                    }
-                    @if (row.status==='invalid' && !row.detach) {
-                      <div
-                        pTooltip="Template is inaccessible. Select a local template or detach restrictions."
-                        [tooltipOptions]="{showDelay: 300}"
-                        tooltipPosition="top">
-                        <svg-icon
-                          class="svg-icon"
-                          src="/assets/images/icons/warning.svg"
-                          svgClass="icon-color-failure">
-                        </svg-icon>
-                      </div>
-                    }
-                    <div
-                      class="guardian-icon-button"
-                      [class.guardian-disabled]="row.detach"
-                      (click)="!row.detach && onSchemaTemplateSearch(row)">
-                      <svg-icon
-                        class="icon-btn svg-icon"
-                        src="/assets/images/icons/search.svg"
-                        svgClass="icon-color-primary"></svg-icon>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              @if (row.selectedOverride) {
-                <div class="schema-template-selected">
-                  Selected local template: <strong>{{row.selectedOverride.name}}</strong>
-                  @if (row.selectedOverride.version) {
-                    <span>v{{row.selectedOverride.version}}</span>
-                  }
-                </div>
-              }
-              @if (row.detach) {
-                <div class="schema-template-warning">
-                  Imported schemas will remain in the policy. Template locks and field restrictions will be removed.
-                </div>
+        @if (schemaTemplateRows.length) {
+          <div class="section">
+            <ng-container *ngTemplateOutlet="sectionHeader; context: { section: 'templates', title: 'Schema templates', count: schemaTemplateRows.length, attention: templatesAttentionCount }"></ng-container>
+            <div class="section-body" [class.section-body--hidden]="!isSectionOpen('templates')">
+              @for (row of schemaTemplateRows; track row.templateId) {
+                <ng-container *ngTemplateOutlet="schemaTemplateRowTemplate; context: { $implicit: row }"></ng-container>
               }
             </div>
-          }
-        </div>
+          </div>
+        }
+        @if (tokens.length) {
+          <ng-container *ngTemplateOutlet="chipSection; context: { section: 'tokens', title: 'Tokens', items: tokens }"></ng-container>
+        }
+        @if (formulas.length) {
+          <ng-container *ngTemplateOutlet="chipSection; context: { section: 'formulas', title: 'Formulas', items: formulas }"></ng-container>
+        }
       </div>
     }
 
     @if (module) {
-      <div>
-        <div class="group-container">
-          <div class="group-header">Details</div>
-          <div class="field-container">
-            <div class="field-header">Description</div>
-            <div class="field-value">{{ module.description || 'N/A' }}</div>
-          </div>
-          <div class="field-container">
-            <div class="field-header">Creator</div>
-            <div class="field-value" [title]="module.owner">{{ module.owner || 'N/A' }}</div>
-          </div>
+      <div class="summary">
+        <div class="summary-title">
+          <span class="summary-name">{{ module.name || 'N/A' }}</span>
+        </div>
+        <ng-container *ngTemplateOutlet="descriptionTemplate; context: { $implicit: module.description }"></ng-container>
+        <div class="summary-grid">
+          <ng-container *ngTemplateOutlet="creatorTemplate; context: { $implicit: module.owner }"></ng-container>
         </div>
       </div>
     }
 
     @if (tool) {
-      <div>
-        <div class="group-container">
-          <div class="group-header">Details</div>
-          <div class="field-container">
-            <div class="field-header">Name</div>
-            <div class="field-value">{{ tool.name || 'N/A' }}</div>
-          </div>
-          <div class="field-container">
-            <div class="field-header">Description</div>
-            <div class="field-value">{{ tool.description || 'N/A' }}</div>
-          </div>
-          <div class="field-container">
-            <div class="field-header">Creator</div>
-            <div class="field-value" [title]="tool.owner">{{ tool.owner || 'N/A' }}</div>
-          </div>
-          @if (!isFile) {
-            <div class="field-container">
-              <div class="field-header">Tools</div>
-              <div class="field-value">{{ tools }}</div>
-            </div>
-          }
-          @if (isFile) {
-            <div class="field-container">
-              <div class="field-header">Tools</div>
-              <form [formGroup]="toolForm!">
-                @for (toolConfig of toolConfigs; track toolConfig) {
-                  <div class="field-input guardian-input-container tool-item">
-                    <label [for]="toolConfig.messageId">{{toolConfig.name}}</label>
-                    <input
-                      [id]="toolConfig.messageId"
-                      class="input"
-                      type="text"
-                      pInputText
-                      [formControlName]="toolConfig.messageId"
-                      (change)="onFilters(toolConfig.messageId, $event)"
-                      [attr.status]="validTool[toolConfig.messageId]"
-                      maxlength="20"
-                      tabindex="-1"
-                      (input)="enforceMask(toolConfig.messageId, $event)">
-                    <div class="tool-search">
-                      <div class="guardian-icon-button" (click)="onToolSearch(toolConfig)">
-                        <svg-icon
-                          class="icon-btn svg-icon"
-                          src="/assets/images/icons/search.svg"
-                        svgClass="icon-color-primary"></svg-icon>
-                      </div>
-                    </div>
-                    <div class="tool-status">
-                      @if (validTool[toolConfig.messageId]==='load') {
-                        <div>
-                          <div class="preloader-image"></div>
-                        </div>
-                      }
-                      @if (validTool[toolConfig.messageId]==='valid') {
-                        <div>
-                          <svg-icon
-                            class="svg-icon"
-                            src="/assets/images/icons/check.svg"
-                            svgClass="icon-color-success">
-                          </svg-icon>
-                        </div>
-                      }
-                      @if (validTool[toolConfig.messageId]==='invalid') {
-                        <div
-                          pTooltip="This Tool is inaccessible."
-                          [tooltipOptions]="{showDelay: 300}"
-                          tooltipPosition="top"
-                          >
-                          <svg-icon
-                            class="svg-icon"
-                            src="/assets/images/icons/warning.svg"
-                            svgClass="icon-color-failure">
-                          </svg-icon>
-                        </div>
-                      }
-                    </div>
-                  </div>
-                }
-              </form>
-            </div>
-          }
+      <div class="summary">
+        <div class="summary-title">
+          <span class="summary-name">{{ tool.name || 'N/A' }}</span>
         </div>
+        <ng-container *ngTemplateOutlet="descriptionTemplate; context: { $implicit: tool.description }"></ng-container>
+        <div class="summary-grid">
+          <ng-container *ngTemplateOutlet="creatorTemplate; context: { $implicit: tool.owner }"></ng-container>
+        </div>
+      </div>
+      <div class="sections">
+        @if (isFile && toolConfigs.length) {
+          <div class="section">
+            <ng-container *ngTemplateOutlet="sectionHeader; context: { section: 'tools', title: 'Tools', count: toolConfigs.length, attention: invalidToolsCount }"></ng-container>
+            <div class="section-body" [class.section-body--hidden]="!isSectionOpen('tools')">
+              <ng-container *ngTemplateOutlet="toolsTableTemplate"></ng-container>
+            </div>
+          </div>
+        }
+        @if (!isFile && tools.length) {
+          <ng-container *ngTemplateOutlet="chipSection; context: { section: 'tools', title: 'Tools', items: tools }"></ng-container>
+        }
       </div>
     }
 
     @if (xlsx) {
-      <div>
-        <div class="group-container">
-          <div class="group-header">Details</div>
-          @if (schemas) {
-            <div class="field-container">
-              <div class="field-header">Schemas Overview</div>
-              <div class="field-value">{{ schemas }}</div>
-            </div>
-          }
-          @if (tools) {
-            <div class="field-container">
-              <div class="field-header">Tools Overview</div>
-              <div class="field-value">{{ tools }}</div>
-            </div>
-          }
-          @if (errors?.length) {
-            <div class="field-container">
-              <div class="field-header">Warning & Errors</div>
-              <div class="field-value field-array">
+      <div class="sections">
+        @if (schemas.length) {
+          <ng-container *ngTemplateOutlet="schemasTemplate"></ng-container>
+        }
+        @if (tools.length) {
+          <ng-container *ngTemplateOutlet="chipSection; context: { section: 'tools', title: 'Tools', items: tools }"></ng-container>
+        }
+        @if (errors?.length) {
+          <div class="section">
+            <ng-container *ngTemplateOutlet="sectionHeader; context: { section: 'errors', title: 'Warnings and errors', count: errors.length, attention: 0 }"></ng-container>
+            <div class="section-body" [class.section-body--hidden]="!isSectionOpen('errors')">
+              <div class="field-array">
                 @for (error of errors; track error) {
                   <div class="field-array-item error-type-{{error.type}}">
                     <div>{{error.worksheet}}</div>
@@ -460,20 +196,249 @@
                     <div>
                       <div>{{error.text}}</div>
                       @if (error.message && error.message !== error.text) {
-                        <div
-                        class="error-message">{{error.message}}</div>
+                        <div class="error-message">{{error.message}}</div>
                       }
                     </div>
                   </div>
                 }
               </div>
             </div>
-          }
-        </div>
+          </div>
+        }
       </div>
     }
   </div>
 </div>
+
+<ng-template #descriptionTemplate let-description>
+  <div class="summary-description" [class.summary-description--clamped]="!descriptionExpanded" [class.summary-description--empty]="!description">{{ description || 'No description' }}</div>
+  @if (description && description.length > 200) {
+    <button type="button" class="link-button" tabindex="-1" (click)="descriptionExpanded = !descriptionExpanded">
+      {{ descriptionExpanded ? 'Less' : 'More' }}
+    </button>
+  }
+</ng-template>
+
+<ng-template #creatorTemplate let-owner>
+  <div class="summary-field">
+    <div class="summary-label">Creator</div>
+    <div class="summary-value summary-value--mono summary-value--copy">
+      <span [title]="owner || ''">{{ owner ? shortenId(owner) : 'N/A' }}</span>
+      @if (owner) {
+        <button type="button" class="icon-button" tabindex="-1" title="Copy creator DID" (click)="copyCreator(owner, $event)">
+          <i class="pi" [ngClass]="creatorCopied ? 'pi-check' : 'pi-copy'"></i>
+        </button>
+      }
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #sectionHeader let-section="section" let-title="title" let-count="count" let-attention="attention">
+  <button type="button" class="section-header" tabindex="-1"
+    [class.section-header--locked]="searchActive || isSectionForced(section)"
+    [attr.aria-expanded]="isSectionOpen(section)"
+    (click)="toggleSection(section)">
+    <i class="pi" [class.pi-chevron-down]="isSectionOpen(section)" [class.pi-chevron-right]="!isSectionOpen(section)"></i>
+    <span class="section-title">{{ title }}</span>
+    <span class="count-badge">{{ count }}</span>
+    @if (attention) {
+      <span class="count-badge count-badge--attention">{{ attention }} {{ attention === 1 ? 'needs' : 'need' }} attention</span>
+    }
+  </button>
+</ng-template>
+
+<ng-template #chipSection let-section="section" let-title="title" let-items="items">
+  <div class="section">
+    <ng-container *ngTemplateOutlet="sectionHeader; context: { section: section, title: title, count: items.length, attention: 0 }"></ng-container>
+    <div class="section-body chip-list" [class.section-body--hidden]="!isSectionOpen(section)">
+      @for (item of items; track $index) {
+        <span class="chip">{{ item.name }}@if (item.version) {<small>{{ item.version }}</small>}</span>
+      }
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #schemasTemplate>
+  <div class="section">
+    <ng-container *ngTemplateOutlet="sectionHeader; context: { section: 'schemas', title: 'Schemas', count: schemas.length, attention: 0 }"></ng-container>
+    <div class="section-body" [class.section-body--hidden]="!isSectionOpen('schemas')">
+      <div #schemaList class="chip-list" [class.chip-list--clamped]="!showAllSchemas && !searchActive">
+        @for (item of schemas; track $index) {
+          <span class="chip">{{ item.name }}@if (item.version) {<small>{{ item.version }}</small>}</span>
+        }
+      </div>
+      @if (schemasOverflow && !searchActive) {
+        <button type="button" class="link-button" tabindex="-1" (click)="showAllSchemas = !showAllSchemas">
+          {{ showAllSchemas ? 'Show less' : 'Show all ' + schemas.length }}
+        </button>
+      }
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #toolsTableTemplate>
+  <div class="tools-table">
+    @for (toolConfig of toolConfigs; track toolConfig) {
+      <div class="tools-table__row">
+        <label class="tools-table__name" [for]="toolConfig.messageId" [title]="toolConfig.name">{{ toolConfig.name }}</label>
+        <input
+          [id]="toolConfig.messageId"
+          class="input"
+          type="text"
+          pInputText
+          [formControl]="$any(toolForm.controls[toolConfig.messageId])"
+          (change)="onFilters(toolConfig.messageId, $event)"
+          [attr.status]="validTool[toolConfig.messageId]"
+          maxlength="20"
+          tabindex="-1"
+          (input)="enforceMask(toolConfig.messageId, $event)">
+        <div class="tools-table__status">
+          @if (validTool[toolConfig.messageId] === 'load') {
+            <div class="preloader-image"></div>
+          }
+          @if (validTool[toolConfig.messageId] === 'valid') {
+            <svg-icon
+              class="svg-icon"
+              src="/assets/images/icons/check.svg"
+              svgClass="icon-color-success">
+            </svg-icon>
+          }
+          @if (validTool[toolConfig.messageId] === 'invalid') {
+            <div
+              pTooltip="This Tool is inaccessible."
+              [tooltipOptions]="{showDelay: 300}"
+              tooltipPosition="top">
+              <svg-icon
+                class="svg-icon"
+                src="/assets/images/icons/warning.svg"
+                svgClass="icon-color-failure">
+              </svg-icon>
+            </div>
+          }
+        </div>
+        <div class="guardian-icon-button" (click)="onToolSearch(toolConfig)">
+          <svg-icon
+            class="icon-btn svg-icon"
+            src="/assets/images/icons/search.svg"
+            svgClass="icon-color-primary"></svg-icon>
+        </div>
+      </div>
+    }
+  </div>
+</ng-template>
+
+<ng-template #schemaTemplateRowTemplate let-row>
+  <div class="schema-template-panel">
+    <div class="schema-template-panel__header">
+      <div>
+        <div class="schema-template-panel__eyebrow">Schema Template</div>
+        <div class="schema-template-panel__title">
+          {{ row.templateName || 'N/A' }}
+          @if (row.templateVersion) {
+            <span>v{{row.templateVersion}}</span>
+          }
+        </div>
+      </div>
+      <div class="schema-template-panel__badges">
+        @if (row.templateStatus) {
+          <span class="schema-template-badge">{{ getTemplateStatusLabel(row.templateStatus) }}</span>
+        }
+        @if (row.status==='local') {
+          <span class="schema-template-badge schema-template-badge--success">Local</span>
+        }
+        @if (row.status==='network') {
+          <span class="schema-template-badge schema-template-badge--success">Network</span>
+        }
+        @if (row.status==='invalid' && !row.detach) {
+          <span class="schema-template-badge schema-template-badge--warning">Needs selection</span>
+        }
+      </div>
+    </div>
+
+    <label class="schema-template-option" for="detach-schema-template-{{row.templateId}}">
+      <p-checkbox
+        [(ngModel)]="row.detach"
+        (onChange)="onDetachSchemaTemplateChange(row)"
+        inputId="detach-schema-template-{{row.templateId}}"
+        binary="true"
+        tabindex="-1"
+      ></p-checkbox>
+      <div>
+      <div class="schema-template-option__title">Detach template during import</div>
+      <div class="schema-template-option__hint">Imported schemas stay in the policy.</div>
+      </div>
+    </label>
+
+    <div class="schema-template-message">
+      <label for="schema-template-message-id-{{row.templateId}}">Template message ID</label>
+      <div class="schema-template-message__control">
+        <input
+          id="schema-template-message-id-{{row.templateId}}"
+          class="input"
+          type="text"
+          pInputText
+          [(ngModel)]="row.messageId"
+          (change)="onSchemaTemplateMessageChange(row, $event)"
+          [disabled]="row.detach"
+          [attr.status]="row.status === 'invalid' ? 'invalid' : ''"
+          maxlength="20"
+          tabindex="-1">
+        <div class="schema-template-message__actions">
+          @if (row.status==='load') {
+            <div class="preloader-image"></div>
+          }
+          @if (row.status==='local' || row.status==='network') {
+            <div
+              [pTooltip]="row.status === 'local' ? 'Template found locally.' : 'Template found in Hedera/IPFS and will be imported.'"
+              [tooltipOptions]="{showDelay: 300}"
+              tooltipPosition="top">
+              <svg-icon
+                class="svg-icon"
+                src="/assets/images/icons/check.svg"
+                svgClass="icon-color-success">
+              </svg-icon>
+            </div>
+          }
+          @if (row.status==='invalid' && !row.detach) {
+            <div
+              pTooltip="Template is inaccessible. Select a local template or detach restrictions."
+              [tooltipOptions]="{showDelay: 300}"
+              tooltipPosition="top">
+              <svg-icon
+                class="svg-icon"
+                src="/assets/images/icons/warning.svg"
+                svgClass="icon-color-failure">
+              </svg-icon>
+            </div>
+          }
+          <div
+            class="guardian-icon-button"
+            [class.guardian-disabled]="row.detach"
+            (click)="!row.detach && onSchemaTemplateSearch(row)">
+            <svg-icon
+              class="icon-btn svg-icon"
+              src="/assets/images/icons/search.svg"
+              svgClass="icon-color-primary"></svg-icon>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    @if (row.selectedOverride) {
+      <div class="schema-template-selected">
+        Selected local template: <strong>{{row.selectedOverride.name}}</strong>
+        @if (row.selectedOverride.version) {
+          <span>v{{row.selectedOverride.version}}</span>
+        }
+      </div>
+    }
+    @if (row.detach) {
+      <div class="schema-template-warning">
+        Imported schemas will remain in the policy. Template locks and field restrictions will be removed.
+      </div>
+    }
+  </div>
+</ng-template>
 <div class="dialog-footer">
   <div class="actions">
     <div class="original-tracking">
@@ -487,6 +452,12 @@
       <label for="originalTracking">
         Show if the original policy will be modified
       </label>
+      <i
+        class="pi pi-info-circle original-tracking__info"
+        pTooltip="Keeps a link to the original policy (its file or Hedera message). The policies list then shows whether the imported copy was changed after import and lets you compare it with the original."
+        tooltipPosition="top"
+        [tooltipOptions]="{showDelay: 200}"
+        aria-label="About modification tracking"></i>
     </div>
     <div class="action-buttons">
       <div class="dialog-button cancel-button">
