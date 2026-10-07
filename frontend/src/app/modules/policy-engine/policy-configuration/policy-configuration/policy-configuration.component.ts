@@ -2603,7 +2603,10 @@ export class PolicyConfigurationComponent implements OnInit {
             showHeader: false,
             header: 'Publish Tool',
             width: '600px',
-            styleClass: 'guardian-dialog'
+            styleClass: 'guardian-dialog',
+            data: {
+                tool: this.toolTemplate
+            }
         })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (options) => {
             if (options) {
