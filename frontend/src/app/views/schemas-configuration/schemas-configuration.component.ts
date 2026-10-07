@@ -4294,47 +4294,67 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     // ── THEN / ELSE fields ───────────────────────────────────────────────────
 
-    public addThenField(cond: SchemaCondition): void {
-        if (!this.canAddFieldToSelectedSchema || this.isConditionLocked(cond)) { return; }
-        const schema = this.currentContextSchema;
-        if (!schema) { return; }
-        const newField = this.buildNewField(this.defaultFieldType, schema.fields);
-        (schema.fields ??= []).push(newField);
-        (cond.thenFields ??= []).push(newField);
-        this.markDirty();
+    // Trigger field names/paths for a condition's own IF rows - excluded from its then/else
+    // picker so a field can't be made conditional on itself.
+    private _triggerFieldPaths(cond: SchemaCondition): Set<string> {
+        const paths = new Set<string>();
+        for (const row of this.getIfRows(cond)) {
+            const path = this.getIfRowFieldPath(row);
+            if (path) { paths.add(path); }
+        }
+        return paths;
     }
 
-    public addElseField(cond: SchemaCondition): void {
-        if (!this.canAddFieldToSelectedSchema || this.isConditionLocked(cond)) { return; }
+    // Root-level (non-ref) fields selectable as a then/else member of this condition: not
+    // read-only, not the condition's own trigger, not already a member of this condition.
+    // A field already owned by a DIFFERENT condition is still listed, but disabled with a
+    // tooltip - a field can only belong to one condition's then/else at a time.
+    public getSelectableThenElseFields(cond: SchemaCondition): { pathStr: string; label: string; disabled: boolean }[] {
         const schema = this.currentContextSchema;
-        if (!schema) { return; }
-        const newField = this.buildNewField(this.defaultFieldType, schema.fields);
-        (schema.fields ??= []).push(newField);
-        (cond.elseFields ??= []).push(newField);
+        if (!schema?.fields) { return []; }
+        const ownedByThis = new Set([...(cond.thenFields || []), ...(cond.elseFields || [])].map(f => f.name));
+        const owned = this.conditionOwnedFieldNames;
+        const triggers = this._triggerFieldPaths(cond);
+        return schema.fields
+            .filter(f => !f.readOnly && !f.isRef && !ownedByThis.has(f.name) && !triggers.has(f.name))
+            .map(f => ({
+                pathStr: f.name,
+                label: f.description || f.title || f.name,
+                disabled: owned.has(f.name),
+            }));
+    }
+
+    public selectThenField(cond: SchemaCondition, ci: number, fieldName: string): void {
+        if (!fieldName || this.isConditionLocked(cond)) { return; }
+        const field = this.currentContextSchema?.fields?.find(f => f.name === fieldName);
+        if (!field || this.conditionOwnedFieldNames.has(field.name)) { return; }
+        field.conditionUserOrdered = true;
+        (cond.thenFields ??= []).push(field);
         this.markDirty();
+        setTimeout(() => { this.condThenRefVal[ci] = null; });
+    }
+
+    public selectElseField(cond: SchemaCondition, ci: number, fieldName: string): void {
+        if (!fieldName || this.isConditionLocked(cond)) { return; }
+        const field = this.currentContextSchema?.fields?.find(f => f.name === fieldName);
+        if (!field || this.conditionOwnedFieldNames.has(field.name)) { return; }
+        field.conditionUserOrdered = true;
+        (cond.elseFields ??= []).push(field);
+        this.markDirty();
+        setTimeout(() => { this.condElseRefVal[ci] = null; });
     }
 
     public removeThenField(cond: SchemaCondition, field: SchemaField): void {
         if (this.isTemplateFieldLocked(field)) { return; }
         cond.thenFields = (cond.thenFields || []).filter(f => f !== field);
-        const schema = this.currentContextSchema;
-        if (schema) {
-            const idx = schema.fields.indexOf(field);
-            if (idx !== -1) { schema.fields.splice(idx, 1); }
-        }
-        if (this.selectedField === field) { this.selectedField = null; }
+        if (!this.conditionOwnedFieldNames.has(field.name)) { field.conditionUserOrdered = false; }
         this.markDirty();
     }
 
     public removeElseField(cond: SchemaCondition, field: SchemaField): void {
         if (this.isTemplateFieldLocked(field)) { return; }
         cond.elseFields = (cond.elseFields || []).filter(f => f !== field);
-        const schema = this.currentContextSchema;
-        if (schema) {
-            const idx = schema.fields.indexOf(field);
-            if (idx !== -1) { schema.fields.splice(idx, 1); }
-        }
-        if (this.selectedField === field) { this.selectedField = null; }
+        if (!this.conditionOwnedFieldNames.has(field.name)) { field.conditionUserOrdered = false; }
         this.markDirty();
     }
 
@@ -4521,16 +4541,32 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return result;
     }
 
+    // Combined picker: root-level fields of this schema (selected as plain then/else members)
+    // plus the existing nested sub-schema field groups (selected as cross-schema targets).
+    public getCondFieldPickerOptions(cond: SchemaCondition): { label: string; items: { pathStr: string; label: string; isBlock?: boolean; disabled?: boolean }[] }[] {
+        const rootItems = this.getSelectableThenElseFields(cond);
+        const groups = rootItems.length ? [{ label: 'This schema', items: rootItems }] : [];
+        return [...groups, ...this.getCrossTargetPSelectGroups()];
+    }
+
     public onCondThenRefChange(cond: SchemaCondition, ci: number, pathStr: string): void {
         if (!pathStr) { return; }
-        this.addThenTarget(cond, pathStr);
-        setTimeout(() => { this.condThenRefVal[ci] = null; });
+        if (pathStr.includes('.')) {
+            this.addThenTarget(cond, pathStr);
+            setTimeout(() => { this.condThenRefVal[ci] = null; });
+        } else {
+            this.selectThenField(cond, ci, pathStr);
+        }
     }
 
     public onCondElseRefChange(cond: SchemaCondition, ci: number, pathStr: string): void {
         if (!pathStr) { return; }
-        this.addElseTarget(cond, pathStr);
-        setTimeout(() => { this.condElseRefVal[ci] = null; });
+        if (pathStr.includes('.')) {
+            this.addElseTarget(cond, pathStr);
+            setTimeout(() => { this.condElseRefVal[ci] = null; });
+        } else {
+            this.selectElseField(cond, ci, pathStr);
+        }
     }
 
     public addThenTarget(cond: SchemaCondition, pathStr: string): void {
