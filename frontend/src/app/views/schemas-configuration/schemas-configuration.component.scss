@@ -3783,6 +3783,9 @@
 
     i { font-size: 13px; color: var(--color-grey-5); flex-shrink: 0; }
 
+    // the generic icon colour above would grey out the arrow on the primary-coloured button
+    .sc-subschema-enter-btn i { color: inherit; font-size: 11px; }
+
     &:hover {
         border-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
         background: color-mix(in srgb, var(--color-primary) 4%, var(--guardian-background));
