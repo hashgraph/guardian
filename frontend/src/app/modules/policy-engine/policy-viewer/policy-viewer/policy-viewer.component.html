@@ -688,15 +688,6 @@
       <!-- ============ RIGHT ZONE: views + dry-run tools ============ -->
       @if (policy) {
         @if (isDryRun) {
-          <div (click)="viewMenu.toggle($event)"
-            class="top-toolbar-btn bordered-btn view-btn" pTooltip="Switch view" tooltipPosition="bottom">
-            <i class="pi pi-{{ viewIcons[view] }}"></i>
-            <span>{{ viewLabels[view] }}</span>
-            <i class="pi pi-chevron-down view-btn-caret"></i>
-          </div>
-
-          <div class="delimiter"></div>
-
           <div (click)="restartDryRun()" class="top-toolbar-btn icon-only bordered-btn"
             pTooltip="Restart dry run" tooltipPosition="bottom">
             <i class="pi pi-refresh"></i>
@@ -730,6 +721,15 @@
               </div>
             </div>
           }
+
+          <div class="delimiter"></div>
+
+          <div (click)="viewMenu.toggle($event)"
+            class="top-toolbar-btn bordered-btn view-btn" pTooltip="Switch view" tooltipPosition="bottom">
+            <i class="pi pi-{{ viewIcons[view] }}"></i>
+            <span>{{ viewLabels[view] }}</span>
+            <i class="pi pi-chevron-down view-btn-caret"></i>
+          </div>
         } @else {
           <div class="view-segment">
             <div (click)="onSelectTab(0)" [class.active]="activeTabIndex === 0" class="view-segment-item">General</div>
