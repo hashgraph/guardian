@@ -1180,6 +1180,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             if (!this.isTemplateMode) {
                 this.schemaTemplate = appliedTemplate;
             }
+            this.normalizeLegacyConditionFieldOrder(schema);
             this.selectedSchema = schema;
             this.loadProperties(resolveIwaVersion(schema));
             this.resetArrayDependencyEditor();
@@ -4296,6 +4297,54 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     // ── THEN / ELSE fields ───────────────────────────────────────────────────
 
+    // Repositions legacy (unflagged) condition fields next to their trigger and flags them.
+    private normalizeLegacyConditionFieldOrder(schema: Schema | null | undefined): void {
+        const fields = schema?.fields;
+        if (!fields?.length || !schema?.conditions?.length) { return; }
+
+        for (const cond of schema.conditions) {
+            const triggerNames = this._conditionTriggerRootNames(cond);
+            if (!triggerNames.length) { continue; }
+            let triggerIdx = -1;
+            for (const name of triggerNames) {
+                const idx = fields.findIndex(f => f.name === name);
+                if (idx > triggerIdx) { triggerIdx = idx; }
+            }
+            if (triggerIdx === -1) { continue; }
+
+            const legacy = [...(cond.thenFields ?? []), ...(cond.elseFields ?? [])]
+                .filter((f, i, arr) => arr.indexOf(f) === i && !f.conditionUserOrdered);
+            if (!legacy.length) { continue; }
+
+            let insertAt = triggerIdx + 1;
+            for (const field of legacy) {
+                const curIdx = fields.findIndex(f => f.name === field.name);
+                if (curIdx === -1) { continue; }
+                fields.splice(curIdx, 1);
+                if (curIdx < insertAt) { insertAt--; }
+                fields.splice(insertAt, 0, field);
+                field.conditionUserOrdered = true;
+                insertAt++;
+            }
+        }
+    }
+
+    // Unlike _triggerFieldPaths, doesn't rely on this.currentContextSchema - needed since
+    // this runs on schemas that aren't necessarily the open one.
+    private _conditionTriggerRootNames(cond: SchemaCondition): string[] {
+        const ic = cond.ifCondition as any;
+        if (!ic) { return []; }
+        const rows = 'AND' in ic ? (ic.AND || []) : ('OR' in ic ? (ic.OR || []) : [ic]);
+        const names: string[] = [];
+        for (const row of rows) {
+            const path = row?.fieldPath;
+            if (Array.isArray(path) && path.length > 1) { continue; }
+            const name = (Array.isArray(path) && path.length === 1) ? path[0] : row?.field?.name;
+            if (name) { names.push(name); }
+        }
+        return names;
+    }
+
     // Trigger field names/paths for a condition's own IF rows - excluded from its then/else
     // picker so a field can't be made conditional on itself.
     private _triggerFieldPaths(cond: SchemaCondition): Set<string> {
@@ -4791,6 +4840,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     this.schemasFetched = true;
                     // server copies are the saved baseline; a locally edited
                     // selectedSchema still differs from its signature and stays dirty
+                    items.forEach(schema => this.normalizeLegacyConditionFieldOrder(schema));
                     items.forEach(schema => this.snapshotSchema(schema));
                     this.loadAppliedSchemaTemplate();
                     if (this.selectedSchema) { this.upsertInSidebar(this.selectedSchema); }

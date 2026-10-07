@@ -2361,7 +2361,7 @@
                                             (onChange)="onCondThenRefChange(cond, ci, $event.value)">
                                             <ng-template pTemplate="item" let-option>
                                                 <span class="sc-cond-opt-row"
-                                                    [pTooltip]="option.disabled ? 'Already used in another condition' : null"
+                                                    [pTooltip]="option.disabled ? 'Already used in another condition' : undefined"
                                                     tooltipPosition="top">
                                                     <span class="sc-cond-opt-label"
                                                         (mouseover)="updateOverflowTitle($event, option.isBlock ? option.label + ' – Sub-schema' : option.label)">{{ option.label }}</span>
@@ -2432,7 +2432,7 @@
                                             (onChange)="onCondElseRefChange(cond, ci, $event.value)">
                                             <ng-template pTemplate="item" let-option>
                                                 <span class="sc-cond-opt-row"
-                                                    [pTooltip]="option.disabled ? 'Already used in another condition' : null"
+                                                    [pTooltip]="option.disabled ? 'Already used in another condition' : undefined"
                                                     tooltipPosition="top">
                                                     <span class="sc-cond-opt-label"
                                                         (mouseover)="updateOverflowTitle($event, option.isBlock ? option.label + ' – Sub-schema' : option.label)">{{ option.label }}</span>
