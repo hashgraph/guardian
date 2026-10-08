@@ -73,3 +73,60 @@ describe('GeoJsonCoordinateScanner', () => {
         }
     }
 });
+
+describe('GeoJsonCoordinateScanner allowed types', () => {
+    const allTypes = ['Point', 'LineString', 'Polygon', 'MultiPoint', 'MultiLineString', 'MultiPolygon'];
+    const collection = (...geometries: unknown[]) => JSON.stringify({
+        type: 'FeatureCollection',
+        features: geometries.map(geometry => ({ type: 'Feature', properties: {}, geometry }))
+    });
+    const polygon = { type: 'Polygon', coordinates: [[[1, 2], [3, 4], [5, 6], [1, 2]]] };
+    const line = { type: 'LineString', coordinates: [[7, 8], [9, 10]] };
+
+    for (const text of [...fixtures, ...noCoordinateFixtures]) {
+        it(`keeps the first coordinate when every shape is allowed for ${text.slice(0, 45)}`, async () => {
+            const actual = await readFirstCoordinate(
+                new Blob([new TextEncoder().encode(text)]),
+                new GeoJsonCoordinateScanner(allTypes),
+                7
+            );
+            expect(actual).toEqual(firstPosition(JSON.parse(text)));
+        });
+    }
+
+    it('skips shapes of other types and takes the first allowed shape', async () => {
+        const actual = await readFirstCoordinate(
+            new Blob([collection(line, polygon)]),
+            new GeoJsonCoordinateScanner(['Polygon'])
+        );
+
+        expect(actual).toEqual([1, 2]);
+    });
+
+    it('stops at the first allowed shape', () => {
+        const scanner = new GeoJsonCoordinateScanner(['Polygon']);
+        const text = collection(line, polygon, line);
+
+        scanner.write(text.slice(0, text.lastIndexOf('{"type":"Feature"')));
+
+        expect(scanner.settled).toBeTrue();
+        expect(scanner.coordinate).toEqual([1, 2]);
+    });
+
+    it('ignores GeometryCollection features as the field does', async () => {
+        const text = collection({ type: 'GeometryCollection', geometries: [polygon] }, line);
+
+        const actual = await readFirstCoordinate(new Blob([text]), new GeoJsonCoordinateScanner(['Polygon']));
+
+        expect(actual).toBeNull();
+    });
+
+    it('finds nothing when no shape is allowed', async () => {
+        const actual = await readFirstCoordinate(
+            new Blob([collection(line)]),
+            new GeoJsonCoordinateScanner(['Polygon'])
+        );
+
+        expect(actual).toBeNull();
+    });
+});

@@ -9,7 +9,7 @@
 }
 @if (isPreviewUnavailable()) {
   <div class="geo-preview-unavailable">
-    <p>Preview unavailable due to size. Download this file to view.</p>
+    <p>The map does not show the full file. Download it to view.</p>
     <p>{{ originalFileLabel() }}</p>
     <button pButton label="Download original file" (click)="downloadOriginal()"></button>
   </div>
@@ -59,12 +59,20 @@
 } @else {
   <div class="map-container">
     <div class="map" #map id="map"></div>
-    @if (canDownload() && isDisabled && !isPreviewUnavailable()) {
+    @if (canDownload() && isDisabled) {
       <button
         pButton
         class="add-feature-button download-geo"
-        [label]="hasOriginalFile() ? 'Download original file' : 'Download GeoJSON'"
-        (click)="hasOriginalFile() ? downloadOriginal() : downloadGeoJSON()">
+        label="Download GeoJSON"
+        (click)="downloadGeoJSON()">
+      </button>
+    }
+    @if (hasOriginalFile() && isDisabled && !isPreviewUnavailable()) {
+      <button
+        pButton
+        class="add-feature-button download-geo"
+        label="Download original file"
+        (click)="downloadOriginal()">
       </button>
     }
   </div>
@@ -95,12 +103,20 @@
             label="Add Geometry"
           ></button>
         }
-        @if (canDownload() && !isPreviewUnavailable()) {
+        @if (canDownload()) {
           <button
             pButton
             class="add-feature-button download-geo"
-            [label]="hasOriginalFile() ? 'Download original file' : 'Download GeoJSON'"
-            (click)="hasOriginalFile() ? downloadOriginal() : downloadGeoJSON()">
+            label="Download GeoJSON"
+            (click)="downloadGeoJSON()">
+          </button>
+        }
+        @if (hasOriginalFile() && !isPreviewUnavailable()) {
+          <button
+            pButton
+            class="add-feature-button download-geo"
+            label="Download original file"
+            (click)="downloadOriginal()">
           </button>
         }
       </div>

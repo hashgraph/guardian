@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import JSZip from 'jszip';
+import { Readable } from 'node:stream';
+import { gzipSync } from 'node:zlib';
 import { GeospatialFileValidator } from '../../../dist/policy-engine/helpers/geospatial-file-validator.js';
 
 const link = (overrides = {}) => ({
@@ -53,6 +55,10 @@ describe('GeospatialFileValidator', function () {
             readAll: async () => {
                 calls.readAll = (calls.readAll || 0) + 1;
                 return buffer;
+            },
+            openStream: () => {
+                calls.openStream = (calls.openStream || 0) + 1;
+                return Readable.from([buffer]);
             }
         };
     }
@@ -184,6 +190,70 @@ describe('GeospatialFileValidator', function () {
         assert.match(info[0][0], /size=2/);
         assert.match(info[0][0], /limit=256/);
         assert.equal(info[0][2], 'user-1');
+    });
+
+    it('accepts gzip GeoJSON and KML within the maximum', async function () {
+        const calls = {};
+        await validator(fileAccess(gzipSync('{"type":"Point","coordinates":[1,2]}'), calls)).validate({
+            place: { geoFile: link() }
+        });
+        await validator(gzipSync('<kml/>')).validate({
+            place: { geoFile: link({ format: 'kml', name: 'site.kml' }) }
+        });
+        assert.equal(error.length, 0);
+        assert.deepEqual(calls, { stat: 1, readPrefix: 1, openStream: 1 });
+    });
+
+    it('rejects gzip whose uncompressed size is above the maximum', async function () {
+        const compressed = gzipSync(' '.repeat(10000));
+        assert.ok(compressed.length < 256);
+        await assert.rejects(
+            validator(compressed).validate({ place: { geoFile: link() } }),
+            /exceeds the 256 byte limit/
+        );
+        assert.equal(error.length, 1);
+    });
+
+    it('accepts gzip at exactly the maximum', async function () {
+        await validator(gzipSync(' '.repeat(256))).validate({ place: { geoFile: link() } });
+        assert.equal(error.length, 0);
+    });
+
+    it('rejects gzip declared as KMZ and gzip holding a ZIP', async function () {
+        await assert.rejects(
+            validator(gzipSync('<kml/>')).validate({
+                place: { geoFile: link({ format: 'kmz', name: 'site.kmz' }) }
+            }),
+            /format does not match/
+        );
+        await assert.rejects(
+            validator(gzipSync(await kmz('<kml/>')), 1000).validate({
+                place: { geoFile: link({ format: 'kml', name: 'site.kml' }) }
+            }),
+            /format does not match/
+        );
+    });
+
+    it('rejects broken and empty gzip', async function () {
+        const compressed = gzipSync('{"type":"Point","coordinates":[1,2]}');
+        await assert.rejects(
+            validator(compressed.subarray(0, compressed.length - 6)).validate({
+                place: { geoFile: link() }
+            }),
+            /could not be read/
+        );
+        await assert.rejects(
+            validator(gzipSync('')).validate({ place: { geoFile: link() } }),
+            /is empty/
+        );
+    });
+
+    it('logs the uncompressed size of a gzip file accepted without preview', async function () {
+        await validator(gzipSync('x'.repeat(200))).validate({
+            place: { geoFile: link({ noPreview: true }) }
+        });
+        assert.equal(info.length, 1);
+        assert.match(info[0][0], /size=200,/);
     });
 
     it('logs rejection and does not replace it when logging fails', async function () {

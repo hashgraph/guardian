@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { DB_NAME, STORES_NAME } from '../constants';
+import { gzipBlob } from '../modules/schema-engine/geo-file/geo-file-compression';
 import { ArtifactService } from './artifact.service';
 import { IndexedDbRegistryService } from './indexed-db-registry.service';
 import { IPFSService } from './ipfs.service';
@@ -144,9 +145,12 @@ export class GeoFilePersistenceService {
         if (!key) return;
         const record = await this.readRecord(STORES_NAME.FILES_STORE, key);
         if (!record) return;
-        const file = new File([record.blob], record.originalName, {
-            type: record.blob.type || 'application/octet-stream'
-        });
+        const compress = link.format !== 'kmz';
+        const file = new File(
+            [compress ? await gzipBlob(record.blob) : record.blob],
+            record.originalName,
+            { type: compress ? 'application/gzip' : record.blob.type || 'application/octet-stream' }
+        );
         const response = await firstValueFrom(this.artifacts.upsertFile(file));
         this.pendingGridFiles.push({ fileId: response.fileId, idbKey: key, record, link });
         const cid = isDryRun ? undefined : await this.uploadToIpfs(file);

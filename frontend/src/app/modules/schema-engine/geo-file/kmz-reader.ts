@@ -7,7 +7,7 @@ const EOCD_LENGTH = 22;
 const MAX_COMMENT_LENGTH = 0xffff;
 const ZIP64_16 = 0xffff;
 const ZIP64_32 = 0xffffffff;
-const BROWSER_ERROR = 'This browser cannot open KMZ files. Please use a current version of Chrome, Edge, Firefox or Safari.';
+const BROWSER_ERROR = 'This browser cannot open KMZ files.';
 
 export interface KmzEntry {
     name: string;

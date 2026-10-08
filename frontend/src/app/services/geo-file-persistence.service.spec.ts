@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { DB_NAME, STORES_NAME } from '../constants';
+import { gunzipIfCompressed, isGzipBlob } from '../modules/schema-engine/geo-file/geo-file-compression';
 import { ArtifactService } from './artifact.service';
 import { GeoFilePersistenceService } from './geo-file-persistence.service';
 import { IndexedDbRegistryService } from './indexed-db-registry.service';
@@ -79,11 +80,53 @@ describe('GeoFilePersistenceService', () => {
         await service.persistGeoFilesInDocument(document, false);
 
         expect(upsertFile).toHaveBeenCalledWith(jasmine.any(File));
-        expect(addFileDirect).toHaveBeenCalledWith(jasmine.any(File));
+        expect(addFileDirect).toHaveBeenCalledWith(upsertFile.calls.mostRecent().args[0]);
         expect(link.fileId).toBe('grid-1');
         expect(link.cid).toBe('cid-1');
         expect(link.idbKey).toBeUndefined();
         expect(remove).toHaveBeenCalledWith(DB_NAME.TABLES, STORES_NAME.FILES_STORE, 'geo-key');
+    });
+
+    it('uploads GeoJSON and KML as gzip under the original name', async () => {
+        for (const [name, format] of [['site.geojson', 'geojson'], ['site.kml', 'kml']] as const) {
+            upsertFile.calls.reset();
+            const file = new File(['original'], name);
+            const link = await service.keepOriginal(file, format);
+
+            await service.persistGeoFilesInDocument({ place: { geoFile: link } }, true);
+
+            const uploaded: File = upsertFile.calls.mostRecent().args[0];
+            expect(uploaded.name).toBe(name);
+            expect(uploaded.type).toBe('application/gzip');
+            expect(await isGzipBlob(uploaded)).toBeTrue();
+            expect(await (await gunzipIfCompressed(uploaded)).text()).toBe('original');
+            expect(link.sizeBytes).toBe(file.size);
+        }
+    });
+
+    it('uploads KMZ unchanged', async () => {
+        const bytes = new Uint8Array([0x50, 0x4b, 0x03, 0x04, 1, 2, 3]);
+        const file = new File([bytes], 'site.kmz', { type: 'application/vnd.google-earth.kmz' });
+        const link = await service.keepOriginal(file, 'kmz');
+
+        await service.persistGeoFilesInDocument({ place: { geoFile: link } }, false);
+
+        const uploaded: File = upsertFile.calls.mostRecent().args[0];
+        expect(uploaded.name).toBe('site.kmz');
+        expect(uploaded.type).toBe('application/vnd.google-earth.kmz');
+        expect(new Uint8Array(await uploaded.arrayBuffer())).toEqual(bytes);
+        expect(addFileDirect).toHaveBeenCalledWith(uploaded);
+    });
+
+    it('keeps the uncompressed original in the browser after a failed submit', async () => {
+        const file = new File(['original'], 'site.geojson');
+        const link = await service.keepOriginal(file, 'geojson');
+        await service.persistGeoFilesInDocument({ place: { geoFile: link } }, true);
+
+        await service.rollbackGridFsUploads();
+
+        const record = records.get(`${STORES_NAME.FILES_STORE}:geo-key`) as { blob: Blob };
+        expect(record.blob).toBe(file);
     });
 
     it('skips IPFS in Dry Run', async () => {

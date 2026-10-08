@@ -1,6 +1,7 @@
 import { DataBaseHelper, DatabaseServer, getGeospatialLimits, PinoLogger } from '@guardian/common';
 import JSZip from 'jszip';
 import { Readable } from 'node:stream';
+import { createGunzip } from 'node:zlib';
 
 interface GeoFileLink {
     fileId?: string;
@@ -18,6 +19,7 @@ interface GridFileAccess {
     stat(fileId: string): Promise<{ length: number }>;
     readPrefix(fileId: string, length: number): Promise<Buffer>;
     readAll(fileId: string): Promise<Buffer>;
+    openStream(fileId: string): Readable;
 }
 
 type ValidatorLogger = Pick<PinoLogger, 'info' | 'error'>;
@@ -47,6 +49,11 @@ const gridFileAccess: GridFileAccess = {
         const file = await DatabaseServer.getGridFile(fileId);
         if (!Buffer.isBuffer(file?.buffer)) throw new Error('Unreadable file');
         return file.buffer;
+    },
+    openStream(fileId: string): Readable {
+        const id = DatabaseServer.dbID(fileId);
+        if (!id) throw new Error('Invalid file id');
+        return DataBaseHelper.gridFS.openDownloadStream(id);
     }
 };
 
@@ -102,6 +109,11 @@ export class GeospatialFileValidator {
                 length
             );
         }
+        let measured = length;
+        const gzip = prefix.length >= 2 && prefix[0] === 0x1f && prefix[1] === 0x8b;
+        if (gzip) {
+            measured = await this.validateGzip(link, path, fileId, length, userId);
+        }
         const zip = prefix.length >= 4 &&
             prefix[0] === 0x50 && prefix[1] === 0x4b && prefix[2] === 0x03 && prefix[3] === 0x04;
         if (zip) {
@@ -139,10 +151,61 @@ export class GeospatialFileValidator {
         }
         if (link.noPreview === true) {
             await this.safeInfo(
-                `Geospatial file accepted without preview: field=${path}, name=${this.fileName(link)}, format=${link.format}, size=${length}, limit=${this.maximumBytes}`,
+                `Geospatial file accepted without preview: field=${path}, name=${this.fileName(link)}, format=${link.format}, size=${measured}, limit=${this.maximumBytes}`,
                 userId
             );
         }
+    }
+
+    private async validateGzip(
+        link: GeoFileLink,
+        path: string,
+        fileId: string,
+        length: number,
+        userId: string | null
+    ): Promise<number> {
+        let size = 0;
+        let head = Buffer.alloc(0);
+        try {
+            const source = this.files.openStream(fileId);
+            const gunzip = createGunzip();
+            source.on('error', error => gunzip.destroy(error));
+            try {
+                for await (const chunk of source.pipe(gunzip)) {
+                    size += chunk.length;
+                    if (head.length < 4) head = Buffer.concat([head, chunk]).subarray(0, 4);
+                    if (size > this.maximumBytes) {
+                        await this.limitFailure(link, path, size, userId);
+                    }
+                }
+            } finally {
+                source.destroy();
+            }
+        } catch (error) {
+            if (error instanceof GeospatialValidationError) throw error;
+            await this.fail(
+                link,
+                path,
+                `The geospatial file ${this.fileName(link)} could not be read.`,
+                userId,
+                length
+            );
+        }
+        if (size === 0) {
+            await this.fail(link, path, `The geospatial file ${this.fileName(link)} is empty.`, userId, 0);
+        }
+        const zip = head.length >= 4 &&
+            head[0] === 0x50 && head[1] === 0x4b && head[2] === 0x03 && head[3] === 0x04;
+        if (zip || (link.format !== 'geojson' && link.format !== 'kml')) {
+            await this.fail(
+                link,
+                path,
+                `The geospatial file ${this.fileName(link)} format does not match its content.`,
+                userId,
+                size
+            );
+        }
+        return size;
     }
 
     private async validateKmz(

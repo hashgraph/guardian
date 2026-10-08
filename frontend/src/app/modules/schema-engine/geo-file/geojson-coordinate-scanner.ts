@@ -55,6 +55,8 @@ export class GeoJsonCoordinateScanner implements CoordinateScanner {
     private stringValue = '';
     private capture: CoordinateCapture | null = null;
 
+    constructor(private readonly allowedTypes: readonly string[] = []) {}
+
     public write(text: string): void {
         for (const character of text) {
             this.consume(character);
@@ -222,7 +224,8 @@ export class GeoJsonCoordinateScanner implements CoordinateScanner {
             }
         }
         if (value === '}' && frame.kind === 'object' && frame.geometry) {
-            if (frame.geometryType && GEOMETRY_TYPES.has(frame.geometryType) && frame.candidate) {
+            if (frame.geometryType && GEOMETRY_TYPES.has(frame.geometryType) && frame.candidate &&
+                (!this.allowedTypes.length || this.allowedTypes.includes(frame.geometryType))) {
                 this.coordinate = frame.candidate;
                 this.settled = true;
             }

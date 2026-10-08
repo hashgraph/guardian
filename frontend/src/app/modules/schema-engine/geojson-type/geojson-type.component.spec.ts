@@ -8,6 +8,8 @@ import { ArtifactService } from 'src/app/services/artifact.service';
 import { GeoFilePersistenceService } from 'src/app/services/geo-file-persistence.service';
 import { GeoJsonService } from 'src/app/services/geo-json.service';
 import { SwitchButton } from '../../common/switch-button/switch-button.component';
+import { gzipBlob } from '../geo-file/geo-file-compression';
+import { KmlCoordinateScanner } from '../geo-file/kml-coordinate-scanner';
 import { GeojsonTypeComponent } from './geojson-type.component';
 
 describe('GeojsonTypeComponent original file link', () => {
@@ -108,7 +110,7 @@ describe('GeojsonTypeComponent original file link', () => {
         expect(value.coordinates).toEqual([3, 4]);
     });
 
-    it('routes linked values to original-file download', () => {
+    it('routes linked values to original-file download', async () => {
         value = {
             type: 'Point',
             coordinates: [1, 2],
@@ -129,12 +131,41 @@ describe('GeojsonTypeComponent original file link', () => {
         spyOn(URL, 'createObjectURL').and.returnValue('blob:test');
         spyOn(URL, 'revokeObjectURL');
 
-        component.downloadOriginal();
+        await component.downloadOriginal();
 
         expect(artifacts.getFileBlob).toHaveBeenCalledWith('grid-1');
         expect(anchor.download).toBe('site.kml');
         expect(click).toHaveBeenCalled();
         expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:test');
+    });
+
+    it('downloads a gzip-stored original decompressed', async () => {
+        value = {
+            type: 'Point',
+            coordinates: [1, 2],
+            geoFile: {
+                fileId: 'grid-1',
+                name: 'site.geojson',
+                format: 'geojson',
+                sizeBytes: 8,
+                previewSizeBytes: 8
+            }
+        };
+        artifacts.getFileBlob.and.returnValue(of(await gzipBlob(new Blob(['original']))));
+        const anchor = {
+            href: '', download: '', click: jasmine.createSpy('click'), remove: jasmine.createSpy('remove')
+        } as any;
+        spyOn(document, 'createElement').and.returnValue(anchor);
+        spyOn(document.body, 'appendChild');
+        const createObjectURL = spyOn(URL, 'createObjectURL').and.returnValue('blob:test');
+        spyOn(URL, 'revokeObjectURL');
+
+        await component.downloadOriginal();
+
+        const downloaded = createObjectURL.calls.mostRecent().args[0];
+        expect(downloaded instanceof Blob ? await downloaded.text() : null).toBe('original');
+        expect(anchor.download).toBe('site.geojson');
+        expect(anchor.click).toHaveBeenCalled();
     });
 
     it('keeps legacy generated download available', () => {
@@ -145,6 +176,23 @@ describe('GeojsonTypeComponent original file link', () => {
 
         expect(component.hasOriginalFile()).toBeFalse();
         expect(component.canDownload()).toBeTrue();
+    });
+
+    it('keeps the GeoJSON download next to the original file for a linked value', () => {
+        value = {
+            type: 'Point',
+            coordinates: [1, 2],
+            geoFile: { fileId: 'grid-1', name: 'site.kml', format: 'kml', sizeBytes: 10, previewSizeBytes: 10 }
+        };
+
+        expect(component.hasOriginalFile()).toBeTrue();
+        expect(component.canDownload()).toBeTrue();
+    });
+
+    it('keeps a legacy single geometry without a GeoJSON download', () => {
+        value = { type: 'Point', coordinates: [1, 2] };
+
+        expect(component.canDownload()).toBeFalse();
     });
 
     it('discards a pending original when the selection is cleared', async () => {
@@ -161,14 +209,151 @@ describe('GeojsonTypeComponent original file link', () => {
         expect((component as any).pendingGeoFile).toBeUndefined();
     });
 
-    it('fails closed when limits cannot be loaded', async () => {
+    it('uses the default limits when limits cannot be loaded', async () => {
         settings.getGeospatialLimits.and.returnValue(throwError(() => new Error('offline')));
-        const file = new File(['{}'], 'site.geojson');
-        spyOn(file, 'arrayBuffer');
-        await component.importFromFile(file);
-        expect(component.importError).toBe('Upload limits could not be loaded. Please try again later.');
-        expect(file.arrayBuffer).not.toHaveBeenCalled();
+        const result = component.importFromFile(new File([new Uint8Array(6 * 1024 * 1024)], 'site.geojson'));
+        close.next(false);
+        close.complete();
+        await result;
+        expect(component.importError).toBe('');
+        expect(JSON.stringify(dialog.open.calls.mostRecent().args[1]?.data))
+            .toContain('which exceeds the 5 MB limit for in-browser rendering');
         expect(geoFiles.keepOriginal).not.toHaveBeenCalled();
+    });
+
+    it('uses the plain size wording in the KML preview warning', async () => {
+        settings.getGeospatialLimits.and.returnValue(of({
+            kmlPreviewMaxFileSizeMb: 0.00001,
+            geojsonPreviewMaxFileSizeMb: 5,
+            geospatialMaxFileSizeMb: 1
+        }));
+        const result = component.importFromFile(new File(['<kml></kml>'], 'site.kml'));
+        close.next(false);
+        close.complete();
+        await result;
+        expect(JSON.stringify(dialog.open.calls.mostRecent().args[1]?.data))
+            .toContain('"message":"This file\'s size is ');
+    });
+
+    describe('in a field that allows only Polygon', () => {
+        const line = JSON.stringify({
+            type: 'FeatureCollection',
+            features: [{ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: [[1, 2], [3, 4]] } }]
+        });
+        const mixed = JSON.stringify({
+            type: 'FeatureCollection',
+            features: [
+                { type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: [[1, 2], [3, 4]] } },
+                { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [[[5, 6], [7, 8], [9, 10], [5, 6]]] } }
+            ]
+        });
+        const message = 'No shapes of an allowed type were found in this file. Allowed shapes: Polygon.';
+        const noPreviewLimits = {
+            kmlPreviewMaxFileSizeMb: 0.000001,
+            geojsonPreviewMaxFileSizeMb: 0.000001,
+            geospatialMaxFileSizeMb: 1
+        };
+        let oldValue: any;
+
+        beforeEach(() => {
+            component.availableOptions = ['Polygon'];
+            (component as any).applyAvailableOptionsFilter();
+            spyOn<any>(component, 'setupMap');
+            spyOn<any>(component, 'centerMap');
+            oldValue = { type: 'Point', coordinates: [1, 2] };
+            value = oldValue;
+        });
+
+        it('still imports a previewable file with a shape the field does not allow', async () => {
+            (component as any).geoJsonService.getFileNames.and.returnValue([]);
+
+            await component.importFromFile(new File([mixed], 'site.geojson'));
+
+            expect(component.importError).toBe('');
+            expect(geoFiles.keepOriginal).toHaveBeenCalled();
+            expect(component.loading).toBeFalse();
+        });
+
+        it('refuses a previewable file that has no allowed shape', async () => {
+            await component.importFromFile(new File([line], 'site.geojson'));
+
+            expect(component.importError).toBe(message);
+            expect(value).toBe(oldValue);
+            expect(geoFiles.keepOriginal).not.toHaveBeenCalled();
+            expect(component.loading).toBeFalse();
+        });
+
+        it('refuses a previewable KMZ that has no allowed shape', async () => {
+            const entry = {
+                name: 'doc.kml', flags: 0, compressionMethod: 0,
+                compressedSize: 3, uncompressedSize: 20, localHeaderOffset: 0
+            };
+            spyOn((component as any).kmzReader, 'inspect').and.resolveTo({ entry, previewSizeBytes: 20 });
+            spyOn((component as any).kmzReader, 'readText').and.resolveTo(
+                '<kml><Placemark><LineString><coordinates>1,2 3,4</coordinates></LineString></Placemark></kml>'
+            );
+
+            await component.importFromFile(new File(['zip'], 'site.kmz'));
+
+            expect(component.importError).toBe(message);
+            expect(value).toBe(oldValue);
+            expect(geoFiles.keepOriginal).not.toHaveBeenCalled();
+            expect(component.loading).toBeFalse();
+        });
+
+        it('stores a mixed file without preview with its point on the first allowed shape', async () => {
+            settings.getGeospatialLimits.and.returnValue(of(noPreviewLimits));
+            const file = new File([mixed], 'site.geojson');
+            geoFiles.keepOriginal.and.resolveTo({
+                idbKey: 'new', name: file.name, format: 'geojson',
+                sizeBytes: file.size, previewSizeBytes: file.size
+            });
+            const result = component.importFromFile(file);
+            close.next(true);
+            close.complete();
+            await result;
+
+            expect(component.importError).toBe('');
+            expect(geoFiles.keepOriginal).toHaveBeenCalled();
+            expect(value.geoFile.automaticPoint).toEqual([5, 6]);
+        });
+
+        it('refuses a file without preview that has no allowed shape', async () => {
+            settings.getGeospatialLimits.and.returnValue(of(noPreviewLimits));
+            const result = component.importFromFile(new File([line], 'site.geojson'));
+            close.next(true);
+            close.complete();
+            await result;
+
+            expect(component.importError).toBe(message);
+            expect(value).toBe(oldValue);
+            expect(geoFiles.keepOriginal).not.toHaveBeenCalled();
+            expect(component.loading).toBeFalse();
+        });
+
+        it('refuses a KMZ without preview that has no allowed shape', async () => {
+            settings.getGeospatialLimits.and.returnValue(of(noPreviewLimits));
+            const entry = {
+                name: 'doc.kml', flags: 0, compressionMethod: 0,
+                compressedSize: 3, uncompressedSize: 20, localHeaderOffset: 0
+            };
+            spyOn((component as any).kmzReader, 'inspect').and.resolveTo({ entry, previewSizeBytes: 20 });
+            spyOn((component as any).kmzReader, 'readCoordinate').and.callFake(
+                async (_file: Blob, _entry: unknown, scanner: KmlCoordinateScanner) => {
+                    scanner.write('<kml><Placemark><LineString><coordinates>1,2 3,4</coordinates></LineString></Placemark></kml>');
+                    scanner.finish();
+                    return scanner.coordinate;
+                }
+            );
+            const result = component.importFromFile(new File(['zip'], 'site.kmz'));
+            close.next(true);
+            close.complete();
+            await result;
+
+            expect(component.importError).toBe(message);
+            expect(value).toBe(oldValue);
+            expect(geoFiles.keepOriginal).not.toHaveBeenCalled();
+        });
     });
 
     it('rejects above maximum without storing', async () => {
@@ -347,7 +532,7 @@ describe('GeojsonTypeComponent original file link', () => {
         };
         spyOn((component as any).kmzReader, 'inspect').and.resolveTo({ entry, previewSizeBytes: 3 });
         spyOn((component as any).kmzReader, 'readText').and.rejectWith(
-            new Error('This browser cannot open KMZ files. Please use a current version of Chrome, Edge, Firefox or Safari.')
+            new Error('This browser cannot open KMZ files.')
         );
         await component.importFromFile(new File(['zip'], 'site.kmz'));
         expect(value).toBe(oldValue);
@@ -391,5 +576,65 @@ describe('GeojsonTypeComponent loading state', () => {
         const status = fixture.nativeElement.querySelector('.geo-file-loading');
         expect(status).not.toBeNull();
         expect(status.textContent).toContain('Reading file...');
+    });
+
+    it('tells the user the map does not show the full file', () => {
+        component.formModel = {
+            getValue: () => ({
+                type: 'Point',
+                coordinates: [1, 2],
+                geoFile: {
+                    fileId: 'grid-1', name: 'large.kml', format: 'kml',
+                    sizeBytes: 20, previewSizeBytes: 20, noPreview: true, automaticPoint: [1, 2]
+                }
+            }),
+            getErrors: () => ({}),
+            setControlValue: () => undefined,
+            setAvailableTypes: () => undefined
+        } as any;
+        spyOn(component, 'ngAfterViewInit');
+
+        fixture.detectChanges(false);
+
+        const notice = fixture.nativeElement.querySelector('.geo-preview-unavailable');
+        expect(notice.textContent).toContain('The map does not show the full file. Download it to view.');
+    });
+
+    describe('download buttons in the document view', () => {
+        const render = (value: unknown): string[] => {
+            component.formModel = {
+                getValue: () => value,
+                getErrors: () => ({}),
+                setControlValue: () => undefined,
+                setAvailableTypes: () => undefined
+            } as any;
+            component.isDisabled = true;
+            spyOn(component, 'ngAfterViewInit');
+            fixture.detectChanges(false);
+            return Array.from(fixture.nativeElement.querySelectorAll('button[label]'))
+                .map((button: any) => button.getAttribute('label'));
+        };
+        const geoFile = { fileId: 'grid-1', name: 'site.kml', format: 'kml', sizeBytes: 10, previewSizeBytes: 10 };
+        const collection = {
+            type: 'FeatureCollection',
+            features: [{ type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [1, 2] } }]
+        };
+
+        it('offers both downloads for a file with preview', () => {
+            expect(render({ ...collection, geoFile })).toEqual(['Download GeoJSON', 'Download original file']);
+        });
+
+        it('offers the GeoJSON in the map area and the original in the notice for a file without preview', () => {
+            const labels = render({
+                type: 'Point', coordinates: [1, 2],
+                geoFile: { ...geoFile, noPreview: true, automaticPoint: [1, 2] }
+            });
+
+            expect(labels).toEqual(['Download original file', 'Download GeoJSON']);
+        });
+
+        it('offers only the GeoJSON download for a document without a file', () => {
+            expect(render(collection)).toEqual(['Download GeoJSON']);
+        });
     });
 });

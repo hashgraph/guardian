@@ -11,6 +11,12 @@ export interface GeospatialLimits {
     geospatialMaxFileSizeMb: number;
 }
 
+export const DEFAULT_GEOSPATIAL_LIMITS: GeospatialLimits = {
+    kmlPreviewMaxFileSizeMb: 10,
+    geojsonPreviewMaxFileSizeMb: 5,
+    geospatialMaxFileSizeMb: 100
+};
+
 /**
  * Services for working from user profile.
  */

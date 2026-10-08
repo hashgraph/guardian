@@ -51,6 +51,7 @@ interface PlacemarkState {
     depth: number;
     geometryCount: number;
     candidate: GeoCoordinate | null;
+    geometryType: string;
     containerDepths: Set<number>;
     geometry: GeometryState | null;
 }
@@ -86,6 +87,8 @@ export class KmlCoordinateScanner implements CoordinateScanner {
     private groundOverlayCandidate: GeoCoordinate | null = null;
     private networkLinkCandidate: GeoCoordinate | null = null;
 
+    constructor(private readonly allowedTypes: readonly string[] = []) {}
+
     public write(text: string): void {
         this.tokenizer.write(text);
     }
@@ -115,7 +118,7 @@ export class KmlCoordinateScanner implements CoordinateScanner {
         const depth = this.tags.length;
         if (name === 'Placemark') {
             this.placemark = {
-                depth, geometryCount: 0, candidate: null,
+                depth, geometryCount: 0, candidate: null, geometryType: '',
                 containerDepths: new Set<number>(), geometry: null
             };
         }
@@ -172,10 +175,11 @@ export class KmlCoordinateScanner implements CoordinateScanner {
             geometry.trackText += value;
         }
         if (this.overlay?.quad && current === 'coordinates') this.overlay.quad.write(value);
-        if (this.overlay?.scalarName === current && this.overlay.scalarText.length < 256) {
+        if (this.overlay && this.overlay.scalarName === current && this.overlay.scalarText.length < 256) {
             this.overlay.scalarText += value;
         }
-        if (this.networkLink?.scalarName === current && this.networkLink.scalarText.length < 256) {
+        if (this.networkLink && this.networkLink.scalarName === current &&
+            this.networkLink.scalarText.length < 256) {
             this.networkLink.scalarText += value;
         }
     }
@@ -202,15 +206,20 @@ export class KmlCoordinateScanner implements CoordinateScanner {
         this.finishScalar(this.overlay, name);
         this.finishScalar(this.networkLink, name);
         if (name === 'GroundOverlay' && this.overlay) {
-            if (!this.groundOverlayCandidate) this.groundOverlayCandidate = this.boundsCoordinate(this.overlay);
+            if (!this.groundOverlayCandidate && this.allows('Polygon')) {
+                this.groundOverlayCandidate = this.boundsCoordinate(this.overlay);
+            }
             this.overlay = null;
         }
         if (name === 'NetworkLink' && this.networkLink) {
-            if (!this.networkLinkCandidate) this.networkLinkCandidate = this.boundsCoordinate(this.networkLink);
+            if (!this.networkLinkCandidate && this.allows('Polygon')) {
+                this.networkLinkCandidate = this.boundsCoordinate(this.networkLink);
+            }
             this.networkLink = null;
         }
         if (name === 'Placemark' && this.placemark) {
-            if (this.placemark.geometryCount === 1 && this.placemark.candidate) {
+            if (this.placemark.geometryCount === 1 && this.placemark.candidate &&
+                this.allows(this.placemark.geometryType)) {
                 this.coordinate = this.placemark.candidate;
                 this.settled = true;
             }
@@ -258,7 +267,20 @@ export class KmlCoordinateScanner implements CoordinateScanner {
         }
         if (!valid || !this.placemark) return;
         this.placemark.geometryCount += 1;
-        if (!this.placemark.candidate) this.placemark.candidate = geometry.candidate;
+        if (!this.placemark.candidate) {
+            this.placemark.candidate = geometry.candidate;
+            this.placemark.geometryType = this.geoJsonType(geometry);
+        }
+    }
+
+    private geoJsonType(geometry: GeometryState): string {
+        if (geometry.name === 'Point' || geometry.name === 'Polygon') return geometry.name;
+        if (geometry.name === 'LineString' || geometry.name === 'LinearRing') return 'LineString';
+        return geometry.trackCount > 2 ? 'LineString' : 'Point';
+    }
+
+    private allows(type: string): boolean {
+        return !this.allowedTypes.length || this.allowedTypes.includes(type);
     }
 
     private emptyBounds(depth: number): BoundsState {

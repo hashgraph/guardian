@@ -168,7 +168,7 @@ describe('KmzReader', () => {
         (globalThis as any).DecompressionStream = class { constructor() { throw new Error('unsupported'); } };
         try {
             await expectAsync(reader.readText(archive, inspection.entry, 1000))
-                .toBeRejectedWithError(/This browser cannot open KMZ files/);
+                .toBeRejectedWithError('This browser cannot open KMZ files.');
         } finally {
             (globalThis as any).DecompressionStream = saved;
         }
@@ -181,7 +181,7 @@ describe('KmzReader', () => {
         (globalThis as any).DecompressionStream = undefined;
         try {
             await expectAsync(reader.readText(archive, inspection.entry, 1000))
-                .toBeRejectedWithError(/This browser cannot open KMZ files/);
+                .toBeRejectedWithError('This browser cannot open KMZ files.');
         } finally {
             (globalThis as any).DecompressionStream = saved;
         }

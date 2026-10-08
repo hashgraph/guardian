@@ -79,4 +79,69 @@ describe('KmlCoordinateScanner', () => {
             });
         }
     }
+
+    it('reads a KML with line breaks around the root element', async () => {
+        const text = '<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n' +
+            '<Document>\n<Placemark><Point><coordinates>1,2</coordinates></Point></Placemark>\n</Document>\n</kml>\n';
+        for (const allowedTypes of [[], ['Point']]) {
+            const actual = await readFirstCoordinate(new Blob([text]), new KmlCoordinateScanner(allowedTypes));
+            expect(actual).toEqual([1, 2]);
+        }
+        const empty = await readFirstCoordinate(
+            new Blob(['<?xml version="1.0"?>\n<kml>\n<Document/>\n</kml>\n']),
+            new KmlCoordinateScanner()
+        );
+        expect(empty).toBeNull();
+    });
+});
+
+describe('KmlCoordinateScanner allowed types', () => {
+    const allTypes = ['Point', 'LineString', 'Polygon', 'MultiPoint', 'MultiLineString', 'MultiPolygon'];
+
+    const firstAllowedPosition = (text: string, allowedTypes: string[]): GeoCoordinate | null => {
+        const feature = kml(new DOMParser().parseFromString(text, 'application/xml')).features.find(item =>
+            item?.geometry && item.geometry.type !== 'GeometryCollection' &&
+            allowedTypes.includes(item.geometry.type)
+        );
+        if (!feature?.geometry) return null;
+        let coordinates: any = 'coordinates' in feature.geometry ? feature.geometry.coordinates : null;
+        while (Array.isArray(coordinates) && Array.isArray(coordinates[0])) coordinates = coordinates[0];
+        if (!Array.isArray(coordinates) || coordinates.length < 2) return null;
+        return coordinates.length >= 3
+            ? [coordinates[0], coordinates[1], coordinates[2]]
+            : [coordinates[0], coordinates[1]];
+    };
+
+    [...fixtures, ...noCoordinateFixtures].forEach((text, index) => {
+        for (const allowedTypes of [allTypes, ['Point'], ['LineString'], ['Polygon']]) {
+            it(`matches the first ${allowedTypes.join(' or ')} shape of kml() for fixture ${index}`, async () => {
+                const actual = await readFirstCoordinate(
+                    new Blob([new TextEncoder().encode(text)]),
+                    new KmlCoordinateScanner(allowedTypes),
+                    7
+                );
+                expect(actual).toEqual(firstAllowedPosition(text, allowedTypes));
+            });
+        }
+    });
+
+    it('stops at the first allowed shape', () => {
+        const scanner = new KmlCoordinateScanner(['Polygon']);
+        scanner.write(wrap(
+            '<Placemark><LineString><coordinates>7,8 9,10</coordinates></LineString></Placemark>' +
+            '<Placemark><Polygon><outerBoundaryIs><LinearRing><coordinates>1,2 3,4 5,6 1,2</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark>'
+        ).slice(0, -17));
+
+        expect(scanner.settled).toBeTrue();
+        expect(scanner.coordinate).toEqual([1, 2]);
+    });
+
+    it('treats a track of more than two points as a LineString and a shorter one as a Point', async () => {
+        const long = wrap('<Placemark><gx:Track><gx:coord>1 2 0</gx:coord><gx:coord>3 4 0</gx:coord><gx:coord>5 6 0</gx:coord></gx:Track></Placemark>');
+        const short = wrap('<Placemark><gx:Track><gx:coord>1 2 0</gx:coord><gx:coord>3 4 0</gx:coord></gx:Track></Placemark>');
+
+        expect(await readFirstCoordinate(new Blob([long]), new KmlCoordinateScanner(['Point']))).toBeNull();
+        expect(await readFirstCoordinate(new Blob([long]), new KmlCoordinateScanner(['LineString']))).toEqual([1, 2, 0]);
+        expect(await readFirstCoordinate(new Blob([short]), new KmlCoordinateScanner(['Point']))).toEqual([1, 2, 0]);
+    });
 });
