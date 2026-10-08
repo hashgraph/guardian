@@ -8,19 +8,24 @@ type: Story
 
 ---
 
+### Background
+
+_Any additional context around this feature._
+
 ### Job Story
 
-_What is situation, motivation, and outcome?_
+_What is the situation, motivation, and outcome?_
 
-When \[SITUATION & CONTEXT\], I want \[MOTIVATION\], so that \[EXPECTED OUTCOME\].
+When \[situation\], I want \[motivation/problem to solve\], 
+so that \[outcome\].
 
-### Acceptance Criteria
+### Acceptance Criteria & Requirements
 
-_What to review during acceptance testing?_
+_What must be true for this to be complete?_
 
 * [ ] item 1
 * [ ] item 2
 
-### Supporting Artifacts & Consideration Details
+### Supporting Artifacts, Consideration Details, Constraints
 
-_What helpful media artifacts or details should be considered?_
+_Add supporting media artifacts, details, constraints e.g. design details, discussions, links, questions etc_
