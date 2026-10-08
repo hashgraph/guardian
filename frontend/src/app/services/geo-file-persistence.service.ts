@@ -25,6 +25,20 @@ export interface GeoFileLink {
     automaticPoint?: [number, number] | [number, number, number];
 }
 
+export function isGeoJsonValue(record: Record<string, unknown>): boolean {
+    return typeof record.type === 'string' && GEOJSON_TYPES.has(record.type) &&
+        ('coordinates' in record || 'geometry' in record || 'features' in record || 'geometries' in record);
+}
+
+export function isGeoFileLink(value: unknown): value is GeoFileLink {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+    const link = value as Record<string, unknown>;
+    return typeof link.name === 'string' &&
+        (link.format === 'geojson' || link.format === 'kml' || link.format === 'kmz') &&
+        typeof link.sizeBytes === 'number' &&
+        typeof link.previewSizeBytes === 'number';
+}
+
 interface GeoFileRecord {
     id: string;
     blob: Blob;
@@ -224,25 +238,11 @@ export class GeoFilePersistenceService {
                 return;
             }
             const record = value as Record<string, unknown>;
-            if (this.isGeoJsonValue(record) && this.isGeoFileLink(record.geoFile)) {
+            if (isGeoJsonValue(record) && isGeoFileLink(record.geoFile)) {
                 await action(record.geoFile);
             }
             for (const child of Object.values(record)) await walk(child);
         };
         await walk(root);
-    }
-
-    private isGeoJsonValue(record: Record<string, unknown>): boolean {
-        return typeof record.type === 'string' && GEOJSON_TYPES.has(record.type) &&
-            ('coordinates' in record || 'geometry' in record || 'features' in record || 'geometries' in record);
-    }
-
-    private isGeoFileLink(value: unknown): value is GeoFileLink {
-        if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
-        const link = value as Record<string, unknown>;
-        return typeof link.name === 'string' &&
-            (link.format === 'geojson' || link.format === 'kml' || link.format === 'kmz') &&
-            typeof link.sizeBytes === 'number' &&
-            typeof link.previewSizeBytes === 'number';
     }
 }
