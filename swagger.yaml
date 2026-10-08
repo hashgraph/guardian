@@ -30488,6 +30488,48 @@ paths:
       summary: Returns current environment name.
       tags:
         - settings
+  /settings/geospatial-limits:
+    get:
+      description: Returns geospatial preview and upload limits in megabytes.
+      operationId: SettingsApi_getGeospatialLimits
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Returns geospatial file limits.
+      tags:
+        - settings
   /settings/about:
     get:
       description: Returns package version. For users with the Standard Registry role only.
