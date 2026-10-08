@@ -17,6 +17,8 @@ import Select from 'ol/interaction/Select.js';
 import { GeoForm } from '../schema-form-model/geo-form';
 import { GeoJsonService } from 'src/app/services/geo-json.service';
 import { DOMParser } from '@xmldom/xmldom';
+import { ArtifactService } from 'src/app/services/artifact.service';
+import { GeoFileFormat, GeoFileLink, GeoFilePersistenceService } from 'src/app/services/geo-file-persistence.service';
 import { FeatureCollection } from 'geojson';
 import { kml } from '@tmcw/togeojson';
 
@@ -323,10 +325,13 @@ export class GeojsonTypeComponent implements OnChanges {
     public fileImportName: string = '';
     public fileImportSize: number = 0;
     public loading: boolean = false;
+    private pendingGeoFile?: GeoFileLink;
 
     constructor(
         private cdkRef: ChangeDetectorRef,
-        private geoJsonService: GeoJsonService
+        private geoJsonService: GeoJsonService,
+        private geoFiles: GeoFilePersistenceService,
+        private artifacts: ArtifactService
     ) { }
 
 
@@ -369,6 +374,7 @@ export class GeojsonTypeComponent implements OnChanges {
 
     private normalizeGeoJSON(value: any): any {
         if (!value || typeof value !== 'object') return value;
+        const geoFile = value.geoFile || this.formModel?.getValue?.()?.geoFile || this.pendingGeoFile;
 
         if (value.type === 'FeatureCollection' && Array.isArray(value.features)) {
             return {
@@ -379,14 +385,22 @@ export class GeojsonTypeComponent implements OnChanges {
                         ...f,
                         geometry: this.normalizeGeometryForTransport(f.geometry),
                     })),
+                ...(geoFile ? { geoFile } : {})
             };
         }
         if (value.type === 'Feature' && value.geometry) {
-            return { ...value, geometry: this.normalizeGeometryForTransport(value.geometry) };
+            return {
+                ...value,
+                geometry: this.normalizeGeometryForTransport(value.geometry),
+                ...(geoFile ? { geoFile } : {})
+            };
         }
 
         if (typeof value.type === 'string' && 'coordinates' in value) {
-            return this.normalizeGeometryForTransport(value);
+            return {
+                ...this.normalizeGeometryForTransport(value),
+                ...(geoFile ? { geoFile } : {})
+            };
         }
 
         return value;
@@ -455,6 +469,7 @@ export class GeojsonTypeComponent implements OnChanges {
         }
 
         const value = this.formModel?.getValue?.();
+        if (value?.geoFile?.fileId) return true;
 
         if (!value?.features?.length) {
             return false;
@@ -484,6 +499,32 @@ export class GeojsonTypeComponent implements OnChanges {
         } catch (e) {
             console.error('Failed to export GeoJSON:', e);
         }
+    }
+
+    public hasOriginalFile(): boolean {
+        return !!this.formModel?.getValue?.()?.geoFile?.fileId;
+    }
+
+    public downloadOriginal(): void {
+        const link = this.formModel?.getValue?.()?.geoFile as GeoFileLink | undefined;
+        if (!link?.fileId) return;
+        this.artifacts.getFileBlob(link.fileId).subscribe(blob => {
+            const url = URL.createObjectURL(blob);
+            const anchor = document.createElement('a');
+            anchor.href = url;
+            anchor.download = link.name;
+            document.body.appendChild(anchor);
+            anchor.click();
+            anchor.remove();
+            URL.revokeObjectURL(url);
+        });
+    }
+
+    private fileFormat(name: string): GeoFileFormat | null {
+        const extension = name.split('.').pop()?.toLowerCase();
+        if (extension === 'json' || extension === 'geojson') return 'geojson';
+        if (extension === 'kml') return 'kml';
+        return null;
     }
 
     ngOnInit(): void {
@@ -779,12 +820,15 @@ export class GeojsonTypeComponent implements OnChanges {
         return this.geometriesList.length <= 500;
     }
 
-    public clearSelectionFeatures() {
+    public async clearSelectionFeatures(): Promise<void> {
         this.geometriesList = [];
         this.geoShapesSource?.clear(true);
+        const pendingGeoFile = this.pendingGeoFile;
 
         this.fileImportName = '';
         this.fileImportSize = 0;
+        this.pendingGeoFile = undefined;
+        if (pendingGeoFile) await this.geoFiles.discard(pendingGeoFile);
 
         this.clearImportedLocations();
         this.importedShapesSource?.clear();
@@ -1246,7 +1290,14 @@ export class GeojsonTypeComponent implements OnChanges {
         this.cdkRef.detectChanges();
     }
 
-    public importFromFile(file: any) {
+    public async importFromFile(file: File): Promise<void> {
+        const format = this.fileFormat(file.name);
+        if (!format) {
+            console.error('Wrong file format.');
+            return;
+        }
+        if (this.pendingGeoFile) await this.geoFiles.discard(this.pendingGeoFile);
+        this.pendingGeoFile = await this.geoFiles.keepOriginal(file, format);
         this.loading = true;
         const fileType = file.name.split('.').pop()?.toLowerCase();
         const fileSizeBytes = file.size;
@@ -1257,10 +1308,6 @@ export class GeojsonTypeComponent implements OnChanges {
             this.importJsonFile(file);
         } else if (fileType === 'kml') {
             this.importKmlFile(file);
-        } else if (fileType === 'shp') {
-            // this.importShapefile(file);
-        } else {
-            console.error('Wrong file format.');
         }
     }
 

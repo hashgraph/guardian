@@ -47,8 +47,8 @@
       <button
         pButton
         class="add-feature-button download-geo"
-        label="Download GeoJSON"
-        (click)="downloadGeoJSON()">
+        [label]="hasOriginalFile() ? 'Download original file' : 'Download GeoJSON'"
+        (click)="hasOriginalFile() ? downloadOriginal() : downloadGeoJSON()">
       </button>
     }
   </div>
@@ -83,8 +83,8 @@
           <button
             pButton
             class="add-feature-button download-geo"
-            label="Download GeoJSON"
-            (click)="downloadGeoJSON()">
+            [label]="hasOriginalFile() ? 'Download original file' : 'Download GeoJSON'"
+            (click)="hasOriginalFile() ? downloadOriginal() : downloadGeoJSON()">
           </button>
         }
       </div>
