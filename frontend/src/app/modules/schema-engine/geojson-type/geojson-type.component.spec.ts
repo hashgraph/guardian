@@ -280,6 +280,79 @@ describe('GeojsonTypeComponent original file link', () => {
         expect(geoFiles.keepOriginal).not.toHaveBeenCalled();
         expect(component.loading).toBeFalse();
     });
+
+    it('checks the KMZ archive maximum before inspect', async () => {
+        const inspect = spyOn((component as any).kmzReader, 'inspect');
+        settings.getGeospatialLimits.and.returnValue(of({
+            kmlPreviewMaxFileSizeMb: 10,
+            geojsonPreviewMaxFileSizeMb: 5,
+            geospatialMaxFileSizeMb: 0.00001
+        }));
+        const result = component.importFromFile(new File([new Uint8Array(100)], 'site.kmz'));
+        close.next(false);
+        close.complete();
+        await result;
+        expect(inspect).not.toHaveBeenCalled();
+    });
+
+    it('uses uncompressed KML size for the preview warning', async () => {
+        const file = new File(['zip'], 'site.kmz');
+        const entry = {
+            name: 'doc.kml', flags: 0, compressionMethod: 0,
+            compressedSize: 3, uncompressedSize: 20, localHeaderOffset: 0
+        };
+        spyOn((component as any).kmzReader, 'inspect').and.resolveTo({
+            entry, previewSizeBytes: 20
+        });
+        const coordinate = spyOn((component as any).kmzReader, 'readCoordinate')
+            .and.resolveTo([12, 34]);
+        settings.getGeospatialLimits.and.returnValue(of({
+            kmlPreviewMaxFileSizeMb: 0.00001,
+            geojsonPreviewMaxFileSizeMb: 5,
+            geospatialMaxFileSizeMb: 1
+        }));
+        geoFiles.keepOriginal.and.resolveTo({
+            idbKey: 'new', name: file.name, format: 'kmz',
+            sizeBytes: file.size, previewSizeBytes: file.size
+        });
+        const result = component.importFromFile(file);
+        close.next(true);
+        close.complete();
+        await result;
+        expect(coordinate).toHaveBeenCalled();
+        expect(value.geoFile.format).toBe('kmz');
+        expect(value.geoFile.previewSizeBytes).toBe(20);
+        expect(value.geoFile.noPreview).toBeTrue();
+        expect(value.geoFile.automaticPoint).toEqual([12, 34]);
+        expect(component.geometriesList[0].coordinates).toEqual([12, 34]);
+    });
+
+    it('keeps old value when the KMZ reader rejects the archive', async () => {
+        const oldValue = { type: 'Point', coordinates: [1, 2] };
+        value = oldValue;
+        spyOn((component as any).kmzReader, 'inspect')
+            .and.rejectWith(new Error('The KMZ central directory is missing.'));
+        await component.importFromFile(new File(['bad'], 'site.kmz'));
+        expect(value).toBe(oldValue);
+        expect(component.importError).toBe('The KMZ central directory is missing.');
+        expect(geoFiles.keepOriginal).not.toHaveBeenCalled();
+    });
+
+    it('does not store a deflated KMZ when browser support is absent', async () => {
+        const oldValue = { type: 'Point', coordinates: [1, 2] };
+        value = oldValue;
+        const entry = {
+            name: 'doc.kml', flags: 0, compressionMethod: 8,
+            compressedSize: 3, uncompressedSize: 3, localHeaderOffset: 0
+        };
+        spyOn((component as any).kmzReader, 'inspect').and.resolveTo({ entry, previewSizeBytes: 3 });
+        spyOn((component as any).kmzReader, 'readText').and.rejectWith(
+            new Error('This browser cannot open KMZ files. Please use a current version of Chrome, Edge, Firefox or Safari.')
+        );
+        await component.importFromFile(new File(['zip'], 'site.kmz'));
+        expect(value).toBe(oldValue);
+        expect(geoFiles.keepOriginal).not.toHaveBeenCalled();
+    });
 });
 
 describe('GeojsonTypeComponent loading state', () => {

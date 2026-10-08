@@ -25,6 +25,7 @@ import { GeospatialLimits, SettingsService } from 'src/app/services/settings.ser
 import { classifyGeoFile, PreviewableGeoFileFormat } from '../geo-file/geo-file-size';
 import { readFirstCoordinate } from '../geo-file/first-coordinate-reader';
 import { GeoJsonCoordinateScanner } from '../geo-file/geojson-coordinate-scanner';
+import { KmzEntry, KmzReader } from '../geo-file/kmz-reader';
 import { KmlCoordinateScanner } from '../geo-file/kml-coordinate-scanner';
 import { GeoFileLimitDialogComponent } from '../dialogs/geo-file-limit-dialog/geo-file-limit-dialog.component';
 import { FeatureCollection } from 'geojson';
@@ -338,6 +339,7 @@ export class GeojsonTypeComponent implements OnChanges {
     private selectedOriginalFile?: File;
     private geospatialLimits?: GeospatialLimits;
     private limitsRequest?: Promise<GeospatialLimits>;
+    private readonly kmzReader = new KmzReader();
 
     constructor(
         private cdkRef: ChangeDetectorRef,
@@ -548,6 +550,7 @@ export class GeojsonTypeComponent implements OnChanges {
         const extension = name.split('.').pop()?.toLowerCase();
         if (extension === 'json' || extension === 'geojson') return 'geojson';
         if (extension === 'kml') return 'kml';
+        if (extension === 'kmz') return 'kmz';
         return null;
     }
 
@@ -1337,7 +1340,7 @@ export class GeojsonTypeComponent implements OnChanges {
 
     public async importFromFile(file: File): Promise<void> {
         const format = this.fileFormat(file.name);
-        if (format !== 'geojson' && format !== 'kml') {
+        if (!format) {
             console.error('Wrong file format.');
             return;
         }
@@ -1347,6 +1350,10 @@ export class GeojsonTypeComponent implements OnChanges {
             limits = await this.loadLimits();
         } catch {
             this.importError = 'Upload limits could not be loaded. Please try again later.';
+            return;
+        }
+        if (format === 'kmz') {
+            await this.importKmz(file, limits);
             return;
         }
         const decision = classifyGeoFile(format, file.size, limits);
@@ -1475,6 +1482,88 @@ export class GeojsonTypeComponent implements OnChanges {
     private formatSize(bytes: number): string {
         const value = bytes / (1024 * 1024);
         return `${Number.isInteger(value) ? value : value.toFixed(2)} MB`;
+    }
+
+    private async importKmz(file: File, limits: GeospatialLimits): Promise<void> {
+        const maximumBytes = limits.geospatialMaxFileSizeMb * 1024 * 1024;
+        if (file.size > maximumBytes) {
+            await this.openLimitDialog(
+                'reject', 'File exceeds size limit',
+                `This file's size is ${this.formatSize(file.size)}, which exceeds the ${limits.geospatialMaxFileSizeMb} MB maximum for upload. Please reduce the size before uploading.`
+            );
+            return;
+        }
+        try {
+            const inspection = await this.kmzReader.inspect(file);
+            if (inspection.previewSizeBytes > maximumBytes) {
+                await this.openLimitDialog(
+                    'reject', 'File exceeds size limit',
+                    `This file's uncompressed size is ${this.formatSize(inspection.previewSizeBytes)}, which exceeds the ${limits.geospatialMaxFileSizeMb} MB maximum for upload. Please reduce the size before uploading.`
+                );
+                return;
+            }
+            const decision = classifyGeoFile('kml', inspection.previewSizeBytes, limits);
+            if (decision === 'warn') {
+                const accepted = await this.openLimitDialog(
+                    'warn', 'File too large to preview',
+                    `This file's uncompressed size is ${this.formatSize(inspection.previewSizeBytes)}, which exceeds the ${limits.kmlPreviewMaxFileSizeMb} MB limit for in-browser rendering. If you choose to proceed, browser rendering will not be available and a dedicated GIS tool, such as ArcGIS, will be required to inspect it.`
+                );
+                if (!accepted) return;
+                await this.importKmzWithoutPreview(
+                    file, inspection.entry, inspection.previewSizeBytes, maximumBytes
+                );
+                return;
+            }
+            await this.importKmzWithPreview(
+                file, inspection.entry, inspection.previewSizeBytes, maximumBytes
+            );
+        } catch (error) {
+            this.importError = error instanceof Error ? error.message : String(error);
+            this.loading = false;
+            this.cdkRef.detectChanges();
+        }
+    }
+
+    private async importKmzWithoutPreview(
+        file: File, entry: KmzEntry, previewSizeBytes: number, maximumBytes: number
+    ): Promise<void> {
+        this.loading = true;
+        const coordinate = await this.kmzReader.readCoordinate(
+            file, entry, new KmlCoordinateScanner(), maximumBytes
+        );
+        if (!coordinate) {
+            this.importError = 'No coordinates were found in this file.';
+            this.loading = false;
+            return;
+        }
+        const link = await this.replacePendingFile(file, 'kmz');
+        link.noPreview = true;
+        link.automaticPoint = coordinate;
+        link.previewSizeBytes = previewSizeBytes;
+        this.fileImportName = file.name;
+        this.fileImportSize = Math.round(file.size / (1024 * 1024));
+        this.setControlValue({ type: 'Point', coordinates: coordinate, geoFile: link });
+        this.geometriesList = [];
+        this.addGeometry({ type: GeoJsonType.POINT, coordinates: coordinate });
+        this.updateMap(false);
+        this.isJSON = false;
+        this.loading = false;
+        this.cdkRef.detectChanges();
+    }
+
+    private async importKmzWithPreview(
+        file: File, entry: KmzEntry, previewSizeBytes: number, maximumBytes: number
+    ): Promise<void> {
+        this.loading = true;
+        const text = await this.kmzReader.readText(file, entry, maximumBytes);
+        const xmlDoc = new DOMParser().parseFromString(text, 'application/xml');
+        const geoJsonData = kml(xmlDoc);
+        const link = await this.replacePendingFile(file, 'kmz');
+        link.previewSizeBytes = previewSizeBytes;
+        this.fileImportName = file.name;
+        this.fileImportSize = Math.round(file.size / (1024 * 1024));
+        this.geoJsonService.saveFile(file.name, geoJsonData);
+        this.getShapeFromFile();
     }
 
     private clearAutomaticPoint(geometry: any): void {

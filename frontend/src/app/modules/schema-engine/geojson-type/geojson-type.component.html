@@ -51,8 +51,8 @@
     @if (!isDisabled) {
       <app-file-drag-n-drop
         (onFileLoaded)="importFromFile($event)"
-        [dropZoneLabel]="'Upload file (.json, .kml, .geojson)'"
-        [fileExtension]="'.json, .kml, .geojson'"
+        [dropZoneLabel]="'Upload file (.json, .kml, .kmz, .geojson)'"
+        [fileExtension]="'.json, .kml, .kmz, .geojson'"
       ></app-file-drag-n-drop>
     }
   </div>
