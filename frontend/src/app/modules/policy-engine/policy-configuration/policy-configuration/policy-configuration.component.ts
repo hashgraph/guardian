@@ -55,6 +55,7 @@ import { PolicyApiConfigDialogComponent } from '../../dialogs/policy-api-config-
     selector: 'app-policy-configuration',
     templateUrl: './policy-configuration.component.html',
     styleUrls: [
+        '../../styles/top-toolbar.scss',
         './policy-configuration.component.scss',
         '../../styles/properties.scss'
     ],
