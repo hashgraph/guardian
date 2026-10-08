@@ -128,8 +128,13 @@ function isTemplateFieldLocked(schemaConfig: ISchemaTemplateSchemaConfig, field:
     return getFieldConfig(schemaConfig, field)?.locked !== false;
 }
 
+const FIELD_HASH_IGNORED_KEYS = new Set(['path', 'fullPath', 'fullType', 'arrayLvl', 'errors', 'order']);
+
 function fieldComparableHash(field: SchemaField): string {
-    return SchemaHelper.stableStringify(SchemaHelper.cloneSchemaRuntimeValue(field));
+    const clone = SchemaHelper.cloneSchemaRuntimeValue(field, FIELD_HASH_IGNORED_KEYS);
+    clone.comment = SchemaHelper.cleanCommentForHash(clone.comment);
+    clone.$comment = SchemaHelper.cleanCommentForHash(clone.$comment);
+    return SchemaHelper.stableStringify(clone);
 }
 
 function getConfigForTemplateSchema(

@@ -2107,6 +2107,22 @@ export class SchemaHelper {
     }
 
     /**
+     * Parses a field's raw comment/$comment string and strips orderPosition. A field's
+     * position in schema.fields is cosmetic (drag-reorder, condition selection, legacy
+     * normalization) and must not count as a change when hashing a field for content-only
+     * comparison, e.g. template field lock checks.
+     * @param comment
+     */
+    public static cleanCommentForHash(comment: unknown): any {
+        if (typeof comment !== 'string') {
+            return comment;
+        }
+        const parsed = SchemaHelper.parseFieldComment(comment);
+        delete parsed.orderPosition;
+        return parsed;
+    }
+
+    /**
      * Build Schema comment
      * @param type
      * @param url
