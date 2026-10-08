@@ -19,7 +19,10 @@ _What is the situation, motivation, and outcome?_
 When \[situation\], I want \[motivation/problem to solve\], 
 so that \[outcome\].
 
-### Acceptance Criteria & Requirements
+### Requirements & Design Details
+_What is required?_
+
+### Acceptance Criteria
 
 _What must be true for this to be complete?_
 
