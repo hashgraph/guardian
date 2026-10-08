@@ -112,7 +112,7 @@
                                         <span>View</span>
                                     </div>
                                 </div>
-                                <div class="profile-row">
+                                <div *ngIf="location !== 'remote'" class="profile-row">
                                     <span class="profile-label">Profile</span>
                                     <p-button (onClick)="download()" label="Download" icon="pi pi-download" severity="secondary" size="small"></p-button>
                                 </div>
@@ -739,6 +739,27 @@
                                                         </small>
                                                         <small *ngIf="remoteDidDocumentForm.hasError('exists')" class="p-error">
                                                             DID Document already exists.
+                                                        </small>
+                                                    </div>
+                                                </form>
+                                                <form class="hedera-form">
+                                                    <div class="input-field-container">
+                                                        <label class="form-label" htmlFor="remoteProofTextarea">
+                                                            * Registration proof:
+                                                        </label>
+                                                        <textarea
+                                                            pInputTextarea
+                                                            id="remoteProofTextarea"
+                                                            [formControl]="remoteProofForm"
+                                                            [readonly]="!remoteUserSetupType.value"
+                                                            class="full-width"
+                                                            placeholder="Registration proof from the .user file"
+                                                            style="height: 100px"></textarea>
+                                                        <small *ngIf="remoteProofForm.hasError('incorrect')" class="p-error">
+                                                            Invalid registration proof.
+                                                        </small>
+                                                        <small *ngIf="remoteProofForm.hasError('required') && remoteDidDocumentForm.value" class="p-error">
+                                                            The .user file has no registration proof. Download the profile again on the home instance.
                                                         </small>
                                                     </div>
                                                 </form>
