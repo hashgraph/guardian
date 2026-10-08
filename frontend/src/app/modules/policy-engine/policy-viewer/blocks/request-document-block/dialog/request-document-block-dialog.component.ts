@@ -289,8 +289,18 @@ export class RequestDocumentBlockDialog {
         const data = this.dataForm.getRawValue();
         this.loading = true;
 
-        await this.tablePersist.persistTablesInDocument(data, !!this.dryRun, this.policyId, this.id, draft);
-        await this.geoFilePersist.persistGeoFilesInDocument(data, !!this.dryRun, !!draft);
+        let geoPersistStarted = false;
+        try {
+            await this.tablePersist.persistTablesInDocument(data, !!this.dryRun, this.policyId, this.id, draft);
+            geoPersistStarted = true;
+            await this.geoFilePersist.persistGeoFilesInDocument(data, !!this.dryRun, !!draft);
+        } catch (error) {
+            await this.tablePersist.rollbackIpfsUploads();
+            if (geoPersistStarted) await this.geoFilePersist.rollbackGridFsUploads();
+            console.error(error);
+            this.loading = false;
+            return;
+        }
 
         prepareVcData(data);
         const draftId = this.parent instanceof RequestDocumentBlockComponent ? this.parent.draftId : null;
@@ -330,6 +340,7 @@ export class RequestDocumentBlockDialog {
                     }
                 }, 1000);
             }, async (e) => {
+                await this.tablePersist.rollbackIpfsUploads();
                 await this.geoFilePersist.rollbackGridFsUploads();
                 console.error(e.error);
                 this.loading = false;

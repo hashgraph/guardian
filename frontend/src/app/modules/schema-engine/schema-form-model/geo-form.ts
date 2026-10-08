@@ -1,7 +1,11 @@
-import { UntypedFormControl } from '@angular/forms';
+import { UntypedFormControl, ValidationErrors } from '@angular/forms';
+import { from, map, Observable, of } from 'rxjs';
 import { ajvSchemaValidator } from 'src/app/validators/ajv-schema.validator';
 import ajv from 'ajv';
 import { GeoJsonSchema, GeoJsonType } from '@guardian/interfaces';
+
+export const MISSING_ORIGINAL_FILE_ERROR =
+    'The original file is not available in this browser. Import it again.';
 
 export class GeoForm {
     private readonly form: UntypedFormControl;
@@ -48,14 +52,38 @@ export class GeoForm {
             const type = this.presetDocument?.geometry?.type || this.presetDocument.type;
             const coordinates = this.presetDocument?.geometry?.coordinates || this.presetDocument.coordinates;
             const features = this.presetDocument.features;
+            const geoFile = this.presetDocument.geoFile;
             this.form.patchValue({
                 type,
                 coordinates,
                 features,
+                ...(geoFile ? { geoFile } : {}),
             }, { emitEvent: false, onlySelf: true });
         }
 
         // this.form.updateValueAndValidity();
+    }
+
+    public setOriginalFileCheck(check: (idbKey: string) => Promise<boolean>): void {
+        this.form.setAsyncValidators(control => this.validateOriginalFile(control.value, check));
+        const link = this.form.value?.geoFile;
+        if (link?.idbKey && !link.fileId) {
+            Promise.resolve().then(() => this.form.updateValueAndValidity());
+        }
+    }
+
+    private validateOriginalFile(
+        value: any,
+        check: (idbKey: string) => Promise<boolean>
+    ): Observable<ValidationErrors | null> {
+        const link = value?.geoFile;
+        const key = typeof link?.idbKey === 'string' ? link.idbKey.trim() : '';
+        if (!key || link.fileId) {
+            return of(null);
+        }
+        return from(check(key)).pipe(map(available => available ? null : {
+            [this.errorsFieldName]: { 0: [MISSING_ORIGINAL_FILE_ERROR] }
+        }));
     }
 
     public setControlValue(value: any, dirty = true) {

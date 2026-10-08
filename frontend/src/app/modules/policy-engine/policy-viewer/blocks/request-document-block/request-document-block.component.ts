@@ -435,10 +435,20 @@ export class RequestDocumentBlockComponent
     private async onSubmit(draft?: boolean) {
         const data = this.dataForm.getRawValue();
         this.loading = true;
-        this.storage.delete(this.getAutosaveId());
 
-        await this.tablePersist.persistTablesInDocument(data, !!this.dryRun, this.policyId, this.id, draft);
-        await this.geoFilePersist.persistGeoFilesInDocument(data, !!this.dryRun, !!draft);
+        let geoPersistStarted = false;
+        try {
+            await this.tablePersist.persistTablesInDocument(data, !!this.dryRun, this.policyId, this.id, draft);
+            geoPersistStarted = true;
+            await this.geoFilePersist.persistGeoFilesInDocument(data, !!this.dryRun, !!draft);
+        } catch (error) {
+            await this.tablePersist.rollbackIpfsUploads();
+            if (geoPersistStarted) await this.geoFilePersist.rollbackGridFsUploads();
+            console.error(error);
+            this.loading = false;
+            return;
+        }
+        this.storage.delete(this.getAutosaveId());
 
         prepareVcData(data);
 

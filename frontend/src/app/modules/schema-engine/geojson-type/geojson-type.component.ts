@@ -391,7 +391,7 @@ export class GeojsonTypeComponent implements OnChanges {
 
     private normalizeGeoJSON(value: any): any {
         if (!value || typeof value !== 'object') return value;
-        const geoFile = value.geoFile || this.formModel?.getValue?.()?.geoFile || this.pendingGeoFile;
+        const geoFile = value.geoFile || this.pendingGeoFile || this.formModel?.getValue?.()?.geoFile;
 
         if (value.type === 'FeatureCollection' && Array.isArray(value.features)) {
             return {
@@ -574,6 +574,7 @@ export class GeojsonTypeComponent implements OnChanges {
         }
         this.applyAvailableOptionsFilter();
         this.formModel.setAvailableTypes(this.typeOptions.map(({ value }) => value));
+        this.formModel.setOriginalFileCheck(idbKey => this.geoFiles.ensurePendingFile(idbKey));
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -864,7 +865,7 @@ export class GeojsonTypeComponent implements OnChanges {
         }
         this.geometriesList = [];
         this.geoShapesSource?.clear(true);
-        const pendingGeoFile = this.pendingGeoFile;
+        const pendingGeoFile = this.browserGeoFile();
 
         this.fileImportName = '';
         this.fileImportSize = 0;
@@ -1466,7 +1467,8 @@ export class GeojsonTypeComponent implements OnChanges {
     }
 
     private async replacePendingFile(file: File, format: GeoFileFormat): Promise<GeoFileLink> {
-        const previous = this.pendingGeoFile;
+        const value = this.formModel?.getValue?.();
+        const previous = this.browserGeoFile();
         const link = await this.geoFiles.keepOriginal(file, format);
         try {
             if (previous) await this.geoFiles.discard(previous);
@@ -1476,7 +1478,16 @@ export class GeojsonTypeComponent implements OnChanges {
         }
         this.pendingGeoFile = link;
         this.selectedOriginalFile = file;
+        if (previous && value?.geoFile === previous) {
+            this.setControlValue({ ...value, geoFile: link });
+        }
         return link;
+    }
+
+    private browserGeoFile(): GeoFileLink | undefined {
+        if (this.pendingGeoFile) return this.pendingGeoFile;
+        const link = this.formModel?.getValue?.()?.geoFile as GeoFileLink | undefined;
+        return link?.idbKey && !link.fileId ? link : undefined;
     }
 
     private formatSize(bytes: number): string {

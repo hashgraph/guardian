@@ -25,7 +25,8 @@ describe('GeojsonTypeComponent original file link', () => {
         value = {};
         geoFiles = jasmine.createSpyObj('GeoFilePersistenceService', [
             'keepOriginal',
-            'discard'
+            'discard',
+            'ensurePendingFile'
         ]);
         artifacts = jasmine.createSpyObj('ArtifactService', ['getFileBlob']);
         settings = jasmine.createSpyObj('SettingsService', ['getGeospatialLimits']);
@@ -108,6 +109,39 @@ describe('GeojsonTypeComponent original file link', () => {
 
         expect(value.geoFile).toBe(link);
         expect(value.coordinates).toEqual([3, 4]);
+    });
+
+    it('attaches a newly imported original instead of the previous link', () => {
+        const previous = {
+            idbKey: 'old-key', name: 'old.geojson', format: 'geojson',
+            sizeBytes: 10, previewSizeBytes: 10
+        };
+        const imported = {
+            idbKey: 'new-key', name: 'new.kml', format: 'kml',
+            sizeBytes: 20, previewSizeBytes: 20
+        };
+        value = { type: 'Point', coordinates: [1, 2], geoFile: previous };
+        (component as any).pendingGeoFile = imported;
+
+        (component as any).setControlValue({ type: 'Point', coordinates: [3, 4] });
+
+        expect(value.geoFile).toBe(imported);
+    });
+
+    it('checks the browser copy of the original file through the persistence service', async () => {
+        const setOriginalFileCheck = jasmine.createSpy('setOriginalFileCheck');
+        component.formModel = {
+            getValue: () => value,
+            setAvailableTypes: () => undefined,
+            setOriginalFileCheck
+        } as any;
+        geoFiles.ensurePendingFile.and.resolveTo(true);
+
+        component.ngOnInit();
+        const check = setOriginalFileCheck.calls.mostRecent().args[0];
+
+        expect(await check('geo-key')).toBeTrue();
+        expect(geoFiles.ensurePendingFile).toHaveBeenCalledWith('geo-key');
     });
 
     it('routes linked values to original-file download', async () => {
@@ -207,6 +241,57 @@ describe('GeojsonTypeComponent original file link', () => {
 
         expect(geoFiles.discard).toHaveBeenCalledOnceWith(link);
         expect((component as any).pendingGeoFile).toBeUndefined();
+    });
+
+    it('discards a loaded browser link when the selection is cleared', async () => {
+        const loaded = {
+            idbKey: 'old-key', name: 'old.kml', format: 'kml' as const,
+            sizeBytes: 10, previewSizeBytes: 10
+        };
+        value = { type: 'Point', coordinates: [1, 2], geoFile: loaded };
+        geoFiles.discard.and.resolveTo();
+
+        await component.clearSelectionFeatures();
+
+        expect(geoFiles.discard).toHaveBeenCalledOnceWith(loaded);
+    });
+
+    it('discards a loaded browser link and relinks the value when a file is imported', async () => {
+        const loaded = {
+            idbKey: 'old-key', name: 'old.kml', format: 'kml' as const,
+            sizeBytes: 10, previewSizeBytes: 10
+        };
+        const imported = {
+            idbKey: 'new-key', name: 'new.kml', format: 'kml' as const,
+            sizeBytes: 20, previewSizeBytes: 20
+        };
+        value = { type: 'Point', coordinates: [1, 2], geoFile: loaded };
+        geoFiles.keepOriginal.and.resolveTo(imported);
+        geoFiles.discard.and.resolveTo();
+
+        await (component as any).replacePendingFile(new File(['x'], 'new.kml'), 'kml');
+
+        expect(geoFiles.discard).toHaveBeenCalledOnceWith(loaded);
+        expect(value.geoFile).toBe(imported);
+        expect(value.coordinates).toEqual([1, 2]);
+    });
+
+    it('keeps a stored link when a file is imported', async () => {
+        const stored = {
+            fileId: 'grid-1', name: 'old.kml', format: 'kml' as const,
+            sizeBytes: 10, previewSizeBytes: 10
+        };
+        const imported = {
+            idbKey: 'new-key', name: 'new.kml', format: 'kml' as const,
+            sizeBytes: 20, previewSizeBytes: 20
+        };
+        value = { type: 'Point', coordinates: [1, 2], geoFile: stored };
+        geoFiles.keepOriginal.and.resolveTo(imported);
+
+        await (component as any).replacePendingFile(new File(['x'], 'new.kml'), 'kml');
+
+        expect(geoFiles.discard).not.toHaveBeenCalled();
+        expect(value.geoFile).toBe(stored);
     });
 
     it('uses the default limits when limits cannot be loaded', async () => {
@@ -563,7 +648,8 @@ describe('GeojsonTypeComponent loading state', () => {
         component.formModel = {
             getValue: () => ({}),
             getErrors: () => ({}),
-            setAvailableTypes: () => undefined
+            setAvailableTypes: () => undefined,
+            setOriginalFileCheck: () => undefined
         } as any;
         spyOn<any>(component, 'setupMap');
     });
@@ -590,7 +676,8 @@ describe('GeojsonTypeComponent loading state', () => {
             }),
             getErrors: () => ({}),
             setControlValue: () => undefined,
-            setAvailableTypes: () => undefined
+            setAvailableTypes: () => undefined,
+            setOriginalFileCheck: () => undefined
         } as any;
         spyOn(component, 'ngAfterViewInit');
 
@@ -606,7 +693,8 @@ describe('GeojsonTypeComponent loading state', () => {
                 getValue: () => value,
                 getErrors: () => ({}),
                 setControlValue: () => undefined,
-                setAvailableTypes: () => undefined
+                setAvailableTypes: () => undefined,
+                setOriginalFileCheck: () => undefined
             } as any;
             component.isDisabled = true;
             spyOn(component, 'ngAfterViewInit');

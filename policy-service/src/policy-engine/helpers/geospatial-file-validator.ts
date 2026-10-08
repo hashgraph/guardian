@@ -24,6 +24,11 @@ interface GridFileAccess {
 
 type ValidatorLogger = Pick<PinoLogger, 'info' | 'error'>;
 
+const GEOJSON_TYPES = new Set([
+    'Point', 'MultiPoint', 'LineString', 'MultiLineString', 'Polygon', 'MultiPolygon',
+    'GeometryCollection', 'Feature', 'FeatureCollection'
+]);
+
 class GeospatialValidationError extends Error {}
 
 async function readStream(stream: Readable): Promise<Buffer> {
@@ -261,18 +266,28 @@ export class GeospatialFileValidator {
                 return;
             }
             const record = value as Record<string, unknown>;
-            const candidate = record.geoFile;
-            if (candidate && typeof candidate === 'object' && !Array.isArray(candidate) &&
-                !seen.has(candidate as object)) {
-                seen.add(candidate as object);
-                result.push({ link: candidate as GeoFileLink, path });
+            const linked = this.isGeoJsonValue(record) && record.geoFile !== undefined;
+            if (linked) {
+                const candidate = record.geoFile;
+                const link: GeoFileLink = candidate && typeof candidate === 'object' && !Array.isArray(candidate)
+                    ? candidate as GeoFileLink
+                    : {};
+                if (!seen.has(link)) {
+                    seen.add(link);
+                    result.push({ link, path });
+                }
             }
             for (const [key, child] of Object.entries(record)) {
-                if (key !== 'geoFile') walk(child, path === '$' ? `$.${key}` : `${path}.${key}`);
+                if (!linked || key !== 'geoFile') walk(child, path === '$' ? `$.${key}` : `${path}.${key}`);
             }
         };
         walk(root, '$');
         return result;
+    }
+
+    private isGeoJsonValue(record: Record<string, unknown>): boolean {
+        return typeof record.type === 'string' && GEOJSON_TYPES.has(record.type) &&
+            ('coordinates' in record || 'geometry' in record || 'features' in record || 'geometries' in record);
     }
 
     private async limitFailure(

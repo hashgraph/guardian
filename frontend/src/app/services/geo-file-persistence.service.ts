@@ -8,6 +8,11 @@ import { IPFSService } from './ipfs.service';
 
 export type GeoFileFormat = 'geojson' | 'kml' | 'kmz';
 
+const GEOJSON_TYPES = new Set([
+    'Point', 'MultiPoint', 'LineString', 'MultiLineString', 'Polygon', 'MultiPolygon',
+    'GeometryCollection', 'Feature', 'FeatureCollection'
+]);
+
 export interface GeoFileLink {
     idbKey?: string;
     fileId?: string;
@@ -81,9 +86,10 @@ export class GeoFilePersistenceService {
         isDryRun: boolean,
         draft = false
     ): Promise<void> {
-        await this.ensureStores();
         this.pendingGridFiles = [];
         await this.visit(root, async link => {
+            if (!link.idbKey?.trim()) return;
+            await this.ensureStores();
             if (draft) {
                 await this.copyToDraft(link.idbKey);
                 return;
@@ -92,11 +98,24 @@ export class GeoFilePersistenceService {
         });
     }
 
+    public async ensurePendingFile(idbKey: string): Promise<boolean> {
+        try {
+            await this.ensureStores();
+            if (await this.readRecord(STORES_NAME.FILES_STORE, idbKey)) return true;
+            const record = await this.readRecord(STORES_NAME.DRAFT_STORE, idbKey);
+            if (!record) return false;
+            await this.indexedDb.put(DB_NAME.TABLES, STORES_NAME.FILES_STORE, { ...record, id: idbKey });
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
     public async restoreGeoFilesFromDraft(root: unknown): Promise<void> {
-        await this.ensureStores();
         await this.visit(root, async link => {
             const key = link.idbKey?.trim();
             if (!key) return;
+            await this.ensureStores();
             const record = await this.readRecord(STORES_NAME.DRAFT_STORE, key);
             if (record) {
                 await this.indexedDb.put(
@@ -205,12 +224,17 @@ export class GeoFilePersistenceService {
                 return;
             }
             const record = value as Record<string, unknown>;
-            if (this.isGeoFileLink(record.geoFile)) {
+            if (this.isGeoJsonValue(record) && this.isGeoFileLink(record.geoFile)) {
                 await action(record.geoFile);
             }
             for (const child of Object.values(record)) await walk(child);
         };
         await walk(root);
+    }
+
+    private isGeoJsonValue(record: Record<string, unknown>): boolean {
+        return typeof record.type === 'string' && GEOJSON_TYPES.has(record.type) &&
+            ('coordinates' in record || 'geometry' in record || 'features' in record || 'geometries' in record);
     }
 
     private isGeoFileLink(value: unknown): value is GeoFileLink {

@@ -570,8 +570,18 @@ export class VCFullscreenDialog implements OnDestroy {
             this.loading = true;
             const data = this.dataForm.getRawValue();
 
-            await this.tablePersist.persistTablesInDocument(data, false);
-            await this.geoFilePersist.persistGeoFilesInDocument(data, false);
+            let geoPersistStarted = false;
+            try {
+                await this.tablePersist.persistTablesInDocument(data, false);
+                geoPersistStarted = true;
+                await this.geoFilePersist.persistGeoFilesInDocument(data, false);
+            } catch (error) {
+                await this.tablePersist.rollbackIpfsUploads();
+                if (geoPersistStarted) await this.geoFilePersist.rollbackGridFsUploads();
+                console.error(error);
+                this.loading = false;
+                return;
+            }
             prepareVcData(data);
 
             let requestSucceeded = false;
@@ -582,7 +592,10 @@ export class VCFullscreenDialog implements OnDestroy {
                 })
                 .pipe(
                     finalize(async () => {
-                        if (!requestSucceeded) await this.geoFilePersist.rollbackGridFsUploads();
+                        if (!requestSucceeded) {
+                            await this.tablePersist.rollbackIpfsUploads();
+                            await this.geoFilePersist.rollbackGridFsUploads();
+                        }
                         this.loading = false;
                     })
                 )

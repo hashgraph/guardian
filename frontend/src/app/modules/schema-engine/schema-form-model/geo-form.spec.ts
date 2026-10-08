@@ -1,6 +1,6 @@
 import { UntypedFormControl } from '@angular/forms';
 import { GeoJsonType } from '@guardian/interfaces';
-import { GeoForm } from './geo-form';
+import { GeoForm, MISSING_ORIGINAL_FILE_ERROR } from './geo-form';
 
 describe('GeoForm no-preview validation', () => {
     function errors(value: unknown): any {
@@ -75,5 +75,72 @@ describe('GeoForm no-preview validation', () => {
                 sizeBytes: 200, previewSizeBytes: 200, noPreview: false
             }
         })[0]).toContain('geometry type "Point" is not available');
+    });
+});
+
+describe('GeoForm original file link', () => {
+    const browserLink = {
+        idbKey: 'geo-key', name: 'site.kml', format: 'kml',
+        sizeBytes: 20, previewSizeBytes: 20
+    };
+
+    it('keeps the file link of a preset value', () => {
+        const control = new UntypedFormControl({});
+        const form = new GeoForm(control);
+        const storedLink = {
+            fileId: 'grid-1', name: 'site.kml', format: 'kml',
+            sizeBytes: 20, previewSizeBytes: 20
+        };
+        form.setData({ preset: { type: 'Point', coordinates: [1, 2], geoFile: storedLink } });
+
+        form.build();
+
+        expect(control.value.geoFile).toBe(storedLink);
+        expect(control.value.coordinates).toEqual([1, 2]);
+    });
+
+    it('marks a value invalid when its browser file is missing', async () => {
+        const control = new UntypedFormControl({ type: 'Point', coordinates: [1, 2], geoFile: browserLink });
+        const form = new GeoForm(control);
+        form.build();
+        const check = jasmine.createSpy('check').and.resolveTo(false);
+
+        form.setOriginalFileCheck(check);
+        await Promise.resolve();
+        await Promise.resolve();
+        await Promise.resolve();
+
+        expect(check).toHaveBeenCalledWith('geo-key');
+        expect(control.invalid).toBeTrue();
+        expect(form.getErrors()[0]).toEqual([MISSING_ORIGINAL_FILE_ERROR]);
+    });
+
+    it('keeps a value valid when its browser file is available', async () => {
+        const control = new UntypedFormControl({ type: 'Point', coordinates: [1, 2], geoFile: browserLink });
+        const form = new GeoForm(control);
+        form.build();
+
+        form.setOriginalFileCheck(async () => true);
+        await Promise.resolve();
+        await Promise.resolve();
+        await Promise.resolve();
+
+        expect(control.valid).toBeTrue();
+    });
+
+    it('does not check a stored file', () => {
+        const control = new UntypedFormControl({});
+        const form = new GeoForm(control);
+        form.build();
+        const check = jasmine.createSpy('check').and.resolveTo(false);
+        form.setOriginalFileCheck(check);
+
+        control.setValue({
+            type: 'Point', coordinates: [1, 2],
+            geoFile: { ...browserLink, fileId: 'grid-1' }
+        });
+
+        expect(check).not.toHaveBeenCalled();
+        expect(control.valid).toBeTrue();
     });
 });

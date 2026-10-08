@@ -93,7 +93,7 @@ describe('GeoFilePersistenceService', () => {
             const file = new File(['original'], name);
             const link = await service.keepOriginal(file, format);
 
-            await service.persistGeoFilesInDocument({ place: { geoFile: link } }, true);
+            await service.persistGeoFilesInDocument({ place: { type: 'Point', coordinates: [1, 2], geoFile: link } }, true);
 
             const uploaded: File = upsertFile.calls.mostRecent().args[0];
             expect(uploaded.name).toBe(name);
@@ -109,7 +109,7 @@ describe('GeoFilePersistenceService', () => {
         const file = new File([bytes], 'site.kmz', { type: 'application/vnd.google-earth.kmz' });
         const link = await service.keepOriginal(file, 'kmz');
 
-        await service.persistGeoFilesInDocument({ place: { geoFile: link } }, false);
+        await service.persistGeoFilesInDocument({ place: { type: 'Point', coordinates: [1, 2], geoFile: link } }, false);
 
         const uploaded: File = upsertFile.calls.mostRecent().args[0];
         expect(uploaded.name).toBe('site.kmz');
@@ -121,7 +121,7 @@ describe('GeoFilePersistenceService', () => {
     it('keeps the uncompressed original in the browser after a failed submit', async () => {
         const file = new File(['original'], 'site.geojson');
         const link = await service.keepOriginal(file, 'geojson');
-        await service.persistGeoFilesInDocument({ place: { geoFile: link } }, true);
+        await service.persistGeoFilesInDocument({ place: { type: 'Point', coordinates: [1, 2], geoFile: link } }, true);
 
         await service.rollbackGridFsUploads();
 
@@ -133,7 +133,7 @@ describe('GeoFilePersistenceService', () => {
         const file = new File(['original'], 'site.kml');
         const link = await service.keepOriginal(file, 'kml');
 
-        await service.persistGeoFilesInDocument({ place: { geoFile: link } }, true);
+        await service.persistGeoFilesInDocument({ place: { type: 'Point', coordinates: [1, 2], geoFile: link } }, true);
 
         expect(addFileDirect).not.toHaveBeenCalled();
         expect(link.fileId).toBe('grid-1');
@@ -143,7 +143,7 @@ describe('GeoFilePersistenceService', () => {
     it('copies browser files to the draft store without uploading', async () => {
         const link = await service.keepOriginal(new File(['x'], 'site.kml'), 'kml');
 
-        await service.persistGeoFilesInDocument({ place: { geoFile: link } }, false, true);
+        await service.persistGeoFilesInDocument({ place: { type: 'Point', coordinates: [1, 2], geoFile: link } }, false, true);
 
         expect(records.has(`${STORES_NAME.DRAFT_STORE}:geo-key`)).toBeTrue();
         expect(upsertFile).not.toHaveBeenCalled();
@@ -152,17 +152,17 @@ describe('GeoFilePersistenceService', () => {
 
     it('restores a draft file to the active store', async () => {
         const link = await service.keepOriginal(new File(['x'], 'site.kml'), 'kml');
-        await service.persistGeoFilesInDocument({ place: { geoFile: link } }, false, true);
+        await service.persistGeoFilesInDocument({ place: { type: 'Point', coordinates: [1, 2], geoFile: link } }, false, true);
         records.delete(`${STORES_NAME.FILES_STORE}:geo-key`);
 
-        await service.restoreGeoFilesFromDraft({ place: { geoFile: link } });
+        await service.restoreGeoFilesFromDraft({ place: { type: 'Point', coordinates: [1, 2], geoFile: link } });
 
         expect(records.has(`${STORES_NAME.FILES_STORE}:geo-key`)).toBeTrue();
     });
 
     it('restores GridFS bytes after a failed submit and leaves IPFS pinned', async () => {
         const link = await service.keepOriginal(new File(['x'], 'site.kml'), 'kml');
-        await service.persistGeoFilesInDocument({ place: { geoFile: link } }, false);
+        await service.persistGeoFilesInDocument({ place: { type: 'Point', coordinates: [1, 2], geoFile: link } }, false);
 
         await service.rollbackGridFsUploads();
 
@@ -186,7 +186,7 @@ describe('GeoFilePersistenceService', () => {
             previewSizeBytes: 1
         };
 
-        await service.persistGeoFilesInDocument({ place: { geoFile: link } }, false);
+        await service.persistGeoFilesInDocument({ place: { type: 'Point', coordinates: [1, 2], geoFile: link } }, false);
 
         expect(upsertFile).not.toHaveBeenCalled();
         expect(link.fileId).toBe('grid-old');
@@ -198,15 +198,90 @@ describe('GeoFilePersistenceService', () => {
         const link = await service.keepOriginal(new File(['x'], 'site.kml'), 'kml');
 
         await expectAsync(
-            service.persistGeoFilesInDocument({ place: { geoFile: link } }, false)
+            service.persistGeoFilesInDocument({ place: { type: 'Point', coordinates: [1, 2], geoFile: link } }, false)
         ).toBeRejectedWithError('ipfs failed');
 
         expect(records.has(`${STORES_NAME.FILES_STORE}:geo-key`)).toBeTrue();
     });
 
+    it('removes the GridFS upload when IPFS fails and the caller rolls back', async () => {
+        addFileDirect.and.returnValue(throwError(() => new Error('ipfs failed')));
+        const link = await service.keepOriginal(new File(['x'], 'site.kml'), 'kml');
+
+        await expectAsync(
+            service.persistGeoFilesInDocument({ place: { type: 'Point', coordinates: [1, 2], geoFile: link } }, false)
+        ).toBeRejectedWithError('ipfs failed');
+        await service.rollbackGridFsUploads();
+
+        expect(deleteFile).toHaveBeenCalledWith('grid-1');
+        expect(link.idbKey).toBe('geo-key');
+        expect(link.fileId).toBeUndefined();
+        expect(records.has(`${STORES_NAME.FILES_STORE}:geo-key`)).toBeTrue();
+    });
+
+    it('reports a browser file that is still available', async () => {
+        await service.keepOriginal(new File(['x'], 'site.kml'), 'kml');
+
+        expect(await service.ensurePendingFile('geo-key')).toBeTrue();
+    });
+
+    it('restores a browser file from the draft store', async () => {
+        const link = await service.keepOriginal(new File(['x'], 'site.kml'), 'kml');
+        await service.persistGeoFilesInDocument({ place: { type: 'Point', coordinates: [1, 2], geoFile: link } }, false, true);
+        records.delete(`${STORES_NAME.FILES_STORE}:geo-key`);
+
+        expect(await service.ensurePendingFile('geo-key')).toBeTrue();
+        expect(records.has(`${STORES_NAME.FILES_STORE}:geo-key`)).toBeTrue();
+    });
+
+    it('reports a browser file that is missing', async () => {
+        expect(await service.ensurePendingFile('missing-key')).toBeFalse();
+    });
+
+    describe('when IndexedDB cannot be opened', () => {
+        let registerStores: jasmine.Spy;
+
+        beforeEach(() => {
+            registerStores = jasmine.createSpy('registerStores').and.rejectWith(new Error('blocked'));
+            TestBed.inject(IndexedDbRegistryService).registerStores = registerStores;
+        });
+
+        it('submits a document without a browser file link', async () => {
+            const stored = {
+                fileId: 'grid-old', name: 'site.kml', format: 'kml' as const,
+                sizeBytes: 1, previewSizeBytes: 1
+            };
+
+            await service.persistGeoFilesInDocument({ note: 'text', place: { type: 'Point', coordinates: [1, 2], geoFile: stored } }, false);
+            await service.restoreGeoFilesFromDraft({ note: 'text' });
+
+            expect(registerStores).not.toHaveBeenCalled();
+        });
+
+        it('reports the storage failure for a browser file link', async () => {
+            const link = {
+                idbKey: 'geo-key', name: 'site.kml', format: 'kml' as const,
+                sizeBytes: 1, previewSizeBytes: 1
+            };
+
+            await expectAsync(
+                service.persistGeoFilesInDocument({ place: { type: 'Point', coordinates: [1, 2], geoFile: link } }, false)
+            ).toBeRejectedWithError('blocked');
+        });
+    });
+
+    it('does not persist an ordinary field named geoFile', async () => {
+        const link = await service.keepOriginal(new File(['x'], 'site.kml'), 'kml');
+
+        await service.persistGeoFilesInDocument({ type: '#schema-1', geoFile: link, details: { geoFile: link } }, false);
+
+        expect(upsertFile).not.toHaveBeenCalled();
+        expect(link.idbKey).toBe('geo-key');
+    });
+
     it('discards both browser copies for a cancelled import', async () => {
         const link = await service.keepOriginal(new File(['x'], 'site.kml'), 'kml');
-        await service.persistGeoFilesInDocument({ place: { geoFile: link } }, false, true);
+        await service.persistGeoFilesInDocument({ place: { type: 'Point', coordinates: [1, 2], geoFile: link } }, false, true);
 
         await service.discard(link);
 
