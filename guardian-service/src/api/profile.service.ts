@@ -1,25 +1,7 @@
 import { DidDocumentStatus, LocationType, MessageAPI, SchemaEntity, TopicType, UserRole, WorkerTaskType } from '@guardian/interfaces';
 import { ApiResponse } from '../api/helpers/api-response.js';
-import {
-    CommonDidDocument,
-    DatabaseServer,
-    Environment,
-    HederaBBSMethod,
-    HederaDid,
-    HederaEd25519Method,
-    IAuthUser,
-    KeyType,
-    MessageError,
-    MessageResponse,
-    NewNotifier,
-    PinoLogger,
-    RunFunctionAsync,
-    SecretManager,
-    Users,
-    VcHelper,
-    Wallet,
-    Workers,
-} from '@guardian/common';
+import { DatabaseServer, Environment, IAuthUser, KeyType, MessageError, MessageResponse, NewNotifier, PinoLogger, RunFunctionAsync, SecretManager, Users, Wallet, Workers } from '@guardian/common';
+import { CommonDidDocument, HederaBBSMethod, HederaDid, HederaEd25519Method, VcHelper } from '@guardian/hedera';
 import { RestoreDataFromHedera } from '../helpers/restore-data-from-hedera.js';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';

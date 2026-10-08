@@ -23,7 +23,7 @@ describe('AnalyticsApi', function () {
             },
             '#middlewares': middlewaresMock,
             '#auth': authMock,
-            '@guardian/common': { PinoLogger: class {} },
+            '@guardian/common/helpers/pino-logger': { PinoLogger: class {} },
             '#helpers': {
                 Guardians: class {
                     constructor(tc) { this.tc = tc; }

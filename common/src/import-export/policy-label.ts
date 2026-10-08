@@ -1,5 +1,7 @@
 import JSZip from 'jszip';
-import { PolicyLabel, Policy, Schema as SchemaCollection } from '../entity/index.js';
+import { PolicyLabel } from '../entity/policy-label.js';
+import { Policy } from '../entity/policy.js';
+import { Schema as SchemaCollection } from '../entity/schema.js';
 import {
     IPolicyLabelConfig,
     INavItemConfig,
@@ -18,7 +20,7 @@ import {
 } from '@guardian/interfaces';
 import { PolicyStatisticImportExport } from './policy-statistic.js';
 import { PolicyImportExport } from './policy.js';
-import { DatabaseServer } from '../database-modules/index.js';
+import { DatabaseServer } from '../database-modules/database-server.js';
 import {ImportExportUtils} from './utils.js';
 
 /**

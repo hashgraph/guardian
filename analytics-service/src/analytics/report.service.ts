@@ -1,4 +1,5 @@
-import { DatabaseServer, MAP_REPORT_ANALYTICS_AGGREGATION_FILTERS, MessageAction, PinoLogger } from '@guardian/common';
+import { DatabaseServer, MAP_REPORT_ANALYTICS_AGGREGATION_FILTERS, PinoLogger } from '@guardian/common';
+import { MessageAction } from '@guardian/hedera';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import JSZip from 'jszip';
 import xl from 'excel4node';

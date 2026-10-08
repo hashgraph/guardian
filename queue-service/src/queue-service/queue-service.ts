@@ -1,4 +1,9 @@
-import { DatabaseServer, IAuthUser, MAP_TASKS_AGGREGATION_FILTERS, MessageError, MessageResponse, NatsService, Singleton } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { Singleton } from '@guardian/common/decorators/singleton';
+import { MAP_TASKS_AGGREGATION_FILTERS } from '@guardian/common/helpers/db-helper';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
+import { NatsService } from '@guardian/common/mq/nats-service';
 import { GenerateUUIDv4, ITask, OrderDirection, QueueEvents, WorkerEvents } from '@guardian/interfaces';
 import { TaskEntity } from '../entity/task.js';
 

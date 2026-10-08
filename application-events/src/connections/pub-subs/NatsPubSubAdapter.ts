@@ -1,4 +1,4 @@
-import { MessageBrokerChannel } from '@guardian/common';
+import { MessageBrokerChannel } from '@guardian/common/mq/message-broker-channel';
 import PubSub from './interfaces/PubSub.js';
 
 export default class NatsPubSubAdapter implements PubSub {

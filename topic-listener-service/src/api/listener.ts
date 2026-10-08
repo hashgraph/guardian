@@ -1,4 +1,5 @@
-import { DatabaseServer, Environment } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { Environment } from '@guardian/common/helpers/environment';
 import { TopicListener as ListenerCollection } from '../entity/index.js';
 import { TopicInfo, TopicMessage } from '../interface/index.js';
 import { ListenerService } from './listener-service.js';

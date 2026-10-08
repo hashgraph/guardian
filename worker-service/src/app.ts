@@ -1,4 +1,5 @@
-import { ApplicationState, GenerateTLSOptionsNats, JwtServicesValidator, LargePayloadContainer, MessageBrokerChannel, MockService, mongoForLoggingInitialization, NotificationService, OldSecretManager, PinoLogger, pinoLoggerInitialization, SecretManager, Users, ValidateConfiguration } from '@guardian/common';
+import { ApplicationState, GenerateTLSOptionsNats, JwtServicesValidator, LargePayloadContainer, MessageBrokerChannel, mongoForLoggingInitialization, NotificationService, OldSecretManager, PinoLogger, pinoLoggerInitialization, SecretManager, Users, ValidateConfiguration } from '@guardian/common';
+import { MockService } from '@guardian/hedera';
 import { Worker } from './api/worker.js';
 import { HederaSDKHelper } from './api/helpers/hedera-sdk-helper.js';
 import { ApplicationStates, GenerateUUIDv4 } from '@guardian/interfaces';

@@ -1,4 +1,5 @@
-import { DatabaseServer, Formula, FormulaImportExport, FormulaMessage, INotificationStep, MessageAction, MessageServer, Policy, TopicConfig, VcDocument, VpDocument } from '@guardian/common';
+import { DatabaseServer, Formula, FormulaImportExport, INotificationStep, Policy, VcDocument, VpDocument } from '@guardian/common';
+import { FormulaMessage, MessageAction, MessageServer, TopicConfig } from '@guardian/hedera';
 import { EntityStatus, GenerateUUIDv4, IOwner, IRootConfig, PolicyStatus } from '@guardian/interfaces';
 
 type IDocument = VcDocument | VpDocument;

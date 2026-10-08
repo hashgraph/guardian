@@ -6,12 +6,8 @@ import { IPolicyBlock, IPolicyDocument, IPolicyEventState } from '../policy-engi
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyUser, UserCredentials } from '../policy-user.js';
-import {
-    SplitDocuments,
-    Schema as SchemaCollection,
-    VcHelper,
-    VcDocumentDefinition as VcDocument,
-} from '@guardian/common';
+import { SplitDocuments, Schema as SchemaCollection } from '@guardian/common';
+import { VcHelper, VcDocumentDefinition as VcDocument } from '@guardian/hedera';
 import { LocationType, SchemaEntity } from '@guardian/interfaces';
 import { BlockActionError } from '../errors/index.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';

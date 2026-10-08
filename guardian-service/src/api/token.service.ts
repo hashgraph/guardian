@@ -1,5 +1,6 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { ArrayMessageResponse, DatabaseServer, IAuthUser, INotificationStep, KeyType, MessageError, MessageResponse, NewNotifier, NotificationStep, PinoLogger, RunFunctionAsync, Token, TopicHelper, Users, Wallet, Workers } from '@guardian/common';
+import { ArrayMessageResponse, DatabaseServer, IAuthUser, INotificationStep, KeyType, MessageError, MessageResponse, NewNotifier, NotificationStep, PinoLogger, RunFunctionAsync, Token, Users, Wallet, Workers } from '@guardian/common';
+import { TopicHelper } from '@guardian/hedera';
 import { GenerateUUIDv4, IOwner, IRootConfig, MessageAPI, OrderDirection, OrgRolePermission, TokenType, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { FilterObject } from '@mikro-orm/core';
 import { publishTokenTags } from '../helpers/import-helpers/index.js'

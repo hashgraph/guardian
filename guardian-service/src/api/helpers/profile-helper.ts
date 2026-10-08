@@ -16,33 +16,8 @@ import {
     UserRole,
     WorkerTaskType
 } from '@guardian/interfaces';
-import {
-    CommonDidDocument, DatabaseServer,
-    DidDocument as DidDocumentCollection,
-    DIDMessage,
-    GuardianRoleMessage,
-    HederaBBSMethod,
-    HederaEd25519Method,
-    IAuthUser,
-    INotificationStep,
-    KeyType,
-    MessageAction,
-    MessageError,
-    MessageServer, PinoLogger,
-    RegistrationMessage,
-    Schema as SchemaCollection,
-    Settings,
-    Topic,
-    TopicConfig,
-    TopicHelper,
-    Users,
-    VcDocument as VcDocumentCollection,
-    VcDocumentDefinition,
-    VcHelper,
-    VCMessage,
-    Wallet,
-    Workers,
-} from '@guardian/common';
+import { DatabaseServer, DidDocument as DidDocumentCollection, IAuthUser, INotificationStep, KeyType, MessageError, PinoLogger, Schema as SchemaCollection, Settings, Topic, Users, VcDocument as VcDocumentCollection, Wallet, Workers } from '@guardian/common';
+import { CommonDidDocument, DIDMessage, GuardianRoleMessage, HederaBBSMethod, HederaEd25519Method, MessageAction, MessageServer, RegistrationMessage, TopicConfig, TopicHelper, VcDocumentDefinition, VcHelper, VCMessage } from '@guardian/hedera';
 import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 import { serDefaultRole } from '../permission.service.js';
 import { publishSystemSchema } from '../../helpers/import-helpers/index.js';

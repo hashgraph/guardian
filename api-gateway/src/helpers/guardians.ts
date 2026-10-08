@@ -30,7 +30,8 @@ import {
     SchemaNode,
     SuggestionsOrderPriority
 } from '@guardian/interfaces';
-import { IAuthUser, NatsService } from '@guardian/common';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { NatsService } from '@guardian/common/mq/nats-service';
 import { NewTask } from './task-manager.js';
 import {
     ModuleDTO,
