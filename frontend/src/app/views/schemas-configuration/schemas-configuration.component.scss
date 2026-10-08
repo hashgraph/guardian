@@ -2217,6 +2217,14 @@
         gap: 3px;
         i { font-size: 9px; }
     }
+    &--cond-member {
+        background: var(--guardian-warning-background, #FFF6E5);
+        color: color-mix(in srgb, var(--color-accent-orange-1, #FFA048) 82%, #000);
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        i { font-size: 9px; }
+    }
     /* Referenced schema name — solid purple, same style as v5 subschema-ref-badge */
     &--ref-name {
         background: var(--color-primary, #4169E2);

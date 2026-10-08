@@ -389,6 +389,7 @@ export class SchemaHelper {
             enumName,
             tableColumns,
             conditionRequired,
+            conditionUserOrdered,
         } = SchemaHelper.parseFieldComment(field.comment);
         field.suggest = suggest;
         if (field.isRef) {
@@ -432,6 +433,7 @@ export class SchemaHelper {
         // branch `required` would demand fields of a condition that was never asked. See
         // `validateConditionFields`, which enforces the flag against the active branch.
         field.required = required || !!conditionRequired;
+        field.conditionUserOrdered = !!conditionUserOrdered;
         field.hidden = !!hidden;
         field.autocalculate = !!autocalculate;
         field.expression = expression;
@@ -1662,6 +1664,9 @@ export class SchemaHelper {
         if (field.hidden) {
             comment.hidden = !!field.hidden;
         }
+        if (field.conditionUserOrdered) {
+            comment.conditionUserOrdered = true;
+        }
         if (field.suggest) {
             comment.suggest = field.suggest;
         }
@@ -2099,6 +2104,22 @@ export class SchemaHelper {
         } catch (error) {
             return {};
         }
+    }
+
+    /**
+     * Parses a field's raw comment/$comment string and strips orderPosition. A field's
+     * position in schema.fields is cosmetic (drag-reorder, condition selection, legacy
+     * normalization) and must not count as a change when hashing a field for content-only
+     * comparison, e.g. template field lock checks.
+     * @param comment
+     */
+    public static cleanCommentForHash(comment: unknown): any {
+        if (typeof comment !== 'string') {
+            return comment;
+        }
+        const parsed = SchemaHelper.parseFieldComment(comment);
+        delete parsed.orderPosition;
+        return parsed;
     }
 
     /**
