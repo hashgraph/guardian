@@ -10,6 +10,7 @@ on:
 permissions:
   contents: read
   checks: write        # required by publish-unit-test-result-action
+  pull-requests: write # required by publish-unit-test-result-action for PR comments
 
 jobs:
   buildAndTest:
