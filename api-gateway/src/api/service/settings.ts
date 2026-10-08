@@ -4,7 +4,7 @@ import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiNoContentRe
 import { ObjectExamples, AboutResponseDTO, SettingsDTO, InternalServerErrorDTO } from '#middlewares';
 import { Auth, AuthUser } from '#auth';
 import { Guardians, InternalException, getGuardianVersion } from '#helpers';
-import { IAuthUser, PinoLogger } from '@guardian/common';
+import { GeospatialLimits, getGeospatialLimits, IAuthUser, PinoLogger } from '@guardian/common';
 
 @Controller('settings')
 @ApiTags('settings')
@@ -151,6 +151,25 @@ export class SettingsApi {
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
+    }
+
+    @Get('/geospatial-limits')
+    @Auth()
+    @ApiOperation({
+        summary: 'Returns geospatial file limits.',
+        description: 'Returns geospatial preview and upload limits in megabytes.',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: Object,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @HttpCode(HttpStatus.OK)
+    getGeospatialLimits(): GeospatialLimits {
+        return getGeospatialLimits();
     }
 
     /**
