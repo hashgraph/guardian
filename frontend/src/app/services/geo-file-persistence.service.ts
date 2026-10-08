@@ -16,6 +16,7 @@ export interface GeoFileLink {
     sizeBytes: number;
     previewSizeBytes: number;
     noPreview?: boolean;
+    automaticPoint?: [number, number] | [number, number, number];
 }
 
 interface GeoFileRecord {

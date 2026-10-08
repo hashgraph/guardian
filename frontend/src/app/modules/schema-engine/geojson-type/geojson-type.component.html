@@ -1,3 +1,19 @@
+@if (importError) {
+  <small class="p-error">{{ importError }}</small>
+}
+@if (loading) {
+  <div class="geo-file-loading" role="status" aria-live="polite">
+    <span class="pi pi-spin pi-spinner" aria-hidden="true"></span>
+    <span>Reading file...</span>
+  </div>
+}
+@if (isPreviewUnavailable()) {
+  <div class="geo-preview-unavailable">
+    <p>Preview unavailable due to size. Download this file to view.</p>
+    <p>{{ originalFileLabel() }}</p>
+    <button pButton label="Download original file" (click)="downloadOriginal()"></button>
+  </div>
+}
 <div class="switch-btn">
   <switch-button
     [on-label]="'JSON'"
@@ -43,7 +59,7 @@
 } @else {
   <div class="map-container">
     <div class="map" #map id="map"></div>
-    @if (canDownload() && isDisabled) {
+    @if (canDownload() && isDisabled && !isPreviewUnavailable()) {
       <button
         pButton
         class="add-feature-button download-geo"
@@ -79,7 +95,7 @@
             label="Add Geometry"
           ></button>
         }
-        @if (canDownload()) {
+        @if (canDownload() && !isPreviewUnavailable()) {
           <button
             pButton
             class="add-feature-button download-geo"

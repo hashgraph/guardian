@@ -95,6 +95,10 @@ export class GeoForm {
         if (!value || typeof value !== 'object' || this.safeStringify(value) === '{}') {
             return { 0: ['A GeoJSON object is required'] };
         }
+        const automaticPoint = value.geoFile?.noPreview === true
+            ? value.geoFile.automaticPoint
+            : undefined;
+        let automaticPointAvailable = true;
 
         const errors: Record<string | number, string[]> = {};
 
@@ -113,7 +117,14 @@ export class GeoForm {
                         ? f.geometry.coordinates
                         : (f.geometry.coordinates && this.safeParse(f.geometry.coordinates)) || [];
 
-                    const r = this.validateGeometryCore(f.geometry.type, coords);
+                    const useAutomaticPoint = automaticPointAvailable &&
+                        this.isAutomaticPoint(f.geometry.type, coords, automaticPoint);
+                    if (useAutomaticPoint) automaticPointAvailable = false;
+                    const r = this.validateGeometryCore(
+                        f.geometry.type,
+                        coords,
+                        useAutomaticPoint
+                    );
                     if (!r.valid) {
                         errors[i] = r.errors.map(e => `Feature #${i}: ${e}`);
                     }
@@ -130,7 +141,11 @@ export class GeoForm {
                 ? value.geometry.coordinates
                 : (value.geometry.coordinates && this.safeParse(value.geometry.coordinates)) || [];
 
-            const r = this.validateGeometryCore(value.geometry.type, coords);
+            const r = this.validateGeometryCore(
+                value.geometry.type,
+                coords,
+                this.isAutomaticPoint(value.geometry.type, coords, automaticPoint)
+            );
             if (!r.valid) {
                 errors[0] = r.errors;
             }
@@ -141,7 +156,11 @@ export class GeoForm {
             const coords = Array.isArray(value.coordinates)
                 ? value.coordinates
                 : (value.coordinates && this.safeParse(value.coordinates)) || [];
-            const r = this.validateGeometryCore(value.type, coords);
+            const r = this.validateGeometryCore(
+                value.type,
+                coords,
+                this.isAutomaticPoint(value.type, coords, automaticPoint)
+            );
             if (!r.valid) {
                 errors[0] = r.errors;
             }
@@ -265,10 +284,23 @@ export class GeoForm {
         return errors;
     }
 
-    private validateGeometryCore(type: string, coords: any): { valid: boolean; errors: string[] } {
+    private isAutomaticPoint(type: string, coords: any, automaticPoint: any): boolean {
+        return type === GeoJsonType.POINT &&
+            Array.isArray(coords) &&
+            Array.isArray(automaticPoint) &&
+            coords.length === automaticPoint.length &&
+            coords.every((value, index) => value === automaticPoint[index]);
+    }
+
+    private validateGeometryCore(
+        type: string,
+        coords: any,
+        allowUnavailableType = false
+    ): { valid: boolean; errors: string[] } {
         let errors: string[] = [];
 
-        if (Array.isArray(this.availableTypes) && this.availableTypes.length && !this.availableTypes.includes(type)) {
+        if (!allowUnavailableType && Array.isArray(this.availableTypes) &&
+            this.availableTypes.length && !this.availableTypes.includes(type)) {
             return { valid: false, errors: [`geometry type "${type}" is not available`] };
         }
 
