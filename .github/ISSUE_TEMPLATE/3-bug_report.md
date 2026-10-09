@@ -31,7 +31,7 @@ _The actual result was:_
 
 * Guardian version:
 * Browser:
-* Platform (iOS, Linux, Windows):
+* Platform:
 
 ### Artifacts & Considerations
 
