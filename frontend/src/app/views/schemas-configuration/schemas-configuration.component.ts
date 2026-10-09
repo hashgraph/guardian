@@ -3521,12 +3521,17 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (!ancestors.size) { return false; }
 
         const visited = new Set<string>();
-        // defs is never pruned (stale refs persist on the backend), so only check
-        // against loaded fields; the backend rejects real cycles on save.
-        const getSchemaReferences = (s: Schema): string[] =>
-            (s.fields || [])
-                .filter(f => f.isRef && f.type)
-                .map(f => f.type);
+        // defs is computed server-side from real $ref chains (SchemaHelper.collectReachableRefs),
+        // not raw $defs keys, so it's safe to use here for rows whose fields aren't loaded yet.
+        const getSchemaReferences = (s: Schema): string[] => {
+            if (Array.isArray(s.fields) && s.fields.length) {
+                return s.fields
+                    .filter(f => f.isRef && f.type)
+                    .map(f => f.type);
+            }
+            const defs = (s as any).defs;
+            return Array.isArray(defs) ? defs : [];
+        };
         const visit = (s: Schema): boolean => {
             if (!s.iri || visited.has(s.iri)) { return false; }
             visited.add(s.iri);
