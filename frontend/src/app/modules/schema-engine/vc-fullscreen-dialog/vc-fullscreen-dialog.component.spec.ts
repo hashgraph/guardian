@@ -8,7 +8,7 @@ describe('VCFullscreenDialog', () => {
             {} as any, { data: {} } as any, {} as any, {} as any, {} as any,
             {} as any, {} as any, {} as any, {} as any, {} as any, {} as any,
             {} as any, new UntypedFormBuilder(), {} as any, {} as any, {} as any,
-            {} as any,
+            {} as any, {} as any,
         );
     }
 

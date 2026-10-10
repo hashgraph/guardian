@@ -4,6 +4,7 @@ import { API_BASE_URL } from './api';
 import { SettingsService } from './settings.service';
 
 const ENVIRONMENT_URL = `${API_BASE_URL}/settings/environment`;
+const GEOSPATIAL_LIMITS_URL = `${API_BASE_URL}/settings/geospatial-limits`;
 
 describe('SettingsService', () => {
     let service: SettingsService;
@@ -43,5 +44,26 @@ describe('SettingsService', () => {
         http.expectOne(ENVIRONMENT_URL).flush('testnet');
 
         expect(network).toBe('testnet');
+    });
+
+    it('gets typed geospatial limits from the settings route', () => {
+        let result: unknown;
+        service.getGeospatialLimits().subscribe(value => result = value);
+
+        const request = http.expectOne(GEOSPATIAL_LIMITS_URL);
+        expect(request.request.method).toBe('GET');
+        request.flush({
+            kmlPreviewMaxFileSizeMb: 10,
+            geojsonPreviewMaxFileSizeMb: 5,
+            geospatialMaxFileSizeMb: 100,
+            geospatialPreviewMaxFeatures: 1500
+        });
+
+        expect(result).toEqual({
+            kmlPreviewMaxFileSizeMb: 10,
+            geojsonPreviewMaxFileSizeMb: 5,
+            geospatialMaxFileSizeMb: 100,
+            geospatialPreviewMaxFeatures: 1500
+        });
     });
 });

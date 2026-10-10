@@ -13,6 +13,7 @@ import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-conf
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { DocumentAutosaveStorage } from 'src/app/modules/policy-engine/structures';
 import { TablePersistenceService } from 'src/app/services/table-persistence.service';
+import { GeoFilePersistenceService } from 'src/app/services/geo-file-persistence.service';
 import { autosaveValueChanged, getMinutesAgoStream } from 'src/app/utils/autosave-utils';
 import { RelayerAccountsService } from 'src/app/services/relayer-accounts.service';
 import { AttachedFile } from 'src/app/modules/common/policy-comments/attached-file';
@@ -114,6 +115,7 @@ export class RequestDocumentBlockDialog {
         private changeDetectorRef: ChangeDetectorRef,
         private indexedDb: IndexedDbRegistryService,
         private tablePersist: TablePersistenceService,
+        private geoFilePersist: GeoFilePersistenceService,
         private ipfsService: IPFSService,
         private policyTest: PolicyTestAutomationService,
     ) {
@@ -287,7 +289,18 @@ export class RequestDocumentBlockDialog {
         const data = this.dataForm.getRawValue();
         this.loading = true;
 
-        await this.tablePersist.persistTablesInDocument(data, !!this.dryRun, this.policyId, this.id, draft);
+        let geoPersistStarted = false;
+        try {
+            await this.tablePersist.persistTablesInDocument(data, !!this.dryRun, this.policyId, this.id, draft);
+            geoPersistStarted = true;
+            await this.geoFilePersist.persistGeoFilesInDocument(data, !!this.dryRun, !!draft);
+        } catch (error) {
+            await this.tablePersist.rollbackIpfsUploads();
+            if (geoPersistStarted) await this.geoFilePersist.rollbackGridFsUploads();
+            console.error(error);
+            this.loading = false;
+            return;
+        }
 
         prepareVcData(data);
         const draftId = this.parent instanceof RequestDocumentBlockComponent ? this.parent.draftId : null;
@@ -326,7 +339,9 @@ export class RequestDocumentBlockDialog {
                         this.dataSaved = true;
                     }
                 }, 1000);
-            }, (e) => {
+            }, async (e) => {
+                await this.tablePersist.rollbackIpfsUploads();
+                await this.geoFilePersist.rollbackGridFsUploads();
                 console.error(e.error);
                 this.loading = false;
             });

@@ -5,6 +5,20 @@ import { Observable } from 'rxjs';
 import { filter, shareReplay } from 'rxjs/operators';
 import { API_BASE_URL } from './api';
 
+export interface GeospatialLimits {
+    kmlPreviewMaxFileSizeMb: number;
+    geojsonPreviewMaxFileSizeMb: number;
+    geospatialMaxFileSizeMb: number;
+    geospatialPreviewMaxFeatures: number;
+}
+
+export const DEFAULT_GEOSPATIAL_LIMITS: GeospatialLimits = {
+    kmlPreviewMaxFileSizeMb: 10,
+    geojsonPreviewMaxFileSizeMb: 5,
+    geospatialMaxFileSizeMb: 100,
+    geospatialPreviewMaxFeatures: 1500
+};
+
 /**
  * Services for working from user profile.
  */
@@ -42,6 +56,10 @@ export class SettingsService {
         return this.http.get(`${this.url}/environment`, {
             responseType: 'text',
         });
+    }
+
+    public getGeospatialLimits(): Observable<GeospatialLimits> {
+        return this.http.get<GeospatialLimits>(`${this.url}/geospatial-limits`);
     }
 
     public getAbout(): Observable<AboutInterface> {

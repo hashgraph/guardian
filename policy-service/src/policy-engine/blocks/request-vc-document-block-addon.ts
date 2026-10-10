@@ -30,6 +30,7 @@ import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/polic
 import deepEqual from 'deep-equal';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
 import { hydrateTablesInObject, loadFileTextById } from '../helpers/table-field.js';
+import { GeospatialFileValidator } from '../helpers/geospatial-file-validator.js';
 
 /**
  * Request VC document block addon with UI
@@ -283,13 +284,12 @@ export class RequestVcDocumentBlockAddon {
                     };
                 }
 
-                const vc = await PolicyActionsUtils.signVC({
+                const vc = await this.createVerifiableCredential({
                     ref,
-                    subject: credentialSubject,
-                    issuer: user.did,
+                    credentialSubject,
+                    user,
                     relayerAccount,
                     options: { uuid, group: groupContext, ...evidenceOptions },
-                    userId: user.userId
                 });
                 let item = PolicyUtils.createVC(ref, documentOwner, vc, actionStatus?.id);
 
@@ -317,6 +317,27 @@ export class RequestVcDocumentBlockAddon {
 
         ref.backup();
         return result?.data;
+    }
+
+    private async createVerifiableCredential(data: {
+        ref: AnyBlockType;
+        credentialSubject: any;
+        user: PolicyUser;
+        relayerAccount: string;
+        options: any;
+    }): Promise<any> {
+        await GeospatialFileValidator.validateDocument(
+            data.credentialSubject,
+            data.user.userId
+        );
+        return PolicyActionsUtils.signVC({
+            ref: data.ref,
+            subject: data.credentialSubject,
+            issuer: data.user.did,
+            relayerAccount: data.relayerAccount,
+            options: data.options,
+            userId: data.user.userId
+        });
     }
 
     /**

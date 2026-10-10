@@ -4,6 +4,7 @@ export * from './common.module.js';
 export * from './db-helper.js';
 export * from './db-naming-strategy.js';
 export * from './do-nothing.js';
+export * from './geospatial-limits.js';
 export * from './ipfs.js';
 export * from './logger.module.js';
 export * from './logger.js';

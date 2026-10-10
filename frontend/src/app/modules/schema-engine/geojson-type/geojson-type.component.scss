@@ -119,9 +119,47 @@
 }
 
 .map-container .download-geo {
-    margin-top: 0.25rem;
+    margin: 16px 0 0;
+}
+
+.map-container .download-geo + .download-geo {
+    margin-left: 8px;
 }
 
 .download-geo {
-    width: 180px;
+    width: auto;
+    white-space: nowrap;
+}
+
+:host {
+    display: block;
+    position: relative;
+}
+
+.geo-file-loading {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    background: color-mix(in srgb, var(--guardian-grey-background) 60%, transparent);
+
+    .preloader-image {
+        position: fixed;
+        top: calc(50% - 28px);
+        left: calc(50% - 28px);
+    }
+}
+
+.geo-preview-unavailable {
+    margin-bottom: 12px;
+    font-size: 12px;
+    line-height: 16px;
+    color: color-mix(in srgb, var(--color-accent-yellow-1) 70%, var(--guardian-font-color));
+
+    p {
+        margin: 0 0 4px;
+    }
+
+    .geo-preview-file {
+        color: var(--guardian-grey-color-4);
+    }
 }

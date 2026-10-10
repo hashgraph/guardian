@@ -18,6 +18,7 @@ import {
     DatabaseServer,
     TopicConfig,
 } from '@guardian/common';
+import { GeospatialFileValidator } from './helpers/geospatial-file-validator.js';
 
 export class PolicyVcDocumentsUtils {
     public static async getAllVersionVcDocuments(
@@ -131,6 +132,11 @@ export class PolicyVcDocumentsUtils {
                 );
             }
         });
+
+        await GeospatialFileValidator.validateDocument(
+            newCredentialSubject,
+            user.userId
+        );
 
         let newDoc = await PolicyVcDocumentsUtils.createVerifiableCredential(
             ref,
