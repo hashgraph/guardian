@@ -1,9 +1,0 @@
-<p>{{ message }}</p>
-<div class="dialog-actions">
-  @if (mode === 'warn') {
-    <button pButton class="button secondary" label="Cancel" (click)="close(false)"></button>
-    <button pButton class="button" label="Upload without preview" (click)="close(true)"></button>
-  } @else {
-    <button pButton class="button" label="Ok" (click)="close(false)"></button>
-  }
-</div>

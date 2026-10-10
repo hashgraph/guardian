@@ -46,6 +46,24 @@ const noCoordinateFixtures = [
 ];
 
 describe('GeoJsonCoordinateScanner', () => {
+    for (const prefix of [
+        '{"type":"Feature","properties":{"description":"',
+        '{"type":"Feature","properties":{"'
+    ]) {
+        it(`keeps long strings bounded after ${prefix}`, () => {
+            const scanner = new GeoJsonCoordinateScanner();
+            scanner.write(prefix);
+            const chunk = 'a'.repeat(16384);
+            for (let index = 0; index < 16; index++) {
+                scanner.write(chunk);
+                expect(Reflect.get(scanner, 'stringValue').length).toBeLessThanOrEqual(65);
+            }
+            scanner.write(prefix.endsWith('description":"') ? '\\u0061\\"tail"}' : '":"ignored"}');
+            scanner.write(',"geometry":{"type":"Point","coordinates":[36,-1]}}');
+            expect(scanner.coordinate).toEqual([36, -1]);
+        });
+    }
+
     for (const text of fixtures) {
         for (const chunkSize of [1, 7, 1024 * 1024]) {
             it(`matches the field at ${chunkSize} bytes for ${text.slice(0, 45)}`, async () => {

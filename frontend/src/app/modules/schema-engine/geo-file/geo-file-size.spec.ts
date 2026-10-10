@@ -5,7 +5,8 @@ describe('classifyGeoFile', () => {
     const limits = {
         kmlPreviewMaxFileSizeMb: 10,
         geojsonPreviewMaxFileSizeMb: 5,
-        geospatialMaxFileSizeMb: 100
+        geospatialMaxFileSizeMb: 100,
+        geospatialPreviewMaxFeatures: 5000
     };
 
     it('keeps GeoJSON at its preview boundary previewable', () => {

@@ -58,7 +58,6 @@ import { SchemaFormNavigationComponent } from './schema-form-navigation/schema-f
 import { SchemaFormViewNavigationComponent } from './schema-form-view-navigation/schema-form-view-navigation.component';
 import { RichTextEditorComponent } from './rich-text-editor/rich-text-editor.component';
 import { RichTextClipDirective } from './rich-text-editor/rich-text-clip.directive';
-import { GeoFileLimitDialogComponent } from './dialogs/geo-file-limit-dialog/geo-file-limit-dialog.component';
 
 @NgModule({
     declarations: [
@@ -92,8 +91,7 @@ import { GeoFileLimitDialogComponent } from './dialogs/geo-file-limit-dialog/geo
         SchemaFormNavigationComponent,
         SchemaFormViewNavigationComponent,
         RichTextEditorComponent,
-        RichTextClipDirective,
-        GeoFileLimitDialogComponent
+        RichTextClipDirective
     ],
     imports: [
         CommonModule,

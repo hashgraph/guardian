@@ -7,7 +7,7 @@ import GeoJSON from 'ol/format/GeoJSON.js';
 import Map from 'ol/Map.js';
 import View from 'ol/View.js';
 import { Circle as CircleStyle, Fill, Stroke, Style, Text } from 'ol/style.js';
-import { extend, getCenter } from 'ol/extent';
+import { extend, getCenter, isEmpty } from 'ol/extent';
 import { Coordinate } from 'ol/coordinate';
 import { toLonLat, transform } from 'ol/proj';
 import { Cluster, OSM, Vector as VectorSource } from 'ol/source.js';
@@ -24,13 +24,16 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { DEFAULT_GEOSPATIAL_LIMITS, GeospatialLimits, SettingsService } from 'src/app/services/settings.service';
 import { classifyGeoFile, PreviewableGeoFileFormat } from '../geo-file/geo-file-size';
 import { gunzipIfCompressed } from '../geo-file/geo-file-compression';
-import { readFirstCoordinate } from '../geo-file/first-coordinate-reader';
+import { GeoCoordinate, readFirstCoordinate } from '../geo-file/first-coordinate-reader';
 import { GeoJsonCoordinateScanner } from '../geo-file/geojson-coordinate-scanner';
 import { KmzEntry, KmzReader } from '../geo-file/kmz-reader';
 import { KmlCoordinateScanner } from '../geo-file/kml-coordinate-scanner';
-import { GeoFileLimitDialogComponent } from '../dialogs/geo-file-limit-dialog/geo-file-limit-dialog.component';
+import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { FeatureCollection } from 'geojson';
 import { kml } from '@tmcw/togeojson';
+
+const MAX_EDITABLE_SHAPES = 300;
+const ROWS_PER_BATCH = 10;
 
 const MAP_OPTIONS = {
     center: [0, 0],
@@ -335,6 +338,8 @@ export class GeojsonTypeComponent implements OnChanges {
     public fileImportName: string = '';
     public fileImportSize: number = 0;
     public loading: boolean = false;
+    public readonly maxEditableShapes = MAX_EDITABLE_SHAPES;
+    public renderedRows: number = Infinity;
     public importError: string = '';
     private pendingGeoFile?: GeoFileLink;
     private selectedOriginalFile?: File;
@@ -555,12 +560,16 @@ export class GeojsonTypeComponent implements OnChanges {
     }
 
     public isPreviewUnavailable(): boolean {
-        return this.formModel?.getValue?.()?.geoFile?.noPreview === true;
+        return this.currentGeoFile()?.noPreview === true;
     }
 
     public originalFileLabel(): string {
-        const link = this.formModel?.getValue?.()?.geoFile as GeoFileLink | undefined;
+        const link = this.currentGeoFile();
         return link ? `${link.name} (${this.formatSize(link.sizeBytes)})` : '';
+    }
+
+    private currentGeoFile(): GeoFileLink | undefined {
+        return this.formModel?.getValue?.()?.geoFile || this.pendingGeoFile;
     }
 
     ngOnInit(): void {
@@ -655,7 +664,10 @@ export class GeojsonTypeComponent implements OnChanges {
             setTimeout(() => {
                 this.initMap();
 
-                if (this.center) {
+                const importedExtent = this.importedShapesSource?.getExtent();
+                if (this.importedLocations.length > 0 && importedExtent && !isEmpty(importedExtent)) {
+                    this.map?.getView().fit(importedExtent, { padding: [40, 40, 40, 40], maxZoom: 14, duration: 350 });
+                } else if (this.center) {
                     this.map?.getView().animate({
                         center: this.center,
                         zoom: 6,
@@ -825,20 +837,31 @@ export class GeojsonTypeComponent implements OnChanges {
             this.importedLocations = this.importedLocations.filter(location => location.id !== feature.getId());
 
             this.updateMap(true);
-        } else if (feature.getId()) {
-            const location = this.allImportedLocations.find(item => item.id === feature.getId());
-            if (location) {
-                this.deleteGeometry(feature.getId())
-                const newGeometry = {
-                    id: location.id || GenerateUUIDv4(),
-                    type: location.type,
-                    coordinates: Array.isArray(location.coordinates) ? location.coordinates : location.coordinates && JSON.parse(location.coordinates) || [],
-                    coordinatesString: Array.isArray(location.coordinates) ? JSON.stringify(location.coordinates, null, 4) : location.coordinates
-                };
-
-                this.addImportedLocation(newGeometry);
-            }
+        } else if (feature.getId() && this.allImportedLocations.some(item => item.id === feature.getId())) {
+            this.deleteGeometry(feature.getId());
         }
+    }
+
+    public includeAllImportedFeatures(): void {
+        this.loading = true;
+        this.cdkRef.detectChanges();
+        setTimeout(() => {
+            this.selectAllImportedFeatures();
+            this.renderedRows = 0;
+            this.renderNextRows();
+        });
+    }
+
+    private renderNextRows(): void {
+        this.renderedRows += ROWS_PER_BATCH;
+        if (this.displayLocationEditor() && this.renderedRows < this.geometriesList.length) {
+            this.cdkRef.detectChanges();
+            setTimeout(() => this.renderNextRows());
+            return;
+        }
+        this.renderedRows = Infinity;
+        this.loading = false;
+        this.cdkRef.detectChanges();
     }
 
     public selectAllImportedFeatures() {
@@ -854,29 +877,22 @@ export class GeojsonTypeComponent implements OnChanges {
     }
 
     public displayLocationEditor() {
-        return this.geometriesList.length <= 500;
+        return this.geometriesList.length <= MAX_EDITABLE_SHAPES;
     }
 
     public async clearSelectionFeatures(): Promise<void> {
-        if (this.isPreviewUnavailable() && this.geometriesList.length > 0) {
-            this.geometriesList = this.geometriesList.slice(0, 1);
-            this.updateMap(true);
-            return;
-        }
+        const picked = this.geometriesList;
         this.geometriesList = [];
         this.geoShapesSource?.clear(true);
-        const pendingGeoFile = this.browserGeoFile();
+        this.pendingGeoFile = this.pendingGeoFile || this.formModel?.getValue?.()?.geoFile;
 
-        this.fileImportName = '';
-        this.fileImportSize = 0;
-        this.pendingGeoFile = undefined;
-        this.selectedOriginalFile = undefined;
-        if (pendingGeoFile) await this.geoFiles.discard(pendingGeoFile);
-
-        this.clearImportedLocations();
-        this.importedShapesSource?.clear();
+        picked.forEach(geometry => {
+            const location = this.allImportedLocations.find(item => item.id === geometry.id);
+            if (location) this.addImportedLocation(location);
+        });
 
         this.setControlValue({});
+        this.jsonInput = '';
     }
 
     private updateMap(updateInput: boolean = false) {
@@ -1133,11 +1149,15 @@ export class GeojsonTypeComponent implements OnChanges {
 
     public deleteGeometry(geometryId: string): any {
         if (geometryId) {
-            if (this.isPreviewUnavailable() && this.geometriesList.length <= 1) {
-                return;
-            }
-            this.clearAutomaticPoint(this.geometriesList.find(item => item.id === geometryId));
+            const location = this.allImportedLocations.find(item => item.id === geometryId);
+            if (!location) this.clearAutomaticPoint(this.geometriesList.find(item => item.id === geometryId));
             this.geometriesList = this.geometriesList.filter(item => item.id !== geometryId);
+            if (!this.geometriesList.length) {
+                this.pendingGeoFile = this.pendingGeoFile || this.formModel?.getValue?.()?.geoFile;
+                this.setControlValue({});
+                this.jsonInput = '';
+            }
+            if (location) this.addImportedLocation(location);
             this.updateMap(true);
         }
     }
@@ -1375,10 +1395,18 @@ export class GeojsonTypeComponent implements OnChanges {
                 `This file's size is ${this.formatSize(file.size)}, which exceeds the ${previewLimit} MB limit for in-browser rendering. If you choose to proceed, browser rendering will not be available and a dedicated GIS tool, such as ArcGIS, will be required to inspect it.`
             );
             if (!accepted) return;
-            await this.importWithoutPreview(file, format);
+            const allowedTypes = this.allowedFileTypes();
+            const coordinate = await this.findAutomaticPoint(() => readFirstCoordinate(
+                file,
+                format === 'geojson'
+                    ? new GeoJsonCoordinateScanner(allowedTypes)
+                    : new KmlCoordinateScanner(allowedTypes)
+            ));
+            if (!coordinate) return;
+            await this.importWithoutPreview(file, format, coordinate);
             return;
         }
-        await this.importWithPreview(file, format);
+        await this.importWithPreview(file, format, limits);
     }
 
     private loadLimits(): Promise<GeospatialLimits> {
@@ -1400,39 +1428,54 @@ export class GeojsonTypeComponent implements OnChanges {
     private async openLimitDialog(
         mode: 'warn' | 'reject', header: string, message: string
     ): Promise<boolean> {
-        const reference = this.dialog.open(GeoFileLimitDialogComponent, {
-            header, width: '640px', styleClass: 'guardian-dialog', closable: false,
-            data: { mode, message }
+        const buttons = mode === 'warn'
+            ? [{ name: 'Cancel', class: 'secondary' }, { name: 'Upload without preview', class: 'primary' }]
+            : [{ name: 'Ok', class: 'primary' }];
+        const reference = this.dialog.open(CustomConfirmDialogComponent, {
+            showHeader: false, width: '640px', styleClass: 'guardian-dialog', duplicate: true,
+            data: { header, texts: [message], buttons }
         });
         if (!reference) return false;
-        return (await firstValueFrom(reference.onClose)) === true;
+        return (await firstValueFrom(reference.onClose)) === 'Upload without preview';
+    }
+
+    private async findAutomaticPoint(
+        read: () => Promise<GeoCoordinate | null>
+    ): Promise<GeoCoordinate | null> {
+        let coordinate: GeoCoordinate | null;
+        this.loading = true;
+        this.cdkRef.detectChanges();
+        try {
+            coordinate = await read();
+        } catch (error) {
+            this.importError = error instanceof Error ? error.message : String(error);
+            return null;
+        } finally {
+            this.loading = false;
+            this.cdkRef.detectChanges();
+        }
+        if (!coordinate) await this.rejectFileWithoutShapes();
+        return coordinate;
+    }
+
+    private async rejectFileWithoutShapes(): Promise<void> {
+        this.loading = false;
+        this.cdkRef.detectChanges();
+        await this.openLimitDialog('reject', 'File cannot be imported', this.noCoordinateMessage());
     }
 
     private async importWithoutPreview(
-        file: File, format: PreviewableGeoFileFormat
+        file: File, format: PreviewableGeoFileFormat, coordinate: GeoCoordinate
     ): Promise<void> {
         this.loading = true;
         try {
-            const allowedTypes = this.allowedFileTypes();
-            const scanner = format === 'geojson'
-                ? new GeoJsonCoordinateScanner(allowedTypes)
-                : new KmlCoordinateScanner(allowedTypes);
-            const coordinate = await readFirstCoordinate(file, scanner);
-            if (!coordinate) {
-                this.importError = this.noCoordinateMessage();
-                return;
-            }
             const link = await this.replacePendingFile(file, format);
             link.noPreview = true;
             link.automaticPoint = coordinate;
             link.previewSizeBytes = file.size;
             this.fileImportName = file.name;
             this.fileImportSize = Math.round(file.size / (1024 * 1024));
-            this.setControlValue({ type: 'Point', coordinates: coordinate, geoFile: link });
-            this.geometriesList = [];
-            this.addGeometry({ type: GeoJsonType.POINT, coordinates: coordinate });
-            this.updateMap(false);
-            this.isJSON = false;
+            this.showFilePoint(coordinate);
         } catch (error) {
             this.importError = error instanceof Error ? error.message : String(error);
         } finally {
@@ -1442,7 +1485,7 @@ export class GeojsonTypeComponent implements OnChanges {
     }
 
     private async importWithPreview(
-        file: File, format: PreviewableGeoFileFormat
+        file: File, format: PreviewableGeoFileFormat, limits: GeospatialLimits
     ): Promise<void> {
         this.loading = true;
         try {
@@ -1453,7 +1496,23 @@ export class GeojsonTypeComponent implements OnChanges {
                 const xmlDoc = new DOMParser().parseFromString(await file.text(), 'application/xml');
                 geoJsonData = kml(xmlDoc);
             }
-            if (!this.hasAllowedShape(geoJsonData)) throw new Error(this.noCoordinateMessage());
+            if (!this.hasAllowedShape(geoJsonData)) {
+                await this.rejectFileWithoutShapes();
+                return;
+            }
+            if (this.hasTooManyShapes(geoJsonData, limits)) {
+                if (!await this.confirmShapeLimit(geoJsonData, limits)) return;
+                const allowedTypes = this.allowedFileTypes();
+                const coordinate = await this.findAutomaticPoint(() => readFirstCoordinate(
+                    file,
+                    format === 'geojson'
+                        ? new GeoJsonCoordinateScanner(allowedTypes)
+                        : new KmlCoordinateScanner(allowedTypes)
+                ));
+                if (!coordinate) return;
+                await this.importWithoutPreview(file, format, coordinate);
+                return;
+            }
             await this.replacePendingFile(file, format);
             this.fileImportName = file.name;
             this.fileImportSize = Math.round(file.size / (1024 * 1024));
@@ -1467,7 +1526,6 @@ export class GeojsonTypeComponent implements OnChanges {
     }
 
     private async replacePendingFile(file: File, format: GeoFileFormat): Promise<GeoFileLink> {
-        const value = this.formModel?.getValue?.();
         const previous = this.browserGeoFile();
         const link = await this.geoFiles.keepOriginal(file, format);
         try {
@@ -1478,9 +1536,12 @@ export class GeojsonTypeComponent implements OnChanges {
         }
         this.pendingGeoFile = link;
         this.selectedOriginalFile = file;
-        if (previous && value?.geoFile === previous) {
-            this.setControlValue({ ...value, geoFile: link });
-        }
+        this.geometriesList = [];
+        this.geoShapesSource?.clear(true);
+        this.clearImportedLocations();
+        this.importedShapesSource?.clear();
+        this.setControlValue({});
+        this.jsonInput = '';
         return link;
     }
 
@@ -1520,13 +1581,15 @@ export class GeojsonTypeComponent implements OnChanges {
                     `This file's uncompressed size is ${this.formatSize(inspection.previewSizeBytes)}, which exceeds the ${limits.kmlPreviewMaxFileSizeMb} MB limit for in-browser rendering. If you choose to proceed, browser rendering will not be available and a dedicated GIS tool, such as ArcGIS, will be required to inspect it.`
                 );
                 if (!accepted) return;
-                await this.importKmzWithoutPreview(
-                    file, inspection.entry, inspection.previewSizeBytes, maximumBytes
-                );
+                const coordinate = await this.findAutomaticPoint(() => this.kmzReader.readCoordinate(
+                    file, inspection.entry, new KmlCoordinateScanner(this.allowedFileTypes()), maximumBytes
+                ));
+                if (!coordinate) return;
+                await this.importKmzWithoutPreview(file, inspection.previewSizeBytes, coordinate);
                 return;
             }
             await this.importKmzWithPreview(
-                file, inspection.entry, inspection.previewSizeBytes, maximumBytes
+                file, inspection.entry, inspection.previewSizeBytes, maximumBytes, limits
             );
         } catch (error) {
             this.importError = error instanceof Error ? error.message : String(error);
@@ -1536,40 +1599,46 @@ export class GeojsonTypeComponent implements OnChanges {
     }
 
     private async importKmzWithoutPreview(
-        file: File, entry: KmzEntry, previewSizeBytes: number, maximumBytes: number
+        file: File, previewSizeBytes: number, coordinate: GeoCoordinate
     ): Promise<void> {
         this.loading = true;
-        const coordinate = await this.kmzReader.readCoordinate(
-            file, entry, new KmlCoordinateScanner(this.allowedFileTypes()), maximumBytes
-        );
-        if (!coordinate) {
-            this.importError = this.noCoordinateMessage();
-            this.loading = false;
-            return;
-        }
         const link = await this.replacePendingFile(file, 'kmz');
         link.noPreview = true;
         link.automaticPoint = coordinate;
         link.previewSizeBytes = previewSizeBytes;
         this.fileImportName = file.name;
         this.fileImportSize = Math.round(file.size / (1024 * 1024));
-        this.setControlValue({ type: 'Point', coordinates: coordinate, geoFile: link });
-        this.geometriesList = [];
-        this.addGeometry({ type: GeoJsonType.POINT, coordinates: coordinate });
-        this.updateMap(false);
-        this.isJSON = false;
+        this.showFilePoint(coordinate);
         this.loading = false;
         this.cdkRef.detectChanges();
     }
 
+    private showFilePoint(coordinate: GeoCoordinate): void {
+        this.addImportedLocation({ type: GeoJsonType.POINT, coordinates: coordinate });
+        this.isJSON = false;
+        this.onViewTypeChange();
+    }
+
     private async importKmzWithPreview(
-        file: File, entry: KmzEntry, previewSizeBytes: number, maximumBytes: number
+        file: File, entry: KmzEntry, previewSizeBytes: number, maximumBytes: number, limits: GeospatialLimits
     ): Promise<void> {
         this.loading = true;
         const text = await this.kmzReader.readText(file, entry, maximumBytes);
         const xmlDoc = new DOMParser().parseFromString(text, 'application/xml');
         const geoJsonData = kml(xmlDoc);
-        if (!this.hasAllowedShape(geoJsonData)) throw new Error(this.noCoordinateMessage());
+        if (!this.hasAllowedShape(geoJsonData)) {
+            await this.rejectFileWithoutShapes();
+            return;
+        }
+        if (this.hasTooManyShapes(geoJsonData, limits)) {
+            if (!await this.confirmShapeLimit(geoJsonData, limits)) return;
+            const coordinate = await this.findAutomaticPoint(() => this.kmzReader.readCoordinate(
+                file, entry, new KmlCoordinateScanner(this.allowedFileTypes()), maximumBytes
+            ));
+            if (!coordinate) return;
+            await this.importKmzWithoutPreview(file, previewSizeBytes, coordinate);
+            return;
+        }
         const link = await this.replacePendingFile(file, 'kmz');
         link.previewSizeBytes = previewSizeBytes;
         this.fileImportName = file.name;
@@ -1578,24 +1647,55 @@ export class GeojsonTypeComponent implements OnChanges {
         this.getShapeFromFile();
     }
 
+    private shapeCount(data: any): number {
+        return data?.type === 'FeatureCollection'
+            ? (data.features || []).filter((feature: any) =>
+                feature?.geometry?.type && feature.geometry.type !== 'GeometryCollection').length
+            : 1;
+    }
+
+    private shapeLimit(limits: GeospatialLimits): number {
+        return limits.geospatialPreviewMaxFeatures ?? DEFAULT_GEOSPATIAL_LIMITS.geospatialPreviewMaxFeatures;
+    }
+
+    private hasTooManyShapes(data: any, limits: GeospatialLimits): boolean {
+        return this.shapeCount(data) > this.shapeLimit(limits);
+    }
+
+    private async confirmShapeLimit(data: any, limits: GeospatialLimits): Promise<boolean> {
+        this.loading = false;
+        this.cdkRef.detectChanges();
+        return this.openLimitDialog(
+            'warn',
+            'File too large to preview',
+            `This file has ${this.shapeCount(data).toLocaleString('en-US')} shapes, which exceeds the ${this.shapeLimit(limits).toLocaleString('en-US')}-shape limit for in-browser rendering. If you choose to proceed, browser rendering will not be available and a dedicated GIS tool, such as ArcGIS, will be required to inspect it.`
+        );
+    }
+
     private allowedFileTypes(): string[] {
         return this.availableOptions?.length ? this.typeOptions.map(({ value }) => value) : [];
     }
 
     private hasAllowedShape(data: any): boolean {
         const allowedTypes = this.allowedFileTypes();
-        if (!allowedTypes.length) return true;
         const geometries = data?.type === 'FeatureCollection'
             ? (data.features || []).map((feature: any) => feature?.geometry)
             : [data?.type === 'Feature' ? data.geometry : data];
-        return geometries.some((geometry: any) => allowedTypes.includes(geometry?.type));
+        return geometries.some((geometry: any) => (allowedTypes.length
+            ? allowedTypes.includes(geometry?.type)
+            : !!geometry?.type && geometry.type !== 'GeometryCollection') && this.hasCoordinates(geometry.coordinates));
+    }
+
+    private hasCoordinates(coordinates: any): boolean {
+        return Array.isArray(coordinates) && (typeof coordinates[0] === 'number'
+            || coordinates.some((item: any) => this.hasCoordinates(item)));
     }
 
     private noCoordinateMessage(): string {
         const allowedTypes = this.allowedFileTypes();
         return allowedTypes.length
             ? `No shapes of an allowed type were found in this file. Allowed shapes: ${allowedTypes.join(', ')}.`
-            : 'No coordinates were found in this file.';
+            : 'No coordinates were found in this file, so it cannot be imported. Please check the file and try again.';
     }
 
     private clearAutomaticPoint(geometry: any): void {

@@ -253,7 +253,10 @@ describe('GeospatialFileValidator', function () {
         assert.ok(compressed.length < 256);
         await assert.rejects(
             validator(compressed).validate({ place: { type: 'Point', coordinates: [1, 2], geoFile: link() } }),
-            /exceeds the 256 byte limit/
+            (rejection) => {
+                assert.equal(rejection.message, 'The geospatial file site.geojson at $.place exceeds the 256 byte limit.');
+                return true;
+            }
         );
         assert.equal(error.length, 1);
     });

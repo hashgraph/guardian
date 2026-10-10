@@ -55,13 +55,15 @@ describe('SettingsService', () => {
         request.flush({
             kmlPreviewMaxFileSizeMb: 10,
             geojsonPreviewMaxFileSizeMb: 5,
-            geospatialMaxFileSizeMb: 100
+            geospatialMaxFileSizeMb: 100,
+            geospatialPreviewMaxFeatures: 1500
         });
 
         expect(result).toEqual({
             kmlPreviewMaxFileSizeMb: 10,
             geojsonPreviewMaxFileSizeMb: 5,
-            geospatialMaxFileSizeMb: 100
+            geospatialMaxFileSizeMb: 100,
+            geospatialPreviewMaxFeatures: 1500
         });
     });
 });

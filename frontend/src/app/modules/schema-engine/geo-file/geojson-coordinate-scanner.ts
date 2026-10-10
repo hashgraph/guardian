@@ -77,7 +77,7 @@ export class GeoJsonCoordinateScanner implements CoordinateScanner {
                 this.mode = 'plain';
                 this.emit({ type: 'string', value: this.stringValue });
                 this.stringValue = '';
-            } else this.stringValue += character;
+            } else if (this.stringValue.length <= 64) this.stringValue += character;
             return;
         }
         if (this.mode === 'escape') {
@@ -89,7 +89,7 @@ export class GeoJsonCoordinateScanner implements CoordinateScanner {
                 this.unicode = '';
                 this.mode = 'unicode';
             } else {
-                this.stringValue += escapes[character] ?? character;
+                if (this.stringValue.length <= 64) this.stringValue += escapes[character] ?? character;
                 this.mode = 'string';
             }
             return;
@@ -98,7 +98,9 @@ export class GeoJsonCoordinateScanner implements CoordinateScanner {
             this.unicode += character;
             if (this.unicode.length === 4) {
                 const code = Number.parseInt(this.unicode, 16);
-                this.stringValue += Number.isFinite(code) ? String.fromCharCode(code) : '';
+                if (this.stringValue.length <= 64) {
+                    this.stringValue += Number.isFinite(code) ? String.fromCharCode(code) : '';
+                }
                 this.mode = 'string';
             }
             return;

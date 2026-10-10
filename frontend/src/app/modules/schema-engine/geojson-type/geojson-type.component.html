@@ -2,16 +2,20 @@
   <small class="p-error">{{ importError }}</small>
 }
 @if (loading) {
-  <div class="geo-file-loading" role="status" aria-live="polite">
-    <span class="pi pi-spin pi-spinner" aria-hidden="true"></span>
-    <span>Reading file...</span>
+  <div class="geo-file-loading" role="status" aria-label="Loading">
+    <div class="preloader-image preloader-image-l-size"></div>
   </div>
 }
 @if (isPreviewUnavailable()) {
   <div class="geo-preview-unavailable">
-    <p>The map does not show the full file. Download it to view.</p>
-    <p>{{ originalFileLabel() }}</p>
-    <button pButton label="Download original file" (click)="downloadOriginal()"></button>
+    @if (isDisabled) {
+      <p>Preview unavailable: this file is too large to show on the map. Download it to view.</p>
+    } @else if (importedLocations.length > 0) {
+      <p>Preview unavailable: this file is too large to show on the map. The marked point is the first point in the file. Add it, or draw your own shapes.</p>
+    } @else {
+      <p>Preview unavailable: this file is too large to show on the map. The marked point is the first point in the file.</p>
+    }
+    <p class="geo-preview-file">{{ originalFileLabel() }}</p>
   </div>
 }
 <div class="switch-btn">
@@ -25,28 +29,23 @@
 </div>
 @if (isJSON) {
   <div class="form-group type-selector">
-    @if (fileImportSize <= 1) {
-      <label for="geoJsonInput" class="form-label coordinates-input">GeoJSON</label>
-      <textarea
-        pInputTextarea
-        id="geoJsonInput"
-        placeholder="{}"
-        [disabled]="isDisabled"
-        required
-        [(ngModel)]="jsonInput"
-        (ngModelChange)="jsonChanged()"
-        class="full-width">
-      </textarea>
-      @if (haveErrors()) {
-        <ul class="p-error validation-errors">
-          @for (err of getAllErrors(); track err) {
-            <li>{{ err }}</li>
-          }
-        </ul>
-      }
-    } @else {
-      <b class="form-label" class="form-label coordinates-input">File was imported successfully, but it’s too large to view.</b>
-      <p class="form-label" class="form-label coordinates-input">{{ fileImportName }} ({{ fileImportSize }} MB) exceeds in-browser preview limits.</p>
+    <label for="geoJsonInput" class="form-label coordinates-input">GeoJSON</label>
+    <textarea
+      pInputTextarea
+      id="geoJsonInput"
+      placeholder="{}"
+      [disabled]="isDisabled"
+      required
+      [(ngModel)]="jsonInput"
+      (ngModelChange)="jsonChanged()"
+      class="full-width">
+    </textarea>
+    @if (haveErrors()) {
+      <ul class="p-error validation-errors">
+        @for (err of getAllErrors(); track err) {
+          <li>{{ err }}</li>
+        }
+      </ul>
     }
     @if (!isDisabled) {
       <app-file-drag-n-drop
@@ -67,7 +66,7 @@
         (click)="downloadGeoJSON()">
       </button>
     }
-    @if (hasOriginalFile() && isDisabled && !isPreviewUnavailable()) {
+    @if (hasOriginalFile() && isDisabled) {
       <button
         pButton
         class="add-feature-button download-geo"
@@ -81,10 +80,10 @@
       <div class="map-control-buttons">
         @if (importedLocations && importedLocations.length > 0) {
           <button
-            (click)="selectAllImportedFeatures()"
+            (click)="includeAllImportedFeatures()"
             pButton
             class="add-feature-button"
-            label="Include all"
+            [label]="isPreviewUnavailable() ? 'Add file point' : 'Include all'"
           ></button>
         }
         @if (geometriesList && geometriesList.length > 0) {
@@ -121,7 +120,7 @@
         }
       </div>
       @if (displayLocationEditor()) {
-        @for (geometry of geometriesList; track geometry; let i = $index) {
+        @for (geometry of geometriesList.slice(0, renderedRows); track geometry; let i = $index) {
           <div>
             <div class="location-control">
               <p class="location-name">Location: {{i + 1}}</p>
@@ -170,8 +169,7 @@
           </div>
         }
       } @else {
-        <b class="form-label" class="form-label coordinates-input">This file is too large to view.</b>
-        <span class="form-label" class="form-label coordinates-input">{{ fileImportName }} ({{ fileImportSize }} MB) exceeds in-browser preview limits.</span>
+        <span class="form-label coordinates-input">{{ geometriesList.length }} shapes are selected. The list shows up to {{ maxEditableShapes }} shapes; the map shows them all.</span>
       }
     </div>
   }

@@ -53,6 +53,16 @@ const noCoordinateFixtures = [
 ];
 
 describe('KmlCoordinateScanner', () => {
+    it('finds the first allowed coordinate after long comment and description CDATA', async () => {
+        const padding = 'a'.repeat(256 * 1024);
+        const text = wrap(`<Placemark><!--${padding}<coordinates>0,0</coordinates>-->` +
+            `<description><![CDATA[${padding}<coordinates>0,0</coordinates>]]></description>` +
+            '<Point><coordinates>36,-1</coordinates></Point></Placemark>');
+        const coordinate = await readFirstCoordinate(new Blob([text]), new KmlCoordinateScanner(['Point']), 7);
+        expect(coordinate).toEqual(firstPosition(text));
+        expect(coordinate).toEqual([36, -1]);
+    });
+
     for (const text of fixtures) {
         for (const chunkSize of [1, 7, 1024 * 1024]) {
             it(`matches kml() at ${chunkSize} bytes for fixture ${fixtures.indexOf(text)}`, async () => {

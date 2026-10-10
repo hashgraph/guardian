@@ -2,6 +2,7 @@ export interface GeospatialLimits {
     kmlPreviewMaxFileSizeMb: number;
     geojsonPreviewMaxFileSizeMb: number;
     geospatialMaxFileSizeMb: number;
+    geospatialPreviewMaxFeatures: number;
 }
 
 type Environment = Record<string, string | undefined>;
@@ -29,6 +30,10 @@ export function getGeospatialLimits(
         geospatialMaxFileSizeMb: positiveNumber(
             environment.GEOSPATIAL_MAX_FILESIZE_MB,
             100
+        ),
+        geospatialPreviewMaxFeatures: positiveNumber(
+            environment.GEOSPATIAL_PREVIEW_MAX_FEATURES,
+            1500
         )
     };
 }

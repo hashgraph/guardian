@@ -7,6 +7,7 @@ export class XmlTokenizer {
     private buffer = '';
     private cursor = 0;
     private entityTail = '';
+    private section: 'comment' | 'cdata' | null = null;
 
     constructor(
         private readonly emit: (token: XmlToken) => void,
@@ -44,6 +45,21 @@ export class XmlTokenizer {
 
     private parse(final: boolean): void {
         while (this.cursor < this.buffer.length && !this.shouldStop()) {
+            if (this.section) {
+                const delimiter = this.section === 'comment' ? '-->' : ']]>';
+                const end = this.buffer.indexOf(delimiter, this.cursor);
+                const contentEnd = end < 0
+                    ? Math.max(this.cursor, this.buffer.length - (final ? 0 : 2))
+                    : end;
+                if (this.section === 'cdata' && contentEnd > this.cursor) {
+                    this.emit({ type: 'text', value: this.buffer.slice(this.cursor, contentEnd) });
+                }
+                this.cursor = contentEnd;
+                if (end < 0) return;
+                this.cursor = end + delimiter.length;
+                this.section = null;
+                continue;
+            }
             if (this.buffer[this.cursor] !== '<') {
                 const index = this.buffer.indexOf('<', this.cursor);
                 if (index < 0) {
@@ -57,16 +73,13 @@ export class XmlTokenizer {
             }
             if (!final && this.isPartialMarkup()) return;
             if (this.buffer.startsWith('<!--', this.cursor)) {
-                const end = this.buffer.indexOf('-->', this.cursor + 4);
-                if (end < 0) return;
-                this.cursor = end + 3;
+                this.cursor += 4;
+                this.section = 'comment';
                 continue;
             }
             if (this.buffer.startsWith('<![CDATA[', this.cursor)) {
-                const end = this.buffer.indexOf(']]>', this.cursor + 9);
-                if (end < 0) return;
-                this.emit({ type: 'text', value: this.buffer.slice(this.cursor + 9, end) });
-                this.cursor = end + 3;
+                this.cursor += 9;
+                this.section = 'cdata';
                 continue;
             }
             if (this.buffer.startsWith('<?', this.cursor)) {
@@ -106,10 +119,9 @@ export class XmlTokenizer {
 
     private isPartialMarkup(): boolean {
         const tail = this.buffer.slice(this.cursor, this.cursor + 9);
-        return '<!--'.startsWith(tail) ||
-            '<![CDATA['.startsWith(tail) ||
-            '<!DOCTYPE'.startsWith(tail.toUpperCase()) ||
-            '<?'.startsWith(tail);
+        return ['<!--', '<![CDATA[', '<!DOCTYPE', '<?'].some(marker =>
+            tail.length < marker.length && marker.startsWith(tail.toUpperCase())
+        );
     }
 
     private findTagEnd(start: number): number {
@@ -157,6 +169,7 @@ export class XmlTokenizer {
         this.buffer = '';
         this.cursor = 0;
         this.entityTail = '';
+        this.section = null;
     }
 
     private emitText(text: string, flush: boolean): void {

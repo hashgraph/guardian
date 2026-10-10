@@ -33,31 +33,43 @@ class GeospatialValidationError extends Error {}
 
 async function readStream(stream: Readable): Promise<Buffer> {
     const chunks: Buffer[] = [];
-    for await (const chunk of stream) chunks.push(Buffer.from(chunk));
+    for await (const chunk of stream) {
+        chunks.push(Buffer.from(chunk));
+    }
     return Buffer.concat(chunks);
 }
 
 const gridFileAccess: GridFileAccess = {
     async stat(fileId: string): Promise<{ length: number }> {
         const id = DatabaseServer.dbID(fileId);
-        if (!id) throw new Error('Invalid file id');
+        if (!id) {
+            throw new Error('Invalid file id');
+        }
         const files = await DataBaseHelper.gridFS.find(id).toArray();
-        if (files.length === 0) throw new Error('Missing file');
+        if (files.length === 0) {
+            throw new Error('Missing file');
+        }
         return { length: files[0].length };
     },
     async readPrefix(fileId: string, length: number): Promise<Buffer> {
         const id = DatabaseServer.dbID(fileId);
-        if (!id) throw new Error('Invalid file id');
+        if (!id) {
+            throw new Error('Invalid file id');
+        }
         return readStream(DataBaseHelper.gridFS.openDownloadStream(id, { end: length }));
     },
     async readAll(fileId: string): Promise<Buffer> {
         const file = await DatabaseServer.getGridFile(fileId);
-        if (!Buffer.isBuffer(file?.buffer)) throw new Error('Unreadable file');
+        if (!Buffer.isBuffer(file?.buffer)) {
+            throw new Error('Unreadable file');
+        }
         return file.buffer;
     },
     openStream(fileId: string): Readable {
         const id = DatabaseServer.dbID(fileId);
-        if (!id) throw new Error('Invalid file id');
+        if (!id) {
+            throw new Error('Invalid file id');
+        }
         return DataBaseHelper.gridFS.openDownloadStream(id);
     }
 };
@@ -178,7 +190,9 @@ export class GeospatialFileValidator {
             try {
                 for await (const chunk of source.pipe(gunzip)) {
                     size += chunk.length;
-                    if (head.length < 4) head = Buffer.concat([head, chunk]).subarray(0, 4);
+                    if (head.length < 4) {
+                        head = Buffer.concat([head, chunk]).subarray(0, 4);
+                    }
                     if (size > this.maximumBytes) {
                         await this.limitFailure(link, path, size, userId);
                     }
@@ -187,7 +201,9 @@ export class GeospatialFileValidator {
                 source.destroy();
             }
         } catch (error) {
-            if (error instanceof GeospatialValidationError) throw error;
+            if (error instanceof GeospatialValidationError) {
+                throw error;
+            }
             await this.fail(
                 link,
                 path,
@@ -235,7 +251,7 @@ export class GeospatialFileValidator {
                 );
             }
             let size = 0;
-            const stream = new Readable({ read() {} });
+            const stream = new Readable({ read() { return; } });
             stream.wrap(entry.nodeStream('nodebuffer'));
             for await (const chunk of stream) {
                 size += chunk.length;
@@ -244,7 +260,9 @@ export class GeospatialFileValidator {
                 }
             }
         } catch (error) {
-            if (error instanceof GeospatialValidationError) throw error;
+            if (error instanceof GeospatialValidationError) {
+                throw error;
+            }
             await this.fail(
                 link,
                 path,
@@ -259,7 +277,9 @@ export class GeospatialFileValidator {
         const result: LocatedLink[] = [];
         const seen = new Set<object>();
         const walk = (value: unknown, path: string): void => {
-            if (!value || typeof value !== 'object' || seen.has(value as object)) return;
+            if (!value || typeof value !== 'object' || seen.has(value as object)) {
+                return;
+            }
             seen.add(value as object);
             if (Array.isArray(value)) {
                 value.forEach((item, index) => walk(item, `${path}[${index}]`));
@@ -278,7 +298,9 @@ export class GeospatialFileValidator {
                 }
             }
             for (const [key, child] of Object.entries(record)) {
-                if (!linked || key !== 'geoFile') walk(child, path === '$' ? `$.${key}` : `${path}.${key}`);
+                if (!linked || key !== 'geoFile') {
+                    walk(child, path === '$' ? `$.${key}` : `${path}.${key}`);
+                }
             }
         };
         walk(root, '$');
@@ -299,7 +321,7 @@ export class GeospatialFileValidator {
         return this.fail(
             link,
             path,
-            `The geospatial file ${this.fileName(link)} at ${path} has size ${size} bytes, which exceeds the ${this.maximumBytes} byte limit.`,
+            `The geospatial file ${this.fileName(link)} at ${path} exceeds the ${this.maximumBytes} byte limit.`,
             userId,
             size
         );
@@ -326,12 +348,16 @@ export class GeospatialFileValidator {
     private async safeInfo(message: string, userId: string | null): Promise<void> {
         try {
             await this.logger.info(message, ['POLICY_SERVICE', 'GEOSPATIAL_FILE'], userId);
-        } catch {}
+        } catch {
+            return;
+        }
     }
 
     private async safeError(message: string, userId: string | null): Promise<void> {
         try {
             await this.logger.error(message, ['POLICY_SERVICE', 'GEOSPATIAL_FILE'], userId);
-        } catch {}
+        } catch {
+            return;
+        }
     }
 }

@@ -3,11 +3,13 @@ import { FormsModule } from '@angular/forms';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, ReplaySubject, throwError } from 'rxjs';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { GeoJsonType } from '@guardian/interfaces';
 import { SettingsService } from 'src/app/services/settings.service';
 import { ArtifactService } from 'src/app/services/artifact.service';
 import { GeoFilePersistenceService } from 'src/app/services/geo-file-persistence.service';
 import { GeoJsonService } from 'src/app/services/geo-json.service';
 import { SwitchButton } from '../../common/switch-button/switch-button.component';
+import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { gzipBlob } from '../geo-file/geo-file-compression';
 import { KmlCoordinateScanner } from '../geo-file/kml-coordinate-scanner';
 import { GeojsonTypeComponent } from './geojson-type.component';
@@ -18,7 +20,7 @@ describe('GeojsonTypeComponent original file link', () => {
     let artifacts: jasmine.SpyObj<ArtifactService>;
     let settings: jasmine.SpyObj<SettingsService>;
     let dialog: jasmine.SpyObj<DialogService>;
-    let close: ReplaySubject<boolean>;
+    let close: ReplaySubject<string | undefined>;
     let component: GeojsonTypeComponent;
 
     beforeEach(() => {
@@ -33,9 +35,10 @@ describe('GeojsonTypeComponent original file link', () => {
         settings.getGeospatialLimits.and.returnValue(of({
             kmlPreviewMaxFileSizeMb: 10,
             geojsonPreviewMaxFileSizeMb: 5,
-            geospatialMaxFileSizeMb: 100
+            geospatialMaxFileSizeMb: 100,
+            geospatialPreviewMaxFeatures: 5000
         }));
-        close = new ReplaySubject<boolean>(1);
+        close = new ReplaySubject<string | undefined>(1);
         dialog = jasmine.createSpyObj('DialogService', ['open']);
         dialog.open.and.returnValue({ onClose: close } as unknown as DynamicDialogRef);
         const geoJsonService = jasmine.createSpyObj<GeoJsonService>('GeoJsonService', [
@@ -229,7 +232,7 @@ describe('GeojsonTypeComponent original file link', () => {
         expect(component.canDownload()).toBeFalse();
     });
 
-    it('discards a pending original when the selection is cleared', async () => {
+    it('keeps a pending original when the selection is cleared', async () => {
         const link = {
             idbKey: 'geo-key', name: 'site.kml', format: 'kml' as const,
             sizeBytes: 10, previewSizeBytes: 10
@@ -239,11 +242,11 @@ describe('GeojsonTypeComponent original file link', () => {
 
         await component.clearSelectionFeatures();
 
-        expect(geoFiles.discard).toHaveBeenCalledOnceWith(link);
-        expect((component as any).pendingGeoFile).toBeUndefined();
+        expect(geoFiles.discard).not.toHaveBeenCalled();
+        expect((component as any).pendingGeoFile).toBe(link);
     });
 
-    it('discards a loaded browser link when the selection is cleared', async () => {
+    it('keeps a loaded browser link for the next pick when the selection is cleared', async () => {
         const loaded = {
             idbKey: 'old-key', name: 'old.kml', format: 'kml' as const,
             sizeBytes: 10, previewSizeBytes: 10
@@ -253,10 +256,98 @@ describe('GeojsonTypeComponent original file link', () => {
 
         await component.clearSelectionFeatures();
 
-        expect(geoFiles.discard).toHaveBeenCalledOnceWith(loaded);
+        expect(geoFiles.discard).not.toHaveBeenCalled();
+        expect(value).toEqual({});
+        expect((component as any).pendingGeoFile).toBe(loaded);
     });
 
-    it('discards a loaded browser link and relinks the value when a file is imported', async () => {
+    it('returns the picked shapes from the file to the candidates when the selection is cleared', async () => {
+        spyOn<any>(component, 'setupMap');
+        component.onUploadMultiLocationFile({
+            type: 'FeatureCollection',
+            features: [
+                { type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [1, 2] } },
+                { type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [3, 4] } }
+            ]
+        } as any);
+        component.selectAllImportedFeatures();
+        component.addGeometry({ type: 'Point', coordinates: [5, 6] });
+
+        await component.clearSelectionFeatures();
+
+        expect(component.geometriesList.length).toBe(0);
+        expect(value).toEqual({});
+        expect(component.importedLocations.map(location => location.coordinates)).toEqual([[1, 2], [3, 4]]);
+    });
+
+    it('empties the JSON text when the selection is cleared', async () => {
+        const loaded = {
+            idbKey: 'old-key', name: 'old.geojson', format: 'geojson' as const,
+            sizeBytes: 10, previewSizeBytes: 10
+        };
+        value = { type: 'Point', coordinates: [1, 2], geoFile: loaded };
+        component.jsonInput = JSON.stringify(value, null, 4);
+        geoFiles.discard.and.resolveTo();
+
+        await component.clearSelectionFeatures();
+        component.isJSON = true;
+        component.onViewTypeChange();
+
+        expect(value).toEqual({});
+        expect(component.jsonInput).toBe('');
+    });
+
+    it('empties the value when the last shape is deleted', () => {
+        const link = {
+            idbKey: 'geo-key', name: 'site.geojson', format: 'geojson' as const,
+            sizeBytes: 10, previewSizeBytes: 10
+        };
+        value = { type: 'Point', coordinates: [1, 2], geoFile: link };
+        component.jsonInput = JSON.stringify(value, null, 4);
+        const geometry = component.addGeometry(value);
+
+        component.deleteGeometry(geometry.id);
+
+        expect(component.geometriesList.length).toBe(0);
+        expect(value).toEqual({});
+        expect(component.jsonInput).toBe('');
+        expect(geoFiles.discard).not.toHaveBeenCalled();
+    });
+
+    it('keeps the file link for a shape added after the last one was deleted', () => {
+        const link = {
+            fileId: 'grid-1', name: 'site.kml', format: 'kml' as const,
+            sizeBytes: 10, previewSizeBytes: 10
+        };
+        value = { type: 'Point', coordinates: [1, 2], geoFile: link };
+        const geometry = component.addGeometry(value);
+
+        component.deleteGeometry(geometry.id);
+        component.addGeometry({ type: 'Point', coordinates: [3, 4] });
+        (component as any).updateMap(true);
+
+        expect(value.geoFile).toBe(link);
+        expect(value.features[0].geometry.coordinates).toEqual([3, 4]);
+    });
+
+    it('keeps the value when a shape other than the last is deleted', () => {
+        value = {
+            type: 'FeatureCollection',
+            features: [
+                { type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [1, 2] } },
+                { type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [3, 4] } }
+            ]
+        };
+        const first = component.addGeometry(value.features[0].geometry);
+        component.addGeometry(value.features[1].geometry);
+
+        component.deleteGeometry(first.id);
+
+        expect(value.features.length).toBe(1);
+        expect(value.features[0].geometry.coordinates).toEqual([3, 4]);
+    });
+
+    it('discards a loaded browser link and starts from an empty field when a file is imported', async () => {
         const loaded = {
             idbKey: 'old-key', name: 'old.kml', format: 'kml' as const,
             sizeBytes: 10, previewSizeBytes: 10
@@ -266,17 +357,23 @@ describe('GeojsonTypeComponent original file link', () => {
             sizeBytes: 20, previewSizeBytes: 20
         };
         value = { type: 'Point', coordinates: [1, 2], geoFile: loaded };
+        component.addGeometry(value);
+        component.importedLocations = [{ id: 'candidate', type: GeoJsonType.POINT, coordinates: [5, 6] }];
+        component.jsonInput = JSON.stringify(value, null, 4);
         geoFiles.keepOriginal.and.resolveTo(imported);
         geoFiles.discard.and.resolveTo();
 
         await (component as any).replacePendingFile(new File(['x'], 'new.kml'), 'kml');
 
         expect(geoFiles.discard).toHaveBeenCalledOnceWith(loaded);
-        expect(value.geoFile).toBe(imported);
-        expect(value.coordinates).toEqual([1, 2]);
+        expect(value).toEqual({});
+        expect(component.geometriesList.length).toBe(0);
+        expect(component.importedLocations.length).toBe(0);
+        expect(component.jsonInput).toBe('');
+        expect((component as any).pendingGeoFile).toBe(imported);
     });
 
-    it('keeps a stored link when a file is imported', async () => {
+    it('does not discard a stored link when a file is imported', async () => {
         const stored = {
             fileId: 'grid-1', name: 'old.kml', format: 'kml' as const,
             sizeBytes: 10, previewSizeBytes: 10
@@ -291,13 +388,31 @@ describe('GeojsonTypeComponent original file link', () => {
         await (component as any).replacePendingFile(new File(['x'], 'new.kml'), 'kml');
 
         expect(geoFiles.discard).not.toHaveBeenCalled();
-        expect(value.geoFile).toBe(stored);
+        expect(value).toEqual({});
+        expect((component as any).pendingGeoFile).toBe(imported);
+    });
+
+    it('drops the shapes picked from the previous file when a new file is imported with preview', async () => {
+        spyOn<any>(component, 'setupMap');
+        (component as any).geoJsonService.getFileNames.and.returnValue([]);
+        value = {
+            type: 'FeatureCollection',
+            features: [{ type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [1, 2] } }]
+        };
+        component.addGeometry(value.features[0].geometry);
+        const point = JSON.stringify({ type: 'Point', coordinates: [3, 4] });
+
+        await component.importFromFile(new File([point], 'next.geojson'));
+
+        expect(geoFiles.keepOriginal).toHaveBeenCalled();
+        expect(component.geometriesList.length).toBe(0);
+        expect(value).toEqual({});
     });
 
     it('uses the default limits when limits cannot be loaded', async () => {
         settings.getGeospatialLimits.and.returnValue(throwError(() => new Error('offline')));
         const result = component.importFromFile(new File([new Uint8Array(6 * 1024 * 1024)], 'site.geojson'));
-        close.next(false);
+        close.next('Cancel');
         close.complete();
         await result;
         expect(component.importError).toBe('');
@@ -310,14 +425,52 @@ describe('GeojsonTypeComponent original file link', () => {
         settings.getGeospatialLimits.and.returnValue(of({
             kmlPreviewMaxFileSizeMb: 0.00001,
             geojsonPreviewMaxFileSizeMb: 5,
-            geospatialMaxFileSizeMb: 1
+            geospatialMaxFileSizeMb: 1,
+            geospatialPreviewMaxFeatures: 5000
         }));
         const result = component.importFromFile(new File(['<kml></kml>'], 'site.kml'));
-        close.next(false);
+        close.next('Cancel');
         close.complete();
         await result;
         expect(JSON.stringify(dialog.open.calls.mostRecent().args[1]?.data))
-            .toContain('"message":"This file\'s size is ');
+            .toContain('"texts":["This file\'s size is ');
+    });
+
+    it('opens the shared confirm dialog and treats its close icon as Cancel', async () => {
+        const result = component.importFromFile(new File([new Uint8Array(6 * 1024 * 1024)], 'site.geojson'));
+        close.next(undefined);
+        close.complete();
+        await result;
+        const [dialogComponent, config] = dialog.open.calls.mostRecent().args;
+        expect(dialogComponent).toBe(CustomConfirmDialogComponent);
+        expect(config?.showHeader).toBeFalse();
+        expect(config?.data).toEqual(jasmine.objectContaining({
+            header: 'File too large to preview',
+            buttons: [
+                { name: 'Cancel', class: 'secondary' },
+                { name: 'Upload without preview', class: 'primary' }
+            ]
+        }));
+        expect(geoFiles.keepOriginal).not.toHaveBeenCalled();
+    });
+
+    it('offers only Ok in the shared dialog above the maximum', async () => {
+        settings.getGeospatialLimits.and.returnValue(of({
+            kmlPreviewMaxFileSizeMb: 0.00001,
+            geojsonPreviewMaxFileSizeMb: 0.00001,
+            geospatialMaxFileSizeMb: 0.00002,
+            geospatialPreviewMaxFeatures: 5000
+        }));
+        const result = component.importFromFile(new File([new Uint8Array(101)], 'site.geojson'));
+        close.next('Ok');
+        close.complete();
+        await result;
+        const config = dialog.open.calls.mostRecent().args[1];
+        expect(config?.data).toEqual(jasmine.objectContaining({
+            header: 'File exceeds size limit',
+            buttons: [{ name: 'Ok', class: 'primary' }]
+        }));
+        expect(geoFiles.keepOriginal).not.toHaveBeenCalled();
     });
 
     describe('in a field that allows only Polygon', () => {
@@ -333,10 +486,16 @@ describe('GeojsonTypeComponent original file link', () => {
             ]
         });
         const message = 'No shapes of an allowed type were found in this file. Allowed shapes: Polygon.';
+        const cannotImport = {
+            header: 'File cannot be imported',
+            texts: [message],
+            buttons: [{ name: 'Ok', class: 'primary' }]
+        };
         const noPreviewLimits = {
             kmlPreviewMaxFileSizeMb: 0.000001,
             geojsonPreviewMaxFileSizeMb: 0.000001,
-            geospatialMaxFileSizeMb: 1
+            geospatialMaxFileSizeMb: 1,
+            geospatialPreviewMaxFeatures: 5000
         };
         let oldValue: any;
 
@@ -360,12 +519,32 @@ describe('GeojsonTypeComponent original file link', () => {
         });
 
         it('refuses a previewable file that has no allowed shape', async () => {
-            await component.importFromFile(new File([line], 'site.geojson'));
+            const result = component.importFromFile(new File([line], 'site.geojson'));
+            close.next('Ok');
+            close.complete();
+            await result;
 
-            expect(component.importError).toBe(message);
+            expect(dialog.open.calls.mostRecent().args[1]?.data).toEqual(cannotImport);
+            expect(component.importError).toBe('');
             expect(value).toBe(oldValue);
             expect(geoFiles.keepOriginal).not.toHaveBeenCalled();
             expect(component.loading).toBeFalse();
+        });
+
+        it('refuses a previewable file whose allowed shape has empty coordinates', async () => {
+            const emptyPolygon = JSON.stringify({
+                type: 'FeatureCollection',
+                features: [{ type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [] } }]
+            });
+            const result = component.importFromFile(new File([emptyPolygon], 'site.geojson'));
+            close.next('Ok');
+            close.complete();
+            await result;
+
+            expect(dialog.open.calls.mostRecent().args[1]?.data).toEqual(cannotImport);
+            expect(component.importError).toBe('');
+            expect(value).toBe(oldValue);
+            expect(geoFiles.keepOriginal).not.toHaveBeenCalled();
         });
 
         it('refuses a previewable KMZ that has no allowed shape', async () => {
@@ -378,15 +557,19 @@ describe('GeojsonTypeComponent original file link', () => {
                 '<kml><Placemark><LineString><coordinates>1,2 3,4</coordinates></LineString></Placemark></kml>'
             );
 
-            await component.importFromFile(new File(['zip'], 'site.kmz'));
+            const result = component.importFromFile(new File(['zip'], 'site.kmz'));
+            close.next('Ok');
+            close.complete();
+            await result;
 
-            expect(component.importError).toBe(message);
+            expect(dialog.open.calls.mostRecent().args[1]?.data).toEqual(cannotImport);
+            expect(component.importError).toBe('');
             expect(value).toBe(oldValue);
             expect(geoFiles.keepOriginal).not.toHaveBeenCalled();
             expect(component.loading).toBeFalse();
         });
 
-        it('stores a mixed file without preview with its point on the first allowed shape', async () => {
+        it('offers the first allowed shape of a mixed file without preview as its point', async () => {
             settings.getGeospatialLimits.and.returnValue(of(noPreviewLimits));
             const file = new File([mixed], 'site.geojson');
             geoFiles.keepOriginal.and.resolveTo({
@@ -394,23 +577,29 @@ describe('GeojsonTypeComponent original file link', () => {
                 sizeBytes: file.size, previewSizeBytes: file.size
             });
             const result = component.importFromFile(file);
-            close.next(true);
+            close.next('Upload without preview');
             close.complete();
             await result;
 
             expect(component.importError).toBe('');
             expect(geoFiles.keepOriginal).toHaveBeenCalled();
-            expect(value.geoFile.automaticPoint).toEqual([5, 6]);
+            expect((component as any).pendingGeoFile.automaticPoint).toEqual([5, 6]);
+            expect(component.importedLocations.map(location => location.coordinates)).toEqual([[5, 6]]);
         });
 
         it('refuses a file without preview that has no allowed shape', async () => {
             settings.getGeospatialLimits.and.returnValue(of(noPreviewLimits));
             const result = component.importFromFile(new File([line], 'site.geojson'));
-            close.next(true);
+            close.next('Upload without preview');
             close.complete();
             await result;
 
-            expect(component.importError).toBe(message);
+            expect(dialog.open.calls.count()).toBe(2);
+            expect(dialog.open.calls.argsFor(0)[1]?.data)
+                .toEqual(jasmine.objectContaining({ header: 'File too large to preview' }));
+            expect(dialog.open.calls.mostRecent().args[1]?.data).toEqual(cannotImport);
+            expect(dialog.open.calls.allArgs().every(([, config]) => config?.duplicate === true)).toBeTrue();
+            expect(component.importError).toBe('');
             expect(value).toBe(oldValue);
             expect(geoFiles.keepOriginal).not.toHaveBeenCalled();
             expect(component.loading).toBeFalse();
@@ -431,11 +620,15 @@ describe('GeojsonTypeComponent original file link', () => {
                 }
             );
             const result = component.importFromFile(new File(['zip'], 'site.kmz'));
-            close.next(true);
+            close.next('Upload without preview');
             close.complete();
             await result;
 
-            expect(component.importError).toBe(message);
+            expect(dialog.open.calls.count()).toBe(2);
+            expect(dialog.open.calls.argsFor(0)[1]?.data)
+                .toEqual(jasmine.objectContaining({ header: 'File too large to preview' }));
+            expect(dialog.open.calls.mostRecent().args[1]?.data).toEqual(cannotImport);
+            expect(component.importError).toBe('');
             expect(value).toBe(oldValue);
             expect(geoFiles.keepOriginal).not.toHaveBeenCalled();
         });
@@ -446,10 +639,11 @@ describe('GeojsonTypeComponent original file link', () => {
         settings.getGeospatialLimits.and.returnValue(of({
             kmlPreviewMaxFileSizeMb: 0.00001,
             geojsonPreviewMaxFileSizeMb: 1,
-            geospatialMaxFileSizeMb: 0.00002
+            geospatialMaxFileSizeMb: 0.00002,
+            geospatialPreviewMaxFeatures: 5000
         }));
         const result = component.importFromFile(file);
-        close.next(false);
+        close.next('Ok');
         close.complete();
         await result;
         expect(dialog.open).toHaveBeenCalled();
@@ -464,10 +658,11 @@ describe('GeojsonTypeComponent original file link', () => {
         settings.getGeospatialLimits.and.returnValue(of({
             kmlPreviewMaxFileSizeMb: 0.00001,
             geojsonPreviewMaxFileSizeMb: 1,
-            geospatialMaxFileSizeMb: 1
+            geospatialMaxFileSizeMb: 1,
+            geospatialPreviewMaxFeatures: 5000
         }));
         const result = component.importFromFile(new File(['<kml></kml>'], 'new.kml'));
-        close.next(false);
+        close.next('Cancel');
         close.complete();
         await result;
         expect(value).toBe(oldValue);
@@ -475,26 +670,35 @@ describe('GeojsonTypeComponent original file link', () => {
         expect(geoFiles.discard).not.toHaveBeenCalled();
     });
 
-    it('stores one marker after accepting large GeoJSON', async () => {
+    it('offers the file point as a candidate after accepting large GeoJSON and adds it on request', async () => {
+        spyOn<any>(component, 'setupMap');
         const file = new File([JSON.stringify({ type: 'Point', coordinates: [12, 34] })], 'site.geojson');
         settings.getGeospatialLimits.and.returnValue(of({
             kmlPreviewMaxFileSizeMb: 1,
             geojsonPreviewMaxFileSizeMb: 0.000001,
-            geospatialMaxFileSizeMb: 1
+            geospatialMaxFileSizeMb: 1,
+            geospatialPreviewMaxFeatures: 5000
         }));
         geoFiles.keepOriginal.and.resolveTo({
             idbKey: 'new', name: file.name, format: 'geojson',
             sizeBytes: file.size, previewSizeBytes: file.size
         });
         const result = component.importFromFile(file);
-        close.next(true);
+        close.next('Upload without preview');
         close.complete();
         await result;
-        expect(value.type).toBe('Point');
-        expect(value.coordinates).toEqual([12, 34]);
+        expect(value).toEqual({});
+        expect(component.geometriesList.length).toBe(0);
+        expect(component.importedLocations.map(location => location.coordinates)).toEqual([[12, 34]]);
+        expect(component.isPreviewUnavailable()).toBeTrue();
+
+        component.selectAllImportedFeatures();
+
+        expect(value.type).toBe('FeatureCollection');
+        expect(value.features.map((feature: any) => feature.geometry)).toEqual([{ type: 'Point', coordinates: [12, 34] }]);
         expect(value.geoFile.noPreview).toBeTrue();
         expect(value.geoFile.automaticPoint).toEqual([12, 34]);
-        expect(component.geometriesList[0].coordinates).toEqual([12, 34]);
+        expect(component.importedLocations.length).toBe(0);
     });
 
     it('keeps the map path active for a no-preview value', () => {
@@ -516,7 +720,85 @@ describe('GeojsonTypeComponent original file link', () => {
         expect(component.geometriesList.length).toBe(1);
     });
 
-    it('does not delete or clear the last no-preview shape', async () => {
+    it('zooms the map to the imported shapes when the map is set up', () => {
+        jasmine.clock().install();
+        const view = jasmine.createSpyObj('View', ['fit', 'animate']);
+        spyOn<any>(component, 'initMap').and.callFake(() => (component as any).map = { getView: () => view });
+        component.onUploadMultiLocationFile({
+            type: 'FeatureCollection',
+            features: [{ type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [36, -1] } }]
+        } as any);
+
+        (component as any).setupMap();
+        jasmine.clock().tick(0);
+        jasmine.clock().uninstall();
+
+        expect(view.fit).toHaveBeenCalledWith(jasmine.any(Array), jasmine.objectContaining({ maxZoom: 14 }));
+        expect(view.animate).not.toHaveBeenCalled();
+    });
+
+    it('shows the loader while Include all runs and hides it afterwards', () => {
+        jasmine.clock().install();
+        spyOn<any>(component, 'setupMap');
+        component.onUploadMultiLocationFile({
+            type: 'FeatureCollection',
+            features: [{ type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [1, 2] } }]
+        } as any);
+
+        component.includeAllImportedFeatures();
+
+        expect(component.loading).toBeTrue();
+        expect(component.geometriesList.length).toBe(0);
+
+        jasmine.clock().tick(0);
+        jasmine.clock().uninstall();
+
+        expect(component.geometriesList.length).toBe(1);
+        expect(component.loading).toBeFalse();
+        expect(component.renderedRows).toBe(Infinity);
+    });
+
+    it('draws the rows in batches after Include all and keeps the loader until the last batch', () => {
+        jasmine.clock().install();
+        spyOn<any>(component, 'setupMap');
+        component.onUploadMultiLocationFile({
+            type: 'FeatureCollection',
+            features: Array.from({ length: 25 }, (_, i) => ({
+                type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [i, 2] }
+            }))
+        } as any);
+
+        component.includeAllImportedFeatures();
+        jasmine.clock().tick(0);
+        expect(component.geometriesList.length).toBe(25);
+        expect(component.renderedRows).toBe(10);
+        expect(component.loading).toBeTrue();
+
+        jasmine.clock().tick(0);
+        expect(component.renderedRows).toBe(20);
+
+        jasmine.clock().tick(0);
+        jasmine.clock().uninstall();
+        expect(component.renderedRows).toBe(Infinity);
+        expect(component.loading).toBeFalse();
+    });
+
+    it('returns a deleted shape from the file to the candidates', () => {
+        spyOn<any>(component, 'setupMap');
+        component.onUploadMultiLocationFile({
+            type: 'FeatureCollection',
+            features: [{ type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [1, 2] } }]
+        } as any);
+        component.selectAllImportedFeatures();
+        expect(component.importedLocations.length).toBe(0);
+
+        component.deleteGeometry(component.geometriesList[0].id);
+
+        expect(component.geometriesList.length).toBe(0);
+        expect(component.importedLocations.map(location => location.coordinates)).toEqual([[1, 2]]);
+    });
+
+    it('deletes and clears a no-preview shape like any other shape, keeping the file', async () => {
         const link = {
             idbKey: 'new', name: 'large.kml', format: 'kml' as const,
             sizeBytes: 20, previewSizeBytes: 20, noPreview: true,
@@ -526,11 +808,15 @@ describe('GeojsonTypeComponent original file link', () => {
         const geometry = component.addGeometry(value);
 
         component.deleteGeometry(geometry.id);
+
+        expect(value).toEqual({});
+        expect((component as any).pendingGeoFile).toBe(link);
+        expect(geoFiles.discard).not.toHaveBeenCalled();
+
         await component.clearSelectionFeatures();
 
-        expect(component.geometriesList.length).toBe(1);
-        expect(value.geoFile).toBe(link);
         expect(geoFiles.discard).not.toHaveBeenCalled();
+        expect((component as any).pendingGeoFile).toBe(link);
     });
 
     it('keeps old value when no coordinate exists', async () => {
@@ -539,14 +825,153 @@ describe('GeojsonTypeComponent original file link', () => {
         settings.getGeospatialLimits.and.returnValue(of({
             kmlPreviewMaxFileSizeMb: 1,
             geojsonPreviewMaxFileSizeMb: 0.000001,
-            geospatialMaxFileSizeMb: 1
+            geospatialMaxFileSizeMb: 1,
+            geospatialPreviewMaxFeatures: 5000
         }));
         const result = component.importFromFile(new File(['{}'], 'site.geojson'));
-        close.next(true);
+        close.next('Upload without preview');
         close.complete();
         await result;
         expect(value).toBe(oldValue);
-        expect(component.importError).toBe('No coordinates were found in this file.');
+        expect(dialog.open.calls.mostRecent().args[1]?.data).toEqual({
+            header: 'File cannot be imported',
+            texts: ['No coordinates were found in this file, so it cannot be imported. Please check the file and try again.'],
+            buttons: [{ name: 'Ok', class: 'primary' }]
+        });
+        expect(component.importError).toBe('');
+        expect(geoFiles.keepOriginal).not.toHaveBeenCalled();
+        expect(component.loading).toBeFalse();
+    });
+
+    describe('above the shape limit', () => {
+        const shapeLimits = {
+            kmlPreviewMaxFileSizeMb: 10,
+            geojsonPreviewMaxFileSizeMb: 5,
+            geospatialMaxFileSizeMb: 100,
+            geospatialPreviewMaxFeatures: 2
+        };
+        const points = (count: number) => JSON.stringify({
+            type: 'FeatureCollection',
+            features: Array.from({ length: count }, (_, i) => ({
+                type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [i + 1, 2] }
+            }))
+        });
+
+        beforeEach(() => {
+            settings.getGeospatialLimits.and.returnValue(of(shapeLimits));
+            spyOn<any>(component, 'setupMap');
+        });
+
+        it('warns with the shape count and keeps nothing on Cancel', async () => {
+            const result = component.importFromFile(new File([points(3)], 'site.geojson'));
+            close.next('Cancel');
+            close.complete();
+            await result;
+
+            expect(dialog.open.calls.mostRecent().args[1]?.data).toEqual(jasmine.objectContaining({
+                header: 'File too large to preview',
+                texts: [jasmine.stringContaining('This file has 3 shapes, which exceeds the 2-shape limit for in-browser rendering.')]
+            }));
+            expect(geoFiles.keepOriginal).not.toHaveBeenCalled();
+            expect(component.loading).toBeFalse();
+        });
+
+        it('offers the first point as a candidate after Upload without preview', async () => {
+            const file = new File([points(3)], 'site.geojson');
+            geoFiles.keepOriginal.and.resolveTo({
+                idbKey: 'new', name: file.name, format: 'geojson',
+                sizeBytes: file.size, previewSizeBytes: file.size
+            });
+            const result = component.importFromFile(file);
+            close.next('Upload without preview');
+            close.complete();
+            await result;
+
+            expect(value).toEqual({});
+            expect((component as any).pendingGeoFile.noPreview).toBeTrue();
+            expect(component.importedLocations.map(location => location.coordinates)).toEqual([[1, 2]]);
+        });
+
+        it('previews a file at the shape limit without a warning', async () => {
+            (component as any).geoJsonService.getFileNames.and.returnValue([]);
+
+            await component.importFromFile(new File([points(2)], 'site.geojson'));
+
+            expect(dialog.open).not.toHaveBeenCalled();
+            expect(geoFiles.keepOriginal).toHaveBeenCalled();
+        });
+
+        it('applies the shape limit to a KMZ with preview', async () => {
+            const entry = {
+                name: 'doc.kml', flags: 0, compressionMethod: 0,
+                compressedSize: 3, uncompressedSize: 20, localHeaderOffset: 0
+            };
+            spyOn((component as any).kmzReader, 'inspect').and.resolveTo({ entry, previewSizeBytes: 20 });
+            spyOn((component as any).kmzReader, 'readText').and.resolveTo(
+                '<kml><Document>' +
+                ['1,2', '3,4', '5,6'].map(c => `<Placemark><Point><coordinates>${c}</coordinates></Point></Placemark>`).join('') +
+                '</Document></kml>'
+            );
+            const result = component.importFromFile(new File(['zip'], 'site.kmz'));
+            close.next('Cancel');
+            close.complete();
+            await result;
+
+            expect(dialog.open.calls.mostRecent().args[1]?.data)
+                .toEqual(jasmine.objectContaining({ texts: [jasmine.stringContaining('This file has 3 shapes')] }));
+            expect(geoFiles.keepOriginal).not.toHaveBeenCalled();
+        });
+    });
+
+    it('shows the size warning before reading a large file and does not read it on Cancel', async () => {
+        settings.getGeospatialLimits.and.returnValue(of({
+            kmlPreviewMaxFileSizeMb: 1,
+            geojsonPreviewMaxFileSizeMb: 0.000001,
+            geospatialMaxFileSizeMb: 1,
+            geospatialPreviewMaxFeatures: 5000
+        }));
+        const result = component.importFromFile(new File(['{}'], 'site.geojson'));
+        close.next('Cancel');
+        close.complete();
+        await result;
+        expect(dialog.open.calls.count()).toBe(1);
+        expect(dialog.open.calls.mostRecent().args[1]?.data)
+            .toEqual(jasmine.objectContaining({ header: 'File too large to preview' }));
+        expect(component.loading).toBeFalse();
+    });
+
+    it('refuses a small file whose only geometry has empty coordinates', async () => {
+        const oldValue = { type: 'Point', coordinates: [1, 2] };
+        value = oldValue;
+        const result = component.importFromFile(new File([JSON.stringify({ type: 'Point', coordinates: [] })], 'site.geojson'));
+        close.next('Ok');
+        close.complete();
+        await result;
+        expect(dialog.open.calls.mostRecent().args[1]?.data).toEqual(jasmine.objectContaining({
+            header: 'File cannot be imported',
+            buttons: [{ name: 'Ok', class: 'primary' }]
+        }));
+        expect(value).toBe(oldValue);
+        expect(geoFiles.keepOriginal).not.toHaveBeenCalled();
+        expect(component.importError).toBe('');
+    });
+
+    it('refuses a small file without coordinates in the same dialog', async () => {
+        const oldValue = { type: 'Point', coordinates: [1, 2] };
+        value = oldValue;
+        const empty = JSON.stringify({
+            type: 'FeatureCollection',
+            features: [{ type: 'Feature', properties: {}, geometry: null }]
+        });
+        const result = component.importFromFile(new File([empty], 'site.geojson'));
+        close.next('Ok');
+        close.complete();
+        await result;
+        expect(dialog.open.calls.mostRecent().args[1]?.data).toEqual(jasmine.objectContaining({
+            header: 'File cannot be imported',
+            buttons: [{ name: 'Ok', class: 'primary' }]
+        }));
+        expect(value).toBe(oldValue);
         expect(geoFiles.keepOriginal).not.toHaveBeenCalled();
         expect(component.loading).toBeFalse();
     });
@@ -556,10 +981,11 @@ describe('GeojsonTypeComponent original file link', () => {
         settings.getGeospatialLimits.and.returnValue(of({
             kmlPreviewMaxFileSizeMb: 10,
             geojsonPreviewMaxFileSizeMb: 5,
-            geospatialMaxFileSizeMb: 0.00001
+            geospatialMaxFileSizeMb: 0.00001,
+            geospatialPreviewMaxFeatures: 5000
         }));
         const result = component.importFromFile(new File([new Uint8Array(100)], 'site.kmz'));
-        close.next(false);
+        close.next('Ok');
         close.complete();
         await result;
         expect(inspect).not.toHaveBeenCalled();
@@ -579,22 +1005,26 @@ describe('GeojsonTypeComponent original file link', () => {
         settings.getGeospatialLimits.and.returnValue(of({
             kmlPreviewMaxFileSizeMb: 0.00001,
             geojsonPreviewMaxFileSizeMb: 5,
-            geospatialMaxFileSizeMb: 1
+            geospatialMaxFileSizeMb: 1,
+            geospatialPreviewMaxFeatures: 5000
         }));
         geoFiles.keepOriginal.and.resolveTo({
             idbKey: 'new', name: file.name, format: 'kmz',
             sizeBytes: file.size, previewSizeBytes: file.size
         });
+        spyOn<any>(component, 'setupMap');
         const result = component.importFromFile(file);
-        close.next(true);
+        close.next('Upload without preview');
         close.complete();
         await result;
+        const link = (component as any).pendingGeoFile;
         expect(coordinate).toHaveBeenCalled();
-        expect(value.geoFile.format).toBe('kmz');
-        expect(value.geoFile.previewSizeBytes).toBe(20);
-        expect(value.geoFile.noPreview).toBeTrue();
-        expect(value.geoFile.automaticPoint).toEqual([12, 34]);
-        expect(component.geometriesList[0].coordinates).toEqual([12, 34]);
+        expect(link.format).toBe('kmz');
+        expect(link.previewSizeBytes).toBe(20);
+        expect(link.noPreview).toBeTrue();
+        expect(link.automaticPoint).toEqual([12, 34]);
+        expect(value).toEqual({});
+        expect(component.importedLocations.map(location => location.coordinates)).toEqual([[12, 34]]);
     });
 
     it('keeps old value when the KMZ reader rejects the archive', async () => {
@@ -661,7 +1091,7 @@ describe('GeojsonTypeComponent loading state', () => {
 
         const status = fixture.nativeElement.querySelector('.geo-file-loading');
         expect(status).not.toBeNull();
-        expect(status.textContent).toContain('Reading file...');
+        expect(status.querySelector('.preloader-image')).not.toBeNull();
     });
 
     it('tells the user the map does not show the full file', () => {
@@ -679,12 +1109,57 @@ describe('GeojsonTypeComponent loading state', () => {
             setAvailableTypes: () => undefined,
             setOriginalFileCheck: () => undefined
         } as any;
+        component.isDisabled = true;
         spyOn(component, 'ngAfterViewInit');
 
         fixture.detectChanges(false);
 
         const notice = fixture.nativeElement.querySelector('.geo-preview-unavailable');
-        expect(notice.textContent).toContain('The map does not show the full file. Download it to view.');
+        expect(notice.textContent).toContain('Preview unavailable: this file is too large to show on the map. Download it to view.');
+    });
+
+    it('labels the candidate button Add file point and offers no original file while the form is edited', () => {
+        (component as any).pendingGeoFile = {
+            idbKey: 'new', name: 'large.kml', format: 'kml',
+            sizeBytes: 20, previewSizeBytes: 20, noPreview: true, automaticPoint: [1, 2]
+        };
+        component.importedLocations = [{ id: 'point', type: GeoJsonType.POINT, coordinates: [1, 2] }];
+        spyOn(component, 'ngAfterViewInit');
+
+        fixture.detectChanges(false);
+
+        const notice = fixture.nativeElement.querySelector('.geo-preview-unavailable');
+        const controls = Array.from(fixture.nativeElement.querySelectorAll('.map-control-buttons button'))
+            .map((button: any) => button.label || button.getAttribute('label'));
+        expect(notice.textContent).toContain('Preview unavailable: this file is too large to show on the map. The marked point is the first point in the file. Add it, or draw your own shapes.');
+        expect(notice.textContent).not.toContain('Download it to view.');
+        expect(notice.querySelectorAll('button').length).toBe(0);
+        expect(controls).toContain('Add file point');
+        expect(controls).not.toContain('Include all');
+    });
+
+    it('shows the JSON text for an imported file above 1 MB', () => {
+        component.isJSON = true;
+        component.fileImportSize = 4;
+        spyOn(component, 'ngAfterViewInit');
+
+        fixture.detectChanges(false);
+
+        expect(fixture.nativeElement.querySelector('#geoJsonInput')).not.toBeNull();
+        expect(fixture.nativeElement.textContent).not.toContain('too large to view');
+    });
+
+    it('explains why the shape list is hidden above 300 shapes', () => {
+        component.geometriesList = Array.from({ length: 301 }, (_, i) => ({
+            id: String(i), type: GeoJsonType.POINT, coordinates: [1, 2]
+        })) as any;
+        spyOn(component, 'ngAfterViewInit');
+
+        fixture.detectChanges(false);
+
+        expect(fixture.nativeElement.textContent)
+            .toContain('301 shapes are selected. The list shows up to 300 shapes; the map shows them all.');
+        expect(fixture.nativeElement.textContent).not.toContain('exceeds in-browser preview limits');
     });
 
     describe('download buttons in the document view', () => {
@@ -712,13 +1187,14 @@ describe('GeojsonTypeComponent loading state', () => {
             expect(render({ ...collection, geoFile })).toEqual(['Download GeoJSON', 'Download original file']);
         });
 
-        it('offers the GeoJSON in the map area and the original in the notice for a file without preview', () => {
+        it('offers both downloads side by side under the map for a file without preview', () => {
             const labels = render({
                 type: 'Point', coordinates: [1, 2],
                 geoFile: { ...geoFile, noPreview: true, automaticPoint: [1, 2] }
             });
 
-            expect(labels).toEqual(['Download original file', 'Download GeoJSON']);
+            expect(labels).toEqual(['Download GeoJSON', 'Download original file']);
+            expect(fixture.nativeElement.querySelector('.geo-preview-unavailable button')).toBeNull();
         });
 
         it('offers only the GeoJSON download for a document without a file', () => {
