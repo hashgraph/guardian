@@ -12,7 +12,7 @@
 .switch-btn {
     width: 180px;
     height: 32px;
-    margin-bottom: 15px;
+    margin-bottom: 16px;
 }
 
 .form-group {
@@ -28,6 +28,11 @@
 
 .coordinates-input {
     z-index: 10;
+}
+
+label.coordinates-input {
+    display: block;
+    margin-bottom: 6px;
 }
 
 .map-control-block {
@@ -113,9 +118,36 @@
     border-color: #f44336;
 }
 
+.p-error {
+    display: block;
+    font-family: Inter;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 14px;
+    color: var(--color-accent-red-1);
+}
+
+:host > .p-error {
+    margin-bottom: 8px;
+}
+
+:host > .p-error:first-child {
+    margin-top: -8px;
+}
+
+:host > .p-error + .switch-btn,
+:host > .p-error + .geo-file-loading + .switch-btn {
+    margin-top: 8px;
+}
+
+#geoJsonInput ~ .validation-errors {
+    margin-bottom: 8px;
+}
+
 .validation-errors {
-    margin: .25rem 0 0;
-    padding-left: 1rem;
+    margin: 8px 0 0;
+    padding-left: 2px;
+    list-style: none;
 }
 
 .map-container .download-geo {
@@ -150,16 +182,17 @@
 }
 
 .geo-preview-unavailable {
-    margin-bottom: 12px;
+    margin-bottom: 16px;
     font-size: 12px;
     line-height: 16px;
     color: color-mix(in srgb, var(--color-accent-yellow-1) 70%, var(--guardian-font-color));
 
     p {
-        margin: 0 0 4px;
+        margin: 0 0 8px;
     }
 
     .geo-preview-file {
+        margin-bottom: 0;
         color: var(--guardian-grey-color-4);
     }
 }

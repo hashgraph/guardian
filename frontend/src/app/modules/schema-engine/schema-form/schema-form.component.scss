@@ -250,6 +250,10 @@ form {
             &.invalid-sub-schema {
                 margin-top: 0px;
                 margin-bottom: 16px;
+
+                &.invalid-geo-field {
+                    padding-left: 0;
+                }
             }
         }
 

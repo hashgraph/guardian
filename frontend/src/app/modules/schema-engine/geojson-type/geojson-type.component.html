@@ -1,6 +1,9 @@
 @if (importError) {
   <small class="p-error">{{ importError }}</small>
 }
+@for (err of getFieldErrors(); track err) {
+  <small class="p-error">{{ err }}</small>
+}
 @if (loading) {
   <div class="geo-file-loading" role="status" aria-label="Loading">
     <div class="preloader-image preloader-image-l-size"></div>
@@ -10,10 +13,8 @@
   <div class="geo-preview-unavailable">
     @if (isDisabled) {
       <p>Preview unavailable: this file is too large to show on the map. Download it to view.</p>
-    } @else if (importedLocations.length > 0) {
-      <p>Preview unavailable: this file is too large to show on the map. The marked point is the first point in the file. Add it, or draw your own shapes.</p>
     } @else {
-      <p>Preview unavailable: this file is too large to show on the map. The marked point is the first point in the file.</p>
+      <p>Preview unavailable: this file is too large to show on the map. The map shows the first point from the file and/or the shapes you added.</p>
     }
     <p class="geo-preview-file">{{ originalFileLabel() }}</p>
   </div>
@@ -40,7 +41,7 @@
       (ngModelChange)="jsonChanged()"
       class="full-width">
     </textarea>
-    @if (haveErrors()) {
+    @if (getAllErrors().length) {
       <ul class="p-error validation-errors">
         @for (err of getAllErrors(); track err) {
           <li>{{ err }}</li>

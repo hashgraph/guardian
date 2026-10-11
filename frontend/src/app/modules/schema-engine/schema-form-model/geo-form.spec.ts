@@ -1,6 +1,6 @@
 import { UntypedFormControl } from '@angular/forms';
 import { GeoJsonType } from '@guardian/interfaces';
-import { GeoForm, MISSING_ORIGINAL_FILE_ERROR } from './geo-form';
+import { GeoForm, MISSING_ORIGINAL_FILE_ERROR, ORIGINAL_FILE_ERRORS_KEY } from './geo-form';
 
 describe('GeoForm no-preview validation', () => {
     function errors(value: unknown): any {
@@ -112,7 +112,8 @@ describe('GeoForm original file link', () => {
 
         expect(check).toHaveBeenCalledWith('geo-key');
         expect(control.invalid).toBeTrue();
-        expect(form.getErrors()[0]).toEqual([MISSING_ORIGINAL_FILE_ERROR]);
+        expect(form.getErrors()[ORIGINAL_FILE_ERRORS_KEY]).toEqual([MISSING_ORIGINAL_FILE_ERROR]);
+        expect(form.getErrors()[0]).toBeUndefined();
     });
 
     it('keeps a value valid when its browser file is available', async () => {

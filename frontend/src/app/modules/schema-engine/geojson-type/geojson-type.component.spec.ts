@@ -1,5 +1,5 @@
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, UntypedFormControl } from '@angular/forms';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, ReplaySubject, throwError } from 'rxjs';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -12,6 +12,7 @@ import { SwitchButton } from '../../common/switch-button/switch-button.component
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { gzipBlob } from '../geo-file/geo-file-compression';
 import { KmlCoordinateScanner } from '../geo-file/kml-coordinate-scanner';
+import { GeoForm, ORIGINAL_FILE_ERRORS_KEY } from '../schema-form-model/geo-form';
 import { GeojsonTypeComponent } from './geojson-type.component';
 
 describe('GeojsonTypeComponent original file link', () => {
@@ -28,7 +29,8 @@ describe('GeojsonTypeComponent original file link', () => {
         geoFiles = jasmine.createSpyObj('GeoFilePersistenceService', [
             'keepOriginal',
             'discard',
-            'ensurePendingFile'
+            'ensurePendingFile',
+            'fileHash'
         ]);
         artifacts = jasmine.createSpyObj('ArtifactService', ['getFileBlob']);
         settings = jasmine.createSpyObj('SettingsService', ['getGeospatialLimits']);
@@ -407,6 +409,128 @@ describe('GeojsonTypeComponent original file link', () => {
         expect(geoFiles.keepOriginal).toHaveBeenCalled();
         expect(component.geometriesList.length).toBe(0);
         expect(value).toEqual({});
+    });
+
+    describe('when the original file is missing in this browser', () => {
+        const content = JSON.stringify({ type: 'Point', coordinates: [3, 4] });
+        const lost = {
+            idbKey: 'lost-key', name: 'site.geojson', format: 'geojson' as const,
+            sizeBytes: content.length, previewSizeBytes: content.length, noPreview: true,
+            automaticPoint: [1, 2] as [number, number], sha256: 'same-hash'
+        };
+
+        beforeEach(() => {
+            value = { type: 'Point', coordinates: [1, 2], geoFile: lost };
+            component.addGeometry(value);
+            (component.formModel as any).getErrors = () => ({ file: ['missing'] });
+        });
+
+        it('attaches the same file again and keeps the selected shapes', async () => {
+            const file = new File([content], 'site.geojson');
+            geoFiles.fileHash.and.resolveTo('same-hash');
+            geoFiles.keepOriginal.and.resolveTo({
+                idbKey: 'new-key', name: 'site.geojson', format: 'geojson',
+                sizeBytes: file.size, previewSizeBytes: file.size, sha256: 'same-hash'
+            });
+
+            await component.importFromFile(file);
+
+            expect(geoFiles.keepOriginal).toHaveBeenCalledOnceWith(file, 'geojson', 'same-hash');
+            expect(settings.getGeospatialLimits).not.toHaveBeenCalled();
+            expect(component.geometriesList.length).toBe(1);
+            expect(value.coordinates).toEqual([1, 2]);
+            expect(value.geoFile).toEqual({ ...lost, idbKey: 'new-key' });
+            expect((component as any).pendingGeoFile).toEqual({ ...lost, idbKey: 'new-key' });
+            expect(component.loading).toBeFalse();
+        });
+
+        it('imports a different file as a new file and drops the shapes', async () => {
+            spyOn<any>(component, 'setupMap');
+            (component as any).geoJsonService.getFileNames.and.returnValue([]);
+            const file = new File([content], 'other.geojson');
+            geoFiles.fileHash.and.resolveTo('other-hash');
+            geoFiles.keepOriginal.and.resolveTo({
+                idbKey: 'new-key', name: 'other.geojson', format: 'geojson',
+                sizeBytes: file.size, previewSizeBytes: file.size, sha256: 'other-hash'
+            });
+            geoFiles.discard.and.resolveTo();
+
+            await component.importFromFile(file);
+
+            expect(geoFiles.keepOriginal).toHaveBeenCalledOnceWith(file, 'geojson');
+            expect(component.geometriesList.length).toBe(0);
+            expect(value).toEqual({});
+        });
+
+        it('does not read a file of another size before the size limits are checked', async () => {
+            settings.getGeospatialLimits.and.returnValue(of({
+                kmlPreviewMaxFileSizeMb: 0.00001,
+                geojsonPreviewMaxFileSizeMb: 0.00001,
+                geospatialMaxFileSizeMb: 0.00002,
+                geospatialPreviewMaxFeatures: 5000
+            }));
+
+            const result = component.importFromFile(new File([new Uint8Array(101)], 'huge.geojson'));
+            close.next('Ok');
+            close.complete();
+            await result;
+
+            expect(geoFiles.fileHash).not.toHaveBeenCalled();
+            expect(dialog.open.calls.mostRecent().args[1]?.data)
+                .toEqual(jasmine.objectContaining({ header: 'File exceeds size limit' }));
+            expect(geoFiles.keepOriginal).not.toHaveBeenCalled();
+            expect(value.geoFile).toEqual(lost);
+        });
+
+        it('keeps the restored file when the JSON text is edited afterwards', async () => {
+            const control = new UntypedFormControl(value);
+            const model = new GeoForm(control);
+            model.build();
+            model.setOriginalFileCheck(async key => key === 'new-key');
+            component.formModel = model;
+            await new Promise(resolve => setTimeout(resolve, 0));
+            expect(model.getErrors()[ORIGINAL_FILE_ERRORS_KEY]).toBeDefined();
+            component.isJSON = true;
+            component.onViewTypeChange(false);
+            geoFiles.fileHash.and.resolveTo('same-hash');
+            geoFiles.keepOriginal.and.resolveTo({ ...lost, idbKey: 'new-key' });
+
+            await component.importFromFile(new File([content], 'site.geojson'));
+            await new Promise(resolve => setTimeout(resolve, 0));
+            expect(control.valid).toBeTrue();
+
+            component.jsonInput += '\n';
+            component.jsonChanged();
+            await new Promise(resolve => setTimeout(resolve, 0));
+            expect(control.value.geoFile.idbKey).toBe('new-key');
+            expect(control.valid).toBeTrue();
+            expect(model.getErrors()[ORIGINAL_FILE_ERRORS_KEY]).toBeUndefined();
+
+            const edited = JSON.parse(component.jsonInput);
+            edited.coordinates = [5, 6];
+            component.jsonInput = JSON.stringify(edited, null, 4);
+            component.jsonChanged();
+            await new Promise(resolve => setTimeout(resolve, 0));
+            expect(control.value.coordinates).toEqual([5, 6]);
+            expect(control.value.geoFile.idbKey).toBe('new-key');
+            expect(control.valid).toBeTrue();
+        });
+
+        it('does not hash the file when the original file is available', async () => {
+            spyOn<any>(component, 'setupMap');
+            (component as any).geoJsonService.getFileNames.and.returnValue([]);
+            (component.formModel as any).getErrors = () => ({});
+            geoFiles.keepOriginal.and.resolveTo({
+                idbKey: 'new-key', name: 'site.geojson', format: 'geojson',
+                sizeBytes: 10, previewSizeBytes: 10, sha256: 'same-hash'
+            });
+            geoFiles.discard.and.resolveTo();
+
+            await component.importFromFile(new File([JSON.stringify({ type: 'Point', coordinates: [3, 4] })], 'site.geojson'));
+
+            expect(geoFiles.fileHash).not.toHaveBeenCalled();
+            expect(component.geometriesList.length).toBe(0);
+        });
     });
 
     it('uses the default limits when limits cannot be loaded', async () => {
@@ -1131,11 +1255,97 @@ describe('GeojsonTypeComponent loading state', () => {
         const notice = fixture.nativeElement.querySelector('.geo-preview-unavailable');
         const controls = Array.from(fixture.nativeElement.querySelectorAll('.map-control-buttons button'))
             .map((button: any) => button.label || button.getAttribute('label'));
-        expect(notice.textContent).toContain('Preview unavailable: this file is too large to show on the map. The marked point is the first point in the file. Add it, or draw your own shapes.');
+        expect(notice.textContent).toContain('Preview unavailable: this file is too large to show on the map. The map shows the first point from the file and/or the shapes you added.');
         expect(notice.textContent).not.toContain('Download it to view.');
         expect(notice.querySelectorAll('button').length).toBe(0);
         expect(controls).toContain('Add file point');
         expect(controls).not.toContain('Include all');
+    });
+
+    it('keeps the same notice after the file point is added', () => {
+        component.formModel = {
+            getValue: () => ({
+                type: 'Point',
+                coordinates: [1, 2],
+                geoFile: {
+                    idbKey: 'new', name: 'large.kml', format: 'kml',
+                    sizeBytes: 20, previewSizeBytes: 20, noPreview: true, automaticPoint: [1, 2]
+                }
+            }),
+            getErrors: () => ({}),
+            setControlValue: () => undefined,
+            setAvailableTypes: () => undefined,
+            setOriginalFileCheck: () => undefined
+        } as any;
+        component.importedLocations = [];
+        spyOn(component, 'ngAfterViewInit');
+
+        fixture.detectChanges(false);
+
+        const notice = fixture.nativeElement.querySelector('.geo-preview-unavailable');
+        expect(notice.textContent).toContain('Preview unavailable: this file is too large to show on the map. The map shows the first point from the file and/or the shapes you added.');
+        expect(notice.textContent).not.toContain('marked point');
+    });
+
+    it('shows a missing original file once at the top of the field, not under a row', () => {
+        const message = 'The original file is not available in this browser. Import it again.';
+        component.formModel = {
+            getValue: () => ({ type: 'Point', coordinates: [1, 2] }),
+            getErrors: () => ({ file: [message] }),
+            setControlValue: () => undefined,
+            setAvailableTypes: () => undefined,
+            setOriginalFileCheck: () => undefined
+        } as any;
+        spyOn(component, 'ngAfterViewInit');
+
+        fixture.detectChanges(false);
+
+        const errors = Array.from(fixture.nativeElement.querySelectorAll('.p-error'))
+            .map((element: any) => element.textContent.trim());
+        expect(errors).toEqual([message]);
+        expect(fixture.nativeElement.firstElementChild.textContent.trim()).toBe(message);
+        expect(component.getErrorsByIndex(0)).toEqual([]);
+        expect(component.getAllErrors()).toEqual([]);
+        expect(component.haveErrors()).toBeTrue();
+    });
+
+    describe('with an empty value', () => {
+        beforeEach(() => {
+            component.formModel = {
+                getValue: () => ({}),
+                getErrors: () => ({ 0: ['A GeoJSON object is required'] }),
+                setControlValue: () => undefined,
+                setAvailableTypes: () => undefined,
+                setOriginalFileCheck: () => undefined
+            } as any;
+            component.isJSON = true;
+            spyOn(component, 'ngAfterViewInit');
+        });
+
+        it('asks to pick a shape at the top of the field after a file is imported', () => {
+            (component as any).pendingGeoFile = {
+                idbKey: 'new', name: 'site.geojson', format: 'geojson', sizeBytes: 10, previewSizeBytes: 10
+            };
+
+            fixture.detectChanges(false);
+
+            const errors = Array.from(fixture.nativeElement.querySelectorAll('.p-error'))
+                .map((element: any) => element.textContent.trim());
+            expect(errors).toEqual(['Select at least one shape from the file, or draw your own.']);
+            expect(fixture.nativeElement.firstElementChild.textContent.trim())
+                .toBe('Select at least one shape from the file, or draw your own.');
+            expect(component.haveErrors()).toBeTrue();
+        });
+
+        it('keeps the required message under the JSON text when no file is imported', () => {
+            fixture.detectChanges(false);
+
+            const errors = Array.from(fixture.nativeElement.querySelectorAll('.p-error'))
+                .map((element: any) => element.textContent.trim());
+            expect(errors).toEqual(['A GeoJSON object is required']);
+            expect(fixture.nativeElement.querySelector('.validation-errors').textContent)
+                .toContain('A GeoJSON object is required');
+        });
     });
 
     it('shows the JSON text for an imported file above 1 MB', () => {

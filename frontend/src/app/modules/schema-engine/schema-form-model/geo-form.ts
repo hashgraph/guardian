@@ -6,6 +6,8 @@ import { GeoJsonSchema, GeoJsonType } from '@guardian/interfaces';
 
 export const MISSING_ORIGINAL_FILE_ERROR =
     'The original file is not available in this browser. Import it again.';
+export const ORIGINAL_FILE_ERRORS_KEY = 'file';
+export const GEOJSON_REQUIRED_ERROR = 'A GeoJSON object is required';
 
 export class GeoForm {
     private readonly form: UntypedFormControl;
@@ -82,7 +84,7 @@ export class GeoForm {
             return of(null);
         }
         return from(check(key)).pipe(map(available => available ? null : {
-            [this.errorsFieldName]: { 0: [MISSING_ORIGINAL_FILE_ERROR] }
+            [this.errorsFieldName]: { [ORIGINAL_FILE_ERRORS_KEY]: [MISSING_ORIGINAL_FILE_ERROR] }
         }));
     }
 
@@ -121,7 +123,7 @@ export class GeoForm {
 
     private validatePayload(value: any): Record<string | number, string[]> {
         if (!value || typeof value !== 'object' || this.safeStringify(value) === '{}') {
-            return { 0: ['A GeoJSON object is required'] };
+            return { 0: [GEOJSON_REQUIRED_ERROR] };
         }
         const automaticPoint = value.geoFile?.noPreview === true
             ? value.geoFile.automaticPoint

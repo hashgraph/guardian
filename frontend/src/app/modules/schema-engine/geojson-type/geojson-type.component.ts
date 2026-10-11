@@ -15,7 +15,7 @@ import { doubleClick, pointerMove } from 'ol/events/condition.js';
 import { LineString, MultiLineString, MultiPoint, MultiPolygon, Polygon } from 'ol/geom';
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer.js';
 import Select from 'ol/interaction/Select.js';
-import { GeoForm } from '../schema-form-model/geo-form';
+import { GEOJSON_REQUIRED_ERROR, GeoForm, ORIGINAL_FILE_ERRORS_KEY } from '../schema-form-model/geo-form';
 import { GeoJsonService } from 'src/app/services/geo-json.service';
 import { DOMParser } from '@xmldom/xmldom';
 import { ArtifactService } from 'src/app/services/artifact.service';
@@ -34,6 +34,7 @@ import { kml } from '@tmcw/togeojson';
 
 const MAX_EDITABLE_SHAPES = 300;
 const ROWS_PER_BATCH = 10;
+const UNPICKED_FILE_ERROR = 'Select at least one shape from the file, or draw your own.';
 
 const MAP_OPTIONS = {
     center: [0, 0],
@@ -480,7 +481,27 @@ export class GeojsonTypeComponent implements OnChanges {
     }
 
     public getAllErrors(): string[] {
-        return Object.values(this.formModel.getErrors()).reduce((acc, val) => acc.concat(val), []);
+        const unpicked = this.hasUnpickedFile();
+        return Object.entries(this.formModel.getErrors())
+            .filter(([key]) => key !== ORIGINAL_FILE_ERRORS_KEY)
+            .reduce((acc: string[], [, val]) => acc.concat(val), [])
+            .filter(error => !unpicked || error !== GEOJSON_REQUIRED_ERROR);
+    }
+
+    public getOriginalFileErrors(): string[] {
+        return this.formModel.getErrors()[ORIGINAL_FILE_ERRORS_KEY] || [];
+    }
+
+    public getFieldErrors(): string[] {
+        const required = Object.values(this.formModel.getErrors())
+            .some(errors => errors.includes(GEOJSON_REQUIRED_ERROR));
+        return this.hasUnpickedFile() && required
+            ? [...this.getOriginalFileErrors(), UNPICKED_FILE_ERROR]
+            : this.getOriginalFileErrors();
+    }
+
+    private hasUnpickedFile(): boolean {
+        return !!this.pendingGeoFile && !this.formModel?.getValue?.()?.type;
     }
 
     public canDownload(): boolean {
@@ -1366,6 +1387,7 @@ export class GeojsonTypeComponent implements OnChanges {
             return;
         }
         this.importError = '';
+        if (await this.reattachMissingFile(file, format)) return;
         let limits: GeospatialLimits;
         try {
             limits = await this.loadLimits();
@@ -1543,6 +1565,33 @@ export class GeojsonTypeComponent implements OnChanges {
         this.setControlValue({});
         this.jsonInput = '';
         return link;
+    }
+
+    private async reattachMissingFile(file: File, format: GeoFileFormat): Promise<boolean> {
+        const value = this.formModel?.getValue?.();
+        const previous = value?.geoFile as GeoFileLink | undefined;
+        if (!previous?.sha256 || previous.fileId || file.size !== previous.sizeBytes || !this.getOriginalFileErrors().length) return false;
+        this.loading = true;
+        this.cdkRef.detectChanges();
+        try {
+            const sha256 = await this.geoFiles.fileHash(file);
+            if (sha256 !== previous.sha256) return false;
+            const link = await this.geoFiles.keepOriginal(file, format, sha256);
+            const restored: GeoFileLink = { ...previous, idbKey: link.idbKey };
+            this.pendingGeoFile = restored;
+            this.selectedOriginalFile = file;
+            this.setControlValue({ ...value, geoFile: restored });
+            if (this.isJSON) {
+                this.jsonInput = JSON.stringify(this.formModel.getValue(), null, 4);
+            }
+            return true;
+        } catch (error) {
+            this.importError = error instanceof Error ? error.message : String(error);
+            return true;
+        } finally {
+            this.loading = false;
+            this.cdkRef.detectChanges();
+        }
     }
 
     private browserGeoFile(): GeoFileLink | undefined {

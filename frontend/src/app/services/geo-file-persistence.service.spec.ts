@@ -68,8 +68,20 @@ describe('GeoFilePersistenceService', () => {
             name: 'site.kml',
             format: 'kml',
             sizeBytes: file.size,
-            previewSizeBytes: file.size
+            previewSizeBytes: file.size,
+            sha256: '0682c5f2076f099c34cfdd15a9e063849ed437a49677e6fcc5b4198c76575be5'
         });
+    });
+
+    it('hashes the original file with SHA-256', async () => {
+        expect(await service.fileHash(new Blob(['abc'])))
+            .toBe('ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad');
+    });
+
+    it('uses a hash that is already known instead of reading the file again', async () => {
+        const link = await service.keepOriginal(new File(['x'], 'site.kml'), 'kml', 'known-hash');
+
+        expect(link.sha256).toBe('known-hash');
     });
 
     it('uploads nested links to GridFS and IPFS and compacts the link', async () => {

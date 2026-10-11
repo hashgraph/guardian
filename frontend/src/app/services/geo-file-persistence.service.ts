@@ -23,6 +23,7 @@ export interface GeoFileLink {
     previewSizeBytes: number;
     noPreview?: boolean;
     automaticPoint?: [number, number] | [number, number, number];
+    sha256?: string;
 }
 
 export function isGeoJsonValue(record: Record<string, unknown>): boolean {
@@ -65,7 +66,13 @@ export class GeoFilePersistenceService {
         private readonly indexedDb: IndexedDbRegistryService
     ) {}
 
-    public async keepOriginal(file: File, format: GeoFileFormat): Promise<GeoFileLink> {
+    public async fileHash(file: Blob): Promise<string> {
+        const digest = await crypto.subtle.digest('SHA-256', await file.arrayBuffer());
+        return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+    }
+
+    public async keepOriginal(file: File, format: GeoFileFormat, sha256?: string): Promise<GeoFileLink> {
+        const hash = sha256 ?? await this.fileHash(file);
         await this.ensureStores();
         const idbKey = crypto.randomUUID();
         const record: GeoFileRecord = {
@@ -81,7 +88,8 @@ export class GeoFilePersistenceService {
             name: file.name,
             format,
             sizeBytes: file.size,
-            previewSizeBytes: file.size
+            previewSizeBytes: file.size,
+            sha256: hash
         };
     }
 
