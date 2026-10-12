@@ -1,5 +1,7 @@
-import { DatabaseServer } from '@guardian/common';
-import { Message, MessageType, TagMessage } from '@guardian/hedera';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { Message } from '@guardian/hedera/message/message';
+import { MessageType } from '@guardian/hedera/message/message-type';
+import { TagMessage } from '@guardian/hedera/message/tag-message';
 import { AnalyticsStatus as Status } from '../entity/analytics-status.js';
 import { AnalyticsTag as Tag } from '../entity/analytics-tag.js';
 import { AnalyticsToken as Token } from '../entity/analytics-token.js';

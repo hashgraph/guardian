@@ -63,8 +63,17 @@ const utilsPath = '../dist/helpers/utils.js';
 async function loadUserService(utilsOverride) {
     const mocks = utilsOverride ? { [utilsPath]: utilsOverride } : {};
     const mod = await esmock('../dist/analytics/user.service.js', mocks, {
-        '@guardian/common': commonMock,
-        '@guardian/hedera': hederaMock,
+        '@guardian/common/database-modules/database-server': { DatabaseServer: commonMock.DatabaseServer },
+        '@guardian/common/helpers/workers': { Workers: commonMock.Workers },
+        '@guardian/common/models/base-entity': { BaseEntity: commonMock.BaseEntity },
+        '@guardian/hedera/message/message-type': { MessageType: hederaMock.MessageType },
+        '@guardian/hedera/message/registration-message': { RegistrationMessage: hederaMock.RegistrationMessage },
+        '@guardian/hedera/message/policy-message': { PolicyMessage: hederaMock.PolicyMessage },
+        '@guardian/hedera/message/token-message': { TokenMessage: hederaMock.TokenMessage },
+        '@guardian/hedera/message/schema-message': { SchemaMessage: hederaMock.SchemaMessage },
+        '@guardian/hedera/message/vc-message': { VCMessage: hederaMock.VcMessage },
+        '@guardian/hedera/message/vp-message': { VPMessage: hederaMock.VpMessage },
+        '@guardian/hedera/message/did-message': { DIDMessage: hederaMock.DIDMessage },
         '@guardian/interfaces': interfacesMock,
     });
     return mod.AnalyticsUserService;

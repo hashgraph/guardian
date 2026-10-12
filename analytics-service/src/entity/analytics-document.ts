@@ -1,5 +1,5 @@
 import { BeforeCreate, Entity, Index, Property } from '@mikro-orm/core';
-import { BaseEntity } from '@guardian/common';
+import { BaseEntity } from '@guardian/common/models/base-entity';
 import { DocumentType } from '../interfaces/document.type.js';
 
 /**
