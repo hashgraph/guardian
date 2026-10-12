@@ -52,8 +52,10 @@ import Long from 'long';
 import { TransactionLogger } from './transaction-logger.js';
 import process from 'node:process';
 import { FireblocksHelper } from './fireblocks-helper.js';
-import { Environment, MockEntityType, MockType } from '@guardian/common';
-import { MockService, MockHelper, HederaClientFactory } from '@guardian/hedera';
+import { Environment } from '@guardian/common/helpers/environment';
+import { MockEntityType, MockType } from '@guardian/common/helpers/mock-types';
+import { MockService, MockHelper } from '@guardian/hedera/mock-service';
+import { HederaClientFactory } from '@guardian/hedera/client';
 
 export const MAX_FEE = Math.abs(+process.env.MAX_TRANSACTION_FEE) || 30;
 export const INITIAL_BALANCE = 30;
