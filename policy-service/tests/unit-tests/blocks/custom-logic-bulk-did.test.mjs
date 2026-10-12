@@ -4,7 +4,7 @@ import { CustomLogicBlock } from '../../../dist/policy-engine/blocks/custom-logi
 import { GenerateDID } from '../../../dist/policy-engine/policy-actions/generate-did.js';
 import { PolicyActionsUtils } from '../../../dist/policy-engine/policy-actions/utils.js';
 import { PolicyUtils } from '../../../dist/policy-engine/helpers/utils.js';
-import { MessageServer } from '@guardian/hedera';
+import { MessageServer } from '@guardian/hedera/message/message-server';
 import { LocationType } from '@guardian/interfaces';
 
 const flush = () => new Promise((resolve) => setImmediate(resolve));

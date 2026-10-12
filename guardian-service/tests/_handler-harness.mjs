@@ -271,12 +271,12 @@ export { Interfaces };
 // patched to CAPTURE {event, cb} (no broker), and ApplicationState.getState() is
 // forced to READY so the api-response gate lets handlers through.
 // ---------------------------------------------------------------------------
-import * as Common from '@guardian/common';
+import { ApplicationState } from '@guardian/common/helpers/application-state';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { DataBaseHelper } from '@guardian/common/helpers/db-helper';
 import { GuardiansService } from '../dist/helpers/guardians.js';
 
-export const common = Common;
-export const DatabaseServer = Common.DatabaseServer;
-export const DataBaseHelper = Common.DataBaseHelper;
+export { DatabaseServer, DataBaseHelper };
 
 // ApiResponse wraps each handler in a state gate: the captured callback closes over
 // a `new ApplicationState()` and returns MessageInitialization unless getState() is
@@ -285,7 +285,7 @@ export const DataBaseHelper = Common.DataBaseHelper;
 // suites replace ApplicationState wholesale, so patching the real prototype here is
 // inert for them.
 const _READY = Interfaces.ApplicationStates ? Interfaces.ApplicationStates.READY : 'READY';
-Common.ApplicationState.prototype.getState = function () { return _READY; };
+ApplicationState.prototype.getState = function () { return _READY; };
 
 export function silentLogger() {
     return { error: async () => {}, info: async () => {}, warn: async () => {}, debug: async () => {} };
