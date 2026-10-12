@@ -38,6 +38,65 @@ export class TableFieldHelper {
         }
     }
 
+    public async attachGeoFilesAnalytics(
+        entity: Message,
+        message: Message,
+        fileMap: Map<string, string>
+    ): Promise<void> {
+        const subject = this.getVcSubject(message, fileMap);
+        if (!subject) {
+            return;
+        }
+        const vcIdentifier = message.consensusTimestamp || message.uuid || 'unknown';
+        const geoFiles: Record<string, string> = {};
+        try {
+            for (const cid of this.extractGeoFileCids(subject)) {
+                geoFiles[cid] = await this.ensureFileCachedInGridFSStrict(vcIdentifier, cid);
+            }
+        } catch (error) {
+            const errorText = error instanceof Error ? error.message : String(error);
+            console.error('attachGeoFilesAnalytics:', errorText);
+            return;
+        }
+        entity.analytics = {
+            ...(entity.analytics || {}),
+            geoFiles
+        };
+    }
+
+    private getVcSubject(message: Message, fileMap: Map<string, string>): any {
+        const vcCid = this.findVcCid(message.files, fileMap);
+        let vcString = vcCid ? fileMap.get(vcCid) : undefined;
+        if (!vcString && Array.isArray(message.documents) && message.documents[0]) {
+            vcString = message.documents[0];
+        }
+        return vcString ? this.getSubject(this.parseFile(vcString)) : null;
+    }
+
+    private extractGeoFileCids(rootNode: unknown): Set<string> {
+        const cids = new Set<string>();
+        const walk = (node: unknown): void => {
+            if (Array.isArray(node)) {
+                for (const item of node) {
+                    walk(item);
+                }
+                return;
+            }
+            if (!node || typeof node !== 'object') {
+                return;
+            }
+            const cid = (node as { geoFile?: { cid?: unknown } }).geoFile?.cid;
+            if (typeof cid === 'string' && IPFS_CID_PATTERN.test(cid)) {
+                cids.add(cid);
+            }
+            for (const child of Object.values(node)) {
+                walk(child);
+            }
+        };
+        walk(rootNode);
+        return cids;
+    }
+
     private parseFile(file: string | undefined): any | null {
         try {
             if (file) {

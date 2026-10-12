@@ -674,8 +674,24 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
     }
 
     private createMapPoints(
-        item: { type: string; coordinates: any[] },
+        item: { type: string; coordinates?: any[]; features?: any[]; geometry?: any },
     ) {
+        if (!item) {
+            return;
+        }
+        if (item.type === 'FeatureCollection') {
+            for (const feature of item.features || []) {
+                this.createMapPoints(feature);
+            }
+            return;
+        }
+        if (item.type === 'Feature') {
+            this.createMapPoints(item.geometry);
+            return;
+        }
+        if (!item.coordinates) {
+            return;
+        }
         switch (item.type) {
             case 'Point': {
                 this.mapPoints.push({

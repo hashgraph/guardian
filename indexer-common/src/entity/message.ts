@@ -87,6 +87,7 @@ export class Message implements IMessage {
         dynamicTopics?: string[];
         unpacked?: boolean;
         tableFiles?: Record<string, string>;
+        geoFiles?: Record<string, string>;
     };
 
     @Property({ nullable: true })

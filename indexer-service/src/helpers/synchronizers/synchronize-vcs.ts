@@ -84,6 +84,7 @@ export class SynchronizationVCs extends SynchronizationTask {
             row.analytics = this.createAnalytics(document, policyMap, topicMap, schemaMap, fileMap);
 
             await tableHelper.attachTableFilesAnalytics(row, document, fileMap);
+            await tableHelper.attachGeoFilesAnalytics(row, document, fileMap);
 
             row.analyticsUpdate = Date.now();
             em.persist(row);
@@ -178,6 +179,9 @@ export class SynchronizationVCs extends SynchronizationTask {
                 },
                 {
                     'analytics.tableFiles': null
+                },
+                {
+                    'analytics.geoFiles': { $exists: false }
                 }
             ],
         };

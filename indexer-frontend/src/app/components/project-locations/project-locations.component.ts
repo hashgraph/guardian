@@ -1,5 +1,4 @@
 import { Component, Input } from '@angular/core';
-import 'ol/ol.css';
 import GeoJSON from 'ol/format/GeoJSON.js';
 import Map from 'ol/Map.js';
 import View from 'ol/View.js';
@@ -116,8 +115,11 @@ const defaultStyles: any = {
     MultiPoint:  new Style({
         image: pointStyle,
     }),
-    LineString:  new Style({
-        image: pointStyle,
+    LineString: new Style({
+        stroke: new Stroke({
+            color: POLYGON.BORDER_COLOR,
+            width: POLYGON.BORDER_WIDTH,
+        }),
     }),
     Polygon: polygonStyle,
     MultiLineString: polygonStyle,
@@ -134,8 +136,11 @@ const activeStyles: any = {
     MultiPoint:  new Style({
         image: selectedPoint,
     }),
-    LineString:  new Style({
-        image: selectedPoint,
+    LineString: new Style({
+        stroke: new Stroke({
+            color: POLYGON.SELECTED_BORDER_COLOR,
+            width: POLYGON.SELECTED_BORDER_WIDTH,
+        }),
     }),
     Polygon: selectedPolygon,
     MultiLineString: selectedPolygon,
@@ -234,37 +239,25 @@ export class ProjectLocationsComponent {
         }
 
         if (this.geoShapes && this.geoShapes.length > 0) {
-            const shapeFeatures: any[] = [];
+            const format = new GeoJSON();
+            const features = this.geoShapes.flatMap((shape: any) =>
+                (Array.isArray(shape) ? shape : [shape]).flatMap((item: any) =>
+                    item ? format.readFeatures(item) : []
+                )
+            ).filter((feature: any) => !!feature.getGeometry());
 
-            this.geoShapes.forEach((shape) => {
-                if (Array.isArray(shape)) {
-                    for (const item of shape) {
-                        var feature = {
-                            type: 'Feature',
-                            geometry: item,
-                        }
-                        
-                        shapeFeatures.push(feature);
-                        this.center = transform(this.getFeatureCenter(item), 'EPSG:4326', 'EPSG:3857');
-                    }
+            for (const feature of features) {
+                const geometry = feature.getGeometry();
+                if (!geometry) {
+                    continue;
                 }
-                else {
-                    var feature = {
-                        type: 'Feature',
-                        geometry: shape,
-                    }
-                    
-                    shapeFeatures.push(feature);
-                    this.center = transform(this.getFeatureCenter(shape), 'EPSG:4326', 'EPSG:3857');
-                }
-            });
-
-            const features = new GeoJSON({
-                featureProjection: 'EPSG:3857',
-            }).readFeatures({
-                type: 'FeatureCollection',
-                features: shapeFeatures,
-            });
+                this.center = transform(
+                    this.getFeatureCenter(format.writeGeometryObject(geometry)),
+                    'EPSG:4326',
+                    'EPSG:3857'
+                );
+                geometry.transform('EPSG:4326', 'EPSG:3857');
+            }
 
             this.vectorSource?.clear(true);
             this.vectorSource?.addFeatures(features);

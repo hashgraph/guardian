@@ -57,27 +57,25 @@
                 </div>
             </div>
 
-            <div *ngIf="!item.isArray && item.isRef" class="form-field-group">
+            <div *ngIf="!item.isArray && item.isRef && item.customType === 'geo'" class="form-field">
+                <div class="label-field">{{item.description}}</div>
+                <ng-container *ngIf="this.values && this.values[item.name]">
+                    <ng-container *ngTemplateOutlet="geoValue; context: { $implicit: this.values[item.name] }"></ng-container>
+                </ng-container>
+            </div>
+
+            <div *ngIf="!item.isArray && item.isRef && item.customType !== 'geo'" class="form-field-group">
                 <div class="label-field">{{item.description}}</div>
                 <div *ngIf="this.values && this.values[item.name]" class="form-field-array-item">
                     <div class="form-field-group">
-                        @if (item.customType === 'geo') {
-                            <textarea
-                                [value]="this.values[item.name] | json"
-                                [rows]="1"
-                                readonly
-                                pInputTextarea>
-                            </textarea>
-                        } @else {
-                            <app-schema-form-view
-                                [fields]="item.fields"
-                                [private-fields]="hide"
-                                [delimiter-hide]="true"
-                                [values]="this.values && this.values[item.name]"
-                                [analytics]="analytics"
-                            >
-                            </app-schema-form-view>
-                        }
+                        <app-schema-form-view
+                            [fields]="item.fields"
+                            [private-fields]="hide"
+                            [delimiter-hide]="true"
+                            [values]="this.values && this.values[item.name]"
+                            [analytics]="analytics"
+                        >
+                        </app-schema-form-view>
                     </div>
                 </div>
             </div>
@@ -129,29 +127,30 @@
             </div>
 
 
-            <div *ngIf="item.isArray && item.isRef" class="form-field-group schema-form-field-array-group">
+            <div *ngIf="item.isArray && item.isRef && item.customType === 'geo'" class="form-field-array">
+                <div class="label-field">{{item.description}}</div>
+                <div *ngFor="let listItem of item.list" class="form-field-array-item"
+                    [attr.index]="item.list.indexOf(listItem)">
+                    <div class="form-field">
+                        <ng-container *ngTemplateOutlet="geoValue; context: { $implicit: listItem }"></ng-container>
+                    </div>
+                </div>
+            </div>
+
+            <div *ngIf="item.isArray && item.isRef && item.customType !== 'geo'" class="form-field-group schema-form-field-array-group">
                 <div class="label-field">{{item.description}}</div>
                 <div *ngFor="let listItem of item.list" class="form-field-array-item"
                     [attr.index]="item.list.indexOf(listItem)">
                     <div class="form-field-group">
-                        @if (item.customType === 'geo') {
-                            <textarea
-                                [value]="listItem | json"
-                                [rows]="1"
-                                readonly
-                                pInputTextarea>
-                            </textarea>
-                        } @else {
-                            <app-schema-form-view
-                                *ngSwitchDefault
-                                [fields]="item.fields"
-                                [private-fields]="hide"
-                                [delimiter-hide]="true"
-                                [values]="listItem"
-                                [analytics]="analytics"
-                            >
-                            </app-schema-form-view>
-                        }
+                        <app-schema-form-view
+                            *ngSwitchDefault
+                            [fields]="item.fields"
+                            [private-fields]="hide"
+                            [delimiter-hide]="true"
+                            [values]="listItem"
+                            [analytics]="analytics"
+                        >
+                        </app-schema-form-view>
                     </div>
                     <div class="short-delimiter-container">
                         <div class="delimiter"></div>
@@ -165,3 +164,31 @@
 
     </ng-container>
 </form>
+
+<ng-template #geoValue let-value>
+    <div class="geo-field">
+        <textarea
+            class="p-field-input geo-field-json"
+            [value]="value | json"
+            [rows]="getGeoRows(value)"
+            readonly
+            pInputTextarea>
+        </textarea>
+        <div *ngIf="value?.geoFile?.cid" class="geo-field-file">
+            <span class="geo-field-file-name">{{ value.geoFile.name }}</span>
+            <button
+                class="p-button p-component p-button-outlined"
+                type="button"
+                [disabled]="!getGeoFileId(value.geoFile) || isGeoFileLoading(value.geoFile)"
+                (click)="downloadGeoFile(value.geoFile)">
+                <span class="p-button-label">
+                    {{ isGeoFileLoading(value.geoFile) ? 'Downloading…' : 'Download original file' }}
+                </span>
+            </button>
+        </div>
+        <div *ngIf="value?.geoFile?.cid && !getGeoFileId(value.geoFile)" class="geo-field-note">
+            The file is still being prepared. Refresh the page in a minute.
+        </div>
+        <div *ngIf="getGeoFileError(value?.geoFile) as error" class="geo-field-error">{{ error }}</div>
+    </div>
+</ng-template>

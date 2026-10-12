@@ -184,16 +184,13 @@ export class SynchronizationProjects extends SynchronizationTask {
     }
 
     private findGeoJSONFieldsInDocument(cs: any, map: any, result = []) {
-        if (map[cs.type] && cs[map[cs.type]]) {
-            const fields = map[cs.type];
-            for (const field of fields) {
-                result.push(cs[field]);
-            }
-        } else {
-            for (const field in cs) {
-                if (Object.prototype.toString.call(cs[field]) === '[object Object]') {
-                    this.findGeoJSONFieldsInDocument(cs[field], map, result);
-                }
+        const fields: string[] = (map[cs.type] || []).filter((field: string) => cs[field]);
+        for (const field of fields) {
+            result.push(cs[field]);
+        }
+        for (const field in cs) {
+            if (!fields.includes(field) && Object.prototype.toString.call(cs[field]) === '[object Object]') {
+                this.findGeoJSONFieldsInDocument(cs[field], map, result);
             }
         }
         return result;
@@ -228,9 +225,25 @@ export class SynchronizationProjects extends SynchronizationTask {
 
     private addCoordinates(
         storage: ICoord[],
-        item: { type: string; coordinates: any[] },
+        item: { type: string; coordinates?: any[]; features?: any[]; geometry?: any },
         projectId: string
     ) {
+        if (!item) {
+            return;
+        }
+        if (item.type === 'FeatureCollection') {
+            for (const feature of item.features || []) {
+                this.addCoordinates(storage, feature, projectId);
+            }
+            return;
+        }
+        if (item.type === 'Feature') {
+            this.addCoordinates(storage, item.geometry, projectId);
+            return;
+        }
+        if (!item.coordinates) {
+            return;
+        }
         switch (item.type) {
             case 'Point': {
                 storage.push({
