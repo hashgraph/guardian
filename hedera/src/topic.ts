@@ -1,5 +1,6 @@
 import { Topic } from '@guardian/common/entity/topic';
-import { KeyType, Wallet, Wallet as WalletManager } from '@guardian/common/helpers/wallet';
+import { KeyType, Wallet } from '@guardian/common/helpers/wallet';
+import { Wallet as WalletManager } from '@guardian/common/wallet/wallet';
 import { Users } from '@guardian/common/helpers/users';
 import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 import { TopicType } from '@guardian/interfaces';
