@@ -3,7 +3,9 @@ import { IURL, UrlType } from './url.interface.js';
 import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { ToolMessageBody } from './message-body.interface.js';
-import { IPFS, toBuffer, PolicyTool } from '@guardian/common';
+import { IPFS } from '@guardian/common/helpers/ipfs';
+import { toBuffer } from '@guardian/common/helpers/utils';
+import { PolicyTool } from '@guardian/common/entity/tool';
 
 /**
  * Tool message

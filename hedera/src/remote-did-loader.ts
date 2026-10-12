@@ -1,4 +1,8 @@
-import { DidURL, DocumentLoader, IDocumentFormat, IPFS, Workers } from '@guardian/common';
+import { DidURL } from '@guardian/common/document-loader/did-url';
+import { DocumentLoader } from '@guardian/common/document-loader/base/document-loader';
+import { IDocumentFormat } from '@guardian/common/document-loader/base/document-format';
+import { IPFS } from '@guardian/common/helpers/ipfs';
+import { Workers } from '@guardian/common/helpers/workers';
 import { HederaDid } from './vcjs/did/hedera-did.js';
 import { WorkerTaskType } from '@guardian/interfaces';
 

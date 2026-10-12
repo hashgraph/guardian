@@ -9,8 +9,9 @@ import {
     decryptWithKeyDerivedFromString,
     encryptWithKeyDerivedFromString,
     utf8ToBytes,
-} from '@guardian/common/dist/helpers/cryppo/index.js';
-import { IPFS, PolicyDiscussion } from '@guardian/common';
+} from '@guardian/common/helpers/cryppo/index';
+import { IPFS } from '@guardian/common/helpers/ipfs';
+import { PolicyDiscussion } from '@guardian/common/entity/policy-discussion';
 
 /**
  * Discussion message

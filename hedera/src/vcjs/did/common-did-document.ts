@@ -3,7 +3,7 @@ import { DocumentContext } from './components/document-context.js';
 import { CommonDid } from './common-did.js';
 import { HederaDid } from './hedera-did.js';
 import { VerificationMethod } from './components/verification-method.js';
-import { Hashing } from '@guardian/common';
+import { Hashing } from '@guardian/common/helpers/hashing';
 import { DocumentService } from './components/document-service.js';
 import { IDidDocument } from './types/did-document.js';
 

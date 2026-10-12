@@ -3,7 +3,8 @@ import { IURL, UrlType } from './url.interface.js';
 import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { PolicyDiffMessageBody } from './message-body.interface.js';
-import { IPFS, toBuffer } from '@guardian/common';
+import { IPFS } from '@guardian/common/helpers/ipfs';
+import { toBuffer } from '@guardian/common/helpers/utils';
 
 /**
  * Policy diff message

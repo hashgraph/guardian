@@ -3,7 +3,8 @@ import { IURL, UrlType } from './url.interface.js';
 import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { StatisticMessageBody } from './message-body.interface.js';
-import { PolicyStatistic, IPFS } from '@guardian/common';
+import { PolicyStatistic } from '@guardian/common/entity/policy-statistic';
+import { IPFS } from '@guardian/common/helpers/ipfs';
 import { IStatisticConfig } from '@guardian/interfaces';
 
 /**

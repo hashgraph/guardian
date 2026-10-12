@@ -10,27 +10,24 @@ import {
 } from './vcjs/index.js';
 import { IDocumentOptions } from './vcjs/vcjs.js';
 import { RemoteDidLoader } from './remote-did-loader.js';
-import {
-    DefaultDocumentLoader,
-    DraftSchemaContextLoader,
-    LocalVcSchemaDocumentLoader,
-    LocalSchemaDocumentLoader,
-    LocalDidLoader,
-    LocalSchemaContextLoader,
-    DraftDidLoader,
-    DraftVcSchemaDocumentLoader,
-    DraftSchemaDocumentLoader,
-    Environment,
-    Singleton,
-    Schema as SchemaCollection,
-    DidDocument as DidDocumentCollection,
-    KeyType,
-    Users,
-    Wallet,
-    IAuthUser,
-    Hashing,
-    DatabaseServer
-} from '@guardian/common';
+import { DefaultDocumentLoader } from '@guardian/common/document-loader/base/document-loader-default';
+import { DraftSchemaContextLoader } from '@guardian/common/document-loader/draft-schema-context-loader';
+import { LocalVcSchemaDocumentLoader } from '@guardian/common/document-loader/local-vc-schema-document-loader';
+import { LocalSchemaDocumentLoader } from '@guardian/common/document-loader/local-schema-document-loader';
+import { LocalDidLoader } from '@guardian/common/document-loader/local-did-loader';
+import { LocalSchemaContextLoader } from '@guardian/common/document-loader/local-schema-context-loader';
+import { DraftDidLoader } from '@guardian/common/document-loader/draft-did-loader';
+import { DraftVcSchemaDocumentLoader } from '@guardian/common/document-loader/draft-vc-schema-document-loader';
+import { DraftSchemaDocumentLoader } from '@guardian/common/document-loader/draft-schema-document-loader';
+import { Environment } from '@guardian/common/helpers/environment';
+import { Singleton } from '@guardian/common/decorators/singleton';
+import { Schema as SchemaCollection } from '@guardian/common/entity/schema';
+import { DidDocument as DidDocumentCollection } from '@guardian/common/entity/did-document';
+import { KeyType, Wallet } from '@guardian/common/helpers/wallet';
+import { Users } from '@guardian/common/helpers/users';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { Hashing } from '@guardian/common/helpers/hashing';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 import {
     Schema,
     ICredentialSubject,

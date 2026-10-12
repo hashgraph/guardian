@@ -4,7 +4,9 @@ import { IURL, UrlType } from './url.interface.js';
 import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { VpMessageBody } from './message-body.interface.js';
-import { Hashing, IPFS, ITopicMessage } from '@guardian/common';
+import { Hashing } from '@guardian/common/helpers/hashing';
+import { IPFS } from '@guardian/common/helpers/ipfs';
+import { ITopicMessage } from '@guardian/common/topic-listener/topic-listener';
 
 /**
  * VP message

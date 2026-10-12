@@ -2,7 +2,9 @@ import { Message } from './message.js';
 import { IURL, UrlType } from './url.interface.js';
 import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
-import { PolicyModule, IPFS, toBuffer } from '@guardian/common';
+import { PolicyModule } from '@guardian/common/entity/module';
+import { IPFS } from '@guardian/common/helpers/ipfs';
+import { toBuffer } from '@guardian/common/helpers/utils';
 import { ModuleMessageBody } from './message-body.interface.js';
 
 /**

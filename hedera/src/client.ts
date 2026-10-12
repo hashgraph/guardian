@@ -1,5 +1,6 @@
 import { AccountId, Client } from '@hiero-ledger/sdk';
-import { Environment, stripPrefix } from '@guardian/common';
+import { Environment } from '@guardian/common/helpers/environment';
+import { stripPrefix } from '@guardian/common/helpers/utils';
 
 /**
  * Builds a Hedera client from the network configuration held by

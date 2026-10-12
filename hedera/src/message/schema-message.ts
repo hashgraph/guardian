@@ -1,4 +1,4 @@
-import { Schema } from '@guardian/common';
+import { Schema } from '@guardian/common/entity/schema';
 import { Message } from './message.js';
 import { IURL, UrlType } from './url.interface.js';
 import { MessageAction } from './message-action.js';

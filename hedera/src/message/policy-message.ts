@@ -1,4 +1,6 @@
-import { Policy, IPFS, toBuffer } from '@guardian/common';
+import { Policy } from '@guardian/common/entity/policy';
+import { IPFS } from '@guardian/common/helpers/ipfs';
+import { toBuffer } from '@guardian/common/helpers/utils';
 import { Message } from './message.js';
 import { IURL, UrlType } from './url.interface.js';
 import { MessageAction } from './message-action.js';

@@ -1,4 +1,5 @@
-import { SchemaTemplate, toBuffer } from '@guardian/common';
+import { SchemaTemplate } from '@guardian/common/entity/schema-template';
+import { toBuffer } from '@guardian/common/helpers/utils';
 import { Message } from './message.js';
 import { MessageAction } from './message-action.js';
 import { SchemaTemplateMessageBody } from './message-body.interface.js';

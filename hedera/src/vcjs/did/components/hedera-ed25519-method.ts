@@ -1,5 +1,5 @@
 import { PrivateKey } from '@hiero-ledger/sdk';
-import { Hashing } from '@guardian/common';
+import { Hashing } from '@guardian/common/helpers/hashing';
 import { VerificationMethod } from './verification-method.js';
 
 /**

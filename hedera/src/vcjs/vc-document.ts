@@ -1,5 +1,5 @@
 import { Timestamp } from '@hiero-ledger/sdk';
-import { Hashing } from '@guardian/common';
+import { Hashing } from '@guardian/common/helpers/hashing';
 import { TimestampUtils } from '../timestamp-utils.js';
 import { IVC, SignatureType } from '@guardian/interfaces';
 import { Issuer } from './issuer.js';

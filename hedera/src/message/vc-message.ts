@@ -4,7 +4,8 @@ import { IURL, UrlType } from './url.interface.js';
 import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { VcMessageBody } from './message-body.interface.js';
-import { Hashing, IPFS } from '@guardian/common';
+import { Hashing } from '@guardian/common/helpers/hashing';
+import { IPFS } from '@guardian/common/helpers/ipfs';
 import { SignatureType } from '@guardian/interfaces';
 import {
     bytesToUtf8,
@@ -12,7 +13,7 @@ import {
     decryptWithKeyDerivedFromString,
     encryptWithKeyDerivedFromString,
     utf8ToBytes,
-} from '@guardian/common/dist/helpers/cryppo/index.js';
+} from '@guardian/common/helpers/cryppo/index';
 
 /**
  * VC message

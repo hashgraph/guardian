@@ -3,7 +3,8 @@ import { IURL, UrlType } from './url.interface.js';
 import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { LabelDocumentMessageBody } from './message-body.interface.js';
-import { IPFS, PolicyLabel } from '@guardian/common';
+import { IPFS } from '@guardian/common/helpers/ipfs';
+import { PolicyLabel } from '@guardian/common/entity/policy-label';
 import { VpDocument } from '../vcjs/vp-document.js';
 
 /**

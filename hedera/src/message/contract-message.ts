@@ -4,7 +4,7 @@ import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { ContractMessageBody } from './message-body.interface.js';
 import { ContractType } from '@guardian/interfaces';
-import { Contract } from '@guardian/common';
+import { Contract } from '@guardian/common/entity/contract';
 
 /**
  * Contract message

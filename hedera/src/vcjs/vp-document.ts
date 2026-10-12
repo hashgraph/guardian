@@ -1,4 +1,4 @@
-import { Hashing } from '@guardian/common';
+import { Hashing } from '@guardian/common/helpers/hashing';
 import { IVP } from '@guardian/interfaces';
 import { VcDocument } from './vc-document.js';
 import { Issuer } from './issuer.js';

@@ -1,5 +1,5 @@
 import { PrivateKey, PublicKey, TopicId } from '@hiero-ledger/sdk';
-import { Hashing } from '@guardian/common';
+import { Hashing } from '@guardian/common/helpers/hashing';
 import { CommonDid } from './common-did.js';
 import { HederaDidComponents } from './types/did-components.js';
 

@@ -1,6 +1,6 @@
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { TopicId } from '@hiero-ledger/sdk';
-import { Hashing } from '@guardian/common';
+import { Hashing } from '@guardian/common/helpers/hashing';
 import { MessageAction } from './message-action.js';
 import { MessageBody } from './message-body.interface.js';
 import { MessageType } from './message-type.js';

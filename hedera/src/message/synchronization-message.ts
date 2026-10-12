@@ -3,7 +3,7 @@ import { IURL } from './url.interface.js';
 import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { SynchronizationMessageBody } from './message-body.interface.js';
-import { MultiPolicy } from '@guardian/common';
+import { MultiPolicy } from '@guardian/common/entity/multi-policy';
 import { MultiPolicyType } from '@guardian/interfaces';
 
 /**

@@ -3,7 +3,8 @@ import { IURL } from './url.interface.js';
 import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { DidMessageBody } from './message-body.interface.js';
-import { Hashing, IPFS } from '@guardian/common';
+import { Hashing } from '@guardian/common/helpers/hashing';
+import { IPFS } from '@guardian/common/helpers/ipfs';
 import { CommonDidDocument } from '../vcjs/index.js';
 
 /**

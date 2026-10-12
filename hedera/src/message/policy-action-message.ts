@@ -3,14 +3,16 @@ import { IURL, UrlType } from './url.interface.js';
 import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { PolicyActionMessageBody } from './message-body.interface.js';
-import { IPFS, ITopicMessage, PolicyAction } from '@guardian/common';
+import { IPFS } from '@guardian/common/helpers/ipfs';
+import { ITopicMessage } from '@guardian/common/topic-listener/topic-listener';
+import { PolicyAction } from '@guardian/common/entity/policy-action';
 import {
     bytesToUtf8,
     CipherStrategy,
     decryptWithKeyDerivedFromString,
     encryptWithKeyDerivedFromString,
     utf8ToBytes,
-} from '@guardian/common/dist/helpers/cryppo/index.js';
+} from '@guardian/common/helpers/cryppo/index';
 
 /**
  * Policy action message
