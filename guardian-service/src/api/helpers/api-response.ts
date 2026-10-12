@@ -1,4 +1,5 @@
-import { ApplicationState, MessageInitialization, MessageResponse } from '@guardian/common';
+import { ApplicationState } from '@guardian/common/helpers/application-state';
+import { MessageInitialization, MessageResponse } from '@guardian/common/models/message-response';
 import { ApplicationStates } from '@guardian/interfaces';
 import { GuardiansService } from '../../helpers/guardians.js';
 

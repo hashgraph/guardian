@@ -10,8 +10,8 @@ import {
     TimeoutError,
     WorkerEvents
 } from '@guardian/interfaces';
-import { Environment } from '../hedera-modules/index.js';
-import { NatsService } from '../mq/index.js';
+import { Environment } from './environment.js';
+import { NatsService } from '../mq/nats-service.js';
 
 export const NON_RETRYABLE_HEDERA_ERRORS = [
     // Insufficient type errors

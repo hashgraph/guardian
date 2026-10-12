@@ -1,12 +1,12 @@
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { Log } from '@guardian/common/entity/log';
+import { MAP_ATTRIBUTES_AGGREGATION_FILTERS } from '@guardian/common/helpers/db-helper';
 import {
-    LargePayloadContainer,
     MessageError,
     MessageResponse,
-    Log,
-    DatabaseServer,
-    MAP_ATTRIBUTES_AGGREGATION_FILTERS,
-    JwtServiceAuthGuard,
-} from '@guardian/common';
+} from '@guardian/common/models/message-response';
+import { LargePayloadContainer } from '@guardian/common/mq/large-payload-container';
+import { JwtServiceAuthGuard } from '@guardian/common/security/jwt-service-auth.guard';
 import { MessageAPI } from '@guardian/interfaces';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Ctx, MessagePattern, NatsContext, Payload, Transport } from '@nestjs/microservices';

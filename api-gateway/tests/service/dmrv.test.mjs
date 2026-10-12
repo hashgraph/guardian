@@ -29,7 +29,7 @@ async function loadDmrv() {
         '#auth': { Auth: () => () => undefined, AuthUser: () => () => undefined },
         '#constants': { PREFIXES: { POLICIES: 'policies/' } },
         '#middlewares': { InternalServerErrorDTO: class {} },
-        '@guardian/common': { PinoLogger: class {} },
+        '@guardian/common/helpers/pino-logger': { PinoLogger: class {} },
     });
 }
 

@@ -1,5 +1,8 @@
 import { PolicyActionType } from './policy-action.type.js';
-import { DatabaseServer, KeyType, PolicyAction, PolicyDiscussion, Wallet } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { KeyType, Wallet } from '@guardian/common/helpers/wallet';
+import { PolicyAction } from '@guardian/common/entity/policy-action';
+import { PolicyDiscussion } from '@guardian/common/entity/policy-discussion';
 
 export class PolicyDiscussionAction {
     public static async request(options: {

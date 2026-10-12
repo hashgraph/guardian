@@ -1,4 +1,17 @@
-import { DatabaseServer, IAuthUser, Policy, PolicyDiscussion, VcDocument, VcHelper, Schema as SchemaCollection, MessageServer, NewNotifier, Users, TopicConfig, TopicHelper, Wallet, KeyType, EncryptVcHelper } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { Policy } from '@guardian/common/entity/policy';
+import { PolicyDiscussion } from '@guardian/common/entity/policy-discussion';
+import { VcDocument } from '@guardian/common/entity/vc-document';
+import { Schema as SchemaCollection } from '@guardian/common/entity/schema';
+import { NewNotifier } from '@guardian/common/notification/notifier';
+import { Users } from '@guardian/common/helpers/users';
+import { Wallet, KeyType } from '@guardian/common/helpers/wallet';
+import { EncryptVcHelper } from '@guardian/common/helpers/encrypt-vc-helper';
+import { VcHelper } from '@guardian/hedera/vc-helper';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { TopicConfig } from '@guardian/hedera/topic';
+import { TopicHelper } from '@guardian/hedera/topic-helper';
 import { EntityOwner, GenerateUUIDv4, LocationType, PolicyStatus, Schema, SchemaEntity, SchemaHelper, TopicType } from '@guardian/interfaces';
 import { publishSystemSchema } from '../helpers/import-helpers/index.js';
 import { PrivateKey } from '@hiero-ledger/sdk';

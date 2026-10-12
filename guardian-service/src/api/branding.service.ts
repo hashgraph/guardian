@@ -1,6 +1,9 @@
 import { MessageAPI } from '@guardian/interfaces';
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { Branding, DatabaseServer, IAuthUser, MessageResponse } from '@guardian/common';
+import { Branding } from '@guardian/common/entity/branding';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { MessageResponse } from '@guardian/common/models/message-response';
 
 const termsAndConditions = `Lorem Ipsum Version Introduction
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.

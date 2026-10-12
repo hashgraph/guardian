@@ -1,5 +1,17 @@
 import { BlockType, GenerateUUIDv4, IOwner, IRootConfig, ModuleStatus, PolicyToolMetadata, SchemaCategory, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
-import { DatabaseServer, INotificationStep, IToolComponents, MessageAction, MessageServer, MessageType, PolicyTool, replaceAllEntities, replaceAllVariables, SchemaFields, TagMessage, ToolImportExport, ToolMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { INotificationStep } from '@guardian/common/notification/notification-step.interface';
+import { IToolComponents, ToolImportExport } from '@guardian/common/import-export/tool';
+import { PolicyTool } from '@guardian/common/entity/tool';
+import { replaceAllEntities, replaceAllVariables, SchemaFields } from '@guardian/common/helpers/utils';
+import { Users } from '@guardian/common/helpers/users';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { MessageType } from '@guardian/hedera/message/message-type';
+import { TagMessage } from '@guardian/hedera/message/tag-message';
+import { ToolMessage } from '@guardian/hedera/message/tool-message';
+import { TopicConfig } from '@guardian/hedera/topic';
+import { TopicHelper } from '@guardian/hedera/topic-helper';
 import { importTag } from '../tag/tag-import-helper.js';
 import { SchemaImportExportHelper } from '../schema/schema-import-helper.js';
 import { ImportToolMap, ImportToolResult, ImportToolResults } from './tool-import.interface.js';

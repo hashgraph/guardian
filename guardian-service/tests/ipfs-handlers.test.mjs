@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { MessageAPI } from '@guardian/interfaces';
 import { ipfsAPI } from '../dist/api/ipfs.service.js';
-import { register, callHandler, ok, common, DatabaseServer, stub, stubProto, silentLogger, restoreStubs } from './_handler-harness.mjs';
+import { IPFS } from '@guardian/common/helpers/ipfs';
+import { register, callHandler, ok, DatabaseServer, stub, stubProto, silentLogger, restoreStubs } from './_handler-harness.mjs';
 
-const { IPFS } = common;
 
 describe('ipfs.service handlers', () => {
     let handlers;

@@ -14,8 +14,8 @@ async function loadEngine() {
     return esmock(
         '../../dist/policy-engine/policy-engine.js',
         {
-            '@guardian/common': {
-                DatabaseServer: { async getPolicyById() { return { id: 'p1', ownerId: 'owner' }; } },
+            '@guardian/common/database-modules/database-server': {
+                DatabaseServer: { async getPolicyById() { return { id: 'p1', ownerId: 'owner' }; } }
             },
             '../../dist/helpers/guardians.js': {
                 GuardiansService: class {

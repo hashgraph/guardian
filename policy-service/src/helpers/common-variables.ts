@@ -1,4 +1,4 @@
-import { Singleton } from '@guardian/common';
+import { Singleton } from '@guardian/common/decorators/singleton';
 
 /**
  * Common variables

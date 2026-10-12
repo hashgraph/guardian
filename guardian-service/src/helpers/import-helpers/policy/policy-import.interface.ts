@@ -1,4 +1,6 @@
-import { IPolicyComponents, PinoLogger, Policy } from '@guardian/common';
+import { IPolicyComponents } from '@guardian/common/import-export/policy';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { Policy } from '@guardian/common/entity/policy';
 import { IFormula, IOwner, PolicyToolMetadata } from '@guardian/interfaces';
 
 export interface ImportPolicyError {

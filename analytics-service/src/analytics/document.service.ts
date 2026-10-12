@@ -1,14 +1,12 @@
-import {
-    DIDMessage,
-    Message,
-    MessageType,
-    RoleMessage,
-    TopicMessage,
-    UrlType,
-    VCMessage,
-    VPMessage,
-    DatabaseServer,
-} from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { DIDMessage } from '@guardian/hedera/message/did-message';
+import { Message } from '@guardian/hedera/message/message';
+import { MessageType } from '@guardian/hedera/message/message-type';
+import { RoleMessage } from '@guardian/hedera/message/role-message';
+import { TopicMessage } from '@guardian/hedera/message/topic-message';
+import { UrlType } from '@guardian/hedera/message/url.interface';
+import { VCMessage } from '@guardian/hedera/message/vc-message';
+import { VPMessage } from '@guardian/hedera/message/vp-message';
 import { AnalyticsDocument as Document } from '../entity/analytics-document.js';
 import { AnalyticsPolicyInstance as PolicyInstance } from '../entity/analytics-policy-instance.js';
 import { AnalyticsStatus as Status } from '../entity/analytics-status.js';

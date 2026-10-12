@@ -55,6 +55,9 @@ jobs:
           pushd common
           yarn run build
           popd
+          pushd hedera
+          yarn run build
+          popd
           pushd frontend
           npm install
           popd

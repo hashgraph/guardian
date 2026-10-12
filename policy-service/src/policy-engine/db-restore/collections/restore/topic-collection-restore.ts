@@ -1,4 +1,5 @@
-import { DataBaseHelper, Topic } from '@guardian/common';
+import { DataBaseHelper } from '@guardian/common/helpers/db-helper';
+import { Topic } from '@guardian/common/entity/topic';
 import { CollectionRestore, IDiffAction } from '../../index.js';
 
 export class TopicCollectionRestore extends CollectionRestore<Topic> {

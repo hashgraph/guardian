@@ -67,7 +67,7 @@ function createClient() {
     switch (network) {
         case 'localnode': {
             const address = process.env.LOCALNODE_ADDRESS || '127.0.0.1';
-            // The same topology common/src/hedera-modules/environment.ts hardcodes for localnode.
+            // The same topology common/src/helpers/environment.ts hardcodes for localnode.
             return Client.forNetwork({ [`${address}:50211`]: new AccountId(3) });
         }
         case 'testnet':

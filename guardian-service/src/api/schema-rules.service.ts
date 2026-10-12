@@ -1,5 +1,10 @@
 import { ApiResponse } from './helpers/api-response.js';
-import { BinaryMessageResponse, DatabaseServer, MessageError, MessageResponse, PinoLogger, PolicyImportExport, SchemaRule, SchemaRuleImportExport } from '@guardian/common';
+import { BinaryMessageResponse, MessageError, MessageResponse } from '@guardian/common/models/message-response';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { PolicyImportExport } from '@guardian/common/import-export/policy';
+import { SchemaRule } from '@guardian/common/entity/schema-rule';
+import { SchemaRuleImportExport } from '@guardian/common/import-export/schema-rule';
 import { EntityStatus, IOwner, MessageAPI, PolicyStatus, SchemaStatus } from '@guardian/interfaces';
 import { getSchemaRuleData, publishRuleConfig } from './helpers/schema-rules-helpers.js';
 

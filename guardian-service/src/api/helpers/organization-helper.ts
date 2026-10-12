@@ -8,25 +8,22 @@ import {
     TopicType,
     WorkerTaskType,
 } from '@guardian/interfaces';
-import {
-    DatabaseServer,
-    DidDocument as DidDocumentCollection,
-    DIDMessage,
-    INotificationStep,
-    KeyType,
-    MessageAction,
-    MessageServer,
-    OrganizationMessage,
-    PinoLogger,
-    RegistrationMessage,
-    Topic,
-    TopicConfig,
-    TopicHelper,
-    Users,
-    VcHelper,
-    Wallet,
-    Workers,
-} from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { DidDocument as DidDocumentCollection } from '@guardian/common/entity/did-document';
+import { INotificationStep } from '@guardian/common/notification/notification-step.interface';
+import { KeyType, Wallet } from '@guardian/common/helpers/wallet';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { Topic } from '@guardian/common/entity/topic';
+import { Users } from '@guardian/common/helpers/users';
+import { Workers } from '@guardian/common/helpers/workers';
+import { DIDMessage } from '@guardian/hedera/message/did-message';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { OrganizationMessage } from '@guardian/hedera/message/organization-message';
+import { RegistrationMessage } from '@guardian/hedera/message/registration-message';
+import { TopicConfig } from '@guardian/hedera/topic';
+import { TopicHelper } from '@guardian/hedera/topic-helper';
+import { VcHelper } from '@guardian/hedera/vc-helper';
 import { getGlobalTopic } from './profile-helper.js';
 import { validateHederaAccountKey } from './hedera-key-validator.js';
 

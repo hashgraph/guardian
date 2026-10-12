@@ -8,7 +8,7 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
-import { KeyType } from '@guardian/common';
+import { KeyType } from '@guardian/common/helpers/wallet';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
 
 /**

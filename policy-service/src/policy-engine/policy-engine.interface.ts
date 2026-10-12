@@ -1,5 +1,6 @@
 import { BlockCacheType, EventConfig, IPolicyEvent, PolicyOutputEventType } from './interfaces/index.js';
-import { DatabaseServer, Policy } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { Policy } from '@guardian/common/entity/policy';
 import { PolicyUser, UserCredentials } from './policy-user.js';
 import { ComponentsService } from './helpers/components-service.js';
 import { IBlockErrorData, LocationType, PolicyAvailability, PolicyStatus } from '@guardian/interfaces';

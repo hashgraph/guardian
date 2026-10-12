@@ -52,7 +52,10 @@ import Long from 'long';
 import { TransactionLogger } from './transaction-logger.js';
 import process from 'node:process';
 import { FireblocksHelper } from './fireblocks-helper.js';
-import { Environment, MockEntityType, MockService, MockType, MockHelper } from '@guardian/common';
+import { Environment } from '@guardian/common/helpers/environment';
+import { MockEntityType, MockType } from '@guardian/common/helpers/mock-types';
+import { MockService, MockHelper } from '@guardian/hedera/mock-service';
+import { HederaClientFactory } from '@guardian/hedera/client';
 
 export const MAX_FEE = Math.abs(+process.env.MAX_TRANSACTION_FEE) || 30;
 export const INITIAL_BALANCE = 30;
@@ -213,7 +216,7 @@ export class HederaSDKHelper {
         Environment.setNetwork(networkOptions.network);
         this.dryRun = dryRun || null;
         this.mockId = mockId || null;
-        this.client = Environment.createClient();
+        this.client = HederaClientFactory.createClient();
         this.network = this.client?.ledgerId?.toString();
         if (operatorId && operatorKey) {
             this.client.setOperator(operatorId, operatorKey);
@@ -1673,7 +1676,7 @@ export class HederaSDKHelper {
      * @returns Client
      */
     public static client(operatorId?: string | AccountId, operatorKey?: string | PrivateKey) {
-        const client = Environment.createClient();
+        const client = HederaClientFactory.createClient();
         if (operatorId && operatorKey) {
             client.setOperator(operatorId, operatorKey);
         }

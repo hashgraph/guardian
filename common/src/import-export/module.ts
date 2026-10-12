@@ -1,6 +1,8 @@
 import JSZip from 'jszip';
-import { PolicyModule, Schema, Tag } from '../entity/index.js';
-import { DatabaseServer } from '../database-modules/index.js';
+import { PolicyModule } from '../entity/module.js';
+import { Schema } from '../entity/schema.js';
+import { Tag } from '../entity/tag.js';
+import { DatabaseServer } from '../database-modules/database-server.js';
 import { ImportExportUtils } from './utils.js';
 
 /**

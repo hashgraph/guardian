@@ -1,4 +1,4 @@
-import { SplitDocuments } from '@guardian/common';
+import { SplitDocuments } from '@guardian/common/entity/split-documents';
 import { PolicyDataLoader } from './loader.js';
 
 /**

@@ -14,8 +14,8 @@ const ORG_UTILS = '../../../dist/policy-engine/helpers/org-utils.js';
 async function makeService({ assignedEntity = null, orgAssigned = true } = {}) {
     const calls = { orgAssigned: [] };
     const { PolicyActionsService } = await esmock(SERVICE, {
-        '@guardian/common': {
-            DatabaseServer: { getAssignedEntity: async () => assignedEntity },
+        '@guardian/common/database-modules/database-server': {
+            DatabaseServer: { getAssignedEntity: async () => assignedEntity }
         },
         [ORG_UTILS]: {
             // recorded so a test can assert the owner guard short-circuits before the

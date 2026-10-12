@@ -1,4 +1,12 @@
-import { IDocumentOptions, Message, PolicyAction, PolicyComment, PolicyDiscussion, RoleMessage, Token, TopicConfig, VcDocumentDefinition } from '@guardian/common';
+import { PolicyAction } from '@guardian/common/entity/policy-action';
+import { PolicyComment } from '@guardian/common/entity/policy-comment';
+import { PolicyDiscussion } from '@guardian/common/entity/policy-discussion';
+import { Token } from '@guardian/common/entity/token';
+import { IDocumentOptions } from '@guardian/hedera/vcjs/vcjs';
+import { Message } from '@guardian/hedera/message/message';
+import { RoleMessage } from '@guardian/hedera/message/role-message';
+import { TopicConfig } from '@guardian/hedera/topic';
+import { VcDocument as VcDocumentDefinition } from '@guardian/hedera/vcjs/vc-document';
 import { LocationType, PolicyActionStatus, PolicyAvailability, PolicyStatus, TopicType } from '@guardian/interfaces';
 import { AnyBlockType } from '../policy-engine.interface.js';
 import { PolicyUtils } from '../helpers/utils.js';

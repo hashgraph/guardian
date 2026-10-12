@@ -1,6 +1,6 @@
 import { BeforeCreate, Entity, Enum, Property, Unique } from '@mikro-orm/core';
 import { IGroup, IUser, LocationType, UserRole } from '@guardian/interfaces';
-import { BaseEntity } from '@guardian/common';
+import { BaseEntity } from '@guardian/common/models/base-entity';
 
 /**
  * User collection

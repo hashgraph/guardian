@@ -1,16 +1,14 @@
-import {
-    DatabaseServer,
-    HederaDidDocument,
-    PolicyLabel,
-    VcHelper,
-    TopicConfig,
-    TopicHelper,
-    Users,
-    Schema as SchemaCollection,
-    VcDocument as VcDocumentCollection,
-    VpDocument as VpDocumentCollection,
-    SchemaConverterUtils,
-} from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { PolicyLabel } from '@guardian/common/entity/policy-label';
+import { Users } from '@guardian/common/helpers/users';
+import { Schema as SchemaCollection } from '@guardian/common/entity/schema';
+import { VcDocument as VcDocumentCollection } from '@guardian/common/entity/vc-document';
+import { VpDocument as VpDocumentCollection } from '@guardian/common/entity/vp-document';
+import { SchemaConverterUtils } from '@guardian/common/helpers/schema-converter-utils';
+import { HederaDidDocument } from '@guardian/hedera/vcjs/did/hedera-did-document';
+import { VcHelper } from '@guardian/hedera/vc-helper';
+import { TopicConfig } from '@guardian/hedera/topic';
+import { TopicHelper } from '@guardian/hedera/topic-helper';
 import {
     GenerateUUIDv4,
     INavItemConfig,

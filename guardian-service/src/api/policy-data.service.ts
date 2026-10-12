@@ -11,13 +11,10 @@ import {
     ModelHelper,
 } from '@guardian/interfaces';
 import { ApiResponse } from '../api/helpers/api-response.js';
-import {
-    DatabaseServer,
-    MessageError,
-    MessageResponse,
-    PinoLogger,
-    VcDocument,
-} from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { VcDocument } from '@guardian/common/entity/vc-document';
 
 /** Normalise bracket array notation → dot notation for MongoDB queries.
  *  e.g. "document.credentialSubject[0].field3" → "document.credentialSubject.0.field3"

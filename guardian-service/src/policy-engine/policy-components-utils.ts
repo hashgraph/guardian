@@ -1,5 +1,7 @@
 import { Permissions, PolicyHelper, PolicyStatus } from '@guardian/interfaces';
-import { DatabaseServer, IAuthUser, Policy } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { Policy } from '@guardian/common/entity/policy';
 import { IPolicyUser } from './policy-user.js';
 import { ExternalEvent } from './interfaces/external-event.js';
 

@@ -8,7 +8,9 @@ import { PolicyInputEventType } from '../interfaces/index.js';
 import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
-import { getVCField, VcDocument, VpDocument } from '@guardian/common';
+import { getVCField } from '@guardian/common/helpers/utils';
+import { VcDocument } from '@guardian/common/entity/vc-document';
+import { VpDocument } from '@guardian/common/entity/vp-document';
 import { FilterObject } from '@mikro-orm/core';
 
 /**

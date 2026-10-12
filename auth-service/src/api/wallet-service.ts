@@ -1,5 +1,9 @@
 import { User } from '../entity/user.js';
-import { DatabaseServer, MessageError, MessageResponse, NatsService, PinoLogger, Singleton } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
+import { NatsService } from '@guardian/common/mq/nats-service';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { Singleton } from '@guardian/common/decorators/singleton';
 import { GenerateUUIDv4, IGetGlobalApplicationKey, IGetKeyMessage, IGetKeyResponse, ISetGlobalApplicationKey, ISetKeyMessage, WalletEvents } from '@guardian/interfaces';
 import { IVault } from '../vaults/index.js';
 

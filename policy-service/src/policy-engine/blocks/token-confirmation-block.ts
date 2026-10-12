@@ -5,7 +5,7 @@ import { ActionCallback, EventBlock, StateField } from '../helpers/decorators/in
 import { ActionType, IPolicyBlock, IPolicyEventState, IPolicyGetData } from '../policy-engine.interface.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { PolicyUtils } from '../helpers/utils.js';
-import { Token as TokenCollection } from '@guardian/common';
+import { Token as TokenCollection } from '@guardian/common/entity/token';
 import { BlockActionError } from '../errors/index.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
