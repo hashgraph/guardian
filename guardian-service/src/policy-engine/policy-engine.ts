@@ -20,34 +20,36 @@ import {
     IgnoreRule,
     ModuleStatus
 } from '@guardian/interfaces';
-import {
-    Artifact,
-    DatabaseServer,
-    findAllEntities,
-    FormulaImportExport,
-    getArtifactType,
-    INotificationStep,
-    IPFS,
-    IPolicyComponents,
-    MockEntityType,
-    MultiPolicy,
-    NatsService,
-    NewNotifier,
-    NotificationHelper,
-    PinoLogger,
-    Policy,
-    PolicyImportExport,
-    replaceAllEntities,
-    replaceAllVariables,
-    replaceArtifactProperties,
-    Schema as SchemaCollection,
-    SchemaFields,
-    Singleton,
-    Token,
-    Topic,
-    Users
-} from '@guardian/common';
-import { MessageAction, MessageServer, MessageType, MockHelper, PolicyMessage, SchemaMessage, SynchronizationMessage, TokenMessage, TopicConfig, TopicHelper, VcHelper } from '@guardian/hedera';
+import { Artifact } from '@guardian/common/entity/artifact';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { findAllEntities, getArtifactType, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, SchemaFields } from '@guardian/common/helpers/utils';
+import { FormulaImportExport } from '@guardian/common/import-export/formula';
+import { INotificationStep } from '@guardian/common/notification/notification-step.interface';
+import { IPFS } from '@guardian/common/helpers/ipfs';
+import { IPolicyComponents, PolicyImportExport } from '@guardian/common/import-export/policy';
+import { MockEntityType } from '@guardian/common/helpers/mock-types';
+import { MultiPolicy } from '@guardian/common/entity/multi-policy';
+import { NatsService } from '@guardian/common/mq/nats-service';
+import { NewNotifier } from '@guardian/common/notification/notifier';
+import { NotificationHelper } from '@guardian/common/notification/notification-helper';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { Policy } from '@guardian/common/entity/policy';
+import { Schema as SchemaCollection } from '@guardian/common/entity/schema';
+import { Singleton } from '@guardian/common/decorators/singleton';
+import { Token } from '@guardian/common/entity/token';
+import { Topic } from '@guardian/common/entity/topic';
+import { Users } from '@guardian/common/helpers/users';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { MessageType } from '@guardian/hedera/message/message-type';
+import { MockHelper } from '@guardian/hedera/mock-service';
+import { PolicyMessage } from '@guardian/hedera/message/policy-message';
+import { SchemaMessage } from '@guardian/hedera/message/schema-message';
+import { SynchronizationMessage } from '@guardian/hedera/message/synchronization-message';
+import { TokenMessage } from '@guardian/hedera/message/token-message';
+import { TopicConfig } from '@guardian/hedera/topic';
+import { TopicHelper } from '@guardian/hedera/topic-helper';
+import { VcHelper } from '@guardian/hedera/vc-helper';
 import {
     deleteDemoSchema,
     deleteSchema,

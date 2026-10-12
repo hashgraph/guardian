@@ -3,7 +3,10 @@ import { anyToXlsx, examplesToXlsx, booleanToXlsx, entityToXlsx, fontToXlsx, str
 import { Hyperlink, Range, Workbook, Worksheet } from './models/workbook.js';
 import { Table } from './models/table.js';
 import { ISchema, IwaVersion, resolveIwaVersion, Schema, SchemaCondition, SchemaField, SchemaHelper } from '@guardian/interfaces';
-import { PolicyTool, PolicyProperty, IPFS, DatabaseServer } from '@guardian/common';
+import { PolicyTool } from '@guardian/common/entity/tool';
+import { PolicyProperty } from '@guardian/common/entity/policy-property';
+import { IPFS } from '@guardian/common/helpers/ipfs';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 import { IRowField } from './interfaces/row-field.interface.js';
 import { SheetName } from './models/sheet-name.js';
 import { XlsxEnum } from './models/xlsx-enum.js';

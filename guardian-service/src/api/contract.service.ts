@@ -1,6 +1,27 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { Contract, DatabaseServer, KeyType, MessageError, MessageResponse, NewNotifier, NotificationHelper, PinoLogger, RetirePool, RetireRequest, Schema as SchemaCollection, Topic, Users, VcDocument, VcDocument as VcDocumentCollection, Wallet, WiperRequest, Workers, Environment } from '@guardian/common';
-import { ContractMessage, MessageAction, MessageServer, TopicConfig, TopicHelper, VcHelper, VCMessage } from '@guardian/hedera';
+import { Contract } from '@guardian/common/entity/contract';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { KeyType, Wallet } from '@guardian/common/helpers/wallet';
+import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
+import { NewNotifier } from '@guardian/common/notification/notifier';
+import { NotificationHelper } from '@guardian/common/notification/notification-helper';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { RetirePool } from '@guardian/common/entity/retire-pool';
+import { RetireRequest } from '@guardian/common/entity/retire-request';
+import { Schema as SchemaCollection } from '@guardian/common/entity/schema';
+import { Topic } from '@guardian/common/entity/topic';
+import { Users } from '@guardian/common/helpers/users';
+import { VcDocument, VcDocument as VcDocumentCollection } from '@guardian/common/entity/vc-document';
+import { WiperRequest } from '@guardian/common/entity/wiper-request';
+import { Workers } from '@guardian/common/helpers/workers';
+import { Environment } from '@guardian/common/helpers/environment';
+import { ContractMessage } from '@guardian/hedera/message/contract-message';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { TopicConfig } from '@guardian/hedera/topic';
+import { TopicHelper } from '@guardian/hedera/topic-helper';
+import { VcHelper } from '@guardian/hedera/vc-helper';
+import { VCMessage } from '@guardian/hedera/message/vc-message';
 import {
     ContractAPI,
     ContractParamType,

@@ -1,6 +1,10 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { DatabaseServer, MessageError, MessageResponse, Policy, VcDocument, PinoLogger } from '@guardian/common';
-import { VcDocumentDefinition } from '@guardian/hedera';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
+import { Policy } from '@guardian/common/entity/policy';
+import { VcDocument } from '@guardian/common/entity/vc-document';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { VcDocument as VcDocumentDefinition } from '@guardian/hedera/vcjs/vc-document';
 import { MessageAPI, Schema, SchemaField } from '@guardian/interfaces';
 import { FilterObject } from '@mikro-orm/core';
 

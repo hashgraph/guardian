@@ -1,4 +1,4 @@
-import { VpDocument } from '@guardian/common';
+import { VpDocument } from '@guardian/common/entity/vp-document';
 import { PolicyDataLoader } from './loader.js';
 
 /**

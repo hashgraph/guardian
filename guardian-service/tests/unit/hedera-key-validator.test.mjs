@@ -7,7 +7,7 @@ async function load({ accountKey, mirrorKey, taskError } = {}) {
     const { validateHederaAccountKey } = await esmock(
         '../../dist/api/helpers/hedera-key-validator.js',
         {
-            '@guardian/common': {
+            '@guardian/common/helpers/workers': {
                 Workers: class {
                     constructor() { calls.push({ ctor: true }); }
                     async addNonRetryableTask(task, opts) {
@@ -15,10 +15,10 @@ async function load({ accountKey, mirrorKey, taskError } = {}) {
                         if (taskError) { throw taskError; }
                         return { key: { _type: 'ED25519', key: mirrorKey } };
                     }
-                },
+                }
             },
-            '@guardian/hedera': {
-                checkHederaKey: (priv, pub) => !!priv && !!pub && priv === `priv-of-${pub}`,
+            '@guardian/hedera/utils': {
+                checkHederaKey: (priv, pub) => !!priv && !!pub && priv === `priv-of-${pub}`
             },
             '@hiero-ledger/sdk': {
                 AccountId: { fromString: (v) => { if (!String(v).startsWith('0.0.')) { throw new Error('bad account'); } } },
@@ -108,11 +108,10 @@ describe('@unit validateHederaAccountKey', function () {
             return await esmock(
                 '../../dist/api/helpers/hedera-key-validator.js',
                 {
-                    '@guardian/common': {
+                    '@guardian/common/helpers/workers': {
                         Workers: class {
                             async addNonRetryableTask() { return { key: mirrorKeyObject }; }
-                        },
-                        // checkHederaKey deliberately NOT stubbed - the real one runs
+                        }
                     },
                 },
             );

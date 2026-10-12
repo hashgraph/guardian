@@ -83,14 +83,20 @@ let mod;
 before(async function () {
     this.timeout(120000);
     mod = await esmock(helperPath, {
-        '@guardian/common': {
-            DatabaseServer: DatabaseServerMock,
-            ToolImportExport: ToolImportExportMock,
+        '@guardian/common/database-modules/database-server': {
+            DatabaseServer: DatabaseServerMock
         },
-        '@guardian/hedera': {
-            MessageServer: MessageServerMock,
-            MessageType: { Tool: 'tool', Tag: 'tag' },
-            MessageAction: { PublishTool: 'publish-tool', PublishTag: 'publish-tag' },
+        '@guardian/common/import-export/tool': {
+            ToolImportExport: ToolImportExportMock
+        },
+        '@guardian/hedera/message/message-server': {
+            MessageServer: MessageServerMock
+        },
+        '@guardian/hedera/message/message-type': {
+            MessageType: { Tool: 'tool', Tag: 'tag' }
+        },
+        '@guardian/hedera/message/message-action': {
+            MessageAction: { PublishTool: 'publish-tool', PublishTag: 'publish-tag' }
         },
         [tagHelperPath]: { importTag: async () => {} },
         [schemaHelperPath]: {

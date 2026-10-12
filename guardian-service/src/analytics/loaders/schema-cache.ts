@@ -1,4 +1,4 @@
-import { DatabaseServer } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 import { CompareOptions } from '../compare/interfaces/index.js';
 import { SchemaModel } from '../compare/models/index.js';
 

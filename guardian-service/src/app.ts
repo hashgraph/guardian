@@ -6,34 +6,33 @@ import { schemaAPI } from './api/schema.service.js';
 import { tokenAPI } from './api/token.service.js';
 import { trustChainAPI } from './api/trust-chain.service.js';
 import { PolicyEngineService } from './policy-engine/policy-engine.service.js';
-import {
-    ApplicationState,
-    COMMON_CONNECTION_CONFIG,
-    DatabaseServer,
-    Environment,
-    ExternalEventChannel,
-    GenerateTLSOptionsNats,
-    IPFS,
-    LargePayloadContainer,
-    MessageBrokerChannel,
-    Migration,
-    mongoForLoggingInitialization,
-    OldSecretManager,
-    PinoLogger,
-    pinoLoggerInitialization,
-    Policy,
-    SecretManager,
-    Users,
-    ValidateConfiguration,
-    Wallet,
-    Workers,
-    JwtServicesValidator,
-    NotificationEvents,
-    markServiceBooted,
-    setGlobalErrorLogger
-} from '@guardian/common';
-import { MessageServer, TopicMemo, TransactionLogger, TransactionLogLvl } from '@guardian/hedera';
-import { entities } from '@guardian/common/dist/entities.js';
+import { ApplicationState } from '@guardian/common/helpers/application-state';
+import { COMMON_CONNECTION_CONFIG } from '@guardian/common/helpers/db-helper';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { Environment } from '@guardian/common/helpers/environment';
+import { ExternalEventChannel } from '@guardian/common/mq/external-channel';
+import { GenerateTLSOptionsNats } from '@guardian/common/helpers/generate-tls-options';
+import { IPFS } from '@guardian/common/helpers/ipfs';
+import { LargePayloadContainer } from '@guardian/common/mq/large-payload-container';
+import { MessageBrokerChannel } from '@guardian/common/mq/message-broker-channel';
+import { Migration } from '@guardian/common/helpers/migration';
+import { mongoForLoggingInitialization } from '@guardian/common/helpers/mongo-logging-initialization';
+import { OldSecretManager } from '@guardian/common/secret-manager/old-style/old-secret-manager';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { pinoLoggerInitialization } from '@guardian/common/helpers/pino-logger-initialization';
+import { Policy } from '@guardian/common/entity/policy';
+import { SecretManager } from '@guardian/common/secret-manager/secret-manager';
+import { Users } from '@guardian/common/helpers/users';
+import { ValidateConfiguration } from '@guardian/common/helpers/validate-configuration';
+import { Wallet } from '@guardian/common/helpers/wallet';
+import { Workers } from '@guardian/common/helpers/workers';
+import { JwtServicesValidator } from '@guardian/common/security/jwt-services-validator';
+import { NotificationEvents } from '@guardian/common/notification/notification-events';
+import { markServiceBooted, setGlobalErrorLogger } from '@guardian/common/helpers/process-error-handlers';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { TopicMemo } from '@guardian/hedera/memo-mappings/topic-memo';
+import { TransactionLogger, TransactionLogLvl } from '@guardian/hedera/transaction-logger';
+import { entities } from '@guardian/common/entities';
 import { ApplicationStates, PolicyEvents, PolicyStatus, WorkerTaskType } from '@guardian/interfaces';
 import { AccountId, PrivateKey, TopicId } from '@hiero-ledger/sdk';
 import { ipfsAPI } from './api/ipfs.service.js';

@@ -1,4 +1,7 @@
-import { Artifact, DatabaseServer, getArtifactType, INotificationStep } from '@guardian/common';
+import { Artifact } from '@guardian/common/entity/artifact';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { getArtifactType } from '@guardian/common/helpers/utils';
+import { INotificationStep } from '@guardian/common/notification/notification-step.interface';
 import { GenerateUUIDv4, IOwner } from '@guardian/interfaces';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { ImportMode } from '../common/import.interface.js';

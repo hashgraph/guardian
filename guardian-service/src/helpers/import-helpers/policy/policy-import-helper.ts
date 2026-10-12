@@ -1,6 +1,15 @@
 import { BlockType, IFormula, IRootConfig, ModuleStatus, SchemaEntity } from '@guardian/interfaces';
-import { DatabaseServer, IPolicyComponents, PinoLogger, Policy, regenerateIds, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, Schema, SchemaFields, FormulaImportExport, PolicyImportExport, INotificationStep } from '@guardian/common';
-import { MessageType, PolicyMessage, MessageServer } from '@guardian/hedera';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { IPolicyComponents, PolicyImportExport } from '@guardian/common/import-export/policy';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { Policy } from '@guardian/common/entity/policy';
+import { regenerateIds, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, SchemaFields } from '@guardian/common/helpers/utils';
+import { Schema } from '@guardian/common/entity/schema';
+import { FormulaImportExport } from '@guardian/common/import-export/formula';
+import { INotificationStep } from '@guardian/common/notification/notification-step.interface';
+import { MessageType } from '@guardian/hedera/message/message-type';
+import { PolicyMessage } from '@guardian/hedera/message/policy-message';
+import { MessageServer } from '@guardian/hedera/message/message-server';
 import { ImportMode } from '../common/import.interface.js';
 import { ImportPolicyError, ImportPolicyOptions, ImportPolicyResult } from './policy-import.interface.js';
 import { PolicyImport } from './policy-import.js';

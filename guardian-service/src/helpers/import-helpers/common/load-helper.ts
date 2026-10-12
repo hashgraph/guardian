@@ -1,5 +1,12 @@
-import { DatabaseServer, PinoLogger } from '@guardian/common';
-import { MessageAction, MessageLoadError, MessageServer, MessageType, SchemaMessage, SchemaPackageMessage, UrlType } from '@guardian/hedera';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageLoadError } from '@guardian/hedera/message/message-load.error';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { MessageType } from '@guardian/hedera/message/message-type';
+import { SchemaMessage } from '@guardian/hedera/message/schema-message';
+import { SchemaPackageMessage } from '@guardian/hedera/message/schema-package-message';
+import { UrlType } from '@guardian/hedera/message/url.interface';
 import { ISchema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
 
 export class SchemaCache {

@@ -155,19 +155,60 @@ function defaultCommonMocks(db) {
         Workers: FakeWorkers,
         Wallet: FakeWallet,
         Users: FakeUsers,
-        MgsUsers: FakeUsers,
         PinoLogger: class { static async error() {} async error() {} async info() {} async warn() {} async debug() {} },
         NewNotifier: async () => ({ start() {}, completed() {}, completedAndStart() {}, sendStatus() {}, finish() {}, result: () => ({}), createStep: () => ({ start() {}, complete() {} }), addStep() {} }),
         NotificationHelper: { success: async () => {}, error: async () => {} },
         RunFunctionAsync: async (fn) => { try { await fn(() => {}); } catch (_) {} },
         KeyType: new Proxy({}, { get: (_, p) => String(p) }),
-        TopicType: new Proxy({}, { get: (_, p) => String(p) }),
-        extractTenantContext: (msg) => ({ tenantId: msg?.tenantId || null }),
         ApplicationState: class { getState() { return Interfaces.ApplicationStates ? Interfaces.ApplicationStates.READY : 'READY'; } updateState() {} },
         Singleton: (t) => t,
         SecretManager: { New: async () => ({ getSecrets: async () => null, setSecrets: async () => {} }) },
         IAuthUser: class {},
     };
+}
+
+// Services import each symbol from the module that declares it, so the
+// package-level maps are split into one esmock entry per module.
+const COMMON_MODULES = {
+    MessageResponse: 'models/message-response',
+    MessageError: 'models/message-response',
+    BinaryMessageResponse: 'models/message-response',
+    ArrayMessageResponse: 'models/message-response',
+    MessageInitialization: 'models/message-response',
+    DataBaseHelper: 'helpers/db-helper',
+    DatabaseServer: 'database-modules/database-server',
+    Workers: 'helpers/workers',
+    Wallet: 'helpers/wallet',
+    KeyType: 'helpers/wallet',
+    Users: 'helpers/users',
+    PinoLogger: 'helpers/pino-logger',
+    NewNotifier: 'notification/notifier',
+    NotificationHelper: 'notification/notification-helper',
+    RunFunctionAsync: 'helpers/run-function-async',
+    ApplicationState: 'helpers/application-state',
+    Singleton: 'decorators/singleton',
+    SecretManager: 'secret-manager/secret-manager',
+    IAuthUser: 'interfaces/auth.interface',
+    getArtifactExtention: 'helpers/utils',
+    getArtifactType: 'helpers/utils',
+    SchemaTemplateImportExport: 'import-export/schema-template',
+};
+
+const HEDERA_MODULES = {
+    TopicConfig: 'topic',
+    MessageServer: 'message/message-server',
+};
+
+function splitByModule(pkg, modules, symbols) {
+    const out = {};
+    for (const [name, value] of Object.entries(symbols)) {
+        const mod = modules[name];
+        if (!mod) {
+            throw new Error(`No module registered for ${pkg} symbol ${name}; add it to the table in _handler-harness.mjs`);
+        }
+        (out[`${pkg}/${mod}`] ||= {})[name] = value;
+    }
+    return out;
 }
 
 /**
@@ -187,11 +228,14 @@ export async function loadAPI(distPath, apiFnName, overrides = {}, apiArgs = [])
     const mergedInterfaces = { ...Interfaces, ...(overrides['@guardian/interfaces'] || {}) };
     // Local mocks: applied to the target module. Extra path-keyed overrides go here.
     const local = {
-        '@guardian/common': mergedCommon,
+        ...splitByModule('@guardian/common', COMMON_MODULES, mergedCommon),
         '@guardian/interfaces': mergedInterfaces,
     };
+    if (overrides['@guardian/hedera']) {
+        Object.assign(local, splitByModule('@guardian/hedera', HEDERA_MODULES, overrides['@guardian/hedera']));
+    }
     for (const [k, v] of Object.entries(overrides)) {
-        if (k === '@guardian/common' || k === '@guardian/interfaces' || k === '__db') continue;
+        if (k === '@guardian/common' || k === '@guardian/hedera' || k === '@guardian/interfaces' || k === '__db') continue;
         local[k] = v;
     }
     // Global mocks: applied across the import tree by resolved path. We only swap

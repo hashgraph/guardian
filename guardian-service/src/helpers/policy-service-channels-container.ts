@@ -1,4 +1,5 @@
-import { MessageBrokerChannel, Singleton } from '@guardian/common';
+import { MessageBrokerChannel } from '@guardian/common/mq/message-broker-channel';
+import { Singleton } from '@guardian/common/decorators/singleton';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 
 /**

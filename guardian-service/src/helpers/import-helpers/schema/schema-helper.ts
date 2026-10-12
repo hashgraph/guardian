@@ -1,6 +1,15 @@
 import { GenerateUUIDv4, IOwner, IRootConfig, ISchema, ModelHelper, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
-import { DatabaseServer, INotificationStep, PinoLogger, Schema as SchemaCollection, SchemaConverterUtils, Users } from '@guardian/common';
-import { MessageAction, MessageServer, SchemaMessage, TopicConfig, TopicHelper } from '@guardian/hedera';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { INotificationStep } from '@guardian/common/notification/notification-step.interface';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { Schema as SchemaCollection } from '@guardian/common/entity/schema';
+import { SchemaConverterUtils } from '@guardian/common/helpers/schema-converter-utils';
+import { Users } from '@guardian/common/helpers/users';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { SchemaMessage } from '@guardian/hedera/message/schema-message';
+import { TopicConfig } from '@guardian/hedera/topic';
+import { TopicHelper } from '@guardian/hedera/topic-helper';
 import { FilterObject } from '@mikro-orm/core';
 import { importTag } from '../tag/tag-import-helper.js';
 import { checkForCircularDependency, loadAnotherSchemas, loadSchema } from '../common/load-helper.js';

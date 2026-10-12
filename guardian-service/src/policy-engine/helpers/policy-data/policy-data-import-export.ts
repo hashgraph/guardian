@@ -18,13 +18,12 @@ import {
 } from './loaders/index.js';
 import { GuardiansService } from '../../../helpers/guardians.js';
 import { IOwner, PolicyEvents, PolicyHelper, TopicType } from '@guardian/interfaces';
-import {
-    DatabaseServer,
-    DidDocument,
-    Policy,
-    Users,
-    findAllEntities, DryRun,
-} from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { DidDocument } from '@guardian/common/entity/did-document';
+import { Policy } from '@guardian/common/entity/policy';
+import { Users } from '@guardian/common/helpers/users';
+import { findAllEntities } from '@guardian/common/helpers/utils';
+import { DryRun } from '@guardian/common/entity/dry-run';
 import { ObjectId } from 'bson';
 
 /**

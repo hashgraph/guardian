@@ -16,8 +16,32 @@ import {
     UserRole,
     WorkerTaskType
 } from '@guardian/interfaces';
-import { DatabaseServer, DidDocument as DidDocumentCollection, IAuthUser, INotificationStep, KeyType, MessageError, PinoLogger, Schema as SchemaCollection, Settings, Topic, Users, VcDocument as VcDocumentCollection, Wallet, Workers } from '@guardian/common';
-import { CommonDidDocument, DIDMessage, GuardianRoleMessage, HederaBBSMethod, HederaEd25519Method, MessageAction, MessageServer, RegistrationMessage, TopicConfig, TopicHelper, VcDocumentDefinition, VcHelper, VCMessage } from '@guardian/hedera';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { DidDocument as DidDocumentCollection } from '@guardian/common/entity/did-document';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { INotificationStep } from '@guardian/common/notification/notification-step.interface';
+import { KeyType, Wallet } from '@guardian/common/helpers/wallet';
+import { MessageError } from '@guardian/common/models/message-response';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { Schema as SchemaCollection } from '@guardian/common/entity/schema';
+import { Settings } from '@guardian/common/entity/settings';
+import { Topic } from '@guardian/common/entity/topic';
+import { Users } from '@guardian/common/helpers/users';
+import { VcDocument as VcDocumentCollection } from '@guardian/common/entity/vc-document';
+import { Workers } from '@guardian/common/helpers/workers';
+import { CommonDidDocument } from '@guardian/hedera/vcjs/did/common-did-document';
+import { DIDMessage } from '@guardian/hedera/message/did-message';
+import { GuardianRoleMessage } from '@guardian/hedera/message/guardian-role-message';
+import { HederaBBSMethod } from '@guardian/hedera/vcjs/did/components/hedera-bbs-method';
+import { HederaEd25519Method } from '@guardian/hedera/vcjs/did/components/hedera-ed25519-method';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { RegistrationMessage } from '@guardian/hedera/message/registration-message';
+import { TopicConfig } from '@guardian/hedera/topic';
+import { TopicHelper } from '@guardian/hedera/topic-helper';
+import { VcDocument as VcDocumentDefinition } from '@guardian/hedera/vcjs/vc-document';
+import { VcHelper } from '@guardian/hedera/vc-helper';
+import { VCMessage } from '@guardian/hedera/message/vc-message';
 import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 import { serDefaultRole } from '../permission.service.js';
 import { publishSystemSchema } from '../../helpers/import-helpers/index.js';

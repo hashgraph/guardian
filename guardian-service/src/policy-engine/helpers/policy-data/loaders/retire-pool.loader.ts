@@ -1,4 +1,5 @@
-import { DatabaseServer, RetirePool } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { RetirePool } from '@guardian/common/entity/retire-pool';
 import { PolicyDataLoader } from './loader.js';
 
 /**
