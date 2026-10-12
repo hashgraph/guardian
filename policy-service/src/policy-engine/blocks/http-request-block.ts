@@ -7,8 +7,9 @@ import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '../po
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { PolicyUtils } from '../helpers/utils.js';
-import { Workers } from '@guardian/common';
-import { VcDocumentDefinition as VcDocument, VcHelper } from '@guardian/hedera';
+import { Workers } from '@guardian/common/helpers/workers';
+import { VcDocument } from '@guardian/hedera/vcjs/vc-document';
+import { VcHelper } from '@guardian/hedera/vc-helper';
 import { LocationType, WorkerTaskType } from '@guardian/interfaces';
 
 /**

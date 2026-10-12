@@ -10,20 +10,38 @@ const MessageType = {
 const { MessagesReport } = await esmock.strict(
     '../../../dist/policy-engine/helpers/messages-report.js',
     {
-        '@guardian/common': {
-            Workers: class {},
+        '@guardian/common/helpers/workers': {
+            Workers: class {}
         },
-        '@guardian/hedera': {
-            DIDMessage: class {},
-            HederaDid: { parse: () => ({ topicId: 't' }) },
-            Message: class {},
-            MessageAction: { PublishSchema: 'PublishSchema', PublishSystemSchema: 'PublishSystemSchema', CreateDID: 'CreateDID' },
-            MessageServer: class {},
-            MessageType,
-            SchemaMessage: class {},
-            TopicMessage: class {},
-            UrlType: { url: 'url' },
-            VCMessage: class {},
+        '@guardian/hedera/message/did-message': {
+            DIDMessage: class {}
+        },
+        '@guardian/hedera/vcjs/did/hedera-did': {
+            HederaDid: { parse: () => ({ topicId: 't' }) }
+        },
+        '@guardian/hedera/message/message': {
+            Message: class {}
+        },
+        '@guardian/hedera/message/message-action': {
+            MessageAction: { PublishSchema: 'PublishSchema', PublishSystemSchema: 'PublishSystemSchema', CreateDID: 'CreateDID' }
+        },
+        '@guardian/hedera/message/message-server': {
+            MessageServer: class {}
+        },
+        '@guardian/hedera/message/message-type': {
+            MessageType
+        },
+        '@guardian/hedera/message/schema-message': {
+            SchemaMessage: class {}
+        },
+        '@guardian/hedera/message/topic-message': {
+            TopicMessage: class {}
+        },
+        '@guardian/hedera/message/url.interface': {
+            UrlType: { url: 'url' }
+        },
+        '@guardian/hedera/message/vc-message': {
+            VCMessage: class {}
         },
         '@guardian/interfaces': {
             TopicType: { PolicyTopic: 'PolicyTopic' },

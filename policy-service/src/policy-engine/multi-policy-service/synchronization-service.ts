@@ -1,8 +1,18 @@
 import { IRootConfig, PolicyStatus, WorkerTaskType } from '@guardian/interfaces';
 import { CronJob } from 'cron';
 import { MintService } from '../mint/mint-service.js';
-import { DatabaseServer, MultiPolicyTransaction, NotificationHelper, PinoLogger, Policy, Token, Users, Workers } from '@guardian/common';
-import { MessageAction, MessageServer, SynchronizationMessage, TopicConfig } from '@guardian/hedera';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { MultiPolicyTransaction } from '@guardian/common/entity/multi-policy-transaction';
+import { NotificationHelper } from '@guardian/common/notification/notification-helper';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { Policy } from '@guardian/common/entity/policy';
+import { Token } from '@guardian/common/entity/token';
+import { Users } from '@guardian/common/helpers/users';
+import { Workers } from '@guardian/common/helpers/workers';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { SynchronizationMessage } from '@guardian/hedera/message/synchronization-message';
+import { TopicConfig } from '@guardian/hedera/topic';
 
 /**
  * Synchronization Service

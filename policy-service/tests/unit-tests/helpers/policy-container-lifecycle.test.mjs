@@ -47,11 +47,17 @@ function makeHarness() {
     return esmock.strict(
         '../../../dist/helpers/policy-container.js',
         {
-            '@guardian/common': {
-                MessageResponse: class { constructor(body) { this.body = body; } },
-                NatsService: FakeNatsService,
-                PinoLogger: class { info() {} error() {} warn() {} },
-                Singleton: (target) => target,
+            '@guardian/common/models/message-response': {
+                MessageResponse: class { constructor(body) { this.body = body; } }
+            },
+            '@guardian/common/mq/nats-service': {
+                NatsService: FakeNatsService
+            },
+            '@guardian/common/helpers/pino-logger': {
+                PinoLogger: class { info() {} error() {} warn() {} }
+            },
+            '@guardian/common/decorators/singleton': {
+                Singleton: (target) => target
             },
             '@guardian/interfaces': {
                 GenerateUUIDv4: () => 'uuid-fixed',

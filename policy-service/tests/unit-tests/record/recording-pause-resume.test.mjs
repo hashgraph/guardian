@@ -7,12 +7,12 @@ const messages = [];
 const { Recording } = await esmock.strict(
     '../../../dist/policy-engine/record/recording.js',
     {
-        '@guardian/common': {
+        '@guardian/common/database-modules/database-server': {
             DatabaseServer: class {
                 static async createRecord(row) {
                     rows.push(row);
                 }
-            },
+            }
         },
         '../../../dist/policy-engine/block-tree-generator.js': {
             BlockTreeGenerator: class {

@@ -9,7 +9,7 @@ import { PolicyUser } from '../policy-user.js';
 import { BlockActionError } from '../errors/index.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { LocationType, OrgRolePermission } from '@guardian/interfaces';
-import { Token } from '@guardian/common';
+import { Token } from '@guardian/common/entity/token';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
 import { checkOrgTokenPermission } from '../helpers/org-utils.js';
 

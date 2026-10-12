@@ -1,5 +1,6 @@
-import { Users, Wallet } from '@guardian/common';
-import { VcHelper } from '@guardian/hedera';
+import { Users } from '@guardian/common/helpers/users';
+import { Wallet } from '@guardian/common/helpers/wallet';
+import { VcHelper } from '@guardian/hedera/vc-helper';
 
 /**
  * Service injector

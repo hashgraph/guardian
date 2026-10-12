@@ -1,5 +1,9 @@
-import { PolicyAction } from '@guardian/common';
-import { RoleMessage, MessageServer, MessageAction, VcHelper, VcDocumentDefinition } from '@guardian/hedera';
+import { PolicyAction } from '@guardian/common/entity/policy-action';
+import { RoleMessage } from '@guardian/hedera/message/role-message';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { VcHelper } from '@guardian/hedera/vc-helper';
+import { VcDocument as VcDocumentDefinition } from '@guardian/hedera/vcjs/vc-document';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyComponentsUtils } from './../policy-components-utils.js';

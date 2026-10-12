@@ -8,8 +8,9 @@ import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyValidatorBlock
 import { BlockActionError } from '../errors/index.js';
 import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
-import { VcDocument as VcDocumentCollection } from '@guardian/common';
-import { VcDocumentDefinition as VcDocument, VcHelper } from '@guardian/hedera';
+import { VcDocument as VcDocumentCollection } from '@guardian/common/entity/vc-document';
+import { VcDocument } from '@guardian/hedera/vcjs/vc-document';
+import { VcHelper } from '@guardian/hedera/vc-helper';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { RecordActionStep } from '../record-action-step.js';
 

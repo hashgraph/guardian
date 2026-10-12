@@ -1,5 +1,13 @@
-import { DatabaseServer, IAuthUser, PinoLogger, Policy as PolicyCollection, PolicyTool as PolicyToolCollection, Schema as SchemaCollection, Users } from '@guardian/common';
-import { HederaDidDocument, TopicConfig, VcHelper } from '@guardian/hedera';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { Policy as PolicyCollection } from '@guardian/common/entity/policy';
+import { PolicyTool as PolicyToolCollection } from '@guardian/common/entity/tool';
+import { Schema as SchemaCollection } from '@guardian/common/entity/schema';
+import { Users } from '@guardian/common/helpers/users';
+import { HederaDidDocument } from '@guardian/hedera/vcjs/did/hedera-did-document';
+import { TopicConfig } from '@guardian/hedera/topic';
+import { VcHelper } from '@guardian/hedera/vc-helper';
 import { GenerateUUIDv4, PolicyHelper, PolicyStatus, SchemaEntity, SchemaStatus } from '@guardian/interfaces';
 import { PrivateKey } from '@hiero-ledger/sdk';
 import { IPolicyBlock } from '../policy-engine.interface.js';

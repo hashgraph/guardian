@@ -1,4 +1,5 @@
-import { DataBaseHelper, Token } from '@guardian/common';
+import { DataBaseHelper } from '@guardian/common/helpers/db-helper';
+import { Token } from '@guardian/common/entity/token';
 import { CollectionRestore, IDiffAction } from '../../index.js';
 
 export class TokenCollectionRestore extends CollectionRestore<Token> {

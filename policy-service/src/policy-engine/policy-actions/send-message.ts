@@ -1,5 +1,7 @@
-import { PolicyAction } from '@guardian/common';
-import { TopicConfig, Message, MessageServer } from '@guardian/hedera';
+import { PolicyAction } from '@guardian/common/entity/policy-action';
+import { TopicConfig } from '@guardian/hedera/topic';
+import { Message } from '@guardian/hedera/message/message';
+import { MessageServer } from '@guardian/hedera/message/message-server';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';

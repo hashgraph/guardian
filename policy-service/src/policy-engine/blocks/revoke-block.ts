@@ -1,4 +1,5 @@
-import { Message, MessageServer } from '@guardian/hedera';
+import { Message } from '@guardian/hedera/message/message';
+import { MessageServer } from '@guardian/hedera/message/message-server';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyEventState, IPolicyInterfaceBlock } from '../policy-engine.interface.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';

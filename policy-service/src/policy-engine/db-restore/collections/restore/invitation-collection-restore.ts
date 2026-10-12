@@ -1,4 +1,5 @@
-import { DataBaseHelper, PolicyInvitations } from '@guardian/common';
+import { DataBaseHelper } from '@guardian/common/helpers/db-helper';
+import { PolicyInvitations } from '@guardian/common/entity/policy-invitations';
 import { CollectionRestore, IDiffAction } from '../../index.js';
 
 export class PolicyInvitationsCollectionRestore extends CollectionRestore<PolicyInvitations> {

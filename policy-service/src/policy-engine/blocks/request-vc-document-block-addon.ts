@@ -15,8 +15,8 @@ import {
 } from '../policy-engine.interface.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyUser } from '../policy-user.js';
-import { VcDocument as VcDocumentCollection } from '@guardian/common';
-import { VcHelper } from '@guardian/hedera';
+import { VcDocument as VcDocumentCollection } from '@guardian/common/entity/vc-document';
+import { VcHelper } from '@guardian/hedera/vc-helper';
 import {
     Schema,
     SchemaHelper,

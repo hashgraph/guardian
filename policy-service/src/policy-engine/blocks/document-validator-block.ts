@@ -8,7 +8,8 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { FilterQuery } from '@mikro-orm/core';
-import { VcDocument, VpDocument } from '@guardian/common';
+import { VcDocument } from '@guardian/common/entity/vc-document';
+import { VpDocument } from '@guardian/common/entity/vp-document';
 import { resolveOrgMemberDids } from '../helpers/org-utils.js';
 import { BlockErrorType, IBlockErrorData, IDocumentValidatorBlockError, LocationType, Schema, SchemaCondition, SchemaField, SchemaHelper } from '@guardian/interfaces';
 

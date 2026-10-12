@@ -1,5 +1,9 @@
-import { PolicyAction } from '@guardian/common';
-import { DIDMessage, HederaDidDocument, MessageServer, MessageAction, TopicConfig } from '@guardian/hedera';
+import { PolicyAction } from '@guardian/common/entity/policy-action';
+import { DIDMessage } from '@guardian/hedera/message/did-message';
+import { HederaDidDocument } from '@guardian/hedera/vcjs/did/hedera-did-document';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { TopicConfig } from '@guardian/hedera/topic';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyComponentsUtils } from './../policy-components-utils.js';

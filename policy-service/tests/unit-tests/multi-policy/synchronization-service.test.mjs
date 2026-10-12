@@ -27,22 +27,41 @@ const { SynchronizationService } = await esmock.strict(
     {
         'cron': { CronJob: FakeCronJob },
         '../../../dist/policy-engine/mint/mint-service.js': { MintService: { multiMint() {} } },
-        '@guardian/common': {
-            DatabaseServer: class {},
-            MultiPolicyTransaction: class {},
-            NotificationHelper: { init() { return {}; } },
-            PinoLogger: class {},
-            Policy: class {},
-            Token: class {},
-            Users: class {},
-            Workers: class {},
-            MgsUsers: class {},
+        '@guardian/common/database-modules/database-server': {
+            DatabaseServer: class {}
         },
-        '@guardian/hedera': {
-            MessageAction: {},
-            MessageServer: class {},
-            SynchronizationMessage: class {},
-            TopicConfig: class {},
+        '@guardian/common/entity/multi-policy-transaction': {
+            MultiPolicyTransaction: class {}
+        },
+        '@guardian/common/notification/notification-helper': {
+            NotificationHelper: { init() { return {}; } }
+        },
+        '@guardian/common/helpers/pino-logger': {
+            PinoLogger: class {}
+        },
+        '@guardian/common/entity/policy': {
+            Policy: class {}
+        },
+        '@guardian/common/entity/token': {
+            Token: class {}
+        },
+        '@guardian/common/helpers/users': {
+            Users: class {}
+        },
+        '@guardian/common/helpers/workers': {
+            Workers: class {}
+        },
+        '@guardian/hedera/message/message-action': {
+            MessageAction: {}
+        },
+        '@guardian/hedera/message/message-server': {
+            MessageServer: class {}
+        },
+        '@guardian/hedera/message/synchronization-message': {
+            SynchronizationMessage: class {}
+        },
+        '@guardian/hedera/topic': {
+            TopicConfig: class {}
         },
         '@guardian/interfaces': {
             PolicyStatus: { PUBLISH: 'PUBLISH', DRAFT: 'DRAFT' },
