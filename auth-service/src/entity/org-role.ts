@@ -1,6 +1,6 @@
 import { Entity, Property, Unique } from '@mikro-orm/core';
 import { OrgRolePermission } from '@guardian/interfaces';
-import { BaseEntity } from '@guardian/common';
+import { BaseEntity } from '@guardian/common/models/base-entity';
 
 /**
  * OrgRole collection (auth-service local copy)

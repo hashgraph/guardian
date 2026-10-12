@@ -86,7 +86,6 @@ const guardianCommonMocks = {
     NatsService: StubNatsService,
     Singleton: (t) => t,
     MessageError: StubMessageError,
-    MessageErrorWrongInput: StubMessageErrorWrongInput,
     MessageResponse: StubMessageResponse,
     MessageInitialization: StubMessageInitialization,
     BinaryMessageResponse: StubBinaryMessageResponse,
@@ -96,7 +95,6 @@ const guardianCommonMocks = {
     Wallet: StubWallet,
     Workers: StubWorkers,
     Users: StubUsers,
-    MgsUsers: StubUsers,
     IAuthUser: class {},
     KeyType: { KEY: 'KEY', RELAYER_ACCOUNT: 'RELAYER_ACCOUNT' },
     KeyEntity: class {},
@@ -105,10 +103,7 @@ const guardianCommonMocks = {
     SecretManager: { New: async () => ({ getSecrets: async () => null, setSecrets: async () => {} }) },
     SecretManagerBase: class {},
     SecretManagerType: { HCP_VAULT: 'hcp', MSG_HCP_VAULT: 'hashicorp' },
-    TenantSecretManager: class { async getSecrets() { return null; } async setSecrets() {} },
-    MgsGuardians: class { async deleteAllUserData() {} async getPolicyById() { return { id: 'p-1', name: 'demo' }; } },
     ProviderAuthUser: class {},
-    extractTenantContext: (msg) => ({ tenantId: msg?.tenantId || null, fromTenantId: (id) => ({ tenantId: id }) }),
 };
 
 // `@guardian/hedera` pulls the Hedera SDK and the VC/BBS stack, so stub the one
@@ -163,6 +158,48 @@ const guardianInterfacesMocks = {
     IUser: class {},
 };
 
+// The service imports each symbol from the module that declares it, so the
+// package-level maps above are split into one esmock entry per module.
+const COMMON_MODULES = {
+    NatsService: 'mq/nats-service',
+    Singleton: 'decorators/singleton',
+    MessageError: 'models/message-response',
+    MessageResponse: 'models/message-response',
+    MessageInitialization: 'models/message-response',
+    BinaryMessageResponse: 'models/message-response',
+    DataBaseHelper: 'helpers/db-helper',
+    DatabaseServer: 'database-modules/database-server',
+    PinoLogger: 'helpers/pino-logger',
+    Wallet: 'helpers/wallet',
+    KeyType: 'helpers/wallet',
+    KeyEntity: 'helpers/wallet',
+    Workers: 'helpers/workers',
+    Users: 'helpers/users',
+    IAuthUser: 'interfaces/auth.interface',
+    ProviderAuthUser: 'interfaces/auth.interface',
+    ApplicationState: 'helpers/application-state',
+    NotificationHelper: 'notification/notification-helper',
+    SecretManager: 'secret-manager/secret-manager',
+    SecretManagerBase: 'secret-manager/secret-manager-base',
+    SecretManagerType: 'secret-manager/secret-manager-config',
+};
+
+const HEDERA_MODULES = {
+    checkHederaKey: 'utils',
+};
+
+function splitByModule(pkg, modules, symbols) {
+    const out = {};
+    for (const [name, value] of Object.entries(symbols)) {
+        const mod = modules[name];
+        if (!mod) {
+            throw new Error(`No module registered for ${pkg} symbol ${name}; add it to the table in _handler-harness.mjs`);
+        }
+        (out[`${pkg}/${mod}`] ||= {})[name] = value;
+    }
+    return out;
+}
+
 /**
  * Merge a per-call override into the default mock map.
  * `overrides['@guardian/common']` is a partial: `{ Wallet: CustomWallet }` only
@@ -170,8 +207,8 @@ const guardianInterfacesMocks = {
  */
 function mergeMocks(overrides) {
     const merged = {
-        '@guardian/common': { ...guardianCommonMocks, ...(overrides?.['@guardian/common'] || {}) },
-        '@guardian/hedera': { ...guardianHederaMocks, ...(overrides?.['@guardian/hedera'] || {}) },
+        ...splitByModule('@guardian/common', COMMON_MODULES, { ...guardianCommonMocks, ...(overrides?.['@guardian/common'] || {}) }),
+        ...splitByModule('@guardian/hedera', HEDERA_MODULES, { ...guardianHederaMocks, ...(overrides?.['@guardian/hedera'] || {}) }),
         '@guardian/interfaces': { ...guardianInterfacesMocks, ...(overrides?.['@guardian/interfaces'] || {}) },
     };
     for (const [k, v] of Object.entries(overrides || {})) {
