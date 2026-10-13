@@ -167,16 +167,19 @@ class ToolMessageMock {
     setDocument() {}
 }
 
-const commonMock = (databaseServer) => ({
-    DatabaseServer: databaseServer,
-    Users: UsersMock,
-    TopicHelper: TopicHelperMock,
-    TopicConfig: { async fromObject(row) { return row; } },
-    MessageServer: MessageServerMock,
-    ToolMessage: ToolMessageMock,
-    MessageType: { Tool: 'tool', Tag: 'tag' },
-    MessageAction: { CreateTool: 'create-tool', PublishTool: 'publish-tool', PublishTag: 'publish-tag' },
-});
+const databaseServerPath = '@guardian/common/database-modules/database-server';
+
+const sharedMocks = {
+    '@guardian/common/helpers/users': { Users: UsersMock },
+    '@guardian/hedera/topic-helper': { TopicHelper: TopicHelperMock },
+    '@guardian/hedera/topic': { TopicConfig: { async fromObject(row) { return row; } } },
+    '@guardian/hedera/message/message-server': { MessageServer: MessageServerMock },
+    '@guardian/hedera/message/tool-message': { ToolMessage: ToolMessageMock },
+    '@guardian/hedera/message/message-type': { MessageType: { Tool: 'tool', Tag: 'tag' } },
+    '@guardian/hedera/message/message-action': {
+        MessageAction: { CreateTool: 'create-tool', PublishTool: 'publish-tool', PublishTag: 'publish-tag' },
+    },
+};
 
 const resolverMock = {
     resolveToolOverrides: async () => ({
@@ -199,7 +202,8 @@ let mod, realMod;
 before(async function () {
     this.timeout(120000);
     mod = await esmock(helperPath, {
-        '@guardian/common': commonMock(DatabaseServerMock),
+        ...sharedMocks,
+        [databaseServerPath]: { DatabaseServer: DatabaseServerMock },
         [tagHelperPath]: { importTag: async () => {} },
         [resolverPath]: resolverMock,
         [schemaHelperPath]: {
@@ -212,10 +216,12 @@ before(async function () {
         },
     });
     realMod = await esmock(helperPath, {
+        ...sharedMocks,
         [tagHelperPath]: { importTag: async () => {} },
         [resolverPath]: resolverMock,
     }, {
-        '@guardian/common': commonMock(RealDatabaseServerMock),
+        '@guardian/common/helpers/users': { Users: UsersMock },
+        [databaseServerPath]: { DatabaseServer: RealDatabaseServerMock },
     });
 });
 
