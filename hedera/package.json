@@ -20,7 +20,7 @@
     },
     "description": "Hedera message, DID and VC layer shared by the services that talk to the ledger",
     "devDependencies": {
-        "@types/node": "24.19.1",
+        "@types/node": "24.19.2",
         "chai": "^4.3.7",
         "mocha": "10.8.2",
         "mocha-junit-reporter": "2.2.1",
