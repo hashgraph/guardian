@@ -7,7 +7,7 @@
         "@mikro-orm/mongodb": "6.6.17",
         "axios": "^1.16.1",
         "dotenv": "^16.6.1",
-        "express": "5.2.1",
+        "express": "5.3.0",
         "js-yaml": "^4.1.0",
         "morgan": "^1.11.0",
         "reflect-metadata": "0.2.2",

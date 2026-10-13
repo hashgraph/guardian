@@ -11,7 +11,7 @@
         "@nestjs/core": "^11.1.24",
         "@nestjs/microservices": "^11.1.24",
         "dotenv": "^16.0.0",
-        "express": "5.2.1",
+        "express": "5.3.0",
         "jsonwebtoken": "^9.0.3",
         "node-vault": "^0.12.0",
         "pako": "^2.1.0",
