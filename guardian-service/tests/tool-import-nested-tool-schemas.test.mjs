@@ -221,6 +221,7 @@ before(async function () {
         [resolverPath]: resolverMock,
     }, {
         '@guardian/common/helpers/users': { Users: UsersMock },
+        '@guardian/hedera/topic': sharedMocks['@guardian/hedera/topic'],
         [databaseServerPath]: { DatabaseServer: RealDatabaseServerMock },
     });
 });
