@@ -1,8 +1,8 @@
 import {AfterDelete, BeforeCreate, Entity, Property} from '@mikro-orm/core';
-import { BaseEntity } from '../models/index.js';
+import { BaseEntity } from '../models/base-entity.js';
 import { EntityStatus, GenerateUUIDv4, IStatistic, IStatisticConfig } from '@guardian/interfaces';
 import {ObjectId} from '@mikro-orm/mongodb';
-import { DataBaseHelper } from '../helpers/index.js';
+import { DataBaseHelper } from '../helpers/db-helper.js';
 
 /**
  * PolicyStatistic collection

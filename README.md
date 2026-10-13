@@ -383,7 +383,7 @@ On first state the credentials from .env file are copied into the secure storage
 
 ## Manual installation
 
-If you want to manually build every component with debug information, then build and run the services and packages in the following sequence: Interfaces, Logger Helper, Message Broker, Logger Service, Auth Service, IPFS, Guardian Service, UI Service, and lastly, the MRV Sender Service. See below for commands.
+If you want to manually build every component with debug information, then build and run the services and packages in the following sequence: Interfaces, Common, Hedera, Logger Helper, Message Broker, Logger Service, Auth Service, IPFS, Guardian Service, UI Service, and lastly, the MRV Sender Service. See below for commands.
 
 ### Prerequisites for manual installation
 
@@ -481,7 +481,21 @@ Npm:
 npm --workspace=@guardian/common run build
 ```
 
-#### 4. From the **logger-service** folder
+#### 4. From the **hedera** folder
+
+Yarn:
+
+```shell
+yarn workspace @guardian/hedera run build
+```
+
+Npm:
+
+```shell
+npm --workspace=@guardian/hedera run build
+```
+
+#### 5. From the **logger-service** folder
 
 Configure the service as previously described. Do not need special configuration variables.
 
@@ -499,7 +513,7 @@ npm --workspace=logger-service run build
 npm --workspace=logger-service start
 ```
 
-#### 5. From the **auth-service** folder
+#### 6. From the **auth-service** folder
 
 Configure the service as previously described. Do not need special configuration variables.
 
@@ -517,7 +531,7 @@ npm --workspace=auth-service run build
 npm --workspace=auth-service start
 ```
 
-#### 6. From the **policy-service** folder
+#### 7. From the **policy-service** folder
 
 Configure the service as previously described. Do not need special configuration variables.
 
@@ -535,7 +549,7 @@ npm --workspace=policy-service run build
 npm --workspace=policy-service start
 ```
 
-#### 7. Build and start the **worker-service** service
+#### 8. Build and start the **worker-service** service
 
 Configure the service as previously described. Update **IPFS_STORAGE_API_KEY** value in `./worker-service/configs/.env.worker` file.
 
@@ -553,7 +567,7 @@ npm --workspace=worker-service run build
 npm --workspace=worker-service start
 ```
 
-#### 8. Build and start the **notification-service** service
+#### 9. Build and start the **notification-service** service
 
 Configure the service as previously described. Update **OPERATOR_ID** and **OPERATOR_KEY** values in `./notification-service/configs/.env.worker` file as in the example above. It has no HTTP port: it runs as a message-broker microservice only.
 
@@ -571,7 +585,7 @@ npm --workspace=notification-service run build
 npm --workspace=notification-service start
 ```
 
-#### 9. Build and start the **guardian-service** service
+#### 10. Build and start the **guardian-service** service
 
 Configure the service as previously described. Update **OPERATOR_ID** and **OPERATOR_KEY** values in `./guardian-service/configs/.env.worker` file as in the example above. It has no HTTP port: it runs as a message-broker microservice only.
 
@@ -589,7 +603,7 @@ npm --workspace=guardian-service run build
 npm --workspace=guardian-service start
 ```
 
-#### 10. From the **api-gateway** folder
+#### 11. From the **api-gateway** folder
 
 Configure the service as previously described (it reads `./configs/.env.gateway` or `./configs/.env.gateway.<GUARDIAN_ENV>`). The service will start on <http://localhost:3002> by default. The Glossary AI endpoints are opt-in: set `ENABLE_GLOSSARY_AI='true'` — and, if needed, `GLOSSARY_AI_TIMEOUT_MS` (milliseconds, default `300000`) — in `./api-gateway/.env` or in `./api-gateway/configs/.env.gateway*`. When you run with Docker Compose both variables are read from the shared `./configs/.env*` file instead, and `ENABLE_GLOSSARY_AI` defaults to `'false'` (the quickstart environment sets it to `'true'`).
 
@@ -607,7 +621,7 @@ npm --workspace=api-gateway run build
 npm --workspace=api-gateway start
 ```
 
-#### 11. From the **mrv-sender** folder
+#### 12. From the **mrv-sender** folder
 
 Configure the service as previously described. Do not need special configuration variables. The service will start on <http://localhost:3005> by default.
 
@@ -617,7 +631,7 @@ npm run build
 npm start
 ```
 
-#### 12. From the **ai-service** folder
+#### 13. From the **ai-service** folder
 
 Configure the service as previously described: it reads `./configs/.env.ai-service` (or `./configs/.env.ai-service.<GUARDIAN_ENV>` when `GUARDIAN_ENV` is set). It has no HTTP port — it only answers requests coming from the api-gateway over the message broker — but it does need an LLM: set `OPENAI_API_KEY` for OpenAI, or `GPT_VERSION` and `OPENAI_API_BASE` for a local server (see [step 5](#5-setting-up-the-llm-used-by-ai-search-and-glossary-ai)).
 
@@ -635,7 +649,7 @@ npm --workspace=ai-service run build
 npm --workspace=ai-service start
 ```
 
-#### 13. From the **frontend** folder
+#### 14. From the **frontend** folder
 
 The service will start on <http://localhost:4200> by default.
 

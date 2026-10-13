@@ -1,4 +1,4 @@
-import { MintTransaction } from '@guardian/common';
+import { MintTransaction } from '@guardian/common/entity/mint-transaction';
 import { PolicyDataLoader } from './loader.js';
 
 /**

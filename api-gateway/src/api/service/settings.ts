@@ -4,7 +4,9 @@ import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiNoContentRe
 import { ObjectExamples, AboutResponseDTO, SettingsDTO, InternalServerErrorDTO } from '#middlewares';
 import { Auth, AuthUser } from '#auth';
 import { Guardians, InternalException, getGuardianVersion } from '#helpers';
-import { GeospatialLimits, getGeospatialLimits, IAuthUser, PinoLogger } from '@guardian/common';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { GeospatialLimits, getGeospatialLimits } from '@guardian/common/helpers/geospatial-limits';
 
 @Controller('settings')
 @ApiTags('settings')

@@ -1,5 +1,17 @@
 import { BlockType, GenerateUUIDv4, IOwner, IRootConfig, ModuleStatus, PolicyToolMetadata, SchemaCategory, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
-import { DatabaseServer, INotificationStep, IToolComponents, MessageAction, MessageServer, MessageType, PolicyTool, replaceAllEntities, replaceAllVariables, SchemaFields, TagMessage, ToolImportExport, ToolMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { INotificationStep } from '@guardian/common/notification/notification-step.interface';
+import { IToolComponents, ToolImportExport } from '@guardian/common/import-export/tool';
+import { PolicyTool } from '@guardian/common/entity/tool';
+import { replaceAllEntities, replaceAllVariables, SchemaFields } from '@guardian/common/helpers/utils';
+import { Users } from '@guardian/common/helpers/users';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { MessageType } from '@guardian/hedera/message/message-type';
+import { TagMessage } from '@guardian/hedera/message/tag-message';
+import { ToolMessage } from '@guardian/hedera/message/tool-message';
+import { TopicConfig } from '@guardian/hedera/topic';
+import { TopicHelper } from '@guardian/hedera/topic-helper';
 import { importTag } from '../tag/tag-import-helper.js';
 import { SchemaImportExportHelper } from '../schema/schema-import-helper.js';
 import { ImportToolMap, ImportToolResult, ImportToolResults } from './tool-import.interface.js';
@@ -498,6 +510,42 @@ export async function importToolByFile(
             fields: ['name', 'iri'],
         }
     ));
+    const directTopicIds = new Set(toolsResult.tools.map((subTool) => subTool.topicId));
+    const nestedTopicIds = new Set<string>();
+    for (const subTool of toolsResult.tools) {
+        for (const nestedTool of subTool.tools || []) {
+            if (nestedTool?.topicId && !directTopicIds.has(nestedTool.topicId)) {
+                nestedTopicIds.add(nestedTool.topicId);
+            }
+        }
+    }
+    if (nestedTopicIds.size) {
+        const nestedSchemas = await DatabaseServer.getSchemas(
+            {
+                category: SchemaCategory.TOOL,
+                topicId: { $in: Array.from(nestedTopicIds) },
+            },
+            {
+                fields: ['name', 'iri'],
+            }
+        );
+        const directNames = new Set(toolsSchemas.map((schema) => schema.name));
+        const nestedIrisByName = new Map<string, Set<string>>();
+        for (const schema of nestedSchemas) {
+            if (directNames.has(schema.name)) {
+                continue;
+            }
+            const iris = nestedIrisByName.get(schema.name) || new Set<string>();
+            iris.add(schema.iri);
+            nestedIrisByName.set(schema.name, iris);
+        }
+        for (const schema of nestedSchemas) {
+            if (nestedIrisByName.get(schema.name)?.size === 1) {
+                toolsSchemas.push(schema);
+                nestedIrisByName.delete(schema.name);
+            }
+        }
+    }
     notifier.completeStep(STEP_IMPORT_SUB_SCHEMAS);
 
     // Import Schemas

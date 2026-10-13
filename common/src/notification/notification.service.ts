@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { CommonVariables } from '../helpers/common-variables.js';
 import { Client, ClientProxy, Transport, NatsRecordBuilder } from '@nestjs/microservices';
 import { GenerateTLSOptionsNats } from '../helpers/generate-tls-options.js';
-import { JwtServicesValidator } from '../security/index.js';
+import { JwtServicesValidator } from '../security/jwt-services-validator.js';
 import { headers } from 'nats';
 
 /**

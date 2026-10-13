@@ -6,7 +6,9 @@ import {Auth, AuthUser} from '#auth';
 import { InternalServerErrorDTO, LogFilterDTO, LogItemDTO, LogResultDTO, ObjectExamples, SeqUrlResponseDTO } from '#middlewares';
 import {UseCache, InternalException, UsersService} from '#helpers';
 import axios from 'axios';
-import {IAuthUser, JwtServicesValidator, PinoLogger} from '@guardian/common';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { JwtServicesValidator } from '@guardian/common/security/jwt-services-validator';
 import process from 'node:process';
 import { headers } from 'nats';
 

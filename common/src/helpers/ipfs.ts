@@ -1,6 +1,6 @@
 import { MessageAPI, WorkerTaskType } from '@guardian/interfaces';
 import { Workers } from './workers.js';
-import { MessageBrokerChannel } from '../mq/index.js';
+import { MessageBrokerChannel } from '../mq/message-broker-channel.js';
 
 export interface IPFSOptions {
     userId?: string | null,

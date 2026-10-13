@@ -1,4 +1,4 @@
-import { RestoreEntity } from '@guardian/common';
+import { RestoreEntity } from '@guardian/common/models/restore-entity';
 import { IDiffAction, IKeyAction } from './../index.js';
 
 export interface ICollectionDiff<T extends RestoreEntity> {

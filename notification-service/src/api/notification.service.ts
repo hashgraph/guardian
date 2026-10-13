@@ -1,12 +1,12 @@
 import { Notification } from '../entity/notification.entity.js';
 import { Progress } from '../entity/progress.entity.js';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 import {
-    DatabaseServer,
-    JwtServiceAuthGuard,
-    JwtServicesValidator,
     MessageError,
     MessageResponse,
-} from '@guardian/common';
+} from '@guardian/common/models/message-response';
+import { JwtServiceAuthGuard } from '@guardian/common/security/jwt-service-auth.guard';
+import { JwtServicesValidator } from '@guardian/common/security/jwt-services-validator';
 import { NotifyAPI, OrderDirection } from '@guardian/interfaces';
 import { Controller, Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';

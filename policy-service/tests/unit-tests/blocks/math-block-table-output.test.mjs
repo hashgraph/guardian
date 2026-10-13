@@ -3,7 +3,9 @@ import { makeBlock, makeUser, restoreHarness } from './_block-exec-harness.mjs';
 import { MathBlock } from '../../../dist/policy-engine/blocks/math-block.js';
 import { PolicyUtils } from '../../../dist/policy-engine/helpers/utils.js';
 import { PolicyComponentsUtils } from '../../../dist/policy-engine/policy-components-utils.js';
-import { DatabaseServer, IPFS, decodeGridFileText } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { IPFS } from '@guardian/common/helpers/ipfs';
+import { decodeGridFileText } from '@guardian/common/helpers/table-csv';
 
 const tableColumns = [
     { name: 'Year', key: 'year' },

@@ -1,4 +1,6 @@
-import { DatabaseServer, INotificationStep, Token } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { INotificationStep } from '@guardian/common/notification/notification-step.interface';
+import { Token } from '@guardian/common/entity/token';
 import { GenerateUUIDv4, IOwner } from '@guardian/interfaces';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { ImportMode } from '../common/import.interface.js';

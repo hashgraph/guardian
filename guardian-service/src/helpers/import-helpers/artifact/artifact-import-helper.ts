@@ -2,7 +2,7 @@ import { IOwner } from '@guardian/interfaces';
 import { ImportArtifactResult } from './artifact-import.interface.js';
 import { ArtifactImport } from './artifact-import.js';
 import { ImportMode } from '../common/import.interface.js';
-import { INotificationStep } from '@guardian/common';
+import { INotificationStep } from '@guardian/common/notification/notification-step.interface';
 
 /**
  * Import artifacts by files

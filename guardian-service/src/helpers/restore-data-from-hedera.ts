@@ -1,44 +1,43 @@
-import {
-    DidDocument as DidDocumentCollection,
-    DIDMessage,
-    KeyType,
-    MessageServer,
-    MessageType,
-    Policy as PolicyCollection,
-    Schema as SchemaCollection,
-    Singleton,
-    Token,
-    Topic,
-    TopicMessage,
-    Users,
-    VcDocument as VcDocumentCollection,
-    VcDocumentDefinition as VcDocument,
-    VCMessage,
-    VpDocument as VpDocumentCollection,
-    VpDocumentDefinition as VpDocument,
-    VPMessage,
-    Wallet,
-    Workers,
-    PolicyImportExport,
-    HederaDid,
-    CommonDidDocument,
-    Message,
-    RegistrationMessage,
-    PolicyMessage,
-    IAuthUser,
-    TokenMessage,
-    SchemaMessage,
-    MessageAction,
-    VcHelper,
-    UrlType,
-    RoleMessage,
-    GuardianRoleMessage,
-    UserPermissionsMessage, PinoLogger, DatabaseServer,
-    SchemaPackageMessage,
-    ToolMessage,
-    ToolImportExport,
-    TagMessage,
-} from '@guardian/common';
+import { DidDocument as DidDocumentCollection } from '@guardian/common/entity/did-document';
+import { KeyType, Wallet } from '@guardian/common/helpers/wallet';
+import { Policy as PolicyCollection } from '@guardian/common/entity/policy';
+import { Schema as SchemaCollection } from '@guardian/common/entity/schema';
+import { Singleton } from '@guardian/common/decorators/singleton';
+import { Token } from '@guardian/common/entity/token';
+import { Topic } from '@guardian/common/entity/topic';
+import { Users } from '@guardian/common/helpers/users';
+import { VcDocument as VcDocumentCollection } from '@guardian/common/entity/vc-document';
+import { VpDocument as VpDocumentCollection } from '@guardian/common/entity/vp-document';
+import { Workers } from '@guardian/common/helpers/workers';
+import { PolicyImportExport } from '@guardian/common/import-export/policy';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { ToolImportExport } from '@guardian/common/import-export/tool';
+import { DIDMessage } from '@guardian/hedera/message/did-message';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { MessageType } from '@guardian/hedera/message/message-type';
+import { TopicMessage } from '@guardian/hedera/message/topic-message';
+import { VcDocument } from '@guardian/hedera/vcjs/vc-document';
+import { VCMessage } from '@guardian/hedera/message/vc-message';
+import { VpDocument } from '@guardian/hedera/vcjs/vp-document';
+import { VPMessage } from '@guardian/hedera/message/vp-message';
+import { HederaDid } from '@guardian/hedera/vcjs/did/hedera-did';
+import { CommonDidDocument } from '@guardian/hedera/vcjs/did/common-did-document';
+import { Message } from '@guardian/hedera/message/message';
+import { RegistrationMessage } from '@guardian/hedera/message/registration-message';
+import { PolicyMessage } from '@guardian/hedera/message/policy-message';
+import { TokenMessage } from '@guardian/hedera/message/token-message';
+import { SchemaMessage } from '@guardian/hedera/message/schema-message';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { VcHelper } from '@guardian/hedera/vc-helper';
+import { UrlType } from '@guardian/hedera/message/url.interface';
+import { RoleMessage } from '@guardian/hedera/message/role-message';
+import { GuardianRoleMessage } from '@guardian/hedera/message/guardian-role-message';
+import { UserPermissionsMessage } from '@guardian/hedera/message/user-permissions-message';
+import { SchemaPackageMessage } from '@guardian/hedera/message/schema-package-message';
+import { ToolMessage } from '@guardian/hedera/message/tool-message';
+import { TagMessage } from '@guardian/hedera/message/tag-message';
 import {
     DidDocumentStatus,
     DocumentStatus,

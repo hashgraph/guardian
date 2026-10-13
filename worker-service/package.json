@@ -3,6 +3,7 @@
     "dependencies": {
         "@filebase/client": "0.0.5",
         "@guardian/common": "workspace:*",
+        "@guardian/hedera": "workspace:*",
         "@guardian/interfaces": "workspace:*",
         "@hiero-ledger/sdk": "2.89.1",
         "@mikro-orm/core": "6.6.17",

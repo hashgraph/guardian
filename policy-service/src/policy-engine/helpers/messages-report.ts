@@ -1,16 +1,14 @@
-import {
-    DIDMessage,
-    HederaDid,
-    Message,
-    MessageAction,
-    MessageServer,
-    MessageType,
-    SchemaMessage,
-    TopicMessage,
-    UrlType,
-    VCMessage,
-    Workers
-} from '@guardian/common';
+import { Workers } from '@guardian/common/helpers/workers';
+import { DIDMessage } from '@guardian/hedera/message/did-message';
+import { HederaDid } from '@guardian/hedera/vcjs/did/hedera-did';
+import { Message } from '@guardian/hedera/message/message';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { MessageType } from '@guardian/hedera/message/message-type';
+import { SchemaMessage } from '@guardian/hedera/message/schema-message';
+import { TopicMessage } from '@guardian/hedera/message/topic-message';
+import { UrlType } from '@guardian/hedera/message/url.interface';
+import { VCMessage } from '@guardian/hedera/message/vc-message';
 import { TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { AnyBlockType } from '../policy-engine.interface.js';
 

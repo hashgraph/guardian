@@ -1,6 +1,6 @@
 import { GenerateUUIDv4, Schema, SchemaField } from '@guardian/interfaces';
 import { Range, Worksheet } from './workbook.js';
-import { IPFS } from '@guardian/common';
+import { IPFS } from '@guardian/common/helpers/ipfs';
 
 export class XlsxEnum {
     public readonly id: string;

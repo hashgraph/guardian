@@ -1,5 +1,7 @@
 import { FindCursor } from 'mongodb';
-import { DataBaseHelper, ApprovalDocument, DeleteCache } from '@guardian/common';
+import { DataBaseHelper } from '@guardian/common/helpers/db-helper';
+import { ApprovalDocument } from '@guardian/common/entity/approval-document';
+import { DeleteCache } from '@guardian/common/entity/delete-cache';
 import { CollectionBackup } from '../collection-backup.js';
 import { IDiffAction } from '../../interfaces/action.interface.js';
 

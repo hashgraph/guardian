@@ -1,6 +1,6 @@
 import { BlockErrorActions } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '../../policy-components-utils.js';
-import { PinoLogger } from '@guardian/common';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
 import { PolicyOutputEventType } from '../../interfaces/index.js';
 
 /**

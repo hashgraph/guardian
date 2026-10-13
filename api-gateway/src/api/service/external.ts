@@ -1,6 +1,6 @@
 import { InternalException, PolicyEngine } from '#helpers';
 import { Examples, ExternalDocumentDTO, InternalServerErrorDTO, ObjectExamples, ResponseDTOWithSyncEvents } from '#middlewares';
-import { PinoLogger } from '@guardian/common';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
 import { Body, Controller, DefaultValuePipe, HttpCode, HttpStatus, Param, ParseBoolPipe, Post, Query } from '@nestjs/common';
 import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 

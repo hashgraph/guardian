@@ -1,4 +1,4 @@
-import { MessageBrokerChannel } from '../mq/index.js';
+import { MessageBrokerChannel } from '../mq/message-broker-channel.js';
 
 /**
  * Service request base class

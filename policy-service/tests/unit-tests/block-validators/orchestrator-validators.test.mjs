@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { DatabaseServer } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 
 let origGetSchemas, origGetModules, origGetTools, origGetTool, origGetArtifact;
 

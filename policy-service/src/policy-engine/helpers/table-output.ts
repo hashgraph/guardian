@@ -1,7 +1,7 @@
 import Papa from 'papaparse';
 import { promisify } from 'node:util';
 import { gzip as gzipRaw } from 'node:zlib';
-import { isPlainObject } from '@guardian/common';
+import { isPlainObject } from '@guardian/common/helpers/table-csv';
 
 const gzipBuffer = promisify(gzipRaw);
 

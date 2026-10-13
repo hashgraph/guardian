@@ -126,9 +126,9 @@ form {
     display: flex;
     justify-content: space-between;
     position: fixed;
-    right: 0;
+    right: var(--first-steps-offset);
     bottom: 0;
-    width: 100%;
+    width: calc(100% - var(--first-steps-offset));
     border-top: 1px solid var(--color-grey-3, #E1E7EF);
     background: var(--guardian-background, #FFF);
     padding-left: calc(var(--header-width, var(--header-width-expand)) + 48px);

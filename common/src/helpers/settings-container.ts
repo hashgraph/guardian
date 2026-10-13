@@ -1,7 +1,7 @@
 import { Singleton } from '../decorators/singleton.js';
-import { PinoLogger } from './index.js';
+import { PinoLogger } from './pino-logger.js';
 import { GenerateUUIDv4, IGetKeyResponse, WalletEvents } from '@guardian/interfaces';
-import { NatsService } from '../mq/index.js';
+import { NatsService } from '../mq/nats-service.js';
 
 /**
  * Application settings container

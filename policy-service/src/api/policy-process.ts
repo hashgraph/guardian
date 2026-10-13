@@ -1,27 +1,25 @@
 import '../config.js'
-import {
-    COMMON_CONNECTION_CONFIG,
-    DatabaseServer,
-    Environment,
-    ExternalEventChannel,
-    GenerateTLSOptionsNats,
-    IPFS,
-    JwtServicesValidator,
-    LargePayloadContainer,
-    MessageBrokerChannel,
-    MessageServer,
-    MockService,
-    mongoForLoggingInitialization,
-    NotificationService,
-    OldSecretManager,
-    PinoLogger,
-    pinoLoggerInitialization,
-    TopicListener,
-    Users,
-    Wallet,
-    Workers
-} from '@guardian/common';
-import { entities } from '@guardian/common/dist/entities.js';
+import { COMMON_CONNECTION_CONFIG } from '@guardian/common/helpers/db-helper';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { Environment } from '@guardian/common/helpers/environment';
+import { ExternalEventChannel } from '@guardian/common/mq/external-channel';
+import { GenerateTLSOptionsNats } from '@guardian/common/helpers/generate-tls-options';
+import { IPFS } from '@guardian/common/helpers/ipfs';
+import { JwtServicesValidator } from '@guardian/common/security/jwt-services-validator';
+import { LargePayloadContainer } from '@guardian/common/mq/large-payload-container';
+import { MessageBrokerChannel } from '@guardian/common/mq/message-broker-channel';
+import { mongoForLoggingInitialization } from '@guardian/common/helpers/mongo-logging-initialization';
+import { NotificationService } from '@guardian/common/notification/notification.service';
+import { OldSecretManager } from '@guardian/common/secret-manager/old-style/old-secret-manager';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { pinoLoggerInitialization } from '@guardian/common/helpers/pino-logger-initialization';
+import { TopicListener } from '@guardian/common/topic-listener/topic-listener';
+import { Users } from '@guardian/common/helpers/users';
+import { Wallet } from '@guardian/common/helpers/wallet';
+import { Workers } from '@guardian/common/helpers/workers';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { MockService } from '@guardian/hedera/mock-service';
+import { entities } from '@guardian/common/entities';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { BlockTreeGenerator } from '../policy-engine/block-tree-generator.js';

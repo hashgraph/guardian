@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { NatsService } from '@guardian/common';
+import { NatsService } from '@guardian/common/mq/nats-service';
 import { WorkerEvents } from '@guardian/interfaces';
 import { HederaSDKHelper } from '../dist/api/helpers/hedera-sdk-helper.js';
 

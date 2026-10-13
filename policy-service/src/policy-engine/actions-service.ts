@@ -1,4 +1,13 @@
-import { DataBaseHelper, DatabaseServer, ITopicMessage, MessageAction, MessageServer, Policy, PolicyActionMessage, PolicyAction, TopicConfig, TopicListener, MessageType } from '@guardian/common';
+import { DataBaseHelper } from '@guardian/common/helpers/db-helper';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { ITopicMessage, TopicListener } from '@guardian/common/topic-listener/topic-listener';
+import { Policy } from '@guardian/common/entity/policy';
+import { PolicyAction } from '@guardian/common/entity/policy-action';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { PolicyActionMessage } from '@guardian/hedera/message/policy-action-message';
+import { TopicConfig } from '@guardian/hedera/topic';
+import { MessageType } from '@guardian/hedera/message/message-type';
 import { AssignedEntityType, GenerateUUIDv4, Permissions, PolicyActionStatus, PolicyActionType, PolicyStatus, UserPermissions } from '@guardian/interfaces';
 import { ActionType, IPolicyInterfaceBlock } from './policy-engine.interface.js';
 import { PolicyUser, UserCredentials } from './policy-user.js';

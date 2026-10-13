@@ -1,4 +1,5 @@
-import { KeyType, PinoLogger, Wallet } from '@guardian/common';
+import { KeyType, Wallet } from '@guardian/common/helpers/wallet';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
 import { MongoEntityManager } from '@mikro-orm/mongodb';
 
 /**

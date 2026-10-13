@@ -45,7 +45,9 @@ const logger = {
 };
 
 const { ImportKeysFromDatabase } = await esmock('../dist/helpers/import-keys-from-database.js', {
-    '@guardian/common': { DatabaseServer: FakeDatabaseServer },
+    '@guardian/common/database-modules/database-server': {
+        DatabaseServer: FakeDatabaseServer
+    },
 });
 
 const originalProvider = process.env.VAULT_PROVIDER;

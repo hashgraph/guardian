@@ -1,4 +1,5 @@
-import { NatsService, PinoLogger } from '@guardian/common';
+import { NatsService } from '@guardian/common/mq/nats-service';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
 import { GenerateUUIDv4, IPropertySuggestionRequest, IPropertySuggestionResponse, MessageAPI } from '@guardian/interfaces';
 import { Singleton } from './decorators/singleton.js';
 import process from 'node:process';

@@ -1,4 +1,4 @@
-import { DataBaseHelper } from '@guardian/common';
+import { DataBaseHelper } from '@guardian/common/helpers/db-helper';
 import { Db } from 'mongodb';
 import { hostname } from 'node:os';
 import { randomUUID } from 'node:crypto';
