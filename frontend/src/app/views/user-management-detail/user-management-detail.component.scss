@@ -511,11 +511,11 @@
 
 .role-footer {
     position: fixed;
-    right: 0;
+    right: var(--first-steps-offset);
     bottom: 0;
     height: 64px;
     background: var(--guardian-background, #fff);
-    width: 100%;
+    width: calc(100% - var(--first-steps-offset));
     display: flex;
     justify-content: flex-end;
     padding: 12px 48px;

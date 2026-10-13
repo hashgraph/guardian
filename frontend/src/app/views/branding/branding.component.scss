@@ -116,7 +116,7 @@
 .actions-container {
     position: fixed;
     left: var(--header-width, var(--header-width-expand));
-    right: 0;
+    right: var(--first-steps-offset);
     bottom: 0;
     height: 64px;
     display: flex;
