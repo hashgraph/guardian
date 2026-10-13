@@ -1,4 +1,4 @@
-import { MultiDocuments } from '@guardian/common';
+import { MultiDocuments } from '@guardian/common/entity/multi-documents';
 import { PolicyDataLoader } from './loader.js';
 
 /**

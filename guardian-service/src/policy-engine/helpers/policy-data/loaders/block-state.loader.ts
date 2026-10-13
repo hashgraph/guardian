@@ -1,5 +1,5 @@
 
-import { BlockState } from '@guardian/common';
+import { BlockState } from '@guardian/common/entity/block-state';
 import { PolicyDataLoader } from './loader.js';
 
 /**

@@ -1,21 +1,17 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { Controller } from '@nestjs/common';
-import {
-    BinaryMessageResponse,
-    DataBaseHelper,
-    DatabaseServer,
-    IAuthUser,
-    MessageError,
-    MessageResponse,
-    NewNotifier,
-    NotificationStep,
-    PinoLogger,
-    RunFunctionAsync,
-    Schema as SchemaCollection,
-    ImportExportUtils,
-    Users
-} from '@guardian/common';
-import { GenerateBlocks, JsonToXlsx, XlsxToJson } from '../xlsx/index.js';
+import { BinaryMessageResponse, MessageError, MessageResponse } from '@guardian/common/models/message-response';
+import { DataBaseHelper } from '@guardian/common/helpers/db-helper';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { NewNotifier } from '@guardian/common/notification/notifier';
+import { NotificationStep } from '@guardian/common/notification/notification-step';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { RunFunctionAsync } from '@guardian/common/helpers/run-function-async';
+import { Schema as SchemaCollection } from '@guardian/common/entity/schema';
+import { ImportExportUtils } from '@guardian/common/import-export/utils';
+import { Users } from '@guardian/common/helpers/users';
+import { JsonToXlsx, XlsxToJson } from '../xlsx/index.js';
 import {
     IOwner,
     GenerateUUIDv4,
@@ -55,6 +51,7 @@ import {
 } from '../helpers/import-helpers/index.js'
 import { validateSchemaDependencies } from '../helpers/import-helpers/schema/schema-dependency-validator.js';
 import { validateSchemaFieldKeys } from '../helpers/import-helpers/schema/schema-field-key-validator.js';
+import { PolicyEngine } from '../policy-engine/policy-engine.js';
 import { getPageOptions } from './helpers/index.js';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -72,36 +69,34 @@ function getSchemaFields(schema: ISchema): SchemaField[] {
     return new Schema(schema, true).fields || [];
 }
 
-function getConditionFieldId(field: any): string {
-    return field?.templateFieldId || field?.name || '';
+/**
+ * Content hash for one condition - "structure" (trigger/operator/rows + branch field
+ * identity/target paths), not the branch fields' own content, which has its own independent
+ * per-field lock. Used by the per-condition lock, alongside signature-based match/removal
+ * detection (which alone would miss a same-signature content change, e.g. a predicate's
+ * comparator changing without its field/value changing). Shared with the update-preview
+ * builder in schema-template.service.ts, which needs the identical notion of "changed".
+ * @param condition
+ */
+function conditionComparableHash(condition: any): string {
+    return SchemaHelper.getConditionComparableHash(condition);
 }
 
-function getConditionPredicates(ifCondition: any): any[] {
-    return ifCondition?.AND ?? ifCondition?.OR ?? (ifCondition ? [ifCondition] : []);
+function getConditionConfig(schemaConfig: ISchemaTemplateSchemaConfig, condition: any): any {
+    const signature = SchemaHelper.getConditionTriggerSignature(condition);
+    if (!signature) {
+        return null;
+    }
+    return schemaConfig.conditions?.[signature.join(',')] || null;
 }
 
-function getParsedConditionTargetPaths(targets: any[]): string[][] {
-    return (targets || [])
-        .map((target: any) => target.fieldPath || [])
-        .filter((fieldPath: string[]) => fieldPath.length > 0);
+function getArrayDependencyConfig(schemaConfig: ISchemaTemplateSchemaConfig, fields: SchemaField[], dependency: any): any {
+    const templateFieldId = SchemaHelper.resolveFieldByPath(fields, dependency?.field || [])?.templateFieldId;
+    return templateFieldId ? (schemaConfig.repeatableLinks?.[templateFieldId] || null) : null;
 }
 
-function getConditionsHash(schema: ISchema): string {
-    const conditions = new Schema(schema, true).conditions || [];
-    return SchemaHelper.stableStringify(
-        conditions.map((condition: any) => ({
-            op: condition.ifCondition?.AND ? 'AND' : condition.ifCondition?.OR ? 'OR' : 'SINGLE',
-            if: getConditionPredicates(condition.ifCondition).map((predicate: any) => [
-                getConditionFieldId(predicate.field),
-                predicate.fieldPath || [],
-                SchemaHelper.cloneSchemaRuntimeValue(predicate.fieldValue)
-            ]),
-            then: (condition.thenFields || []).map(getConditionFieldId),
-            else: (condition.elseFields || []).map(getConditionFieldId),
-            thenTargets: getParsedConditionTargetPaths(condition.thenTargets),
-            elseTargets: getParsedConditionTargetPaths(condition.elseTargets)
-        }))
-    );
+function arrayDependencyComparableHash(dependency: any): string {
+    return SchemaHelper.stableStringify(dependency);
 }
 
 function flattenFields(fields: SchemaField[], result: SchemaField[] = []): SchemaField[] {
@@ -220,8 +215,65 @@ export function validateTemplateSchemaUpdateByConfig(
         throw new Error(`Schema settings for "${previous.name}" are locked by schema template and cannot be edited.`);
     }
 
-    if (schemaConfig.conditionsLocked && getConditionsHash(previous) !== getConditionsHash(next)) {
-        throw new Error(`Conditions for "${previous.name}" are locked by schema template and cannot be edited.`);
+    const previousConditions = new Schema(previous, true).conditions || [];
+    const nextConditions = new Schema(next, true).conditions || [];
+
+    // Mirrors customFieldsLocked exactly: blocks adding a brand-new condition, not editing or
+    // removing an existing one - that's the per-condition lock's job, below. Count-based, not
+    // identity-based: a condition has no stable key independent of its own content (unlike a
+    // field's `path`), so matching by trigger field names/operator would misclassify a
+    // legitimate structural edit to an individually-unlocked condition (e.g. changing its
+    // operator or trigger field) as "a new condition was added".
+    if (schemaConfig.conditionsLocked && nextConditions.length > previousConditions.length) {
+        throw new Error(`Schema "${previous.name}" does not allow new conditions because it is locked by schema template.`);
+    }
+
+    // Per-individual-condition lock - independent of conditionsLocked above. Unlike per-field
+    // locks, a condition with no config entry defaults to *unlocked*: this is an opt-in extra
+    // restriction, not a default-safe state every condition starts in.
+    for (const previousCondition of previousConditions) {
+        if (getConditionConfig(schemaConfig, previousCondition)?.locked !== true) {
+            continue;
+        }
+        const signature = SchemaHelper.getConditionTriggerSignature(previousCondition);
+        const matchIndex = SchemaHelper.findConditionIndexBySignature(nextConditions, signature);
+        if (matchIndex === -1) {
+            throw new Error(`A condition in "${previous.name}" is locked by schema template and cannot be removed.`);
+        }
+        if (conditionComparableHash(previousCondition) !== conditionComparableHash(nextConditions[matchIndex])) {
+            throw new Error(`A condition in "${previous.name}" is locked by schema template and cannot be edited.`);
+        }
+    }
+
+    const previousFieldTree = getSchemaFields(previous);
+    const nextFieldTree = getSchemaFields(next);
+    const previousLinks = new Schema(previous, true).arrayDependencies || [];
+    const nextLinks = new Schema(next, true).arrayDependencies || [];
+
+    // Mirrors customFieldsLocked/conditionsLocked: blocks adding a brand-new repeatable link,
+    // not editing or removing an existing one - that's the per-link lock's job, below.
+    // Count-based for the same reason as conditions above: re-pointing an individually-unlocked
+    // link to a different source/dependent array is a legitimate edit, not an addition, even
+    // though it changes the field/on pair that would otherwise identify the link.
+    if (schemaConfig.repeatableLinksLocked && nextLinks.length > previousLinks.length) {
+        throw new Error(`Schema "${previous.name}" does not allow new repeatable links because it is locked by schema template.`);
+    }
+
+    // Per-individual-repeatable-link lock, same opt-in-only default as conditions above.
+    for (const previousLink of previousLinks) {
+        if (getArrayDependencyConfig(schemaConfig, previousFieldTree, previousLink)?.locked !== true) {
+            continue;
+        }
+        const templateFieldId = SchemaHelper.resolveFieldByPath(previousFieldTree, previousLink.field || [])?.templateFieldId;
+        const matchIndex = nextLinks.findIndex((candidate) =>
+            SchemaHelper.resolveFieldByPath(nextFieldTree, candidate.field || [])?.templateFieldId === templateFieldId
+        );
+        if (matchIndex === -1) {
+            throw new Error(`A repeatable link in "${previous.name}" is locked by schema template and cannot be removed.`);
+        }
+        if (arrayDependencyComparableHash(previousLink) !== arrayDependencyComparableHash(nextLinks[matchIndex])) {
+            throw new Error(`A repeatable link in "${previous.name}" is locked by schema template and cannot be edited.`);
+        }
     }
 
     const previousFields = flattenFields(getSchemaFields(previous));
@@ -602,9 +654,6 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 if (!row || row.owner !== owner.owner) {
                     throw new Error('Invalid schema');
                 }
-                if (checkForCircularDependency(row)) {
-                    throw new Error(`There is circular dependency in schema: ${row.iri}`);
-                }
                 const previous = {
                     templateId: row.templateId,
                     templateSchemaId: row.templateSchemaId,
@@ -617,6 +666,9 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     entity: item.entity,
                     document: item.document ? JSON.parse(JSON.stringify(item.document)) : item.document
                 } as ISchema;
+                if (checkForCircularDependency(next)) {
+                    throw new Error(`There is circular dependency in schema: ${next.iri}`);
+                }
                 validateSchemaFieldKeys(next);
                 validateSchemaDependencies(next);
                 await resolveTemplateSchemaContext(next, owner);
@@ -2211,7 +2263,9 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     notifier.fail('Invalid import schema parameter');
                 }
 
-                const category = await getSchemaCategory(topicId);
+                const schemaTarget = await getSchemaTarget(topicId);
+                const category = schemaTarget?.category || SchemaCategory.POLICY;
+                const target = schemaTarget?.target || null;
 
                 const schemasMap = await SchemaImportExportHelper.importSchemasByMessages(
                     messageIds,
@@ -2225,7 +2279,26 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     owner?.id,
                     schemasIds,
                 );
-                notifier.result(schemasMap);
+
+                let validation = null;
+                if (category === SchemaCategory.POLICY && target) {
+                    await PolicyImportExportHelper.updatePolicyComponents(target, logger, owner?.id);
+                    try {
+                        const policyValidation = await new PolicyEngine(logger).validateModel(target.id);
+                        validation = {
+                            isValid: !policyValidation.blocks.some((block) => !block.isValid),
+                            errors: policyValidation
+                        };
+                    } catch (error) {
+                        await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
+                    }
+                }
+
+                notifier.result({
+                    ...schemasMap,
+                    policyId: category === SchemaCategory.POLICY ? target?.id : null,
+                    validation
+                });
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 notifier.fail(error);
@@ -2298,7 +2371,9 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     notifier.fail('Invalid import schema parameter');
                 }
 
-                const category = await getSchemaCategory(topicId);
+                const schemaTarget = await getSchemaTarget(topicId);
+                const category = schemaTarget?.category || SchemaCategory.POLICY;
+                const target = schemaTarget?.target || null;
                 let result = await SchemaImportExportHelper.importSchemaByFiles(
                     schemas,
                     owner,
@@ -2312,7 +2387,25 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 );
                 result = await importTagsByFiles(result, tags, notifier);
 
-                notifier.result(result);
+                let validation = null;
+                if (category === SchemaCategory.POLICY && target) {
+                    await PolicyImportExportHelper.updatePolicyComponents(target, logger, owner?.id);
+                    try {
+                        const policyValidation = await new PolicyEngine(logger).validateModel(target.id);
+                        validation = {
+                            isValid: !policyValidation.blocks.some((block) => !block.isValid),
+                            errors: policyValidation
+                        };
+                    } catch (error) {
+                        await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
+                    }
+                }
+
+                notifier.result({
+                    ...result,
+                    policyId: category === SchemaCategory.POLICY ? target?.id : null,
+                    validation
+                });
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 notifier.fail(error);
@@ -2853,7 +2946,6 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 xlsxResult.updateSchemas(false);
                 xlsxResult.updatePolicy(target);
                 xlsxResult.addErrors(errors);
-                GenerateBlocks.generate(xlsxResult);
 
                 const result = await SchemaImportExportHelper.importSchemaByFiles(
                     xlsxResult.schemas,
@@ -2867,15 +2959,26 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     owner?.id
                 );
 
+                let validation = null;
                 if (category === SchemaCategory.TOOL) {
                     await updateToolConfig(target);
                     await DatabaseServer.updateTool(target);
                 } else if (category === SchemaCategory.POLICY) {
                     await PolicyImportExportHelper.updatePolicyComponents(target, logger, owner?.id);
+                    try {
+                        const policyValidation = await new PolicyEngine(logger).validateModel(target.id);
+                        validation = {
+                            isValid: !policyValidation.blocks.some((block) => !block.isValid),
+                            errors: policyValidation
+                        };
+                    } catch (error) {
+                        await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
+                    }
                 }
 
                 return new MessageResponse({
                     schemas: xlsxResult.schemas,
+                    validation,
                     errors: result.errors
                 });
             } catch (error) {
@@ -2941,10 +3044,6 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 xlsxResult.updateSchemas(false);
                 xlsxResult.updatePolicy(target);
                 xlsxResult.addErrors(errors);
-                const isReplacement = Array.isArray(schemasIds) && schemasIds.some((schemaId) => !!schemaId);
-                if (!isReplacement) {
-                    GenerateBlocks.generate(xlsxResult);
-                }
                 notifier.completeStep(STEP_IMPORT_TOOLS);
 
                 notifier.startStep(STEP_IMPORT_SCHEMAS);
@@ -2962,16 +3061,28 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 );
                 notifier.completeStep(STEP_IMPORT_SCHEMAS);
 
+                let validation = null;
                 if (category === SchemaCategory.TOOL) {
                     await updateToolConfig(target);
                     await DatabaseServer.updateTool(target);
                 } else if (category === SchemaCategory.POLICY) {
                     await PolicyImportExportHelper.updatePolicyComponents(target, logger, owner?.id);
+                    try {
+                        const policyValidation = await new PolicyEngine(logger).validateModel(target.id);
+                        validation = {
+                            isValid: !policyValidation.blocks.some((block) => !block.isValid),
+                            errors: policyValidation
+                        };
+                    } catch (error) {
+                        await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
+                    }
                 }
                 notifier.complete();
 
                 notifier.result({
                     schemas: xlsxResult.schemas,
+                    policyId: category === SchemaCategory.POLICY ? target.id : null,
+                    validation,
                     errors: result.errors
                 });
             }, async (error) => {
@@ -3008,7 +3119,6 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     }
                 }
                 xlsxResult.updateSchemas(false);
-                GenerateBlocks.generate(xlsxResult);
 
                 return new MessageResponse(xlsxResult.toJson());
             } catch (error) {

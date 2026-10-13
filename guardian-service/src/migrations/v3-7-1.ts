@@ -17,6 +17,23 @@ export class ReleaseMigration extends Migration {
         await this.dropMeecoIssuerWhitelist();
         await this.applyDescriptions('policy-properties.csv', IwaVersion.V1);
         await this.applyDescriptions('policy-properties-v3.csv', IwaVersion.V3);
+        await this.markPolicyActionsExecuted();
+    }
+
+    /**
+     * Policy actions are now claimed through `executedAt` before they run.
+     * Rows written before that have no claim, so a topic replay would run
+     * every one of them again. Mark them all as already executed.
+     */
+    async markPolicyActionsExecuted() {
+        await this.getCollection('PolicyAction').updateMany(
+            {
+                type: { $in: ['ACTION', 'REMOTE_ACTION'] },
+                executedAt: null
+            },
+            { $set: { executedAt: new Date() } },
+            { session: this.ctx }
+        );
     }
 
     /**

@@ -12,11 +12,25 @@ describe('checkForCircularDependency', () => {
         assert.equal(checkForCircularDependency({ document: { $defs: {} } }), false);
     });
 
-    it('returns true when $defs includes the schema\'s own $id', () => {
+    it('returns false when a stale $defs entry shares the schema\'s own $id but has no real $ref back to it', () => {
         const schema = {
             document: {
                 $id: '#self',
                 $defs: { '#self': { type: 'object' } },
+            },
+        };
+        assert.equal(checkForCircularDependency(schema), false);
+    });
+
+    it('returns true when the document has a real $ref cycle back to its own $id', () => {
+        const schema = {
+            document: {
+                $id: '#p',
+                $defs: {
+                    '#r': { $id: '#r', type: 'object', properties: { backToP: { $ref: '#p' } } },
+                },
+                type: 'object',
+                properties: { toR: { $ref: '#r' } },
             },
         };
         assert.equal(checkForCircularDependency(schema), true);

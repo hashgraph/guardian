@@ -16,6 +16,14 @@ const addOutput = (engine, name, field) => {
     return o;
 };
 
+const addTableOutput = (engine, rows) => {
+    const o = engine.addOutput();
+    o.field = 'results';
+    o.rows = rows;
+    o.update();
+    return o;
+};
+
 describe('MathEngine — structure', () => {
     it('starts with one empty page per group and no items', () => {
         const engine = new MathEngine();
@@ -110,6 +118,74 @@ describe('MathEngine.validate', () => {
         const engine = new MathEngine();
         addOutput(engine, 'missing', 'doc.x');
         assert.deepEqual(engine.validate(), ['outputs', engine.outputs.pages[0].id]);
+    });
+
+    it('accepts a table output whose cells name known variables', () => {
+        const engine = new MathEngine();
+        addVariable(engine, 'x', 'doc.a');
+        addTableOutput(engine, [{ a: 'x', b: '' }]);
+        assert.equal(engine.validate(), null);
+    });
+
+    it('flags a table output whose cell names an unknown variable', () => {
+        const engine = new MathEngine();
+        addVariable(engine, 'x', 'doc.a');
+        const output = addTableOutput(engine, [{ a: 'x', b: 'missing' }]);
+        assert.deepEqual(engine.validate(), ['outputs', engine.outputs.pages[0].id]);
+        assert.equal(output.error, 'Unknown variable: missing');
+    });
+
+    it('flags a table output whose cell names a function', () => {
+        const engine = new MathEngine();
+        addVariable(engine, 'x', 'doc.a');
+        const output = addTableOutput(engine, [{ a: 'size' }]);
+        assert.deepEqual(engine.validate(), ['outputs', engine.outputs.pages[0].id]);
+        assert.equal(output.error, 'Invalid value');
+    });
+
+    it('flags a table output with a cell that is not a variable name', () => {
+        const engine = new MathEngine();
+        addVariable(engine, 'x', 'doc.a');
+        addTableOutput(engine, [{ a: '1x' }]);
+        assert.deepEqual(engine.validate(), ['outputs', engine.outputs.pages[0].id]);
+    });
+
+    it('accepts a table output with no rows', () => {
+        const engine = new MathEngine();
+        addTableOutput(engine, []);
+        assert.equal(engine.validate(), null);
+    });
+
+    it('flags an unknown variable in any table of a table list', () => {
+        const engine = new MathEngine();
+        addVariable(engine, 'x', 'doc.a');
+        const output = engine.addOutput();
+        output.field = 'sites.results';
+        output.tables = [[{ a: 'x' }], [{ a: 'missing' }]];
+        output.update();
+        assert.deepEqual(engine.validate(), ['outputs', engine.outputs.pages[0].id]);
+        assert.equal(output.error, 'Unknown variable: missing');
+    });
+
+    it('accepts a column table output whose columns name known variables', () => {
+        const engine = new MathEngine();
+        addVariable(engine, 'x', 'doc.a');
+        const output = engine.addOutput();
+        output.field = 'results';
+        output.columns = { year: 'x', co2: '' };
+        output.update();
+        assert.equal(engine.validate(), null);
+    });
+
+    it('flags a column table output whose column names an unknown variable', () => {
+        const engine = new MathEngine();
+        addVariable(engine, 'x', 'doc.a');
+        const output = engine.addOutput();
+        output.field = 'results';
+        output.columns = { year: 'x', co2: 'missing' };
+        output.update();
+        assert.deepEqual(engine.validate(), ['outputs', engine.outputs.pages[0].id]);
+        assert.equal(output.error, 'Unknown variable: missing');
     });
 });
 

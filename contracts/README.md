@@ -45,6 +45,7 @@ For different networks:
 - **Testnet**: `RPC_URL=https://testnet.hashio.io/api`, `HEDERA_NETWORK=testnet`
 - **Mainnet**: `RPC_URL=https://mainnet.hashio.io/api`, `HEDERA_NETWORK=mainnet`
 - **Previewnet**: `RPC_URL=https://previewnet.hashio.io/api`, `HEDERA_NETWORK=previewnet`
+- **Custom network**: set `HEDERA_NETWORK` to a JSON node map and `MIRROR_NETWORK` to the mirror node address, e.g. `127.0.0.1:5600` for a local mirror or `mirror.example.com:443` for a remote one that serves its REST API over https on that port
 
 ## Installation
 

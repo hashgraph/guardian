@@ -10,7 +10,7 @@ import {TestEntity} from '../database-helper/test-entities.mjs';
 import {Schema} from '../../../dist/entity/index.js'
 
 const {DatabaseServer} = await esmock('../../../dist/database-modules/database-server.js', {
-	'../../../dist/helpers/index.js': {DataBaseHelper},
+	'../../../dist/helpers/db-helper.js': {DataBaseHelper},
 });
 
 describe('DatabaseServer', function () {

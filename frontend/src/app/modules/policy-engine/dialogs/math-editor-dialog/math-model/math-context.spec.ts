@@ -265,6 +265,23 @@ describe('MathContext Table columns', () => {
         return result;
     }
 
+    function cohortTable(): any {
+        return {
+            type: 'table',
+            columnKeys: ['instanceId', 'year', 'delta'],
+            columnNames: ['Cohort', 'Year', 'Delta'],
+            rows: [
+                { instanceId: 'C1', year: '2020', delta: '100' },
+                { instanceId: 'C1', year: '2021', delta: '150' },
+                { instanceId: 'C2', year: '2021', delta: '80' }
+            ]
+        };
+    }
+
+    function cohortLinks(): FieldLink[] {
+        return [link('inst', 'area.instanceId'), link('year', 'area.year'), link('delta', 'area.delta')];
+    }
+
     function table(): any {
         return {
             type: 'table',
@@ -423,5 +440,81 @@ describe('MathContext Table columns', () => {
         expect(() => context.setDocument(documents({ siteTable: value }))).toThrowError(
             /Table column "Area" has 10001 rows; General formulas are limited to 10000/
         );
+    });
+
+    it('finds the previous-year value with LookupTwo over Table columns', () => {
+        const context = new MathContext([
+            ...cohortLinks(),
+            formula(
+                'prevYear',
+                '\\mathrm{Map}\\left(1..\\mathrm{Length}\\left(\\mathrm{year}\\right),\\ \\mathrm{i} \\mapsto '
+                + '\\mathrm{At}\\left(\\mathrm{year},\\ \\mathrm{i}\\right) - 1\\right)'
+            ),
+            formula(
+                'deltaPrev',
+                '\\mathrm{Map}\\left(1..\\mathrm{Length}\\left(\\mathrm{year}\\right),\\ \\mathrm{i} \\mapsto '
+                + '\\mathrm{LookupTwo}\\left(\\mathrm{delta},\\ \\mathrm{inst},\\ \\mathrm{At}\\left(\\mathrm{inst},\\ \\mathrm{i}\\right),'
+                + '\\ \\mathrm{year},\\ \\mathrm{At}\\left(\\mathrm{prevYear},\\ \\mathrm{i}\\right)\\right)\\right)'
+            )
+        ]);
+
+        const result = context.setDocument(documents({ area: cohortTable() }));
+
+        expect(result.scope.prevYear).toEqual([2019, 2020, 2020]);
+        expect(result.scope.deltaPrev).toEqual([0, 100, 0]);
+        expect(context.getWarnings()).toEqual([]);
+    });
+
+    it('keeps a text key read with At inside Lookup', () => {
+        const context = new MathContext([
+            ...cohortLinks(),
+            formula(
+                'firstDelta',
+                '\\mathrm{Lookup}\\left(\\mathrm{delta},\\ \\mathrm{inst},\\ \\mathrm{At}\\left(\\mathrm{inst},\\ 3\\right)\\right)'
+            )
+        ]);
+
+        const result = context.setDocument(documents({ area: cohortTable() }));
+
+        expect(result.scope.firstDelta).toBe(80);
+        expect(context.getWarnings()).toEqual([]);
+    });
+
+    it('reads Table columns as numbers and text in LookupMin, LookupMax and EqualString', () => {
+        const context = new MathContext([
+            ...cohortLinks(),
+            formula(
+                'firstC1',
+                '\\mathrm{LookupMin}\\left(\\mathrm{delta},\\ \\mathrm{inst},\\ \\mathrm{At}\\left(\\mathrm{inst},\\ 1\\right),\\ \\mathrm{year}\\right)'
+            ),
+            formula(
+                'lastC1',
+                '\\mathrm{LookupMax}\\left(\\mathrm{delta},\\ \\mathrm{inst},\\ \\mathrm{At}\\left(\\mathrm{inst},\\ 1\\right),\\ \\mathrm{year}\\right)'
+            ),
+            formula(
+                'isC2',
+                '\\mathrm{EqualString}\\left(\\mathrm{At}\\left(\\mathrm{inst},\\ 3\\right),\\ \\text{C2}\\right)'
+            )
+        ]);
+
+        const result = context.setDocument(documents({ area: cohortTable() }));
+
+        expect(result.scope.firstC1).toBe(100);
+        expect(result.scope.lastC1).toBe(150);
+        expect(result.scope.isC2).toBe(1);
+    });
+
+    it('still turns text into 0 with a warning when At is used in arithmetic', () => {
+        const context = new MathContext([
+            ...cohortLinks(),
+            formula('wrong', '\\mathrm{At}\\left(\\mathrm{inst},\\ 1\\right) + 1')
+        ]);
+
+        const result = context.setDocument(documents({ area: cohortTable() }));
+
+        expect(result.scope.wrong).toBe(1);
+        expect(context.getWarnings()).toEqual([
+            'Table column "Cohort" replaced 3 nonnumeric cells with 0.'
+        ]);
     });
 });

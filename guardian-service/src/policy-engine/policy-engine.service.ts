@@ -1,51 +1,44 @@
-import {
-    BinaryMessageResponse,
-    CommentMessage,
-    DataBaseHelper,
-    DatabaseServer,
-    DiscussionMessage,
-    DryRun,
-    DryRunFiles,
-    EncryptUtils,
-    findAllEntities,
-    IAuthUser,
-    IMessageResponse,
-    ImportExportUtils,
-    IPFS,
-    MessageAction,
-    loadErrorCode,
-    MessageError,
-    MessageResponse,
-    MessageServer,
-    MessageType,
-    MigrationFailedItem,
-    MigrationRun,
-    MockEntityType,
-    MockEvent,
-    MockType,
-    MockHelper,
-    NatsService,
-    NewNotifier,
-    NotificationStep,
-    PinoLogger,
-    Policy,
-    PolicyAction, PolicyComment,
-    PolicyDiscussion,
-    PolicyImportExport,
-    PolicyMessage,
-    PolicyParameters,
-    RecordImportExport,
-    RunFunctionAsync,
-    Schema as SchemaCollection,
-    Singleton,
-    TopicConfig,
-    Users,
-    VcHelper,
-    MintTransaction,
-    containsRegex,
-    expandTablesInDocument
-} from '@guardian/common';
-import { GenerateBlocks, JsonToXlsx, XlsxToJson } from '../xlsx/index.js';
+import { BinaryMessageResponse, IMessageResponse, MessageError, MessageResponse } from '@guardian/common/models/message-response';
+import { DataBaseHelper } from '@guardian/common/helpers/db-helper';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { DryRun } from '@guardian/common/entity/dry-run';
+import { DryRunFiles } from '@guardian/common/entity/dry-run-files';
+import { EncryptUtils } from '@guardian/common/helpers/encrypt-utils';
+import { findAllEntities, containsRegex } from '@guardian/common/helpers/utils';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { ImportExportUtils } from '@guardian/common/import-export/utils';
+import { IPFS } from '@guardian/common/helpers/ipfs';
+import { MigrationFailedItem } from '@guardian/common/entity/migration-failed-item';
+import { MigrationRun } from '@guardian/common/entity/migration-run';
+import { MockEntityType, MockType } from '@guardian/common/helpers/mock-types';
+import { NatsService } from '@guardian/common/mq/nats-service';
+import { NewNotifier } from '@guardian/common/notification/notifier';
+import { NotificationStep } from '@guardian/common/notification/notification-step';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { Policy } from '@guardian/common/entity/policy';
+import { PolicyAction } from '@guardian/common/entity/policy-action';
+import { PolicyComment } from '@guardian/common/entity/policy-comment';
+import { PolicyDiscussion } from '@guardian/common/entity/policy-discussion';
+import { PolicyImportExport } from '@guardian/common/import-export/policy';
+import { PolicyParameters } from '@guardian/common/entity/policy-parameters';
+import { RecordImportExport } from '@guardian/common/import-export/record';
+import { RunFunctionAsync } from '@guardian/common/helpers/run-function-async';
+import { Schema as SchemaCollection } from '@guardian/common/entity/schema';
+import { Singleton } from '@guardian/common/decorators/singleton';
+import { Users } from '@guardian/common/helpers/users';
+import { MintTransaction } from '@guardian/common/entity/mint-transaction';
+import { expandTablesInDocument } from '@guardian/common/helpers/table-csv';
+import { MockEvent, MockHelper } from '@guardian/hedera/mock-service';
+import { VcHelper } from '@guardian/hedera/vc-helper';
+import { CommentMessage } from '@guardian/hedera/message/comment-message';
+import { DiscussionMessage } from '@guardian/hedera/message/discussion-message';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { loadErrorCode } from '@guardian/hedera/message/message-load.error';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { MessageType } from '@guardian/hedera/message/message-type';
+import { PolicyMessage } from '@guardian/hedera/message/policy-message';
+import { TopicConfig } from '@guardian/hedera/topic';
+import { JsonToXlsx, XlsxToJson } from '../xlsx/index.js';
 import {
     DocumentCategoryType,
     DocumentType,
@@ -1858,7 +1851,7 @@ export class PolicyEngineService {
                         return new BinaryMessageResponse(arrayBuffer);
                     }
 
-                    const zip = await PolicyImportExport.generate(policy);
+                    const zip = await PolicyImportExport.generate(policy, new VcHelper());
                     const file = await zip.generateAsync({
                         type: 'arraybuffer',
                         compression: 'DEFLATE',
@@ -2004,10 +1997,12 @@ export class PolicyEngineService {
                     // <-- Steps
                     const STEP_IMPORT_POLICY = 'Import policy';
                     const STEP_START_POLICY = 'Start policy';
+                    const STEP_VALIDATE_POLICY = 'Validate policy';
                     // Steps -->
 
-                    notifier.addStep(STEP_IMPORT_POLICY, 90);
+                    notifier.addStep(STEP_IMPORT_POLICY, 80);
                     notifier.addStep(STEP_START_POLICY, 10);
+                    notifier.addStep(STEP_VALIDATE_POLICY, 10);
                     notifier.start();
 
                     await logger.info(`Import policy by file`, ['GUARDIAN_SERVICE'], owner?.id);
@@ -2036,8 +2031,23 @@ export class PolicyEngineService {
                             notifier.getStep(STEP_START_POLICY)
                         );
                     }
+
+                    notifier.startStep(STEP_VALIDATE_POLICY);
+                    let validation = null;
+                    try {
+                        const policyValidation = await this.policyEngine.validateModel(result.policy.id);
+                        validation = {
+                            isValid: !policyValidation.blocks.some((block) => !block.isValid),
+                            errors: policyValidation
+                        };
+                    } catch (error) {
+                        await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
+                    }
+                    notifier.completeStep(STEP_VALIDATE_POLICY);
+
                     notifier.result({
                         policyId: result.policy.id,
+                        validation,
                         errors: result.errors
                     });
 
@@ -2196,11 +2206,13 @@ export class PolicyEngineService {
                         const STEP_LOAD_POLICY = 'Load policy';
                         const STEP_IMPORT_POLICY = 'Import policy';
                         const STEP_START_POLICY = 'Start policy';
+                        const STEP_VALIDATE_POLICY = 'Validate policy';
                         // Steps -->
 
                         notifier.addStep(STEP_LOAD_POLICY, 5);
-                        notifier.addStep(STEP_IMPORT_POLICY, 90);
+                        notifier.addStep(STEP_IMPORT_POLICY, 80);
                         notifier.addStep(STEP_START_POLICY, 5);
+                        notifier.addStep(STEP_VALIDATE_POLICY, 10);
                         notifier.start();
 
                         notifier.startStep(STEP_LOAD_POLICY);
@@ -2233,9 +2245,24 @@ export class PolicyEngineService {
                                 notifier.getStep(STEP_START_POLICY)
                             );
                         }
+
+                        notifier.startStep(STEP_VALIDATE_POLICY);
+                        let validation = null;
+                        try {
+                            const policyValidation = await this.policyEngine.validateModel(result.policy.id);
+                            validation = {
+                                isValid: !policyValidation.blocks.some((block) => !block.isValid),
+                                errors: policyValidation
+                            };
+                        } catch (error) {
+                            await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
+                        }
+                        notifier.completeStep(STEP_VALIDATE_POLICY);
+
                         notifier.complete();
                         notifier.result({
                             policyId: result.policy.id,
+                            validation,
                             errors: result.errors
                         });
 
@@ -2279,7 +2306,6 @@ export class PolicyEngineService {
                         }
                     }
                     xlsxResult.updateSchemas(false);
-                    GenerateBlocks.generate(xlsxResult);
                     return new MessageResponse(xlsxResult.toJson());
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -2309,7 +2335,6 @@ export class PolicyEngineService {
                     xlsxResult.updateSchemas(false);
                     xlsxResult.updatePolicy(policy);
                     xlsxResult.addErrors(errors);
-                    GenerateBlocks.generate(xlsxResult);
                     const category = await getSchemaCategory(policy.topicId);
                     const result = await SchemaImportExportHelper.importSchemaByFiles(
                         xlsxResult.schemas,
@@ -2322,9 +2347,29 @@ export class PolicyEngineService {
                         notifier,
                         owner?.id
                     );
+                    const schemaMap = new Map<string, string>();
+                    for (const item of result.schemasMap || []) {
+                        if (item.oldIRI && item.newIRI && item.oldIRI !== item.newIRI) {
+                            schemaMap.set(item.oldIRI, item.newIRI);
+                        }
+                    }
+                    if (schemaMap.size) {
+                        await this.policyEngine.updateSchemaId(policy, schemaMap);
+                    }
                     await PolicyImportExportHelper.updatePolicyComponents(policy, logger, owner?.id);
+                    let validation = null;
+                    try {
+                        const policyValidation = await this.policyEngine.validateModel(policy.id);
+                        validation = {
+                            isValid: !policyValidation.blocks.some((block) => !block.isValid),
+                            errors: policyValidation
+                        };
+                    } catch (error) {
+                        await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
+                    }
                     return new MessageResponse({
                         policyId: policy.id,
+                        validation,
                         errors: result.errors
                     });
                 } catch (error) {
@@ -2349,11 +2394,13 @@ export class PolicyEngineService {
                     const STEP_LOAD_POLICY = 'Load file';
                     const STEP_IMPORT_TOOLS = 'Import tools';
                     const STEP_IMPORT_SCHEMAS = 'Import schemas';
+                    const STEP_VALIDATE_POLICY = 'Validate policy';
                     // Steps -->
 
                     notifier.addStep(STEP_LOAD_POLICY);
                     notifier.addStep(STEP_IMPORT_TOOLS);
                     notifier.addStep(STEP_IMPORT_SCHEMAS);
+                    notifier.addStep(STEP_VALIDATE_POLICY);
                     notifier.start();
 
                     notifier.startStep(STEP_LOAD_POLICY);
@@ -2376,7 +2423,6 @@ export class PolicyEngineService {
                     xlsxResult.updateSchemas(false);
                     xlsxResult.updatePolicy(policy);
                     xlsxResult.addErrors(errors);
-                    GenerateBlocks.generate(xlsxResult);
                     notifier.completeStep(STEP_IMPORT_TOOLS);
 
                     notifier.startStep(STEP_IMPORT_SCHEMAS);
@@ -2393,12 +2439,35 @@ export class PolicyEngineService {
                         owner?.id,
                         schemasIds,
                     );
+                    const schemaMap = new Map<string, string>();
+                    for (const item of result.schemasMap || []) {
+                        if (item.oldIRI && item.newIRI && item.oldIRI !== item.newIRI) {
+                            schemaMap.set(item.oldIRI, item.newIRI);
+                        }
+                    }
+                    if (schemaMap.size) {
+                        await this.policyEngine.updateSchemaId(policy, schemaMap);
+                    }
                     await PolicyImportExportHelper.updatePolicyComponents(policy, logger, owner?.id);
                     notifier.completeStep(STEP_IMPORT_SCHEMAS);
+
+                    notifier.startStep(STEP_VALIDATE_POLICY);
+                    let validation = null;
+                    try {
+                        const policyValidation = await this.policyEngine.validateModel(policy.id);
+                        validation = {
+                            isValid: !policyValidation.blocks.some((block) => !block.isValid),
+                            errors: policyValidation
+                        };
+                    } catch (error) {
+                        await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
+                    }
+                    notifier.completeStep(STEP_VALIDATE_POLICY);
                     notifier.complete();
 
                     notifier.result({
                         policyId: policy.id,
+                        validation,
                         errors: result.errors
                     });
                 }, async (error) => {
@@ -2420,6 +2489,7 @@ export class PolicyEngineService {
                         throw new Error(`Policy is not in Dry Run`);
                     }
                     const users = await DatabaseServer.getVirtualUsers(policyId, savepointIds, false, false, owner?.id);
+                    await PolicyComponentsUtils.SetVirtualUserRoles(model, users, savepointIds);
                     return new MessageResponse(users);
                 } catch (error) {
                     return new MessageError(error);
@@ -2496,6 +2566,7 @@ export class PolicyEngineService {
                         });
 
                     const users = await DatabaseServer.getVirtualUsers(policyId, savepointIds, false, false, owner?.id);
+                    await PolicyComponentsUtils.SetVirtualUserRoles(model, users, savepointIds);
                     return new MessageResponse(users);
                 } catch (error) {
                     return new MessageError(error);
@@ -2581,6 +2652,7 @@ export class PolicyEngineService {
 
                     await DatabaseServer.setVirtualUser(policyId, virtualDID, owner?.id)
                     const users = await DatabaseServer.getVirtualUsers(policyId, undefined, false, false, owner?.id);
+                    await PolicyComponentsUtils.SetVirtualUserRoles(model, users);
 
                     await (new GuardiansService())
                         .sendPolicyMessage(PolicyEvents.SET_VIRTUAL_USER, policyId, { did: virtualDID });

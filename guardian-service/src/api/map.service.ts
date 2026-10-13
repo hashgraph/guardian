@@ -1,5 +1,7 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { IAuthUser, MessageError, MessageResponse, PinoLogger } from '@guardian/common';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
 import { MessageAPI } from '@guardian/interfaces';
 
 /**

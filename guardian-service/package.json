@@ -3,12 +3,13 @@
     "dependencies": {
         "@formulajs/formulajs": "4.6.1",
         "@guardian/common": "workspace:*",
+        "@guardian/hedera": "workspace:*",
         "@guardian/interfaces": "workspace:*",
         "@hiero-ledger/proto": "2.31.0",
-        "@hiero-ledger/sdk": "2.88.0",
-        "@mikro-orm/core": "6.6.16",
-        "@mikro-orm/migrations-mongodb": "6.6.16",
-        "@mikro-orm/mongodb": "6.6.16",
+        "@hiero-ledger/sdk": "2.89.1",
+        "@mikro-orm/core": "6.6.17",
+        "@mikro-orm/migrations-mongodb": "6.6.17",
+        "@mikro-orm/mongodb": "6.6.17",
         "@nestjs/common": "^11.1.24",
         "@nestjs/core": "^11.1.24",
         "@nestjs/microservices": "^11.1.24",
@@ -34,7 +35,7 @@
     "devDependencies": {
         "@types/express": "5.0.6",
         "@types/fs-extra": "11.0.4",
-        "@types/node": "24.13.6",
+        "@types/node": "24.19.2",
         "chai": "4.5.0",
         "esmock": "^2.6.7",
         "mocha": "10.8.2",
@@ -72,11 +73,11 @@
         "dev": "tsc -w",
         "lint": "tslint --config ../tslint.json --project .",
         "start": "node dist/index.js",
-        "test": "mocha tests/**/*.test.mjs --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/guardian-service.xml --timeout 10000 --exit",
-        "test:local": "mocha tests/**/*.test.mjs --timeout 10000 --exit",
+        "test": "mocha 'tests/**/*.test.mjs' --ignore 'tests/stability.test.mjs' --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/guardian-service.xml --timeout 10000 --exit",
+        "test:local": "mocha 'tests/**/*.test.mjs' --ignore 'tests/stability.test.mjs' --timeout 10000 --exit",
         "test:stability": "mocha tests/stability.test.mjs --exit"
     },
     "type": "module",
     "types": "dist/index.d.ts",
-    "version": "3.7.1-rc"
+    "version": "3.7.1"
 }

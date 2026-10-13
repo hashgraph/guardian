@@ -1,53 +1,54 @@
 //entities
 import { AssignedEntityType, IVC, MintTransactionStatus, PolicyTestStatus, SchemaEntity, TopicType } from '@guardian/interfaces';
-import { TopicId } from '@hiero-ledger/sdk';
+import type { TopicId } from '@hiero-ledger/sdk';
+import type { IVirtualMessage } from './virtual-message.interface.js';
 import { FilterQuery } from '@mikro-orm/core';
+import { AggregateVC } from '../entity/aggregate-documents.js';
+import { ApprovalDocument as ApprovalDocumentCollection } from '../entity/approval-document.js';
+import { Artifact as ArtifactCollection } from '../entity/artifact.js';
+import { AssignEntity } from '../entity/assign-entity.js';
+import { BlockCache } from '../entity/block-cache.js';
+import { BlockState } from '../entity/block-state.js';
+import { Contract as ContractCollection } from '../entity/contract.js';
+import { DidDocument as DidDocumentCollection } from '../entity/did-document.js';
+import { DocumentState } from '../entity/document-state.js';
+import { DryRun } from '../entity/dry-run.js';
+import { ExternalDocument } from '../entity/external-document.js';
+import { MintRequest } from '../entity/mint-request.js';
+import { MintTransaction } from '../entity/mint-transaction.js';
+import { MultiDocuments } from '../entity/multi-documents.js';
+import { MultiPolicy } from '../entity/multi-policy.js';
+import { MultiPolicyTransaction } from '../entity/multi-policy-transaction.js';
+import { Policy } from '../entity/policy.js';
+import { PolicyCache } from '../entity/policy-cache.js';
+import { PolicyCacheData } from '../entity/policy-cache-data.js';
+import { PolicyCategory } from '../entity/policy-category.js';
+import { PolicyInvitations } from '../entity/policy-invitations.js';
+import { PolicyModule } from '../entity/module.js';
+import { PolicyProperty } from '../entity/policy-property.js';
+import { PolicyRoles as PolicyRolesCollection } from '../entity/policy-roles.js';
+import { PolicyTest } from '../entity/policy-test.js';
+import { PolicyTool } from '../entity/tool.js';
+import { Record } from '../entity/record.js';
+import { RetirePool } from '../entity/retire-pool.js';
+import { Schema as SchemaCollection } from '../entity/schema.js';
+import { SplitDocuments } from '../entity/split-documents.js';
+import { SuggestionsConfig } from '../entity/suggestions-config.js';
+import { Tag } from '../entity/tag.js';
+import { TagCache } from '../entity/tag-cache.js';
+import { Theme } from '../entity/theme.js';
+import { Token as TokenCollection } from '../entity/token.js';
+import { Topic as TopicCollection } from '../entity/topic.js';
+import { VcDocument as VcDocumentCollection } from '../entity/vc-document.js';
 import {
-    AggregateVC,
-    ApprovalDocument as ApprovalDocumentCollection,
-    Artifact as ArtifactCollection,
-    AssignEntity,
-    BlockCache,
-    BlockState,
-    Contract as ContractCollection,
-    DidDocument as DidDocumentCollection,
-    DocumentState,
-    DryRun,
-    ExternalDocument,
-    Message,
-    MintRequest,
-    MintTransaction,
-    MultiDocuments,
-    MultiPolicy,
-    MultiPolicyTransaction,
-    Policy,
-    PolicyCache,
-    PolicyCacheData,
-    PolicyCategory,
-    PolicyInvitations,
-    PolicyModule,
-    PolicyProperty,
-    PolicyRoles as PolicyRolesCollection,
-    PolicyTest,
-    PolicyTool,
-    Record,
-    RetirePool,
-    Schema as SchemaCollection,
-    SplitDocuments,
-    SuggestionsConfig,
-    Tag,
-    TagCache,
-    Theme,
-    Token as TokenCollection,
-    Topic as TopicCollection,
-    VcDocument as VcDocumentCollection,
     VpDocument,
-    VpDocument as VpDocumentCollection
-} from '../index.js';
-import { BaseEntity } from '../models/index.js';
+    VpDocument as VpDocumentCollection,
+} from '../entity/vp-document.js';
+import { BaseEntity } from '../models/base-entity.js';
 
 //interfaces
-import { IAuthUser, IGetDocumentAggregationFilters, IOrmConnection, STATUS_IMPLEMENTATION } from './index.js';
+import { IAuthUser } from './auth.interface.js';
+import { IGetDocumentAggregationFilters, IOrmConnection, STATUS_IMPLEMENTATION } from './db-helper.js';
 
 export interface IAddDryRunIdItem {
     dryRunId: string,
@@ -532,7 +533,7 @@ export abstract class AbstractDatabaseServer {
      *
      * @virtual
      */
-    public static async saveVirtualMessage<T>(dryRun: string, message: Message): Promise<void> {
+    public static async saveVirtualMessage<T>(dryRun: string, message: IVirtualMessage): Promise<void> {
         throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.saveVirtualMessage.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 

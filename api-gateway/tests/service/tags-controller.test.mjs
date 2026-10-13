@@ -24,7 +24,8 @@ describe('TagsApi', function () {
 
     before(async () => {
         ({ TagsApi } = await esmock(TAGS_DIST, {
-            '@guardian/common': { PinoLogger: class {}, RunFunctionAsync: (fn) => { runRan = true; fn(); } },
+            '@guardian/common/helpers/pino-logger': { PinoLogger: class {} },
+            '@guardian/common/helpers/run-function-async': { RunFunctionAsync: (fn) => { runRan = true; fn(); } },
             '@guardian/interfaces': {
                 Permissions: { POLICIES_POLICY_TAG: 'POLICIES_POLICY_TAG' },
                 SchemaCategory: { TAG: 'TAG' },

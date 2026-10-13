@@ -1,4 +1,6 @@
-import { DataBaseHelper, DeleteCache, MintTransaction } from '@guardian/common';
+import { DataBaseHelper } from '@guardian/common/helpers/db-helper';
+import { DeleteCache } from '@guardian/common/entity/delete-cache';
+import { MintTransaction } from '@guardian/common/entity/mint-transaction';
 import { FindCursor } from 'mongodb';
 import { CollectionBackup } from '../collection-backup.js';
 import { IDiffAction } from '../../interfaces/action.interface.js';

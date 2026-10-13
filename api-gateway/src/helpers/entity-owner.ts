@@ -1,4 +1,4 @@
-import { IAuthUser } from '@guardian/common';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
 import { EntityOwner as Owner } from '@guardian/interfaces';
 import { HttpException, HttpStatus } from '@nestjs/common';
 

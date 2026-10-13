@@ -1,4 +1,5 @@
-import { checkHederaKey, Workers } from '@guardian/common';
+import { Workers } from '@guardian/common/helpers/workers';
+import { checkHederaKey } from '@guardian/hedera/utils';
 import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 import { WorkerTaskType } from '@guardian/interfaces';
 

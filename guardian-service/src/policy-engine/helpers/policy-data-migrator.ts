@@ -1,45 +1,44 @@
-import {
-    AggregateVC,
-    BaseEntity,
-    BlockState,
-    Contract,
-    ContractMessage,
-    DatabaseServer,
-    DidDocument,
-    DocumentState,
-    IAuthUser,
-    KeyType,
-    MessageAction,
-    MessageServer,
-    PinoLogger,
-    MintRequest,
-    MintTransaction,
-    MultiDocuments,
-    PolicyRoles,
-    RetirePool,
-    RoleMessage,
-    SplitDocuments,
-    Token,
-    Topic,
-    TopicConfig,
-    TopicHelper,
-    Users,
-    VCMessage,
-    VPMessage,
-    VcDocument,
-    VcDocumentDefinition,
-    VcHelper,
-    VpDocument,
-    VpDocumentDefinition,
-    Wallet,
-    Workers,
-    findAllEntities,
-    PolicyCache,
-    INotificationStep,
-    MigrationRun,
-    MigrationFailedItem,
-    MigrationMessageMap, DataBaseHelper, DryRun,
-} from '@guardian/common';
+import { AggregateVC } from '@guardian/common/entity/aggregate-documents';
+import { BaseEntity } from '@guardian/common/models/base-entity';
+import { BlockState } from '@guardian/common/entity/block-state';
+import { Contract } from '@guardian/common/entity/contract';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { DidDocument } from '@guardian/common/entity/did-document';
+import { DocumentState } from '@guardian/common/entity/document-state';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { KeyType, Wallet } from '@guardian/common/helpers/wallet';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { MintRequest } from '@guardian/common/entity/mint-request';
+import { MintTransaction } from '@guardian/common/entity/mint-transaction';
+import { MultiDocuments } from '@guardian/common/entity/multi-documents';
+import { PolicyRoles } from '@guardian/common/entity/policy-roles';
+import { RetirePool } from '@guardian/common/entity/retire-pool';
+import { SplitDocuments } from '@guardian/common/entity/split-documents';
+import { Token } from '@guardian/common/entity/token';
+import { Topic } from '@guardian/common/entity/topic';
+import { Users } from '@guardian/common/helpers/users';
+import { VcDocument } from '@guardian/common/entity/vc-document';
+import { VpDocument } from '@guardian/common/entity/vp-document';
+import { Workers } from '@guardian/common/helpers/workers';
+import { findAllEntities } from '@guardian/common/helpers/utils';
+import { PolicyCache } from '@guardian/common/entity/policy-cache';
+import { INotificationStep } from '@guardian/common/notification/notification-step.interface';
+import { MigrationRun } from '@guardian/common/entity/migration-run';
+import { MigrationFailedItem } from '@guardian/common/entity/migration-failed-item';
+import { MigrationMessageMap } from '@guardian/common/entity/migration-message-map';
+import { DataBaseHelper } from '@guardian/common/helpers/db-helper';
+import { DryRun } from '@guardian/common/entity/dry-run';
+import { ContractMessage } from '@guardian/hedera/message/contract-message';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { RoleMessage } from '@guardian/hedera/message/role-message';
+import { TopicConfig } from '@guardian/hedera/topic';
+import { TopicHelper } from '@guardian/hedera/topic-helper';
+import { VCMessage } from '@guardian/hedera/message/vc-message';
+import { VPMessage } from '@guardian/hedera/message/vp-message';
+import { VcDocument as VcDocumentDefinition } from '@guardian/hedera/vcjs/vc-document';
+import { VcHelper } from '@guardian/hedera/vc-helper';
+import { VpDocument as VpDocumentDefinition } from '@guardian/hedera/vcjs/vp-document';
 import {
     ContractAPI,
     ContractType,

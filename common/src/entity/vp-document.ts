@@ -1,8 +1,8 @@
 import { DocumentSignature, DocumentStatus, IVP, IVPDocument } from '@guardian/interfaces';
 import { Entity, Property, Enum, BeforeCreate, BeforeUpdate, OnLoad, AfterDelete, AfterUpdate, AfterCreate } from '@mikro-orm/core';
-import { RestoreEntity } from '../models/index.js';
+import { RestoreEntity } from '../models/restore-entity.js';
 import { ObjectId } from '@mikro-orm/mongodb';
-import { DataBaseHelper } from '../helpers/index.js';
+import { DataBaseHelper } from '../helpers/db-helper.js';
 import { DeleteCache } from './delete-cache.js';
 
 /**

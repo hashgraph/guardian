@@ -32,7 +32,19 @@ function execute(): void {
     //Output
     const outputs = group.outputs.getItems();
     for (const link of outputs) {
-        setDocumentValueByPath(schema, result, link.path, context.scope[link.name]);
+        if (link.isTableList) {
+            setDocumentValueByPath(schema, result, link.path, link.getTableList(context.scope).map((rows) => ({
+                type: 'table',
+                rows
+            })));
+        } else if (link.isTable) {
+            setDocumentValueByPath(schema, result, link.path, {
+                type: 'table',
+                rows: link.getTableRows(context.scope)
+            });
+        } else {
+            setDocumentValueByPath(schema, result, link.path, context.scope[link.name]);
+        }
     }
 
     //Code

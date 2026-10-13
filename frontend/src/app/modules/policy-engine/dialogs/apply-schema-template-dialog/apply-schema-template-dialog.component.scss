@@ -438,13 +438,12 @@
         }
 
         .diff-row-name {
-            overflow: hidden;
             color: var(--guardian-font-color, #23252e);
             font-size: 14px;
             font-weight: 600;
             line-height: 20px;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            overflow-wrap: anywhere;
+            white-space: normal;
         }
 
         .diff-row-scope {
@@ -472,7 +471,7 @@
         .diff-detail-row {
             display: grid;
             grid-template-columns: 120px minmax(0, 1fr) 28px minmax(0, 1fr);
-            align-items: center;
+            align-items: start;
             min-height: 36px;
             border-bottom: 1px solid var(--guardian-border-color, #e1e7ef);
 
@@ -491,13 +490,12 @@
 
         .diff-detail-value {
             min-width: 0;
-            overflow: hidden;
             padding: 8px 10px;
             color: var(--guardian-font-color, #23252e);
             font-size: 13px;
             line-height: 18px;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            overflow-wrap: anywhere;
+            white-space: normal;
 
             &.before {
                 background: #f8fafc;

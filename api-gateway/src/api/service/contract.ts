@@ -1,5 +1,6 @@
 import { ContractType, Permissions } from '@guardian/interfaces';
-import { IAuthUser, PinoLogger } from '@guardian/common';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
 import {
     BadRequestException,
     Body,

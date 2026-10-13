@@ -8,9 +8,9 @@ import {
     AfterUpdate,
     AfterCreate,
 } from '@mikro-orm/core';
-import { BaseEntity } from '../models/index.js';
+import { BaseEntity } from '../models/base-entity.js';
 import { ObjectId } from '@mikro-orm/mongodb';
-import { DataBaseHelper } from '../helpers/index.js';
+import { DataBaseHelper } from '../helpers/db-helper.js';
 
 /**
  * Block state

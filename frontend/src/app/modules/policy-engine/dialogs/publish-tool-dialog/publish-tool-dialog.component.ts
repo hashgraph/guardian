@@ -53,7 +53,26 @@ export class PublishToolDialog {
 
     public get isPublishDisabled(): boolean {
         const isFormInvalid = !this.versionControl.valid;
-        const isVersionNotNewer = this.tool?.version && ModelHelper.versionCompare(this.tool.version, this.versionControl.value) >= 0;
-        return isFormInvalid || isVersionNotNewer;
+        return isFormInvalid || this.isVersionNotNewer;
+    }
+
+    public get versionError(): string | null {
+        if (this.versionControl.pristine && this.versionControl.untouched) {
+            return null;
+        }
+        if (this.versionControl.hasError('required')) {
+            return 'Version is required';
+        }
+        if (this.versionControl.hasError('pattern')) {
+            return 'Version must contain only numbers separated by dots, for example 1, 1.0 or 1.0.0';
+        }
+        if (this.isVersionNotNewer) {
+            return `Version must be greater than ${this.tool.previousVersion}`;
+        }
+        return null;
+    }
+
+    private get isVersionNotNewer(): boolean {
+        return !!this.tool?.previousVersion && ModelHelper.versionCompare(this.tool.previousVersion, this.versionControl.value) >= 0;
     }
 }

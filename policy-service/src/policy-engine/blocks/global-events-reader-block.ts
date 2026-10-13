@@ -12,7 +12,15 @@ import {
     LocationType, Schema, SchemaField, SchemaHelper, SetDataPayloadReader, TopicType, WorkerTaskType
 } from '@guardian/interfaces';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
-import { GlobalEventsReaderStream, IPFS, MessageAction, MessageServer, SchemaMessage, SchemaPackageMessage, TopicHelper, UrlType, Workers } from '@guardian/common';
+import { GlobalEventsReaderStream } from '@guardian/common/entity/global-events-reader-stream';
+import { IPFS } from '@guardian/common/helpers/ipfs';
+import { Workers } from '@guardian/common/helpers/workers';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { SchemaMessage } from '@guardian/hedera/message/schema-message';
+import { SchemaPackageMessage } from '@guardian/hedera/message/schema-package-message';
+import { TopicHelper } from '@guardian/hedera/topic-helper';
+import { UrlType } from '@guardian/hedera/message/url.interface';
 import { TopicId } from '@hiero-ledger/sdk';
 
 /**

@@ -1,8 +1,8 @@
 import { AuthEvents, GenerateUUIDv4, IOwner, IRootConfig, OrgRolePermission, UserRole } from '@guardian/interfaces';
 import { Singleton } from '../decorators/singleton.js';
 import { KeyType, Wallet } from './wallet.js';
-import { NatsService } from '../mq/index.js';
-import { AuthenticatedRequest, IAuthUser } from '../interfaces/index.js';
+import { NatsService } from '../mq/nats-service.js';
+import { AuthenticatedRequest, IAuthUser } from '../interfaces/auth.interface.js';
 
 /**
  * Users service

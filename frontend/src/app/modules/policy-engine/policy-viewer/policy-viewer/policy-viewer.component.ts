@@ -36,7 +36,10 @@ const MockTabs = ['API', 'IPFS', 'Topics'];
 @Component({
     selector: 'app-policy-viewer',
     templateUrl: './policy-viewer.component.html',
-    styleUrls: ['./policy-viewer.component.scss'],
+    styleUrls: [
+        '../../styles/top-toolbar.scss',
+        './policy-viewer.component.scss'
+    ],
     standalone: false
 })
 export class PolicyViewerComponent implements OnInit, OnDestroy {
@@ -58,13 +61,36 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         ipfs: ['createDate', 'size', 'url', 'document'],
     };
     public viewLabels: any = {
-        policy: 'Policy View',
+        policy: 'Policy',
         transactions: 'Transactions',
         artifacts: 'Artifacts',
         ipfs: 'IPFS',
-        mock_config: 'Mock Config',
-        mock_data: 'Mock Data',
+        mock_config: 'Mock config',
+        mock_data: 'Mock data',
     };
+    public viewIcons: any = {
+        policy: 'list',
+        transactions: 'arrow-right-arrow-left',
+        artifacts: 'paperclip',
+        ipfs: 'cloud',
+        mock_config: 'cog',
+        mock_data: 'database',
+    };
+    public viewHints: any = {
+        policy: 'Run the policy and fill in forms',
+        transactions: 'Messages sent to Hedera',
+        artifacts: 'Documents produced by blocks',
+        ipfs: 'Files stored off-chain',
+        mock_config: 'Choose which Hedera and IPFS calls are simulated',
+        mock_data: 'Simulated messages, files and tokens',
+    };
+    public viewMenuGroups: { title: string, items: string[] }[] = [
+        { title: '', items: ['policy'] },
+        { title: 'Technical views', items: ['transactions', 'artifacts', 'ipfs'] },
+        { title: 'Developer tools', items: ['mock_config', 'mock_data'] },
+    ];
+    public tabLabels: string[] = ['General', 'Export Documents', 'Mint Requests'];
+    public copiedField: string = '';
     public pageIndex: number;
     public pageSize: number;
     public documentCount: any;
@@ -696,6 +722,76 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     this.newActionsExist = response.body.actionsCount > 0 || response.body.delayCount > 0;
                 }
             })
+    }
+
+    public onSelectTab(index: number) {
+        this.activeTabIndex = index;
+        this.onTabChange(index);
+    }
+
+    public get isMockView(): boolean {
+        return this.view === 'mock_config' || this.view === 'mock_data';
+    }
+
+    public get hasRoleMenu(): boolean {
+        return this.isMultipleGroups || !!this.editableParameters?.length;
+    }
+
+    public get isPublicPolicy(): boolean {
+        return this.policyInfo?.availability === 'public' && !!this.policyInfo?.messageId;
+    }
+
+    public get messageTimestampDate(): Date | null {
+        const seconds = Number(String(this.policyInfo?.messageId || '').split('.')[0]);
+        return seconds > 0 ? new Date(seconds * 1000) : null;
+    }
+
+    public get actingAsLabel(): string {
+        const role = this.userRole || this.policyInfo?.userRoles?.[0];
+        if (role && role !== 'No role') {
+            return role;
+        }
+        return this.virtualUsers.find((user) => user.active)?.username || 'No role';
+    }
+
+    public virtualUserLabel(user: any): string {
+        const role = user?.role;
+        if (role && role !== 'No role' && role !== user.username) {
+            return `${user.username} – ${role}`;
+        }
+        return user?.username;
+    }
+
+    public shortDid(did: string): string {
+        const match = /^(did:[^:]+:[^:]+:)([^_]+)(_.*)?$/.exec(did || '');
+        if (!match || match[2].length <= 12) {
+            return did;
+        }
+        return `${match[1]}${match[2].slice(0, 4)}…${match[2].slice(-4)}${match[3] || ''}`;
+    }
+
+    public openVirtualUsersMenu(event: Event, menu: any) {
+        menu.toggle(event);
+        this.policyEngineService
+            .getVirtualUsers(this.policyId, this.savepointIds)
+            .subscribe((users) => this.virtualUsers = users);
+    }
+
+    public copyIdentity(field: string, value: string | undefined, event?: Event): void {
+        event?.stopPropagation();
+        if (!value) {
+            return;
+        }
+        navigator.clipboard.writeText(value).then(() => {
+            this.copiedField = field;
+            setTimeout(() => {
+                if (this.copiedField === field) {
+                    this.copiedField = '';
+                }
+            }, 1500);
+        }).catch(() => {
+            this.copiedField = '';
+        });
     }
 
     public onTabChange(index: string | number | undefined) {

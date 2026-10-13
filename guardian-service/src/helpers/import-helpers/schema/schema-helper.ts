@@ -1,5 +1,15 @@
 import { GenerateUUIDv4, IOwner, IRootConfig, ISchema, ModelHelper, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
-import { DatabaseServer, INotificationStep, MessageAction, MessageServer, PinoLogger, Schema as SchemaCollection, SchemaConverterUtils, SchemaMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { INotificationStep } from '@guardian/common/notification/notification-step.interface';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { Schema as SchemaCollection } from '@guardian/common/entity/schema';
+import { SchemaConverterUtils } from '@guardian/common/helpers/schema-converter-utils';
+import { Users } from '@guardian/common/helpers/users';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { SchemaMessage } from '@guardian/hedera/message/schema-message';
+import { TopicConfig } from '@guardian/hedera/topic';
+import { TopicHelper } from '@guardian/hedera/topic-helper';
 import { FilterObject } from '@mikro-orm/core';
 import { importTag } from '../tag/tag-import-helper.js';
 import { checkForCircularDependency, loadAnotherSchemas, loadSchema } from '../common/load-helper.js';
@@ -96,13 +106,7 @@ export async function incrementSchemaVersion(
     const { previousVersion } = SchemaHelper.getVersion(schema);
     let newVersion = '1.0.0';
     if (previousVersion) {
-        const schemas = await DatabaseServer.getSchemas({ uuid: schema.uuid });
-        const versions = [];
-        for (const element of schemas) {
-            const elementVersions = SchemaHelper.getVersion(element);
-            versions.push(elementVersions.version, elementVersions.previousVersion);
-        }
-        newVersion = SchemaHelper.incrementVersion(previousVersion, versions);
+        newVersion = await incrementVersionByUuid(schema.uuid, previousVersion);
     }
     schema.version = newVersion;
 
@@ -110,29 +114,18 @@ export async function incrementSchemaVersion(
 }
 
 /**
- * Get highest schema version
- * @param topicId Topic ID
+ * Next version not yet used by any schema with this uuid
+ * @param uuid Schema UUID
+ * @param previousVersion Version to increment from
  */
-export async function incrementHighestSchemaVersion(topicId: string): Promise<string> {
-    const schemas = await DatabaseServer.getSchemas({ topicId });
+export async function incrementVersionByUuid(uuid: string, previousVersion: string): Promise<string> {
+    const schemas = await DatabaseServer.getSchemas({ uuid });
     const versions = [];
-    let highestVersion = '1.0.0';
     for (const element of schemas) {
         const elementVersions = SchemaHelper.getVersion(element);
-        if (elementVersions.version) {
-            versions.push(elementVersions.version);
-            if (ModelHelper.versionCompare(elementVersions.version, highestVersion) === 1) {
-                highestVersion = elementVersions.version;
-            }
-        }
-        if (elementVersions.previousVersion) {
-            versions.push(elementVersions.previousVersion);
-            if (ModelHelper.versionCompare(elementVersions.previousVersion, highestVersion) === 1) {
-                highestVersion = elementVersions.previousVersion;
-            }
-        }
+        versions.push(elementVersions.version, elementVersions.previousVersion);
     }
-    return SchemaHelper.incrementVersion(highestVersion, versions);
+    return SchemaHelper.incrementVersion(previousVersion, versions);
 }
 
 /**
@@ -298,7 +291,7 @@ export async function copySchemaAsync(
     item.status = SchemaStatus.DRAFT;
     item.topicId = topicId;
 
-    const newVersion = await incrementHighestSchemaVersion(item.topicId)
+    const newVersion = SchemaHelper.incrementVersion(item.version, []);
     SchemaHelper.setVersion(item, newVersion, item.version);
     SchemaHelper.updateIRI(item);
     item.iri = item.iri || item.uuid;
@@ -373,7 +366,7 @@ export async function createSchemaAndArtifacts(
         newSchema.contextURL = `schema:${newSchema.uuid}`;
     }
 
-    const newVersion = await incrementHighestSchemaVersion(newSchema.topicId)
+    const newVersion = old ? await incrementVersionByUuid(old.uuid, previousVersion) : '';
     SchemaHelper.setVersion(newSchema, newVersion, previousVersion);
     const row = await createSchema(newSchema, user, notifier);
 

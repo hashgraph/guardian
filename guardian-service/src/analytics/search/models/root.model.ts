@@ -1,4 +1,6 @@
-import { Policy, PolicyTool, PolicyModule } from '@guardian/common';
+import { Policy } from '@guardian/common/entity/policy';
+import { PolicyTool } from '@guardian/common/entity/tool';
+import { PolicyModule } from '@guardian/common/entity/module';
 import { BlockType } from '@guardian/interfaces';
 import { BlockSearchModel } from './block.model.js';
 import { ChainSearchModel } from './chain.model.js';

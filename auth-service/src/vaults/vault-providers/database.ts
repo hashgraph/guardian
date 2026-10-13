@@ -1,5 +1,5 @@
 import { IVault } from '../vault.interface.js';
-import { DatabaseServer } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 import { WalletAccount } from '../../entity/wallet-account.js';
 
 /**

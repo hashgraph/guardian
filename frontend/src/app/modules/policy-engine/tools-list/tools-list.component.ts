@@ -420,7 +420,10 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             showHeader: false,
             header: 'Publish Tool',
             width: '600px',
-            styleClass: 'guardian-dialog'
+            styleClass: 'guardian-dialog',
+            data: {
+                tool
+            }
         })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (options) => {
             if (options) {

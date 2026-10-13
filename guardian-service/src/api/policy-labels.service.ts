@@ -1,24 +1,20 @@
 import { ApiResponse } from './helpers/api-response.js';
-import {
-    BinaryMessageResponse,
-    DatabaseServer,
-    LabelDocumentMessage,
-    LabelMessage,
-    MessageAction,
-    MessageError,
-    MessageResponse,
-    MessageServer,
-    PinoLogger,
-    PolicyImportExport,
-    PolicyLabel,
-    PolicyLabelImportExport,
-    Users,
-    Schema as SchemaCollection,
-    RunFunctionAsync,
-    INotificationStep,
-    NewNotifier,
-    containsRegex,
-} from '@guardian/common';
+import { BinaryMessageResponse, MessageError, MessageResponse } from '@guardian/common/models/message-response';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { PolicyImportExport } from '@guardian/common/import-export/policy';
+import { PolicyLabel } from '@guardian/common/entity/policy-label';
+import { PolicyLabelImportExport } from '@guardian/common/import-export/policy-label';
+import { Users } from '@guardian/common/helpers/users';
+import { Schema as SchemaCollection } from '@guardian/common/entity/schema';
+import { RunFunctionAsync } from '@guardian/common/helpers/run-function-async';
+import { INotificationStep } from '@guardian/common/notification/notification-step.interface';
+import { NewNotifier } from '@guardian/common/notification/notifier';
+import { containsRegex } from '@guardian/common/helpers/utils';
+import { LabelDocumentMessage } from '@guardian/hedera/message/label-document-message';
+import { LabelMessage } from '@guardian/hedera/message/label-message';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageServer } from '@guardian/hedera/message/message-server';
 import {
     EntityStatus,
     GenerateUUIDv4,

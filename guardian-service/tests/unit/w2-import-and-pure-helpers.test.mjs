@@ -96,8 +96,22 @@ describe('importToolErrors', () => {
 });
 
 describe('checkForCircularDependency', () => {
-    it('true when $id appears in $defs', () => {
-        assert.equal(checkForCircularDependency({ document: { $id: '#x', $defs: { '#x': {} } } }), true);
+    it('false when a stale $defs entry shares the $id but has no real $ref back to it', () => {
+        assert.equal(checkForCircularDependency({ document: { $id: '#x', $defs: { '#x': {} } } }), false);
+    });
+
+    it('true when the document has a real $ref cycle back to its own $id', () => {
+        const schema = {
+            document: {
+                $id: '#p',
+                $defs: {
+                    '#r': { $id: '#r', type: 'object', properties: { backToP: { $ref: '#p' } } },
+                },
+                type: 'object',
+                properties: { toR: { $ref: '#r' } },
+            },
+        };
+        assert.equal(checkForCircularDependency(schema), true);
     });
 
     it('false when $id not in $defs', () => {

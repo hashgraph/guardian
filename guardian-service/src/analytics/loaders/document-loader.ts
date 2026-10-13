@@ -1,4 +1,4 @@
-import { DatabaseServer } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 import { CompareOptions, IRefLvl, IVcDocument, IVpDocument } from '../compare/interfaces/index.js';
 import { DocumentModel, SchemaModel, VcDocumentModel, VpDocumentModel } from '../compare/models/index.js';
 import { SchemaCache } from './schema-cache.js';

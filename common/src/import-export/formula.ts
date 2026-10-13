@@ -1,7 +1,8 @@
 import JSZip from 'jszip';
-import { Formula, Policy } from '../entity/index.js';
+import { Formula } from '../entity/formula.js';
+import { Policy } from '../entity/policy.js';
 import { EntityStatus, GenerateUUIDv4, IFormulaConfig } from '@guardian/interfaces';
-import { DatabaseServer } from '../database-modules/index.js';
+import { DatabaseServer } from '../database-modules/database-server.js';
 import { ImportExportUtils } from './utils.js';
 import { findBlocks } from '../helpers/utils.js';
 

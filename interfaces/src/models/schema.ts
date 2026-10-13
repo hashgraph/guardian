@@ -149,6 +149,10 @@ export class Schema implements ISchema {
      */
     public errors?: any[];
     /**
+     * Schema definitions referenced by the document.
+     */
+    public defs?: string[];
+    /**
      * User DID
      * @private
      */
@@ -228,6 +232,7 @@ export class Schema implements ISchema {
             }
             this.component = (schema as any).component || (schema as any).__component;
             this.errors = schema.errors;
+            this.defs = Array.isArray(schema.defs) ? schema.defs : [];
             this.codeVersion = schema.codeVersion;
             // Untagged schemas predate IWA v3 support and must read as v1, never
             // as the current create-default.
@@ -257,6 +262,7 @@ export class Schema implements ISchema {
             this.contextURL = `schema:${this.uuid}`;
             this.iri = '';
             this.errors = [];
+            this.defs = [];
             this.codeVersion = '';
             this.iwaVersion = DEFAULT_IWA_VERSION;
         }

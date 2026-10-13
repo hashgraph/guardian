@@ -1,5 +1,12 @@
 import { User } from '../entity/user.js';
-import { DatabaseServer, MessageError, MessageResponse, NatsService, PinoLogger, ProviderAuthUser, Singleton, DataBaseHelper, containsRegex } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
+import { NatsService } from '@guardian/common/mq/nats-service';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { ProviderAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { Singleton } from '@guardian/common/decorators/singleton';
+import { DataBaseHelper } from '@guardian/common/helpers/db-helper';
+import { containsRegex } from '@guardian/common/helpers/utils';
 import {
     AuthEvents,
     GenerateUUIDv4,

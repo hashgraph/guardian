@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 import {ContractFunctionParameters, TokenAssociateTransaction, TransferTransaction} from '@hiero-ledger/sdk';
 import {deployWipeContract, initializeClient, sharedState} from './shared-setup';
-import {accountIdToSolidityAddress, createAccount, createFungibleToken, executeContract, getTokenBalance} from './helpers';
+import {accountIdToSolidityAddress, createAccount, createFungibleToken, executeContract, waitForFundedTokenBalance, waitForTokenBalance} from './helpers';
 
 describe('Wipe Contract - Fungible Token Operations', function () {
     this.timeout(300000);
@@ -62,7 +62,7 @@ describe('Wipe Contract - Fungible Token Operations', function () {
                 .execute(sharedState.client!);
             await transferResponse.getReceipt(sharedState.client!);
 
-            const initialBalance = await getTokenBalance(sharedState.client!, user.accountId, tokenId);
+            const initialBalance = await waitForFundedTokenBalance(sharedState.client!, user.accountId, tokenId);
 
             const wipeAmount = 100000000;
             const params = new ContractFunctionParameters()
@@ -80,7 +80,7 @@ describe('Wipe Contract - Fungible Token Operations', function () {
 
             expect(receipt.status.toString()).to.equal('SUCCESS');
 
-            const finalBalance = await getTokenBalance(sharedState.client!, user.accountId, tokenId);
+            const finalBalance = await waitForTokenBalance(sharedState.client!, user.accountId, tokenId, balance => balance < initialBalance);
 
             expect(finalBalance).to.be.lessThan(initialBalance);
         });

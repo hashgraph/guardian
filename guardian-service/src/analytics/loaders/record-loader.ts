@@ -1,4 +1,4 @@
-import { IRecordResult } from '@guardian/common';
+import { IRecordResult } from '@guardian/common/import-export/record';
 import { CompareOptions } from '../compare/interfaces/index.js';
 import { DocumentModel, RecordModel, SchemaModel, VcDocumentModel, VpDocumentModel } from '../compare/models/index.js';
 import { SchemaCache } from './schema-cache.js';

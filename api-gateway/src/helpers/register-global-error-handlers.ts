@@ -1,4 +1,4 @@
-import { registerGlobalErrorHandlers } from '@guardian/common';
+import { registerGlobalErrorHandlers } from '@guardian/common/helpers/process-error-handlers';
 
 // Registered as a side effect on import so the safety nets are active before the
 // application bootstrap (imported afterwards in index.ts) can produce any

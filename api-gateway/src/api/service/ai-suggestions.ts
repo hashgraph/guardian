@@ -3,8 +3,15 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Inject, NotImplementedExce
 import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiResponse, ApiTags, ApiExtraModels, ApiQuery, ApiBody } from '@nestjs/swagger';
 import { Auth, AuthUser } from '#auth';
 import { AISuggestions, InternalException } from '#helpers';
-import { InternalServerErrorDTO, PropertySuggestionRequestDTO, PropertySuggestionResponseDTO } from '#middlewares';
-import { IAuthUser, PinoLogger } from '@guardian/common';
+import {
+    InternalServerErrorDTO,
+    PropertySuggestionFieldInputDTO,
+    PropertySuggestionRequestDTO,
+    PropertySuggestionResponseDTO,
+    PropertySuggestionSchemaInputDTO
+} from '#middlewares';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
 import { IPropertySuggestionResponse, Permissions } from '@guardian/interfaces';
 import process from 'node:process';
 
@@ -69,10 +76,7 @@ export class AISuggestionsAPI {
         @Query('q') q: string,
     ): Promise<string> {
         try {
-            // All routes share the same singleton AISuggestions instance, so every
-            // construction site must pass the logger or the first route hit would
-            // leave the shared instance without one.
-            const aiSuggestions = new AISuggestions(this.logger);
+            const aiSuggestions = new AISuggestions();
             return await aiSuggestions.getAIAnswer(q);
         } catch (error) {
             await InternalException(error, this.logger, null);
@@ -113,7 +117,7 @@ export class AISuggestionsAPI {
     @HttpCode(HttpStatus.OK)
     async rebuildVector(): Promise<boolean> {
         try {
-            const aiSuggestions = new AISuggestions(this.logger);
+            const aiSuggestions = new AISuggestions();
             return await aiSuggestions.rebuildAIVector();
         } catch (error) {
             await InternalException(error, this.logger, null);
@@ -129,7 +133,7 @@ export class AISuggestionsAPI {
     )
     @ApiOperation({
         summary: 'Returns whether Glossary AI is enabled',
-        description: 'Lets the client know upfront whether it should show the Glossary AI schema-tagging UI at all.',
+        description: 'Lets the client know upfront whether it should show the IWA property mapping suggestions UI at all.',
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -157,10 +161,10 @@ export class AISuggestionsAPI {
     )
     @ApiOperation({
         summary: 'Suggest schema field properties',
-        description: 'Returns ranked IWA property candidates for each schema field',
+        description: 'Returns ranked IWA property candidates for each schema field, based on the schema sent in the request.',
     })
     @ApiBody({
-        description: 'Schema fields to tag.',
+        description: 'Live schema state and the fields to tag.',
         required: true,
         type: PropertySuggestionRequestDTO
     })
@@ -191,7 +195,13 @@ export class AISuggestionsAPI {
             }
         }
     })
-    @ApiExtraModels(PropertySuggestionRequestDTO, PropertySuggestionResponseDTO, InternalServerErrorDTO)
+    @ApiExtraModels(
+        PropertySuggestionRequestDTO,
+        PropertySuggestionSchemaInputDTO,
+        PropertySuggestionFieldInputDTO,
+        PropertySuggestionResponseDTO,
+        InternalServerErrorDTO
+    )
     @HttpCode(HttpStatus.OK)
     async getPropertySuggestions(
         @AuthUser() user: IAuthUser,
@@ -201,7 +211,7 @@ export class AISuggestionsAPI {
             throw new NotImplementedException('Glossary AI is not enabled');
         }
         try {
-            const aiSuggestions = new AISuggestions(this.logger);
+            const aiSuggestions = new AISuggestions();
             return await aiSuggestions.getPropertySuggestions(body);
         } catch (error) {
             await InternalException(error, this.logger, user.id);

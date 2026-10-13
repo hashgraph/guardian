@@ -1,4 +1,6 @@
-import { DatabaseServer, SchemaRule, VcDocument } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { SchemaRule } from '@guardian/common/entity/schema-rule';
+import { VcDocument } from '@guardian/common/entity/vc-document';
 import { IOwner, ISchemaRulesConfig } from '@guardian/interfaces';
 
 export function publishRuleConfig(data?: ISchemaRulesConfig): ISchemaRulesConfig {

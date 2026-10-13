@@ -1,5 +1,5 @@
 import { Entity, Property, Enum, Unique, Index } from '@mikro-orm/core';
-import { BaseEntity } from '../models/index.js';
+import { BaseEntity } from '../models/base-entity.js';
 import { IntegrationType } from '@guardian/interfaces';
 
 /**

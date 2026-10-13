@@ -117,7 +117,7 @@ UI_GATEWAY_HOST=host.docker.internal UI_GATEWAY_PORT=3002 docker compose run --r
 From the `/e2e-tests` folder, run the following command to install Cypress:
 
 ```bash
-npm install cypress --save-dev
+npm install cypress
 ```
 
 ### Configuration
@@ -598,7 +598,7 @@ solo one-shot single deploy
 
 The port forwards are **not** free choices. Guardian's `localnode` branch hardcodes the consensus
 node on `:50211` as account `0.0.3`, the mirror node gRPC endpoint on `:5600` and the mirror node
-REST API on `:5551` (`common/src/hedera-modules/environment.ts`). The `OVERRIDE_HEDERA_*` variables
+REST API on `:5551` (`common/src/helpers/environment.ts`). The `OVERRIDE_HEDERA_*` variables
 cannot be used to move them: only `guardian-service` and `policy-service` read those, while
 `topic-listener-service` goes straight to `HEDERA_NET` + `LOCALNODE_*`. So publish Solo on the ports
 Guardian already expects:

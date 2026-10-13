@@ -21772,12 +21772,14 @@ paths:
                   did: >-
                     did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999
                   username: Administrator
+                  role: Administrator
                   hederaAccountId: 0.0.6046379
                   id: 69c83b92cebecbe1c023104d
                 - active: false
                   did: >-
                     did:hedera:testnet:DoabcYQtNM3kqxAv6DiWadYRF6LYNqGX85ZtZFZibjTA_0.0.8417999
                   username: Virtual User 2
+                  role: Project Proponent
                   hederaAccountId: 0.0.1774730673941
                   id: 69c83db1cebecbe1c0231117
         '401':
@@ -22050,12 +22052,14 @@ paths:
                   did: >-
                     did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999
                   username: Administrator
+                  role: Administrator
                   hederaAccountId: 0.0.6046379
                   id: 69c83b92cebecbe1c023104d
                 - active: true
                   did: >-
                     did:hedera:testnet:9VywBBXBtcV2RW7Whak6aJ9GR7PsKsiJaymAeWnBVvUB_0.0.8417999
                   username: Virtual User 1
+                  role: Project Proponent
                   hederaAccountId: 0.0.1774731899661
                   id: 69c8427bcebecbe1c02311eb
         '401':
@@ -37493,8 +37497,8 @@ paths:
   /ai-suggestions/schema-properties/enabled:
     get:
       description: >-
-        Lets the client know upfront whether it should show the Glossary AI
-        schema-tagging UI at all.
+        Lets the client know upfront whether it should show the IWA property
+        mapping suggestions UI at all.
       operationId: AISuggestionsAPI_getGlossaryAiEnabled
       parameters: []
       responses:
@@ -37534,12 +37538,14 @@ paths:
         - ai-suggestions
   /ai-suggestions/schema-properties:
     post:
-      description: Returns ranked IWA property candidates for each schema field
+      description: >-
+        Returns ranked IWA property candidates for each schema field, based on
+        the schema sent in the request.
       operationId: AISuggestionsAPI_getPropertySuggestions
       parameters: []
       requestBody:
         required: true
-        description: Schema fields to tag.
+        description: Live schema state and the fields to tag.
         content:
           application/json:
             schema:
@@ -53775,7 +53781,7 @@ info:
     leverages a customizable Policy Workflow Engine and Web3 technology to
     ensure transparent and fraud-proof operations, making it a key tool for
     transforming sustainability practices and carbon markets.
-  version: 3.7.1-rc
+  version: 3.7.1
   contact:
     name: API developer
     url: https://hashgraph.com
@@ -57962,6 +57968,12 @@ components:
           type: number
           nullable: true
           example: 1
+        defs:
+          type: array
+          items:
+            type: string
+          example:
+            - '#f3b2a9c1e4d5678901234567'
       required:
         - id
         - uuid
@@ -61118,19 +61130,71 @@ components:
         - info
         - total
         - documents
+    PropertySuggestionFieldInputDTO:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Field name
+        title:
+          type: string
+          description: Field title
+        description:
+          type: string
+          description: Field description
+        type:
+          type: string
+          description: Field type
+        currentProperty:
+          type: string
+          description: IWA property currently assigned to the field, if any
+      required:
+        - name
+    PropertySuggestionSchemaInputDTO:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Schema name
+        description:
+          type: string
+          description: Schema description
+        iwaVersion:
+          type: string
+          description: IWA dMRV specification version. Defaults to '1.0.0' when omitted.
+          enum:
+            - 1.0.0
+            - 3.0.0
+        fields:
+          description: >-
+            All fields currently in the editor, used as context for the
+            suggestions
+          type: array
+          items:
+            $ref: '#/components/schemas/PropertySuggestionFieldInputDTO'
+      required:
+        - fields
     PropertySuggestionRequestDTO:
       type: object
       properties:
         schemaId:
           type: string
-          description: Id of the schema the field(s) needing a suggestion belong to
+          description: >-
+            Id of the schema the field(s) needing a suggestion belong to, used
+            for logging only
+        schema:
+          description: >-
+            Live editor state of the schema (name, description, IWA version and
+            fields) used as the context for the suggestions
+          allOf:
+            - $ref: '#/components/schemas/PropertySuggestionSchemaInputDTO'
         fieldNames:
           description: Names of the schema fields to return suggestions for
           type: array
           items:
             type: string
       required:
-        - schemaId
+        - schema
         - fieldNames
     PropertySuggestionCandidateDTO:
       type: object

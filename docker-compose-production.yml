@@ -24,6 +24,7 @@ services:
     volumes:
       - ./ai-service/faiss-vector:/usr/local/app/ai-service/faiss-vector:rw
       - ./ai-service/data:/usr/local/app/ai-service/data:rw
+      - ./ai-service/configs:/usr/local/app/ai-service/configs:ro
     environment:
       VECTOR_STORAGE_PATH: ./faiss-vector
       DOCS_STORAGE_PATH: ./data/generated-data

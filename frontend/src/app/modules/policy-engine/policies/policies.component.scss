@@ -1166,8 +1166,8 @@
     justify-content: space-between;
     position: fixed;
     bottom: 0;
-    right: 0;
-    width: 100%;
+    right: var(--first-steps-offset);
+    width: calc(100% - var(--first-steps-offset));
     border-top: 1px solid var(--color-grey-3, #E1E7EF);
     background: var(--guardian-background, #FFF);
 

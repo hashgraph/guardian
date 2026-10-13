@@ -1,5 +1,15 @@
 import { ApiResponse } from './helpers/api-response.js';
-import { BinaryMessageResponse, DatabaseServer, MessageAction, MessageError, MessageResponse, MessageServer, NewNotifier, PinoLogger, PolicyStatistic, PolicyStatisticImportExport, StatisticAssessmentMessage, StatisticMessage, Users } from '@guardian/common';
+import { BinaryMessageResponse, MessageError, MessageResponse } from '@guardian/common/models/message-response';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { NewNotifier } from '@guardian/common/notification/notifier';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { PolicyStatistic } from '@guardian/common/entity/policy-statistic';
+import { PolicyStatisticImportExport } from '@guardian/common/import-export/policy-statistic';
+import { Users } from '@guardian/common/helpers/users';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { StatisticAssessmentMessage } from '@guardian/hedera/message/statistic-assessment-message';
+import { StatisticMessage } from '@guardian/hedera/message/statistic-message';
 import {
     EntityStatus,
     GenerateUUIDv4,

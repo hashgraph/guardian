@@ -2,7 +2,11 @@ import assert from 'node:assert/strict';
 import { AISuggestions } from '../../dist/helpers/ai-suggestions.js';
 import { MessageAPI } from '@guardian/interfaces';
 
-const request = { schemaId: 'schema-1', fieldNames: ['fieldName'] };
+const request = {
+    schemaId: 'schema-1',
+    schema: { name: 'Schema', fields: [{ name: 'fieldName' }] },
+    fieldNames: ['fieldName'],
+};
 const originalTimeoutEnv = process.env.GLOSSARY_AI_TIMEOUT_MS;
 
 afterEach(() => {
@@ -83,6 +87,24 @@ describe('AISuggestions.getPropertySuggestions', () => {
         const res = await svc.getPropertySuggestions(request);
 
         assert.deepEqual(res, { available: false, results: [] });
+    });
+
+    it('forwards a request with no schemaId (unsaved schema) unchanged, using the live schema state', async () => {
+        const liveRequest = {
+            schema: { name: 'Unsaved schema', fields: [{ name: 'fieldName' }] },
+            fieldNames: ['fieldName'],
+        };
+        const calls = [];
+        const svc = stubRequestOrThrow(async (subject, data, timeout) => {
+            calls.push({ subject, data, timeout });
+            return { available: true, results: [{ fieldName: 'fieldName', candidates: [] }] };
+        });
+
+        const res = await svc.getPropertySuggestions(liveRequest);
+
+        assert.deepEqual(res, { available: true, results: [{ fieldName: 'fieldName', candidates: [] }] });
+        assert.deepEqual(calls[0].data, liveRequest);
+        assert.equal(calls[0].data.schemaId, undefined);
     });
 
     it('rethrows unexpected errors', async () => {

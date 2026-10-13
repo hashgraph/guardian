@@ -1,4 +1,6 @@
-import { NatsService, Policy, Singleton } from '@guardian/common';
+import { Singleton } from '@guardian/common/decorators/singleton';
+import { Policy } from '@guardian/common/entity/policy';
+import { NatsService } from '@guardian/common/mq/nats-service';
 import { GenerateUUIDv4, MessageAPI, PolicyEngineEvents } from '@guardian/interfaces';
 
 /**
@@ -53,21 +55,6 @@ export class AISuggestionsDB extends NatsService {
             throw new Error('Invalid AI response');
         }
         if (res.error) {
-            throw new Error(res.error);
-        }
-        return res;
-    }
-
-    /**
-     * Get a full schema by id, so suggestions can always be computed from the
-     * authoritative schema rather than whatever subset the client sends.
-     * @param id Schema id
-     * @returns Raw schema, or null if no schema with that id exists
-     */
-    public async getSchemaById(id: string): Promise<any> {
-        const res = (await this.sendMessage(MessageAPI.GET_SCHEMA, { id })) as any;
-
-        if (res?.error) {
             throw new Error(res.error);
         }
         return res;

@@ -7663,6 +7663,7 @@ export const ObjectExamples = {
             active: true,
             did: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
             username: 'Administrator',
+            role: 'Administrator',
             hederaAccountId: '0.0.6046379',
             id: '69c83b92cebecbe1c023104d'
         },
@@ -7670,6 +7671,7 @@ export const ObjectExamples = {
             active: false,
             did: 'did:hedera:testnet:DoabcYQtNM3kqxAv6DiWadYRF6LYNqGX85ZtZFZibjTA_0.0.8417999',
             username: 'Virtual User 2',
+            role: 'Project Proponent',
             hederaAccountId: '0.0.1774730673941',
             id: '69c83db1cebecbe1c0231117'
         }
@@ -7686,6 +7688,7 @@ export const ObjectExamples = {
             active: false,
             did: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
             username: 'Administrator',
+            role: 'Administrator',
             hederaAccountId: '0.0.6046379',
             id: '69c83b92cebecbe1c023104d'
         },
@@ -7693,6 +7696,7 @@ export const ObjectExamples = {
             active: true,
             did: 'did:hedera:testnet:9VywBBXBtcV2RW7Whak6aJ9GR7PsKsiJaymAeWnBVvUB_0.0.8417999',
             username: 'Virtual User 1',
+            role: 'Project Proponent',
             hederaAccountId: '0.0.1774731899661',
             id: '69c8427bcebecbe1c02311eb'
         }
@@ -8312,6 +8316,7 @@ export const ObjectExamples = {
             active: false,
             did: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
             username: 'Administrator',
+            role: 'Administrator',
             hederaAccountId: '0.0.6046379',
             id: '69c8f0fa81910b160912d236'
         },
@@ -8319,6 +8324,7 @@ export const ObjectExamples = {
             active: true,
             did: 'did:hedera:testnet:F6Euo3PPrDtm5J2VjDfYs6JSyTgn8BvJuqjhM2GW38rN_0.0.8417999',
             username: 'Virtual User 1',
+            role: null,
             hederaAccountId: '0.0.1774777687871',
             id: '69c8f557fd6d97ee3534e2b1'
         }

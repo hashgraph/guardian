@@ -31,10 +31,14 @@ tags:
     \
     The supported settings are:
 
-* **Change schema settings** (`schemaSettingsLocked`): locks schema name, description, and entity type.
-* **Can add custom fields** (`customFieldsLocked`): prevents adding custom fields to the schema.
-* **Can edit selected field** (`fields[fieldId].locked`): prevents editing and removing an individual template field.
+* **Lock schema settings** (`schemaSettingsLocked`): locks schema name, description, and entity type.
+* **Lock custom fields** (`customFieldsLocked`): prevents adding custom fields to the schema.
+* **Lock custom conditions** (`conditionsLocked`): prevents adding new conditions. Add-only - it does not block editing or removing an existing condition.
+* **Lock custom repeatable links** (`repeatableLinksLocked`): prevents adding new repeatable field links. Add-only - it does not block editing or removing an existing link.
+* **Lock field editing** (`fields[fieldId].locked`): prevents editing and removing an individual template field.
   * Template-owned fields are locked by default; set `locked: false` explicitly to allow policy users to edit or remove the field.
+* **Lock this condition** (`conditions[signature].locked`): prevents editing and removing an individual condition. Conditions are unlocked by default; set `locked: true` to lock one.
+* **Lock this repeatable link** (`repeatableLinks[fieldId].locked`): prevents editing and removing an individual repeatable field link. Links are unlocked by default; set `locked: true` to lock one.
 * **Guidelines** (`guidelines`): adds schema-level or field-level notes that are shown in the policy schema editor after the template is applied.
 
 ### Result

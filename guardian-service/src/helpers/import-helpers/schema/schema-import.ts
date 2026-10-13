@@ -3,6 +3,7 @@ import {
     IOwner,
     IRootConfig,
     ISchema,
+    ModelHelper,
     ModuleStatus,
     Schema,
     SchemaCategory,
@@ -11,20 +12,18 @@ import {
     TopicType,
     resolveIwaVersion,
 } from '@guardian/interfaces';
-import {
-    DatabaseServer,
-    PinoLogger,
-    MessageAction,
-    MessageServer,
-    MessageType,
-    replaceValueRecursive,
-    SchemaConverterUtils,
-    TagMessage,
-    TopicConfig,
-    TopicHelper,
-    Users,
-    INotificationStep
-} from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { replaceValueRecursive } from '@guardian/common/helpers/utils';
+import { SchemaConverterUtils } from '@guardian/common/helpers/schema-converter-utils';
+import { Users } from '@guardian/common/helpers/users';
+import { INotificationStep } from '@guardian/common/notification/notification-step.interface';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { MessageType } from '@guardian/hedera/message/message-type';
+import { TagMessage } from '@guardian/hedera/message/tag-message';
+import { TopicConfig } from '@guardian/hedera/topic';
+import { TopicHelper } from '@guardian/hedera/topic-helper';
 import { ImportSchemaError, ImportSchemaMap, ImportSchemaOptions, ImportSchemaResult } from './schema-import.interface.js';
 import geoJson from '@guardian/interfaces/dist/helpers/geojson-schema/geo-json.js';
 import sentinelHub from '@guardian/interfaces/dist/helpers/sentinel-hub/sentinel-hub-schema.js';
@@ -408,6 +407,19 @@ export class SchemaImport {
 
                 SchemaHelper.updateOwner(schemaObject, user);
                 const row = schemaForUpdate;
+                const previousIri = row.iri;
+                const previousUuid = row.uuid;
+                const previousVersion = row.version || SchemaHelper.getVersion(row)?.version || row.sourceVersion || SchemaHelper.getVersion(row)?.previousVersion || '';
+                let newVersion = (file.sourceVersion || schemaObject.sourceVersion || row.version || '').trim();
+                if (newVersion && !ModelHelper.checkVersionFormat(newVersion)) {
+                    this.errors.push({
+                        type: 'schema',
+                        uuid: row.uuid,
+                        name: row.name,
+                        error: `Invalid version "${newVersion}" ignored on import, previous version "${previousVersion}" kept.`
+                    });
+                    newVersion = previousVersion;
+                }
                 if (!row || row.owner !== user.owner) {
                     throw new Error('Invalid schema');
                 }
@@ -422,14 +434,21 @@ export class SchemaImport {
                     ? SchemaStatus.ERROR
                     : SchemaStatus.DRAFT;
                 row.errors = dependencyError ? errors : [];
-                SchemaHelper.setVersion(row, null, row.version);
+                SchemaHelper.setVersion(row, newVersion, previousVersion);
                 SchemaHelper.updateIRI(row);
                 await DatabaseServer.updateSchema(row.id, row);
                 await updateSchemaDefs(row.iri);
                 this.schemasMapping[index].newID = row.id;
+                this.schemasMapping[index].oldIRI = previousIri || this.schemasMapping[index].oldIRI;
+                this.schemasMapping[index].oldUUID = previousUuid || this.schemasMapping[index].oldUUID;
+                this.schemasMapping[index].newIRI = row.iri;
+                this.schemasMapping[index].newUUID = row.uuid;
 
                 if (file.iri !== row.iri) {
                     updatedSchemasIriMap.set(file.iri, row.iri);
+                }
+                if (previousIri && previousIri !== row.iri) {
+                    updatedSchemasIriMap.set(previousIri, row.iri);
                 }
 
             } else {

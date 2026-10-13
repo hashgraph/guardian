@@ -1,11 +1,8 @@
 import { ApiResponse } from './helpers/api-response.js';
-import {
-    DatabaseServer,
-    IAuthUser,
-    MessageError,
-    MessageResponse,
-    PinoLogger,
-} from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
 import { AssignedEntityType, MessageAPI } from '@guardian/interfaces';
 
 /**

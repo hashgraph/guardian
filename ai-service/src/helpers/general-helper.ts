@@ -1,5 +1,6 @@
 import { Methodology } from '../models/models.js';
-import { Policy, PolicyCategory } from '@guardian/common';
+import { Policy } from '@guardian/common/entity/policy';
+import { PolicyCategory } from '@guardian/common/entity/policy-category';
 
 export function GetMehodologiesByPolicies(responseText: string, policies: Policy[]) {
     const methodologies: Methodology[] = [];

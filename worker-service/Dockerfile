@@ -15,16 +15,19 @@ COPY --link --parents */package.json ./
 RUN --mount=type=cache,target=/root/.yarn/berry/cache,sharing=private \
     yarn install --immutable
 
-# Stage 2: Build interfaces -> common -> worker-service.
+# Stage 2: Build interfaces -> common -> hedera -> worker-service.
 FROM deps-dev AS build
 COPY --link interfaces/tsconfig*.json interfaces/
 COPY --link interfaces/src interfaces/src/
 COPY --link common/tsconfig*.json common/
 COPY --link common/src common/src/
+COPY --link hedera/tsconfig*.json hedera/
+COPY --link hedera/src hedera/src/
 COPY --link worker-service/tsconfig*.json worker-service/
 COPY --link worker-service/src worker-service/src/
 RUN yarn workspace @guardian/interfaces run build \
  && yarn workspace @guardian/common run build \
+ && yarn workspace @guardian/hedera run build \
  && yarn workspace worker-service run build:prod
 
 # Stage 3: FOCUSED production install for the target arch, run on the
@@ -52,6 +55,8 @@ COPY --link --from=build /usr/local/app/interfaces/package.json interfaces/
 COPY --link --from=build /usr/local/app/interfaces/dist interfaces/dist/
 COPY --link --from=build /usr/local/app/common/package.json common/
 COPY --link --from=build /usr/local/app/common/dist common/dist/
+COPY --link --from=build /usr/local/app/hedera/package.json hedera/
+COPY --link --from=build /usr/local/app/hedera/dist hedera/dist/
 COPY --link --from=build /usr/local/app/worker-service/package.json worker-service/
 COPY --link --from=build /usr/local/app/worker-service/dist worker-service/dist/
 

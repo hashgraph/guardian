@@ -1,5 +1,9 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { DatabaseServer, getArtifactExtention, getArtifactType, IAuthUser, MessageError, MessageResponse, PinoLogger } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { getArtifactExtention, getArtifactType } from '@guardian/common/helpers/utils';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
 import { IOwner, MessageAPI, ModuleStatus, PolicyStatus } from '@guardian/interfaces';
 
 export async function getParent(parentId: string) {

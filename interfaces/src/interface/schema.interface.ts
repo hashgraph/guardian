@@ -138,6 +138,11 @@ export interface ISchema {
     errors?: any[];
 
     /**
+     * Schema definitions referenced by the document.
+     */
+    defs?: string[];
+
+    /**
      * Topic count
      */
     topicCount?: number;

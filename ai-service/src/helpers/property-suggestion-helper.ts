@@ -4,7 +4,7 @@ import {
     IPropertySuggestionFieldInput,
     IPropertySuggestionResult
 } from '@guardian/interfaces';
-import { PinoLogger } from '@guardian/common';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
 
 const promptTemplate = `You are assisting with tagging schema fields to standardized IWA glossary properties. Your responses always JSON only (see "example of response"). No additional text, no explanation of the reasoning.
 
@@ -29,18 +29,17 @@ Example of response:
 {
   "results": [
     {
-      "field": "...",
+      "fieldName": "...",
       "candidates": [
         {
-          "property": "...",
+          "title": "...",
           "confidence": ...,
           "reasonCode": "..."
-        }
+        },
+        ...
       ]
     },
     ...
-      ]
-    }
   ]
 }
 `;
@@ -60,6 +59,28 @@ const RATIONALE_TEMPLATES: Record<RationaleReasonCode, (fieldName: string, prope
 function renderRationale(reasonCode: string, fieldName: string, propertyTitle: string): string {
     const template = RATIONALE_TEMPLATES[reasonCode as RationaleReasonCode] || RATIONALE_TEMPLATES.name;
     return template(fieldName, propertyTitle);
+}
+
+const MAX_LOGGED_STRING_LENGTH = 50;
+const MAX_LOGGED_ARRAY_ITEMS = 5;
+
+/**
+ * Serializes a value for logging, shortening long strings and large arrays
+ * so the output stays valid JSON (unlike truncating the serialized text).
+ */
+export function stringifyForLog(value: unknown): string {
+    return JSON.stringify(value, (_key, item) => {
+        if (typeof item === 'string' && item.length > MAX_LOGGED_STRING_LENGTH) {
+            return item.slice(0, MAX_LOGGED_STRING_LENGTH - 3) + '...';
+        }
+        if (Array.isArray(item) && item.length > MAX_LOGGED_ARRAY_ITEMS) {
+            return [
+                ...item.slice(0, MAX_LOGGED_ARRAY_ITEMS),
+                `... +${item.length - MAX_LOGGED_ARRAY_ITEMS} more`
+            ];
+        }
+        return item;
+    });
 }
 
 export class PropertySuggestionConnect {
@@ -159,8 +180,9 @@ export class PropertySuggestionConnect {
             );
             throw error;
         }
+
         await logger?.info(
-            `[GLOSSARY_AI] LLM response after ${Date.now() - modelStartedAt}ms: ${JSON.stringify(response)}`,
+            `[GLOSSARY_AI] LLM response after ${Date.now() - modelStartedAt}ms: ${stringifyForLog(response)}`,
             ['AI_SERVICE']
         );
 
@@ -168,6 +190,15 @@ export class PropertySuggestionConnect {
 
         const resultsByField = new Map<string, IPropertySuggestionCandidate[]>();
         for (const item of (response?.results || [])) {
+            // Gives a warning if basic checks don't pass. The output parser does not validate a plain JSON schema and,
+            // in case ofwrong result, the filter below returns an empty - but successful - response.
+            if (!item || !targets.includes(item.fieldName)) {
+                await logger?.warn(
+                    `[GLOSSARY_AI] dropping a result with a missing or non-target fieldName: ${JSON.stringify(item?.fieldName)}`,
+                    ['AI_SERVICE']
+                );
+                continue;
+            }
             // Defensive re-filter: the enum makes a hallucinated title unlikely, not impossible.
             const seenTitles = new Set<string>();
             const currentProperty = currentPropertyByField.get(item.fieldName);

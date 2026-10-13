@@ -35,6 +35,7 @@ export class PolicyTemplate {
     public readonly synchronizationTopicId!: string;
     public readonly messageId!: string;
     public readonly version!: string;
+    public readonly discontinuedDate?: string;
     public readonly previousVersion!: string;
     public readonly tests!: any;
     public policyDocumentation!: any[];
@@ -70,6 +71,7 @@ export class PolicyTemplate {
 
     public readonly isDraft: boolean = false;
     public readonly isPublished: boolean = false;
+    public readonly isDiscontinued: boolean = false;
     public readonly isDryRun: boolean = false;
     public readonly readonly: boolean = false;
     public readonly isPublishError: boolean = false;
@@ -99,6 +101,7 @@ export class PolicyTemplate {
         this.synchronizationTopicId = policy.synchronizationTopicId;
         this.messageId = policy.messageId;
         this.version = policy.version;
+        this.discontinuedDate = policy.discontinuedDate;
         this.previousVersion = policy.previousVersion;
         this.tests = policy.tests;
         this.editableParametersSettings = policy.editableParametersSettings;
@@ -109,6 +112,7 @@ export class PolicyTemplate {
 
         this.isDraft = this.status === PolicyStatus.DRAFT;
         this.isPublished = this.status === PolicyStatus.PUBLISH || this.status === PolicyStatus.DISCONTINUED;
+        this.isDiscontinued = this.status === PolicyStatus.DISCONTINUED;
         this.isDryRun = this.status === PolicyStatus.DRY_RUN;
         this.isPublishError = this.status === PolicyStatus.PUBLISH_ERROR;
         this.isDemo = this.status === PolicyStatus.DEMO;

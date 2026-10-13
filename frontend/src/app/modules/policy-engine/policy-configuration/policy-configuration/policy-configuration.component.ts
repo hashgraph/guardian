@@ -55,6 +55,7 @@ import { PolicyApiConfigDialogComponent } from '../../dialogs/policy-api-config-
     selector: 'app-policy-configuration',
     templateUrl: './policy-configuration.component.html',
     styleUrls: [
+        '../../styles/top-toolbar.scss',
         './policy-configuration.component.scss',
         '../../styles/properties.scss'
     ],
@@ -2603,7 +2604,10 @@ export class PolicyConfigurationComponent implements OnInit {
             showHeader: false,
             header: 'Publish Tool',
             width: '600px',
-            styleClass: 'guardian-dialog'
+            styleClass: 'guardian-dialog',
+            data: {
+                tool: this.toolTemplate
+            }
         })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (options) => {
             if (options) {

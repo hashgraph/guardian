@@ -20,43 +20,36 @@ import {
     IgnoreRule,
     ModuleStatus
 } from '@guardian/interfaces';
-import {
-    Artifact,
-    DatabaseServer,
-    findAllEntities,
-    FormulaImportExport,
-    getArtifactType,
-    INotificationStep,
-    IPFS,
-    IPolicyComponents,
-    MessageAction,
-    MessageServer,
-    MessageType,
-    MockEntityType,
-    MockHelper,
-    MultiPolicy,
-    NatsService,
-    NewNotifier,
-    NotificationHelper, PinoLogger,
-    Policy,
-    PolicyImportExport,
-    PolicyMessage,
-    replaceAllEntities,
-    replaceAllVariables,
-    replaceArtifactProperties,
-    Schema as SchemaCollection,
-    SchemaFields,
-    SchemaMessage,
-    Singleton,
-    SynchronizationMessage,
-    Token,
-    TokenMessage,
-    Topic,
-    TopicConfig,
-    TopicHelper,
-    Users,
-    VcHelper
-} from '@guardian/common';
+import { Artifact } from '@guardian/common/entity/artifact';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { findAllEntities, getArtifactType, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, SchemaFields } from '@guardian/common/helpers/utils';
+import { FormulaImportExport } from '@guardian/common/import-export/formula';
+import { INotificationStep } from '@guardian/common/notification/notification-step.interface';
+import { IPFS } from '@guardian/common/helpers/ipfs';
+import { IPolicyComponents, PolicyImportExport } from '@guardian/common/import-export/policy';
+import { MockEntityType } from '@guardian/common/helpers/mock-types';
+import { MultiPolicy } from '@guardian/common/entity/multi-policy';
+import { NatsService } from '@guardian/common/mq/nats-service';
+import { NewNotifier } from '@guardian/common/notification/notifier';
+import { NotificationHelper } from '@guardian/common/notification/notification-helper';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { Policy } from '@guardian/common/entity/policy';
+import { Schema as SchemaCollection } from '@guardian/common/entity/schema';
+import { Singleton } from '@guardian/common/decorators/singleton';
+import { Token } from '@guardian/common/entity/token';
+import { Topic } from '@guardian/common/entity/topic';
+import { Users } from '@guardian/common/helpers/users';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { MessageType } from '@guardian/hedera/message/message-type';
+import { MockHelper } from '@guardian/hedera/mock-service';
+import { PolicyMessage } from '@guardian/hedera/message/policy-message';
+import { SchemaMessage } from '@guardian/hedera/message/schema-message';
+import { SynchronizationMessage } from '@guardian/hedera/message/synchronization-message';
+import { TokenMessage } from '@guardian/hedera/message/token-message';
+import { TopicConfig } from '@guardian/hedera/topic';
+import { TopicHelper } from '@guardian/hedera/topic-helper';
+import { VcHelper } from '@guardian/hedera/vc-helper';
 import {
     deleteDemoSchema,
     deleteSchema,
@@ -1772,7 +1765,7 @@ export class PolicyEngine extends NatsService {
             const modelToPublish = Object.assign(Object.create(Object.getPrototypeOf(model)), model);
             modelToPublish.config = configToPublish;
 
-            const zip = await PolicyImportExport.generate(modelToPublish, schemaPackageDocuments);
+            const zip = await PolicyImportExport.generate(modelToPublish, new VcHelper(), schemaPackageDocuments);
             const buffer = await zip.generateAsync({
                 type: 'arraybuffer',
                 compression: 'DEFLATE',
@@ -2021,7 +2014,7 @@ export class PolicyEngine extends NatsService {
 
         //Send Message
         notifier.startStep(STEP_PUBLISH_MESSAGE);
-        const zip = await PolicyImportExport.generate(model);
+        const zip = await PolicyImportExport.generate(model, new VcHelper());
         const buffer = await zip.generateAsync({
             type: 'arraybuffer',
             compression: 'DEFLATE',

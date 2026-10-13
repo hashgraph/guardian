@@ -21,7 +21,8 @@ import {
     ExternalEventType,
 } from '../interfaces/external-event.js';
 import { PolicyUtils } from '../helpers/utils.js';
-import { NotificationHelper, Users } from '@guardian/common';
+import { NotificationHelper } from '@guardian/common/notification/notification-helper';
+import { Users } from '@guardian/common/helpers/users';
 import {
     LocationType,
     NotificationAction,

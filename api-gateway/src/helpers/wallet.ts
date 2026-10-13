@@ -1,6 +1,6 @@
 import { Singleton } from '../helpers/decorators/singleton.js';
 import { GenerateUUIDv4, IWalletAccount, WalletEvents } from '@guardian/interfaces';
-import { NatsService } from '@guardian/common';
+import { NatsService } from '@guardian/common/mq/nats-service';
 
 /**
  * Key types

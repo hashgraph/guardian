@@ -1,4 +1,4 @@
-import { Users } from '@guardian/common';
+import { Users } from '@guardian/common/helpers/users';
 import type { OrgTokenPermission } from '@guardian/interfaces';
 import { BlockActionError } from '../errors/index.js';
 import { getOrgTokenPermissionError } from './org-token-permission.js';

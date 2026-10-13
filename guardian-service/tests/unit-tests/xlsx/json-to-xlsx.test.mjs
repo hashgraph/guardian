@@ -80,6 +80,13 @@ describe('JsonToXlsx.generate README worksheet', function () {
         assert.equal(readme.getValue(1, 1), 'README from template');
         assert.notInclude(workbook.sheetNames, 'Schema name');
     });
+
+    it('round-trips schema version metadata', async function () {
+        const buffer = await JsonToXlsx.generate([makeSchema({ version: '1.0.1' })], [], []);
+        const result = await XlsxToJson.parse(Buffer.from(buffer));
+
+        assert.equal(result.xlsxSchemas[0].schema.version, '1.0.1');
+    });
 });
 
 // ---------------------------------------------------------------------------

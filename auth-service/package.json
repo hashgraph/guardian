@@ -2,10 +2,11 @@
     "author": "Hashgraph <guardian@hashgraph.com>",
     "dependencies": {
         "@guardian/common": "workspace:*",
+        "@guardian/hedera": "workspace:*",
         "@guardian/interfaces": "workspace:*",
-        "@mikro-orm/core": "6.6.16",
-        "@mikro-orm/migrations-mongodb": "6.6.16",
-        "@mikro-orm/mongodb": "6.6.16",
+        "@mikro-orm/core": "6.6.17",
+        "@mikro-orm/migrations-mongodb": "6.6.17",
+        "@mikro-orm/mongodb": "6.6.17",
         "@nestjs/common": "^11.1.24",
         "@nestjs/core": "^11.1.24",
         "@nestjs/microservices": "^11.1.24",
@@ -23,7 +24,7 @@
     "description": "",
     "devDependencies": {
         "@types/jsonwebtoken": "9.0.10",
-        "@types/node": "24.13.6",
+        "@types/node": "24.19.2",
         "@types/node-vault": "0.9.13",
         "chai": "^4.3.7",
         "esmock": "^2.6.7",
@@ -59,8 +60,8 @@
         "dev:docker": "nodemon .",
         "lint": "tslint --config ../tslint.json --project .",
         "start": "node dist/index.js",
-        "test": "mocha tests/**/*.test.mjs --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/auth-service.xml --exit"
+        "test": "mocha 'tests/**/*.test.mjs' --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/auth-service.xml --exit"
     },
     "type": "module",
-    "version": "3.7.1-rc"
+    "version": "3.7.1"
 }

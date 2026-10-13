@@ -15,6 +15,8 @@ interface SchemaTemplateDiffGroup {
     schemaName: string;
     schemaChanges: SchemaTemplateUpdatePreview['changes'];
     fieldChanges: SchemaTemplateUpdatePreview['changes'];
+    conditionChanges: SchemaTemplateUpdatePreview['changes'];
+    linkChanges: SchemaTemplateUpdatePreview['changes'];
     changesCount: number;
 }
 
@@ -265,12 +267,18 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
                     schemaName: key,
                     schemaChanges: [],
                     fieldChanges: [],
+                    conditionChanges: [],
+                    linkChanges: [],
                     changesCount: 0
                 });
             }
             const group = groups.get(key)!;
             if (this.isSchemaChange(change.type)) {
                 group.schemaChanges.push(change);
+            } else if (this.isConditionChange(change.type)) {
+                group.conditionChanges.push(change);
+            } else if (this.isLinkChange(change.type)) {
+                group.linkChanges.push(change);
             } else {
                 group.fieldChanges.push(change);
             }
@@ -281,6 +289,14 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
 
     public isSchemaChange(type: string): boolean {
         return type.startsWith('SCHEMA');
+    }
+
+    public isConditionChange(type: string): boolean {
+        return type.startsWith('CONDITION');
+    }
+
+    public isLinkChange(type: string): boolean {
+        return type.startsWith('REPEATABLE_LINK');
     }
 
     public isAddChange(type: string): boolean {
@@ -299,6 +315,8 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
         switch (type) {
             case 'SCHEMA_ADD':
             case 'FIELD_ADD':
+            case 'CONDITION_ADD':
+            case 'REPEATABLE_LINK_ADD':
                 return 'Added';
             case 'SCHEMA_UPDATE':
             case 'FIELD_UPDATE':
@@ -307,6 +325,7 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
             case 'FIELD_REMOVE':
             case 'CUSTOM_FIELD_REMOVE':
             case 'CONDITION_REMOVE':
+            case 'REPEATABLE_LINK_REMOVE':
                 return 'Removed';
             case 'CUSTOM_FIELD_PRESERVE':
                 return 'Preserved';
@@ -319,11 +338,14 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
         switch (type) {
             case 'SCHEMA_ADD':
             case 'FIELD_ADD':
+            case 'CONDITION_ADD':
+            case 'REPEATABLE_LINK_ADD':
                 return 'green';
             case 'SCHEMA_REMOVE':
             case 'FIELD_REMOVE':
             case 'CUSTOM_FIELD_REMOVE':
             case 'CONDITION_REMOVE':
+            case 'REPEATABLE_LINK_REMOVE':
                 return 'red';
             case 'CUSTOM_FIELD_PRESERVE':
                 return 'blue';
@@ -341,7 +363,16 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
     }
 
     public getChangeScope(type: string): string {
-        return type.startsWith('SCHEMA') ? 'Schema' : 'Field Name';
+        if (type.startsWith('SCHEMA')) {
+            return 'Schema';
+        }
+        if (this.isConditionChange(type)) {
+            return 'Condition';
+        }
+        if (this.isLinkChange(type)) {
+            return 'Repeatable Link';
+        }
+        return 'Field Name';
     }
 
     public onClose(): void {
