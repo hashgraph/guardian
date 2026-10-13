@@ -14,8 +14,11 @@ const ACTIONS_UTILS = '../../../dist/policy-engine/policy-actions/utils.js';
 async function makeService({ policyUser, request = null } = {}) {
     const calls = { executed: [], validated: [], callbacks: [], errors: [] };
     const { PolicyActionsService } = await esmock(SERVICE, {
-        '@guardian/common': {
+        '@guardian/common/helpers/db-helper': {
             DataBaseHelper: class {
+                static orm = {
+                    em: { getCollection: () => ({ updateOne: async () => ({ modifiedCount: 1 }) }) },
+                };
                 async findOne() { return request; }
             },
         },
