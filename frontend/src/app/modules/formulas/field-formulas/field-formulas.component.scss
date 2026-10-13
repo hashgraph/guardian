@@ -1,0 +1,138 @@
+.field-formulas {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.formula {
+    background: #fff;
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(35, 37, 46, 0.06);
+}
+
+.formula-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px 10px 16px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.formula-icon {
+    width: 20px;
+    height: 20px;
+    flex: none;
+    color: var(--color-primary, #4169E2);
+    opacity: 0.8;
+}
+
+.formula-math {
+    flex: 1;
+    overflow-x: auto;
+    font-size: 18px;
+    min-height: 28px;
+    display: flex;
+    align-items: center;
+    color: var(--guardian-font-color, #23252E);
+}
+
+.formula-text {
+    font-size: 14px;
+}
+
+.chevron {
+    width: 28px;
+    height: 28px;
+    flex: none;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-grey-5, #848FA9);
+    transition: transform 0.15s;
+}
+
+.formula-head:hover .chevron {
+    background: #EEF2FC;
+    color: var(--color-primary, #4169E2);
+}
+
+.formula.open .chevron {
+    transform: rotate(180deg);
+}
+
+.formula-body {
+    border-top: 1px solid var(--guardian-border-color, #E1E7EF);
+    padding: 12px 16px 14px;
+}
+
+.formula-name {
+    font-family: Poppins, sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--guardian-font-color, #23252E);
+}
+
+.formula-desc {
+    font-size: 13px;
+    color: var(--color-grey-5, #848FA9);
+    margin-top: 2px;
+    line-height: 1.45;
+}
+
+.vars-title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-grey-5, #848FA9);
+    margin: 14px 0 6px;
+}
+
+table.vars {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+
+    td {
+        padding: 6px 8px;
+        border-top: 1px solid #F0F2F7;
+        vertical-align: middle;
+    }
+
+    td.sym {
+        width: 140px;
+        font-size: 15px;
+        white-space: nowrap;
+    }
+
+    td.kind {
+        width: 80px;
+        color: var(--color-grey-5, #848FA9);
+        font-size: 12px;
+    }
+
+    td.val {
+        width: 120px;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+    }
+}
+
+.details-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-primary, #4169E2);
+    cursor: pointer;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}

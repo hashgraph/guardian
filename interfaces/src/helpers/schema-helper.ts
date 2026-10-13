@@ -1,4 +1,4 @@
-import { GenerateUUIDv4, IOwner, ISchema, ISchemaDocument, SchemaCondition, SchemaField, SchemaFieldPredicate, SchemaPredicateComparator, ISchemaArrayDependency } from '../index.js';
+import { GenerateUUIDv4, IOwner, ISchema, ISchemaDocument, SchemaCondition, SchemaIfCondition, SchemaField, SchemaFieldPredicate, SchemaPredicateComparator, ISchemaArrayDependency } from '../index.js';
 
 import { SchemaDataTypes } from '../interface/schema-document.interface.js';
 import { IIwaFieldRemap, IIwaUpgradeReport, mapIwaPathV1ToV3 } from '../type/iwa-version.type.js';
@@ -907,6 +907,93 @@ export class SchemaHelper {
     }
 
     /**
+     * Resolve the value(s) a predicate path points at in a document.
+     * Arrays met mid-path are indexed by `entries` (array path, dot-joined, to entry index);
+     * with `anyEntry` every element is visited; otherwise the array is not traversed.
+     * @param data document
+     * @param path field path
+     * @param entries array path to entry index
+     * @param anyEntry visit every array element
+     * @returns candidate values
+     */
+    public static resolveConditionValues(
+        data: any,
+        path: string[],
+        entries?: Record<string, number> | null,
+        anyEntry: boolean = false
+    ): any[] {
+        let nodes: any[] = [data];
+        for (let i = 0; i < path.length; i++) {
+            const next: any[] = [];
+            for (const node of nodes) {
+                if (node === null || node === undefined || typeof node !== 'object') {
+                    next.push(undefined);
+                    continue;
+                }
+                if (i > 0 && Array.isArray(node)) {
+                    const key = path.slice(0, i).join('.');
+                    if (entries && Object.prototype.hasOwnProperty.call(entries, key)) {
+                        next.push(node[entries[key]]?.[path[i]]);
+                        continue;
+                    }
+                    if (anyEntry) {
+                        for (const element of node) {
+                            if (element === null || element === undefined || typeof element !== 'object') {
+                                next.push(undefined);
+                            } else {
+                                next.push(element[path[i]]);
+                            }
+                        }
+                        continue;
+                    }
+                }
+                next.push(node[path[i]]);
+            }
+            nodes = next;
+        }
+        return nodes;
+    }
+
+    /**
+     * Evaluate an if-condition against a document.
+     * @param ifCondition predicate, `{ AND }` or `{ OR }`
+     * @param data document
+     * @param equalsFn equality used by predicates
+     * @param options array entry scoping
+     * @returns true if the condition matches
+     */
+    public static evaluateIfCondition(
+        ifCondition: SchemaIfCondition | null | undefined,
+        data: any,
+        equalsFn: (a: any, b: any) => boolean = SchemaHelper.valuesEqual,
+        options?: { entries?: Record<string, number> | null; anyEntry?: boolean }
+    ): boolean {
+        const ic: any = ifCondition;
+        const test = (p: any): boolean => {
+            const path = (p?.fieldPath?.length > 1) ? p.fieldPath : [p?.field?.name];
+            if (!path[0]) {
+                return false;
+            }
+            const candidates = SchemaHelper.resolveConditionValues(
+                data, path, options?.entries, !!options?.anyEntry
+            );
+            return candidates.some((v) =>
+                SchemaHelper.testPredicateValue(p?.comparator, v, p.fieldValue, equalsFn)
+            );
+        };
+        if (!ic) {
+            return false;
+        }
+        if (Array.isArray(ic.AND)) {
+            return ic.AND.length > 0 && ic.AND.every(test);
+        }
+        if (Array.isArray(ic.OR)) {
+            return ic.OR.some(test);
+        }
+        return test(ic);
+    }
+
+    /**
      * Validate the fields a schema's conditions reveal against a submitted document.
      *
      * `buildDocument` declares the shape of every branch but does not mark branch fields
@@ -928,38 +1015,10 @@ export class SchemaHelper {
             return errors;
         }
 
-        const resolve = (path: string[]): any => {
-            let node: any = data;
-            for (const segment of path) {
-                if (node === null || node === undefined || typeof node !== 'object') {
-                    return undefined;
-                }
-                node = node[segment];
-            }
-            return node;
-        };
         const present = (value: any): boolean =>
             value !== undefined && value !== null && value !== '';
-        const test = (p: any): boolean => {
-            const path = (p?.fieldPath?.length > 1) ? p.fieldPath : [p?.field?.name];
-            if (!path[0]) {
-                return false;
-            }
-            return SchemaHelper.testPredicateValue(p?.comparator, resolve(path), p.fieldValue);
-        };
-        const evaluate = (condition: SchemaCondition): boolean => {
-            const ic: any = condition?.ifCondition;
-            if (!ic) {
-                return false;
-            }
-            if (Array.isArray(ic.AND)) {
-                return ic.AND.length > 0 && ic.AND.every(test);
-            }
-            if (Array.isArray(ic.OR)) {
-                return ic.OR.some(test);
-            }
-            return test(ic);
-        };
+        const evaluate = (condition: SchemaCondition): boolean =>
+            SchemaHelper.evaluateIfCondition(condition?.ifCondition, data);
 
         const revealMap = SchemaHelper.buildRevealMap(conditions);
         for (const condition of conditions) {

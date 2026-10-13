@@ -718,3 +718,43 @@
 .formula-item.cdk-drag-placeholder {
     opacity: 0.5;
 }
+.display-condition {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    width: 100%;
+
+    .display-condition-hint {
+        font-size: 12px;
+        color: var(--color-grey-5, #848FA9);
+    }
+
+    .display-condition-add,
+    .display-condition-remove {
+        background: none;
+        border: none;
+        padding: 0;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--color-primary, #4169E2);
+        cursor: pointer;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    .display-condition-remove {
+        margin-left: auto;
+    }
+
+    .display-condition-box {
+        width: 100%;
+        background: var(--guardian-background, #FFFFFF);
+        border: 1px solid var(--guardian-border-color, #E1E7EF);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+}

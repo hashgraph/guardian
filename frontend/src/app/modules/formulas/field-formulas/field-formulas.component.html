@@ -1,0 +1,56 @@
+<div class="field-formulas">
+  @for (item of items; track item.uuid) {
+    <div class="formula" [class.open]="isExpanded(item)">
+      <div class="formula-head" title="Show formula details" (click)="toggle(item)">
+        <svg-icon class="formula-icon" src="/assets/images/icons/function.svg" svgClass="formula-icon-svg"></svg-icon>
+        <div class="formula-math">
+          @if (item.type === 'formula') {
+            <span [latexMarkup]="item.value"></span>
+          } @else if (item.type === 'text') {
+            <span class="formula-text">{{item.value}}</span>
+          } @else {
+            <span class="formula-text">{{item.name}}</span>
+          }
+        </div>
+        <div class="chevron">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+      </div>
+      @if (isExpanded(item)) {
+        <div class="formula-body">
+          <div class="formula-name">{{item.name}}</div>
+          @if (item.description) {
+            <div class="formula-desc">{{item.description}}</div>
+          }
+          @if (item.relationshipItems.length) {
+            <div class="vars-title">Where</div>
+            <table class="vars">
+              @for (rel of item.relationshipItems; track rel.uuid) {
+                <tr>
+                  <td class="sym">
+                    @if (isPlainSymbol(rel.name)) {
+                      {{rel.name}}
+                    } @else {
+                      <span [latexMarkup]="rel.name"></span>
+                    }
+                  </td>
+                  <td class="kind">{{typeLabel(rel)}}</td>
+                  <td>{{rel.description}}</td>
+                  <td class="val">
+                    @if (rel.type === 'constant') {
+                      {{rel.value}}
+                    }
+                  </td>
+                </tr>
+              }
+            </table>
+          }
+          <a class="details-link" (click)="openDetails($event)">
+            Open details
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3h7v7M10 14L21 3M21 14v7H3V3h7"/></svg>
+          </a>
+        </div>
+      }
+    </div>
+  }
+</div>

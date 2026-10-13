@@ -27,6 +27,8 @@ import { FormulaConfigurationComponent } from './formula-configuration/formula-c
 import { NewFormulaDialog } from './dialogs/new-formula-dialog/new-formula-dialog.component';
 import { FormulasViewDialog } from './dialogs/formulas-view-dialog/formulas-view-dialog.component';
 import { UploadFormulaFileDialog } from './dialogs/upload-formula-file-dialog/upload-formula-file-dialog.component';
+import { FieldFormulasComponent } from './field-formulas/field-formulas.component';
+import { LatexMarkupDirective } from './latex-markup.directive';
 import { FormulasGraphTabComponent } from "./dialogs/formulas-view-dialog/formulas-graph-tab/formulas-graph-tab.component";
 
 @NgModule({
@@ -38,6 +40,8 @@ import { FormulasGraphTabComponent } from "./dialogs/formulas-view-dialog/formul
         FormulasViewDialog,
         UploadFormulaFileDialog,
         FormulasGraphTabComponent,
+        FieldFormulasComponent,
+        LatexMarkupDirective,
     ],
     imports: [
         CommonModule,
@@ -62,7 +66,9 @@ import { FormulasGraphTabComponent } from "./dialogs/formulas-view-dialog/formul
         AngularSvgIconModule.forRoot(),
     ],
     exports: [
-        FormulasViewDialog
+        FormulasViewDialog,
+        FieldFormulasComponent,
+        LatexMarkupDirective
     ],
     providers: [
         { provide: DialogService, useClass: GuardianDialogService },

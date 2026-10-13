@@ -6,6 +6,7 @@ import {
 import {
     FormulasTree,
     FormulaItem,
+    IFormulaConditionContext,
     SchemaItem,
 } from '../../../models/formula-tree';
 import {TreeGraphComponent} from 'src/app/modules/common/tree-graph/tree-graph.component';
@@ -43,6 +44,8 @@ export class FormulasGraphTabComponent implements OnChanges {
     public schema!: string;
     @Input()
     public path!: string;
+    @Input()
+    public context?: IFormulaConditionContext;
 
     public source: TreeSource<GraphNode> | null = null;
     private treeGraph: TreeGraphComponent | null = null;
@@ -81,7 +84,7 @@ export class FormulasGraphTabComponent implements OnChanges {
     }
 
     private buildGraph(tree: FormulasTree, schema: string, path: string): TreeSource<GraphNode> | null {
-        const items = tree.get(schema, path);
+        const items = tree.get(schema, path, this.context);
         if (!items?.length) {
             return null;
         }

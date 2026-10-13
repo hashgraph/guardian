@@ -1,6 +1,6 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IFormulaItem, FormulaItemType, IFormulaLink, Schema, UserPermissions, EntityStatus } from '@guardian/interfaces';
+import { IFormulaItem, FormulaItemType, IFormulaLink, Schema, SchemaField, UserPermissions, EntityStatus } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { FormulasService } from 'src/app/services/formulas.service';
@@ -11,6 +11,7 @@ import { MathLiveComponent } from '../../common/mathlive/mathlive.component';
 import { LinkDialog } from '../dialogs/link-dialog/link-dialog.component';
 import { Formulas } from '../models/formulas';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
+import { ConditionFieldGroup } from '../../common/condition-if-editor/condition-if-editor.component';
 import { UploadFormulaFileDialog } from '../dialogs/upload-formula-file-dialog/upload-formula-file-dialog.component';
 
 @Component({
@@ -171,6 +172,9 @@ export class FormulaConfigurationComponent implements OnInit {
             }
         }
 
+        this.linkGroupsCache.clear();
+        this.linkResolversCache.clear();
+        this.linkFirstEntryCache.clear();
         this.schemasMap.clear();
         this.schemasFieldMap.clear();
         for (const schema of this.schemas) {
@@ -336,9 +340,132 @@ export class FormulaConfigurationComponent implements OnInit {
         })!;
         dialogRef.onClose.subscribe((result: IFormulaLink | null) => {
             if (result) {
+                // keep the display condition only when the link still points at the same schema
+                const previous = item.link;
+                if (
+                    result.type === 'schema' &&
+                    previous?.type === 'schema' &&
+                    previous.entityId === result.entityId &&
+                    previous.condition
+                ) {
+                    result.condition = previous.condition;
+                } else {
+                    delete result.condition;
+                }
                 item.link = result
             }
         });
+    }
+
+    // ── Display condition of a schema link ───────────────────────────────────
+
+    private linkGroupsCache = new Map<string, ConditionFieldGroup[]>();
+    private linkResolversCache = new Map<string, (pathStr: string) => SchemaField | null>();
+    private linkFirstEntryCache = new Map<string, () => { field: SchemaField; fieldPath: string[] } | null>();
+
+    private findSchema(entityId: string): Schema | undefined {
+        return this.schemas?.find((s) => s.iri === entityId);
+    }
+
+    public getLinkFieldGroups(link: IFormulaLink): ConditionFieldGroup[] {
+        const entityId = link.entityId;
+        let groups = this.linkGroupsCache.get(entityId);
+        if (!groups) {
+            groups = this.buildLinkFieldGroups(this.findSchema(entityId));
+            this.linkGroupsCache.set(entityId, groups);
+        }
+        return groups;
+    }
+
+    private buildLinkFieldGroups(schema?: Schema): ConditionFieldGroup[] {
+        const result: ConditionFieldGroup[] = [];
+        if (!schema) {
+            return result;
+        }
+        const nestLabel = (name: string, depth: number) =>
+            depth <= 1 ? name : ' '.repeat((depth - 1) * 3) + '› ' + name;
+        const addGroups = (fields: SchemaField[], groupName: string, depth: number) => {
+            const items: { pathStr: string; label: string }[] = [];
+            for (const f of fields) {
+                if (f.readOnly || f.isRef) { continue; }
+                items.push({ pathStr: f.path || f.name, label: f.description || f.title || f.name });
+            }
+            if (items.length) {
+                result.push({ label: nestLabel(groupName, depth), items });
+            }
+            for (const f of fields) {
+                if (f.readOnly || !f.isRef || !Array.isArray(f.fields) || !f.fields.length) { continue; }
+                addGroups(f.fields, f.description || f.title || f.name, depth + 1);
+            }
+        };
+        addGroups(schema.fields || [], 'This schema', 0);
+        return result;
+    }
+
+    private snapshotField(field: SchemaField): SchemaField {
+        return {
+            name: field.name,
+            title: field.title,
+            description: field.description,
+            type: field.type,
+            isArray: field.isArray,
+            isRef: field.isRef,
+            ...(field.enum ? { enum: field.enum } : {})
+        } as SchemaField;
+    }
+
+    public getLinkResolveField(link: IFormulaLink): (pathStr: string) => SchemaField | null {
+        const entityId = link.entityId;
+        let resolver = this.linkResolversCache.get(entityId);
+        if (!resolver) {
+            resolver = (pathStr: string) => {
+                const field = this.findSchema(entityId)?.getField(pathStr);
+                return field ? this.snapshotField(field) : null;
+            };
+            this.linkResolversCache.set(entityId, resolver);
+        }
+        return resolver;
+    }
+
+    public getLinkFirstEntry(link: IFormulaLink): () => { field: SchemaField; fieldPath: string[] } | null {
+        let first = this.linkFirstEntryCache.get(link.entityId);
+        if (!first) {
+            first = () => this.findFirstEntry(link);
+            this.linkFirstEntryCache.set(link.entityId, first);
+        }
+        return first;
+    }
+
+    private findFirstEntry(link: IFormulaLink): { field: SchemaField; fieldPath: string[] } | null {
+        const resolve = this.getLinkResolveField(link);
+        for (const group of this.getLinkFieldGroups(link)) {
+            for (const option of group.items) {
+                const field = resolve(option.pathStr);
+                if (field) {
+                    return { field, fieldPath: option.pathStr.split('.') };
+                }
+            }
+        }
+        return null;
+    }
+
+    public toggleLinkCondition(item: IFormulaItem, on: boolean): void {
+        if (this.readonly || !item.link) {
+            return;
+        }
+        if (!on) {
+            delete item.link.condition;
+            return;
+        }
+        const first = this.getLinkFirstEntry(item.link)();
+        if (!first) {
+            return;
+        }
+        item.link.condition = {
+            field: first.field,
+            fieldValue: '',
+            ...(first.fieldPath.length > 1 ? { fieldPath: first.fieldPath } : {})
+        };
     }
 
     public getEntityName(link: IFormulaLink): string {

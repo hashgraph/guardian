@@ -195,6 +195,7 @@
                       }
                     </div>
                   </div>
+                  <ng-container [ngTemplateOutlet]="displayCondition" [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
                 }
                 @if (item.type === 'formula') {
                   <div class="guardian-input-container" style="height: auto">
@@ -225,6 +226,7 @@
                       }
                     </div>
                   </div>
+                  <ng-container [ngTemplateOutlet]="displayCondition" [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
                   <div class="guardian-input-container">
                     <label class="form-label">Relationships</label>
                     <p-multiSelect
@@ -277,6 +279,7 @@
                       }
                     </div>
                   </div>
+                  <ng-container [ngTemplateOutlet]="displayCondition" [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
                   <div class="guardian-input-container">
                     <label class="form-label">Relationships</label>
                     <p-multiSelect
@@ -404,3 +407,35 @@
     }
   </div>
 </div>
+<ng-template #displayCondition let-item>
+  @if (item.link?.type === 'schema') {
+    <div class="display-condition">
+      <label class="form-label">Display condition</label>
+      <div class="display-condition-hint">Optional – without a condition the formula is always shown</div>
+      @if (!item.link.condition) {
+        @if (!readonly) {
+          <button type="button" class="display-condition-add" (click)="toggleLinkCondition(item, true)">
+            + Add display condition
+          </button>
+        }
+      } @else {
+        <div class="display-condition-box">
+          <app-condition-if-editor
+            [ifCondition]="item.link.condition"
+            (ifConditionChange)="item.link.condition = $event"
+            [fieldGroups]="getLinkFieldGroups(item.link)"
+            [resolveField]="getLinkResolveField(item.link)"
+            [firstEntry]="getLinkFirstEntry(item.link)"
+            [disabled]="readonly"
+            fieldPanelStyleClass="guardian-dropdown-panel sc-cond-panel">
+            @if (!readonly) {
+              <button condHeaderActions type="button" class="display-condition-remove" (click)="toggleLinkCondition(item, false)">
+                Remove condition
+              </button>
+            }
+          </app-condition-if-editor>
+        </div>
+      }
+    </div>
+  }
+</ng-template>

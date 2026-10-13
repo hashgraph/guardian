@@ -61,6 +61,7 @@ export class DocumentViewComponent implements OnInit {
     public rules: DocumentValidators;
     public rulesResults: SchemaRuleValidateResult;
     public formulasResults: any | null;
+    private formulasBySubject = new Map<any, any>();
     public link: string | undefined;
     public accordionLink: string | undefined;
     public navCollapsed: boolean = false;
@@ -115,11 +116,37 @@ export class DocumentViewComponent implements OnInit {
                 this.subjects.push(this.document.verifiableCredential);
             }
         }
+        this.updateFormulasResults();
         this.loadData();
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        this.formulasResults = this.formulas?.getFields(this.schemaId);
+        this.updateFormulasResults();
+    }
+
+    /**
+     * Formulas of fields whose display condition matches the credential subject values.
+     * Cached per subject: the view is OnPush and the template needs stable references.
+     */
+    private updateFormulasResults(): void {
+        this.formulasBySubject = new Map<any, any>();
+        if (!this.formulas) {
+            this.formulasResults = this.formulas;
+            return;
+        }
+        for (const subject of this.subjects) {
+            this.formulasBySubject.set(subject, this.formulas.getFields(this.schemaId, {
+                data: subject,
+                anyEntry: true
+            }));
+        }
+        this.formulasResults = this.subjects.length
+            ? this.formulasBySubject.get(this.subjects[0])
+            : this.formulas.getFields(this.schemaId, { data: null, anyEntry: true });
+    }
+
+    public formulasFor(item: any): any {
+        return this.formulasBySubject.get(item) ?? this.formulasResults;
     }
 
     ngOnDestroy() {
@@ -231,7 +258,7 @@ export class DocumentViewComponent implements OnInit {
                 const formulas = results.formulas;
                 this.formulas = FormulasTree.from(formulas);
                 this.formulas?.setDocuments(this.document);
-                this.formulasResults = this.formulas?.getFields(this.schemaId);
+                this.updateFormulasResults();
                 delete results.formulas;
             }
 

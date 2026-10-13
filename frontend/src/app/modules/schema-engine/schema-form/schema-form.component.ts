@@ -12,6 +12,8 @@ import { Subject, Subscription, firstValueFrom, takeUntil } from 'rxjs';
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from '../../../services/api';
+import { FormFormulas } from 'src/app/modules/formulas/models/form-formulas';
+import { FormulaItem } from 'src/app/modules/formulas/models/formula-tree';
 import { FieldForm, IFieldControl, IFieldIndexControl } from '../schema-form-model/field-form';
 import { getMinutesAgoStream } from 'src/app/utils/autosave-utils';
 import { withNewTabLinks } from '../rich-text-editor/rich-text-sanitizer';
@@ -22,6 +24,8 @@ import {
     GeoType,
     resolveGeoDependencies
 } from './geo-dependency-resolver';
+
+const EMPTY_FORMULAS: FormulaItem[] = [];
 
 enum PlaceholderByFieldType {
     Email = "example@email.com",
@@ -107,6 +111,8 @@ export class SchemaFormComponent implements OnInit {
     @Input() isFormForRequestBlock: boolean = false;
     @Input() lastSavedAt?: Date;
     @Input() isEditMode: boolean = false;
+    @Input() formulas?: FormFormulas | null;
+    @Input() formulaEntries?: Record<string, number> | null;
 
     @Output() change = new EventEmitter<Schema | null>();
     @Output() destroy = new EventEmitter<void>();
@@ -128,6 +134,8 @@ export class SchemaFormComponent implements OnInit {
     private geoOptions = new Map<string, GeoOption[]>();
     private controlsIndex: Map<string, { ancestors: IFieldControl<any>[], field: IFieldControl<any>, listItem?: any }> = new Map();
 
+    private entryScopes = new WeakMap<object, Record<string, number>>();
+
     constructor(
         private ipfs: IPFSService,
         protected changeDetectorRef: ChangeDetectorRef,
@@ -135,6 +143,29 @@ export class SchemaFormComponent implements OnInit {
     ) { }
 
     ngOnInit(): void {
+    }
+
+    public getFieldFormulas(item: IFieldControl<any>): FormulaItem[] {
+        return this.formulas?.get(item.fullPath, this.formulaEntries) ?? EMPTY_FORMULAS;
+    }
+
+    /**
+     * Entries scope for formulas of a repeated sub-schema entry: parent scope plus
+     * this array's current entry index. The same object is returned (and refreshed in place)
+     * so child components do not see a new input on every change detection pass.
+     */
+    public getEntryFormulaScope(item: IFieldControl<any>, listItem: any): Record<string, number> {
+        let scope = this.entryScopes.get(listItem);
+        if (!scope) {
+            scope = {};
+            this.entryScopes.set(listItem, scope);
+        }
+        for (const key of Object.keys(scope)) {
+            delete scope[key];
+        }
+        Object.assign(scope, this.formulaEntries);
+        scope[item.path] = Number(listItem.index);
+        return scope;
     }
 
     ngOnChanges(changes: SimpleChanges) {

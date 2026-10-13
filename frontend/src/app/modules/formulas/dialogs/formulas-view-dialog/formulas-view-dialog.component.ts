@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { FormulaFiles, FormulaItem, FormulasTree, SchemaItem } from '../../models/formula-tree';
+import { FormulaFiles, FormulaItem, FormulasTree, IFormulaConditionContext, SchemaItem } from '../../models/formula-tree';
 import { TreeListData, TreeListItem, TreeListView } from 'src/app/modules/common/tree-graph/tree-list';
 
 @Component({
@@ -14,6 +14,7 @@ export class FormulasViewDialog {
     public tree: FormulasTree;
     public schema: string;
     public path: string;
+    public context?: IFormulaConditionContext;
     public items: FormulaItem[];
     public current: FormulaItem | SchemaItem | null;
     public nav: TreeListView<any>;
@@ -49,11 +50,12 @@ export class FormulasViewDialog {
         this.tree = this.config.data?.tree;
         this.schema = this.config.data?.schema;
         this.path = this.config.data?.path;
+        this.context = this.config.data?.context;
     }
 
     ngOnInit() {
         this.loading = false;
-        this.items = this.tree?.get(this.schema, this.path) || [];
+        this.items = this.tree?.get(this.schema, this.path, this.context) || [];
         this.files = this.tree?.getFiles(this.items) || [];
         const navTree = FormulasTree.createNav(this.items)
         const fields = TreeListData.fromObject<any>(navTree, 'children');

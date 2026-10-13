@@ -7,6 +7,22 @@ import { uriValidator } from 'src/app/validators/uri.validator';
 import { GeoForm } from './geo-form';
 import { SentinelHubForm } from './sentinel-hub-form';
 
+/**
+ * Loose equality used by condition predicates: numbers, dates and trimmed strings.
+ */
+export function equalsLoosely(a: any, b: any): boolean {
+    const an = (typeof a === 'number') ? a : (typeof a === 'string' && a.trim() !== '' && !isNaN(+a) ? +a : NaN);
+    const bn = (typeof b === 'number') ? b : (typeof b === 'string' && b.trim() !== '' && !isNaN(+b) ? +b : NaN);
+    if (!Number.isNaN(an) && !Number.isNaN(bn)) return an === bn;
+
+    const ad = moment(a); const bd = moment(b);
+    if (ad.isValid() && bd.isValid()) return ad.toISOString() === bd.toISOString();
+
+    const as = (a ?? '').toString().trim();
+    const bs = (b ?? '').toString().trim();
+    return as === bs;
+}
+
 export interface IFieldControl<T extends UntypedFormControl | UntypedFormGroup | UntypedFormArray> extends SchemaField {
     id: string;
     hide: boolean;
@@ -263,16 +279,7 @@ export class FieldForm {
     }
 
     private equalsLoosely(a: any, b: any): boolean {
-        const an = (typeof a === 'number') ? a : (typeof a === 'string' && a.trim() !== '' && !isNaN(+a) ? +a : NaN);
-        const bn = (typeof b === 'number') ? b : (typeof b === 'string' && b.trim() !== '' && !isNaN(+b) ? +b : NaN);
-        if (!Number.isNaN(an) && !Number.isNaN(bn)) return an === bn;
-
-        const ad = moment(a); const bd = moment(b);
-        if (ad.isValid() && bd.isValid()) return ad.toISOString() === bd.toISOString();
-
-        const as = (a ?? '').toString().trim();
-        const bs = (b ?? '').toString().trim();
-        return as === bs;
+        return equalsLoosely(a, b);
     }
 
     private findControl(name: string): IFieldControl<any> | undefined {
