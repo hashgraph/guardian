@@ -467,7 +467,7 @@
     position: fixed;
     top: 0;
     left: 0;
-    right: 0;
+    right: var(--first-steps-offset);
     height: var(--topbar-height);
     z-index: 100;
 
