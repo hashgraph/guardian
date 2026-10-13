@@ -11,7 +11,7 @@ async function load(messages, { getMessagesError } = {}) {
     const { resolvePublishedDidDocument } = await esmock(
         '../../dist/api/helpers/profile-helper.js',
         {
-            '@guardian/common': {
+            '@guardian/hedera/message/message-server': {
                 MessageServer: class {
                     static async getMessages(options) {
                         calls.getMessages.push(options);
@@ -24,6 +24,8 @@ async function load(messages, { getMessagesError } = {}) {
                         return message;
                     }
                 },
+            },
+            '@guardian/hedera/vcjs/did/common-did-document': {
                 CommonDidDocument: {
                     from: (json) => ({
                         json,
