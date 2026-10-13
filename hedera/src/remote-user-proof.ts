@@ -1,7 +1,7 @@
 import { ed25519 } from '@noble/curves/ed25519';
-import { Hashing } from '../hedera-modules/hashing.js';
-import type { CommonDidDocument } from '../hedera-modules/vcjs/did/common-did-document.js';
-import { HederaEd25519Method } from '../hedera-modules/vcjs/did/components/hedera-ed25519-method.js';
+import { Hashing } from '@guardian/common/helpers/hashing';
+import type { CommonDidDocument } from './vcjs/did/common-did-document.js';
+import { HederaEd25519Method } from './vcjs/did/components/hedera-ed25519-method.js';
 
 /**
  * Remote user registration proof.

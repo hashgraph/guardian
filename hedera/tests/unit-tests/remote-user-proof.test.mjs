@@ -4,9 +4,9 @@ import {
     createRemoteUserProof,
     verifyRemoteUserProof,
     REMOTE_USER_PROOF_LIFETIME_MS,
-} from '../../dist/helpers/remote-user-proof.js';
-import { CommonDidDocument } from '../../dist/hedera-modules/vcjs/did/common-did-document.js';
-import { HederaEd25519Method } from '../../dist/hedera-modules/vcjs/did/components/hedera-ed25519-method.js';
+} from '../../dist/remote-user-proof.js';
+import { CommonDidDocument } from '../../dist/vcjs/did/common-did-document.js';
+import { HederaEd25519Method } from '../../dist/vcjs/did/components/hedera-ed25519-method.js';
 
 /*
  * A DID, its account and its topic are all public, so anyone could register them as a

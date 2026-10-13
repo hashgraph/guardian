@@ -1,7 +1,7 @@
 import { DidDocumentStatus, LocationType, MessageAPI, SchemaEntity, TopicType, UserRole, WorkerTaskType } from '@guardian/interfaces';
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { DatabaseServer } from '@guardian/common/database-modules/database-server';
-import { createRemoteUserProof } from '@guardian/common/helpers/remote-user-proof';
+import { createRemoteUserProof } from '@guardian/hedera/remote-user-proof';
 import { Environment } from '@guardian/common/helpers/environment';
 import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
 import { KeyType, Wallet } from '@guardian/common/helpers/wallet';

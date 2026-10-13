@@ -20,7 +20,7 @@ import { DatabaseServer } from '@guardian/common/database-modules/database-serve
 import { DidDocument as DidDocumentCollection } from '@guardian/common/entity/did-document';
 import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
 import { INotificationStep } from '@guardian/common/notification/notification-step.interface';
-import { IRemoteUserProof, verifyRemoteUserProof } from '@guardian/common/helpers/remote-user-proof';
+import { IRemoteUserProof, verifyRemoteUserProof } from '@guardian/hedera/remote-user-proof';
 import { KeyType, Wallet } from '@guardian/common/helpers/wallet';
 import { MessageError } from '@guardian/common/models/message-response';
 import { PinoLogger } from '@guardian/common/helpers/pino-logger';
