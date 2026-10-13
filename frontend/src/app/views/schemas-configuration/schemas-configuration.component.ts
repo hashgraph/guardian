@@ -4103,14 +4103,18 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     // Rebuilt only when the schema list itself changes; these getters run on every
     // change-detection pass, so the map must not be reconstructed each time.
     private _schemaByIriSource: Schema[] | null = null;
+    private _schemaByIriSubSource: Map<string, Schema> | null = null;
     private _schemaByIriCache = new Map<string, Schema>();
 
+    // Includes sub-schemas that exist only in _subSchemasByIri; top-level schemas win.
     private get _schemaByIri(): Map<string, Schema> {
-        if (this._schemaByIriSource !== this.schemas) {
+        if (this._schemaByIriSource !== this.schemas || this._schemaByIriSubSource !== this._subSchemasByIri) {
             this._schemaByIriSource = this.schemas;
-            this._schemaByIriCache = new Map(
-                (this.schemas ?? []).filter(s => s.iri).map(s => [s.iri as string, s])
-            );
+            this._schemaByIriSubSource = this._subSchemasByIri;
+            this._schemaByIriCache = new Map(this._subSchemasByIri);
+            for (const s of this.schemas ?? []) {
+                if (s.iri) { this._schemaByIriCache.set(s.iri, s); }
+            }
         }
         return this._schemaByIriCache;
     }
@@ -4182,7 +4186,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (!field) { return ''; }
         const schema = this.currentContextSchema;
         if (!schema) { return field.name ?? ''; }
-        const schemaByIri = new Map(this.schemas.filter(s => s.iri).map(s => [s.iri as string, s]));
+        const schemaByIri = this._schemaByIri;
 
         // Direct field match
         if (schema.fields?.some(f => f.name === field.name && !f.isRef)) { return field.name; }
@@ -4221,7 +4225,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const parts = pathStr.split('.');
         const schema = this.currentContextSchema;
         if (!schema) { return null; }
-        const schemaByIri = new Map(this.schemas.filter(s => s.iri).map(s => [s.iri as string, s]));
+        const schemaByIri = this._schemaByIri;
 
         if (parts.length === 1) { return schema.fields?.find(f => f.name === parts[0]) ?? null; }
 
@@ -4345,14 +4349,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     // ── Cross-schema targets ─────────────────────────────────────────────────
 
     private _resolveFieldByPath(path: string[]): SchemaField | null {
-        const schemaByIri = new Map(this.schemas.map(s => [s.iri, s]));
         let fields = this.currentContextSchema?.fields ?? [];
         let field: SchemaField | null = null;
         for (let i = 0; i < path.length; i++) {
             field = fields.find(f => f.name === path[i]) ?? null;
             if (!field) { return null; }
             if (i < path.length - 1) {
-                const ref = schemaByIri.get(field.type);
+                const ref = this.resolveRefSchema(field.type);
                 fields = ref?.fields
                     ?? (Array.isArray((field as any).fields) && (field as any).fields.length ? (field as any).fields : []);
             }
@@ -4363,16 +4366,15 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public getCrossTargetPaths(): { pathStr: string; label: string }[] {
         const schema = this.currentContextSchema;
         if (!schema?.fields) { return []; }
-        const schemaByIri = new Map(this.schemas.map(s => [s.iri, s]));
         const result: { pathStr: string; label: string }[] = [];
 
         const traverse = (fields: SchemaField[], pathParts: string[], labelParts: string[]) => {
             for (const f of fields) {
                 if (f.isRef && f.type) {
-                    const ref = schemaByIri.get(f.type);
+                    const ref = this.resolveRefSchema(f.type);
                     const refFields = ref?.fields ?? (Array.isArray((f as any).fields) && (f as any).fields.length ? (f as any).fields : []);
                     if (refFields.length) {
-                        traverse(refFields, [...pathParts, f.name], [...labelParts, ref?.name || f.name]);
+                        traverse(refFields, [...pathParts, f.name], [...labelParts, this.refGroupName(ref, f)]);
                     }
                 } else if (!f.readOnly) {
                     result.push({
@@ -4385,26 +4387,28 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
         for (const f of schema.fields) {
             if (f.isRef && f.type) {
-                const ref = schemaByIri.get(f.type);
+                const ref = this.resolveRefSchema(f.type);
                 const refFields = ref?.fields ?? (Array.isArray((f as any).fields) && (f as any).fields.length ? (f as any).fields : []);
                 if (refFields.length) {
-                    traverse(refFields, [f.name], [ref?.name || f.name]);
+                    traverse(refFields, [f.name], [this.refGroupName(ref, f)]);
                 }
             }
         }
         return result;
     }
 
-    private conditionFieldGroupsCache: { label: string; items: { pathStr: string; label: string }[] }[] | null = null;
+    private conditionFieldGroupsCache: { label: string; name: string; items: { pathStr: string; label: string; fullLabel: string }[] }[] | null = null;
     private conditionFieldGroupsCacheSchema: Schema | null = null;
     private conditionFieldGroupsCacheSchemas: Schema[] | null = null;
+    private conditionFieldGroupsCacheSubSchemas: Map<string, Schema> | null = null;
     private conditionFieldGroupsCacheVersion = -1;
 
-    public getConditionFieldPSelectGroups(): { label: string; items: { pathStr: string; label: string }[] }[] {
+    public getConditionFieldPSelectGroups(): { label: string; name: string; items: { pathStr: string; label: string; fullLabel: string }[] }[] {
         const schema = this.currentContextSchema;
         if (this.conditionFieldGroupsCache
             && this.conditionFieldGroupsCacheSchema === schema
             && this.conditionFieldGroupsCacheSchemas === this.schemas
+            && this.conditionFieldGroupsCacheSubSchemas === this._subSchemasByIri
             && this.conditionFieldGroupsCacheVersion === this.schemaEditVersion) {
             return this.conditionFieldGroupsCache;
         }
@@ -4412,56 +4416,81 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.conditionFieldGroupsCache = groups;
         this.conditionFieldGroupsCacheSchema = schema;
         this.conditionFieldGroupsCacheSchemas = this.schemas;
+        this.conditionFieldGroupsCacheSubSchemas = this._subSchemasByIri;
         this.conditionFieldGroupsCacheVersion = this.schemaEditVersion;
         return groups;
     }
 
-    private buildConditionFieldPSelectGroups(): { label: string; items: { pathStr: string; label: string }[] }[] {
+    private buildConditionFieldPSelectGroups(): { label: string; name: string; items: { pathStr: string; label: string; fullLabel: string }[] }[] {
         const schema = this.currentContextSchema;
         if (!schema) { return []; }
-        const schemaByIri = new Map(this.schemas.filter(s => s.iri).map(s => [s.iri as string, s]));
-        const result: { label: string; items: { pathStr: string; label: string }[] }[] = [];
+        const result: { label: string; name: string; items: { pathStr: string; label: string; fullLabel: string }[] }[] = [];
 
-        const nestLabel = (name: string, depth: number) =>
-            depth <= 1 ? name : ' '.repeat((depth - 1) * 3) + '› ' + name;
 
-        const addGroups = (fields: SchemaField[], pathParts: string[], groupName: string, depth: number) => {
-            const items: { pathStr: string; label: string }[] = [];
+        const addGroups = (fields: SchemaField[], pathParts: string[], trail: string[]) => {
+            const items: { pathStr: string; label: string; fullLabel: string }[] = [];
             for (const f of fields) {
                 if (f.readOnly || (f.isRef && f.type)) { continue; }
-                items.push({ pathStr: [...pathParts, f.name].join('.'), label: f.description || f.title || f.name });
+                items.push({ pathStr: [...pathParts, f.name].join('.'), label: this.selectorFieldLabel(f), fullLabel: this.fieldPathLabel(trail, this.selectorFieldLabel(f)) });
             }
             if (items.length) {
-                result.push({ label: nestLabel(groupName, depth), items });
+                result.push({ label: this.groupPathLabel(trail, 'This schema'), name: trail[trail.length - 1] ?? 'This schema', items });
             }
             for (const f of fields) {
                 if (f.readOnly || !f.isRef || !f.type) { continue; }
-                const ref = schemaByIri.get(f.type);
+                const ref = this.resolveRefSchema(f.type);
                 const refFields = ref?.fields
                     ?? (Array.isArray((f as any).fields) && (f as any).fields.length ? (f as any).fields : []);
                 if (refFields.length) {
-                    addGroups(refFields, [...pathParts, f.name], ref?.name || f.name, depth + 1);
+                    addGroups(refFields, [...pathParts, f.name], [...trail, this.refGroupName(ref, f)]);
                 }
             }
         };
 
-        addGroups(schema.fields ?? [], [], 'This schema', 0);
+        addGroups(schema.fields ?? [], [], []);
         return result;
+    }
+
+    private selectorFieldLabel(field: SchemaField): string {
+        return field.description || field.name;
+    }
+
+    // Schema name for a group header; unresolved refs fall back to the field's own label.
+    private refGroupName(ref: Schema | undefined, field: SchemaField): string {
+        return ref?.name || this.selectorFieldLabel(field);
+    }
+
+    private groupPathLabel(trail: string[], rootLabel: string): string {
+        return trail.length ? trail.join(' › ') : rootLabel;
+    }
+
+    private fieldPathLabel(trail: string[], label: string): string {
+        return trail.length ? `${trail.join(' › ')} › ${label}` : label;
+    }
+
+    // Parent chain shown as a muted hint next to the group name in the selector panels.
+    public conditionGroupParents(group: { label: string }): string {
+        const parts = group.label.split(' › ');
+        if (parts.length < 2) { return ''; }
+        parts.pop();
+        return parts.length > 2 ? `${parts[0]} › … › ${parts[parts.length - 1]}` : parts.join(' › ');
     }
 
     public condThenRefVal: Record<number, string | null> = {};
     public condElseRefVal: Record<number, string | null> = {};
 
-    private crossTargetGroupsCache: { label: string; items: { pathStr: string; label: string; isBlock?: boolean }[] }[] | null = null;
+    private crossTargetGroupsCache: { label: string; name: string; items: { pathStr: string; label: string; fullLabel: string; isBlock?: boolean }[] }[] | null = null;
     private crossTargetGroupsCacheSchema: Schema | null = null;
     private crossTargetGroupsCacheSchemas: Schema[] | null = null;
+    private crossTargetGroupsCacheSubSchemas: Map<string, Schema> | null = null;
     private crossTargetGroupsCacheVersion = -1;
 
-    public getCrossTargetPSelectGroups(): { label: string; items: { pathStr: string; label: string; isBlock?: boolean }[] }[] {
+    public getCrossTargetPSelectGroups(): { label: string; name: string; items: { pathStr: string; label: string; fullLabel: string; isBlock?: boolean }[] }[] {
         const schema = this.currentContextSchema;
         if (this.crossTargetGroupsCache
             && this.crossTargetGroupsCacheSchema === schema
             && this.crossTargetGroupsCacheSchemas === this.schemas
+            && this.crossTargetGroupsCacheSubSchemas === this._subSchemasByIri
             && this.crossTargetGroupsCacheVersion === this.schemaEditVersion) {
             return this.crossTargetGroupsCache;
         }
@@ -4469,56 +4498,55 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.crossTargetGroupsCache = groups;
         this.crossTargetGroupsCacheSchema = schema;
         this.crossTargetGroupsCacheSchemas = this.schemas;
+        this.crossTargetGroupsCacheSubSchemas = this._subSchemasByIri;
         this.crossTargetGroupsCacheVersion = this.schemaEditVersion;
         return groups;
     }
 
-    private buildCrossTargetPSelectGroups(): { label: string; items: { pathStr: string; label: string; isBlock?: boolean }[] }[] {
+    private buildCrossTargetPSelectGroups(): { label: string; name: string; items: { pathStr: string; label: string; fullLabel: string; isBlock?: boolean }[] }[] {
         const schema = this.currentContextSchema;
         if (!schema?.fields) { return []; }
-        const schemaByIri = new Map(this.schemas.map(s => [s.iri, s]));
-        const result: { label: string; items: { pathStr: string; label: string; isBlock?: boolean }[] }[] = [];
+        const result: { label: string; name: string; items: { pathStr: string; label: string; fullLabel: string; isBlock?: boolean }[] }[] = [];
 
-        const nestLabel = (name: string, depth: number) =>
-            depth <= 1 ? name : ' '.repeat((depth - 1) * 3) + '› ' + name;
 
-        const traverse = (fields: SchemaField[], pathParts: string[], groupName: string, depth: number) => {
-            const items: { pathStr: string; label: string; isBlock?: boolean }[] = [];
+        const traverse = (fields: SchemaField[], pathParts: string[], trail: string[]) => {
+            const items: { pathStr: string; label: string; fullLabel: string; isBlock?: boolean }[] = [];
             for (const f of fields) {
                 if (f.readOnly) { continue; }
                 if (f.isRef && f.type) {
-                    const ref = schemaByIri.get(f.type);
+                    const ref = this.resolveRefSchema(f.type);
                     const refFields = ref?.fields ?? (Array.isArray((f as any).fields) && (f as any).fields.length ? (f as any).fields : []);
                     if (refFields.length) {
                         items.push({
                             pathStr: [...pathParts, f.name].join('.'),
-                            label: f.description || f.title || f.name,
+                            label: this.selectorFieldLabel(f),
+                            fullLabel: this.fieldPathLabel(trail, this.selectorFieldLabel(f)),
                             isBlock: true
                         });
                     }
                     continue;
                 }
-                items.push({ pathStr: [...pathParts, f.name].join('.'), label: f.description || f.title || f.name });
+                items.push({ pathStr: [...pathParts, f.name].join('.'), label: this.selectorFieldLabel(f), fullLabel: this.fieldPathLabel(trail, this.selectorFieldLabel(f)) });
             }
             if (items.length) {
-                result.push({ label: nestLabel(groupName, depth), items });
+                result.push({ label: this.groupPathLabel(trail, ''), name: trail[trail.length - 1], items });
             }
             for (const f of fields) {
                 if (f.readOnly || !f.isRef || !f.type) { continue; }
-                const ref = schemaByIri.get(f.type);
+                const ref = this.resolveRefSchema(f.type);
                 const refFields = ref?.fields ?? (Array.isArray((f as any).fields) && (f as any).fields.length ? (f as any).fields : []);
                 if (refFields.length) {
-                    traverse(refFields, [...pathParts, f.name], ref?.name || f.name, depth + 1);
+                    traverse(refFields, [...pathParts, f.name], [...trail, this.refGroupName(ref, f)]);
                 }
             }
         };
 
         for (const f of schema.fields) {
             if (f.readOnly || !f.isRef || !f.type) { continue; }
-            const ref = schemaByIri.get(f.type);
+            const ref = this.resolveRefSchema(f.type);
             const refFields = ref?.fields ?? (Array.isArray((f as any).fields) && (f as any).fields.length ? (f as any).fields : []);
             if (refFields.length) {
-                traverse(refFields, [f.name], ref?.name || f.name, 1);
+                traverse(refFields, [f.name], [this.refGroupName(ref, f)]);
             }
         }
 

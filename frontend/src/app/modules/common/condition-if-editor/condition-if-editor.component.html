@@ -37,7 +37,7 @@
                 optionLabel="label"
                 optionValue="pathStr"
                 [filter]="true"
-                filterBy="label"
+                filterBy="label,fullLabel"
                 [resetFilterOnHide]="true"
                 [virtualScroll]="true"
                 [virtualScrollItemSize]="38"
@@ -46,10 +46,19 @@
                 [disabled]="disabled"
                 [ngModel]="getRowFieldPath(row)"
                 (onChange)="setIfRowField(ri, $event.value)">
+                <ng-template pTemplate="group" let-group>
+                    <span class="sc-cond-group-row"
+                        [pTooltip]="group.label" tooltipPosition="top" tooltipStyleClass="sc-cond-tooltip" [tooltipOptions]="{showDelay: 300}">
+                        <span class="sc-cond-group-name">{{ group.name ?? group.label }}</span>
+                        @if (groupParents(group); as parents) {
+                            <span class="sc-cond-group-parents">in {{ parents }}</span>
+                        }
+                    </span>
+                </ng-template>
                 <ng-template pTemplate="item" let-option>
                     <span class="sc-cond-opt-row">
                         <span class="sc-cond-opt-label"
-                            (mouseover)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
+                            [pTooltip]="option.fullLabel ?? option.label" tooltipPosition="top" tooltipStyleClass="sc-cond-tooltip" [tooltipOptions]="{showDelay: 300}">{{ option.label }}</span>
                     </span>
                 </ng-template>
             </p-select>
