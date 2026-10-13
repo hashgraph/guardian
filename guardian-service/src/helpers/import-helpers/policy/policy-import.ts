@@ -50,7 +50,7 @@ import { PolicyImportExportHelper } from './policy-import-helper.js';
 import { SchemaImportExportHelper } from '../schema/schema-import-helper.js';
 import { importTag } from '../tag/tag-import-helper.js';
 import { ImportToolMap, ImportToolResults } from '../tool/tool-import.interface.js';
-import { importSubTools } from '../tool/tool-import-helper.js';
+import { getToolSchemas, importSubTools } from '../tool/tool-import-helper.js';
 import { resolveToolOverrides } from '../tool/tool-override-resolver.js';
 import { ImportTokenMap, ImportTokenResult } from '../token/token-import.interface.js';
 import { ImportArtifactResult } from '../artifact/artifact-import.interface.js';
@@ -419,16 +419,7 @@ export class PolicyImport {
         userId: string | null
     ) {
         step.start();
-        const topicIds = this.toolsResult.tools.map((tool) => tool.topicId);
-        const toolsSchemas = (await DatabaseServer.getSchemas(
-            {
-                category: SchemaCategory.TOOL,
-                topicId: { $in: topicIds }
-            },
-            {
-                fields: ['name', 'iri'],
-            }
-        )) as { name: string; iri: string }[];
+        const toolsSchemas = await getToolSchemas(this.toolsResult.tools);
         this.schemasResult = await SchemaImportExportHelper.importSchemaByFiles(
             schemas,
             user,
