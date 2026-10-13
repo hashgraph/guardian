@@ -2306,9 +2306,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/core@npm:1.2.14":
-  version: 1.2.14
-  resolution: "@langchain/core@npm:1.2.14"
+"@langchain/core@npm:1.2.17":
+  version: 1.2.17
+  resolution: "@langchain/core@npm:1.2.17"
   dependencies:
     "@cfworker/json-schema": "npm:^4.0.2"
     "@standard-schema/spec": "npm:^1.1.0"
@@ -2317,7 +2317,7 @@ __metadata:
     mustache: "npm:^4.2.0"
     p-queue: "npm:^6.6.2"
     zod: "npm:^3.25.76 || ^4"
-  checksum: 10c0/524e2e0ffd59968d87b7a0d06fcfb7dc58e53f703ab5cba7a756c901c2e54b644f9fd80cfe6cf6d8e905ade46ff76298c7c45103eb4a2a2c7e42e4cec53572bf
+  checksum: 10c0/ed246ba9e6ab9757c32f4c4c2d7d34010880a4b01ecb7b4fc64c042636bfbbdedafdb3572b8ff5bf38b39c66a5d3a272d052254d83393c5430bf342c2494ec40
   languageName: node
   linkType: hard
 
@@ -4679,7 +4679,7 @@ __metadata:
     "@guardian/interfaces": "workspace:*"
     "@langchain/classic": "npm:1.0.52"
     "@langchain/community": "npm:1.1.29"
-    "@langchain/core": "npm:1.2.14"
+    "@langchain/core": "npm:1.2.17"
     "@langchain/openai": "npm:1.6.2"
     "@langchain/textsplitters": "npm:1.0.2"
     "@types/node": "npm:24.19.1"
