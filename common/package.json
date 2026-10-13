@@ -38,7 +38,7 @@
         "@hiero-ledger/sdk": "2.89.1",
         "@types/express": "5.0.6",
         "@types/jsonwebtoken": "9.0.10",
-        "@types/node": "24.19.1",
+        "@types/node": "24.19.2",
         "chai": "^4.3.7",
         "esmock": "^2.6.7",
         "express": "5.2.1",
