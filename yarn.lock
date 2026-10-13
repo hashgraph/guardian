@@ -7677,8 +7677,8 @@ __metadata:
   linkType: hard
 
 "fireblocks-sdk@npm:^5.39.0":
-  version: 5.39.1
-  resolution: "fireblocks-sdk@npm:5.39.1"
+  version: 5.40.1
+  resolution: "fireblocks-sdk@npm:5.40.1"
   dependencies:
     "@notabene/pii-sdk": "npm:^1.17.1"
     axios: "npm:^1.16.0"
@@ -7687,7 +7687,7 @@ __metadata:
     qs: "npm:^6.11.0"
     query-string: "npm:^7.1.3"
     uuid: "npm:^8.3.2"
-  checksum: 10c0/d7068be592633729bba269346289557c486ab0de22cb01269333ad8a45cb1c93aba1d3c11ae5985ec42fee9cc8d45d4a4fa11c477fd445c0122cdcc2b96cf8cc
+  checksum: 10c0/db66a54d6f5214189cb374f85a271e7e9a0affe7e600a2b42a031c31140c10d2d94a6a098805361b4de59d4cd5a43bbe04dd6820c5f660e6c08063281c6c15eb
   languageName: node
   linkType: hard
 
