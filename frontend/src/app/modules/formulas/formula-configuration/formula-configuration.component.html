@@ -12,430 +12,438 @@
     </div>
   }
 
-  <div class="header-container">
-    <div class="schema-breadcrumb">
-      <a class="breadcrumb-back" (click)="onBack()">Formulas</a>
-      <span class="breadcrumb-sep"> / </span>
-      <span class="breadcrumb-current">{{item?.name}}</span>
-    </div>
-
-    <div class="guardian-user-page-header">
-      <span>{{item?.name}}</span>
-      @if (policy) {
-        <div class="policy-name">
-          <span>Policy Name: {{policy.name}}</span>
-          @if (policy.version) {
-            <span class="policy-version">Version: {{policy.version}}</span>
-          }
-        </div>
-      }
-    </div>
-  </div>
-
-  <div class="step-container">
-    <div class="guardian-step-container">
-      <div class="guardian-stepper horizontal-stepper">
-        <div class="guardian-step" [attr.action]="isActionStep(0)" (click)="onStep(0)">
-          <div class="guardian-step-icon">
-            <svg-icon class="icon-btn svg-icon-16"
-              src="/assets/images/icons/16/file-fill.svg">
-            </svg-icon>
-          </div>
-          <div class="guardian-step-name">Overview</div>
-        </div>
-        <div class="guardian-step-separator"></div>
-        <div class="guardian-step" [attr.action]="isActionStep(1)" (click)="onStep(1)">
-          <div class="guardian-step-icon">
-            <svg-icon class="icon-btn svg-icon-16"
-              src="/assets/images/icons/16/edit.svg">
-            </svg-icon>
-          </div>
-          <div class="guardian-step-name">Edit Formula</div>
-        </div>
-        <div class="guardian-step-separator"></div>
-        <div class="guardian-step" [attr.action]="isActionStep(2)" (click)="onStep(2)">
-          <div class="guardian-step-icon">
-            <svg-icon class="icon-btn svg-icon-16"
-              src="/assets/images/icons/16/file.svg">
-            </svg-icon>
-          </div>
-          <div class="guardian-step-name">Attach Files</div>
-        </div>
+  <div class="top-toolbar">
+    <nav class="pc-breadcrumb">
+      <div (click)="onBack()" class="pc-back-crumb" title="Back to formulas">
+        <i class="pi pi-arrow-left"></i>
       </div>
+      <a (click)="onBack()" class="pc-crumb-link">Formulas</a>
+      <i class="pi pi-chevron-right pc-breadcrumb-sep"></i>
+    </nav>
+    <div (click)="identityMenu.toggle($event)" class="policy-identity">
+      <span class="f-type-icon lg" data-type="formula">
+        <svg-icon src="/assets/images/icons/function.svg"></svg-icon>
+      </span>
+      <div class="policy-identity-text">
+        <span #formulaNameEl class="policy-identity-name"
+          [pTooltip]="item?.name || 'Untitled formula'"
+          [tooltipDisabled]="formulaNameEl.scrollWidth <= formulaNameEl.clientWidth"
+          tooltipPosition="bottom">{{ item?.name || 'Untitled formula' }}</span>
+        <span class="policy-identity-meta">Policy: {{ policy?.name }} · Formula details</span>
+      </div>
+      <i class="pi pi-chevron-down policy-identity-caret"></i>
     </div>
-  </div>
-
-  <div #body class="body-container">
-    @if (isActionStep(0)) {
-      <div class="overview-viewer">
-        <form [formGroup]="overviewForm">
-          <div class="guardian-input-container">
-            <label class="form-label" htmlFor="version">* Name</label>
-            <input formControlName="name" id="name" pInputText type="text" [readonly]="readonly"/>
-          </div>
-          <div class="guardian-input-container">
-            <label class="form-label" htmlFor="version">Description</label>
-            <input formControlName="description" id="description" pInputText type="text" [readonly]="readonly"/>
-          </div>
-          <div class="guardian-input-container">
-            <label class="form-label" htmlFor="version">* Policy</label>
-            <input formControlName="policy" id="policy" pInputText type="text" readonly/>
-          </div>
-        </form>
+    @if (item?.status === EntityStatus.PUBLISHED) {
+      <div class="status-badge status-badge--published">
+        <i class="pi pi-globe"></i>
+        <span>Published</span>
+      </div>
+    } @else if (item?.status === EntityStatus.DRY_RUN) {
+      <div class="status-badge status-badge--dryrun">
+        <svg-icon src="/assets/images/icons/build.svg" svgClass="icon-style-build"></svg-icon>
+        <span>In Dry Run</span>
+      </div>
+    } @else if (item?.status === EntityStatus.ERROR) {
+      <div class="status-badge status-badge--error">
+        <i class="pi pi-exclamation-circle"></i>
+        <span>Error</span>
+      </div>
+    } @else if (item) {
+      <div class="status-badge status-badge--draft">
+        <i class="pi pi-pencil"></i>
+        <span>Draft</span>
       </div>
     }
-    @if (isActionStep(1)) {
-      <div class="item-filters">
-        <div class="item-filters-header">Select Type</div>
-        <checkbox-button [(value)]="filters.constant" class="item-filter constant-filter" (change)="onFilter()">Constant</checkbox-button>
-        <checkbox-button [(value)]="filters.variable" class="item-filter variable-filter" (change)="onFilter()">Variable</checkbox-button>
-        <checkbox-button [(value)]="filters.formula" class="item-filter formula-filter" (change)="onFilter()">Formula</checkbox-button>
-        <checkbox-button [(value)]="filters.text" class="item-filter text-filter" (change)="onFilter()">Text</checkbox-button>
+    <div class="toolbar-spacer"></div>
+    @if (!readonly && dirty) {
+      <div class="unsaved-marker">
+        <span class="unsaved-dot"></span>
+        <span>Unsaved changes</span>
       </div>
-      <div
-        class="formula-items"
-        cdkDropList
-        [cdkDropListData]="config.data"
-        (cdkDropListDropped)="drop($event)"
-        cdkScrollable
-        >
-        @for (item of config.data; track item) {
-          <div
-            class="formula-item"
-            [attr.type]="item.type"
-            [attr.readonly]="readonly"
-            cdkDrag
-            cdkDragLockAxis="y"
-            [cdkDragDisabled]="readonly"
-            >
-            <div cdkDragHandle class="formula-item-icon" [attr.readonly]="readonly">
-              @if (!readonly) {
-                <svg-icon class="icon-btn svg-icon"
-                  src="/assets/images/icons/equal.svg"
-                  svgClass="icon-color-close">
-                </svg-icon>
-              }
-            </div>
-            <div class="formula-item-container">
-              <div class="formula-item-header">
-                @if (item.type === 'constant') {
-                  <div class="formula-item-header__icon">
-                    <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/const.svg" svgClass="icon-color-font"></svg-icon>
-                  </div>
-                }
-                @if (item.type === 'variable') {
-                  <div class="formula-item-header__icon">
-                    <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/variable.svg" svgClass="icon-color-font"></svg-icon>
-                  </div>
-                }
-                @if (item.type === 'formula') {
-                  <div class="formula-item-header__icon">
-                    <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/function.svg" svgClass="icon-color-font"></svg-icon>
-                  </div>
-                }
-                @if (item.type === 'text') {
-                  <div class="formula-item-header__icon">
-                    <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/text.svg" svgClass="icon-color-font"></svg-icon>
-                  </div>
-                }
-                @if (item.type === 'constant') {
-                  <div class="formula-item-header__name">Constant</div>
-                }
-                @if (item.type === 'variable') {
-                  <div class="formula-item-header__name">Variable</div>
-                }
-                @if (item.type === 'formula') {
-                  <div class="formula-item-header__name">Formula</div>
-                }
-                @if (item.type === 'text') {
-                  <div class="formula-item-header__name">Text</div>
-                }
-                @if (!readonly) {
-                  <div class="formula-item-header__delete">
-                    <button
-                      class="guardian-icon-button big"
-                      (click)="deleteItem(item)"
-                      [disabled]="readonly">
-                      <svg-icon
-                        class="icon-btn svg-icon"
-                        src="/assets/images/icons/delete.svg"
-                        [svgClass]="readonly ? 'icon-color-disabled' : 'icon-color-delete'">
-                      </svg-icon>
-                    </button>
-                  </div>
-                }
-              </div>
-              <div class="formula-item-body">
-                <div class="guardian-input-container">
-                  <label class="form-label">* Name</label>
-                  <input [(ngModel)]="item.name" pInputText type="text" [readonly]="readonly"/>
-                </div>
-                @if (item.type === 'constant') {
-                  <div class="guardian-input-container">
-                    <label class="form-label">Value</label>
-                    <input [(ngModel)]="item.value" pInputText type="text" [readonly]="readonly"/>
-                  </div>
-                }
-                @if (item.type === 'variable') {
-                  <div class="guardian-input-container">
-                    <label class="form-label">Link (Input)</label>
-                    <div class="formula-link" (click)="onLink(item)">
-                      @if (item.link) {
-                        <div class="formula-link-value">
-                          <div class="formula-link-value__entity">{{getEntityName(item.link)}}:</div>
-                          <div class="formula-link-value__item">{{getFieldName(item.link)}}</div>
-                        </div>
-                      }
-                      @if (item.link && !readonly) {
-                        <div class="formula-link-remove">
-                          <button class="guardian-icon-button" (click)="deleteLink(item, $event)">
-                            <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
-                          </button>
-                        </div>
-                      }
-                    </div>
-                  </div>
-                  <ng-container [ngTemplateOutlet]="displayCondition" [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
-                }
-                @if (item.type === 'formula') {
-                  <div class="guardian-input-container" style="height: auto">
-                    <label class="form-label">Formula</label>
-                    <math-live
-                      [(value)]="item.value"
-                      [readonly]="readonly"
-                      [menu]="true"
-                      (keyboard)="onKeyboard($event)"
-                      (focus)="onKeyboardFocus($event)"
-                    ></math-live>
-                  </div>
-                  <div class="guardian-input-container">
-                    <label class="form-label">Link (Output)</label>
-                    <div class="formula-link" (click)="onLink(item)">
-                      @if (item.link) {
-                        <div class="formula-link-value">
-                          <div class="formula-link-value__entity">{{getEntityName(item.link)}}:</div>
-                          <div class="formula-link-value__item">{{getFieldName(item.link)}}</div>
-                        </div>
-                      }
-                      @if (item.link && !readonly) {
-                        <div class="formula-link-remove">
-                          <button class="guardian-icon-button" (click)="deleteLink(item, $event)">
-                            <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
-                          </button>
-                        </div>
-                      }
-                    </div>
-                  </div>
-                  <ng-container [ngTemplateOutlet]="displayCondition" [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
-                  <div class="guardian-input-container">
-                    <label class="form-label">Relationships</label>
-                    <p-multiSelect
-                      [(ngModel)]="item.relationships"
-                      [options]="config.all"
-                      class="guardian-multiselect relationships-multiselect"
-                      appendTo="body"
-                      optionLabel="name"
-                      optionValue="uuid"
-                      panelStyleClass="guardian-multiselect-panel"
-                      [readonly]="readonly">
-                      <ng-template let-value pTemplate="selectedItems">
-                        @for (option of value; track option) {
-                          <div class="multiselect-selected-value">
-                            {{ option.name || 'N/A' }}
-                          </div>
-                        }
-                      </ng-template>
-                      <ng-template let-option pTemplate="item">
-                        <div class="multiselect-option-value">
-                          <span>{{ option.name || 'N/A' }}</span>
-                          @if (option.description) {
-                            <span> - {{ option.description }}</span>
-                          }
-                        </div>
-                      </ng-template>
-                    </p-multiSelect>
-                  </div>
-                }
-                @if (item.type === 'text') {
-                  <div class="guardian-textarea-container">
-                    <label class="form-label">Text</label>
-                    <textarea [(ngModel)]="item.value" pTextarea rows="3" [readonly]="readonly"></textarea>
-                  </div>
-                  <div class="guardian-input-container">
-                    <label class="form-label">Link (Output)</label>
-                    <div class="formula-link" (click)="onLink(item)">
-                      @if (item.link) {
-                        <div class="formula-link-value">
-                          <div class="formula-link-value__entity">{{getEntityName(item.link)}}:</div>
-                          <div class="formula-link-value__item">{{getFieldName(item.link)}}</div>
-                        </div>
-                      }
-                      @if (item.link && !readonly) {
-                        <div class="formula-link-remove">
-                          <button class="guardian-icon-button" (click)="deleteLink(item, $event)">
-                            <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
-                          </button>
-                        </div>
-                      }
-                    </div>
-                  </div>
-                  <ng-container [ngTemplateOutlet]="displayCondition" [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
-                  <div class="guardian-input-container">
-                    <label class="form-label">Relationships</label>
-                    <p-multiSelect
-                      [(ngModel)]="item.relationships"
-                      [options]="config.all"
-                      class="guardian-multiselect relationships-multiselect"
-                      appendTo="body"
-                      optionLabel="name"
-                      optionValue="uuid"
-                      panelStyleClass="guardian-multiselect-panel"
-                      [readonly]="readonly">
-                      <ng-template let-value pTemplate="selectedItems">
-                        @for (option of value; track option) {
-                          <div class="multiselect-selected-value">
-                            {{ option.name || 'N/A' }}
-                          </div>
-                        }
-                      </ng-template>
-                      <ng-template let-option pTemplate="item">
-                        <div class="multiselect-option-value">
-                          <span>{{ option.name || 'N/A' }}</span>
-                          @if (option.description) {
-                            <span> - {{ option.description }}</span>
-                          }
-                        </div>
-                      </ng-template>
-                    </p-multiSelect>
-                  </div>
-                }
-                <div class="guardian-textarea-container">
-                  <label class="form-label">Description</label>
-                  <textarea [(ngModel)]="item.description" pTextarea rows="3" [readonly]="readonly"></textarea>
-                </div>
-              </div>
-            </div>
+    }
+    <div (click)="openFiles()" class="top-toolbar-btn bordered-btn files-btn" title="Attached files">
+      <i class="pi pi-paperclip"></i>
+      <span>Files</span>
+      <span class="files-count">{{ config.files.length }}</span>
+    </div>
+    @if (!readonly) {
+      <div (click)="onSave()" class="top-toolbar-btn top-toolbar-btn--primary" title="Save">
+        <i class="pi pi-save"></i>
+        <span>Save</span>
+      </div>
+    }
+  </div>
+
+  <p-popover #identityMenu>
+    <div class="identity-popover formula-overview-popover formula-font">
+      <div class="identity-popover-header">Formula details</div>
+      <form [formGroup]="overviewForm">
+        <div class="guardian-input-container">
+          <label class="form-label" htmlFor="name">* Name</label>
+          <input formControlName="name" id="name" pInputText type="text" [readonly]="readonly"/>
+        </div>
+        <div class="guardian-input-container">
+          <label class="form-label" htmlFor="description">Description</label>
+          <input formControlName="description" id="description" pInputText type="text" [readonly]="readonly"/>
+        </div>
+        <div class="guardian-input-container">
+          <label class="form-label" htmlFor="policy">* Policy</label>
+          <div class="formula-policy-field">
+            <input formControlName="policy" id="policy" pInputText type="text" readonly/>
+            @if (showPolicyVersion) {
+              <span class="formula-policy-version">v{{ policy.version }}</span>
+            }
+          </div>
+        </div>
+      </form>
+    </div>
+  </p-popover>
+
+  <div class="formula-body">
+    <aside class="formula-list">
+      <div class="list-tools">
+        <div class="search-row">
+          <span class="search"
+            pTooltip="Matches name, value, formula, text, link, display condition and description – case-insensitive"
+            tooltipPosition="bottom">
+            <i class="pi pi-search search-icon"></i>
+            <input
+              pInputText
+              type="text"
+              autocomplete="off"
+              placeholder="Search items"
+              [ngModel]="searchText"
+              (ngModelChange)="onSearch($event)"
+              (keydown.escape)="clearSearch()"/>
+            @if (searchText) {
+              <button type="button" class="search-clear" title="Clear (Esc)" (click)="clearSearch()">
+                <i class="pi pi-times"></i>
+              </button>
+            }
+          </span>
+          @if (!readonly) {
+            <button type="button" class="add-btn" (click)="addMenu.toggle($event)">
+              <i class="pi pi-plus"></i>
+              <span>Add</span>
+              <i class="pi pi-chevron-down add-btn-caret"></i>
+            </button>
+          }
+        </div>
+        <div class="chips">
+          @for (option of options; track option.id) {
+            <button type="button" class="chip" [class.on]="filters[option.id]" [attr.data-type]="option.id"
+              [title]="(filters[option.id] ? 'Hide ' : 'Show ') + option.text.toLowerCase() + ' items'"
+              (click)="toggleFilter(option.id)">
+              <span class="f-type-icon sm" [attr.data-type]="option.id">
+                <svg-icon [src]="'/assets/images/icons/' + option.icon + '.svg'"></svg-icon>
+              </span>
+              <span>{{ option.text }}</span>
+              <span class="chip-count">{{ config.counts[option.id] }}</span>
+            </button>
+          }
+        </div>
+        @if (query) {
+          <div class="search-info">
+            {{ config.data.length }} of {{ config.total }} match ·
+            <button type="button" class="link-btn small" (click)="clearSearch()">Clear</button>
           </div>
         }
-        @if (!config.data.length) {
+      </div>
+
+      <div #rows class="rows"
+        cdkDropList
+        [cdkDropListData]="config.data"
+        [cdkDropListDisabled]="!canDrag"
+        (cdkDropListDropped)="drop($event)"
+        [class.no-drag]="!canDrag">
+        @for (item of config.data; track item.uuid) {
+          @let meta = config.meta.get(item.uuid);
+          <div class="row"
+            cdkDrag
+            cdkDragLockAxis="y"
+            [cdkDragDisabled]="!canDrag"
+            [class.selected]="item === selected"
+            [attr.data-uuid]="item.uuid"
+            (click)="select(item)">
+            <span cdkDragHandle class="grip">
+              @if (canDrag) {
+                <svg class="grip-icon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+                  <rect x="2" y="3.5" width="12" height="2" rx="1"/>
+                  <rect x="2" y="7" width="12" height="2" rx="1"/>
+                  <rect x="2" y="10.5" width="12" height="2" rx="1"/>
+                </svg>
+              }
+            </span>
+            <span class="f-type-icon" [attr.data-type]="item.type">
+              <svg-icon [src]="'/assets/images/icons/' + typeIcons[item.type] + '.svg'"></svg-icon>
+            </span>
+            <div class="row-main">
+              <div class="row-name">
+                @if (item.name) {
+                  <span>{{ item.name }}</span>
+                } @else {
+                  <span class="placeholder">Untitled</span>
+                }
+              </div>
+              @if (meta) {
+                @if (meta.noLink) {
+                  <div class="row-sub"><i>No link</i></div>
+                } @else {
+                  <div #sub class="row-sub"
+                    [pTooltip]="meta.subText"
+                    [tooltipDisabled]="sub.scrollWidth <= sub.clientWidth"
+                    tooltipPosition="bottom">
+                    @if (meta.entity) {
+                      <span class="ent">
+                        <ng-container [ngTemplateOutlet]="segments" [ngTemplateOutletContext]="{ $implicit: meta.entity }"></ng-container>
+                      </span>
+                    }
+                    <ng-container [ngTemplateOutlet]="segments" [ngTemplateOutletContext]="{ $implicit: meta.sub }"></ng-container>
+                  </div>
+                }
+                @if (meta.hit) {
+                  <div #hit class="row-hit"
+                    [pTooltip]="meta.hit.label + ': ' + meta.hit.text"
+                    [tooltipDisabled]="hit.scrollWidth <= hit.clientWidth"
+                    tooltipPosition="bottom">
+                    <span class="hit-key">{{ meta.hit.label }}:</span>
+                    <ng-container [ngTemplateOutlet]="segments" [ngTemplateOutletContext]="{ $implicit: meta.hit.segments }"></ng-container>
+                  </div>
+                }
+              }
+            </div>
+            @if (item.link?.condition) {
+              <span class="row-flags"><i class="pi pi-filter" title="Has display condition"></i></span>
+            }
+          </div>
+        }
+        @if (!config.total) {
           <div class="not-exist">
             <svg-icon class="svg-icon-32" src="/assets/images/icons/32/list.svg" svgClass="icon-color-close"></svg-icon>
             <span class="info-text-strong">There are no components added yet</span>
             <span class="info-text">Please add a new component to see the data</span>
           </div>
+        } @else if (!config.data.length) {
+          <div class="list-empty">
+            @if (allHidden) {
+              <b>All types are hidden</b>
+              <button type="button" class="link-btn" (click)="showAllTypes()">Show all types</button>
+            } @else if (query) {
+              <b>No items match "{{ query }}"</b>
+              <span>Search covers name, value, formula, text, link, display condition and description.</span>
+              <button type="button" class="link-btn" (click)="clearSearch()">Clear search</button>
+            } @else {
+              <b>No items of the selected types</b>
+              <button type="button" class="link-btn" (click)="showAllTypes()">Show all types</button>
+            }
+          </div>
         }
       </div>
-    }
-    @if (isActionStep(2)) {
-      @if (!readonly) {
-        <div class="file-menu">
-          <button
-            (click)="uploadFile()"
-            class="guardian-button guardian-button-primary">
-            <div class="guardian-button-icon">
-              <svg-icon class="icon-btn svg-icon"
-                src="/assets/images/icons/cloud-upload.svg"
-                svgClass="icon-color-secondary">
-              </svg-icon>
-            </div>
-            <div class="guardian-button-label">Upload file</div>
-          </button>
-        </div>
-      }
-      <div class="files-viewer">
-        <div class="variables-container">
-          @if (config.files.length) {
-            <div class="variables-grid">
-              <div class="variables-grid-header">
-                <div class="variables-grid-cell cell-300">NAME</div>
-                <div class="variables-grid-cell cell-max">URL</div>
-                <div class="variables-grid-cell cell-64"></div>
-              </div>
-              <div class="variables-grid-body">
-                @for (file of config.files; track file) {
-                  <div class="variables-grid-row">
-                    <div class="variables-grid-cell cell-300">
-                      {{file.name}}
-                    </div>
-                    <div class="variables-grid-cell cell-max">
-                      <ipfs-link [url]="file.url"></ipfs-link>
-                    </div>
-                    <div class="variables-grid-cell cell-64 cell-btn">
-                      @if (!readonly) {
-                        <button
-                          class="guardian-icon-button big"
-                          (click)="deleteFile(file)">
-                          <svg-icon
-                            class="icon-btn svg-icon"
-                            src="/assets/images/icons/delete.svg"
-                            svgClass="icon-color-delete">
-                          </svg-icon>
-                        </button>
-                      }
-                    </div>
-                  </div>
+      <div class="list-foot">
+        @if (isFiltering) {
+          Showing {{ config.data.length }} of {{ config.total }} · clear search and filters to reorder
+        } @else if (readonly) {
+          {{ config.total }} {{ config.total === 1 ? 'item' : 'items' }}
+        } @else {
+          {{ config.total }} {{ config.total === 1 ? 'item' : 'items' }} · drag to reorder
+        }
+      </div>
+    </aside>
+
+    <main #editor class="formula-editor">
+      @for (item of selectedList; track item.uuid) {
+        <div class="card" [attr.data-type]="item.type">
+          <div class="card-h">
+            <span class="f-type-icon lg" [attr.data-type]="item.type">
+              <svg-icon [src]="'/assets/images/icons/' + typeIcons[item.type] + '.svg'"></svg-icon>
+            </span>
+            <div class="card-h-text">
+              <div class="card-h-title">
+                @if (item.name) {
+                  <span>{{ item.name }}</span>
+                } @else {
+                  <span class="placeholder">Untitled</span>
                 }
               </div>
+              <div class="card-h-type">{{ typeNames[item.type] }} · {{ typePosition }} of {{ typeTotal }}</div>
             </div>
+            @if (!readonly) {
+              <button type="button" class="icon-btn" title="Duplicate" (click)="duplicateItem(item)">
+                <i class="pi pi-copy"></i>
+              </button>
+              <button type="button" class="icon-btn del" title="Delete" (click)="deleteItem(item)">
+                <i class="pi pi-trash"></i>
+              </button>
+            }
+          </div>
+          @if (!selectedVisible) {
+            <div class="hidden-note">This item is hidden by the current search or filters – it stays open until you pick another one.</div>
           }
-          @if (!config.files.length) {
-            <div class="variables-empty-grid">
-              <div>
-                <svg-icon
-                  class="icon-btn"
-                  src="/assets/images/icons/list.svg"
-                  svgClass="icon-color-disabled">
-                </svg-icon>
+          <div class="card-b">
+            @if (item.type === 'constant') {
+              <div class="grid2">
+                <ng-container [ngTemplateOutlet]="nameField" [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
+                <div class="sec">
+                  <label class="sec-label">Value</label>
+                  <input [(ngModel)]="item.value" (ngModelChange)="markDirty()" pInputText type="text" [readonly]="readonly"/>
+                </div>
               </div>
-              <div>There were no files attached yet.</div>
+            } @else {
+              <ng-container [ngTemplateOutlet]="nameField" [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
+            }
+            @if (item.type === 'variable') {
+              <ng-container [ngTemplateOutlet]="linkField" [ngTemplateOutletContext]="{ $implicit: item, label: 'Link (Input)' }"></ng-container>
+              <ng-container [ngTemplateOutlet]="displayCondition" [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
+            }
+            @if (item.type === 'formula') {
+              <div class="sec">
+                <label class="sec-label">Formula</label>
+                <math-live
+                  [(value)]="item.value"
+                  (valueChange)="markDirty()"
+                  [readonly]="readonly"
+                  [menu]="true"
+                  (keyboard)="onKeyboard($event)"
+                  (focus)="onKeyboardFocus($event)"
+                ></math-live>
+              </div>
+              <ng-container [ngTemplateOutlet]="linkField" [ngTemplateOutletContext]="{ $implicit: item, label: 'Link (Output)' }"></ng-container>
+              <ng-container [ngTemplateOutlet]="displayCondition" [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
+              <ng-container [ngTemplateOutlet]="relationships" [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
+            }
+            @if (item.type === 'text') {
+              <div class="sec">
+                <label class="sec-label">Text</label>
+                <textarea [(ngModel)]="item.value" (ngModelChange)="markDirty()" pTextarea rows="3" [readonly]="readonly"></textarea>
+              </div>
+              <ng-container [ngTemplateOutlet]="linkField" [ngTemplateOutletContext]="{ $implicit: item, label: 'Link (Output)' }"></ng-container>
+              <ng-container [ngTemplateOutlet]="displayCondition" [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
+              <ng-container [ngTemplateOutlet]="relationships" [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
+            }
+            <div class="sec">
+              <label class="sec-label">Description</label>
+              <textarea [(ngModel)]="item.description" (ngModelChange)="markDirty()" pTextarea rows="3" [readonly]="readonly"></textarea>
             </div>
-          }
+          </div>
         </div>
+      } @empty {
+        <div class="empty-editor">Select an item on the left</div>
+      }
+    </main>
+  </div>
+</div>
+
+<p-popover #addMenu>
+  <div class="add-menu formula-font">
+    @for (option of options; track option.id) {
+      <div class="add-menu-item" (click)="addItem(option); addMenu.hide()">
+        <span class="f-type-icon" [attr.data-type]="option.id">
+          <svg-icon [src]="'/assets/images/icons/' + option.icon + '.svg'"></svg-icon>
+        </span>
+        <span>{{ option.text }}</span>
       </div>
     }
   </div>
-  <div class="action-container">
-    @if (isActionStep(0)) {
-      <button (click)="onSave()" class="guardian-button guardian-button-primary save-button">Save Changes</button>
-    }
-    @if (isActionStep(1) && !readonly) {
-      <menu-button [options]="options" [immediately]="false" (action)="addItem($event)"></menu-button>
-      <button (click)="onSave()" class="guardian-button guardian-button-primary save-button">Save Changes</button>
-    }
-    @if (isActionStep(2)) {
-      <button (click)="onSave()" class="guardian-button guardian-button-primary save-button">Save Changes</button>
-    }
+</p-popover>
+
+<ng-template #nameField let-item>
+  <div class="sec">
+    <label class="sec-label"><span class="req">*</span>Name</label>
+    <input #nameInput [(ngModel)]="item.name" (ngModelChange)="markDirty()" pInputText type="text" [readonly]="readonly"/>
   </div>
-</div>
-<ng-template #displayCondition let-item>
-  @if (item.link?.type === 'schema') {
-    <div class="display-condition">
-      <label class="form-label">Display condition</label>
-      <div class="display-condition-hint">Optional – without a condition the formula is always shown</div>
-      @if (!item.link.condition) {
+</ng-template>
+
+<ng-template #linkField let-item let-label="label">
+  <div class="sec">
+    <label class="sec-label">{{ label }}</label>
+    <div class="input-link" [class.ro]="readonly" (click)="onLink(item)">
+      @if (item.link) {
+        <span class="link-ent">{{ getEntityName(item.link) }}:</span>
+        <span #linkText class="link-field"
+          [pTooltip]="getFieldName(item.link)"
+          [tooltipDisabled]="linkText.scrollWidth <= linkText.clientWidth"
+          tooltipPosition="bottom">{{ getFieldName(item.link) }}</span>
         @if (!readonly) {
-          <button type="button" class="display-condition-add" (click)="toggleLinkCondition(item, true)">
-            + Add display condition
+          <button type="button" class="icon-btn small" title="Remove link" (click)="deleteLink(item, $event)">
+            <i class="pi pi-times"></i>
           </button>
         }
       } @else {
-        <div class="display-condition-box">
-          <app-condition-if-editor
-            [ifCondition]="item.link.condition"
-            (ifConditionChange)="item.link.condition = $event"
-            [fieldGroups]="getLinkFieldGroups(item.link)"
-            [resolveField]="getLinkResolveField(item.link)"
-            [firstEntry]="getLinkFirstEntry(item.link)"
-            [disabled]="readonly"
-            fieldPanelStyleClass="guardian-dropdown-panel sc-cond-panel">
-            @if (!readonly) {
-              <button condHeaderActions type="button" class="display-condition-remove" (click)="toggleLinkCondition(item, false)">
-                Remove condition
-              </button>
-            }
-          </app-condition-if-editor>
+        <span class="placeholder">Select a schema field or formula</span>
+        @if (!readonly) {
+          <i class="pi pi-link end"></i>
+        }
+      }
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #relationships let-item>
+  <div class="sec">
+    <label class="sec-label">Relationships</label>
+    <p-multiSelect
+      [(ngModel)]="item.relationships"
+      (ngModelChange)="markDirty()"
+      [options]="config.all"
+      class="guardian-multiselect relationships-multiselect"
+      appendTo="body"
+      optionLabel="name"
+      optionValue="uuid"
+      panelStyleClass="guardian-multiselect-panel"
+      [readonly]="readonly">
+      <ng-template let-value pTemplate="selectedItems">
+        @for (option of value; track option) {
+          <div class="multiselect-selected-value">
+            {{ option.name || 'N/A' }}
+          </div>
+        }
+      </ng-template>
+      <ng-template let-option pTemplate="item">
+        <div class="multiselect-option-value">
+          <span>{{ option.name || 'N/A' }}</span>
+          @if (option.description) {
+            <span> - {{ option.description }}</span>
+          }
         </div>
+      </ng-template>
+    </p-multiSelect>
+  </div>
+</ng-template>
+
+<ng-template #displayCondition let-item>
+  @if (item.link?.type === 'schema') {
+    <div class="sec">
+      <label class="sec-label">
+        Display condition
+        <span class="sec-hint">Optional – without a condition the formula is always shown</span>
+      </label>
+      @if (!item.link.condition) {
+        @if (!readonly) {
+          <button type="button" class="link-btn" (click)="toggleLinkCondition(item, true)">
+            <i class="pi pi-plus"></i> Add display condition
+          </button>
+        } @else {
+          <div class="always-shown">Always shown</div>
+        }
+      } @else {
+        <app-condition-if-editor
+          [ifCondition]="item.link.condition"
+          (ifConditionChange)="item.link.condition = $event; markDirty()"
+          [fieldGroups]="getLinkFieldGroups(item.link)"
+          [resolveField]="getLinkResolveField(item.link)"
+          [firstEntry]="getLinkFirstEntry(item.link)"
+          [disabled]="readonly"
+          fieldPanelStyleClass="guardian-dropdown-panel sc-cond-panel">
+          @if (!readonly) {
+            <button condHeaderActions type="button" class="icon-btn del cond-remove" title="Remove condition"
+              (click)="toggleLinkCondition(item, false)">
+              <i class="pi pi-trash"></i>
+            </button>
+          }
+        </app-condition-if-editor>
       }
     </div>
   }
 </ng-template>
+
+<ng-template #segments let-list>@for (seg of list; track $index) {@if (seg.mark) {<mark>{{ seg.text }}</mark>} @else {<span>{{ seg.text }}</span>}}</ng-template>

@@ -1,7 +1,7 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IFormulaItem, FormulaItemType, IFormulaLink, Schema, SchemaField, UserPermissions, EntityStatus } from '@guardian/interfaces';
-import { forkJoin, Subscription } from 'rxjs';
+import { IFormulaItem, FormulaItemType, IFormulaLink, Schema, SchemaField, UserPermissions, EntityStatus, PolicyStatus } from '@guardian/interfaces';
+import { debounceTime, forkJoin, Subject, Subscription } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { FormulasService } from 'src/app/services/formulas.service';
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
@@ -12,18 +12,20 @@ import { LinkDialog } from '../dialogs/link-dialog/link-dialog.component';
 import { Formulas } from '../models/formulas';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { ConditionFieldGroup } from '../../common/condition-if-editor/condition-if-editor.component';
-import { UploadFormulaFileDialog } from '../dialogs/upload-formula-file-dialog/upload-formula-file-dialog.component';
+import { FormulaFilesDialog } from '../dialogs/formula-files-dialog/formula-files-dialog.component';
 
 @Component({
     selector: 'app-formula-configuration',
     templateUrl: './formula-configuration.component.html',
-    styleUrls: ['./formula-configuration.component.scss'],
+    styleUrls: ['../../policy-engine/styles/top-toolbar.scss', './formula-configuration.component.scss'],
     standalone: false
 })
 export class FormulaConfigurationComponent implements OnInit {
     public readonly title: string = 'Configuration';
 
-    @ViewChild('body', { static: true }) body: ElementRef;
+    @ViewChild('editor') editor: ElementRef<HTMLElement>;
+    @ViewChild('rows') rows: ElementRef<HTMLElement>;
+    @ViewChild('nameInput') nameInput: ElementRef<HTMLInputElement>;
 
     public loading: boolean = true;
     public isConfirmed: boolean = false;
@@ -40,42 +42,55 @@ export class FormulaConfigurationComponent implements OnInit {
     public readonly: boolean = false;
     public keyboard: boolean = false;
 
+    public readonly EntityStatus = EntityStatus;
+
+    public get showPolicyVersion(): boolean {
+        const status = this.policy?.status;
+        return !!this.policy?.version && (status === PolicyStatus.PUBLISH || status === PolicyStatus.DISCONTINUED);
+    }
+
     public config: Formulas = new Formulas();
     public readonly options = [
-        {
-            id: 'constant',
-            text: 'Add New Constant',
-            icon: 'const',
-            color: 'icon-color-primary'
-        },
-        {
-            id: 'variable',
-            text: 'Add New Variable',
-            icon: 'variable',
-            color: 'icon-color-primary'
-        },
-        {
-            id: 'formula',
-            text: 'Add New Formula',
-            icon: 'function',
-            color: 'icon-color-primary'
-        },
-        {
-            id: 'text',
-            text: 'Add New Text',
-            icon: 'text',
-            color: 'icon-color-primary'
-        }
+        { id: 'constant', text: 'Constant', icon: 'const' },
+        { id: 'variable', text: 'Variable', icon: 'variable' },
+        { id: 'formula', text: 'Formula', icon: 'function' },
+        { id: 'text', text: 'Text', icon: 'text' }
     ];
+    public readonly typeNames: { [type: string]: string } = {
+        constant: 'Constant',
+        variable: 'Variable',
+        formula: 'Formula',
+        text: 'Text'
+    };
 
-    public readonly filters = {
+    public readonly typeIcons: { [type: string]: string } = {
+        constant: 'const',
+        variable: 'variable',
+        formula: 'function',
+        text: 'text'
+    };
+
+    public selected: IFormulaItem | null = null;
+    /** the selected item as a list (the editor is re-mounted for every item) */
+    public selectedList: IFormulaItem[] = [];
+    public typePosition: number = 0;
+    public typeTotal: number = 0;
+    public selectedVisible: boolean = true;
+    public searchText: string = '';
+    public query: string = '';
+    public isFiltering: boolean = false;
+    public allHidden: boolean = false;
+    public canDrag: boolean = false;
+    private search$ = new Subject<string>();
+
+    public readonly filters: { [type: string]: boolean } = {
         constant: true,
         variable: true,
         formula: true,
         text: true
     }
 
-    public stepper = [true, false];
+    public dirty: boolean = false;
 
     public overviewForm = new FormGroup({
         name: new FormControl<string>('', Validators.required),
@@ -98,6 +113,27 @@ export class FormulaConfigurationComponent implements OnInit {
     }
 
     ngOnInit() {
+        this.config.labelFn = (item: IFormulaItem) => {
+            if (!item.link) {
+                return null;
+            }
+            return {
+                entity: this.getEntityName(item.link),
+                field: this.getFieldName(item.link)
+            };
+        };
+        this.subscription.add(
+            this.search$.pipe(debounceTime(150)).subscribe((value) => {
+                this.applyQuery(value);
+            })
+        );
+        this.subscription.add(
+            this.overviewForm.valueChanges.subscribe(() => {
+                if (this.overviewForm.dirty) {
+                    this.markDirty();
+                }
+            })
+        );
         this.subscription.add(
             this.route.queryParams.subscribe((queryParams) => {
                 this.loadProfile();
@@ -148,10 +184,11 @@ export class FormulaConfigurationComponent implements OnInit {
                 policy: this.policy?.name || '',
             });
             this.config.fromData(item?.config);
-
-            setTimeout(() => {
-                this.loading = false;
-            }, 1000);
+            this.selected = this.config.all[0] || null;
+            this.refreshView();
+            this.dirty = false;
+            this.overviewForm.markAsPristine();
+            this.loading = false;
         }, (e) => {
             this.loading = false;
         });
@@ -221,9 +258,10 @@ export class FormulaConfigurationComponent implements OnInit {
             .subscribe((data) => {
                 this.item = data;
                 this.formulasMap.set(String(this.item.uuid), String(this.item.name));
-                setTimeout(() => {
-                    this.loading = false;
-                }, 1000);
+                this.dirty = false;
+                this.overviewForm.markAsPristine();
+                this.refreshView();
+                this.loading = false;
             }, (e) => {
                 this.loading = false;
             });
@@ -231,7 +269,22 @@ export class FormulaConfigurationComponent implements OnInit {
 
     public addItem(option: any) {
         const type: FormulaItemType = option.id;
-        this.config.add(type);
+        const item = this.config.add(type);
+        this.selected = item;
+        this.dirty = true;
+        this.refreshView();
+        if (!this.selectedVisible) {
+            this.clearSearch();
+            this.filters.constant = true;
+            this.filters.variable = true;
+            this.filters.formula = true;
+            this.filters.text = true;
+            this.onFilter();
+        }
+        setTimeout(() => {
+            this.scrollToRow(item);
+            this.nameInput?.nativeElement.focus();
+        });
     }
 
     public deleteItem(item: any) {
@@ -253,51 +306,96 @@ export class FormulaConfigurationComponent implements OnInit {
         })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
+                const index = this.config.indexOf(item);
                 this.config.delete(item);
-            }
-        });
-    }
-
-    public deleteFile(file: any) {
-        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
-            showHeader: false,
-            width: '640px',
-            styleClass: 'guardian-dialog',
-            data: {
-                header: 'Delete file',
-                text: 'Are you sure want to delete file?',
-                buttons: [{
-                    name: 'Close',
-                    class: 'secondary'
-                }, {
-                    name: 'Delete',
-                    class: 'delete'
-                }]
-            },
-        })!;
-        dialogRef.onClose.subscribe((result: string) => {
-            if (result === 'Delete') {
-                this.config.deleteFile(file);
+                if (this.selected?.uuid === item.uuid) {
+                    const all = this.config.all;
+                    this.selected = all[index] || all[index - 1] || null;
+                }
+                this.markDirty();
+                setTimeout(() => this.scrollToRow(this.selected));
             }
         });
     }
 
     public onFilter() {
         this.config.setFilters(this.filters);
+        this.refreshView();
     }
 
-    public onStep(index: number) {
-        this.loading = true;
-        for (let i = 0; i < this.stepper.length; i++) {
-            this.stepper[i] = false;
+    public toggleFilter(type: string) {
+        this.filters[type] = !this.filters[type];
+        this.onFilter();
+    }
+
+    public showAllTypes() {
+        this.filters.constant = true;
+        this.filters.variable = true;
+        this.filters.formula = true;
+        this.filters.text = true;
+        this.onFilter();
+    }
+
+    public onSearch(value: string) {
+        this.searchText = value;
+        this.search$.next(value);
+    }
+
+    public clearSearch() {
+        this.searchText = '';
+        this.applyQuery('');
+    }
+
+    private applyQuery(value: string) {
+        this.config.setQuery(value);
+        this.query = String(value || '').trim();
+        this.refreshView();
+    }
+
+    public select(item: IFormulaItem) {
+        if (this.selected === item) {
+            return;
         }
-        this.stepper[index] = true;
-        this.loading = false;
+        this.selected = item;
         this.keyboard = false;
+        this.refreshView();
     }
 
-    public isActionStep(index: number): boolean {
-        return this.stepper[index];
+    public duplicateItem(item: IFormulaItem) {
+        if (this.readonly) {
+            return;
+        }
+        const copy = this.config.duplicate(item);
+        if (copy) {
+            this.selected = copy;
+            this.dirty = true;
+            this.refreshView();
+            setTimeout(() => this.scrollToRow(copy));
+        }
+    }
+
+    /**
+     * Updates the list data and the state of the list and the editor.
+     */
+    public refreshView() {
+        this.config.update();
+        const selected = this.selected;
+        this.selectedList = selected ? [selected] : [];
+        const sameType = selected ? this.config.all.filter((e) => e.type === selected.type) : [];
+        this.typeTotal = sameType.length;
+        this.typePosition = selected ? sameType.indexOf(selected) + 1 : 0;
+        this.selectedVisible = !selected || this.config.data.includes(selected);
+        this.allHidden = !this.filters.constant && !this.filters.variable && !this.filters.formula && !this.filters.text;
+        this.isFiltering = this.config.isFiltering;
+        this.canDrag = !this.readonly && !this.isFiltering;
+    }
+
+    private scrollToRow(item: IFormulaItem | null) {
+        if (!item) {
+            return;
+        }
+        const row = this.rows?.nativeElement.querySelector(`[data-uuid="${item.uuid}"]`);
+        row?.scrollIntoView({ block: 'nearest' });
     }
 
     public onKeyboard($event: boolean) {
@@ -308,7 +406,10 @@ export class FormulaConfigurationComponent implements OnInit {
         setTimeout(() => {
             if (this.keyboard) {
                 const focus = $event.getElement();
-                const scroll = this.body;
+                const scroll = this.editor;
+                if (!scroll) {
+                    return;
+                }
                 const targetRect = focus.nativeElement.getBoundingClientRect();
                 const scrollRect = scroll.nativeElement.getBoundingClientRect();
                 const y = targetRect.y - scrollRect.y;
@@ -329,6 +430,7 @@ export class FormulaConfigurationComponent implements OnInit {
             showHeader: false,
             width: '90%',
             styleClass: 'guardian-dialog',
+            focusOnShow: false,
             data: {
                 link: item.link,
                 schemas: this.schemas,
@@ -352,7 +454,8 @@ export class FormulaConfigurationComponent implements OnInit {
                 } else {
                     delete result.condition;
                 }
-                item.link = result
+                item.link = result;
+                this.markDirty();
             }
         });
     }
@@ -398,7 +501,7 @@ export class FormulaConfigurationComponent implements OnInit {
                 addGroups(f.fields, f.description || f.title || f.name, depth + 1);
             }
         };
-        addGroups(schema.fields || [], 'This schema', 0);
+        addGroups(schema.fields || [], `This schema – ${schema.name}`, 0);
         return result;
     }
 
@@ -455,6 +558,7 @@ export class FormulaConfigurationComponent implements OnInit {
         }
         if (!on) {
             delete item.link.condition;
+            this.markDirty();
             return;
         }
         const first = this.getLinkFirstEntry(item.link)();
@@ -466,6 +570,7 @@ export class FormulaConfigurationComponent implements OnInit {
             fieldValue: '',
             ...(first.fieldPath.length > 1 ? { fieldPath: first.fieldPath } : {})
         };
+        this.markDirty();
     }
 
     public getEntityName(link: IFormulaLink): string {
@@ -499,23 +604,33 @@ export class FormulaConfigurationComponent implements OnInit {
         $event.preventDefault();
         $event.stopPropagation();
         item.link = null;
+        this.markDirty();
     }
 
     public drop(event: CdkDragDrop<any[]>) {
         this.config.reorder(event.previousIndex, event.currentIndex);
+        this.markDirty();
     }
 
-    public uploadFile() {
-        const dialogRef = this.dialogService.open(UploadFormulaFileDialog, {
+    public openFiles() {
+        const dialogRef = this.dialogService.open(FormulaFilesDialog, {
             showHeader: false,
-            width: '640px',
+            width: '800px',
             styleClass: 'guardian-dialog',
-            data: {},
+            data: {
+                config: this.config,
+                readonly: this.readonly
+            },
         })!;
-        dialogRef.onClose.subscribe((result: any) => {
-            if(result) {
-                this.config.addFile(result);
+        dialogRef.onClose.subscribe((changed: boolean) => {
+            if (changed) {
+                this.markDirty();
             }
         });
+    }
+
+    public markDirty() {
+        this.dirty = true;
+        this.refreshView();
     }
 }

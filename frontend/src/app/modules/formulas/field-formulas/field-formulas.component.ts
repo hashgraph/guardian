@@ -40,10 +40,6 @@ export class FieldFormulasComponent {
         return item.uuid;
     }
 
-    public isPlainSymbol(name: string): boolean {
-        return !name || /\s/.test(name);
-    }
-
     public typeLabel(item: FormulaItem): string {
         switch (item.type) {
             case 'constant': return 'Constant';

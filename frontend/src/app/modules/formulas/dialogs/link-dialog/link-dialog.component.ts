@@ -20,6 +20,7 @@ export class LinkDialog {
     public itemId: string | null;
     public items: TreeListView<any> | null;
     public isLargeSize: boolean = true;
+    private original: IFormulaLink | null = null;
     @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
 
     constructor(
@@ -41,6 +42,13 @@ export class LinkDialog {
             this.type = link.type;
             this.entityId = link.entityId;
             this.itemId = link.item;
+            this.original = link;
+            const exists = link.type === 'schema'
+                ? this.schemas.some((s) => s.iri === link.entityId)
+                : this.formulas.some((s) => s.uuid === link.entityId);
+            if (exists) {
+                this.onNext();
+            }
         }
     }
 
@@ -52,7 +60,21 @@ export class LinkDialog {
     }
 
     public onChangeType(type: 'schema' | 'formula') {
-        this.type = type;
+        if (this.type !== type) {
+            this.type = type;
+            this.entityId = this.original && this.original.type === type ? this.original.entityId : '';
+            this.syncItem();
+        }
+    }
+
+    /**
+     * The linked field is kept only for the original entity.
+     */
+    private syncItem() {
+        const same = !!this.original
+            && this.original.type === this.type
+            && this.original.entityId === this.entityId;
+        this.itemId = same ? this.original!.item : null;
     }
 
     public onSelectEntity(item: any) {
@@ -62,6 +84,7 @@ export class LinkDialog {
         if (this.type === 'formula') {
             this.entityId = item.uuid;
         }
+        this.syncItem();
     }
 
     public onClose(): void {
@@ -81,6 +104,27 @@ export class LinkDialog {
             const fields = TreeListData.fromObject<FieldData>(formula.config || {}, 'formulas');
             this.items = TreeListView.createView(fields, (s) => { return !s.parent });
         }
+        this.revealSelected();
+    }
+
+    private revealSelected() {
+        if (!this.items || !this.itemId) {
+            return;
+        }
+        const selected = this.items.findItem((e) => this.type === 'schema'
+            ? e.data.path === this.itemId
+            : e.data.uuid === this.itemId);
+        if (!selected) {
+            return;
+        }
+        this.items.collapsePath(selected.parent, false);
+        this.items.updateHidden();
+        setTimeout(() => {
+            const row = this.dialogHeader?.nativeElement
+                .closest('.p-dialog, .guardian-dialog')
+                ?.querySelector('.field-item[data-selected="true"]');
+            row?.scrollIntoView({ block: 'center' });
+        }, 350);
     }
 
     public onPrev() {

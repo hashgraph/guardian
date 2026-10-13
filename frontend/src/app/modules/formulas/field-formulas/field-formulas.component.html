@@ -28,11 +28,7 @@
               @for (rel of item.relationshipItems; track rel.uuid) {
                 <tr>
                   <td class="sym">
-                    @if (isPlainSymbol(rel.name)) {
-                      {{rel.name}}
-                    } @else {
-                      <span [latexMarkup]="rel.name"></span>
-                    }
+                    {{rel.name}}
                   </td>
                   <td class="kind">{{typeLabel(rel)}}</td>
                   <td>{{rel.description}}</td>
