@@ -54,8 +54,10 @@ describe('ConditionIfEditorComponent', () => {
         component.setIfRowValue(0, 'x');
         component.addIfRow();
         component.removeIfRow(0);
+        component.setIfRowComparator(0, 'contains');
         expect(emitted.length).toBe(0);
         expect(component.ifCondition.AND[0]).toBe(row);
+        expect(row).not.toEqual(jasmine.objectContaining({ comparator: 'contains' }));
     });
 
     it('sets the row field with a nested path and resets the value', () => {

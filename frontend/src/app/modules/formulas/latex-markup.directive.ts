@@ -2,6 +2,10 @@ import { Directive, ElementRef, Input, OnChanges } from '@angular/core';
 import { convertLatexToMarkup } from 'mathlive';
 import { isSafeHref } from '../schema-engine/rich-text-editor/rich-text-sanitizer';
 
+// MathLive copies these into raw style/class/id/data-* attributes, so imported formulas
+// could restyle the host page. LaTeX using them is shown as plain text instead.
+const UNSAFE_COMMANDS = /\\(?:htmlStyle|class|cssId|htmlData|style)(?![a-zA-Z])/;
+
 const REMOVED_TAGS = new Set(['SCRIPT', 'IFRAME', 'OBJECT', 'EMBED', 'STYLE', 'LINK', 'META', 'BASE', 'FORM']);
 
 /**
@@ -39,6 +43,10 @@ export class LatexMarkupDirective implements OnChanges {
             return LatexMarkupDirective.cache.get(latex)!;
         }
         let result: string | null;
+        if (UNSAFE_COMMANDS.test(latex)) {
+            LatexMarkupDirective.cache.set(latex, null);
+            return null;
+        }
         try {
             result = LatexMarkupDirective.scrub(convertLatexToMarkup(latex));
         } catch {

@@ -62,6 +62,7 @@
                     optionValue="value"
                     appendTo="body"
                     [ngModel]="getIfRowComparator(row)"
+                    [disabled]="disabled"
                     (onChange)="setIfRowComparator(ri, $event.value)">
                     <ng-template pTemplate="item" let-option>
                         <span class="sc-cond-opt-row">

@@ -116,6 +116,7 @@ export class ConditionIfEditorComponent {
     }
 
     public setIfRowComparator(rowIdx: number, comparator: string): void {
+        if (this.disabled) { return; }
         const ic = this.ifCondition as any;
         if (!ic) { return; }
         const apply = (row: any) => {
