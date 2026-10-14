@@ -19,9 +19,8 @@
           <tr>
             <td class="ff-col-name">{{ file.name }}</td>
             <td class="ff-col-url">
-              <span #urlEl class="ff-url"
-                [pTooltip]="file.url || ''"
-                [tooltipDisabled]="urlEl.scrollWidth <= urlEl.clientWidth"
+              <span class="ff-url"
+                [truncateTooltip]="file.url"
                 tooltipPosition="bottom">
                 <ipfs-link [url]="file.url"></ipfs-link>
               </span>

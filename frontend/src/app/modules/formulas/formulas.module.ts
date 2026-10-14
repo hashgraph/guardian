@@ -31,6 +31,7 @@ import { UploadFormulaFileDialog } from './dialogs/upload-formula-file-dialog/up
 import { FormulaFilesDialog } from './dialogs/formula-files-dialog/formula-files-dialog.component';
 import { FieldFormulasComponent } from './field-formulas/field-formulas.component';
 import { LatexMarkupDirective } from './latex-markup.directive';
+import { TruncateTooltipDirective } from './truncate-tooltip.directive';
 import { FormulasGraphTabComponent } from "./dialogs/formulas-view-dialog/formulas-graph-tab/formulas-graph-tab.component";
 
 @NgModule({
@@ -45,6 +46,7 @@ import { FormulasGraphTabComponent } from "./dialogs/formulas-view-dialog/formul
         FormulasGraphTabComponent,
         FieldFormulasComponent,
         LatexMarkupDirective,
+        TruncateTooltipDirective,
     ],
     imports: [
         CommonModule,

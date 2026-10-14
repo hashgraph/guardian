@@ -13,7 +13,7 @@ import { Formulas } from '../../models/formulas';
 export class FormulaFilesDialog {
     public config: Formulas;
     public readonly: boolean = false;
-    public changed: boolean = false;
+    private onChange: () => void;
 
     constructor(
         public ref: DynamicDialogRef,
@@ -22,10 +22,12 @@ export class FormulaFilesDialog {
     ) {
         this.config = this.dialogConfig.data?.config;
         this.readonly = !!this.dialogConfig.data?.readonly;
+        // called on every change, so the editor sees it however the dialog is closed (Esc included)
+        this.onChange = this.dialogConfig.data?.onChange || (() => {});
     }
 
     public onClose(): void {
-        this.ref.close(this.changed);
+        this.ref.close();
     }
 
     public uploadFile(): void {
@@ -38,7 +40,7 @@ export class FormulaFilesDialog {
         dialogRef.onClose.subscribe((result: any) => {
             if (result) {
                 this.config.addFile(result);
-                this.changed = true;
+                this.onChange();
             }
         });
     }
@@ -63,7 +65,7 @@ export class FormulaFilesDialog {
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
                 this.config.deleteFile(file);
-                this.changed = true;
+                this.onChange();
             }
         });
     }

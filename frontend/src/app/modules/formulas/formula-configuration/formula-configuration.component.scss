@@ -729,6 +729,59 @@
     }
 }
 
+.status-menu {
+    display: flex;
+    flex-direction: column;
+    min-width: 160px;
+    padding: 4px;
+
+    .status-menu-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        height: 34px;
+        padding: 0 10px;
+        border: 1px solid transparent;
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
+
+        &:hover {
+            background: var(--guardian-hover, #F0F3FC);
+            border-color: currentColor;
+        }
+
+        i {
+            font-size: 14px;
+        }
+
+        svg-icon {
+            display: inline-flex;
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+
+            ::ng-deep svg {
+                width: 16px;
+                height: 16px;
+                fill: currentColor;
+            }
+        }
+    }
+
+    .publish-color {
+        color: var(--pc-publish-status-color, var(--color-accent-green-1, #19BE47));
+    }
+
+    .dry-run-color {
+        color: var(--pc-dry-run-status-color, var(--color-primary, #4169E2));
+    }
+
+    .edit-color {
+        color: var(--pc-edit-status-color, var(--pc-wizard-color, #9c27b0));
+    }
+}
+
 .formula-overview-popover {
     width: 360px;
     padding: 0 0 4px 0;

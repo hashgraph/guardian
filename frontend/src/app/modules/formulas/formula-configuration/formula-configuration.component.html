@@ -25,9 +25,8 @@
         <svg-icon src="/assets/images/icons/function.svg"></svg-icon>
       </span>
       <div class="policy-identity-text">
-        <span #formulaNameEl class="policy-identity-name"
-          [pTooltip]="item?.name || 'Untitled formula'"
-          [tooltipDisabled]="formulaNameEl.scrollWidth <= formulaNameEl.clientWidth"
+        <span class="policy-identity-name"
+          [truncateTooltip]="item?.name || 'Untitled formula'"
           tooltipPosition="bottom">{{ item?.name || 'Untitled formula' }}</span>
         <span class="policy-identity-meta">Policy: {{ policy?.name }} · Formula details</span>
       </div>
@@ -39,19 +38,24 @@
         <span>Published</span>
       </div>
     } @else if (item?.status === EntityStatus.DRY_RUN) {
-      <div class="status-badge status-badge--dryrun">
+      <div (click)="statusMenu.toggle($event)" class="status-badge status-badge--dryrun" title="Dry Run">
         <svg-icon src="/assets/images/icons/build.svg" svgClass="icon-style-build"></svg-icon>
         <span>In Dry Run</span>
+        <i class="pi pi-sort-down-fill status-badge-caret"></i>
       </div>
     } @else if (item?.status === EntityStatus.ERROR) {
-      <div class="status-badge status-badge--error">
+      <div (click)="canPublish && statusMenu.toggle($event)" class="status-badge status-badge--error" title="Error">
         <i class="pi pi-exclamation-circle"></i>
         <span>Error</span>
+        @if (canPublish) {
+          <i class="pi pi-sort-down-fill status-badge-caret"></i>
+        }
       </div>
     } @else if (item) {
-      <div class="status-badge status-badge--draft">
+      <div (click)="statusMenu.toggle($event)" class="status-badge status-badge--draft" title="Draft">
         <i class="pi pi-pencil"></i>
         <span>Draft</span>
+        <i class="pi pi-sort-down-fill status-badge-caret"></i>
       </div>
     }
     <div class="toolbar-spacer"></div>
@@ -73,6 +77,32 @@
       </div>
     }
   </div>
+
+  <p-popover #statusMenu>
+    <div class="status-menu formula-font">
+      @if (canPublish) {
+        <div (click)="onChangeStatus(EntityStatus.PUBLISHED); statusMenu.hide()" class="status-menu-item publish-color"
+          title="Release version into public domain.">
+          <i class="pi pi-globe"></i>
+          <span>Publish</span>
+        </div>
+      }
+      @if (item?.status === EntityStatus.DRAFT) {
+        <div (click)="onChangeStatus(EntityStatus.DRY_RUN); statusMenu.hide()" class="status-menu-item dry-run-color"
+          title="Run without making any persistent changes or executing transaction.">
+          <svg-icon src="/assets/images/icons/build.svg" svgClass="icon-style-build"></svg-icon>
+          <span>Dry Run</span>
+        </div>
+      }
+      @if (item?.status === EntityStatus.DRY_RUN) {
+        <div (click)="onChangeStatus(EntityStatus.DRAFT); statusMenu.hide()" class="status-menu-item edit-color"
+          title="Return to editing.">
+          <i class="pi pi-pencil"></i>
+          <span>Stop</span>
+        </div>
+      }
+    </div>
+  </p-popover>
 
   <p-popover #identityMenu>
     <div class="identity-popover formula-overview-popover formula-font">
@@ -189,9 +219,8 @@
                 @if (meta.noLink) {
                   <div class="row-sub"><i>No link</i></div>
                 } @else {
-                  <div #sub class="row-sub"
-                    [pTooltip]="meta.subText"
-                    [tooltipDisabled]="sub.scrollWidth <= sub.clientWidth"
+                  <div class="row-sub"
+                    [truncateTooltip]="meta.subText"
                     tooltipPosition="bottom">
                     @if (meta.entity) {
                       <span class="ent">
@@ -202,9 +231,8 @@
                   </div>
                 }
                 @if (meta.hit) {
-                  <div #hit class="row-hit"
-                    [pTooltip]="meta.hit.label + ': ' + meta.hit.text"
-                    [tooltipDisabled]="hit.scrollWidth <= hit.clientWidth"
+                  <div class="row-hit"
+                    [truncateTooltip]="meta.hit.label + ': ' + meta.hit.text"
                     tooltipPosition="bottom">
                     <span class="hit-key">{{ meta.hit.label }}:</span>
                     <ng-container [ngTemplateOutlet]="segments" [ngTemplateOutletContext]="{ $implicit: meta.hit.segments }"></ng-container>
@@ -359,9 +387,8 @@
     <div class="input-link" [class.ro]="readonly" (click)="onLink(item)">
       @if (item.link) {
         <span class="link-ent">{{ getEntityName(item.link) }}:</span>
-        <span #linkText class="link-field"
-          [pTooltip]="getFieldName(item.link)"
-          [tooltipDisabled]="linkText.scrollWidth <= linkText.clientWidth"
+        <span class="link-field"
+          [truncateTooltip]="getFieldName(item.link)"
           tooltipPosition="bottom">{{ getFieldName(item.link) }}</span>
         @if (!readonly) {
           <button type="button" class="icon-btn small" title="Remove link" (click)="deleteLink(item, $event)">

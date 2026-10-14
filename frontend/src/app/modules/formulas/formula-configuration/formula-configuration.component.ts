@@ -1,7 +1,7 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IFormulaItem, FormulaItemType, IFormulaLink, Schema, SchemaField, UserPermissions, EntityStatus, PolicyStatus } from '@guardian/interfaces';
-import { debounceTime, forkJoin, Subject, Subscription } from 'rxjs';
+import { debounceTime, forkJoin, Observable, of, Subject, Subscription, switchMap } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { FormulasService } from 'src/app/services/formulas.service';
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
@@ -43,6 +43,11 @@ export class FormulaConfigurationComponent implements OnInit {
     public keyboard: boolean = false;
 
     public readonly EntityStatus = EntityStatus;
+
+    /** formulas can be published only when their policy is published */
+    public get canPublish(): boolean {
+        return this.policy?.status === PolicyStatus.PUBLISH;
+    }
 
     public get showPolicyVersion(): boolean {
         const status = this.policy?.status;
@@ -183,8 +188,9 @@ export class FormulaConfigurationComponent implements OnInit {
                 description: item.description || '',
                 policy: this.policy?.name || '',
             });
+            const selectedId = this.selected?.uuid;
             this.config.fromData(item?.config);
-            this.selected = this.config.all[0] || null;
+            this.selected = (selectedId && this.config.getItem(selectedId)) || this.config.all[0] || null;
             this.refreshView();
             this.dirty = false;
             this.overviewForm.markAsPristine();
@@ -243,18 +249,20 @@ export class FormulaConfigurationComponent implements OnInit {
         this.router.navigate(['/formulas']);
     }
 
-    public onSave() {
-        this.loading = true;
-        const config = this.config.getJson();
+    private getSaveItem(): any {
         const value = this.overviewForm.value;
-        const item = {
+        return {
             ...this.item,
             name: value.name,
             description: value.description,
-            config
+            config: this.config.getJson()
         };
+    }
+
+    public onSave() {
+        this.loading = true;
         this.formulasService
-            .updateFormula(item)
+            .updateFormula(this.getSaveItem())
             .subscribe((data) => {
                 this.item = data;
                 this.formulasMap.set(String(this.item.uuid), String(this.item.name));
@@ -262,6 +270,57 @@ export class FormulaConfigurationComponent implements OnInit {
                 this.overviewForm.markAsPristine();
                 this.refreshView();
                 this.loading = false;
+            }, (e) => {
+                this.loading = false;
+            });
+    }
+
+    public onChangeStatus(status: EntityStatus) {
+        if (status !== EntityStatus.PUBLISHED) {
+            this.changeStatus(status);
+            return;
+        }
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Publish Formula',
+                text: `Are you sure want to publish formula (${this.item?.name})?`,
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Publish',
+                    class: 'primary'
+                }]
+            },
+        })!;
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Publish') {
+                this.changeStatus(status);
+            }
+        });
+    }
+
+    /**
+     * Saves unsaved changes first: the status requests do not send the configuration.
+     */
+    private changeStatus(status: EntityStatus) {
+        let request: (item: any) => Observable<any>;
+        if (status === EntityStatus.DRAFT) {
+            request = (item) => this.formulasService.draft(item);
+        } else if (status === EntityStatus.DRY_RUN) {
+            request = (item) => this.formulasService.dryRun(item);
+        } else {
+            request = (item) => this.formulasService.publish(item);
+        }
+        this.loading = true;
+        const save$ = this.dirty ? this.formulasService.updateFormula(this.getSaveItem()) : of(this.item);
+        save$
+            .pipe(switchMap((item) => request(item || this.item)))
+            .subscribe(() => {
+                this.loadData();
             }, (e) => {
                 this.loading = false;
             });
@@ -613,19 +672,15 @@ export class FormulaConfigurationComponent implements OnInit {
     }
 
     public openFiles() {
-        const dialogRef = this.dialogService.open(FormulaFilesDialog, {
+        this.dialogService.open(FormulaFilesDialog, {
             showHeader: false,
             width: '800px',
             styleClass: 'guardian-dialog',
             data: {
                 config: this.config,
-                readonly: this.readonly
+                readonly: this.readonly,
+                onChange: () => this.markDirty()
             },
-        })!;
-        dialogRef.onClose.subscribe((changed: boolean) => {
-            if (changed) {
-                this.markDirty();
-            }
         });
     }
 
