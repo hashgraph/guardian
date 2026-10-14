@@ -79,29 +79,27 @@
   </div>
 
   <p-popover #statusMenu>
-    <div class="status-menu formula-font">
-      @if (canPublish) {
-        <div (click)="onChangeStatus(EntityStatus.PUBLISHED); statusMenu.hide()" class="status-menu-item publish-color"
-          title="Release version into public domain.">
-          <i class="pi pi-globe"></i>
-          <span>Publish</span>
-        </div>
-      }
-      @if (item?.status === EntityStatus.DRAFT) {
-        <div (click)="onChangeStatus(EntityStatus.DRY_RUN); statusMenu.hide()" class="status-menu-item dry-run-color"
-          title="Run without making any persistent changes or executing transaction.">
-          <svg-icon src="/assets/images/icons/build.svg" svgClass="icon-style-build"></svg-icon>
-          <span>Dry Run</span>
-        </div>
-      }
-      @if (item?.status === EntityStatus.DRY_RUN) {
-        <div (click)="onChangeStatus(EntityStatus.DRAFT); statusMenu.hide()" class="status-menu-item edit-color"
-          title="Return to editing.">
-          <i class="pi pi-pencil"></i>
-          <span>Stop</span>
-        </div>
-      }
-    </div>
+    @if (canPublish) {
+      <div (click)="onChangeStatus(EntityStatus.PUBLISHED); statusMenu.hide()" class="toolbar-menu all-status publish-color"
+        title="Release version into public domain.">
+        <i class="pi pi-globe publish-color"></i>
+        <span class="publish-color">Publish</span>
+      </div>
+    }
+    @if (item?.status === EntityStatus.DRAFT) {
+      <div (click)="onChangeStatus(EntityStatus.DRY_RUN); statusMenu.hide()" class="toolbar-menu all-status dry-run-color"
+        title="Run without making any persistent changes or executing transaction.">
+        <svg-icon src="/assets/images/icons/build.svg" svgClass="icon-style-build dry-run-color"></svg-icon>
+        <span class="dry-run-color">Dry Run</span>
+      </div>
+    }
+    @if (item?.status === EntityStatus.DRY_RUN) {
+      <div (click)="onChangeStatus(EntityStatus.DRAFT); statusMenu.hide()" class="toolbar-menu all-status edit-color"
+        title="Return to editing.">
+        <i class="pi pi-pencil edit-color"></i>
+        <span class="edit-color">Stop</span>
+      </div>
+    }
   </p-popover>
 
   <p-popover #identityMenu>

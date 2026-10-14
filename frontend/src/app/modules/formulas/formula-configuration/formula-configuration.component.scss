@@ -729,57 +729,57 @@
     }
 }
 
-.status-menu {
+// Status menu, the same as the policy configurator's (policy-configuration.component.scss)
+.toolbar-menu {
     display: flex;
-    flex-direction: column;
-    min-width: 160px;
-    padding: 4px;
+    overflow: hidden;
+    min-width: 110px;
+    height: 34px;
+    flex-direction: row;
+    border: 1px solid transparent;
+    margin: 3px 5px;
+    padding: 4px 8px 2px 2px;
+    border-radius: 4px;
+    font-size: 12px;
+    align-items: center;
+    align-content: center;
+    color: var(--pc-active-icon-color);
+    cursor: pointer;
 
-    .status-menu-item {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        height: 34px;
-        padding: 0 10px;
-        border: 1px solid transparent;
-        border-radius: 6px;
+    &:hover {
+        background: rgb(63 81 181 / 3%);
+        border: 1px solid var(--pc-active-icon-color);
+    }
+
+    svg-icon {
+        width: 18px;
+        fill: var(--pc-active-icon-color)
+    }
+
+    svg {
+        height: 18px;
+    }
+
+    span {
         font-size: 14px;
-        cursor: pointer;
-
-        &:hover {
-            background: var(--guardian-hover, #F0F3FC);
-            border-color: currentColor;
-        }
-
-        i {
-            font-size: 14px;
-        }
-
-        svg-icon {
-            display: inline-flex;
-            width: 16px;
-            height: 16px;
-            fill: currentColor;
-
-            ::ng-deep svg {
-                width: 16px;
-                height: 16px;
-                fill: currentColor;
-            }
-        }
+        align-items: center;
+        align-content: center;
+        text-align: center;
+        line-height: 15px;
+        padding-left: 8px;
     }
+}
 
-    .publish-color {
-        color: var(--pc-publish-status-color, var(--color-accent-green-1, #19BE47));
-    }
+.edit-color {
+    color: var(--pc-edit-status-color, var(--pc-wizard-color, #9c27b0));
+}
 
-    .dry-run-color {
-        color: var(--pc-dry-run-status-color, var(--color-primary, #4169E2));
-    }
+.dry-run-color {
+    color: var(--pc-dry-run-status-color, var(--pc-active-icon-color));
+}
 
-    .edit-color {
-        color: var(--pc-edit-status-color, var(--pc-wizard-color, #9c27b0));
-    }
+.publish-color {
+    color: var(--pc-publish-status-color, var(--color-accent-green-1, #19BE47));
 }
 
 .formula-overview-popover {
