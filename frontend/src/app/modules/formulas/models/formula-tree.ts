@@ -1,4 +1,4 @@
-import { IFormulaItem, IFormula, IFormulaLink, FormulaItemType, Schema, SchemaField, IVCDocument, ISchema, IVPDocument, IVC, IVP, ICredentialSubject, IFormulaFile, SchemaHelper, SchemaIfCondition } from "@guardian/interfaces";
+import { IFormulaItem, IFormula, IFormulaLink, FormulaItemType, Schema, SchemaField, IVCDocument, ISchema, IVPDocument, IVC, IVP, ICredentialSubject, IFormulaFile, SchemaHelper, SchemaIfCondition, IFormulaSource } from "@guardian/interfaces";
 
 export interface IFormulaConditionContext {
     data: any;
@@ -214,6 +214,7 @@ export class FormulaItem {
     public readonly description: string;
     public readonly type: FormulaItemType;
     public readonly condition: SchemaIfCondition | null;
+    public readonly source: IFormulaSource | null;
 
     private _value: any;
     private _link: IFormulaLink | null;
@@ -233,6 +234,8 @@ export class FormulaItem {
         this.name = config.name || '';
         this.description = config.description || '';
         this.type = config.type || '';
+
+        this.source = config.source && typeof config.source === 'object' ? config.source : null;
 
         this._value = config.value || '';
         this._link = config.link || null;

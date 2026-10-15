@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { FormulaFiles, FormulaItem, FormulasTree, IFormulaConditionContext, SchemaItem } from '../../models/formula-tree';
-import { filterRootItems, FormulasViewOrigin } from './formula-view-items';
+import { filterRootItems, FormulasViewOrigin, sourceRows } from './formula-view-items';
 import { TreeListData, TreeListItem, TreeListView } from 'src/app/modules/common/tree-graph/tree-list';
 
 @Component({
@@ -22,6 +22,7 @@ export class FormulasViewDialog {
     public current: FormulaItem | SchemaItem | null;
     public nav: TreeListView<any>;
     public files: FormulaFiles[];
+    public sourceBlocks: { name: string, rows: { label: string, value: string }[] }[] = [];
 
     public isLargeSize: boolean = true;
     private startX: number = 0;
@@ -38,7 +39,8 @@ export class FormulasViewDialog {
     private readonly allTabs = [
         { label: 'Diagram', key: 'diagram', icon: 'graph' },
         { label: 'Formulas', key: 'formulas', icon: 'function' },
-        { label: 'Files', key: 'files', icon: 'file' }
+        { label: 'Files', key: 'files', icon: 'file' },
+        { label: 'Info', key: 'info', icon: 'info' }
     ];
 
     public viewDocumentOptions = this.allTabs;
@@ -65,6 +67,7 @@ export class FormulasViewDialog {
         this.loading = false;
         const all = this.tree?.get(this.schema, this.path, this.context) || [];
         this.items = filterRootItems(all, this.itemId);
+        this.sourceBlocks = this.items.map((e) => ({ name: e.name, rows: sourceRows(e.source) }));
         this.files = this.tree?.getFiles(this.items) || [];
         const navTree = FormulasTree.createNav(this.items)
         const fields = TreeListData.fromObject<any>(navTree, 'children');
