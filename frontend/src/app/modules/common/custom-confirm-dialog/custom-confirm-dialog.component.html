@@ -15,7 +15,7 @@
   }
 
   @if (text) {
-    <div class="confirmation-text">{{ text }}</div>
+    <div class="confirmation-text" [class.confirmation-text--regular]="regularText">{{ text }}</div>
   }
   @if (texts) {
     <div class="confirmation-texts">

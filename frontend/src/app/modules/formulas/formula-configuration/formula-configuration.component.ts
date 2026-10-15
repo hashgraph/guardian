@@ -396,6 +396,7 @@ export class FormulaConfigurationComponent implements OnInit {
             data: {
                 header: 'Apply methodology to all items',
                 text: `Set methodology "${value}" on all ${all.length} items? Items that already have a different methodology will be overwritten.`,
+                regularText: true,
                 buttons: [{
                     name: 'Close',
                     class: 'secondary'

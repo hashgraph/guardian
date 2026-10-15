@@ -24,7 +24,6 @@
 .dialog-body {
     display: flex;
     flex-direction: column;
-    min-height: 600px;
     padding-bottom: 24px;
 }
 
@@ -32,11 +31,11 @@
     margin-bottom: 24px;
 }
 
+// Fits the viewport with the header, tabs and footer, so the dialog itself never scrolls
 .view-body {
     display: flex;
     flex-direction: row;
-    min-height: 600px;
-    height: 600px;
+    height: clamp(320px, calc(100vh - 340px), 600px);
     gap: 10px;
 }
 
