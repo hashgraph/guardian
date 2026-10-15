@@ -2,6 +2,7 @@ import { EntityStatus, FormulaItemType, IFormula, IFormulaConfig } from '@guardi
 import {
     applyFieldBindingOps,
     applyFieldBindingOpsToFormulas,
+    buildFieldPath,
     createStubItem,
     findFieldBindings,
     IFieldTarget,
@@ -141,5 +142,11 @@ describe('field-bindings', () => {
         expect(isEditableFormula({ status: EntityStatus.DRY_RUN })).toBeTrue();
         expect(isEditableFormula({ status: EntityStatus.PUBLISHED })).toBeFalse();
         expect(isEditableFormula(null)).toBeFalse();
+    });
+
+    it('buildFieldPath joins the drilled-into field names and the field name', () => {
+        expect(buildFieldPath([], 'G6')).toBe('G6');
+        expect(buildFieldPath(['projectRisks'], 'G6')).toBe('projectRisks.G6');
+        expect(buildFieldPath(['a', 'b'], 'c')).toBe('a.b.c');
     });
 });

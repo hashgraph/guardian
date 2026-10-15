@@ -1283,6 +1283,8 @@
                             <div class="sc-rp-label">Formulas</div>
                             @if (formulasView.state === 'save-first') {
                                 <div class="sc-ff-hint">Save the schema first to assign formulas.</div>
+                            } @else if (formulasView.state === 'sub-schema') {
+                                <div class="sc-ff-hint">This is a sub-schema – assign formulas from a document schema that uses it.</div>
                             } @else if (formulasView.state === 'loading') {
                                 <div class="sc-ff-hint">Loading formulas…</div>
                             } @else {

@@ -27,10 +27,12 @@ import { updateOverflowTitle } from 'src/app/utils/overflow-title';
 import { FormulasService } from 'src/app/services/formulas.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
-import { IFieldFormulaRow, IFieldFormulasView, SchemaFieldFormulas } from './schema-field-formulas';
+import { IFieldFormulaRow, IFieldFormulasView, IFieldScope, SchemaFieldFormulas } from './schema-field-formulas';
 
 export interface DrillEntry {
     fieldLabel: string;
+    /** key of the sub-schema field drilled into; the drill path is the formula link path prefix */
+    fieldName: string;
     fields: SchemaField[];
     schemaIri: string;
 }
@@ -2244,38 +2246,57 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Whether the selected field can have formulas: a top-level field of the open schema
-     * (its path in the schema is its name) that is not help text.
+     * The selected field as formulas see it: the open (root) schema and the path from it.
+     * When drilling, the drilled-into field names prefix the path. Null when there is no
+     * field or it is not in the fields shown.
+     */
+    private get selectedFieldScope(): IFieldScope | null {
+        const schema = this.selectedSchema;
+        const field = this.selectedField;
+        if (!schema || !field) {
+            return null;
+        }
+        const fields = this.isDrilling ? this.drillCurrentFields : schema.fields;
+        if (!Array.isArray(fields) || !fields.includes(field)) {
+            return null;
+        }
+        const prefix = this.isDrilling ? this.drillStack.map(e => e.fieldName) : [];
+        return { schema, field, prefix, fields };
+    }
+
+    /**
+     * State of the Formulas section of the selected field. Help text has no section; a
+     * sub-schema (entity NONE) opened directly only gets a hint, because formulas link to
+     * a document schema and the path from it.
      */
     public get selectedFieldFormulasView(): IFieldFormulasView | null {
         if (!this.fieldFormulas) {
             return null;
         }
-        const schema = this.selectedSchema;
-        const field = this.selectedField;
-        const eligible = !!schema && !!field &&
-            !this.isTemplateMode &&
-            !this.isDrilling &&
-            Array.isArray(schema.fields) && schema.fields.includes(field) &&
-            !this.selectedFieldIsHelpText;
-        return this.fieldFormulas.view(schema, field, eligible);
+        const scope = this.selectedFieldScope;
+        const eligible = !!scope && !this.isTemplateMode && !this.selectedFieldIsHelpText;
+        const subSchema = this.selectedSchema?.entity === SchemaEntity.NONE;
+        return this.fieldFormulas.view(scope, eligible, subSchema);
     }
 
     public assignFieldFormula(value: string | null): void {
-        if (this.selectedSchema && this.selectedField && !this.selectedFieldLocked) {
-            this.fieldFormulas.assign(this.selectedSchema, this.selectedField, value);
+        const scope = this.selectedFieldScope;
+        if (scope && !this.selectedFieldLocked && scope.schema.entity !== SchemaEntity.NONE) {
+            this.fieldFormulas.assign(scope, value);
         }
     }
 
     public unbindFieldFormula(row: IFieldFormulaRow): void {
-        if (this.selectedSchema && this.selectedField && !this.selectedFieldLocked) {
-            this.fieldFormulas.unbind(this.selectedSchema, this.selectedField, row);
+        const scope = this.selectedFieldScope;
+        if (scope && !this.selectedFieldLocked && scope.schema.entity !== SchemaEntity.NONE) {
+            this.fieldFormulas.unbind(scope, row);
         }
     }
 
     public createFieldFormula(): void {
-        if (this.selectedSchema && this.selectedField && !this.selectedFieldLocked) {
-            this.fieldFormulas.create(this.selectedSchema, this.selectedField);
+        const scope = this.selectedFieldScope;
+        if (scope && !this.selectedFieldLocked && scope.schema.entity !== SchemaEntity.NONE) {
+            this.fieldFormulas.create(scope);
         }
     }
 
@@ -3497,7 +3518,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const fields = subSchema?.fields ?? field.fields ?? [];
         this.drillStack = [
             ...this.drillStack,
-            { fieldLabel: field.title || field.name, fields, schemaIri: field.type || '' }
+            { fieldLabel: field.title || field.name, fieldName: field.name, fields, schemaIri: field.type || '' }
         ];
         this.persistSuggestionsForContext(previousContext);
         this.restoreOrClearSuggestionsForContext();

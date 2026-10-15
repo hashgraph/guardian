@@ -10,6 +10,7 @@ import {
     applyFieldBindingOps,
     applyFieldBindingOpsToFormulas,
     BINDABLE_ITEM_TYPES,
+    buildFieldPath,
     createStubItem,
     FieldBindingOp,
     findFieldBindings,
@@ -60,10 +61,21 @@ export interface IFieldFormulaGroup {
 }
 
 export interface IFieldFormulasView {
-    state: 'hidden' | 'loading' | 'save-first' | 'ready';
+    state: 'hidden' | 'loading' | 'save-first' | 'sub-schema' | 'ready';
     rows: IFieldFormulaRow[];
     groups: IFieldFormulaGroup[];
     documents: { label: string; value: string }[];
+}
+
+/**
+ * A field as the designer shows it: the root (document) schema that is open, the
+ * field, the names of the sub-schema fields drilled into and the list holding the field.
+ */
+export interface IFieldScope {
+    schema: Schema;
+    field: SchemaField;
+    prefix: string[];
+    fields: SchemaField[];
 }
 
 interface IPendingBinding {
@@ -72,8 +84,7 @@ interface IPendingBinding {
     formulaId: string;
     itemUuid: string;
     item?: IFormulaItem;
-    schema: Schema;
-    field: SchemaField;
+    scope: IFieldScope;
 }
 
 const HIDDEN: IFieldFormulasView = { state: 'hidden', rows: [], groups: [], documents: [] };
@@ -195,8 +206,13 @@ export class SchemaFieldFormulas {
     /**
      * The section state for the field. Rebuilt only when the inputs change.
      */
-    public view(schema: Schema | null, field: SchemaField | null, eligible: boolean): IFieldFormulasView {
-        const key = [schema, field, field?.name, schema?.iri, (schema as any)?.id, eligible, this.policy, this.canEdit, this.version];
+    public view(scope: IFieldScope | null, eligible: boolean, subSchema: boolean): IFieldFormulasView {
+        const schema = scope?.schema || null;
+        const field = scope?.field || null;
+        const key = [
+            schema, field, field?.name, scope?.prefix.join('.'), scope?.fields, schema?.iri, (schema as any)?.id,
+            eligible, subSchema, this.policy, this.canEdit, this.version
+        ];
         if (key.length === this.viewKey.length && key.every((value, i) => value === this.viewKey[i])) {
             return this.viewCache;
         }
@@ -207,13 +223,19 @@ export class SchemaFieldFormulas {
             this.newDocument = NEW_FORMULA_DOCUMENT;
             this.assignValue = null;
         }
-        this.viewCache = this.buildView(schema, field, eligible);
+        this.viewCache = this.buildView(scope, eligible, subSchema);
         return this.viewCache;
     }
 
-    private buildView(schema: Schema | null, field: SchemaField | null, eligible: boolean): IFieldFormulasView {
-        if (!eligible || !schema || !field || !this.policy || !this.canEdit) {
+    private buildView(scope: IFieldScope | null, eligible: boolean, subSchema: boolean): IFieldFormulasView {
+        if (!eligible || !scope || !this.policy || !this.canEdit) {
             return HIDDEN;
+        }
+        const schema = scope.schema;
+        // formulas link to a document schema and the path from it; a sub-schema's own iri
+        // is never matched by a request form
+        if (subSchema) {
+            return { ...HIDDEN, state: 'sub-schema' };
         }
         if (!this.schemaId(schema) || !schema.iri) {
             return { ...HIDDEN, state: 'save-first' };
@@ -222,7 +244,7 @@ export class SchemaFieldFormulas {
         if (!saved) {
             return { ...HIDDEN, state: 'loading' };
         }
-        const target = this.target(schema, field);
+        const target = this.target(scope);
         const formulas = this.effectiveFormulas();
         const rows: IFieldFormulaRow[] = findFieldBindings(formulas, target).map(({ formula, item }) => ({
             key: `${formula.id}:${item.uuid}`,
@@ -274,7 +296,7 @@ export class SchemaFieldFormulas {
     /**
      * Shows the chosen item on the field. Asks first when the item is linked elsewhere.
      */
-    public assign(schema: Schema, field: SchemaField, value: string | null): void {
+    public assign(scope: IFieldScope, value: string | null): void {
         setTimeout(() => this.assignValue = null);
         if (!value || !this.policy) {
             return;
@@ -287,7 +309,7 @@ export class SchemaFieldFormulas {
         if (!formula || !item) {
             return;
         }
-        const target = this.target(schema, field);
+        const target = this.target(scope);
         const apply = () => {
             const index = this.pending.findIndex((p) => p.type === 'unbind' &&
                 p.itemUuid === itemUuid &&
@@ -295,7 +317,7 @@ export class SchemaFieldFormulas {
             if (index !== -1) {
                 this.pending.splice(index, 1);
             } else {
-                this.pending.push({ type: 'bind', policyId: this.policy.id, formulaId, itemUuid, schema, field });
+                this.pending.push({ type: 'bind', policyId: this.policy.id, formulaId, itemUuid, scope: this.copyScope(scope) });
             }
             this.version++;
         };
@@ -329,18 +351,18 @@ export class SchemaFieldFormulas {
     /**
      * Removes the item from the field. A pending assignment is simply dropped.
      */
-    public unbind(schema: Schema, field: SchemaField, row: IFieldFormulaRow): void {
+    public unbind(scope: IFieldScope, row: IFieldFormulaRow): void {
         if (!this.policy || row.published) {
             return;
         }
-        const target = this.target(schema, field);
+        const target = this.target(scope);
         if (row.pending) {
             this.pending = this.pending.filter((p) => !(p.type !== 'unbind' &&
                 p.itemUuid === row.itemUuid &&
                 this.sameTarget(p, target)));
         } else {
             const formulaId = row.key.slice(0, row.key.length - row.itemUuid.length - 1);
-            this.pending.push({ type: 'unbind', policyId: this.policy.id, formulaId, itemUuid: row.itemUuid, schema, field });
+            this.pending.push({ type: 'unbind', policyId: this.policy.id, formulaId, itemUuid: row.itemUuid, scope: this.copyScope(scope) });
         }
         this.version++;
     }
@@ -348,12 +370,12 @@ export class SchemaFieldFormulas {
     /**
      * Adds a placeholder formula item linked to the field.
      */
-    public create(schema: Schema, field: SchemaField): void {
+    public create(scope: IFieldScope): void {
         const name = (this.newName || '').trim();
         if (!name || !this.policy) {
             return;
         }
-        const target = this.target(schema, field);
+        const target = this.target(scope);
         const item = createStubItem(name, target);
         this.pending.push({
             type: 'create',
@@ -361,8 +383,7 @@ export class SchemaFieldFormulas {
             formulaId: this.newDocument || NEW_FORMULA_DOCUMENT,
             itemUuid: item.uuid,
             item,
-            schema,
-            field
+            scope: this.copyScope(scope)
         });
         this.newName = '';
         this.version++;
@@ -376,7 +397,7 @@ export class SchemaFieldFormulas {
             return;
         }
         const count = this.pending.length;
-        this.pending = this.pending.filter((p) => this.schemaId(p.schema) !== schemaId);
+        this.pending = this.pending.filter((p) => this.schemaId(p.scope.schema) !== schemaId);
         if (this.pending.length !== count) {
             this.version++;
         }
@@ -389,7 +410,7 @@ export class SchemaFieldFormulas {
      */
     public save(): Observable<boolean> {
         // a field deleted after its formulas were assigned has nothing to link to
-        this.pending = this.pending.filter((p) => !!p.schema.fields?.includes(p.field));
+        this.pending = this.pending.filter((p) => p.scope.fields.includes(p.scope.field));
         const batch = [...this.pending];
         if (!batch.length) {
             return of(true);
@@ -472,7 +493,7 @@ export class SchemaFieldFormulas {
     }
 
     private toOp(p: IPendingBinding): FieldBindingOp {
-        const target = this.target(p.schema, p.field);
+        const target = this.target(p.scope);
         if (p.type === 'create') {
             return { type: 'create', formulaId: p.formulaId, item: p.item!, target };
         }
@@ -480,15 +501,23 @@ export class SchemaFieldFormulas {
     }
 
     /**
-     * Top-level fields only: their path in the schema is the field name.
-     * The iri and the name are read when used, so a renamed key or a saved schema is picked up.
+     * The root schema iri and the field path from it. The iri and the field name are read
+     * when used, so a renamed key or a saved schema is picked up; the drilled-into field
+     * names are fixed when the change is queued.
      */
-    private target(schema: Schema, field: SchemaField): IFieldTarget {
-        return { schemaIri: String(schema.iri || ''), fieldPath: field.name };
+    private target(scope: IFieldScope): IFieldTarget {
+        return {
+            schemaIri: String(scope.schema.iri || ''),
+            fieldPath: buildFieldPath(scope.prefix, scope.field.name)
+        };
+    }
+
+    private copyScope(scope: IFieldScope): IFieldScope {
+        return { ...scope, prefix: [...scope.prefix] };
     }
 
     private sameTarget(p: IPendingBinding, target: IFieldTarget): boolean {
-        const own = this.target(p.schema, p.field);
+        const own = this.target(p.scope);
         return own.schemaIri === target.schemaIri && own.fieldPath === target.fieldPath;
     }
 

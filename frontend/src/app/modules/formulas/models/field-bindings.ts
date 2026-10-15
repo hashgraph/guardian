@@ -39,6 +39,15 @@ export interface IFieldBinding {
 }
 
 /**
+ * Path of a field in its root (document) schema, as stored in `IFormulaLink.item`:
+ * the names of the sub-schema fields leading to it and its own name, joined by '.'.
+ * Array sub-schemas add no index (`Schema` paths and form `fullPath`s have none).
+ */
+export function buildFieldPath(prefix: string[], name: string): string {
+    return [...prefix, name].join('.');
+}
+
+/**
  * Whether the link points to the field.
  */
 export function isLinkedTo(link: IFormulaLink | null | undefined, target: IFieldTarget): boolean {
