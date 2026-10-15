@@ -2380,6 +2380,13 @@
                                                 </div>
                                             </div>
                                             <div class="sc-field-card-actions">
+                                                @if (canEnterSubSchema(f)) {
+                                                    <button class="sc-subschema-enter-btn"
+                                                        [title]="isTemplateConfigMode ? 'Open sub-schema settings' : 'Enter sub-schema'"
+                                                        (click)="isTemplateConfigMode ? enterTemplateSubSchema(f, $event) : enterSubSchema(f, $event)">
+                                                        <i class="pi pi-arrow-right"></i>Enter
+                                                    </button>
+                                                }
                                                 @if (!isTemplateConfigMode && !isTemplateFieldLocked(f)) {
                                                     <button class="sc-icon-btn sc-icon-btn--danger" title="Remove" (click)="removeThenField(cond, f); $event.stopPropagation()">
                                                         <i class="pi pi-trash"></i>
@@ -2471,6 +2478,13 @@
                                                 </div>
                                             </div>
                                             <div class="sc-field-card-actions">
+                                                @if (canEnterSubSchema(f)) {
+                                                    <button class="sc-subschema-enter-btn"
+                                                        [title]="isTemplateConfigMode ? 'Open sub-schema settings' : 'Enter sub-schema'"
+                                                        (click)="isTemplateConfigMode ? enterTemplateSubSchema(f, $event) : enterSubSchema(f, $event)">
+                                                        <i class="pi pi-arrow-right"></i>Enter
+                                                    </button>
+                                                }
                                                 @if (!isTemplateConfigMode && !isTemplateFieldLocked(f)) {
                                                     <button class="sc-icon-btn sc-icon-btn--danger" title="Remove" (click)="removeElseField(cond, f); $event.stopPropagation()">
                                                         <i class="pi pi-trash"></i>

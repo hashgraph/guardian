@@ -3547,6 +3547,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
         const fields = subSchema?.fields ?? field.fields ?? [];
         this.drillEntering = true;
+        this.activeDrillTab = 'fields';
         this.drillStack = [
             ...this.drillStack,
             { fieldLabel: field.title || field.name, fieldName: field.name, fields, schemaIri: field.type || '' }
