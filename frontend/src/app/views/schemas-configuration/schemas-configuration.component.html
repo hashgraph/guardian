@@ -766,16 +766,9 @@
                             <button class="sc-view-pill" [class.active]="previewPill === 'readonly'" (click)="setPreviewPill('readonly')">Read-only</button>
                         </div>
                         <div class="sc-preview-viewport">
-                            @if (!previewReady) {
-                                <div class="sc-canvas-loading">
-                                    <p-progressSpinner [style]="{ width: '40px', height: '40px' }"></p-progressSpinner>
-                                </div>
-                            }
                             @for (key of [previewKey]; track key) {
                                 @if (previewSchemaRef; as pSchema) {
                                     <app-schema-form-root
-                                        [style.display]="previewReady ? 'block' : 'none'"
-                                        (form)="onPreviewFormBuilt()"
                                         [schema]="pSchema"
                                         [preset]="previewPreset"
                                         [formulas]="previewFormulas"
