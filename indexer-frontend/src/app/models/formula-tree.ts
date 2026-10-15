@@ -477,13 +477,13 @@ export class FormulaTree {
         return this._links.get(schema)?.get(path) || [];
     }
 
+    /**
+     * Finds an item by uuid (what the link dialog stores), then by name (older links).
+     */
     public get(variable: string): FormulaItem | null {
-        for (const item of this._items) {
-            if (item.name === variable) {
-                return item;
-            }
-        }
-        return null;
+        return this._items.find((item) => item.uuid === variable)
+            || this._items.find((item) => item.name === variable)
+            || null;
     }
 
     public merge(links: Map<string, Map<string, FormulaItem[]>>) {
