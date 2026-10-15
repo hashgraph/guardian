@@ -23,7 +23,6 @@ import { FormulasViewDialog } from '../../dialogs/formulas-view-dialog/formulas-
 import {TableViewerComponent} from '../table-viewer/table-viewer.component';
 import { isSafeHref, withNewTabLinks } from './rich-text-view';
 import { collectImageReferences, markdownToHtml } from './markdown-view';
-import { EntitiesService } from '@services/entities.service';
 import { ArtifactsService } from '@services/artifacts.service';
 import { firstValueFrom } from 'rxjs';
 
@@ -74,7 +73,6 @@ export class SchemaFormViewComponent {
 
     constructor(
         private dialogService: DialogService,
-        private entitiesService: EntitiesService,
         private changeDetector: ChangeDetectorRef,
         private artifacts: ArtifactsService
     ) { }
@@ -241,14 +239,30 @@ export class SchemaFormViewComponent {
 
         let request = this.pendingImages.get(reference);
         if (!request) {
-            request = this.entitiesService.getImageByLink(reference)
+            const cid = reference.replace(/^ipfs:\/\//, '');
+            const fileId = this.analytics?.richTextImages?.[cid];
+            if (!fileId) {
+                return null;
+            }
+            request = firstValueFrom(this.artifacts.getFileBlob(fileId))
+                .then(response => {
+                    const blob = response.body;
+                    if (!blob) throw new Error('Image is not available');
+                    return new Promise<string>((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => typeof reader.result === 'string'
+                            ? resolve(reader.result) : reject(new Error('Image could not be read'));
+                        reader.onerror = () => reject(new Error('Image could not be read'));
+                        reader.readAsDataURL(new Blob([blob], { type: 'image/jpeg' }));
+                    });
+                })
                 .catch(() => null)
                 .finally(() => this.pendingImages.delete(reference));
             this.pendingImages.set(reference, request);
         }
 
         const source = await request;
-        this.resolvedImages.set(reference, source);
+        if (source) this.resolvedImages.set(reference, source);
         return source;
     }
 

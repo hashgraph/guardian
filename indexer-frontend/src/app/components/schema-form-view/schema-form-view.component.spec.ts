@@ -132,78 +132,113 @@ describe('SchemaFormViewComponent', () => {
     });
 
     describe('rich text images', () => {
-        const reference = 'ipfs://bafkreiabcdef123456';
-        const dataUrl = 'data:image/jpg;base64,AAAA';
+        const cid = 'bafkreiabcdef123456';
+        const reference = 'ipfs://' + cid;
         const markdown = `Before\n\n![Site photo](${reference})`;
+        const png = Uint8Array.from(atob(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jXioAAAAASUVORK5CYII='
+        ), character => character.charCodeAt(0));
 
-        const flush = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
-
-        function createLoadingComponent(result: Promise<string>): any {
+        function componentFor(getFileBlob: jasmine.Spy): any {
             const component = createComponent();
             component.resolvedImages = new Map();
             component.pendingImages = new Map();
             component.hide = {};
+            component.analytics = { richTextImages: { [cid]: 'grid-image' } };
+            component.artifacts = { getFileBlob };
             component.changeDetector = { markForCheck: jasmine.createSpy('markForCheck') };
             component.entitiesService = {
-                getImageByLink: jasmine.createSpy('getImageByLink').and.returnValue(result),
+                getImageByLink: jasmine.createSpy('getImageByLink').and.callFake(() => {
+                    throw new Error('Unsafe whole-file route was used');
+                }),
             };
             return component;
         }
 
-        const richTextField = (name: string) => ({
-            name,
-            type: 'string',
-            customType: 'richText',
-            isArray: false,
-            isRef: false,
+        const field = (name: string, isArray = false) => ({
+            name, type: 'string', customType: 'richText', isArray, isRef: false,
         });
 
-        it('should fetch a reference in the value and render it as src', async () => {
-            const component = createLoadingComponent(Promise.resolve(dataUrl));
-            component.values = { field0: markdown };
+        it('reads a cached image above 1 MB and renders it inline without a file download', async () => {
+            const body = new Blob([png, new Uint8Array(2 * 1024 * 1024)], { type: 'text/csv' });
+            const getFileBlob = jasmine.createSpy('getFileBlob').and.returnValue(of({ body }));
+            const component = componentFor(getFileBlob);
+            const click = spyOn(HTMLAnchorElement.prototype, 'click');
+            const source = await component.loadImage(reference);
 
-            component.update([richTextField('field0')]);
-            await flush();
-
-            expect(component.entitiesService.getImageByLink).toHaveBeenCalledWith(reference);
-            const html = component.getRichTextValue(markdown);
-            expect(html).toContain(`src="${dataUrl}"`);
-            expect(html).toContain('Before');
-        });
-
-        it('should fetch one reference once when two fields share it', async () => {
-            const component = createLoadingComponent(Promise.resolve(dataUrl));
-            component.values = { field0: markdown, field1: markdown };
-
-            component.update([richTextField('field0'), richTextField('field1')]);
-            await flush();
-
-            expect(component.entitiesService.getImageByLink).toHaveBeenCalledTimes(1);
-        });
-
-        it('should keep the text and leave src empty when the fetch fails', async () => {
-            const component = createLoadingComponent(Promise.reject(new Error('404')));
-            component.values = { field0: markdown };
-
-            component.update([richTextField('field0')]);
-            await flush();
-            component.update([richTextField('field0')]);
-            await flush();
-
-            expect(component.entitiesService.getImageByLink).toHaveBeenCalledTimes(1);
-            const html = component.getRichTextValue(markdown);
-            expect(html).toContain('Before');
-            expect(html).toContain('src=""');
-        });
-
-        it('should fetch nothing for a value with no image', async () => {
-            const component = createLoadingComponent(Promise.resolve(dataUrl));
-            component.values = { field0: 'Just text' };
-
-            component.update([richTextField('field0')]);
-            await flush();
-
+            expect(body.size).toBeGreaterThan(1024 * 1024);
+            expect(getFileBlob).toHaveBeenCalledOnceWith('grid-image');
             expect(component.entitiesService.getImageByLink).not.toHaveBeenCalled();
+            expect(click).not.toHaveBeenCalled();
+            const host = document.createElement('div');
+            host.innerHTML = component.getRichTextValue(markdown);
+            expect(host.querySelector('img')?.getAttribute('src')).toBe(source);
+            expect(host.querySelector('button')).toBeNull();
+            expect(host.textContent).toContain('Before');
+            const image = new Image();
+            image.src = source;
+            await image.decode();
+            expect(image.naturalWidth).toBe(1);
+        });
+
+        it('shares a pending image read and reuses the resolved data', async () => {
+            const getFileBlob = jasmine.createSpy('getFileBlob').and.returnValue(of({ body: new Blob([png]) }));
+            const component = componentFor(getFileBlob);
+            const [first, second] = await Promise.all([
+                component.loadImage(reference), component.loadImage(reference),
+            ]);
+            expect(first).toBe(second);
+            expect(await component.loadImage(reference)).toBe(first);
+            expect(getFileBlob).toHaveBeenCalledTimes(1);
+        });
+
+        it('does not fall back when the sync has not prepared the image yet', async () => {
+            const getFileBlob = jasmine.createSpy('getFileBlob');
+            const component = componentFor(getFileBlob);
+            component.analytics = {};
+            expect(await component.loadImage(reference)).toBeNull();
+            expect(getFileBlob).not.toHaveBeenCalled();
+            expect(component.entitiesService.getImageByLink).not.toHaveBeenCalled();
+            component.analytics = { richTextImages: { [cid]: 'grid-image' } };
+            getFileBlob.and.returnValue(of({ body: new Blob([png]) }));
+            expect(await component.loadImage(reference)).toContain('data:image/jpeg;base64,');
+        });
+
+        it('keeps text after a failed fetch and retries on the next field update', async () => {
+            const getFileBlob = jasmine.createSpy('getFileBlob').and.returnValue(throwError(() => new Error('404')));
+            const component = componentFor(getFileBlob);
+            expect(await component.loadImage(reference)).toBeNull();
+            expect(component.getRichTextValue(markdown)).toContain('Before');
+            expect(component.getRichTextValue(markdown)).toContain('src=""');
+            getFileBlob.and.returnValue(of({ body: new Blob([png]) }));
+            expect(await component.loadImage(reference)).toContain('data:image/jpeg;base64,');
+            expect(getFileBlob).toHaveBeenCalledTimes(2);
+        });
+
+        it('retries an empty response instead of remembering a broken image forever', async () => {
+            const getFileBlob = jasmine.createSpy('getFileBlob').and.returnValue(of({ body: null }));
+            const component = componentFor(getFileBlob);
+            expect(await component.loadImage(reference)).toBeNull();
+            getFileBlob.and.returnValue(of({ body: new Blob([png]) }));
+            expect(await component.loadImage(reference)).not.toBeNull();
+        });
+
+        it('loads array field images from the shared analytics map', async () => {
+            const getFileBlob = jasmine.createSpy('getFileBlob').and.returnValue(of({ body: new Blob([png]) }));
+            const component = componentFor(getFileBlob);
+            component.values = { photos: [markdown, markdown] };
+            component.update([field('photos', true)]);
+            await component.loadImage(reference);
+            expect(getFileBlob).toHaveBeenCalledOnceWith('grid-image');
+            expect(component.fields[0].list.length).toBe(2);
+        });
+
+        it('fetches nothing for text or an ordinary IPFS link', async () => {
+            const getFileBlob = jasmine.createSpy('getFileBlob');
+            const component = componentFor(getFileBlob);
+            component.values = { note: `Just [a file](${reference})` };
+            component.update([field('note')]);
+            expect(getFileBlob).not.toHaveBeenCalled();
         });
     });
 

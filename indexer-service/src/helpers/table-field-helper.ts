@@ -64,6 +64,53 @@ export class TableFieldHelper {
         };
     }
 
+    public async attachRichTextImagesAnalytics(
+        entity: Message,
+        message: Message,
+        fileMap: Map<string, string>
+    ): Promise<void> {
+        const vcCid = this.findVcCid(message.files, fileMap);
+        const vcString = (vcCid ? fileMap.get(vcCid) : undefined) || message.documents?.[0];
+        const subjects = this.parseFile(vcString)?.credentialSubject;
+        if (!subjects) {
+            return;
+        }
+        const richTextImages: Record<string, string> = {};
+        const richTextImagesFailed: string[] = [];
+        const vcIdentifier = message.consensusTimestamp || message.uuid || 'unknown';
+        for (const cid of this.extractRichTextImageCids(subjects)) {
+            try {
+                richTextImages[cid] = await this.ensureFileCachedInGridFSStrict(vcIdentifier, cid);
+            } catch (error) {
+                richTextImagesFailed.push(cid);
+                console.error('attachRichTextImagesAnalytics:',
+                    error instanceof Error ? error.message : String(error));
+            }
+        }
+        entity.analytics = { ...(entity.analytics || {}), richTextImages, richTextImagesFailed };
+    }
+
+    private extractRichTextImageCids(root: unknown): Set<string> {
+        const cids = new Set<string>();
+        const walk = (value: unknown): void => {
+            if (typeof value === 'string') {
+                for (const match of value.matchAll(/!\[((?:\\.|[^\]\\])*)\]\(([^)\s]+)\)/g)) {
+                    const reference = match[2];
+                    if (reference.startsWith('ipfs://')) {
+                        const cid = reference.slice(7);
+                        if (IPFS_CID_PATTERN.test(cid)) cids.add(cid);
+                    }
+                }
+            } else if (Array.isArray(value)) {
+                value.forEach(walk);
+            } else if (value && typeof value === 'object') {
+                Object.values(value).forEach(walk);
+            }
+        };
+        walk(root);
+        return cids;
+    }
+
     private getVcSubject(message: Message, fileMap: Map<string, string>): any {
         const vcCid = this.findVcCid(message.files, fileMap);
         let vcString = vcCid ? fileMap.get(vcCid) : undefined;

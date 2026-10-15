@@ -549,6 +549,7 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
                 title: this.schema?.name,
                 schema: this.schema,
                 credentialSubject: this.getDocumentSubject(),
+                analytics: this.analytics,
                 formulasResults: this.formulasResults,
                 targetId: this.id,
                 discussionId: discussion.consensusTimestamp,

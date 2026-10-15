@@ -88,6 +88,8 @@ export class Message implements IMessage {
         unpacked?: boolean;
         tableFiles?: Record<string, string>;
         geoFiles?: Record<string, string>;
+        richTextImages?: Record<string, string>;
+        richTextImagesFailed?: string[];
     };
 
     @Property({ nullable: true })

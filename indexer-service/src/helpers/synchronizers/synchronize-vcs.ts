@@ -85,6 +85,7 @@ export class SynchronizationVCs extends SynchronizationTask {
 
             await tableHelper.attachTableFilesAnalytics(row, document, fileMap);
             await tableHelper.attachGeoFilesAnalytics(row, document, fileMap);
+            await tableHelper.attachRichTextImagesAnalytics(row, document, fileMap);
 
             row.analyticsUpdate = Date.now();
             em.persist(row);
@@ -182,6 +183,12 @@ export class SynchronizationVCs extends SynchronizationTask {
                 },
                 {
                     'analytics.geoFiles': { $exists: false }
+                },
+                {
+                    'analytics.richTextImages': { $exists: false }
+                },
+                {
+                    'analytics.richTextImagesFailed.0': { $exists: true }
                 }
             ],
         };
