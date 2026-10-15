@@ -1317,8 +1317,7 @@
                                     <div class="sc-ff-hint">No formulas on this field.</div>
                                 }
                                 @if (!selectedFieldLocked) {
-                                    <div class="sc-rp-group">
-                                        <label class="sc-rp-label">Assign formula</label>
+                                    <div class="sc-ff-actions">
                                         <p-select
                                             class="guardian-dropdown sc-rp-select"
                                             panelStyleClass="guardian-dropdown-panel sc-ff-panel"
@@ -1333,7 +1332,7 @@
                                             [resetFilterOnHide]="true"
                                             appendTo="body"
                                             emptyMessage="No formula items to assign"
-                                            placeholder="Select a formula item…"
+                                            placeholder="Assign an existing formula…"
                                             [(ngModel)]="fieldFormulas.assignValue"
                                             (onChange)="assignFieldFormula($event.value)">
                                             <ng-template pTemplate="group" let-group>
@@ -1351,33 +1350,60 @@
                                                 </div>
                                             </ng-template>
                                         </p-select>
-                                    </div>
-                                    <div class="sc-rp-group">
-                                        <label class="sc-rp-label">Create new</label>
-                                        <input
-                                            class="sc-rp-input"
-                                            type="text"
-                                            placeholder="Placeholder name"
-                                            [(ngModel)]="fieldFormulas.newName"
-                                            (keydown.enter)="createFieldFormula()" />
-                                        <div class="sc-ff-create">
-                                            <p-select
-                                                class="guardian-dropdown sc-rp-select"
-                                                panelStyleClass="guardian-dropdown-panel"
-                                                [options]="formulasView.documents"
-                                                optionLabel="label"
-                                                optionValue="value"
-                                                appendTo="body"
-                                                [(ngModel)]="fieldFormulas.newDocument">
-                                            </p-select>
-                                            <button class="sc-btn sc-btn--sm" type="button"
-                                                [disabled]="!fieldFormulas.newName.trim()"
-                                                (click)="createFieldFormula()">
+                                        @if (!fieldFormulas.creating) {
+                                            <button class="sc-ff-new-btn" type="button" (click)="fieldFormulas.startCreate()">
                                                 <i class="pi pi-plus"></i>
-                                                Create
+                                                New formula
                                             </button>
-                                        </div>
+                                        }
                                     </div>
+                                    @if (fieldFormulas.creating) {
+                                        <div class="sc-ff-new">
+                                            <div class="sc-ff-new-title">New formula</div>
+                                            <div class="sc-rp-group">
+                                                <label class="sc-rp-label">Name</label>
+                                                <input
+                                                    class="sc-rp-input"
+                                                    type="text"
+                                                    placeholder="Formula name"
+                                                    [(ngModel)]="fieldFormulas.newName"
+                                                    (keydown.enter)="createFieldFormula()"
+                                                    (keydown.escape)="fieldFormulas.cancelCreate()" />
+                                            </div>
+                                            <div class="sc-rp-group">
+                                                <label class="sc-rp-label">Add to</label>
+                                                <p-select
+                                                    class="guardian-dropdown sc-rp-select"
+                                                    panelStyleClass="guardian-dropdown-panel sc-ff-doc-panel"
+                                                    [options]="formulasView.documents"
+                                                    optionLabel="label"
+                                                    optionValue="value"
+                                                    appendTo="body"
+                                                    placeholder="Select a formula document…"
+                                                    [(ngModel)]="fieldFormulas.newDocument">
+                                                    <ng-template pTemplate="item" let-option>
+                                                        @if (option.isNew) {
+                                                            <div class="sc-ff-doc-new">
+                                                                <i class="pi pi-plus"></i>
+                                                                {{ option.label }}
+                                                            </div>
+                                                        } @else {
+                                                            <span class="sc-ff-option-name" [title]="option.label">{{ option.label }}</span>
+                                                        }
+                                                    </ng-template>
+                                                </p-select>
+                                            </div>
+                                            <div class="sc-ff-new-hint">Creates an empty formula linked to this field. Add its expression in the Formula Editor.</div>
+                                            <div class="sc-ff-new-buttons">
+                                                <button class="sc-btn sc-btn--sm" type="button" (click)="fieldFormulas.cancelCreate()">Cancel</button>
+                                                <button class="sc-btn sc-btn--sm sc-btn-primary" type="button"
+                                                    [disabled]="!fieldFormulas.canCreate"
+                                                    (click)="createFieldFormula()">
+                                                    Create
+                                                </button>
+                                            </div>
+                                        </div>
+                                    }
                                 }
                             }
                         }
@@ -1784,6 +1810,12 @@
                                     @if (isFieldConditional(field)) {
                                         <span class="sc-badge sc-badge--cond">
                                             <i class="pi pi-code"></i>Condition
+                                        </span>
+                                    }
+                                    @let formulaCount = getFieldFormulaCount(field);
+                                    @if (formulaCount) {
+                                        <span class="sc-badge sc-badge--formula">
+                                            <svg-icon src="/assets/images/icons/function.svg"></svg-icon>{{ formulaCount === 1 ? 'Formula' : formulaCount + ' Formulas' }}
                                         </span>
                                     }
                                 </div>

@@ -28,6 +28,7 @@ import { FormulasService } from 'src/app/services/formulas.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { IFieldFormulaRow, IFieldFormulasView, IFieldScope, SchemaFieldFormulas } from './schema-field-formulas';
+import { buildFieldPath } from 'src/app/modules/formulas/models/field-bindings';
 
 export interface DrillEntry {
     fieldLabel: string;
@@ -2291,6 +2292,19 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (scope && !this.selectedFieldLocked && scope.schema.entity !== SchemaEntity.NONE) {
             this.fieldFormulas.unbind(scope, row);
         }
+    }
+
+    /**
+     * Number of formula items on a field card of the schema shown. Sub-schemas opened
+     * directly and templates have none, because formulas link to a document schema.
+     */
+    public getFieldFormulaCount(field: SchemaField): number {
+        const schema = this.selectedSchema;
+        if (!this.fieldFormulas || !schema || this.isTemplateMode || schema.entity === SchemaEntity.NONE) {
+            return 0;
+        }
+        const prefix = this.isDrilling ? this.drillStack.map(e => e.fieldName) : [];
+        return this.fieldFormulas.count(schema, buildFieldPath(prefix, field.name));
     }
 
     public createFieldFormula(): void {

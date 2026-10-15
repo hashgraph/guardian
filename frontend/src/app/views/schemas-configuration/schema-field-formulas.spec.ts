@@ -71,4 +71,46 @@ describe('SchemaFieldFormulas', () => {
             done();
         });
     });
+
+    it('counts the formulas of a field, pending changes included', () => {
+        const { model } = create();
+        const schema: any = { id: 's1', iri: '#root' };
+        expect(model.count(schema, 'risks.G6')).toBe(1);
+        expect(model.count(schema, 'risks.G7')).toBe(0);
+        model.assign(scope(['risks']), 'd1|f1');
+        expect(model.count(schema, 'risks.G6')).toBe(2);
+        model.newName = 'New';
+        model.newDocument = 'd1';
+        model.create(scope(['risks'], 'G7'));
+        expect(model.count(schema, 'risks.G7')).toBe(1);
+        expect(model.count({ iri: '#other' } as any, 'risks.G6')).toBe(0);
+    });
+
+    it('closes the new formula form after creating and on another field', () => {
+        const { model } = create();
+        const s = scope(['risks']);
+        model.view(s, true, false);
+        model.startCreate();
+        model.newName = 'New';
+        model.newDocument = 'd1';
+        model.create(s);
+        expect(model.creating).toBeFalse();
+        expect(model.newDocument).toBe('');
+        model.startCreate();
+        model.view(scope(['risks'], 'G9'), true, false);
+        expect(model.creating).toBeFalse();
+    });
+
+    it('creates nothing until a formula document is chosen', () => {
+        const { model } = create();
+        const s = scope(['risks'], 'G7');
+        model.view(s, true, false);
+        model.startCreate();
+        model.newName = 'New';
+        expect(model.canCreate).toBeFalse();
+        model.create(s);
+        expect(model.hasPending).toBeFalse();
+        model.newDocument = 'd1';
+        expect(model.canCreate).toBeTrue();
+    });
 });

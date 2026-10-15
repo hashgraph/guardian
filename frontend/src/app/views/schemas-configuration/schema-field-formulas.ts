@@ -60,11 +60,18 @@ export interface IFieldFormulaGroup {
     items: IFieldFormulaOption[];
 }
 
+export interface IFieldFormulaDocument {
+    label: string;
+    value: string;
+    /** the option that creates a new formula document */
+    isNew?: boolean;
+}
+
 export interface IFieldFormulasView {
     state: 'hidden' | 'loading' | 'save-first' | 'sub-schema' | 'ready';
     rows: IFieldFormulaRow[];
     groups: IFieldFormulaGroup[];
-    documents: { label: string; value: string }[];
+    documents: IFieldFormulaDocument[];
 }
 
 /**
@@ -96,9 +103,12 @@ const HIDDEN: IFieldFormulasView = { state: 'hidden', rows: [], groups: [], docu
  * as pending operations and written to the formula documents after the schemas are saved.
  */
 export class SchemaFieldFormulas {
-    /** inputs of the "Create new" form */
+    /** the "New formula" form is open */
+    public creating: boolean = false;
+    /** inputs of the "New formula" form */
     public newName: string = '';
-    public newDocument: string = NEW_FORMULA_DOCUMENT;
+    /** no document is chosen up front, so a new formula document is never created by mistake */
+    public newDocument: string = '';
     /** model of the "Assign formula" select, reset after every choice */
     public assignValue: string | null = null;
 
@@ -114,6 +124,9 @@ export class SchemaFieldFormulas {
     private viewKey: any[] = [];
     private viewCache: IFieldFormulasView = HIDDEN;
     private viewField: SchemaField | null = null;
+
+    private countKey: any[] = [];
+    private countCache = new Map<string, number>();
 
     constructor(
         private readonly formulasService: FormulasService,
@@ -219,8 +232,9 @@ export class SchemaFieldFormulas {
         this.viewKey = key;
         if (field !== this.viewField) {
             this.viewField = field;
+            this.creating = false;
             this.newName = '';
-            this.newDocument = NEW_FORMULA_DOCUMENT;
+            this.newDocument = '';
             this.assignValue = null;
         }
         this.viewCache = this.buildView(scope, eligible, subSchema);
@@ -260,7 +274,7 @@ export class SchemaFieldFormulas {
                 this.sameTarget(p, target))
         }));
         const groups: IFieldFormulaGroup[] = [];
-        const documents: { label: string; value: string }[] = [];
+        const documents: IFieldFormulaDocument[] = [];
         for (const formula of formulas) {
             const isNew = formula.id === NEW_FORMULA_DOCUMENT;
             if (!isNew && !isEditableFormula(formula)) {
@@ -286,9 +300,9 @@ export class SchemaFieldFormulas {
                 groups.push({ label: formula.name || 'Untitled', items });
             }
         }
-        documents.push({ label: 'New formula document', value: NEW_FORMULA_DOCUMENT });
-        if (!documents.some((d) => d.value === this.newDocument)) {
-            this.newDocument = NEW_FORMULA_DOCUMENT;
+        documents.push({ label: 'New formula document', value: NEW_FORMULA_DOCUMENT, isNew: true });
+        if (this.newDocument && !documents.some((d) => d.value === this.newDocument)) {
+            this.newDocument = '';
         }
         return { state: 'ready', rows, groups, documents };
     }
@@ -368,11 +382,11 @@ export class SchemaFieldFormulas {
     }
 
     /**
-     * Adds a placeholder formula item linked to the field.
+     * Adds an empty formula item linked to the field.
      */
     public create(scope: IFieldScope): void {
         const name = (this.newName || '').trim();
-        if (!name || !this.policy) {
+        if (!this.canCreate || !this.policy) {
             return;
         }
         const target = this.target(scope);
@@ -380,13 +394,55 @@ export class SchemaFieldFormulas {
         this.pending.push({
             type: 'create',
             policyId: this.policy.id,
-            formulaId: this.newDocument || NEW_FORMULA_DOCUMENT,
+            formulaId: this.newDocument,
             itemUuid: item.uuid,
             item,
             scope: this.copyScope(scope)
         });
         this.newName = '';
+        this.newDocument = '';
+        this.creating = false;
         this.version++;
+    }
+
+    public get canCreate(): boolean {
+        return !!(this.newName || '').trim() && !!this.newDocument;
+    }
+
+    public startCreate(): void {
+        this.creating = true;
+        this.newDocument = '';
+    }
+
+    public cancelCreate(): void {
+        this.creating = false;
+        this.newName = '';
+        this.newDocument = '';
+    }
+
+    /**
+     * Number of formula items shown on the field, pending changes included.
+     * Counted once per schema and change, so it is cheap to call for every field card.
+     */
+    public count(schema: Schema | null | undefined, fieldPath: string): number {
+        const iri = String(schema?.iri || '');
+        if (!iri || !this.policy || !this.canEdit || !this.formulas.has(this.policy.id)) {
+            return 0;
+        }
+        const key = [iri, this.policy, this.version];
+        if (!key.every((value, i) => value === this.countKey[i])) {
+            this.countKey = key;
+            this.countCache = new Map<string, number>();
+            for (const formula of this.effectiveFormulas()) {
+                for (const item of formula.config?.formulas || []) {
+                    const link = item?.link;
+                    if (link?.type === 'schema' && link.entityId === iri && BINDABLE_ITEM_TYPES.has(item.type)) {
+                        this.countCache.set(link.item, (this.countCache.get(link.item) || 0) + 1);
+                    }
+                }
+            }
+        }
+        return this.countCache.get(fieldPath) || 0;
     }
 
     /**
