@@ -148,7 +148,7 @@
                 <button class="sc-nav-tab" [class.active]="activeTab === 'builder'" (click)="activeTab = 'builder'">
                     Builder
                 </button>
-                <button class="sc-nav-tab" [class.active]="activeTab === 'preview'" (click)="activeTab = 'preview'">
+                <button class="sc-nav-tab" [class.active]="activeTab === 'preview'" (click)="openPreview()">
                     Preview
                 </button>
             </div>
@@ -769,6 +769,7 @@
                                 <app-schema-form-root
                                     [schema]="selectedSchema"
                                     [preset]="previewPreset"
+                                    [formulas]="previewFormulas"
                                     [private-fields]="{}"
                                     [readonly-fields]="previewReadonlyFields"
                                     [example]="previewPill !== 'submitter'"

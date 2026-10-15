@@ -27,6 +27,7 @@ import { updateOverflowTitle } from 'src/app/utils/overflow-title';
 import { FormulasService } from 'src/app/services/formulas.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
+import { FormulasTree } from 'src/app/modules/formulas/models/formula-tree';
 import { IFieldFormulaRow, IFieldFormulasView, IFieldScope, SchemaFieldFormulas } from './schema-field-formulas';
 
 export interface DrillEntry {
@@ -145,6 +146,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public previewPill: 'submitter' | 'readonly' = 'submitter';
     public previewPreset: any = null;
     public previewReadonlyFields: any = null;
+    public previewFormulas: FormulasTree | null = null;
     public richTextPresetTarget: 'default' | 'suggest' | 'test' | null = null;
     @ViewChild('richTextPresetEditor') public richTextPresetEditor?: RichTextEditorComponent;
 
@@ -1233,6 +1235,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             }
             this.upsertInSidebar(schema);
             this.rebuildPreview();
+            this.loadPreviewFormulas();
             this.loadParentSchemas();
         });
 
@@ -4990,6 +4993,26 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public setPreviewPill(pill: 'submitter' | 'readonly'): void {
         this.previewPill = pill;
         this.rebuildPreview();
+    }
+
+    public openPreview(): void {
+        this.activeTab = 'preview';
+        this.loadPreviewFormulas();
+    }
+
+    /** the saved formulas of the schema, so the preview shows them like the request form */
+    private loadPreviewFormulas(): void {
+        const iri = this.selectedSchema?.iri;
+        if (this.activeTab !== 'preview' || !this.fieldFormulas || this.isTemplateMode) {
+            return;
+        }
+        this.fieldFormulas.previewTree(iri)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((tree) => {
+                if (this.selectedSchema?.iri === iri) {
+                    this.previewFormulas = tree;
+                }
+            });
     }
 
     private rebuildPreview(): void {

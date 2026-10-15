@@ -32,6 +32,11 @@
 .formula-math {
     flex: 1;
     overflow-x: auto;
+    // Limits and scripts of tall math (sums, fractions) are drawn outside the line box and
+    // would add a vertical scrollbar; the padding gives them room, the margin keeps the layout.
+    overflow-y: hidden;
+    padding: 14px 0;
+    margin: -14px 0;
     font-size: 18px;
     min-height: 28px;
     display: flex;

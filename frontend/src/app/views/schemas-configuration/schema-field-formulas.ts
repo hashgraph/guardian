@@ -19,6 +19,7 @@ import {
     isLinkedTo,
     NEW_FORMULA_DOCUMENT
 } from 'src/app/modules/formulas/models/field-bindings';
+import { FormulasTree } from 'src/app/modules/formulas/models/formula-tree';
 import { formulaTypeIcon, formulaTypeName } from 'src/app/modules/formulas/models/formula-meta';
 
 const PAGE_SIZE = 100;
@@ -436,6 +437,17 @@ export class SchemaFieldFormulas {
         if (this.pending.length !== count) {
             this.version++;
         }
+    }
+
+    /**
+     * The saved formulas of the schema as a request form shows them, for the Preview tab.
+     * Emits null when the topic has no policy or the schema is not saved yet.
+     */
+    public previewTree(schemaIri: string | null | undefined): Observable<FormulasTree | null> {
+        if (!this.policy?.id || !schemaIri) {
+            return of(null);
+        }
+        return this.formulasService.getFormTree(this.policy.id, schemaIri).pipe(catchError(() => of(null)));
     }
 
     /**
