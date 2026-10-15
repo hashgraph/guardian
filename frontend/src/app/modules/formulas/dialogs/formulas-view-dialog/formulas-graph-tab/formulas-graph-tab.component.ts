@@ -12,6 +12,11 @@ import {
 import {TreeGraphComponent} from 'src/app/modules/common/tree-graph/tree-graph.component';
 import {TreeNode} from 'src/app/modules/common/tree-graph/tree-node';
 import {TreeSource} from 'src/app/modules/common/tree-graph/tree-source';
+import {fitToContainer, initialView} from 'src/app/modules/common/tree-graph/tree-zoom';
+
+const ZOOM_STEP = 1.25;
+const FIT_PADDING = 24;
+const INITIAL_MIN_ZOOM = 0.6;
 
 type ValueStatus = 'Missing' | 'Default' | 'Suggested' | 'Not null';
 
@@ -71,8 +76,78 @@ export class FormulasGraphTabComponent implements OnChanges {
 
         if (this.treeGraph && this.source) {
             this.treeGraph.setData(this.source);
-            this.treeGraph.move(18, 46);
+            this.scheduleFit();
         }
+    }
+
+    public get zoom(): number {
+        return this.treeGraph ? Math.round(this.treeGraph.zoom * 100) : 100;
+    }
+
+    public onZoomIn(): void {
+        this.zoomByStep(ZOOM_STEP);
+    }
+
+    public onZoomOut(): void {
+        this.zoomByStep(1 / ZOOM_STEP);
+    }
+
+    public onFit(): void {
+        this.fit(false);
+    }
+
+    private zoomByStep(factor: number): void {
+        const container = this.treeGraph?.movedEl?.nativeElement;
+        if (!this.treeGraph || !container) {
+            return;
+        }
+        const rect = container.getBoundingClientRect();
+        this.treeGraph.zoomAt(this.treeGraph.zoom * factor, rect.width / 2, rect.height / 2);
+    }
+
+    private scheduleFit(attempt: number = 0): void {
+        setTimeout(() => {
+            if (!this.fit(true) && attempt < 20) {
+                this.scheduleFit(attempt + 1);
+            }
+        }, attempt === 0 ? 0 : 50);
+    }
+
+    private fit(initial: boolean): boolean {
+        const graph = this.treeGraph;
+        const container = graph?.movedEl?.nativeElement;
+        const grid = graph?.gridEl?.nativeElement.querySelector('.tree-grid') as HTMLElement | null;
+        if (!graph || !container || !grid) {
+            return false;
+        }
+        const rect = container.getBoundingClientRect();
+        // offset sizes are unscaled, so the result does not depend on the current zoom
+        let view = fitToContainer(rect.width, rect.height, grid.offsetWidth, grid.offsetHeight, FIT_PADDING);
+        const rootEl = grid.querySelector('.tree-node') as HTMLElement | null;
+        if (initial && rootEl) {
+            // root node centre/top in unscaled grid coordinates (offsets ignore the CSS scale)
+            let left = 0;
+            let top = 0;
+            for (let el: HTMLElement | null = rootEl; el && el !== grid; el = el.offsetParent as HTMLElement | null) {
+                left += el.offsetLeft;
+                top += el.offsetTop;
+            }
+            view = initialView(
+                rect.width,
+                rect.height,
+                grid.offsetWidth,
+                grid.offsetHeight,
+                left + rootEl.offsetWidth / 2,
+                top,
+                FIT_PADDING,
+                INITIAL_MIN_ZOOM
+            );
+        }
+        if (!view) {
+            return false;
+        }
+        graph.setView(view.zoom, view.x, view.y);
+        return true;
     }
 
     private buildTitle(node: any): string {
@@ -128,7 +203,7 @@ export class FormulasGraphTabComponent implements OnChanges {
 
         if (this.source) {
             this.treeGraph.setData(this.source);
-            this.treeGraph.move(18, 46);
+            this.scheduleFit();
         }
     }
 
