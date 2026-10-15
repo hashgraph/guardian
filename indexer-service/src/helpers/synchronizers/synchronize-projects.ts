@@ -71,7 +71,12 @@ export class SynchronizationProjects extends SynchronizationTask {
         for (const document of allDocuments) {
             const coords = this.updateGeoCoordinates(document, fileMap);
             if (coords) {
+                const savedCoordinates = new Set<string>();
                 for (const coord of coords) {
+                    if (savedCoordinates.has(coord.coordinates)) {
+                        continue;
+                    }
+                    savedCoordinates.add(coord.coordinates);
                     const row = em.create(ProjectCoordinates, coord);
                     await safetyRunning(async () => {
                         await em.persistAndFlush(row);

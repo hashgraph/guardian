@@ -1,1 +1,10 @@
-<div class="map" id="map"></div>
+<div class="map-container">
+    <div class="map" id="map"></div>
+    <div *ngIf="clusterDocumentIds.length > 1" class="document-picker">
+        <div>Choose a document</div>
+        <button type="button" *ngFor="let projectId of clusterDocumentIds" (click)="openDocument(projectId)">
+            {{ projectId }}
+        </button>
+        <button type="button" (click)="closeDocumentPicker()">Close</button>
+    </div>
+</div>

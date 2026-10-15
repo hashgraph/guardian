@@ -1,4 +1,5 @@
 import { Component, Input } from '@angular/core';
+import { NgFor, NgIf } from '@angular/common';
 import GeoJSON from 'ol/format/GeoJSON.js';
 import Map from 'ol/Map.js';
 import View from 'ol/View.js';
@@ -7,10 +8,11 @@ import { Cluster, OSM, Vector as VectorSource } from 'ol/source.js';
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer.js';
 import { doubleClick, pointerMove } from 'ol/events/condition.js';
 import Select from 'ol/interaction/Select.js';
+import Feature from 'ol/Feature.js';
 import { Router } from '@angular/router';
 import { ProjectCoordinates } from '@indexer/interfaces';
 import { getCenter } from 'ol/extent';
-import { LineString, MultiLineString, MultiPoint, MultiPolygon, Polygon } from 'ol/geom';
+import { LineString, MultiLineString, MultiPoint, MultiPolygon, Point, Polygon } from 'ol/geom';
 import { Coordinate } from 'ol/coordinate';
 import { transform } from 'ol/proj';
 
@@ -191,7 +193,7 @@ function activeStyleFunction(feature: any) {
 @Component({
     selector: 'app-project-locations',
     standalone: true,
-    imports: [],
+    imports: [NgFor, NgIf],
     templateUrl: './project-locations.component.html',
     styleUrl: './project-locations.component.scss',
 })
@@ -200,13 +202,16 @@ export class ProjectLocationsComponent {
     @Input() geoShapes?: any[] = [];
 
     public map!: Map;
+    public clusterDocumentIds: string[] = [];
     private vectorSource: VectorSource = new VectorSource();
     private geoShapesSource: VectorSource = new VectorSource();
     private center!: Coordinate;
+    private clickSelection?: Select;
 
     constructor(private router: Router) { }
 
     ngOnChanges() {
+        this.clusterDocumentIds = [];
         const points: any[] = [];
 
         if (this.projectLocations && this.projectLocations.length > 0) {
@@ -316,19 +321,14 @@ export class ProjectLocationsComponent {
             condition: doubleClick,
             style: styleFunction,
         });
+        this.clickSelection = selectClick;
         selectClick.getFeatures().on('add', (event) => {
             // tslint:disable-next-line:no-shadowed-variable
             const features = event.element.get('features');
             const geometry = event.element.getGeometry();
 
-            if (geometry && features?.length == 1 && features[0].get('projectId')) {
-                const geometryType = geometry.getType();
-                if (geometryType == 'Point') {
-                    this.router.navigate([
-                        '/vc-documents',
-                        features[0].get('projectId'),
-                    ]);
-                }
+            if (geometry?.getType() === 'Point' && Array.isArray(features)) {
+                this.selectCluster(features);
             }
         });
 
@@ -348,6 +348,39 @@ export class ProjectLocationsComponent {
                 }
             });
         }
+    }
+
+    public selectCluster(features: Feature[]): void {
+        this.clusterDocumentIds = [];
+        const first = features[0]?.getGeometry();
+        if (!(first instanceof Point)) {
+            return;
+        }
+        const coordinates = first.getCoordinates();
+        if (features.some(feature => {
+            const geometry = feature.getGeometry();
+            return !(geometry instanceof Point) ||
+                geometry.getCoordinates()[0] !== coordinates[0] ||
+                geometry.getCoordinates()[1] !== coordinates[1];
+        })) {
+            return;
+        }
+        this.clusterDocumentIds = [...new Set(features
+            .map(feature => feature.get('projectId'))
+            .filter((id): id is string => typeof id === 'string' && id.length > 0))];
+        if (this.clusterDocumentIds.length === 1) {
+            this.openDocument(this.clusterDocumentIds[0]);
+        }
+    }
+
+    public closeDocumentPicker(): void {
+        this.clusterDocumentIds = [];
+        this.clickSelection?.getFeatures().clear();
+    }
+
+    public openDocument(projectId: string): void {
+        this.closeDocumentPicker();
+        this.router.navigate(['/vc-documents', projectId]);
     }
 
     getFeatureCenter(feature: any): number[] {

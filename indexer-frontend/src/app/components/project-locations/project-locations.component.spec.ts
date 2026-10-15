@@ -1,5 +1,11 @@
 import { ProjectLocationsComponent } from './project-locations.component';
+import { fakeAsync, tick } from '@angular/core/testing';
 import { transform } from 'ol/proj';
+import Feature from 'ol/Feature';
+import Point from 'ol/geom/Point';
+import Select from 'ol/interaction/Select';
+import VectorLayer from 'ol/layer/Vector';
+import { Cluster } from 'ol/source';
 
 describe('ProjectLocationsComponent geospatial shapes', () => {
     const point = { type: 'Point', coordinates: [36, -1] };
@@ -77,4 +83,84 @@ describe('ProjectLocationsComponent geospatial shapes', () => {
         expect(features[0].get('projectId')).toBe('document-id');
         expect(features[0].getGeometry().getCoordinates()).toEqual(transform([36, -1], 'EPSG:4326', 'EPSG:3857'));
     });
+});
+
+describe('ProjectLocationsComponent shared centers', () => {
+    function feature(id: string, coordinates = [36, -1]): Feature {
+        const value = new Feature(new Point(transform(coordinates, 'EPSG:4326', 'EPSG:3857')));
+        value.set('projectId', id);
+        return value;
+    }
+
+    it('keeps both coincident markers and lets either document be opened from the cluster', fakeAsync(() => {
+        const router = jasmine.createSpyObj('Router', ['navigate']);
+        const component = new ProjectLocationsComponent(router);
+        component.projectLocations = [
+            { coordinates: '36|-1', projectId: 'document-a' },
+            { coordinates: '36|-1', projectId: 'document-b' },
+        ];
+        component.ngOnChanges();
+        tick();
+        const layer = component.map.getLayers().item(2);
+        if (!(layer instanceof VectorLayer)) throw new Error('Missing marker layer');
+        const source = layer.getSource();
+        if (!(source instanceof Cluster)) throw new Error('Missing cluster source');
+        const selection = component.map.getInteractions().getArray()
+            .filter((interaction): interaction is Select => interaction instanceof Select)[1];
+        const cluster = new Feature(new Point(transform([36, -1], 'EPSG:4326', 'EPSG:3857')));
+        cluster.set('features', source.getSource()!.getFeatures());
+        selection.getFeatures().push(cluster);
+
+        expect(component.clusterDocumentIds).toEqual(['document-a', 'document-b']);
+        expect(router.navigate).not.toHaveBeenCalled();
+        component.openDocument('document-b');
+        expect(router.navigate).toHaveBeenCalledWith(['/vc-documents', 'document-b']);
+        expect(selection.getFeatures().getLength()).toBe(0);
+        expect(component.clusterDocumentIds).toEqual([]);
+        component.map.setTarget(undefined);
+    }));
+
+    it('leaves ordinary clusters to the existing zoom interaction', () => {
+        const router = jasmine.createSpyObj('Router', ['navigate']);
+        const component = new ProjectLocationsComponent(router);
+        component.selectCluster([feature('document-a'), feature('document-b', [37, -1])]);
+        expect(component.clusterDocumentIds).toEqual([]);
+        expect(router.navigate).not.toHaveBeenCalled();
+    });
+
+    it('does not open document-page shapes without navigation identifiers', () => {
+        const router = jasmine.createSpyObj('Router', ['navigate']);
+        const component = new ProjectLocationsComponent(router);
+        const shape = new Feature(new Point([0, 0]));
+        component.selectCluster([shape, shape]);
+        expect(component.clusterDocumentIds).toEqual([]);
+        expect(router.navigate).not.toHaveBeenCalled();
+    });
+
+    it('opens one coincident document directly even if several shapes share its center', () => {
+        const router = jasmine.createSpyObj('Router', ['navigate']);
+        const component = new ProjectLocationsComponent(router);
+        component.selectCluster([feature('document-a'), feature('document-a')]);
+        expect(router.navigate).toHaveBeenCalledOnceWith(['/vc-documents', 'document-a']);
+        expect(component.clusterDocumentIds).toEqual([]);
+    });
+
+    it('reopens the same cluster after Close at maximum zoom', fakeAsync(() => {
+        const component = new ProjectLocationsComponent(jasmine.createSpyObj('Router', ['navigate']));
+        component.initMap();
+        component.map.getView().setZoom(20);
+        const selection = component.map.getInteractions().getArray()
+            .filter((interaction): interaction is Select => interaction instanceof Select)[1];
+        const cluster = new Feature(new Point([0, 0]));
+        cluster.set('features', [feature('document-a'), feature('document-b')]);
+        selection.getFeatures().push(cluster);
+        expect(component.clusterDocumentIds).toEqual(['document-a', 'document-b']);
+
+        component.closeDocumentPicker();
+        expect(selection.getFeatures().getLength()).toBe(0);
+        selection.getFeatures().push(cluster);
+        expect(component.clusterDocumentIds).toEqual(['document-a', 'document-b']);
+        component.map.setTarget(undefined);
+        tick();
+    }));
 });
