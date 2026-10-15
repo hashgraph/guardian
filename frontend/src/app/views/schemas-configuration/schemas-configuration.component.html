@@ -1302,10 +1302,17 @@
                                                 @if (row.pending) {
                                                     <span class="sc-ff-tag sc-ff-tag--pending">unsaved</span>
                                                 }
+                                                @if (!row.pending) {
+                                                    <a class="sc-ff-icon-btn" target="_blank" rel="noopener"
+                                                        [routerLink]="['/formulas', row.formulaId]" [queryParams]="{ item: row.itemUuid }"
+                                                        pTooltip="Open this formula in the Formula Editor in a new tab" tooltipPosition="left">
+                                                        <i class="pi pi-external-link"></i>
+                                                    </a>
+                                                }
                                                 @if (row.published) {
                                                     <span class="sc-ff-tag">Published</span>
                                                 } @else if (!selectedFieldLocked) {
-                                                    <button class="sc-ff-remove" type="button" title="Remove from this field"
+                                                    <button class="sc-ff-icon-btn sc-ff-remove" type="button" title="Remove from this field"
                                                         (click)="unbindFieldFormula(row)">
                                                         <i class="pi pi-times"></i>
                                                     </button>

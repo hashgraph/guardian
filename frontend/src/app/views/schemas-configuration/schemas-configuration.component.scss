@@ -5079,7 +5079,7 @@
     }
 }
 
-.sc-ff-remove {
+.sc-ff-icon-btn {
     flex-shrink: 0;
     display: inline-flex;
     align-items: center;
@@ -5093,12 +5093,19 @@
     color: var(--guardian-font-color-secondary, #848FA9);
     cursor: pointer;
 
+    text-decoration: none;
+
     i { font-size: 11px; }
 
     &:hover {
-        background: var(--guardian-failure-background, #FFEAEA);
-        color: var(--color-accent-red-1, #FF432A);
+        background: var(--guardian-primary-background, #e1e7fa);
+        color: var(--color-primary, #4169E2);
     }
+}
+
+.sc-ff-remove:hover {
+    background: var(--guardian-failure-background, #FFEAEA);
+    color: var(--color-accent-red-1, #FF432A);
 }
 
 .sc-ff-actions {

@@ -190,7 +190,7 @@ export class FormulaConfigurationComponent implements OnInit {
                 description: item.description || '',
                 policy: this.policy?.name || '',
             });
-            const selectedId = this.selected?.uuid;
+            const selectedId = this.selected?.uuid || this.route.snapshot.queryParams['item'];
             this.config.fromData(item?.config);
             this.selected = (selectedId && this.config.getItem(selectedId)) || this.config.all[0] || null;
             this.refreshSelection();
