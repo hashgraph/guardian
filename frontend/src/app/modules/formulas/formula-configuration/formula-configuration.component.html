@@ -216,6 +216,13 @@
               @if (meta) {
                 @if (meta.noLink) {
                   <div class="row-sub"><i>No link</i></div>
+                } @else if (meta.missingLink) {
+                  <div class="row-sub row-sub--missing"
+                    [truncateTooltip]="meta.subText"
+                    tooltipPosition="bottom">
+                    <i class="pi pi-exclamation-triangle"></i>
+                    <ng-container [ngTemplateOutlet]="segments" [ngTemplateOutletContext]="{ $implicit: meta.sub }"></ng-container>
+                  </div>
                 } @else {
                   <div class="row-sub"
                     [truncateTooltip]="meta.subText"
@@ -413,8 +420,18 @@
 <ng-template #linkField let-item let-label="label">
   <div class="sec">
     <label class="sec-label">{{ label }}</label>
-    <div class="input-link" [class.ro]="readonly" (click)="onLink(item)">
-      @if (item.link) {
+    <div class="input-link" [class.ro]="readonly" [class.missing]="item.link && selectedLinkMissing" (click)="onLink(item)">
+      @if (item.link && selectedLinkMissing) {
+        <i class="pi pi-exclamation-triangle link-warn"></i>
+        <span class="link-field link-field--missing"
+          [truncateTooltip]="missingLinkText"
+          tooltipPosition="bottom">{{ missingLinkText }}</span>
+        @if (!readonly) {
+          <button type="button" class="icon-btn small" title="Remove link" (click)="deleteLink(item, $event)">
+            <i class="pi pi-times"></i>
+          </button>
+        }
+      } @else if (item.link) {
         <span class="link-ent">{{ getEntityName(item.link) }}:</span>
         <span class="link-field"
           [truncateTooltip]="getFieldName(item.link)"

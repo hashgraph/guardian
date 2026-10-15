@@ -343,6 +343,15 @@
                 font-weight: 600;
                 color: var(--formula-variable-color, #DA9B22);
             }
+
+            &--missing {
+                color: var(--color-accent-yellow-1, #DA9B22);
+
+                .pi {
+                    margin-right: 4px;
+                    font-size: 11px;
+                }
+            }
         }
 
         .row-hit {
@@ -656,6 +665,22 @@
 
         .icon-btn {
             margin-left: auto;
+        }
+
+        &.missing {
+            border-color: var(--color-accent-yellow-1, #DA9B22);
+            background: var(--guardian-warning-background, #FFF6E3);
+        }
+
+        .link-warn {
+            flex-shrink: 0;
+            font-size: 14px;
+            color: var(--color-accent-yellow-1, #DA9B22);
+        }
+
+        .link-field--missing {
+            font-size: 13px;
+            color: var(--color-accent-yellow-1, #DA9B22);
         }
     }
 

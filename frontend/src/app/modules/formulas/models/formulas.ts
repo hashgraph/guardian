@@ -2,6 +2,11 @@ import { moveItemInArray } from '@angular/cdk/drag-drop';
 import { IFormulaItem, FormulaItemType, GenerateUUIDv4, IFormulaConfig, IFormulaFile } from '@guardian/interfaces';
 
 /**
+ * Shown instead of the link label when the linked schema or field does not exist.
+ */
+export const MISSING_LINK_TEXT = 'Linked field not found – it may have been renamed or deleted';
+
+/**
  * Text part (marked or not) of a highlighted line.
  */
 export interface IFormulaSegment {
@@ -15,6 +20,8 @@ export interface IFormulaSegment {
 export interface IFormulaLinkLabel {
     entity: string;
     field: string;
+    /** the linked schema or field was not found */
+    missing?: boolean;
 }
 
 /**
@@ -29,6 +36,8 @@ export interface IFormulaRowMeta {
     subText: string;
     /** true when the item has no summary at all (no link) */
     noLink: boolean;
+    /** true when the linked schema or field was not found */
+    missingLink: boolean;
     /** the match that is not visible on the row, only while searching */
     hit: { label: string; text: string; segments: IFormulaSegment[] } | null;
 }
@@ -281,7 +290,9 @@ export class Formulas {
             add('Formula', latexToPlain(item.value));
         }
         const link = this.getLinkLabel(item);
-        if (link) {
+        if (link?.missing) {
+            add('Link', MISSING_LINK_TEXT);
+        } else if (link) {
             add('Link', `${link.entity}: ${link.field}`);
         }
         for (const label of this.getConditionLabels(item)) {
@@ -336,6 +347,7 @@ export class Formulas {
         let sub: IFormulaSegment[] = [];
         let subText = '';
         let noLink = false;
+        let missingLink = false;
         let visible: string[];
         if (item.type === FormulaItemType.Constant) {
             subText = `= ${item.value ?? ''}${item.description ? ' · ' + item.description : ''}`;
@@ -343,7 +355,11 @@ export class Formulas {
             visible = ['Name', 'Value', 'Description'];
         } else {
             const link = this.getLinkLabel(item);
-            if (link) {
+            if (link?.missing) {
+                missingLink = true;
+                subText = MISSING_LINK_TEXT;
+                sub = highlightSegments(subText, terms);
+            } else if (link) {
                 entity = highlightSegments(`${link.entity}:`, terms);
                 sub = highlightSegments(link.field, terms);
                 subText = `${link.entity}: ${link.field}`;
@@ -362,7 +378,7 @@ export class Formulas {
                 hit = { label: part.label, text, segments: highlightSegments(text, terms) };
             }
         }
-        return { entity, sub, subText, noLink, hit };
+        return { entity, sub, subText, noLink, missingLink, hit };
     }
 
     public fromData(config: IFormulaConfig) {

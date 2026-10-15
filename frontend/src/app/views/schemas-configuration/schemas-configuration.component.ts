@@ -4,7 +4,7 @@ import { HttpResponse } from '@angular/common/http';
 import { EMPTY, Observable, Subject, Subscription, firstValueFrom, forkJoin, of } from 'rxjs';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { catchError, debounceTime, distinctUntilChanged, map, shareReplay, switchMap, takeUntil } from 'rxjs/operators';
-import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, relationAncestors, ModuleStatus, ISchemaTemplate, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus, ISchemaArrayDependency, ISchemaArrayDependencyMapping, DEFAULT_IWA_VERSION, IwaVersion, resolveIwaVersion, IPropertySuggestionResult, IPropertySuggestionRequest } from '@guardian/interfaces';
+import { DefaultFieldDictionary, DocumentGenerator, IFormulaLink, isAncestorType, isGeoCustomType, ISchema, relationAncestors, ModuleStatus, ISchemaTemplate, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus, ISchemaArrayDependency, ISchemaArrayDependencyMapping, DEFAULT_IWA_VERSION, IwaVersion, resolveIwaVersion, IPropertySuggestionResult, IPropertySuggestionRequest } from '@guardian/interfaces';
 import { SchemaService } from 'src/app/services/schema.service';
 import { TagsService } from 'src/app/services/tag.service';
 import { ProjectComparisonService } from 'src/app/services/project-comparison.service';
@@ -24,6 +24,10 @@ import { markdownToHtml } from 'src/app/modules/schema-engine/rich-text-editor/m
 import { SchemaTemplatesService } from 'src/app/services/schema-templates.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { updateOverflowTitle } from 'src/app/utils/overflow-title';
+import { FormulasService } from 'src/app/services/formulas.service';
+import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { ProfileService } from 'src/app/services/profile.service';
+import { IFieldFormulaRow, IFieldFormulasView, SchemaFieldFormulas } from './schema-field-formulas';
 
 export interface DrillEntry {
     fieldLabel: string;
@@ -193,7 +197,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (this.isTemplateConfigMode) {
             return this.templateConfigDirty;
         }
-        return this.dirtySchemaIds.size > 0;
+        return this.dirtySchemaIds.size > 0 || !!this.fieldFormulas?.hasPending;
     }
 
     public get showTopSaveActions(): boolean {
@@ -846,7 +850,22 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         private _cdr: ChangeDetectorRef,
         private toastService: ToastService,
         private ipfs: IPFSService,
-    ) {}
+        formulasService: FormulasService,
+        policyEngineService: PolicyEngineService,
+        profileService: ProfileService,
+    ) {
+        this.fieldFormulas = new SchemaFieldFormulas(
+            formulasService,
+            policyEngineService,
+            profileService,
+            dialogService,
+            (action, error) => this.reportError(action, error),
+            (link) => this.describeFormulaLink(link)
+        );
+    }
+
+    /** Formula items shown on the fields, kept on the formula side. */
+    public fieldFormulas: SchemaFieldFormulas;
 
     public uploadRichTextImage = async (file: File): Promise<string> => {
         const cid = await firstValueFrom(this.ipfs.addFile(file));
@@ -1191,9 +1210,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 this.dirtySchemaIds.delete(schemaId);
                 // freshly loaded from the server, so this is the saved baseline
                 this.snapshotSchema(schema, schemaId);
+                this.fieldFormulas?.discard(schemaId);
             }
             if (!this.topic && schema.topicId) {
                 this.topic = schema.topicId;
+            }
+            if (!this.isTemplateMode && this.type !== 'system' && this.type !== 'tag') {
+                this.fieldFormulas?.load(schema.topicId || this.topic);
             }
             // Raw sub-schemas preserve the API's hierarchical $defs; filtered to exclude
             // the current schema so it never appears in its own $defs (mirrors old editor).
@@ -2087,7 +2110,22 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 if (s) { toSave.push(s); }
             }
         }
-        if (!toSave.length && !toCreate.length) { return; }
+        const hasFormulaChanges = !!this.fieldFormulas?.hasPending;
+        if (!toSave.length && !toCreate.length) {
+            if (hasFormulaChanges) {
+                this.saveFieldFormulas();
+            }
+            return;
+        }
+        if (hasFormulaChanges && toSave.some(s => s.status === SchemaStatus.PUBLISHED)) {
+            // A new version is created by a background task with a new iri that is not
+            // known here, so the formula links can't be pointed at it in the same save.
+            this.reportError('Save all', {
+                message: 'Formula assignments can\'t be saved together with a new schema version. ' +
+                    'Remove the unsaved assignments, save the new version, then assign the formulas.'
+            });
+            return;
+        }
         this.isSaving = true;
         // Sync any in-flight drill edits to the schema object in case this.schemas was refreshed
         // after enterSubSchema stored its fields reference in drillStack.
@@ -2183,9 +2221,83 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     this.newSchemaKeys.clear();
                     // what was just saved becomes the new baseline
                     allSchemas.forEach(schema => this.snapshotSchema(schema));
+                    if (hasFormulaChanges) {
+                        this.saveFieldFormulas();
+                    }
                 },
                 error: (error) => { this.isSaving = false; this.reportError('Save all', error); }
             });
+    }
+
+    /**
+     * Writes the formula assignments made in the field panel. Runs after the schemas are
+     * saved, so the links use the saved schema iri. Failed changes stay pending for a retry.
+     */
+    private saveFieldFormulas(): void {
+        this.isSaving = true;
+        this.fieldFormulas.save()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: () => { this.isSaving = false; },
+                error: (error) => { this.isSaving = false; this.reportError('Save formula assignments', error); }
+            });
+    }
+
+    /**
+     * Whether the selected field can have formulas: a top-level field of the open schema
+     * (its path in the schema is its name) that is not help text.
+     */
+    public get selectedFieldFormulasView(): IFieldFormulasView | null {
+        if (!this.fieldFormulas) {
+            return null;
+        }
+        const schema = this.selectedSchema;
+        const field = this.selectedField;
+        const eligible = !!schema && !!field &&
+            !this.isTemplateMode &&
+            !this.isDrilling &&
+            Array.isArray(schema.fields) && schema.fields.includes(field) &&
+            !this.selectedFieldIsHelpText;
+        return this.fieldFormulas.view(schema, field, eligible);
+    }
+
+    public assignFieldFormula(value: string | null): void {
+        if (this.selectedSchema && this.selectedField && !this.selectedFieldLocked) {
+            this.fieldFormulas.assign(this.selectedSchema, this.selectedField, value);
+        }
+    }
+
+    public unbindFieldFormula(row: IFieldFormulaRow): void {
+        if (this.selectedSchema && this.selectedField && !this.selectedFieldLocked) {
+            this.fieldFormulas.unbind(this.selectedSchema, this.selectedField, row);
+        }
+    }
+
+    public createFieldFormula(): void {
+        if (this.selectedSchema && this.selectedField && !this.selectedFieldLocked) {
+            this.fieldFormulas.create(this.selectedSchema, this.selectedField);
+        }
+    }
+
+    /**
+     * "Schema: field" label of a formula link, for the move confirmation.
+     */
+    private describeFormulaLink(link: IFormulaLink): string {
+        if (link.type !== 'schema') {
+            return 'another formula item';
+        }
+        const schema = (this.selectedSchema?.iri === link.entityId ? this.selectedSchema : null)
+            || this.schemas.find(s => s.iri === link.entityId)
+            || this._subSchemasByIri.get(link.entityId)
+            || null;
+        let field: SchemaField | null = null;
+        try {
+            field = schema?.getField?.(link.item) || null;
+        } catch {
+            field = null;
+        }
+        const fieldName = field?.description || field?.title || field?.name || link.item;
+        return `${schema?.name || link.entityId}: ${fieldName}`;
     }
 
     public addField(ft: FieldTypeUI): void {

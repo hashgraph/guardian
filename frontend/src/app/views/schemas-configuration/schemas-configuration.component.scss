@@ -4951,3 +4951,193 @@
         width: 100%;
     }
 }
+
+// ── Formulas of the selected field ──────────────────────────────────────────
+.sc-ff-hint {
+    font-size: 12px;
+    color: var(--guardian-font-color-secondary, #848FA9);
+}
+
+.sc-ff-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sc-ff-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
+    border-radius: var(--sc-radius-sm);
+    background: var(--guardian-background, #fff);
+
+    &--pending {
+        border-style: dashed;
+    }
+}
+
+.sc-ff-type {
+    --tc: var(--formula-function-color, #E50299);
+    --tb: var(--formula-function-background, #fbd9ef);
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--tc);
+    background: var(--tb);
+
+    &[data-type="variable"] {
+        --tc: var(--formula-variable-color, #DA9B22);
+        --tb: var(--formula-variable-background, #FFF6E3);
+    }
+
+    &[data-type="text"] {
+        --tc: var(--formula-text-color, #19BE47);
+        --tb: var(--formula-text-background, #d7f5e2);
+    }
+
+    svg-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 0;
+    }
+
+    ::ng-deep svg {
+        width: 14px;
+        height: 14px;
+        fill: var(--tc);
+    }
+
+    &--sm {
+        width: 20px;
+        height: 20px;
+        min-width: 20px;
+
+        ::ng-deep svg {
+            width: 12px;
+            height: 12px;
+        }
+    }
+}
+
+.sc-ff-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+}
+
+.sc-ff-name,
+.sc-ff-doc {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.sc-ff-name {
+    font-size: 13px;
+    color: var(--guardian-font-color, #23252E);
+}
+
+.sc-ff-doc {
+    font-size: 11px;
+    color: var(--guardian-font-color-secondary, #848FA9);
+}
+
+.sc-ff-tag {
+    flex-shrink: 0;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 1px 6px;
+    border-radius: 8px;
+    color: var(--guardian-font-color-secondary, #848FA9);
+    background: var(--guardian-grey-background, #F9FAFC);
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
+
+    &--pending {
+        color: var(--color-accent-yellow-1, #DA9B22);
+        background: var(--guardian-warning-background, #FFF6E3);
+        border-color: transparent;
+    }
+}
+
+.sc-ff-remove {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--guardian-font-color-secondary, #848FA9);
+    cursor: pointer;
+
+    i { font-size: 11px; }
+
+    &:hover {
+        background: var(--guardian-failure-background, #FFEAEA);
+        color: var(--color-accent-red-1, #FF432A);
+    }
+}
+
+.sc-ff-create {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    .sc-rp-select {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .sc-btn {
+        flex-shrink: 0;
+    }
+}
+
+.sc-ff-group {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.sc-ff-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    width: 100%;
+}
+
+.sc-ff-option-name {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.sc-ff-option-link {
+    margin-left: auto;
+    max-width: 50%;
+    font-size: 11px;
+    color: var(--guardian-font-color-secondary, #848FA9);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+::ng-deep .guardian-dropdown-panel.sc-ff-panel {
+    max-width: 420px;
+
+    .p-select-option {
+        min-width: 0;
+        overflow: hidden;
+    }
+}

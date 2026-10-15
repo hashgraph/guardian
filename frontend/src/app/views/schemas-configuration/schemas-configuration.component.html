@@ -1277,6 +1277,109 @@
                             </div>
                         }
 
+                        @let formulasView = selectedFieldFormulasView;
+                        @if (formulasView && formulasView.state !== 'hidden') {
+                            <div class="sc-rp-divider"></div>
+                            <div class="sc-rp-label">Formulas</div>
+                            @if (formulasView.state === 'save-first') {
+                                <div class="sc-ff-hint">Save the schema first to assign formulas.</div>
+                            } @else if (formulasView.state === 'loading') {
+                                <div class="sc-ff-hint">Loading formulas…</div>
+                            } @else {
+                                @if (formulasView.rows.length) {
+                                    <div class="sc-ff-list">
+                                        @for (row of formulasView.rows; track row.key) {
+                                            <div class="sc-ff-row" [class.sc-ff-row--pending]="row.pending">
+                                                <span class="sc-ff-type" [attr.data-type]="row.type" [title]="row.typeName">
+                                                    <svg-icon [src]="'/assets/images/icons/' + row.icon + '.svg'"></svg-icon>
+                                                </span>
+                                                <div class="sc-ff-text">
+                                                    <span class="sc-ff-name" [title]="row.itemName">{{ row.itemName }}</span>
+                                                    <span class="sc-ff-doc" [title]="row.formulaName">{{ row.formulaName }}</span>
+                                                </div>
+                                                @if (row.pending) {
+                                                    <span class="sc-ff-tag sc-ff-tag--pending">unsaved</span>
+                                                }
+                                                @if (row.published) {
+                                                    <span class="sc-ff-tag">Published</span>
+                                                } @else if (!selectedFieldLocked) {
+                                                    <button class="sc-ff-remove" type="button" title="Remove from this field"
+                                                        (click)="unbindFieldFormula(row)">
+                                                        <i class="pi pi-times"></i>
+                                                    </button>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                } @else {
+                                    <div class="sc-ff-hint">No formulas on this field.</div>
+                                }
+                                @if (!selectedFieldLocked) {
+                                    <div class="sc-rp-group">
+                                        <label class="sc-rp-label">Assign formula</label>
+                                        <p-select
+                                            class="guardian-dropdown sc-rp-select"
+                                            panelStyleClass="guardian-dropdown-panel sc-ff-panel"
+                                            [options]="formulasView.groups"
+                                            [group]="true"
+                                            optionGroupLabel="label"
+                                            optionGroupChildren="items"
+                                            optionLabel="label"
+                                            optionValue="value"
+                                            [filter]="true"
+                                            filterBy="label"
+                                            [resetFilterOnHide]="true"
+                                            appendTo="body"
+                                            emptyMessage="No formula items to assign"
+                                            placeholder="Select a formula item…"
+                                            [(ngModel)]="fieldFormulas.assignValue"
+                                            (onChange)="assignFieldFormula($event.value)">
+                                            <ng-template pTemplate="group" let-group>
+                                                <span class="sc-ff-group">{{ group.label }}</span>
+                                            </ng-template>
+                                            <ng-template pTemplate="item" let-option>
+                                                <div class="sc-ff-option">
+                                                    <span class="sc-ff-type sc-ff-type--sm" [attr.data-type]="option.type">
+                                                        <svg-icon [src]="'/assets/images/icons/' + option.icon + '.svg'"></svg-icon>
+                                                    </span>
+                                                    <span class="sc-ff-option-name" [title]="option.label">{{ option.label }}</span>
+                                                    @if (option.linkedTo) {
+                                                        <span class="sc-ff-option-link" [title]="option.linkedTo">{{ option.linkedTo }}</span>
+                                                    }
+                                                </div>
+                                            </ng-template>
+                                        </p-select>
+                                    </div>
+                                    <div class="sc-rp-group">
+                                        <label class="sc-rp-label">Create new</label>
+                                        <input
+                                            class="sc-rp-input"
+                                            type="text"
+                                            placeholder="Placeholder name"
+                                            [(ngModel)]="fieldFormulas.newName"
+                                            (keydown.enter)="createFieldFormula()" />
+                                        <div class="sc-ff-create">
+                                            <p-select
+                                                class="guardian-dropdown sc-rp-select"
+                                                panelStyleClass="guardian-dropdown-panel"
+                                                [options]="formulasView.documents"
+                                                optionLabel="label"
+                                                optionValue="value"
+                                                appendTo="body"
+                                                [(ngModel)]="fieldFormulas.newDocument">
+                                            </p-select>
+                                            <button class="sc-btn sc-btn--sm" type="button"
+                                                [disabled]="!fieldFormulas.newName.trim()"
+                                                (click)="createFieldFormula()">
+                                                <i class="pi pi-plus"></i>
+                                                Create
+                                            </button>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        }
+
                         @if (selectedFieldCanBeArray || selectedFieldCanBeUpdatable) {
                             <div class="sc-rp-divider"></div>
                             <div class="sc-rp-label">Other</div>

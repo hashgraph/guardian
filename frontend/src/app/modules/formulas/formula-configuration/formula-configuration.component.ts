@@ -9,7 +9,7 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MathLiveComponent } from '../../common/mathlive/mathlive.component';
 import { LinkDialog } from '../dialogs/link-dialog/link-dialog.component';
-import { Formulas } from '../models/formulas';
+import { Formulas, MISSING_LINK_TEXT } from '../models/formulas';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { ConditionFieldGroup } from '../../common/condition-if-editor/condition-if-editor.component';
 import { FormulaFilesDialog } from '../dialogs/formula-files-dialog/formula-files-dialog.component';
@@ -99,6 +99,9 @@ export class FormulaConfigurationComponent implements OnInit {
     }
 
     public dirty: boolean = false;
+    /** the schema link of the selected item points to a schema or field that does not exist */
+    public selectedLinkMissing: boolean = false;
+    public readonly missingLinkText = MISSING_LINK_TEXT;
 
     public overviewForm = new FormGroup({
         name: new FormControl<string>('', Validators.required),
@@ -127,7 +130,8 @@ export class FormulaConfigurationComponent implements OnInit {
             }
             return {
                 entity: this.getEntityName(item.link),
-                field: this.getFieldName(item.link)
+                field: this.getFieldName(item.link),
+                missing: this.isLinkMissing(item.link)
             };
         };
         this.subscription.add(
@@ -505,6 +509,7 @@ export class FormulaConfigurationComponent implements OnInit {
         this.config.update();
         const selected = this.selected;
         this.selectedList = selected ? [selected] : [];
+        this.selectedLinkMissing = !!selected?.link && this.isLinkMissing(selected.link);
         const sameType = selected ? this.config.all.filter((e) => e.type === selected.type) : [];
         this.typeTotal = sameType.length;
         this.typePosition = selected ? sameType.indexOf(selected) + 1 : 0;
@@ -705,6 +710,16 @@ export class FormulaConfigurationComponent implements OnInit {
             return this.formulasMap.get(link.entityId) || '';
         }
         return '';
+    }
+
+    /**
+     * A schema link whose schema or field is not among the policy schemas.
+     */
+    public isLinkMissing(link: IFormulaLink): boolean {
+        if (link?.type !== 'schema') {
+            return false;
+        }
+        return !this.schemasMap.has(link.entityId) || !this.schemasFieldMap.has(`${link.entityId}.${link.item}`);
     }
 
     public getFieldName(link: IFormulaLink): string {

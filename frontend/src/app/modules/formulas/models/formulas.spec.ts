@@ -1,5 +1,5 @@
 import { FormulaItemType, IFormulaConfig } from '@guardian/interfaces';
-import { Formulas, highlightSegments, latexToPlain } from './formulas';
+import { Formulas, highlightSegments, latexToPlain, MISSING_LINK_TEXT } from './formulas';
 
 function field(name: string, description: string = '') {
     return { name, title: name, description, type: 'string' } as any;
@@ -256,5 +256,23 @@ describe('Formulas reorder and edit', () => {
             expect('source' in item).toBe(false);
         }
         expect(json.formulas).toEqual(createConfig().formulas);
+    });
+});
+
+describe('Formulas missing links', () => {
+    it('should show a warning instead of the label of a missing link', () => {
+        const model = new Formulas();
+        model.labelFn = (item) => item.link
+            ? { entity: '', field: '', missing: item.link.item === 'f2' }
+            : null;
+        model.fromData(createConfig());
+        model.update();
+        expect(model.meta.get('f1')!.missingLink).toBe(true);
+        expect(model.meta.get('f1')!.subText).toBe(MISSING_LINK_TEXT);
+        expect(model.meta.get('f1')!.entity).toBeNull();
+        expect(model.meta.get('v1')!.missingLink).toBe(false);
+        model.setQuery('not found');
+        model.update();
+        expect(model.data.map((e) => e.uuid)).toEqual(['f1']);
     });
 });
