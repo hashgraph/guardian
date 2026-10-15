@@ -1,38 +1,53 @@
----
 name: Bug report
-about: Report a bug you've found, with enough detail for someone to reproduce it.
-title: ''
-labels: ''
-assignees: ''
+description: Report a bug, with enough detail to reproduce it.
 type: Bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please redact keys, `.env` contents, and other secrets from logs and screenshots.
 
----
+  - type: textarea
+    id: summary
+    attributes:
+      label: Bug summary
+    validations:
+      required: true
 
-### Bug Summary
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. First...
+        2. Then...
+    validations:
+      required: true
 
-_Summarize the bug._
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+    validations:
+      required: true
 
-### Steps to Reproduce
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+    validations:
+      required: true
 
-_To reproduce do this._
+  - type: input
+    id: version
+    attributes:
+      label: Guardian version and how you're running it
+      placeholder: ex. 3.7.0, Docker Compose
+    validations:
+      required: true
 
-1. first..
-2. then..
-
-### Expected Result
-
-_The expected result is:_
-
-### Actual Result
-
-_The actual result was:_
-
-### Environment
-
-* Guardian version:
-* Browser:
-* Platform:
-
-### Artifacts & Considerations
-
-_Supporting media artifacts (e.g. images or records) and considerations include:_
+  - type: textarea
+    id: artifacts
+    attributes:
+      label: Artifacts and considerations
+      description: Screenshots, recordings, logs, or anything else that helps.
