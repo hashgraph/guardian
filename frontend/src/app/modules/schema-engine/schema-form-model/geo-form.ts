@@ -3,6 +3,7 @@ import { from, map, Observable, of } from 'rxjs';
 import { ajvSchemaValidator } from 'src/app/validators/ajv-schema.validator';
 import ajv from 'ajv';
 import { GeoJsonSchema, GeoJsonType } from '@guardian/interfaces';
+import { polygonRingError } from './polygon-ring-validation';
 
 export const MISSING_ORIGINAL_FILE_ERROR =
     'The original file is not available in this browser. Import it again.';
@@ -245,11 +246,16 @@ export class GeoForm {
                 errors.push(`Polygon: ring #${ri} must contain at least 3 points (excluding the closing point)`);
                 return;
             }
+            const validCoordinates = ring.every((coordinate: any) => this.isLonLat(coordinate));
             ring.forEach((c: any, ci: number) => {
                 if (!this.isLonLat(c)) {
                     errors.push(`Polygon: invalid point #${ci} in ring #${ri}`);
                 }
             });
+            if (validCoordinates) {
+                const error = polygonRingError(ring);
+                if (error) errors.push(`Polygon: ring #${ri} ${error}`);
+            }
         });
         return errors;
     }
@@ -299,17 +305,8 @@ export class GeoForm {
                 errors.push(`MultiPolygon: polygon #${pi} must contain at least one ring`);
                 return;
             }
-            poly.forEach((ring: any, ri: number) => {
-                if (!Array.isArray(ring) || ring.length < 3) {
-                    errors.push(`MultiPolygon: in polygon #${pi}, ring #${ri} must contain at least 3 points`);
-                    return;
-                }
-                ring.forEach((c: any, ci: number) => {
-                    if (!this.isLonLat(c)) {
-                        errors.push(`MultiPolygon: invalid point #${ci} in polygon #${pi}, ring #${ri}`);
-                    }
-                });
-            });
+            const polygonErrors = this.validatePolygon(poly);
+            errors.push(...polygonErrors.map(error => `MultiPolygon: polygon #${pi}: ${error.replace(/^Polygon: /, '')}`));
         });
         return errors;
     }
