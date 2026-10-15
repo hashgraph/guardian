@@ -57,15 +57,14 @@
                       }
                     </div>
                   }
-                  @if (getFieldFormulas(item); as fx) {
-                    @if (fx.length) {
-                      <app-field-formulas
-                        [items]="fx"
-                        [model]="formulas!"
-                        [fullPath]="item.fullPath"
-                        [entries]="formulaEntries"
-                        ></app-field-formulas>
-                    }
+                  @let fx = getFieldFormulas(item);
+                  @if (fx.length) {
+                    <app-field-formulas
+                      [items]="fx"
+                      [model]="formulas!"
+                      [fullPath]="item.fullPath"
+                      [entries]="formulaEntries"
+                      ></app-field-formulas>
                   }
                   @if (
                     !isFormForFinishSetup &&
@@ -635,15 +634,14 @@
                         </div>
                       }
                     </div>
-                    @if (getFieldFormulas(item); as fx) {
-                      @if (fx.length) {
-                        <app-field-formulas
-                          [items]="fx"
-                          [model]="formulas!"
-                          [fullPath]="item.fullPath"
-                          [entries]="formulaEntries"
-                          ></app-field-formulas>
-                      }
+                    @let fx = getFieldFormulas(item);
+                    @if (fx.length) {
+                      <app-field-formulas
+                        [items]="fx"
+                        [model]="formulas!"
+                        [fullPath]="item.fullPath"
+                        [entries]="formulaEntries"
+                        ></app-field-formulas>
                     }
                     @if (
                       !isFormForFinishSetup &&

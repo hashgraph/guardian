@@ -75,15 +75,15 @@ describe('SchemaFieldFormulas', () => {
     it('counts the formulas of a field, pending changes included', () => {
         const { model } = create();
         const schema: any = { id: 's1', iri: '#root' };
-        expect(model.count(schema, 'risks.G6')).toBe(1);
-        expect(model.count(schema, 'risks.G7')).toBe(0);
+        expect(model.count(schema, ['risks'], 'G6')).toBe(1);
+        expect(model.count(schema, ['risks'], 'G7')).toBe(0);
         model.assign(scope(['risks']), 'd1|f1');
-        expect(model.count(schema, 'risks.G6')).toBe(2);
+        expect(model.count(schema, ['risks'], 'G6')).toBe(2);
         model.newName = 'New';
         model.newDocument = 'd1';
         model.create(scope(['risks'], 'G7'));
-        expect(model.count(schema, 'risks.G7')).toBe(1);
-        expect(model.count({ iri: '#other' } as any, 'risks.G6')).toBe(0);
+        expect(model.count(schema, ['risks'], 'G7')).toBe(1);
+        expect(model.count({ iri: '#other' } as any, ['risks'], 'G6')).toBe(0);
     });
 
     it('closes the new formula form after creating and on another field', () => {

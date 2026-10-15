@@ -81,9 +81,9 @@ export function isEditableFormula(formula: IFormula | null | undefined): boolean
 }
 
 /**
- * A placeholder formula item linked to the field.
+ * A placeholder formula item. Its link is set when the create operation is applied.
  */
-export function createStubItem(name: string, target: IFieldTarget, uuid: string = GenerateUUIDv4()): IFormulaItem {
+export function createStubItem(name: string, uuid: string = GenerateUUIDv4()): IFormulaItem {
     return {
         uuid,
         name,
@@ -91,7 +91,7 @@ export function createStubItem(name: string, target: IFieldTarget, uuid: string 
         type: FormulaItemType.Formula,
         value: '',
         relationships: [],
-        link: moveLink(null, target)
+        link: null
     };
 }
 

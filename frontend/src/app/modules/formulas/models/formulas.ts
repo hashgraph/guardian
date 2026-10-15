@@ -1,5 +1,6 @@
 import { moveItemInArray } from '@angular/cdk/drag-drop';
-import { IFormulaItem, FormulaItemType, GenerateUUIDv4, IFormulaConfig, IFormulaFile } from '@guardian/interfaces';
+import { IFormulaItem, FormulaItemType, GenerateUUIDv4, IFormulaConfig, IFormulaFile, SchemaHelper } from '@guardian/interfaces';
+import { sourceRows } from './formula-meta';
 
 /**
  * Shown instead of the link label when the linked schema or field does not exist.
@@ -182,6 +183,11 @@ export class Formulas {
         return this.items.length;
     }
 
+    /** the trimmed search text */
+    public get searchQuery(): string {
+        return this.query;
+    }
+
     public get isFiltering(): boolean {
         return !!this.query || Array.from(this.filterMap.values()).some((e) => !e);
     }
@@ -249,14 +255,15 @@ export class Formulas {
         const data: IFormulaItem[] = [];
         const meta = new Map<string, IFormulaRowMeta>();
         for (const item of this.items) {
-            const parts = this.getParts(item);
+            const link = this.getLinkLabel(item);
+            const parts = this.getParts(item, link);
             if (!this.isMatch(parts)) {
                 continue;
             }
             counts[item.type]++;
             if (this.filterMap.get(item.type)) {
                 data.push(item);
-                meta.set(item.uuid, this.getMeta(item, parts));
+                meta.set(item.uuid, this.getMeta(item, parts, link));
             }
         }
         this.counts = counts;
@@ -273,7 +280,7 @@ export class Formulas {
         };
     }
 
-    private getParts(item: IFormulaItem): ISearchPart[] {
+    private getParts(item: IFormulaItem, link: IFormulaLinkLabel | null): ISearchPart[] {
         const parts: ISearchPart[] = [];
         const add = (label: string, raw: any) => {
             raw = String(raw ?? '');
@@ -289,7 +296,6 @@ export class Formulas {
         } else if (item.type === FormulaItemType.Formula) {
             add('Formula', latexToPlain(item.value));
         }
-        const link = this.getLinkLabel(item);
         if (link?.missing) {
             add('Link', MISSING_LINK_TEXT);
         } else if (link) {
@@ -298,11 +304,7 @@ export class Formulas {
         for (const label of this.getConditionLabels(item)) {
             add('Shown if', label);
         }
-        const source = [item.source?.methodology, item.source?.section, item.source?.equation, item.source?.page]
-            .map((e) => String(e ?? '').trim())
-            .filter((e) => e)
-            .join(' · ');
-        add('Source', source);
+        add('Source', sourceRows(item.source).map((r) => r.value).join(' · '));
         add('Description', item.description);
         return parts;
     }
@@ -319,14 +321,7 @@ export class Formulas {
         if (!condition) {
             return [];
         }
-        let rows: any[];
-        if (Array.isArray(condition.AND)) {
-            rows = condition.AND;
-        } else if (Array.isArray(condition.OR)) {
-            rows = condition.OR;
-        } else {
-            rows = [condition];
-        }
+        const rows: any[] = SchemaHelper.getConditionTriggerPredicates(condition);
         const result: string[] = [];
         for (const row of rows) {
             const field = row?.field;
@@ -341,7 +336,7 @@ export class Formulas {
         return this.terms.every((term) => parts.some((part) => part.lower.includes(term)));
     }
 
-    private getMeta(item: IFormulaItem, parts: ISearchPart[]): IFormulaRowMeta {
+    private getMeta(item: IFormulaItem, parts: ISearchPart[], link: IFormulaLinkLabel | null): IFormulaRowMeta {
         const terms = this.terms;
         let entity: IFormulaSegment[] | null = null;
         let sub: IFormulaSegment[] = [];
@@ -354,7 +349,6 @@ export class Formulas {
             sub = highlightSegments(subText, terms);
             visible = ['Name', 'Value', 'Description'];
         } else {
-            const link = this.getLinkLabel(item);
             if (link?.missing) {
                 missingLink = true;
                 subText = MISSING_LINK_TEXT;

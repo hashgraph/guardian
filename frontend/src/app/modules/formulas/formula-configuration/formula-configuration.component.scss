@@ -1,3 +1,5 @@
+@import '../formula-type';
+
 .formula-font,
 .guardian-page {
     font-family: var(--guardian-font-family, Inter, sans-serif);
@@ -21,8 +23,7 @@
 
 // Type icon: a rounded square with the type colours (24px, sm 20px, lg 30px)
 .f-type-icon {
-    --tc: var(--formula-constant-color, #4169E2);
-    --tb: var(--formula-constant-background, #e1e7fa);
+    @include formula-type-colors;
     width: 24px;
     height: 24px;
     min-width: 24px;
@@ -33,21 +34,6 @@
     flex-shrink: 0;
     color: var(--tc);
     background: var(--tb);
-
-    &[data-type="variable"] {
-        --tc: var(--formula-variable-color, #DA9B22);
-        --tb: var(--formula-variable-background, #FFF6E3);
-    }
-
-    &[data-type="formula"] {
-        --tc: var(--formula-function-color, #E50299);
-        --tb: var(--formula-function-background, #fbd9ef);
-    }
-
-    &[data-type="text"] {
-        --tc: var(--formula-text-color, #19BE47);
-        --tb: var(--formula-text-background, #d7f5e2);
-    }
 
     svg-icon {
         display: flex;
@@ -198,8 +184,7 @@
     }
 
     .chip {
-        --tb: var(--formula-constant-background, #e1e7fa);
-        --tc: var(--formula-constant-color, #4169E2);
+        @include formula-type-colors;
         height: 28px;
         padding: 0 7px 0 2px;
         display: flex;
@@ -213,21 +198,6 @@
         font-size: 12px;
         font-weight: 500;
         cursor: pointer;
-
-        &[data-type="variable"] {
-            --tb: var(--formula-variable-background, #FFF6E3);
-            --tc: var(--formula-variable-color, #DA9B22);
-        }
-
-        &[data-type="formula"] {
-            --tb: var(--formula-function-background, #fbd9ef);
-            --tc: var(--formula-function-color, #E50299);
-        }
-
-        &[data-type="text"] {
-            --tb: var(--formula-text-background, #d7f5e2);
-            --tc: var(--formula-text-color, #19BE47);
-        }
 
         &.on {
             background: var(--tb);

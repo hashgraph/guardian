@@ -1,3 +1,6 @@
+@import '../../modules/formulas/formula-type';
+
+
 :host {
     display: flex;
     flex-direction: column;
@@ -2209,12 +2212,15 @@
     &--opt  { background: var(--guardian-grey-background, #F9FAFC); color: var(--guardian-font-color-secondary, #848FA9); }
     &--arr  { background: var(--guardian-primary-background, #E1E7FA); color: var(--color-primary, #4169E2); }
     &--type { background: var(--guardian-grey-background, #F9FAFC); color: var(--guardian-font-color-secondary, #848FA9); }
-    &--cond {
-        background: var(--guardian-primary-background, #E1E7FA);
-        color: var(--color-primary, #4169E2);
+    &--cond,
+    &--formula {
         display: inline-flex;
         align-items: center;
         gap: 3px;
+    }
+    &--cond {
+        background: var(--guardian-primary-background, #E1E7FA);
+        color: var(--color-primary, #4169E2);
         i { font-size: 9px; }
     }
     /* Referenced schema name — solid purple, same style as v5 subschema-ref-badge */
@@ -2231,9 +2237,6 @@
     &--formula {
         background: var(--formula-function-background, #fbd9ef);
         color: color-mix(in srgb, var(--formula-function-color, #E50299) 82%, #000);
-        display: inline-flex;
-        align-items: center;
-        gap: 3px;
 
         svg-icon {
             display: flex;
@@ -4999,8 +5002,7 @@
 }
 
 .sc-ff-type {
-    --tc: var(--formula-function-color, #E50299);
-    --tb: var(--formula-function-background, #fbd9ef);
+    @include formula-type-colors;
     width: 24px;
     height: 24px;
     min-width: 24px;
@@ -5010,16 +5012,6 @@
     justify-content: center;
     color: var(--tc);
     background: var(--tb);
-
-    &[data-type="variable"] {
-        --tc: var(--formula-variable-color, #DA9B22);
-        --tb: var(--formula-variable-background, #FFF6E3);
-    }
-
-    &[data-type="text"] {
-        --tc: var(--formula-text-color, #19BE47);
-        --tb: var(--formula-text-background, #d7f5e2);
-    }
 
     svg-icon {
         display: flex;
@@ -5126,17 +5118,10 @@
     align-items: center;
     gap: 5px;
     padding: 4px 0;
-    border: none;
-    background: transparent;
-    color: var(--color-primary, #4169E2);
-    font-family: inherit;
     font-size: 13px;
     font-weight: 500;
-    cursor: pointer;
 
     i { font-size: 11px; }
-
-    &:hover { text-decoration: underline; }
 }
 
 .sc-ff-new {

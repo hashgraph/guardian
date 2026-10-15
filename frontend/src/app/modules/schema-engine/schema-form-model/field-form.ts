@@ -278,10 +278,6 @@ export class FieldForm {
         return { fields, conditions }
     }
 
-    private equalsLoosely(a: any, b: any): boolean {
-        return equalsLoosely(a, b);
-    }
-
     private findControl(name: string): IFieldControl<any> | undefined {
         const base = this.fieldControls?.find(control => control.name === name);
         if (base) { return base; }
@@ -300,7 +296,7 @@ export class FieldForm {
                 : p.path;
             const c = path ? this.form.get(path) : this.form.controls[p.name];
             if (!c) return false;
-            return SchemaHelper.testPredicateValue(p.comparator, c.value, p.value, this.equalsLoosely.bind(this));
+            return SchemaHelper.testPredicateValue(p.comparator, c.value, p.value, equalsLoosely);
         };
 
         if (expr.op === 'SINGLE') return test(expr.pairs[0]);

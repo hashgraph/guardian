@@ -5,6 +5,7 @@ import { takeUntil } from 'rxjs/operators';
 import { FormulasService } from 'src/app/services/formulas.service';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { SchemaService } from 'src/app/services/schema.service';
+import { equalsLoosely } from '../schema-form-model/field-form';
 import { FormulasTree } from '../../formulas/models/formula-tree';
 import { SchemaFormViewComponent } from '../schema-form-view/schema-form-view.component';
 import { SchemaFormViewNavigationComponent } from '../schema-form-view-navigation/schema-form-view-navigation.component';
@@ -60,7 +61,6 @@ export class DocumentViewComponent implements OnInit {
     public schemaMap: { [x: string]: Schema | null } = {};
     public rules: DocumentValidators;
     public rulesResults: SchemaRuleValidateResult;
-    public formulasResults: any | null;
     private formulasBySubject = new Map<any, any>();
     public link: string | undefined;
     public accordionLink: string | undefined;
@@ -131,22 +131,19 @@ export class DocumentViewComponent implements OnInit {
     private updateFormulasResults(): void {
         this.formulasBySubject = new Map<any, any>();
         if (!this.formulas) {
-            this.formulasResults = this.formulas;
             return;
         }
         for (const subject of this.subjects) {
             this.formulasBySubject.set(subject, this.formulas.getFields(this.schemaId, {
                 data: subject,
-                anyEntry: true
+                anyEntry: true,
+                equalsFn: equalsLoosely
             }));
         }
-        this.formulasResults = this.subjects.length
-            ? this.formulasBySubject.get(this.subjects[0])
-            : this.formulas.getFields(this.schemaId, { data: null, anyEntry: true });
     }
 
     public formulasFor(item: any): any {
-        return this.formulasBySubject.get(item) ?? this.formulasResults;
+        return this.formulasBySubject.get(item) ?? null;
     }
 
     ngOnDestroy() {

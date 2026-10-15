@@ -208,9 +208,11 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         }
         const formulaModel = new FormFormulas(this.formulas, this.schema.iri, equalsLoosely);
         formulaModel.setData(this.group.getRawValue());
-        this.formulaSub = this.group.valueChanges.subscribe(() => {
-            formulaModel.setData(this.group.getRawValue());
-        });
+        if (formulaModel.hasConditions) {
+            this.formulaSub = this.group.valueChanges.subscribe(() => {
+                formulaModel.setData(this.group.getRawValue());
+            });
+        }
         this.formulaModel = formulaModel;
     }
 

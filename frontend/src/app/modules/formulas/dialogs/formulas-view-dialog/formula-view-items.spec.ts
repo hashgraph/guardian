@@ -1,4 +1,5 @@
-import { filterRootItems, sourceRows } from './formula-view-items';
+import { filterRootItems } from './formula-view-items';
+import { sourceRows } from '../../models/formula-meta';
 
 describe('filterRootItems', () => {
     const items: any[] = [{ uuid: 'a' }, { uuid: 'b' }, { uuid: 'c' }];

@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { DialogService } from 'primeng/dynamicdialog';
 import { FormulaItem } from '../models/formula-tree';
+import { formulaTypeName } from '../models/formula-meta';
 import { FormFormulas } from '../models/form-formulas';
 import { FormulasViewDialog } from '../dialogs/formulas-view-dialog/formulas-view-dialog.component';
 
@@ -41,13 +42,7 @@ export class FieldFormulasComponent {
     }
 
     public typeLabel(item: FormulaItem): string {
-        switch (item.type) {
-            case 'constant': return 'Constant';
-            case 'variable': return 'Variable';
-            case 'formula': return 'Formula';
-            case 'text': return 'Text';
-            default: return '';
-        }
+        return formulaTypeName(item.type);
     }
 
     public openDetails(event: Event, item?: FormulaItem): void {

@@ -28,7 +28,6 @@ import { FormulasService } from 'src/app/services/formulas.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { IFieldFormulaRow, IFieldFormulasView, IFieldScope, SchemaFieldFormulas } from './schema-field-formulas';
-import { buildFieldPath } from 'src/app/modules/formulas/models/field-bindings';
 
 export interface DrillEntry {
     fieldLabel: string;
@@ -2246,6 +2245,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             });
     }
 
+    /** names of the sub-schema fields drilled into, the path prefix of the fields shown */
+    private get fieldFormulaPrefix(): string[] {
+        return this.isDrilling ? this.drillStack.map(e => e.fieldName) : [];
+    }
+
     /**
      * The selected field as formulas see it: the open (root) schema and the path from it.
      * When drilling, the drilled-into field names prefix the path. Null when there is no
@@ -2261,8 +2265,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (!Array.isArray(fields) || !fields.includes(field)) {
             return null;
         }
-        const prefix = this.isDrilling ? this.drillStack.map(e => e.fieldName) : [];
-        return { schema, field, prefix, fields };
+        return { schema, field, prefix: this.fieldFormulaPrefix, fields };
+    }
+
+    /** the selected field scope when its formulas can be changed, else null */
+    private get editableFieldScope(): IFieldScope | null {
+        const scope = this.selectedFieldScope;
+        return scope && !this.selectedFieldLocked && scope.schema.entity !== SchemaEntity.NONE ? scope : null;
     }
 
     /**
@@ -2276,20 +2285,19 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
         const scope = this.selectedFieldScope;
         const eligible = !!scope && !this.isTemplateMode && !this.selectedFieldIsHelpText;
-        const subSchema = this.selectedSchema?.entity === SchemaEntity.NONE;
-        return this.fieldFormulas.view(scope, eligible, subSchema);
+        return this.fieldFormulas.view(scope, eligible, this.selectedSchema?.entity === SchemaEntity.NONE);
     }
 
     public assignFieldFormula(value: string | null): void {
-        const scope = this.selectedFieldScope;
-        if (scope && !this.selectedFieldLocked && scope.schema.entity !== SchemaEntity.NONE) {
+        const scope = this.editableFieldScope;
+        if (scope) {
             this.fieldFormulas.assign(scope, value);
         }
     }
 
     public unbindFieldFormula(row: IFieldFormulaRow): void {
-        const scope = this.selectedFieldScope;
-        if (scope && !this.selectedFieldLocked && scope.schema.entity !== SchemaEntity.NONE) {
+        const scope = this.editableFieldScope;
+        if (scope) {
             this.fieldFormulas.unbind(scope, row);
         }
     }
@@ -2303,13 +2311,12 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (!this.fieldFormulas || !schema || this.isTemplateMode || schema.entity === SchemaEntity.NONE) {
             return 0;
         }
-        const prefix = this.isDrilling ? this.drillStack.map(e => e.fieldName) : [];
-        return this.fieldFormulas.count(schema, buildFieldPath(prefix, field.name));
+        return this.fieldFormulas.count(schema, this.fieldFormulaPrefix, field.name);
     }
 
     public createFieldFormula(): void {
-        const scope = this.selectedFieldScope;
-        if (scope && !this.selectedFieldLocked && scope.schema.entity !== SchemaEntity.NONE) {
+        const scope = this.editableFieldScope;
+        if (scope) {
             this.fieldFormulas.create(scope);
         }
     }

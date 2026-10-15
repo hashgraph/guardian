@@ -6,7 +6,6 @@ import {
 import {
     FormulasTree,
     FormulaItem,
-    IFormulaConditionContext,
     SchemaItem,
 } from '../../../models/formula-tree';
 import {TreeGraphComponent} from 'src/app/modules/common/tree-graph/tree-graph.component';
@@ -44,15 +43,7 @@ class GraphNode extends TreeNode<GraphNodeData> {
 })
 export class FormulasGraphTabComponent implements OnChanges {
     @Input()
-    public tree!: FormulasTree;
-    @Input()
-    public schema!: string;
-    @Input()
-    public path!: string;
-    @Input()
-    public context?: IFormulaConditionContext;
-    @Input()
-    public items?: FormulaItem[];
+    public items: FormulaItem[] = [];
 
     public source: TreeSource<GraphNode> | null = null;
     private treeGraph: TreeGraphComponent | null = null;
@@ -72,7 +63,7 @@ export class FormulasGraphTabComponent implements OnChanges {
     public nodeDescription: string | null = null;
 
     public ngOnChanges(): void {
-        this.source = this.buildGraph(this.tree, this.schema, this.path);
+        this.source = this.buildGraph(this.items);
 
         if (this.treeGraph && this.source) {
             this.treeGraph.setData(this.source);
@@ -122,9 +113,9 @@ export class FormulasGraphTabComponent implements OnChanges {
         }
         const rect = container.getBoundingClientRect();
         // offset sizes are unscaled, so the result does not depend on the current zoom
-        let view = fitToContainer(rect.width, rect.height, grid.offsetWidth, grid.offsetHeight, FIT_PADDING);
-        const rootEl = grid.querySelector('.tree-node') as HTMLElement | null;
-        if (initial && rootEl) {
+        const rootEl = initial ? grid.querySelector('.tree-node') as HTMLElement | null : null;
+        let view;
+        if (rootEl) {
             // root node centre/top in unscaled grid coordinates (offsets ignore the CSS scale)
             let left = 0;
             let top = 0;
@@ -142,6 +133,8 @@ export class FormulasGraphTabComponent implements OnChanges {
                 FIT_PADDING,
                 INITIAL_MIN_ZOOM
             );
+        } else {
+            view = fitToContainer(rect.width, rect.height, grid.offsetWidth, grid.offsetHeight, FIT_PADDING);
         }
         if (!view) {
             return false;
@@ -160,8 +153,7 @@ export class FormulasGraphTabComponent implements OnChanges {
         return name || type;
     }
 
-    private buildGraph(tree: FormulasTree, schema: string, path: string): TreeSource<GraphNode> | null {
-        const items = this.items ?? tree.get(schema, path, this.context);
+    private buildGraph(items: FormulaItem[]): TreeSource<GraphNode> | null {
         if (!items?.length) {
             return null;
         }

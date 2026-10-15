@@ -203,7 +203,7 @@
               }
             </span>
             <span class="f-type-icon" [attr.data-type]="item.type">
-              <svg-icon [src]="'/assets/images/icons/' + typeIcons[item.type] + '.svg'"></svg-icon>
+              <svg-icon [src]="'/assets/images/icons/' + typeIcons(item.type) + '.svg'"></svg-icon>
             </span>
             <div class="row-main">
               <div class="row-name">
@@ -216,17 +216,14 @@
               @if (meta) {
                 @if (meta.noLink) {
                   <div class="row-sub"><i>No link</i></div>
-                } @else if (meta.missingLink) {
-                  <div class="row-sub row-sub--missing"
-                    [truncateTooltip]="meta.subText"
-                    tooltipPosition="bottom">
-                    <i class="pi pi-exclamation-triangle"></i>
-                    <ng-container [ngTemplateOutlet]="segments" [ngTemplateOutletContext]="{ $implicit: meta.sub }"></ng-container>
-                  </div>
                 } @else {
                   <div class="row-sub"
+                    [class.row-sub--missing]="meta.missingLink"
                     [truncateTooltip]="meta.subText"
                     tooltipPosition="bottom">
+                    @if (meta.missingLink) {
+                      <i class="pi pi-exclamation-triangle"></i>
+                    }
                     @if (meta.entity) {
                       <span class="ent">
                         <ng-container [ngTemplateOutlet]="segments" [ngTemplateOutletContext]="{ $implicit: meta.entity }"></ng-container>
@@ -288,7 +285,7 @@
         <div class="card" [attr.data-type]="item.type">
           <div class="card-h">
             <span class="f-type-icon lg" [attr.data-type]="item.type">
-              <svg-icon [src]="'/assets/images/icons/' + typeIcons[item.type] + '.svg'"></svg-icon>
+              <svg-icon [src]="'/assets/images/icons/' + typeIcons(item.type) + '.svg'"></svg-icon>
             </span>
             <div class="card-h-text">
               <div class="card-h-title">
@@ -298,7 +295,7 @@
                   <span class="placeholder">Untitled</span>
                 }
               </div>
-              <div class="card-h-type">{{ typeNames[item.type] }} · {{ typePosition }} of {{ typeTotal }}</div>
+              <div class="card-h-type">{{ typeNames(item.type) }} · {{ typePosition }} of {{ typeTotal }}</div>
             </div>
             @if (!readonly) {
               <button type="button" class="icon-btn" title="Duplicate" (click)="duplicateItem(item)">
@@ -420,22 +417,19 @@
 <ng-template #linkField let-item let-label="label">
   <div class="sec">
     <label class="sec-label">{{ label }}</label>
-    <div class="input-link" [class.ro]="readonly" [class.missing]="item.link && selectedLinkMissing" (click)="onLink(item)">
-      @if (item.link && selectedLinkMissing) {
-        <i class="pi pi-exclamation-triangle link-warn"></i>
-        <span class="link-field link-field--missing"
-          [truncateTooltip]="missingLinkText"
-          tooltipPosition="bottom">{{ missingLinkText }}</span>
-        @if (!readonly) {
-          <button type="button" class="icon-btn small" title="Remove link" (click)="deleteLink(item, $event)">
-            <i class="pi pi-times"></i>
-          </button>
+    <div class="input-link" [class.ro]="readonly" [class.missing]="selectedLinkMissing" (click)="onLink(item)">
+      @if (item.link) {
+        @if (selectedLinkMissing) {
+          <i class="pi pi-exclamation-triangle link-warn"></i>
+          <span class="link-field link-field--missing"
+            [truncateTooltip]="missingLinkText"
+            tooltipPosition="bottom">{{ missingLinkText }}</span>
+        } @else {
+          <span class="link-ent">{{ getEntityName(item.link) }}:</span>
+          <span class="link-field"
+            [truncateTooltip]="getFieldName(item.link)"
+            tooltipPosition="bottom">{{ getFieldName(item.link) }}</span>
         }
-      } @else if (item.link) {
-        <span class="link-ent">{{ getEntityName(item.link) }}:</span>
-        <span class="link-field"
-          [truncateTooltip]="getFieldName(item.link)"
-          tooltipPosition="bottom">{{ getFieldName(item.link) }}</span>
         @if (!readonly) {
           <button type="button" class="icon-btn small" title="Remove link" (click)="deleteLink(item, $event)">
             <i class="pi pi-times"></i>

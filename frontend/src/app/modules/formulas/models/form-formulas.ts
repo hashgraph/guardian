@@ -10,7 +10,6 @@ export class FormFormulas {
     public readonly fields: Record<string, { tree: FormulasTree; schema: string; path: string }>;
 
     private data: any = null;
-    private version = 0;
     private cache = new Map<string, FormulaItem[]>();
 
     constructor(
@@ -21,13 +20,18 @@ export class FormFormulas {
         this.fields = tree.getFields(schemaIri);
     }
 
-    public get dataVersion(): number {
-        return this.version;
+    /**
+     * True when any formula item of the schema has a display condition,
+     * i.e. the visible items can change together with the form data.
+     */
+    public get hasConditions(): boolean {
+        return Object.values(this.fields).some((field) =>
+            this.tree.get(field.schema, field.path).some((item) => !!item.condition)
+        );
     }
 
     public setData(raw: any): void {
         this.data = raw;
-        this.version++;
         this.cache.clear();
     }
 

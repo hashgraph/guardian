@@ -19,23 +19,13 @@ import {
     isLinkedTo,
     NEW_FORMULA_DOCUMENT
 } from 'src/app/modules/formulas/models/field-bindings';
+import { formulaTypeIcon, formulaTypeName } from 'src/app/modules/formulas/models/formula-meta';
 
 const PAGE_SIZE = 100;
 
-const TYPE_ICONS: { [type: string]: string } = {
-    variable: 'variable',
-    formula: 'function',
-    text: 'text'
-};
-
-const TYPE_NAMES: { [type: string]: string } = {
-    variable: 'Variable',
-    formula: 'Formula',
-    text: 'Text'
-};
-
 export interface IFieldFormulaRow {
     key: string;
+    formulaId: string;
     formulaName: string;
     itemUuid: string;
     itemName: string;
@@ -125,7 +115,7 @@ export class SchemaFieldFormulas {
     private viewCache: IFieldFormulasView = HIDDEN;
     private viewField: SchemaField | null = null;
 
-    private countKey: any[] = [];
+    private countKey: string = '';
     private countCache = new Map<string, number>();
 
     constructor(
@@ -232,9 +222,7 @@ export class SchemaFieldFormulas {
         this.viewKey = key;
         if (field !== this.viewField) {
             this.viewField = field;
-            this.creating = false;
-            this.newName = '';
-            this.newDocument = '';
+            this.cancelCreate();
             this.assignValue = null;
         }
         this.viewCache = this.buildView(scope, eligible, subSchema);
@@ -262,16 +250,15 @@ export class SchemaFieldFormulas {
         const formulas = this.effectiveFormulas();
         const rows: IFieldFormulaRow[] = findFieldBindings(formulas, target).map(({ formula, item }) => ({
             key: `${formula.id}:${item.uuid}`,
+            formulaId: String(formula.id),
             formulaName: formula.name || '',
             itemUuid: item.uuid,
             itemName: item.name || 'Untitled',
             type: item.type,
-            typeName: TYPE_NAMES[item.type] || item.type,
-            icon: TYPE_ICONS[item.type] || 'function',
+            typeName: formulaTypeName(item.type),
+            icon: formulaTypeIcon(item.type),
             published: formula.status === EntityStatus.PUBLISHED,
-            pending: this.pending.some((p) => p.type !== 'unbind' &&
-                p.itemUuid === item.uuid &&
-                this.sameTarget(p, target))
+            pending: this.pending.some((p) => this.isPendingOp(p, item.uuid, target, false))
         }));
         const groups: IFieldFormulaGroup[] = [];
         const documents: IFieldFormulaDocument[] = [];
@@ -292,7 +279,7 @@ export class SchemaFieldFormulas {
                     value: `${formula.id}|${item.uuid}`,
                     label: item.name || 'Untitled',
                     type: item.type,
-                    icon: TYPE_ICONS[item.type] || 'function',
+                    icon: formulaTypeIcon(item.type),
                     linkedTo: item.link ? this.describeLink(item.link) : ''
                 });
             }
@@ -301,7 +288,7 @@ export class SchemaFieldFormulas {
             }
         }
         documents.push({ label: 'New formula document', value: NEW_FORMULA_DOCUMENT, isNew: true });
-        if (this.newDocument && !documents.some((d) => d.value === this.newDocument)) {
+        if (!documents.some((d) => d.value === this.newDocument)) {
             this.newDocument = '';
         }
         return { state: 'ready', rows, groups, documents };
@@ -325,9 +312,7 @@ export class SchemaFieldFormulas {
         }
         const target = this.target(scope);
         const apply = () => {
-            const index = this.pending.findIndex((p) => p.type === 'unbind' &&
-                p.itemUuid === itemUuid &&
-                this.sameTarget(p, target));
+            const index = this.pending.findIndex((p) => this.isPendingOp(p, itemUuid, target, true));
             if (index !== -1) {
                 this.pending.splice(index, 1);
             } else {
@@ -371,12 +356,9 @@ export class SchemaFieldFormulas {
         }
         const target = this.target(scope);
         if (row.pending) {
-            this.pending = this.pending.filter((p) => !(p.type !== 'unbind' &&
-                p.itemUuid === row.itemUuid &&
-                this.sameTarget(p, target)));
+            this.pending = this.pending.filter((p) => !this.isPendingOp(p, row.itemUuid, target, false));
         } else {
-            const formulaId = row.key.slice(0, row.key.length - row.itemUuid.length - 1);
-            this.pending.push({ type: 'unbind', policyId: this.policy.id, formulaId, itemUuid: row.itemUuid, scope: this.copyScope(scope) });
+            this.pending.push({ type: 'unbind', policyId: this.policy.id, formulaId: row.formulaId, itemUuid: row.itemUuid, scope: this.copyScope(scope) });
         }
         this.version++;
     }
@@ -385,12 +367,10 @@ export class SchemaFieldFormulas {
      * Adds an empty formula item linked to the field.
      */
     public create(scope: IFieldScope): void {
-        const name = (this.newName || '').trim();
         if (!this.canCreate || !this.policy) {
             return;
         }
-        const target = this.target(scope);
-        const item = createStubItem(name, target);
+        const item = createStubItem(this.newName.trim());
         this.pending.push({
             type: 'create',
             policyId: this.policy.id,
@@ -399,19 +379,17 @@ export class SchemaFieldFormulas {
             item,
             scope: this.copyScope(scope)
         });
-        this.newName = '';
-        this.newDocument = '';
-        this.creating = false;
+        this.cancelCreate();
         this.version++;
     }
 
     public get canCreate(): boolean {
-        return !!(this.newName || '').trim() && !!this.newDocument;
+        return !!this.newName.trim() && !!this.newDocument;
     }
 
+    /** every way out of the form clears it, so opening only shows it */
     public startCreate(): void {
         this.creating = true;
-        this.newDocument = '';
     }
 
     public cancelCreate(): void {
@@ -424,13 +402,14 @@ export class SchemaFieldFormulas {
      * Number of formula items shown on the field, pending changes included.
      * Counted once per schema and change, so it is cheap to call for every field card.
      */
-    public count(schema: Schema | null | undefined, fieldPath: string): number {
+    public count(schema: Schema | null | undefined, prefix: string[], fieldName: string): number {
         const iri = String(schema?.iri || '');
         if (!iri || !this.policy || !this.canEdit || !this.formulas.has(this.policy.id)) {
             return 0;
         }
-        const key = [iri, this.policy, this.version];
-        if (!key.every((value, i) => value === this.countKey[i])) {
+        // the version changes with the policy, the loaded formulas and the pending changes
+        const key = `${this.version}|${iri}`;
+        if (key !== this.countKey) {
             this.countKey = key;
             this.countCache = new Map<string, number>();
             for (const formula of this.effectiveFormulas()) {
@@ -442,7 +421,7 @@ export class SchemaFieldFormulas {
                 }
             }
         }
-        return this.countCache.get(fieldPath) || 0;
+        return this.countCache.get(buildFieldPath(prefix, fieldName)) || 0;
     }
 
     /**
@@ -570,6 +549,13 @@ export class SchemaFieldFormulas {
 
     private copyScope(scope: IFieldScope): IFieldScope {
         return { ...scope, prefix: [...scope.prefix] };
+    }
+
+    /** a pending unbind (`unbind` true) or a pending bind/create of the item on the field */
+    private isPendingOp(p: IPendingBinding, itemUuid: string, target: IFieldTarget, unbind: boolean): boolean {
+        return (p.type === 'unbind') === unbind &&
+            p.itemUuid === itemUuid &&
+            this.sameTarget(p, target);
     }
 
     private sameTarget(p: IPendingBinding, target: IFieldTarget): boolean {

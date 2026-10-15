@@ -1,0 +1,21 @@
+// Colours of a formula item type, keyed on [data-type]: sets --tc (text) and --tb (background).
+// Constant is the default.
+@mixin formula-type-colors {
+    --tc: var(--formula-constant-color, #4169E2);
+    --tb: var(--formula-constant-background, #e1e7fa);
+
+    &[data-type="variable"] {
+        --tc: var(--formula-variable-color, #DA9B22);
+        --tb: var(--formula-variable-background, #FFF6E3);
+    }
+
+    &[data-type="formula"] {
+        --tc: var(--formula-function-color, #E50299);
+        --tb: var(--formula-function-background, #fbd9ef);
+    }
+
+    &[data-type="text"] {
+        --tc: var(--formula-text-color, #19BE47);
+        --tb: var(--formula-text-background, #d7f5e2);
+    }
+}

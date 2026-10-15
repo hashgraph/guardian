@@ -10,12 +10,14 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MathLiveComponent } from '../../common/mathlive/mathlive.component';
 import { LinkDialog } from '../dialogs/link-dialog/link-dialog.component';
 import { Formulas, MISSING_LINK_TEXT } from '../models/formulas';
+import { FORMULA_TYPES, SOURCE_FIELDS, formulaTypeIcon, formulaTypeName } from '../models/formula-meta';
+import { moveLink } from '../models/field-bindings';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { ConditionFieldGroup } from '../../common/condition-if-editor/condition-if-editor.component';
 import { FormulaFilesDialog } from '../dialogs/formula-files-dialog/formula-files-dialog.component';
 
 type SourceKey = keyof IFormulaSource;
-const SOURCE_KEYS: SourceKey[] = ['methodology', 'section', 'equation', 'page'];
+const SOURCE_KEYS: SourceKey[] = SOURCE_FIELDS.map((f) => f.key);
 
 @Component({
     selector: 'app-formula-configuration',
@@ -58,25 +60,9 @@ export class FormulaConfigurationComponent implements OnInit {
     }
 
     public config: Formulas = new Formulas();
-    public readonly options = [
-        { id: 'constant', text: 'Constant', icon: 'const' },
-        { id: 'variable', text: 'Variable', icon: 'variable' },
-        { id: 'formula', text: 'Formula', icon: 'function' },
-        { id: 'text', text: 'Text', icon: 'text' }
-    ];
-    public readonly typeNames: { [type: string]: string } = {
-        constant: 'Constant',
-        variable: 'Variable',
-        formula: 'Formula',
-        text: 'Text'
-    };
-
-    public readonly typeIcons: { [type: string]: string } = {
-        constant: 'const',
-        variable: 'variable',
-        formula: 'function',
-        text: 'text'
-    };
+    public readonly options = FORMULA_TYPES;
+    public readonly typeNames = formulaTypeName;
+    public readonly typeIcons = formulaTypeIcon;
 
     public selected: IFormulaItem | null = null;
     /** the selected item as a list (the editor is re-mounted for every item) */
@@ -85,10 +71,19 @@ export class FormulaConfigurationComponent implements OnInit {
     public typeTotal: number = 0;
     public selectedVisible: boolean = true;
     public searchText: string = '';
-    public query: string = '';
-    public isFiltering: boolean = false;
-    public allHidden: boolean = false;
-    public canDrag: boolean = false;
+    /** the applied (debounced) search text */
+    public get query(): string {
+        return this.config.searchQuery;
+    }
+    public get isFiltering(): boolean {
+        return this.config.isFiltering;
+    }
+    public get allHidden(): boolean {
+        return !Object.values(this.filters).some((e) => e);
+    }
+    public get canDrag(): boolean {
+        return !this.readonly && !this.isFiltering;
+    }
     private search$ = new Subject<string>();
 
     public readonly filters: { [type: string]: boolean } = {
@@ -142,7 +137,7 @@ export class FormulaConfigurationComponent implements OnInit {
         this.subscription.add(
             this.overviewForm.valueChanges.subscribe(() => {
                 if (this.overviewForm.dirty) {
-                    this.markDirty();
+                    this.dirty = true;
                 }
             })
         );
@@ -198,7 +193,7 @@ export class FormulaConfigurationComponent implements OnInit {
             const selectedId = this.selected?.uuid;
             this.config.fromData(item?.config);
             this.selected = (selectedId && this.config.getItem(selectedId)) || this.config.all[0] || null;
-            this.refreshView();
+            this.refreshSelection();
             this.dirty = false;
             this.overviewForm.markAsPristine();
             this.loading = false;
@@ -275,7 +270,7 @@ export class FormulaConfigurationComponent implements OnInit {
                 this.formulasMap.set(String(this.item.uuid), String(this.item.name));
                 this.dirty = false;
                 this.overviewForm.markAsPristine();
-                this.refreshView();
+                this.refreshList();
                 this.loading = false;
             }, (e) => {
                 this.loading = false;
@@ -338,14 +333,10 @@ export class FormulaConfigurationComponent implements OnInit {
         const item = this.config.add(type);
         this.selected = item;
         this.dirty = true;
-        this.refreshView();
+        this.refreshSelection();
         if (!this.selectedVisible) {
             this.clearSearch();
-            this.filters.constant = true;
-            this.filters.variable = true;
-            this.filters.formula = true;
-            this.filters.text = true;
-            this.onFilter();
+            this.showAllTypes();
         }
         setTimeout(() => {
             this.scrollToRow(item);
@@ -441,7 +432,8 @@ export class FormulaConfigurationComponent implements OnInit {
                     const all = this.config.all;
                     this.selected = all[index] || all[index - 1] || null;
                 }
-                this.markDirty();
+                this.dirty = true;
+                this.refreshSelection();
                 setTimeout(() => this.scrollToRow(this.selected));
             }
         });
@@ -449,7 +441,7 @@ export class FormulaConfigurationComponent implements OnInit {
 
     public onFilter() {
         this.config.setFilters(this.filters);
-        this.refreshView();
+        this.refreshSelection();
     }
 
     public toggleFilter(type: string) {
@@ -477,8 +469,7 @@ export class FormulaConfigurationComponent implements OnInit {
 
     private applyQuery(value: string) {
         this.config.setQuery(value);
-        this.query = String(value || '').trim();
-        this.refreshView();
+        this.refreshSelection();
     }
 
     public select(item: IFormulaItem) {
@@ -487,7 +478,7 @@ export class FormulaConfigurationComponent implements OnInit {
         }
         this.selected = item;
         this.keyboard = false;
-        this.refreshView();
+        this.refreshSelection();
     }
 
     public duplicateItem(item: IFormulaItem) {
@@ -498,16 +489,23 @@ export class FormulaConfigurationComponent implements OnInit {
         if (copy) {
             this.selected = copy;
             this.dirty = true;
-            this.refreshView();
+            this.refreshSelection();
             setTimeout(() => this.scrollToRow(copy));
         }
     }
 
     /**
-     * Updates the list data and the state of the list and the editor.
+     * Rebuilds the list rows and the counters, then the state of the editor.
      */
-    public refreshView() {
+    private refreshList() {
         this.config.update();
+        this.refreshSelection();
+    }
+
+    /**
+     * Updates the state of the list and the editor that depends on the selected item.
+     */
+    private refreshSelection() {
         const selected = this.selected;
         this.selectedList = selected ? [selected] : [];
         this.selectedLinkMissing = !!selected?.link && this.isLinkMissing(selected.link);
@@ -515,9 +513,6 @@ export class FormulaConfigurationComponent implements OnInit {
         this.typeTotal = sameType.length;
         this.typePosition = selected ? sameType.indexOf(selected) + 1 : 0;
         this.selectedVisible = !selected || this.config.data.includes(selected);
-        this.allHidden = !this.filters.constant && !this.filters.variable && !this.filters.formula && !this.filters.text;
-        this.isFiltering = this.config.isFiltering;
-        this.canDrag = !this.readonly && !this.isFiltering;
     }
 
     private scrollToRow(item: IFormulaItem | null) {
@@ -572,19 +567,13 @@ export class FormulaConfigurationComponent implements OnInit {
         })!;
         dialogRef.onClose.subscribe((result: IFormulaLink | null) => {
             if (result) {
-                // keep the display condition only when the link still points at the same schema
-                const previous = item.link;
-                if (
-                    result.type === 'schema' &&
-                    previous?.type === 'schema' &&
-                    previous.entityId === result.entityId &&
-                    previous.condition
-                ) {
-                    result.condition = previous.condition;
+                // keeps the display condition only when the link still points at the same schema
+                if (result.type === 'schema') {
+                    item.link = moveLink(item.link, { schemaIri: result.entityId, fieldPath: result.item });
                 } else {
                     delete result.condition;
+                    item.link = result;
                 }
-                item.link = result;
                 this.markDirty();
             }
         });
@@ -749,7 +738,8 @@ export class FormulaConfigurationComponent implements OnInit {
 
     public drop(event: CdkDragDrop<any[]>) {
         this.config.reorder(event.previousIndex, event.currentIndex);
-        this.markDirty();
+        this.dirty = true;
+        this.refreshSelection();
     }
 
     public openFiles() {
@@ -760,13 +750,16 @@ export class FormulaConfigurationComponent implements OnInit {
             data: {
                 config: this.config,
                 readonly: this.readonly,
-                onChange: () => this.markDirty()
+                onChange: () => this.dirty = true
             },
         });
     }
 
+    /**
+     * An item was edited: its row (name, value, link, source) and the search counters are rebuilt.
+     */
     public markDirty() {
         this.dirty = true;
-        this.refreshView();
+        this.refreshList();
     }
 }

@@ -1,7 +1,8 @@
 import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { FormulaFiles, FormulaItem, FormulasTree, IFormulaConditionContext, SchemaItem } from '../../models/formula-tree';
-import { filterRootItems, FormulasViewOrigin, sourceRows } from './formula-view-items';
+import { filterRootItems, FormulasViewOrigin } from './formula-view-items';
+import { sourceRows } from '../../models/formula-meta';
 import { TreeListData, TreeListItem, TreeListView } from 'src/app/modules/common/tree-graph/tree-list';
 
 @Component({
@@ -43,8 +44,8 @@ export class FormulasViewDialog {
         { label: 'Info', key: 'info', icon: 'info' }
     ];
 
-    public viewDocumentOptions = this.allTabs;
-    public activeTab: string = 'diagram';
+    public viewDocumentOptions: { label: string, key: string, icon: string }[];
+    public activeTab: string;
 
     constructor(
         public ref: DynamicDialogRef,

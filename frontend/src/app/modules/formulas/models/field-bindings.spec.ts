@@ -104,7 +104,7 @@ describe('field-bindings', () => {
         });
 
         it('creates a stub once', () => {
-            const item = createStubItem('X', B, 'n1');
+            const item = createStubItem('X', 'n1');
             const op = { type: 'create' as const, formulaId: 'd1', item, target: A };
             const { config } = applyFieldBindingOps(createConfig(), [op, op]);
             expect(config.formulas!.length).toBe(5);
@@ -115,7 +115,7 @@ describe('field-bindings', () => {
         });
 
         it('handles an empty config', () => {
-            const item = createStubItem('X', A, 'n1');
+            const item = createStubItem('X', 'n1');
             const { config } = applyFieldBindingOps(undefined, [{ type: 'create', formulaId: 'd1', item, target: A }]);
             expect(config.formulas!.map((e) => e.uuid)).toEqual(['n1']);
         });
@@ -127,7 +127,7 @@ describe('field-bindings', () => {
             const formulas: IFormula[] = [{ id: 'd1', config: createConfig() }, untouched];
             const result = applyFieldBindingOpsToFormulas(formulas, [
                 { type: 'unbind', formulaId: 'd1', itemUuid: 'v1', target: A },
-                { type: 'create', formulaId: NEW_FORMULA_DOCUMENT, item: createStubItem('N', A, 'n1'), target: A },
+                { type: 'create', formulaId: NEW_FORMULA_DOCUMENT, item: createStubItem('N', 'n1'), target: A },
             ], () => ({ name: 'Policy formulas', status: EntityStatus.DRAFT, config: { formulas: [], files: [] } }));
             expect(result.length).toBe(3);
             expect(result[1]).toBe(untouched);

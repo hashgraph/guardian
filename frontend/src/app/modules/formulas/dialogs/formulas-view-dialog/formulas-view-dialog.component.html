@@ -20,7 +20,7 @@
       </p-tablist>
     </p-tabs>
   </div>
-  @if (activeTab === 'formulas' && origin !== 'form') {
+  @if (activeTab === 'formulas') {
     <div class="view-body" #contentContainer>
       <div class="nav-container" #navContainer>
         @if (nav) {
@@ -214,10 +214,6 @@
   @if (activeTab === 'diagram') {
     <div class="view-body">
       <formulas-graph-tab
-        [tree]="tree"
-        [schema]="schema"
-        [path]="path"
-        [context]="context"
         [items]="items">
       </formulas-graph-tab>
     </div>
