@@ -50,7 +50,7 @@ export class FieldFormulasComponent {
         }
     }
 
-    public openDetails(event: Event): void {
+    public openDetails(event: Event, item?: FormulaItem): void {
         event.stopPropagation();
         const field = this.model?.fields[this.fullPath];
         if (!field) {
@@ -64,7 +64,9 @@ export class FieldFormulasComponent {
                 tree: field.tree,
                 schema: field.schema,
                 path: field.path,
-                context: this.model.context(this.entries)
+                context: this.model.context(this.entries),
+                itemId: item?.uuid,
+                origin: 'form'
             },
         });
     }

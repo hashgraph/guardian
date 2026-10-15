@@ -46,6 +46,8 @@ export class FormulasGraphTabComponent implements OnChanges {
     public path!: string;
     @Input()
     public context?: IFormulaConditionContext;
+    @Input()
+    public items?: FormulaItem[];
 
     public source: TreeSource<GraphNode> | null = null;
     private treeGraph: TreeGraphComponent | null = null;
@@ -84,7 +86,7 @@ export class FormulasGraphTabComponent implements OnChanges {
     }
 
     private buildGraph(tree: FormulasTree, schema: string, path: string): TreeSource<GraphNode> | null {
-        const items = tree.get(schema, path, this.context);
+        const items = this.items ?? tree.get(schema, path, this.context);
         if (!items?.length) {
             return null;
         }
@@ -126,6 +128,7 @@ export class FormulasGraphTabComponent implements OnChanges {
 
         if (this.source) {
             this.treeGraph.setData(this.source);
+            this.treeGraph.move(18, 46);
         }
     }
 
