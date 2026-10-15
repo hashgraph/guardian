@@ -51,6 +51,6 @@ export class FormFormulas {
     }
 
     public context(entries?: Record<string, number> | null): IFormulaConditionContext {
-        return { data: this.data, entries, equalsFn: this.equalsFn };
+        return { data: this.data, entries, anyEntry: true, equalsFn: this.equalsFn };
     }
 }

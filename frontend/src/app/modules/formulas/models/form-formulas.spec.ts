@@ -101,6 +101,18 @@ describe('FormFormulas', () => {
 
         expect(model.get(key, { rows: 0 }).length).toBe(0);
         expect(model.get(key, { rows: 1 }).map((e) => e.uuid)).toEqual(['a']);
+    });
+
+    it('matches any entry when no entry index is given', () => {
+        const condition = pred('kind', 'x', ['rows', 'kind']);
+        const tree = buildTree([formula('f1', [item('a', 'field1', condition)])]);
+        const model = new FormFormulas(tree, SCHEMA);
+        const key = `${SCHEMA}/field1`;
+
+        model.setData({ rows: [{ kind: 'y' }, { kind: 'x' }] });
+        expect(model.get(key).map((e) => e.uuid)).toEqual(['a']);
+
+        model.setData({ rows: [{ kind: 'y' }] });
         expect(model.get(key).length).toBe(0);
     });
 
