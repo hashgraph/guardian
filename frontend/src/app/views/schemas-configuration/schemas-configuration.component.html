@@ -145,10 +145,10 @@
         @if (showTopSaveActions) {
             @if (!isTemplateConfigMode && (!isTemplatePreviewMode || selectedSchema)) {
             <div class="sc-nav-tabs">
-                <button class="sc-nav-tab" [class.active]="activeTab === 'builder'" (click)="activeTab = 'builder'">
+                <button class="sc-nav-tab" [class.active]="activeTab === 'builder'" (click)="setActiveTab('builder')">
                     Builder
                 </button>
-                <button class="sc-nav-tab" [class.active]="activeTab === 'preview'" (click)="openPreview()">
+                <button class="sc-nav-tab" [class.active]="activeTab === 'preview'" (click)="setActiveTab('preview')">
                     Preview
                 </button>
             </div>
@@ -465,7 +465,7 @@
         <!-- ═══════════════════════════════════════════════════════ CANVAS -->
         <div class="sc-canvas">
 
-            <div class="sc-canvas-body" [class.sc-canvas-body--drilling]="isDrilling">
+            <div class="sc-canvas-body" [class.sc-canvas-body--drilling]="isDrilling && activeTab === 'builder'">
 
                 @if (schemaLoading && !selectedSchema) {
 
@@ -488,10 +488,10 @@
                         </button>
                     </div>
 
-                } @else if (activeTab === 'builder') {
+                } @else {
 
-                    <!-- ── BUILDER ── -->
-                    <div class="sc-editor">
+                    <!-- ── BUILDER ── (kept mounted and hidden on the Preview tab) -->
+                    <div class="sc-editor" [class.sc-editor--hidden]="activeTab !== 'builder'">
 
                         <!-- ── Root schema properties panel ── -->
                         <div class="sc-schema-props" [class.sc-schema-props--locked]="selectedSchemaSettingsLocked">
@@ -755,41 +755,53 @@
                         }
                     </div>
 
-                } @else {
+                }
 
-                    <!-- ── PREVIEW TAB ── -->
-                    <div class="sc-preview">
+                <!-- ── PREVIEW TAB ── (mounted on first open, hidden on Builder; remounted via previewKey) -->
+                @if (previewMounted && selectedSchema) {
+                    <div class="sc-preview" [class.sc-preview--hidden]="activeTab !== 'preview'">
                         <div class="sc-preview-bar">
                             <span>View as:</span>
                             <button class="sc-view-pill" [class.active]="previewPill === 'submitter'" (click)="setPreviewPill('submitter')">Submitter</button>
                             <button class="sc-view-pill" [class.active]="previewPill === 'readonly'" (click)="setPreviewPill('readonly')">Read-only</button>
                         </div>
                         <div class="sc-preview-viewport">
-                            @if (selectedSchema) {
-                                <app-schema-form-root
-                                    [schema]="selectedSchema"
-                                    [preset]="previewPreset"
-                                    [formulas]="previewFormulas"
-                                    [private-fields]="{}"
-                                    [readonly-fields]="previewReadonlyFields"
-                                    [example]="previewPill !== 'submitter'"
-                                    [showButtons]="false"
-                                    [paginationHidden]="true">
-                                </app-schema-form-root>
-                            } @else {
-                                <div class="sc-preview-placeholder">
-                                    <i class="pi pi-eye-slash"></i>
-                                    <span>Select a schema to preview</span>
+                            @if (!previewReady) {
+                                <div class="sc-canvas-loading">
+                                    <p-progressSpinner [style]="{ width: '40px', height: '40px' }"></p-progressSpinner>
                                 </div>
+                            }
+                            @for (key of [previewKey]; track key) {
+                                @if (previewSchemaRef; as pSchema) {
+                                    <app-schema-form-root
+                                        [style.display]="previewReady ? 'block' : 'none'"
+                                        (form)="onPreviewFormBuilt()"
+                                        [schema]="pSchema"
+                                        [preset]="previewPreset"
+                                        [formulas]="previewFormulas"
+                                        [private-fields]="{}"
+                                        [readonly-fields]="previewReadonlyFields"
+                                        [example]="previewPill !== 'submitter'"
+                                        [showButtons]="false"
+                                        [paginationHidden]="true">
+                                    </app-schema-form-root>
+                                } @else {
+                                    <div class="sc-preview-placeholder">
+                                        <i class="pi pi-eye-slash"></i>
+                                        <span>Select a schema to preview</span>
+                                    </div>
+                                }
                             }
                         </div>
                     </div>
-
                 }
 
                 <!-- ── Sub-schema drill-down panel ── -->
                 @if (isDrilling) {
-                    <div class="sc-drill-panel">
+                    <div class="sc-drill-panel"
+                         [class.sc-drill-panel--hidden]="activeTab !== 'builder'"
+                         [class.sc-drill-panel--enter]="drillEntering"
+                         (animationend)="$event.target === $event.currentTarget && (drillEntering = false)">
 
                         <div class="sc-drill-breadcrumb">
                             <button class="sc-drill-crumb sc-drill-crumb--root" (click)="drillClose()">
@@ -919,7 +931,7 @@
             </div>
 
             <!-- ── Right panel (field properties) ──────────────────────── -->
-            @if (selectedField && isTemplateConfigMode) {
+            @if (selectedField && isTemplateConfigMode && activeTab === 'builder') {
                 <aside class="sc-right-panel">
                     <div class="sc-rp-header">
                         <div class="sc-rp-title">
@@ -955,7 +967,7 @@
                     </div>
                 </aside>
             }
-            @if (selectedField && !isTemplateConfigMode) {
+            @if (selectedField && !isTemplateConfigMode && activeTab === 'builder') {
                 <aside class="sc-right-panel" [class.sc-right-panel--locked]="selectedFieldLocked">
                     <div class="sc-rp-header">
                         <div class="sc-rp-title">

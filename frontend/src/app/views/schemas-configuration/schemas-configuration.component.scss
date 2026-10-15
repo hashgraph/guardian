@@ -1392,6 +1392,8 @@
     display: flex;
     flex-direction: column;
     min-height: 100%;
+
+    &--hidden { display: none; }
 }
 
 .sc-schema-featured-btn {
@@ -1836,7 +1838,11 @@
     z-index: 20;
     display: flex;
     flex-direction: column;
-    animation: sc-drill-in 0.18s ease;
+
+    // One-shot class so toggling display between Builder and Preview does not replay it.
+    &--enter { animation: sc-drill-in 0.18s ease; }
+
+    &--hidden { display: none; }
 }
 
 @keyframes sc-drill-in {
@@ -2353,6 +2359,8 @@
     display: flex;
     flex-direction: column;
     min-height: 100%;
+
+    &--hidden { display: none; }
 }
 
 .sc-preview-bar {

@@ -147,10 +147,16 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public previewPreset: any = null;
     public previewReadonlyFields: any = null;
     public previewFormulas: FormulasTree | null = null;
+    public previewMounted = false;
+    public previewKey = 0;
+    public previewReady = false;
+    public previewSchemaRef: Schema | null = null;
+    private previewBuiltFor: { schema: Schema | null; version: number } = { schema: null, version: -1 };
     public richTextPresetTarget: 'default' | 'suggest' | 'test' | null = null;
     @ViewChild('richTextPresetEditor') public richTextPresetEditor?: RichTextEditorComponent;
 
     public drillStack: DrillEntry[] = [];
+    public drillEntering = false;
     public get isDrilling(): boolean { return this.drillStack.length > 0; }
     public get drillCurrentFields(): SchemaField[] { return this.drillStack[this.drillStack.length - 1]?.fields ?? []; }
     public get currentDrilledSchemaIri(): string { return this.drillStack[this.drillStack.length - 1]?.schemaIri || ''; }
@@ -3540,6 +3546,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             subSchema.fields = [...field.fields];
         }
         const fields = subSchema?.fields ?? field.fields ?? [];
+        this.drillEntering = true;
         this.drillStack = [
             ...this.drillStack,
             { fieldLabel: field.title || field.name, fieldName: field.name, fields, schemaIri: field.type || '' }
@@ -4995,9 +5002,30 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.rebuildPreview();
     }
 
-    public openPreview(): void {
-        this.activeTab = 'preview';
-        this.loadPreviewFormulas();
+    public setActiveTab(tab: 'builder' | 'preview'): void {
+        this.activeTab = tab;
+        if (tab === 'preview') {
+            this.previewMounted = true;
+            if (this.isPreviewStale()) {
+                this.rebuildPreview();
+            }
+            this.loadPreviewFormulas();
+        }
+    }
+
+    public onPreviewFormBuilt(): void {
+        // The form root clears its loading flag in a timeout queued after this emit; wait one tick.
+        const key = this.previewKey;
+        setTimeout(() => {
+            if (key === this.previewKey) {
+                this.previewReady = true;
+            }
+        }, 0);
+    }
+
+    private isPreviewStale(): boolean {
+        return this.previewBuiltFor.schema !== this.currentContextSchema
+            || this.previewBuiltFor.version !== this.schemaEditVersion;
     }
 
     /** the saved formulas of the schema, so the preview shows them like the request form */
@@ -5016,13 +5044,18 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     private rebuildPreview(): void {
-        if (!this.selectedSchema || this.previewPill === 'submitter') {
+        const schema = this.currentContextSchema;
+        this.previewBuiltFor = { schema, version: this.schemaEditVersion };
+        this.previewSchemaRef = schema;
+        this.previewKey++;
+        this.previewReady = false;
+        if (!schema || this.previewPill === 'submitter') {
             this.previewPreset = null;
             this.previewReadonlyFields = null;
             return;
         }
-        this.previewPreset = DocumentGenerator.generateDocument(this.selectedSchema);
-        this.previewReadonlyFields = this.selectedSchema.fields;
+        this.previewPreset = DocumentGenerator.generateDocument(schema);
+        this.previewReadonlyFields = schema.fields;
     }
 
     public onExport(): void {
