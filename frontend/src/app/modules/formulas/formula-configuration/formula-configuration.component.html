@@ -132,7 +132,7 @@
       <div class="list-tools">
         <div class="search-row">
           <span class="search"
-            pTooltip="Matches name, value, formula, text, link, display condition and description – case-insensitive"
+            pTooltip="Matches name, value, formula, text, link, display condition, source and description – case-insensitive"
             tooltipPosition="bottom">
             <i class="pi pi-search search-icon"></i>
             <input
@@ -256,7 +256,7 @@
               <button type="button" class="link-btn" (click)="showAllTypes()">Show all types</button>
             } @else if (query) {
               <b>No items match "{{ query }}"</b>
-              <span>Search covers name, value, formula, text, link, display condition and description.</span>
+              <span>Search covers name, value, formula, text, link, display condition, source and description.</span>
               <button type="button" class="link-btn" (click)="clearSearch()">Clear search</button>
             } @else {
               <b>No items of the selected types</b>
@@ -345,6 +345,37 @@
               <ng-container [ngTemplateOutlet]="linkField" [ngTemplateOutletContext]="{ $implicit: item, label: 'Link (Output)' }"></ng-container>
               <ng-container [ngTemplateOutlet]="displayCondition" [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
               <ng-container [ngTemplateOutlet]="relationships" [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
+            }
+            @if (!readonly || hasSource(item)) {
+              <div class="sec">
+                <label class="sec-label">
+                  Source
+                  <span class="sec-hint">Optional – where this item comes from in the methodology</span>
+                </label>
+                <div class="grid2 source-grid">
+                  <div class="source-field">
+                    <label class="source-label">
+                      Methodology
+                      @if (!readonly && getSource(item, 'methodology')) {
+                        <button type="button" class="link-btn" (click)="applyMethodologyToAll(item)">Apply to all</button>
+                      }
+                    </label>
+                    <input [ngModel]="getSource(item, 'methodology')" (ngModelChange)="setSource(item, 'methodology', $event)" pInputText type="text" placeholder="e.g. VM0042 v2.1" [readonly]="readonly"/>
+                  </div>
+                  <div class="source-field">
+                    <label class="source-label">Section</label>
+                    <input [ngModel]="getSource(item, 'section')" (ngModelChange)="setSource(item, 'section', $event)" pInputText type="text" placeholder="e.g. 8.1.2 Baseline emissions" [readonly]="readonly"/>
+                  </div>
+                  <div class="source-field">
+                    <label class="source-label">Equation</label>
+                    <input [ngModel]="getSource(item, 'equation')" (ngModelChange)="setSource(item, 'equation', $event)" pInputText type="text" placeholder="e.g. Equation (12)" [readonly]="readonly"/>
+                  </div>
+                  <div class="source-field">
+                    <label class="source-label">Page</label>
+                    <input [ngModel]="getSource(item, 'page')" (ngModelChange)="setSource(item, 'page', $event)" pInputText type="text" placeholder="e.g. 34" [readonly]="readonly"/>
+                  </div>
+                </div>
+              </div>
             }
             <div class="sec">
               <label class="sec-label">Description</label>

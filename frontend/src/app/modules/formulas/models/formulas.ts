@@ -287,6 +287,11 @@ export class Formulas {
         for (const label of this.getConditionLabels(item)) {
             add('Shown if', label);
         }
+        const source = [item.source?.methodology, item.source?.section, item.source?.equation, item.source?.page]
+            .map((e) => String(e ?? '').trim())
+            .filter((e) => e)
+            .join(' · ');
+        add('Source', source);
         add('Description', item.description);
         return parts;
     }

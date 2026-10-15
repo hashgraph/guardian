@@ -1,6 +1,6 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IFormulaItem, FormulaItemType, IFormulaLink, Schema, SchemaField, UserPermissions, EntityStatus, PolicyStatus } from '@guardian/interfaces';
+import { IFormulaItem, IFormulaSource, FormulaItemType, IFormulaLink, Schema, SchemaField, UserPermissions, EntityStatus, PolicyStatus } from '@guardian/interfaces';
 import { debounceTime, forkJoin, Observable, of, Subject, Subscription, switchMap } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { FormulasService } from 'src/app/services/formulas.service';
@@ -13,6 +13,9 @@ import { Formulas } from '../models/formulas';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { ConditionFieldGroup } from '../../common/condition-if-editor/condition-if-editor.component';
 import { FormulaFilesDialog } from '../dialogs/formula-files-dialog/formula-files-dialog.component';
+
+type SourceKey = keyof IFormulaSource;
+const SOURCE_KEYS: SourceKey[] = ['methodology', 'section', 'equation', 'page'];
 
 @Component({
     selector: 'app-formula-configuration',
@@ -343,6 +346,68 @@ export class FormulaConfigurationComponent implements OnInit {
         setTimeout(() => {
             this.scrollToRow(item);
             this.nameInput?.nativeElement.focus();
+        });
+    }
+
+    public hasSource(item: IFormulaItem): boolean {
+        return !!item.source && SOURCE_KEYS.some((key) => !!item.source?.[key]);
+    }
+
+    public getSource(item: IFormulaItem, key: SourceKey): string {
+        return item.source?.[key] || '';
+    }
+
+    /**
+     * Creates `source` lazily on the first non-empty value and removes it when all fields are empty.
+     */
+    public setSource(item: IFormulaItem, key: SourceKey, value: string | null) {
+        const text = value || '';
+        if (!text && !item.source) {
+            return;
+        }
+        const source: IFormulaSource = { ...(item.source || {}) };
+        if (text) {
+            source[key] = text;
+        } else {
+            delete source[key];
+        }
+        if (SOURCE_KEYS.some((k) => !!source[k]?.trim())) {
+            item.source = source;
+        } else {
+            delete item.source;
+        }
+        this.markDirty();
+    }
+
+    public applyMethodologyToAll(item: IFormulaItem) {
+        const value = this.getSource(item, 'methodology');
+        if (!value) {
+            return;
+        }
+        const all = this.config.all;
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Apply methodology to all items',
+                text: `Set methodology "${value}" on all ${all.length} items? Items that already have a different methodology will be overwritten.`,
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Apply',
+                    class: 'primary'
+                }]
+            },
+        })!;
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Apply') {
+                for (const e of all) {
+                    e.source = { ...(e.source || {}), methodology: value };
+                }
+                this.markDirty();
+            }
         });
     }
 

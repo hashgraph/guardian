@@ -239,4 +239,22 @@ describe('Formulas reorder and edit', () => {
         expect(json.files).toEqual([]);
         expect(json.formulas?.[0]).toEqual(createConfig().formulas?.[0]);
     });
+
+    it('should search by source fields', () => {
+        model.getItem('c1')!.source = { methodology: 'VM0042 v2.1', section: '8.1.2 Baseline', page: '34' };
+        model.update();
+        model.setQuery('vm0042');
+        expect(uuids(model)).toEqual(['c1']);
+        expect(model.meta.get('c1')?.hit?.label).toBe('Source');
+        model.setQuery('baseline 34');
+        expect(uuids(model)).toEqual(['c1']);
+    });
+
+    it('should not add source to items without it', () => {
+        const json = model.getJson();
+        for (const item of json.formulas || []) {
+            expect('source' in item).toBe(false);
+        }
+        expect(json.formulas).toEqual(createConfig().formulas);
+    });
 });
