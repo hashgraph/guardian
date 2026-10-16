@@ -2436,21 +2436,6 @@
     }
 }
 
-.sc-preview-placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    padding: 80px 24px;
-    color: var(--guardian-font-color-secondary, #848FA9);
-    font-size: 14px;
-
-    i {
-        font-size: 48px;
-        color: var(--guardian-font-color-secondary, #848FA9);
-    }
-}
-
 /* ── Right panel (field properties) ── */
 .sc-right-panel {
     width: 340px;

@@ -3547,6 +3547,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     subSchema.conditions = loaded.conditions;
                     const entry = this.drillStack.find(e => e.schemaIri === subSchema.iri);
                     if (entry) { entry.fields = subSchema.fields; }
+                    if (this.previewSchemaRef === subSchema) { this.rebuildPreview(); }
                 },
                 error: (error) => this.reportError('Failed to load sub-schema fields', error),
             });
@@ -5043,14 +5044,14 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     /** the saved formulas of the schema, so the preview shows them like the request form */
     private loadPreviewFormulas(): void {
-        const iri = this.selectedSchema?.iri;
+        const iri = this.currentContextSchema?.iri;
         if (this.activeTab !== 'preview' || !this.fieldFormulas || this.isTemplateMode) {
             return;
         }
         this.fieldFormulas.previewTree(iri)
             .pipe(takeUntil(this.destroy$))
             .subscribe((tree) => {
-                if (this.selectedSchema?.iri === iri) {
+                if (this.currentContextSchema?.iri === iri) {
                     this.previewFormulas = tree;
                 }
             });
