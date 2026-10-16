@@ -24,15 +24,7 @@
 
     }
 
-    .flex {
-        display: flex;
-    }
-
-    .flex-column-gap-20 {
-        column-gap: 20px;
-    }
-
-    .toggle-container::ng-deep input:checked+.slider {
+        .toggle-container::ng-deep input:checked+.slider {
         cursor: not-allowed;
     }
 }
@@ -75,12 +67,6 @@
     justify-content: space-between;
 }
 
-.module-actions-buttons-container {
-    display: flex;
-    gap: 6px;
-    margin-left: auto;
-}
-
 .toolbar-btn-primary ::ng-deep .p-button {
     background: var(--color-primary);
     border: 1px solid var(--color-primary);
@@ -95,21 +81,12 @@
     border-radius: 8px;
 }
 
-.module-actions-buttons-container svg {
-    margin-right: 8px;
-}
-
 .search-input {
     width: 400px;
     height: 40px;
     border-radius: 8px;
     border: 1px solid var(--color-grey-3, #E1E7EF);
     background: var(--color-grey-white, #FFF);
-}
-
-.primary-color {
-    fill: var(--color-primary);
-    color: var(--color-primary);
 }
 
 .color-white {
@@ -121,11 +98,6 @@
     fill: var(--color-grey-5, #848FA9) !important;
     color: var(--color-grey-5, #848FA9) !important;
     cursor: not-allowed !important;
-}
-
-.delete-color {
-    fill: var(--color-accent-red-1, #FF432A);
-    color: var(--color-accent-red-1, #FF432A);
 }
 
 .header-actions {
@@ -173,28 +145,12 @@
     font-family: var(--guardian-font-family, Inter, sans-serif);
 }
 
+.top-toolbar .top-toolbar-btn.top-toolbar-btn--primary {
+    height: 40px;
+    border-radius: 8px;
+}
+
 .top-toolbar {
-    flex-shrink: 0;
-
-    .top-toolbar-btn.top-toolbar-btn--primary {
-        height: 40px;
-        border-radius: 8px;
-    }
-
-    .is-disabled {
-        opacity: 0.45;
-        pointer-events: none;
-    }
-
-    .policy-identity--static {
-        cursor: default;
-
-        &:hover {
-            background: transparent;
-            border-color: transparent;
-        }
-    }
-
     .status-badge--default {
         color: var(--color-primary, #4169E2);
         background: color-mix(in srgb, var(--color-primary, #4169E2) 12%, transparent);
@@ -203,18 +159,6 @@
             font-size: 10px;
         }
     }
-}
-
-.role-avatar {
-    flex: 0 0 32px;
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-primary, #4169E2);
-    background: color-mix(in srgb, var(--color-primary, #4169E2) 12%, transparent);
 }
 
 .editor {

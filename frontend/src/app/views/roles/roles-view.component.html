@@ -151,7 +151,7 @@
         <i class="pi pi-chevron-right pc-breadcrumb-sep"></i>
       </nav>
       <div class="policy-identity policy-identity--static">
-        <span class="role-avatar"><i class="pi pi-shield"></i></span>
+        <span class="guardian-avatar"><i class="pi pi-shield"></i></span>
         <div class="policy-identity-text">
           <span class="policy-identity-name">{{ newRole.controls['name'].value || 'New role' }}</span>
           <span class="policy-identity-meta">Role</span>
@@ -284,7 +284,7 @@
               <div class="matrix-row matrix-head">
                 <div class="matrix-lead">Entity</div>
                 <div class="matrix-cells">
-                  @for (action of selectedCategory.actions; track action; let i = $index) {
+                  @for (action of selectedCategory.actions; track action) {
                     <div class="matrix-cell">{{ action }}</div>
                   }
                 </div>
@@ -305,33 +305,17 @@
                     <span class="entity-name" (click)="onAll(entity)">{{ entity.name }}</span>
                   </div>
                   <div class="matrix-cells">
-                    @if (entity.type === 'all') {
-                      @for (action of entity.actions; track action) {
-                        <div class="matrix-cell matrix-cell--wide">
-                          @if (action) {
-                            <p-checkbox
-                              [binary]="true"
-                              [formControl]="action.control"
-                              (onChange)="onCheckAll(entity)"
-                              [styleClass]="'primary-checkbox'"
-                            ></p-checkbox>
-                          }
-                        </div>
-                      }
-                    }
-                    @if (entity.type === 'checkbox') {
-                      @for (action of entity.actions; track action; let i = $index) {
-                        <div class="matrix-cell">
-                          @if (action) {
-                            <p-checkbox
-                              [binary]="true"
-                              [formControl]="action.control"
-                              (onChange)="onCheckAll(entity)"
-                              [styleClass]="'primary-checkbox'"
-                            ></p-checkbox>
-                          }
-                        </div>
-                      }
+                    @for (action of entity.actions; track $index) {
+                      <div class="matrix-cell" [class.matrix-cell--wide]="entity.type === 'all'">
+                        @if (action) {
+                          <p-checkbox
+                            [binary]="true"
+                            [formControl]="action.control"
+                            (onChange)="onCheckAll(entity)"
+                            [styleClass]="'primary-checkbox'"
+                          ></p-checkbox>
+                        }
+                      </div>
                     }
                   </div>
                 </div>
@@ -345,7 +329,7 @@
               <div class="matrix-row matrix-head">
                 <div class="matrix-lead">Entity</div>
                 <div class="matrix-cells">
-                  @for (action of selectedCategory.actions; track action; let i = $index) {
+                  @for (action of selectedCategory.actions; track action) {
                     <div class="matrix-cell">{{ action }}</div>
                   }
                 </div>
@@ -356,7 +340,7 @@
                     <span class="entity-name">{{ entity.name }}</span>
                   </div>
                   <div class="matrix-cells">
-                    @for (action of entity.actions; track action; let i = $index) {
+                    @for (action of entity.actions; track action) {
                       <div class="matrix-cell">
                         <p-radioButton
                           name="permissionGroup_{{entity.name}}"

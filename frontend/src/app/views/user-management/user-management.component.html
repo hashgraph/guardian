@@ -102,7 +102,7 @@
             <tr class="guardian-grid-row guardian-list-row" [attr.template]="row.template" (click)="onChangeRoles(row)">
               <td class="row-cell-text" style="min-width: 240px;">
                 <div class="user-cell">
-                  <div class="user-avatar">{{ getInitials(row.username) }}</div>
+                  <div class="guardian-avatar">{{ getInitials(row.username) }}</div>
                   <div class="user-cell-text">
                     <span class="user-name" pTooltip="{{ row.username }}" tooltipPosition="top">{{ row.username }}</span>
                     <span class="user-did" pTooltip="{{ row.did }}" tooltipPosition="bottom">{{ shortDid(row.did) }}</span>

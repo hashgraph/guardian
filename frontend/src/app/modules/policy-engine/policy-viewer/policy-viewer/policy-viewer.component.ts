@@ -33,6 +33,7 @@ const MockTabs = ['API', 'IPFS', 'Topics'];
  * Component for choosing a policy and
  * display blocks of the selected policy
  */
+import { shortDid } from 'src/app/utils/short-did';
 @Component({
     selector: 'app-policy-viewer',
     templateUrl: './policy-viewer.component.html',
@@ -762,13 +763,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         return user?.username;
     }
 
-    public shortDid(did: string): string {
-        const match = /^(did:[^:]+:[^:]+:)([^_]+)(_.*)?$/.exec(did || '');
-        if (!match || match[2].length <= 12) {
-            return did;
-        }
-        return `${match[1]}${match[2].slice(0, 4)}…${match[2].slice(-4)}${match[3] || ''}`;
-    }
+    public shortDid = shortDid;
 
     public openVirtualUsersMenu(event: Event, menu: any) {
         menu.toggle(event);

@@ -212,3 +212,19 @@
         transform: translateX(3px);
     }
 }
+
+
+// Rounded tinted square with initials or an icon.
+.guardian-avatar {
+    flex: 0 0 32px;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-primary, #4169E2);
+    background: color-mix(in srgb, var(--color-primary, #4169E2) 12%, transparent);
+}

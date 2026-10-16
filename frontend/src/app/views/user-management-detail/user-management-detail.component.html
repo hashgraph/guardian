@@ -14,7 +14,7 @@
       <i class="pi pi-chevron-right pc-breadcrumb-sep"></i>
     </nav>
     <div class="policy-identity policy-identity--static">
-      <span class="user-avatar">{{ initials }}</span>
+      <span class="guardian-avatar">{{ initials }}</span>
       <div class="policy-identity-text">
         <span class="policy-identity-name">{{ username }}</span>
         <span class="policy-identity-meta">User</span>
@@ -49,7 +49,7 @@
           <div class="user-band-name">{{ username }}</div>
           <div class="user-band-meta">
             @if (target?.did) {
-              <span class="user-did" [title]="target.did">{{ shortDid }}</span>
+              <span class="user-did" [title]="target.did">{{ shortDid(target.did) }}</span>
               <i class="pi pi-copy user-did-copy" pTooltip="Copy DID" tooltipPosition="top" (click)="copyDid()"></i>
             }
             @if (parentLabel) {
@@ -134,8 +134,8 @@
                   <span><span class="dash">–</span>Not granted</span>
                 </div>
                 <div class="seg">
-                  <span [class.on]="!showAll" (click)="showAll = false">Granted only</span>
-                  <span [class.on]="showAll" (click)="showAll = true">All</span>
+                  <span [class.on]="!showAll" (click)="setShowAll(false)">Granted only</span>
+                  <span [class.on]="showAll" (click)="setShowAll(true)">All</span>
                 </div>
               </div>
 

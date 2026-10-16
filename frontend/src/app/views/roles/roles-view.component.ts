@@ -33,6 +33,9 @@ export class RolesViewComponent implements OnInit, OnDestroy {
     public dirty: boolean = false;
     public categoryCount: number = 0;
     public defaultRoleName: string = '';
+    public coverage: { category: ICategory, count: number, total: number }[] = [];
+    public coverageTotal: number = 0;
+    public emptyCategories: ICategory[] = [];
     public generalCategories: ICategory[] = [];
     public permissionCategories: ICategory[] = [];
     public accessCategories: ICategory[] = [];
@@ -67,6 +70,7 @@ export class RolesViewComponent implements OnInit, OnDestroy {
             this.user = new UserPermissions(profile);
             this.permissions = permissions || [];
             this.categoryCount = PermissionsGroup.from(this.permissions).categories.length;
+            this.loadDefaultRole();
             this.loadData();
         }, (e) => {
             this.loadError(e);
@@ -81,7 +85,6 @@ export class RolesViewComponent implements OnInit, OnDestroy {
             this.pageIndex,
             this.pageSize
         ).subscribe((response) => {
-            this.loadDefaultRole();
             this.page = response.body?.map((user: any) => {
                 return user;
             }) || [];
@@ -253,24 +256,20 @@ export class RolesViewComponent implements OnInit, OnDestroy {
         return total;
     }
 
-    public get coverage(): { category: ICategory, count: number, total: number }[] {
-        const list = [];
+    private updateStats() {
+        const coverage = [];
+        const empty: ICategory[] = [];
         for (const category of [...this.permissionCategories, ...this.accessCategories]) {
             const count = this.getCount(category);
             if (count > 0) {
-                list.push({ category, count, total: this.getTotal(category) });
+                coverage.push({ category, count, total: this.getTotal(category) });
+            } else {
+                empty.push(category);
             }
         }
-        return list.sort((a, b) => b.count - a.count);
-    }
-
-    public get coverageTotal(): number {
-        return this.coverage.reduce((sum, item) => sum + item.count, 0);
-    }
-
-    public get emptyCategories(): ICategory[] {
-        return [...this.permissionCategories, ...this.accessCategories]
-            .filter((category) => this.getCount(category) === 0);
+        this.coverage = coverage.sort((a, b) => b.count - a.count);
+        this.coverageTotal = coverage.reduce((sum, item) => sum + item.count, 0);
+        this.emptyCategories = empty;
     }
 
     public onSelectEmpty() {
@@ -296,10 +295,12 @@ export class RolesViewComponent implements OnInit, OnDestroy {
         this.permissionCategories = this.group.categories.filter((c) => c.type === 'Permissions');
         this.accessCategories = this.group.categories.filter((c) => c.type === 'Access');
         this.selectedCategory = this.group.first;
+        this.updateStats();
         this.dirty = false;
         this.snapshot = JSON.stringify(this.newRole.getRawValue());
         this.formSubscription?.unsubscribe();
         this.formSubscription = this.newRole.valueChanges.subscribe(() => {
+            this.updateStats();
             this.dirty = JSON.stringify(this.newRole?.getRawValue()) !== this.snapshot;
         });
     }
@@ -311,11 +312,13 @@ export class RolesViewComponent implements OnInit, OnDestroy {
     public onAll(entity: IEntity) {
         entity.selectAll();
         this.group.checkCount();
+        this.updateStats();
     }
 
     public onCheckAll(entity: IEntity) {
         entity.checkAll();
         this.group.checkCount();
+        this.updateStats();
     }
 
     public setDefault(row: any) {
@@ -325,6 +328,7 @@ export class RolesViewComponent implements OnInit, OnDestroy {
         this.loading = true;
         this.permissionsService.setDefaultRole(row.id).subscribe((response) => {
             row.default = true;
+            this.loadDefaultRole();
             this.loadData();
         }, (e) => {
             this.loadError(e);

@@ -559,3 +559,22 @@
         background: var(--guardian-tool-color, #c37a29);
     }
 }
+
+// Static identity (no menu behind it) and disabled buttons, for pages without a popover.
+.top-toolbar {
+    flex-shrink: 0;
+
+    .policy-identity--static {
+        cursor: default;
+
+        &:hover {
+            background: transparent;
+            border-color: transparent;
+        }
+    }
+
+    .top-toolbar-btn.is-disabled {
+        opacity: 0.45;
+        pointer-events: none;
+    }
+}

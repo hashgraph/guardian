@@ -19,41 +19,9 @@
     font-family: var(--guardian-font-family, Inter, sans-serif);
 }
 
-.top-toolbar {
-    flex-shrink: 0;
-
-    .top-toolbar-btn.top-toolbar-btn--primary {
-        height: 40px;
-        border-radius: 8px;
-    }
-
-    .is-disabled {
-        opacity: 0.45;
-        pointer-events: none;
-    }
-
-    .policy-identity--static {
-        cursor: default;
-
-        &:hover {
-            background: transparent;
-            border-color: transparent;
-        }
-    }
-}
-
-.user-avatar {
-    flex: 0 0 32px;
-    width: 32px;
-    height: 32px;
+.top-toolbar .top-toolbar-btn.top-toolbar-btn--primary {
+    height: 40px;
     border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--color-primary, #4169E2);
-    background: color-mix(in srgb, var(--color-primary, #4169E2) 12%, transparent);
 }
 
 .user-tabs {
@@ -424,10 +392,7 @@
         font-weight: 500;
     }
 
-    td.matrix-entity {
-        font-weight: 500;
     }
-}
 
 .empty-text,
 .muted {
@@ -557,8 +522,8 @@
         background: var(--color-accent-green-1, #19BE47);
     }
 
-    &.status--orange::before {
-        background: var(--color-accent-yellow-1, #DA9B22);
+    &.status--dry-run::before {
+        background: var(--pc-dry-run-color, #E0A800);
     }
 
     &.status--yellow::before {

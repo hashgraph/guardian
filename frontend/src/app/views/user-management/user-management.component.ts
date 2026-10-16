@@ -5,6 +5,7 @@ import { UserPermissions } from '@guardian/interfaces';
 import { Subscription, forkJoin } from 'rxjs';
 import { UntypedFormControl } from '@angular/forms';
 import { ActivatedRoute, Params, Router } from '@angular/router';
+import { getUserInitials, shortDid } from 'src/app/utils/index';
 
 @Component({
     selector: 'app-user-management',
@@ -152,18 +153,9 @@ export class UsersManagementComponent implements OnInit, OnDestroy {
         return this.roles.find((role) => role.default)?.name || '';
     }
 
-    public getInitials(name: string): string {
-        const clean = (name || '').replace(/[^A-Za-z0-9]/g, '');
-        const capitals = clean.replace(/[^A-Z]/g, '');
-        return (capitals.length >= 2 ? capitals : clean).slice(0, 2).toUpperCase() || '?';
-    }
+    public getInitials = getUserInitials;
 
-    public shortDid(did: string): string {
-        if (!did || did.length <= 28) {
-            return did || '';
-        }
-        return `${did.slice(0, 20)}…${did.slice(-6)}`;
-    }
+    public shortDid = shortDid;
 
     public onChangeRoles(row: any) {
         this.router.navigate(['user-management', row.username]);

@@ -4,7 +4,7 @@ import { ProfileService } from '../../services/profile.service';
 import { PolicyStatus, UserPermissions } from '@guardian/interfaces';
 import { Subscription, forkJoin } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
-import { PermissionsGroup } from 'src/app/utils/index';
+import { PermissionsGroup, getUserInitials, shortDid } from 'src/app/utils/index';
 import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
@@ -69,6 +69,8 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
     public assignedCount: number = 0;
     public grantedCount: number = 0;
     public showAll: boolean = false;
+    public shortDid = shortDid;
+    public visiblePreview: typeof this.preview = [];
     public preview: {
         name: string,
         actions: string[],
@@ -186,21 +188,11 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
         if (!parent) {
             return '';
         }
-        if (parent === this.user.did) {
-            return this.user.username;
-        }
-        return parent.length > 28 ? `${parent.slice(0, 20)}…${parent.slice(-6)}` : parent;
+        return parent === this.user.did ? this.user.username : shortDid(parent);
     }
 
     public get initials(): string {
-        const clean = (this.username || '').replace(/[^A-Za-z0-9]/g, '');
-        const capitals = clean.replace(/[^A-Z]/g, '');
-        return (capitals.length >= 2 ? capitals : clean).slice(0, 2).toUpperCase() || '?';
-    }
-
-    public get shortDid(): string {
-        const did: string = this.target?.did || '';
-        return did.length > 40 ? `${did.slice(0, 28)}…${did.slice(-8)}` : did;
+        return getUserInitials(this.username);
     }
 
     public copyDid() {
@@ -231,15 +223,20 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
         }
         this.preview = preview;
         this.grantedCount = granted;
+        this.updateVisiblePreview();
     }
 
-    public get visiblePreview() {
-        if (this.showAll) {
-            return this.preview;
-        }
-        return this.preview
-            .map((category) => ({ ...category, entities: category.entities.filter((e) => e.granted) }))
-            .filter((category) => category.entities.length);
+    public setShowAll(value: boolean) {
+        this.showAll = value;
+        this.updateVisiblePreview();
+    }
+
+    private updateVisiblePreview() {
+        this.visiblePreview = this.showAll
+            ? this.preview
+            : this.preview
+                .map((category) => ({ ...category, entities: category.entities.filter((e) => e.granted) }))
+                .filter((category) => category.entities.length);
     }
 
     public onToggleAssign(row: any, checked: boolean) {
@@ -439,7 +436,7 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
             case PolicyStatus.DRAFT:
                 return 'grey';
             case PolicyStatus.DRY_RUN:
-                return 'orange';
+                return 'dry-run';
             case PolicyStatus.DISCONTINUED:
             case PolicyStatus.PUBLISH_ERROR:
                 return 'red';
