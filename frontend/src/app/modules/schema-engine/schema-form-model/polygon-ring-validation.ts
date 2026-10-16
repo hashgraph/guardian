@@ -277,6 +277,15 @@ export function polygonHolesError(rings: readonly (readonly Position[])[]): stri
     if (rings.length < 2) return null;
     const shell = normalizeRing(rings[0]);
     const normalized = rings.map((ring, index) => index ? alignRing(normalizeRing(ring), shell[0][0]) : shell);
+    const owners = new Map<string, number>();
+    for (let ring = 0; ring < normalized.length; ring++) {
+        for (const point of normalized[ring]) {
+            const key = point[0] + '|' + point[1];
+            const owner = owners.get(key);
+            if (owner !== undefined && owner !== ring) return `ring #${ring} must not cross or touch ring #${owner}`;
+            owners.set(key, ring);
+        }
+    }
     const crossing = findCrossing(normalized);
     if (crossing) {
         const [first, second] = [crossing[0].ring, crossing[1].ring].sort((a, b) => a - b);

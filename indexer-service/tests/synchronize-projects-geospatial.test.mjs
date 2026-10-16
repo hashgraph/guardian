@@ -125,4 +125,51 @@ describe('SynchronizationProjects geospatial values', () => {
         assert.deepEqual(sync(['location', 'polygonOnly']), expected);
         assert.deepEqual(sync(['location']), expected);
     });
+
+    it('finds a nested geo field when the stored sub-schema value has no type', () => {
+        const synchronizer = Object.create(SynchronizationProjects.prototype);
+        const wrapped = (coordinates) => ({
+            type: 'FeatureCollection',
+            features: [{ type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates } }],
+        });
+        const context = { '@context': {
+            '@version': 1.1,
+            'site-schema': {
+                '@id': 'schema:site-schema#site-schema',
+                '@context': {
+                    siteName: { '@type': 'https://www.schema.org/text' },
+                    siteLocation: { '@id': 'schema:site-schema#GeoJSON' },
+                },
+            },
+            'parent-schema&1.0.0': {
+                '@id': '#parent-schema&1.0.0',
+                '@context': {
+                    location: { '@id': 'schema:parent-schema#GeoJSON' },
+                    note: { '@type': 'https://www.schema.org/text' },
+                    site: { '@id': 'schema:parent-schema#site-schema' },
+                },
+            },
+            '#GeoJSON': { '@context': { '@version': 1.1 } },
+        } };
+        const sync = (subject) => synchronizer.updateGeoCoordinates({
+            files: ['vc'], consensusTimestamp: 'document-id',
+        }, new Map([['vc', JSON.stringify({ '@context': [context], credentialSubject: [subject] })]]));
+
+        assert.deepEqual(sync({
+            type: 'parent-schema&1.0.0',
+            location: wrapped([36.5, -1.5]),
+            site: { siteLocation: wrapped([36.7, -1.3]) },
+        }), [
+            { coordinates: '36.5|-1.5', projectId: 'document-id' },
+            { coordinates: '36.7|-1.3', projectId: 'document-id' },
+        ]);
+        assert.deepEqual(sync({
+            type: 'parent-schema&1.0.0',
+            site: { siteName: 'A', siteLocation: wrapped([36.7, -1.3]) },
+        }), [{ coordinates: '36.7|-1.3', projectId: 'document-id' }]);
+        assert.deepEqual(sync({
+            type: 'parent-schema&1.0.0',
+            note: { siteLocation: wrapped([1, 2]) },
+        }), []);
+    });
 });

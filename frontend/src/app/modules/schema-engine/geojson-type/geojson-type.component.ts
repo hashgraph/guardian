@@ -693,7 +693,7 @@ export class GeojsonTypeComponent implements OnChanges {
                     extend(shapesExtent, this.geoShapesSource.getExtent());
                 }
                 if (!isEmpty(shapesExtent)) {
-                    this.map?.getView().fit(shapesExtent, { padding: [40, 40, 40, 40], maxZoom: 14, duration: 350 });
+                    this.map?.getView().fit(shapesExtent, { padding: [40, 40, 40, 40], maxZoom: 12, duration: 350 });
                 } else if (this.center) {
                     this.map?.getView().animate({
                         center: this.center,

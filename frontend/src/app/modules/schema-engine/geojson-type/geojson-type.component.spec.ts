@@ -857,7 +857,7 @@ describe('GeojsonTypeComponent original file link', () => {
         jasmine.clock().tick(0);
         jasmine.clock().uninstall();
 
-        expect(view.fit).toHaveBeenCalledWith(jasmine.any(Array), jasmine.objectContaining({ maxZoom: 14 }));
+        expect(view.fit).toHaveBeenCalledWith(jasmine.any(Array), jasmine.objectContaining({ maxZoom: 12 }));
         expect(view.animate).not.toHaveBeenCalled();
     });
 
@@ -887,7 +887,7 @@ describe('GeojsonTypeComponent original file link', () => {
         expect(view.fit).toHaveBeenCalledTimes(1);
         expect(view.fit).toHaveBeenCalledWith(
             (component as any).geoShapesSource.getExtent(),
-            jasmine.objectContaining({ maxZoom: 14 })
+            jasmine.objectContaining({ maxZoom: 12 })
         );
         expect(view.animate).not.toHaveBeenCalled();
     });

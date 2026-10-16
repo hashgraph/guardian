@@ -320,6 +320,17 @@ describe('Selected polygon holes', () => {
         expect(errors('Polygon', [shell, hole, [[4, 2], [6, 2], [6, 4], [4, 4], [4, 2]]])).toEqual([
             'Polygon: ring #2 must not cross or touch ring #1',
         ]);
+        const left = [[1, 5], [3, 3], [5, 5], [3, 7], [1, 5]];
+        const right = [[5, 5], [7, 3], [9, 5], [7, 7], [5, 5]];
+        expect(errors('Polygon', [shell, left, right])).toEqual([
+            'Polygon: ring #2 must not cross or touch ring #1',
+        ]);
+        expect(errors('Polygon', [shell, [...left].reverse(), [...right].reverse()])).toEqual([
+            'Polygon: ring #2 must not cross or touch ring #1',
+        ]);
+        expect(errors('Polygon', [shell, right, left])).toEqual([
+            'Polygon: ring #2 must not cross or touch ring #1',
+        ]);
         const large = [[1, 1], [9, 1], [9, 9], [1, 9], [1, 1]];
         const small = [[4, 4], [6, 4], [6, 6], [4, 6], [4, 4]];
         expect(errors('Polygon', [shell, large, small])).toEqual([

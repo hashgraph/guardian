@@ -175,7 +175,8 @@ export class SynchronizationProjects extends SynchronizationTask {
         if (this.schemaHasGeoJson(schemaContext)) {
             const subject = this.getSubject(documentFile);
             const geoFields = this.findGeoJsonFields(schemaContext);
-            const geoFieldsValues = this.findGeoJSONFieldsInDocument(subject, geoFields)
+            const refFields = this.findRefFields(schemaContext);
+            const geoFieldsValues = this.findGeoJSONFieldsInDocument(subject, geoFields, refFields)
             for (const geoFieldsValue of geoFieldsValues) {
                 if (Array.isArray(geoFieldsValue)) {
                     for (const item of geoFieldsValue) {
@@ -188,14 +189,35 @@ export class SynchronizationProjects extends SynchronizationTask {
         }
     }
 
-    private findGeoJSONFieldsInDocument(cs: any, map: any, result = []) {
-        const fields: string[] = (map[cs.type] || []).filter((field: string) => cs[field]);
+    private findGeoJSONFieldsInDocument(cs: any, map: any, refs: any, result = [], type = cs.type) {
+        const fields: string[] = (map[type] || []).filter((field: string) => cs[field]);
         for (const field of fields) {
             result.push(cs[field]);
         }
         for (const field in cs) {
             if (!fields.includes(field) && Object.prototype.toString.call(cs[field]) === '[object Object]') {
-                this.findGeoJSONFieldsInDocument(cs[field], map, result);
+                const refType = refs[type] && refs[type][field];
+                this.findGeoJSONFieldsInDocument(cs[field], map, refs, result, cs[field].type || refType);
+            }
+        }
+        return result;
+    }
+
+    private findRefFields(context: any) {
+        context = context['@context'] || context;
+        const result = {};
+        for (const schema of Object.keys(context || {})) {
+            const fields = context[schema] && context[schema]['@context'];
+            if (Object.prototype.toString.call(fields) !== '[object Object]') {
+                continue;
+            }
+            result[schema] = {};
+            for (const field of Object.keys(fields)) {
+                const id = fields[field] && fields[field]['@id'];
+                const target = typeof id === 'string' ? id.slice(id.lastIndexOf('#') + 1) : null;
+                if (target && context[target]) {
+                    result[schema][field] = target;
+                }
             }
         }
         return result;
