@@ -71,7 +71,12 @@ export class SynchronizationProjects extends SynchronizationTask {
         for (const document of allDocuments) {
             const coords = this.updateGeoCoordinates(document, fileMap);
             if (coords) {
+                const savedCoordinates = new Set<string>();
                 for (const coord of coords) {
+                    if (savedCoordinates.has(coord.coordinates)) {
+                        continue;
+                    }
+                    savedCoordinates.add(coord.coordinates);
                     const row = em.create(ProjectCoordinates, coord);
                     await safetyRunning(async () => {
                         await em.persistAndFlush(row);
@@ -170,7 +175,8 @@ export class SynchronizationProjects extends SynchronizationTask {
         if (this.schemaHasGeoJson(schemaContext)) {
             const subject = this.getSubject(documentFile);
             const geoFields = this.findGeoJsonFields(schemaContext);
-            const geoFieldsValues = this.findGeoJSONFieldsInDocument(subject, geoFields)
+            const refFields = this.findRefFields(schemaContext);
+            const geoFieldsValues = this.findGeoJSONFieldsInDocument(subject, geoFields, refFields)
             for (const geoFieldsValue of geoFieldsValues) {
                 if (Array.isArray(geoFieldsValue)) {
                     for (const item of geoFieldsValue) {
@@ -183,16 +189,34 @@ export class SynchronizationProjects extends SynchronizationTask {
         }
     }
 
-    private findGeoJSONFieldsInDocument(cs: any, map: any, result = []) {
-        if (map[cs.type] && cs[map[cs.type]]) {
-            const fields = map[cs.type];
-            for (const field of fields) {
-                result.push(cs[field]);
+    private findGeoJSONFieldsInDocument(cs: any, map: any, refs: any, result = [], type = cs.type) {
+        const fields: string[] = (map[type] || []).filter((field: string) => cs[field]);
+        for (const field of fields) {
+            result.push(cs[field]);
+        }
+        for (const field in cs) {
+            if (!fields.includes(field) && Object.prototype.toString.call(cs[field]) === '[object Object]') {
+                const refType = refs[type] && refs[type][field];
+                this.findGeoJSONFieldsInDocument(cs[field], map, refs, result, cs[field].type || refType);
             }
-        } else {
-            for (const field in cs) {
-                if (Object.prototype.toString.call(cs[field]) === '[object Object]') {
-                    this.findGeoJSONFieldsInDocument(cs[field], map, result);
+        }
+        return result;
+    }
+
+    private findRefFields(context: any) {
+        context = context['@context'] || context;
+        const result = {};
+        for (const schema of Object.keys(context || {})) {
+            const fields = context[schema] && context[schema]['@context'];
+            if (Object.prototype.toString.call(fields) !== '[object Object]') {
+                continue;
+            }
+            result[schema] = {};
+            for (const field of Object.keys(fields)) {
+                const id = fields[field] && fields[field]['@id'];
+                const target = typeof id === 'string' ? id.slice(id.lastIndexOf('#') + 1) : null;
+                if (target && context[target]) {
+                    result[schema][field] = target;
                 }
             }
         }
@@ -228,9 +252,25 @@ export class SynchronizationProjects extends SynchronizationTask {
 
     private addCoordinates(
         storage: ICoord[],
-        item: { type: string; coordinates: any[] },
+        item: { type: string; coordinates?: any[]; features?: any[]; geometry?: any },
         projectId: string
     ) {
+        if (!item) {
+            return;
+        }
+        if (item.type === 'FeatureCollection') {
+            for (const feature of item.features || []) {
+                this.addCoordinates(storage, feature, projectId);
+            }
+            return;
+        }
+        if (item.type === 'Feature') {
+            this.addCoordinates(storage, item.geometry, projectId);
+            return;
+        }
+        if (!item.coordinates) {
+            return;
+        }
         switch (item.type) {
             case 'Point': {
                 storage.push({

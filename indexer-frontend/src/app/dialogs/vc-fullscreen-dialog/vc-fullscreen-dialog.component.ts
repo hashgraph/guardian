@@ -25,6 +25,7 @@ export class VCFullscreenDialog {
     public title: string;
     public schema: any;
     public credentialSubject: any;
+    public analytics: unknown;
     public formulasResults: any | null;
     public targetId: string;
     public discussionId: string;
@@ -46,6 +47,7 @@ export class VCFullscreenDialog {
         this.title = this.config.data?.title;
         this.schema = this.config.data?.schema;
         this.credentialSubject = this.config.data?.credentialSubject;
+        this.analytics = this.config.data?.analytics;
         this.formulasResults = this.config.data?.formulasResults;
 
         this.targetId = this.config.data?.targetId;

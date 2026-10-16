@@ -1099,6 +1099,7 @@
                                       @if (ifInvalidField(item)) {
                                         <div
                                           class="invalid-field-label invalid-sub-schema"
+                                          [class.invalid-geo-field]="item.customType === 'geo'"
                                           >
                                           Please make sure all fields in schema contain a
                                           valid value

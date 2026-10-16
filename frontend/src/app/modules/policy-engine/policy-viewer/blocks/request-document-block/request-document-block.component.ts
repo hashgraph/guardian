@@ -21,6 +21,7 @@ import { SavepointFlowService } from 'src/app/services/savepoint-flow.service';
 import { DocumentAutosaveStorage } from '../../../structures';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { TablePersistenceService } from 'src/app/services/table-persistence.service';
+import { GeoFilePersistenceService } from 'src/app/services/geo-file-persistence.service';
 import { PolicyStatus } from '@guardian/interfaces';
 import { RelayerAccountsService } from 'src/app/services/relayer-accounts.service';
 import { AttachedFile } from 'src/app/modules/common/policy-comments/attached-file';
@@ -154,6 +155,7 @@ export class RequestDocumentBlockComponent
         private savepointFlow: SavepointFlowService,
         private indexedDb: IndexedDbRegistryService,
         private tablePersist: TablePersistenceService,
+        private geoFilePersist: GeoFilePersistenceService,
         private ipfsService: IPFSService,
         private policyTest: PolicyTestAutomationService,
         private schemaService: SchemaService,
@@ -456,9 +458,20 @@ export class RequestDocumentBlockComponent
     private async onSubmit(draft?: boolean) {
         const data = this.dataForm.getRawValue();
         this.loading = true;
-        this.storage.delete(this.getAutosaveId());
 
-        await this.tablePersist.persistTablesInDocument(data, !!this.dryRun, this.policyId, this.id, draft);
+        let geoPersistStarted = false;
+        try {
+            await this.tablePersist.persistTablesInDocument(data, !!this.dryRun, this.policyId, this.id, draft);
+            geoPersistStarted = true;
+            await this.geoFilePersist.persistGeoFilesInDocument(data, !!this.dryRun, !!draft);
+        } catch (error) {
+            await this.tablePersist.rollbackIpfsUploads();
+            if (geoPersistStarted) await this.geoFilePersist.rollbackGridFsUploads();
+            console.error(error);
+            this.loading = false;
+            return;
+        }
+        this.storage.delete(this.getAutosaveId());
 
         prepareVcData(data);
 
@@ -484,6 +497,7 @@ export class RequestDocumentBlockComponent
                     try {
                         if (!requestSucceeded) {
                             await this.tablePersist.rollbackIpfsUploads();
+                            await this.geoFilePersist.rollbackGridFsUploads();
                         }
                     } finally {
                         this.loading = false;
@@ -679,6 +693,7 @@ export class RequestDocumentBlockComponent
                     this.preset(autosaveDocument);
 
                     await this.tablePersist.restoreTablesFromDraft(autosaveDocument);
+                    await this.geoFilePersist.restoreGeoFilesFromDraft(autosaveDocument);
 
                     this.savepointFlow.setSkipOnce();
                     if (this.type == 'dialog') {

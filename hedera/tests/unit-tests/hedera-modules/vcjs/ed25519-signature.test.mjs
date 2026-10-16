@@ -87,4 +87,38 @@ describe('VCJS Ed25519 signing and verification (@digitalbazaar)', function () {
         assert.equal(json.proof.type, SignatureType.Ed25519Signature2018);
         assert.isTrue(await vcjs.verifyVC(json));
     });
+
+    it('signs and verifies a credential whose geo value links the original file', async function () {
+        const key = PrivateKey.fromString(
+            '302e020100300506032b657004220420bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+        );
+        const didDocument = await HederaDidDocument.generate('testnet', key, '0.0.0');
+        const vcjs = buildVcjs(didDocument.toJsonTree());
+        const linkedSubject = {
+            ...subject,
+            place: {
+                type: 'Point',
+                coordinates: [27.5615, 53.9023],
+                geoFile: {
+                    fileId: '507f1f77bcf86cd799439011',
+                    cid: 'bafy-test',
+                    name: 'site.kml',
+                    format: 'kml',
+                    sizeBytes: 1024,
+                    previewSizeBytes: 1024
+                }
+            }
+        };
+
+        const credential = await vcjs.createVerifiableCredential(
+            linkedSubject,
+            didDocument,
+            SignatureType.Ed25519Signature2018
+        );
+        const json = credential.toJsonTree();
+
+        assert.deepEqual(json.credentialSubject[0].place.coordinates, [27.5615, 53.9023]);
+        assert.equal(json.credentialSubject[0].place.geoFile.name, 'site.kml');
+        assert.isTrue(await vcjs.verifyVC(json));
+    });
 });

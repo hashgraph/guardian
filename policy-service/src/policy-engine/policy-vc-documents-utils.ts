@@ -16,6 +16,7 @@ import { MessageAction } from '@guardian/hedera/message/message-action';
 import { Message } from '@guardian/hedera/message/message';
 import { MessageMemo } from '@guardian/hedera/memo-mappings/message-memo';
 import { TopicConfig } from '@guardian/hedera/topic';
+import { GeospatialFileValidator } from './helpers/geospatial-file-validator.js';
 
 export class PolicyVcDocumentsUtils {
     public static async getAllVersionVcDocuments(
@@ -129,6 +130,11 @@ export class PolicyVcDocumentsUtils {
                 );
             }
         });
+
+        await GeospatialFileValidator.validateDocument(
+            newCredentialSubject,
+            user.userId
+        );
 
         let newDoc = await PolicyVcDocumentsUtils.createVerifiableCredential(
             ref,

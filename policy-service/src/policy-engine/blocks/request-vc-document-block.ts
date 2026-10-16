@@ -15,6 +15,7 @@ import deepEqual from 'deep-equal';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
 import { hydrateTablesInObject, loadFileTextById } from '../helpers/table-field.js';
 import { RecordActionStep } from '../record-action-step.js';
+import { GeospatialFileValidator } from '../helpers/geospatial-file-validator.js';
 
 /**
  * Request VC document block
@@ -251,7 +252,15 @@ export class RequestVcDocumentBlock {
             }
 
             //Create Verifiable Credential
-            const item = await this.createVerifiableCredential(user, documentOwner, relayerAccount, credentialSubject, actionStatusId, data.evidence);
+            const item = await this.createVerifiableCredential(
+                user,
+                documentOwner,
+                relayerAccount,
+                credentialSubject,
+                actionStatusId,
+                data.evidence,
+                !draft
+            );
             PolicyUtils.setDocumentRef(item, documentRef);
 
             //Update metadata
@@ -448,8 +457,12 @@ export class RequestVcDocumentBlock {
         relayerAccount: string,
         credentialSubject: any,
         actionStatusId: string,
-        evidence?: { dataType: string; data: string }[]
+        evidence?: { dataType: string; data: string }[],
+        validateGeospatialFiles = true
     ): Promise<IPolicyDocument> {
+        if (validateGeospatialFiles) {
+            await GeospatialFileValidator.validateDocument(credentialSubject, issuer.userId);
+        }
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
 
         const groupContext = await PolicyUtils.getGroupContext(ref, issuer);

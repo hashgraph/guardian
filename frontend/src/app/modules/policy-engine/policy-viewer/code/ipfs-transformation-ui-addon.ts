@@ -3,6 +3,7 @@ import { firstValueFrom } from 'rxjs';
 import { fileTypeFromBuffer } from 'file-type';
 import { PolicyEngineService } from "src/app/services/policy-engine.service";
 import { CID } from 'multiformats/cid';
+import { isGeoFileLink, isGeoJsonValue } from 'src/app/services/geo-file-persistence.service';
 
 interface DocumentData {
     document: any;
@@ -73,6 +74,9 @@ export class IpfsTransformationUIAddonCode {
                     }
                 }
             } else {
+                if (isGeoJsonValue(documentObject) && isGeoFileLink(documentObject.geoFile)) {
+                    tasks.push(this.processGeoValue(documentObject));
+                }
                 for (const key in documentObject) {
                     const value = documentObject[key];
                     if (typeof (value) === 'string' && this.shouldProcessString(value)) {
@@ -173,6 +177,30 @@ export class IpfsTransformationUIAddonCode {
         }
 
         return Object.assign(result, link);
+    }
+
+    private async processGeoValue(value: any): Promise<void> {
+        const geoFile = value.geoFile;
+        const cid = typeof (geoFile.cid) === 'string' ? geoFile.cid.trim() : '';
+        if (!cid) {
+            return;
+        }
+
+        const link = await this.processIpfsString(`ipfs://${cid}`);
+        const target = link && (link.resourceUrl || link.base64String);
+        if (!target) {
+            return;
+        }
+
+        const result: any = { ...geoFile };
+        delete result.idbKey;
+        delete result.fileId;
+        delete result.cid;
+        if (geoFile.format !== 'kmz') {
+            result.compression = 'gzip';
+        }
+
+        value.geoFile = Object.assign(result, link);
     }
 
 
