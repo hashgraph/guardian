@@ -44,14 +44,14 @@ export class UserDTO implements IUser {
     permissions: string[];
 
     @ApiProperty({
-        type: 'string',
+        type: 'object',
         required: false,
         isArray: true,
-        description: 'Identifiers of the policies assigned to the user.'
+        description: 'Assignment records of the user, of every type (Policy, RemotePolicy, Schema, Token, Module).'
     })
     @IsOptional()
     @IsArray()
-    assignedEntities?: string[];
+    assignedEntities?: any[];
 
     @ApiProperty({
         type: 'string',

@@ -25,6 +25,7 @@ import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-conf
 import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from 'src/app/modules/common/import-entity-dialog/import-entity-dialog.component';
 import { MockDialog } from '../../dialogs/mock-dialog/mock-dialog.component';
 import { PolicyTestAutomationService } from '../policy-test-automation/policy-test-automation.service';
+import { shortDid } from 'src/app/utils/short-did';
 
 type MockItemType = 'IPFS' | 'MESSAGE' | 'TOKEN' | 'ACCOUNT' | 'API';
 const MockTabs = ['API', 'IPFS', 'Topics'];
@@ -33,7 +34,6 @@ const MockTabs = ['API', 'IPFS', 'Topics'];
  * Component for choosing a policy and
  * display blocks of the selected policy
  */
-import { shortDid } from 'src/app/utils/short-did';
 @Component({
     selector: 'app-policy-viewer',
     templateUrl: './policy-viewer.component.html',

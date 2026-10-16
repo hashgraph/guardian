@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { PermissionsService } from '../../services/permissions.service';
 import { ProfileService } from '../../services/profile.service';
-import { UserPermissions } from '@guardian/interfaces';
+import { AssignedEntityType, UserPermissions } from '@guardian/interfaces';
 import { Subscription, forkJoin } from 'rxjs';
 import { UntypedFormControl } from '@angular/forms';
 import { ActivatedRoute, Params, Router } from '@angular/router';
@@ -154,6 +154,10 @@ export class UsersManagementComponent implements OnInit, OnDestroy {
     }
 
     public getInitials = getUserInitials;
+
+    public policyCount(row: any): number {
+        return row.assignedEntities?.filter((e: any) => e.type === AssignedEntityType.Policy).length || 0;
+    }
 
     public shortDid = shortDid;
 

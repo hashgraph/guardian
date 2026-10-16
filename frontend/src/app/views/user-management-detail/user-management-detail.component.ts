@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { PermissionsService } from '../../services/permissions.service';
 import { ProfileService } from '../../services/profile.service';
-import { PolicyStatus, UserPermissions } from '@guardian/interfaces';
+import { AssignedEntityType, PolicyStatus, UserPermissions } from '@guardian/interfaces';
 import { Subscription, forkJoin } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PermissionsGroup, getUserInitials, shortDid } from 'src/app/utils/index';
@@ -140,7 +140,7 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
             this.needSave = false;
             this.setControls();
             this.updateControls();
-            this.assignedCount = user?.assignedEntities?.length || 0;
+            this.assignedCount = this.countPolicies(user?.assignedEntities);
             setTimeout(() => {
                 this.loading = false;
             }, 500);
@@ -173,9 +173,13 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
         });
     }
 
+    private countPolicies(entities: any[] | undefined): number {
+        return entities?.filter((e) => e.type === AssignedEntityType.Policy).length || 0;
+    }
+
     private loadAssignedCount() {
         this.permissionsService.getUser(this.username).subscribe((user) => {
-            this.assignedCount = user?.assignedEntities?.length || 0;
+            this.assignedCount = this.countPolicies(user?.assignedEntities);
         }, (e) => {
             console.error(e);
         });
