@@ -58736,6 +58736,13 @@ components:
           type: array
           items:
             type: string
+        assignedEntities:
+          type: array
+          items:
+            type: object
+          description: >-
+            Assignment records of the user, of every type (Policy, RemotePolicy,
+            Schema, Token, Module).
         did:
           type: string
           example: >-
@@ -61495,6 +61502,13 @@ components:
           type: array
           items:
             type: string
+        assignedEntities:
+          type: array
+          items:
+            type: object
+          description: >-
+            Assignment records of the user, of every type (Policy, RemotePolicy,
+            Schema, Token, Module).
         did:
           type: string
           example: >-
