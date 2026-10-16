@@ -3,6 +3,7 @@ export interface GeospatialLimits {
     geojsonPreviewMaxFileSizeMb: number;
     geospatialMaxFileSizeMb: number;
     geospatialPreviewMaxFeatures: number;
+    geospatialPreviewMaxPoints: number;
 }
 
 type Environment = Record<string, string | undefined>;
@@ -34,6 +35,10 @@ export function getGeospatialLimits(
         geospatialPreviewMaxFeatures: positiveNumber(
             environment.GEOSPATIAL_PREVIEW_MAX_FEATURES,
             1500
+        ),
+        geospatialPreviewMaxPoints: positiveNumber(
+            environment.GEOSPATIAL_PREVIEW_MAX_POINTS,
+            20000
         )
     };
 }

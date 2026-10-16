@@ -1,7 +1,7 @@
 import { UntypedFormControl } from '@angular/forms';
 import { GeoJsonType } from '@guardian/interfaces';
 import { GeoForm } from './geo-form';
-import { polygonRingError } from './polygon-ring-validation';
+import { polygonHolesError, polygonRingError } from './polygon-ring-validation';
 
 describe('Selected polygon ring validation', () => {
     const square = [[0, 0], [4, 0], [4, 4], [0, 4], [0, 0]];
@@ -281,5 +281,105 @@ describe('Polygon sweep differential regression', () => {
             expect(Boolean(polygonRingError(points))).withContext('seeded ring ' + iteration)
                 .toBe(pairwiseInvalid(points));
         }
+    });
+});
+
+describe('Selected polygon holes', () => {
+    const shell = [[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]];
+    const hole = [[2, 2], [4, 2], [4, 4], [2, 4], [2, 2]];
+
+    function errors(type: string, coordinates: unknown): string[] {
+        const control = new UntypedFormControl({ type, coordinates });
+        new GeoForm(control).build();
+        control.updateValueAndValidity();
+        return control.errors?.geoJsonFieldErrors?.[0] || [];
+    }
+
+    it('accepts holes inside the outer ring in either direction', () => {
+        expect(errors('Polygon', [shell, hole])).toEqual([]);
+        expect(errors('Polygon', [shell, [...hole].reverse(), [[6, 6], [8, 6], [8, 8], [6, 8], [6, 6]]])).toEqual([]);
+        expect(polygonHolesError([shell])).toBeNull();
+    });
+
+    it('rejects a hole outside the outer ring', () => {
+        expect(errors('Polygon', [shell, [[12, 12], [14, 12], [14, 14], [12, 14], [12, 12]]])).toEqual([
+            'Polygon: ring #1 must lie inside ring #0',
+        ]);
+    });
+
+    it('rejects a hole that crosses or touches the outer ring', () => {
+        expect(errors('Polygon', [shell, [[8, 2], [12, 2], [12, 4], [8, 4], [8, 2]]])).toEqual([
+            'Polygon: ring #1 must not cross or touch ring #0',
+        ]);
+        expect(errors('Polygon', [shell, [[5, 0], [6, 2], [4, 2], [5, 0]]])).toEqual([
+            'Polygon: ring #1 must not cross or touch ring #0',
+        ]);
+    });
+
+    it('rejects holes that touch each other or lie inside each other', () => {
+        expect(errors('Polygon', [shell, hole, [[4, 2], [6, 2], [6, 4], [4, 4], [4, 2]]])).toEqual([
+            'Polygon: ring #2 must not cross or touch ring #1',
+        ]);
+        const large = [[1, 1], [9, 1], [9, 9], [1, 9], [1, 1]];
+        const small = [[4, 4], [6, 4], [6, 6], [4, 6], [4, 4]];
+        expect(errors('Polygon', [shell, large, small])).toEqual([
+            'Polygon: ring #2 must not lie inside ring #1',
+        ]);
+        expect(errors('Polygon', [shell, small, large])).toEqual([
+            'Polygon: ring #1 must not lie inside ring #2',
+        ]);
+    });
+
+    it('keeps the polygon index for a MultiPolygon member', () => {
+        expect(errors('MultiPolygon', [[shell, hole], [shell, [[12, 12], [14, 12], [14, 14], [12, 12]]]])).toEqual([
+            'MultiPolygon: polygon #1: ring #1 must lie inside ring #0',
+        ]);
+    });
+
+    it('reports only the ring error when a ring is invalid on its own', () => {
+        expect(errors('Polygon', [shell, [[2, 2], [4, 4], [2, 4], [4, 2], [2, 2]]])).toEqual([
+            'Polygon: ring #1 must not cross or touch itself',
+        ]);
+    });
+
+    it('handles holes written on the other side of the dateline', () => {
+        const dateline = [[179, 0], [-179, 0], [-179, 4], [179, 4], [179, 0]];
+        expect(errors('Polygon', [dateline, [[179.5, 1], [-179.5, 1], [-179.5, 2], [179.5, 2], [179.5, 1]]])).toEqual([]);
+        expect(errors('Polygon', [dateline, [[-179.8, 1], [-179.6, 1], [-179.6, 2], [-179.8, 2], [-179.8, 1]]])).toEqual([]);
+        expect(errors('Polygon', [dateline, [[-178, 1], [-177, 1], [-177, 2], [-178, 2], [-178, 1]]])).toEqual([
+            'Polygon: ring #1 must lie inside ring #0',
+        ]);
+    });
+
+    it('does not change the input coordinates', () => {
+        const coordinates = [shell, hole, [[12, 12], [14, 12], [14, 14], [12, 12]]];
+        const before = JSON.stringify(coordinates);
+        expect(polygonHolesError(coordinates)).toBe('ring #2 must lie inside ring #0');
+        expect(JSON.stringify(coordinates)).toBe(before);
+    });
+
+    it('checks a 40,001-point star with 400 holes through the real form under 1000 ms', () => {
+        const star = Array.from({ length: 40000 }, (_, index) => {
+            const angle = 2 * Math.PI * index / 40000;
+            const radius = index % 2 ? 5 : 10;
+            return [radius * Math.cos(angle), radius * Math.sin(angle)];
+        });
+        star.push([...star[0]]);
+        const holes: number[][][] = [];
+        for (let row = 0; row < 20; row++) {
+            for (let column = 0; column < 20; column++) {
+                const x = -3 + column * 0.3;
+                const y = -3 + row * 0.3;
+                holes.push([[x, y], [x + 0.1, y], [x + 0.1, y + 0.1], [x, y + 0.1], [x, y]]);
+            }
+        }
+        const coordinates = [star, ...holes];
+        const started = performance.now();
+        expect(errors('Polygon', coordinates)).toEqual([]);
+        const elapsed = performance.now() - started;
+        expect(elapsed).toBeLessThan(1000);
+        holes[399] = [[20, 20], [20.1, 20], [20.1, 20.1], [20, 20]];
+        expect(errors('Polygon', [star, ...holes])).toEqual(['Polygon: ring #400 must lie inside ring #0']);
+        console.info('Polygon real-form star with holes', star.length, holes.length, elapsed);
     });
 });

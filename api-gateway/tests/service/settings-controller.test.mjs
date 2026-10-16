@@ -6,7 +6,8 @@ describe('SettingsApi geospatial limits', function () {
         'KML_PREVIEW_MAX_FILESIZE_MB',
         'GEOJSON_PREVIEW_MAX_FILESIZE_MB',
         'GEOSPATIAL_MAX_FILESIZE_MB',
-        'GEOSPATIAL_PREVIEW_MAX_FEATURES'
+        'GEOSPATIAL_PREVIEW_MAX_FEATURES',
+        'GEOSPATIAL_PREVIEW_MAX_POINTS'
     ];
     let previous;
 
@@ -29,13 +30,15 @@ describe('SettingsApi geospatial limits', function () {
         process.env.GEOJSON_PREVIEW_MAX_FILESIZE_MB = '4.5';
         process.env.GEOSPATIAL_MAX_FILESIZE_MB = '101';
         process.env.GEOSPATIAL_PREVIEW_MAX_FEATURES = '3000';
+        process.env.GEOSPATIAL_PREVIEW_MAX_POINTS = '30000';
         const api = new SettingsApi({});
 
         assert.deepEqual(api.getGeospatialLimits(), {
             kmlPreviewMaxFileSizeMb: 11,
             geojsonPreviewMaxFileSizeMb: 4.5,
             geospatialMaxFileSizeMb: 101,
-            geospatialPreviewMaxFeatures: 3000
+            geospatialPreviewMaxFeatures: 3000,
+            geospatialPreviewMaxPoints: 30000
         });
     });
 
@@ -44,13 +47,15 @@ describe('SettingsApi geospatial limits', function () {
         process.env.GEOJSON_PREVIEW_MAX_FILESIZE_MB = '0';
         process.env.GEOSPATIAL_MAX_FILESIZE_MB = '';
         process.env.GEOSPATIAL_PREVIEW_MAX_FEATURES = '-5';
+        process.env.GEOSPATIAL_PREVIEW_MAX_POINTS = 'bad';
         const api = new SettingsApi({});
 
         assert.deepEqual(api.getGeospatialLimits(), {
             kmlPreviewMaxFileSizeMb: 10,
             geojsonPreviewMaxFileSizeMb: 5,
             geospatialMaxFileSizeMb: 100,
-            geospatialPreviewMaxFeatures: 1500
+            geospatialPreviewMaxFeatures: 1500,
+            geospatialPreviewMaxPoints: 20000
         });
     });
 });

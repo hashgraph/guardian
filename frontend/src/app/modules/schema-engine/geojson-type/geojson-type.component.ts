@@ -7,7 +7,7 @@ import GeoJSON from 'ol/format/GeoJSON.js';
 import Map from 'ol/Map.js';
 import View from 'ol/View.js';
 import { Circle as CircleStyle, Fill, Stroke, Style, Text } from 'ol/style.js';
-import { extend, getCenter, isEmpty } from 'ol/extent';
+import { createEmpty, extend, getCenter, isEmpty } from 'ol/extent';
 import { Coordinate } from 'ol/coordinate';
 import { toLonLat, transform } from 'ol/proj';
 import { Cluster, OSM, Vector as VectorSource } from 'ol/source.js';
@@ -685,9 +685,15 @@ export class GeojsonTypeComponent implements OnChanges {
             setTimeout(() => {
                 this.initMap();
 
-                const importedExtent = this.importedShapesSource?.getExtent();
-                if (this.importedLocations.length > 0 && importedExtent && !isEmpty(importedExtent)) {
-                    this.map?.getView().fit(importedExtent, { padding: [40, 40, 40, 40], maxZoom: 14, duration: 350 });
+                const shapesExtent = createEmpty();
+                if (this.importedLocations.length > 0) {
+                    extend(shapesExtent, this.importedShapesSource.getExtent());
+                }
+                if (this.geometriesList.length > 0) {
+                    extend(shapesExtent, this.geoShapesSource.getExtent());
+                }
+                if (!isEmpty(shapesExtent)) {
+                    this.map?.getView().fit(shapesExtent, { padding: [40, 40, 40, 40], maxZoom: 14, duration: 350 });
                 } else if (this.center) {
                     this.map?.getView().animate({
                         center: this.center,
@@ -852,12 +858,18 @@ export class GeojsonTypeComponent implements OnChanges {
 
         const importedLocation = this.importedLocations.find(location => location.id === feature.getId());
         if (importedLocation) {
-            this.addGeometry(importedLocation);
+            this.loading = true;
+            this.cdkRef.detectChanges();
+            setTimeout(() => {
+                this.addGeometry(importedLocation);
 
-            this.importedShapesSource?.removeFeature(feature);
-            this.importedLocations = this.importedLocations.filter(location => location.id !== feature.getId());
+                this.importedShapesSource?.removeFeature(feature);
+                this.importedLocations = this.importedLocations.filter(location => location.id !== feature.getId());
 
-            this.updateMap(true);
+                this.updateMap(true);
+                this.loading = false;
+                this.cdkRef.detectChanges();
+            });
         } else if (feature.getId() && this.allImportedLocations.some(item => item.id === feature.getId())) {
             this.deleteGeometry(feature.getId());
         }
@@ -1125,7 +1137,7 @@ export class GeojsonTypeComponent implements OnChanges {
             this.mapCreated = false;
             this.setupMap();
 
-            this.centerMap();
+            this.centerMap(undefined, false);
         }
     }
 
@@ -1187,7 +1199,7 @@ export class GeojsonTypeComponent implements OnChanges {
         return Array.isArray(geometry.coordinates) ? JSON.stringify(geometry.coordinates) : geometry.coordinates;
     }
 
-    private centerMap(geometry?: any) {
+    private centerMap(geometry?: any, zoom = true) {
         setTimeout(() => {
             if (!geometry) {
                 geometry = this.formModel.getValue();
@@ -1243,11 +1255,13 @@ export class GeojsonTypeComponent implements OnChanges {
             }
 
             if (this.center && this.center.length > 1) {
-                this.map?.getView().animate({
-                    center: this.center,
-                    zoom: 6,
-                    duration: 350,
-                });
+                if (zoom) {
+                    this.map?.getView().animate({
+                        center: this.center,
+                        zoom: 6,
+                        duration: 350,
+                    });
+                }
                 this.updateMap(true);
             }
         }, 500);
@@ -1522,7 +1536,7 @@ export class GeojsonTypeComponent implements OnChanges {
                 await this.rejectFileWithoutShapes();
                 return;
             }
-            if (this.hasTooManyShapes(geoJsonData, limits)) {
+            if (this.hasTooManyShapes(geoJsonData, limits) || this.hasTooManyPoints(geoJsonData, limits)) {
                 if (!await this.confirmShapeLimit(geoJsonData, limits)) return;
                 const allowedTypes = this.allowedFileTypes();
                 const coordinate = await this.findAutomaticPoint(() => readFirstCoordinate(
@@ -1679,7 +1693,7 @@ export class GeojsonTypeComponent implements OnChanges {
             await this.rejectFileWithoutShapes();
             return;
         }
-        if (this.hasTooManyShapes(geoJsonData, limits)) {
+        if (this.hasTooManyShapes(geoJsonData, limits) || this.hasTooManyPoints(geoJsonData, limits)) {
             if (!await this.confirmShapeLimit(geoJsonData, limits)) return;
             const coordinate = await this.findAutomaticPoint(() => this.kmzReader.readCoordinate(
                 file, entry, new KmlCoordinateScanner(this.allowedFileTypes()), maximumBytes
@@ -1711,13 +1725,38 @@ export class GeojsonTypeComponent implements OnChanges {
         return this.shapeCount(data) > this.shapeLimit(limits);
     }
 
+    private pointCount(data: any): number {
+        const count = (coordinates: any): number => !Array.isArray(coordinates)
+            ? 0
+            : typeof coordinates[0] === 'number'
+                ? 1
+                : coordinates.reduce((sum: number, item: any) => sum + count(item), 0);
+        const geometries = data?.type === 'FeatureCollection'
+            ? (data.features || []).map((feature: any) => feature?.geometry)
+            : [data?.type === 'Feature' ? data.geometry : data];
+        return geometries
+            .filter((geometry: any) => geometry?.type && geometry.type !== 'GeometryCollection')
+            .reduce((sum: number, geometry: any) => sum + count(geometry.coordinates), 0);
+    }
+
+    private pointLimit(limits: GeospatialLimits): number {
+        return limits.geospatialPreviewMaxPoints ?? DEFAULT_GEOSPATIAL_LIMITS.geospatialPreviewMaxPoints!;
+    }
+
+    private hasTooManyPoints(data: any, limits: GeospatialLimits): boolean {
+        return this.pointCount(data) > this.pointLimit(limits);
+    }
+
     private async confirmShapeLimit(data: any, limits: GeospatialLimits): Promise<boolean> {
         this.loading = false;
         this.cdkRef.detectChanges();
+        const reason = this.hasTooManyShapes(data, limits)
+            ? `This file has ${this.shapeCount(data).toLocaleString('en-US')} shapes, which exceeds the ${this.shapeLimit(limits).toLocaleString('en-US')}-shape limit for in-browser rendering.`
+            : `This file has ${this.pointCount(data).toLocaleString('en-US')} points, which exceeds the ${this.pointLimit(limits).toLocaleString('en-US')}-point limit for in-browser rendering.`;
         return this.openLimitDialog(
             'warn',
             'File too large to preview',
-            `This file has ${this.shapeCount(data).toLocaleString('en-US')} shapes, which exceeds the ${this.shapeLimit(limits).toLocaleString('en-US')}-shape limit for in-browser rendering. If you choose to proceed, browser rendering will not be available and a dedicated GIS tool, such as ArcGIS, will be required to inspect it.`
+            `${reason} If you choose to proceed, browser rendering will not be available and a dedicated GIS tool, such as ArcGIS, will be required to inspect it.`
         );
     }
 

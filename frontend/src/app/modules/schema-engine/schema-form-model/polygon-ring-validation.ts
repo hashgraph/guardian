@@ -2,6 +2,9 @@ type Position = readonly number[];
 
 interface Segment {
     index: number;
+    ring: number;
+    previous: number;
+    next: number;
     start: Position;
     end: Position;
 }
@@ -160,12 +163,19 @@ class SweepStatus {
     }
 }
 
-function hasCrossing(points: Position[]): boolean {
-    const segments: Segment[] = points.map((point, index) => {
-        const next = points[(index + 1) % points.length];
-        return comparePositions(point, next) < 0
-            ? { index, start: point, end: next }
-            : { index, start: next, end: point };
+function findCrossing(rings: Position[][]): [Segment, Segment] | null {
+    const segments: Segment[] = [];
+    rings.forEach((points, ring) => {
+        const offset = segments.length;
+        points.forEach((point, position) => {
+            const following = points[(position + 1) % points.length];
+            const index = offset + position;
+            const previous = offset + (position + points.length - 1) % points.length;
+            const next = offset + (position + 1) % points.length;
+            segments.push(comparePositions(point, following) < 0
+                ? { index, ring, previous, next, start: point, end: following }
+                : { index, ring, previous, next, start: following, end: point });
+        });
     });
     const events = segments.flatMap(segment => [
         { point: segment.start, segment, start: true },
@@ -174,26 +184,32 @@ function hasCrossing(points: Position[]): boolean {
     events.sort((a, b) => comparePositions(a.point, b.point) ||
         Number(a.start) - Number(b.start) || compareSegments(a.segment, b.segment));
     const status = new SweepStatus();
-    const crosses = (first: SweepNode | null, second: SweepNode | null): boolean => {
-        if (!first || !second) return false;
-        const distance = Math.abs(first.segment.index - second.segment.index);
-        return distance !== 1 && distance !== points.length - 1 &&
-            intersects(first.segment, second.segment);
+    const crosses = (first: SweepNode | null, second: SweepNode | null): [Segment, Segment] | null => {
+        if (!first || !second) return null;
+        return first.segment.index !== second.segment.previous &&
+            first.segment.index !== second.segment.next &&
+            intersects(first.segment, second.segment) ? [first.segment, second.segment] : null;
     };
     for (const event of events) {
         const node = event.start ? status.insert(event.segment) : status.find(event.segment);
         const previous = status.neighbor(node, false);
         const next = status.neighbor(node, true);
-        if (crosses(previous, node) || crosses(node, next)) return true;
+        const found = crosses(previous, node) || crosses(node, next);
+        if (found) return found;
         if (!event.start) {
             status.remove(node);
-            if (crosses(previous, next)) return true;
+            const after = crosses(previous, next);
+            if (after) return after;
         }
     }
-    return false;
+    return null;
 }
 
-export function polygonRingError(ring: readonly Position[]): string | null {
+function hasCrossing(points: Position[]): boolean {
+    return findCrossing([points]) !== null;
+}
+
+function normalizeRing(ring: readonly Position[]): number[][] {
     const points: number[][] = [];
     for (const coordinate of ring) {
         let longitude = coordinate[0];
@@ -209,6 +225,31 @@ export function polygonRingError(ring: readonly Position[]): string | null {
         points[0][1] === points[points.length - 1][1]) {
         points.pop();
     }
+    return points;
+}
+
+function alignRing(points: number[][], reference: number): number[][] {
+    let shift = 0;
+    while (points[0][0] + shift - reference > 180) shift -= 360;
+    while (points[0][0] + shift - reference < -180) shift += 360;
+    return shift ? points.map(([longitude, latitude]) => [longitude + shift, latitude]) : points;
+}
+
+function contains(ring: Position[], point: Position): boolean {
+    let inside = false;
+    for (let index = 0, previous = ring.length - 1; index < ring.length; previous = index++) {
+        const a = ring[previous];
+        const b = ring[index];
+        if ((a[1] > point[1]) !== (b[1] > point[1])) {
+            const side = cross(a, b, point);
+            if (b[1] > a[1] ? side > 0 : side < 0) inside = !inside;
+        }
+    }
+    return inside;
+}
+
+export function polygonRingError(ring: readonly Position[]): string | null {
+    const points = normalizeRing(ring);
     if (points.length < 3) return 'must contain at least 3 distinct points';
     const positions = new Set(points.map(point => point[0] + '|' + point[1]));
     if (positions.size !== points.length) return 'must not repeat a point except to close the ring';
@@ -230,4 +271,26 @@ export function polygonRingError(ring: readonly Position[]): string | null {
             (next[0] - origin[0]) * (point[1] - origin[1]);
     }, 0);
     return area === 0 ? 'must enclose a nonzero area' : null;
+}
+
+export function polygonHolesError(rings: readonly (readonly Position[])[]): string | null {
+    if (rings.length < 2) return null;
+    const shell = normalizeRing(rings[0]);
+    const normalized = rings.map((ring, index) => index ? alignRing(normalizeRing(ring), shell[0][0]) : shell);
+    const crossing = findCrossing(normalized);
+    if (crossing) {
+        const [first, second] = [crossing[0].ring, crossing[1].ring].sort((a, b) => a - b);
+        return `ring #${second} must not cross or touch ring #${first}`;
+    }
+    for (let hole = 1; hole < normalized.length; hole++) {
+        if (!contains(normalized[0], normalized[hole][0])) return `ring #${hole} must lie inside ring #0`;
+    }
+    for (let hole = 1; hole < normalized.length; hole++) {
+        for (let other = 1; other < normalized.length; other++) {
+            if (other !== hole && contains(normalized[other], normalized[hole][0])) {
+                return `ring #${hole} must not lie inside ring #${other}`;
+            }
+        }
+    }
+    return null;
 }

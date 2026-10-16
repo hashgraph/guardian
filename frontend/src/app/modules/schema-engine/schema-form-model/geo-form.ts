@@ -3,7 +3,7 @@ import { from, map, Observable, of } from 'rxjs';
 import { ajvSchemaValidator } from 'src/app/validators/ajv-schema.validator';
 import ajv from 'ajv';
 import { GeoJsonSchema, GeoJsonType } from '@guardian/interfaces';
-import { polygonRingError } from './polygon-ring-validation';
+import { polygonHolesError, polygonRingError } from './polygon-ring-validation';
 
 export const MISSING_ORIGINAL_FILE_ERROR =
     'The original file is not available in this browser. Import it again.';
@@ -257,6 +257,10 @@ export class GeoForm {
                 if (error) errors.push(`Polygon: ring #${ri} ${error}`);
             }
         });
+        if (!errors.length && coords.length > 1) {
+            const error = polygonHolesError(coords);
+            if (error) errors.push(`Polygon: ${error}`);
+        }
         return errors;
     }
 

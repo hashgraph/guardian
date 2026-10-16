@@ -69,6 +69,47 @@ describe('TableFieldHelper rich-text image cache', () => {
         }
     });
 
+    it('uploads an image above 1 MB from IPFS into GridFS byte for byte', async () => {
+        const originalGridFS = DataBaseHelper.gridFS;
+        const originalGetFile = IPFSService.getFile;
+        const bytes = Buffer.alloc(Math.round(2.3 * 1024 * 1024), 0);
+        for (let index = 0; index < bytes.length; index++) {
+            bytes[index] = (index * 31) % 251;
+        }
+        const uploaded = [];
+        DataBaseHelper.gridFS = {
+            find: () => ({ toArray: async () => [] }),
+            openUploadStream: (filename) => {
+                const listeners = {};
+                return {
+                    id: 'grid-large-image',
+                    once: (event, listener) => { listeners[event] = listener; },
+                    end: (data) => {
+                        uploaded.push([filename, data]);
+                        listeners.finish();
+                    },
+                };
+            },
+        };
+        IPFSService.getFile = async (cid) => {
+            assert.equal(cid, first);
+            return bytes;
+        };
+        try {
+            const { message, fileMap } = document([{ text: image(first) }]);
+            const entity = {};
+            await new TableFieldHelper().attachRichTextImagesAnalytics(entity, message, fileMap);
+            assert.deepEqual(entity.analytics, { richTextImages: { [first]: 'grid-large-image' }, richTextImagesFailed: [] });
+            assert.equal(uploaded.length, 1);
+            assert.equal(uploaded[0][0], first);
+            assert.ok(uploaded[0][1].length > 1024 * 1024);
+            assert.ok(uploaded[0][1].equals(bytes));
+        } finally {
+            DataBaseHelper.gridFS = originalGridFS;
+            IPFSService.getFile = originalGetFile;
+        }
+    });
+
     it('records failed CIDs and succeeds on a later sync', async () => {
         const helper = new TableFieldHelper();
         let fail = true;

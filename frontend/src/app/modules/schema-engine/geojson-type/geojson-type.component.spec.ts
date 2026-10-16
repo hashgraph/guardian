@@ -861,6 +861,37 @@ describe('GeojsonTypeComponent original file link', () => {
         expect(view.animate).not.toHaveBeenCalled();
     });
 
+    it('fits the map to the selected shapes after switching back from JSON, without the zoom 6 jump', () => {
+        jasmine.clock().install();
+        const view = jasmine.createSpyObj('View', ['fit', 'animate']);
+        spyOn<any>(component, 'initMap').and.callFake(() => (component as any).map = { getView: () => view });
+        component.onUploadMultiLocationFile({
+            type: 'FeatureCollection',
+            features: [{
+                type: 'Feature', properties: {}, geometry: {
+                    type: 'Polygon', coordinates: [[[36, -1], [36.02, -1], [36.02, -0.98], [36, -1]]]
+                }
+            }]
+        } as any);
+        component.selectAllImportedFeatures();
+        jasmine.clock().tick(1000);
+        view.fit.calls.reset();
+        view.animate.calls.reset();
+
+        component.isJSON = false;
+        component.onViewTypeChange();
+        jasmine.clock().tick(1000);
+        jasmine.clock().uninstall();
+
+        expect(component.importedLocations.length).toBe(0);
+        expect(view.fit).toHaveBeenCalledTimes(1);
+        expect(view.fit).toHaveBeenCalledWith(
+            (component as any).geoShapesSource.getExtent(),
+            jasmine.objectContaining({ maxZoom: 14 })
+        );
+        expect(view.animate).not.toHaveBeenCalled();
+    });
+
     it('shows the loader while Include all runs and hides it afterwards', () => {
         jasmine.clock().install();
         spyOn<any>(component, 'setupMap');
@@ -880,6 +911,28 @@ describe('GeojsonTypeComponent original file link', () => {
         expect(component.geometriesList.length).toBe(1);
         expect(component.loading).toBeFalse();
         expect(component.renderedRows).toBe(Infinity);
+    });
+
+    it('shows the loader while a clicked file shape is added and hides it afterwards', () => {
+        jasmine.clock().install();
+        spyOn<any>(component, 'setupMap');
+        component.onUploadMultiLocationFile({
+            type: 'FeatureCollection',
+            features: [{ type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [1, 2] } }]
+        } as any);
+        const id = component.importedLocations[0].id;
+
+        (component as any).selectFeature({ ol_uid: '1', getId: () => id });
+
+        expect(component.loading).toBeTrue();
+        expect(component.geometriesList.length).toBe(0);
+
+        jasmine.clock().tick(0);
+        jasmine.clock().uninstall();
+
+        expect(component.geometriesList.length).toBe(1);
+        expect(component.importedLocations.length).toBe(0);
+        expect(component.loading).toBeFalse();
     });
 
     it('draws the rows in batches after Include all and keeps the loader until the last batch', () => {
@@ -1044,6 +1097,77 @@ describe('GeojsonTypeComponent original file link', () => {
             expect(dialog.open.calls.mostRecent().args[1]?.data)
                 .toEqual(jasmine.objectContaining({ texts: [jasmine.stringContaining('This file has 3 shapes')] }));
             expect(geoFiles.keepOriginal).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('above the point limit', () => {
+        const polygon = (count: number) => JSON.stringify({
+            type: 'FeatureCollection',
+            features: [{
+                type: 'Feature', properties: {}, geometry: {
+                    type: 'Polygon',
+                    coordinates: [[
+                        ...Array.from({ length: count - 1 }, (_, i) => [36 + Math.cos(i) / 100, -1 + Math.sin(i) / 100]),
+                        [36.01, -1]
+                    ]]
+                }
+            }, {
+                type: 'Feature', properties: {}, geometry: {
+                    type: 'GeometryCollection',
+                    geometries: [{ type: 'LineString', coordinates: [[0, 0], [1, 1], [2, 2]] }]
+                }
+            }]
+        });
+
+        beforeEach(() => {
+            settings.getGeospatialLimits.and.returnValue(of({
+                kmlPreviewMaxFileSizeMb: 10,
+                geojsonPreviewMaxFileSizeMb: 5,
+                geospatialMaxFileSizeMb: 100,
+                geospatialPreviewMaxFeatures: 5000,
+                geospatialPreviewMaxPoints: 5
+            }));
+            spyOn<any>(component, 'setupMap');
+        });
+
+        it('warns with the point count and keeps nothing on Cancel', async () => {
+            const result = component.importFromFile(new File([polygon(6)], 'site.geojson'));
+            close.next('Cancel');
+            close.complete();
+            await result;
+
+            expect(dialog.open.calls.mostRecent().args[1]?.data).toEqual(jasmine.objectContaining({
+                header: 'File too large to preview',
+                texts: [jasmine.stringContaining('This file has 6 points, which exceeds the 5-point limit for in-browser rendering.')]
+            }));
+            expect(geoFiles.keepOriginal).not.toHaveBeenCalled();
+            expect(component.loading).toBeFalse();
+        });
+
+        it('previews a file at the point limit without a warning, not counting GeometryCollection', async () => {
+            (component as any).geoJsonService.getFileNames.and.returnValue([]);
+
+            await component.importFromFile(new File([polygon(5)], 'site.geojson'));
+
+            expect(dialog.open).not.toHaveBeenCalled();
+            expect(geoFiles.keepOriginal).toHaveBeenCalled();
+        });
+
+        it('uses the 20,000-point default when the server does not send the point limit', async () => {
+            settings.getGeospatialLimits.and.returnValue(of({
+                kmlPreviewMaxFileSizeMb: 10,
+                geojsonPreviewMaxFileSizeMb: 5,
+                geospatialMaxFileSizeMb: 100,
+                geospatialPreviewMaxFeatures: 5000
+            }));
+            const result = component.importFromFile(new File([polygon(20001)], 'site.geojson'));
+            close.next('Cancel');
+            close.complete();
+            await result;
+
+            expect(dialog.open.calls.mostRecent().args[1]?.data).toEqual(jasmine.objectContaining({
+                texts: [jasmine.stringContaining('This file has 20,001 points, which exceeds the 20,000-point limit')]
+            }));
         });
     });
 

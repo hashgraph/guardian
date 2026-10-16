@@ -178,6 +178,14 @@ label.coordinates-input {
         position: fixed;
         top: calc(50% - 28px);
         left: calc(50% - 28px);
+        animation: geo-file-loading-rotation 1s linear infinite;
+        will-change: transform;
+    }
+}
+
+@keyframes geo-file-loading-rotation {
+    to {
+        transform: rotate(360deg);
     }
 }
 
