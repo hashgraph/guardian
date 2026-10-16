@@ -97,6 +97,14 @@ export class HeaderComponent {
             label: 'header.formulas',
             routerLink: '/formulas',
         },
+        {
+            label: 'header.mint_tokens',
+            routerLink: '/mint-tokens',
+        },
+        {
+            label: 'header.project_practices',
+            routerLink: '/project-practices',
+        },
     ];
 
     public documentsMenu: MenuItem[] = [
