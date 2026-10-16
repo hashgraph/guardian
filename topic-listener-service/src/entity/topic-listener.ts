@@ -32,4 +32,10 @@ export class TopicListener extends BaseEntity {
      */
     @Property()
     sendIndex: number;
+
+    /**
+     * Poll on the short idle cap
+     */
+    @Property({ nullable: true })
+    latencySensitive?: boolean;
 }
