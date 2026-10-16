@@ -1838,11 +1838,20 @@
     z-index: 20;
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
 
     // One-shot class so toggling display between Builder and Preview does not replay it.
     &--enter { animation: sc-drill-in 0.18s ease; }
 
     &--hidden { display: none; }
+
+    .sc-cond-canvas {
+        flex: 0 0 auto;
+        overflow: visible;
+    }
+
+    .sc-drill-breadcrumb { position: sticky; top: 0; z-index: 2; }
+    .sc-drill-back-bar { position: sticky; bottom: 0; z-index: 2; margin-top: auto; }
 }
 
 @keyframes sc-drill-in {
