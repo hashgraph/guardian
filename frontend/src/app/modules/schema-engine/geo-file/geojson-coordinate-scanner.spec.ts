@@ -64,6 +64,33 @@ describe('GeoJsonCoordinateScanner', () => {
         });
     }
 
+    it('keeps a long metadata number bounded across chunks', () => {
+        const scanner = new GeoJsonCoordinateScanner();
+        scanner.write('{"type":"Feature","properties":{"precision":0.');
+        const chunk = '1'.repeat(1024 * 1024);
+        for (let index = 0; index < 6; index++) {
+            scanner.write(chunk);
+            expect(Reflect.get(scanner, 'token').length).toBeLessThanOrEqual(65);
+        }
+        scanner.write('},"geometry":{"type":"Point","coordinates":[36,-1]}}');
+        expect(scanner.coordinate).toEqual([36, -1]);
+    });
+
+    it('reads ordinary coordinate numbers and skips a shape with an unreadable one', async () => {
+        const read = (text: string) => readFirstCoordinate(
+            new Blob([new TextEncoder().encode(text)]),
+            new GeoJsonCoordinateScanner(),
+            7
+        );
+        expect(await read('{"type":"Point","coordinates":[36.123456789012345,-1.5e-0,12.25E+1]}'))
+            .toEqual([36.123456789012345, -1.5, 122.5]);
+        expect(await read('{"type":"FeatureCollection","features":[' +
+            `{"type":"Feature","geometry":{"type":"Point","coordinates":[3${'1'.repeat(100)},2,3]}},` +
+            '{"type":"Feature","geometry":{"type":"Point","coordinates":[7,8]}}]}'))
+            .toEqual([7, 8]);
+        expect(await read('{"type":"Point","coordinates":[1e999,2,3]}')).toBeNull();
+    });
+
     for (const text of fixtures) {
         for (const chunkSize of [1, 7, 1024 * 1024]) {
             it(`matches the field at ${chunkSize} bytes for ${text.slice(0, 45)}`, async () => {

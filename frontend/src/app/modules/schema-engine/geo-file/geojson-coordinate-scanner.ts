@@ -36,6 +36,8 @@ interface CoordinateCapture {
     failed: boolean;
 }
 
+const MAX_TOKEN_LENGTH = 64;
+
 const GEOMETRY_TYPES = new Set([
     'Point',
     'LineString',
@@ -107,7 +109,7 @@ export class GeoJsonCoordinateScanner implements CoordinateScanner {
         }
         if (this.mode === 'number') {
             if (/[0-9eE+\-.]/.test(character)) {
-                this.token += character;
+                if (this.token.length <= MAX_TOKEN_LENGTH) this.token += character;
                 return;
             }
             this.emitNumber();
@@ -116,7 +118,7 @@ export class GeoJsonCoordinateScanner implements CoordinateScanner {
         }
         if (this.mode === 'literal') {
             if (/[A-Za-z]/.test(character)) {
-                this.token += character;
+                if (this.token.length <= MAX_TOKEN_LENGTH) this.token += character;
                 return;
             }
             this.emitLiteral();
@@ -139,10 +141,10 @@ export class GeoJsonCoordinateScanner implements CoordinateScanner {
     }
 
     private emitNumber(): void {
-        const value = Number(this.token);
+        const value = this.token.length > MAX_TOKEN_LENGTH ? Number.NaN : Number(this.token);
         this.mode = 'plain';
         this.token = '';
-        if (Number.isFinite(value)) this.emit({ type: 'number', value });
+        this.emit({ type: 'number', value });
     }
 
     private emitLiteral(): void {
@@ -260,6 +262,10 @@ export class GeoJsonCoordinateScanner implements CoordinateScanner {
 
     private captureNumber(token: JsonToken): void {
         if (!this.capture || token.type !== 'number' || this.capture.failed) return;
+        if (!Number.isFinite(token.value)) {
+            this.capture.failed = true;
+            return;
+        }
         if (this.capture.numberDepth === null) this.capture.numberDepth = this.capture.depth;
         if (this.capture.numberDepth === this.capture.depth && this.capture.numbers.length < 3) {
             this.capture.numbers.push(token.value);
