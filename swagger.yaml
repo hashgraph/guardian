@@ -58737,10 +58737,12 @@ components:
           items:
             type: string
         assignedEntities:
-          description: Identifiers of the policies assigned to the user.
           type: array
           items:
-            type: string
+            type: object
+          description: >-
+            Assignment records of the user, of every type (Policy, RemotePolicy,
+            Schema, Token, Module).
         did:
           type: string
           example: >-
@@ -61501,10 +61503,12 @@ components:
           items:
             type: string
         assignedEntities:
-          description: Identifiers of the policies assigned to the user.
           type: array
           items:
-            type: string
+            type: object
+          description: >-
+            Assignment records of the user, of every type (Policy, RemotePolicy,
+            Schema, Token, Module).
         did:
           type: string
           example: >-
