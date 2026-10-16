@@ -2421,7 +2421,7 @@
                                                 <span class="sc-cond-group-row"
                                                     [pTooltip]="group.label" tooltipPosition="top" tooltipStyleClass="sc-cond-tooltip" [tooltipOptions]="{showDelay: 300}">
                                                     <span class="sc-cond-group-name">{{ group.name }}</span>
-                                                    @if (conditionGroupParents(group); as parents) {
+                                                    @if (group.parents; as parents) {
                                                         <span class="sc-cond-group-parents">in {{ parents }}</span>
                                                     }
                                                 </span>
@@ -2429,7 +2429,7 @@
                                             <ng-template pTemplate="item" let-option>
                                                 <span class="sc-cond-opt-row">
                                                     <span class="sc-cond-opt-label"
-                                                        [pTooltip]="option.isBlock ? option.fullLabel + ' - Sub-schema' : option.fullLabel" tooltipPosition="top" tooltipStyleClass="sc-cond-tooltip" [tooltipOptions]="{showDelay: 300}">{{ option.label }}</span>
+                                                        [pTooltip]="option.isBlock ? option.fullLabel + ' – Sub-schema' : option.fullLabel" tooltipPosition="top" tooltipStyleClass="sc-cond-tooltip" [tooltipOptions]="{showDelay: 300}">{{ option.label }}</span>
                                                     @if (option.isBlock) {
                                                         <span class="sc-cond-opt-block-badge">Sub-schema</span>
                                                     }
@@ -2521,7 +2521,7 @@
                                                 <span class="sc-cond-group-row"
                                                     [pTooltip]="group.label" tooltipPosition="top" tooltipStyleClass="sc-cond-tooltip" [tooltipOptions]="{showDelay: 300}">
                                                     <span class="sc-cond-group-name">{{ group.name }}</span>
-                                                    @if (conditionGroupParents(group); as parents) {
+                                                    @if (group.parents; as parents) {
                                                         <span class="sc-cond-group-parents">in {{ parents }}</span>
                                                     }
                                                 </span>
@@ -2529,7 +2529,7 @@
                                             <ng-template pTemplate="item" let-option>
                                                 <span class="sc-cond-opt-row">
                                                     <span class="sc-cond-opt-label"
-                                                        [pTooltip]="option.isBlock ? option.fullLabel + ' - Sub-schema' : option.fullLabel" tooltipPosition="top" tooltipStyleClass="sc-cond-tooltip" [tooltipOptions]="{showDelay: 300}">{{ option.label }}</span>
+                                                        [pTooltip]="option.isBlock ? option.fullLabel + ' – Sub-schema' : option.fullLabel" tooltipPosition="top" tooltipStyleClass="sc-cond-tooltip" [tooltipOptions]="{showDelay: 300}">{{ option.label }}</span>
                                                     @if (option.isBlock) {
                                                         <span class="sc-cond-opt-block-badge">Sub-schema</span>
                                                     }

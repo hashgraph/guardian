@@ -4397,13 +4397,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return result;
     }
 
-    private conditionFieldGroupsCache: { label: string; name: string; items: { pathStr: string; label: string; fullLabel: string }[] }[] | null = null;
+    private conditionFieldGroupsCache: { label: string; name: string; parents: string; items: { pathStr: string; label: string; fullLabel: string }[] }[] | null = null;
     private conditionFieldGroupsCacheSchema: Schema | null = null;
     private conditionFieldGroupsCacheSchemas: Schema[] | null = null;
     private conditionFieldGroupsCacheSubSchemas: Map<string, Schema> | null = null;
     private conditionFieldGroupsCacheVersion = -1;
 
-    public getConditionFieldPSelectGroups(): { label: string; name: string; items: { pathStr: string; label: string; fullLabel: string }[] }[] {
+    public getConditionFieldPSelectGroups(): { label: string; name: string; parents: string; items: { pathStr: string; label: string; fullLabel: string }[] }[] {
         const schema = this.currentContextSchema;
         if (this.conditionFieldGroupsCache
             && this.conditionFieldGroupsCacheSchema === schema
@@ -4421,10 +4421,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return groups;
     }
 
-    private buildConditionFieldPSelectGroups(): { label: string; name: string; items: { pathStr: string; label: string; fullLabel: string }[] }[] {
+    private buildConditionFieldPSelectGroups(): { label: string; name: string; parents: string; items: { pathStr: string; label: string; fullLabel: string }[] }[] {
         const schema = this.currentContextSchema;
         if (!schema) { return []; }
-        const result: { label: string; name: string; items: { pathStr: string; label: string; fullLabel: string }[] }[] = [];
+        const result: { label: string; name: string; parents: string; items: { pathStr: string; label: string; fullLabel: string }[] }[] = [];
 
 
         const addGroups = (fields: SchemaField[], pathParts: string[], trail: string[]) => {
@@ -4434,7 +4434,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 items.push({ pathStr: [...pathParts, f.name].join('.'), label: this.selectorFieldLabel(f), fullLabel: this.fieldPathLabel(trail, this.selectorFieldLabel(f)) });
             }
             if (items.length) {
-                result.push({ label: this.groupPathLabel(trail, 'This schema'), name: trail[trail.length - 1] ?? 'This schema', items });
+                result.push({ label: this.groupPathLabel(trail, 'This schema'), name: trail[trail.length - 1] ?? 'This schema', parents: this.groupParentsHint(trail), items });
             }
             for (const f of fields) {
                 if (f.readOnly || !f.isRef || !f.type) { continue; }
@@ -4468,24 +4468,23 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return trail.length ? `${trail.join(' › ')} › ${label}` : label;
     }
 
-    // Parent chain shown as a muted hint next to the group name in the selector panels.
-    public conditionGroupParents(group: { label: string }): string {
-        const parts = group.label.split(' › ');
-        if (parts.length < 2) { return ''; }
-        parts.pop();
-        return parts.length > 2 ? `${parts[0]} › … › ${parts[parts.length - 1]}` : parts.join(' › ');
+    // Parent chain of a group, shown as a muted hint next to the group name. Built from the trail
+    // itself so a schema name containing the separator cannot corrupt it.
+    private groupParentsHint(trail: string[]): string {
+        const parents = trail.slice(0, -1);
+        return parents.length > 2 ? `${parents[0]} › … › ${parents[parents.length - 1]}` : parents.join(' › ');
     }
 
     public condThenRefVal: Record<number, string | null> = {};
     public condElseRefVal: Record<number, string | null> = {};
 
-    private crossTargetGroupsCache: { label: string; name: string; items: { pathStr: string; label: string; fullLabel: string; isBlock?: boolean }[] }[] | null = null;
+    private crossTargetGroupsCache: { label: string; name: string; parents: string; items: { pathStr: string; label: string; fullLabel: string; isBlock?: boolean }[] }[] | null = null;
     private crossTargetGroupsCacheSchema: Schema | null = null;
     private crossTargetGroupsCacheSchemas: Schema[] | null = null;
     private crossTargetGroupsCacheSubSchemas: Map<string, Schema> | null = null;
     private crossTargetGroupsCacheVersion = -1;
 
-    public getCrossTargetPSelectGroups(): { label: string; name: string; items: { pathStr: string; label: string; fullLabel: string; isBlock?: boolean }[] }[] {
+    public getCrossTargetPSelectGroups(): { label: string; name: string; parents: string; items: { pathStr: string; label: string; fullLabel: string; isBlock?: boolean }[] }[] {
         const schema = this.currentContextSchema;
         if (this.crossTargetGroupsCache
             && this.crossTargetGroupsCacheSchema === schema
@@ -4503,10 +4502,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return groups;
     }
 
-    private buildCrossTargetPSelectGroups(): { label: string; name: string; items: { pathStr: string; label: string; fullLabel: string; isBlock?: boolean }[] }[] {
+    private buildCrossTargetPSelectGroups(): { label: string; name: string; parents: string; items: { pathStr: string; label: string; fullLabel: string; isBlock?: boolean }[] }[] {
         const schema = this.currentContextSchema;
         if (!schema?.fields) { return []; }
-        const result: { label: string; name: string; items: { pathStr: string; label: string; fullLabel: string; isBlock?: boolean }[] }[] = [];
+        const result: { label: string; name: string; parents: string; items: { pathStr: string; label: string; fullLabel: string; isBlock?: boolean }[] }[] = [];
 
 
         const traverse = (fields: SchemaField[], pathParts: string[], trail: string[]) => {
@@ -4529,7 +4528,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 items.push({ pathStr: [...pathParts, f.name].join('.'), label: this.selectorFieldLabel(f), fullLabel: this.fieldPathLabel(trail, this.selectorFieldLabel(f)) });
             }
             if (items.length) {
-                result.push({ label: this.groupPathLabel(trail, ''), name: trail[trail.length - 1], items });
+                result.push({ label: this.groupPathLabel(trail, ''), name: trail[trail.length - 1], parents: this.groupParentsHint(trail), items });
             }
             for (const f of fields) {
                 if (f.readOnly || !f.isRef || !f.type) { continue; }

@@ -13,6 +13,7 @@ export interface ConditionFieldGroup {
     label: string;
     /** Schema name of the group header; `label` is used when absent. */
     name?: string;
+    parents?: string;
     items: ConditionFieldOption[];
 }
 
@@ -37,15 +38,6 @@ export class ConditionIfEditorComponent {
     @Input() fieldPanelStyleClass = 'guardian-dropdown-panel width-825 sc-cond-panel';
 
     @Output() ifConditionChange = new EventEmitter<any>();
-
-    // Parent chain shown as a muted hint next to the group name in the field panel.
-    public groupParents(group: ConditionFieldGroup): string {
-        if (!group.name) { return ''; }
-        const parts = group.label.split(' › ');
-        if (parts.length < 2) { return ''; }
-        parts.pop();
-        return parts.length > 2 ? `${parts[0]} › … › ${parts[parts.length - 1]}` : parts.join(' › ');
-    }
 
     public updateOverflowTitle(event: MouseEvent, text: string): void {
         updateOverflowTitle(event, text);

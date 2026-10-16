@@ -50,7 +50,7 @@
                     <span class="sc-cond-group-row"
                         [pTooltip]="group.label" tooltipPosition="top" tooltipStyleClass="sc-cond-tooltip" [tooltipOptions]="{showDelay: 300}">
                         <span class="sc-cond-group-name">{{ group.name ?? group.label }}</span>
-                        @if (groupParents(group); as parents) {
+                        @if (group.parents; as parents) {
                             <span class="sc-cond-group-parents">in {{ parents }}</span>
                         }
                     </span>
