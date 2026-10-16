@@ -19,6 +19,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@arnog/colors@npm:^0.7.0":
+  version: 0.7.3
+  resolution: "@arnog/colors@npm:0.7.3"
+  checksum: 10c0/2ceee7b48ed317b0c1d4390e24d20b3f52fb51559925c2b484469ef2230cc185beb2aaed01297dfb90e91b374511c8e7b3a46c0db1da2ca0388188685b939a50
+  languageName: node
+  linkType: hard
+
 "@assemblyscript/loader@npm:^0.9.4":
   version: 0.9.4
   resolution: "@assemblyscript/loader@npm:0.9.4"
@@ -1184,13 +1191,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cortex-js/compute-engine@npm:^0.27.0":
-  version: 0.27.0
-  resolution: "@cortex-js/compute-engine@npm:0.27.0"
+"@cortex-js/compute-engine@npm:^0.151.0":
+  version: 0.151.0
+  resolution: "@cortex-js/compute-engine@npm:0.151.0"
   dependencies:
-    complex-esm: "npm:^2.1.1-esm1"
-    decimal.js: "npm:^10.4.3"
-  checksum: 10c0/7942cd499eda1f389b518c1bbf96a4fe8d817629a3d5b03108fbe906290e9585073eca30b57b09dc7473cd37540237d47d5f42ad9f6dcf096010691e5fa4cecf
+    "@arnog/colors": "npm:^0.7.0"
+    complex.js: "npm:^2.4.3"
+  bin:
+    epsil: dist/esm-min/cli/epsil.js
+  checksum: 10c0/4f92bee58a1dadca312c4a7059ee6ef8818130bd6fe2d60571f10c44fe8d5046f01e516792b9c180b1e88f231be6840458c2f71e6405a6f5415c245aa136e9c8
   languageName: node
   linkType: hard
 
@@ -6140,17 +6149,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"complex-esm@npm:^2.1.1-esm1":
-  version: 2.1.1-esm1
-  resolution: "complex-esm@npm:2.1.1-esm1"
-  checksum: 10c0/65725286ea8513785333a9d710ee5fafb6e32a24bc12648ba6ba62ab3c8cc380d79d7a8f542159c7fb5134364eb294e5446dd5e6b83aaffdb4dfeb27a227bc89
-  languageName: node
-  linkType: hard
-
 "complex.js@npm:^2.2.5":
   version: 2.4.2
   resolution: "complex.js@npm:2.4.2"
   checksum: 10c0/c78cca0a3c08fa48845e2703b9772bdd80d44e56728382d43879183cb23391da6e8b6326ceec23c685abfd529b61d34842ba1784d7fa3783b194fbc6d0850d7c
+  languageName: node
+  linkType: hard
+
+"complex.js@npm:^2.4.3":
+  version: 2.4.3
+  resolution: "complex.js@npm:2.4.3"
+  checksum: 10c0/c61b225c4c2925c922ebaf2c4c6d7d0c2f9cebf4fb5eb8dce231aea7508f15db0920b52107279fdd9947b54a0320eae2911d430a421c2db8d0d24df6c2cb2cf8
   languageName: node
   linkType: hard
 
@@ -12060,7 +12069,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "policy-service@workspace:policy-service"
   dependencies:
-    "@cortex-js/compute-engine": "npm:^0.27.0"
+    "@cortex-js/compute-engine": "npm:^0.151.0"
     "@formulajs/formulajs": "npm:4.6.1"
     "@guardian/common": "workspace:*"
     "@guardian/hedera": "workspace:*"
