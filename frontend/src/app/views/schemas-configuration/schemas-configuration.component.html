@@ -2415,7 +2415,7 @@
                                             optionLabel="label"
                                             optionValue="pathStr"
                                             [filter]="true"
-                                            filterBy="label,pathStr"
+                                            filterBy="label,fullLabel,pathStr"
                                             [resetFilterOnHide]="true"
                                             [virtualScroll]="true"
                                             [virtualScrollItemSize]="38"
@@ -2424,10 +2424,19 @@
                                             [disabled]="!getCrossTargetPSelectGroups().length || isConditionLocked(cond)"
                                             [(ngModel)]="condThenRefVal[ci]"
                                             (onChange)="onCondThenRefChange(cond, ci, $event.value)">
+                                            <ng-template pTemplate="group" let-group>
+                                                <span class="sc-cond-group-row"
+                                                    [pTooltip]="group.label" tooltipPosition="top" tooltipStyleClass="sc-cond-tooltip" [tooltipOptions]="{showDelay: 300}">
+                                                    <span class="sc-cond-group-name">{{ group.name }}</span>
+                                                    @if (group.parents; as parents) {
+                                                        <span class="sc-cond-group-parents">in {{ parents }}</span>
+                                                    }
+                                                </span>
+                                            </ng-template>
                                             <ng-template pTemplate="item" let-option>
                                                 <span class="sc-cond-opt-row">
                                                     <span class="sc-cond-opt-label"
-                                                        (mouseover)="updateOverflowTitle($event, option.isBlock ? option.label + ' – Sub-schema' : option.label)">{{ option.label }}</span>
+                                                        [pTooltip]="option.isBlock ? option.fullLabel + ' – Sub-schema' : option.fullLabel" tooltipPosition="top" tooltipStyleClass="sc-cond-tooltip" [tooltipOptions]="{showDelay: 300}">{{ option.label }}</span>
                                                     @if (option.isBlock) {
                                                         <span class="sc-cond-opt-block-badge">Sub-schema</span>
                                                     }
@@ -2513,7 +2522,7 @@
                                             optionLabel="label"
                                             optionValue="pathStr"
                                             [filter]="true"
-                                            filterBy="label,pathStr"
+                                            filterBy="label,fullLabel,pathStr"
                                             [resetFilterOnHide]="true"
                                             [virtualScroll]="true"
                                             [virtualScrollItemSize]="38"
@@ -2522,10 +2531,19 @@
                                             [disabled]="!getCrossTargetPSelectGroups().length || isConditionLocked(cond)"
                                             [(ngModel)]="condElseRefVal[ci]"
                                             (onChange)="onCondElseRefChange(cond, ci, $event.value)">
+                                            <ng-template pTemplate="group" let-group>
+                                                <span class="sc-cond-group-row"
+                                                    [pTooltip]="group.label" tooltipPosition="top" tooltipStyleClass="sc-cond-tooltip" [tooltipOptions]="{showDelay: 300}">
+                                                    <span class="sc-cond-group-name">{{ group.name }}</span>
+                                                    @if (group.parents; as parents) {
+                                                        <span class="sc-cond-group-parents">in {{ parents }}</span>
+                                                    }
+                                                </span>
+                                            </ng-template>
                                             <ng-template pTemplate="item" let-option>
                                                 <span class="sc-cond-opt-row">
                                                     <span class="sc-cond-opt-label"
-                                                        (mouseover)="updateOverflowTitle($event, option.isBlock ? option.label + ' – Sub-schema' : option.label)">{{ option.label }}</span>
+                                                        [pTooltip]="option.isBlock ? option.fullLabel + ' – Sub-schema' : option.fullLabel" tooltipPosition="top" tooltipStyleClass="sc-cond-tooltip" [tooltipOptions]="{showDelay: 300}">{{ option.label }}</span>
                                                     @if (option.isBlock) {
                                                         <span class="sc-cond-opt-block-badge">Sub-schema</span>
                                                     }

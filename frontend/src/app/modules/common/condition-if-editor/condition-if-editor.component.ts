@@ -5,10 +5,15 @@ import { updateOverflowTitle } from 'src/app/utils/overflow-title';
 export interface ConditionFieldOption {
     pathStr: string;
     label: string;
+    /** Full path label (parent schemas › field); shown as tooltip and searched by the filter. */
+    fullLabel?: string;
 }
 
 export interface ConditionFieldGroup {
     label: string;
+    /** Schema name of the group header; `label` is used when absent. */
+    name?: string;
+    parents?: string;
     items: ConditionFieldOption[];
 }
 
