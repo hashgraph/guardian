@@ -137,6 +137,7 @@ export class UserProfileComponent implements OnInit {
     public vcDocumentForm!: UntypedFormGroup;
     public remoteCredentialsForm!: UntypedFormGroup;
     public remoteDidDocumentForm!: UntypedFormControl;
+    public remoteProofForm!: UntypedFormControl;
     public didKeys: any[] = [];
 
     public tab: 'general' | 'keys' | 'relayerAccounts' | 'credentials' = 'general';
@@ -211,6 +212,7 @@ export class UserProfileComponent implements OnInit {
             topicId: new UntypedFormControl('', [Validators.required, noWhitespaceValidator()])
         });
         this.remoteDidDocumentForm = new UntypedFormControl('', [Validators.required]);
+        this.remoteProofForm = new UntypedFormControl('', [Validators.required]);
 
         this.localFullForm = new UntypedFormGroup({});
         this.localFullForm.addControl('standardRegistry', this.standardRegistryForm);
@@ -227,6 +229,7 @@ export class UserProfileComponent implements OnInit {
         this.remoteFullForm.addControl('locationType', this.locationType);
         this.remoteFullForm.addControl('hederaCredentials', this.remoteCredentialsForm);
         this.remoteFullForm.addControl('didDocument', this.remoteDidDocumentForm);
+        this.remoteFullForm.addControl('proof', this.remoteProofForm);
 
         // Steps
         // Common
@@ -262,7 +265,8 @@ export class UserProfileComponent implements OnInit {
                 return this.locationType.value;
             },
             canNext: () => {
-                return !this.locationType.value && this.hederaCredentialsForm.valid || this.remoteCredentialsForm.valid && this.remoteDidDocumentForm.valid;
+                return !this.locationType.value && this.hederaCredentialsForm.valid ||
+                    this.remoteCredentialsForm.valid && this.remoteDidDocumentForm.valid && this.remoteProofForm.valid;
             },
             next: () => {
                 if (!this.locationType.value) {
@@ -760,6 +764,9 @@ export class UserProfileComponent implements OnInit {
             if (!this.remoteDidDocumentForm.valid) {
                 return false;
             }
+            if (!this.remoteProofForm.valid) {
+                return false;
+            }
             return true;
         } else {
             if (!this.standardRegistryForm.valid) {
@@ -930,6 +937,14 @@ export class UserProfileComponent implements OnInit {
             profile.hederaAccountId = data.hederaCredentials.id?.trim();
             profile.topicId = data.hederaCredentials.topicId;
             profile.didDocument = data.didDocument;
+            try {
+                profile.proof = JSON.parse(data.proof);
+            } catch (error) {
+                this.remoteProofForm.setErrors({ incorrect: true });
+                this.loading = false;
+                this.headerProps.setLoading(false);
+                return;
+            }
         } else {
             //Local
             const data = this.localFullForm.value;
@@ -991,24 +1006,22 @@ export class UserProfileComponent implements OnInit {
     }
 
     public download() {
-        if (this.profile) {
-            const name = this.profile.username;
-            const data = {
-                username: this.profile.username,
-                hederaAccountId: this.profile.hederaAccountId,
-                topicId: this.profile.topicId,
-                did: this.profile.did,
-                didDocument: this.profile.didDocument?.document,
-                vcDocument: this.profile.vcDocument?.document,
-            }
+        if (!this.profile) {
+            return;
+        }
+        this.loading = true;
+        this.profileService.exportRemoteUser().subscribe((data) => {
             const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data));
             const downloadAnchorNode = document.createElement('a');
             downloadAnchorNode.setAttribute('href', dataStr);
-            downloadAnchorNode.setAttribute('download', name + '.user');
+            downloadAnchorNode.setAttribute('download', data.username + '.user');
             document.body.appendChild(downloadAnchorNode);
             downloadAnchorNode.click();
             downloadAnchorNode.remove();
-        }
+            this.loading = false;
+        }, () => {
+            this.loading = false;
+        });
     }
 
     public importFromFile(event: any) {
@@ -1022,6 +1035,7 @@ export class UserProfileComponent implements OnInit {
                 topicId: config.topicId || ''
             })
             this.remoteDidDocumentForm.setValue(JSON.stringify(config.didDocument))
+            this.remoteProofForm.setValue(config.proof ? JSON.stringify(config.proof) : '');
         });
     }
 

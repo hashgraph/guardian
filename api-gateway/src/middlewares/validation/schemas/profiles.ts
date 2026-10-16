@@ -165,6 +165,65 @@ export class FireblocksConfigDTO {
 }
 
 /**
+ * Signature by the DID's Ed25519 key proving that a remote user registration comes from the DID holder.
+ */
+export class RemoteUserProofDTO {
+    @ApiProperty({ type: 'string', required: true, example: '#did' })
+    did: string;
+
+    @ApiProperty({ type: 'string', required: true, example: '0.0.1' })
+    hederaAccountId: string;
+
+    @ApiProperty({ type: 'string', required: true, example: '0.0.1' })
+    topicId: string;
+
+    @ApiProperty({
+        type: 'string',
+        required: true,
+        description: 'Issue time (ISO 8601). A proof is accepted for 24 hours.',
+        example: '2026-01-01T00:00:00.000Z'
+    })
+    issued: string;
+
+    @ApiProperty({ type: 'string', required: true, example: '#did#did-root-key' })
+    verificationMethod: string;
+
+    @ApiProperty({ type: 'string', required: true, description: 'Base58 Ed25519 signature.' })
+    signature: string;
+}
+
+/**
+ * Profile file exported on the home instance for registering the user as a remote user on another instance.
+ */
+export class RemoteUserExportDTO {
+    @ApiProperty({ type: 'string', required: true, example: 'username' })
+    username: string;
+
+    @ApiProperty({ type: 'string', required: true, example: '0.0.1' })
+    hederaAccountId: string;
+
+    @ApiProperty({ type: 'string', required: true, example: '0.0.1' })
+    topicId: string;
+
+    @ApiProperty({ type: 'string', required: true, example: '#did' })
+    did: string;
+
+    @ApiProperty({ nullable: false, required: true, type: () => DidDocumentDTO })
+    didDocument: DidDocumentDTO;
+
+    @ApiProperty({
+        type: 'object',
+        nullable: true,
+        additionalProperties: true,
+        description: 'User VC document, when the user has one.'
+    })
+    vcDocument?: any;
+
+    @ApiProperty({ type: () => RemoteUserProofDTO, required: true })
+    proof: RemoteUserProofDTO;
+}
+
+/**
  * Body for connecting Hedera credentials / publishing DID–VC (PUT profile).
  * Many fields are optional depending on role and local vs remote flow.
  */
@@ -222,4 +281,11 @@ export class CredentialsDTO {
 
     @ApiProperty({ required: false, type: () => FireblocksConfigDTO })
     fireblocksConfig?: FireblocksConfigDTO;
+
+    @ApiProperty({
+        required: false,
+        type: () => RemoteUserProofDTO,
+        description: 'Required for a remote user. Taken from the profile file exported on the home instance.'
+    })
+    proof?: RemoteUserProofDTO;
 }

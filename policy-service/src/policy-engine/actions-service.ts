@@ -284,6 +284,9 @@ export class PolicyActionsService {
         const policyOwnerHederaCred = await policyOwnerCred.loadHederaCredentials(this.policyInstance, this.policyOwnerId);
         const policyOwnerSignOptions = await policyOwnerCred.loadSignOptions(this.policyInstance, this.policyOwnerId);
         const userMessageKey = await UserCredentials.loadMessageKey(this.messageId, data.owner, userId);
+        if (!userMessageKey) {
+            throw Error('Decentralized access key is not set');
+        }
         const messageServer = new MessageServer({
             operatorId: policyOwnerHederaCred.hederaAccountId,
             operatorKey: policyOwnerHederaCred.hederaAccountKey,
@@ -701,7 +704,7 @@ export class PolicyActionsService {
         }
     }
 
-    private async checkActionSender(row: PolicyAction, policyUser: PolicyUser) {
+    private checkActionSender(row: PolicyAction, policyUser: PolicyUser): boolean {
         return policyUser.hederaAccountId === row.sender && row.accountId === row.sender;
     }
 
@@ -740,6 +743,9 @@ export class PolicyActionsService {
             const policyOwnerHederaCred = await policyOwnerCred.loadHederaCredentials(this.policyInstance, userId);
             const policyOwnerSignOptions = await policyOwnerCred.loadSignOptions(this.policyInstance, userId);
             const userMessageKey = await UserCredentials.loadMessageKey(this.messageId, policyUser.did, userId);
+            if (!userMessageKey) {
+                throw Error('Decentralized access key is not set');
+            }
             const messageServer = new MessageServer({
                 operatorId: policyOwnerHederaCred.hederaAccountId,
                 operatorKey: policyOwnerHederaCred.hederaAccountKey,
@@ -809,6 +815,9 @@ export class PolicyActionsService {
             const policyOwnerHederaCred = await policyOwnerCred.loadHederaCredentials(this.policyInstance, userId);
             const policyOwnerSignOptions = await policyOwnerCred.loadSignOptions(this.policyInstance, userId);
             const userMessageKey = await UserCredentials.loadMessageKey(this.messageId, row.owner, userId);
+            if (!userMessageKey) {
+                throw Error('Decentralized access key is not set');
+            }
             const messageServer = new MessageServer({
                 operatorId: policyOwnerHederaCred.hederaAccountId,
                 operatorKey: policyOwnerHederaCred.hederaAccountKey,
@@ -874,6 +883,9 @@ export class PolicyActionsService {
     private async completeRequest(response: PolicyAction) {
         const collection = new DataBaseHelper(PolicyAction);
         const request = await collection.findOne({ messageId: response.startMessageId });
+        if (!request || response.sender !== request.accountId) {
+            return;
+        }
         const valid = await PolicyActionsUtils.validate(request, response, this.policyOwnerId);
         if (valid) {
             const callback = this.callback.get(request.messageId);

@@ -12,3 +12,4 @@ export { TopicMemo } from './memo-mappings/topic-memo.js';
 export { checkHederaKey } from './utils.js';
 export { VcHelper } from './vc-helper.js';
 export { RemoteDidLoader } from './remote-did-loader.js';
+export * from './remote-user-proof.js';

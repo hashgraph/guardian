@@ -13352,6 +13352,66 @@ paths:
       summary: Sets Hedera credentials for the authenticated user.
       tags:
         - profiles
+  /profiles/{username}/remote-user:
+    get:
+      description: >-
+        Returns the profile file used to register the **currently authenticated
+        user** as a remote user on another Guardian instance. It contains the
+        published DID document and a proof signed with the DID key, which the
+        other instance verifies. The proof is accepted for 24 hours. No private
+        keys are included. The `username` path segment is **not** used to choose
+        whose profile is exported.
+      operationId: ProfileApi_exportRemoteUser
+      parameters:
+        - name: username
+          required: true
+          in: path
+          description: >-
+            Present for URL compatibility with existing clients. The server does
+            not use this value.
+          schema:
+            example: username
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RemoteUserExportDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Exports the authenticated user's profile for another instance.
+      tags:
+        - profiles
   /profiles/push/{username}:
     put:
       description: >-
@@ -58783,6 +58843,69 @@ components:
         - permissions
         - didDocument
         - vcDocument
+    RemoteUserProofDTO:
+      type: object
+      properties:
+        did:
+          type: string
+          example: '#did'
+        hederaAccountId:
+          type: string
+          example: 0.0.1
+        topicId:
+          type: string
+          example: 0.0.1
+        issued:
+          type: string
+          description: Issue time (ISO 8601). A proof is accepted for 24 hours.
+          example: '2026-01-01T00:00:00.000Z'
+        verificationMethod:
+          type: string
+          example: '#did#did-root-key'
+        signature:
+          type: string
+          description: Base58 Ed25519 signature.
+      required:
+        - did
+        - hederaAccountId
+        - topicId
+        - issued
+        - verificationMethod
+        - signature
+    RemoteUserExportDTO:
+      type: object
+      properties:
+        username:
+          type: string
+          example: username
+        hederaAccountId:
+          type: string
+          example: 0.0.1
+        topicId:
+          type: string
+          example: 0.0.1
+        did:
+          type: string
+          example: '#did'
+        didDocument:
+          nullable: false
+          allOf:
+            - $ref: '#/components/schemas/DidDocumentDTO'
+        vcDocument:
+          type: object
+          nullable: true
+          additionalProperties: true
+          description: User VC document, when the user has one.
+        proof:
+          $ref: '#/components/schemas/RemoteUserProofDTO'
+      required:
+        - username
+        - hederaAccountId
+        - topicId
+        - did
+        - didDocument
+        - vcDocument
+        - proof
     CredentialsDTO:
       type: object
       properties:
@@ -58829,6 +58952,12 @@ components:
           example: false
         fireblocksConfig:
           $ref: '#/components/schemas/FireblocksConfigDTO'
+        proof:
+          description: >-
+            Required for a remote user. Taken from the profile file exported on
+            the home instance.
+          allOf:
+            - $ref: '#/components/schemas/RemoteUserProofDTO'
       required:
         - hederaAccountId
     DidVerificationMethodEntryDTO:
