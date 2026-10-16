@@ -58736,6 +58736,11 @@ components:
           type: array
           items:
             type: string
+        assignedEntities:
+          description: Identifiers of the policies assigned to the user.
+          type: array
+          items:
+            type: string
         did:
           type: string
           example: >-
@@ -61492,6 +61497,11 @@ components:
         permissions:
           example:
             - POLICIES_POLICY_READ
+          type: array
+          items:
+            type: string
+        assignedEntities:
+          description: Identifiers of the policies assigned to the user.
           type: array
           items:
             type: string
