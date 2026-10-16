@@ -147,10 +147,15 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public previewPreset: any = null;
     public previewReadonlyFields: any = null;
     public previewFormulas: FormulasTree | null = null;
+    public previewMounted = false;
+    public previewKey = 0;
+    public previewSchemaRef: Schema | null = null;
+    private previewBuiltFor: { schema: Schema | null; version: number } = { schema: null, version: -1 };
     public richTextPresetTarget: 'default' | 'suggest' | 'test' | null = null;
     @ViewChild('richTextPresetEditor') public richTextPresetEditor?: RichTextEditorComponent;
 
     public drillStack: DrillEntry[] = [];
+    public drillEntering = false;
     public get isDrilling(): boolean { return this.drillStack.length > 0; }
     public get drillCurrentFields(): SchemaField[] { return this.drillStack[this.drillStack.length - 1]?.fields ?? []; }
     public get currentDrilledSchemaIri(): string { return this.drillStack[this.drillStack.length - 1]?.schemaIri || ''; }
@@ -1156,22 +1161,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     map((data: any) => {
                         // Spread $defs into throw-away copies so parseFields resolves $ref links
                         // without mutating the originals — updateRefs() during save needs clean docs.
-                        const defs: Record<string, any> = {};
-                        for (const sub of (data.subSchemas || [])) {
-                            if (sub.iri && sub.document) {
-                                defs[sub.iri] = typeof sub.document === 'string'
-                                    ? JSON.parse(sub.document)
-                                    : sub.document;
-                            }
-                        }
-                        const hasDefs = Object.keys(defs).length > 0;
-                        const withDefs = (raw: any): any => {
-                            if (!hasDefs || !raw?.document) { return raw; }
-                            const doc = typeof raw.document === 'string'
-                                ? JSON.parse(raw.document)
-                                : raw.document;
-                            return { ...raw, document: { ...doc, $defs: defs } };
-                        };
+                        const defs = this.collectDefs(data.subSchemas);
+                        const withDefs = (raw: any) => this.withDefs(raw, defs);
                         const schema = data.schema ? new Schema(withDefs(data.schema)) : null;
                         return {
                             schema,
@@ -3525,6 +3516,43 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return aId < bId ? 1 : -1;
     }
 
+    private collectDefs(subSchemas: any[] | undefined): Record<string, any> {
+        const defs: Record<string, any> = {};
+        for (const sub of (subSchemas || [])) {
+            if (sub.iri && sub.document) {
+                defs[sub.iri] = typeof sub.document === 'string' ? JSON.parse(sub.document) : sub.document;
+            }
+        }
+        return defs;
+    }
+
+    private withDefs(raw: any, defs: Record<string, any>): any {
+        if (!Object.keys(defs).length || !raw?.document) { return raw; }
+        const doc = typeof raw.document === 'string' ? JSON.parse(raw.document) : raw.document;
+        return { ...raw, document: { ...doc, $defs: defs } };
+    }
+
+    private hydrateSubSchemaFields(subSchema: Schema): void {
+        const id = subSchema.id || (subSchema as any)._id;
+        if (!id) { return; }
+        this.schemaService.getSchemaWithSubSchemas(this.getCategory(), id, this.topic)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (data: any) => {
+                    if (!data?.schema) { return; }
+                    const defs = this.collectDefs(data.subSchemas);
+                    const loaded = new Schema(this.withDefs(data.schema, defs));
+                    if (subSchema.fields?.length) { return; }
+                    subSchema.fields = loaded.fields;
+                    subSchema.conditions = loaded.conditions;
+                    const entry = this.drillStack.find(e => e.schemaIri === subSchema.iri);
+                    if (entry) { entry.fields = subSchema.fields; }
+                    if (this.previewSchemaRef === subSchema) { this.rebuildPreview(); }
+                },
+                error: (error) => this.reportError('Failed to load sub-schema fields', error),
+            });
+    }
+
     public enterSubSchema(field: SchemaField, event: Event): void {
         event.stopPropagation();
         if (!this.canEnterSubSchema(field)) { return; }
@@ -3540,6 +3568,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             subSchema.fields = [...field.fields];
         }
         const fields = subSchema?.fields ?? field.fields ?? [];
+        if (subSchema && !fields.length) { this.hydrateSubSchemaFields(subSchema); }
+        this.drillEntering = true;
+        this.activeDrillTab = 'fields';
         this.drillStack = [
             ...this.drillStack,
             { fieldLabel: field.title || field.name, fieldName: field.name, fields, schemaIri: field.type || '' }
@@ -4995,34 +5026,49 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.rebuildPreview();
     }
 
-    public openPreview(): void {
-        this.activeTab = 'preview';
-        this.loadPreviewFormulas();
+    public setActiveTab(tab: 'builder' | 'preview'): void {
+        this.activeTab = tab;
+        if (tab === 'preview') {
+            this.previewMounted = true;
+            if (this.isPreviewStale()) {
+                this.rebuildPreview();
+            }
+            this.loadPreviewFormulas();
+        }
+    }
+
+    private isPreviewStale(): boolean {
+        return this.previewBuiltFor.schema !== this.currentContextSchema
+            || this.previewBuiltFor.version !== this.schemaEditVersion;
     }
 
     /** the saved formulas of the schema, so the preview shows them like the request form */
     private loadPreviewFormulas(): void {
-        const iri = this.selectedSchema?.iri;
+        const iri = this.currentContextSchema?.iri;
         if (this.activeTab !== 'preview' || !this.fieldFormulas || this.isTemplateMode) {
             return;
         }
         this.fieldFormulas.previewTree(iri)
             .pipe(takeUntil(this.destroy$))
             .subscribe((tree) => {
-                if (this.selectedSchema?.iri === iri) {
+                if (this.currentContextSchema?.iri === iri) {
                     this.previewFormulas = tree;
                 }
             });
     }
 
     private rebuildPreview(): void {
-        if (!this.selectedSchema || this.previewPill === 'submitter') {
+        const schema = this.currentContextSchema;
+        this.previewBuiltFor = { schema, version: this.schemaEditVersion };
+        this.previewSchemaRef = schema;
+        this.previewKey++;
+        if (!schema || this.previewPill === 'submitter') {
             this.previewPreset = null;
             this.previewReadonlyFields = null;
             return;
         }
-        this.previewPreset = DocumentGenerator.generateDocument(this.selectedSchema);
-        this.previewReadonlyFields = this.selectedSchema.fields;
+        this.previewPreset = DocumentGenerator.generateDocument(schema);
+        this.previewReadonlyFields = schema.fields;
     }
 
     public onExport(): void {

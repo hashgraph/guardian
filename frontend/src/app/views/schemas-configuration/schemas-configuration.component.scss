@@ -1392,6 +1392,8 @@
     display: flex;
     flex-direction: column;
     min-height: 100%;
+
+    &--hidden { display: none; }
 }
 
 .sc-schema-featured-btn {
@@ -1836,7 +1838,20 @@
     z-index: 20;
     display: flex;
     flex-direction: column;
-    animation: sc-drill-in 0.18s ease;
+    overflow-y: auto;
+
+    // One-shot class so toggling display between Builder and Preview does not replay it.
+    &--enter { animation: sc-drill-in 0.18s ease; }
+
+    &--hidden { display: none; }
+
+    .sc-cond-canvas {
+        flex: 0 0 auto;
+        overflow: visible;
+    }
+
+    .sc-drill-breadcrumb { position: sticky; top: 0; z-index: 2; }
+    .sc-drill-back-bar { position: sticky; bottom: 0; z-index: 2; margin-top: auto; }
 }
 
 @keyframes sc-drill-in {
@@ -2353,6 +2368,8 @@
     display: flex;
     flex-direction: column;
     min-height: 100%;
+
+    &--hidden { display: none; }
 }
 
 .sc-preview-bar {
@@ -2416,21 +2433,6 @@
             max-width: 100% !important;
             flex: unset !important;
         }
-    }
-}
-
-.sc-preview-placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    padding: 80px 24px;
-    color: var(--guardian-font-color-secondary, #848FA9);
-    font-size: 14px;
-
-    i {
-        font-size: 48px;
-        color: var(--guardian-font-color-secondary, #848FA9);
     }
 }
 
