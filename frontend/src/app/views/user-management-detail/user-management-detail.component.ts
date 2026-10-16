@@ -140,7 +140,7 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
             this.needSave = false;
             this.setControls();
             this.updateControls();
-            this.loadAssignedCount();
+            this.assignedCount = user?.assignedEntities?.length || 0;
             setTimeout(() => {
                 this.loading = false;
             }, 500);
@@ -160,7 +160,6 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
         ).subscribe((response) => {
             this.policyPage = response.body || [];
             this.policyCount = parseInt(response.headers.get('X-Total-Count') as any, 10) || this.policyPage.length;
-            this.loadAssignedCount();
             this.allPolicy = true;
             for (const p of this.policyPage) {
                 this.allPolicy = this.allPolicy && p.assigned;
@@ -175,9 +174,8 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
     }
 
     private loadAssignedCount() {
-        this.permissionsService.getUsers({ username: this.username }).subscribe((response) => {
-            const row = (response.body || []).find((u: any) => u.username === this.username);
-            this.assignedCount = row?.assignedEntities?.length || 0;
+        this.permissionsService.getUser(this.username).subscribe((user) => {
+            this.assignedCount = user?.assignedEntities?.length || 0;
         }, (e) => {
             console.error(e);
         });
@@ -398,6 +396,9 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
 
     public onChange(index: string | number | undefined) {
         this.selectedIndex = typeof index === 'number' ? index : 0;
+        if (this.selectedIndex === 0 && this.needSave) {
+            return;
+        }
         this.loadData();
     }
 
@@ -418,6 +419,7 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
             this.loading = true;
             this.permissionsService.assignPolicy(this.username, ids, assign).subscribe((response) => {
                 this.loadData();
+                this.loadAssignedCount();
             }, (e) => {
                 this.loadError(e);
             });
@@ -425,6 +427,7 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
             this.loading = true;
             this.permissionsService.delegatePolicy(this.username, ids, assign).subscribe((response) => {
                 this.loadData();
+                this.loadAssignedCount();
             }, (e) => {
                 this.loadError(e);
             });
@@ -497,6 +500,7 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
             this.loading = true;
             this.permissionsService.assignPolicy(this.username, ids, assign).subscribe((response) => {
                 this.loadData();
+                this.loadAssignedCount();
             }, (e) => {
                 this.loadError(e);
             });
@@ -504,6 +508,7 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
             this.loading = true;
             this.permissionsService.delegatePolicy(this.username, ids, assign).subscribe((response) => {
                 this.loadData();
+                this.loadAssignedCount();
             }, (e) => {
                 this.loadError(e);
             });

@@ -46,6 +46,16 @@ export class UserDTO implements IUser {
     @ApiProperty({
         type: 'string',
         required: false,
+        isArray: true,
+        description: 'Identifiers of the policies assigned to the user.'
+    })
+    @IsOptional()
+    @IsArray()
+    assignedEntities?: string[];
+
+    @ApiProperty({
+        type: 'string',
+        required: false,
         example: Examples.DID
     })
     @IsOptional()
