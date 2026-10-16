@@ -1,6 +1,8 @@
 import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { FormulaFiles, FormulaItem, FormulasTree, SchemaItem } from '../../models/formula-tree';
+import { FormulaFiles, FormulaItem, FormulasTree, IFormulaConditionContext, SchemaItem } from '../../models/formula-tree';
+import { filterRootItems, FormulasViewOrigin } from './formula-view-items';
+import { sourceRows } from '../../models/formula-meta';
 import { TreeListData, TreeListItem, TreeListView } from 'src/app/modules/common/tree-graph/tree-list';
 
 @Component({
@@ -14,10 +16,14 @@ export class FormulasViewDialog {
     public tree: FormulasTree;
     public schema: string;
     public path: string;
+    public context?: IFormulaConditionContext;
+    public itemId?: string;
+    public origin: FormulasViewOrigin;
     public items: FormulaItem[];
     public current: FormulaItem | SchemaItem | null;
     public nav: TreeListView<any>;
     public files: FormulaFiles[];
+    public sourceBlocks: { name: string, rows: { label: string, value: string }[] }[] = [];
 
     public isLargeSize: boolean = true;
     private startX: number = 0;
@@ -31,14 +37,15 @@ export class FormulasViewDialog {
     @ViewChild('navContainer') navContainerRef?: ElementRef;
     @ViewChild('contentContainer') contentContainerRef?: ElementRef;
 
-    public viewDocumentOptions = [
+    private readonly allTabs = [
+        { label: 'Diagram', key: 'diagram', icon: 'graph' },
         { label: 'Formulas', key: 'formulas', icon: 'function' },
-        { label: 'Diagram',    key: 'diagram',    icon: 'graph' },
-        { label: 'Files',    key: 'files',    icon: 'file' }
+        { label: 'Files', key: 'files', icon: 'file' },
+        { label: 'Info', key: 'info', icon: 'info' }
     ];
 
-    public activeTab: string = 'formulas';
-    public tabIndex: number = 0;
+    public viewDocumentOptions: { label: string, key: string, icon: string }[];
+    public activeTab: string;
 
     constructor(
         public ref: DynamicDialogRef,
@@ -49,11 +56,19 @@ export class FormulasViewDialog {
         this.tree = this.config.data?.tree;
         this.schema = this.config.data?.schema;
         this.path = this.config.data?.path;
+        this.context = this.config.data?.context;
+        this.itemId = this.config.data?.itemId;
+        this.origin = this.config.data?.origin === 'form' ? 'form' : 'document';
+        // Values are empty on a request form, so the Formulas tab is not shown there
+        this.viewDocumentOptions = this.allTabs.filter((e) => this.origin !== 'form' || e.key !== 'formulas');
+        this.activeTab = this.viewDocumentOptions[0].key;
     }
 
     ngOnInit() {
         this.loading = false;
-        this.items = this.tree?.get(this.schema, this.path) || [];
+        const all = this.tree?.get(this.schema, this.path, this.context) || [];
+        this.items = filterRootItems(all, this.itemId);
+        this.sourceBlocks = this.items.map((e) => ({ name: e.name, rows: sourceRows(e.source) }));
         this.files = this.tree?.getFiles(this.items) || [];
         const navTree = FormulasTree.createNav(this.items)
         const fields = TreeListData.fromObject<any>(navTree, 'children');
@@ -96,10 +111,9 @@ export class FormulasViewDialog {
         this.nav.updateSelected();
     }
 
-    public setTab(index: string | number | undefined): void {
-        const tabIndex = typeof index === 'number' ? index : 0;
-        const opt = this.viewDocumentOptions[tabIndex];
-        this.activeTab = opt?.key || 'formulas';
+    public setTab(key: string | number | undefined): void {
+        const opt = this.viewDocumentOptions.find((e) => e.key === key);
+        this.activeTab = opt?.key || this.viewDocumentOptions[0].key;
     }
 
     public toggleSize(): void {

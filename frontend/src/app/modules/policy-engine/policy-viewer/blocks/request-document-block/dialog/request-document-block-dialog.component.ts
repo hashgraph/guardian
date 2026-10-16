@@ -17,6 +17,8 @@ import { autosaveValueChanged, getMinutesAgoStream } from 'src/app/utils/autosav
 import { RelayerAccountsService } from 'src/app/services/relayer-accounts.service';
 import { AttachedFile } from 'src/app/modules/common/policy-comments/attached-file';
 import { IPFSService } from 'src/app/services/ipfs.service';
+import { FormulasService } from 'src/app/services/formulas.service';
+import { FormulasTree } from 'src/app/modules/formulas/models/formula-tree';
 import { PolicyTestAutomationService } from '../../../policy-test-automation/policy-test-automation.service';
 
 @Component({
@@ -51,6 +53,7 @@ export class RequestDocumentBlockDialog {
     public rules: DocumentValidators;
     public dataForm: UntypedFormGroup;
     public destroy$: Subject<boolean> = new Subject<boolean>();
+    public formulas: FormulasTree | null = null;
     public rulesResults: any;
     public lastSavedAt?: Date;
     private storage: DocumentAutosaveStorage;
@@ -116,6 +119,7 @@ export class RequestDocumentBlockDialog {
         private tablePersist: TablePersistenceService,
         private ipfsService: IPFSService,
         private policyTest: PolicyTestAutomationService,
+        private formulasService: FormulasService,
     ) {
         this.parent = this.config.data;
         this.dataForm = this.fb.group({});
@@ -129,6 +133,7 @@ export class RequestDocumentBlockDialog {
     ngOnInit() {
         this.loading = true;
         this.loadRules();
+        this.loadFormulas();
         this.initForm(this.dataForm);
         this.sub = interval(this.AUTOSAVE_INTERVAL).subscribe(async () => {
             const data = this.dataForm.getRawValue();
@@ -175,6 +180,22 @@ export class RequestDocumentBlockDialog {
                 }, 500);
             }, (e) => {
                 this.loading = false;
+            });
+    }
+
+    private loadFormulas() {
+        const schemaIri = this.schema?.iri;
+        if (!this.policyId || !schemaIri) {
+            return;
+        }
+        this.formulasService
+            .getFormTree(this.policyId, schemaIri)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((formulas) => {
+                this.formulas = formulas;
+                this.changeDetectorRef.markForCheck();
+            }, () => {
+                this.formulas = null;
             });
     }
 

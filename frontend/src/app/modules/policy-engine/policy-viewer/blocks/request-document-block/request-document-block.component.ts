@@ -11,6 +11,8 @@ import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { RequestDocumentBlockDialog } from './dialog/request-document-block-dialog.component';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { SchemaService } from 'src/app/services/schema.service';
+import { FormulasService } from 'src/app/services/formulas.service';
+import { FormulasTree } from 'src/app/modules/formulas/models/formula-tree';
 import { audit, finalize, takeUntil } from 'rxjs/operators';
 import { interval, Subject, Subscription, firstValueFrom } from 'rxjs';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
@@ -96,6 +98,8 @@ export class RequestDocumentBlockComponent
     public rules: DocumentValidators;
     public rulesResults: any;
     public destroy$: Subject<boolean> = new Subject<boolean>();
+    public formulas: FormulasTree | null = null;
+    private formulasSchemaIri?: string;
     public readonly: boolean = false;
     public draft: boolean;
     public relayerAccount: boolean;
@@ -153,6 +157,7 @@ export class RequestDocumentBlockComponent
         private ipfsService: IPFSService,
         private policyTest: PolicyTestAutomationService,
         private schemaService: SchemaService,
+        private formulasService: FormulasService,
     ) {
         super(policyEngineService, profile, wsService);
         this.dataForm = this.fb.group({});
@@ -237,6 +242,7 @@ export class RequestDocumentBlockComponent
             }, 500);
         } else if (this.type === 'page') {
             this.loadRules();
+            this.loadFormulas();
         } else {
             setTimeout(() => {
                 this.loading = false;
@@ -348,6 +354,23 @@ export class RequestDocumentBlockComponent
             });
     }
 
+
+    private loadFormulas() {
+        const schemaIri = this.schema?.iri;
+        if (!this.policyId || !schemaIri || this.formulasSchemaIri === schemaIri) {
+            return;
+        }
+        this.formulasSchemaIri = schemaIri;
+        this.formulasService
+            .getFormTree(this.policyId, schemaIri)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((formulas) => {
+                this.formulas = formulas;
+                this.changeDetectorRef.markForCheck();
+            }, () => {
+                this.formulas = null;
+            });
+    }
 
     private loadRelayerAccounts() {
         this.loading = true;

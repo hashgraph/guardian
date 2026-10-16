@@ -57,6 +57,15 @@
                       }
                     </div>
                   }
+                  @let fx = getFieldFormulas(item);
+                  @if (fx.length) {
+                    <app-field-formulas
+                      [items]="fx"
+                      [model]="formulas!"
+                      [fullPath]="item.fullPath"
+                      [entries]="formulaEntries"
+                      ></app-field-formulas>
+                  }
                   @if (
                     !isFormForFinishSetup &&
                     item.suggest &&
@@ -625,6 +634,15 @@
                         </div>
                       }
                     </div>
+                    @let fx = getFieldFormulas(item);
+                    @if (fx.length) {
+                      <app-field-formulas
+                        [items]="fx"
+                        [model]="formulas!"
+                        [fullPath]="item.fullPath"
+                        [entries]="formulaEntries"
+                        ></app-field-formulas>
+                    }
                     @if (
                       !isFormForFinishSetup &&
                       item.suggest &&
@@ -1118,6 +1136,8 @@
                                               @default {
                                                 <app-schema-form
                                                   [form-model]="item.model"
+                                                  [formulas]="formulas"
+                                                  [formulaEntries]="formulaEntries"
                                                   [private-fields]="hide"
                                                   [rules]="rules"
                                                   [dryRun]="dryRun"
@@ -1368,6 +1388,8 @@
                                                             [form-model]="
                                                                 listItem.model
                                                             "
+                                                            [formulas]="formulas"
+                                                            [formulaEntries]="getEntryFormulaScope(item, listItem)"
                                                                 [dryRun]="dryRun"
                                                             [policyId]="
                                                                 policyId

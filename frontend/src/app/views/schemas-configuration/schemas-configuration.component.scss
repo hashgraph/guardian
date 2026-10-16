@@ -1,3 +1,6 @@
+@import '../../modules/formulas/formula-type';
+
+
 :host {
     display: flex;
     flex-direction: column;
@@ -2209,12 +2212,15 @@
     &--opt  { background: var(--guardian-grey-background, #F9FAFC); color: var(--guardian-font-color-secondary, #848FA9); }
     &--arr  { background: var(--guardian-primary-background, #E1E7FA); color: var(--color-primary, #4169E2); }
     &--type { background: var(--guardian-grey-background, #F9FAFC); color: var(--guardian-font-color-secondary, #848FA9); }
-    &--cond {
-        background: var(--guardian-primary-background, #E1E7FA);
-        color: var(--color-primary, #4169E2);
+    &--cond,
+    &--formula {
         display: inline-flex;
         align-items: center;
         gap: 3px;
+    }
+    &--cond {
+        background: var(--guardian-primary-background, #E1E7FA);
+        color: var(--color-primary, #4169E2);
         i { font-size: 9px; }
     }
     /* Referenced schema name — solid purple, same style as v5 subschema-ref-badge */
@@ -2228,6 +2234,23 @@
     &--hidden { background: var(--guardian-grey-background, #F9FAFC); color: var(--guardian-font-color-secondary, #848FA9); }
     &--auto { background: var(--guardian-primary-background, #E1E7FA); color: color-mix(in srgb, var(--color-primary, #4169E2) 82%, #000); }
     &--upd { background: var(--guardian-success-background, #EEFBF0); color: color-mix(in srgb, var(--color-accent-green-1, #19BE47) 82%, #000); }
+    &--formula {
+        background: var(--formula-function-background, #fbd9ef);
+        color: color-mix(in srgb, var(--formula-function-color, #E50299) 82%, #000);
+
+        svg-icon {
+            display: flex;
+            width: 10px;
+            height: 10px;
+            line-height: 0;
+        }
+
+        ::ng-deep svg {
+            width: 10px;
+            height: 10px;
+            fill: currentColor;
+        }
+    }
 }
 
 .sc-field-card-actions {
@@ -3231,12 +3254,6 @@
     &--else { background: var(--guardian-grey-background, #F1F3F9); color: var(--guardian-font-color-secondary, #848FA9); }
 }
 
-.sc-cond-op-sel {
-    flex: 1;
-    font-size: 11px !important;
-    padding: 4px 7px !important;
-}
-
 .sc-cond-section-sub {
     font-size: 11px;
     color: var(--guardian-font-color-secondary, #848FA9);
@@ -3636,57 +3653,6 @@
     overflow: hidden;
 }
 
-.sc-cond-block-hdr {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 14px;
-    background: var(--guardian-grey-background);
-    border-bottom: 1px solid var(--guardian-border-color);
-}
-
-.sc-cond-type-group { display: flex; gap: 4px; }
-
-.sc-cond-type-btn {
-    padding: 4px 14px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 600;
-    border: 1px solid var(--guardian-border-color);
-    cursor: pointer;
-    background: var(--guardian-background);
-    color: var(--color-grey-5);
-    font-family: inherit;
-    transition: all 0.12s;
-
-    &.active {
-        background: var(--guardian-primary-background);
-        border-color: var(--color-primary);
-        color: var(--color-primary);
-    }
-
-    &:not(.active):hover {
-        background: var(--guardian-hover);
-        color: var(--guardian-font-color);
-    }
-
-    &:disabled {
-        opacity: 0.4;
-        cursor: default;
-    }
-
-    &:disabled:hover {
-        background: var(--guardian-background);
-        color: var(--color-grey-5);
-    }
-}
-
-.sc-cond-type-note {
-    font-size: 13px;
-    color: var(--color-grey-5);
-    flex: 1;
-}
-
 .sc-cond-block-del {
     margin-left: auto;
     background: none;
@@ -3725,137 +3691,6 @@
     font-size: 14px;
     display: flex;
     align-items: center;
-}
-
-.sc-cond-block-body {
-    padding: 14px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.sc-cond-when-label {
-    font-size: 14px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--color-grey-5);
-    margin-bottom: 4px;
-}
-
-.sc-cond-rule-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    background: var(--guardian-grey-background);
-    border: 1px solid var(--guardian-border-color);
-    border-radius: var(--sc-radius-sm);
-}
-
-.sc-cond-rule-num {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--color-grey-5);
-    min-width: 20px;
-    flex-shrink: 0;
-}
-
-.sc-cond-field-sel {
-    flex: 1;
-    min-width: 0;
-}
-
-.sc-cond-op-eq {
-    font-size: 14px;
-    color: var(--color-grey-5);
-    flex-shrink: 0;
-    font-weight: 500;
-}
-
-.sc-cond-val-inp {
-    height: 40px;
-    padding: 0 12px;
-    border-radius: var(--sc-radius-sm);
-    border: 1px solid var(--guardian-border-color);
-    background: var(--guardian-background);
-    font-size: 14px;
-    font-family: var(--font-family-inter, 'Inter', sans-serif);
-    color: var(--guardian-font-color);
-    min-width: 80px;
-    max-width: 200px;
-    outline: none;
-    box-sizing: border-box;
-
-    &:focus { border-color: var(--color-primary); }
-    &:disabled { opacity: 0.5; cursor: default; background: var(--guardian-grey-background); }
-}
-
-.sc-cond-val-wrap {
-    width: 180px;
-    flex-shrink: 0;
-    min-width: 0;
-}
-
-.sc-cond-val-sel {
-    width: 100%;
-}
-
-// A condition locked by the applied template disables its field / comparator / value
-// selects - PrimeNG's own disabled look is not enough against the guardian-dropdown theme,
-// so spell out the grey state (same palette as the disabled value input above).
-// PrimeNG puts .p-select on the host, so match both the host and any descendant.
-.sc-cond-block ::ng-deep {
-    p-select.p-disabled,
-    .p-select.p-disabled {
-        background: var(--guardian-grey-background, #F1F3F9);
-        border-color: var(--guardian-border-color, #E1E7EF);
-        cursor: not-allowed;
-        opacity: 1;
-
-        .p-select-label,
-        .p-select-dropdown,
-        .p-select-dropdown-icon {
-            color: var(--guardian-disabled-color, #848FA9);
-            cursor: not-allowed;
-        }
-    }
-}
-
-.sc-cond-row-del {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--color-grey-4);
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    padding: 4px 6px;
-    border-radius: 4px;
-    flex-shrink: 0;
-    transition: color 0.12s, background 0.12s;
-
-    &:hover:not(:disabled) { color: var(--color-accent-red-1); background: var(--guardian-failure-background); }
-    &:disabled { opacity: 0.3; cursor: default; }
-}
-
-.sc-cond-add-rule {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    color: var(--color-grey-5);
-    cursor: pointer;
-    background: none;
-    border: none;
-    font-family: inherit;
-    padding: 4px 0;
-    align-self: flex-start;
-    transition: color 0.12s;
-
-    i { font-size: 13px; }
-    &:hover:not(:disabled) { color: var(--color-primary); }
-    &:disabled { opacity: 0.4; cursor: default; }
 }
 
 // THEN / ELSE 2-column grid
@@ -5137,5 +4972,247 @@
     .sc-array-link-title {
         flex: 1 1 auto;
         width: 100%;
+    }
+}
+
+// ── Formulas of the selected field ──────────────────────────────────────────
+.sc-ff-hint {
+    font-size: 12px;
+    color: var(--guardian-font-color-secondary, #848FA9);
+}
+
+.sc-ff-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sc-ff-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
+    border-radius: var(--sc-radius-sm);
+    background: var(--guardian-background, #fff);
+
+    &--pending {
+        border-style: dashed;
+    }
+}
+
+.sc-ff-type {
+    @include formula-type-colors;
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--tc);
+    background: var(--tb);
+
+    svg-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 0;
+    }
+
+    ::ng-deep svg {
+        width: 14px;
+        height: 14px;
+        fill: var(--tc);
+    }
+
+    &--sm {
+        width: 20px;
+        height: 20px;
+        min-width: 20px;
+
+        ::ng-deep svg {
+            width: 12px;
+            height: 12px;
+        }
+    }
+}
+
+.sc-ff-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+}
+
+.sc-ff-name,
+.sc-ff-doc {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.sc-ff-name {
+    font-size: 13px;
+    color: var(--guardian-font-color, #23252E);
+}
+
+.sc-ff-doc {
+    font-size: 11px;
+    color: var(--guardian-font-color-secondary, #848FA9);
+}
+
+.sc-ff-tag {
+    flex-shrink: 0;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 1px 6px;
+    border-radius: 8px;
+    color: var(--guardian-font-color-secondary, #848FA9);
+    background: var(--guardian-grey-background, #F9FAFC);
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
+
+    &--pending {
+        color: var(--color-accent-yellow-1, #DA9B22);
+        background: var(--guardian-warning-background, #FFF6E3);
+        border-color: transparent;
+    }
+}
+
+.sc-ff-icon-btn {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--guardian-font-color-secondary, #848FA9);
+    cursor: pointer;
+
+    text-decoration: none;
+
+    i { font-size: 11px; }
+
+    &:hover {
+        background: var(--guardian-primary-background, #e1e7fa);
+        color: var(--color-primary, #4169E2);
+    }
+}
+
+.sc-ff-remove:hover {
+    background: var(--guardian-failure-background, #FFEAEA);
+    color: var(--color-accent-red-1, #FF432A);
+}
+
+.sc-ff-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    margin-top: 8px;
+
+    .sc-rp-select {
+        width: 100%;
+    }
+}
+
+.sc-ff-new-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 0;
+    font-size: 13px;
+    font-weight: 500;
+
+    i { font-size: 11px; }
+}
+
+.sc-ff-new {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 8px;
+    padding: 12px;
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
+    border-radius: var(--sc-radius-sm);
+    background: var(--guardian-grey-background, #F9FAFC);
+
+    .sc-rp-group { margin: 0; }
+}
+
+.sc-ff-new-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--guardian-font-color, #23252E);
+}
+
+.sc-ff-new-hint {
+    font-size: 11px;
+    line-height: 16px;
+    color: var(--guardian-font-color-secondary, #848FA9);
+}
+
+.sc-ff-new-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+.sc-ff-group {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.sc-ff-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    width: 100%;
+}
+
+.sc-ff-option-name {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.sc-ff-option-link {
+    margin-left: auto;
+    max-width: 50%;
+    font-size: 11px;
+    color: var(--guardian-font-color-secondary, #848FA9);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+::ng-deep .guardian-dropdown-panel.sc-ff-doc-panel {
+    .p-select-option:has(.sc-ff-doc-new) {
+        margin-top: 4px;
+        border-top: 1px solid var(--guardian-border-color, #E1E7EF);
+    }
+
+    .sc-ff-doc-new {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--color-primary, #4169E2);
+        font-weight: 500;
+
+        i { font-size: 11px; }
+    }
+}
+
+::ng-deep .guardian-dropdown-panel.sc-ff-panel {
+    max-width: 420px;
+
+    .p-select-option {
+        min-width: 0;
+        overflow: hidden;
     }
 }

@@ -6,6 +6,7 @@ import { SelectType } from './tree-types';
 import { TreeNode } from './tree-node';
 import { Grid } from './tree-grid';
 import { TreeSource } from './tree-source';
+import { clampZoom, wheelFactor, zoomAtPoint } from './tree-zoom';
 
 @Component({
     selector: 'app-tree-graph',
@@ -26,6 +27,12 @@ export class TreeGraphComponent implements OnInit {
 
     @Input()
     public width: number = 200;
+    /**
+     * 'origin' - legacy wheel zoom around the top-left corner,
+     * 'cursor' - zoom anchored at the cursor position (proportional to wheel delta, supports pinch).
+     */
+    @Input()
+    public wheelZoom: 'origin' | 'cursor' = 'origin';
     public zoom = 1;
     public toolbar = true;
     public source: TreeSource<any>;
@@ -121,7 +128,47 @@ export class TreeGraphComponent implements OnInit {
         this.setZoom(this.zoom, this.gridEl.nativeElement);
     }
 
+    /**
+     * Zoom keeping the container point (px, py) fixed on screen.
+     * Dragging stays 1:1 because grid.x/y are left/top offsets (not scaled) and transform-origin is 0 0.
+     */
+    public zoomAt(newZoom: number, px: number, py: number): void {
+        if (!this.grid || !this.gridEl) {
+            return;
+        }
+        const view = zoomAtPoint({ zoom: this.zoom, x: this.grid.x, y: this.grid.y }, newZoom, px, py);
+        this.zoom = view.zoom;
+        this.setZoom(this.zoom, this.gridEl.nativeElement);
+        this.move(view.x, view.y);
+    }
+
+    public setView(zoom: number, x: number, y: number): void {
+        if (!this.grid || !this.gridEl) {
+            return;
+        }
+        this.zoom = clampZoom(zoom);
+        this.setZoom(this.zoom, this.gridEl.nativeElement);
+        this.move(x, y);
+    }
+
+    private onCursorWheel($event: WheelEvent) {
+        $event.preventDefault();
+        if (!this.grid || !this.gridEl) {
+            return;
+        }
+        const rect = this.movedEl.nativeElement.getBoundingClientRect();
+        this.zoomAt(
+            this.zoom * wheelFactor($event.deltaY, $event.deltaMode),
+            $event.clientX - rect.left,
+            $event.clientY - rect.top
+        );
+    }
+
     public onScroll($event: any) {
+        if (this.wheelZoom === 'cursor') {
+            this.onCursorWheel($event);
+            return;
+        }
         if ($event.deltaY < 0) {
             this.zoom = this.zoom * 1.1;
         } else {

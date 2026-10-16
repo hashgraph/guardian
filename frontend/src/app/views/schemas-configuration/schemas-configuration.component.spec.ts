@@ -2057,4 +2057,67 @@ describe('SchemasConfigurationComponent', () => {
             expect(optionIris(component)).toEqual(['#id-1', '#id-2']);
         });
     });
+
+    describe('field formulas', () => {
+        function withFormulas(component: any, pending: boolean): any[] {
+            const calls: any[] = [];
+            component.fieldFormulas = {
+                hasPending: pending,
+                save: () => { calls.push(component.updated.length); return of(true); },
+            };
+            return calls;
+        }
+
+        it('counts pending formula assignments as unsaved changes', () => {
+            const schema: any = makeSchema({ id: 'a' });
+            const component = createComponent({ schemas: [schema], selectedSchema: schema });
+            withFormulas(component, true);
+
+            expect(component.hasUnsavedChanges).toBeTrue();
+        });
+
+        it('saves the formula assignments alone when no schema is dirty', () => {
+            const schema: any = makeSchema({ id: 'a' });
+            const component = createComponent({ schemas: [schema], selectedSchema: schema });
+            const calls = withFormulas(component, true);
+
+            component.saveAll();
+
+            expect(calls).toEqual([0]);
+            expect(component.isSaving).toBeFalse();
+        });
+
+        it('saves the formula assignments after the schemas', () => {
+            const schema: any = makeSchema({ id: 'a', fields: [makeField()] });
+            const component = createComponent({ schemas: [schema], selectedSchema: schema, dirtyIds: ['a'] });
+            const calls = withFormulas(component, true);
+
+            component.saveAll();
+
+            expect(calls).toEqual([1]);
+        });
+
+        it('keeps the formula assignments when the schema save fails', () => {
+            const schema: any = makeSchema({ id: 'a', fields: [makeField()] });
+            const component = createComponent({ schemas: [schema], selectedSchema: schema, dirtyIds: ['a'] });
+            component.schemaService.update = () => throwError(() => ({ error: { message: 'rejected' } }));
+            const calls = withFormulas(component, true);
+
+            component.saveAll();
+
+            expect(calls).toEqual([]);
+        });
+
+        it('does not combine formula assignments with a new schema version', () => {
+            const schema: any = makeSchema({ id: 'a', status: 'PUBLISHED', fields: [makeField()] });
+            const component = createComponent({ schemas: [schema], selectedSchema: schema, dirtyIds: ['a'] });
+            component.schemaService.newVersion = () => { throw new Error('should not be called'); };
+            const calls = withFormulas(component, true);
+
+            component.saveAll();
+
+            expect(calls).toEqual([]);
+            expect(component.toasts.length).toBe(1);
+        });
+    });
 });

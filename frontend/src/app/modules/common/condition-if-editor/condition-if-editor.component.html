@@ -1,0 +1,114 @@
+<!-- Block header: IF / IF ALL / IF ANY toggle (+ projected actions) -->
+<div class="sc-cond-block-hdr">
+    <div class="sc-cond-type-group">
+        <button class="sc-cond-type-btn"
+            [class.active]="getIfOperator() === 'SINGLE'"
+            [disabled]="disabled"
+            (click)="setConditionOperator('SINGLE')">IF</button>
+        <button class="sc-cond-type-btn"
+            [class.active]="getIfOperator() === 'AND'"
+            [disabled]="disabled"
+            (click)="setConditionOperator('AND')">IF ALL</button>
+        <button class="sc-cond-type-btn"
+            [class.active]="getIfOperator() === 'OR'"
+            [disabled]="disabled"
+            (click)="setConditionOperator('OR')">IF ANY</button>
+    </div>
+    <span class="sc-cond-type-note">
+        @if (getIfOperator() === 'SINGLE') { – single condition }
+        @else if (getIfOperator() === 'AND') { – all must match }
+        @else { – any must match }
+    </span>
+    <ng-content select="[condHeaderActions]"></ng-content>
+</div>
+
+<!-- Rule rows -->
+<div class="sc-cond-block-body">
+    <div class="sc-cond-when-label">When</div>
+
+    @for (row of getIfRows(); track $index; let ri = $index) {
+        <div class="sc-cond-rule-row">
+            <span class="sc-cond-rule-num">{{ ri + 1 }}.</span>
+            <p-select
+                class="sc-cond-field-sel guardian-dropdown"
+                [panelStyleClass]="fieldPanelStyleClass"
+                [options]="fieldGroups"
+                [group]="true"
+                optionLabel="label"
+                optionValue="pathStr"
+                [filter]="true"
+                filterBy="label"
+                [resetFilterOnHide]="true"
+                [virtualScroll]="true"
+                [virtualScrollItemSize]="38"
+                appendTo="body"
+                placeholder="Select field…"
+                [disabled]="disabled"
+                [ngModel]="getRowFieldPath(row)"
+                (onChange)="setIfRowField(ri, $event.value)">
+                <ng-template pTemplate="item" let-option>
+                    <span class="sc-cond-opt-row">
+                        <span class="sc-cond-opt-label"
+                            (mouseover)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
+                    </span>
+                </ng-template>
+            </p-select>
+            @if (getIfRowComparatorOptions(row).length > 1) {
+                <p-select
+                    class="sc-cond-op-sel guardian-dropdown"
+                    panelStyleClass="guardian-dropdown-panel"
+                    [options]="getIfRowComparatorOptions(row)"
+                    optionLabel="label"
+                    optionValue="value"
+                    appendTo="body"
+                    [ngModel]="getIfRowComparator(row)"
+                    [disabled]="disabled"
+                    (onChange)="setIfRowComparator(ri, $event.value)">
+                    <ng-template pTemplate="item" let-option>
+                        <span class="sc-cond-opt-row">
+                            <span class="sc-cond-opt-label"
+                                  (mouseover)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
+                        </span>
+                    </ng-template>
+                </p-select>
+            } @else {
+                <span class="sc-cond-op-eq">=</span>
+            }
+            <div class="sc-cond-val-wrap">
+                @if (isIfRowEnum(row)) {
+                    <p-select
+                        class="sc-cond-val-sel guardian-dropdown"
+                        panelStyleClass="guardian-dropdown-panel width-300"
+                        [options]="getIfRowOptions(row)"
+                        appendTo="body"
+                        placeholder="Select value…"
+                        [disabled]="disabled"
+                        [ngModel]="getIfRowValue(row)"
+                        (onChange)="setIfRowValue(ri, $event.value)">
+                        <ng-template pTemplate="item" let-option>
+                            <span (mouseover)="updateOverflowTitle($event, option)">{{ option }}</span>
+                        </ng-template>
+                    </p-select>
+                } @else {
+                    <input class="sc-cond-val-inp" type="text" placeholder="value"
+                        [disabled]="disabled"
+                        [value]="getIfRowValue(row)"
+                        (input)="setIfRowValue(ri, $any($event.target).value)" />
+                }
+            </div>
+            <button class="sc-cond-row-del"
+                [disabled]="getIfRows().length <= 1 || disabled"
+                (click)="removeIfRow(ri)">
+                <i class="pi pi-times"></i>
+            </button>
+        </div>
+    }
+
+    @if (getIfOperator() !== 'SINGLE') {
+        <button class="sc-cond-add-rule" [disabled]="disabled" (click)="addIfRow()">
+            <i class="pi pi-plus"></i> Add condition row
+        </button>
+    }
+
+    <ng-content select="[condBody]"></ng-content>
+</div>

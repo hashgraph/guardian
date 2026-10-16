@@ -550,7 +550,7 @@ export class SchemaFormViewComponent implements OnInit {
             showHeader: false,
             width: '90%',
             styleClass: 'guardian-dialog',
-            data: formulas,
+            data: { ...formulas, origin: 'document' },
         })!;
         dialogRef.onClose.subscribe((result: any) => { });
     }

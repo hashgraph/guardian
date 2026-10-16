@@ -2,7 +2,10 @@ import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, EventEmitter, 
 import { SchemaFormComponent } from '../schema-form/schema-form.component';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { Schema, SchemaField, SchemaRuleValidateResult } from '@guardian/interfaces';
-import { FieldForm, IFieldControl } from '../schema-form-model/field-form';
+import { equalsLoosely, FieldForm, IFieldControl } from '../schema-form-model/field-form';
+import { Subscription } from 'rxjs';
+import { FormulasTree } from 'src/app/modules/formulas/models/formula-tree';
+import { FormFormulas } from 'src/app/modules/formulas/models/form-formulas';
 import { SchemaFormNavigationComponent } from '../schema-form-navigation/schema-form-navigation.component';
 
 /**
@@ -21,6 +24,8 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     public hasNavigation = true;
     public navCollapsed = false;
     public navFields: IFieldControl<any>[] = [];
+    public formulaModel: FormFormulas | null = null;
+    private formulaSub?: Subscription;
 
     private startX: number = 0;
     private startWidthPercent: number = 25;
@@ -64,6 +69,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     @Input() isFormForRequestBlock: boolean = false;
     @Input() lastSavedAt?: Date;
     @Input() isEditMode: boolean = false;
+    @Input() formulas: FormulasTree | null = null;
 
     @Output('form') form = new EventEmitter<UntypedFormGroup>();
     @Output('change') change = new EventEmitter<Schema | null>();
@@ -128,6 +134,9 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     }
 
     ngOnChanges(changes: SimpleChanges) {
+        if (changes.formulas && this.model) {
+            this.buildFormulaModel();
+        }
         this.loading = true;
         if (
             changes.schema ||
@@ -149,6 +158,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     }
 
     ngOnDestroy() {
+        this.formulaSub?.unsubscribe();
         if (this.model) {
             this.model.destroy();
         }
@@ -185,7 +195,25 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         this.model.build();
         this.navFields = [...(this.model.controls || [])];
         this.group.updateValueAndValidity();
+        this.buildFormulaModel();
         this.form.emit(this.group);
+    }
+
+    private buildFormulaModel() {
+        this.formulaSub?.unsubscribe();
+        this.formulaSub = undefined;
+        if (!this.formulas || !this.schema?.iri || !this.group) {
+            this.formulaModel = null;
+            return;
+        }
+        const formulaModel = new FormFormulas(this.formulas, this.schema.iri, equalsLoosely);
+        formulaModel.setData(this.group.getRawValue());
+        if (formulaModel.hasConditions) {
+            this.formulaSub = this.group.valueChanges.subscribe(() => {
+                formulaModel.setData(this.group.getRawValue());
+            });
+        }
+        this.formulaModel = formulaModel;
     }
 
     public onChange($event: Schema | null) {

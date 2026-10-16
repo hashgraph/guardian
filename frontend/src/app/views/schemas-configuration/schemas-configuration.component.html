@@ -148,7 +148,7 @@
                 <button class="sc-nav-tab" [class.active]="activeTab === 'builder'" (click)="activeTab = 'builder'">
                     Builder
                 </button>
-                <button class="sc-nav-tab" [class.active]="activeTab === 'preview'" (click)="activeTab = 'preview'">
+                <button class="sc-nav-tab" [class.active]="activeTab === 'preview'" (click)="openPreview()">
                     Preview
                 </button>
             </div>
@@ -769,6 +769,7 @@
                                 <app-schema-form-root
                                     [schema]="selectedSchema"
                                     [preset]="previewPreset"
+                                    [formulas]="previewFormulas"
                                     [private-fields]="{}"
                                     [readonly-fields]="previewReadonlyFields"
                                     [example]="previewPill !== 'submitter'"
@@ -1277,6 +1278,144 @@
                             </div>
                         }
 
+                        @let formulasView = selectedFieldFormulasView;
+                        @if (formulasView && formulasView.state !== 'hidden') {
+                            <div class="sc-rp-divider"></div>
+                            <div class="sc-rp-label">Formulas</div>
+                            @if (formulasView.state === 'save-first') {
+                                <div class="sc-ff-hint">Save the schema first to assign formulas.</div>
+                            } @else if (formulasView.state === 'sub-schema') {
+                                <div class="sc-ff-hint">This is a sub-schema – assign formulas from a document schema that uses it.</div>
+                            } @else if (formulasView.state === 'loading') {
+                                <div class="sc-ff-hint">Loading formulas…</div>
+                            } @else {
+                                @if (formulasView.rows.length) {
+                                    <div class="sc-ff-list">
+                                        @for (row of formulasView.rows; track row.key) {
+                                            <div class="sc-ff-row" [class.sc-ff-row--pending]="row.pending">
+                                                <span class="sc-ff-type" [attr.data-type]="row.type" [title]="row.typeName">
+                                                    <svg-icon [src]="'/assets/images/icons/' + row.icon + '.svg'"></svg-icon>
+                                                </span>
+                                                <div class="sc-ff-text">
+                                                    <span class="sc-ff-name" [title]="row.itemName">{{ row.itemName }}</span>
+                                                    <span class="sc-ff-doc" [title]="row.formulaName">{{ row.formulaName }}</span>
+                                                </div>
+                                                @if (row.pending) {
+                                                    <span class="sc-ff-tag sc-ff-tag--pending">unsaved</span>
+                                                }
+                                                @if (!row.pending) {
+                                                    <a class="sc-ff-icon-btn" target="_blank" rel="noopener"
+                                                        [routerLink]="['/formulas', row.formulaId]" [queryParams]="{ item: row.itemUuid }"
+                                                        pTooltip="Open this formula in the Formula Editor in a new tab" tooltipPosition="left">
+                                                        <i class="pi pi-external-link"></i>
+                                                    </a>
+                                                }
+                                                @if (row.published) {
+                                                    <span class="sc-ff-tag">Published</span>
+                                                } @else if (!selectedFieldLocked) {
+                                                    <button class="sc-ff-icon-btn sc-ff-remove" type="button" title="Remove from this field"
+                                                        (click)="unbindFieldFormula(row)">
+                                                        <i class="pi pi-times"></i>
+                                                    </button>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                } @else {
+                                    <div class="sc-ff-hint">No formulas on this field.</div>
+                                }
+                                @if (!selectedFieldLocked) {
+                                    <div class="sc-ff-actions">
+                                        <p-select
+                                            class="guardian-dropdown sc-rp-select"
+                                            panelStyleClass="guardian-dropdown-panel sc-ff-panel"
+                                            [options]="formulasView.groups"
+                                            [group]="true"
+                                            optionGroupLabel="label"
+                                            optionGroupChildren="items"
+                                            optionLabel="label"
+                                            optionValue="value"
+                                            [filter]="true"
+                                            filterBy="label"
+                                            [resetFilterOnHide]="true"
+                                            appendTo="body"
+                                            emptyMessage="No formula items to assign"
+                                            placeholder="Assign an existing formula…"
+                                            [(ngModel)]="fieldFormulas.assignValue"
+                                            (onChange)="assignFieldFormula($event.value)">
+                                            <ng-template pTemplate="group" let-group>
+                                                <span class="sc-ff-group">{{ group.label }}</span>
+                                            </ng-template>
+                                            <ng-template pTemplate="item" let-option>
+                                                <div class="sc-ff-option">
+                                                    <span class="sc-ff-type sc-ff-type--sm" [attr.data-type]="option.type">
+                                                        <svg-icon [src]="'/assets/images/icons/' + option.icon + '.svg'"></svg-icon>
+                                                    </span>
+                                                    <span class="sc-ff-option-name" [title]="option.label">{{ option.label }}</span>
+                                                    @if (option.linkedTo) {
+                                                        <span class="sc-ff-option-link" [title]="option.linkedTo">{{ option.linkedTo }}</span>
+                                                    }
+                                                </div>
+                                            </ng-template>
+                                        </p-select>
+                                        @if (!fieldFormulas.creating) {
+                                            <button class="sc-rp-ai-hint-link sc-ff-new-btn" type="button" (click)="fieldFormulas.startCreate()">
+                                                <i class="pi pi-plus"></i>
+                                                New formula
+                                            </button>
+                                        }
+                                    </div>
+                                    @if (fieldFormulas.creating) {
+                                        <div class="sc-ff-new">
+                                            <div class="sc-ff-new-title">New formula</div>
+                                            <div class="sc-rp-group">
+                                                <label class="sc-rp-label">Name</label>
+                                                <input
+                                                    class="sc-rp-input"
+                                                    type="text"
+                                                    placeholder="Formula name"
+                                                    [(ngModel)]="fieldFormulas.newName"
+                                                    (keydown.enter)="createFieldFormula()"
+                                                    (keydown.escape)="fieldFormulas.cancelCreate()" />
+                                            </div>
+                                            <div class="sc-rp-group">
+                                                <label class="sc-rp-label">Add to</label>
+                                                <p-select
+                                                    class="guardian-dropdown sc-rp-select"
+                                                    panelStyleClass="guardian-dropdown-panel sc-ff-doc-panel"
+                                                    [options]="formulasView.documents"
+                                                    optionLabel="label"
+                                                    optionValue="value"
+                                                    appendTo="body"
+                                                    placeholder="Select a formula document…"
+                                                    [(ngModel)]="fieldFormulas.newDocument">
+                                                    <ng-template pTemplate="item" let-option>
+                                                        @if (option.isNew) {
+                                                            <div class="sc-ff-doc-new">
+                                                                <i class="pi pi-plus"></i>
+                                                                {{ option.label }}
+                                                            </div>
+                                                        } @else {
+                                                            <span class="sc-ff-option-name" [title]="option.label">{{ option.label }}</span>
+                                                        }
+                                                    </ng-template>
+                                                </p-select>
+                                            </div>
+                                            <div class="sc-ff-new-hint">Creates an empty formula linked to this field. Add its expression in the Formula Editor.</div>
+                                            <div class="sc-ff-new-buttons">
+                                                <button class="sc-btn sc-btn--sm" type="button" (click)="fieldFormulas.cancelCreate()">Cancel</button>
+                                                <button class="sc-btn sc-btn--sm sc-btn-primary" type="button"
+                                                    [disabled]="!fieldFormulas.canCreate"
+                                                    (click)="createFieldFormula()">
+                                                    Create
+                                                </button>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            }
+                        }
+
                         @if (selectedFieldCanBeArray || selectedFieldCanBeUpdatable) {
                             <div class="sc-rp-divider"></div>
                             <div class="sc-rp-label">Other</div>
@@ -1679,6 +1818,12 @@
                                     @if (isFieldConditional(field)) {
                                         <span class="sc-badge sc-badge--cond">
                                             <i class="pi pi-code"></i>Condition
+                                        </span>
+                                    }
+                                    @let formulaCount = getFieldFormulaCount(field);
+                                    @if (formulaCount) {
+                                        <span class="sc-badge sc-badge--formula">
+                                            <svg-icon src="/assets/images/icons/function.svg"></svg-icon>{{ formulaCount === 1 ? 'Formula' : formulaCount + ' Formulas' }}
                                         </span>
                                     }
                                 </div>
@@ -2162,30 +2307,17 @@
 
             @for (cond of (currentContextSchema?.conditions || []); track cond; let ci = $index) {
                 <div class="sc-cond-block">
-
-                    <!-- Block header: IF / IF ALL / IF ANY toggle + delete -->
-                    <div class="sc-cond-block-hdr">
-                        <div class="sc-cond-type-group">
-                            <button class="sc-cond-type-btn"
-                                [class.active]="getIfOperator(cond) === 'SINGLE'"
-                                [disabled]="isConditionLocked(cond)"
-                                (click)="setConditionOperator(cond, 'SINGLE')">IF</button>
-                            <button class="sc-cond-type-btn"
-                                [class.active]="getIfOperator(cond) === 'AND'"
-                                [disabled]="isConditionLocked(cond)"
-                                (click)="setConditionOperator(cond, 'AND')">IF ALL</button>
-                            <button class="sc-cond-type-btn"
-                                [class.active]="getIfOperator(cond) === 'OR'"
-                                [disabled]="isConditionLocked(cond)"
-                                (click)="setConditionOperator(cond, 'OR')">IF ANY</button>
-                        </div>
-                        <span class="sc-cond-type-note">
-                            @if (getIfOperator(cond) === 'SINGLE') { — single condition }
-                            @else if (getIfOperator(cond) === 'AND') { — all must match }
-                            @else { — any must match }
-                        </span>
+                    <app-condition-if-editor
+                        [ifCondition]="cond.ifCondition"
+                        (ifConditionChange)="cond.ifCondition = $event; markDirty()"
+                        [fieldGroups]="getConditionFieldPSelectGroups()"
+                        [resolveField]="condResolveField"
+                        [resolveFieldPath]="condResolveFieldPath"
+                        [firstEntry]="condFirstEntry"
+                        [disabled]="isConditionLocked(cond)">
+                        <!-- Block header: IF / IF ALL / IF ANY toggle + lock / delete (toggle lives in the shared editor) -->
                         @if (isTemplateConfigMode) {
-                            <button class="sc-cond-block-lock"
+                            <button condHeaderActions class="sc-cond-block-lock"
                                 tooltipPosition="top"
                                 [pTooltip]="isConditionLocked(cond) ? 'Unlock this condition' : 'Lock this condition'"
                                 [disabled]="isTemplateReadonly"
@@ -2193,10 +2325,10 @@
                                 <i class="pi" [class.pi-lock]="isConditionLocked(cond)" [class.pi-lock-open]="!isConditionLocked(cond)"></i>
                             </button>
                         } @else if (isConditionLocked(cond)) {
-                            <i class="pi pi-lock sc-cond-block-lock-badge" title="Locked by the applied template"></i>
+                            <i condHeaderActions class="pi pi-lock sc-cond-block-lock-badge" title="Locked by the applied template"></i>
                         }
                         @if (!isTemplateConfigMode) {
-                            <button class="sc-cond-block-del"
+                            <button condHeaderActions class="sc-cond-block-del"
                                 tooltipPosition="top"
                                 [pTooltip]="getRemoveConditionTitle(cond)"
                                 [disabled]="conditionHasLockedField(cond) || isConditionLocked(cond)"
@@ -2204,98 +2336,9 @@
                                 <i class="pi pi-trash"></i>
                             </button>
                         }
-                    </div>
-
-                    <!-- Rule rows -->
-                    <div class="sc-cond-block-body">
-                        <div class="sc-cond-when-label">When</div>
-
-                        @for (row of getIfRows(cond); track $index; let ri = $index) {
-                            <div class="sc-cond-rule-row">
-                                <span class="sc-cond-rule-num">{{ ri + 1 }}.</span>
-                                <p-select
-                                    class="sc-cond-field-sel guardian-dropdown"
-                                    panelStyleClass="guardian-dropdown-panel width-825 sc-cond-panel"
-                                    [options]="getConditionFieldPSelectGroups()"
-                                    [group]="true"
-                                    optionLabel="label"
-                                    optionValue="pathStr"
-                                    [filter]="true"
-                                    filterBy="label"
-                                    [resetFilterOnHide]="true"
-                                    [virtualScroll]="true"
-                                    [virtualScrollItemSize]="38"
-                                    appendTo="body"
-                                    placeholder="Select field…"
-                                    [disabled]="isConditionLocked(cond)"
-                                    [ngModel]="getIfRowFieldPath(row)"
-                                    (onChange)="setIfRowField(cond, ri, $event.value)">
-                                    <ng-template pTemplate="item" let-option>
-                                        <span class="sc-cond-opt-row">
-                                            <span class="sc-cond-opt-label"
-                                                (mouseover)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
-                                        </span>
-                                    </ng-template>
-                                </p-select>
-                                @if (getIfRowComparatorOptions(row).length > 1) {
-                                    <p-select
-                                        class="sc-cond-op-sel guardian-dropdown"
-                                        panelStyleClass="guardian-dropdown-panel"
-                                        [options]="getIfRowComparatorOptions(row)"
-                                        optionLabel="label"
-                                        optionValue="value"
-                                        appendTo="body"
-                                        [disabled]="isConditionLocked(cond)"
-                                        [ngModel]="getIfRowComparator(row)"
-                                        (onChange)="setIfRowComparator(cond, ri, $event.value)">
-                                        <ng-template pTemplate="item" let-option>
-                                            <span class="sc-cond-opt-row">
-                                                <span class="sc-cond-opt-label"
-                                                      (mouseover)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
-                                            </span>
-                                        </ng-template>
-                                    </p-select>
-                                } @else {
-                                    <span class="sc-cond-op-eq">=</span>
-                                }
-                                <div class="sc-cond-val-wrap">
-                                    @if (isIfRowEnum(row)) {
-                                        <p-select
-                                            class="sc-cond-val-sel guardian-dropdown"
-                                            panelStyleClass="guardian-dropdown-panel width-300"
-                                            [options]="getIfRowOptions(row)"
-                                            appendTo="body"
-                                            placeholder="Select value…"
-                                            [disabled]="isConditionLocked(cond)"
-                                            [ngModel]="getIfRowValue(row)"
-                                            (onChange)="setIfRowValue(cond, ri, $event.value)">
-                                            <ng-template pTemplate="item" let-option>
-                                                <span (mouseover)="updateOverflowTitle($event, option)">{{ option }}</span>
-                                            </ng-template>
-                                        </p-select>
-                                    } @else {
-                                        <input class="sc-cond-val-inp" type="text" placeholder="value"
-                                            [disabled]="isConditionLocked(cond)"
-                                            [value]="getIfRowValue(row)"
-                                            (input)="setIfRowValue(cond, ri, $any($event.target).value)" />
-                                    }
-                                </div>
-                                <button class="sc-cond-row-del"
-                                    [disabled]="getIfRows(cond).length <= 1 || isConditionLocked(cond)"
-                                    (click)="removeIfRow(cond, ri)">
-                                    <i class="pi pi-times"></i>
-                                </button>
-                            </div>
-                        }
-
-                        @if (getIfOperator(cond) !== 'SINGLE') {
-                            <button class="sc-cond-add-rule" [disabled]="isConditionLocked(cond)" (click)="addIfRow(cond)">
-                                <i class="pi pi-plus"></i> Add condition row
-                            </button>
-                        }
 
                         <!-- THEN / ELSE 2-column grid -->
-                        <div class="sc-cond-te-grid">
+                        <div condBody class="sc-cond-te-grid">
 
                             <!-- THEN -->
                             <div class="sc-cond-te-block">
@@ -2480,7 +2523,7 @@
                             </div>
 
                         </div>
-                    </div>
+                    </app-condition-if-editor>
                 </div>
             }
 

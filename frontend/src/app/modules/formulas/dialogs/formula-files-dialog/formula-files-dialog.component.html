@@ -1,0 +1,53 @@
+<div class="ff-header">
+  <div class="ff-title">Attached files</div>
+  <button type="button" class="ff-icon-btn" title="Close" (click)="onClose()">
+    <i class="pi pi-times"></i>
+  </button>
+</div>
+<div class="ff-body">
+  @if (config.files.length) {
+    <table class="ff-table">
+      <thead>
+        <tr>
+          <th class="ff-col-name">NAME</th>
+          <th>URL</th>
+          <th class="ff-col-action"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (file of config.files; track file) {
+          <tr>
+            <td class="ff-col-name">{{ file.name }}</td>
+            <td class="ff-col-url">
+              <span class="ff-url"
+                [truncateTooltip]="file.url"
+                tooltipPosition="bottom">
+                <ipfs-link [url]="file.url"></ipfs-link>
+              </span>
+            </td>
+            <td class="ff-col-action">
+              @if (!readonly) {
+                <button type="button" class="ff-icon-btn ff-del" title="Delete" (click)="deleteFile(file)">
+                  <i class="pi pi-trash"></i>
+                </button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  } @else {
+    <div class="ff-empty">There were no files attached yet.</div>
+  }
+</div>
+<div class="ff-footer">
+  @if (!readonly) {
+    <button type="button" class="ff-btn" (click)="uploadFile()">
+      <i class="pi pi-cloud-upload"></i>
+      <span>Upload file</span>
+    </button>
+  } @else {
+    <span></span>
+  }
+  <button type="button" class="ff-btn" (click)="onClose()">Close</button>
+</div>

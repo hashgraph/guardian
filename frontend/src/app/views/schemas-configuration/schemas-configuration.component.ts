@@ -4,7 +4,7 @@ import { HttpResponse } from '@angular/common/http';
 import { EMPTY, Observable, Subject, Subscription, firstValueFrom, forkJoin, of } from 'rxjs';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { catchError, debounceTime, distinctUntilChanged, map, shareReplay, switchMap, takeUntil } from 'rxjs/operators';
-import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, relationAncestors, ModuleStatus, ISchemaTemplate, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus, ISchemaArrayDependency, ISchemaArrayDependencyMapping, DEFAULT_IWA_VERSION, IwaVersion, resolveIwaVersion, IPropertySuggestionResult, IPropertySuggestionRequest } from '@guardian/interfaces';
+import { DefaultFieldDictionary, DocumentGenerator, IFormulaLink, isAncestorType, isGeoCustomType, ISchema, relationAncestors, ModuleStatus, ISchemaTemplate, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus, ISchemaArrayDependency, ISchemaArrayDependencyMapping, DEFAULT_IWA_VERSION, IwaVersion, resolveIwaVersion, IPropertySuggestionResult, IPropertySuggestionRequest } from '@guardian/interfaces';
 import { SchemaService } from 'src/app/services/schema.service';
 import { TagsService } from 'src/app/services/tag.service';
 import { ProjectComparisonService } from 'src/app/services/project-comparison.service';
@@ -23,9 +23,17 @@ import { RichTextEditorComponent } from 'src/app/modules/schema-engine/rich-text
 import { markdownToHtml } from 'src/app/modules/schema-engine/rich-text-editor/markdown';
 import { SchemaTemplatesService } from 'src/app/services/schema-templates.service';
 import { ToastService } from 'src/app/services/toast.service';
+import { updateOverflowTitle } from 'src/app/utils/overflow-title';
+import { FormulasService } from 'src/app/services/formulas.service';
+import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { ProfileService } from 'src/app/services/profile.service';
+import { FormulasTree } from 'src/app/modules/formulas/models/formula-tree';
+import { IFieldFormulaRow, IFieldFormulasView, IFieldScope, SchemaFieldFormulas } from './schema-field-formulas';
 
 export interface DrillEntry {
     fieldLabel: string;
+    /** key of the sub-schema field drilled into; the drill path is the formula link path prefix */
+    fieldName: string;
     fields: SchemaField[];
     schemaIri: string;
 }
@@ -138,6 +146,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public previewPill: 'submitter' | 'readonly' = 'submitter';
     public previewPreset: any = null;
     public previewReadonlyFields: any = null;
+    public previewFormulas: FormulasTree | null = null;
     public richTextPresetTarget: 'default' | 'suggest' | 'test' | null = null;
     @ViewChild('richTextPresetEditor') public richTextPresetEditor?: RichTextEditorComponent;
 
@@ -192,7 +201,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (this.isTemplateConfigMode) {
             return this.templateConfigDirty;
         }
-        return this.dirtySchemaIds.size > 0;
+        return this.dirtySchemaIds.size > 0 || !!this.fieldFormulas?.hasPending;
     }
 
     public get showTopSaveActions(): boolean {
@@ -845,7 +854,22 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         private _cdr: ChangeDetectorRef,
         private toastService: ToastService,
         private ipfs: IPFSService,
-    ) {}
+        formulasService: FormulasService,
+        policyEngineService: PolicyEngineService,
+        profileService: ProfileService,
+    ) {
+        this.fieldFormulas = new SchemaFieldFormulas(
+            formulasService,
+            policyEngineService,
+            profileService,
+            dialogService,
+            (action, error) => this.reportError(action, error),
+            (link) => this.describeFormulaLink(link)
+        );
+    }
+
+    /** Formula items shown on the fields, kept on the formula side. */
+    public fieldFormulas: SchemaFieldFormulas;
 
     public uploadRichTextImage = async (file: File): Promise<string> => {
         const cid = await firstValueFrom(this.ipfs.addFile(file));
@@ -1190,9 +1214,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 this.dirtySchemaIds.delete(schemaId);
                 // freshly loaded from the server, so this is the saved baseline
                 this.snapshotSchema(schema, schemaId);
+                this.fieldFormulas?.discard(schemaId);
             }
             if (!this.topic && schema.topicId) {
                 this.topic = schema.topicId;
+            }
+            if (!this.isTemplateMode && this.type !== 'system' && this.type !== 'tag') {
+                this.fieldFormulas?.load(schema.topicId || this.topic);
             }
             // Raw sub-schemas preserve the API's hierarchical $defs; filtered to exclude
             // the current schema so it never appears in its own $defs (mirrors old editor).
@@ -1207,6 +1235,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             }
             this.upsertInSidebar(schema);
             this.rebuildPreview();
+            this.loadPreviewFormulas();
             this.loadParentSchemas();
         });
 
@@ -2086,7 +2115,22 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 if (s) { toSave.push(s); }
             }
         }
-        if (!toSave.length && !toCreate.length) { return; }
+        const hasFormulaChanges = !!this.fieldFormulas?.hasPending;
+        if (!toSave.length && !toCreate.length) {
+            if (hasFormulaChanges) {
+                this.saveFieldFormulas();
+            }
+            return;
+        }
+        if (hasFormulaChanges && toSave.some(s => s.status === SchemaStatus.PUBLISHED)) {
+            // A new version is created by a background task with a new iri that is not
+            // known here, so the formula links can't be pointed at it in the same save.
+            this.reportError('Save all', {
+                message: 'Formula assignments can\'t be saved together with a new schema version. ' +
+                    'Remove the unsaved assignments, save the new version, then assign the formulas.'
+            });
+            return;
+        }
         this.isSaving = true;
         // Sync any in-flight drill edits to the schema object in case this.schemas was refreshed
         // after enterSubSchema stored its fields reference in drillStack.
@@ -2182,9 +2226,123 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     this.newSchemaKeys.clear();
                     // what was just saved becomes the new baseline
                     allSchemas.forEach(schema => this.snapshotSchema(schema));
+                    if (hasFormulaChanges) {
+                        this.saveFieldFormulas();
+                    }
                 },
                 error: (error) => { this.isSaving = false; this.reportError('Save all', error); }
             });
+    }
+
+    /**
+     * Writes the formula assignments made in the field panel. Runs after the schemas are
+     * saved, so the links use the saved schema iri. Failed changes stay pending for a retry.
+     */
+    private saveFieldFormulas(): void {
+        this.isSaving = true;
+        this.fieldFormulas.save()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: () => { this.isSaving = false; },
+                error: (error) => { this.isSaving = false; this.reportError('Save formula assignments', error); }
+            });
+    }
+
+    /** names of the sub-schema fields drilled into, the path prefix of the fields shown */
+    private get fieldFormulaPrefix(): string[] {
+        return this.isDrilling ? this.drillStack.map(e => e.fieldName) : [];
+    }
+
+    /**
+     * The selected field as formulas see it: the open (root) schema and the path from it.
+     * When drilling, the drilled-into field names prefix the path. Null when there is no
+     * field or it is not in the fields shown.
+     */
+    private get selectedFieldScope(): IFieldScope | null {
+        const schema = this.selectedSchema;
+        const field = this.selectedField;
+        if (!schema || !field) {
+            return null;
+        }
+        const fields = this.isDrilling ? this.drillCurrentFields : schema.fields;
+        if (!Array.isArray(fields) || !fields.includes(field)) {
+            return null;
+        }
+        return { schema, field, prefix: this.fieldFormulaPrefix, fields };
+    }
+
+    /** the selected field scope when its formulas can be changed, else null */
+    private get editableFieldScope(): IFieldScope | null {
+        const scope = this.selectedFieldScope;
+        return scope && !this.selectedFieldLocked && scope.schema.entity !== SchemaEntity.NONE ? scope : null;
+    }
+
+    /**
+     * State of the Formulas section of the selected field. Help text has no section; a
+     * sub-schema (entity NONE) opened directly only gets a hint, because formulas link to
+     * a document schema and the path from it.
+     */
+    public get selectedFieldFormulasView(): IFieldFormulasView | null {
+        if (!this.fieldFormulas) {
+            return null;
+        }
+        const scope = this.selectedFieldScope;
+        const eligible = !!scope && !this.isTemplateMode && !this.selectedFieldIsHelpText;
+        return this.fieldFormulas.view(scope, eligible, this.selectedSchema?.entity === SchemaEntity.NONE);
+    }
+
+    public assignFieldFormula(value: string | null): void {
+        const scope = this.editableFieldScope;
+        if (scope) {
+            this.fieldFormulas.assign(scope, value);
+        }
+    }
+
+    public unbindFieldFormula(row: IFieldFormulaRow): void {
+        const scope = this.editableFieldScope;
+        if (scope) {
+            this.fieldFormulas.unbind(scope, row);
+        }
+    }
+
+    /**
+     * Number of formula items on a field card of the schema shown. Sub-schemas opened
+     * directly and templates have none, because formulas link to a document schema.
+     */
+    public getFieldFormulaCount(field: SchemaField): number {
+        const schema = this.selectedSchema;
+        if (!this.fieldFormulas || !schema || this.isTemplateMode || schema.entity === SchemaEntity.NONE) {
+            return 0;
+        }
+        return this.fieldFormulas.count(schema, this.fieldFormulaPrefix, field.name);
+    }
+
+    public createFieldFormula(): void {
+        const scope = this.editableFieldScope;
+        if (scope) {
+            this.fieldFormulas.create(scope);
+        }
+    }
+
+    /**
+     * "Schema: field" label of a formula link, for the move confirmation.
+     */
+    private describeFormulaLink(link: IFormulaLink): string {
+        if (link.type !== 'schema') {
+            return 'another formula item';
+        }
+        const schema = (this.selectedSchema?.iri === link.entityId ? this.selectedSchema : null)
+            || this.schemas.find(s => s.iri === link.entityId)
+            || this._subSchemasByIri.get(link.entityId)
+            || null;
+        let field: SchemaField | null = null;
+        try {
+            field = schema?.getField?.(link.item) || null;
+        } catch {
+            field = null;
+        }
+        const fieldName = field?.description || field?.title || field?.name || link.item;
+        return `${schema?.name || link.entityId}: ${fieldName}`;
     }
 
     public addField(ft: FieldTypeUI): void {
@@ -3114,34 +3272,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public updateOverflowTitle(event: MouseEvent, text: string): void {
-        const element = event.currentTarget;
-        if (!(element instanceof HTMLElement)) { return; }
-        if (element.scrollWidth > element.clientWidth || this.overflowsAncestor(element)) {
-            element.setAttribute('title', text);
-        } else {
-            element.removeAttribute('title');
-        }
-    }
-
-    private overflowsAncestor(element: HTMLElement): boolean {
-        const elementRect = element.getBoundingClientRect();
-        let parent = element.parentElement;
-        while (parent) {
-            const style = getComputedStyle(parent);
-            const clipsContent = style.overflowX === 'hidden' ||
-                style.overflowX === 'clip' ||
-                style.overflow === 'hidden' ||
-                style.overflow === 'clip';
-            if (clipsContent) {
-                const parentRect = parent.getBoundingClientRect();
-                if (elementRect.right > parentRect.right + 1 ||
-                    elementRect.left < parentRect.left - 1) {
-                    return true;
-                }
-            }
-            parent = parent.parentElement;
-        }
-        return false;
+        updateOverflowTitle(event, text);
     }
 
     public updateArrayLinkPanelWidth(event: MouseEvent): void {
@@ -3411,7 +3542,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const fields = subSchema?.fields ?? field.fields ?? [];
         this.drillStack = [
             ...this.drillStack,
-            { fieldLabel: field.title || field.name, fields, schemaIri: field.type || '' }
+            { fieldLabel: field.title || field.name, fieldName: field.name, fields, schemaIri: field.type || '' }
         ];
         this.persistSuggestionsForContext(previousContext);
         this.restoreOrClearSuggestionsForContext();
@@ -4104,6 +4235,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return fields.find(f => f.name === parts[parts.length - 1]) ?? null;
     }
 
+    // Callbacks handed to the shared IF-condition editor.
+    public readonly condResolveField = (pathStr: string): SchemaField | null => this._resolveConditionField(pathStr);
+    public readonly condResolveFieldPath = (row: any): string => this.getIfRowFieldPath(row);
+    public readonly condFirstEntry = (): { field: SchemaField; fieldPath: string[] } | null => this._firstConditionEntry;
+
     private get _firstConditionEntry(): { field: SchemaField; fieldPath: string[] } | null {
         for (const group of this.getConditionFieldGroups()) {
             for (const opt of group.fields) {
@@ -4138,54 +4274,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     // ── IF operator / rows ───────────────────────────────────────────────────
 
-    public getIfOperator(cond: SchemaCondition): 'SINGLE' | 'AND' | 'OR' {
-        const ic = cond.ifCondition as any;
-        if (!ic) { return 'SINGLE'; }
-        if ('AND' in ic) { return 'AND'; }
-        if ('OR' in ic) { return 'OR'; }
-        return 'SINGLE';
-    }
-
-    public getIfRows(cond: SchemaCondition): any[] {
-        const ic = cond.ifCondition as any;
-        if (!ic) { return [{ field: null, fieldValue: '' }]; }
-        if ('AND' in ic) { return ic.AND || []; }
-        if ('OR' in ic) { return ic.OR || []; }
-        return [ic];
-    }
-
-    public setConditionOperator(cond: SchemaCondition, op: 'SINGLE' | 'AND' | 'OR'): void {
-        if (this.isConditionLocked(cond)) { return; }
-        const rows = this.getIfRows(cond);
-        const firstEntry = this._firstConditionEntry;
-        // getIfRows returns a placeholder row for a null ifCondition, so an existing row is
-        // only usable when it actually carries a field; otherwise fall back to the first entry.
-        const existing = rows[0]?.field ? rows[0] : null;
-        const first = existing ?? {
-            field: firstEntry?.field,
-            fieldValue: '',
-            ...(firstEntry && firstEntry.fieldPath.length > 1 ? { fieldPath: firstEntry.fieldPath } : {}),
-        };
-        const predicate = {
-            field: first.field,
-            fieldValue: first.fieldValue,
-            ...(Array.isArray(first.fieldPath) && first.fieldPath.length > 1 ? { fieldPath: first.fieldPath } : {}),
-            ...(first.comparator ? { comparator: first.comparator } : {}),
-        };
-        if (op === 'SINGLE') {
-            (cond as any).ifCondition = predicate;
-        } else if (op === 'AND') {
-            (cond as any).ifCondition = { AND: [predicate] };
-        } else {
-            (cond as any).ifCondition = { OR: [predicate] };
-        }
-        this.markDirty();
-    }
-
-    public getIfRowValue(row: any): any { return row?.fieldValue ?? ''; }
-    public isIfRowEnum(row: any): boolean { return !!(row?.field?.enum?.length); }
-    public getIfRowOptions(row: any): string[] { return row?.field?.enum ?? []; }
-
     /**
      * `contains` only means anything against an array; the backend/eval/compile layers already
      * self-correct a stale `contains` (from a field whose "Allow Multiple Answers" was since
@@ -4206,90 +4294,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 if (!isArrayField) { delete p.comparator; }
             }
         }
-    }
-
-    // 'equals' (including absent, its default) is one universal comparator for every field -
-    // array or scalar alike. No legacy carve-out: an array-field '=' predicate saved before
-    // this feature existed means exactly the same "each element equals" as one authored today.
-    public getIfRowComparator(row: any): string {
-        return row?.comparator || 'equals';
-    }
-
-    public getIfRowComparatorOptions(row: any): { label: string; value: string }[] {
-        const isArrayField = !!(row?.field?.isArray && !row?.field?.isRef);
-        if (!isArrayField) {
-            return [{ label: '=', value: 'equals' }];
-        }
-        return [
-            { label: '= (each)', value: 'equals' },
-            { label: 'contains', value: 'contains' },
-        ];
-    }
-
-    public setIfRowComparator(cond: SchemaCondition, rowIdx: number, comparator: string): void {
-        if (this.isConditionLocked(cond)) { return; }
-        const ic = cond.ifCondition as any;
-        if (!ic) { return; }
-        const apply = (row: any) => {
-            if (!row) { return; }
-            if (comparator === 'equals') { delete row.comparator; }
-            else { row.comparator = comparator; }
-        };
-        if ('AND' in ic) { apply(ic.AND[rowIdx]); }
-        else if ('OR' in ic) { apply(ic.OR[rowIdx]); }
-        else { apply(ic); }
-        this.markDirty();
-    }
-
-    public setIfRowField(cond: SchemaCondition, rowIdx: number, pathStr: string): void {
-        if (this.isConditionLocked(cond)) { return; }
-        const field = this._resolveConditionField(pathStr);
-        if (!field) { return; }
-        const fieldPath = pathStr.split('.');
-        const predicate = {
-            field,
-            fieldValue: '',
-            ...(fieldPath.length > 1 ? { fieldPath } : {}),
-        };
-        const ic = cond.ifCondition as any;
-        if (ic && 'AND' in ic) { ic.AND[rowIdx] = predicate; }
-        else if (ic && 'OR' in ic) { ic.OR[rowIdx] = predicate; }
-        else { (cond as any).ifCondition = predicate; }
-        this.markDirty();
-    }
-
-    public setIfRowValue(cond: SchemaCondition, rowIdx: number, value: any): void {
-        if (this.isConditionLocked(cond)) { return; }
-        const ic = cond.ifCondition as any;
-        if (!ic) { return; }
-        if ('AND' in ic) { ic.AND[rowIdx].fieldValue = value; }
-        else if ('OR' in ic) { ic.OR[rowIdx].fieldValue = value; }
-        else { ic.fieldValue = value; }
-        this.markDirty();
-    }
-
-    public addIfRow(cond: SchemaCondition): void {
-        if (this.isConditionLocked(cond)) { return; }
-        const ic = cond.ifCondition as any;
-        if (!ic) { return; }
-        const firstEntry = this._firstConditionEntry;
-        const newRow = {
-            field: firstEntry?.field ?? null,
-            fieldValue: '',
-            ...(firstEntry && firstEntry.fieldPath.length > 1 ? { fieldPath: firstEntry.fieldPath } : {}),
-        };
-        if ('AND' in ic) { ic.AND.push(newRow); }
-        else if ('OR' in ic) { ic.OR.push(newRow); }
-        this.markDirty();
-    }
-
-    public removeIfRow(cond: SchemaCondition, rowIdx: number): void {
-        if (this.isConditionLocked(cond)) { return; }
-        const ic = cond.ifCondition as any;
-        if (!ic) { return; }
-        if ('AND' in ic && ic.AND.length > 1) { ic.AND.splice(rowIdx, 1); }
-        else if ('OR' in ic && ic.OR.length > 1) { ic.OR.splice(rowIdx, 1); }
-        this.markDirty();
     }
 
     // ── THEN / ELSE fields ───────────────────────────────────────────────────
@@ -4989,6 +4993,26 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public setPreviewPill(pill: 'submitter' | 'readonly'): void {
         this.previewPill = pill;
         this.rebuildPreview();
+    }
+
+    public openPreview(): void {
+        this.activeTab = 'preview';
+        this.loadPreviewFormulas();
+    }
+
+    /** the saved formulas of the schema, so the preview shows them like the request form */
+    private loadPreviewFormulas(): void {
+        const iri = this.selectedSchema?.iri;
+        if (this.activeTab !== 'preview' || !this.fieldFormulas || this.isTemplateMode) {
+            return;
+        }
+        this.fieldFormulas.previewTree(iri)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((tree) => {
+                if (this.selectedSchema?.iri === iri) {
+                    this.previewFormulas = tree;
+                }
+            });
     }
 
     private rebuildPreview(): void {

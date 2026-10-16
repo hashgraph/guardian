@@ -5,6 +5,7 @@ import { takeUntil } from 'rxjs/operators';
 import { FormulasService } from 'src/app/services/formulas.service';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { SchemaService } from 'src/app/services/schema.service';
+import { equalsLoosely } from '../schema-form-model/field-form';
 import { FormulasTree } from '../../formulas/models/formula-tree';
 import { SchemaFormViewComponent } from '../schema-form-view/schema-form-view.component';
 import { SchemaFormViewNavigationComponent } from '../schema-form-view-navigation/schema-form-view-navigation.component';
@@ -60,7 +61,7 @@ export class DocumentViewComponent implements OnInit {
     public schemaMap: { [x: string]: Schema | null } = {};
     public rules: DocumentValidators;
     public rulesResults: SchemaRuleValidateResult;
-    public formulasResults: any | null;
+    private formulasBySubject = new Map<any, any>();
     public link: string | undefined;
     public accordionLink: string | undefined;
     public navCollapsed: boolean = false;
@@ -115,11 +116,34 @@ export class DocumentViewComponent implements OnInit {
                 this.subjects.push(this.document.verifiableCredential);
             }
         }
+        this.updateFormulasResults();
         this.loadData();
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        this.formulasResults = this.formulas?.getFields(this.schemaId);
+        this.updateFormulasResults();
+    }
+
+    /**
+     * Formulas of fields whose display condition matches the credential subject values.
+     * Cached per subject: the view is OnPush and the template needs stable references.
+     */
+    private updateFormulasResults(): void {
+        this.formulasBySubject = new Map<any, any>();
+        if (!this.formulas) {
+            return;
+        }
+        for (const subject of this.subjects) {
+            this.formulasBySubject.set(subject, this.formulas.getFields(this.schemaId, {
+                data: subject,
+                anyEntry: true,
+                equalsFn: equalsLoosely
+            }));
+        }
+    }
+
+    public formulasFor(item: any): any {
+        return this.formulasBySubject.get(item) ?? null;
     }
 
     ngOnDestroy() {
@@ -231,7 +255,7 @@ export class DocumentViewComponent implements OnInit {
                 const formulas = results.formulas;
                 this.formulas = FormulasTree.from(formulas);
                 this.formulas?.setDocuments(this.document);
-                this.formulasResults = this.formulas?.getFields(this.schemaId);
+                this.updateFormulasResults();
                 delete results.formulas;
             }
 

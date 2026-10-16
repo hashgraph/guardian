@@ -1,0 +1,208 @@
+:host {
+    display: contents;
+}
+
+.sc-cond-block-hdr {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: var(--guardian-grey-background);
+    border-bottom: 1px solid var(--guardian-border-color);
+}
+
+.sc-cond-type-group { display: flex; gap: 4px; }
+
+.sc-cond-type-btn {
+    padding: 4px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid var(--guardian-border-color);
+    cursor: pointer;
+    background: var(--guardian-background);
+    color: var(--color-grey-5);
+    font-family: inherit;
+    transition: all 0.12s;
+
+    &.active {
+        background: var(--guardian-primary-background);
+        border-color: var(--color-primary);
+        color: var(--color-primary);
+    }
+
+    &:not(.active):hover {
+        background: var(--guardian-hover);
+        color: var(--guardian-font-color);
+    }
+
+    &:disabled {
+        opacity: 0.4;
+        cursor: default;
+    }
+
+    &:disabled:hover {
+        background: var(--guardian-background);
+        color: var(--color-grey-5);
+    }
+}
+
+.sc-cond-type-note {
+    font-size: 13px;
+    color: var(--color-grey-5);
+    flex: 1;
+}
+
+.sc-cond-block-body {
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sc-cond-when-label {
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-grey-5);
+    margin-bottom: 4px;
+}
+
+.sc-cond-rule-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--guardian-grey-background);
+    border: 1px solid var(--guardian-border-color);
+    border-radius: var(--sc-radius-sm, 8px);
+}
+
+.sc-cond-rule-num {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-grey-5);
+    min-width: 20px;
+    flex-shrink: 0;
+}
+
+.sc-cond-field-sel {
+    flex: 1;
+    min-width: 0;
+}
+
+.sc-cond-op-eq {
+    font-size: 14px;
+    color: var(--color-grey-5);
+    flex-shrink: 0;
+    font-weight: 500;
+}
+
+.sc-cond-op-sel {
+    flex: 1;
+    font-size: 11px !important;
+    padding: 4px 7px !important;
+}
+
+.sc-cond-val-inp {
+    height: 40px;
+    padding: 0 12px;
+    border-radius: var(--sc-radius-sm, 8px);
+    border: 1px solid var(--guardian-border-color);
+    background: var(--guardian-background);
+    font-size: 14px;
+    font-family: var(--font-family-inter, 'Inter', sans-serif);
+    color: var(--guardian-font-color);
+    min-width: 80px;
+    max-width: 200px;
+    outline: none;
+    box-sizing: border-box;
+
+    &:focus { border-color: var(--color-primary); }
+    &:disabled { opacity: 0.5; cursor: default; background: var(--guardian-grey-background); }
+}
+
+.sc-cond-val-wrap {
+    width: 180px;
+    flex-shrink: 0;
+    min-width: 0;
+}
+
+.sc-cond-val-sel {
+    width: 100%;
+}
+
+// A disabled (e.g. template-locked) condition greys out its field / comparator / value
+// selects - PrimeNG's own disabled look is not enough against the guardian-dropdown theme,
+// so spell out the grey state (same palette as the disabled value input above).
+// PrimeNG puts .p-select on the host, so match both the host and any descendant.
+:host ::ng-deep {
+    p-select.p-disabled,
+    .p-select.p-disabled {
+        background: var(--guardian-grey-background, #F1F3F9);
+        border-color: var(--guardian-border-color, #E1E7EF);
+        cursor: not-allowed;
+        opacity: 1;
+
+        .p-select-label,
+        .p-select-dropdown,
+        .p-select-dropdown-icon {
+            color: var(--guardian-disabled-color, #848FA9);
+            cursor: not-allowed;
+        }
+    }
+}
+
+.sc-cond-row-del {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-grey-4);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    padding: 4px 6px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    transition: color 0.12s, background 0.12s;
+
+    &:hover:not(:disabled) { color: var(--color-accent-red-1); background: var(--guardian-failure-background); }
+    &:disabled { opacity: 0.3; cursor: default; }
+}
+
+.sc-cond-add-rule {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--color-grey-5);
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-family: inherit;
+    padding: 4px 0;
+    align-self: flex-start;
+    transition: color 0.12s;
+
+    i { font-size: 13px; }
+    &:hover:not(:disabled) { color: var(--color-primary); }
+    &:disabled { opacity: 0.4; cursor: default; }
+}
+
+.sc-cond-opt-row {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-width: 0;
+    height: 22px;
+}
+
+.sc-cond-opt-label {
+    display: block;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

@@ -4,6 +4,7 @@
       <div class="tree-container">
         <app-tree-graph
           [width]="220"
+          wheelZoom="cursor"
           (init)="initGraph($event)"
           (render)="onRender()"
           (select)="onSelect($event)"
@@ -22,6 +23,26 @@
             </div>
           </ng-template>
         </app-tree-graph>
+      </div>
+      <div class="zoom-toolbar" [class.panel-open]="selectedNode">
+        <div class="zoom-button">
+          <button class="guardian-icon-button" title="Zoom in" (click)="onZoomIn()">
+            <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/add.svg" svgClass="icon-color-primary"> </svg-icon>
+          </button>
+        </div>
+        <div class="zoom-button">
+          <div class="zoom-label">{{ zoom }}%</div>
+        </div>
+        <div class="zoom-button">
+          <button class="guardian-icon-button" title="Zoom out" (click)="onZoomOut()">
+            <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/minus.svg" svgClass="icon-color-primary"> </svg-icon>
+          </button>
+        </div>
+        <div class="zoom-button">
+          <button class="guardian-icon-button" title="Fit to view" (click)="onFit()">
+            <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/center.svg" svgClass="icon-color-primary"> </svg-icon>
+          </button>
+        </div>
       </div>
       @if (selectedNode) {
         <div class="node-details">
