@@ -14,10 +14,8 @@
 }
 
 .not-exist {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
+    position: static;
+    flex: 1 1 auto;
     font-size: 20px;
     color: darkgrey;
     display: flex;
@@ -121,30 +119,72 @@
     line-height: 16px;
 }
 
-.user-role-label {
-    max-width: 250px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    height: 26px;
-    padding: 3px 8px 3px 0px;
-}
-
-.user-role-default-label {
-    max-width: 250px;
-    height: 26px;
-    padding: 3px 8px 3px 0px;
-    color: #AAB7C4;
-}
-
-.user-role-btn {
+.user-cell {
     display: flex;
-    cursor: pointer;
-    width: 30px;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
 
-    .user-role-icon {
-        width: 26px;
-        height: 26px;
-        overflow: hidden;
+    .user-avatar {
+        flex: 0 0 32px;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--color-primary, #4169E2);
+        background: color-mix(in srgb, var(--color-primary, #4169E2) 12%, transparent);
     }
+
+    .user-cell-text {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .user-name,
+    .user-did {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .user-name {
+        font-weight: 600;
+    }
+
+    .user-did {
+        font-family: 'Roboto Mono', ui-monospace, monospace;
+        font-size: 12px;
+        color: var(--color-grey-5, #848FA9);
+    }
+}
+
+.role-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.role-chip {
+    display: inline-flex;
+    align-items: center;
+    height: 26px;
+    padding: 0 10px;
+    border-radius: 6px;
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
+    background: var(--guardian-background, #FFF);
+    font-size: 12px;
+
+    &.role-chip--none {
+        border-style: dashed;
+        color: var(--color-grey-5, #848FA9);
+    }
+}
+
+.numeric-cell {
+    font-variant-numeric: tabular-nums;
 }

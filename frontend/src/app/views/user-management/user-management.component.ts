@@ -87,15 +87,6 @@ export class UsersManagementComponent implements OnInit, OnDestroy {
             this.page = response.body?.map((user: any) => {
                 return user;
             }) || [];
-            for (const user of this.page) {
-                const permissionsGroup = [];
-                if (Array.isArray(user.permissionsGroup)) {
-                    for (const group of user.permissionsGroup) {
-                        permissionsGroup.push(group.roleName || group.roleId);
-                    }
-                }
-                user.__permissionsGroup = permissionsGroup.join(', ');
-            }
             this.count = parseInt(response.headers.get('X-Total-Count') as any, 10) || this.page.length;
             setTimeout(() => {
                 this.loading = false;
@@ -151,6 +142,27 @@ export class UsersManagementComponent implements OnInit, OnDestroy {
             this.statusFilterValue = this.statusFilterOption.find((o) => o.name === this._queryParams.status) || this.statusFilterOption[0];
             this.searchFilter.setValue(this._queryParams.username);
         }
+    }
+
+    public get hasFilters(): boolean {
+        return Object.keys(this.getFilters()).length > 0;
+    }
+
+    public get defaultRoleName(): string {
+        return this.roles.find((role) => role.default)?.name || '';
+    }
+
+    public getInitials(name: string): string {
+        const clean = (name || '').replace(/[^A-Za-z0-9]/g, '');
+        const capitals = clean.replace(/[^A-Z]/g, '');
+        return (capitals.length >= 2 ? capitals : clean).slice(0, 2).toUpperCase() || '?';
+    }
+
+    public shortDid(did: string): string {
+        if (!did || did.length <= 28) {
+            return did || '';
+        }
+        return `${did.slice(0, 20)}…${did.slice(-6)}`;
     }
 
     public onChangeRoles(row: any) {

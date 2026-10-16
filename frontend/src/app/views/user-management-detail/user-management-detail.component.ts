@@ -5,11 +5,12 @@ import { PolicyStatus, UserPermissions } from '@guardian/interfaces';
 import { Subscription, forkJoin } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PermissionsGroup } from 'src/app/utils/index';
+import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
     selector: 'app-user-management-detail',
     templateUrl: './user-management-detail.component.html',
-    styleUrls: ['./user-management-detail.component.scss'],
+    styleUrls: ['../../modules/policy-engine/styles/top-toolbar.scss', './user-management-detail.component.scss'],
     standalone: false
 })
 export class UsersManagementDetailComponent implements OnInit, OnDestroy {
@@ -26,7 +27,7 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
         owner: string,
         own: boolean,
         canEdit: boolean
-    }[];
+    }[] = [];
     public group: PermissionsGroup;
     public permissions: any[] = [];
     public policyPage: any[] = [];
@@ -65,6 +66,14 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
     }];
     public needSave: boolean = false;
     public allPolicy: boolean = false;
+    public assignedCount: number = 0;
+    public grantedCount: number = 0;
+    public showAll: boolean = false;
+    public preview: {
+        name: string,
+        actions: string[],
+        entities: { name: string, type: string, granted: boolean, cells: ({ value: boolean, tooltip: string } | null)[] }[]
+    }[] = [];
 
     private subscription = new Subscription();
     private oldGroups: Map<string, any>;
@@ -73,7 +82,8 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
         private permissionsService: PermissionsService,
         private profileService: ProfileService,
         private router: Router,
-        private route: ActivatedRoute
+        private route: ActivatedRoute,
+        private toastService: ToastService
     ) {
     }
 
@@ -125,8 +135,10 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
         this.loading = true;
         this.permissionsService.getUser(this.username).subscribe((user) => {
             this.target = user;
+            this.needSave = false;
             this.setControls();
             this.updateControls();
+            this.loadAssignedCount();
             setTimeout(() => {
                 this.loading = false;
             }, 500);
@@ -146,6 +158,7 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
         ).subscribe((response) => {
             this.policyPage = response.body || [];
             this.policyCount = parseInt(response.headers.get('X-Total-Count') as any, 10) || this.policyPage.length;
+            this.loadAssignedCount();
             this.allPolicy = true;
             for (const p of this.policyPage) {
                 this.allPolicy = this.allPolicy && p.assigned;
@@ -157,6 +170,81 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
         }, (e) => {
             this.loadError(e);
         });
+    }
+
+    private loadAssignedCount() {
+        this.permissionsService.getUsers({ username: this.username }).subscribe((response) => {
+            const row = (response.body || []).find((u: any) => u.username === this.username);
+            this.assignedCount = row?.assignedEntities?.length || 0;
+        }, (e) => {
+            console.error(e);
+        });
+    }
+
+    public get parentLabel(): string {
+        const parent = this.target?.parent;
+        if (!parent) {
+            return '';
+        }
+        if (parent === this.user.did) {
+            return this.user.username;
+        }
+        return parent.length > 28 ? `${parent.slice(0, 20)}…${parent.slice(-6)}` : parent;
+    }
+
+    public get initials(): string {
+        const clean = (this.username || '').replace(/[^A-Za-z0-9]/g, '');
+        const capitals = clean.replace(/[^A-Z]/g, '');
+        return (capitals.length >= 2 ? capitals : clean).slice(0, 2).toUpperCase() || '?';
+    }
+
+    public get shortDid(): string {
+        const did: string = this.target?.did || '';
+        return did.length > 40 ? `${did.slice(0, 28)}…${did.slice(-8)}` : did;
+    }
+
+    public copyDid() {
+        if (this.target?.did) {
+            navigator.clipboard.writeText(this.target.did).then(() => {
+                this.toastService.success('Copied to clipboard');
+            }).catch((error) => console.error(error));
+        }
+    }
+
+    private updatePreview() {
+        let granted = 0;
+        const preview: typeof this.preview = [];
+        for (const category of this.group.categories) {
+            const entities = [];
+            for (const entity of category.entities) {
+                const cells = Array.from(entity.actions as any[], (action: any) => {
+                    if (!action) {
+                        return null;
+                    }
+                    return { value: !!action.control?.value, tooltip: action.tooltip || '' };
+                });
+                const count = cells.filter((cell) => cell?.value).length;
+                granted += count;
+                entities.push({ name: entity.name, type: entity.type, granted: count > 0, cells });
+            }
+            preview.push({ name: category.name, actions: category.actions, entities });
+        }
+        this.preview = preview;
+        this.grantedCount = granted;
+    }
+
+    public get visiblePreview() {
+        if (this.showAll) {
+            return this.preview;
+        }
+        return this.preview
+            .map((category) => ({ ...category, entities: category.entities.filter((e) => e.granted) }))
+            .filter((category) => category.entities.length);
+    }
+
+    public onToggleAssign(row: any, checked: boolean) {
+        row.assigned = checked;
+        this.assignPolicy(row, checked);
     }
 
     private loadError(error: any): void {
@@ -238,6 +326,7 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
                 }
             }
         }
+        this.updatePreview();
     }
 
     private changed(): boolean {
@@ -350,7 +439,7 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
             case PolicyStatus.DRAFT:
                 return 'grey';
             case PolicyStatus.DRY_RUN:
-                return 'grey';
+                return 'orange';
             case PolicyStatus.DISCONTINUED:
             case PolicyStatus.PUBLISH_ERROR:
                 return 'red';
@@ -383,6 +472,9 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
     }
 
     public onCancelRole() {
+        if (!this.needSave) {
+            return;
+        }
         this.needSave = false;
         this.setControls();
         this.updateControls();

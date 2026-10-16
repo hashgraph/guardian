@@ -541,3 +541,21 @@
         opacity: 0.85;
     }
 }
+
+// "Unsaved changes" marker shown to the left of the Discard / Save buttons.
+.top-toolbar .unsaved-marker {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 8px;
+    font-size: 12px;
+    color: var(--color-grey-6, #495057);
+    white-space: nowrap;
+
+    .unsaved-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--guardian-tool-color, #c37a29);
+    }
+}
