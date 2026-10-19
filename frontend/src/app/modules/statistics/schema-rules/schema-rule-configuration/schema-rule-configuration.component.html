@@ -135,21 +135,23 @@
                 <div class="node-header">
                   {{node.data.name}}
                 </div>
-                @if (node.fields.selectedCount>0) {
+                @let isRoot = node.type === 'root';
+                @let nodeCount = isRoot ? node.fields.selectedAllCount : node.fields.selectedCount;
+                @if (nodeCount>0) {
                   <div class="node-fields">
-                    @for (item of node.fields.selectedFields; track item) {
+                    @for (item of (isRoot ? node.fields.selectedAllFields : node.fields.selectedFields); track item) {
                       <div class="node-field">
                         {{item.data.description}}
                       </div>
                     }
-                    @if (node.fields.selectedCount>4) {
+                    @if (nodeCount>4) {
                       <div class="node-not-fields">
-                        + {{node.fields.selectedCount-4}} more
+                        + {{nodeCount-4}} more
                       </div>
                     }
                   </div>
                 }
-                @if (!node.fields.selectedCount) {
+                @if (!nodeCount) {
                   <div class="node-fields">
                     <div class="node-not-fields">
                       Nothing selected
