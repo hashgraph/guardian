@@ -1,3 +1,4 @@
+import { restoreSchemaDefs } from '../../../common/models/schema-defs';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormulaEngine, GenerateUUIDv4, IStatistic, IVCDocument, Schema, UserPermissions } from '@guardian/interfaces';
@@ -180,7 +181,7 @@ export class StatisticAssessmentConfigurationComponent implements OnInit {
     ) {
         this.item = item;
         this.policy = relationships?.policy || {};
-        const schemas = relationships?.schemas || [];
+        const schemas = restoreSchemaDefs(relationships?.schemas || []);
         this.schemas.clear();
         for (const item of schemas) {
             try {

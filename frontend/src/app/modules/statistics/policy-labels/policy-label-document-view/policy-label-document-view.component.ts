@@ -1,3 +1,4 @@
+import { restoreSchemaDefs } from '../../../common/models/schema-defs';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GenerateUUIDv4, IValidatorStep, LabelValidators, Schema, UserPermissions } from '@guardian/interfaces';
@@ -15,7 +16,11 @@ import { PolicyLabelsService } from 'src/app/services/policy-labels.service';
 @Component({
     selector: 'app-policy-label-document-view',
     templateUrl: './policy-label-document-view.component.html',
-    styleUrls: ['./policy-label-document-view.component.scss'],
+    styleUrls: [
+        '../../../policy-engine/styles/top-toolbar.scss',
+        '../../styles/top-bar-extras.scss',
+        './policy-label-document-view.component.scss'
+    ],
     standalone: false
 })
 export class PolicyLabelDocumentViewComponent implements OnInit {
@@ -37,7 +42,7 @@ export class PolicyLabelDocumentViewComponent implements OnInit {
     public target: any;
     public relationships: any;
     public schemasMap: Map<string, Schema>;
-    public stepper = [true, false, false];
+    public view: 'document' | 'relationships' = 'document';
 
     public token: any;
 
@@ -125,7 +130,7 @@ export class PolicyLabelDocumentViewComponent implements OnInit {
         ]) => {
             this.definition = definition;
             this.policy = definitionRelationships?.policy || {};
-            this.policySchemas = definitionRelationships?.policySchemas || [];
+            this.policySchemas = restoreSchemaDefs(definitionRelationships?.policySchemas || []);
             this.documentsSchemas = definitionRelationships?.documentsSchemas || [];
             this.document = document || {};
             this.target = documentRelationships?.target || {};
@@ -139,12 +144,16 @@ export class PolicyLabelDocumentViewComponent implements OnInit {
         });
     }
 
-    public onBack() {
+    public onDocuments() {
         this.router.navigate([
             '/policy-labels',
             this.definitionId,
             'documents'
         ]);
+    }
+
+    public onLabels() {
+        this.router.navigate(['/policy-labels']);
     }
 
     private updateMetadata() {
@@ -231,12 +240,12 @@ export class PolicyLabelDocumentViewComponent implements OnInit {
         return data
     }
 
-    public onStep(index: number) {
-        this.navLoading = true;
-        for (let i = 0; i < this.stepper.length; i++) {
-            this.stepper[i] = false;
+    public onView(view: 'document' | 'relationships') {
+        if (this.view === view) {
+            return;
         }
-        this.stepper[index] = true;
+        this.navLoading = true;
+        this.view = view;
         setTimeout(() => {
             this.tree?.move(18, 46);
             setTimeout(() => {

@@ -1,7 +1,7 @@
 {
     "author": "Hashgraph <guardian@hashgraph.com>",
     "dependencies": {
-        "@aws-sdk/client-secrets-manager": "3.1149.0",
+        "@aws-sdk/client-secrets-manager": "3.1152.0",
         "@azure/identity": "^4.10.0",
         "@azure/keyvault-secrets": "^4.9.0",
         "@digitalbazaar/credentials-context": "3.2.0",
@@ -27,7 +27,7 @@
         "lodash.set": "^4.3.2",
         "mongodb": "6.21.0",
         "nats": "^2.29.3",
-        "node-vault": "^0.12.0",
+        "node-vault": "^0.13.0",
         "pino": "10.4.0",
         "reflect-metadata": "0.2.2",
         "rxjs": "7.8.2",

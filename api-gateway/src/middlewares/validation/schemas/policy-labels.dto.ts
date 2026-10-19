@@ -129,6 +129,7 @@ export class PolicyLabelRelationshipsDTO {
     @ApiProperty({
         type: () => PolicyDTO,
         required: false,
+        description: 'Policy summary (without config).'
     })
     @IsOptional()
     @IsObject()
@@ -138,6 +139,8 @@ export class PolicyLabelRelationshipsDTO {
         type: () => SchemaDTO,
         required: false,
         isArray: true,
+        description: 'Published root schemas and the sub-schemas they reference, without context. '
+            + 'When a document has no $defs, `defs` lists the iris of its definitions, which are the documents of the sub-schemas in this list.'
     })
     @IsOptional()
     @IsArray()

@@ -9,10 +9,9 @@ import { NavMenu, NavItem, NavTree } from "./nav-item";
 export class LabelConfig {
     public show: boolean = false;
     public readonly: boolean = false;
-    public stepper = [true, false, false];
     public policy: any;
 
-    public readonly step = new Subject<number>();
+    public readonly changed = new Subject<void>();
 
     public groupTypes: any[] = [{
         label: 'At least one',
@@ -59,27 +58,8 @@ export class LabelConfig {
         this.policy = relationships?.policy || {};
     }
 
-    public isActionStep(index: number): boolean {
-        return this.stepper[index];
-    }
-
-    public async goToStep(index: number) {
-        for (let i = 0; i < this.stepper.length; i++) {
-            this.stepper[i] = (i == index);
-        }
-        return this.refreshView();
-    }
-
-    public async refreshView() {
-        return new Promise<void>((resolve, reject) => {
-            setTimeout(() => {
-                resolve();
-            }, 400);
-        });
-    }
-
-    public onStep(index: number) {
-        this.step.next(index);
+    public refreshNavigation() {
+        this.updateSelected();
     }
 
     public dragMenuStart(item: NavItem) {
@@ -103,6 +83,7 @@ export class LabelConfig {
             this.navigationTree.add(this.draggedMenuItem);
             this.navigationTree.update();
             this.draggedMenuItem = null;
+            this.changed.next();
         }
     }
 
@@ -112,6 +93,7 @@ export class LabelConfig {
         }
         $event.accept();
         this.navigationTree.update();
+        this.changed.next();
     }
 
     public onClearNavItem() {
@@ -158,6 +140,7 @@ export class LabelConfig {
                 this.selectedNavItem = null;
                 this.navigationTree.delete(node);
                 this.navigationTree.update();
+                this.changed.next();
             }
         });
     }
