@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {
     buildRelationshipsSchemas,
     pickRelationshipsPolicy,
-} from '../../dist/api/helpers/schema-rules-relationships.js';
+} from '../../dist/api/helpers/relationships.js';
 
 const sub2 = { title: 'sub2', properties: { a: { type: 'string' } } };
 const sub1 = { title: 'sub1', properties: { s2: { $ref: '#s2' } } };
@@ -17,7 +17,7 @@ const schemas = () => [
     { iri: '#unused', entity: 'NONE', context: {}, defs: [], document: { title: 'unused' } },
 ];
 
-describe('schema rule relationships', () => {
+describe('relationships', () => {
     it('keeps only whitelisted policy fields', () => {
         const policy = pickRelationshipsPolicy({ id: '1', name: 'p', version: '1', status: 'PUBLISH', config: { big: true }, hashMap: {} });
         assert.deepEqual(policy, { id: '1', name: 'p', version: '1', status: 'PUBLISH' });
