@@ -847,6 +847,17 @@
                 overflow: hidden;
                 text-overflow: ellipsis;
                 font-weight: 400;
+
+                &[nested="true"] {
+                    color: var(--guardian-disabled-color, #848FA9);
+                    padding-left: 28px;
+
+                    &::before {
+                        content: '\21B3';
+                        margin-left: -12px;
+                        margin-right: 4px;
+                    }
+                }
             }
 
             .node-not-fields {

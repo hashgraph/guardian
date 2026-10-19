@@ -140,7 +140,7 @@
                 @if (nodeCount>0) {
                   <div class="node-fields">
                     @for (item of (isRoot ? node.fields.selectedAllFields : node.fields.selectedFields); track item) {
-                      <div class="node-field">
+                      <div class="node-field" [attr.nested]="item.lvl > 0" [attr.title]="item.lvl > 0 ? item.parent?.data?.description : null">
                         {{item.data.description}}
                       </div>
                     }
