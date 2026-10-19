@@ -303,6 +303,17 @@
                         width: 100%;
                         height: 100%;
                         padding: 0px 24px 24px 24px;
+
+                        // PrimeNG puts .guardian-tabs on the p-tabs host itself,
+                        // so the theme's ".guardian-tabs .p-tabs" height never applies
+                        ::ng-deep .guardian-tabs.p-tabs {
+                            height: 100%;
+
+                            .p-tabpanels {
+                                flex: 1;
+                                min-height: 0;
+                            }
+                        }
                     }
 
                     .field-list {
