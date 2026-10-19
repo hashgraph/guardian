@@ -1,3 +1,4 @@
+import { restoreSchemaDefs } from '../../../common/models/schema-defs';
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DocumentFieldValidators, EntityStatus, FieldRuleResult, ISchemaRules, ISchemaRulesConfig, PolicyStatus, Schema, SchemaField, UserPermissions } from '@guardian/interfaces';
@@ -24,6 +25,7 @@ import { IPFSService } from 'src/app/services/ipfs.service';
     templateUrl: './schema-rule-configuration.component.html',
     styleUrls: [
         '../../../policy-engine/styles/top-toolbar.scss',
+        '../../styles/top-bar-extras.scss',
         './schema-rule-configuration.component.scss'
     ],
     standalone: false
@@ -233,27 +235,10 @@ export class SchemaRuleConfigurationComponent implements OnInit {
                 this.properties.set(property.title, property.value);
             }
         }
-        const schemas = relationships.schemas || [];
-        const documents = new Map<string, any>();
-        for (const schema of schemas) {
-            if (schema.iri && schema.document) {
-                const { $defs, ...document } = schema.document;
-                documents.set(schema.iri, document);
-            }
-        }
+        const schemas = restoreSchemaDefs(relationships.schemas || []);
         this.schemas = [];
         for (const schema of schemas) {
             try {
-                // The server sends `$defs` once, as the sub-schemas themselves.
-                if (schema.document && !schema.document.$defs && Array.isArray(schema.defs) && schema.defs.length) {
-                    const $defs: any = {};
-                    for (const iri of schema.defs) {
-                        if (documents.has(iri)) {
-                            $defs[iri] = documents.get(iri);
-                        }
-                    }
-                    schema.document = { ...schema.document, $defs };
-                }
                 const item = new Schema(schema);
                 const node = SchemaNode.from(item, this.properties);
                 for (const field of item.fields) {

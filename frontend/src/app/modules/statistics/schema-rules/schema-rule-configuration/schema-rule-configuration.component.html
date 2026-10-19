@@ -21,7 +21,7 @@
       <i class="pi pi-chevron-right pc-breadcrumb-sep"></i>
     </nav>
     <div (click)="identityMenu.toggle($event)" class="policy-identity">
-      <span class="rule-type-icon">
+      <span class="type-icon">
         <svg-icon src="/assets/images/icons/circle-check.svg"></svg-icon>
       </span>
       <div class="policy-identity-text">
@@ -95,7 +95,7 @@
   </p-popover>
 
   <p-popover #identityMenu>
-    <div class="identity-popover rule-overview-popover">
+    <div class="identity-popover">
       <div class="identity-popover-header">Rule details</div>
       <form [formGroup]="overviewForm">
         <div class="guardian-input-container">
@@ -108,10 +108,10 @@
         </div>
         <div class="guardian-input-container">
           <label class="form-label" htmlFor="policy">* Policy</label>
-          <div class="rule-policy-field">
+          <div class="policy-field">
             <input formControlName="policy" id="policy" pInputText type="text" readonly/>
             @if (showPolicyVersion) {
-              <span class="rule-policy-version">v{{ policy.version }}</span>
+              <span class="policy-version">v{{ policy.version }}</span>
             }
           </div>
         </div>
