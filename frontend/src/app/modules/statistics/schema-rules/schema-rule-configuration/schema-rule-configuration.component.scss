@@ -946,34 +946,38 @@
         gap: 6px;
 
         svg-icon {
-            display: flex;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 14px;
+            height: 14px;
+            flex: 0 0 14px;
         }
 
         svg {
+            display: block;
             width: 14px;
             height: 14px;
             fill: currentColor;
         }
 
-        .seg-count {
-            min-width: 18px;
-            height: 18px;
-            padding: 0 5px;
-            border-radius: 9px;
-            font-size: 11px;
-            font-weight: 600;
-            display: inline-flex;
+        span {
+            display: flex;
             align-items: center;
-            justify-content: center;
-            color: var(--guardian-disabled-color, #848FA9);
-            background: var(--guardian-grey-background, #F9FAFC);
-            border: 1px solid var(--guardian-border-color, #E1E7EF);
+            line-height: 1;
         }
 
-        &.active .seg-count {
-            color: var(--guardian-primary-color, #4169E2);
-            border-color: color-mix(in srgb, var(--guardian-primary-color, #4169E2) 35%, transparent);
-            background: color-mix(in srgb, var(--guardian-primary-color, #4169E2) 10%, transparent);
+        // same as the Files counter in Formulas
+        .seg-count {
+            min-width: 20px;
+            height: 20px;
+            padding: 0 6px;
+            border-radius: 10px;
+            justify-content: center;
+            font-weight: 600;
+            color: var(--color-grey-5, #848FA9);
+            background: var(--guardian-grey-background, #F9FAFC);
+            border: 1px solid var(--guardian-border-color, #E1E7EF);
         }
     }
 
@@ -1050,6 +1054,12 @@
     input {
         width: 100%;
         font-size: 14px;
+    }
+
+    input[readonly] {
+        background: var(--guardian-grey-background, #F9FAFC);
+        color: var(--guardian-disabled-color, #848FA9);
+        cursor: default;
     }
 
     .form-label {
