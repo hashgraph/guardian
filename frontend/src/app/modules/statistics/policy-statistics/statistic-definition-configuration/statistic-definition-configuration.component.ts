@@ -231,7 +231,7 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
             this.updateForm(item);
             if (!this.viewInitialized) {
                 this.viewInitialized = true;
-                this.view = this.variables.variables.length ? 'rules' : 'schemas';
+                this.view = this.rulesCount ? 'rules' : 'schemas';
             }
             setTimeout(() => {
                 this.loading = false;

@@ -280,7 +280,7 @@ export class PolicyLabelConfigurationComponent implements OnInit {
         const item = this.getItem();
         this.rulesConfig.show = true;
         this.rulesConfig.setData(node, item);
-        this.rulesConfig.view = this.rulesConfig.variables.variables.length ? 'rules' : 'schemas';
+        this.rulesConfig.view = this.rulesConfig.rulesCount ? 'rules' : 'schemas';
     }
 
     public onCancelNavItem() {
@@ -298,7 +298,6 @@ export class PolicyLabelConfigurationComponent implements OnInit {
         this.saveRequest()
             .subscribe((item) => {
                 this.applyItem(item);
-                this.labelConfig.refreshNavigation();
                 setTimeout(() => {
                     this.loading = false;
                 }, 1000);
