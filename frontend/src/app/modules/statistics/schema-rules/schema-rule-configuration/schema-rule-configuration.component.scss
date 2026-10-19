@@ -634,6 +634,37 @@
                         .guardian-input:focus+.cell-focus {
                             display: block;
                         }
+
+                        &.cell-editable {
+                            input {
+                                height: 28px;
+                                padding: 0 24px 0 8px;
+                                border: 1px solid var(--guardian-border-color, #E1E7EF);
+                                border-radius: 6px;
+                                background: var(--guardian-grey-background, #F6F7FA);
+                                cursor: text;
+                            }
+
+                            &:hover input {
+                                border-color: var(--guardian-primary-color, #4169E2);
+                            }
+
+                            input:focus {
+                                background: var(--guardian-background, #FFFFFF);
+                            }
+
+                            .cell-edit-icon {
+                                position: absolute;
+                                right: 24px;
+                                font-size: 11px;
+                                color: var(--guardian-disabled-color, #848FA9);
+                                pointer-events: none;
+                            }
+
+                            input:focus ~ .cell-edit-icon {
+                                display: none;
+                            }
+                        }
                     }
 
                     .variables-grid-cell-transparent {

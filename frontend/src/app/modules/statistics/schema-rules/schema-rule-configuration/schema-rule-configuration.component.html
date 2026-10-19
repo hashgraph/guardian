@@ -406,7 +406,7 @@
               <div class="variables-grid-body">
                 @for (variable of variables.variables; track variable) {
                   <div class="variables-grid-row">
-                    <div class="variables-grid-cell cell-84">
+                    <div class="variables-grid-cell cell-84" [class.cell-editable]="!readonly">
                       <input
                         class="guardian-input guardian-input-cell"
                         [(ngModel)]="variable.id"
@@ -415,6 +415,9 @@
                         pInputText
                         type="text"
                         [readonly]="readonly"/>
+                      @if (!readonly) {
+                        <i class="pi pi-pencil cell-edit-icon"></i>
+                      }
                       <div class="cell-focus"></div>
                     </div>
                     <div class="variables-grid-cell cell-200">
