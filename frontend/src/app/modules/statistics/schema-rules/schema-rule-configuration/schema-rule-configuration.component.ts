@@ -183,7 +183,7 @@ export class SchemaRuleConfigurationComponent implements OnInit {
             this.schemaService.properties()
         ]).subscribe(([item, relationships, properties]) => {
             this.item = item;
-            this.readonly = this.item?.status === EntityStatus.ACTIVE;
+            this.readonly = !this.user.SCHEMAS_RULE_CREATE || this.item?.status === EntityStatus.ACTIVE;
             if (relationships) {
                 this.updateTree(relationships, properties);
             }
@@ -555,6 +555,9 @@ export class SchemaRuleConfigurationComponent implements OnInit {
     }
 
     public onChangeStatus(active: boolean) {
+        if (!this.user.SCHEMAS_RULE_CREATE) {
+            return;
+        }
         this.loading = true;
         const save$ = active && this.dirty ? this.save$() : of(this.item);
         save$.pipe(
@@ -612,6 +615,9 @@ export class SchemaRuleConfigurationComponent implements OnInit {
     }
 
     public onDeleteVariable(variable: FieldRule) {
+        if (this.readonly) {
+            return;
+        }
         const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
             showHeader: false,
             width: '640px',

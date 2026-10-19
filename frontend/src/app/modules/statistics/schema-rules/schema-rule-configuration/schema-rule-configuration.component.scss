@@ -962,6 +962,10 @@
     .status-badge {
         cursor: pointer;
 
+        &--static {
+            cursor: default;
+        }
+
         &--active {
             color: var(--pc-publish-color, #21A66B);
             background: color-mix(in srgb, var(--pc-publish-color, #21A66B) 14%, transparent);
