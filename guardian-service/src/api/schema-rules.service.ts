@@ -7,6 +7,7 @@ import { SchemaRule } from '@guardian/common/entity/schema-rule';
 import { SchemaRuleImportExport } from '@guardian/common/import-export/schema-rule';
 import { EntityStatus, IOwner, MessageAPI, PolicyStatus, SchemaStatus } from '@guardian/interfaces';
 import { getSchemaRuleData, publishRuleConfig } from './helpers/schema-rules-helpers.js';
+import { buildRelationshipsSchemas, pickRelationshipsPolicy } from './helpers/schema-rules-relationships.js';
 
 /**
  * Connect to the message broker methods of working with schema rules.
@@ -164,8 +165,8 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
                     .filter((s) => s.status === SchemaStatus.PUBLISHED && s.entity !== 'EVC');
 
                 return new MessageResponse({
-                    policy,
-                    schemas: all,
+                    policy: pickRelationshipsPolicy(policy),
+                    schemas: buildRelationshipsSchemas(all),
                 });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], userId);
