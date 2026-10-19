@@ -1,7 +1,7 @@
 import { isDeepStrictEqual } from 'node:util';
 
 /**
- * Policy fields the Schema Rules editor needs.
+ * Policy fields the Schema Rules, Statistics and Policy Labels editors need.
  */
 const POLICY_FIELDS = [
     'id',
@@ -59,7 +59,7 @@ function getDefs(schema: any): string[] {
 }
 
 /**
- * Shape schemas for the Schema Rules editor:
+ * Shape schemas for the Schema Rules, Statistics and Policy Labels editors:
  * - keep root schemas (VC or system) and the sub-schemas they reach transitively;
  * - drop `context` (not used by the editor);
  * - move the `$defs` copies out of the documents (`defs` keeps their keys, the

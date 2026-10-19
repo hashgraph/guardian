@@ -1,4 +1,5 @@
 import { ApiResponse } from './helpers/api-response.js';
+import { buildRelationshipsSchemas, pickRelationshipsPolicy } from './helpers/relationships.js';
 import { BinaryMessageResponse, MessageError, MessageResponse } from '@guardian/common/models/message-response';
 import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 import { PinoLogger } from '@guardian/common/helpers/pino-logger';
@@ -279,8 +280,8 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 const documentsSchemas = await DatabaseServer.getSchemas({ topicId: item.topicId });
 
                 return new MessageResponse({
-                    policy,
-                    policySchemas: all,
+                    policy: pickRelationshipsPolicy(policy),
+                    policySchemas: buildRelationshipsSchemas(all),
                     documentsSchemas
                 });
             } catch (error) {

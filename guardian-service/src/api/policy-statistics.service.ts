@@ -1,4 +1,5 @@
 import { ApiResponse } from './helpers/api-response.js';
+import { buildRelationshipsSchemas, pickRelationshipsPolicy } from './helpers/relationships.js';
 import { BinaryMessageResponse, MessageError, MessageResponse } from '@guardian/common/models/message-response';
 import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 import { NewNotifier } from '@guardian/common/notification/notifier';
@@ -186,13 +187,14 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Item does not exist.');
                 }
 
-                const schemas = await PolicyStatisticImportExport.getPolicySchemas(policy);
+                const schemas = buildRelationshipsSchemas(await PolicyStatisticImportExport.getPolicySchemas(policy));
+                const policySummary = pickRelationshipsPolicy(policy);
 
                 if (item.status === EntityStatus.PUBLISHED) {
                     const schema = await DatabaseServer.getSchema({ topicId: item.topicId });
-                    return new MessageResponse({ policy, schemas, schema });
+                    return new MessageResponse({ policy: policySummary, schemas, schema });
                 } else {
-                    return new MessageResponse({ policy, schemas });
+                    return new MessageResponse({ policy: policySummary, schemas });
                 }
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], userId);

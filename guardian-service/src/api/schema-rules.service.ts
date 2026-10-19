@@ -7,7 +7,7 @@ import { SchemaRule } from '@guardian/common/entity/schema-rule';
 import { SchemaRuleImportExport } from '@guardian/common/import-export/schema-rule';
 import { EntityStatus, IOwner, MessageAPI, PolicyStatus, SchemaStatus } from '@guardian/interfaces';
 import { getSchemaRuleData, publishRuleConfig } from './helpers/schema-rules-helpers.js';
-import { buildRelationshipsSchemas, pickRelationshipsPolicy } from './helpers/schema-rules-relationships.js';
+import { buildRelationshipsSchemas, pickRelationshipsPolicy } from './helpers/relationships.js';
 
 /**
  * Connect to the message broker methods of working with schema rules.

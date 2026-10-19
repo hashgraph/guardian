@@ -332,6 +332,8 @@ export class NavTree {
 
     public update() {
         NavItem.updateOrder(this.data);
+        // a new reference, so the (OnPush) p-tree renders the change
+        this.data = [...this.data];
     }
 
     public delete(node: NavItem): void {
