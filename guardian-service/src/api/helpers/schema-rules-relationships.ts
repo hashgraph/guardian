@@ -99,8 +99,9 @@ export function buildRelationshipsSchemas(schemas: any[]): any[] {
         const { context, ...item } = schema;
         const document = getDocument(schema);
         const defs = document?.$defs;
-        if (defs && typeof defs === 'object' && Object.keys(defs).length) {
-            const restorable = Object.keys(defs).every((iri) => {
+        const keys = defs && typeof defs === 'object' ? Object.keys(defs) : [];
+        if (keys.length) {
+            const restorable = keys.every((iri) => {
                 const sub = getDocument(byIri.get(iri));
                 if (!sub) {
                     return false;
@@ -111,7 +112,7 @@ export function buildRelationshipsSchemas(schemas: any[]): any[] {
             if (restorable) {
                 const { $defs, ...rest } = document;
                 item.document = rest;
-                item.defs = Object.keys(defs);
+                item.defs = keys;
             }
         }
         result.push(item);
