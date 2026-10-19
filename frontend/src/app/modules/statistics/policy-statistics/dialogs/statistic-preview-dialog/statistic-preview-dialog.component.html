@@ -14,79 +14,85 @@
       </div>
     }
     <div class="preview-container">
-      <div class="fields-header">
-        Input Fields
-      </div>
-      @if (preview) {
-        <div class="fields-container">
-          @for (variable of preview; track variable) {
-            <div class="field-container">
-              <div class="field-name">
-                {{variable.description}}
-              </div>
-              <div class="field-input">
-                <input
-                  class="guardian-input"
-                  [(ngModel)]="variable.value"
-                  pInputText
-                  type="text"
-                  />
-              </div>
-            </div>
-          }
-        </div>
-      }
-      <div class="fields-header">
-        Scores
-      </div>
-      @if (formulas) {
-        <div class="fields-container">
-          @for (score of scores; track score) {
-            <div class="field-container">
-              <div class="field-name">
-                {{score.description}}
-              </div>
-              @if (score.options) {
-                <div class="options-container">
-                  @for (option of score.options; track option) {
-                    <div class="option-container">
-                      <div class="option-checkbox">
-                        <p-radioButton
-                          class="guardian-radio-button radio-button-24"
-                          [name]="score.id"
-                          [value]="option.value"
-                          [(ngModel)]="score.value"
-                          [inputId]="option.id"
-                        ></p-radioButton>
-                      </div>
-                      <label class="option-name" [for]="option.id">
-                        {{option.description}}
-                      </label>
-                    </div>
-                  }
+      <section class="preview-section">
+        <div class="fields-header">Input Fields</div>
+        @if (preview?.length) {
+          <div class="fields-container">
+            @for (variable of preview; track variable) {
+              <div class="field-container">
+                <div class="field-name">
+                  {{variable.description}}
                 </div>
-              }
-            </div>
-          }
-        </div>
-      }
-      <div class="fields-header">
-        Formulas
-      </div>
-      @if (formulas) {
-        <div class="fields-container">
-          @for (formula of formulas; track formula) {
-            <div class="field-container">
-              <div class="field-name">
-                {{formula.description}}
+                <div class="field-input">
+                  <input
+                    class="guardian-input"
+                    [(ngModel)]="variable.value"
+                    pInputText
+                    type="text"
+                    />
+                </div>
               </div>
-              <div class="field-value">
-                {{formula.value}}
+            }
+          </div>
+        } @else {
+          <div class="section-empty">There were no fields selected yet.</div>
+        }
+      </section>
+      <section class="preview-section">
+        <div class="fields-header">Scores</div>
+        @if (scores?.length) {
+          <div class="fields-container">
+            @for (score of scores; track score) {
+              <div class="field-container">
+                <div class="field-name">
+                  {{score.description}}
+                </div>
+                @if (score.options) {
+                  <div class="options-container">
+                    @for (option of score.options; track option) {
+                      <div class="option-container">
+                        <div class="option-checkbox">
+                          <p-radioButton
+                            class="guardian-radio-button radio-button-24"
+                            [name]="score.id"
+                            [value]="option.value"
+                            [(ngModel)]="score.value"
+                            [inputId]="option.id"
+                          ></p-radioButton>
+                        </div>
+                        <label class="option-name" [for]="option.id">
+                          {{option.description}}
+                        </label>
+                      </div>
+                    }
+                  </div>
+                }
               </div>
-            </div>
-          }
-        </div>
-      }
+            }
+          </div>
+        } @else {
+          <div class="section-empty">There are no scores created yet.</div>
+        }
+      </section>
+      <section class="preview-section">
+        <div class="fields-header">Formulas</div>
+        @if (formulas?.length) {
+          <div class="fields-container">
+            @for (formula of formulas; track formula) {
+              <div class="field-container">
+                <div class="field-name">
+                  {{formula.description}}
+                </div>
+                <div class="field-value">
+                  {{formula.value}}
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="section-empty">There are no formulas created yet.</div>
+        }
+      </section>
     </div>
   </div>
 </div>
