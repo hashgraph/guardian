@@ -12,147 +12,167 @@
     </div>
   }
 
-  @if (!rulesConfig.show) {
-    <div class="header-container">
-      <div class="guardian-user-page-path">
-        <span class="path-link" (click)="onBack()">Labels</span>
-        <span>></span>
-        <span class="path-link">{{item?.name || 'Label'}}</span>
+  <div class="top-toolbar">
+    @if (!rulesConfig.show) {
+      <nav class="pc-breadcrumb">
+        <div (click)="onBack()" class="pc-back-crumb" title="Back to policy labels">
+          <i class="pi pi-arrow-left"></i>
+        </div>
+        <a (click)="onBack()" class="pc-crumb-link">Policy Labels</a>
+        <i class="pi pi-chevron-right pc-breadcrumb-sep"></i>
+      </nav>
+      <div (click)="identityMenu.toggle($event)" class="policy-identity">
+        <span class="type-icon">
+          <svg-icon src="/assets/images/icons/hashtag.svg"></svg-icon>
+        </span>
+        <div class="policy-identity-text">
+          <span class="policy-identity-name"
+            [title]="item?.name || 'Untitled label'">{{ item?.name || 'Untitled label' }}</span>
+          <span class="policy-identity-meta">Policy: {{ policy?.name }} · Label details</span>
+        </div>
+        <i class="pi pi-chevron-down policy-identity-caret"></i>
       </div>
-      <div class="guardian-user-page-header">
-        <span>{{item?.name}}</span>
-        @if (policy) {
-          <div class="policy-name">
-            <span>Policy Name: {{policy.name}}</span>
-            <span class="policy-version">Version: {{policy.version}}</span>
-          </div>
-        }
+      @if (item?.status === EntityStatus.PUBLISHED) {
+        <div class="status-badge status-badge--published status-badge--static" title="Published">
+          <i class="pi pi-globe"></i>
+          <span>Published</span>
+        </div>
+      } @else if (item?.status === EntityStatus.ERROR) {
+        <div (click)="statusMenu.toggle($event)" class="status-badge status-badge--error" title="Error">
+          <i class="pi pi-exclamation-circle"></i>
+          <span>Error</span>
+          <i class="pi pi-sort-down-fill status-badge-caret"></i>
+        </div>
+      } @else if (item) {
+        <div (click)="statusMenu.toggle($event)" class="status-badge status-badge--draft" title="Draft">
+          <i class="pi pi-pencil"></i>
+          <span>Draft</span>
+          <i class="pi pi-sort-down-fill status-badge-caret"></i>
+        </div>
+      }
+      <div class="toolbar-spacer"></div>
+      @if (!readonly && dirty) {
+        <div class="unsaved-marker">
+          <span class="unsaved-dot"></span>
+          <span>Unsaved changes</span>
+        </div>
+      }
+      <div class="view-segment">
+        <div class="view-segment-item" [class.active]="labelView === 'imports'" (click)="onLabelView('imports')">
+          <svg-icon src="/assets/images/icons/16/import.svg"></svg-icon>
+          <span>Imports</span>
+          <span class="seg-count">{{ importsCount }}</span>
+        </div>
+        <div class="view-segment-item" [class.active]="labelView === 'navigation'" (click)="onLabelView('navigation')">
+          <svg-icon src="/assets/images/icons/16/order.svg"></svg-icon>
+          <span>Navigation</span>
+          <span class="seg-count">{{ navigationCount }}</span>
+        </div>
       </div>
-    </div>
-  }
+      <div (click)="onPreview()" class="top-toolbar-btn bordered-btn" title="Preview">
+        <i class="pi pi-eye"></i>
+        <span>Preview</span>
+      </div>
+      @if (!readonly) {
+        <div (click)="onSave()" class="top-toolbar-btn top-toolbar-btn--primary" title="Save">
+          <i class="pi pi-save"></i>
+          <span>Save</span>
+        </div>
+      }
+    } @else {
+      <nav class="pc-breadcrumb">
+        <div (click)="onCancelNavItem()" class="pc-back-crumb" title="Cancel and go back to the label">
+          <i class="pi pi-arrow-left"></i>
+        </div>
+        <a (click)="onBack()" class="pc-crumb-link">Policy Labels</a>
+        <i class="pi pi-chevron-right pc-breadcrumb-sep"></i>
+        <a (click)="onCancelNavItem()" class="pc-crumb-link" [title]="item?.name || 'Label'">{{ item?.name || 'Label' }}</a>
+        <i class="pi pi-chevron-right pc-breadcrumb-sep"></i>
+      </nav>
+      <div class="policy-identity policy-identity--static">
+        <span class="type-icon">
+          <svg-icon src="/assets/images/icons/{{rulesConfig.icon}}.svg"></svg-icon>
+        </span>
+        <div class="policy-identity-text">
+          <span class="policy-identity-name"
+            [title]="rulesConfig.name || rulesConfig.type">{{ rulesConfig.name || rulesConfig.type }}</span>
+          <span class="policy-identity-meta">{{ rulesConfig.typeLabel }} · Tag: {{ rulesConfig.tag }}</span>
+        </div>
+      </div>
+      @if (rulesConfig.readonly) {
+        <div class="status-badge status-badge--readonly">
+          <i class="pi pi-lock"></i>
+          <span>Read-only</span>
+        </div>
+      }
+      <div class="toolbar-spacer"></div>
+      @if (!rulesConfig.readonly && (dirty || rulesConfig.dirty)) {
+        <div class="unsaved-marker">
+          <span class="unsaved-dot"></span>
+          <span>Unsaved changes</span>
+        </div>
+      }
+      <div class="view-segment">
+        <div class="view-segment-item" [class.active]="rulesConfig.view === 'schemas'" (click)="onRulesView('schemas')">
+          <svg-icon src="/assets/images/icons/16/tree.svg"></svg-icon>
+          <span>Schemas</span>
+        </div>
+        <div class="view-segment-item" [class.active]="rulesConfig.view === 'rules'" (click)="onRulesView('rules')">
+          <svg-icon src="/assets/images/icons/16/table.svg"></svg-icon>
+          <span>Rules</span>
+          <span class="seg-count">{{ rulesConfig.rulesCount }}</span>
+        </div>
+      </div>
+      <div (click)="onCancelNavItem()" class="top-toolbar-btn bordered-btn" title="Discard rule changes">
+        <span>Cancel</span>
+      </div>
+      @if (!rulesConfig.readonly) {
+        <div (click)="onSaveNavItem()" class="top-toolbar-btn top-toolbar-btn--primary"
+          title="Apply rule changes and save the label">
+          <span>Apply</span>
+        </div>
+      }
+    }
+  </div>
 
-  @if (rulesConfig.show) {
-    <div class="header-container">
-      <div class="guardian-user-page-path">
-        <span class="path-link" (click)="onBack()">Labels</span>
-        <span>></span>
-        <span class="path-link" (click)="onCancelNavItem()">{{item?.name || 'Label'}}</span>
-        <span>></span>
-        <span class="path-link">{{rulesConfig.name || rulesConfig.type}}</span>
-      </div>
-      <div class="guardian-user-page-header">
-        <span>{{rulesConfig.name}}</span>
-        @if (policy) {
-          <div class="policy-name">
-            <span>Policy Name: {{policy.name}}</span>
-            <span class="policy-version">Version: {{policy.version}}</span>
-          </div>
-        }
-      </div>
+  <p-popover #statusMenu>
+    <div (click)="onPublish(); statusMenu.hide()" class="toolbar-menu publish-color"
+      title="Release version into public domain.">
+      <i class="pi pi-globe publish-color"></i>
+      <span class="publish-color">Publish</span>
     </div>
-  }
+  </p-popover>
 
-  @if (labelConfig.show) {
-    <div class="body-container" style="z-index: 1">
-      <div class="guardian-menu-container">
-        <div class="guardian-menu-separator"></div>
-        <div class="guardian-menu-button" (click)="onBack()">
-          <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/back.svg"></svg-icon>
-          <div class="guardian-menu-name">Back</div>
+  <p-popover #identityMenu>
+    <div class="identity-popover">
+      <div class="identity-popover-header">Label details</div>
+      <form [formGroup]="labelConfig.overviewForm">
+        <div class="guardian-input-container">
+          <label class="form-label" htmlFor="name">* Name</label>
+          <input formControlName="name" id="name" pInputText type="text" [readonly]="labelConfig.readonly" />
         </div>
-        <div class="guardian-menu-separator"></div>
-        <div class="guardian-menu-button" (click)="onSave()" [attr.disabled]="labelConfig.readonly">
-          <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/save.svg"></svg-icon>
-          <div class="guardian-menu-name">Save</div>
+        <div class="guardian-input-container">
+          <label class="form-label" htmlFor="description">Description</label>
+          <input formControlName="description" id="description" pInputText type="text"
+            [readonly]="labelConfig.readonly" />
         </div>
-        <div class="guardian-menu-separator"></div>
-        <div class="guardian-menu-button" (click)="onPreview()">
-          <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/preview.svg"></svg-icon>
-          <div class="guardian-menu-name">Preview</div>
-        </div>
-        <div class="guardian-menu-separator"></div>
-        @if (readonly) {
-          <div class="guardian-menu-label success-color">
-            <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/publish.svg"></svg-icon>
-            <div class="guardian-menu-name">Published</div>
-          </div>
-          <div class="guardian-menu-separator"></div>
-        }
-        @if (!readonly) {
-          <div
-            class="guardian-menu-button guardian-menu-select"
-            (click)="statusMenu.toggle($event)"
-            [attr.open]="statusMenu.visible">
-            <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/edit.svg"></svg-icon>
-            <div class="guardian-menu-name">Draft</div>
-            <div class="guardian-menu-select-icon"></div>
-          </div>
-          <p-tieredMenu
-            #statusMenu
-            [model]="statusMenuItems"
-            [popup]="true"
-            appendTo="body"
-            styleClass="guardian-menu-popup">
-            <ng-template pTemplate="item" let-item>
-              <div class="guardian-menu-button success-color" (click)="item.callback($event)">
-                <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/{{item.icon}}.svg"></svg-icon>
-                <div class="guardian-menu-name">{{item.label}}</div>
-              </div>
-            </ng-template>
-          </p-tieredMenu>
-          <div class="guardian-menu-separator guardian-menu-separator-last"></div>
-        }
-      </div>
-      <div class="tab-container">
-        <div class="guardian-step-container">
-          <div class="guardian-stepper horizontal-stepper">
-            <div class="guardian-step" [attr.action]="labelConfig.isActionStep(0)"
-              (click)="labelConfig.onStep(0)">
-              <div class="guardian-step-icon">
-                <svg-icon class="icon-btn svg-icon-16"
-                src="/assets/images/icons/16/file-fill.svg"></svg-icon>
-              </div>
-              <div class="guardian-step-name">Overview</div>
-            </div>
-            <div class="guardian-step" [attr.action]="labelConfig.isActionStep(1)"
-              (click)="labelConfig.onStep(1)">
-              <div class="guardian-step-icon">
-                <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/import.svg"></svg-icon>
-              </div>
-              <div class="guardian-step-name">Imports</div>
-            </div>
-            <div class="guardian-step" [attr.action]="labelConfig.isActionStep(2)"
-              (click)="labelConfig.onStep(2)">
-              <div class="guardian-step-icon">
-                <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/order.svg"></svg-icon>
-              </div>
-              <div class="guardian-step-name">Navigation</div>
-            </div>
+        <div class="guardian-input-container">
+          <label class="form-label" htmlFor="policy">* Policy</label>
+          <div class="policy-field">
+            <input formControlName="policy" id="policy" pInputText type="text" readonly />
+            @if (showPolicyVersion) {
+              <span class="policy-version">v{{ policy.version }}</span>
+            }
           </div>
         </div>
-      </div>
+      </form>
+    </div>
+  </p-popover>
+
+  @if (labelConfig.show && !rulesConfig.show) {
+    <div class="body-container">
       <div class="step-body-container">
-        @if (labelConfig.isActionStep(0)) {
-          <div class="overview-viewer">
-            <form [formGroup]="labelConfig.overviewForm">
-              <div class="guardian-input-container">
-                <label class="form-label" htmlFor="version">* Name</label>
-                <input formControlName="name" id="name" pInputText type="text"
-                  [readonly]="labelConfig.readonly" />
-              </div>
-              <div class="guardian-input-container">
-                <label class="form-label" htmlFor="version">Description</label>
-                <input formControlName="description" id="description" pInputText type="text"
-                  [readonly]="labelConfig.readonly" />
-              </div>
-              <div class="guardian-input-container">
-                <label class="form-label" htmlFor="version">* Policy</label>
-                <input formControlName="policy" id="policy" pInputText type="text" readonly />
-              </div>
-            </form>
-          </div>
-        }
-        @if (labelConfig.isActionStep(1)) {
+        @if (labelView === 'imports') {
           <div class="imports-viewer">
             @if (!labelConfig.readonly) {
               <div class="import-toolbar">
@@ -221,7 +241,7 @@
             </div>
           </div>
         }
-        @if (labelConfig.isActionStep(2)) {
+        @if (labelView === 'navigation') {
           <div class="navigation-viewer">
             <div class="navigation-toolbar" [attr.readonly]="readonly">
               <div class="navigation-toolbar-header">Elements</div>
@@ -333,17 +353,17 @@
                     @if (labelConfig.getGroupConfig(selectedNavItem); as config) {
                       <div class="guardian-input-container">
                         <label class="form-label" htmlFor="version">* Tag</label>
-                        <input pInputText type="text" [(ngModel)]="config.tag"
+                        <input pInputText type="text" [(ngModel)]="config.tag" (ngModelChange)="markDirty()"
                           [readonly]="selectedNavItem.freezed" />
                       </div>
                       <div class="guardian-input-container">
                         <label class="form-label" htmlFor="version">* Title</label>
-                        <input pInputText type="text" [(ngModel)]="config.title"
+                        <input pInputText type="text" [(ngModel)]="config.title" (ngModelChange)="markDirty()"
                           [readonly]="selectedNavItem.freezed" />
                       </div>
                       <div class="guardian-input-container">
                         <label class="form-label" htmlFor="version">* Rule</label>
-                        <p-select [(ngModel)]="config.rule" [options]="labelConfig.groupTypes"
+                        <p-select [(ngModel)]="config.rule" (ngModelChange)="markDirty()" [options]="labelConfig.groupTypes"
                           [showClear]="false" class="guardian-dropdown" appendTo="body"
                           placeholder="Not selected" optionLabel="label" optionValue="value"
                           panelStyleClass="guardian-dropdown-panel" [readonly]="selectedNavItem.freezed">
@@ -353,24 +373,24 @@
                     @if (labelConfig.getRuleConfig(selectedNavItem); as config) {
                       <div class="guardian-input-container">
                         <label class="form-label" htmlFor="version">* Tag</label>
-                        <input pInputText type="text" [(ngModel)]="config.tag"
+                        <input pInputText type="text" [(ngModel)]="config.tag" (ngModelChange)="markDirty()"
                           [readonly]="selectedNavItem.freezed" />
                       </div>
                       <div class="guardian-input-container">
                         <label class="form-label" htmlFor="version">* Title</label>
-                        <input pInputText type="text" [(ngModel)]="config.title"
+                        <input pInputText type="text" [(ngModel)]="config.title" (ngModelChange)="markDirty()"
                           [readonly]="selectedNavItem.freezed" />
                       </div>
                     }
                     @if (labelConfig.getLabelConfig(selectedNavItem); as config) {
                       <div class="guardian-input-container">
                         <label class="form-label" htmlFor="version">* Tag</label>
-                        <input pInputText type="text" [(ngModel)]="config.tag"
+                        <input pInputText type="text" [(ngModel)]="config.tag" (ngModelChange)="markDirty()"
                           [readonly]="selectedNavItem.freezed" />
                       </div>
                       <div class="guardian-input-container">
                         <label class="form-label" htmlFor="version">* Title</label>
-                        <input pInputText type="text" [(ngModel)]="config.title"
+                        <input pInputText type="text" [(ngModel)]="config.title" (ngModelChange)="markDirty()"
                           [readonly]="selectedNavItem.freezed" />
                       </div>
                       <div class="item-options-header">
@@ -396,12 +416,12 @@
                     @if (labelConfig.getStatisticConfig(selectedNavItem); as config) {
                       <div class="guardian-input-container">
                         <label class="form-label" htmlFor="version">* Tag</label>
-                        <input pInputText type="text" [(ngModel)]="config.tag"
+                        <input pInputText type="text" [(ngModel)]="config.tag" (ngModelChange)="markDirty()"
                           [readonly]="selectedNavItem.freezed" />
                       </div>
                       <div class="guardian-input-container">
                         <label class="form-label" htmlFor="version">* Title</label>
-                        <input pInputText type="text" [(ngModel)]="config.title"
+                        <input pInputText type="text" [(ngModel)]="config.title" (ngModelChange)="markDirty()"
                           [readonly]="selectedNavItem.freezed" />
                       </div>
                       <div class="item-options-header">
@@ -454,32 +474,9 @@
   }
 
   @if (rulesConfig.show) {
-    <div class="body-container" style="z-index: 2">
-      <div class="step-container">
-        <div class="guardian-step-container">
-          <div class="guardian-stepper horizontal-stepper">
-            <div class="guardian-step" [attr.action]="rulesConfig.isActionStep(0)"
-              (click)="rulesConfig.onStep(0)">
-              <div class="guardian-step-icon">
-                <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/tree.svg">
-                </svg-icon>
-              </div>
-              <div class="guardian-step-name">Select Schemas</div>
-            </div>
-            <div class="guardian-step-separator"></div>
-            <div class="guardian-step" [attr.action]="rulesConfig.isActionStep(1)"
-              (click)="rulesConfig.onStep(1)">
-              <div class="guardian-step-icon">
-                <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/table.svg">
-                </svg-icon>
-              </div>
-              <div class="guardian-step-name">Configure Rules</div>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div class="body-container">
       <div class="step-body-container">
-        @if (rulesConfig.isActionStep(0)) {
+        @if (rulesConfig.view === 'schemas') {
           <div class="schema-viewer">
             <div class="tree-container">
               <app-tree-graph (init)="rulesConfig.initTree($event)" (render)="rulesConfig.createNodes($event)"
@@ -490,21 +487,23 @@
                     <div class="node-header">
                       {{node.data.name}}
                     </div>
-                    @if (node.fields.selectedCount>0) {
+                    @let isRoot = node.type === 'root';
+                    @let nodeCount = isRoot ? node.fields.selectedAllCount : node.fields.selectedCount;
+                    @if (nodeCount>0) {
                       <div class="node-fields">
-                        @for (item of node.fields.selectedFields; track item) {
-                          <div class="node-field">
+                        @for (item of (isRoot ? node.fields.selectedAllFields : node.fields.selectedFields); track item) {
+                          <div class="node-field" [attr.nested]="item.lvl > 0" [attr.title]="item.lvl > 0 ? item.parent?.data?.description : null">
                             {{item.data.description}}
                           </div>
                         }
-                        @if (node.fields.selectedCount>4) {
+                        @if (nodeCount>4) {
                           <div class="node-not-fields">
-                            + {{node.fields.selectedCount-4}} more
+                            + {{nodeCount-4}} more
                           </div>
                         }
                       </div>
                     }
-                    @if (!node.fields.selectedCount) {
+                    @if (!nodeCount) {
                       <div class="node-fields">
                         <div class="node-not-fields">
                           Nothing selected
@@ -686,7 +685,7 @@
             </div>
           </div>
         }
-        @if (rulesConfig.isActionStep(1)) {
+        @if (rulesConfig.view === 'rules') {
           <div class="config-viewer">
             <div class="variables-container">
               <div class="variables-header">
@@ -704,10 +703,13 @@
                   <div class="variables-grid-body">
                     @for (variable of rulesConfig.variables.variables; track variable) {
                       <div class="variables-grid-row">
-                        <div class="variables-grid-cell cell-84">
-                          <input class="guardian-input guardian-input-cell" [(ngModel)]="variable.id"
+                        <div class="variables-grid-cell cell-84" [class.cell-editable]="!rulesConfig.readonly">
+                          <input class="guardian-input guardian-input-cell" [(ngModel)]="variable.id" (ngModelChange)="rulesConfig.markDirty()"
                             id="formula.id" pInputText type="text" [readonly]="rulesConfig.readonly"
                             (blur)="rulesConfig.onRename()" />
+                          @if (!rulesConfig.readonly) {
+                            <i class="pi pi-pencil cell-edit-icon"></i>
+                          }
                           <div class="cell-focus"></div>
                         </div>
                         <div class="variables-grid-cell cell-300">
@@ -757,23 +759,26 @@
                   <div class="variables-grid-body">
                     @for (score of rulesConfig.scores.scores; track score) {
                       <div class="variables-grid-row">
-                        <div class="variables-grid-cell cell-84">
-                          <input class="guardian-input guardian-input-cell" [(ngModel)]="score.id"
+                        <div class="variables-grid-cell cell-84" [class.cell-editable]="!rulesConfig.readonly">
+                          <input class="guardian-input guardian-input-cell" [(ngModel)]="score.id" (ngModelChange)="rulesConfig.markDirty()"
                             id="formula.id" pInputText type="text" [readonly]="rulesConfig.readonly"
                             (blur)="rulesConfig.onRename()" />
+                          @if (!rulesConfig.readonly) {
+                            <i class="pi pi-pencil cell-edit-icon"></i>
+                          }
                           <div class="cell-focus"></div>
                         </div>
                         <!-- <div class="variables-grid-cell cell-200">
                         {{score.type}}
                       </div> -->
                       <div class="variables-grid-cell">
-                        <input class="guardian-input guardian-input-cell" [(ngModel)]="score.description"
+                        <input class="guardian-input guardian-input-cell" [(ngModel)]="score.description" (ngModelChange)="rulesConfig.markDirty()"
                           id="formula.description" pInputText type="text"
                           [readonly]="rulesConfig.readonly" />
                         <div class="cell-focus"></div>
                       </div>
                       <div class="variables-grid-cell cell-300 cell-multiselect">
-                        <p-multiSelect [(ngModel)]="score.relationships"
+                        <p-multiSelect [(ngModel)]="score.relationships" (ngModelChange)="rulesConfig.markDirty()"
                           [options]="rulesConfig.variables.variables"
                           class="guardian-multiselect guardian-multiselect-cell" appendTo="body"
                           optionLabel="id" optionValue="id" placeholder="Not selected"
@@ -860,14 +865,17 @@
                 <div class="variables-grid-body">
                   @for (formula of rulesConfig.formulas.formulas; track formula) {
                     <div class="variables-grid-row">
-                      <div class="variables-grid-cell cell-84">
-                        <input class="guardian-input guardian-input-cell" [(ngModel)]="formula.id"
+                      <div class="variables-grid-cell cell-84" [class.cell-editable]="!rulesConfig.readonly">
+                        <input class="guardian-input guardian-input-cell" [(ngModel)]="formula.id" (ngModelChange)="rulesConfig.markDirty()"
                           id="formula.id" pInputText type="text" [readonly]="rulesConfig.readonly"
                           (blur)="rulesConfig.onRename()" />
+                        @if (!rulesConfig.readonly) {
+                          <i class="pi pi-pencil cell-edit-icon"></i>
+                        }
                         <div class="cell-focus"></div>
                       </div>
                       <div class="variables-grid-cell cell-200 cell-select">
-                        <p-select [(ngModel)]="formula.type" [options]="rulesConfig.formulaTypes"
+                        <p-select [(ngModel)]="formula.type" (ngModelChange)="rulesConfig.markDirty()" [options]="rulesConfig.formulaTypes"
                           [showClear]="false" class="guardian-dropdown guardian-dropdown-cell"
                           appendTo="body" placeholder="Not selected"
                           panelStyleClass="guardian-dropdown-panel">
@@ -875,14 +883,14 @@
                         <div class="cell-focus"></div>
                       </div>
                       <div class="variables-grid-cell cell-300">
-                        <input class="guardian-input guardian-input-cell" [(ngModel)]="formula.description"
+                        <input class="guardian-input guardian-input-cell" [(ngModel)]="formula.description" (ngModelChange)="rulesConfig.markDirty()"
                           id="formula.description" pInputText type="text"
                           [readonly]="rulesConfig.readonly" />
                         <div class="cell-focus"></div>
                       </div>
                       <div class="variables-grid-cell">
                         <ngx-codemirror [attr.codemirror-readonly]="rulesConfig.readonly"
-                          [(ngModel)]="formula.formula"
+                          [(ngModel)]="formula.formula" (ngModelChange)="rulesConfig.markDirty()"
                           [options]="rulesConfig.getCodeMirrorOptions(formula.id)"
                         [disabled]="rulesConfig.readonly"></ngx-codemirror>
                       </div>
@@ -937,13 +945,6 @@
             }
           </div>
         </div>
-      }
-    </div>
-    <div class="actions-container">
-      <button (click)="onCancelNavItem()" class="guardian-button guardian-button-secondary">Cancel</button>
-      @if (!rulesConfig.readonly) {
-        <button (click)="onSaveNavItem()"
-        class="guardian-button guardian-button-primary">Apply Changes</button>
       }
     </div>
   </div>
