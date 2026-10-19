@@ -61754,8 +61754,15 @@ components:
       type: object
       properties:
         policy:
-          $ref: '#/components/schemas/PolicyDTO'
+          description: Policy summary (without config).
+          allOf:
+            - $ref: '#/components/schemas/PolicyDTO'
         schemas:
+          description: >-
+            Published root schemas and the sub-schemas they reference, without
+            context. When a document has no $defs, `defs` lists the iris of its
+            definitions, which are the documents of the sub-schemas in this
+            list.
           type: array
           items:
             $ref: '#/components/schemas/SchemaDTO'

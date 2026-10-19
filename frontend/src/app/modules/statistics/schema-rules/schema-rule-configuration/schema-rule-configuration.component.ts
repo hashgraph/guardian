@@ -234,9 +234,26 @@ export class SchemaRuleConfigurationComponent implements OnInit {
             }
         }
         const schemas = relationships.schemas || [];
+        const documents = new Map<string, any>();
+        for (const schema of schemas) {
+            if (schema.iri && schema.document) {
+                const { $defs, ...document } = schema.document;
+                documents.set(schema.iri, document);
+            }
+        }
         this.schemas = [];
         for (const schema of schemas) {
             try {
+                // The server sends `$defs` once, as the sub-schemas themselves.
+                if (schema.document && !schema.document.$defs && Array.isArray(schema.defs) && schema.defs.length) {
+                    const $defs: any = {};
+                    for (const iri of schema.defs) {
+                        if (documents.has(iri)) {
+                            $defs[iri] = documents.get(iri);
+                        }
+                    }
+                    schema.document = { ...schema.document, $defs };
+                }
                 const item = new Schema(schema);
                 const node = SchemaNode.from(item, this.properties);
                 for (const field of item.fields) {
