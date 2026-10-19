@@ -12,81 +12,111 @@
     </div>
   }
 
-  <div class="header-container">
-    <div class="schema-breadcrumb">
-      <a class="breadcrumb-back" (click)="onBack()">Schema Rules</a>
-      <span class="breadcrumb-sep"> / </span>
-      <span class="breadcrumb-current">{{item?.name}}</span>
-    </div>
-
-    <div class="guardian-user-page-header">
-      <span>{{item?.name}}</span>
-      @if (policy) {
-        <div class="policy-name">
-          <span>Policy Name: {{policy.name}}</span>
-          @if (policy.version) {
-            <span class="policy-version">Version: {{policy.version}}</span>
-          }
-        </div>
-      }
-    </div>
-  </div>
-  <div class="step-container">
-    <div class="guardian-step-container">
-      <div class="guardian-stepper horizontal-stepper">
-        <div class="guardian-step" [attr.action]="stepper[0]" (click)="onStep(0)">
-          <div class="guardian-step-icon">
-            <svg-icon
-              class="icon-btn svg-icon-16"
-              src="/assets/images/icons/16/file-fill.svg">
-            </svg-icon>
-          </div>
-          <div class="guardian-step-name">Overview</div>
-        </div>
-        <div class="guardian-step-separator"></div>
-        <div class="guardian-step" [attr.action]="stepper[1]" (click)="onStep(1)">
-          <div class="guardian-step-icon">
-            <svg-icon
-              class="icon-btn svg-icon-16"
-              src="/assets/images/icons/16/tree.svg">
-            </svg-icon>
-          </div>
-          <div class="guardian-step-name">Select Schemas</div>
-        </div>
-        <div class="guardian-step-separator"></div>
-        <div class="guardian-step" [attr.action]="stepper[2]" (click)="onStep(2)">
-          <div class="guardian-step-icon">
-            <svg-icon
-              class="icon-btn svg-icon-16"
-              src="/assets/images/icons/16/table.svg">
-            </svg-icon>
-          </div>
-          <div class="guardian-step-name">Configure Rules</div>
-        </div>
+  <div class="top-toolbar">
+    <nav class="pc-breadcrumb">
+      <div (click)="onBack()" class="pc-back-crumb" title="Back to schema rules">
+        <i class="pi pi-arrow-left"></i>
       </div>
+      <a (click)="onBack()" class="pc-crumb-link">Schema Rules</a>
+      <i class="pi pi-chevron-right pc-breadcrumb-sep"></i>
+    </nav>
+    <div (click)="identityMenu.toggle($event)" class="policy-identity">
+      <span class="rule-type-icon">
+        <svg-icon src="/assets/images/icons/circle-check.svg"></svg-icon>
+      </span>
+      <div class="policy-identity-text">
+        <span class="policy-identity-name"
+          [title]="item?.name || 'Untitled rule'">{{ item?.name || 'Untitled rule' }}</span>
+        <span class="policy-identity-meta">Policy: {{ policy?.name }} · Rule details</span>
+      </div>
+      <i class="pi pi-chevron-down policy-identity-caret"></i>
     </div>
-  </div>
-  <div class="body-container">
-    @if (stepper[0]) {
-      <div class="overview-viewer">
-        <form [formGroup]="overviewForm">
-          <div class="guardian-input-container">
-            <label class="form-label" htmlFor="version">* Name</label>
-            <input formControlName="name" id="name" pInputText type="text" [readonly]="readonly"/>
-          </div>
-          <div class="guardian-input-container">
-            <label class="form-label" htmlFor="version">Description</label>
-            <input formControlName="description" id="description" pInputText type="text" [readonly]="readonly"/>
-          </div>
-          <div class="guardian-input-container">
-            <label class="form-label" htmlFor="version">* Policy</label>
-            <input formControlName="policy" id="policy" pInputText type="text" readonly/>
-          </div>
-        </form>
+    @if (item?.status === EntityStatus.ACTIVE) {
+      <div (click)="statusMenu.toggle($event)" class="status-badge status-badge--active" title="Active">
+        <i class="pi pi-check-circle"></i>
+        <span>Active</span>
+        <i class="pi pi-sort-down-fill status-badge-caret"></i>
+      </div>
+    } @else if (item) {
+      <div (click)="statusMenu.toggle($event)" class="status-badge status-badge--draft" title="Draft">
+        <i class="pi pi-pencil"></i>
+        <span>Draft</span>
+        <i class="pi pi-sort-down-fill status-badge-caret"></i>
       </div>
     }
+    <div class="toolbar-spacer"></div>
+    @if (!readonly && dirty) {
+      <div class="unsaved-marker">
+        <span class="unsaved-dot"></span>
+        <span>Unsaved changes</span>
+      </div>
+    }
+    <div class="view-segment">
+      <div class="view-segment-item" [class.active]="view === 'schemas'" (click)="onView('schemas')">
+        <svg-icon src="/assets/images/icons/16/tree.svg"></svg-icon>
+        <span>Schemas</span>
+      </div>
+      <div class="view-segment-item" [class.active]="view === 'rules'" (click)="onView('rules')">
+        <svg-icon src="/assets/images/icons/16/table.svg"></svg-icon>
+        <span>Rules</span>
+        <span class="seg-count">{{ rulesCount }}</span>
+      </div>
+    </div>
+    <div (click)="onPreview()" class="top-toolbar-btn bordered-btn" title="Preview">
+      <i class="pi pi-eye"></i>
+      <span>Preview</span>
+    </div>
+    @if (!readonly) {
+      <div (click)="onSave()" class="top-toolbar-btn top-toolbar-btn--primary" title="Save">
+        <i class="pi pi-save"></i>
+        <span>Save</span>
+      </div>
+    }
+  </div>
 
-    @if (stepper[1]) {
+  <p-popover #statusMenu>
+    @if (item?.status === EntityStatus.ACTIVE) {
+      <div (click)="onChangeStatus(false); statusMenu.hide()" class="toolbar-menu edit-color"
+        title="Return to editing.">
+        <i class="pi pi-pencil edit-color"></i>
+        <span class="edit-color">Deactivate</span>
+      </div>
+    } @else {
+      <div (click)="onChangeStatus(true); statusMenu.hide()" class="toolbar-menu publish-color"
+        title="Activate the rule.">
+        <i class="pi pi-check-circle publish-color"></i>
+        <span class="publish-color">Activate</span>
+      </div>
+    }
+  </p-popover>
+
+  <p-popover #identityMenu>
+    <div class="identity-popover rule-overview-popover">
+      <div class="identity-popover-header">Rule details</div>
+      <form [formGroup]="overviewForm">
+        <div class="guardian-input-container">
+          <label class="form-label" htmlFor="name">* Name</label>
+          <input formControlName="name" id="name" pInputText type="text" [readonly]="readonly"/>
+        </div>
+        <div class="guardian-input-container">
+          <label class="form-label" htmlFor="description">Description</label>
+          <input formControlName="description" id="description" pInputText type="text" [readonly]="readonly"/>
+        </div>
+        <div class="guardian-input-container">
+          <label class="form-label" htmlFor="policy">* Policy</label>
+          <div class="rule-policy-field">
+            <input formControlName="policy" id="policy" pInputText type="text" readonly/>
+            @if (showPolicyVersion) {
+              <span class="rule-policy-version">v{{ policy.version }}</span>
+            }
+          </div>
+        </div>
+      </form>
+    </div>
+  </p-popover>
+
+  <div class="body-container">
+    @if (view === 'schemas') {
       <div class="schema-viewer">
         <div class="tree-container">
           <app-tree-graph
@@ -350,7 +380,7 @@
       </div>
     }
 
-    @if (stepper[2]) {
+    @if (view === 'rules') {
       <div class="config-viewer">
         <div class="variables-container">
           <div class="variables-header">
@@ -374,6 +404,7 @@
                       <input
                         class="guardian-input guardian-input-cell"
                         [(ngModel)]="variable.id"
+                        (ngModelChange)="dirty = true"
                         id="formula.id"
                         pInputText
                         type="text"
@@ -442,13 +473,4 @@
       </div>
     }
   </div>
-
-  @if (!readonly) {
-    <div class="actions-container">
-      @if (stepper[2]) {
-        <button (click)="onPreview()" class="guardian-button guardian-button-secondary">Preview</button>
-      }
-      <button (click)="onSave()" class="guardian-button guardian-button-primary">Apply Changes</button>
-    </div>
-  }
 </div>
