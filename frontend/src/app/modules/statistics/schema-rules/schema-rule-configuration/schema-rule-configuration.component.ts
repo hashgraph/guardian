@@ -1,7 +1,7 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EntityStatus, ISchemaRules, ISchemaRulesConfig, Schema, SchemaField, UserPermissions } from '@guardian/interfaces';
-import { forkJoin, Subscription } from 'rxjs';
+import { DocumentFieldValidators, EntityStatus, FieldRuleResult, ISchemaRules, ISchemaRulesConfig, PolicyStatus, Schema, SchemaField, UserPermissions } from '@guardian/interfaces';
+import { debounceTime, forkJoin, Observable, of, Subject, Subscription, switchMap } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TreeGraphComponent } from '../../../common/tree-graph/tree-graph.component';
 import { TreeNode } from '../../../common/tree-graph/tree-node';
@@ -13,7 +13,6 @@ import { TreeSource } from '../../../common/tree-graph/tree-source';
 import { createAutocomplete } from '../../../common/models/lang-modes/autocomplete';
 import { DialogService } from 'primeng/dynamicdialog';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
-import { SchemaRulesPreviewDialog } from '../dialogs/schema-rules-preview-dialog/schema-rules-preview-dialog.component';
 import { ConditionRule, FormulaRule, RangeRule } from '../../../common/models/conditions';
 import { FieldRule, FieldRules } from "src/app/modules/common/models/field-rule";
 import { EnumValue, SchemaRuleConfigDialog } from '../dialogs/schema-rule-config-dialog/schema-rule-config-dialog.component';
@@ -23,7 +22,10 @@ import { IPFSService } from 'src/app/services/ipfs.service';
 @Component({
     selector: 'app-schema-rule-configuration',
     templateUrl: './schema-rule-configuration.component.html',
-    styleUrls: ['./schema-rule-configuration.component.scss'],
+    styleUrls: [
+        '../../../policy-engine/styles/top-toolbar.scss',
+        './schema-rule-configuration.component.scss'
+    ],
     standalone: false
 })
 export class SchemaRuleConfigurationComponent implements OnInit {
@@ -52,9 +54,21 @@ export class SchemaRuleConfigurationComponent implements OnInit {
     public searchField: string = '';
     public tabIndex: number = 0;
 
-    public stepper = [true, false, false];
+    public view: 'schemas' | 'rules' = 'schemas';
+    private viewInitialized: boolean = false;
+
+    public testOpen: boolean = false;
+    public testValues = new Map<string, string>();
+    public testResults = new Map<string, FieldRuleResult>();
+    public hoverKey: string | null = null;
+    public readonly FieldRuleResult = FieldRuleResult;
+    private validators: DocumentFieldValidators;
+    private test$ = new Subject<void>();
+    private testOptions = new WeakMap<EnumValue, { items: any[], options: any[] }>();
 
     public readonly: boolean = false;
+    public dirty: boolean = false;
+    public readonly EntityStatus = EntityStatus;
 
     @ViewChild('fieldTree', { static: false }) fieldTree: ElementRef;
     @ViewChild('treeTabs', { static: false }) treeTabs: ElementRef;
@@ -80,6 +94,28 @@ export class SchemaRuleConfigurationComponent implements OnInit {
         } else {
             return 100;
         }
+    }
+
+    public get rulesCount(): number {
+        return this.variables.variables.length;
+    }
+
+    public get testSummary(): { pass: number, fail: number, error: number, none: number } {
+        const summary = { pass: 0, fail: 0, error: 0, none: 0 };
+        for (const variable of this.variables.variables) {
+            switch (this.testResults.get(this.key(variable))) {
+                case FieldRuleResult.Success: summary.pass++; break;
+                case FieldRuleResult.Failure: summary.fail++; break;
+                case FieldRuleResult.Error: summary.error++; break;
+                case FieldRuleResult.None: summary.none++; break;
+            }
+        }
+        return summary;
+    }
+
+    public get showPolicyVersion(): boolean {
+        const status = this.policy?.status;
+        return !!this.policy?.version && (status === PolicyStatus.PUBLISH || status === PolicyStatus.DISCONTINUED);
     }
 
     public get roots(): SchemaNode[] {
@@ -119,6 +155,16 @@ export class SchemaRuleConfigurationComponent implements OnInit {
     }
 
     ngOnInit() {
+        this.subscription.add(
+            this.overviewForm.valueChanges.subscribe(() => {
+                if (this.overviewForm.dirty) {
+                    this.dirty = true;
+                }
+            })
+        );
+        this.subscription.add(
+            this.test$.pipe(debounceTime(150)).subscribe(() => this.runTest())
+        );
         this.subscription.add(
             this.route.queryParams.subscribe((queryParams) => {
                 this.loadProfile();
@@ -161,11 +207,15 @@ export class SchemaRuleConfigurationComponent implements OnInit {
             this.schemaService.properties()
         ]).subscribe(([item, relationships, properties]) => {
             this.item = item;
-            this.readonly = this.item?.status === EntityStatus.ACTIVE;
+            this.readonly = !this.user.SCHEMAS_RULE_CREATE || this.item?.status === EntityStatus.ACTIVE;
             if (relationships) {
                 this.updateTree(relationships, properties);
             }
             this.updateForm(item);
+            if (!this.viewInitialized) {
+                this.viewInitialized = true;
+                this.view = this.variables.variables.length ? 'rules' : 'schemas';
+            }
             setTimeout(() => {
                 this.loading = false;
             }, 1000);
@@ -201,6 +251,8 @@ export class SchemaRuleConfigurationComponent implements OnInit {
             }
         }
 
+        this.selectedNode = null;
+        this.rootNode = null;
         this.source = new TreeSource(this.nodes);
         if (this.tree) {
             this.tree.setData(this.source);
@@ -235,6 +287,8 @@ export class SchemaRuleConfigurationComponent implements OnInit {
             description: item.description || '',
             policy: this.policy?.name || '',
         });
+        this.overviewForm.markAsPristine();
+        this.dirty = false;
 
         const config = item.config;
         this.variables.fromData(config?.fields);
@@ -255,6 +309,7 @@ export class SchemaRuleConfigurationComponent implements OnInit {
                 rootView.updateSelected();
             }
         }
+        this.rebuildTest();
     }
 
     public onBack() {
@@ -336,6 +391,7 @@ export class SchemaRuleConfigurationComponent implements OnInit {
             return;
         }
         field.selected = !field.selected;
+        this.dirty = true;
         if (this.rootNode) {
             const rootView = this.rootNode.fields;
             rootView.updateHidden();
@@ -417,25 +473,17 @@ export class SchemaRuleConfigurationComponent implements OnInit {
         this.tree?.onSelectNode(null);
     }
 
-    public onStep(index: number) {
-        this.loading = true;
-        setTimeout(() => {
-            for (let i = 0; i < this.stepper.length; i++) {
-                this.stepper[i] = false;
-            }
-            this.stepper[index] = true;
-            this.tree?.move(18, 46);
-            if (index === 1) {
-                setTimeout(() => {
-                    this.tree?.refresh();
-                    this.loading = false;
-                }, 1500);
-            } else {
-                setTimeout(() => {
-                    this.loading = false;
-                }, 400);
-            }
-        }, 200);
+    public onView(view: 'schemas' | 'rules') {
+        if (this.view === view) {
+            return;
+        }
+        this.view = view;
+        if (view === 'schemas') {
+            setTimeout(() => {
+                this.tree?.move(18, 46);
+                this.tree?.refresh();
+            }, 0);
+        }
     }
 
     public onZoom(d: number) {
@@ -472,6 +520,7 @@ export class SchemaRuleConfigurationComponent implements OnInit {
         this.variables.fromNodes(this.source.roots);
         this.variables.updateType(this.schemas);
         this.updateCodeMirror();
+        this.rebuildTest();
     }
 
     public getRelationshipsName(id: string) {
@@ -504,8 +553,7 @@ export class SchemaRuleConfigurationComponent implements OnInit {
         return enums;
     }
 
-    public onSave() {
-        this.loading = true;
+    private save$(): Observable<any> {
         const value = this.overviewForm.value;
         const config: ISchemaRulesConfig = {
             fields: this.variables.getJson()
@@ -516,40 +564,119 @@ export class SchemaRuleConfigurationComponent implements OnInit {
             description: value.description,
             config
         };
-        this.schemaRulesService
-            .updateRule(item)
-            .subscribe((item) => {
-                this.item = item;
-                this.updateForm(item);
-                setTimeout(() => {
-                    this.loading = false;
-                }, 1000);
-            }, (e) => {
-                this.loading = false;
-            });
+        return this.schemaRulesService.updateRule(item);
     }
 
-    public onPreview() {
-        const value = this.overviewForm.value;
-        const config: ISchemaRulesConfig = {
-            fields: this.variables.getJson(),
-        };
-        const item = {
-            ...this.item,
-            name: value.name,
-            description: value.description,
-            config
-        };
-        const dialogRef = this.dialogService.open(SchemaRulesPreviewDialog, {
-            showHeader: false,
-            header: 'Preview',
-            width: '90%',
-            styleClass: 'guardian-dialog',
-            data: {
-                item
+    public onSave() {
+        this.loading = true;
+        this.save$().subscribe((item) => {
+            this.item = item;
+            this.updateForm(item);
+            setTimeout(() => {
+                this.loading = false;
+            }, 1000);
+        }, (e) => {
+            this.loading = false;
+        });
+    }
+
+    public onChangeStatus(active: boolean) {
+        if (!this.user.SCHEMAS_RULE_CREATE) {
+            return;
+        }
+        this.loading = true;
+        const save$ = active && this.dirty ? this.save$() : of(this.item);
+        save$.pipe(
+            switchMap((item) => this.schemaRulesService.activateRule(item, active))
+        ).subscribe(() => {
+            this.loadData();
+        }, (e) => {
+            this.loading = false;
+        });
+    }
+
+    public formatPath(path: string): string {
+        return (path || '').split(' / ').join(' › ');
+    }
+
+    public key(variable: FieldRule): string {
+        return `${variable.schemaId}|${variable.path}`;
+    }
+
+    public onToggleTest() {
+        if (this.view === 'schemas') {
+            this.onView('rules');
+            this.testOpen = true;
+        } else {
+            this.testOpen = !this.testOpen;
+        }
+        this.rebuildTest();
+    }
+
+    public onTestValue(variable: FieldRule, value: string | null) {
+        const key = this.key(variable);
+        if (value === null || value === undefined || value === '') {
+            this.testValues.delete(key);
+        } else {
+            this.testValues.set(key, String(value));
+        }
+        this.test$.next();
+    }
+
+    public onTestIdChange() {
+        this.dirty = true;
+        this.rebuildTest();
+    }
+
+    public onClearTest() {
+        this.testValues.clear();
+        this.testResults.clear();
+    }
+
+    public getTestEnum(variable: FieldRule): EnumValue | null {
+        return this.getEnum(variable) || null;
+    }
+
+    public getTestOptions(variable: FieldRule): any[] {
+        const value = this.getTestEnum(variable);
+        if (!value) {
+            return [];
+        }
+        let cache = this.testOptions.get(value);
+        if (!cache || cache.items !== value.items) {
+            cache = { items: value.items, options: [{ label: '', value: '' }, ...(value.items || [])] };
+            this.testOptions.set(value, cache);
+        }
+        return cache.options;
+    }
+
+    private rebuildTest() {
+        if (!this.testOpen) {
+            return;
+        }
+        this.validators = new DocumentFieldValidators(this.variables.getJson());
+        const keys = new Set(this.variables.variables.map((v) => this.key(v)));
+        for (const key of Array.from(this.testValues.keys())) {
+            if (!keys.has(key)) {
+                this.testValues.delete(key);
             }
-        })!;
-        dialogRef.onClose.subscribe(async (result) => { });
+        }
+        this.runTest();
+    }
+
+    private runTest() {
+        this.testResults.clear();
+        if (!this.testOpen || !this.validators || !this.testValues.size) {
+            return;
+        }
+        const document: any = {};
+        for (const variable of this.variables.variables) {
+            document[variable.id] = this.testValues.get(this.key(variable)) ?? null;
+        }
+        const result = this.validators.validate(document);
+        for (const variable of this.variables.variables) {
+            this.testResults.set(this.key(variable), result[variable.id]);
+        }
     }
 
     public onEditRule(variable: FieldRule) {
@@ -569,11 +696,16 @@ export class SchemaRuleConfigurationComponent implements OnInit {
             if (result) {
                 const rule: FormulaRule | ConditionRule | RangeRule = result.rule;
                 variable.addRule(rule);
+                this.dirty = true;
+                this.rebuildTest();
             }
         });
     }
 
     public onDeleteVariable(variable: FieldRule) {
+        if (this.readonly) {
+            return;
+        }
         const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
             showHeader: false,
             width: '640px',
@@ -594,6 +726,8 @@ export class SchemaRuleConfigurationComponent implements OnInit {
             if (result === 'Delete') {
                 this.variables.delete(variable);
                 this.updateCodeMirror();
+                this.dirty = true;
+                this.rebuildTest();
             }
         });
     }

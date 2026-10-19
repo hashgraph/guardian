@@ -264,6 +264,7 @@ export class TreeListView<T> {
     private readonly _indexes: Set<number>;
 
     private _selectedFields: TreeListItem<T>[] = [];
+    private _selectedAllFields: TreeListItem<T>[] = [];
     private _selectedCount = 0;
     private _selectedAllCount = 0;
     private _selectedLimit = 0;
@@ -277,6 +278,10 @@ export class TreeListView<T> {
 
     public get selectedFields(): TreeListItem<T>[] {
         return this._selectedFields;
+    }
+
+    public get selectedAllFields(): TreeListItem<T>[] {
+        return this._selectedAllFields;
     }
 
     public get selectedCount(): number {
@@ -388,7 +393,9 @@ export class TreeListView<T> {
 
     public updateSelected() {
         const list = this._data.list;
-        this._selectedAllCount = list.filter((item) => item.selected).length;
+        const selected = list.filter((item) => item.selected);
+        this._selectedAllCount = selected.length;
+        this._selectedAllFields = this._selectedLimit ? selected.slice(0, this._selectedLimit) : selected;
         this._selectedFields = list.filter((item, index) => item.selected && this._indexes.has(index));
         this._selectedCount = this._selectedFields.length;
         if (this._selectedLimit) {

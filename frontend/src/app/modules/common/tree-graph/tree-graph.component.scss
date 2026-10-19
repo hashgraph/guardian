@@ -20,7 +20,7 @@
 }
 
 .tree-graph {
-    background: #EFF3F7;
+    background: var(--guardian-tree-canvas-color, #EFF3F7);
     position: relative;
     display: flex;
     flex-direction: column;
@@ -54,13 +54,13 @@
         top: 0px;
         display: grid;
 
-        background-color: #f4f6f9;
+        background-color: var(--guardian-tree-canvas-color, #f4f6f9);
         opacity: 1;
         background-image:
-            linear-gradient(#e8e8e8 0.8px, transparent 0.8px),
-            linear-gradient(90deg, #e8e8e8 0.8px, transparent 0.8px),
-            linear-gradient(#e8e8e8 0.4px, transparent 0.4px),
-            linear-gradient(90deg, #e8e8e8 0.4px, #f4f6f9 0.4px);
+            linear-gradient(var(--guardian-tree-grid-color, #e8e8e8) 0.8px, transparent 0.8px),
+            linear-gradient(90deg, var(--guardian-tree-grid-color, #e8e8e8) 0.8px, transparent 0.8px),
+            linear-gradient(var(--guardian-tree-grid-color, #e8e8e8) 0.4px, transparent 0.4px),
+            linear-gradient(90deg, var(--guardian-tree-grid-color, #e8e8e8) 0.4px, var(--guardian-tree-canvas-color, #f4f6f9) 0.4px);
         background-size: 20px 20px, 20px 20px, 4px 4px, 4px 4px;
         background-position: -0.8px -0.8px, -0.8px -0.8px, -0.4px -0.4px, -0.4px -0.4px;
 
@@ -94,7 +94,7 @@
                 & {
                     &::after,
                     &::before {
-                        border-color: #848FA9;
+                        border-color: var(--guardian-disabled-color, #848FA9);
                         border-width: 2px;
                         border-style: dashed;
                     }
@@ -233,7 +233,7 @@
                     left: 0;
                     right: 0;
                     height: 2px;
-                    border-top: 2px dashed #848FA9;
+                    border-top: 2px dashed var(--guardian-disabled-color, #848FA9);
                 }
 
                 &.variant-tag::before {

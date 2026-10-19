@@ -815,6 +815,12 @@
         font-size: 14px;
     }
 
+    input[readonly] {
+        background: var(--guardian-grey-background, #F9FAFC);
+        color: var(--guardian-disabled-color, #848FA9);
+        cursor: default;
+    }
+
     .form-label {
         font-size: 12px;
         font-weight: 600;
