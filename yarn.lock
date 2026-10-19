@@ -1872,21 +1872,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/classic@npm:1.0.52":
-  version: 1.0.52
-  resolution: "@langchain/classic@npm:1.0.52"
+"@langchain/classic@npm:1.0.53":
+  version: 1.0.53
+  resolution: "@langchain/classic@npm:1.0.53"
   dependencies:
     "@langchain/openai": "npm:1.6.2"
     "@langchain/textsplitters": "npm:1.0.2"
     handlebars: "npm:^4.7.9"
-    js-yaml: "npm:^5.4.1"
+    js-yaml: "npm:^5.4.2"
     jsonpointer: "npm:^5.0.1"
-    langsmith: "npm:>=0.4.0 <1.0.0"
+    langsmith: "npm:>=0.11.0 <1.0.0"
     openapi-types: "npm:^12.1.3"
-    yaml: "npm:^2.9.0"
+    yaml: "npm:^2.9.1"
     zod: "npm:^3.25.76 || ^4"
   peerDependencies:
-    "@langchain/core": ^1.2.14
+    "@langchain/core": ^1.2.18
     cheerio: "*"
     peggy: ^5.1.0
     typeorm: "*"
@@ -1900,7 +1900,7 @@ __metadata:
       optional: true
     typeorm:
       optional: true
-  checksum: 10c0/d685da218d9b5809879b56fc98f48468a9305ce8862f1f813824520b09047808b6f69844c549ed985828ecf8176d1bdd4460f4d64a0930801a5bfcee7ba37665
+  checksum: 10c0/50f33a7eb1024721a3c40e7a5c3a72e9bf034780ad439487a564ffcc59fb1c3b08583dbebb1511f3a9fed9997559251efa3943835841fcae6c1450c64c50bd85
   languageName: node
   linkType: hard
 
@@ -2306,18 +2306,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/core@npm:1.2.17":
-  version: 1.2.17
-  resolution: "@langchain/core@npm:1.2.17"
+"@langchain/core@npm:1.2.18":
+  version: 1.2.18
+  resolution: "@langchain/core@npm:1.2.18"
   dependencies:
     "@cfworker/json-schema": "npm:^4.0.2"
     "@standard-schema/spec": "npm:^1.1.0"
     js-tiktoken: "npm:^1.0.12"
-    langsmith: "npm:>=0.5.0 <1.0.0"
+    langsmith: "npm:>=0.11.0 <1.0.0"
     mustache: "npm:^4.2.0"
     p-queue: "npm:^6.6.2"
     zod: "npm:^3.25.76 || ^4"
-  checksum: 10c0/ed246ba9e6ab9757c32f4c4c2d7d34010880a4b01ecb7b4fc64c042636bfbbdedafdb3572b8ff5bf38b39c66a5d3a272d052254d83393c5430bf342c2494ec40
+  checksum: 10c0/13a8d853c349b38934b54b710eda0e438c7432bcc2feab2d353eeeffa3a6e8eedd86683f1c2fbf7b8fdae534f3bcb265cebcd30494f8e6072e59fe5310f9c89c
   languageName: node
   linkType: hard
 
@@ -4687,9 +4687,9 @@ __metadata:
   dependencies:
     "@guardian/common": "workspace:*"
     "@guardian/interfaces": "workspace:*"
-    "@langchain/classic": "npm:1.0.52"
+    "@langchain/classic": "npm:1.0.53"
     "@langchain/community": "npm:1.1.29"
-    "@langchain/core": "npm:1.2.17"
+    "@langchain/core": "npm:1.2.18"
     "@langchain/openai": "npm:1.6.2"
     "@langchain/textsplitters": "npm:1.0.2"
     "@types/node": "npm:24.19.2"
@@ -5063,6 +5063,13 @@ __metadata:
   version: 2.0.1
   resolution: "argparse@npm:2.0.1"
   checksum: 10c0/c5640c2d89045371c7cedd6a70212a04e360fd34d6edeae32f6952c63949e3525ea77dbec0289d8213a99bbaeab5abfa860b5c12cf88a2e6cf8106e90dd27a7e
+  languageName: node
+  linkType: hard
+
+"argparse@npm:^3.0.3":
+  version: 3.0.3
+  resolution: "argparse@npm:3.0.3"
+  checksum: 10c0/8d715f1c4bb0aa14a8b8ee749d6ab6f12d380caba33139d527cac79988af152cfd160f152c3964c76c7ea473f1899bd0989bd1e9cfdba22e68f50b6a4b5c9d0d
   languageName: node
   linkType: hard
 
@@ -9807,14 +9814,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-yaml@npm:^5.4.1":
-  version: 5.4.1
-  resolution: "js-yaml@npm:5.4.1"
+"js-yaml@npm:^5.4.2":
+  version: 5.5.0
+  resolution: "js-yaml@npm:5.5.0"
   dependencies:
-    argparse: "npm:^2.0.1"
+    argparse: "npm:^3.0.3"
   bin:
     js-yaml: bin/js-yaml.mjs
-  checksum: 10c0/efe9dfaf222809694d375ad5ecca825561d2432eb55bc0f628911c0dfa4dbce98a71dcbc3252f630208bbdf5f4e9ac363847e4a7f49845b577ae2548b8fcf147
+  checksum: 10c0/311619f44dd788657e9b81d4b5c60ff367441f364045e3796bc604a41f25819852748fb173ae82f2553d53cb609d7fdb79e0a74148892cb2c085eebe91839b53
   languageName: node
   linkType: hard
 
@@ -10136,7 +10143,33 @@ __metadata:
   languageName: node
   linkType: hard
 
-"langsmith@npm:>=0.4.0 <1.0.0, langsmith@npm:>=0.5.0 <1.0.0":
+"langsmith@npm:>=0.11.0 <1.0.0":
+  version: 0.11.0
+  resolution: "langsmith@npm:0.11.0"
+  dependencies:
+    p-queue: "npm:6.6.2"
+  peerDependencies:
+    "@opentelemetry/api": "*"
+    "@opentelemetry/exporter-trace-otlp-proto": "*"
+    "@opentelemetry/sdk-trace-base": "*"
+    openai: "*"
+    ws: ">=7"
+  peerDependenciesMeta:
+    "@opentelemetry/api":
+      optional: true
+    "@opentelemetry/exporter-trace-otlp-proto":
+      optional: true
+    "@opentelemetry/sdk-trace-base":
+      optional: true
+    openai:
+      optional: true
+    ws:
+      optional: true
+  checksum: 10c0/3a40ad37da7eff640fa4d52862e7d806a16b74a1d8655229fb11b37c748d39ae49aa107612b34aa2fe5d159d7c188532d779c515cf2f275115ba8cc023edddff
+  languageName: node
+  linkType: hard
+
+"langsmith@npm:>=0.4.0 <1.0.0":
   version: 0.7.2
   resolution: "langsmith@npm:0.7.2"
   dependencies:
@@ -15252,7 +15285,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yaml@npm:2.9.1":
+"yaml@npm:2.9.1, yaml@npm:^2.9.1":
   version: 2.9.1
   resolution: "yaml@npm:2.9.1"
   bin:
@@ -15261,7 +15294,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yaml@npm:^2.8.3, yaml@npm:^2.9.0":
+"yaml@npm:^2.8.3":
   version: 2.9.0
   resolution: "yaml@npm:2.9.0"
   bin:

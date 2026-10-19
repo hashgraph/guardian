@@ -6,9 +6,9 @@
     "dependencies": {
         "@guardian/common": "workspace:*",
         "@guardian/interfaces": "workspace:*",
-        "@langchain/classic": "1.0.52",
+        "@langchain/classic": "1.0.53",
         "@langchain/community": "1.1.29",
-        "@langchain/core": "1.2.17",
+        "@langchain/core": "1.2.18",
         "@langchain/openai": "1.6.2",
         "@langchain/textsplitters": "1.0.2",
         "dotenv": "^16.6.1",
