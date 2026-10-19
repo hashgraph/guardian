@@ -97,6 +97,8 @@ export function buildRelationshipsSchemas(schemas: any[]): any[] {
             continue;
         }
         const { context, ...item } = schema;
+        // `id` is a getter on the entity, so the spread does not copy it
+        item.id = schema.id;
         const document = getDocument(schema);
         const defs = document?.$defs;
         const keys = defs && typeof defs === 'object' ? Object.keys(defs) : [];

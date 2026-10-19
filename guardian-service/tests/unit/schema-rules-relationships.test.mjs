@@ -42,6 +42,16 @@ describe('schema rule relationships', () => {
         assert.equal(result[1].document.$defs, undefined);
     });
 
+    it('keeps id, which is a getter on entities', () => {
+        const list = schemas();
+        class Entity { get id() { return 'abc'; } }
+        Object.assign(list[2], {});
+        const entity = Object.assign(new Entity(), list[2]);
+        list[2] = entity;
+        const result = buildRelationshipsSchemas(list);
+        assert.equal(result.find((s) => s.iri === '#s2').id, 'abc');
+    });
+
     it('accepts string documents', () => {
         const list = schemas().map((s) => ({ ...s, document: JSON.stringify(s.document) }));
         const result = buildRelationshipsSchemas(list);
