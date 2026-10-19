@@ -66,9 +66,9 @@
         <span class="seg-count">{{ rulesCount }}</span>
       </div>
     </div>
-    <div (click)="onPreview()" class="top-toolbar-btn bordered-btn" title="Preview">
-      <i class="pi pi-eye"></i>
-      <span>Preview</span>
+    <div (click)="onToggleTest()" class="top-toolbar-btn bordered-btn" [class.toggled]="testOpen" title="Test rules with sample values">
+      <i class="pi pi-play-circle"></i>
+      <span>Test</span>
     </div>
     @if (!readonly) {
       <div (click)="onSave()" class="top-toolbar-btn top-toolbar-btn--primary" title="Save">
@@ -387,6 +387,7 @@
     }
 
     @if (view === 'rules') {
+      <div class="rules-view">
       <div class="config-viewer">
         <div class="variables-container">
           <div class="variables-header">
@@ -396,21 +397,22 @@
             <div class="variables-grid">
               <div class="variables-grid-header">
                 <div class="variables-grid-cell cell-84">ID</div>
-                <div class="variables-grid-cell cell-200">PATH</div>
+                <div class="variables-grid-cell cell-260">PATH</div>
                 <div class="variables-grid-cell cell-200">PROPERTY</div>
                 <div class="variables-grid-cell cell-max">FIELD</div>
-                <div class="variables-grid-cell cell-200">TYPE</div>
+                <div class="variables-grid-cell cell-140">TYPE</div>
                 <div class="variables-grid-cell cell-150">RULES</div>
                 <div class="variables-grid-cell cell-125"></div>
               </div>
               <div class="variables-grid-body">
                 @for (variable of variables.variables; track variable) {
-                  <div class="variables-grid-row">
+                  <div class="variables-grid-row" [class.hl]="hoverKey === key(variable)"
+                    (mouseenter)="hoverKey = key(variable)" (mouseleave)="hoverKey = null">
                     <div class="variables-grid-cell cell-84" [class.cell-editable]="!readonly">
                       <input
                         class="guardian-input guardian-input-cell"
                         [(ngModel)]="variable.id"
-                        (ngModelChange)="dirty = true"
+                        (ngModelChange)="onTestIdChange()"
                         id="formula.id"
                         pInputText
                         type="text"
@@ -420,8 +422,8 @@
                       }
                       <div class="cell-focus"></div>
                     </div>
-                    <div class="variables-grid-cell cell-200">
-                      {{variable.schemaName}} / {{variable.schemaPath}}
+                    <div class="variables-grid-cell cell-260">
+                      {{variable.schemaName}} › {{formatPath(variable.schemaPath)}}
                     </div>
                     <div class="variables-grid-cell cell-200">
                       {{variable.fieldPropertyName}}
@@ -429,7 +431,7 @@
                     <div class="variables-grid-cell cell-max">
                       {{variable.fieldDescription}}
                     </div>
-                    <div class="variables-grid-cell cell-200">
+                    <div class="variables-grid-cell cell-140">
                       <span style="text-transform: capitalize">
                         {{variable.displayType}}
                       </span>
@@ -481,6 +483,84 @@
             </div>
           }
         </div>
+      </div>
+      @if (testOpen) {
+        <aside class="test-panel">
+          <div class="tp-head">
+            <i class="pi pi-play-circle tp-head-icon"></i>
+            <span class="tp-title">Test rules</span>
+            <span class="tp-close" (click)="onToggleTest()" title="Close"><i class="pi pi-times"></i></span>
+          </div>
+          <div class="tp-sub">Enter sample values – results update as you type and after every rule edit. Values are not saved.</div>
+          @if (testResults.size) {
+            @let summary = testSummary;
+            <div class="tp-summary">
+              @if (summary.pass) {
+                <span class="pill ok"><i class="pi pi-check"></i>{{ summary.pass }} pass</span>
+              }
+              @if (summary.fail) {
+                <span class="pill fail"><i class="pi pi-exclamation-triangle"></i>{{ summary.fail }} fails</span>
+              }
+              @if (summary.error) {
+                <span class="pill err"><i class="pi pi-times"></i>{{ summary.error }} can't evaluate</span>
+              }
+              @if (summary.none) {
+                <span class="pill none">{{ summary.none }} no rule</span>
+              }
+            </div>
+          }
+          <div class="tp-list">
+            @for (variable of variables.variables; track variable) {
+              @let result = testResults.get(key(variable));
+              @let testEnum = getTestEnum(variable);
+              <div class="tp-row" [class.hl]="hoverKey === key(variable)"
+                (mouseenter)="hoverKey = key(variable)" (mouseleave)="hoverKey = null"
+                (focusin)="hoverKey = key(variable)" (focusout)="hoverKey = null">
+                <div class="tp-label">
+                  <span class="tp-id">{{ variable.id }}</span>
+                  <span class="tp-name" [title]="variable.fieldDescription">{{ variable.fieldDescription }}</span>
+                  @if (result === FieldRuleResult.Success) {
+                    <span class="pill ok"><i class="pi pi-check"></i>Passes</span>
+                  } @else if (result === FieldRuleResult.Failure) {
+                    <span class="pill fail"><i class="pi pi-exclamation-triangle"></i>Fails</span>
+                  } @else if (result === FieldRuleResult.Error) {
+                    <span class="pill err"><i class="pi pi-times"></i>Can't evaluate</span>
+                  } @else if (result === FieldRuleResult.None) {
+                    <span class="pill none">No rule</span>
+                  }
+                </div>
+                <div class="tp-input" [attr.result]="result">
+                  @if (testEnum) {
+                    <p-select
+                      [ngModel]="testValues.get(key(variable)) || ''"
+                      (ngModelChange)="onTestValue(variable, $event)"
+                      [options]="getTestOptions(variable)"
+                      [showClear]="false"
+                      class="guardian-dropdown"
+                      appendTo="body"
+                      placeholder="Value"
+                      panelStyleClass="guardian-dropdown-panel"
+                      optionLabel="label"
+                      optionValue="value">
+                    </p-select>
+                  } @else {
+                    <input
+                      pInputText
+                      type="text"
+                      placeholder="Value"
+                      [ngModel]="testValues.get(key(variable)) || ''"
+                      (ngModelChange)="onTestValue(variable, $event)"/>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+          <div class="tp-foot">
+            <span class="tp-legend"><b>Fails</b> – the rule returned false. <b>Can't evaluate</b> – a value it needs is missing or invalid.</span>
+            <button type="button" class="link-btn" (click)="onClearTest()">Clear values</button>
+          </div>
+        </aside>
+      }
       </div>
     }
   </div>
