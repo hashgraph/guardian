@@ -55,87 +55,57 @@ export function getDocumentValueByPath(doc: any, path: string): any {
     }
 }
 
+//Return complete lists instead of a truncated preview
+export const EVALUATE_OPTIONS = { materialization: Number.MAX_SAFE_INTEGER };
+
+//Exact results (rationals, radicals) are converted to floating point numbers
+export function evaluateNumeric(expression: any): any {
+    const result = expression.evaluate(EVALUATE_OPTIONS);
+    return result.N(EVALUATE_OPTIONS);
+}
+
+function findLibraryDefinition(name: string): any {
+    const lib: any = ComputeEngine;
+    for (const category of lib.getStandardLibrary()) {
+        const definitions = Array.isArray(category.definitions) ? category.definitions : [category.definitions];
+        for (const group of definitions) {
+            if (group && group[name]) {
+                return group[name];
+            }
+        }
+    }
+    return null;
+}
+
 export function createComputeEngine() {
     const lib: any = ComputeEngine;
     if (!lib.__updated) {
-        const At = lib.getStandardLibrary().find((t: any) => !!t.At)?.At;
-        if (At) {
-            At.signature = '(value: list|tuple|string, indexes: ...(number | string)) -> unknown';
+        //Accept Map(collection, function) by reordering the arguments to Map(function, collection)
+        const MapDefinition = findLibraryDefinition('Map');
+        if (MapDefinition?.canonical) {
+            const canonical = MapDefinition.canonical;
+            MapDefinition.canonical = function (ops: any[], options: any) {
+                if (ops.length >= 2 && ops[0]?.operator !== 'Function' && ops[1]?.operator === 'Function') {
+                    ops = [ops[1], ops[0], ...ops.slice(2)];
+                }
+                return canonical.call(this, ops, options);
+            };
         }
-        const Sum = lib.getStandardLibrary().find((t: any) => !!t.Sum)?.Sum;
-        if (Sum) {
-            Sum.signature = '(collection|function, ...(tuple<symbol>|tuple<symbol, integer>|tuple<symbol, integer, integer>|tuple<symbol, integer, (...any) -> integer>)) -> number';
-            const evaluate = Sum.evaluate;
-            Sum.evaluate = function () {
-                const e = arguments[0];
-                if (e && e[1]) {
-                    const op2 = e[1].op2;
-                    const op3 = e[1].op3;
-                    if (op2 || op3) {
-                        let start = op2.value;
-                        let end = op3.value;
-                        if (!start || start < 1 || isNaN(start) || !isFinite(start)) {
-                            start = 1;
-                        }
-                        if (!end || end < 1 || isNaN(end) || !isFinite(end)) {
-                            end = start;
-                        }
-                        if (end < start) {
-                            end = start;
-                        }
-                        Object.defineProperty(op2, 're', {
-                            get: function re() {
-                                return start;
-                            },
-                            configurable: true
-                        });
-                        Object.defineProperty(op3, 're', {
-                            get: function re() {
-                                return end;
-                            },
-                            configurable: true
-                        });
+        //At returns 0 for an index outside the list range
+        const AtDefinition = findLibraryDefinition('At');
+        if (AtDefinition?.evaluate) {
+            const evaluate = AtDefinition.evaluate;
+            AtDefinition.evaluate = function (ops: any[], options: any) {
+                const list = ops[0];
+                const index = ops[1];
+                if (ops.length === 2 && list?.operator === 'List' && index?.isNumberLiteral) {
+                    const position = index.re;
+                    if (!Number.isInteger(position) || position < 1 || position > list.nops) {
+                        return options.engine.number(0);
                     }
                 }
-                return evaluate.apply(this, arguments);
-            }
-        }
-        const Range = lib.getStandardLibrary().find((t: any) => !!t.Range)?.Range;
-        if (Range) {
-            const size = Range.collection.size;
-            Range.collection.size = function () {
-                const e = arguments[0];
-                if (e) {
-                    const op1 = e.op1;
-                    const op2 = e.op2;
-                    if (op1 && op2 && op2.type !== 'nothing') {
-                        let start = op1.value;
-                        let end = op2.value;
-                        if (!start || start < 1 || isNaN(start) || !isFinite(start)) {
-                            start = 1;
-                        }
-                        if (!end || end < 1 || isNaN(end) || !isFinite(end)) {
-                            end = start;
-                        }
-                        if (end < start) {
-                            end = start;
-                        }
-                        Object.defineProperty(op1, 're', {
-                            get: function re() {
-                                return start;
-                            },
-                            configurable: true
-                        });
-                        Object.defineProperty(op2, 're', {
-                            get: function re() {
-                                return end;
-                            },
-                            configurable: true
-                        });
-                    }
-                }
-                return size.apply(this, arguments);
-            }
+                return evaluate.call(this, ops, options);
+            };
         }
         lib.__updated = true;
     }
@@ -224,18 +194,56 @@ function _findCommand(json: any, command: string, parent: any, result: any[]): a
 }
 
 export function parseValue(value: any): any {
+    if (value && typeof value === 'object' && 'json' in value) {
+        return parseJson(value.json);
+    }
     if (value && value.type) {
         if (value.type.kind === 'list') {
-            const result = [];
-            if (Array.isArray(value.ops)) {
-                for (const element of value.ops) {
-                    const itemValue = parseValue(element);
-                    result.push(itemValue);
-                }
-            }
-            return result;
+            return Array.isArray(value.ops) ? value.ops.map((element: any) => parseValue(element)) : [];
         }
         return value.value;
     }
     return value;
+}
+
+function parseJson(json: any): any {
+    if (Array.isArray(json)) {
+        if (json[0] === 'List') {
+            return json.slice(1).map((item) => parseJson(item));
+        }
+        if (json[0] === 'Rational' && typeof json[1] === 'number' && typeof json[2] === 'number') {
+            return json[1] / json[2];
+        }
+        return json;
+    }
+    if (json && typeof json === 'object') {
+        if (typeof json.num === 'string') {
+            return Number(json.num);
+        }
+        if (typeof json.str === 'string') {
+            return json.str;
+        }
+        return json;
+    }
+    if (typeof json === 'string') {
+        if (json.length >= 2 && json.startsWith("'") && json.endsWith("'")) {
+            return json.slice(1, -1);
+        }
+        if (json === 'NaN' || json === 'ComplexInfinity') {
+            return NaN;
+        }
+        if (json === 'PositiveInfinity') {
+            return Infinity;
+        }
+        if (json === 'NegativeInfinity') {
+            return -Infinity;
+        }
+        if (json === 'True') {
+            return true;
+        }
+        if (json === 'False') {
+            return false;
+        }
+    }
+    return json;
 }
