@@ -1,0 +1,15 @@
+{
+ "type": "request-vc-draft",
+ "version": "1.0.0",
+ "schema": "#dc44a535-8dc1-4fea-819f-fe67336481bf",
+ "policyId": "SET_FROM_YOUR_INSTANCE",
+ "blockId": "SET_FROM_YOUR_INSTANCE",
+ "document": {
+  "ppFullName": "Amara Ndosi",
+  "ppOrganization": "Rural Access Water Ltd.",
+  "ppCountry": "United Republic of Tanzania",
+  "ppEmail": "contact@ruralaccesswater.example",
+  "ppPhone": "+255 27 000 0000",
+  "ppRole": "Managing Director"
+ }
+}

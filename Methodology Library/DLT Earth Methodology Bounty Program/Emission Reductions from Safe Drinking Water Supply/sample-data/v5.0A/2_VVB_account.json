@@ -1,0 +1,18 @@
+{
+ "type": "request-vc-draft",
+ "version": "1.0.0",
+ "schema": "#ac11aa64-0028-4ffe-b58d-6dba9cff116d",
+ "policyId": "SET_FROM_YOUR_INSTANCE",
+ "blockId": "SET_FROM_YOUR_INSTANCE",
+ "document": {
+  "vvbId": "VVB-EWV-001",
+  "vvbName": "Earthwise Verification Services Ltd. (sample VVB)",
+  "vvbAccreditation": "ISO 14065 accreditation body (sample record)",
+  "accreditationNumber": "SAMPLE-ACC-0001",
+  "vvbContact": "Grace Mushi",
+  "vvbEmail": "audits@earthwise-vvb.example",
+  "vvbCountry": "Kenya",
+  "vvbScope": "VCS sectoral scope 3 (Energy demand); validation and verification",
+  "vvbNotes": "Sample VVB used for the VMR0015 test run."
+ }
+}
