@@ -6,6 +6,7 @@ import { GenerateUUIDv4, IListenerOptions, ListenerEvents } from '@guardian/inte
 import { TopicListener as ListenerCollection } from '../entity/index.js';
 import { Listener } from './listener.js';
 import { envNumber } from '../helpers/env.js';
+import { ListenerScheduler } from './listener-scheduler.js';
 
 /**
  * Worker class
@@ -16,12 +17,18 @@ export class ListenerService extends NatsService {
 
     private readonly delay: number = 10 * 1000;
     /**
-     * Delay between mirror node calls. The public mirror node allows ~50 req/s per
-     * source IP and that budget is shared with every other process behind the same
-     * IP (worker-service, indexer, ...), so the listener paces itself well below it.
+     * Min spacing between the starts of mirror node calls, shared by every listener
+     * (~30 req/s). The public mirror node allows ~50 req/s per source IP and that budget
+     * is shared with every other process behind the same IP (worker-service, indexer, ...),
+     * so the listener paces itself well below it.
      */
     private readonly callDelay: number =
-        envNumber('LISTENER_CALL_DELAY_MS', Math.ceil(1000 / 40));
+        envNumber('LISTENER_CALL_DELAY_MS', 33);
+    /**
+     * Max listeners searching at the same time
+     */
+    private readonly concurrency: number =
+        Math.max(1, envNumber('LISTENER_CONCURRENCY', 5));
     private readonly map: Map<string, Listener>;
 
     constructor(
@@ -72,6 +79,7 @@ export class ListenerService extends NatsService {
             if (index !== null) {
                 await listener.restart(index);
             }
+            await listener.setLatencySensitive(!!options.latencySensitive);
             return listener.name;
         } else {
             if (index === null) {
@@ -85,7 +93,8 @@ export class ListenerService extends NatsService {
                         topicId: options.topicId,
                         name: options.name,
                         searchIndex: index,
-                        sendIndex: index
+                        sendIndex: index,
+                        latencySensitive: !!options.latencySensitive
                     },
                 ));
             const listener = new Listener(this, row);
@@ -120,15 +129,11 @@ export class ListenerService extends NatsService {
     }
 
     public async scheduler(): Promise<void> {
-        while (true) {
-            for (const listener of this.map.values()) {
-                const polled = await listener.search();
-                if (polled) {
-                    //only pace real mirror node calls - a listener in backoff costs nothing
-                    await new Promise(resolve => setTimeout(resolve, this.callDelay));
-                }
-            }
-            await new Promise(resolve => setTimeout(resolve, this.delay));
-        }
+        new ListenerScheduler(() => this.map.values(), {
+            concurrency: this.concurrency,
+            callDelay: this.callDelay,
+            passDelay: this.delay,
+            fastTick: 250
+        }).start();
     }
 }
