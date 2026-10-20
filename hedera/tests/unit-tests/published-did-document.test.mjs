@@ -117,7 +117,7 @@ describe('@unit resolvePublishedDidDocument', function () {
         const { resolvePublishedDidDocument } = await load([], { getMessagesError: new Error('mirror') });
 
         assert.match((await rejection(resolvePublishedDidDocument('did:user', null, '0.0.100', 'u1')))?.message, /Invalid topic/);
-        assert.match((await rejection(resolvePublishedDidDocument('did:user', '0.0.5', '0.0.100', 'u1')))?.message, /Invalid topic/);
+        assert.match((await rejection(resolvePublishedDidDocument('did:user', '0.0.5', '0.0.100', 'u1')))?.message, /Unable to read the DID topic 0\.0\.5.*mirror/);
     });
 });
 
@@ -166,7 +166,7 @@ describe('@unit resolveOwnerDidDocument', function () {
     it('rejects a topic it cannot read', async () => {
         const { resolveOwnerDidDocument } = await load([], { topicInfoError: new Error('mirror') });
 
-        assert.match((await rejection(resolveOwnerDidDocument('did:owner', '0.0.7', '0.0.100', 'u1')))?.message, /Invalid topic/);
+        assert.match((await rejection(resolveOwnerDidDocument('did:owner', '0.0.7', '0.0.100', 'u1')))?.message, /Unable to read the DID topic 0\.0\.7.*mirror/);
         assert.match((await rejection(resolveOwnerDidDocument('did:owner', null, '0.0.100', 'u1')))?.message, /Invalid topic/);
     });
 

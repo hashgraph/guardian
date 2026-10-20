@@ -50,7 +50,7 @@ async function loadPublishedDidDocument(
             type: MessageType.DIDDocument
         });
     } catch (error) {
-        throw new Error(`Invalid topic.`);
+        throw new Error(`Unable to read the DID topic ${topicId}, try again later: ${error?.message || error}`);
     }
     const matching = messages.filter((message) => message.did === did && accept(message));
     const published = earliest ? matching[0] : matching.pop();
@@ -120,7 +120,7 @@ export async function resolveOwnerDidDocument(
         });
         submitKey = info?.submitKey || null;
     } catch (error) {
-        throw new Error(`Invalid topic.`);
+        throw new Error(`Unable to read the DID topic ${topicId}, try again later: ${error?.message || error}`);
     }
     if (submitKey) {
         // DID documents are never updated, and other users of the instance holding the
