@@ -1039,7 +1039,7 @@ export async function resolvePublishedDidDocument(
             type: MessageType.DIDDocument
         });
     } catch (error) {
-        throw new Error(`Invalid topic.`);
+        throw new Error(`Unable to read the DID topic ${topicId}, try again later: ${error?.message || error}`);
     }
     const published = messages
         .filter((message) => message.did === did && message.payer === hederaAccountId)

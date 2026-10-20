@@ -107,6 +107,6 @@ describe('@unit resolvePublishedDidDocument', function () {
         const { resolvePublishedDidDocument } = await load([], { getMessagesError: new Error('mirror') });
 
         assert.match((await rejection(resolvePublishedDidDocument('did:user', null, '0.0.100', 'u1')))?.message, /Invalid topic/);
-        assert.match((await rejection(resolvePublishedDidDocument('did:user', '0.0.5', '0.0.100', 'u1')))?.message, /Invalid topic/);
+        assert.match((await rejection(resolvePublishedDidDocument('did:user', '0.0.5', '0.0.100', 'u1')))?.message, /Unable to read the DID topic 0\.0\.5.*mirror/);
     });
 });
