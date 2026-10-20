@@ -137,15 +137,42 @@ describe('Listener latency-sensitive profile', () => {
         assert.equal(make().latencySensitive, false);
     });
 
-    it('idles on the short cap, however long it has been silent', () => {
+    const idle = (listener) => {
+        listener.onPollSuccess(false);
+        return listener._nextPollAt - Date.now();
+    };
+    const near = (delay, expected) => delay <= expected && delay >= expected * 0.75;
+
+    it('polls on the short interval while the active window lasts', () => {
         const listener = make({ latencySensitive: true });
+        listener.onPollSuccess(true);
         for (let i = 0; i < 20; i++) {
-            listener.onPollSuccess(false);
-            const delay = listener._nextPollAt - Date.now();
-            assert.ok(delay <= Listener.FAST_IDLE_BACKOFF_MAX_MS, `idle ${delay}`);
-            assert.ok(delay >= Listener.FAST_IDLE_BACKOFF_MAX_MS * 0.75, `idle ${delay}`);
+            const delay = idle(listener);
+            assert.ok(near(delay, Listener.FAST_POLL_MS), `active ${delay}`);
+        }
+        assert.equal(listener._idleCount, 0);
+    });
+
+    it('doubles up to the fast cap once the window has passed', () => {
+        const listener = make({ latencySensitive: true });
+        listener.onPollSuccess(true);
+        listener._lastMessageAt = Date.now() - Listener.FAST_ACTIVE_WINDOW_MS;
+        assert.ok(near(idle(listener), Listener.FAST_POLL_MS * 2), 'first step');
+        assert.ok(near(idle(listener), Listener.FAST_POLL_MS * 4), 'second step');
+        for (let i = 0; i < 20; i++) {
+            const delay = idle(listener);
+            assert.ok(near(delay, Listener.FAST_IDLE_BACKOFF_MAX_MS), `capped ${delay}`);
         }
         assert.ok(Listener.FAST_IDLE_BACKOFF_MAX_MS < Listener.IDLE_BACKOFF_MAX_MS);
+    });
+
+    it('starts outside the window and re-enters it on a message', () => {
+        const listener = make({ latencySensitive: true });
+        assert.ok(near(idle(listener), Listener.FAST_POLL_MS * 2), 'fresh listener');
+        idle(listener);
+        listener.onPollSuccess(true);
+        assert.equal(listener.isPollDue(), true);
+        assert.ok(near(idle(listener), Listener.FAST_POLL_MS), 'after a message');
     });
 
     it('still backs off on errors like a regular listener', () => {
@@ -160,7 +187,7 @@ describe('Listener latency-sensitive profile', () => {
         listener.onPollSuccess(false);
         const first = listener._nextPollAt - Date.now();
         assert.ok(first >= Listener.IDLE_BACKOFF_STEP_MS * 0.75, `first idle ${first}`);
-        assert.ok(first > Listener.FAST_IDLE_BACKOFF_MAX_MS);
+        assert.ok(first > Listener.FAST_POLL_MS);
         listener.onPollSuccess(false);
         assert.ok(listener._nextPollAt - Date.now() > first, 'doubles');
     });

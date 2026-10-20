@@ -14,12 +14,13 @@ export class ListenerService extends NatsService {
 
     private readonly delay: number = 10 * 1000;
     /**
-     * Delay between mirror node calls. The public mirror node allows ~50 req/s per
-     * source IP and that budget is shared with every other process behind the same
-     * IP (worker-service, indexer, ...), so the listener paces itself well below it.
+     * Min spacing between the starts of mirror node calls, shared by every listener
+     * (~30 req/s). The public mirror node allows ~50 req/s per source IP and that budget
+     * is shared with every other process behind the same IP (worker-service, indexer, ...),
+     * so the listener paces itself well below it.
      */
     private readonly callDelay: number =
-        envNumber('LISTENER_CALL_DELAY_MS', Math.ceil(1000 / 40));
+        envNumber('LISTENER_CALL_DELAY_MS', 33);
     /**
      * Max listeners searching at the same time
      */
