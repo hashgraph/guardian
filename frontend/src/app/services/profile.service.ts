@@ -63,6 +63,10 @@ export class ProfileService {
         return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/restore/topics/${encodeURIComponent(this.auth.getUsername())}`, profile);
     }
 
+    public exportRemoteUser(): Observable<any> {
+        return this.http.get<any>(`${this.url}/${encodeURIComponent(this.auth.getUsername())}/remote-user`);
+    }
+
     public getBalance(): Observable<string | null> {
         return this.http.get<string | null>(`${this.url}/${encodeURIComponent(this.auth.getUsername())}/balance`);
     }
