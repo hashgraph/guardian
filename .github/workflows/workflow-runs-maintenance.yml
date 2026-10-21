@@ -1,8 +1,6 @@
-name: Workflow Runs Maintenance
-
 # Deletes cancelled/skipped Actions runs and runs older than 20 weeks, to keep the
 # Actions history and artifact storage manageable.
-
+name: Workflow Runs Maintenance
 on:
   workflow_dispatch:
   schedule:

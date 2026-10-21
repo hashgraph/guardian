@@ -18,7 +18,7 @@ jobs:
       YARN_ENABLE_GLOBAL_CACHE: 'false'
     strategy:
       matrix:
-        node-version: [ 24.21.0 ]
+        node-version: [ 24.22.1 ]
         mongodb-version: [ 7.0.41 ]
     steps:
       - name: Harden Runner
