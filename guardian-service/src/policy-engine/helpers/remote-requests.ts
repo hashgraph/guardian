@@ -72,6 +72,7 @@ export function getRemoteRequestsPipeline(
             startMessageId: '$startMessageId',
             policyId: '$policyId',
             status: '$status',
+            lastStatus: '$lastStatus',
             topicId: '$topicId',
             messageId: '$messageId',
             blockTag: '$blockTag',
@@ -86,6 +87,8 @@ export function getRemoteRequestsPipeline(
             type: { $last: '$type' },
             documentType: { $max: '$documentType' },
             statuses: { $addToSet: '$status' },
+            // the same on every row of the thread
+            lastStatus: { $last: '$lastStatus' },
             createDate: { $last: '$createDate' },
             policyId: { $last: '$policyId' },
             topicId: { $last: '$topicId' },
@@ -102,6 +105,8 @@ export function getRemoteRequestsPipeline(
             status: {
                 $switch: {
                     branches: [
+                        // failed or rejected on this side without a row of its own
+                        { case: { $in: ['$lastStatus', ['ERROR', 'REJECTED']] }, then: '$lastStatus' },
                         { case: { $in: ['ERROR', '$statuses'] }, then: 'ERROR' },
                         { case: { $in: ['CANCELED', '$statuses'] }, then: 'CANCELED' },
                         { case: { $in: ['REJECTED', '$statuses'] }, then: 'REJECTED' },

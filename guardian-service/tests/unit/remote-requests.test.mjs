@@ -176,6 +176,17 @@ describe('incoming requests handlers', () => {
             assert.deepEqual(facet.items[0], { $sort: { startMessageId: -1 } });
         });
 
+        it('takes a failure or rejection recorded only in lastStatus first', async () => {
+            const { pipelines } = await run([{ items: [], total: [] }]);
+            const group = pipelines[0].find((stage) => stage.$group).$group;
+            assert.deepEqual(group.lastStatus, { $last: '$lastStatus' });
+            const project = pipelines[0].filter((stage) => stage.$project).at(-1).$project;
+            assert.deepEqual(project.status.$switch.branches[0], {
+                case: { $in: ['$lastStatus', ['ERROR', 'REJECTED']] },
+                then: '$lastStatus'
+            });
+        });
+
         it('matches policy and type before grouping and status after it', async () => {
             const { pipelines } = await run([{ items: [], total: [] }], {
                 filters: { policyId: 'p1', status: 'NEW', type: 'REQUEST' }
