@@ -44850,16 +44850,16 @@ paths:
         - name: status
           required: false
           in: query
-          description: Status
+          description: Status, or several statuses separated by a comma
           schema:
             example: NEW
             type: string
         - name: type
           required: false
           in: query
-          description: Type
+          description: Type, or several types separated by a comma
           schema:
-            example: ACTION
+            example: ACTION,REMOTE_ACTION
             type: string
         - name: sortField
           required: false
@@ -45422,6 +45422,8 @@ paths:
                   value:
                     requestsCount: 0
                     actionsCount: 0
+                    failedCount: 0
+                    threadsCount: 0
                     delayCount: 0
                     total: 0
         '401':
@@ -62140,11 +62142,19 @@ components:
       properties:
         requestsCount:
           type: number
-          description: Number of new requests
+          description: Number of requests waiting for the user (per thread)
           example: 0
         actionsCount:
           type: number
-          description: Number of new actions
+          description: Number of actions waiting for the remote policy (per thread)
+          example: 0
+        failedCount:
+          type: number
+          description: Number of failed threads
+          example: 0
+        threadsCount:
+          type: number
+          description: Number of threads, as the grid lists them
           example: 0
         delayCount:
           type: number
@@ -62157,6 +62167,8 @@ components:
       required:
         - requestsCount
         - actionsCount
+        - failedCount
+        - threadsCount
         - delayCount
         - total
     PolicyLabelDTO:
