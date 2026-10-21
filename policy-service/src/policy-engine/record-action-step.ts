@@ -3,20 +3,29 @@ import { PolicyLink } from './interfaces/index.js';
 
 type Callback = (id: string, timestamp: number, errors: { message: string; stack?: string }[]) => void;
 
+export interface IPreviewDocument {
+    source: string | null;
+    target: string | null;
+    blockType: string | null;
+    document: unknown;
+}
+
 export class RecordActionStep {
     public readonly id: string;
     public readonly timestemp: number;
     public readonly syncActions: boolean;
     public readonly withHistory: boolean;
+    public readonly preview: boolean;
     private readonly results: any[] = [];
     private readonly errors: { message: string; stack?: string }[] = [];
     private readonly actionsMap: Set<string> = new Set();
+    private readonly previewDocuments: IPreviewDocument[] = [];
     public counter: number;
     private callbackFired = false;
     private timer: ReturnType<typeof setTimeout> | null = null;
     private readonly callback: Callback;
 
-    constructor(callback: Callback, initialCounter = 0, syncActions = false, withHistory = false, existingId?: string) {
+    constructor(callback: Callback, initialCounter = 0, syncActions = false, withHistory = false, existingId?: string, preview = false) {
         this.id = existingId ?? GenerateUUIDv4();
         this.timestemp = Date.now();
         this.callback = callback;
@@ -24,6 +33,7 @@ export class RecordActionStep {
         this.callbackFired = false;
         this.syncActions = syncActions;
         this.withHistory = withHistory;
+        this.preview = preview;
     }
 
     public checkCycle(link: PolicyLink<any>) {
@@ -48,6 +58,27 @@ export class RecordActionStep {
 
     public getResults() {
         return this.results;
+    }
+
+    public addPreviewDocument(
+        source: string | null,
+        target: { tag?: string | null; blockType?: string | null } | null,
+        state: unknown
+    ): void {
+        if (!this.preview) {
+            return;
+        }
+        const data = state && typeof state === 'object' ? Reflect.get(state, 'data') : undefined;
+        this.previewDocuments.push({
+            source,
+            target: target?.tag ?? null,
+            blockType: target?.blockType ?? null,
+            document: structuredClone(data ?? null)
+        });
+    }
+
+    public getPreviewDocuments(): IPreviewDocument[] {
+        return this.previewDocuments;
     }
 
     public addError(err: unknown): void {

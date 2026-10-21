@@ -16,6 +16,7 @@ import { PolicyActionsUtils } from '../policy-actions/utils.js';
 import { hydrateTablesInObject, loadFileTextById } from '../helpers/table-field.js';
 import { RecordActionStep } from '../record-action-step.js';
 import { GeospatialFileValidator } from '../helpers/geospatial-file-validator.js';
+import { createPreviewDocument, getPreviewDocumentId } from '../helpers/preview.js';
 
 /**
  * Request VC document block
@@ -191,7 +192,7 @@ export class RequestVcDocumentBlock {
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
     async setData(user: PolicyUser, data: IPolicyDocument, _, actionStatus): Promise<any> {
-        if (this.state.hasOwnProperty(user.id)) {
+        if (!actionStatus?.preview && this.state.hasOwnProperty(user.id)) {
             delete this.state[user.id].restoreData;
         }
 
@@ -207,6 +208,7 @@ export class RequestVcDocumentBlock {
         const options = await ref.getOptions(user);
         try {
             const actionStatusId = actionStatus?.id ?? (ref.dryRun ? data?.recordActionId ?? null : null);
+            const preview = !!actionStatus?.preview;
             //Prepare data
             const document = await this.prepareDocument(data);
             const draft = data.draft;
@@ -222,7 +224,7 @@ export class RequestVcDocumentBlock {
                 = await PolicyUtils.getRelayerAccountAndOwner(ref, user, data.relayerAccount, documentRef, inheritRelayerAccount);
 
             //Prepare Credential Subject
-            const credentialSubject = await this.createCredentialSubject(user, relayerAccount, document, actionStatusId);
+            const credentialSubject = await this.createCredentialSubject(user, relayerAccount, document, actionStatusId, preview);
 
             //Get relationships
             if (documentRef) {
@@ -243,12 +245,27 @@ export class RequestVcDocumentBlock {
             }
 
             //Validate
-            if (!draft) {
+            if (!draft && !preview) {
                 const _vcHelper = new VcHelper();
                 const res = await _vcHelper.verifySubject(credentialSubject);
                 if (!res.ok) {
                     throw new BlockActionError(JSON.stringify(res.error), ref.blockType, ref.uuid);
                 }
+            }
+
+            if (preview) {
+                const previewItem = createPreviewDocument(
+                    ref,
+                    documentOwner,
+                    credentialSubject,
+                    ref.options.schema,
+                    user.did,
+                    actionStatusId
+                );
+                PolicyUtils.setDocumentRef(previewItem, documentRef);
+                previewItem.relayerAccount = relayerAccount;
+                await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, { data: previewItem }, actionStatus);
+                return previewItem;
             }
 
             //Create Verifiable Credential
@@ -420,6 +437,7 @@ export class RequestVcDocumentBlock {
         relayerAccount: string,
         document: any,
         actionStatusId: string,
+        preview: boolean = false,
     ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
         const options = await ref.getOptions(user);
@@ -433,13 +451,15 @@ export class RequestVcDocumentBlock {
 
         PolicyUtils.setGuardianVersion(credentialSubject, this._schema);
 
-        const newId = await PolicyActionsUtils.generateId({
-            ref,
-            type: idType,
-            user,
-            relayerAccount,
-            userId: user.userId
-        }, actionStatusId);
+        const newId = preview
+            ? getPreviewDocumentId(idType, user)
+            : await PolicyActionsUtils.generateId({
+                ref,
+                type: idType,
+                user,
+                relayerAccount,
+                userId: user.userId
+            }, actionStatusId);
         if (newId) {
             credentialSubject.id = newId;
         }

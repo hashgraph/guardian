@@ -35,6 +35,7 @@ import {
     gzipTableCsv,
     isTableOutputValue
 } from '../helpers/table-output.js';
+import { createPreviewDocument } from '../helpers/preview.js';
 
 const filename = fileURLToPath(import.meta.url);
 
@@ -342,7 +343,8 @@ export class MathBlock {
         userId: string | null,
         recordActionId: string | null = null,
         user?: PolicyUser,
-        storedTables: IStoredTable[] = []
+        storedTables: IStoredTable[] = [],
+        preview: boolean = false
     ): Promise<IPolicyDocument> {
         if (!documents) {
             throw new BlockActionError('Invalid VC', ref.blockType, ref.uuid);
@@ -363,6 +365,12 @@ export class MathBlock {
         map.addRelationships(contextRelationships.map((d) => this.getCredentialSubject(d)));
 
         const newJson = await this.calculate(ref, map, docOwner);
+        if (preview) {
+            if (options.unsigned) {
+                return await this.createUnsignedDocument(newJson, ref, recordActionId);
+            }
+            return createPreviewDocument(ref, docOwner, newJson, options.outputSchema, ref.policyOwner, recordActionId);
+        }
         await this.storeResultTables(ref, newJson, userId, storedTables, user);
         if (options.unsigned) {
             return await this.createUnsignedDocument(newJson, ref, recordActionId);
@@ -542,12 +550,12 @@ export class MathBlock {
             if (Array.isArray(event.data.data)) {
                 const result: IPolicyDocument[] = [];
                 for (const doc of event.data.data) {
-                    const newVC = await this.process(doc, ref, event?.user?.userId, event.actionStatus?.id ?? null, event.user, storedTables);
+                    const newVC = await this.process(doc, ref, event?.user?.userId, event.actionStatus?.id ?? null, event.user, storedTables, !!event.actionStatus?.preview);
                     result.push(newVC)
                 }
                 event.data.data = result;
             } else {
-                event.data.data = await this.process(event.data.data, ref, event?.user?.userId, event.actionStatus?.id ?? null, event.user, storedTables);
+                event.data.data = await this.process(event.data.data, ref, event?.user?.userId, event.actionStatus?.id ?? null, event.user, storedTables, !!event.actionStatus?.preview);
             }
         } catch (error) {
             await this.deleteResultTables(ref, storedTables);

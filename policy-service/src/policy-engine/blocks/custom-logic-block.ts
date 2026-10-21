@@ -18,6 +18,7 @@ import { BlockActionError } from '../errors/index.js';
 import { collectTablesPack, hydrateTablesInObject, loadFileTextById } from '../helpers/table-field.js';
 import { RecordActionStep } from '../record-action-step.js';
 import { buildSandboxWorkerEnv } from '../helpers/workers/sandbox-worker-env.js';
+import { createPreviewDocument } from '../helpers/preview.js';
 
 const filename = fileURLToPath(import.meta.url);
 
@@ -136,6 +137,9 @@ export class CustomLogicBlock {
         try {
             const triggerEvents = async (documents: IPolicyDocument | IPolicyDocument[]) => {
                 if (!documents) {
+                    if (event.actionStatus?.preview) {
+                        return;
+                    }
                     // An empty result is a legitimate script outcome (`done(null)`, or a bare
                     // `return` when a source lookup misses), but it must not silently kill the
                     // workflow. Skipping every event left an interfaceStepBlock parked on this
@@ -160,6 +164,10 @@ export class CustomLogicBlock {
             await this.execute(event.data, event.user, triggerEvents, event?.user?.userId, event.actionStatus);
             ref.backup();
         } catch (error) {
+            if (event.actionStatus?.preview) {
+                event.actionStatus.addError(error);
+                return event.data;
+            }
             const message = PolicyUtils.getErrorMessage(error);
             ref.error(message);
             // Also surface to the UI: this local catch pre-empts @CatchErrors, which would
@@ -267,6 +275,8 @@ export class CustomLogicBlock {
                         }
                         if (options.unsigned) {
                             return await this.createUnsignedDocument(json, ref, actionStatus?.id);
+                        } else if (actionStatus?.preview) {
+                            return createPreviewDocument(ref, metadata.owner, json, options.outputSchema, metadata.issuer, actionStatus.id);
                         } else {
                             return await this.createDocument(json, metadata, ref, userId, actionStatus?.id, user, didBatch);
                         }
