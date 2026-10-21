@@ -187,18 +187,47 @@ describe('incoming requests handlers', () => {
             });
         });
 
-        it('matches policy and type before grouping and status after it', async () => {
+        it('matches policy before grouping, and type and status after it', async () => {
             const { pipelines } = await run([{ items: [], total: [] }], {
-                filters: { policyId: 'p1', status: 'NEW', type: 'REQUEST' }
+                filters: { policyId: 'p1', status: 'NEW', type: 'REMOTE_ACTION' }
             });
             const pipeline = pipelines[0];
             const names = pipeline.map(stageName);
-            assert.deepEqual(pipeline[0].$match, { accountId: user.hederaAccountId, policyId: 'p1', type: 'REQUEST' });
+            assert.deepEqual(pipeline[0].$match, { accountId: user.hederaAccountId, policyId: 'p1' });
             const last = pipeline[names.lastIndexOf('$match')].$match;
-            assert.deepEqual(last, { status: 'NEW' });
+            assert.deepEqual(last, { type: 'REMOTE_ACTION', status: 'NEW' });
             assert.ok(names.lastIndexOf('$match') > names.indexOf('$group'));
-            assert.equal(names.indexOf('$match'), 0);
             assert.equal(names.filter((n) => n === '$match').length, 2);
+        });
+
+        it('takes the thread type, id and load state from the request row', async () => {
+            const { pipelines } = await run([{ items: [], total: [] }]);
+            const group = pipelines[0].find((stage) => stage.$group).$group;
+            const isRequest = { $eq: ['$messageId', '$startMessageId'] };
+            assert.deepEqual(group.requestType, { $max: { $cond: [isRequest, '$type', null] } });
+            assert.deepEqual(group.requestLoaded, { $max: { $cond: [isRequest, '$loaded', null] } });
+            const project = pipelines[0].filter((stage) => stage.$project).at(-1).$project;
+            assert.deepEqual(project.type, { $ifNull: ['$requestType', '$anyType'] });
+            assert.deepEqual(project.loaded, { $ifNull: ['$requestLoaded', '$anyLoaded'] });
+            assert.equal(project.messageId, '$startMessageId');
+        });
+
+        it('dates a thread by its earliest row', async () => {
+            const { pipelines } = await run([{ items: [], total: [] }]);
+            const group = pipelines[0].find((stage) => stage.$group).$group;
+            assert.deepEqual(group.createDate, { $min: '$createDate' });
+        });
+
+        it('returns every row when the page size is 0', async () => {
+            const { pipelines } = await run([{ items: [], total: [] }], { pageIndex: '0', pageSize: '0' });
+            const facet = pipelines[0][pipelines[0].length - 1].$facet;
+            assert.deepEqual(facet.items, [{ $sort: { startMessageId: -1 } }]);
+        });
+
+        it('drops a negative skip or limit', async () => {
+            const { pipelines } = await run([{ items: [], total: [] }], { pageIndex: '-1', pageSize: '-5' });
+            const facet = pipelines[0][pipelines[0].length - 1].$facet;
+            assert.deepEqual(facet.items, [{ $sort: { startMessageId: -1 } }]);
         });
     });
 

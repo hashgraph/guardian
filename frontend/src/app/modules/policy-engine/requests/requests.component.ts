@@ -399,8 +399,14 @@ export class PolicyRequestsComponent implements OnInit, OnDestroy {
         if (!event?.field) {
             return;
         }
+        // A non-lazy table with customSort emits this again whenever its rows change,
+        // so only a click that changes the sort reloads the page
+        const order = event.order === 1 ? 1 : -1;
+        if (event.field === this.sortField && order === this.sortOrder) {
+            return;
+        }
         this.sortField = event.field;
-        this.sortOrder = event.order === 1 ? 1 : -1;
+        this.sortOrder = order;
         this.pageIndex = 0;
         this.updateUrl();
         this.loadData();

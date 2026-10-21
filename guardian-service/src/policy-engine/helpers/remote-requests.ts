@@ -38,8 +38,9 @@ export function getRemoteRequestsSort(sortField?: string, sortDirection?: string
 /**
  * Build the pipeline for the incoming requests grid
  * Rows are grouped by `startMessageId`, the page and the total are taken from the same grouped rows
- * `policyId` and `type` are constant within a thread, so they are matched before the grouping,
- * `status` is derived by the grouping and is matched after it
+ * `policyId` is constant within a thread, so it is matched before the grouping.
+ * `type` is not: the reply to a remote action is saved as an action, so the thread takes the type
+ * of its request row and is matched by it after the grouping, together with the derived `status`
  * @param accountId
  * @param filters
  * @param sort
@@ -56,9 +57,6 @@ export function getRemoteRequestsPipeline(
     const leading: any = { accountId };
     if (filters?.policyId) {
         leading.policyId = filters.policyId;
-    }
-    if (filters?.type) {
-        leading.type = filters.type;
     }
     const aggregate: any[] = [{
         $match: leading
@@ -84,23 +82,25 @@ export function getRemoteRequestsPipeline(
     }, {
         $group: {
             _id: '$startMessageId',
-            type: { $last: '$type' },
+            // the request row starts the thread, the replies follow it
+            requestType: { $max: { $cond: [{ $eq: ['$messageId', '$startMessageId'] }, '$type', null] } },
+            anyType: { $first: '$type' },
             documentType: { $max: '$documentType' },
             statuses: { $addToSet: '$status' },
             // the same on every row of the thread
             lastStatus: { $last: '$lastStatus' },
-            createDate: { $last: '$createDate' },
+            createDate: { $min: '$createDate' },
             policyId: { $last: '$policyId' },
             topicId: { $last: '$topicId' },
-            messageId: { $last: '$messageId' },
             startMessageId: { $last: '$startMessageId' },
             blockTag: { $last: '$blockTag' },
-            loaded: { $last: '$loaded' },
+            requestLoaded: { $max: { $cond: [{ $eq: ['$messageId', '$startMessageId'] }, '$loaded', null] } },
+            anyLoaded: { $first: '$loaded' },
         }
     }, {
         $project: {
             statuses: '$statuses',
-            type: '$type',
+            type: { $ifNull: ['$requestType', '$anyType'] },
             documentType: '$documentType',
             status: {
                 $switch: {
@@ -118,22 +118,34 @@ export function getRemoteRequestsPipeline(
             policyId: '$policyId',
             createDate: '$createDate',
             topicId: '$topicId',
-            messageId: '$messageId',
+            // approve, reject, cancel and reload address the request row
+            messageId: '$startMessageId',
             startMessageId: '$startMessageId',
             blockTag: '$blockTag',
-            loaded: '$loaded'
+            // Reload fetches the document of the request row
+            loaded: { $ifNull: ['$requestLoaded', '$anyLoaded'] }
         }
     }];
 
+    const trailing: any = {};
+    if (filters?.type) {
+        trailing.type = filters.type;
+    }
     if (filters?.status) {
-        aggregate.push({ $match: { status: filters.status } });
+        trailing.status = filters.status;
+    }
+    if (Object.keys(trailing).length) {
+        aggregate.push({ $match: trailing });
     }
 
     const page: any[] = [{ $sort: sort }];
-    if (skip) {
+    if (skip > 0) {
         page.push({ $skip: skip });
     }
-    page.push({ $limit: limit });
+    // no positive limit: the whole list, as before
+    if (limit > 0) {
+        page.push({ $limit: limit });
+    }
 
     aggregate.push({
         $facet: {
@@ -171,8 +183,8 @@ export async function getRemoteRequests(msg: {
         const _pageSize = parseInt(pageSize, 10);
         const _pageIndex = parseInt(pageIndex, 10);
         if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
-            limit = _pageSize;
-            skip = _pageIndex * _pageSize;
+            limit = Math.max(_pageSize, 0);
+            skip = Math.max(_pageIndex, 0) * limit;
         }
 
         const aggregate = getRemoteRequestsPipeline(
