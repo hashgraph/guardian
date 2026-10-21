@@ -238,13 +238,13 @@ describe('incoming requests handlers', () => {
         it('returns every row when the page size is 0', async () => {
             const { pipelines } = await run([{ items: [], total: [] }], { pageIndex: '0', pageSize: '0' });
             const facet = pipelines[0][pipelines[0].length - 1].$facet;
-            assert.deepEqual(facet.items, [{ $sort: { startMessageId: -1 } }]);
+            assert.deepEqual(facet.items, [{ $sort: { startMessageId: -1 } }, { $limit: 5000 }]);
         });
 
         it('drops a negative skip or limit', async () => {
             const { pipelines } = await run([{ items: [], total: [] }], { pageIndex: '-1', pageSize: '-5' });
             const facet = pipelines[0][pipelines[0].length - 1].$facet;
-            assert.deepEqual(facet.items, [{ $sort: { startMessageId: -1 } }]);
+            assert.deepEqual(facet.items, [{ $sort: { startMessageId: -1 } }, { $limit: 5000 }]);
         });
     });
 

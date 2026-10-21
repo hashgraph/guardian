@@ -36,6 +36,11 @@ export function getRemoteRequestsSort(sortField?: string, sortDirection?: string
 }
 
 /**
+ * Rows returned when the page size is not set, about 400 bytes each
+ */
+export const MAX_UNLIMITED_ROWS = 5000;
+
+/**
  * Match a single value or a comma separated list of values
  * @param value
  */
@@ -163,10 +168,8 @@ export function getRemoteRequestsPipeline(
     if (skip > 0) {
         page.push({ $skip: skip });
     }
-    // no positive limit: the whole list, as before
-    if (limit > 0) {
-        page.push({ $limit: limit });
-    }
+    // no positive limit: the list up to the cap, as the facet result is a single document (16 MB)
+    page.push({ $limit: limit > 0 ? limit : MAX_UNLIMITED_ROWS });
 
     aggregate.push({
         $facet: {

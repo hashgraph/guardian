@@ -13,8 +13,8 @@ import { ObjectId } from '@mikro-orm/mongodb';
     name: 'accountId_startMessageId_index',
 })
 @Index({
-    properties: ['accountId', 'lastStatus', 'type'],
-    name: 'accountId_lastStatus_type_index',
+    properties: ['accountId', 'policyId'],
+    name: 'accountId_policyId_index',
 })
 export class PolicyAction extends BaseEntity {
     /**
