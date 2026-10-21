@@ -6,37 +6,34 @@ import { schemaAPI } from './api/schema.service.js';
 import { tokenAPI } from './api/token.service.js';
 import { trustChainAPI } from './api/trust-chain.service.js';
 import { PolicyEngineService } from './policy-engine/policy-engine.service.js';
-import {
-    ApplicationState,
-    COMMON_CONNECTION_CONFIG,
-    DatabaseServer,
-    Environment,
-    ExternalEventChannel,
-    GenerateTLSOptionsNats,
-    IPFS,
-    LargePayloadContainer,
-    MessageBrokerChannel,
-    MessageServer,
-    Migration,
-    mongoForLoggingInitialization,
-    OldSecretManager,
-    PinoLogger,
-    pinoLoggerInitialization,
-    Policy,
-    SecretManager,
-    TopicMemo,
-    TransactionLogger,
-    TransactionLogLvl,
-    Users,
-    ValidateConfiguration,
-    Wallet,
-    Workers,
-    JwtServicesValidator,
-    NotificationEvents,
-    markServiceBooted,
-    setGlobalErrorLogger
-} from '@guardian/common';
-import { entities } from '@guardian/common/dist/entities.js';
+import { ApplicationState } from '@guardian/common/helpers/application-state';
+import { COMMON_CONNECTION_CONFIG } from '@guardian/common/helpers/db-helper';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { Environment } from '@guardian/common/helpers/environment';
+import { applyNetworkOverrides } from '@guardian/common/helpers/network-overrides';
+import { ExternalEventChannel } from '@guardian/common/mq/external-channel';
+import { GenerateTLSOptionsNats } from '@guardian/common/helpers/generate-tls-options';
+import { IPFS } from '@guardian/common/helpers/ipfs';
+import { LargePayloadContainer } from '@guardian/common/mq/large-payload-container';
+import { MessageBrokerChannel } from '@guardian/common/mq/message-broker-channel';
+import { Migration } from '@guardian/common/helpers/migration';
+import { mongoForLoggingInitialization } from '@guardian/common/helpers/mongo-logging-initialization';
+import { OldSecretManager } from '@guardian/common/secret-manager/old-style/old-secret-manager';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { pinoLoggerInitialization } from '@guardian/common/helpers/pino-logger-initialization';
+import { Policy } from '@guardian/common/entity/policy';
+import { SecretManager } from '@guardian/common/secret-manager/secret-manager';
+import { Users } from '@guardian/common/helpers/users';
+import { ValidateConfiguration } from '@guardian/common/helpers/validate-configuration';
+import { Wallet } from '@guardian/common/helpers/wallet';
+import { Workers } from '@guardian/common/helpers/workers';
+import { JwtServicesValidator } from '@guardian/common/security/jwt-services-validator';
+import { NotificationEvents } from '@guardian/common/notification/notification-events';
+import { markServiceBooted, setGlobalErrorLogger } from '@guardian/common/helpers/process-error-handlers';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { TopicMemo } from '@guardian/hedera/memo-mappings/topic-memo';
+import { TransactionLogger, TransactionLogLvl } from '@guardian/hedera/transaction-logger';
+import { entities } from '@guardian/common/entities';
 import { ApplicationStates, PolicyEvents, PolicyStatus, WorkerTaskType } from '@guardian/interfaces';
 import { AccountId, PrivateKey, TopicId } from '@hiero-ledger/sdk';
 import { ipfsAPI } from './api/ipfs.service.js';
@@ -208,40 +205,14 @@ Promise.all([
     Environment.setLocalNodeProtocol(process.env.LOCALNODE_PROTOCOL);
     Environment.setLocalNodeAddress(process.env.LOCALNODE_ADDRESS);
 
-    if (process.env.OVERRIDE_NETWORK_CONFIGURATION === 'true') {
-        if (process.env.OVERRIDE_HEDERA_CONSENSUS_NODES) {
-            try {
-                const nodes = JSON.parse(process.env.OVERRIDE_HEDERA_CONSENSUS_NODES);
-                Environment.setNodes(nodes);
-            } catch (error) {
-                await logger.warn(
-                    'OVERRIDE_HEDERA_CONSENSUS_NODES field in settings: ' + error.message,
-                    ['GUARDIAN_SERVICE'],
-                    null
-                );
-                console.warn(error);
-            }
-        }
-        if (process.env.OVERRIDE_HEDERA_MIRROR_NODES) {
-            try {
-                const mirrorNodes = JSON.parse(
-                    process.env.OVERRIDE_HEDERA_MIRROR_NODES
-                );
-                Environment.setMirrorNodes(mirrorNodes);
-            } catch (error) {
-                await logger.warn(
-                    'OVERRIDE_HEDERA_MIRROR_NODES field in settings: ' + error.message,
-                    ['GUARDIAN_SERVICE'],
-                    null
-                );
-                console.warn(error);
-            }
-        }
-
-        if (process.env.OVERRIDE_HEDERA_MIRROR_NODES_BASE_API) {
-            Environment.setMirrorNodesBaseApi(process.env.OVERRIDE_HEDERA_MIRROR_NODES_BASE_API);
-        }
-    }
+    await applyNetworkOverrides(process.env, async (variableName, error) => {
+        await logger.warn(
+            `${variableName} field in settings: ${error.message}`,
+            ['GUARDIAN_SERVICE'],
+            null
+        );
+        console.warn(error);
+    });
 
     Environment.setNetwork(process.env.HEDERA_NET);
     MessageServer.setLang(process.env.MESSAGE_LANG);

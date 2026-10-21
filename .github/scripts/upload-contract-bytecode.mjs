@@ -22,9 +22,14 @@
  *   OPERATOR_KEY         MANDATORY, its private key (DER hex or raw), it also becomes the file key
  *   HEDERA_NET           localnode (default) | testnet | previewnet | mainnet
  *   LOCALNODE_ADDRESS    default 127.0.0.1, only used when HEDERA_NET=localnode
+ *   OVERRIDE_NETWORK_CONFIGURATION, OVERRIDE_HEDERA_CONSENSUS_NODES
+ *                        same variables Guardian reads: when the first is `true` and the second
+ *                        is a JSON map such as {"127.0.0.1:35211":"0.0.3"}, it replaces the
+ *                        consensus nodes of any HEDERA_NET (Solo does not use the localnode ports)
  *   CONTRACTS_DIR        default <repo>/contracts, where `npx hardhat compile` wrote artifacts/
  *   GITHUB_OUTPUT        when set, the ids are also appended to it as wipe/retire/
  *                        retireSingle/retireDouble
+ *   ENV_FILE             when set, the *_FILE_ID variables are also appended to it in env-file form
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -62,7 +67,20 @@ function fail(message) {
     process.exit(1);
 }
 
+function createClientFromOverride() {
+    let nodes;
+    try {
+        nodes = JSON.parse(process.env.OVERRIDE_HEDERA_CONSENSUS_NODES);
+    } catch (error) {
+        return fail(`OVERRIDE_HEDERA_CONSENSUS_NODES is not valid JSON: ${error.message}`);
+    }
+    return Client.forNetwork(nodes);
+}
+
 function createClient() {
+    if (process.env.OVERRIDE_NETWORK_CONFIGURATION === 'true' && process.env.OVERRIDE_HEDERA_CONSENSUS_NODES) {
+        return createClientFromOverride();
+    }
     const network = process.env.HEDERA_NET || 'localnode';
     switch (network) {
         case 'localnode': {
@@ -143,9 +161,12 @@ try {
 // Printed unconditionally and in env-file form, so running this by hand is all it takes to fill in
 // the *_FILE_ID variables of a configs/.env.<env>.guardian.system file. The workflow reads
 // GITHUB_OUTPUT instead, which is only written when Actions provides it.
+const envLines = Object.entries(fileIds).map(([name, id]) => `${ENV_VARIABLE[name]}="${id}"`);
 console.log('\nPaste into your configs/.env.<env>.guardian.system:');
-for (const [name, id] of Object.entries(fileIds)) {
-    console.log(`${ENV_VARIABLE[name]}="${id}"`);
+console.log(envLines.join('\n'));
+
+if (process.env.ENV_FILE) {
+    fs.appendFileSync(process.env.ENV_FILE, envLines.map((line) => `${line}\n`).join(''));
 }
 
 if (process.env.GITHUB_OUTPUT) {

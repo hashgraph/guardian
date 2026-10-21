@@ -549,7 +549,8 @@ These directories are mounted as volumes from the Docker container to your local
 The suite defaults to Hedera testnet, and nothing below is needed for that. A local network is worth
 the setup when you want to run the whole suite without spending testnet HBAR, without waiting on real
 consensus and mirror-node indexing, or on a ledger that starts empty every time. It is what the
-`E2E Tests` workflow (`.github/workflows/api-manual.yml`) does on every run.
+`E2E Tests` workflow (`.github/workflows/e2e-tests.yml`) does on every run, using
+`hiero-ledger/hiero-solo-action`.
 
 #### The `hederaNet` parameter
 
@@ -587,104 +588,146 @@ CYPRESS_hederaNet=localnode CYPRESS_grepTags="smoke" docker compose run --rm cyp
 
 #### Bringing the network up with Solo
 
-[Solo](https://solo.hiero.org) provisions a single-node Hiero network on Kubernetes-in-Docker. The
-lightest configuration Guardian can use is a consensus node plus a mirror node — no explorer, no
-JSON-RPC relay, no block node.
+[Solo](https://solo.hiero.org) provisions a single-node Hiero network on Kubernetes-in-Docker. You
+need Docker, `kind`, `kubectl` and Node 22 or newer; one script does the rest:
 
 ```bash
-npm install -g @hiero-ledger/solo@latest
-solo one-shot single deploy
+cd e2e-tests
+npm run solo:up
 ```
 
-The port forwards are **not** free choices. Guardian's `localnode` branch hardcodes the consensus
-node on `:50211` as account `0.0.3`, the mirror node gRPC endpoint on `:5600` and the mirror node
-REST API on `:5551` (`common/src/hedera-modules/environment.ts`). The `OVERRIDE_HEDERA_*` variables
-cannot be used to move them: only `guardian-service` and `policy-service` read those, while
-`topic-listener-service` goes straight to `HEDERA_NET` + `LOCALNODE_*`. So publish Solo on the ports
-Guardian already expects:
+`solo:up` runs `solo one-shot single deploy --minimal-setup` (a single consensus node and a mirror
+node; Solo 0.94 still deploys its explorer and relay with that flag), waits until the consensus node
+and the mirror REST API answer, and creates the operator: an ED25519 account with 50,000,000 HBAR,
+funded by the genesis account, since one-shot only predefines ECDSA accounts. It then compiles
+`contracts/`, uploads their bytecode, and writes everything Guardian needs to
+`e2e-tests/.solo/solo.env`. Solo is pinned (see `SOLO_VERSION` in `scripts/solo-network.mjs`) and
+runs through `npx`, with its state in `e2e-tests/.solo/home`, so a globally installed Solo and
+`~/.solo` are never touched.
+
+Behind a TLS-intercepting proxy (for example Zscaler) image pulls inside the kind node fail with
+`x509: certificate signed by unknown authority`. Set `SOLO_EXTRA_CA_CERT` to the PEM bundle of the
+proxy CA and `solo:up` installs it in the node before Solo creates any pod:
 
 ```bash
-kubectl port-forward svc/haproxy-node1-svc -n <namespace> 50211:50211 &
-kubectl port-forward svc/mirror-1-rest     -n <namespace> 5551:80     &
-kubectl port-forward svc/mirror-1-grpc     -n <namespace> 5600:5600   &
+SOLO_EXTRA_CA_CERT=/path/to/proxy-ca.pem npm run solo:up
 ```
 
-These are plain background processes: if one dies, the whole stack silently loses the network. The
-workflow supervises them for exactly that reason.
-
-Then create the operator account. It pays for every account, topic, token and contract the run
-creates, and HBAR is free here, so fund it generously:
+When you are done:
 
 ```bash
-solo ledger account create --deployment <deployment> --hbar-amount 50000000
+npm run solo:down
 ```
 
-The command prints the account ID; its private key is in the cluster:
+It destroys the deployment, deletes the `solo-cluster` kind cluster and removes `e2e-tests/.solo/`.
 
-```bash
-kubectl get secret account-key-<accountId> -n <namespace> -o jsonpath='{.data.privateKey}' | base64 -d
-```
+The network is published on `127.0.0.1:35211` (consensus node, account `0.0.3`) and
+`127.0.0.1:38081` (mirror node REST API). These are not the ports Guardian's `localnode` mode
+assumes (`:50211` and `:5551`, `common/src/helpers/environment.ts`), so `solo.env` points Guardian
+at them with `OVERRIDE_NETWORK_CONFIGURATION`, `OVERRIDE_HEDERA_CONSENSUS_NODES` and
+`OVERRIDE_HEDERA_MIRROR_NODES`. `guardian-service`, `policy-service` and `topic-listener-service`
+all apply them, as does `.github/scripts/upload-contract-bytecode.mjs`.
 
 #### Contract bytecode
 
 `guardian-service` deploys the retire/wipe contracts from Hedera File IDs, and the ones shipped in
-`configs/.env..guardian.system` are testnet files that a fresh network does not have — without
-replacing them every spec in `013_contracts/` fails on the first deploy. Compile and upload them:
-
-```bash
-# RPC_URL is not used by `compile`, but Hardhat validates every declared network at config load
-# and all four remote ones take their url from it, so it has to be set to something.
-cd contracts && npm install && RPC_URL=http://localhost:7546 npx hardhat compile && cd -
-
-OPERATOR_ID=<accountId> OPERATOR_KEY=<privateKey> \
-  node .github/scripts/upload-contract-bytecode.mjs
-```
-
-It prints the four File IDs both as it uploads them and, at the end, as the four
-`*_FILE_ID` lines to paste into the env file below.
+`configs/.env..guardian.system` are testnet files that a fresh network does not have; without
+replacing them every spec in `013_contracts/` fails on the first deploy. `solo:up` compiles
+`contracts/` and runs `.github/scripts/upload-contract-bytecode.mjs` for you, and the four
+`*_FILE_ID` variables end up in `solo.env`.
 
 #### Pointing Guardian at it
 
-`configs/.env.localnode.guardian.system` is the ecosystem env file for this setup; fill in
-`OPERATOR_ID`, `OPERATOR_KEY` and the four `*_FILE_ID` variables, then:
+To run Guardian natively and the suite against it, the way the workflow does, install and build
+Guardian once from the repository root (this is the workflow's build step), then use the
+`e2e-tests` scripts:
+
+```bash
+yarn install --immutable
+yarn workspaces foreach -A --topological-dev --parallel --jobs 4 \
+  --include '@guardian/interfaces' --include '@guardian/common' --include '@guardian/hedera' \
+  --include notification-service --include logger-service --include auth-service \
+  --include queue-service --include topic-listener-service --include guardian-service \
+  --include policy-service --include worker-service --include api-gateway run build
+```
+
+```bash
+cd e2e-tests
+npm run solo:up              # the network, once
+npm run guardian:up          # MongoDB, NATS, Valkey and Kubo containers, then every Guardian service
+npm run guardian:test        # the whole suite
+npm run guardian:test:smoke  # only the tests tagged smoke
+npm run guardian:test -- cypress/e2e/api-tests/001_demo/getRandomKey.cy.js   # a single spec
+npm run guardian:test -- 'cypress/e2e/api-tests/010_tokens/*.cy.js' cypress/e2e/api-tests/001_demo/getRandomKey.cy.js   # several specs or globs
+npm run guardian:down        # stops the services and removes the containers
+```
+
+`guardian:test` accepts any number of specs after `--`, each a file or a glob (`*` and `**` work, as
+in the default pattern `cypress/e2e/api-tests/**/*.cy.js`), or one comma-separated list. Quote the
+globs, so that Cypress expands them rather than your shell. Specs that need users or seeded
+artefacts rely on `000_accounts_creating/create_accounts.cy.js` and, on a local network,
+`000_accounts_creating/seedHederaArtefacts.cy.js`, which run first in a full run; include them
+when you run a spec on a freshly started stack.
+
+`scripts/local-guardian.sh` loads `.solo/solo.env` for you and takes the JWT keys from
+`configs/.env.quickstart.guardian.system`, so nothing has to be configured. Service logs are in
+`e2e-tests/.local/logs`. The infra containers are recreated on every `guardian:up`, because the
+ledger is empty after each `solo:up` and an older database would point at accounts that no longer
+exist. Stop a running `guardian-quickstart` first: they use the same ports.
+
+To start the services yourself instead, load the variables in every shell that starts one, and in
+the one that runs the suite:
+
+```bash
+set -a; source e2e-tests/.solo/solo.env; set +a
+cd e2e-tests && CYPRESS_grepTags="smoke" ./entrypoint.sh
+```
+
+`entrypoint.sh` back-fills `CYPRESS_hederaNet`, `CYPRESS_operatorId` and `CYPRESS_operatorKey` from
+`HEDERA_NET`, `OPERATOR_ID` and `OPERATOR_KEY`.
+
+For the docker compose stack, `configs/.env.localnode.guardian.system` is the ecosystem env file:
+fill in `OPERATOR_ID`, `OPERATOR_KEY` and the four `*_FILE_ID` variables from `solo.env`, then:
 
 ```bash
 GUARDIAN_ENV=localnode docker compose up
 ```
 
-One caveat for the compose path: the services run in containers, so `LOCALNODE_ADDRESS` has to be
-`host.docker.internal` rather than `127.0.0.1` — and on Linux that also needs
+The services run in containers there, so `LOCALNODE_ADDRESS` and the `OVERRIDE_*` addresses use
+`host.docker.internal` rather than `127.0.0.1`, and on Linux that also needs
 `extra_hosts: ["host.docker.internal:host-gateway"]` on every Guardian service, which the root
-`docker-compose*.yml` do not declare. Running the services natively (`npm start` per service, as the
-workflow does) has no such problem and `LOCALNODE_ADDRESS=127.0.0.1` is enough.
+`docker-compose*.yml` do not declare. Running the services natively has no such problem.
 
 ### CI/CD Integration
 
 #### GitHub Actions Workflow
 
-The repository includes automated test execution via GitHub Actions (`.github/workflows/api-manual.yml`).
+The repository includes automated test execution via GitHub Actions (`.github/workflows/e2e-tests.yml`).
 
 ##### Manual Workflow Run
 
-1. Go to **Actions** → **Guardian CI API Tests (Manual)**
+1. Go to **Actions** → **E2E Tests**
 2. Click **Run workflow**
 3. Enter parameters:
    - **Tags**: e.g., `all`, `smoke`, `preparing policies`, etc.
-   - **Report name**: Custom report title
+   - **Solo version**: optional, the Solo release that deploys the local Hiero network
 
 ##### Available Input Parameters
 
-- `tags` (default: `all`) - Test tags to run. For multiple tags, use spaces (e.g. `policies schemas`) or commas (e.g. `policies,schemas`). In Docker/CI runs, `preparing` is automatically prepended for feature-scoped runs (not for `all`).
-- `report_name` (default: `Guardian's Cypress Report`) - Custom report name
+- `tags` (default: `smoke`) - Test tags to run. For multiple tags, use spaces (e.g. `policies schemas`) or commas (e.g. `policies,schemas`). In Docker/CI runs, `preparing` is automatically prepended for feature-scoped runs (not for `all`).
+- `solo_version` (default: empty, which uses `SOLO_VERSION` in the workflow) - Solo release passed to `hiero-ledger/hiero-solo-action`.
+
+Scheduled runs (nightly, 03:00 UTC) run `all` tags and pushes run `smoke`.
 
 ##### Workflow Features
 
-- Automatically builds Guardian services
-- Starts necessary services (MongoDB, NATS, Guardian services)
-- Runs Cypress tests in Docker
+- Starts a local Hiero network with Solo, and uploads the contract bytecode to it
+- Builds Guardian services
+- Starts MongoDB, NATS, Valkey and Kubo as service containers, and the Guardian services natively
+- Runs Cypress natively on the runner against that stack
 - Publishes test results
-- Uploads HTML and JSON reports as artifacts
-- Cleans up Docker resources
+- Uploads HTML and JSON reports as artifacts, plus the Guardian and Solo logs when a run fails
+- Deletes the Solo kind cluster at the end of the run
 
 ##### Test Report Artifacts
 
