@@ -35,7 +35,7 @@ jobs:
   buildAndTest:
     name: Build and Test
     runs-on: hg-guard-lin-lg
-    timeout-minutes: 150
+    timeout-minutes: 120
     env:
       # .yarnrc.yml does not set enableGlobalCache and Yarn 4 defaults it to true,
       # which puts the cache in ~/.yarn/berry/cache. Forcing it off keeps the cache in
@@ -570,11 +570,3 @@ jobs:
           path: ~/.solo/logs
           if-no-files-found: ignore
           retention-days: 14
-
-      # hiero-solo-action has no cleanup and this runner is self-hosted, so the kind cluster
-      # and its port-forwards would otherwise outlive the job.
-      - name: Destroy the local Hiero network
-        if: always()
-        run: |
-          pkill -f 'kubectl port-forward' || true
-          kind delete cluster --name solo-e2e
