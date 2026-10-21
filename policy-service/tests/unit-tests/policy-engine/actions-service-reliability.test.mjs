@@ -197,6 +197,10 @@ async function createSide({
             return this;
         }
 
+        setLatencySensitive() {
+            return this;
+        }
+
         async subscribe(callback) {
             calls.subscribed = rows.map((r) => ({ messageId: r.messageId, status: r.status }));
             this.callback = callback;
