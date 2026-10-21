@@ -42,9 +42,7 @@ export class RequestConfirmDialog {
         this.list = list || [];
         this.buttons = buttons || [];
         if (document) {
-            this.json = typeof document === 'string'
-                ? document
-                : JSON.stringify(hideSecrets(document), null, 4);
+            this.json = JSON.stringify(hideSecrets(document), null, 4);
         }
     }
 

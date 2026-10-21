@@ -57,7 +57,6 @@ export class RequestDetailsDialog implements OnInit {
     public banner: string = '';
     public documentType: string = '';
 
-    public wrapper: any = null;
     public credential: any = null;
     public json: string = '';
     public summary: ISummaryRow[] = [];
@@ -112,7 +111,6 @@ export class RequestDetailsDialog implements OnInit {
     }
 
     private setDocument(wrapper: any): void {
-        this.wrapper = wrapper;
         this.json = wrapper ? JSON.stringify(hideSecrets(wrapper), null, 4) : '';
         this.credential = null;
         this.summary = [];

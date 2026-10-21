@@ -379,11 +379,11 @@ export async function getRemoteRequestsCount(msg: { options: any, user: IAuthUse
             }
         ];
         const collection = new DataBaseHelper(PolicyAction);
-        const [counts] = await collection.aggregate(pipeline) as any[];
         // requests, actions and failures are counted per thread, as the grid lists them
-        const [threads] = await collection.aggregate(
-            getRemoteThreadsCountPipeline(user.hederaAccountId, policyId)
-        ) as any[];
+        const [[counts], [threads]] = await Promise.all([
+            collection.aggregate(pipeline),
+            collection.aggregate(getRemoteThreadsCountPipeline(user.hederaAccountId, policyId))
+        ]) as any[][];
 
         return new MessageResponse({
             requestsCount: threads?.requestsCount || 0,

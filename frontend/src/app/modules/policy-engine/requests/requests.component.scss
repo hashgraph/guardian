@@ -206,6 +206,12 @@
     color: var(--guardian-font-color, #23252E);
 }
 
+.request-select {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 // one grid for the header and every row, so the columns line up
 .requests-list-head,
 .request-row {
@@ -227,12 +233,6 @@
     background: var(--guardian-hover, #F0F3FC);
     color: var(--guardian-disabled-color, #848FA9);
     font-size: 13px;
-
-    .request-select {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
 
     .requests-list-head-text {
         grid-column: 2 / 5;
@@ -257,13 +257,6 @@
 
     &:first-child {
         border-top: none;
-    }
-
-    .request-select {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 24px;
     }
 
     .request-icon {

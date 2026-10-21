@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { LocationType, PolicyActionStatus, PolicyActionType, PolicyStatus, UserPermissions } from '@guardian/interfaces';
+import { LocationType, PolicyActionStatus, PolicyActionType, PolicyStatus } from '@guardian/interfaces';
 import { debounceTime, firstValueFrom, forkJoin, Subject, Subscription } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { DialogService } from 'primeng/dynamicdialog';
@@ -62,8 +62,6 @@ export class PolicyRequestsComponent implements OnInit, OnDestroy {
     public loading: boolean = true;
     public isConfirmed: boolean = false;
     public isLocalUser: boolean = false;
-    public user: UserPermissions = new UserPermissions();
-    public owner: string;
     public page: any[];
     public items: IRequestItem[] = [];
     public pageIndex: number;
@@ -80,6 +78,7 @@ export class PolicyRequestsComponent implements OnInit, OnDestroy {
     public counts: { [tab in RequestTab]: number } = { need: 0, progress: 0, failed: 0, all: 0 };
 
     public allPolicies: any[] = [];
+    public policyOptions: { id: string, name: string }[] = [{ id: '', name: 'All policies' }];
     /**
      * The policy the page was opened for (`policyId` in the URL), it cannot be changed here
      */
@@ -202,10 +201,12 @@ export class PolicyRequestsComponent implements OnInit, OnDestroy {
             this.profileLoaded = true;
             this.isConfirmed = !!(profile && profile.confirmed);
             this.isLocalUser = profile.location === LocationType.LOCAL;
-            this.user = new UserPermissions(profile);
-            this.owner = this.user.did;
 
             this.allPolicies = [...remotePolicies].filter((p) => p.status === PolicyStatus.VIEW);
+            this.policyOptions = [
+                { id: '', name: 'All policies' },
+                ...this.allPolicies.map((p) => ({ id: p.id, name: p.name }))
+            ];
 
             if (this.isConfirmed) {
                 this.loadData();
@@ -357,25 +358,13 @@ export class PolicyRequestsComponent implements OnInit, OnDestroy {
     }
 
     public onPage(event: any): void {
-        if (this.pageSize !== event.pageSize) {
-            this.pageIndex = 0;
-            this.pageSize = event.pageSize;
-        } else {
-            this.pageIndex = event.pageIndex;
-            this.pageSize = event.pageSize;
-        }
+        this.pageIndex = this.pageSize !== event.pageSize ? 0 : event.pageIndex;
+        this.pageSize = event.pageSize;
         if (this.searchTerm.trim()) {
             this.showSearchPage();
         } else {
             this.loadData();
         }
-    }
-
-    public get policyOptions(): { id: string, name: string }[] {
-        return [
-            { id: '', name: 'All policies' },
-            ...this.allPolicies.map((p) => ({ id: p.id, name: p.name }))
-        ];
     }
 
     public get isEmpty(): boolean {
