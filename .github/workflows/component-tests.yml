@@ -1,19 +1,27 @@
-name: Guardian Unit Tests
+name: Component Tests
+
 on:
-  workflow_dispatch:
   push:
+    branches-ignore:
+      - 'dependabot/**'
     paths-ignore:
       - '.github/**'
       - 'docs/**'
       - '**/*.md'
+  workflow_dispatch:
 
 permissions:
   contents: read
   checks: write        # required by publish-unit-test-result-action
 
+concurrency:
+  group: e2e-tests-${{ github.event_name }}-${{ github.ref }}
+  # Superseded pushes are pointless; a nightly or a hand-triggered run is not.
+  cancel-in-progress: ${{ github.event_name == 'push' }}
+
 jobs:
   buildAndTest:
-    name: Build and Test (Manual - Main)
+    name: Build and Test
     runs-on: hg-guard-lin-md
     timeout-minutes: 30
     env:
@@ -21,7 +29,7 @@ jobs:
       NODE_VERSION: "24.22.1"
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
         with:
           egress-policy: audit
 
