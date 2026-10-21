@@ -335,12 +335,12 @@ export function calculatePreviewAutoFields(
                 return Reflect.has(target, key);
             },
             get(target, key, receiver) {
-                const value = Reflect.get(target, key, receiver);
+                const propertyValue = Reflect.get(target, key, receiver);
                 if (typeof key !== 'string' || !names.has(key)) {
-                    return value;
+                    return propertyValue;
                 }
                 reads.add(`${prefix}${key}`);
-                return tracker.track(value, null, `${prefix}${key}`);
+                return tracker.track(propertyValue, null, `${prefix}${key}`);
             }
         });
         try {
