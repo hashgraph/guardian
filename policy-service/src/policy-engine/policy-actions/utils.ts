@@ -149,6 +149,34 @@ export class PolicyActionsUtils {
     }
 
     /**
+     * Send a request to the user's home instance and wait for the response.
+     * Settles on every outcome: an error response, a rejection, an expiry, and a
+     * failure while completing.
+     */
+    private static waitRequest<T>(
+        ref: AnyBlockType,
+        data: PolicyAction,
+        userId: string | null,
+        complete: (action: PolicyAction) => Promise<T>
+    ): Promise<T> {
+        return new Promise<T>((resolve, reject) => {
+            const callback = async (action: PolicyAction) => {
+                try {
+                    if (action.status === PolicyActionStatus.COMPLETED) {
+                        resolve(await complete(action));
+                    } else {
+                        reject(action.document);
+                    }
+                } catch (error) {
+                    reject(error);
+                }
+            }
+            const controller = PolicyComponentsUtils.getActionsController(ref.policyId);
+            controller.sendRequest(data, callback, userId).catch(reject).then();
+        });
+    }
+
+    /**
      * policy-roles
      */
     public static async signAndSendRole(options: {
@@ -170,18 +198,8 @@ export class PolicyActionsUtils {
             return await SignAndSendRole.local(options);
         } else {
             const data = await SignAndSendRole.request(options);
-            return new Promise((resolve, reject) => {
-                const callback = async (action: PolicyAction) => {
-                    if (action.status === PolicyActionStatus.COMPLETED) {
-                        const result = await SignAndSendRole.complete(action, userId);
-                        resolve(result)
-                    } else {
-                        reject(action.document);
-                    }
-                }
-                const controller = PolicyComponentsUtils.getActionsController(ref.policyId);
-                controller.sendRequest(data, callback, userId).catch(reject).then();
-            });
+            return await PolicyActionsUtils.waitRequest(ref, data, userId,
+                (action) => SignAndSendRole.complete(action, userId));
         }
     }
 
@@ -235,18 +253,8 @@ export class PolicyActionsUtils {
                     return await GenerateDID.local(options, actionStatusId, batch);
                 } else {
                     const data = await GenerateDID.request(options);
-                    return new Promise((resolve, reject) => {
-                        const callback = async (action: PolicyAction) => {
-                            if (action.status === PolicyActionStatus.COMPLETED) {
-                                const result = await GenerateDID.complete(action, user, userId);
-                                resolve(result)
-                            } else {
-                                reject(action.document);
-                            }
-                        }
-                        const controller = PolicyComponentsUtils.getActionsController(ref.policyId);
-                        controller.sendRequest(data, callback, userId).catch(reject).then();
-                    });
+                    return await PolicyActionsUtils.waitRequest(ref, data, userId,
+                        (action) => GenerateDID.complete(action, user, userId));
                 }
             }
             return undefined;
@@ -278,18 +286,8 @@ export class PolicyActionsUtils {
             return await SignVC.local(options);
         } else {
             const data = await SignVC.request(options);
-            return new Promise((resolve, reject) => {
-                const callback = async (action: PolicyAction) => {
-                    if (action.status === PolicyActionStatus.COMPLETED) {
-                        const result = await SignVC.complete(action, userId);
-                        resolve(result)
-                    } else {
-                        reject(action.document);
-                    }
-                }
-                const controller = PolicyComponentsUtils.getActionsController(ref.policyId);
-                controller.sendRequest(data, callback, userId).catch(reject).then();
-            });
+            return await PolicyActionsUtils.waitRequest(ref, data, userId,
+                (action) => SignVC.complete(action, userId));
         }
     }
 
@@ -313,18 +311,8 @@ export class PolicyActionsUtils {
             return await SendMessage.local(options);
         } else {
             const data = await SendMessage.request(options);
-            return new Promise((resolve, reject) => {
-                const callback = async (action: PolicyAction) => {
-                    if (action.status === PolicyActionStatus.COMPLETED) {
-                        const result = await SendMessage.complete(action, userId);
-                        resolve(result)
-                    } else {
-                        reject(action.document);
-                    }
-                }
-                const controller = PolicyComponentsUtils.getActionsController(ref.policyId);
-                controller.sendRequest(data, callback, userId).catch(reject).then();
-            });
+            return await PolicyActionsUtils.waitRequest(ref, data, userId,
+                (action) => SendMessage.complete(action, userId));
         }
     }
 
@@ -346,18 +334,8 @@ export class PolicyActionsUtils {
             return await SendMessages.local(options);
         } else {
             const data = await SendMessages.request(options);
-            return new Promise((resolve, reject) => {
-                const callback = async (action: PolicyAction) => {
-                    if (action.status === PolicyActionStatus.COMPLETED) {
-                        const result = await SendMessages.complete(action, userId);
-                        resolve(result)
-                    } else {
-                        reject(action.document);
-                    }
-                }
-                const controller = PolicyComponentsUtils.getActionsController(ref.policyId);
-                controller.sendRequest(data, callback, userId).catch(reject).then();
-            });
+            return await PolicyActionsUtils.waitRequest(ref, data, userId,
+                (action) => SendMessages.complete(action, userId));
         }
     }
 
@@ -377,18 +355,8 @@ export class PolicyActionsUtils {
             return await AssociateToken.local(options);
         } else {
             const data = await AssociateToken.request(options);
-            return new Promise((resolve, reject) => {
-                const callback = async (action: PolicyAction) => {
-                    if (action.status === PolicyActionStatus.COMPLETED) {
-                        const result = await AssociateToken.complete(action, userId);
-                        resolve(result)
-                    } else {
-                        reject(action.document);
-                    }
-                }
-                const controller = PolicyComponentsUtils.getActionsController(ref.policyId);
-                controller.sendRequest(data, callback, userId).catch(reject).then();
-            });
+            return await PolicyActionsUtils.waitRequest(ref, data, userId,
+                (action) => AssociateToken.complete(action, userId));
         }
     }
 
@@ -408,18 +376,8 @@ export class PolicyActionsUtils {
             return await DissociateToken.local(options);
         } else {
             const data = await DissociateToken.request(options);
-            return new Promise((resolve, reject) => {
-                const callback = async (action: PolicyAction) => {
-                    if (action.status === PolicyActionStatus.COMPLETED) {
-                        const result = await DissociateToken.complete(action, userId);
-                        resolve(result)
-                    } else {
-                        reject(action.document);
-                    }
-                }
-                const controller = PolicyComponentsUtils.getActionsController(ref.policyId);
-                controller.sendRequest(data, callback, userId).catch(reject).then();
-            });
+            return await PolicyActionsUtils.waitRequest(ref, data, userId,
+                (action) => DissociateToken.complete(action, userId));
         }
     }
 
@@ -526,18 +484,8 @@ export class PolicyActionsUtils {
             return await CreateTopic.local({ ...options, needKey });
         } else {
             const data = await CreateTopic.request(options);
-            return new Promise((resolve, reject) => {
-                const callback = async (action: PolicyAction) => {
-                    if (action.status === PolicyActionStatus.COMPLETED) {
-                        const result = await CreateTopic.complete(action, userId);
-                        resolve(result)
-                    } else {
-                        reject(action.document);
-                    }
-                }
-                const controller = PolicyComponentsUtils.getActionsController(ref.policyId);
-                controller.sendRequest(data, callback, userId).catch(reject).then();
-            });
+            return await PolicyActionsUtils.waitRequest(ref, data, userId,
+                (action) => CreateTopic.complete(action, userId));
         }
     }
 

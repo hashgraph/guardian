@@ -597,7 +597,9 @@ export class PolicyEngineService {
                             data,
                             syncEvents,
                             history,
-                            waitRemotePolicy
+                            waitRemotePolicy,
+                            // only a caller-set timeout bounds the wait for a remote policy
+                            timeout: msg.timeout ? timeout : undefined
                         }, timeout) as any;
                     return new MessageResponse(blockData);
                 } catch (error) {
@@ -632,7 +634,9 @@ export class PolicyEngineService {
                             data,
                             syncEvents,
                             history,
-                            waitRemotePolicy
+                            waitRemotePolicy,
+                            // only a caller-set timeout bounds the wait for a remote policy
+                            timeout: msg.timeout ? timeout : undefined
                         }, timeout) as any
                     return new MessageResponse(blockData);
                 } catch (error) {
@@ -4473,6 +4477,7 @@ export class PolicyEngineService {
                             startMessageId: '$startMessageId',
                             policyId: '$policyId',
                             status: '$status',
+                            lastStatus: '$lastStatus',
                             topicId: '$topicId',
                             messageId: '$messageId',
                             blockTag: '$blockTag',
@@ -4491,6 +4496,8 @@ export class PolicyEngineService {
                             type: { $last: '$type' },
                             documentType: { $last: '$documentType' },
                             statuses: { $addToSet: '$status' },
+                            // the same on every row of the thread
+                            lastStatus: { $last: '$lastStatus' },
                             createDate: { $last: '$createDate' },
                             policyId: { $last: '$policyId' },
                             topicId: { $last: '$topicId' },
@@ -4507,6 +4514,8 @@ export class PolicyEngineService {
                             status: {
                                 $switch: {
                                     branches: [
+                                        // failed or rejected on this side without a row of its own
+                                        { case: { $in: ['$lastStatus', ['ERROR', 'REJECTED']] }, then: '$lastStatus' },
                                         { case: { $in: ['ERROR', '$statuses'] }, then: 'ERROR' },
                                         { case: { $in: ['CANCELED', '$statuses'] }, then: 'CANCELED' },
                                         { case: { $in: ['REJECTED', '$statuses'] }, then: 'REJECTED' },
