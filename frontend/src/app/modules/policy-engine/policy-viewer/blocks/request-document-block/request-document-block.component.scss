@@ -176,14 +176,14 @@
             position: fixed;
             right: 0;
             bottom: 0;
-            width: 100%;
+            width: calc(100% - var(--first-steps-offset));
             border-top: 1px solid var(--color-grey-3, #e1e7ef);
             background: var(--guardian-background, #fff);
             padding-left: calc(var(--header-width, var(--header-width-expand)) + 48px);
             transition: padding-left 0.125s ease-in-out;
 
             margin-top: 20px;
-            left: 50%;
+            left: calc(50% - var(--first-steps-offset) / 2);
             transform: translateX(-50%);
             z-index: 200;
         }
@@ -545,13 +545,13 @@
         position: fixed;
         right: 0;
         bottom: 0;
-        width: 100%;
+        width: calc(100% - var(--first-steps-offset));
         border-top: 1px solid var(--color-grey-3, #e1e7ef);
         background: var(--guardian-background, #fff);
         padding-left: calc(var(--header-width, var(--header-width-expand)) + 48px);
         transition: padding-left 0.125s ease-in-out;
         margin-top: 20px;
-        left: 50%;
+        left: calc(50% - var(--first-steps-offset) / 2);
         transform: translateX(-50%);
         z-index: 200;
 

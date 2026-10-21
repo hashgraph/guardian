@@ -1,22 +1,20 @@
-import {
-    ApprovalDocument,
-    BlockState,
-    DidDocument,
-    DocumentState,
-    ExternalDocument,
-    MultiDocuments,
-    PolicyRoles,
-    Tag,
-    Token,
-    Topic,
-    VcDocument,
-    VpDocument,
-    MintRequest,
-    MintTransaction,
-    PolicyInvitations,
-    PolicyDiscussion,
-    PolicyComment
-} from '@guardian/common';
+import { ApprovalDocument } from '@guardian/common/entity/approval-document';
+import { BlockState } from '@guardian/common/entity/block-state';
+import { DidDocument } from '@guardian/common/entity/did-document';
+import { DocumentState } from '@guardian/common/entity/document-state';
+import { ExternalDocument } from '@guardian/common/entity/external-document';
+import { MultiDocuments } from '@guardian/common/entity/multi-documents';
+import { PolicyRoles } from '@guardian/common/entity/policy-roles';
+import { Tag } from '@guardian/common/entity/tag';
+import { Token } from '@guardian/common/entity/token';
+import { Topic } from '@guardian/common/entity/topic';
+import { VcDocument } from '@guardian/common/entity/vc-document';
+import { VpDocument } from '@guardian/common/entity/vp-document';
+import { MintRequest } from '@guardian/common/entity/mint-request';
+import { MintTransaction } from '@guardian/common/entity/mint-transaction';
+import { PolicyInvitations } from '@guardian/common/entity/policy-invitations';
+import { PolicyDiscussion } from '@guardian/common/entity/policy-discussion';
+import { PolicyComment } from '@guardian/common/entity/policy-comment';
 import { ICollectionDiff, ICollectionKeys } from './../index.js';
 
 export interface IPolicyCollectionDiff {

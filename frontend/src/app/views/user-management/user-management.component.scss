@@ -14,10 +14,8 @@
 }
 
 .not-exist {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
+    position: static;
+    flex: 1 1 auto;
     font-size: 20px;
     color: darkgrey;
     display: flex;
@@ -25,16 +23,6 @@
     align-items: center;
     row-gap: 8px;
     justify-content: center;
-}
-
-.info-text {
-    color: var(--color-grey-5, #848FA9);
-    text-align: center;
-    font-family: Inter, sans-serif;
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: normal;
 }
 
 .info-text-strong {
@@ -59,16 +47,6 @@
     border-radius: 8px;
     border: 1px solid var(--color-grey-3, #E1E7EF);
     background: var(--color-grey-white, #FFF);
-}
-
-.primary-color {
-    fill: var(--color-primary);
-    color: var(--color-primary);
-}
-
-.color-white {
-    fill: var(--guardian-secondary-color, #FFFFFF);
-    color: var(--guardian-secondary-color, #FFFFFF);
 }
 
 .disabled-color {
@@ -121,30 +99,58 @@
     line-height: 16px;
 }
 
-.user-role-label {
-    max-width: 250px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    height: 26px;
-    padding: 3px 8px 3px 0px;
-}
-
-.user-role-default-label {
-    max-width: 250px;
-    height: 26px;
-    padding: 3px 8px 3px 0px;
-    color: #AAB7C4;
-}
-
-.user-role-btn {
+.user-cell {
     display: flex;
-    cursor: pointer;
-    width: 30px;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
 
-    .user-role-icon {
-        width: 26px;
-        height: 26px;
-        overflow: hidden;
+    .user-cell-text {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
     }
+
+    .user-name,
+    .user-did {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .user-name {
+        font-weight: 600;
+    }
+
+    .user-did {
+        font-family: 'Roboto Mono', ui-monospace, monospace;
+        font-size: 12px;
+        color: var(--color-grey-5, #848FA9);
+    }
+}
+
+.role-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.role-chip {
+    display: inline-flex;
+    align-items: center;
+    height: 26px;
+    padding: 0 10px;
+    border-radius: 6px;
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
+    background: var(--guardian-background, #FFF);
+    font-size: 12px;
+
+    &.role-chip--none {
+        border-style: dashed;
+        color: var(--color-grey-5, #848FA9);
+    }
+}
+
+.numeric-cell {
+    font-variant-numeric: tabular-nums;
 }

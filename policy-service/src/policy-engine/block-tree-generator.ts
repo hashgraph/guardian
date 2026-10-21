@@ -1,4 +1,12 @@
-import { DataBaseHelper, IAuthUser, JwtServicesValidator, MessageError, MessageResponse, NatsService, PinoLogger, Policy, Singleton, Users } from '@guardian/common';
+import { DataBaseHelper } from '@guardian/common/helpers/db-helper';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { JwtServicesValidator } from '@guardian/common/security/jwt-services-validator';
+import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
+import { NatsService } from '@guardian/common/mq/nats-service';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { Policy } from '@guardian/common/entity/policy';
+import { Singleton } from '@guardian/common/decorators/singleton';
+import { Users } from '@guardian/common/helpers/users';
 import { GenerateUUIDv4, IUser, PolicyAvailability, PolicyEvents, PolicyStatus } from '@guardian/interfaces';
 import { headers } from 'nats';
 import { Inject } from '../helpers/decorators/inject.js';
@@ -99,6 +107,18 @@ export class BlockTreeGenerator extends NatsService {
     }
 
     /**
+     * When to stop waiting for a remote policy. The caller gives up after
+     * `timeout` ms, so stop a little earlier to leave time for the reply.
+     */
+    public static remoteWaitDeadline(timeout: number | undefined, now: number = Date.now()): number | undefined {
+        const ms = Number(timeout);
+        if (!timeout || !Number.isFinite(ms) || ms <= 0) {
+            return undefined;
+        }
+        return now + ms - Math.min(1000, ms / 10);
+    }
+
+    /**
      * Shared execution path for SET_BLOCK_DATA and SET_BLOCK_DATA_BY_TAG.
      */
     private async executeSetBlockData(
@@ -109,7 +129,9 @@ export class BlockTreeGenerator extends NatsService {
         syncEvents: boolean | undefined,
         history: boolean | undefined,
         waitRemotePolicy: boolean | undefined,
+        timeout?: number,
     ): Promise<MessageResponse<any> | MessageError<any>> {
+        const waitUntil = BlockTreeGenerator.remoteWaitDeadline(timeout);
         // <-- Available
         const error = await PolicyComponentsUtils.isAvailableSetData(block, userFull);
         if (error) {
@@ -140,7 +162,7 @@ export class BlockTreeGenerator extends NatsService {
             0, syncEvents, history
         );
 
-        const res = await PolicyComponentsUtils.blockSetData(block, userFull, data, actionstep, waitRemotePolicy);
+        const res = await PolicyComponentsUtils.blockSetData(block, userFull, data, actionstep, waitRemotePolicy, waitUntil);
 
         actionstep.finish();
 
@@ -273,12 +295,13 @@ export class BlockTreeGenerator extends NatsService {
                 data: any,
                 syncEvents?: boolean,
                 history?: boolean,
-                waitRemotePolicy?: boolean
+                waitRemotePolicy?: boolean,
+                timeout?: number
             }) => {
-                const { user, blockId, data, syncEvents, history, waitRemotePolicy } = msg;
+                const { user, blockId, data, syncEvents, history, waitRemotePolicy, timeout } = msg;
                 const userFull = await this.getUser(policyInstance, user);
                 const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
-                return this.executeSetBlockData(block, userFull, data, policyId, syncEvents, history, waitRemotePolicy);
+                return this.executeSetBlockData(block, userFull, data, policyId, syncEvents, history, waitRemotePolicy, timeout);
             });
 
         this.getPolicyMessages(PolicyEvents.SET_BLOCK_DATA_BY_TAG, policyId,
@@ -289,12 +312,13 @@ export class BlockTreeGenerator extends NatsService {
                 data: any,
                 syncEvents?: boolean,
                 history?: boolean,
-                waitRemotePolicy?: boolean
+                waitRemotePolicy?: boolean,
+                timeout?: number
             }) => {
-                const { user, tag, data, syncEvents, history, waitRemotePolicy } = msg;
+                const { user, tag, data, syncEvents, history, waitRemotePolicy, timeout } = msg;
                 const userFull = await this.getUser(policyInstance, user);
                 const block = PolicyComponentsUtils.GetBlockByTag<IPolicyInterfaceBlock>(policyId, tag);
-                return this.executeSetBlockData(block, userFull, data, policyId, syncEvents, history, waitRemotePolicy);
+                return this.executeSetBlockData(block, userFull, data, policyId, syncEvents, history, waitRemotePolicy, timeout);
             });
 
         this.getPolicyMessages(PolicyEvents.RETRY_MINT, policyId,
@@ -707,6 +731,7 @@ export class BlockTreeGenerator extends NatsService {
                     const service = new PolicyActionsService(policyId, policyInstance, policy, policyOwnerId);
                     await service.init();
                     PolicyComponentsUtils.RegisterActionsService(policyId, service);
+                    service.start();
                 }
             }
             if (policy.status === PolicyStatus.VIEW) {
@@ -719,6 +744,7 @@ export class BlockTreeGenerator extends NatsService {
                     const service = new PolicyActionsService(policyId, policyInstance, policy, policyOwnerId);
                     await service.init();
                     PolicyComponentsUtils.RegisterActionsService(policyId, service);
+                    service.start();
                 }
             }
         } catch (error) {

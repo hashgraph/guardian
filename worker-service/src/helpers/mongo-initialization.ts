@@ -4,7 +4,7 @@ import { MongoDriver } from '@mikro-orm/mongodb';
 import process from 'node:process';
 
 //helpers
-import { COMMON_CONNECTION_CONFIG } from '@guardian/common';
+import { COMMON_CONNECTION_CONFIG } from '@guardian/common/helpers/db-helper';
 
 //constants
 import { DEFAULT_MONGO } from '#constants';

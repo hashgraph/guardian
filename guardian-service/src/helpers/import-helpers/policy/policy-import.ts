@@ -18,33 +18,31 @@ import {
     SchemaHelper,
     SchemaStatus,
 } from '@guardian/interfaces';
-import {
-    DatabaseServer,
-    PinoLogger,
-    MessageAction,
-    MessageServer,
-    MessageType,
-    Policy,
-    PolicyMessage,
-    PolicyTool,
-    RecordImportExport,
-    Schema,
-    Tag,
-    Token,
-    Topic,
-    TopicConfig,
-    TopicHelper,
-    Users,
-    Formula,
-    FormulaImportExport,
-    INotificationStep,
-    PolicyRecordMessage,
-    Record,
-    SchemaTemplate,
-    SchemaTemplateImportExport,
-    SchemaTemplateMessage,
-    SchemaTemplateSnapshot,
-} from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { Policy } from '@guardian/common/entity/policy';
+import { PolicyTool } from '@guardian/common/entity/tool';
+import { RecordImportExport } from '@guardian/common/import-export/record';
+import { Schema } from '@guardian/common/entity/schema';
+import { Tag } from '@guardian/common/entity/tag';
+import { Token } from '@guardian/common/entity/token';
+import { Topic } from '@guardian/common/entity/topic';
+import { Users } from '@guardian/common/helpers/users';
+import { Formula } from '@guardian/common/entity/formula';
+import { FormulaImportExport } from '@guardian/common/import-export/formula';
+import { INotificationStep } from '@guardian/common/notification/notification-step.interface';
+import { Record } from '@guardian/common/entity/record';
+import { SchemaTemplate } from '@guardian/common/entity/schema-template';
+import { SchemaTemplateImportExport } from '@guardian/common/import-export/schema-template';
+import { SchemaTemplateSnapshot } from '@guardian/common/entity/schema-template-snapshot';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { MessageType } from '@guardian/hedera/message/message-type';
+import { PolicyMessage } from '@guardian/hedera/message/policy-message';
+import { TopicConfig } from '@guardian/hedera/topic';
+import { TopicHelper } from '@guardian/hedera/topic-helper';
+import { PolicyRecordMessage } from '@guardian/hedera/message/policy-record-message';
+import { SchemaTemplateMessage } from '@guardian/hedera/message/schema-template-message';
 import { ImportMode } from '../common/import.interface.js';
 import { ImportFormulaResult, ImportPolicyError, ImportPolicyOptions, ImportPolicyResult, ImportTestResult } from './policy-import.interface.js';
 import { ImportSchemaMap, ImportSchemaResult } from '../schema/schema-import.interface.js';
@@ -52,7 +50,7 @@ import { PolicyImportExportHelper } from './policy-import-helper.js';
 import { SchemaImportExportHelper } from '../schema/schema-import-helper.js';
 import { importTag } from '../tag/tag-import-helper.js';
 import { ImportToolMap, ImportToolResults } from '../tool/tool-import.interface.js';
-import { importSubTools } from '../tool/tool-import-helper.js';
+import { getToolSchemas, importSubTools } from '../tool/tool-import-helper.js';
 import { resolveToolOverrides } from '../tool/tool-override-resolver.js';
 import { ImportTokenMap, ImportTokenResult } from '../token/token-import.interface.js';
 import { ImportArtifactResult } from '../artifact/artifact-import.interface.js';
@@ -421,16 +419,7 @@ export class PolicyImport {
         userId: string | null
     ) {
         step.start();
-        const topicIds = this.toolsResult.tools.map((tool) => tool.topicId);
-        const toolsSchemas = (await DatabaseServer.getSchemas(
-            {
-                category: SchemaCategory.TOOL,
-                topicId: { $in: topicIds }
-            },
-            {
-                fields: ['name', 'iri'],
-            }
-        )) as { name: string; iri: string }[];
+        const toolsSchemas = await getToolSchemas(this.toolsResult.tools);
         this.schemasResult = await SchemaImportExportHelper.importSchemaByFiles(
             schemas,
             user,

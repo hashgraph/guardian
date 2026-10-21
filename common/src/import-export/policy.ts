@@ -1,12 +1,20 @@
 import JSZip from 'jszip';
-import { Artifact, Formula, Policy, PolicyCategory, PolicyTool, Schema, SchemaTemplateSnapshot, Tag, Token } from '../entity/index.js';
-import { DatabaseServer } from '../database-modules/index.js';
+import { Artifact } from '../entity/artifact.js';
+import { Formula } from '../entity/formula.js';
+import { Policy } from '../entity/policy.js';
+import { PolicyCategory } from '../entity/policy-category.js';
+import { PolicyTool } from '../entity/tool.js';
+import { Schema } from '../entity/schema.js';
+import { SchemaTemplateSnapshot } from '../entity/schema-template-snapshot.js';
+import { Tag } from '../entity/tag.js';
+import { Token } from '../entity/token.js';
+import { DatabaseServer } from '../database-modules/database-server.js';
 import { ImportExportUtils } from './utils.js';
 import { PolicyCategoryExport, SchemaCategory, SchemaHelper, Schema as InterfaceSchema, SchemaEntity, GenerateUUIDv4 } from '@guardian/interfaces';
 import stringify from 'fast-json-stable-stringify';
 import crypto from 'node:crypto';
-import { VcHelper } from '../helpers/vc-helper.js';
-import { DataBaseHelper } from '../helpers/index.js';
+import type { IPolicyProofSigner } from '../interfaces/policy-proof-signer.interface.js';
+import { DataBaseHelper } from '../helpers/db-helper.js';
 import { ObjectId } from 'bson';
 
 interface IArtifact {
@@ -296,23 +304,25 @@ export class PolicyImportExport {
     /**
      * Generate Zip File
      * @param policy policy to pack
+     * @param vcSigner signer used for the export proof
      *
      * @param schemaPackageDocuments
      * @returns Zip file
      */
-    public static async generate(policy: Policy, schemaPackageDocuments: { document?: Buffer; context?: Buffer; metadata?: Buffer } | null = null): Promise<JSZip> {
+    public static async generate(policy: Policy, vcSigner: IPolicyProofSigner, schemaPackageDocuments: { document?: Buffer; context?: Buffer; metadata?: Buffer } | null = null): Promise<JSZip> {
         const components = await PolicyImportExport.loadPolicyComponents(policy);
-        return await PolicyImportExport.generateZipFile(components, schemaPackageDocuments);
+        return await PolicyImportExport.generateZipFile(components, vcSigner, schemaPackageDocuments);
     }
 
     /**
      * Generate Zip File
      * @param components policy components
+     * @param vcSigner signer used for the export proof
      *
      * @param schemaPackageDocuments
      * @returns Zip file
      */
-    public static async generateZipFile(components: IPolicyComponents, schemaPackageDocuments?: { document?: Buffer; context?: Buffer; metadata?: Buffer } | null): Promise<JSZip> {
+    public static async generateZipFile(components: IPolicyComponents, vcSigner: IPolicyProofSigner, schemaPackageDocuments?: { document?: Buffer; context?: Buffer; metadata?: Buffer } | null): Promise<JSZip> {
         const zip = new JSZip();
         const preparedComponents: IPolicyComponents = PolicyImportExport.preparePolicyComponents(components);
 
@@ -396,11 +406,10 @@ export class PolicyImportExport {
         const policySchema = await DatabaseServer.getSchemaByType(preparedComponents.policy.topicId, SchemaEntity.POLICY_EXPORT_PROOF);
         if(policySchema) {
             credentialSubject = SchemaHelper.updateObjectContext(new InterfaceSchema(policySchema), credentialSubject);
-            const vcHelper = new VcHelper();
-            const didDocument = await vcHelper.loadDidDocument(preparedComponents.policy?.owner, preparedComponents.policy?.ownerId);
+            const didDocument = await vcSigner.loadDidDocument(preparedComponents.policy?.owner, preparedComponents.policy?.ownerId);
 
             if(didDocument) {
-                const vc = await vcHelper.createVerifiableCredential(
+                const vc = await vcSigner.createVerifiableCredential(
                     credentialSubject,
                     didDocument,
                     null,

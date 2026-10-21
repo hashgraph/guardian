@@ -11,6 +11,8 @@ import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { RequestDocumentBlockDialog } from './dialog/request-document-block-dialog.component';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { SchemaService } from 'src/app/services/schema.service';
+import { FormulasService } from 'src/app/services/formulas.service';
+import { FormulasTree } from 'src/app/modules/formulas/models/formula-tree';
 import { audit, finalize, takeUntil } from 'rxjs/operators';
 import { interval, Subject, Subscription, firstValueFrom } from 'rxjs';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
@@ -19,6 +21,7 @@ import { SavepointFlowService } from 'src/app/services/savepoint-flow.service';
 import { DocumentAutosaveStorage } from '../../../structures';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { TablePersistenceService } from 'src/app/services/table-persistence.service';
+import { GeoFilePersistenceService } from 'src/app/services/geo-file-persistence.service';
 import { PolicyStatus } from '@guardian/interfaces';
 import { RelayerAccountsService } from 'src/app/services/relayer-accounts.service';
 import { AttachedFile } from 'src/app/modules/common/policy-comments/attached-file';
@@ -96,6 +99,8 @@ export class RequestDocumentBlockComponent
     public rules: DocumentValidators;
     public rulesResults: any;
     public destroy$: Subject<boolean> = new Subject<boolean>();
+    public formulas: FormulasTree | null = null;
+    private formulasSchemaIri?: string;
     public readonly: boolean = false;
     public draft: boolean;
     public relayerAccount: boolean;
@@ -150,9 +155,11 @@ export class RequestDocumentBlockComponent
         private savepointFlow: SavepointFlowService,
         private indexedDb: IndexedDbRegistryService,
         private tablePersist: TablePersistenceService,
+        private geoFilePersist: GeoFilePersistenceService,
         private ipfsService: IPFSService,
         private policyTest: PolicyTestAutomationService,
         private schemaService: SchemaService,
+        private formulasService: FormulasService,
     ) {
         super(policyEngineService, profile, wsService);
         this.dataForm = this.fb.group({});
@@ -237,6 +244,7 @@ export class RequestDocumentBlockComponent
             }, 500);
         } else if (this.type === 'page') {
             this.loadRules();
+            this.loadFormulas();
         } else {
             setTimeout(() => {
                 this.loading = false;
@@ -349,6 +357,23 @@ export class RequestDocumentBlockComponent
     }
 
 
+    private loadFormulas() {
+        const schemaIri = this.schema?.iri;
+        if (!this.policyId || !schemaIri || this.formulasSchemaIri === schemaIri) {
+            return;
+        }
+        this.formulasSchemaIri = schemaIri;
+        this.formulasService
+            .getFormTree(this.policyId, schemaIri)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((formulas) => {
+                this.formulas = formulas;
+                this.changeDetectorRef.markForCheck();
+            }, () => {
+                this.formulas = null;
+            });
+    }
+
     private loadRelayerAccounts() {
         this.loading = true;
         this.relayerAccountsService
@@ -433,9 +458,20 @@ export class RequestDocumentBlockComponent
     private async onSubmit(draft?: boolean) {
         const data = this.dataForm.getRawValue();
         this.loading = true;
-        this.storage.delete(this.getAutosaveId());
 
-        await this.tablePersist.persistTablesInDocument(data, !!this.dryRun, this.policyId, this.id, draft);
+        let geoPersistStarted = false;
+        try {
+            await this.tablePersist.persistTablesInDocument(data, !!this.dryRun, this.policyId, this.id, draft);
+            geoPersistStarted = true;
+            await this.geoFilePersist.persistGeoFilesInDocument(data, !!this.dryRun, !!draft);
+        } catch (error) {
+            await this.tablePersist.rollbackIpfsUploads();
+            if (geoPersistStarted) await this.geoFilePersist.rollbackGridFsUploads();
+            console.error(error);
+            this.loading = false;
+            return;
+        }
+        this.storage.delete(this.getAutosaveId());
 
         prepareVcData(data);
 
@@ -461,6 +497,7 @@ export class RequestDocumentBlockComponent
                     try {
                         if (!requestSucceeded) {
                             await this.tablePersist.rollbackIpfsUploads();
+                            await this.geoFilePersist.rollbackGridFsUploads();
                         }
                     } finally {
                         this.loading = false;
@@ -656,6 +693,7 @@ export class RequestDocumentBlockComponent
                     this.preset(autosaveDocument);
 
                     await this.tablePersist.restoreTablesFromDraft(autosaveDocument);
+                    await this.geoFilePersist.restoreGeoFilesFromDraft(autosaveDocument);
 
                     this.savepointFlow.setSkipOnce();
                     if (this.type == 'dialog') {

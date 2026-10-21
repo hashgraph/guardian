@@ -21,6 +21,8 @@ export interface SchemaCondition {
   errors?: any[];
 }
 
+export type SchemaIfCondition = SchemaCondition['ifCondition'];
+
 /**
  * How a predicate's value is compared against the field's actual value.
  * Absent means 'equals' - one universal default for every field, array or scalar alike.

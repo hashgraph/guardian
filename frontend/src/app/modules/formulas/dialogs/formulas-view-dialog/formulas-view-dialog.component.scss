@@ -24,7 +24,6 @@
 .dialog-body {
     display: flex;
     flex-direction: column;
-    min-height: 600px;
     padding-bottom: 24px;
 }
 
@@ -32,11 +31,11 @@
     margin-bottom: 24px;
 }
 
+// Fits the viewport with the header, tabs and footer, so the dialog itself never scrolls
 .view-body {
     display: flex;
     flex-direction: row;
-    min-height: 600px;
-    height: 600px;
+    height: clamp(320px, calc(100vh - 340px), 600px);
     gap: 10px;
 }
 
@@ -296,5 +295,60 @@
         justify-content: center;
         align-items: center;
         flex-direction: column;
+    }
+}
+.info-body {
+    display: block;
+    overflow-y: auto;
+}
+
+.info-container {
+    width: 100%;
+
+    .info-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--guardian-font-color);
+        margin-bottom: 16px;
+    }
+
+    .info-block {
+        margin-bottom: 24px;
+    }
+
+    .info-subtitle {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--guardian-font-color);
+        margin-bottom: 8px;
+    }
+
+    .info-row {
+        display: flex;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--guardian-border-color, #E1E7EF);
+        font-size: 14px;
+    }
+
+    .info-table .info-row:first-child {
+        border-top: 1px solid var(--guardian-border-color, #E1E7EF);
+    }
+
+    .info-label {
+        flex: 0 0 300px;
+        color: var(--color-grey-5, #848FA9);
+        padding-right: 16px;
+    }
+
+    .info-value {
+        flex: 1;
+        min-width: 0;
+        color: var(--guardian-font-color);
+        overflow-wrap: anywhere;
+    }
+
+    .info-empty {
+        font-size: 14px;
+        color: var(--color-grey-5, #848FA9);
     }
 }

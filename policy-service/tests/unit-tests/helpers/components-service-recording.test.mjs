@@ -4,12 +4,20 @@ import esmock from 'esmock';
 const { ComponentsService } = await esmock.strict(
     '../../../dist/policy-engine/helpers/components-service.js',
     {
-        '@guardian/common': {
-            DatabaseServer: class {},
-            PinoLogger: class {},
-            TopicConfig: class {},
-            Users: class {},
-            VcHelper: class {},
+        '@guardian/common/database-modules/database-server': {
+            DatabaseServer: class {}
+        },
+        '@guardian/common/helpers/pino-logger': {
+            PinoLogger: class {}
+        },
+        '@guardian/common/helpers/users': {
+            Users: class {}
+        },
+        '@guardian/hedera/topic': {
+            TopicConfig: class {}
+        },
+        '@guardian/hedera/vc-helper': {
+            VcHelper: class {}
         },
         '@guardian/interfaces': {
             GenerateUUIDv4: () => 'uuid',

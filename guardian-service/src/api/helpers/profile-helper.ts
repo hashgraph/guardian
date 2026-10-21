@@ -16,33 +16,34 @@ import {
     UserRole,
     WorkerTaskType
 } from '@guardian/interfaces';
-import {
-    CommonDidDocument, DatabaseServer,
-    DidDocument as DidDocumentCollection,
-    DIDMessage,
-    GuardianRoleMessage,
-    HederaBBSMethod,
-    HederaEd25519Method,
-    IAuthUser,
-    INotificationStep,
-    KeyType,
-    MessageAction,
-    MessageError,
-    MessageServer, PinoLogger,
-    RegistrationMessage,
-    Schema as SchemaCollection,
-    Settings,
-    Topic,
-    TopicConfig,
-    TopicHelper,
-    Users,
-    VcDocument as VcDocumentCollection,
-    VcDocumentDefinition,
-    VcHelper,
-    VCMessage,
-    Wallet,
-    Workers,
-} from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { DidDocument as DidDocumentCollection } from '@guardian/common/entity/did-document';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { INotificationStep } from '@guardian/common/notification/notification-step.interface';
+import { IRemoteUserProof, verifyRemoteUserProof } from '@guardian/hedera/remote-user-proof';
+import { KeyType, Wallet } from '@guardian/common/helpers/wallet';
+import { MessageError } from '@guardian/common/models/message-response';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { Schema as SchemaCollection } from '@guardian/common/entity/schema';
+import { Settings } from '@guardian/common/entity/settings';
+import { Topic } from '@guardian/common/entity/topic';
+import { Users } from '@guardian/common/helpers/users';
+import { VcDocument as VcDocumentCollection } from '@guardian/common/entity/vc-document';
+import { Workers } from '@guardian/common/helpers/workers';
+import { CommonDidDocument } from '@guardian/hedera/vcjs/did/common-did-document';
+import { DIDMessage } from '@guardian/hedera/message/did-message';
+import { GuardianRoleMessage } from '@guardian/hedera/message/guardian-role-message';
+import { HederaBBSMethod } from '@guardian/hedera/vcjs/did/components/hedera-bbs-method';
+import { HederaEd25519Method } from '@guardian/hedera/vcjs/did/components/hedera-ed25519-method';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageType } from '@guardian/hedera/message/message-type';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { RegistrationMessage } from '@guardian/hedera/message/registration-message';
+import { TopicConfig } from '@guardian/hedera/topic';
+import { TopicHelper } from '@guardian/hedera/topic-helper';
+import { VcDocument as VcDocumentDefinition } from '@guardian/hedera/vcjs/vc-document';
+import { VcHelper } from '@guardian/hedera/vc-helper';
+import { VCMessage } from '@guardian/hedera/message/vc-message';
 import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 import { serDefaultRole } from '../permission.service.js';
 import { publishSystemSchema } from '../../helpers/import-helpers/index.js';
@@ -70,6 +71,7 @@ export interface ICredentials {
     useFireblocksSigning: boolean;
     fireblocksConfig: IFireblocksConfig;
     topicId: string;
+    proof?: IRemoteUserProof;
 }
 
 /**
@@ -614,16 +616,19 @@ export async function createRemoteUserProfile({
         hederaAccountId,
         vcDocument,
         didDocument,
-        topicId
+        topicId,
+        proof
     } = profile;
     const dataBaseServer = new DatabaseServer();
 
     // <-- Steps
     const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+    const STEP_RESOLVE_DID = 'Resolve DID document';
     const STEP_SAVE = 'Save';
     // Steps -->
 
     notifier.addStep(STEP_RESOLVE_ACCOUNT);
+    notifier.addStep(STEP_RESOLVE_DID);
     notifier.addStep(STEP_SAVE);
     notifier.start();
 
@@ -654,9 +659,18 @@ export async function createRemoteUserProfile({
     // ------------------------
     // <-- DID Document
     // ------------------------
+    notifier.startStep(STEP_RESOLVE_DID);
+    const userDID = (await validateDidWithoutKeys(didDocument)).getDid();
+    const currentDidDocument = await resolvePublishedDidDocument(
+        userDID,
+        topicId,
+        hederaAccountId,
+        user.id.toString()
+    );
+    verifyRemoteUserProof(proof, currentDidDocument, hederaAccountId, topicId);
+    notifier.completeStep(STEP_RESOLVE_DID);
+
     notifier.startStep(STEP_SAVE);
-    const currentDidDocument = await validateDidWithoutKeys(didDocument);
-    const userDID = currentDidDocument.getDid();
 
     const existingUser = await dataBaseServer.findOne(DidDocumentCollection, { did: userDID });
     if (existingUser) {
@@ -997,6 +1011,44 @@ export async function validateDidWithoutKeys(json: string | any): Promise<Common
         }
     }
     return document;
+}
+
+/**
+ * Load the DID document the given Hedera account published to the given topic.
+ * A remote user profile is only as trustworthy as its DID document, so the
+ * supplied copy is used to identify the DID and the published one is stored.
+ * @param did
+ * @param topicId
+ * @param hederaAccountId
+ * @param userId
+ */
+export async function resolvePublishedDidDocument(
+    did: string,
+    topicId: string,
+    hederaAccountId: string,
+    userId: string
+): Promise<CommonDidDocument> {
+    if (!topicId) {
+        throw new Error(`Invalid topic.`);
+    }
+    let messages: DIDMessage[];
+    try {
+        messages = await MessageServer.getMessages<DIDMessage>({
+            topicId,
+            userId,
+            type: MessageType.DIDDocument
+        });
+    } catch (error) {
+        throw new Error(`Unable to read the DID topic ${topicId}, try again later: ${error?.message || error}`);
+    }
+    const published = messages
+        .filter((message) => message.did === did && message.payer === hederaAccountId)
+        .pop();
+    if (!published) {
+        throw new Error(`DID document is not published by the Hedera account.`);
+    }
+    await MessageServer.loadDocument(published, null, { userId });
+    return await validateDidWithoutKeys(published.getDocument());
 }
 
 export async function validateVc(json: string | any): Promise<VcDocumentDefinition> {

@@ -5,247 +5,257 @@
 }
 
 <div class="guardian-page">
-  <div class="user-detail-header">
-    <div class="header-row header-row-back">
-      <span
-        class="user-detail-breadcrumb user-detail-breadcrumb-clickable"
-        role="button"
-        tabindex="0"
-        (click)="goToPage()"
-        (keydown.enter)="goToPage()">
-        <span class="breadcrumb-item">User Management</span>
-      </span>
-      <span class="breadcrumb-sep"> / </span>
-      <span class="breadcrumb-item">{{ username }}</span>
+  <div class="top-toolbar">
+    <nav class="pc-breadcrumb">
+      <div (click)="goToPage()" class="pc-back-crumb" title="Back to User Management">
+        <i class="pi pi-arrow-left"></i>
+      </div>
+      <a (click)="goToPage()" class="pc-crumb-link">User Management</a>
+      <i class="pi pi-chevron-right pc-breadcrumb-sep"></i>
+    </nav>
+    <div class="policy-identity policy-identity--static">
+      <span class="guardian-avatar">{{ initials }}</span>
+      <div class="policy-identity-text">
+        <span class="policy-identity-name">{{ username }}</span>
+        <span class="policy-identity-meta">User</span>
+      </div>
+    </div>
+    <div class="toolbar-spacer"></div>
+    @if (needSave) {
+      <div class="unsaved-marker">
+        <span class="unsaved-dot"></span>
+        <span>Unsaved changes</span>
+      </div>
+    }
+    <div (click)="onCancelRole()"
+      class="top-toolbar-btn bordered-btn"
+      [class.is-disabled]="!needSave"
+      title="Discard changes">
+      <span>Discard</span>
+    </div>
+    <div (click)="needSave && selectedIndex === 0 && onSaveRole()"
+      class="top-toolbar-btn top-toolbar-btn--primary"
+      [class.is-disabled]="!needSave || selectedIndex !== 0"
+      title="Save">
+      <i class="pi pi-check"></i>
+      <span>Save</span>
     </div>
   </div>
 
-  <div class="guardian-user-page-header">{{ username }}</div>
+  <p-tabs class="user-tabs" [(value)]="selectedIndex" (valueChange)="onChange($event)">
+    <div class="user-band">
+      <div class="user-band-top">
+        <div class="user-band-main">
+          <div class="user-band-name">{{ username }}</div>
+          <div class="user-band-meta">
+            @if (target?.did) {
+              <span class="user-did" [title]="target.did">{{ shortDid(target.did) }}</span>
+              <i class="pi pi-copy user-did-copy" pTooltip="Copy DID" tooltipPosition="top" (click)="copyDid()"></i>
+            }
+            @if (parentLabel) {
+              <span class="user-band-dot">·</span>
+              <span>Parent: {{ parentLabel }}</span>
+            }
+          </div>
+        </div>
+        <div class="user-numbers">
+          <div class="user-number">
+            <div class="user-number-value">{{ roleGroups.length || 0 }}</div>
+            <div class="user-number-label">Roles</div>
+          </div>
+          <div class="user-number">
+            <div class="user-number-value">{{ assignedCount }}</div>
+            <div class="user-number-label">Policies</div>
+          </div>
+          <div class="user-number">
+            <div class="user-number-value">{{ grantedCount }}</div>
+            <div class="user-number-label">Permissions</div>
+          </div>
+        </div>
+      </div>
+      <p-tablist>
+        <p-tab [value]="0">Roles <span class="tab-count">{{ roleGroups.length || 0 }}</span></p-tab>
+        <p-tab [value]="1">Assigned policies <span class="tab-count">{{ assignedCount }}</span></p-tab>
+      </p-tablist>
+    </div>
 
-  <p-tabs [(value)]="selectedIndex" (valueChange)="onChange($event)">
-    <p-tablist>
-      <p-tab [value]="0">User Roles</p-tab>
-      <p-tab [value]="1">Assigned Policies</p-tab>
-    </p-tablist>
-    <p-tabpanels>
-      <p-tabpanel [value]="0">
-        <div class="permissions-content">
-          <div class="selected-roles">
-            <div class="role-header">Selected Roles</div>
-            @if (roleGroups.length) {
-              <div class="roles-content">
-                @for (group of roleGroups; track group) {
-                  <div
-                    class="role-content"
+    <div class="user-body">
+      <p-tabpanels>
+        <p-tabpanel [value]="0">
+          <div class="card">
+            <div class="section">
+              <div class="section-title">Selected roles</div>
+              <div class="section-text">Permissions from all selected roles are combined. Roles assigned by another user are locked.</div>
+              <div class="role-chips">
+                @for (group of roleGroups; track group.roleId) {
+                  <span class="role-chip"
                     pTooltip="Assigned by another user"
                     tooltipPosition="top"
                     [tooltipDisabled]="group.own"
-                    [attr.own]="group.own"
-                    [attr.editable]="group.canEdit">
-                    <div class="role-name">{{ group.roleName }}</div>
-                    <div class="role-icon" (click)="onDeleteRole(group.roleId)">
-                      <svg-icon class="svg-icon-16"
-                        src="/assets/images/icons/16/circle-close.svg"
-                        svgClass="close-icon-color">
-                      </svg-icon>
-                    </div>
+                    [attr.locked]="!group.canEdit">
+                    @if (!group.canEdit) {
+                      <i class="pi pi-lock"></i>
+                    }
+                    {{ group.roleName }}
+                    @if (group.canEdit) {
+                      <i class="pi pi-times role-chip-remove" (click)="onDeleteRole(group.roleId)"></i>
+                    }
+                  </span>
+                }
+                <span class="add-role">
+                  <button type="button" class="add-role-btn"><i class="pi pi-plus"></i>Add role</button>
+                  <p-multiSelect [filter]="true"
+                    [options]="roles"
+                    optionLabel="name"
+                    optionValue="id"
+                    optionDisabled="disabled"
+                    [(ngModel)]="roleIds"
+                    emptyMessage="Search by Role name"
+                    placeholder="Add role"
+                    appendTo="body"
+                    [panelStyle]="{ 'min-width': '260px' }"
+                    (onPanelHide)="onChangeRole()">
+                    <ng-template let-option pTemplate="item">
+                      <div class="dropdown-item">{{ option.name }}</div>
+                    </ng-template>
+                  </p-multiSelect>
+                </span>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-head">
+                <div>
+                  <div class="section-title">Effective permissions</div>
+                </div>
+                <div class="section-spacer"></div>
+                <div class="legend">
+                  <span><span class="dot dot--on"></span>Granted</span>
+                  <span><span class="dash">–</span>Not granted</span>
+                </div>
+                <div class="seg">
+                  <span [class.on]="!showAll" (click)="setShowAll(false)">Granted only</span>
+                  <span [class.on]="showAll" (click)="setShowAll(true)">All</span>
+                </div>
+              </div>
+
+              @for (category of visiblePreview; track category.name) {
+                <div class="matrix-category">
+                  <div class="matrix-group">{{ category.name }}</div>
+                  <table class="matrix">
+                    <thead>
+                      <tr>
+                        <th class="matrix-entity">Entity</th>
+                        @for (action of category.actions; track $index) {
+                          <th>{{ action }}</th>
+                        }
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (entity of category.entities; track entity.name) {
+                        <tr>
+                          <td class="matrix-entity">{{ entity.name }}</td>
+                          @for (cell of entity.cells; track $index) {
+                            <td [pTooltip]="cell?.tooltip || ''" [tooltipDisabled]="!cell?.tooltip" tooltipPosition="top"
+                              [attr.colspan]="entity.type === 'all' ? category.actions.length : null">
+                              @if (cell) {
+                                @if (cell.value) {
+                                  <span class="dot dot--on"></span>
+                                } @else {
+                                  <span class="dash">–</span>
+                                }
+                              }
+                            </td>
+                          }
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+              @if (!visiblePreview.length) {
+                <div class="empty-text">No permissions granted</div>
+              }
+            </div>
+          </div>
+        </p-tabpanel>
+
+        <p-tabpanel [value]="1">
+          <div class="filters-container">
+            <p-select [(ngModel)]="statusFilterValue"
+              [appendTo]="'body'"
+              [options]="statusFilterOption"
+              (onChange)="onFilter()">
+              <ng-template pTemplate="selectedItem">
+                @if (statusFilterValue) {
+                  <div>
+                    <span class="dropdown-label">Status</span>
+                    <span class="dropdown-item">{{ statusFilterValue }}</span>
                   </div>
                 }
-              </div>
-            }
-          </div>
-
-          <div class="roles">
-            <p-multiSelect [filter]="true"
-              [options]="roles"
-              optionLabel="name"
-              optionValue="id"
-              optionDisabled="disabled"
-              [(ngModel)]="roleIds"
-              emptyMessage="Search by Role name"
-              placeholder="Search by Role name"
-              appendTo="body"
-              (onPanelHide)="onChangeRole()">
-              <ng-template let-option pTemplate="selectedItem">
-                <div class="dropdown-item">{{ option.name }}</div>
               </ng-template>
               <ng-template let-option pTemplate="item">
                 <div class="dropdown-item">{{ option.name }}</div>
               </ng-template>
-            </p-multiSelect>
-          </div>
-
-          <div class="selected-roles">
-            <div class="permissions-header">Preview</div>
-          </div>
-
-          @if (group) {
-            <div class="categories">
-              @for (category of group.categories; track category) {
-                <div class="category">
-                  <div class="category-header">
-                    <div class="category-name">{{ category.name }}</div>
-                  </div>
-                  <div class="category-actions">
-                    <div class="category-actions-header">ACTIONS</div>
-                    <div class="permissions">
-                      @if (category.type === 'Access') {
-                        @for (action of category.actions; track action; let i = $index) {
-                          <div
-                            class="permission big perm-{{i}}">
-                            {{ action }}
-                          </div>
-                        }
-                      }
-                      @if (category.type === 'Permissions') {
-                        @for (action of category.actions; track action; let i = $index) {
-                          <div
-                            class="permission perm-{{i}}">
-                            {{ action }}
-                          </div>
-                        }
-                      }
-                    </div>
-                  </div>
-                  <div class="category-body">
-                    @for (entity of category.entities; track entity) {
-                      <div class="entity">
-                        <div class="entity-name">{{ entity.name }}</div>
-                        <div class="permissions">
-                          @if (entity.type === 'all') {
-                            @for (action of entity.actions; track action) {
-                              <div class="all-permission">
-                                @if (action) {
-                                  <p-checkbox
-                                    [binary]="true"
-                                    pTooltip="{{ action.tooltip }}"
-                                    [tooltipDisabled]="!action.tooltip"
-                                    [formControl]="action.control">
-                                  </p-checkbox>
-                                }
-                              </div>
-                            }
-                          }
-                          @if (entity.type === 'checkbox') {
-                            @for (action of entity.actions; track action; let i = $index) {
-                              <div
-                                class="permission perm-{{i}}">
-                                @if (action) {
-                                  <p-checkbox
-                                    [binary]="true"
-                                    pTooltip="{{ action.tooltip }}"
-                                    [tooltipDisabled]="!action.tooltip"
-                                    [formControl]="action.control">
-                                  </p-checkbox>
-                                }
-                                @if (!action) {
-                                  <div class="permission-background"></div>
-                                }
-                              </div>
-                            }
-                          }
-                          @if (entity.type === 'radio') {
-                            @for (action of entity.actions; track action; let i = $index) {
-                              <div
-                                class="permission big perm-{{i}}">
-                                @if (action) {
-                                  <p-radioButton
-                                    pTooltip="{{ action.tooltip }}"
-                                    [tooltipDisabled]="!action.tooltip"
-                                    [formControl]="action.control">
-                                  </p-radioButton>
-                                }
-                                @if (!action) {
-                                  <div class="permission-background"></div>
-                                }
-                              </div>
-                            }
-                          }
-                        </div>
-                      </div>
-                    }
-                  </div>
-                </div>
+            </p-select>
+            <div class="section-spacer"></div>
+            <div class="assigned-count">
+              @if (statusFilterValue === 'ALL') {
+                {{ assignedCount }} of {{ policyCount }} assigned
+              } @else {
+                {{ policyCount }} {{ policyCount === 1 ? 'policy' : 'policies' }}
               }
             </div>
-          }
-
-          <div class="role-footer">
-            <button (click)="onCancelRole()"
-              class="button secondary"
-              label="Cancel"
-              pButton
-              type="button">
-            </button>
-            <button (click)="onSaveRole()"
-              [disabled]="!needSave"
-              class="button"
-              label="Save"
-              pButton
-              type="button">
-            </button>
-          </div>
-        </div>
-      </p-tabpanel>
-      <p-tabpanel [value]="1">
-        <div class="tab-container">
-          <div class="filters-container">
-            <div class="filter-container">
-              <p-select [(ngModel)]="statusFilterValue"
-                [appendTo]="'body'"
-                [options]="statusFilterOption"
-                (onChange)="onFilter()">
-                <ng-template pTemplate="selectedItem">
-                  @if (statusFilterValue) {
-                    <div>
-                      <span class="dropdown-label">Status</span>
-                      <span class="dropdown-item">{{ statusFilterValue }}</span>
-                    </div>
-                  }
-                </ng-template>
-                <ng-template let-option pTemplate="item">
-                  <div class="dropdown-item">{{ option.name }}</div>
-                </ng-template>
-              </p-select>
-            </div>
           </div>
 
-          <div class="grid-container">
-            <table>
+          <div class="card policy-card">
+            <table class="policy-table">
               <thead>
-                <tr class="grid-header header-container">
-                  <th class="name">NAME</th>
-                  <th class="description">Description</th>
-                  <th class="status">Status</th>
-                  <th class="version">Version</th>
-                  <th class="checkbox">
-                    <label>
+                <tr>
+                  <th>Policy</th>
+                  <th>Description</th>
+                  <th class="col-status">Status</th>
+                  <th class="col-version">Version</th>
+                  <th class="col-assign">
+                    <label class="assign-all">
+                      <span>Assign all</span>
                       <p-checkbox
                         [(ngModel)]="allPolicy"
                         [binary]="true"
                         (onChange)="assignAllPolicy()">
                       </p-checkbox>
-                      Assign All Policy
                     </label>
                   </th>
                 </tr>
               </thead>
               <tbody>
-                @for (row of policyPage; track row) {
-                  <tr class="grid-row row-container">
-                    <td class="name">{{ row.name }}</td>
-                    <td class="description">{{ row.description }}</td>
-                    <td class="status">
-                      <div class="chip chip-color-{{ getColor(row.status, !!row.discontinuedDate) }}">
-                        {{ getLabelStatus(row.status, !!row.discontinuedDate) }}
-                      </div>
+                @for (row of policyPage; track row.id) {
+                  <tr>
+                    <td class="policy-name">{{ row.name }}</td>
+                    <td>
+                      @if (row.description) {
+                        <div class="policy-description" [pTooltip]="row.description" tooltipPosition="top" showDelay="300">{{ row.description }}</div>
+                      } @else {
+                        <span class="muted">No description</span>
+                      }
                     </td>
-                    <td class="version">{{ row.version }}</td>
-                    <td class="checkbox">
-                      <p-checkbox [(ngModel)]="row.assigned"
-                        [binary]="true"
-                        (onChange)="assignPolicy(row, $event.checked)">
-                      </p-checkbox>
+                    <td class="col-status">
+                      <span class="status status--{{ getColor(row.status, !!row.discontinuedDate) }}">
+                        {{ getLabelStatus(row.status, !!row.discontinuedDate) }}
+                      </span>
+                    </td>
+                    <td class="col-version">
+                      @if (row.version && row.status !== 'DRY-RUN') {
+                        {{ row.version }}
+                      }
+                    </td>
+                    <td class="col-assign">
+                      <label class="switch">
+                        <input type="checkbox"
+                          [checked]="row.assigned"
+                          (change)="onToggleAssign(row, $any($event.target).checked)">
+                        <span class="slider round"></span>
+                      </label>
                     </td>
                   </tr>
                 }
@@ -258,8 +268,8 @@
               (page)="onPolicyPage($event)"
             ></app-paginator>
           </div>
-        </div>
-      </p-tabpanel>
-    </p-tabpanels>
+        </p-tabpanel>
+      </p-tabpanels>
+    </div>
   </p-tabs>
 </div>

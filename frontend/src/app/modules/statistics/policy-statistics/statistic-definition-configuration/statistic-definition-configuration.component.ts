@@ -1,7 +1,7 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EntityStatus, IStatistic, Schema, UserPermissions } from '@guardian/interfaces';
-import { forkJoin, Subscription } from 'rxjs';
+import { EntityStatus, IStatistic, PolicyStatus, Schema, UserPermissions } from '@guardian/interfaces';
+import { forkJoin, Observable, Subscription } from 'rxjs';
 import { PolicyStatisticsService } from 'src/app/services/policy-statistics.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
@@ -20,11 +20,16 @@ import { createAutocomplete } from '../../../common/models/lang-modes/autocomple
 import { SchemaScore, SchemaScores } from '../../../common/models/schema-scores';
 import { SchemaRule, SchemaRules } from '../../../common/models/schema-rules';
 import { CustomConfirmDialogComponent } from '../../../common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { restoreSchemaDefs } from '../../../common/models/schema-defs';
 
 @Component({
     selector: 'app-statistic-definition-configuration',
     templateUrl: './statistic-definition-configuration.component.html',
-    styleUrls: ['./statistic-definition-configuration.component.scss'],
+    styleUrls: [
+        '../../../policy-engine/styles/top-toolbar.scss',
+        '../../styles/top-bar-extras.scss',
+        './statistic-definition-configuration.component.scss'
+    ],
     standalone: false
 })
 export class StatisticDefinitionConfigurationComponent implements OnInit {
@@ -52,9 +57,12 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
     public searchField: string = '';
     public tabIndex: number = 0;
 
-    public stepper = [true, false, false];
+    public view: 'schemas' | 'rules' = 'schemas';
+    private viewInitialized: boolean = false;
 
     public readonly: boolean = false;
+    public dirty: boolean = false;
+    public readonly EntityStatus = EntityStatus;
 
     @ViewChild('fieldTree', { static: false }) fieldTree: ElementRef;
     @ViewChild('treeTabs', { static: false }) treeTabs: ElementRef;
@@ -73,14 +81,6 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
         description: new FormControl<string>(''),
         policy: new FormControl<string>('', Validators.required),
     });
-
-    public readonly statusMenuItems = [{
-        label: 'Publish',
-        icon: 'publish',
-        callback: ($event: any) => {
-            this.publish();
-        }
-    }]
 
     public schemaFilterType: number = 1;
 
@@ -120,6 +120,15 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
         } else {
             return 100;
         }
+    }
+
+    public get rulesCount(): number {
+        return this.variables.variables.length;
+    }
+
+    public get showPolicyVersion(): boolean {
+        const status = this.policy?.status;
+        return !!this.policy?.version && (status === PolicyStatus.PUBLISH || status === PolicyStatus.DISCONTINUED);
     }
 
     public get roots(): SchemaNode[] {
@@ -167,6 +176,13 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
 
     ngOnInit() {
         this.subscription.add(
+            this.overviewForm.valueChanges.subscribe(() => {
+                if (this.overviewForm.dirty) {
+                    this.dirty = true;
+                }
+            })
+        );
+        this.subscription.add(
             this.route.queryParams.subscribe((queryParams) => {
                 this.loadProfile();
             })
@@ -213,6 +229,10 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
                 this.updateTree(relationships, properties);
             }
             this.updateForm(item);
+            if (!this.viewInitialized) {
+                this.viewInitialized = true;
+                this.view = this.rulesCount ? 'rules' : 'schemas';
+            }
             setTimeout(() => {
                 this.loading = false;
             }, 1000);
@@ -230,7 +250,7 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
                 this.properties.set(property.title, property.value);
             }
         }
-        const schemas = relationships.schemas || [];
+        const schemas = restoreSchemaDefs(relationships.schemas || []);
         this.schemas = [];
         for (const schema of schemas) {
             try {
@@ -261,6 +281,8 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
             policy: this.policy?.name || '',
             // method: item.description,
         });
+        this.overviewForm.markAsPristine();
+        this.dirty = false;
 
         const config = item.config;
         this.variables.fromData(config?.variables);
@@ -368,6 +390,7 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
             return;
         }
         field.selected = !field.selected;
+        this.markDirty();
         if (this.rootNode) {
             const rootView = this.rootNode.fields;
             rootView.updateHidden();
@@ -449,25 +472,17 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
         this.tree?.onSelectNode(null);
     }
 
-    public onStep(index: number) {
-        this.loading = true;
-        setTimeout(() => {
-            for (let i = 0; i < this.stepper.length; i++) {
-                this.stepper[i] = false;
-            }
-            this.stepper[index] = true;
-            this.tree?.move(18, 46);
-            if (index === 1) {
-                setTimeout(() => {
-                    this.tree?.refresh();
-                    this.loading = false;
-                }, 1500);
-            } else {
-                setTimeout(() => {
-                    this.loading = false;
-                }, 400);
-            }
-        }, 200);
+    public onView(view: 'schemas' | 'rules') {
+        if (this.view === view) {
+            return;
+        }
+        this.view = view;
+        if (view === 'schemas') {
+            setTimeout(() => {
+                this.tree?.move(18, 46);
+                this.tree?.refresh();
+            }, 0);
+        }
     }
 
     public onZoom(d: number) {
@@ -510,6 +525,7 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
 
     public onAddVariable() {
         this.formulas.add();
+        this.markDirty();
     }
 
     public onDeleteVariable(formula: any) {
@@ -532,6 +548,7 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
                 this.formulas.delete(formula);
+                this.markDirty();
             }
         });
     }
@@ -539,6 +556,7 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
     public onAddScore() {
         this.scores.add();
         this.updateCodeMirror();
+        this.markDirty();
     }
 
     public onDeleteScore(score: SchemaScore) {
@@ -562,6 +580,7 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
             if (result === 'Delete') {
                 this.scores.delete(score);
                 this.updateCodeMirror();
+                this.markDirty();
             }
         });
     }
@@ -580,6 +599,7 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
             if (result) {
                 score.description = result.description;
                 score.options = result.options;
+                this.markDirty();
             }
         });
     }
@@ -596,9 +616,7 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
         return item;
     }
 
-    public onSave() {
-        this.loading = true;
-        // this.rules.update(this.variables);
+    private getSaveItem(): any {
         const value = this.overviewForm.value;
         const config = {
             variables: this.variables.getJson(),
@@ -606,24 +624,57 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
             scores: this.scores.getJson(),
             rules: this.rules.getJson(),
         };
-        const item = {
+        return {
             ...this.item,
             name: value.name,
             description: value.description,
             // method: value.method,
             config
         };
-        this.policyStatisticsService
-            .updateDefinition(item)
+    }
+
+    private saveRequest(): Observable<IStatistic> {
+        return this.policyStatisticsService.updateDefinition(this.getSaveItem());
+    }
+
+    private applySaved(item: IStatistic) {
+        this.item = item;
+        this.updateForm(item);
+    }
+
+    public onSave() {
+        this.loading = true;
+        this.saveRequest()
             .subscribe((item) => {
-                this.item = item;
-                this.updateForm(item);
+                this.applySaved(item);
                 setTimeout(() => {
                     this.loading = false;
                 }, 1000);
             }, (e) => {
                 this.loading = false;
             });
+    }
+
+    public onPublish() {
+        if (!this.dirty) {
+            this.publish();
+            return;
+        }
+        this.loading = true;
+        this.saveRequest()
+            .subscribe((item) => {
+                this.loading = false;
+                this.applySaved(item);
+                this.publish();
+            }, (e) => {
+                this.loading = false;
+            });
+    }
+
+    public markDirty() {
+        if (!this.readonly) {
+            this.dirty = true;
+        }
     }
 
     public onPreview() {
@@ -701,9 +752,5 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
                 }
             });
         }
-    }
-
-    public isActionStep(index: number): boolean {
-        return this.stepper[index];
     }
 }

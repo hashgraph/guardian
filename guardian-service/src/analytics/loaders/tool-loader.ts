@@ -1,4 +1,5 @@
-import { Artifact as ArtifactCollection, DatabaseServer } from '@guardian/common';
+import { Artifact as ArtifactCollection } from '@guardian/common/entity/artifact';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 import { CompareOptions, IArtifactRawData, IToolData } from '../compare/interfaces/index.js';
 import { FileModel, SchemaModel, ToolModel } from '../compare/index.js';
 import { FilterQuery } from '@mikro-orm/core';

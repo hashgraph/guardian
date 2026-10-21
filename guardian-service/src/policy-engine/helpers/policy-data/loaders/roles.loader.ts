@@ -1,4 +1,4 @@
-import { PolicyRoles } from '@guardian/common';
+import { PolicyRoles } from '@guardian/common/entity/policy-roles';
 import { PolicyDataLoader } from './loader.js';
 
 /**

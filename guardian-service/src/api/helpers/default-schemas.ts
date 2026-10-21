@@ -1,6 +1,6 @@
 import { SchemaEntity } from '@guardian/interfaces';
 import path from 'node:path';
-import { DatabaseServer } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 import fs from 'fs-extra';
 
 const { readJSON } = fs;

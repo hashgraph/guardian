@@ -1,4 +1,7 @@
-import { DatabaseServer, MessageError, MessageResponse, NatsService, Singleton } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
+import { NatsService } from '@guardian/common/mq/nats-service';
+import { Singleton } from '@guardian/common/decorators/singleton';
 import { GenerateUUIDv4, PolicyEvents } from '@guardian/interfaces';
 import { BlockEngine } from './block-engine/index.js';
 import { PolicyUser } from './policy-user.js';

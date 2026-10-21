@@ -1,4 +1,5 @@
-import { IAuthUser, PinoLogger } from '@guardian/common';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
 import { Controller, Get, HttpCode, HttpStatus, Param, Query, Response } from '@nestjs/common';
 import { Permissions } from '@guardian/interfaces';
 import { ApiTags, ApiOperation, ApiOkResponse, ApiInternalServerErrorResponse, ApiParam, ApiQuery } from '@nestjs/swagger';

@@ -1,0 +1,156 @@
+:host {
+    display: block;
+    // span the guardian-dialog content padding so the header/footer dividers run edge to edge
+    margin: 0 -32px -32px;
+    font-family: var(--guardian-font-family, Inter, sans-serif);
+    font-weight: 400;
+    color: var(--guardian-font-color, #23252E);
+
+    :where(button) {
+        font: inherit;
+    }
+}
+
+.ff-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--guardian-border-color, #E1E7EF);
+
+    .ff-title {
+        font-family: var(--font-family-poppins, 'Poppins', sans-serif);
+        font-size: 16px;
+        font-weight: 600;
+        line-height: 24px;
+        color: var(--guardian-font-color, #23252E);
+    }
+}
+
+.ff-body {
+    padding: 16px 20px;
+    max-height: 60vh;
+    overflow: auto;
+}
+
+.ff-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-size: 13px;
+
+    th {
+        padding: 8px;
+        text-align: left;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--color-grey-5, #848FA9);
+        border-bottom: 1px solid var(--guardian-border-color, #E1E7EF);
+    }
+
+    td {
+        padding: 10px 8px;
+        font-size: 13px;
+        font-weight: 400;
+        color: var(--guardian-font-color, #23252E);
+        border-bottom: 1px solid var(--guardian-border-color, #E1E7EF);
+        vertical-align: middle;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .ff-col-name {
+        width: 45%;
+    }
+
+    .ff-col-action {
+        width: 48px;
+        padding: 4px 8px;
+        text-align: right;
+    }
+
+    .ff-url {
+        display: block;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+
+        ::ng-deep ipfs-link {
+            display: inline;
+        }
+
+        ::ng-deep ipfs-link .link {
+            display: inline;
+            white-space: nowrap;
+            font: inherit;
+            color: var(--color-primary, #4169E2);
+            text-decoration: none;
+            text-transform: none;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+}
+
+.ff-empty {
+    padding: 32px 0;
+    text-align: center;
+    font-size: 13px;
+    color: var(--color-grey-5, #848FA9);
+}
+
+.ff-icon-btn {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--color-grey-5, #848FA9);
+    cursor: pointer;
+
+    &:hover {
+        background: var(--guardian-hover, #F0F3FC);
+    }
+
+    &.ff-del:hover {
+        color: var(--color-accent-red-1, #FF432A);
+        background: var(--guardian-delete-background, #FFEAEA);
+    }
+}
+
+.ff-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    border-top: 1px solid var(--guardian-border-color, #E1E7EF);
+}
+
+.ff-btn {
+    height: 36px;
+    padding: 0 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
+    border-radius: 6px;
+    background: var(--guardian-background, #FFFFFF);
+    color: var(--guardian-font-color, #23252E);
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+
+    &:hover {
+        background: var(--guardian-hover, #F0F3FC);
+    }
+}

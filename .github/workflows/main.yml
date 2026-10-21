@@ -19,10 +19,10 @@ jobs:
       YARN_ENABLE_GLOBAL_CACHE: 'false'
     strategy:
       matrix:
-        node-version: [ 24.21.0 ]
+        node-version: [ 24.22.1 ]
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: audit
 
@@ -30,7 +30,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ matrix.node-version }}
 
@@ -53,6 +53,9 @@ jobs:
           yarn run build
           popd
           pushd common
+          yarn run build
+          popd
+          pushd hedera
           yarn run build
           popd
           pushd ai-service
@@ -98,6 +101,12 @@ jobs:
           CI: true
           NODE_OPTIONS: --openssl-legacy-provider
 
+      # Fails when a built workspace imports a package that its production
+      # install does not provide. tsc cannot see this, because in CI every
+      # package is hoisted to the root node_modules.
+      - name: Check production dependencies
+        run: node .github/scripts/dep-closure-check.mjs
+
       - name: Detect secrets
         run: |
           yarn run detect-secrets
@@ -111,6 +120,9 @@ jobs:
           npm run lint
           popd
           pushd common
+          npm run lint
+          popd
+          pushd hedera
           npm run lint
           popd
           pushd ai-service
@@ -153,6 +165,9 @@ jobs:
           npm run test
           popd
           pushd common
+          npm run test
+          popd
+          pushd hedera
           npm run test
           popd
           pushd ai-service

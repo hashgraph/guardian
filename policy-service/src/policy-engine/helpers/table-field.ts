@@ -2,16 +2,8 @@ import { BlockActionError } from '../errors/index.js';
 import { AnyBlockType } from '../policy-engine.interface.js';
 import { PolicyUtils } from '../helpers/utils.js';
 
-import {
-    DatabaseServer,
-    decodeGridFileText,
-    hasDeclaredTableColumns,
-    isPlainObject,
-    isTableValue,
-    isTableWithFileId,
-    parseCsvToTable,
-    parseIfJson
-} from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { decodeGridFileText, hasDeclaredTableColumns, isPlainObject, isTableValue, isTableWithFileId, parseCsvToTable, parseIfJson } from '@guardian/common/helpers/table-csv';
 import { ITableField } from '@guardian/interfaces';
 
 export {

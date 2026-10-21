@@ -252,4 +252,153 @@ describe('IpfsTransformationUIAddonCode', () => {
 
         expect(document.credentialSubject[0].nested.field1.resourceUrl).toBeDefined();
     });
+
+    function geoValue(geoFileOverrides: any = {}): any {
+        return {
+            type: 'FeatureCollection',
+            features: [
+                {
+                    type: 'Feature',
+                    properties: {},
+                    geometry: { type: 'Point', coordinates: [36.015, -1.005] }
+                }
+            ],
+            geoFile: {
+                fileId: 'grid-fs-id',
+                cid,
+                name: 'farms.kml',
+                format: 'kml',
+                sizeBytes: 2097152,
+                previewSizeBytes: 2097152,
+                ...geoFileOverrides
+            }
+        };
+    }
+
+    it('should rewrite a geo file link to a gateway link and drop the storage ids', async () => {
+        const addon = createAddon(gatewayConfig());
+        const document: any = { field2: geoValue() };
+
+        await addon.run({ document, params: {}, history: [] });
+
+        expect(document.field2.type).toBe('FeatureCollection');
+        expect(document.field2.features).toEqual(geoValue().features);
+        expect(document.field2.geoFile).toEqual({
+            name: 'farms.kml',
+            format: 'kml',
+            sizeBytes: 2097152,
+            previewSizeBytes: 2097152,
+            compression: 'gzip',
+            resourceUrl: jasmine.stringMatching(/^https:\/\/host\/api\/v1\/ipfs\/file\//)
+        });
+    });
+
+    it('should rewrite a geo file link to base64 and mark it as gzip', async () => {
+        const addon = createAddon({ transformationType: 'base64' });
+        const document: any = { field2: geoValue({ name: 'farms.geojson', format: 'geojson' }) };
+
+        await addon.run({ document, params: {}, history: [] });
+
+        expect(document.field2.geoFile.compression).toBe('gzip');
+        expect(document.field2.geoFile.base64String).toContain('data:application/gzip;base64,');
+        expect(document.field2.geoFile.fileId).toBeUndefined();
+        expect(document.field2.geoFile.cid).toBeUndefined();
+    });
+
+    it('should not mark a kmz geo file as gzip', async () => {
+        const addon = createAddon(gatewayConfig());
+        const document: any = { field2: geoValue({ name: 'farms.kmz', format: 'kmz' }) };
+
+        await addon.run({ document, params: {}, history: [] });
+
+        expect(document.field2.geoFile.format).toBe('kmz');
+        expect(document.field2.geoFile.compression).toBeUndefined();
+        expect(document.field2.geoFile.resourceUrl).toContain('/api/v1/ipfs/file/');
+    });
+
+    it('should keep the no-preview flag and the automatic point of a geo file', async () => {
+        const addon = createAddon(gatewayConfig());
+        const document: any = {
+            field2: {
+                type: 'Point',
+                coordinates: [36.0012, -1.0021],
+                geoFile: {
+                    fileId: 'grid-fs-id',
+                    cid,
+                    name: 'farms.kml',
+                    format: 'kml',
+                    sizeBytes: 58720256,
+                    previewSizeBytes: 58720256,
+                    noPreview: true,
+                    automaticPoint: [36.0012, -1.0021]
+                }
+            }
+        };
+
+        await addon.run({ document, params: {}, history: [] });
+
+        expect(document.field2.coordinates).toEqual([36.0012, -1.0021]);
+        expect(document.field2.geoFile.noPreview).toBeTrue();
+        expect(document.field2.geoFile.automaticPoint).toEqual([36.0012, -1.0021]);
+        expect(document.field2.geoFile.resourceUrl).toContain('/api/v1/ipfs/file/');
+        expect(document.field2.geoFile.fileId).toBeUndefined();
+    });
+
+    it('should leave a geo file link untouched when it carries no cid', async () => {
+        const addon = createAddon(gatewayConfig());
+        const value = geoValue({ cid: undefined });
+        const geoFile = value.geoFile;
+        const document: any = { field2: value };
+
+        await addon.run({ document, params: {}, history: [] });
+
+        expect(document.field2.geoFile).toBe(geoFile);
+        expect(document.field2.geoFile.fileId).toBe('grid-fs-id');
+        expect(document.field2.geoFile.resourceUrl).toBeUndefined();
+    });
+
+    it('should leave a geo file link untouched when the download fails', async () => {
+        const failingService: any = {
+            getFile: () => throwError(() => new Error('gone')),
+            getFileFromDryRunStorage: () => throwError(() => new Error('gone'))
+        };
+        const addon = createAddon({ transformationType: 'base64' }, failingService);
+        const value = geoValue();
+        const geoFile = value.geoFile;
+        const document: any = { field2: value };
+
+        await addon.run({ document, params: {}, history: [] });
+
+        expect(document.field2.geoFile).toBe(geoFile);
+        expect(document.field2.geoFile.cid).toBe(cid);
+        expect(document.field2.geoFile.base64String).toBeUndefined();
+    });
+
+    it('should not touch an ordinary object named geoFile', async () => {
+        const addon = createAddon(gatewayConfig());
+        const ordinary = { geoFile: { name: 'contract', cid, fileId: 'grid-fs-id' } };
+        const malformed = geoValue({ format: 'pdf' });
+        const document: any = { contract: ordinary, field2: malformed };
+
+        await addon.run({ document, params: {}, history: [] });
+
+        expect(document.contract.geoFile).toEqual({ name: 'contract', cid, fileId: 'grid-fs-id' });
+        expect(document.field2.geoFile.cid).toBe(cid);
+        expect(document.field2.geoFile.resourceUrl).toBeUndefined();
+    });
+
+    it('should rewrite a geo file link nested inside the credential subject', async () => {
+        const addon = createAddon(gatewayConfig());
+        const document: any = {
+            credentialSubject: [
+                { field0: 'plain text', group: { field2: geoValue() } }
+            ]
+        };
+
+        await addon.run({ document, params: {}, history: [] });
+
+        expect(document.credentialSubject[0].field0).toBe('plain text');
+        expect(document.credentialSubject[0].group.field2.geoFile.resourceUrl).toContain('/api/v1/ipfs/file/');
+        expect(document.credentialSubject[0].group.field2.geoFile.cid).toBeUndefined();
+    });
 });

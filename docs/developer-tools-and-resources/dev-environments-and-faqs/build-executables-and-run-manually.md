@@ -75,7 +75,13 @@ yarn
 yarn workspace @guardian/common run build
 ```
 
-5. Build and start _**logger-service**_ service
+5. Build _**@guardian/hedera**_ package
+
+```
+yarn workspace @guardian/hedera run build
+```
+
+6. Build and start _**logger-service**_ service
 
 To build the service:
 
@@ -91,7 +97,7 @@ To start the service:
 yarn workspace logger-service start
 ```
 
-6. Build and start _**auth-service**_ service
+7. Build and start _**auth-service**_ service
 
 To build the service:
 
@@ -123,7 +129,7 @@ PASSWORD\_COMPLEXITY sets the password complexity level. Available values: easy,
 Default value is medium
 {% endhint %}
 
-7. Build and start _**policy-service**_ service
+8. Build and start _**policy-service**_ service
 
 To build the service:
 
@@ -139,7 +145,7 @@ To start the service:
 yarn workspace policy-service start
 ```
 
-8. Build and start _**worker-service**_ service To build the service:
+9. Build and start _**worker-service**_ service To build the service:
 
 ```
 yarn workspace worker-service run build
@@ -153,7 +159,7 @@ To start the service:
 yarn workspace worker-service start
 ```
 
-9. Build and start **notification**_**-service**_ service
+10. Build and start **notification**_**-service**_ service
 
 To build the service:
 
@@ -185,7 +191,7 @@ Npm:
 npm --workspace=notification-service start
 ```
 
-10. Build and start _**guardian-service**_ service
+11. Build and start _**guardian-service**_ service
 
 To build the service:
 
@@ -201,7 +207,7 @@ To start the service (found on [http://localhost:3002](https://localhost:3002)):
  yarn workspace guardian-service start
 ```
 
-11. Build and start _**api-gateway**_ service
+12. Build and start _**api-gateway**_ service
 
 To build the service:
 
@@ -217,7 +223,7 @@ To start the service (found on [http://localhost:3002](https://localhost:3002)):
 yarn workspace api-gateway start
 ```
 
-12. From the **mrv-sender** folder
+13. From the **mrv-sender** folder
 
 To build the service:
 
@@ -234,7 +240,7 @@ To start the service (found on [http://localhost:3005](http://localhost:3005)):
 npm start
 ```
 
-13. **From the ai-service folder**
+14. **From the ai-service folder**
 
 To build the service:
 
@@ -264,7 +270,7 @@ Npm:
 npm --workspace=ai-service start
 ```
 
-14. From the **frontend** folder
+15. From the **frontend** folder
 
 To build the service:
 

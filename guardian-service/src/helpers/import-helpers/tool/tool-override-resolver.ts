@@ -1,5 +1,6 @@
 import { ModuleStatus, PolicyToolMetadata } from '@guardian/interfaces';
-import { DatabaseServer, PolicyTool } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { PolicyTool } from '@guardian/common/entity/tool';
 import { ImportToolMap } from './tool-import.interface.js';
 
 /**

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { decodeGridFileText, parseCsvToTable } from '@guardian/common';
+import { decodeGridFileText, parseCsvToTable } from '@guardian/common/helpers/table-csv';
 import {
     buildCompactTableJson,
     buildTableOutputCsv,

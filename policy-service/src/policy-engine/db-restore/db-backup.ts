@@ -1,4 +1,7 @@
-import { DataBaseHelper, DatabaseServer, Policy, PolicyDiff } from '@guardian/common';
+import { DataBaseHelper } from '@guardian/common/helpers/db-helper';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { Policy } from '@guardian/common/entity/policy';
+import { PolicyDiff } from '@guardian/common/entity/policy-diff';
 import { IPolicyCollectionDiff, IPolicyKeysDiff } from './index.js';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { FileHelper } from './file-helper.js';

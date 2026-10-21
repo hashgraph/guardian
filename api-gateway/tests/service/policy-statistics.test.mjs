@@ -32,7 +32,7 @@ async function load() {
         '#helpers': { Guardians: FakeGuardians, EntityOwner: FakeEntityOwner, InternalException: internalExceptionRethrow },
         '#auth': { Auth: () => () => undefined, AuthUser: () => () => undefined },
         '#middlewares': new Proxy({}, { get: () => class {} }),
-        '@guardian/common': { PinoLogger: class {} },
+        '@guardian/common/helpers/pino-logger': { PinoLogger: class {} },
         '@guardian/interfaces': guardiansInterfaces
     });
 }

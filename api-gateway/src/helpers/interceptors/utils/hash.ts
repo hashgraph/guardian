@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 
 //types and interfaces
-import {IAuthUser} from '@guardian/common';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
 
 export function getHash(user: IAuthUser | null): string {
     return crypto.createHash('md5').update(JSON.stringify(user?.id ?? 'anonymous')).digest('hex');

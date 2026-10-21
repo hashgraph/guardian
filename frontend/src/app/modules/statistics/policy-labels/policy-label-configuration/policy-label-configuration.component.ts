@@ -1,7 +1,7 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EntityStatus, IPolicyLabelConfig, UserPermissions } from '@guardian/interfaces';
-import { forkJoin, Subscription } from 'rxjs';
+import { EntityStatus, IPolicyLabelConfig, PolicyStatus, UserPermissions } from '@guardian/interfaces';
+import { forkJoin, Observable, Subscription } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { SchemaService } from 'src/app/services/schema.service';
 import { DialogService } from 'primeng/dynamicdialog';
@@ -18,7 +18,11 @@ import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-conf
 @Component({
     selector: 'app-policy-label-configuration',
     templateUrl: './policy-label-configuration.component.html',
-    styleUrls: ['./policy-label-configuration.component.scss'],
+    styleUrls: [
+        '../../../policy-engine/styles/top-toolbar.scss',
+        '../../styles/top-bar-extras.scss',
+        './policy-label-configuration.component.scss'
+    ],
     standalone: false
 })
 export class PolicyLabelConfigurationComponent implements OnInit {
@@ -37,13 +41,24 @@ export class PolicyLabelConfigurationComponent implements OnInit {
 
     public readonly labelConfig: LabelConfig;
     public readonly rulesConfig: RulesConfig;
-    public readonly statusMenuItems = [{
-        label: 'Publish',
-        icon: 'publish',
-        callback: ($event: any) => {
-            this.publish();
-        }
-    }]
+
+    public labelView: 'imports' | 'navigation' = 'imports';
+    private viewInitialized: boolean = false;
+    public dirty: boolean = false;
+    public readonly EntityStatus = EntityStatus;
+
+    public get showPolicyVersion(): boolean {
+        const status = this.policy?.status;
+        return !!this.policy?.version && (status === PolicyStatus.PUBLISH || status === PolicyStatus.DISCONTINUED);
+    }
+
+    public get importsCount(): number {
+        return this.labelConfig.menu.imports.length;
+    }
+
+    public get navigationCount(): number {
+        return this.labelConfig.navigationTree.data.length;
+    }
 
     @ViewChild('fieldTree', { static: false }) fieldTree: ElementRef;
     @ViewChild('treeTabs', { static: false }) treeTabs: ElementRef;
@@ -69,36 +84,15 @@ export class PolicyLabelConfigurationComponent implements OnInit {
             })
         );
         this.subscription.add(
-            this.route.queryParams.subscribe((queryParams) => {
-                const index = queryParams.tab || 0;
-                this.labelConfig.goToStep(index).then();
+            this.labelConfig.overviewForm.valueChanges.subscribe(() => {
+                if (this.labelConfig.overviewForm.dirty) {
+                    this.markDirty();
+                }
             })
         );
         this.subscription.add(
-            this.labelConfig.step.subscribe((index) => {
-                this.loading = true;
-                this.router.navigate([], {
-                    relativeTo: this.route,
-                    queryParams: {
-                        tab: String(index),
-                    },
-                    queryParamsHandling: 'merge',
-                });
-                setTimeout(() => {
-                    this.labelConfig.goToStep(index).then(() => {
-                        this.loading = false;
-                    })
-                }, 100);
-            })
-        );
-        this.subscription.add(
-            this.rulesConfig.step.subscribe((index) => {
-                this.loading = true;
-                setTimeout(() => {
-                    this.rulesConfig.goToStep(index).then(() => {
-                        this.loading = false;
-                    })
-                }, 100);
+            this.labelConfig.changed.subscribe(() => {
+                this.markDirty();
             })
         );
     }
@@ -146,8 +140,12 @@ export class PolicyLabelConfigurationComponent implements OnInit {
             this.rulesConfig.setSchemas(relationships);
 
             this.labelConfig.setPolicy(relationships);
-            this.labelConfig.setData(this.item);
+            this.applyItem(this.item);
             this.labelConfig.show = true;
+            if (!this.viewInitialized) {
+                this.viewInitialized = true;
+                this.labelView = this.labelConfig.navigationTree.data.length ? 'navigation' : 'imports';
+            }
 
             setTimeout(() => {
                 this.loading = false;
@@ -173,20 +171,64 @@ export class PolicyLabelConfigurationComponent implements OnInit {
         return item;
     }
 
+    private applyItem(item: any) {
+        this.item = item;
+        this.labelConfig.setData(item);
+        this.labelConfig.overviewForm.markAsPristine();
+        this.dirty = false;
+    }
+
+    private saveRequest(): Observable<any> {
+        return this.policyLabelsService.updateLabel(this.getItem());
+    }
+
+    public markDirty() {
+        if (!this.readonly) {
+            this.dirty = true;
+        }
+    }
+
     public onSave() {
         this.loading = true;
-        const item = this.getItem();
-        this.policyLabelsService
-            .updateLabel(item)
+        this.saveRequest()
             .subscribe((item) => {
-                this.item = item;
-                this.labelConfig.setData(this.item);
+                this.applyItem(item);
                 setTimeout(() => {
                     this.loading = false;
                 }, 1000);
             }, (e) => {
                 this.loading = false;
             });
+    }
+
+    public onPublish() {
+        if (!this.dirty) {
+            this.publish();
+            return;
+        }
+        this.loading = true;
+        this.saveRequest()
+            .subscribe((item) => {
+                this.loading = false;
+                this.applyItem(item);
+                this.publish();
+            }, (e) => {
+                this.loading = false;
+            });
+    }
+
+    public onLabelView(view: 'imports' | 'navigation') {
+        if (this.labelView === view) {
+            return;
+        }
+        this.labelView = view;
+        if (view === 'navigation') {
+            this.labelConfig.refreshNavigation();
+        }
+    }
+
+    public onRulesView(view: 'schemas' | 'rules') {
+        this.rulesConfig.setView(view);
     }
 
     public onPreview() {
@@ -222,62 +264,46 @@ export class PolicyLabelConfigurationComponent implements OnInit {
                         this.labelConfig.menu.addStatistic(item)
                     }
                 }
+                if (result.length) {
+                    this.markDirty();
+                }
             }
         });
     }
 
     public onDeleteImport(item: NavItem) {
         this.labelConfig.menu.delete(item);
+        this.markDirty();
     }
 
     public onEditNavItem(node: NavItem) {
-        this.loading = true;
         const item = this.getItem();
         this.rulesConfig.show = true;
         this.rulesConfig.setData(node, item);
-        setTimeout(() => {
-            this.rulesConfig.goToStep(0).then(() => {
-                this.loading = false;
-            })
-        }, 100);
+        this.rulesConfig.view = this.rulesConfig.rulesCount ? 'rules' : 'schemas';
     }
 
     public onCancelNavItem() {
-        this.loading = true;
         this.rulesConfig.show = false;
         this.rulesConfig.onCancel();
-        setTimeout(() => {
-            this.labelConfig.goToStep(2).then(() => {
-                this.loading = false;
-            })
-        }, 100);
+        this.labelView = 'navigation';
+        this.labelConfig.refreshNavigation();
     }
 
     public onSaveNavItem() {
         this.loading = true;
         this.rulesConfig.show = false;
         this.rulesConfig.onSave();
-
-        const item = this.getItem();
-        this.policyLabelsService
-            .updateLabel(item)
+        this.labelView = 'navigation';
+        this.saveRequest()
             .subscribe((item) => {
-                this.item = item;
-                this.labelConfig.setData(this.item);
+                this.applyItem(item);
                 setTimeout(() => {
-                    this.labelConfig.goToStep(2).then(() => {
-                        this.loading = false;
-                    })
+                    this.loading = false;
                 }, 1000);
             }, (e) => {
                 this.loading = false;
             });
-
-        // setTimeout(() => {
-        //     this.labelConfig.goToStep(2).then(() => {
-        //         this.loading = false;
-        //     })
-        // }, 100);
     }
 
     private publish() {

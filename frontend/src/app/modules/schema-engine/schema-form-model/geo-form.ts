@@ -1,7 +1,14 @@
-import { UntypedFormControl } from '@angular/forms';
+import { UntypedFormControl, ValidationErrors } from '@angular/forms';
+import { from, map, Observable, of } from 'rxjs';
 import { ajvSchemaValidator } from 'src/app/validators/ajv-schema.validator';
 import ajv from 'ajv';
 import { GeoJsonSchema, GeoJsonType } from '@guardian/interfaces';
+import { polygonHolesError, polygonRingError } from './polygon-ring-validation';
+
+export const MISSING_ORIGINAL_FILE_ERROR =
+    'The original file is not available in this browser. Import it again.';
+export const ORIGINAL_FILE_ERRORS_KEY = 'file';
+export const GEOJSON_REQUIRED_ERROR = 'A GeoJSON object is required';
 
 export class GeoForm {
     private readonly form: UntypedFormControl;
@@ -48,14 +55,38 @@ export class GeoForm {
             const type = this.presetDocument?.geometry?.type || this.presetDocument.type;
             const coordinates = this.presetDocument?.geometry?.coordinates || this.presetDocument.coordinates;
             const features = this.presetDocument.features;
+            const geoFile = this.presetDocument.geoFile;
             this.form.patchValue({
                 type,
                 coordinates,
                 features,
+                ...(geoFile ? { geoFile } : {}),
             }, { emitEvent: false, onlySelf: true });
         }
 
         // this.form.updateValueAndValidity();
+    }
+
+    public setOriginalFileCheck(check: (idbKey: string) => Promise<boolean>): void {
+        this.form.setAsyncValidators(control => this.validateOriginalFile(control.value, check));
+        const link = this.form.value?.geoFile;
+        if (link?.idbKey && !link.fileId) {
+            Promise.resolve().then(() => this.form.updateValueAndValidity());
+        }
+    }
+
+    private validateOriginalFile(
+        value: any,
+        check: (idbKey: string) => Promise<boolean>
+    ): Observable<ValidationErrors | null> {
+        const link = value?.geoFile;
+        const key = typeof link?.idbKey === 'string' ? link.idbKey.trim() : '';
+        if (!key || link.fileId) {
+            return of(null);
+        }
+        return from(check(key)).pipe(map(available => available ? null : {
+            [this.errorsFieldName]: { [ORIGINAL_FILE_ERRORS_KEY]: [MISSING_ORIGINAL_FILE_ERROR] }
+        }));
     }
 
     public setControlValue(value: any, dirty = true) {
@@ -93,8 +124,12 @@ export class GeoForm {
 
     private validatePayload(value: any): Record<string | number, string[]> {
         if (!value || typeof value !== 'object' || this.safeStringify(value) === '{}') {
-            return { 0: ['A GeoJSON object is required'] };
+            return { 0: [GEOJSON_REQUIRED_ERROR] };
         }
+        const automaticPoint = value.geoFile?.noPreview === true
+            ? value.geoFile.automaticPoint
+            : undefined;
+        let automaticPointAvailable = true;
 
         const errors: Record<string | number, string[]> = {};
 
@@ -113,7 +148,14 @@ export class GeoForm {
                         ? f.geometry.coordinates
                         : (f.geometry.coordinates && this.safeParse(f.geometry.coordinates)) || [];
 
-                    const r = this.validateGeometryCore(f.geometry.type, coords);
+                    const useAutomaticPoint = automaticPointAvailable &&
+                        this.isAutomaticPoint(f.geometry.type, coords, automaticPoint);
+                    if (useAutomaticPoint) automaticPointAvailable = false;
+                    const r = this.validateGeometryCore(
+                        f.geometry.type,
+                        coords,
+                        useAutomaticPoint
+                    );
                     if (!r.valid) {
                         errors[i] = r.errors.map(e => `Feature #${i}: ${e}`);
                     }
@@ -130,7 +172,11 @@ export class GeoForm {
                 ? value.geometry.coordinates
                 : (value.geometry.coordinates && this.safeParse(value.geometry.coordinates)) || [];
 
-            const r = this.validateGeometryCore(value.geometry.type, coords);
+            const r = this.validateGeometryCore(
+                value.geometry.type,
+                coords,
+                this.isAutomaticPoint(value.geometry.type, coords, automaticPoint)
+            );
             if (!r.valid) {
                 errors[0] = r.errors;
             }
@@ -141,7 +187,11 @@ export class GeoForm {
             const coords = Array.isArray(value.coordinates)
                 ? value.coordinates
                 : (value.coordinates && this.safeParse(value.coordinates)) || [];
-            const r = this.validateGeometryCore(value.type, coords);
+            const r = this.validateGeometryCore(
+                value.type,
+                coords,
+                this.isAutomaticPoint(value.type, coords, automaticPoint)
+            );
             if (!r.valid) {
                 errors[0] = r.errors;
             }
@@ -196,12 +246,21 @@ export class GeoForm {
                 errors.push(`Polygon: ring #${ri} must contain at least 3 points (excluding the closing point)`);
                 return;
             }
+            const validCoordinates = ring.every((coordinate: any) => this.isLonLat(coordinate));
             ring.forEach((c: any, ci: number) => {
                 if (!this.isLonLat(c)) {
                     errors.push(`Polygon: invalid point #${ci} in ring #${ri}`);
                 }
             });
+            if (validCoordinates) {
+                const error = polygonRingError(ring);
+                if (error) errors.push(`Polygon: ring #${ri} ${error}`);
+            }
         });
+        if (!errors.length && coords.length > 1) {
+            const error = polygonHolesError(coords);
+            if (error) errors.push(`Polygon: ${error}`);
+        }
         return errors;
     }
 
@@ -250,25 +309,29 @@ export class GeoForm {
                 errors.push(`MultiPolygon: polygon #${pi} must contain at least one ring`);
                 return;
             }
-            poly.forEach((ring: any, ri: number) => {
-                if (!Array.isArray(ring) || ring.length < 3) {
-                    errors.push(`MultiPolygon: in polygon #${pi}, ring #${ri} must contain at least 3 points`);
-                    return;
-                }
-                ring.forEach((c: any, ci: number) => {
-                    if (!this.isLonLat(c)) {
-                        errors.push(`MultiPolygon: invalid point #${ci} in polygon #${pi}, ring #${ri}`);
-                    }
-                });
-            });
+            const polygonErrors = this.validatePolygon(poly);
+            errors.push(...polygonErrors.map(error => `MultiPolygon: polygon #${pi}: ${error.replace(/^Polygon: /, '')}`));
         });
         return errors;
     }
 
-    private validateGeometryCore(type: string, coords: any): { valid: boolean; errors: string[] } {
+    private isAutomaticPoint(type: string, coords: any, automaticPoint: any): boolean {
+        return type === GeoJsonType.POINT &&
+            Array.isArray(coords) &&
+            Array.isArray(automaticPoint) &&
+            coords.length === automaticPoint.length &&
+            coords.every((value, index) => value === automaticPoint[index]);
+    }
+
+    private validateGeometryCore(
+        type: string,
+        coords: any,
+        allowUnavailableType = false
+    ): { valid: boolean; errors: string[] } {
         let errors: string[] = [];
 
-        if (Array.isArray(this.availableTypes) && this.availableTypes.length && !this.availableTypes.includes(type)) {
+        if (!allowUnavailableType && Array.isArray(this.availableTypes) &&
+            this.availableTypes.length && !this.availableTypes.includes(type)) {
             return { valid: false, errors: [`geometry type "${type}" is not available`] };
         }
 

@@ -5,7 +5,7 @@ import { Table } from './models/table.js';
 import * as mathjs from 'mathjs';
 import { XlsxSchemaConditions } from './models/schema-condition.js';
 import { isAncestorType, isRelationType, IwaVersion, ModelHelper, relationParent, SchemaCategory, SchemaEntity, SchemaField } from '@guardian/interfaces';
-import { DatabaseServer } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 import { XlsxResult } from './models/xlsx-result.js';
 import { XlsxEnum } from './models/xlsx-enum.js';
 import { EnumTable, SharedEnumTable } from './models/enum-table.js';

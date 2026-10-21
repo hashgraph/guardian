@@ -21,6 +21,8 @@ export class CustomConfirmDialogComponent implements OnInit {
     public loading = true;
     public header: string;
     public text: string;
+    /** regular font weight for the text (it is medium by default) */
+    public regularText: boolean;
     public texts: string[];
     public details: string[];
     public buttons: {
@@ -42,6 +44,7 @@ export class CustomConfirmDialogComponent implements OnInit {
     ) {
         this.header = this.config.data.header;
         this.text = this.config.data.text;
+        this.regularText = !!this.config.data.regularText;
         this.texts = this.config.data.texts;
         this.details = this.config.data.details;
 

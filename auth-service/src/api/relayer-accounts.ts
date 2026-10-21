@@ -1,4 +1,12 @@
-import { DatabaseServer, IAuthUser, KeyType, MessageError, MessageResponse, NatsService, PinoLogger, Singleton, Wallet, Workers, containsRegex } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { KeyType, Wallet } from '@guardian/common/helpers/wallet';
+import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
+import { NatsService } from '@guardian/common/mq/nats-service';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { Singleton } from '@guardian/common/decorators/singleton';
+import { Workers } from '@guardian/common/helpers/workers';
+import { containsRegex } from '@guardian/common/helpers/utils';
 import { AuthEvents, GenerateUUIDv4, WorkerTaskType } from '@guardian/interfaces';
 import { RelayerAccount } from '../entity/relayer-account.js';
 import { User } from '../entity/user.js';

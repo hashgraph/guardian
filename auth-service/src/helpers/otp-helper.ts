@@ -1,6 +1,6 @@
 import { Totp, generateBackupCodes } from 'time2fa';
 import { OtpSecret } from '../entity/otp-secret.js';
-import { DataBaseHelper } from '@guardian/common';
+import { DataBaseHelper } from '@guardian/common/helpers/db-helper';
 import { User } from '../entity/user.js';
 
 export class OtpHelper {

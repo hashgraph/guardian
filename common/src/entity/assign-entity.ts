@@ -1,5 +1,5 @@
 import { AssignedEntityType } from '@guardian/interfaces';
-import { BaseEntity } from '../models/index.js';
+import { BaseEntity } from '../models/base-entity.js';
 import {
     Entity,
     Property,

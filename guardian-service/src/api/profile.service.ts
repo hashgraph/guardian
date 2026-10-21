@@ -1,25 +1,22 @@
 import { DidDocumentStatus, LocationType, MessageAPI, SchemaEntity, TopicType, UserRole, WorkerTaskType } from '@guardian/interfaces';
 import { ApiResponse } from '../api/helpers/api-response.js';
-import {
-    CommonDidDocument,
-    DatabaseServer,
-    Environment,
-    HederaBBSMethod,
-    HederaDid,
-    HederaEd25519Method,
-    IAuthUser,
-    KeyType,
-    MessageError,
-    MessageResponse,
-    NewNotifier,
-    PinoLogger,
-    RunFunctionAsync,
-    SecretManager,
-    Users,
-    VcHelper,
-    Wallet,
-    Workers,
-} from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { createRemoteUserProof } from '@guardian/hedera/remote-user-proof';
+import { Environment } from '@guardian/common/helpers/environment';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { KeyType, Wallet } from '@guardian/common/helpers/wallet';
+import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
+import { NewNotifier } from '@guardian/common/notification/notifier';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { RunFunctionAsync } from '@guardian/common/helpers/run-function-async';
+import { SecretManager } from '@guardian/common/secret-manager/secret-manager';
+import { Users } from '@guardian/common/helpers/users';
+import { Workers } from '@guardian/common/helpers/workers';
+import { CommonDidDocument } from '@guardian/hedera/vcjs/did/common-did-document';
+import { HederaBBSMethod } from '@guardian/hedera/vcjs/did/components/hedera-bbs-method';
+import { HederaDid } from '@guardian/hedera/vcjs/did/hedera-did';
+import { HederaEd25519Method } from '@guardian/hedera/vcjs/did/components/hedera-ed25519-method';
+import { VcHelper } from '@guardian/hedera/vc-helper';
 import { RestoreDataFromHedera } from '../helpers/restore-data-from-hedera.js';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
@@ -649,6 +646,52 @@ export function profileAPI(logger: PinoLogger) {
                     msg?.user?.id
                 );
                 return new MessageResponse({ ...item, key });
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Export the profile of a local user, signed for registering it as a remote user on another instance
+     *
+     * @param {any} msg
+     *
+     * @returns {any} - profile file content
+     */
+    ApiResponse(MessageAPI.EXPORT_REMOTE_USER,
+        async (msg: { user: IAuthUser }) => {
+            try {
+                const user = msg?.user;
+                if (!user?.did) {
+                    return new MessageError('User is not registered.');
+                }
+                const db = new DatabaseServer();
+                const didRow = await db.getDidDocument(user.did);
+                if (!didRow || didRow.status !== DidDocumentStatus.CREATE) {
+                    return new MessageError('DID document is not published.');
+                }
+                let topicId = didRow.topicId;
+                if (!topicId) {
+                    const topic = await db.getTopic({ type: TopicType.UserTopic, owner: user.did })
+                        || await db.getTopic({ type: TopicType.UserTopic, owner: user.parent });
+                    topicId = topic?.topicId;
+                }
+                const vcDocument = await db.getVcDocument({
+                    owner: user.did,
+                    type: { $in: [SchemaEntity.USER, SchemaEntity.STANDARD_REGISTRY] }
+                });
+                const didDocument = await new VcHelper().loadDidDocument(user.did, user.id);
+                const proof = createRemoteUserProof(didDocument, user.hederaAccountId, topicId);
+                return new MessageResponse({
+                    username: user.username,
+                    hederaAccountId: user.hederaAccountId,
+                    topicId,
+                    did: user.did,
+                    didDocument: didRow.document,
+                    vcDocument: vcDocument?.document,
+                    proof
+                });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                 return new MessageError(error);

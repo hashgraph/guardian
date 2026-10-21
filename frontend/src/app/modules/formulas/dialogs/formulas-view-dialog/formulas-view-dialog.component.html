@@ -12,10 +12,10 @@
 <div class="dialog-body">
 
   <div class="view-bar">
-    <p-tabs class="guardian-tabs action-tabs" [(value)]="tabIndex" (valueChange)="setTab($event)">
+    <p-tabs class="guardian-tabs action-tabs" [value]="activeTab" (valueChange)="setTab($event)">
       <p-tablist>
-        @for (tab of viewDocumentOptions; track tab; let i = $index) {
-          <p-tab [value]="i"><div class="tabview-label">{{ tab.label }}</div></p-tab>
+        @for (tab of viewDocumentOptions; track tab.key) {
+          <p-tab [value]="tab.key"><div class="tabview-label">{{ tab.label }}</div></p-tab>
         }
       </p-tablist>
     </p-tabs>
@@ -214,9 +214,7 @@
   @if (activeTab === 'diagram') {
     <div class="view-body">
       <formulas-graph-tab
-        [tree]="tree"
-        [schema]="schema"
-        [path]="path">
+        [items]="items">
       </formulas-graph-tab>
     </div>
   }
@@ -240,6 +238,33 @@
         @if (!files.length) {
           <div class="no-files">
             <div>There were no files attached.</div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  @if (activeTab === 'info') {
+    <div class="view-body info-body">
+      <div class="info-container">
+        <div class="info-title">Where this formula comes from</div>
+        @for (block of sourceBlocks; track $index) {
+          <div class="info-block">
+            @if (sourceBlocks.length > 1) {
+              <div class="info-subtitle">{{ block.name }}</div>
+            }
+            @if (block.rows.length) {
+              <div class="info-table">
+                @for (row of block.rows; track row.label) {
+                  <div class="info-row">
+                    <div class="info-label">{{ row.label }}</div>
+                    <div class="info-value">{{ row.value }}</div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="info-empty">No source information.</div>
+            }
           </div>
         }
       </div>

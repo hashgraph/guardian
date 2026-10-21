@@ -98,7 +98,7 @@
         @if (items && type==='schema') {
           <div class="field-tree">
             @for (item of items.data.items; track item) {
-              <div class="field-item">
+              <div class="field-item" [attr.data-selected]="!item.expandable && item.data.path === itemId">
                 <div class="field-offset"
                   [style.width.px]="24*item.lvl"
                 [style.min-width.px]="24*item.lvl"></div>
@@ -130,7 +130,7 @@
         @if (items && type==='formula') {
           <div class="field-tree">
             @for (item of items.data.items; track item) {
-              <div class="field-item">
+              <div class="field-item" [attr.data-selected]="!item.expandable && item.data.uuid === itemId">
                 <div class="field-offset"
                   [style.width.px]="24*item.lvl"
                 [style.min-width.px]="24*item.lvl"></div>
@@ -182,7 +182,7 @@
       <div class="dialog-button">
         <button
           (click)="onPrev()"
-        class="guardian-button guardian-button-secondary">Prev</button>
+        class="guardian-button guardian-button-secondary">Previous</button>
       </div>
     }
     @if (step === 2) {

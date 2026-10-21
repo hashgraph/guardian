@@ -1,14 +1,12 @@
-import {
-    DatabaseServer,
-    MessageAction,
-    MessageServer,
-    Policy,
-    PolicyRecordMessage,
-    Record,
-    RecordImportExport,
-    TopicConfig,
-    Users
-} from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { Policy } from '@guardian/common/entity/policy';
+import { Record } from '@guardian/common/entity/record';
+import { RecordImportExport } from '@guardian/common/import-export/record';
+import { Users } from '@guardian/common/helpers/users';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { PolicyRecordMessage } from '@guardian/hedera/message/policy-record-message';
+import { TopicConfig } from '@guardian/hedera/topic';
 import { ISignOptions, Permissions, RecordMethod } from '@guardian/interfaces';
 import { ObjectId } from '@mikro-orm/mongodb';
 

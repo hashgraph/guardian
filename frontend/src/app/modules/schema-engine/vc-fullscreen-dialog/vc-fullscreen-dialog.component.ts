@@ -38,6 +38,7 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { ApproveUpdateVcDocumentDialogComponent } from '../../policy-engine/dialogs/approve-update-vc-document-dialog/approve-update-vc-document-dialog.component';
 import { TablePersistenceService } from 'src/app/services/table-persistence.service';
+import { GeoFilePersistenceService } from 'src/app/services/geo-file-persistence.service';
 import { prepareVcData } from '../../common/models/prepare-vc-data';
 import { ViewerDialog } from '../../policy-engine/dialogs/viewer-dialog/viewer-dialog.component';
 
@@ -131,7 +132,8 @@ export class VCFullscreenDialog implements OnDestroy {
         private policyEngineService: PolicyEngineService,
         private toastService: ToastService,
         private dialog: DialogService,
-        private tablePersist: TablePersistenceService
+        private tablePersist: TablePersistenceService,
+        private geoFilePersist: GeoFilePersistenceService
     ) {
         this.dataForm = this.fb.group({});
     }
@@ -568,18 +570,37 @@ export class VCFullscreenDialog implements OnDestroy {
             this.loading = true;
             const data = this.dataForm.getRawValue();
 
-            await this.tablePersist.persistTablesInDocument(data, false);
+            let geoPersistStarted = false;
+            try {
+                await this.tablePersist.persistTablesInDocument(data, false);
+                geoPersistStarted = true;
+                await this.geoFilePersist.persistGeoFilesInDocument(data, false);
+            } catch (error) {
+                await this.tablePersist.rollbackIpfsUploads();
+                if (geoPersistStarted) await this.geoFilePersist.rollbackGridFsUploads();
+                console.error(error);
+                this.loading = false;
+                return;
+            }
             prepareVcData(data);
 
+            let requestSucceeded = false;
             this.policyEngineService
                 .createNewVersionVcDocument(this.policyId!, {
                     documentId: this.lastVersionVcDoc.id ?? this.documentId,
                     document: data,
                 })
                 .pipe(
-                    finalize(() => this.loading = false)
+                    finalize(async () => {
+                        if (!requestSucceeded) {
+                            await this.tablePersist.rollbackIpfsUploads();
+                            await this.geoFilePersist.rollbackGridFsUploads();
+                        }
+                        this.loading = false;
+                    })
                 )
                 .subscribe((status) => {
+                    requestSucceeded = true;
                     if (status.ok) {
                         this.onEditMode(true);
                         this.toastService.success(

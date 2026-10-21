@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { handlePolicyDataQuery } from '../../dist/api/policy-data.service.js';
-import { MessageError, MessageResponse, DatabaseServer } from '@guardian/common';
+import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 import {
     PolicyStatus,
     POLICY_DATA_MAX_PAGE_SIZE,

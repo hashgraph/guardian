@@ -16,6 +16,16 @@
         padding-left: 12px;
         font-size: 24px;
         user-select: all;
+        // MathLive falls back to the browser's field colours, which ignore the Guardian theme
+        background-color: var(--guardian-background, #FFFFFF);
+        color: var(--guardian-font-color, #23252E);
+        --caret-color: var(--guardian-font-color, #23252E);
+        --selection-color: var(--guardian-font-color, #23252E);
+        --selection-background-color: var(--guardian-primary-background, #e1e7fa);
+        --contains-highlight-background-color: var(--guardian-hover, #F0F3FC);
+        --smart-fence-color: var(--color-grey-5, #848FA9);
+        --placeholder-color: var(--color-grey-5, #848FA9);
+        --primary-color: var(--color-primary, #4169E2);
     }
 }
 

@@ -1,24 +1,22 @@
-import {
-    ApprovalDocument,
-    BlockState,
-    DataBaseHelper,
-    DidDocument,
-    DocumentState,
-    ExternalDocument,
-    MintRequest,
-    MintTransaction,
-    MultiDocuments,
-    PolicyComment,
-    PolicyDiscussion,
-    PolicyInvitations,
-    PolicyRoles,
-    RestoreEntity,
-    Tag,
-    Token,
-    Topic,
-    VcDocument,
-    VpDocument
-} from '@guardian/common';
+import { ApprovalDocument } from '@guardian/common/entity/approval-document';
+import { BlockState } from '@guardian/common/entity/block-state';
+import { DataBaseHelper } from '@guardian/common/helpers/db-helper';
+import { DidDocument } from '@guardian/common/entity/did-document';
+import { DocumentState } from '@guardian/common/entity/document-state';
+import { ExternalDocument } from '@guardian/common/entity/external-document';
+import { MintRequest } from '@guardian/common/entity/mint-request';
+import { MintTransaction } from '@guardian/common/entity/mint-transaction';
+import { MultiDocuments } from '@guardian/common/entity/multi-documents';
+import { PolicyComment } from '@guardian/common/entity/policy-comment';
+import { PolicyDiscussion } from '@guardian/common/entity/policy-discussion';
+import { PolicyInvitations } from '@guardian/common/entity/policy-invitations';
+import { PolicyRoles } from '@guardian/common/entity/policy-roles';
+import { RestoreEntity } from '@guardian/common/models/restore-entity';
+import { Tag } from '@guardian/common/entity/tag';
+import { Token } from '@guardian/common/entity/token';
+import { Topic } from '@guardian/common/entity/topic';
+import { VcDocument } from '@guardian/common/entity/vc-document';
+import { VpDocument } from '@guardian/common/entity/vp-document';
 import { ICollectionDiff, ICollectionKeys, IDiffAction, IKeyAction, IPolicyCollectionDiff, IPolicyDiff, IPolicyKeysDiff } from './index.js';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { GenerateUUIDv4 } from '@guardian/interfaces';

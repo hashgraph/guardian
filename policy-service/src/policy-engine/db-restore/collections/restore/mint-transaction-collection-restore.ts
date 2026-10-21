@@ -1,4 +1,5 @@
-import { DataBaseHelper, MintTransaction } from '@guardian/common';
+import { DataBaseHelper } from '@guardian/common/helpers/db-helper';
+import { MintTransaction } from '@guardian/common/entity/mint-transaction';
 import { CollectionRestore, IDiffAction } from '../../index.js';
 
 export class MintTransactionCollectionRestore extends CollectionRestore<MintTransaction> {

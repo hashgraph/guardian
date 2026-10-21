@@ -13,10 +13,13 @@ import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-conf
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { DocumentAutosaveStorage } from 'src/app/modules/policy-engine/structures';
 import { TablePersistenceService } from 'src/app/services/table-persistence.service';
+import { GeoFilePersistenceService } from 'src/app/services/geo-file-persistence.service';
 import { autosaveValueChanged, getMinutesAgoStream } from 'src/app/utils/autosave-utils';
 import { RelayerAccountsService } from 'src/app/services/relayer-accounts.service';
 import { AttachedFile } from 'src/app/modules/common/policy-comments/attached-file';
 import { IPFSService } from 'src/app/services/ipfs.service';
+import { FormulasService } from 'src/app/services/formulas.service';
+import { FormulasTree } from 'src/app/modules/formulas/models/formula-tree';
 import { PolicyTestAutomationService } from '../../../policy-test-automation/policy-test-automation.service';
 
 @Component({
@@ -51,6 +54,7 @@ export class RequestDocumentBlockDialog {
     public rules: DocumentValidators;
     public dataForm: UntypedFormGroup;
     public destroy$: Subject<boolean> = new Subject<boolean>();
+    public formulas: FormulasTree | null = null;
     public rulesResults: any;
     public lastSavedAt?: Date;
     private storage: DocumentAutosaveStorage;
@@ -114,8 +118,10 @@ export class RequestDocumentBlockDialog {
         private changeDetectorRef: ChangeDetectorRef,
         private indexedDb: IndexedDbRegistryService,
         private tablePersist: TablePersistenceService,
+        private geoFilePersist: GeoFilePersistenceService,
         private ipfsService: IPFSService,
         private policyTest: PolicyTestAutomationService,
+        private formulasService: FormulasService,
     ) {
         this.parent = this.config.data;
         this.dataForm = this.fb.group({});
@@ -129,6 +135,7 @@ export class RequestDocumentBlockDialog {
     ngOnInit() {
         this.loading = true;
         this.loadRules();
+        this.loadFormulas();
         this.initForm(this.dataForm);
         this.sub = interval(this.AUTOSAVE_INTERVAL).subscribe(async () => {
             const data = this.dataForm.getRawValue();
@@ -175,6 +182,22 @@ export class RequestDocumentBlockDialog {
                 }, 500);
             }, (e) => {
                 this.loading = false;
+            });
+    }
+
+    private loadFormulas() {
+        const schemaIri = this.schema?.iri;
+        if (!this.policyId || !schemaIri) {
+            return;
+        }
+        this.formulasService
+            .getFormTree(this.policyId, schemaIri)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((formulas) => {
+                this.formulas = formulas;
+                this.changeDetectorRef.markForCheck();
+            }, () => {
+                this.formulas = null;
             });
     }
 
@@ -287,7 +310,18 @@ export class RequestDocumentBlockDialog {
         const data = this.dataForm.getRawValue();
         this.loading = true;
 
-        await this.tablePersist.persistTablesInDocument(data, !!this.dryRun, this.policyId, this.id, draft);
+        let geoPersistStarted = false;
+        try {
+            await this.tablePersist.persistTablesInDocument(data, !!this.dryRun, this.policyId, this.id, draft);
+            geoPersistStarted = true;
+            await this.geoFilePersist.persistGeoFilesInDocument(data, !!this.dryRun, !!draft);
+        } catch (error) {
+            await this.tablePersist.rollbackIpfsUploads();
+            if (geoPersistStarted) await this.geoFilePersist.rollbackGridFsUploads();
+            console.error(error);
+            this.loading = false;
+            return;
+        }
 
         prepareVcData(data);
         const draftId = this.parent instanceof RequestDocumentBlockComponent ? this.parent.draftId : null;
@@ -326,7 +360,9 @@ export class RequestDocumentBlockDialog {
                         this.dataSaved = true;
                     }
                 }, 1000);
-            }, (e) => {
+            }, async (e) => {
+                await this.tablePersist.rollbackIpfsUploads();
+                await this.geoFilePersist.rollbackGridFsUploads();
                 console.error(e.error);
                 this.loading = false;
             });

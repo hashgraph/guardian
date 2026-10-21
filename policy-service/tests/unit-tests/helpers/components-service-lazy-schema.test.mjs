@@ -28,15 +28,23 @@ function getSchemasImpl(filter = {}) {
 const { ComponentsService } = await esmock.strict(
     '../../../dist/policy-engine/helpers/components-service.js',
     {
-        '@guardian/common': {
+        '@guardian/common/database-modules/database-server': {
             DatabaseServer: class {
                 constructor() { }
                 static async getSchemas(filter) { return getSchemasImpl(filter); }
-            },
-            PinoLogger: class { info() { } warn() { } error() { } },
-            TopicConfig: class { },
-            Users: class { },
-            VcHelper: class { },
+            }
+        },
+        '@guardian/common/helpers/pino-logger': {
+            PinoLogger: class { info() { } warn() { } error() { } }
+        },
+        '@guardian/common/helpers/users': {
+            Users: class { }
+        },
+        '@guardian/hedera/topic': {
+            TopicConfig: class { }
+        },
+        '@guardian/hedera/vc-helper': {
+            VcHelper: class { }
         },
         '@guardian/interfaces': {
             GenerateUUIDv4: () => 'uuid',

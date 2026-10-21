@@ -2,7 +2,7 @@ import { AfterDelete, Entity, Property, Unique } from '@mikro-orm/core';
 import { MigrationRunSummary } from '@guardian/interfaces';
 import { BaseEntity } from '../models/base-entity.js';
 import { MigrationFailedItem } from './migration-failed-item.js';
-import { DataBaseHelper } from '../helpers/index.js';
+import { DataBaseHelper } from '../helpers/db-helper.js';
 
 /**
  * Migration run collection

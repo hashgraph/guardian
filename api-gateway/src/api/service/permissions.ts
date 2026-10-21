@@ -1,4 +1,5 @@
-import { IAuthUser, PinoLogger } from '@guardian/common';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
 import { AssignedEntityType, Permissions, PolicyStatus, UserPermissions } from '@guardian/interfaces';
 import {
     Body,
@@ -672,6 +673,7 @@ export class PermissionsApi {
             if (!row || row.parent !== owner || row.did === user.did) {
                 throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND);
             }
+            (row as any).assignedEntities = await new Guardians().assignedEntities(user, row.did);
             return row as any;
         } catch (error) {
             await InternalException(error, this.logger, user.id);
