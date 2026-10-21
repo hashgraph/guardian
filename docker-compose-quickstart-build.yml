@@ -220,15 +220,6 @@ services:
     expose:
       - '6555'
 
-  topic-viewer:
-    build:
-      context: .
-      dockerfile: ./topic-viewer/Dockerfile
-    expose:
-      - '3006'
-      - '5009'
-    init: true
-
   web-proxy:
     build:
       context: .
