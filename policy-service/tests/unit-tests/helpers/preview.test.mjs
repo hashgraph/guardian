@@ -155,6 +155,7 @@ describe('@unit preview helpers', function () {
             assert.deepEqual(res.body.documents, [
                 { source: 'form', target: 'save', blockType: 'sendToGuardianBlock', document: { id: 'doc-1' } }
             ]);
+            assert.deepEqual(res.body.calculations, []);
             assert.deepEqual(res.body.errors, []);
         });
 

@@ -14,7 +14,7 @@ import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { RecordActionStep } from '../record-action-step.js';
-import { createPreviewDocument } from '../helpers/preview.js';
+import { buildCalculatePreviewCalculation, createPreviewDocument, PreviewScope } from '../helpers/preview.js';
 
 interface IMetadata {
     owner: PolicyUser;
@@ -104,6 +104,7 @@ export class CalculateContainerBlock {
             }
         }
         const addons = ref.getAddons();
+        const inputScope = { ...scope };
         for (const addon of addons) {
             scope = await addon.run(scope, docOwner);
         }
@@ -114,6 +115,16 @@ export class CalculateContainerBlock {
                     newJson[field.name] = scope[field.value];
                 }
             }
+        }
+        const actionStatus = PreviewScope.current();
+        if (actionStatus) {
+            const formulas: Record<string, unknown> = {};
+            for (const addon of addons) {
+                addon.getVariables(formulas);
+            }
+            actionStatus.addPreviewCalculation(
+                buildCalculatePreviewCalculation(ref.tag, options.inputFields, options.outputFields, formulas, inputScope, scope)
+            );
         }
         return newJson;
     }

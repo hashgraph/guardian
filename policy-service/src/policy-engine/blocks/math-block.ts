@@ -35,7 +35,7 @@ import {
     gzipTableCsv,
     isTableOutputValue
 } from '../helpers/table-output.js';
-import { createPreviewDocument } from '../helpers/preview.js';
+import { buildMathPreviewCalculation, createPreviewDocument, PreviewScope } from '../helpers/preview.js';
 
 const filename = fileURLToPath(import.meta.url);
 
@@ -52,6 +52,7 @@ interface IMetadata {
 interface IMathWorkerResult {
     result: IPolicyDocument;
     warnings: string[];
+    scope?: Record<string, unknown>;
 }
 
 interface IStoredTable {
@@ -115,7 +116,8 @@ export class MathBlock {
         documents: any,
         schema: Schema,
         tablesPack: Record<string, { rows: any[]; columnKeys: string[] }>,
-        copy: boolean
+        copy: boolean,
+        withScope: boolean
     }): Promise<IMathWorkerResult> {
         return new Promise<IMathWorkerResult>(async (resolve, reject) => {
             const workerFile = path.join(path.dirname(filename), '..', 'helpers', 'workers', 'math-worker.js');
@@ -143,7 +145,8 @@ export class MathBlock {
                         cleanup();
                         resolve({
                             result: data.result,
-                            warnings: Array.isArray(data.warnings) ? data.warnings : []
+                            warnings: Array.isArray(data.warnings) ? data.warnings : [],
+                            scope: data.scope
                         })
                     }
                 } catch (error) {
@@ -189,6 +192,7 @@ export class MathBlock {
         const tablesPack = collectTablesPack(tableDocuments);
 
         // Run
+        const actionStatus = PreviewScope.current();
         const workerResult = await this.createWorker({
             expression: options.expression,
             documents: workerDocuments,
@@ -196,11 +200,18 @@ export class MathBlock {
             user,
             schema,
             tablesPack,
-            copy: !options.outputSchema || options.outputSchema === options.inputSchema
+            copy: !options.outputSchema || options.outputSchema === options.inputSchema,
+            withScope: !!actionStatus
         })
 
         for (const warning of workerResult.warnings) {
             ref.warn(warning);
+        }
+
+        if (actionStatus) {
+            actionStatus.addPreviewCalculation(
+                buildMathPreviewCalculation(ref.tag, options.expression, workerResult.scope ?? {}, workerResult.result)
+            );
         }
 
         return workerResult.result;

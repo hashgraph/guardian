@@ -6,7 +6,7 @@ import { buildTableHelper } from '../table-field-core.js';
  * Execute function
  */
 function execute(): void {
-    const { expression, user, documents, schema, copy, tablesPack } = workerData;
+    const { expression, user, documents, schema, copy, tablesPack, withScope } = workerData;
     const group = MathEngine.from(expression);
     if (!group) {
         throw new Error('Invalid block config');
@@ -63,7 +63,8 @@ function execute(): void {
     parentPort.postMessage({
         type: 'done',
         result,
-        warnings: groupContext.getWarnings()
+        warnings: groupContext.getWarnings(),
+        scope: withScope ? context.scope : undefined
     });
 }
 

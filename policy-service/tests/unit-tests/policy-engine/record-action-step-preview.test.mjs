@@ -39,4 +39,26 @@ describe('@unit RecordActionStep preview', () => {
             { source: null, target: null, blockType: 'mintDocumentBlock', document: null }
         ]);
     });
+
+    it('ignores calculations outside a preview', () => {
+        const step = new RecordActionStep(() => {});
+        step.addPreviewCalculation({ source: 'math', blockType: 'mathBlock', inputs: [], values: [], outputs: [] });
+        assert.deepEqual(step.getPreviewCalculations(), []);
+    });
+
+    it('keeps a copy of each calculation in order', () => {
+        const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
+        const first = {
+            source: 'math',
+            blockType: 'mathBlock',
+            inputs: [{ name: 'a', path: 'amount', value: 2 }],
+            values: [],
+            outputs: []
+        };
+        step.addPreviewCalculation(first);
+        step.addPreviewCalculation({ source: 'calc', blockType: 'calculateContainerBlock', inputs: [], values: [], outputs: [] });
+        first.inputs[0].value = 99;
+        assert.deepEqual(step.getPreviewCalculations().map((item) => item.source), ['math', 'calc']);
+        assert.equal(step.getPreviewCalculations()[0].inputs[0].value, 2);
+    });
 });

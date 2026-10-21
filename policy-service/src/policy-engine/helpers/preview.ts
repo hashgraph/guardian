@@ -4,8 +4,9 @@ import { MessageError, MessageResponse } from '@guardian/common/models/message-r
 import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/policy-event-type.js';
 import { AnyBlockType, IPolicyDocument, IPolicyInterfaceBlock } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
-import { RecordActionStep } from '../record-action-step.js';
+import { IPreviewCalculation, RecordActionStep } from '../record-action-step.js';
 import { PolicyUtils } from './utils.js';
+import { getDocumentValueByPath, MathEngine, MathItemType } from './math-model/index.js';
 
 export const PREVIEW_BLOCK_TYPES: ReadonlySet<string> = new Set([
     'mathBlock',
@@ -76,12 +77,90 @@ export function createPreviewDocument(
     return item;
 }
 
+export function buildMathPreviewCalculation(
+    source: string | null,
+    expression: unknown,
+    scope: Record<string, unknown>,
+    result: unknown
+): IPreviewCalculation {
+    const calculation: IPreviewCalculation = {
+        source,
+        blockType: 'mathBlock',
+        inputs: [],
+        values: [],
+        outputs: []
+    };
+    const engine = MathEngine.from(expression);
+    if (!engine) {
+        return calculation;
+    }
+    engine.validate();
+    for (const link of engine.variables.getItems()) {
+        if (link.name) {
+            calculation.inputs.push({
+                name: link.name,
+                path: link.path,
+                value: scope[link.name] ?? null
+            });
+        }
+    }
+    for (const formula of engine.formulas.getItems()) {
+        if (formula.type === MathItemType.VARIABLE) {
+            calculation.values.push({
+                name: formula.functionName,
+                description: formula.description || '',
+                formula: formula.functionBodyText || '',
+                value: scope[formula.functionName] ?? null
+            });
+        }
+    }
+    for (const link of engine.outputs.getItems()) {
+        calculation.outputs.push({
+            name: link.name,
+            path: link.path,
+            value: getDocumentValueByPath(result, link.path) ?? null
+        });
+    }
+    return calculation;
+}
+
+export function buildCalculatePreviewCalculation(
+    source: string | null,
+    inputFields: { name: string; value: string }[] | undefined,
+    outputFields: { name: string; value: string }[] | undefined,
+    formulas: Record<string, unknown>,
+    inputScope: Record<string, unknown>,
+    scope: Record<string, unknown>
+): IPreviewCalculation {
+    return {
+        source,
+        blockType: 'calculateContainerBlock',
+        inputs: (inputFields || []).map((field) => ({
+            name: field.value,
+            path: field.name,
+            value: inputScope[field.value] ?? null
+        })),
+        values: Object.keys(formulas).map((name) => ({
+            name,
+            description: '',
+            formula: String(formulas[name] ?? ''),
+            value: scope[name] ?? null
+        })),
+        outputs: (outputFields || []).map((field) => ({
+            name: field.value,
+            path: field.name,
+            value: scope[field.value] ?? null
+        }))
+    };
+}
+
 export function buildPreviewResponse(actionStatus: RecordActionStep, input: unknown) {
     return {
         trackingId: actionStatus.id,
         preview: true,
         input,
         documents: actionStatus.getPreviewDocuments(),
+        calculations: actionStatus.getPreviewCalculations(),
         steps: actionStatus.getResults(),
         errors: actionStatus.getErrors().map((error) => error.message)
     };

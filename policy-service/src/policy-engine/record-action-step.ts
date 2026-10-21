@@ -10,6 +10,27 @@ export interface IPreviewDocument {
     document: unknown;
 }
 
+export interface IPreviewValue {
+    name: string;
+    path: string;
+    value: unknown;
+}
+
+export interface IPreviewFormulaValue {
+    name: string;
+    description: string;
+    formula: string;
+    value: unknown;
+}
+
+export interface IPreviewCalculation {
+    source: string | null;
+    blockType: string;
+    inputs: IPreviewValue[];
+    values: IPreviewFormulaValue[];
+    outputs: IPreviewValue[];
+}
+
 export class RecordActionStep {
     public readonly id: string;
     public readonly timestemp: number;
@@ -20,6 +41,7 @@ export class RecordActionStep {
     private readonly errors: { message: string; stack?: string }[] = [];
     private readonly actionsMap: Set<string> = new Set();
     private readonly previewDocuments: IPreviewDocument[] = [];
+    private readonly previewCalculations: IPreviewCalculation[] = [];
     public counter: number;
     private callbackFired = false;
     private timer: ReturnType<typeof setTimeout> | null = null;
@@ -79,6 +101,17 @@ export class RecordActionStep {
 
     public getPreviewDocuments(): IPreviewDocument[] {
         return this.previewDocuments;
+    }
+
+    public addPreviewCalculation(calculation: IPreviewCalculation): void {
+        if (!this.preview) {
+            return;
+        }
+        this.previewCalculations.push(structuredClone(calculation));
+    }
+
+    public getPreviewCalculations(): IPreviewCalculation[] {
+        return this.previewCalculations;
     }
 
     public addError(err: unknown): void {
