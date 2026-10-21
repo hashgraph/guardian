@@ -8,6 +8,7 @@ import { PolicyUser } from '../policy-user.js';
 import { IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { LocationType } from '@guardian/interfaces';
+import { findScriptFieldReads } from '../helpers/preview.js';
 
 /**
  * Switch block
@@ -182,6 +183,15 @@ export class SwitchBlock {
         const scope = this.getScope(docs);
 
         const { conditions, executionFlow } = options;
+        const previewSource = event.actionStatus?.preview ? event.actionStatus.getPreviewSource() : null;
+        const firstDocument = Array.isArray(docs) ? docs[0] : docs;
+        if (previewSource && firstDocument?.schema === previewSource.schema) {
+            for (const condition of conditions) {
+                for (const read of findScriptFieldReads(String(condition.value || ''), previewSource)) {
+                    event.actionStatus.addPreviewRead(read.schema, read.path);
+                }
+            }
+        }
         const tags: string[] = [];
         for (const condition of conditions) {
             const type = condition.type as string;

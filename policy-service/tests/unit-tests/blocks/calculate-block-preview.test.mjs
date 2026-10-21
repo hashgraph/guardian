@@ -54,4 +54,11 @@ describe('@unit calculateContainerBlock preview', () => {
         assert.equal(item.owner, undefined);
         assert.equal(item.document.issuer, undefined);
     });
+
+    it('records its input fields against the schema of the input document', async () => {
+        const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
+        const options = { outputSchema: '#out', inputFields: [{ name: 'amount', value: 'a' }] };
+        await setup().process(input(), refWith(options), 'uid', step, makeUser());
+        assert.deepEqual(step.getPreviewReads(), [{ schema: '#in', path: 'amount' }]);
+    });
 });

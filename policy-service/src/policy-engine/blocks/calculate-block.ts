@@ -153,6 +153,15 @@ export class CalculateContainerBlock {
             throw new BlockActionError('Invalid VC', ref.blockType, ref.uuid);
         }
 
+        if (actionStatus?.preview) {
+            const readDocuments = Array.isArray(contextDocuments) ? contextDocuments : [contextDocuments];
+            for (const readDocument of readDocuments) {
+                for (const field of options.inputFields || []) {
+                    actionStatus.addPreviewRead(readDocument.schema ?? null, field.name);
+                }
+            }
+        }
+
         // <-- aggregate
         let json: any | any[];
         if (isArray) {

@@ -1,12 +1,14 @@
 import { workerData, parentPort } from 'node:worker_threads';
 import { Code, DocumentMap, MathEngine, setDocumentValueByPath } from '../math-model/index.js';
 import { buildTableHelper } from '../table-field-core.js';
+import { PreviewReadTracker } from './preview-read-tracker.js';
 
 /**
  * Execute function
  */
 function execute(): void {
-    const { expression, user, documents, schema, copy, tablesPack, withScope } = workerData;
+    const { expression, user, documents, schema, copy, tablesPack, withScope, trackReads } = workerData;
+    const tracker = trackReads ? new PreviewReadTracker() : null;
     const group = MathEngine.from(expression);
     if (!group) {
         throw new Error('Invalid block config');
@@ -52,7 +54,13 @@ function execute(): void {
     if (code) {
         code.setContext({
             ...context,
-            document,
+            document: tracker ? tracker.track(document, null) : document,
+            getField: tracker
+                ? (path: string) => {
+                    tracker.add(null, path);
+                    return context.getField(path);
+                }
+                : context.getField,
             result,
             user,
             table: buildTableHelper(tablesPack)
@@ -62,9 +70,10 @@ function execute(): void {
 
     parentPort.postMessage({
         type: 'done',
-        result,
+        result: tracker ? tracker.unwrap(result) : result,
         warnings: groupContext.getWarnings(),
-        scope: withScope ? context.scope : undefined
+        scope: withScope ? context.scope : undefined,
+        reads: tracker ? tracker.take() : undefined
     });
 }
 

@@ -156,6 +156,8 @@ describe('@unit preview helpers', function () {
                 { source: 'form', target: 'save', blockType: 'sendToGuardianBlock', document: { id: 'doc-1' } }
             ]);
             assert.deepEqual(res.body.calculations, []);
+            assert.deepEqual(res.body.fields, []);
+            assert.deepEqual(res.body.missingFields, []);
             assert.deepEqual(res.body.errors, []);
         });
 
@@ -183,6 +185,22 @@ describe('@unit preview helpers', function () {
                 return new MessageResponse({});
             });
             assert.deepEqual(res.body.errors, ['math failed']);
+        });
+
+        it('returns the fields the chain read from the form', async () => {
+            const res = await runPreview(formBlock(), user, {}, async (block, previewUser, data, step) => {
+                step.setPreviewSource({
+                    schema: '#S',
+                    document: { amount: 2 },
+                    paths: ['amount', 'rate'],
+                    dependencies: {}
+                });
+                step.addPreviewRead('#S', 'amount');
+                step.addPreviewRead('#S', 'rate');
+                return new MessageResponse({});
+            });
+            assert.deepEqual(res.body.fields, ['amount', 'rate']);
+            assert.deepEqual(res.body.missingFields, ['rate']);
         });
 
         it('rethrows when the form block throws', async () => {

@@ -61,4 +61,32 @@ describe('@unit RecordActionStep preview', () => {
         assert.deepEqual(step.getPreviewCalculations().map((item) => item.source), ['math', 'calc']);
         assert.equal(step.getPreviewCalculations()[0].inputs[0].value, 2);
     });
+
+    it('keeps each read once and ignores empty paths', () => {
+        const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
+        step.addPreviewRead('#S', 'amount');
+        step.addPreviewRead('#S', 'amount');
+        step.addPreviewRead(null, 'amount');
+        step.addPreviewRead('#S', '');
+        assert.deepEqual(step.getPreviewReads(), [
+            { schema: '#S', path: 'amount' },
+            { schema: null, path: 'amount' }
+        ]);
+    });
+
+    it('ignores reads and the form source outside a preview', () => {
+        const step = new RecordActionStep(() => {});
+        step.addPreviewRead('#S', 'amount');
+        step.setPreviewSource({ schema: '#S', document: {}, paths: [], dependencies: {} });
+        assert.deepEqual(step.getPreviewReads(), []);
+        assert.equal(step.getPreviewSource(), null);
+    });
+
+    it('keeps a copy of the form source', () => {
+        const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
+        const source = { schema: '#S', document: { amount: 1 }, paths: ['amount'], dependencies: {} };
+        step.setPreviewSource(source);
+        source.document.amount = 5;
+        assert.equal(step.getPreviewSource().document.amount, 1);
+    });
 });

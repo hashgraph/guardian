@@ -49,7 +49,8 @@ describe('@unit mathBlock preview calculation', () => {
             return {
                 result: { total: 4 },
                 warnings: [],
-                scope: workerData.withScope ? { a: 2, b: 4 } : undefined
+                scope: workerData.withScope ? { a: 2, b: 4 } : undefined,
+                reads: workerData.trackReads ? [{ schema: null, path: 'note' }] : undefined
             };
         };
         return { block, map, sent };
@@ -73,6 +74,18 @@ describe('@unit mathBlock preview calculation', () => {
         const { block, map, sent } = setup();
         const result = await block.calculate(refWith(), map, makeUser());
         assert.equal(sent[0].withScope, false);
+        assert.equal(sent[0].trackReads, false);
         assert.deepEqual(result, { total: 4 });
+    });
+
+    it('records the variable fields and the fields the code section read', async () => {
+        const { block, map, sent } = setup();
+        const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
+        await PreviewScope.run(step, () => block.calculate(refWith(), map, makeUser(), '#in'));
+        assert.equal(sent[0].trackReads, true);
+        assert.deepEqual(step.getPreviewReads(), [
+            { schema: '#in', path: 'amount' },
+            { schema: '#in', path: 'note' }
+        ]);
     });
 });

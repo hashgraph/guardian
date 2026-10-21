@@ -79,4 +79,46 @@ describe('@unit RequestVcDocumentBlock preview', () => {
         await block.setData(makeUser({ id: 'u-2' }), { document: { amount: 5 } }, null, previewStep());
         assert.deepEqual(block.state['u-2'].restoreData, { old: 1 });
     });
+
+    const formSchema = () => ({
+        iri: '#S',
+        type: 'TestType',
+        contextURL: 'ctx://x',
+        fields: [
+            { name: 'amount', type: 'number', isRef: false, isArray: false },
+            { name: 'rate', type: 'number', isRef: false, isArray: false },
+            { name: 'total', type: 'number', isRef: false, isArray: false, autocalculate: true, expression: 'amount * rate' }
+        ]
+    });
+
+    const firstSubject = (item) => Array.isArray(item.document.credentialSubject)
+        ? item.document.credentialSubject[0]
+        : item.document.credentialSubject;
+
+    it('fills empty fields and records the form source when field discovery is asked', async () => {
+        const { block } = mk();
+        block._schema = formSchema();
+        const step = previewStep();
+        const item = await block.setData(makeUser(), { document: { amount: 5 }, previewFields: true }, null, step);
+        const subject = firstSubject(item);
+        assert.equal(subject.amount, 5);
+        assert.equal(subject.rate, 0);
+        assert.equal(subject.total, 0);
+        assert.deepEqual(step.getPreviewSource(), {
+            schema: '#S',
+            document: { amount: 5 },
+            paths: ['amount', 'rate', 'total'],
+            dependencies: { total: ['amount', 'rate'] }
+        });
+    });
+
+    it('leaves empty fields empty in a normal preview', async () => {
+        const { block } = mk();
+        block._schema = formSchema();
+        const step = previewStep();
+        const item = await block.setData(makeUser(), { document: { amount: 5 } }, null, step);
+        assert.equal('rate' in firstSubject(item), false);
+        assert.deepEqual(step.getPreviewSource().dependencies, { total: ['amount', 'rate'] });
+        assert.deepEqual(step.getErrors(), []);
+    });
 });

@@ -31,6 +31,18 @@ export interface IPreviewCalculation {
     outputs: IPreviewValue[];
 }
 
+export interface IPreviewRead {
+    schema: string | null;
+    path: string;
+}
+
+export interface IPreviewSource {
+    schema: string;
+    document: unknown;
+    paths: string[];
+    dependencies: Record<string, string[]>;
+}
+
 export class RecordActionStep {
     public readonly id: string;
     public readonly timestemp: number;
@@ -42,6 +54,8 @@ export class RecordActionStep {
     private readonly actionsMap: Set<string> = new Set();
     private readonly previewDocuments: IPreviewDocument[] = [];
     private readonly previewCalculations: IPreviewCalculation[] = [];
+    private readonly previewReads: Map<string, IPreviewRead> = new Map();
+    private previewSource: IPreviewSource | null = null;
     public counter: number;
     private callbackFired = false;
     private timer: ReturnType<typeof setTimeout> | null = null;
@@ -112,6 +126,31 @@ export class RecordActionStep {
 
     public getPreviewCalculations(): IPreviewCalculation[] {
         return this.previewCalculations;
+    }
+
+    public addPreviewRead(schema: string | null, path: string): void {
+        if (!this.preview || !path) {
+            return;
+        }
+        const key = `${schema ?? ''}\u0000${path}`;
+        if (!this.previewReads.has(key)) {
+            this.previewReads.set(key, { schema, path });
+        }
+    }
+
+    public getPreviewReads(): IPreviewRead[] {
+        return [...this.previewReads.values()];
+    }
+
+    public setPreviewSource(source: IPreviewSource): void {
+        if (!this.preview) {
+            return;
+        }
+        this.previewSource = structuredClone(source);
+    }
+
+    public getPreviewSource(): IPreviewSource | null {
+        return this.previewSource;
     }
 
     public addError(err: unknown): void {

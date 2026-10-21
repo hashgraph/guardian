@@ -18,7 +18,7 @@ import { BlockActionError } from '../errors/index.js';
 import { collectTablesPack, hydrateTablesInObject, loadFileTextById } from '../helpers/table-field.js';
 import { RecordActionStep } from '../record-action-step.js';
 import { buildSandboxWorkerEnv } from '../helpers/workers/sandbox-worker-env.js';
-import { createPreviewDocument } from '../helpers/preview.js';
+import { createPreviewDocument, findScriptFieldReads } from '../helpers/preview.js';
 
 const filename = fileURLToPath(import.meta.url);
 
@@ -339,6 +339,11 @@ export class CustomLogicBlock {
 
                 const expression = options.expression || '';
                 if (options.selectedScriptLanguage === ScriptLanguageOption.PYTHON) {
+                    if (actionStatus?.preview) {
+                        for (const read of findScriptFieldReads(`${execCode}${expression}`, actionStatus.getPreviewSource())) {
+                            actionStatus.addPreviewRead(read.schema, read.path);
+                        }
+                    }
                     const pythonWorkerData = {
                         execFunc: `${execCode}${expression}`,
                         user,
@@ -478,7 +483,8 @@ export class CustomLogicBlock {
                                 artifacts,
                                 documents: context.documents,
                                 sources: context.sources,
-                                tablesPack
+                                tablesPack,
+                                trackReads: !!actionStatus?.preview
                             },
                             env: buildSandboxWorkerEnv()
                         });
@@ -499,6 +505,11 @@ export class CustomLogicBlock {
                         reject(error);
                     });
                     worker.on('message', async (data) => {
+                        if (Array.isArray(data?.reads)) {
+                            for (const read of data.reads) {
+                                actionStatus?.addPreviewRead(read.schema, read.path);
+                            }
+                        }
                         // A thrown script posts an 'error' sentinel; reject so runAction's catch
                         // surfaces it (BlockErrorFn + log) instead of silently parking the step.
                         if (data?.error) {

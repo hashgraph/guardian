@@ -16,7 +16,13 @@ import { PolicyActionsUtils } from '../policy-actions/utils.js';
 import { hydrateTablesInObject, loadFileTextById } from '../helpers/table-field.js';
 import { RecordActionStep } from '../record-action-step.js';
 import { GeospatialFileValidator } from '../helpers/geospatial-file-validator.js';
-import { createPreviewDocument, getPreviewDocumentId } from '../helpers/preview.js';
+import {
+    calculatePreviewAutoFields,
+    collectPreviewPaths,
+    createPreviewDocument,
+    fillPreviewPlaceholders,
+    getPreviewDocumentId
+} from '../helpers/preview.js';
 
 /**
  * Request VC document block
@@ -210,7 +216,7 @@ export class RequestVcDocumentBlock {
             const actionStatusId = actionStatus?.id ?? (ref.dryRun ? data?.recordActionId ?? null : null);
             const preview = !!actionStatus?.preview;
             //Prepare data
-            const document = await this.prepareDocument(data);
+            const document = await this.prepareDocument(data, actionStatus);
             const draft = data.draft;
             const draftId = data.draftId;
             const editType = options.editType;
@@ -411,7 +417,7 @@ export class RequestVcDocumentBlock {
         return { valid: true };
     }
 
-    private async prepareDocument(data: IPolicyDocument): Promise<any> {
+    private async prepareDocument(data: IPolicyDocument, actionStatus?: RecordActionStep): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
 
         const document = data.document;
@@ -420,12 +426,32 @@ export class RequestVcDocumentBlock {
             throw new BlockActionError('Invalid document.', ref.blockType, ref.uuid);
         }
 
+        const source = actionStatus?.preview ? structuredClone(document) : null;
+
         const disposeTables = await hydrateTablesInObject(
             document,
             async (fileId: string) => loadFileTextById(ref, fileId),
         );
 
-        PolicyUtils.setAutoCalculateFields(this._schema, document);
+        if (actionStatus?.preview) {
+            if (Reflect.get(data, 'previewFields') === true) {
+                fillPreviewPlaceholders(this._schema.fields, document);
+            }
+            const dependencies: Record<string, string[]> = {};
+            const errors: string[] = [];
+            calculatePreviewAutoFields(this._schema.fields, document, dependencies, errors);
+            for (const error of errors) {
+                actionStatus.addError(new Error(error));
+            }
+            actionStatus.setPreviewSource({
+                schema: this._schema.iri,
+                document: source,
+                paths: collectPreviewPaths(this._schema.fields),
+                dependencies
+            });
+        } else {
+            PolicyUtils.setAutoCalculateFields(this._schema, document);
+        }
 
         disposeTables();
 

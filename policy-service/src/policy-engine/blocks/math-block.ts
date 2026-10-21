@@ -35,7 +35,13 @@ import {
     gzipTableCsv,
     isTableOutputValue
 } from '../helpers/table-output.js';
-import { buildMathPreviewCalculation, createPreviewDocument, PreviewScope } from '../helpers/preview.js';
+import {
+    buildMathPreviewCalculation,
+    createPreviewDocument,
+    getMathPreviewReads,
+    PreviewScope
+} from '../helpers/preview.js';
+import { IPreviewReadRecord } from '../helpers/workers/preview-read-tracker.js';
 
 const filename = fileURLToPath(import.meta.url);
 
@@ -53,6 +59,7 @@ interface IMathWorkerResult {
     result: IPolicyDocument;
     warnings: string[];
     scope?: Record<string, unknown>;
+    reads?: IPreviewReadRecord[];
 }
 
 interface IStoredTable {
@@ -117,7 +124,8 @@ export class MathBlock {
         schema: Schema,
         tablesPack: Record<string, { rows: any[]; columnKeys: string[] }>,
         copy: boolean,
-        withScope: boolean
+        withScope: boolean,
+        trackReads: boolean
     }): Promise<IMathWorkerResult> {
         return new Promise<IMathWorkerResult>(async (resolve, reject) => {
             const workerFile = path.join(path.dirname(filename), '..', 'helpers', 'workers', 'math-worker.js');
@@ -146,7 +154,8 @@ export class MathBlock {
                         resolve({
                             result: data.result,
                             warnings: Array.isArray(data.warnings) ? data.warnings : [],
-                            scope: data.scope
+                            scope: data.scope,
+                            reads: Array.isArray(data.reads) ? data.reads : undefined
                         })
                     }
                 } catch (error) {
@@ -167,7 +176,8 @@ export class MathBlock {
     private async calculate(
         ref: IPolicyCalculateBlock,
         documents: DocumentMap,
-        user: PolicyUser
+        user: PolicyUser,
+        currentSchema: string | null = null
     ): Promise<any> {
         const options = await ref.getOptions(user);
         const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema);
@@ -193,6 +203,11 @@ export class MathBlock {
 
         // Run
         const actionStatus = PreviewScope.current();
+        if (actionStatus) {
+            for (const read of getMathPreviewReads(options.expression, currentSchema)) {
+                actionStatus.addPreviewRead(read.schema, read.path);
+            }
+        }
         const workerResult = await this.createWorker({
             expression: options.expression,
             documents: workerDocuments,
@@ -201,7 +216,8 @@ export class MathBlock {
             schema,
             tablesPack,
             copy: !options.outputSchema || options.outputSchema === options.inputSchema,
-            withScope: !!actionStatus
+            withScope: !!actionStatus,
+            trackReads: !!actionStatus
         })
 
         for (const warning of workerResult.warnings) {
@@ -209,6 +225,9 @@ export class MathBlock {
         }
 
         if (actionStatus) {
+            for (const read of workerResult.reads ?? []) {
+                actionStatus.addPreviewRead(read.schema ?? currentSchema, read.path);
+            }
             actionStatus.addPreviewCalculation(
                 buildMathPreviewCalculation(ref.tag, options.expression, workerResult.scope ?? {}, workerResult.result)
             );
@@ -375,7 +394,7 @@ export class MathBlock {
         map.addDocument(this.getCredentialSubject(contextDocument));
         map.addRelationships(contextRelationships.map((d) => this.getCredentialSubject(d)));
 
-        const newJson = await this.calculate(ref, map, docOwner);
+        const newJson = await this.calculate(ref, map, docOwner, contextDocument.schema ?? null);
         if (preview) {
             if (options.unsigned) {
                 return await this.createUnsignedDocument(newJson, ref, recordActionId);
