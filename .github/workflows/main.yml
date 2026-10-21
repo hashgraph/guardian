@@ -19,7 +19,7 @@ jobs:
       YARN_ENABLE_GLOBAL_CACHE: 'false'
     strategy:
       matrix:
-        node-version: [ 24.21.0 ]
+        node-version: [ 24.22.1 ]
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
