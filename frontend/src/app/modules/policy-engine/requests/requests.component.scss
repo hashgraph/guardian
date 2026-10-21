@@ -182,6 +182,12 @@
     }
 }
 
+.requests-search-note {
+    margin: -8px 0 16px;
+    font-size: 13px;
+    color: var(--guardian-disabled-color, #848FA9);
+}
+
 .guardian-page > .requests-list {
     // takes the room it needs and shrinks to the window, then the rows scroll
     flex: 0 1 auto;

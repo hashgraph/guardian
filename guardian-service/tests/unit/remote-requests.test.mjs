@@ -235,7 +235,13 @@ describe('incoming requests handlers', () => {
             assert.deepEqual(group.createDate, { $min: '$createDate' });
         });
 
-        it('returns every row when the page size is 0', async () => {
+        it('caps a page size above the limit', async () => {
+            const { pipelines } = await run([{ items: [], total: [] }], { pageIndex: '0', pageSize: '60000' });
+            const facet = pipelines[0][pipelines[0].length - 1].$facet;
+            assert.deepEqual(facet.items, [{ $sort: { startMessageId: -1 } }, { $limit: 5000 }]);
+        });
+
+        it('returns rows up to the cap when the page size is 0', async () => {
             const { pipelines } = await run([{ items: [], total: [] }], { pageIndex: '0', pageSize: '0' });
             const facet = pipelines[0][pipelines[0].length - 1].$facet;
             assert.deepEqual(facet.items, [{ $sort: { startMessageId: -1 } }, { $limit: 5000 }]);

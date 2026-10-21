@@ -85,6 +85,10 @@
     </div>
   </div>
 
+  @if (searchLimited) {
+    <div class="requests-search-note">Search covers the newest {{ searchLimit }} requests only.</div>
+  }
+
   @if (bulk) {
     <div class="bulk-progress">
       <div class="bulk-progress-head">

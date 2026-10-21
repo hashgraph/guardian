@@ -97,6 +97,10 @@ export class PolicyRequestsComponent implements OnInit, OnDestroy {
     private dataSubscription: Subscription | null = null;
     private profileLoaded: boolean = false;
     private searchRows: any[] = [];
+    /**
+     * The server returns at most this many rows to a search
+     */
+    public readonly searchLimit = 5000;
     private readonly refresh = new Subject<void>();
     private readonly search = new Subject<void>();
 
@@ -277,6 +281,10 @@ export class PolicyRequestsComponent implements OnInit, OnDestroy {
             ago: timeAgo(row.createDate)
         }));
         this.pruneSelection();
+    }
+
+    public get searchLimited(): boolean {
+        return !!this.searchTerm.trim() && this.searchRows.length >= this.searchLimit;
     }
 
     private showSearchPage() {
