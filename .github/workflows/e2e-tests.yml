@@ -47,7 +47,7 @@ jobs:
       CYPRESS_CACHE_FOLDER: ${{ github.workspace }}/.cache/Cypress
       MIN_PASSWORD_LENGTH: 4
       PASSWORD_COMPLEXITY: easy
-      NODE_VERSION: "24.21.0"
+      NODE_VERSION: "24.22.1"
       # Solo release for scheduled and push runs; workflow_dispatch can override it. Keep it in
       # step with SOLO_VERSION in e2e-tests/scripts/solo-network.mjs.
       SOLO_VERSION: "0.94.0"

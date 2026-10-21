@@ -47,7 +47,7 @@ jobs:
       CYPRESS_CACHE_FOLDER: ${{ github.workspace }}/.cache/Cypress
       MIN_PASSWORD_LENGTH: 4
       PASSWORD_COMPLEXITY: easy
-      NODE_VERSION: "24.21.0"
+      NODE_VERSION: "24.22.1"
       # How many worker-service processes to run; the readiness gate expects exactly
       # this many WORKERS_SERVICE connections on NATS.
       WORKER_COUNT: 5
