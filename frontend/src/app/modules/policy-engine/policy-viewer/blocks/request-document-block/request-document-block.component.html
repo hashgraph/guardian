@@ -68,6 +68,14 @@
               </button>
             </div>
           }
+          <div class="calculation-preview-toggle">
+            <p-toggleswitch
+              inputId="calculationPreview_{{ id }}"
+              [ngModel]="previewMode"
+              (onChange)="onPreviewModeChange($event.checked)">
+            </p-toggleswitch>
+            <label for="calculationPreview_{{ id }}">Calculation preview</label>
+          </div>
           @if (relayerAccount || enableAdditionalData) {
             <div class="relayer-account-steps">
               <div class="guardian-step-container">
@@ -108,12 +116,13 @@
               [preset]="presetDocument"
               [private-fields]="hideFields"
               [readonly-fields]="presetReadonlyFields"
-              [submitText]="submitText"
+              [submitText]="previewMode ? 'Preview' : submitText"
               [rules]="rulesResults"
               [formulas]="formulas"
               [paginationHidden]="false"
               [saveShown]="false"
               [isFormForRequestBlock]="true"
+              [requiredFields]="previewRequiredFields"
               (form)="initForm($event)"
               (buttons)="onChangeButtons($event)"
               (saveBtnEvent)="handleSaveBtnEvent($event)"
