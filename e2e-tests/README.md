@@ -2,6 +2,31 @@
 
 The `/e2e-tests` folder comprises the Guardian Cypress test automation framework and automated UI and API tests runnable on the local machine or via Docker.
 
+## Quickstart
+
+```bash
+cd e2e-tests
+npm run solo:up              # the network, once
+npm run guardian:up          # MongoDB, NATS, Valkey and Kubo containers, then every Guardian service
+npm run guardian:test:smoke  # only the tests tagged smoke
+
+# Other commands
+npm run guardian:test        # the whole suite
+npm run guardian:test -- cypress/e2e/api-tests/001_demo/getRandomKey.cy.js   # a single spec
+npm run guardian:test -- 'cypress/e2e/api-tests/010_tokens/*.cy.js' cypress/e2e/api-tests/001_demo/getRandomKey.cy.js   # several specs or globs
+npm run guardian:down        # stops the services and removes the containers
+```
+
+NOTE: Behind a TLS-intercepting proxy (for example Zscaler) image pulls inside the kind node fail with
+`x509: certificate signed by unknown authority`. Set `SOLO_EXTRA_CA_CERT` to the PEM bundle of the
+proxy CA and `solo:up` installs it in the node before Solo creates any pod:
+
+```bash
+SOLO_EXTRA_CA_CERT=/path/to/proxy-ca.pem npm run solo:up
+```
+
+## Running tests manually
+
 Unless specified otherwise, the tests are idempotent and can be run multiple times without side effects, and in any order.
 The only requirement is preparing the environment with a few accounts using the `preparing` tag, and ensuring the accounts have enough balance for the operations performed during the tests (especially the StandardRegistry):
 
@@ -12,7 +37,7 @@ TAG=preparing ./run-test-by-tag.sh
 
 See [Running Tests with Tags](#running-tests-with-tags) below for more details.
 
-## Guardian E2E (Docker)
+## Guardian E2E via Docker
 
 ### Prerequisites
 
@@ -90,7 +115,7 @@ cd e2e-tests
 UI_GATEWAY_HOST=host.docker.internal UI_GATEWAY_PORT=3002 docker compose run --rm --build cypress-ui
 ```
 
-## Guardian Local Machine (Non-Docker)
+## Guardian E2E native
 
 ### Description
 
@@ -106,7 +131,7 @@ UI_GATEWAY_HOST=host.docker.internal UI_GATEWAY_PORT=3002 docker compose run --r
 
 ### Software Requirements
 
-- Node.js 20 and above
+- Node.js 24 and above
 - Docker and Docker Compose (for Docker-based test execution)
 - Follow steps from the [README](https://github.com/hashgraph/guardian/blob/main/README.md) to install and deploy the Guardian application.
 
