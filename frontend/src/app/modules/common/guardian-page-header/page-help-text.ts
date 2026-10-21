@@ -18,6 +18,7 @@ export const PAGE_HELP_TEXT: Readonly<Record<string, string>> = {
 
     roles: 'Create and manage roles which bundle a set of permissions like issuing credentials, approving documents, and configuring policies.',
     users: 'View users within the workspace and assign roles to grant or revoke permissions.',
+    'incoming-requests': 'Approve what a remote policy needs your account or key for, and track the actions you have submitted to it.',
     'external-policies': 'Policies imported from another Standard Registry on the Hedera network. Approve a remote policy to make it available alongside the policies authored in this workspace.',
     'service-status': 'Review the status of Guardian services.',
     'worker-tasks': 'Long-running background jobs that the platform runs on your behalf, like publishing policies, importing schemas, and migrating data. Track progress, retry failed work, and clear out finished tasks here.',

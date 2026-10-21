@@ -1,0 +1,151 @@
+<div class="dialog-header">
+  <div class="header-container">
+    <div class="header-text" [title]="operation.title">{{ operation.title }}</div>
+  </div>
+  <div class="header-icon" (click)="onClose()">
+    <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+  </div>
+</div>
+
+<div class="dialog-body request-dialog-body">
+  @if (loading) {
+    <div class="guardian-loading">
+      <div class="guardian-loading-image"></div>
+    </div>
+  }
+
+  <div class="request-meta">
+    <span class="request-status request-status--{{ status.tone }}">
+      <i class="{{ status.icon }}"></i>{{ status.label }}
+    </span>
+    <span class="request-meta-text">
+      {{ operation.reason }}@if (row.policyName) { · {{ row.policyName }}}
+    </span>
+  </div>
+
+  @if (!row.loaded && kind === 'request' && isPending) {
+    <div class="request-note request-note--warning">
+      <i class="pi pi-exclamation-triangle"></i>
+      The document of this request has not been loaded yet. Use Retry loading to fetch it.
+    </div>
+  } @else if (failed) {
+    <div class="request-note request-note--warning">
+      <i class="pi pi-exclamation-triangle"></i>
+      The document could not be loaded. Close the dialog and try again.
+    </div>
+  } @else if (!loading && !hasDocument) {
+    <div class="request-note">
+      <i class="pi pi-info-circle"></i>
+      There is no document to show.
+    </div>
+  }
+
+  @if (hasDocument) {
+    <div class="request-note">
+      <i class="pi pi-info-circle"></i>{{ banner }}
+    </div>
+
+    @if (views.length > 1) {
+      <div class="details-views">
+        @for (item of views; track item.id) {
+          <button
+            type="button"
+            class="details-view"
+            [class.details-view--active]="view === item.id"
+            (click)="onView(item.id)">{{ item.label }}</button>
+        }
+      </div>
+    }
+
+    @if (view === 'form') {
+      <div class="details-form">
+        <app-document-view
+          [policyId]="row.policyId"
+          [document]="credential"
+          [getByUser]="false"
+          type="VC"
+          dialogContext="viewer"></app-document-view>
+      </div>
+    }
+
+    @if (view === 'summary') {
+      <div class="request-kv">
+        @for (item of summary; track item.name) {
+          <div class="request-kv-name">{{ item.name }}</div>
+          <div class="request-kv-value">{{ item.value }}</div>
+        }
+      </div>
+    }
+
+    @if (view === 'json') {
+      <div class="request-json">{{ json }}</div>
+    }
+  }
+
+  <div class="details-technical">
+    <button type="button" class="details-technical-toggle" (click)="technicalOpen = !technicalOpen">
+      <span>Technical details</span>
+      <i class="pi pi-chevron-down" [class.details-technical-chevron--open]="technicalOpen"></i>
+    </button>
+    @if (technicalOpen) {
+      <div class="request-kv">
+        <div class="request-kv-name">Created</div>
+        <div class="request-kv-value">{{ row.createDate | date: 'dd MMM yyyy, HH:mm:ss' }}</div>
+        @if (documentType) {
+          <div class="request-kv-name">Operation</div>
+          <div class="request-kv-value">{{ documentType }}</div>
+        }
+        @if (row.blockTag) {
+          <div class="request-kv-name">Block tag</div>
+          <div class="request-kv-value">{{ row.blockTag }}</div>
+        }
+        <div class="request-kv-name">Topic</div>
+        <div class="request-kv-value">
+          <hedera-explorer [params]="row.topicId" type="topics">{{ row.topicId }}</hedera-explorer>
+        </div>
+        <div class="request-kv-name">Message ID</div>
+        <div class="request-kv-value">
+          @if (row.index !== undefined && row.index !== null) {
+            <hedera-explorer
+              type="topics"
+              [params]="row.topicId"
+              subType="messages"
+              [subParams]="'' + row.index">{{ row.messageId }}</hedera-explorer>
+          } @else {
+            {{ row.messageId }}
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
+<div class="dialog-footer">
+  <div class="action-buttons request-dialog-actions">
+    <div class="request-dialog-actions-group">
+      @if (canCancel) {
+        <div class="dialog-button">
+          <button class="guardian-button guardian-button-delete" (click)="onAction('cancel')">Cancel request</button>
+        </div>
+      }
+    </div>
+    <div class="request-dialog-actions-group">
+      <div class="dialog-button">
+        <button class="guardian-button guardian-button-secondary" (click)="onClose()">Close</button>
+      </div>
+      @if (canReload) {
+        <div class="dialog-button">
+          <button class="guardian-button guardian-button-primary" (click)="onAction('reload')">Retry loading</button>
+        </div>
+      }
+      @if (canDecide) {
+        <div class="dialog-button">
+          <button class="guardian-button guardian-button-delete" (click)="onAction('reject')">Reject</button>
+        </div>
+        <div class="dialog-button">
+          <button class="guardian-button guardian-button-primary" (click)="onAction('approve')">Approve</button>
+        </div>
+      }
+    </div>
+  </div>
+</div>

@@ -1,3 +1,4 @@
+import { DatePipe } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LocationType, PolicyActionStatus, PolicyActionType, PolicyStatus, UserPermissions } from '@guardian/interfaces';
@@ -5,23 +6,12 @@ import { debounceTime, firstValueFrom, forkJoin, Subject, Subscription } from 'r
 import { ProfileService } from 'src/app/services/profile.service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
-import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
-import { VCViewerDialog } from '../../schema-engine/vc-dialog/vc-dialog.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { ToastService } from 'src/app/services/toast.service';
-
-interface IColumn {
-    id: string;
-    title: string;
-    type: string;
-    size: string;
-    tooltip: boolean;
-    sortField?: string;
-    technical?: boolean;
-    permissions?: (user: UserPermissions) => boolean;
-    canDisplay?: () => boolean;
-}
+import { getOperationInfo, getRequestKind, getStatusInfo, IOperationInfo, IStatusInfo, RequestKind, timeAgo } from './request-labels';
+import { RequestDetailsAction, RequestDetailsDialog } from './request-details-dialog/request-details-dialog.component';
+import { IConfirmButton, IConfirmRow, RequestConfirmDialog } from './request-confirm-dialog/request-confirm-dialog.component';
 
 interface IBulkProgress {
     label: string;
@@ -31,15 +21,39 @@ interface IBulkProgress {
     failures: { name: string, message: string }[];
 }
 
+interface IRequestItem {
+    row: any;
+    kind: RequestKind;
+    operation: IOperationInfo;
+    status: IStatusInfo;
+    ago: string;
+}
+
 type BulkKind = 'approve' | 'reject';
 
-const DEFAULT_SORT_FIELD = 'createDate';
-const DEFAULT_SORT_ORDER = -1;
+type RequestTab = 'need' | 'progress' | 'failed' | 'all';
+
+const DEFAULT_TAB: RequestTab = 'need';
+
+/**
+ * What every tab lists: the types and the statuses of the threads
+ */
+const TAB_FILTERS: { [tab in RequestTab]: { type?: string, status?: string } } = {
+    need: { type: PolicyActionType.REQUEST, status: PolicyActionStatus.NEW },
+    progress: { type: `${PolicyActionType.ACTION},${PolicyActionType.REMOTE_ACTION}`, status: PolicyActionStatus.NEW },
+    failed: { status: PolicyActionStatus.ERROR },
+    all: {}
+};
 
 @Component({
     selector: 'app-policy-requests',
     templateUrl: './requests.component.html',
-    styleUrls: ['./requests.component.scss'],
+    styleUrls: [
+        '../styles/top-toolbar.scss',
+        './request-common.scss',
+        './requests.component.scss'
+    ],
+    providers: [DatePipe],
     standalone: false
 })
 export class PolicyRequestsComponent implements OnInit, OnDestroy {
@@ -51,60 +65,40 @@ export class PolicyRequestsComponent implements OnInit, OnDestroy {
     public user: UserPermissions = new UserPermissions();
     public owner: string;
     public page: any[];
+    public items: IRequestItem[] = [];
     public pageIndex: number;
     public pageSize: number;
     public pageCount: number;
-    public columns: IColumn[];
-    public showTechnical: boolean = false;
-    private _defaultColumns: IColumn[];
+
+    public readonly tabs: { id: RequestTab, label: string }[] = [
+        { id: 'need', label: 'Needs your approval' },
+        { id: 'progress', label: 'In progress' },
+        { id: 'failed', label: 'Failed' },
+        { id: 'all', label: 'All' }
+    ];
+    public tab: RequestTab = DEFAULT_TAB;
+    public counts: { [tab in RequestTab]: number } = { need: 0, progress: 0, failed: 0, all: 0 };
 
     public allPolicies: any[] = [];
-    public currentPolicy: any = null;
-    public currentPolicyId: string = '';
-    public currentType: string = '';
-    public currentStatus: string = '';
-
-    public sortField: string = DEFAULT_SORT_FIELD;
-    public sortOrder: number = DEFAULT_SORT_ORDER;
+    /**
+     * The policy the page was opened for (`policyId` in the URL), it cannot be changed here
+     */
+    public scopedPolicyId: string = '';
+    /**
+     * The policy picked in the filter (`policy` in the URL)
+     */
+    public selectedPolicyId: string = '';
+    public searchTerm: string = '';
 
     public selected = new Set<string>();
     public bulk: IBulkProgress | null = null;
 
-    public types = [{
-        name: 'All',
-        value: ''
-    }, {
-        name: 'Actions',
-        value: 'ACTION'
-    }, {
-        name: 'Requests',
-        value: 'REQUEST'
-    }];
-
-    public statuses = [{
-        name: 'All',
-        value: ''
-    }, {
-        name: 'New',
-        value: 'NEW'
-    }, {
-        name: 'Completed',
-        value: 'COMPLETED'
-    }, {
-        name: 'Rejected',
-        value: 'REJECTED'
-    }, {
-        name: 'Canceled',
-        value: 'CANCELED'
-    }, {
-        name: 'Error',
-        value: 'ERROR'
-    }];
-
     private subscription = new Subscription();
     private dataSubscription: Subscription | null = null;
     private profileLoaded: boolean = false;
+    private searchRows: any[] = [];
     private readonly refresh = new Subject<void>();
+    private readonly search = new Subject<void>();
 
     constructor(
         private profileService: ProfileService,
@@ -114,99 +108,9 @@ export class PolicyRequestsComponent implements OnInit, OnDestroy {
         private toastService: ToastService,
         private router: Router,
         private route: ActivatedRoute,
-        private wsService: WebSocketService
+        private wsService: WebSocketService,
+        private datePipe: DatePipe
     ) {
-        this._defaultColumns = [
-            {
-                id: 'select',
-                title: '',
-                type: 'button',
-                size: '44',
-                tooltip: false,
-                canDisplay: () => this.isLocalUser
-            },
-            {
-                id: 'createDate',
-                title: 'Created',
-                type: 'text',
-                size: '160',
-                tooltip: false,
-                sortField: 'createDate'
-            },
-            {
-                id: 'policyName',
-                title: 'Policy',
-                type: 'text',
-                size: '200',
-                tooltip: true
-            },
-            {
-                id: 'operationType',
-                title: 'Operation',
-                type: 'text',
-                size: '200',
-                tooltip: true,
-                sortField: 'documentType'
-            },
-            {
-                id: 'type',
-                title: 'Type',
-                type: 'text',
-                size: '120',
-                tooltip: false,
-                sortField: 'type'
-            },
-            {
-                id: 'status',
-                title: 'Status',
-                type: 'text',
-                size: '140',
-                tooltip: false,
-                sortField: 'status'
-            },
-            {
-                id: 'options',
-                title: '',
-                type: 'text',
-                size: '220',
-                tooltip: false
-            },
-            {
-                id: 'operations',
-                title: '',
-                type: 'text',
-                size: '180',
-                tooltip: false
-            },
-            {
-                id: 'topicId',
-                title: 'Topic',
-                type: 'text',
-                size: '135',
-                tooltip: true,
-                technical: true,
-                sortField: 'topicId'
-            },
-            {
-                id: 'messageId',
-                title: 'Message ID',
-                type: 'text',
-                size: '200',
-                tooltip: true,
-                technical: true
-            },
-            {
-                id: 'blockTag',
-                title: 'Block Tag',
-                type: 'text',
-                size: '150',
-                tooltip: true,
-                technical: true,
-                sortField: 'blockTag'
-            }
-        ];
-
-        this.columns = this.getColumns();
     }
 
     ngOnInit() {
@@ -216,33 +120,23 @@ export class PolicyRequestsComponent implements OnInit, OnDestroy {
         this.pageCount = 0;
         this.subscription.add(
             this.route.queryParams.subscribe((queryParams) => {
-                const policyId = queryParams.policyId || '';
-                const type = this.types.find((t) => t.value === queryParams.type)?.value || '';
-                const status = this.statuses.find((s) => s.value === queryParams.status)?.value || '';
-                const sortField = this._defaultColumns.some((c) => c.sortField === queryParams.sortField)
-                    ? queryParams.sortField
-                    : DEFAULT_SORT_FIELD;
-                const sortOrder = queryParams.sortField && queryParams.sortOrder === 'asc'
-                    ? 1
-                    : DEFAULT_SORT_ORDER;
+                const scopedPolicyId = queryParams.policyId || '';
+                const selectedPolicyId = scopedPolicyId ? '' : (queryParams.policy || '');
+                const tab = this.tabs.find((t) => t.id === queryParams.tab)?.id || DEFAULT_TAB;
 
-                const changed = policyId !== this.currentPolicyId ||
-                    type !== this.currentType ||
-                    status !== this.currentStatus ||
-                    sortField !== this.sortField ||
-                    sortOrder !== this.sortOrder;
+                const changed = scopedPolicyId !== this.scopedPolicyId ||
+                    selectedPolicyId !== this.selectedPolicyId ||
+                    tab !== this.tab;
 
-                this.currentPolicyId = policyId;
-                this.currentType = type;
-                this.currentStatus = status;
-                this.sortField = sortField;
-                this.sortOrder = sortOrder;
+                this.scopedPolicyId = scopedPolicyId;
+                this.selectedPolicyId = selectedPolicyId;
+                this.tab = tab;
 
                 if (!this.profileLoaded) {
                     this.loadProfile();
                 } else if (changed) {
-                    this.currentPolicy = this.findPolicy(policyId);
                     this.pageIndex = 0;
+                    this.selected.clear();
                     this.loadData();
                 }
             })
@@ -250,7 +144,7 @@ export class PolicyRequestsComponent implements OnInit, OnDestroy {
         this.subscription.add(
             this.wsService.requestSubscribe((message) => {
                 const policyId = message?.data?.policyId;
-                if (this.currentPolicyId && policyId && policyId !== this.currentPolicyId) {
+                if (this.policyId && policyId && policyId !== this.policyId) {
                     return;
                 }
                 this.refresh.next();
@@ -263,6 +157,12 @@ export class PolicyRequestsComponent implements OnInit, OnDestroy {
                 }
             })
         );
+        this.subscription.add(
+            this.search.pipe(debounceTime(300)).subscribe(() => {
+                this.pageIndex = 0;
+                this.loadData();
+            })
+        );
     }
 
     ngOnDestroy(): void {
@@ -270,15 +170,22 @@ export class PolicyRequestsComponent implements OnInit, OnDestroy {
         this.dataSubscription?.unsubscribe();
     }
 
-    private getColumns(): IColumn[] {
-        return this._defaultColumns.filter((c) => this.showTechnical || !c.technical);
+    /**
+     * The policy the list is limited to
+     */
+    public get policyId(): string {
+        return this.scopedPolicyId || this.selectedPolicyId;
     }
 
-    private findPolicy(policyId: string): any {
-        if (!policyId) {
-            return null;
-        }
-        return this.allPolicies.find((p: any) => p.id === policyId) || null;
+    public get scopedPolicy(): any {
+        return this.allPolicies.find((p: any) => p.id === this.scopedPolicyId) || null;
+    }
+
+    /**
+     * Policies that are not remote are not in the filter, the rows still know the name
+     */
+    public get scopedPolicyName(): string {
+        return this.scopedPolicy?.name || this.page?.[0]?.policyName || 'Policy';
     }
 
     private loadProfile() {
@@ -294,14 +201,7 @@ export class PolicyRequestsComponent implements OnInit, OnDestroy {
             this.user = new UserPermissions(profile);
             this.owner = this.user.did;
 
-            this.allPolicies = [...remotePolicies];
-            this.allPolicies = this.allPolicies.filter((p) => p.status === PolicyStatus.VIEW);
-            this.allPolicies.unshift({
-                name: 'All',
-            });
-            this.allPolicies.forEach((p: any) => p.label = p.name);
-
-            this.currentPolicy = this.findPolicy(this.currentPolicyId);
+            this.allPolicies = [...remotePolicies].filter((p) => p.status === PolicyStatus.VIEW);
 
             if (this.isConfirmed) {
                 this.loadData();
@@ -314,67 +214,138 @@ export class PolicyRequestsComponent implements OnInit, OnDestroy {
     }
 
     private loadData(silent: boolean = false) {
-        const filters: any = {};
+        const filters: any = { ...TAB_FILTERS[this.tab] };
         if (!silent) {
             this.loading = true;
         }
+        if (this.policyId) {
+            filters.policyId = this.policyId;
+        }
+        filters.sortField = 'createDate';
+        filters.sortDirection = 'desc';
 
-        if (this.currentPolicy) {
-            filters.policyId = this.currentPolicy.id;
-        }
-        if (this.currentStatus) {
-            filters.status = this.currentStatus;
-        }
-        if (this.currentType) {
-            filters.type = this.currentType;
-        }
-        filters.sortField = this.sortField;
-        filters.sortDirection = this.sortOrder === 1 ? 'asc' : 'desc';
+        this.loadCounts();
 
+        // the server cannot search, so a search reads every row of the tab and filters them here
+        const searching = !!this.searchTerm.trim();
         this.dataSubscription?.unsubscribe();
         this.dataSubscription = this.externalPoliciesService
             .getActionRequests(
-                this.pageIndex,
-                this.pageSize,
+                searching ? 0 : this.pageIndex,
+                searching ? 0 : this.pageSize,
                 filters
             )
             .subscribe((response) => {
                 const { page, count } = this.externalPoliciesService.parsePage(response);
-                this.page = page;
-                this.pageCount = count;
-                this.pruneSelection();
+                if (searching) {
+                    this.searchRows = page;
+                    this.showSearchPage();
+                } else {
+                    this.searchRows = [];
+                    this.setPage(page, count);
+                }
                 this.loading = false;
             }, (e) => {
                 this.loading = false;
             });
     }
 
+    private loadCounts() {
+        this.externalPoliciesService
+            .getActionRequestsCount(this.policyId ? { policyId: this.policyId } : undefined)
+            .subscribe((response) => {
+                const body = response?.body;
+                if (body) {
+                    this.counts = {
+                        need: body.requestsCount || 0,
+                        progress: body.actionsCount || 0,
+                        failed: body.failedCount || 0,
+                        all: body.threadsCount || 0
+                    };
+                }
+            });
+    }
+
+    private setPage(rows: any[], count: number) {
+        this.page = rows;
+        this.pageCount = count;
+        this.items = rows.map((row) => ({
+            row,
+            kind: getRequestKind(row),
+            operation: getOperationInfo(row),
+            status: getStatusInfo(row),
+            ago: timeAgo(row.createDate)
+        }));
+        this.pruneSelection();
+    }
+
+    private showSearchPage() {
+        const term = this.searchTerm.trim().toLowerCase();
+        const found = this.searchRows.filter((row) => {
+            const operation = getOperationInfo(row);
+            return [operation.title, operation.reason, row.policyName, getStatusInfo(row).label]
+                .some((value) => String(value || '').toLowerCase().includes(term));
+        });
+        const start = this.pageIndex * this.pageSize;
+        this.setPage(found.slice(start, start + this.pageSize), found.length);
+    }
+
     private updateUrl() {
-        const queryParams: any = {
-            policyId: this.currentPolicyId || null,
-            type: this.currentType || null,
-            status: this.currentStatus || null,
-            sortField: null,
-            sortOrder: null
-        };
-        if (this.sortField !== DEFAULT_SORT_FIELD || this.sortOrder !== DEFAULT_SORT_ORDER) {
-            queryParams.sortField = this.sortField;
-            queryParams.sortOrder = this.sortOrder === 1 ? 'asc' : 'desc';
-        }
         this.router.navigate([], {
             relativeTo: this.route,
-            queryParams,
+            queryParams: {
+                tab: this.tab !== DEFAULT_TAB ? this.tab : null,
+                policy: this.selectedPolicyId || null
+            },
             queryParamsHandling: 'merge',
             replaceUrl: true
         });
     }
 
-    public onBack(id?: string) {
-        if (id) {
-            this.router.navigate(['/policy-viewer', id]);
-        } else {
-            this.router.navigate(['/policy-viewer']);
+    public onBackToPolicies() {
+        this.router.navigate(['/policy-viewer']);
+    }
+
+    public onBackToPolicy() {
+        this.router.navigate(['/policy-viewer', this.scopedPolicyId]);
+    }
+
+    /**
+     * Show the requests of every policy
+     */
+    public onClearScope() {
+        this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { policyId: null, policy: null },
+            queryParamsHandling: 'merge'
+        });
+    }
+
+    public onTab(tab: RequestTab) {
+        if (tab === this.tab) {
+            return;
         }
+        this.tab = tab;
+        this.pageIndex = 0;
+        this.selected.clear();
+        this.updateUrl();
+        this.loadData();
+    }
+
+    public onPolicyFilter() {
+        this.pageIndex = 0;
+        this.updateUrl();
+        this.loadData();
+    }
+
+    public onSearch() {
+        this.search.next();
+    }
+
+    public onClearSearch() {
+        this.searchTerm = '';
+        this.pageIndex = 0;
+        this.loadData();
     }
 
     public onPage(event: any): void {
@@ -385,36 +356,22 @@ export class PolicyRequestsComponent implements OnInit, OnDestroy {
             this.pageIndex = event.pageIndex;
             this.pageSize = event.pageSize;
         }
-        this.loadData();
-    }
-
-    public onFilter(event: any) {
-        this.pageIndex = 0;
-        this.currentPolicyId = this.currentPolicy?.id || '';
-        this.updateUrl();
-        this.loadData();
-    }
-
-    public onSort(event: { field: string, order: number }) {
-        if (!event?.field) {
-            return;
+        if (this.searchTerm.trim()) {
+            this.showSearchPage();
+        } else {
+            this.loadData();
         }
-        // A non-lazy table with customSort emits this again whenever its rows change,
-        // so only a click that changes the sort reloads the page
-        const order = event.order === 1 ? 1 : -1;
-        if (event.field === this.sortField && order === this.sortOrder) {
-            return;
-        }
-        this.sortField = event.field;
-        this.sortOrder = order;
-        this.pageIndex = 0;
-        this.updateUrl();
-        this.loadData();
     }
 
-    public onToggleTechnical() {
-        this.showTechnical = !this.showTechnical;
-        this.columns = this.getColumns();
+    public get policyOptions(): { id: string, name: string }[] {
+        return [
+            { id: '', name: 'All policies' },
+            ...this.allPolicies.map((p) => ({ id: p.id, name: p.name }))
+        ];
+    }
+
+    public get isEmpty(): boolean {
+        return !this.loading && this.items.length === 0;
     }
 
     //#region Selection
@@ -470,20 +427,25 @@ export class PolicyRequestsComponent implements OnInit, OnDestroy {
 
     //#region Single row actions
 
-    private describe(row: any): string[] {
+    private describe(row: any): IConfirmRow[] {
         return [
-            `Policy: ${row.policyName || row.policyId || 'Unknown'}`,
-            `Operation: ${this.getOperationName(row)}`,
-            `Request: ${row.messageId}`
+            { name: 'Policy', value: row.policyName || row.policyId || 'Unknown' },
+            { name: 'Operation', value: getOperationInfo(row).title },
+            { name: 'Created', value: this.datePipe.transform(row.createDate, 'dd MMM yyyy, HH:mm') || '' }
         ];
     }
 
-    private confirm(header: string, text: string, details: string[], buttons: { name: string, class: string }[], document?: any) {
-        return this.dialogService.open(CustomConfirmDialogComponent, {
+    private confirm(
+        header: string,
+        text: string,
+        buttons: IConfirmButton[],
+        content: { rows?: IConfirmRow[], list?: string[], document?: any } = {}
+    ) {
+        return this.dialogService.open(RequestConfirmDialog, {
             showHeader: false,
-            width: document ? '720px' : '640px',
+            width: content.document ? '720px' : '560px',
             styleClass: 'guardian-dialog',
-            data: { header, text, details, document, buttons },
+            data: { header, text, buttons, ...content },
         })!;
     }
 
@@ -496,9 +458,11 @@ export class PolicyRequestsComponent implements OnInit, OnDestroy {
                 const dialogRef = this.confirm(
                     'Approve request',
                     'The request will be signed and executed on your behalf. Review the document before approving.',
-                    this.describe(item),
                     [{ name: 'Close', class: 'secondary' }, { name: 'Approve', class: 'primary' }],
-                    response?.body?.document || response?.body || {}
+                    {
+                        rows: this.describe(item),
+                        document: response?.body?.document || response?.body || {}
+                    }
                 );
                 dialogRef.onClose.subscribe((result: string) => {
                     if (result === 'Approve') {
@@ -520,9 +484,9 @@ export class PolicyRequestsComponent implements OnInit, OnDestroy {
     public onReject(item: any) {
         const dialogRef = this.confirm(
             'Reject request',
-            'The request will be rejected and the sender will be notified.',
-            this.describe(item),
-            [{ name: 'Close', class: 'secondary' }, { name: 'Reject', class: 'delete' }]
+            'The request will be rejected and the policy will be notified.',
+            [{ name: 'Close', class: 'secondary' }, { name: 'Reject', class: 'delete' }],
+            { rows: this.describe(item) }
         );
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Reject') {
@@ -541,9 +505,9 @@ export class PolicyRequestsComponent implements OnInit, OnDestroy {
     public onCancel(item: any) {
         const dialogRef = this.confirm(
             'Cancel request',
-            'The pending action will be canceled and will not be sent to the remote policy.',
-            this.describe(item),
-            [{ name: 'Close', class: 'secondary' }, { name: 'Cancel request', class: 'delete' }]
+            'The pending action will be cancelled and will not be sent to the remote policy.',
+            [{ name: 'Close', class: 'secondary' }, { name: 'Cancel request', class: 'delete' }],
+            { rows: this.describe(item) }
         );
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Cancel request') {
@@ -585,11 +549,11 @@ export class PolicyRequestsComponent implements OnInit, OnDestroy {
             approve
                 ? `${rows.length} request(s) will be signed and executed on your behalf, one after another.`
                 : `${rows.length} request(s) will be rejected, one after another.`,
-            rows.map((row, i) => `${i + 1}. ${this.describeShort(row)}`),
             [
                 { name: 'Close', class: 'secondary' },
                 approve ? { name: 'Approve all', class: 'primary' } : { name: 'Reject all', class: 'delete' }
-            ]
+            ],
+            { list: rows.map((row) => this.describeShort(row)) }
         );
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Approve all' || result === 'Reject all') {
@@ -599,7 +563,7 @@ export class PolicyRequestsComponent implements OnInit, OnDestroy {
     }
 
     private describeShort(row: any): string {
-        return `${row.policyName || row.policyId || 'Unknown'} – ${this.getOperationName(row)} (${row.messageId})`;
+        return `${row.policyName || row.policyId || 'Unknown'} – ${getOperationInfo(row).title}`;
     }
 
     private async runBulk(kind: BulkKind, rows: any[]) {
@@ -653,88 +617,34 @@ export class PolicyRequestsComponent implements OnInit, OnDestroy {
 
     //#endregion
 
-    getStatusName(row: any) {
-        switch (row.status) {
-            case PolicyActionStatus.NEW:
-                return 'New';
-            case PolicyActionStatus.COMPLETED:
-                return 'Completed';
-            case PolicyActionStatus.REJECTED:
-                return 'Rejected';
-            case PolicyActionStatus.ERROR:
-                return 'Error';
-            case PolicyActionStatus.CANCELED:
-                return 'Canceled';
-            default:
-                return 'Incorrect status';
-        }
-    }
-
-    getTypeName(row: any) {
-        switch (row.type) {
-            case PolicyActionType.ACTION:
-                return 'Action';
-            case PolicyActionType.REMOTE_ACTION:
-                return 'Action';
-            case PolicyActionType.REQUEST:
-                return 'Request';
-            default:
-                return 'Incorrect type';
-        }
-    }
-
-    getOperationName(row: any) {
-        if (row.type === PolicyActionType.REQUEST) {
-            const type = row.documentType || row.document?.type;
-            switch (type) {
-                case 'sign-and-send-role':
-                    return 'Select role';
-                case 'generate-did':
-                    return 'Generate DID Document';
-                case 'sign-vc':
-                    return 'Sign VC Document';
-                case 'send-message':
-                    return 'Send message';
-                case 'send-messages':
-                    return 'Send messages';
-                case 'create-topic':
-                    return 'Create topic';
-                case 'associate-token':
-                    return 'Associate token';
-                case 'dissociate-token':
-                    return 'Dissociate token';
-                default:
-                    return type || 'Request';
+    public onDetails(row: any) {
+        const dialogRef = this.dialogService.open(RequestDetailsDialog, {
+            showHeader: false,
+            width: '720px',
+            styleClass: 'guardian-dialog',
+            data: {
+                row,
+                canDecide: this.canDecide(row),
+                isLocalUser: this.isLocalUser
             }
-        }
-        if (row.type === PolicyActionType.REMOTE_ACTION) {
-            return 'Remote action';
-        }
-        if (row.blockTag) {
-            return `Block action: ${row.blockTag}`;
-        }
-        return 'Block action';
-    }
-
-    public openVCDocument(row: any) {
-        this.loading = true;
-        this.externalPoliciesService
-            .getRequestDocument({ startMessageId: row.startMessageId })
-            .subscribe((response) => {
-                this.dialogService.open(VCViewerDialog, {
-                    showHeader: false,
-                    width: '90%',
-                    styleClass: 'guardian-dialog',
-                    data: {
-                        row: null,
-                        document: response?.body?.document || response?.body,
-                        title: 'Document',
-                        type: 'JSON',
-                    }
-                });
-                this.loading = false;
-            }, (e) => {
-                this.loading = false;
-            });
+        })!;
+        dialogRef.onClose.subscribe((action: RequestDetailsAction | null) => {
+            switch (action) {
+                case 'approve':
+                    this.onApprove(row);
+                    break;
+                case 'reject':
+                    this.onReject(row);
+                    break;
+                case 'cancel':
+                    this.onCancel(row);
+                    break;
+                case 'reload':
+                    this.onReload(row);
+                    break;
+                default:
+                    break;
+            }
+        });
     }
 }

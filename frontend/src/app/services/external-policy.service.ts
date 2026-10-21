@@ -117,6 +117,8 @@ export class ExternalPoliciesService {
     ): Observable<HttpResponse<{
         requestsCount: number,
         actionsCount: number,
+        failedCount: number,
+        threadsCount: number,
         delayCount: number,
         total: number
     }>> {

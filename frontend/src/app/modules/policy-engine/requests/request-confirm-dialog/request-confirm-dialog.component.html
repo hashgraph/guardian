@@ -1,0 +1,48 @@
+<div class="dialog-header">
+  <div class="header-container">
+    <div class="header-text">{{ header }}</div>
+  </div>
+  <div class="header-icon" (click)="onClick()">
+    <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+  </div>
+</div>
+
+<div class="dialog-body request-dialog-body">
+  <p class="request-confirm-text">{{ text }}</p>
+
+  @if (rows.length > 0) {
+    <div class="request-kv">
+      @for (item of rows; track item.name) {
+        <div class="request-kv-name">{{ item.name }}</div>
+        <div class="request-kv-value">{{ item.value }}</div>
+      }
+    </div>
+  }
+
+  @if (list.length > 0) {
+    <ol class="request-list">
+      @for (item of list; track item) {
+        <li>{{ item }}</li>
+      }
+    </ol>
+  }
+
+  @if (json) {
+    <div class="request-json request-confirm-document">{{ json }}</div>
+  }
+</div>
+
+<div class="dialog-footer">
+  <div class="action-buttons request-dialog-actions">
+    <div class="request-dialog-actions-group"></div>
+    <div class="request-dialog-actions-group">
+      @for (button of buttons; track button.name) {
+        <div class="dialog-button">
+          <button
+            class="guardian-button guardian-button-{{ button.class }}"
+            (click)="onClick(button)">{{ button.name }}</button>
+        </div>
+      }
+    </div>
+  </div>
+</div>
