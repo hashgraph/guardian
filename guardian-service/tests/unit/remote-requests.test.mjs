@@ -95,6 +95,14 @@ describe('incoming requests handlers', () => {
             assert.deepEqual(pipelines[0][0].$match, { accountId: user.hederaAccountId });
         });
 
+        it('matches several types or statuses given as a comma separated list', async () => {
+            const { pipelines } = await run([{ items: [], total: [] }], {
+                filters: { type: 'ACTION,REMOTE_ACTION', status: 'NEW' }
+            });
+            const trailing = pipelines[0].filter((stage) => stage.$match).pop().$match;
+            assert.deepEqual(trailing, { type: { $in: ['ACTION', 'REMOTE_ACTION'] }, status: 'NEW' });
+        });
+
         it('takes the page and the total from one $facet over the grouped rows', async () => {
             const { result, pipelines } = await run([{
                 items: [{ startMessageId: '1.1', policyId: 'p1', documentType: 'sign-vc', type: 'REQUEST' }],
@@ -212,6 +220,15 @@ describe('incoming requests handlers', () => {
             assert.equal(project.messageId, '$startMessageId');
         });
 
+        it('takes the position of the request message in its topic from the request row', async () => {
+            const { pipelines } = await run([{ items: [], total: [] }]);
+            const group = pipelines[0].find((stage) => stage.$group).$group;
+            assert.deepEqual(group.requestIndex.$max.$cond[0], { $eq: ['$messageId', '$startMessageId'] });
+            assert.equal(group.requestIndex.$max.$cond[1], '$index');
+            const projection = pipelines[0].filter((stage) => stage.$project).pop().$project;
+            assert.equal(projection.index, '$requestIndex');
+        });
+
         it('dates a thread by its earliest row', async () => {
             const { pipelines } = await run([{ items: [], total: [] }]);
             const group = pipelines[0].find((stage) => stage.$group).$group;
@@ -283,11 +300,14 @@ describe('incoming requests handlers', () => {
     });
 
     describe('GET_REMOTE_REQUESTS_COUNT', () => {
-        it('computes every counter in one aggregation', async () => {
+        const threadCounts = { requestsCount: 3, actionsCount: 2, failedCount: 1, threads: 6 };
+        const rowCounts = { delayCount: 1, total: 9 };
+
+        it('counts requests, actions and failures per thread, the rest per row', async () => {
             const pipelines = [];
             stubProto(DataBaseHelper, 'aggregate', async (pipeline) => {
                 pipelines.push(pipeline);
-                return [{ requestsCount: 3, actionsCount: 2, delayCount: 1, total: 9 }];
+                return pipelines.length === 1 ? [rowCounts] : [threadCounts];
             });
             stubProto(DataBaseHelper, 'count', async () => {
                 throw new Error('counters are computed by the aggregation, not by separate queries');
@@ -301,9 +321,38 @@ describe('incoming requests handlers', () => {
                 user
             });
 
-            assert.equal(pipelines.length, 1);
+            assert.equal(pipelines.length, 2);
             assert.deepEqual(pipelines[0][0].$match, { accountId: user.hederaAccountId, policyId: 'p1' });
-            assert.deepEqual(result.body, { requestsCount: 3, actionsCount: 2, delayCount: 1, total: 9 });
+            assert.deepEqual(pipelines[1][0].$match, { accountId: user.hederaAccountId, policyId: 'p1' });
+            const names = pipelines[1].map((stage) => Object.keys(stage)[0]);
+            assert.ok(names.indexOf('$group') < names.lastIndexOf('$group'), 'threads are grouped before they are counted');
+            assert.deepEqual(result.body, {
+                requestsCount: 3,
+                actionsCount: 2,
+                failedCount: 1,
+                threadsCount: 6,
+                delayCount: 1,
+                total: 9
+            });
+        });
+
+        it('counts the threads by the type and the status the grid shows', async () => {
+            const pipelines = [];
+            stubProto(DataBaseHelper, 'aggregate', async (pipeline) => {
+                pipelines.push(pipeline);
+                return [];
+            });
+            await handlers[PolicyEngineEvents.GET_REMOTE_REQUESTS_COUNT]({ options: { filters: {} }, user });
+            const group = pipelines[1].filter((stage) => stage.$group).pop().$group;
+            assert.deepEqual(group.requestsCount.$sum.$cond[0].$and, [
+                { $in: ['$type', ['REQUEST']] },
+                { $eq: ['$status', 'NEW'] }
+            ]);
+            assert.deepEqual(group.actionsCount.$sum.$cond[0].$and, [
+                { $in: ['$type', ['ACTION', 'REMOTE_ACTION']] },
+                { $eq: ['$status', 'NEW'] }
+            ]);
+            assert.deepEqual(group.failedCount.$sum.$cond[0], { $eq: ['$status', 'ERROR'] });
         });
 
         it('returns zeros when the account has no rows', async () => {
@@ -312,7 +361,14 @@ describe('incoming requests handlers', () => {
                 options: { filters: {} },
                 user
             });
-            assert.deepEqual(result.body, { requestsCount: 0, actionsCount: 0, delayCount: 0, total: 0 });
+            assert.deepEqual(result.body, {
+                requestsCount: 0,
+                actionsCount: 0,
+                failedCount: 0,
+                threadsCount: 0,
+                delayCount: 0,
+                total: 0
+            });
         });
     });
 });

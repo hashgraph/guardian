@@ -36,29 +36,25 @@ export function getRemoteRequestsSort(sortField?: string, sortDirection?: string
 }
 
 /**
- * Build the pipeline for the incoming requests grid
- * Rows are grouped by `startMessageId`, the page and the total are taken from the same grouped rows
- * `policyId` is constant within a thread, so it is matched before the grouping.
- * `type` is not: the reply to a remote action is saved as an action, so the thread takes the type
- * of its request row and is matched by it after the grouping, together with the derived `status`
- * @param accountId
- * @param filters
- * @param sort
- * @param skip
- * @param limit
+ * Match a single value or a comma separated list of values
+ * @param value
  */
-export function getRemoteRequestsPipeline(
-    accountId: string,
-    filters: { policyId?: string, status?: string, type?: string } | undefined,
-    sort: { [key: string]: 1 | -1 },
-    skip: number,
-    limit: number
-): any[] {
+function matchValues(value: string): any {
+    const values = String(value).split(',').map((item) => item.trim()).filter((item) => !!item);
+    return values.length > 1 ? { $in: values } : values[0];
+}
+
+/**
+ * Stages that turn the rows of an account into one row per thread
+ * @param accountId
+ * @param policyId
+ */
+function getRemoteThreadsStages(accountId: string, policyId?: string): any[] {
     const leading: any = { accountId };
-    if (filters?.policyId) {
-        leading.policyId = filters.policyId;
+    if (policyId) {
+        leading.policyId = policyId;
     }
-    const aggregate: any[] = [{
+    return [{
         $match: leading
     }, {
         $project: {
@@ -95,6 +91,8 @@ export function getRemoteRequestsPipeline(
             startMessageId: { $last: '$startMessageId' },
             blockTag: { $last: '$blockTag' },
             requestLoaded: { $max: { $cond: [{ $eq: ['$messageId', '$startMessageId'] }, '$loaded', null] } },
+            // position of the request message in its topic, for a link to the explorer
+            requestIndex: { $max: { $cond: [{ $eq: ['$messageId', '$startMessageId'] }, '$index', null] } },
             anyLoaded: { $first: '$loaded' },
         }
     }, {
@@ -122,17 +120,40 @@ export function getRemoteRequestsPipeline(
             messageId: '$startMessageId',
             startMessageId: '$startMessageId',
             blockTag: '$blockTag',
+            index: '$requestIndex',
             // Reload fetches the document of the request row
             loaded: { $ifNull: ['$requestLoaded', '$anyLoaded'] }
         }
     }];
+}
+
+/**
+ * Build the pipeline for the incoming requests grid
+ * Rows are grouped by `startMessageId`, the page and the total are taken from the same grouped rows
+ * `policyId` is constant within a thread, so it is matched before the grouping.
+ * `type` is not: the reply to a remote action is saved as an action, so the thread takes the type
+ * of its request row and is matched by it after the grouping, together with the derived `status`
+ * @param accountId
+ * @param filters
+ * @param sort
+ * @param skip
+ * @param limit
+ */
+export function getRemoteRequestsPipeline(
+    accountId: string,
+    filters: { policyId?: string, status?: string, type?: string } | undefined,
+    sort: { [key: string]: 1 | -1 },
+    skip: number,
+    limit: number
+): any[] {
+    const aggregate: any[] = getRemoteThreadsStages(accountId, filters?.policyId);
 
     const trailing: any = {};
     if (filters?.type) {
-        trailing.type = filters.type;
+        trailing.type = matchValues(filters.type);
     }
     if (filters?.status) {
-        trailing.status = filters.status;
+        trailing.status = matchValues(filters.status);
     }
     if (Object.keys(trailing).length) {
         aggregate.push({ $match: trailing });
@@ -287,6 +308,39 @@ export async function getRemoteRequestDocument(msg: { options: any, user: IAuthU
 }
 
 /**
+ * Build the pipeline that counts the threads of an account by what is expected of the user
+ * @param accountId
+ * @param policyId
+ */
+export function getRemoteThreadsCountPipeline(accountId: string, policyId?: string): any[] {
+    const count = (type: any, status: string) => ({
+        $sum: {
+            $cond: [{
+                $and: [
+                    { $in: ['$type', type] },
+                    { $eq: ['$status', status] }
+                ]
+            }, 1, 0]
+        }
+    });
+    return [
+        ...getRemoteThreadsStages(accountId, policyId),
+        {
+            $group: {
+                _id: null,
+                requestsCount: count([PolicyActionType.REQUEST], PolicyActionStatus.NEW),
+                actionsCount: count(
+                    [PolicyActionType.ACTION, PolicyActionType.REMOTE_ACTION],
+                    PolicyActionStatus.NEW
+                ),
+                failedCount: { $sum: { $cond: [{ $eq: ['$status', PolicyActionStatus.ERROR] }, 1, 0] } },
+                threads: { $sum: 1 }
+            }
+        }
+    ];
+}
+
+/**
  * Get remote requests count
  * @param msg
  */
@@ -307,26 +361,6 @@ export async function getRemoteRequestsCount(msg: { options: any, user: IAuthUse
             {
                 $group: {
                     _id: null,
-                    requestsCount: {
-                        $sum: {
-                            $cond: [{
-                                $and: [
-                                    { $eq: ['$lastStatus', PolicyActionStatus.NEW] },
-                                    { $eq: ['$type', PolicyActionType.REQUEST] }
-                                ]
-                            }, 1, 0]
-                        }
-                    },
-                    actionsCount: {
-                        $sum: {
-                            $cond: [{
-                                $and: [
-                                    { $eq: ['$lastStatus', PolicyActionStatus.NEW] },
-                                    { $eq: ['$type', PolicyActionType.ACTION] }
-                                ]
-                            }, 1, 0]
-                        }
-                    },
                     delayCount: {
                         $sum: {
                             $cond: [{
@@ -341,11 +375,18 @@ export async function getRemoteRequestsCount(msg: { options: any, user: IAuthUse
                 }
             }
         ];
-        const [counts] = await new DataBaseHelper(PolicyAction).aggregate(pipeline) as any[];
+        const collection = new DataBaseHelper(PolicyAction);
+        const [counts] = await collection.aggregate(pipeline) as any[];
+        // requests, actions and failures are counted per thread, as the grid lists them
+        const [threads] = await collection.aggregate(
+            getRemoteThreadsCountPipeline(user.hederaAccountId, policyId)
+        ) as any[];
 
         return new MessageResponse({
-            requestsCount: counts?.requestsCount || 0,
-            actionsCount: counts?.actionsCount || 0,
+            requestsCount: threads?.requestsCount || 0,
+            actionsCount: threads?.actionsCount || 0,
+            failedCount: threads?.failedCount || 0,
+            threadsCount: threads?.threads || 0,
             delayCount: counts?.delayCount || 0,
             total: counts?.total || 0
         });

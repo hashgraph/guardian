@@ -740,16 +740,16 @@ export class ExternalPoliciesApi {
     @ApiQuery({
         name: 'status',
         type: String,
-        description: 'Status',
+        description: 'Status, or several statuses separated by a comma',
         required: false,
         example: 'NEW'
     })
     @ApiQuery({
         name: 'type',
         type: String,
-        description: 'Type',
+        description: 'Type, or several types separated by a comma',
         required: false,
-        example: 'ACTION'
+        example: 'ACTION,REMOTE_ACTION'
     })
     @ApiQuery({
         name: 'sortField',
@@ -1221,7 +1221,7 @@ export class ExternalPoliciesApi {
         examples: {
             default: {
                     summary: 'Default example',
-                value: { requestsCount: 0, actionsCount: 0, delayCount: 0, total: 0 }
+                value: { requestsCount: 0, actionsCount: 0, failedCount: 0, threadsCount: 0, delayCount: 0, total: 0 }
             }
         }
     })
