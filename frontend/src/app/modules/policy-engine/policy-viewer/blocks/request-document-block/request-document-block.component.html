@@ -17,6 +17,14 @@
           <h1 mat-dialog-title>{{ title }}</h1>
         }
         <div class="draft-file-actions">
+          <div class="calculation-preview-toggle">
+            <p-toggleswitch
+              inputId="calculationPreview_{{ id }}"
+              [ngModel]="previewMode"
+              (onChange)="onPreviewModeChange($event.checked)">
+            </p-toggleswitch>
+            <label for="calculationPreview_{{ id }}">Calculation preview</label>
+          </div>
           <request-draft-file-actions
             [schema]="schema"
             [policyId]="policyId"
@@ -68,14 +76,6 @@
               </button>
             </div>
           }
-          <div class="calculation-preview-toggle">
-            <p-toggleswitch
-              inputId="calculationPreview_{{ id }}"
-              [ngModel]="previewMode"
-              (onChange)="onPreviewModeChange($event.checked)">
-            </p-toggleswitch>
-            <label for="calculationPreview_{{ id }}">Calculation preview</label>
-          </div>
           @if (relayerAccount || enableAdditionalData) {
             <div class="relayer-account-steps">
               <div class="guardian-step-container">

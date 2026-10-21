@@ -179,12 +179,18 @@ describe('@unit preview helpers', function () {
             assert.equal(res, error);
         });
 
-        it('collects block errors into the response', async () => {
+        it('collects block errors into the response with the block type and error data', async () => {
             const res = await runPreview(formBlock(), user, {}, async (block, previewUser, data, step) => {
-                step.addError(new Error('math failed'));
+                step.addError(new Error('math failed'), 'mathBlock');
+                step.addError(Object.assign(new Error('script failed'), { data: { line: 3 } }), 'customLogicBlock');
+                step.addError('no block');
                 return new MessageResponse({});
             });
-            assert.deepEqual(res.body.errors, ['math failed']);
+            assert.deepEqual(res.body.errors, [
+                { message: 'math failed', blockType: 'mathBlock', errorData: null },
+                { message: 'script failed', blockType: 'customLogicBlock', errorData: { line: 3 } },
+                { message: 'no block', blockType: null, errorData: null }
+            ]);
         });
 
         it('returns the fields the chain read from the form', async () => {

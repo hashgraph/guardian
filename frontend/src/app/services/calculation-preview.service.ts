@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { SchemaField } from '@guardian/interfaces';
+import { IBlockErrorData } from '@guardian/interfaces';
 import { PolicyEngineService } from './policy-engine.service';
 import { TablePersistenceService } from './table-persistence.service';
+import { ToastService } from './toast.service';
 import { prepareVcData } from '../modules/common/models/prepare-vc-data';
 
 export interface ICalculationPreviewValue {
@@ -40,7 +41,18 @@ export interface ICalculationPreviewResult {
     calculations: ICalculationPreviewCalculation[];
     fields: string[];
     missingFields: string[];
-    errors: string[];
+    errors: ICalculationPreviewError[];
+}
+
+export interface ICalculationPreviewError {
+    message: string;
+    blockType: string | null;
+    errorData: IBlockErrorData | null;
+}
+
+export interface ICalculationPreviewViewerDocument {
+    label: string;
+    document: unknown;
 }
 
 export function normalizePreviewResult(raw: any): ICalculationPreviewResult {
@@ -59,7 +71,8 @@ export function normalizePreviewResult(raw: any): ICalculationPreviewResult {
 export class CalculationPreviewService {
     constructor(
         private policyEngineService: PolicyEngineService,
-        private tablePersist: TablePersistenceService
+        private tablePersist: TablePersistenceService,
+        private toastService: ToastService
     ) {}
 
     public async run(
@@ -89,15 +102,64 @@ export class CalculationPreviewService {
         return merged;
     }
 
-    public getFieldLabels(fields: SchemaField[] | undefined, prefix: string = ''): Record<string, string> {
-        const labels: Record<string, string> = {};
-        for (const field of fields || []) {
-            const path = `${prefix}${field.name}`;
-            labels[path] = field.description || field.name;
-            if (field.isRef) {
-                Object.assign(labels, this.getFieldLabels(field.fields, `${path}.`));
+    public getViewerDocuments(result: ICalculationPreviewResult): ICalculationPreviewViewerDocument[] {
+        const documents: ICalculationPreviewViewerDocument[] = [];
+        for (const item of result.documents) {
+            const name = item.target || item.source || 'Document';
+            const states = Array.isArray(item.document) ? item.document : [item.document];
+            for (const state of states) {
+                const document = state && typeof state === 'object' ? Reflect.get(state, 'document') : null;
+                if (document) {
+                    documents.push({
+                        label: `${documents.length + 1}. ${name}`,
+                        document: this.restorePreviewTables(structuredClone(document))
+                    });
+                }
             }
         }
-        return labels;
+        return documents;
+    }
+
+    private restorePreviewTables(node: unknown): unknown {
+        if (typeof node === 'string') {
+            return this.restorePreviewTable(node);
+        }
+        if (Array.isArray(node)) {
+            return node.map((item) => this.restorePreviewTables(item));
+        }
+        if (node && typeof node === 'object') {
+            for (const key of Object.keys(node)) {
+                Reflect.set(node, key, this.restorePreviewTables(Reflect.get(node, key)));
+            }
+        }
+        return node;
+    }
+
+    private restorePreviewTable(value: string): string {
+        if (!value.startsWith('{')) {
+            return value;
+        }
+        let table: unknown;
+        try {
+            table = JSON.parse(value);
+        } catch {
+            return value;
+        }
+        if (!table || typeof table !== 'object') {
+            return value;
+        }
+        const fileId = Reflect.get(table, 'fileId');
+        const csv = Reflect.get(table, 'csv');
+        if (Reflect.get(table, 'type') !== 'table' || typeof fileId !== 'string' || !fileId.startsWith('preview-') || typeof csv !== 'string') {
+            return value;
+        }
+        Reflect.deleteProperty(table, 'fileId');
+        return JSON.stringify(table);
+    }
+
+    public showErrors(result: ICalculationPreviewResult): void {
+        for (const error of result.errors) {
+            this.toastService.error(error.message, error.blockType || '', { blockErrorData: error.errorData || undefined });
+        }
     }
 }

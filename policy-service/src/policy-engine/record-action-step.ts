@@ -3,6 +3,13 @@ import { PolicyLink } from './interfaces/index.js';
 
 type Callback = (id: string, timestamp: number, errors: { message: string; stack?: string }[]) => void;
 
+export interface IActionError {
+    message: string;
+    stack?: string;
+    blockType?: string | null;
+    errorData?: unknown;
+}
+
 export interface IPreviewDocument {
     source: string | null;
     target: string | null;
@@ -50,7 +57,7 @@ export class RecordActionStep {
     public readonly withHistory: boolean;
     public readonly preview: boolean;
     private readonly results: any[] = [];
-    private readonly errors: { message: string; stack?: string }[] = [];
+    private readonly errors: IActionError[] = [];
     private readonly actionsMap: Set<string> = new Set();
     private readonly previewDocuments: IPreviewDocument[] = [];
     private readonly previewCalculations: IPreviewCalculation[] = [];
@@ -153,13 +160,14 @@ export class RecordActionStep {
         return this.previewSource;
     }
 
-    public addError(err: unknown): void {
+    public addError(err: unknown, blockType: string | null = null): void {
         const message = err instanceof Error ? err.message : String(err);
         const stack = err instanceof Error ? err.stack : undefined;
-        this.errors.push({ message, stack });
+        const errorData = err && typeof err === 'object' ? Reflect.get(err, 'data') : undefined;
+        this.errors.push({ message, stack, blockType, errorData });
     }
 
-    public getErrors(): { message: string; stack?: string }[] {
+    public getErrors(): IActionError[] {
         return [...this.errors];
     }
 

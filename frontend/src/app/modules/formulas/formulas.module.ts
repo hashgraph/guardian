@@ -74,7 +74,8 @@ import { FormulasGraphTabComponent } from "./dialogs/formulas-view-dialog/formul
     exports: [
         FormulasViewDialog,
         FieldFormulasComponent,
-        LatexMarkupDirective
+        LatexMarkupDirective,
+        TruncateTooltipDirective
     ],
     providers: [
         { provide: DialogService, useClass: GuardianDialogService },

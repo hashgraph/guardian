@@ -22,7 +22,7 @@ import { FormulasService } from 'src/app/services/formulas.service';
 import { FormulasTree } from 'src/app/modules/formulas/models/formula-tree';
 import { PolicyTestAutomationService } from '../../../policy-test-automation/policy-test-automation.service';
 import { CalculationPreviewService, ICalculationPreviewResult } from 'src/app/services/calculation-preview.service';
-import { CalculationPreviewDialogComponent } from '../../../../dialogs/calculation-preview-dialog/calculation-preview-dialog.component';
+import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 
 @Component({
     selector: 'request-document-block-dialog',
@@ -435,13 +435,22 @@ export class RequestDocumentBlockDialog {
     }
 
     private showPreviewResult(result: ICalculationPreviewResult): void {
-        this.dialogService.open(CalculationPreviewDialogComponent, {
+        this.calculationPreview.showErrors(result);
+        const documents = this.calculationPreview.getViewerDocuments(result);
+        if (!documents.length) {
+            return;
+        }
+        this.dialogService.open(VCViewerDialog, {
             showHeader: false,
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
-                result,
-                labels: this.calculationPreview.getFieldLabels(this.schema?.fields)
+                title: 'Calculation preview',
+                type: 'VC',
+                viewDocument: true,
+                dryRun: !!this.dryRun,
+                document: documents[0].document,
+                previewDocuments: documents
             }
         });
     }

@@ -588,7 +588,11 @@ export function buildPreviewResponse(actionStatus: RecordActionStep, input: unkn
         fields,
         missingFields,
         steps: actionStatus.getResults(),
-        errors: actionStatus.getErrors().map((error) => error.message)
+        errors: actionStatus.getErrors().map((error) => ({
+            message: error.message,
+            blockType: error.blockType ?? null,
+            errorData: error.errorData ?? null
+        }))
     };
 }
 

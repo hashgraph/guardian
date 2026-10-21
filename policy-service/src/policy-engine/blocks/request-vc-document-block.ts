@@ -434,14 +434,19 @@ export class RequestVcDocumentBlock {
         );
 
         if (actionStatus?.preview) {
-            if (Reflect.get(data, 'previewFields') === true) {
+            const previewFields = Reflect.get(data, 'previewFields') === true;
+            if (previewFields) {
                 fillPreviewPlaceholders(this._schema.fields, document);
             }
             const dependencies: Record<string, string[]> = {};
             const errors: string[] = [];
             calculatePreviewAutoFields(this._schema.fields, document, dependencies, errors);
+            if (errors.length && !previewFields) {
+                disposeTables();
+                throw new Error(errors[0]);
+            }
             for (const error of errors) {
-                actionStatus.addError(new Error(error));
+                actionStatus.addError(new Error(error), ref.blockType);
             }
             actionStatus.setPreviewSource({
                 schema: this._schema.iri,

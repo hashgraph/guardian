@@ -46,7 +46,7 @@ export function CatchErrors() {
                     } catch (error) {
                         const actionStatus = argArray[0]?.actionStatus;
                         if (actionStatus?.preview) {
-                            actionStatus.addError(error);
+                            actionStatus.addError(error, thisArg.blockType);
                             return;
                         }
                         switch (thisArg.options.onErrorAction) {

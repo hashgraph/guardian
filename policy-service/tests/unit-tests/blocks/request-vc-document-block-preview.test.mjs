@@ -121,4 +121,33 @@ describe('@unit RequestVcDocumentBlock preview', () => {
         assert.deepEqual(step.getPreviewSource().dependencies, { total: ['amount', 'rate'] });
         assert.deepEqual(step.getErrors(), []);
     });
+
+    const brokenSchema = () => ({
+        ...formSchema(),
+        fields: [
+            { name: 'amount', type: 'number', isRef: false, isArray: false },
+            { name: 'total', type: 'number', isRef: false, isArray: false, autocalculate: true, expression: 'amount *' }
+        ]
+    });
+
+    it('fails a preview on an autocalculate error the way a normal submit fails', async () => {
+        const { block, events } = mk();
+        block._schema = brokenSchema();
+        const step = previewStep();
+        await assert.rejects(
+            block.setData(makeUser(), { document: { amount: 5 } }, null, step),
+            (error) => error.errorObject?.type === 'blockActionError' && /Invalid expression: total/.test(error.message)
+        );
+        assert.equal(events.length, 0);
+        assert.deepEqual(step.getErrors(), []);
+    });
+
+    it('keeps collecting autocalculate errors quietly during field discovery', async () => {
+        const { block, events } = mk();
+        block._schema = brokenSchema();
+        const step = previewStep();
+        await block.setData(makeUser(), { document: { amount: 5 }, previewFields: true }, null, step);
+        assert.deepEqual(step.getErrors().map((error) => error.message), ['Invalid expression: total']);
+        assert.deepEqual(events.map((event) => event[0]), ['RunEvent']);
+    });
 });

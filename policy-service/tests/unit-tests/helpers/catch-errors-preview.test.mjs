@@ -33,10 +33,11 @@ describe('@unit CatchErrors in preview', () => {
     it('collects the error on the preview step and stops the block quietly', async () => {
         const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
         const triggered = [];
-        const thisArg = { options: {}, parent: null, triggerEvents: (...args) => triggered.push(args) };
+        const thisArg = { options: {}, parent: null, blockType: 'mathBlock', triggerEvents: (...args) => triggered.push(args) };
         const result = await failing().apply(thisArg, [{ user: {}, data: {}, actionStatus: step }]);
         assert.equal(result, undefined);
         assert.deepEqual(step.getErrors().map((error) => error.message), ['formula failed']);
+        assert.deepEqual(step.getErrors().map((error) => error.blockType), ['mathBlock']);
         assert.equal(blockErrorCalls.length, 0);
         assert.equal(triggered.length, 0);
     });

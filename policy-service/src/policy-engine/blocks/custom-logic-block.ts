@@ -178,7 +178,7 @@ export class CustomLogicBlock {
             ref.backup();
         } catch (error) {
             if (event.actionStatus?.preview) {
-                event.actionStatus.addError(error);
+                event.actionStatus.addError(error, ref.blockType);
                 return event.data;
             }
             const message = PolicyUtils.getErrorMessage(error);

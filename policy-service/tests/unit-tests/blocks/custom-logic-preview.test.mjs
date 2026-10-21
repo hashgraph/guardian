@@ -39,6 +39,7 @@ describe('@unit customLogicBlock preview', () => {
         const { block, components, events } = setup(async () => { throw new Error('script failed'); });
         await block.runAction(makeEvent(step));
         assert.deepEqual(step.getErrors().map((error) => error.message), ['script failed']);
+        assert.deepEqual(step.getErrors().map((error) => error.blockType), ['customLogicBlock']);
         assert.equal(uiErrors.length, 0);
         assert.equal(events.length, 0);
         assert.equal(components.__logs.filter(([level]) => level === 'error').length, 0);
