@@ -12,3 +12,6 @@ cypress/fixtures/StandardRegistryData.json
 cypress/fixtures/seededMessages.json
 cypress/fixtures/testJsonCid
 cypress/fixtures/testJsonDRCid
+.solo/
+.certs/
+.local/

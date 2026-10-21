@@ -10,7 +10,14 @@
         "ui-only": "npx cypress run --env \"grepTags=ui,grepFilterSpecs=true\"",
         "test-tag": "./run-test-by-tag.sh",
         "api-tests": "npx cypress run --env \"grepTags=all,grepFilterSpecs=true\" --spec \"cypress/e2e/api-tests/**/*.cy.js\" --browser chrome",
-        "smoke-pull": "npx cypress run --env \"grepTags=smoke,grepFilterSpecs=true\" --spec \"cypress/e2e/api-tests/**/*.cy.js\" --browser chrome"
+        "smoke-pull": "npx cypress run --env \"grepTags=smoke,grepFilterSpecs=true\" --spec \"cypress/e2e/api-tests/**/*.cy.js\" --browser chrome",
+        "solo:up": "node scripts/solo-network.mjs up",
+        "solo:down": "node scripts/solo-network.mjs down",
+        "test:scripts": "node --test \"scripts/*.test.mjs\"",
+        "guardian:up": "scripts/local-guardian.sh up",
+        "guardian:down": "scripts/local-guardian.sh down",
+        "guardian:test": "scripts/local-guardian.sh test",
+        "guardian:test:smoke": "scripts/local-guardian.sh smoke"
     },
     "keywords": [
         "qa",

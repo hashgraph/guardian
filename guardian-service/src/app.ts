@@ -10,6 +10,7 @@ import { ApplicationState } from '@guardian/common/helpers/application-state';
 import { COMMON_CONNECTION_CONFIG } from '@guardian/common/helpers/db-helper';
 import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 import { Environment } from '@guardian/common/helpers/environment';
+import { applyNetworkOverrides } from '@guardian/common/helpers/network-overrides';
 import { ExternalEventChannel } from '@guardian/common/mq/external-channel';
 import { GenerateTLSOptionsNats } from '@guardian/common/helpers/generate-tls-options';
 import { IPFS } from '@guardian/common/helpers/ipfs';
@@ -204,40 +205,14 @@ Promise.all([
     Environment.setLocalNodeProtocol(process.env.LOCALNODE_PROTOCOL);
     Environment.setLocalNodeAddress(process.env.LOCALNODE_ADDRESS);
 
-    if (process.env.OVERRIDE_NETWORK_CONFIGURATION === 'true') {
-        if (process.env.OVERRIDE_HEDERA_CONSENSUS_NODES) {
-            try {
-                const nodes = JSON.parse(process.env.OVERRIDE_HEDERA_CONSENSUS_NODES);
-                Environment.setNodes(nodes);
-            } catch (error) {
-                await logger.warn(
-                    'OVERRIDE_HEDERA_CONSENSUS_NODES field in settings: ' + error.message,
-                    ['GUARDIAN_SERVICE'],
-                    null
-                );
-                console.warn(error);
-            }
-        }
-        if (process.env.OVERRIDE_HEDERA_MIRROR_NODES) {
-            try {
-                const mirrorNodes = JSON.parse(
-                    process.env.OVERRIDE_HEDERA_MIRROR_NODES
-                );
-                Environment.setMirrorNodes(mirrorNodes);
-            } catch (error) {
-                await logger.warn(
-                    'OVERRIDE_HEDERA_MIRROR_NODES field in settings: ' + error.message,
-                    ['GUARDIAN_SERVICE'],
-                    null
-                );
-                console.warn(error);
-            }
-        }
-
-        if (process.env.OVERRIDE_HEDERA_MIRROR_NODES_BASE_API) {
-            Environment.setMirrorNodesBaseApi(process.env.OVERRIDE_HEDERA_MIRROR_NODES_BASE_API);
-        }
-    }
+    await applyNetworkOverrides(process.env, async (variableName, error) => {
+        await logger.warn(
+            `${variableName} field in settings: ${error.message}`,
+            ['GUARDIAN_SERVICE'],
+            null
+        );
+        console.warn(error);
+    });
 
     Environment.setNetwork(process.env.HEDERA_NET);
     MessageServer.setLang(process.env.MESSAGE_LANG);
