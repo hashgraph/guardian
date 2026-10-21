@@ -853,6 +853,18 @@ describe('@unit PolicyActionsService – messages of other users', function () {
         assert.equal(home.rows[0].accountId, USER_ACCOUNT);
     });
 
+    it('reports a failed reload while the key is still missing', async () => {
+        const topic = createTopic();
+        topic.documents.set('request-1', { type: 'sign-vc' });
+        const home = await createSide({ topic, main: false, messageKey: null });
+        await home.service.receive({ message: createMessage(USER_DID), payer: OWNER_ACCOUNT, index: 1, id: 'request-1' });
+
+        let error = null;
+        await home.service.loadAction('request-1', { hederaAccountId: USER_ACCOUNT }).catch((e) => error = e);
+        assert.equal(error?.message, 'Failed to load the action document');
+        assert.isFalse(home.rows[0].loaded);
+    });
+
     it('keeps the document it wrote when its own echo cannot be read', async () => {
         const topic = createTopic();
         const main = await createSide({ topic, main: true, users: {} });

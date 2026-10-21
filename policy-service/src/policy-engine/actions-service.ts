@@ -1466,7 +1466,9 @@ export class PolicyActionsService {
         if (!row) {
             throw Error('Action not found');
         }
-        await this.reloadDocument(row);
+        if (!await this.reloadDocument(row)) {
+            throw Error('Failed to load the action document');
+        }
     }
 
     /**
